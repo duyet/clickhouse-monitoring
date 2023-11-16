@@ -1,0 +1,27 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:tailwindcss/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "prettier"
+  ],
+  "plugins": ["tailwindcss"],
+  "rules": {
+    "@next/next/no-html-link-for-pages": "off",
+    "tailwindcss/no-custom-classname": "off",
+    "tailwindcss/classnames-order": "error",
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "react/no-unknown-property": "off"
+  },
+  "settings": {
+    "tailwindcss": {
+      "callees": ["cn", "cva"],
+      "config": "tailwind.config.cjs"
+    },
+    "next": {
+      "rootDir": ["app/*/"]
+    }
+  }
+}

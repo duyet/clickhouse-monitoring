@@ -1,0 +1,12 @@
+# Build artifacts
+.next/
+.turbo/
+_next/
+__tmp__/
+dist/
+node_modules/
+target/
+compiled/
+pnpm-lock.yaml
+.github/actions/*/index.mjs
+test/**/out/**
