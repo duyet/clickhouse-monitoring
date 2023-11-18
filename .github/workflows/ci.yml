@@ -1,0 +1,26 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/base.yml
+    with:
+      action: build
+
+  test:
+    uses: ./.github/workflows/base.yml
+    with:
+      action: test
