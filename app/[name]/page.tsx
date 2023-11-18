@@ -1,7 +1,7 @@
 import { unstable_noStore as noStore } from 'next/cache'
 
 import { fetchData } from '@/lib/clickhouse'
-import { getQueryByName, queries } from '@/lib/clickhouse-queries'
+import { getQueryConfigByName, queries } from '@/lib/clickhouse-queries'
 import { cn } from '@/lib/utils'
 import { DataTable } from '@/components/data-table/data-table'
 
@@ -18,7 +18,7 @@ export default async function Page({ params: { name } }: PageProps) {
   noStore()
 
   // Get the query config
-  const config = getQueryByName(name)
+  const config = getQueryConfigByName(name)
   if (!config) {
     return <div>404</div>
   }
