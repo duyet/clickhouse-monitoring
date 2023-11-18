@@ -1,14 +1,11 @@
-name: Build
+name: Reusable
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types:
-      - opened
-      - reopened
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      action:
+        required: true
+        type: string
 
 env:
   CLICKHOUSE_HOST: http://localhost:8123
@@ -17,11 +14,10 @@ env:
 
 permissions:
   contents: read
-  pages: write
   id-token: write
 
 jobs:
-  build:
+  job:
     runs-on: ubuntu-latest
     services:
       clickhouse:
@@ -60,5 +56,10 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Build Next.js
+      - name: Test App
+        if: ${{ inputs.action == 'test' }}
+        run: yarn e2e:headless
+
+      - name: Build App
+        if: ${{ inputs.action == 'build' }}
         run: yarn build
