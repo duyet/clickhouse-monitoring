@@ -118,7 +118,7 @@ export const queries: Array<QueryConfig> = [
   },
 ]
 
-export const getQueryByName = (name: string) => {
+export const getQueryConfigByName = (name: string) => {
   if (!name) {
     return null
   }

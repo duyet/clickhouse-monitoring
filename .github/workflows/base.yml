@@ -1,14 +1,11 @@
-name: Build
+name: Reusable
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types:
-      - opened
-      - reopened
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      job-type:
+        required: true
+        type: string
 
 env:
   CLICKHOUSE_HOST: http://localhost:8123
@@ -17,11 +14,11 @@ env:
 
 permissions:
   contents: read
-  pages: write
   id-token: write
 
 jobs:
-  build:
+  job:
+    name: ${{ inputs.job-type }}
     runs-on: ubuntu-latest
     services:
       clickhouse:
@@ -60,5 +57,19 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Build Next.js
+      - name: Test e2e
+        if: ${{ inputs.job-type == 'test' }}
+        uses: cypress-io/github-action@v6
+        with:
+          command: yarn e2e:headless
+
+      - name: Test components
+        if: ${{ inputs.job-type == 'test' }}
+        uses: cypress-io/github-action@v6
+        with:
+          component: true
+          command: yarn component:headless
+
+      - name: Build App
+        if: ${{ inputs.job-type == 'build' }}
         run: yarn build

@@ -38,12 +38,14 @@ interface DataTableProps<TData> {
   title: string
   config: QueryConfig
   data: TData[]
+  defaultPageSize?: number
 }
 
 export function DataTable<TData, TValue>({
   title = '',
   config,
   data,
+  defaultPageSize = 50,
 }: DataTableProps<TData>) {
   const columns = getColumns(config) as ColumnDef<TData, TValue>[]
   const [sorting, setSorting] = useState<SortingState>([])
@@ -63,7 +65,7 @@ export function DataTable<TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: 50,
+        pageSize: defaultPageSize,
       },
     },
   })
@@ -77,7 +79,11 @@ export function DataTable<TData, TValue>({
         <div className="flex items-center gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
+              <Button
+                variant="outline"
+                className="ml-auto"
+                aria-label="Column Options"
+              >
                 <ColumnsIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -93,6 +99,8 @@ export function DataTable<TData, TValue>({
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
                       }
+                      role="checkbox"
+                      aria-label={column.id}
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
