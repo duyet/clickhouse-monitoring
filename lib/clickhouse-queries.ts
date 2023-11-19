@@ -1,4 +1,5 @@
 import { QUERY_COMMENT } from '@/lib/clickhouse'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { ColumnFormat } from '@/components/data-table/columns'
 
 export interface QueryConfig {
@@ -6,7 +7,7 @@ export interface QueryConfig {
   sql: string
   columns: string[]
   columnFormats?: { [key: string]: ColumnFormat }
-  relatedCharts?: string[]
+  relatedCharts?: string[] | [string, ChartProps][]
 }
 
 export const queries: Array<QueryConfig> = [
@@ -37,7 +38,25 @@ export const queries: Array<QueryConfig> = [
       elapsed: ColumnFormat.Duration,
       query_id: ColumnFormat.Action,
     },
-    relatedCharts: ['query-count-spark'],
+    relatedCharts: [
+      [
+        'query-count-by-user',
+        {
+          title: 'Total Queries over last 14 days',
+          interval: 'toStartOfDay',
+          lastHours: 24 * 14,
+          showLegend: false,
+        },
+      ],
+      [
+        'query-count',
+        {
+          title: 'Total Running Queries over last 12 hours (query / 5 minutes)',
+          interval: 'toStartOfFiveMinutes',
+          lastHours: 12,
+        },
+      ],
+    ],
   },
   {
     name: 'merges',
@@ -68,7 +87,16 @@ export const queries: Array<QueryConfig> = [
       elapsed: ColumnFormat.Duration,
       is_mutation: ColumnFormat.Boolean,
     },
-    relatedCharts: ['merge-count-spark'],
+    relatedCharts: [
+      [
+        'merge-count',
+        {
+          title: 'Merge over last 12 hours (avg / 5 minutes)',
+          interval: 'toStartOfFiveMinutes',
+          lastHours: 12,
+        },
+      ],
+    ],
   },
   {
     name: 'tables',

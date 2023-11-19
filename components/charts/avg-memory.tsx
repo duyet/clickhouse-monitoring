@@ -6,23 +6,15 @@ import {
   CardDescription,
   CardHeader,
 } from '@/components/ui/card'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor'
-
-import { ClickHouseIntervalFunc } from '../interval-select'
-
-interface ChartAvgMemoryProps {
-  title?: string
-  interval?: ClickHouseIntervalFunc
-  className?: string
-  chartClassName?: string
-}
 
 export async function ChartAvgMemory({
   title,
   interval = 'toStartOfTenMinutes',
   className,
   chartClassName,
-}: ChartAvgMemoryProps) {
+}: ChartProps) {
   const data = await fetchData(`
     SELECT ${interval}(event_time) as event_time,
            avg(CurrentMetric_MemoryTracking) AS avg_memory,

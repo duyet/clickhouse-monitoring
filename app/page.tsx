@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartAvgMemory } from '@/components/charts/avg-memory'
-import ChartMergeCountSpark from '@/components/charts/merge-count-spark'
-import { ChartQueryCount } from '@/components/charts/query-count'
+import ChartMergeCount from '@/components/charts/merge-count'
+import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
 import { IntervalSelect } from '@/components/interval-select'
 
 export default function Home() {
@@ -24,12 +24,8 @@ export default function Home() {
             className="w-full"
             chartClassName="h-72"
           />
-          <ChartQueryCount
-            title="Query Count"
-            className="w-full"
-            chartClassName="h-72"
-          />
-          <ChartMergeCountSpark
+          <ChartQueryCountByUser title="Query Count" className="w-full" />
+          <ChartMergeCount
             title="Merge and PartMutation (Avg)"
             className="w-full"
             chartClassName="h-72"

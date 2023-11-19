@@ -1,22 +1,30 @@
-'use client'
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAppContext } from '@/app/context'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from '@/components/ui/card'
 
 interface ChartCardProps {
-  title?: string
-  children?: React.ReactNode
+  title?: string | React.ReactNode
+  children: React.ReactNode
+  className?: string
 }
 
-export async function ChartCard({ title, children }: ChartCardProps) {
-  const { interval } = useAppContext()
-
+export async function ChartCard({
+  title,
+  className,
+  children,
+}: ChartCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
+    <Card className={className}>
+      {title ? (
+        <CardHeader className="p-2">
+          <CardDescription>{title}</CardDescription>
+        </CardHeader>
+      ) : null}
+
+      <CardContent className="p-2">{children}</CardContent>
     </Card>
   )
 }

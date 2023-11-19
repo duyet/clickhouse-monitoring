@@ -35,7 +35,7 @@ import { getColumns } from '@/components/data-table/columns'
 import { DataTablePagination } from '@/components/data-table/pagination'
 
 interface DataTableProps<TData> {
-  title: string
+  title?: string
   config: QueryConfig
   data: TData[]
   defaultPageSize?: number
@@ -73,9 +73,7 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="flex flex-row items-center justify-between pb-4">
-        <h1 className="text-muted-foreground mb-3 text-xl capitalize">
-          {title}
-        </h1>
+        <h1 className="text-muted-foreground text-xl capitalize">{title}</h1>
         <div className="flex items-center gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

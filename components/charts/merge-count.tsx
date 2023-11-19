@@ -4,20 +4,19 @@ import { ChartCard } from '@/components/chart-card'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor'
 
-export async function ChartQueryCountSpark({
+export async function ChartMergeCountSpark({
   title,
-  interval = 'toStartOfMinute',
+  interval = 'toStartOfFiveMinutes',
+  lastHours = 12,
   className,
   chartClassName,
-  lastHours = 24,
-  ...props
 }: ChartProps) {
   const data = await fetchData(`
     SELECT ${interval}(event_time) AS event_time,
-           COUNT() AS query_count
-    FROM system.query_log
-    WHERE type = 'QueryFinish'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+           avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
+           avg(CurrentMetric_PartMutation)  AS avg_CurrentMetric_PartMutation
+    FROM system.metric_log
+    WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1
   `)
@@ -28,13 +27,15 @@ export async function ChartQueryCountSpark({
         className={cn('h-52', chartClassName)}
         data={data}
         index="event_time"
-        categories={['query_count']}
+        categories={[
+          'avg_CurrentMetric_Merge',
+          'avg_CurrentMetric_PartMutation',
+        ]}
         readable="quantity"
         stack
-        {...props}
       />
     </ChartCard>
   )
 }
 
-export default ChartQueryCountSpark
+export default ChartMergeCountSpark

@@ -15,8 +15,10 @@ import {
   formatReadableSize,
 } from '@/lib/format-readable'
 
+type ReadableFormat = 'size' | 'quantity'
+
 export interface AreaChartProps extends TremorAreaChartProps {
-  readable?: 'size' | 'quantity'
+  readable?: ReadableFormat
 }
 
 export function AreaChart({ readable, ...props }: AreaChartProps) {
@@ -46,7 +48,7 @@ export function AreaChart({ readable, ...props }: AreaChartProps) {
 }
 
 export interface BarChartProps extends TremorBarChartProps {
-  readable?: 'size'
+  readable?: ReadableFormat
   readableColumn?: string
 }
 

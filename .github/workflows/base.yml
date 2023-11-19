@@ -57,6 +57,10 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Lint
+        if: ${{ inputs.job-type == 'lint' }}
+        run: yarn lint
+
       - name: Test e2e
         if: ${{ inputs.job-type == 'test' }}
         uses: cypress-io/github-action@v6
