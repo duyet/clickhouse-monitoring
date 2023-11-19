@@ -14,7 +14,7 @@ export async function ChartMergeCountSpark({
   const data = await fetchData(`
     SELECT ${interval}(event_time) AS event_time,
            avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
-           avg(ProfileEvent_MergedRows) AS avg_ProfileEvent_MergedRows
+           avg(CurrentMetric_PartMutation) AS avg_CurrentMetric_PartMutation
     FROM system.metric_log
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
@@ -29,7 +29,7 @@ export async function ChartMergeCountSpark({
         index="event_time"
         categories={[
           'avg_CurrentMetric_Merge',
-          'avg_ProfileEvent_MergedRows',
+          'avg_CurrentMetric_PartMutation',
         ]}
         readable="quantity"
         stack

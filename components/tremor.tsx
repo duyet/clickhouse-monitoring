@@ -4,10 +4,12 @@ import React from 'react'
 import {
   AreaChart as TremorAreaChart,
   BarChart as TremorBarChart,
+  BarList as TremorBarList,
 } from '@tremor/react'
 import type {
   AreaChartProps as TremorAreaChartProps,
   BarChartProps as TremorBarChartProps,
+  BarListProps as TremorBarListProps,
 } from '@tremor/react'
 
 import {
@@ -76,5 +78,28 @@ export function BarChart({
       valueFormatter={valueFormatter}
       {...props}
     />
+  )
+}
+
+export interface BarListProps extends TremorBarListProps {
+  data: (TremorBarListProps['data'][0] & { [key: string]: any })[]
+  formatedColumn?: string
+}
+
+export function BarList({ data, formatedColumn, ...props }: BarListProps) {
+  let valueFormatter
+
+  if (formatedColumn) {
+    valueFormatter = (value: number) => {
+      const formated = data.find((d) => d.value === value)?.[
+        formatedColumn
+      ] as string
+
+      return formated ? formated : value
+    }
+  }
+
+  return (
+    <TremorBarList data={data} valueFormatter={valueFormatter} {...props} />
   )
 }

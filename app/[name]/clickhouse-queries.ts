@@ -32,20 +32,20 @@ export const queries: Array<QueryConfig> = [
     },
     relatedCharts: [
       [
+        'query-count',
+        {
+          title: 'Total Running Queries over last 12 hours (query / 5 minutes)',
+          interval: 'toStartOfFiveMinutes',
+          lastHours: 12,
+        },
+      ],
+      [
         'query-count-by-user',
         {
           title: 'Total Queries over last 14 days',
           interval: 'toStartOfDay',
           lastHours: 24 * 14,
           showLegend: false,
-        },
-      ],
-      [
-        'query-count',
-        {
-          title: 'Total Running Queries over last 12 hours (query / 5 minutes)',
-          interval: 'toStartOfFiveMinutes',
-          lastHours: 12,
         },
       ],
     ],

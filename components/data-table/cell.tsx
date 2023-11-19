@@ -19,12 +19,18 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ColumnFormat } from '@/components/data-table/columns'
 
+const CODE_TRUNCATE_LENGTH = 50
+
 export const formatCell = (row: any, value: any, format: ColumnFormat) => {
   switch (format) {
     case ColumnFormat.Code:
       return <code>{value}</code>
 
     case ColumnFormat.CodeToggle:
+      if (value.length < CODE_TRUNCATE_LENGTH) {
+        return <code>{value}</code>
+      }
+
       return (
         <Accordion type="single" collapsible={row.getIsExpanded()}>
           <AccordionItem value="code" className="border-0">

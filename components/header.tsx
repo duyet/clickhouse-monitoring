@@ -7,7 +7,7 @@ export function Header() {
   return (
     <div className="flex items-center justify-between space-y-2">
       <div>
-        <h2 className="flex flex-row items-center text-2xl font-bold tracking-tight min-w-32">
+        <h2 className="min-w-32 flex flex-row items-center text-2xl font-bold tracking-tight">
           <Image
             src="/logo.svg"
             width={40}
