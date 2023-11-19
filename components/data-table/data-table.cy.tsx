@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { QueryConfig } from '@/app/[name]/clickhouse-queries'
+import type { QueryConfig } from '@/lib/types/query-config'
 
 import { DataTable } from './data-table'
 
