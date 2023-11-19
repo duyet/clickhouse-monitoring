@@ -5,7 +5,7 @@ import {
 } from '@radix-ui/react-icons'
 import { ColumnDef } from '@tanstack/react-table'
 
-import type { QueryConfig } from '@/lib/clickhouse-queries'
+import type { QueryConfig } from '@/lib/types/query-config'
 import { Button } from '@/components/ui/button'
 import { formatCell } from '@/components/data-table/cell'
 
@@ -29,14 +29,28 @@ const formatHeader = (name: any, format: ColumnFormat) => {
   }
 }
 
+export const normalizeColumnName = (column: string) => {
+  return column.toLocaleLowerCase().replace('readable_', '').trim()
+}
+
+/**
+ * Generates an array of column definitions based on the provided configuration.
+ *
+ * @param {string[]} allColumns - An array of all column names, this can grab from raw data.
+ * @param {QueryConfig} config - The configuration object for the query.
+ *
+ * @returns {ColumnDef<ColumnType>[]} - An array of column definitions.
+ */
 export const getColumns = (config: QueryConfig): ColumnDef<ColumnType>[] => {
-  return config.columns.map((column) => {
-    // Remove the `readable_` prefix
-    const name = column.replace('readable_', '')
+  const configColumns = config.columns || []
+
+  return configColumns.map((column) => {
+    const name = normalizeColumnName(column)
     // Format the cell
     const format = config.columnFormats?.[column] || ColumnFormat.None
 
     return {
+      id: column,
       accessorKey: column,
       header: ({ column }) => (
         <Button

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
 
+import { ClickHouseInterval } from '@/lib/types/clickhouse-interval'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,15 +20,7 @@ import {
 } from '@/components/ui/popover'
 import { useAppContext } from '@/app/context'
 
-export type ClickHouseIntervalFunc =
-  | 'toStartOfMinute'
-  | 'toStartOfFiveMinutes'
-  | 'toStartOfTenMinutes'
-  | 'toStartOfFifteenMinutes'
-  | 'toStartOfHour'
-  | 'toStartOfDay'
-
-const defaultIntervals: { value: ClickHouseIntervalFunc; label: string }[] = [
+const defaultIntervals: { value: ClickHouseInterval; label: string }[] = [
   {
     value: 'toStartOfMinute',
     label: '1m',
@@ -47,7 +40,7 @@ const defaultIntervals: { value: ClickHouseIntervalFunc; label: string }[] = [
 ]
 
 interface IntervalSelectProps {
-  values?: { value: ClickHouseIntervalFunc; label: string }[]
+  values?: { value: ClickHouseInterval; label: string }[]
 }
 
 export function IntervalSelect({ values = [] }: IntervalSelectProps) {
@@ -83,7 +76,7 @@ export function IntervalSelect({ values = [] }: IntervalSelectProps) {
                 key={i.value}
                 value={i.value}
                 onSelect={(currentValue: string) => {
-                  setInterval?.(currentValue as ClickHouseIntervalFunc)
+                  setInterval?.(currentValue as ClickHouseInterval)
                   setOpen(false)
                 }}
               >

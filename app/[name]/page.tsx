@@ -1,9 +1,10 @@
 import { unstable_noStore as noStore } from 'next/cache'
 
 import { fetchData } from '@/lib/clickhouse'
-import { getQueryConfigByName, queries } from '@/lib/clickhouse-queries'
 import { DataTable } from '@/components/data-table/data-table'
 import { RelatedCharts } from '@/components/related-charts'
+
+import { getQueryConfigByName, queries } from './clickhouse-queries'
 
 interface PageProps {
   params: {

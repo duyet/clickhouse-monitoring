@@ -1,21 +1,20 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { ColumnsIcon } from '@radix-ui/react-icons'
 import {
   ColumnDef,
-  ExpandedState,
   flexRender,
   getCoreRowModel,
-  getExpandedRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table'
+import type { RowData } from '@tanstack/react-table'
 
-import type { QueryConfig } from '@/lib/clickhouse-queries'
+import type { QueryConfig } from '@/lib/types/query-config'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -31,25 +30,48 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getColumns } from '@/components/data-table/columns'
+import {
+  getColumns,
+  normalizeColumnName,
+} from '@/components/data-table/columns'
 import { DataTablePagination } from '@/components/data-table/pagination'
 
-interface DataTableProps<TData> {
+interface DataTableProps<TData extends RowData> {
   title?: string
   config: QueryConfig
   data: TData[]
   defaultPageSize?: number
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends RowData, TValue>({
   title = '',
   config,
   data,
   defaultPageSize = 50,
 }: DataTableProps<TData>) {
+  // Columns available in the data
+  const allColumns: string[] = (
+    data.filter((row) => typeof row === 'object') as object[]
+  )
+    .map((row) => Object.keys(row))
+    .flat()
+  // Columns available in the config
   const columns = getColumns(config) as ColumnDef<TData, TValue>[]
+
+  // Only show the columns in QueryConfig['columns'] list by initial
+  const initialColumnVisibility = allColumns.reduce(
+    (state, column) => ({
+      ...state,
+      [column]: config.columns?.includes(normalizeColumnName(column)),
+    }),
+    {}
+  )
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    initialColumnVisibility
+  )
+
+  // Sorting
   const [sorting, setSorting] = useState<SortingState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
     data,
@@ -67,6 +89,7 @@ export function DataTable<TData, TValue>({
       pagination: {
         pageSize: defaultPageSize,
       },
+      columnVisibility: initialColumnVisibility,
     },
   })
 
@@ -100,7 +123,7 @@ export function DataTable<TData, TValue>({
                       role="checkbox"
                       aria-label={column.id}
                     >
-                      {column.id}
+                      {normalizeColumnName(column.id)}
                     </DropdownMenuCheckboxItem>
                   )
                 })}

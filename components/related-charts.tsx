@@ -1,6 +1,6 @@
 import { ComponentType } from 'react'
 
-import type { QueryConfig } from '@/lib/clickhouse-queries'
+import type { QueryConfig } from '@/lib/types/query-config'
 import { cn } from '@/lib/utils'
 import type { ChartProps } from '@/components/charts/chart-props'
 

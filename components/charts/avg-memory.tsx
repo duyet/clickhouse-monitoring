@@ -1,13 +1,9 @@
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from '@/components/ui/card'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor'
+
+import { ChartCard } from '../chart-card'
 
 export async function ChartAvgMemory({
   title,
@@ -26,21 +22,19 @@ export async function ChartAvgMemory({
   `)
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardDescription>{title}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <AreaChart
-          className={cn(chartClassName)}
-          data={data}
-          index="event_time"
-          categories={['avg_memory']}
-          readable="size"
-          yAxisWidth={60}
-        />
-      </CardContent>
-    </Card>
+    <ChartCard title={title} className={className}>
+      <AreaChart
+        className={cn('h-52', chartClassName)}
+        data={data}
+        index="event_time"
+        categories={[
+          'avg_CurrentMetric_Merge',
+          'avg_CurrentMetric_PartMutation',
+        ]}
+        readable="quantity"
+        stack
+      />
+    </ChartCard>
   )
 }
 

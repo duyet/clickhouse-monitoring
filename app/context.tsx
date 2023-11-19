@@ -8,11 +8,11 @@ import {
   useState,
 } from 'react'
 
-import type { ClickHouseIntervalFunc } from '@/components/interval-select'
+import type { ClickHouseInterval } from '@/lib/types/clickhouse-interval'
 
 export interface ContextValue {
-  interval: ClickHouseIntervalFunc
-  setInterval?: Dispatch<SetStateAction<ClickHouseIntervalFunc>>
+  interval: ClickHouseInterval
+  setInterval?: Dispatch<SetStateAction<ClickHouseInterval>>
   reloadInterval: number | null
   setReloadInterval: Dispatch<SetStateAction<number | null>>
 }
@@ -20,7 +20,7 @@ export interface ContextValue {
 export const Context = createContext<ContextValue | undefined>(undefined)
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
-  const [interval, setInterval] = useState<ClickHouseIntervalFunc>(
+  const [interval, setInterval] = useState<ClickHouseInterval>(
     'toStartOfFiveMinutes'
   )
 

@@ -1,14 +1,6 @@
 import { QUERY_COMMENT } from '@/lib/clickhouse'
-import type { ChartProps } from '@/components/charts/chart-props'
+import type { QueryConfig } from '@/lib/types/query-config'
 import { ColumnFormat } from '@/components/data-table/columns'
-
-export interface QueryConfig {
-  name: string
-  sql: string
-  columns: string[]
-  columnFormats?: { [key: string]: ColumnFormat }
-  relatedCharts?: string[] | [string, ChartProps][]
-}
 
 export const queries: Array<QueryConfig> = [
   {
@@ -96,37 +88,6 @@ export const queries: Array<QueryConfig> = [
           lastHours: 12,
         },
       ],
-    ],
-  },
-  {
-    name: 'tables',
-    sql: `
-      SELECT database,
-          table,
-          sum(data_compressed_bytes) as compressed_bytes,
-          sum(data_uncompressed_bytes) AS uncompressed_bytes,
-          formatReadableSize(compressed_bytes) AS compressed,
-          formatReadableSize(uncompressed_bytes) AS uncompressed,
-          round(uncompressed_bytes / compressed_bytes, 2) AS compr_rate,
-          sum(rows) AS total_rows,
-          formatReadableQuantity(sum(rows)) AS total_rows_formatted,
-          count() AS part_count
-      FROM system.parts
-      WHERE (active = 1)
-        AND (database != 'system')
-        AND (table LIKE '%')
-      GROUP BY database,
-               table
-      ORDER BY database, compressed_bytes DESC
-    `,
-    columns: [
-      'database',
-      'table',
-      'compressed',
-      'uncompressed',
-      'compr_rate',
-      'total_rows_formatted',
-      'part_count',
     ],
   },
   {
