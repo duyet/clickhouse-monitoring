@@ -25,6 +25,11 @@ jobs:
     with:
       job-type: test
 
+  lint:
+    uses: ./.github/workflows/base.yml
+    with:
+      job-type: lint
+
   build-docker:
     runs-on: ubuntu-latest
     env:
