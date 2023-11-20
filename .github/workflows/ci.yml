@@ -118,4 +118,4 @@ jobs:
     steps:
       - name: Test image
         run: |
-          curl -sSf http://localhost:3000
+          curl -sSf http://localhost:3000/healthz || exit 1
