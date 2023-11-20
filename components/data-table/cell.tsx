@@ -36,7 +36,7 @@ export const formatCell = (row: any, value: any, format: ColumnFormat) => {
           <AccordionItem value="code" className="border-0">
             <AccordionTrigger className="py-0 hover:no-underline">
               <code className="truncate break-words font-normal">
-                {value.substring(0, 50)}
+                {value.substring(0, 50)}...
               </code>
             </AccordionTrigger>
             <AccordionContent>
