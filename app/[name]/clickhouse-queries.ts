@@ -6,12 +6,12 @@ export const queries: Array<QueryConfig> = [
   {
     name: 'running-queries',
     sql: `
-      SELECT *, 
+      SELECT *,
         formatReadableQuantity(read_rows) as readable_read_rows,
         formatReadableQuantity(total_rows_approx) as readable_total_rows_approx,
         formatReadableSize(memory_usage) as readable_memory_usage,
         formatReadableSize(peak_memory_usage) as readable_peak_memory_usage
-      FROM system.processes 
+      FROM system.processes
       WHERE is_cancelled = 0 AND query NOT LIKE '%${QUERY_COMMENT}%'
       ORDER BY elapsed
     `,
@@ -22,13 +22,11 @@ export const queries: Array<QueryConfig> = [
       'readable_read_rows',
       'readable_total_rows_approx',
       'readable_memory_usage',
-      'readable_peak_memory_usage',
-      'query_id',
     ],
     columnFormats: {
       query: ColumnFormat.CodeToggle,
       elapsed: ColumnFormat.Duration,
-      query_id: ColumnFormat.Action,
+      query_id: ColumnFormat.None,
     },
     relatedCharts: [
       [

@@ -20,9 +20,7 @@ const config: QueryConfig = {
         formatReadableQuantity(sum(rows)) AS readable_total_rows,
         count() AS part_count
     FROM system.parts
-    WHERE (active = 1)
-      AND (database != 'system')
-      AND (table LIKE '%')
+    WHERE active = 1
     GROUP BY database,
              table
     ORDER BY database, compressed_bytes DESC
@@ -38,12 +36,19 @@ const config: QueryConfig = {
 }
 
 export default async function TablePage() {
-  let databases: string[] = []
+  let databases: { name: string; count: number }[] = []
   try {
-    const data = await fetchData(
-      "SELECT name FROM system.databases WHERE engine = 'Atomic'"
-    )
-    databases = data.map((row) => row.name)
+    // List database names and number of tables
+    databases = await fetchData(`
+      SELECT d.name as name,
+             countDistinct(t.name) as count
+      FROM system.databases AS d
+      LEFT JOIN system.tables AS t ON d.name = t.database
+      WHERE d.engine = 'Atomic' 
+            /* some system tables do not have parts information */
+            AND d.name IN (SELECT database FROM system.parts WHERE active = 1)
+      GROUP BY d.name
+    `)
 
     if (!databases.length) {
       return <div>Empty</div>
@@ -52,27 +57,27 @@ export default async function TablePage() {
     return <div>Could not getting list database, error: ${e}</div>
   }
 
-  // Fetch the data from ClickHouse
-  const data = await fetchData(config.sql)
+  // Fetching all tables
+  const tables = await fetchData(config.sql)
 
   return (
     <div className="flex flex-col">
       <div>
-        <Tabs defaultValue={databases[0]} className="w-full">
+        <Tabs defaultValue={databases[0].name} className="w-full">
           <TabsList className="mb-3">
-            {databases.map((name) => (
+            {databases.map(({ name, count }) => (
               <TabsTrigger key={name} value={name}>
-                {name}
+                {name} ({count})
               </TabsTrigger>
             ))}
           </TabsList>
 
-          {databases.map((name) => (
+          {databases.map(({ name }) => (
             <TabsContent key={name} value={name}>
               <DataTable
                 title={name}
                 config={config}
-                data={data.filter((table) => table.database == name)}
+                data={tables.filter((table) => table.database == name)}
               />
             </TabsContent>
           ))}

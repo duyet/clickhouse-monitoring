@@ -1,5 +1,7 @@
 # ClickHouse Monitoring Dashboard
 
+[![Build and Test](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml/badge.svg)](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml)
+
 This is a simple monitoring dashboard for ClickHouse cluster, built with [Next.js](https://nextjs.org/).
 
 ## Getting Started

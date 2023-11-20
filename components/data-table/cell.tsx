@@ -76,6 +76,13 @@ export const formatCell = (row: any, value: any, format: ColumnFormat) => {
         </DropdownMenu>
       )
 
+    case ColumnFormat.Badge:
+      return (
+        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+          {value}
+        </span>
+      )
+
     default:
       return value
   }

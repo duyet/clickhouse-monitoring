@@ -15,12 +15,13 @@ export enum ColumnFormat {
   Duration = 'duration',
   Boolean = 'boolean',
   Action = 'action',
+  Badge = 'badge',
   None = 'none',
 }
 
 export type ColumnType = { [key: string]: string }
 
-const formatHeader = (name: any, format: ColumnFormat) => {
+const formatHeader = (name: string, format: ColumnFormat) => {
   switch (format) {
     case ColumnFormat.Action:
       return <div className="text-muted-foreground">action</div>
@@ -36,28 +37,29 @@ export const normalizeColumnName = (column: string) => {
 /**
  * Generates an array of column definitions based on the provided configuration.
  *
- * @param {string[]} allColumns - An array of all column names, this can grab from raw data.
  * @param {QueryConfig} config - The configuration object for the query.
  *
  * @returns {ColumnDef<ColumnType>[]} - An array of column definitions.
  */
-export const getColumns = (config: QueryConfig): ColumnDef<ColumnType>[] => {
+export const getColumnDefs = (config: QueryConfig): ColumnDef<ColumnType>[] => {
   const configColumns = config.columns || []
 
   return configColumns.map((column) => {
     const name = normalizeColumnName(column)
-    // Format the cell
-    const format = config.columnFormats?.[column] || ColumnFormat.None
+    const columnFormat =
+      config.columnFormats?.[column] ||
+      config.columnFormats?.[name] ||
+      ColumnFormat.None
 
     return {
-      id: column,
+      id: name,
       accessorKey: column,
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          {formatHeader(name, format)}
+          {formatHeader(name, columnFormat)}
 
           {column.getIsSorted() === false ? (
             <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -73,7 +75,7 @@ export const getColumns = (config: QueryConfig): ColumnDef<ColumnType>[] => {
 
       cell: ({ row, getValue }) => {
         const value = getValue()
-        const formatted = formatCell(row, value, format)
+        const formatted = formatCell(row, value, columnFormat)
 
         return formatted
       },

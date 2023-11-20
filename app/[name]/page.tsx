@@ -1,4 +1,5 @@
 import { unstable_noStore as noStore } from 'next/cache'
+import { notFound } from 'next/navigation'
 
 import { fetchData } from '@/lib/clickhouse'
 import { DataTable } from '@/components/data-table/data-table'
@@ -21,7 +22,7 @@ export default async function Page({ params: { name } }: PageProps) {
   // Get the query config
   const config = getQueryConfigByName(name)
   if (!config) {
-    return <div>404</div>
+    return notFound()
   }
 
   // Fetch the data from ClickHouse

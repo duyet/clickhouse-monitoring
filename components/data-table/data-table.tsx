@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { ColumnsIcon } from '@radix-ui/react-icons'
 import {
   ColumnDef,
   flexRender,
@@ -15,13 +14,7 @@ import {
 import type { RowData } from '@tanstack/react-table'
 
 import type { QueryConfig } from '@/lib/types/query-config'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { uniq } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -31,16 +24,20 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  getColumns,
+  getColumnDefs,
   normalizeColumnName,
 } from '@/components/data-table/columns'
 import { DataTablePagination } from '@/components/data-table/pagination'
+
+import { ColumnVisibilityButton } from './buttons/column-visibility'
+import { ShowSQLButton } from './buttons/show-sql'
 
 interface DataTableProps<TData extends RowData> {
   title?: string
   config: QueryConfig
   data: TData[]
   defaultPageSize?: number
+  showSQL?: boolean
 }
 
 export function DataTable<TData extends RowData, TValue>({
@@ -48,34 +45,42 @@ export function DataTable<TData extends RowData, TValue>({
   config,
   data,
   defaultPageSize = 50,
+  showSQL = true,
 }: DataTableProps<TData>) {
-  // Columns available in the data
-  const allColumns: string[] = (
-    data.filter((row) => typeof row === 'object') as object[]
+  // Columns available in the data, normalized
+  const allColumns: string[] = uniq(
+    (data.filter((row) => typeof row === 'object') as object[])
+      .map((row) => Object.keys(row))
+      .flat()
+      .map(normalizeColumnName)
   )
-    .map((row) => Object.keys(row))
-    .flat()
-  // Columns available in the config
-  const columns = getColumns(config) as ColumnDef<TData, TValue>[]
+
+  // Configured columns available, normalized
+  const configuredColumns = config.columns.map(normalizeColumnName)
+
+  // Column definitions for the table
+  const columnDefs = getColumnDefs(config) as ColumnDef<TData, TValue>[]
 
   // Only show the columns in QueryConfig['columns'] list by initial
   const initialColumnVisibility = allColumns.reduce(
-    (state, column) => ({
+    (state, col) => ({
       ...state,
-      [column]: config.columns?.includes(normalizeColumnName(column)),
+      [col]: configuredColumns.includes(col),
     }),
     {}
   )
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     initialColumnVisibility
   )
+  console.log('columnVisibility', columnVisibility)
+  console.log('columnDefs', columnDefs)
 
   // Sorting
   const [sorting, setSorting] = useState<SortingState>([])
 
   const table = useReactTable({
     data,
-    columns,
+    columns: columnDefs,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
@@ -98,37 +103,8 @@ export function DataTable<TData extends RowData, TValue>({
       <div className="flex flex-row items-center justify-between pb-4">
         <h1 className="text-muted-foreground text-xl capitalize">{title}</h1>
         <div className="flex items-center gap-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="ml-auto"
-                aria-label="Column Options"
-              >
-                <ColumnsIcon className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                      role="checkbox"
-                      aria-label={column.id}
-                    >
-                      {normalizeColumnName(column.id)}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {showSQL ? <ShowSQLButton sql={config.sql} /> : null}
+          <ColumnVisibilityButton table={table} />
         </div>
       </div>
       <div className="mb-5 rounded-md border">
@@ -171,7 +147,7 @@ export function DataTable<TData extends RowData, TValue>({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columnDefs.length}
                   className="h-24 text-center"
                 >
                   No results.
