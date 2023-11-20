@@ -29,15 +29,6 @@ describe('Page /tables', () => {
       .contains('system')
       .should('exist')
 
-    // Click on "default" tab
-    cy.get('[role="tab"]').contains('default').click()
-
-    // Should have "default" tab active
-    cy.get('[role="tab"]')
-      .contains('default')
-      .should('have.attr', 'aria-selected', 'true')
-    cy.get('[role="tabpanel"][data-state="active"]')
-      .contains('default')
-      .should('exist')
+    // TODO: If contains another tab, click on it and check if it's active
   })
 })

@@ -7,15 +7,11 @@ import {
 
 interface ChartCardProps {
   title?: string | React.ReactNode
-  children: React.ReactNode
+  children: string | React.ReactNode
   className?: string
 }
 
-export async function ChartCard({
-  title,
-  className,
-  children,
-}: ChartCardProps) {
+export function ChartCard({ title, className, children }: ChartCardProps) {
   return (
     <Card className={className}>
       {title ? (

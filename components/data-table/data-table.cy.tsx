@@ -139,4 +139,50 @@ describe('<DataTable />', () => {
 
     cy.get('thead tr th').should('have.length', 2)
   })
+
+  it('should have "Show Code" button when showSQL={true}', () => {
+    cy.mount(
+      <DataTable title="Test Table" config={config} data={[]} showSQL={true} />
+    )
+
+    cy.get('button[aria-label="Show SQL"]').should('exist')
+  })
+
+  it('should not have "Show Code" button when showSQL={false}', () => {
+    cy.mount(
+      <DataTable title="Test Table" config={config} data={[]} showSQL={false} />
+    )
+
+    cy.get('button[aria-label="Show SQL"]').should('not.exist')
+  })
+
+  it('should show dialog when click on "Show Code" button', () => {
+    // Define some mock data
+    const data = [
+      { col1: 'val1', col2: 'val1' },
+      { col1: 'val2', col2: 'val2' },
+      { col1: 'val3', col2: 'val3' },
+    ]
+
+    cy.mount(
+      <DataTable
+        title="Test Table"
+        config={config}
+        data={data}
+        showSQL={true}
+      />
+    )
+
+    // Click on "Show SQL" button
+    cy.get('button[aria-label="Show SQL"]').click()
+
+    // Showing dialog contains the current SQL code
+    cy.get('pre').contains(config.sql)
+
+    // Click to dismiss the dialog
+    cy.contains('[role="dialog"] button', 'Close', { matchCase: false }).click()
+
+    // Dialog should be closed
+    cy.get('pre').should('not.exist')
+  })
 })

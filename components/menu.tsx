@@ -10,7 +10,17 @@ import {
   navigationMenuTriggerClasses,
 } from '@/components/ui/navigation-menu'
 
-const items = [
+interface MenuItem {
+  title: string
+  href: string
+  countSql?: string
+}
+
+interface MenuProps {
+  items?: MenuItem[]
+}
+
+const defaultItems = [
   {
     title: 'Overview',
     href: '/',
@@ -36,7 +46,7 @@ const items = [
   },
 ]
 
-export async function Menu() {
+export function Menu({ items = defaultItems }: MenuProps) {
   return (
     <NavigationMenu>
       <NavigationMenuList>
