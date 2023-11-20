@@ -86,6 +86,7 @@ jobs:
           cache-to: type=gha,mode=max
           allow: network.host,security.insecure
           network: host
+          platforms: linux/amd64,linux/arm64
 
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
