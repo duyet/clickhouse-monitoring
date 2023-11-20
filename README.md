@@ -12,13 +12,43 @@ To get the project up and running on your local machine, follow these steps:
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the dashboard.
 
-## Project Structure
-
-The main page of the dashboard can be edited by modifying `app/page.tsx`. Changes to the file will automatically update the page.
-
 ## Deployment
 
+### 1. Vercel
+
 For easy deployment, use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme), created by the makers of Next.js. Refer to the [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+### 2. Docker
+
+Using the latest image here: https://github.com/duyet/clickhouse-monitoring/pkgs/container/clickhouse-monitoring
+
+```bash
+docker run -it \
+    -e CLICKHOUSE_HOST='http://localhost' \
+    -e CLICKHOUSE_USER='default' \
+    --name clickhouse-monitoring \
+    ghcr.io/duyet/clickhouse-monitoring:main
+```
+
+### 3. Kubernetes Helm Chart
+
+Using the latest helm chart here: https://github.com/duyet/charts/tree/master/clickhouse-monitoring
+
+```bash
+helm repo add duyet https://duyet.github.io/charts
+
+cat <<EOF >> values.yaml
+env:
+  - name: CLICKHOUSE_HOST
+    value: http://localhost:8123
+  - name: CLICKHOUSE_USER
+    value: default
+  - name: CLICKHOUSE_PASSWORD
+    value: ''
+EOF
+
+helm install -f values.yaml clickhouse-monitoring-release duyet/clickhouse-monitoring
+```
 
 ## Feedback and Contributions
 
