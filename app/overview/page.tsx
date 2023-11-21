@@ -13,7 +13,6 @@ export const revalidate = 5
 export default async function Overview() {
   noStore()
 
-  x
   return (
     <Tabs defaultValue="overview" className="space-y-4">
       <div className="flex items-center justify-between space-y-2">

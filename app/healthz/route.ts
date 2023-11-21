@@ -1,24 +1,7 @@
 import { NextResponse } from 'next/server'
-import packageInfo from '@/package.json'
-
-import { fetchData } from '@/lib/clickhouse'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  try {
-    const clickhouse = await fetchData('SELECT version()')
-    return NextResponse.json({
-      ui: packageInfo.version,
-      clickhouse,
-    })
-  } catch {
-    return NextResponse.json(
-      {
-        ui: packageInfo.version,
-        clikckhouse: false,
-      },
-      { status: 500 }
-    )
-  }
+  return NextResponse.json({ ok: true })
 }
