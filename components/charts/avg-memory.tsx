@@ -1,5 +1,4 @@
 import { fetchData } from '@/lib/clickhouse'
-import { cn } from '@/lib/utils'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor'
 
@@ -10,7 +9,6 @@ export async function ChartAvgMemory({
   interval = 'toStartOfTenMinutes',
   lastHours = 24,
   className,
-  chartClassName,
 }: ChartProps) {
   const data = await fetchData(`
     SELECT ${interval}(event_time) as event_time,
@@ -25,15 +23,12 @@ export async function ChartAvgMemory({
   return (
     <ChartCard title={title} className={className}>
       <AreaChart
-        className={cn('h-52', chartClassName)}
         data={data}
         index="event_time"
-        categories={[
-          'avg_CurrentMetric_Merge',
-          'avg_CurrentMetric_PartMutation',
-        ]}
-        readable="quantity"
-        stack
+        categories={['avg_memory']}
+        className={className}
+        readable={true}
+        readableColumns={['readable_avg_memory']}
       />
     </ChartCard>
   )

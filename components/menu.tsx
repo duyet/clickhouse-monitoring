@@ -23,7 +23,7 @@ interface MenuProps {
 const defaultItems = [
   {
     title: 'Overview',
-    href: '/',
+    href: '/overview',
   },
   {
     title: 'Running Queries',

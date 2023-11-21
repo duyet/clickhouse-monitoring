@@ -20,23 +20,51 @@ import {
 type ReadableFormat = 'size' | 'quantity'
 
 export interface AreaChartProps extends TremorAreaChartProps {
-  readable?: ReadableFormat
+  readable?: true | ReadableFormat
+  readableColumns?: string[]
 }
 
-export function AreaChart({ readable, ...props }: AreaChartProps) {
+export function AreaChart({
+  data,
+  categories,
+  index,
+  readable,
+  readableColumns,
+  ...props
+}: AreaChartProps) {
   let valueFormatter = undefined
 
-  switch (readable) {
-    case 'size':
-      valueFormatter = (value: number) => formatReadableSize(value, 1)
-      break
-    case 'quantity':
-      valueFormatter = (value: number) => formatReadableQuantity(value)
-      break
+  if (readable && readableColumns) {
+    valueFormatter = (value: number) => {
+      for (let i = 0; i < categories.length; i++) {
+        // Bruteforce
+        const formated = data.find((d) => d[categories[i]] === value)?.[
+          readableColumns[i]
+        ]
+
+        if (formated) {
+          return formated
+        }
+      }
+
+      return value
+    }
+  } else if (readable) {
+    switch (readable) {
+      case 'size':
+        valueFormatter = (value: number) => formatReadableSize(value, 1)
+        break
+      case 'quantity':
+        valueFormatter = (value: number) => formatReadableQuantity(value)
+        break
+    }
   }
 
   return (
     <TremorAreaChart
+      data={data}
+      index={index}
+      categories={categories}
       valueFormatter={valueFormatter}
       intervalType="preserveStartEnd"
       animationDuration={100}
@@ -44,6 +72,7 @@ export function AreaChart({ readable, ...props }: AreaChartProps) {
       showGridLines={false}
       startEndOnly={true}
       allowDecimals={false}
+      showYAxis={false}
       {...props}
     />
   )
