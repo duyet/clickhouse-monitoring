@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DataTable } from '@/components/data-table/data-table'
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 5
+export const revalidate = 0
 
 const config: QueryConfig = {
   name: 'tables',

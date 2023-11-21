@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   description: 'Simple UI for ClickHouse Monitoring',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default function RootLayout({
   children,
 }: {
