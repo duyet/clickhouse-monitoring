@@ -30,3 +30,10 @@ export function dedent(str: string) {
 
   return indent > 0 ? str.replace(re, '') : str
 }
+
+export function getHost(url?: string) {
+  if (!url) return ''
+
+  const { host } = new URL(url)
+  return host
+}

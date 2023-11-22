@@ -2,6 +2,7 @@ import Image from 'next/image'
 
 import { Menu } from '@/components/menu'
 import { ReloadButton } from '@/components/reload-button'
+import { ServerHostname } from '@/components/server-hostname'
 
 export function Header() {
   return (
@@ -18,7 +19,9 @@ export function Header() {
           <span className="hidden sm:flex">ClickHouse Monitoring</span>
           <span className="flex sm:hidden">Monitoring</span>
         </h2>
-        <p className="text-muted-foreground"></p>
+        <p className="text-muted-foreground">
+          <ServerHostname />
+        </p>
       </div>
       <div className="flex items-center space-x-2">
         <Menu />
