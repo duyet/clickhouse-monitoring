@@ -2,6 +2,7 @@ import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons'
 import { MoreHorizontal } from 'lucide-react'
 
 import dayjs from '@/lib/dayjs'
+import { formatReadableQuantity } from '@/lib/format-readable'
 import {
   Accordion,
   AccordionContent,
@@ -26,6 +27,12 @@ export const formatCell = (row: any, value: any, format: ColumnFormat) => {
     case ColumnFormat.Code:
       return <code>{value}</code>
 
+    case ColumnFormat.Number:
+      return formatReadableQuantity(value, 'long')
+
+    case ColumnFormat.NumberShort:
+      return formatReadableQuantity(value, 'short')
+
     case ColumnFormat.CodeToggle:
       if (value.length < CODE_TRUNCATE_LENGTH) {
         return <code>{value}</code>
@@ -48,8 +55,13 @@ export const formatCell = (row: any, value: any, format: ColumnFormat) => {
         </Accordion>
       )
 
+    case ColumnFormat.RelatedTime:
+      let fromNow = dayjs(value).fromNow()
+      return <span title={value}>{fromNow}</span>
+
     case ColumnFormat.Duration:
-      return dayjs.duration({ seconds: parseFloat(value) }).humanize()
+      let humanized = dayjs.duration({ seconds: parseFloat(value) }).humanize()
+      return <span title={value}>{humanized}</span>
 
     case ColumnFormat.Boolean:
       return value ? (

@@ -1,6 +1,7 @@
 import { fetchData } from '@/lib/clickhouse'
 import type { QueryConfig } from '@/lib/types/query-config'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ColumnFormat } from '@/components/data-table/columns'
 import { DataTable } from '@/components/data-table/data-table'
 
 export const dynamic = 'force-dynamic'
@@ -33,6 +34,9 @@ const config: QueryConfig = {
     'readable_total_rows',
     'part_count',
   ],
+  columnFormats: {
+    part_count: ColumnFormat.Number,
+  },
 }
 
 export default async function TablePage() {

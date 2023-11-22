@@ -11,7 +11,10 @@ import { formatCell } from '@/components/data-table/cell'
 
 export enum ColumnFormat {
   Code = 'code',
+  Number = 'number',
+  NumberShort = 'number-short',
   CodeToggle = 'code-toggle',
+  RelatedTime = 'related-time',
   Duration = 'duration',
   Boolean = 'boolean',
   Action = 'action',

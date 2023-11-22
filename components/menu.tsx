@@ -1,9 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
 
-import { fetchData, QUERY_COMMENT } from '@/lib/clickhouse'
+import { QUERY_COMMENT } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -13,6 +12,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerClasses,
 } from '@/components/ui/navigation-menu'
+import { CountBadge } from '@/components/count-badge'
 
 interface MenuProps {
   items?: MenuItem[]
@@ -48,6 +48,11 @@ const defaultItems = [
         description:
           'Queries that have been run including successed, failed queries with resourses usage details',
       },
+      {
+        title: 'Most Expensive Queries',
+        href: '/expensive-queries',
+        description: 'Most expensive queries in my ClickHouse',
+      },
     ],
   },
   {
@@ -62,7 +67,21 @@ const defaultItems = [
   },
   {
     title: 'Settings',
-    href: '/settings',
+    href: '',
+    items: [
+      {
+        title: 'Settings',
+        href: '/settings',
+        description:
+          'The values of global server settings which can be viewed in the table `system.settings`',
+      },
+      {
+        title: 'MergeTree Settings',
+        href: '/mergetree-settings',
+        description:
+          'The values of merge_tree settings (for all MergeTree tables) which can be viewed in the table `system.merge_tree_settings`',
+      },
+    ],
   },
 ]
 
@@ -75,22 +94,6 @@ export function Menu({ items = defaultItems }: MenuProps) {
         ))}
       </NavigationMenuList>
     </NavigationMenu>
-  )
-}
-
-async function MenuCounter({ sql }: { sql?: string }) {
-  if (!sql) return null
-
-  const data = await fetchData(sql)
-  if (!data || !data.length || !data?.[0]?.['count()']) return null
-
-  const count = data[0]['count()'] || data[0]['count'] || 0
-  if (count === 0) return null
-
-  return (
-    <Badge className="ml-2" variant="outline">
-      {count}
-    </Badge>
   )
 }
 
@@ -108,7 +111,7 @@ function SingleItem({ item }: { item: MenuItem }) {
       <Link href={item.href} legacyBehavior passHref>
         <NavigationMenuLink className={navigationMenuTriggerClasses}>
           {item.title}
-          <MenuCounter sql={item.countSql} />
+          <CountBadge sql={item.countSql} />
         </NavigationMenuLink>
       </Link>
     </NavigationMenuItem>
@@ -119,16 +122,16 @@ function HasChildItems({ item }: { item: MenuItem }) {
   return (
     <NavigationMenuItem>
       <NavigationMenuTrigger>
-        {item.title} <MenuCounter sql={item.countSql} />
+        {item.title} <CountBadge sql={item.countSql} />
       </NavigationMenuTrigger>
       <NavigationMenuContent>
-        <ul className="flex w-fit min-w-[400px] flex-col gap-3 p-4">
+        <ul className="grid w-fit min-w-[400px] grid-cols-1 content-center items-stretch gap-2 p-4 md:min-w-[700px] md:grid-cols-2">
           {item.items?.map((childItem) => (
             <ListItem
               key={childItem.href}
               title={
                 <span>
-                  {childItem.title} <MenuCounter sql={childItem.countSql} />
+                  {childItem.title} <CountBadge sql={childItem.countSql} />
                 </span>
               }
               href={childItem.href}

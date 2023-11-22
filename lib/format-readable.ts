@@ -21,10 +21,33 @@ export function formatReadableSize(bytes: number, decimals = 1) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
 
-export function formatReadableQuantity(quantity: number) {
+/**
+ * Format a number to a human readable quantity.
+ * For example:
+ * formatReadableQuantity(123456789) => 123.5M
+ * formatReadableQuantity(123456789, 'short') => 123.5M
+ * formatReadableQuantity(123456789, 'long') => 123,456,789
+ *
+ * @param quantity
+ * @param preset 'short' or 'long', defaults to 'short'
+ * @returns
+ */
+export function formatReadableQuantity(
+  quantity: number,
+  preset: string = 'short'
+) {
+  const options =
+    preset === 'short'
+      ? {
+          notation: 'compact' as 'compact',
+          compactDisplay: 'short' as 'short',
+        }
+      : {
+          notation: 'standard' as 'standard',
+        }
+
   return new Intl.NumberFormat('en-US', {
     style: 'decimal',
-    notation: 'compact',
-    compactDisplay: 'short',
+    ...options,
   }).format(quantity)
 }
