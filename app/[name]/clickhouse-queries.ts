@@ -22,11 +22,12 @@ export const queries: Array<QueryConfig> = [
       'readable_read_rows',
       'readable_total_rows_approx',
       'readable_memory_usage',
+      'query_id',
     ],
     columnFormats: {
       query: ColumnFormat.CodeToggle,
       elapsed: ColumnFormat.Duration,
-      query_id: ColumnFormat.None,
+      query_id: [ColumnFormat.Action, ['kill-query']],
     },
     relatedCharts: [
       [

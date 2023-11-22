@@ -7,6 +7,7 @@ import { ColumnDef } from '@tanstack/react-table'
 
 import type { QueryConfig } from '@/lib/types/query-config'
 import { Button } from '@/components/ui/button'
+import type { Action } from '@/components/data-table/actions/types'
 import { formatCell } from '@/components/data-table/cell'
 
 export enum ColumnFormat {
@@ -49,10 +50,19 @@ export const getColumnDefs = (config: QueryConfig): ColumnDef<ColumnType>[] => {
 
   return configColumns.map((column) => {
     const name = normalizeColumnName(column)
-    const columnFormat =
+    const format =
       config.columnFormats?.[column] ||
       config.columnFormats?.[name] ||
       ColumnFormat.None
+
+    let columnFormat: ColumnFormat
+    let columnFormatOptions: Action[] = []
+    if (Array.isArray(format) && format.length === 2) {
+      columnFormat = format[0] as ColumnFormat
+      columnFormatOptions = format[1] as Action[]
+    } else {
+      columnFormat = format as ColumnFormat
+    }
 
     return {
       id: name,
@@ -78,7 +88,12 @@ export const getColumnDefs = (config: QueryConfig): ColumnDef<ColumnType>[] => {
 
       cell: ({ row, getValue }) => {
         const value = getValue()
-        const formatted = formatCell(row, value, columnFormat)
+        const formatted = formatCell(
+          row,
+          value,
+          columnFormat,
+          columnFormatOptions
+        )
 
         return formatted
       },

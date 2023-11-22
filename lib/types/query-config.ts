@@ -6,6 +6,22 @@ export interface QueryConfig {
   description?: string
   sql: string
   columns: string[]
-  columnFormats?: { [key: string]: ColumnFormat }
+  /**
+   * Column format can be specified as a enum ColumnFormat
+   * or an array of two elements [ColumnFormat.Action, arg]
+   *
+   * Example:
+   *
+   * ```ts
+   * columnFormats: {
+   *   query: ColumnFormat.Code,
+   *   changed: ColumnFormat.Boolean,
+   *   query_id: [ColumnFormat.Action, ['kill-query']],
+   * }
+   * ```
+   */
+  columnFormats?: {
+    [key: string]: ColumnFormat | [ColumnFormat.Action, string[]]
+  }
   relatedCharts?: string[] | [string, ChartProps][]
 }

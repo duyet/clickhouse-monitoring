@@ -1,4 +1,5 @@
 import React from 'react'
+import { mount } from 'cypress/react18'
 
 import type { QueryConfig } from '@/lib/types/query-config'
 
@@ -20,7 +21,7 @@ describe('<DataTable />', () => {
       { col1: 'val3', col2: 'val3' },
     ]
 
-    cy.mount(<DataTable title="Test Table" config={config} data={data} />)
+    mount(<DataTable title="Test Table" config={config} data={data} />)
 
     cy.get('h1').contains('Test Table')
     cy.get('table').should('have.length', 1)
@@ -39,7 +40,7 @@ describe('<DataTable />', () => {
       data.push({ col1: `val${i}`, col2: `val${i}` })
     }
 
-    cy.mount(
+    mount(
       <DataTable
         title="Test Table"
         config={config}
@@ -76,7 +77,7 @@ describe('<DataTable />', () => {
       data.push({ col1: `val${i}`, col2: `val${i}` })
     }
 
-    cy.mount(
+    mount(
       <DataTable
         title="Test Table"
         config={config}
@@ -106,7 +107,7 @@ describe('<DataTable />', () => {
       { col1: 'val3', col2: 'val3' },
     ]
 
-    cy.mount(<DataTable title="Test Table" config={config} data={data} />)
+    mount(<DataTable title="Test Table" config={config} data={data} />)
 
     // Before click: table should contains 2 columns
     cy.get('thead tr th').should('have.length', 2)
@@ -141,7 +142,7 @@ describe('<DataTable />', () => {
   })
 
   it('should have "Show Code" button when showSQL={true}', () => {
-    cy.mount(
+    mount(
       <DataTable title="Test Table" config={config} data={[]} showSQL={true} />
     )
 
@@ -149,7 +150,7 @@ describe('<DataTable />', () => {
   })
 
   it('should not have "Show Code" button when showSQL={false}', () => {
-    cy.mount(
+    mount(
       <DataTable title="Test Table" config={config} data={[]} showSQL={false} />
     )
 
@@ -164,7 +165,7 @@ describe('<DataTable />', () => {
       { col1: 'val3', col2: 'val3' },
     ]
 
-    cy.mount(
+    mount(
       <DataTable
         title="Test Table"
         config={config}

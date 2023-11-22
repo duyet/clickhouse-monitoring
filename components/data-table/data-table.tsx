@@ -72,8 +72,6 @@ export function DataTable<TData extends RowData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     initialColumnVisibility
   )
-  console.log('columnVisibility', columnVisibility)
-  console.log('columnDefs', columnDefs)
 
   // Sorting
   const [sorting, setSorting] = useState<SortingState>([])
