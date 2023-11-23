@@ -1,25 +1,24 @@
-import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons'
+import type { LinkProps } from 'next/link'
 
 import dayjs from '@/lib/dayjs'
 import { formatReadableQuantity } from '@/lib/format-readable'
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
-import { ColumnFormat } from '@/components/data-table/columns'
+  ColumnFormat,
+  ColumnFormatOptions,
+} from '@/components/data-table/columns'
 
-import { ActionMenu } from './actions/action-menu'
-import type { Action } from './actions/types'
-
-const CODE_TRUNCATE_LENGTH = 50
+import { ActionMenu } from './cells/actions/action-menu'
+import type { Action } from './cells/actions/types'
+import { BadgeFormat } from './cells/badge-format'
+import { BooleanFormat } from './cells/boolean-format'
+import { CodeToggleFormat } from './cells/code-toggle-format'
+import { LinkFormat } from './cells/link-format'
 
 export const formatCell = (
   row: any,
   value: any,
   format: ColumnFormat,
-  columnFormatOptions: Action[] = []
+  columnFormatOptions?: ColumnFormatOptions
 ) => {
   switch (format) {
     case ColumnFormat.Code:
@@ -32,31 +31,7 @@ export const formatCell = (
       return formatReadableQuantity(value, 'short')
 
     case ColumnFormat.CodeToggle:
-      if (value.length < CODE_TRUNCATE_LENGTH) {
-        return <code>{value}</code>
-      }
-
-      return (
-        <Accordion
-          type="single"
-          defaultValue={row.getIsExpanded() ? 'code' : undefined}
-          collapsible={row.getIsExpanded()}
-          onValueChange={(value) => row.toggleExpanded(value === 'code')}
-        >
-          <AccordionItem value="code" className="border-0">
-            <AccordionTrigger className="py-0 hover:no-underline">
-              <code className="truncate break-words font-normal">
-                {value.substring(0, 50)}...
-              </code>
-            </AccordionTrigger>
-            <AccordionContent>
-              <code className="whitespace-pre-wrap font-normal">
-                {value.substring(50)}
-              </code>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      )
+      return <CodeToggleFormat row={row} value={value} />
 
     case ColumnFormat.RelatedTime:
       let fromNow = dayjs(value).fromNow()
@@ -67,20 +42,27 @@ export const formatCell = (
       return <span title={value}>{humanized}</span>
 
     case ColumnFormat.Boolean:
-      return value ? (
-        <CheckCircledIcon className="text-green-700" />
-      ) : (
-        <CrossCircledIcon className="text-rose-700" />
-      )
+      return <BooleanFormat value={value} />
 
     case ColumnFormat.Action:
-      return <ActionMenu value={value} actions={columnFormatOptions} />
+      return (
+        <ActionMenu
+          row={row}
+          value={value}
+          actions={columnFormatOptions as Action[]}
+        />
+      )
 
     case ColumnFormat.Badge:
+      return <BadgeFormat value={value} />
+
+    case ColumnFormat.Link:
       return (
-        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-          {value}
-        </span>
+        <LinkFormat
+          row={row}
+          value={value}
+          options={columnFormatOptions as LinkProps}
+        />
       )
 
     default:

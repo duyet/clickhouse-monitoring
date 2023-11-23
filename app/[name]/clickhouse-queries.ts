@@ -41,7 +41,7 @@ export const queries: Array<QueryConfig> = [
       [
         'query-count-by-user',
         {
-          title: 'Total Queries over last 14 days',
+          title: 'Total Queries over last 14 days by users',
           interval: 'toStartOfDay',
           lastHours: 24 * 14,
           showLegend: false,

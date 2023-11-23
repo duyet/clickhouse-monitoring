@@ -1,3 +1,4 @@
+import { LinkProps } from 'next/link'
 import {
   CaretDownIcon,
   CaretSortIcon,
@@ -7,8 +8,8 @@ import { ColumnDef } from '@tanstack/react-table'
 
 import type { QueryConfig } from '@/lib/types/query-config'
 import { Button } from '@/components/ui/button'
-import type { Action } from '@/components/data-table/actions/types'
 import { formatCell } from '@/components/data-table/cell'
+import type { Action } from '@/components/data-table/cells/actions/types'
 
 export enum ColumnFormat {
   Code = 'code',
@@ -20,8 +21,12 @@ export enum ColumnFormat {
   Boolean = 'boolean',
   Action = 'action',
   Badge = 'badge',
+  Link = 'link',
   None = 'none',
 }
+
+// Union of all possible format options
+export type ColumnFormatOptions = Action[] | LinkProps
 
 export type ColumnType = { [key: string]: string }
 
@@ -56,10 +61,10 @@ export const getColumnDefs = (config: QueryConfig): ColumnDef<ColumnType>[] => {
       ColumnFormat.None
 
     let columnFormat: ColumnFormat
-    let columnFormatOptions: Action[] = []
+    let columnFormatOptions: ColumnFormatOptions
     if (Array.isArray(format) && format.length === 2) {
       columnFormat = format[0] as ColumnFormat
-      columnFormatOptions = format[1] as Action[]
+      columnFormatOptions = format[1] as ColumnFormatOptions
     } else {
       columnFormat = format as ColumnFormat
     }

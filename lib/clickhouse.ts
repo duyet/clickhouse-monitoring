@@ -10,10 +10,14 @@ export const getClient = () =>
 
 export const QUERY_COMMENT = '/* client=clickhouse-monitoring */ '
 
-export const fetchData = async (query: string) => {
+export const fetchData = async (
+  query: string,
+  params: Record<string, unknown> = {}
+) => {
   const resultSet = await getClient().query({
     query: QUERY_COMMENT + query,
     format: 'JSONEachRow',
+    query_params: params,
   })
 
   const data: any[] = []

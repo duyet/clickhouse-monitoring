@@ -13,6 +13,7 @@ import {
 import type { Action } from './types'
 
 interface ActionButtonProps {
+  row?: any
   value: any
   actions: Action[]
 }

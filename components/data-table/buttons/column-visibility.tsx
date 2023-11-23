@@ -1,4 +1,4 @@
-import { ColumnsIcon } from '@radix-ui/react-icons'
+import { MixerHorizontalIcon } from '@radix-ui/react-icons'
 import { Table } from '@tanstack/react-table'
 
 import { Button } from '@/components/ui/button'
@@ -23,8 +23,9 @@ export function ColumnVisibilityButton<TData>({
           variant="outline"
           className="ml-auto"
           aria-label="Column Options"
+          title="Column Options"
         >
-          <ColumnsIcon className="h-4 w-4" />
+          <MixerHorizontalIcon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

@@ -100,7 +100,7 @@ export function DataTable<TData extends RowData, TValue>({
     <div>
       <div className="flex flex-row items-center justify-between pb-4">
         <div>
-          <h1 className="text-muted-foreground text-xl capitalize">{title}</h1>
+          <h1 className="text-muted-foreground text-xl">{title}</h1>
           <p className="text-muted-foreground text-sm">{config.description}</p>
         </div>
         <div className="flex items-center gap-3">

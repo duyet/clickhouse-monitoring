@@ -25,7 +25,12 @@ export function ShowSQLButton({ sql }: ShowSQLButtonProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="ml-auto" aria-label="Show SQL">
+        <Button
+          variant="outline"
+          className="ml-auto"
+          aria-label="Show SQL"
+          title="Show SQL for this table"
+        >
           <CodeIcon className="h-4 w-4" />
         </Button>
       </DialogTrigger>

@@ -1,5 +1,10 @@
 import type { ChartProps } from '@/components/charts/chart-props'
-import type { ColumnFormat } from '@/components/data-table/columns'
+import type {
+  ColumnFormat,
+  ColumnFormatAction,
+  ColumnFormatLink,
+  ColumnFormatOptions,
+} from '@/components/data-table/columns'
 
 export interface QueryConfig {
   name: string
@@ -17,11 +22,12 @@ export interface QueryConfig {
    *   query: ColumnFormat.Code,
    *   changed: ColumnFormat.Boolean,
    *   query_id: [ColumnFormat.Action, ['kill-query']],
+   *   table: [ColumnFormat.Link, { href: '/tables/{table}' }],
    * }
    * ```
    */
   columnFormats?: {
-    [key: string]: ColumnFormat | [ColumnFormat.Action, string[]]
+    [key: string]: ColumnFormat | [ColumnFormat, ColumnFormatOptions]
   }
   relatedCharts?: string[] | [string, ChartProps][]
 }

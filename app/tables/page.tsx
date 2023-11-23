@@ -5,13 +5,15 @@ import { ColumnFormat } from '@/components/data-table/columns'
 import { DataTable } from '@/components/data-table/data-table'
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export const revalidate = 30
 
 const config: QueryConfig = {
   name: 'tables',
   sql: `
-    SELECT database,
+    SELECT
+        database,
         table,
+        engine,
         sum(data_compressed_bytes) as compressed_bytes,
         sum(data_uncompressed_bytes) AS uncompressed_bytes,
         formatReadableSize(compressed_bytes) AS compressed,
@@ -23,11 +25,14 @@ const config: QueryConfig = {
     FROM system.parts
     WHERE active = 1
     GROUP BY database,
-             table
+             table,
+             engine
     ORDER BY database, compressed_bytes DESC
   `,
   columns: [
+    'database',
     'table',
+    'engine',
     'compressed',
     'uncompressed',
     'compr_rate',
@@ -36,6 +41,7 @@ const config: QueryConfig = {
   ],
   columnFormats: {
     part_count: ColumnFormat.Number,
+    table: [ColumnFormat.Link, { href: '/tables/[database]/[table]' }],
   },
 }
 
