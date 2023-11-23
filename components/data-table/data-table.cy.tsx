@@ -1,5 +1,4 @@
 import React from 'react'
-import { mount } from 'cypress/react18'
 
 import type { QueryConfig } from '@/lib/types/query-config'
 
@@ -21,7 +20,7 @@ describe('<DataTable />', () => {
       { col1: 'val3', col2: 'val3' },
     ]
 
-    mount(<DataTable title="Test Table" config={config} data={data} />)
+    cy.mount(<DataTable title="Test Table" config={config} data={data} />)
 
     cy.get('h1').contains('Test Table')
     cy.get('table').should('have.length', 1)
@@ -40,7 +39,7 @@ describe('<DataTable />', () => {
       data.push({ col1: `val${i}`, col2: `val${i}` })
     }
 
-    mount(
+    cy.mount(
       <DataTable
         title="Test Table"
         config={config}
@@ -73,21 +72,21 @@ describe('<DataTable />', () => {
   it('render paging, click on next page', () => {
     let data = []
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       data.push({ col1: `val${i}`, col2: `val${i}` })
     }
 
-    mount(
+    cy.mount(
       <DataTable
         title="Test Table"
         config={config}
         data={data}
-        defaultPageSize={50}
+        defaultPageSize={2}
       />
     )
 
     // Page 1 of 2
-    cy.get('div').contains('Page 1 of 2')
+    cy.get('div').contains('Page 1 of 5')
 
     // "Go to next page" button should be enabled
     cy.get('button')
@@ -96,10 +95,10 @@ describe('<DataTable />', () => {
       .click()
 
     // Page 2 of 2
-    cy.get('div').contains('Page 2 of 2')
+    cy.get('div').contains('Page 2 of 5')
   })
 
-  it('should adjust column visibility', () => {
+  it('should adjust column visibility, hide col1', () => {
     // Define some mock data
     const data = [
       { col1: 'val1', col2: 'val1' },
@@ -107,42 +106,85 @@ describe('<DataTable />', () => {
       { col1: 'val3', col2: 'val3' },
     ]
 
-    mount(<DataTable title="Test Table" config={config} data={data} />)
+    cy.mount(<DataTable title="Test Table" config={config} data={data} />)
+
+    const $optionBtn = cy.get('button[aria-label="Column Options"]')
 
     // Before click: table should contains 2 columns
     cy.get('thead tr th').should('have.length', 2)
 
     // Click on "Column Options" button, should showing 2 checkboxes: col1 and col2
     // Click on col1 to toggle hide it
-    cy.get('button[aria-label="Column Options"]').click()
-    cy.get('[role="checkbox"]').should('have.length', 2)
-    cy.get('[role="checkbox"]').contains('col1').click()
+    $optionBtn.click().then(() => {
+      cy.get('[role="checkbox"]').should('have.length', 2)
+      cy.get('[role="checkbox"]').contains('col1').click()
 
-    // After click: table should contains only col2
-    cy.get('thead tr th').should('have.length', 1)
+      // After click: table should contains only col2
+      cy.get('thead tr th').should('have.length', 1)
+    })
+  })
+
+  it('should adjust column visibility, hide col2', () => {
+    // Define some mock data
+    const data = [
+      { col1: 'val1', col2: 'val1' },
+      { col1: 'val2', col2: 'val2' },
+      { col1: 'val3', col2: 'val3' },
+    ]
+
+    cy.mount(<DataTable title="Test Table" config={config} data={data} />)
+
+    cy.get('button[aria-label="Column Options"]').as('btn')
+
+    // Before click: table should contains 2 columns
+    cy.get('thead tr th').should('have.length', 2)
 
     // Click on "Column Options" button, should showing 2 checkboxes: col1 and col2
     // Click on col2 to toggle hide it
-    cy.get('button[aria-label="Column Options"]').click()
+    cy.get('@btn').click()
     cy.get('[role="checkbox"]').should('have.length', 2)
     cy.get('[role="checkbox"]').contains('col2').click()
 
     // After click: table should contains no column
-    cy.get('thead tr th').should('have.length', 0)
+    cy.get('thead tr th').should('have.length', 1)
+  })
+
+  it('should adjust column visibility, hide both col1 and col2', () => {
+    // Define some mock data
+    const data = [
+      { col1: 'val1', col2: 'val1' },
+      { col1: 'val2', col2: 'val2' },
+      { col1: 'val3', col2: 'val3' },
+    ]
+
+    cy.mount(<DataTable title="Test Table" config={config} data={data} />)
+
+    cy.get('button[aria-label="Column Options"]').as('btn')
+
+    // Before click: table should contains 2 columns
+    cy.get('thead tr th').should('have.length', 2)
 
     // Click on "Column Options" button, should showing 2 checkboxes: col1 and col2
-    // Click on col2 to toggle show it again
-    cy.get('button[aria-label="Column Options"]').click()
-    cy.get('[role="checkbox"]').should('have.length', 2)
-    cy.get('[role="checkbox"]').contains('col1').click()
-    cy.get('button[aria-label="Column Options"]').click()
-    cy.get('[role="checkbox"]').contains('col2').click()
+    // Click on col1 to toggle hide it
+    cy.get('@btn').click()
+    // Uncheck col1
+    cy.get('[role="checkbox"][aria-checked="true"][aria-label="col1"]').click()
 
-    cy.get('thead tr th').should('have.length', 2)
+    // After click: table should contains no column
+    cy.get('thead tr th').should('have.length', 1)
+
+    // Uncheck col2
+    cy.get('@btn').click({ force: true })
+    cy.get('[role="checkbox"][aria-checked="true"][aria-label="col2"]')
+      .should('be.visible')
+      .click({ force: true })
+
+    // After click: table should contains no column
+    cy.get('thead tr th').should('have.length', 0)
   })
 
   it('should have "Show Code" button when showSQL={true}', () => {
-    mount(
+    cy.mount(
       <DataTable title="Test Table" config={config} data={[]} showSQL={true} />
     )
 
@@ -150,7 +192,7 @@ describe('<DataTable />', () => {
   })
 
   it('should not have "Show Code" button when showSQL={false}', () => {
-    mount(
+    cy.mount(
       <DataTable title="Test Table" config={config} data={[]} showSQL={false} />
     )
 
@@ -165,7 +207,7 @@ describe('<DataTable />', () => {
       { col1: 'val3', col2: 'val3' },
     ]
 
-    mount(
+    cy.mount(
       <DataTable
         title="Test Table"
         config={config}

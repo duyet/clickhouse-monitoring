@@ -1,8 +1,6 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 import type {
   ColumnFormat,
-  ColumnFormatAction,
-  ColumnFormatLink,
   ColumnFormatOptions,
 } from '@/components/data-table/columns'
 

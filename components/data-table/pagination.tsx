@@ -36,8 +36,7 @@ export function DataTablePagination<TData>({
       <div
         className={cn(
           'flex items-center space-x-6 lg:space-x-8',
-
-          table.getCanPreviousPage() && table.getCanNextPage()
+          table.getCanPreviousPage() || table.getCanNextPage()
             ? 'flex'
             : 'hidden'
         )}
