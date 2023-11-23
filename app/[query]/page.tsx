@@ -6,22 +6,22 @@ import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { RelatedCharts } from '@/components/related-charts'
 
-import { getQueryConfigByName, queries } from './clickhouse-queries'
+import { getQueryConfigByName } from './clickhouse-queries'
 
 interface PageProps {
   params: {
-    name: string
+    query: string
   }
 }
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 5
+export const revalidate = 30
 
-export default async function Page({ params: { name } }: PageProps) {
+export default async function Page({ params: { query } }: PageProps) {
   noStore()
 
   // Get the query config
-  const config = getQueryConfigByName(name)
+  const config = getQueryConfigByName(query)
   if (!config) {
     return notFound()
   }
@@ -36,7 +36,7 @@ export default async function Page({ params: { name } }: PageProps) {
 
         <div>
           <DataTable
-            title={name.replace('-', ' ')}
+            title={query.replace('-', ' ')}
             config={config}
             data={data}
           />
@@ -47,8 +47,3 @@ export default async function Page({ params: { name } }: PageProps) {
     return <ErrorAlert title="ClickHouse Error" message={`${error}`} />
   }
 }
-
-export const generateStaticParams = async () =>
-  queries.map(({ name }) => ({
-    name,
-  }))
