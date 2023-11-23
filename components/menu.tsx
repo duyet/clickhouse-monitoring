@@ -51,7 +51,12 @@ const defaultItems = [
       {
         title: 'Most Expensive Queries',
         href: '/expensive-queries',
-        description: 'Most expensive queries in my ClickHouse',
+        description: 'Most expensive queries by many factors',
+      },
+      {
+        title: 'Most Expensive Queries by Memory',
+        href: '/expensive-queries-by-memory',
+        description: 'Most expensive queries by memory',
       },
     ],
   },
@@ -80,6 +85,12 @@ const defaultItems = [
         href: '/mergetree-settings',
         description:
           'The values of merge_tree settings (for all MergeTree tables) which can be viewed in the table `system.merge_tree_settings`',
+      },
+      {
+        title: 'Disks',
+        href: '/disks',
+        description:
+          'The values of disk settings which can be viewed in the table `system.disks`',
       },
     ],
   },

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { fetchData } from '@/lib/clickhouse'
 import { DataTable } from '@/components/data-table/data-table'
+import { ErrorAlert } from '@/components/error-alert'
 import { RelatedCharts } from '@/components/related-charts'
 
 import { getQueryConfigByName, queries } from './clickhouse-queries'
@@ -26,17 +27,25 @@ export default async function Page({ params: { name } }: PageProps) {
   }
 
   // Fetch the data from ClickHouse
-  const data = await fetchData(config.sql)
+  try {
+    const data = await fetchData(config.sql)
 
-  return (
-    <div className="flex flex-col">
-      <RelatedCharts relatedCharts={config.relatedCharts} />
+    return (
+      <div className="flex flex-col">
+        <RelatedCharts relatedCharts={config.relatedCharts} />
 
-      <div>
-        <DataTable title={name.replace('-', ' ')} config={config} data={data} />
+        <div>
+          <DataTable
+            title={name.replace('-', ' ')}
+            config={config}
+            data={data}
+          />
+        </div>
       </div>
-    </div>
-  )
+    )
+  } catch (error) {
+    return <ErrorAlert title="ClickHouse Error" message={`${error}`} />
+  }
 }
 
 export const generateStaticParams = async () =>

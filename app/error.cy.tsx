@@ -10,7 +10,7 @@ describe('<Error />', () => {
     // Render
     cy.mount(<ErrorPage error={err} reset={reset} />)
 
-    cy.get('h2').contains('Something went wrong').should('be.visible')
+    cy.contains('Something went wrong').should('be.visible')
 
     // Check console.log was called
     cy.window().then((win) => {

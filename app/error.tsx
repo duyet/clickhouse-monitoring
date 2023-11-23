@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 
-import { Button } from '@/components/ui/button'
+import { ErrorAlert } from '@/components/error-alert'
 
 export default function Error({
   error,
@@ -17,18 +17,10 @@ export default function Error({
   }, [error])
 
   return (
-    <div>
-      <h2 className="font-medium">Something went wrong!</h2>
-      <p className="mb-5 font-light">Checking console for more details.</p>
-      <Button
-        variant="outline"
-        onClick={
-          // Attempt to recover by trying to re-render the segment
-          () => reset()
-        }
-      >
-        Try again
-      </Button>
-    </div>
+    <ErrorAlert
+      title="Something went wrong"
+      message="Checking console for more details."
+      reset={reset}
+    />
   )
 }

@@ -4,7 +4,7 @@ import { ChartCard } from '@/components/chart-card'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor'
 
-export async function ChartQueryCountSpark({
+export async function ChartQueryCount({
   title,
   interval = 'toStartOfMinute',
   className,
@@ -37,4 +37,4 @@ export async function ChartQueryCountSpark({
   )
 }
 
-export default ChartQueryCountSpark
+export default ChartQueryCount

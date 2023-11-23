@@ -141,7 +141,7 @@ export const queries: Array<QueryConfig> = [
               (normalized_query_hash),
               ())
       ORDER BY user_time DESC
-      LIMIT 200
+      LIMIT 1000
     `,
     columns: [
       'query',
@@ -183,6 +183,37 @@ export const queries: Array<QueryConfig> = [
       result_rows: ColumnFormat.Number,
     },
     relatedCharts: [],
+  },
+  {
+    name: 'expensive-queries-by-memory',
+    description: 'Most expensive queries by memory finished over last 24 hours',
+    sql: `
+      SELECT
+          query,
+          user,
+          count() as cnt,
+          sum(memory_usage) AS memory,
+          formatReadableSize(sum(memory_usage)) AS readable_memory,
+          normalized_query_hash
+      FROM
+          clusterAllReplicas(default, system.query_log)
+      WHERE
+          (event_time >= (now() - toIntervalDay(1)))
+          AND query_kind = 'Select'
+          AND type = 'QueryFinish'
+      GROUP BY
+          normalized_query_hash,
+          query,
+          user
+      ORDER BY
+          memory DESC
+      LIMIT 1000
+    `,
+
+    columns: ['query', 'user', 'cnt', 'readable_memory'],
+    columnFormats: {
+      query: ColumnFormat.CodeToggle,
+    },
   },
   {
     name: 'merges',
@@ -278,6 +309,42 @@ export const queries: Array<QueryConfig> = [
       is_obsolete: ColumnFormat.Boolean,
       value: ColumnFormat.Code,
     },
+  },
+  {
+    name: 'disks',
+    sql: `
+      SELECT name,
+             path,
+             unreserved_space,
+             formatReadableSize(unreserved_space) AS readable_unreserved_space,
+             free_space,
+             formatReadableSize(free_space) AS readable_free_space,
+             total_space,
+             formatReadableSize(total_space) AS readable_total_space,
+             toString(round(100.0 * free_space / total_space, 2)) || '%' AS percent_free,
+             keep_free_space
+      FROM system.disks
+      ORDER BY name
+    `,
+    columns: [
+      'name',
+      'path',
+      'readable_unreserved_space',
+      'readable_free_space',
+      'percent_free',
+      'readable_total_space',
+      'keep_free_space',
+    ],
+    relatedCharts: [
+      [
+        'disks-usage',
+        {
+          title: 'Disk Usage over last 14 days',
+          interval: 'toStartOfTenMinutes',
+          lastHours: 24 * 14,
+        },
+      ],
+    ],
   },
 ]
 

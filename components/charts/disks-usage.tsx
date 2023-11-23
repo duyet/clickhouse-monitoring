@@ -4,21 +4,24 @@ import { ChartCard } from '@/components/chart-card'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor'
 
-export async function ChartMergeCount({
+export async function ChartDisksUsage({
   title,
-  interval = 'toStartOfFiveMinutes',
-  lastHours = 12,
+  interval = 'toStartOfHour',
   className,
   chartClassName,
+  lastHours = 24 * 7,
+  ...props
 }: ChartProps) {
   const data = await fetchData(`
-    SELECT ${interval}(event_time) AS event_time,
-           avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
-           avg(CurrentMetric_PartMutation) AS avg_CurrentMetric_PartMutation
-    FROM system.metric_log
+    WITH CAST(sumMap(map(metric, value)), 'Map(LowCardinality(String), UInt32)') AS map
+    SELECT
+        ${interval}(event_time) as event_time,
+        map['DiskAvailable_default'] as DiskAvailable_default,
+        formatReadableSize(DiskAvailable_default) as readable_DiskAvailable_default
+    FROM system.asynchronous_metric_log
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
-    ORDER BY 1
+    ORDER BY 1 ASC
   `)
 
   return (
@@ -27,15 +30,12 @@ export async function ChartMergeCount({
         className={cn('h-52', chartClassName)}
         data={data}
         index="event_time"
-        categories={[
-          'avg_CurrentMetric_Merge',
-          'avg_CurrentMetric_PartMutation',
-        ]}
-        readable="quantity"
-        stack
+        categories={['DiskAvailable_default']}
+        readableColumns={['readable_DiskAvailable_default']}
+        {...props}
       />
     </ChartCard>
   )
 }
 
-export default ChartMergeCount
+export default ChartDisksUsage

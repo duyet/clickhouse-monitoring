@@ -2,9 +2,10 @@ import { unstable_noStore as noStore } from 'next/cache'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartAvgMemory } from '@/components/charts/avg-memory'
-import ChartMergeCount from '@/components/charts/merge-count'
+import { ChartDisksUsage } from '@/components/charts/disks-usage'
+import { ChartMergeCount } from '@/components/charts/merge-count'
 import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
-import ChartTopTableSize from '@/components/charts/top-table-size'
+import { ChartTopTableSize } from '@/components/charts/top-table-size'
 import { IntervalSelect } from '@/components/interval-select'
 
 export const dynamic = 'force-dynamic'
@@ -45,6 +46,12 @@ export default async function Overview() {
             chartClassName="h-72"
           />
           <ChartTopTableSize className="w-full p-5" />
+          <ChartDisksUsage
+            title="Disks Usage over last 14 days"
+            className="w-full p-5"
+            interval="toStartOfTenMinutes"
+            lastHours={24 * 14}
+          />
         </div>
       </TabsContent>
     </Tabs>

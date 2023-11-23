@@ -22,7 +22,7 @@ export async function CountBadge({
   if (!data || !data.length || !data?.[0]?.['count()']) return null
 
   const count = data[0]['count()'] || data[0]['count'] || 0
-  if (count === 0) return null
+  if (count == 0) return null
 
   return (
     <Badge className="ml-2" variant="outline">
