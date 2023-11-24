@@ -12,13 +12,13 @@ import {
 
 import type { Action } from './types'
 
-interface ActionButtonProps {
+export interface ActionMenuProps {
   row?: any
   value: any
   actions: Action[]
 }
 
-export function ActionMenu({ value, actions }: ActionButtonProps) {
+export function ActionMenu({ value, actions }: ActionMenuProps) {
   // Using dynamic import to avoid cypress components test error
   const ActionItem = dynamic(() =>
     import('./action-item').then((res) => res.ActionItem)

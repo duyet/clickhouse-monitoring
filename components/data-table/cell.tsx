@@ -7,7 +7,7 @@ import {
   ColumnFormatOptions,
 } from '@/components/data-table/columns'
 
-import { ActionMenu } from './cells/actions/action-menu'
+import { ActionFormat } from './cells/action-format'
 import type { Action } from './cells/actions/types'
 import { BadgeFormat } from './cells/badge-format'
 import { BooleanFormat } from './cells/boolean-format'
@@ -46,7 +46,7 @@ export const formatCell = (
 
     case ColumnFormat.Action:
       return (
-        <ActionMenu
+        <ActionFormat
           row={row}
           value={value}
           actions={columnFormatOptions as Action[]}
