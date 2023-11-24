@@ -11,6 +11,7 @@ env:
   CLICKHOUSE_HOST: http://localhost:8123
   CLICKHOST_USER: default
   CLICKHOST_PASS: ''
+  CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
 permissions:
   contents: read
@@ -23,6 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        containers: [1, 2]
         browser: [chrome, firefox, edge]
 
     services:
