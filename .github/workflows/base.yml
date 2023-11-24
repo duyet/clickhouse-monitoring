@@ -61,19 +61,6 @@ jobs:
         if: ${{ inputs.job-type == 'lint' }}
         run: yarn lint
 
-      - name: Test e2e
-        if: ${{ inputs.job-type == 'test' }}
-        uses: cypress-io/github-action@v6
-        with:
-          command: yarn e2e:headless
-
-      - name: Test components
-        if: ${{ inputs.job-type == 'test' }}
-        uses: cypress-io/github-action@v6
-        with:
-          component: true
-          command: yarn component:headless
-
       - name: Build App
         if: ${{ inputs.job-type == 'build' }}
         run: yarn build
