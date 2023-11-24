@@ -5,7 +5,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor'
 
 export async function ChartDisksUsage({
-  title,
+  title = 'Disks Usage over last 7 days',
   interval = 'toStartOfHour',
   className,
   chartClassName,

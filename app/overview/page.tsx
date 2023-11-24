@@ -49,7 +49,7 @@ export default async function Overview() {
           <ChartDisksUsage
             title="Disks Usage over last 14 days"
             className="w-full p-5"
-            interval="toStartOfTenMinutes"
+            interval="toStartOfHour"
             lastHours={24 * 14}
           />
         </div>
