@@ -40,20 +40,30 @@ export function ReloadButton({ className }: ReloadButtonProps) {
 
   const onClickReload = refreshRouter
 
-  useInterval(() => {
-    if (countDown <= 0) {
-      refreshRouter()
-      setCountDown(initCountDown)
-      return
-    } else {
-      setCountDown(countDown - 1)
-    }
-  }, 1000)
+  useInterval(
+    () => {
+      if (countDown <= 0) {
+        refreshRouter()
+        setCountDown(initCountDown)
+        return
+      } else {
+        setCountDown(countDown - 1)
+      }
+    },
+    isLoading ? null : 1000
+  )
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex flex-row gap-2">
+        <Button
+          variant="outline"
+          className={cn(
+            'flex flex-row gap-2',
+            className,
+            isLoading ? 'animate-pulse' : ''
+          )}
+        >
           <span>{countDown}s</span>
           <ReloadIcon
             className={cn('h-4 w-4', isLoading ? 'animate-spin' : '')}

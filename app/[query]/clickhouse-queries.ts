@@ -10,7 +10,9 @@ export const queries: Array<QueryConfig> = [
         formatReadableQuantity(read_rows) as readable_read_rows,
         formatReadableQuantity(total_rows_approx) as readable_total_rows_approx,
         formatReadableSize(memory_usage) as readable_memory_usage,
-        formatReadableSize(peak_memory_usage) as readable_peak_memory_usage
+        formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
+        if(total_rows_approx > 0, toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress_percentage,
+        (elapsed / (read_rows / total_rows_approx)) * (1 - (read_rows / total_rows_approx)) AS estimated_remaining_time
       FROM system.processes
       WHERE is_cancelled = 0 AND query NOT LIKE '%${QUERY_COMMENT}%'
       ORDER BY elapsed
@@ -22,11 +24,13 @@ export const queries: Array<QueryConfig> = [
       'readable_read_rows',
       'readable_total_rows_approx',
       'readable_memory_usage',
+      'progress_percentage',
       'query_id',
     ],
     columnFormats: {
       query: ColumnFormat.CodeToggle,
       elapsed: ColumnFormat.Duration,
+      estimated_remaining_time: ColumnFormat.Duration,
       query_id: [ColumnFormat.Action, ['kill-query']],
     },
     relatedCharts: [
