@@ -34,6 +34,7 @@ export function DataTablePagination<TData>({
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
       <div
+        aria-label="Pagination"
         className={cn(
           'flex items-center space-x-6 lg:space-x-8',
           table.getCanPreviousPage() || table.getCanNextPage()
@@ -48,6 +49,7 @@ export function DataTablePagination<TData>({
             onValueChange={(value) => {
               table.setPageSize(Number(value))
             }}
+            aria-label="Rows per page"
           >
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue placeholder={table.getState().pagination.pageSize} />

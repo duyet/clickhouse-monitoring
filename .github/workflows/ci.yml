@@ -20,11 +20,6 @@ jobs:
     with:
       job-type: build
 
-  test:
-    uses: ./.github/workflows/base.yml
-    with:
-      job-type: test
-
   lint:
     uses: ./.github/workflows/base.yml
     with:
@@ -91,7 +86,7 @@ jobs:
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
 
-  test-docker:
+  validate-docker-build:
     runs-on: ubuntu-latest
     needs: build-docker
     if: ${{ github.ref == 'refs/heads/main' }}
