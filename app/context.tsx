@@ -24,9 +24,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     'toStartOfFiveMinutes'
   )
 
-  // Set reload interval to 5 seconds by default
+  // Set reload interval to 30s by default
   // setReloadInterval(null) to stop it
-  const [reloadInterval, setReloadInterval] = useState<number | null>(10000)
+  const [reloadInterval, setReloadInterval] = useState<number | null>(30000)
 
   return (
     <Context.Provider

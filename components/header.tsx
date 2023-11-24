@@ -1,8 +1,8 @@
 import Image from 'next/image'
 
+import { ClickHouseHost } from '@/components/clickhouse-host'
 import { Menu } from '@/components/menu'
 import { ReloadButton } from '@/components/reload-button'
-import { ServerHostname } from '@/components/server-hostname'
 
 export function Header() {
   return (
@@ -20,7 +20,7 @@ export function Header() {
           <span className="flex sm:hidden">Monitoring</span>
         </h2>
         <p className="text-muted-foreground">
-          <ServerHostname />
+          <ClickHouseHost />
         </p>
       </div>
       <div className="flex items-center space-x-2">

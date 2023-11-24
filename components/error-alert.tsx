@@ -15,11 +15,13 @@ export function ErrorAlert({
   reset,
 }: ErrorAlertProps) {
   return (
-    <Alert variant="destructive">
+    <Alert>
       <AlertTitle className="text-lg">{title}</AlertTitle>
       <AlertDescription>
         <div className="mb-5 font-light">
-          <code>{message}</code>
+          <pre>
+            <code>{message}</code>
+          </pre>
         </div>
 
         {reset ? (
