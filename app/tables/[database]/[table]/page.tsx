@@ -8,6 +8,7 @@ import { ColumnFormat } from '@/components/data-table/columns'
 import { DataTable } from '@/components/data-table/data-table'
 
 import { AlternativeTables } from './alternative-tables'
+import { SampleData } from './sample-data'
 import { ShowDDL } from './show-ddl-button'
 import { TableInfo } from './table-info'
 
@@ -84,6 +85,7 @@ export default async function ColumnsPage({
           <AlternativeTables database={database} table={table} />
           <ShowDDL database={database} table={table} />
           <TableInfo database={database} table={table} />
+          <SampleData database={database} table={table} />
         </div>
 
         <DataTable
