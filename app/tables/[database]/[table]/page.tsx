@@ -2,9 +2,13 @@ import Link from 'next/link'
 import { ArrowLeftIcon } from 'lucide-react'
 
 import { fetchData } from '@/lib/clickhouse'
-import type { QueryConfig } from '@/lib/types/query-config'
+import { type QueryConfig } from '@/lib/types/query-config'
+import { Button } from '@/components/ui/button'
 import { ColumnFormat } from '@/components/data-table/columns'
 import { DataTable } from '@/components/data-table/data-table'
+
+import { AlternativeTables } from './alternative-tables'
+import { ShowDDL } from './show-ddl-button'
 
 const config: QueryConfig = {
   name: 'columns',
@@ -64,13 +68,21 @@ export default async function ColumnsPage({
   return (
     <div className="flex flex-col">
       <div>
-        <Link
-          href="/tables"
-          className="text-muted-foreground flex flex-row items-center gap-2 text-xs hover:underline hover:decoration-1 hover:underline-offset-4"
-        >
-          <ArrowLeftIcon className="h-3 w-3" />
-          Back to tables
-        </Link>
+        <div className="mb-3 flex flex-row gap-3">
+          <Link href="/tables">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-muted-foreground flex flex-row gap-2"
+            >
+              <ArrowLeftIcon className="h-3 w-3" />
+              Back to tables
+            </Button>
+          </Link>
+
+          <AlternativeTables database={database} table={table} />
+          <ShowDDL database={database} table={table} />
+        </div>
 
         <DataTable
           title={`${database}.${table}`}
