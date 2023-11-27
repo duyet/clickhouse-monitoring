@@ -9,6 +9,7 @@ import { DataTable } from '@/components/data-table/data-table'
 
 import { AlternativeTables } from './alternative-tables'
 import { ShowDDL } from './show-ddl-button'
+import { TableInfo } from './table-info'
 
 const config: QueryConfig = {
   name: 'columns',
@@ -82,6 +83,7 @@ export default async function ColumnsPage({
 
           <AlternativeTables database={database} table={table} />
           <ShowDDL database={database} table={table} />
+          <TableInfo database={database} table={table} />
         </div>
 
         <DataTable
