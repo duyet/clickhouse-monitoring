@@ -3,10 +3,12 @@ import { Badge } from '@/components/ui/badge'
 
 interface CountBadgeProps {
   sql?: string
+  className?: string
 }
 
 export async function CountBadge({
   sql,
+  className,
 }: CountBadgeProps): Promise<JSX.Element | null> {
   if (!sql) return null
 
@@ -25,7 +27,7 @@ export async function CountBadge({
   if (count == 0) return null
 
   return (
-    <Badge className="ml-2" variant="outline">
+    <Badge className={className} variant="outline">
       {count}
     </Badge>
   )

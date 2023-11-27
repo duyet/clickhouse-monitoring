@@ -7,6 +7,7 @@ import {
   useContext,
   useState,
 } from 'react'
+import { usePathname } from 'next/navigation'
 
 import type { ClickHouseInterval } from '@/lib/types/clickhouse-interval'
 
@@ -15,6 +16,7 @@ export interface ContextValue {
   setInterval?: Dispatch<SetStateAction<ClickHouseInterval>>
   reloadInterval: number | null
   setReloadInterval: Dispatch<SetStateAction<number | null>>
+  pathname: string
 }
 
 export const Context = createContext<ContextValue | undefined>(undefined)
@@ -28,9 +30,17 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // setReloadInterval(null) to stop it
   const [reloadInterval, setReloadInterval] = useState<number | null>(30000)
 
+  const pathname = usePathname()
+
   return (
     <Context.Provider
-      value={{ interval, setInterval, reloadInterval, setReloadInterval }}
+      value={{
+        interval,
+        setInterval,
+        reloadInterval,
+        setReloadInterval,
+        pathname,
+      }}
     >
       {children}
     </Context.Provider>

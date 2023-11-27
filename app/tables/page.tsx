@@ -57,6 +57,7 @@ export default async function TablePage() {
       WHERE d.engine = 'Atomic' 
             /* some system tables do not have parts information */
             AND d.name IN (SELECT database FROM system.parts WHERE active = 1)
+            AND t.name IN (SELECT table FROM system.parts WHERE active = 1)
       GROUP BY d.name
     `)
 
