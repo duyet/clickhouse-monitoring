@@ -31,7 +31,7 @@ export default async function Overview() {
         </div>
       </div>
       <TabsContent value="overview" className="space-y-4">
-        <div className="grid grid-cols-2 items-stretch gap-5">
+        <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
           <ChartAvgMemory
             title="Memory Usage last 24h (avg / 10 minutes)"
             className="w-full"

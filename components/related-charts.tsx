@@ -33,10 +33,11 @@ export async function RelatedCharts({
     charts.push([chartsModule.default, props])
   }
 
-  const chartWidth = charts.length > 1 ? `w-1/${charts.length}` : 'w-full'
+  const chartWidth =
+    charts.length > 1 ? `w-full md:w-1/${charts.length}` : 'w-full'
 
   return (
-    <div className={cn('mb-5 flex flex-row gap-5', className)}>
+    <div className={cn('mb-5 flex flex-col gap-5 md:flex-row', className)}>
       {charts.map(([Chart, props], i) => (
         <Chart
           key={i}
