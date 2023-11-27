@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { Menu } from './menu'
 import { MenuDropdownStyle } from './menu-dropdown-style'
 import { MenuNavigationStyle } from './menu-navigation-style'
 import { type MenuItem } from './types'
@@ -120,5 +121,34 @@ describe('<MenuDropdownStyle />', () => {
     cy.contains('Item 2').click()
     cy.contains('Item 2.1').should('be.visible')
     cy.contains('Item 2.2').should('be.visible')
+  })
+
+  describe('<Menu />', () => {
+    it('renders on Macbook', () => {
+      // On macbook-16, the menu should be <MenuNavigationStyle />
+      cy.viewport('macbook-16')
+      cy.mount(<Menu items={items} />)
+      cy.get('a').should('have.length', 2)
+    })
+
+    it('renders on iPhone', () => {
+      // On iphone-x, the menu should be <MenuDropdownStyle />
+      cy.viewport('iphone-x')
+      cy.mount(<Menu items={items} />)
+      cy.get('button').should('be.visible')
+    })
+
+    it('responsive', () => {
+      cy.mount(<Menu items={items} />)
+
+      // On iphone-x, the menu should be <MenuDropdownStyle />
+      cy.viewport('iphone-x')
+      cy.get('button').should('be.visible')
+
+      // On macbook-16, the menu should be <MenuNavigationStyle />
+      cy.viewport('macbook-16')
+      cy.get('button').should('not.be.visible')
+      cy.get('a').should('have.length', 2)
+    })
   })
 })
