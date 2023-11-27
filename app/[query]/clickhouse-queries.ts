@@ -195,8 +195,10 @@ export const queries: Array<QueryConfig> = [
           query,
           user,
           count() as cnt,
-          sum(memory_usage) AS memory,
-          formatReadableSize(sum(memory_usage)) AS readable_memory,
+          sum(memory_usage) AS sum_memory,
+          avg(memory_usage) AS avg_memory,
+          formatReadableSize(sum_memory) AS readable_sum_memory,
+          formatReadableSize(avg_memory) AS readable_avg_memory,
           normalized_query_hash
       FROM
           clusterAllReplicas(default, system.query_log)
@@ -209,11 +211,16 @@ export const queries: Array<QueryConfig> = [
           query,
           user
       ORDER BY
-          memory DESC
+          avg_memory DESC
       LIMIT 1000
     `,
-
-    columns: ['query', 'user', 'cnt', 'readable_memory'],
+    columns: [
+      'query',
+      'user',
+      'cnt',
+      'readable_avg_memory',
+      'readable_sum_memory',
+    ],
     columnFormats: {
       query: ColumnFormat.CodeToggle,
     },

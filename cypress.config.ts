@@ -1,7 +1,7 @@
 import { defineConfig } from 'cypress'
 
 export default defineConfig({
-  projectId: "8zgiqh",
+  projectId: '8zgiqh',
   defaultCommandTimeout: 15000,
   fixturesFolder: false,
   e2e: {
