@@ -11,7 +11,7 @@ export async function ChartMergeCount({
   className,
   chartClassName,
 }: ChartProps) {
-  const data = await fetchData(`
+  const sql = `
     SELECT ${interval}(event_time) AS event_time,
            avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
            avg(CurrentMetric_PartMutation) AS avg_CurrentMetric_PartMutation
@@ -19,10 +19,12 @@ export async function ChartMergeCount({
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1
-  `)
+  `
+
+  const data = await fetchData(sql)
 
   return (
-    <ChartCard title={title} className={className}>
+    <ChartCard title={title} className={className} sql={sql}>
       <AreaChart
         className={cn('h-52', chartClassName)}
         data={data}

@@ -4,6 +4,34 @@ import { ColumnFormat } from '@/components/data-table/columns'
 
 export const queries: Array<QueryConfig> = [
   {
+    name: 'global-table-overview',
+    sql: `
+      SELECT
+          table,
+          sum(rows) AS rows,
+          max(modification_time) AS latest_modification,
+          formatReadableSize(sum(bytes)) AS data_size,
+          formatReadableSize(sum(primary_key_bytes_in_memory)) AS primary_keys_size,
+          any(engine) AS engine,
+          sum(bytes) AS bytes_size
+      FROM clusterAllReplicas(default, system.parts)
+      WHERE active
+      GROUP BY
+          database,
+          table
+      ORDER BY bytes_size DESC
+    `,
+    columns: [
+      'table',
+      'rows',
+      'data_size',
+      'latest_modification',
+      'primary_keys_size',
+      'engine',
+      'bytes_size',
+    ],
+  },
+  {
     name: 'running-queries',
     sql: `
       SELECT *,

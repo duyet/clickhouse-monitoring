@@ -86,7 +86,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
             <ListItem
               key={childItem.href}
               title={
-                <span className="flex flex-row gap-2">
+                <span className="flex flex-row items-center gap-2">
                   {childItem.title}
                   {childItem.countSql ? (
                     <ServerComponentLazy>

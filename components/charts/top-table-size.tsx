@@ -66,7 +66,7 @@ export async function ChartTopTableSize({
   return (
     <ChartCard title={title} className={className}>
       <Tabs defaultValue="by-size">
-        <TabsList>
+        <TabsList className="mb-5">
           <TabsTrigger value="by-size">Top tables by Size</TabsTrigger>
           <TabsTrigger value="by-count">Top tables by Row Count</TabsTrigger>
         </TabsList>

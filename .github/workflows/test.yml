@@ -12,6 +12,7 @@ env:
   CLICKHOST_USER: default
   CLICKHOST_PASS: ''
   CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 permissions:
   contents: read
@@ -24,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        containers: [1, 2]
+        containers: [1]
         browser: [chrome, firefox, edge]
 
     services:

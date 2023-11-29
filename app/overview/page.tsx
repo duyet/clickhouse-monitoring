@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartAvgMemory } from '@/components/charts/avg-memory'
 import { ChartDisksUsage } from '@/components/charts/disks-usage'
 import { ChartMergeCount } from '@/components/charts/merge-count'
+import ChartNewPartCreated from '@/components/charts/new-parts-created'
 import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
 import { IntervalSelect } from '@/components/interval-select'
@@ -47,10 +48,16 @@ export default async function Overview() {
           />
           <ChartTopTableSize className="w-full p-5" />
           <ChartDisksUsage
-            title="Disks Usage over last 14 days"
             className="w-full p-5"
+            title="Disks Usage over last 30 days"
+            interval="toStartOfDay"
+            lastHours={24 * 30}
+          />
+          <ChartNewPartCreated
+            className="w-full p-5"
+            title="New Parts Created over last 24 hours"
             interval="toStartOfHour"
-            lastHours={24 * 14}
+            lastHours={24}
           />
         </div>
       </TabsContent>
