@@ -30,7 +30,7 @@ jobs:
 
     services:
       clickhouse:
-        image: clickhouse/clickhouse-server:23.10
+        image: ghcr.io/duyet/docker-images:clickhouse_testing
         ports:
           - 8123:8123
           - 9000:9000
@@ -87,7 +87,7 @@ jobs:
 
     services:
       clickhouse:
-        image: clickhouse/clickhouse-server:23.10
+        image: ghcr.io/duyet/docker-images:clickhouse_testing
         ports:
           - 8123:8123
           - 9000:9000
