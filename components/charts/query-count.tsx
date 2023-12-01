@@ -12,7 +12,7 @@ export async function ChartQueryCount({
   lastHours = 24,
   ...props
 }: ChartProps) {
-  const data = await fetchData(`
+  const sql = `
     SELECT ${interval}(event_time) AS event_time,
            COUNT() AS query_count
     FROM system.query_log
@@ -20,10 +20,11 @@ export async function ChartQueryCount({
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1
-  `)
+  `
+  const data = await fetchData(sql)
 
   return (
-    <ChartCard title={title} className={className}>
+    <ChartCard title={title} className={className} sql={sql}>
       <AreaChart
         className={cn('h-52', chartClassName)}
         data={data}

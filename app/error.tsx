@@ -19,7 +19,7 @@ export default function Error({
   return (
     <ErrorAlert
       title="Something went wrong"
-      message="Checking console for more details."
+      message={error.message}
       reset={reset}
     />
   )

@@ -11,7 +11,7 @@ export async function ChartQueryCountByUser({
   chartClassName,
   ...props
 }: ChartProps) {
-  const raw = await fetchData(`
+  const sql = `
     SELECT ${interval}(event_time) AS event_time,
            user,
            COUNT(*) AS count
@@ -20,7 +20,8 @@ export async function ChartQueryCountByUser({
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1, 2
     ORDER BY 1 ASC, 3 DESC
-  `)
+  `
+  const raw = await fetchData(sql)
 
   const data = raw.reduce((acc, cur) => {
     const { event_time, user, count } = cur
@@ -41,7 +42,7 @@ export async function ChartQueryCountByUser({
   }, [] as string[])
 
   return (
-    <ChartCard title={title} className={className}>
+    <ChartCard title={title} className={className} sql={sql}>
       <BarChart
         className={chartClassName}
         data={barData}

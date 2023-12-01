@@ -1,17 +1,7 @@
-'use client'
-
 import { CodeIcon } from '@radix-ui/react-icons'
 
-import { dedent } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { DialogSQL } from '@/components/dialog-sql'
 
 interface ShowSQLButtonProps {
   sql?: string
@@ -23,8 +13,8 @@ export function ShowSQLButton({ sql }: ShowSQLButtonProps) {
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <DialogSQL
+      button={
         <Button
           variant="outline"
           className="ml-auto"
@@ -33,16 +23,8 @@ export function ShowSQLButton({ sql }: ShowSQLButtonProps) {
         >
           <CodeIcon className="h-4 w-4" />
         </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>SQL Code</DialogTitle>
-          <DialogDescription>Raw SQL code of this table</DialogDescription>
-        </DialogHeader>
-        <div className="w-fit overflow-auto">
-          <pre className="text-sm">{dedent(sql)}</pre>
-        </div>
-      </DialogContent>
-    </Dialog>
+      }
+      sql={sql}
+    />
   )
 }

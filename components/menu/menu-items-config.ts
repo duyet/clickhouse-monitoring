@@ -34,6 +34,11 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/expensive-queries-by-memory',
         description: 'Most expensive queries by memory',
       },
+      {
+        title: 'New Parts Created',
+        href: '/charts/new-parts-created',
+        description: 'How many (and how often) new parts are created',
+      },
     ],
   },
   {

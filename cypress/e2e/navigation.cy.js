@@ -1,13 +1,9 @@
 describe('Navigation', () => {
-  it('should navigate to the /tables page', () => {
-    cy.visitAndValidate('/overview', 'a[href*="merges"]', '/merges', 'Merges')
+  it('should navigate to the /merge page', () => {
+    cy.visit('/overview')
+
+    cy.get('a[href*="merges"]').click()
+    cy.url().should('include', '/merges')
+    cy.contains('Merges', { matchCase: false }).should('be.visible')
   })
-
-  // it('should navigate to the /settings page', () => {
-  //   cy.visit('/overviews')
-
-  //   cy.get('nav ul li button').contains('Settings').hover()
-  //   cy.get('a').contains('Settings').click()
-  //   cy.url().should('include', '/settings')
-  // })
 })
