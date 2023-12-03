@@ -25,6 +25,17 @@ export const menuItemsConfig: MenuItem[] = [
           'Queries that have been run including successed, failed queries with resourses usage details',
       },
       {
+        title: 'Failed Queries',
+        href: '/failed-queries',
+        description: 'Which queries have failed?',
+      },
+      {
+        title: 'Latest Common Errors',
+        href: '/common-errors',
+        description:
+          'Exploring the system.errors table to see when the error last occurred',
+      },
+      {
         title: 'Most Expensive Queries',
         href: '/expensive-queries',
         description: 'Most expensive queries by many factors',
