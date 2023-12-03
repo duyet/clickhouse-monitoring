@@ -42,6 +42,7 @@ const config: QueryConfig = {
   columnFormats: {
     part_count: ColumnFormat.Number,
     table: [ColumnFormat.Link, { href: '/tables/[database]/[table]' }],
+    engine: ColumnFormat.ColoredBadge,
   },
 }
 

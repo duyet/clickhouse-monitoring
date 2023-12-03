@@ -12,6 +12,7 @@ import type { Action } from './cells/actions/types'
 import { BadgeFormat } from './cells/badge-format'
 import { BooleanFormat } from './cells/boolean-format'
 import { CodeToggleFormat } from './cells/code-toggle-format'
+import { ColoredBadgeFormat } from './cells/colored-badge-format'
 import { LinkFormat } from './cells/link-format'
 
 export const formatCell = (
@@ -21,6 +22,9 @@ export const formatCell = (
   columnFormatOptions?: ColumnFormatOptions
 ) => {
   switch (format) {
+    case ColumnFormat.ColoredBadge:
+      return <ColoredBadgeFormat value={value} />
+
     case ColumnFormat.Code:
       return <code>{value}</code>
 

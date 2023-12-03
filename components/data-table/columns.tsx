@@ -12,15 +12,16 @@ import { formatCell } from '@/components/data-table/cell'
 import type { Action } from '@/components/data-table/cells/actions/types'
 
 export enum ColumnFormat {
-  Code = 'code',
-  Number = 'number',
+  ColoredBadge = 'colored-badge',
+  RelatedTime = 'related-time',
   NumberShort = 'number-short',
   CodeToggle = 'code-toggle',
-  RelatedTime = 'related-time',
   Duration = 'duration',
   Boolean = 'boolean',
   Action = 'action',
+  Number = 'number',
   Badge = 'badge',
+  Code = 'code',
   Link = 'link',
   None = 'none',
 }

@@ -20,9 +20,7 @@ export default async function Overview() {
       <div className="flex items-center justify-between space-y-2">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="disks" disabled>
-            Disks
-          </TabsTrigger>
+          <TabsTrigger value="disks">Disks</TabsTrigger>
           <TabsTrigger value="settings" disabled>
             Settings
           </TabsTrigger>
@@ -57,20 +55,24 @@ export default async function Overview() {
           </ServerComponentLazy>
 
           <ServerComponentLazy>
-            <ChartDisksUsage
-              className="w-full p-5"
-              title="Disks Usage over last 30 days"
-              interval="toStartOfDay"
-              lastHours={24 * 30}
-            />
-          </ServerComponentLazy>
-
-          <ServerComponentLazy>
             <ChartNewPartCreated
               className="w-full p-5"
               title="New Parts Created over last 24 hours"
               interval="toStartOfHour"
               lastHours={24}
+            />
+          </ServerComponentLazy>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="disks" className="space-y-4">
+        <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+          <ServerComponentLazy>
+            <ChartDisksUsage
+              className="w-full p-5"
+              title="Disks Usage over last 30 days"
+              interval="toStartOfDay"
+              lastHours={24 * 30}
             />
           </ServerComponentLazy>
         </div>
