@@ -14,7 +14,7 @@ export const queries: Array<QueryConfig> = [
           formatReadableSize(sum(primary_key_bytes_in_memory)) AS primary_keys_size,
           any(engine) AS engine,
           sum(bytes) AS bytes_size
-      FROM clusterAllReplicas(default, system.parts)
+      FROM system.parts
       WHERE active
       GROUP BY
           database,
@@ -228,8 +228,7 @@ export const queries: Array<QueryConfig> = [
           formatReadableSize(sum_memory) AS readable_sum_memory,
           formatReadableSize(avg_memory) AS readable_avg_memory,
           normalized_query_hash
-      FROM
-          clusterAllReplicas(default, system.query_log)
+      FROM system.query_log
       WHERE
           (event_time >= (now() - toIntervalDay(1)))
           AND query_kind = 'Select'
@@ -238,8 +237,7 @@ export const queries: Array<QueryConfig> = [
           normalized_query_hash,
           query,
           user
-      ORDER BY
-          avg_memory DESC
+      ORDER BY avg_memory DESC
       LIMIT 1000
     `,
     columns: [

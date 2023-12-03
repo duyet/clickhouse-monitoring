@@ -19,7 +19,7 @@ export function ErrorAlert({
       <AlertTitle className="text-lg">{title}</AlertTitle>
       <AlertDescription>
         <div className="mb-5 font-light">
-          <pre>
+          <pre className="overflow-auto hover:text-clip">
             <code>{message}</code>
           </pre>
         </div>

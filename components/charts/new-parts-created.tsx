@@ -20,7 +20,7 @@ export async function ChartNewPartCreated({
         formatReadableQuantity(total_written_rows) AS readable_total_written_rows,
         sum(size_in_bytes) AS total_bytes_on_disk,
         formatReadableSize(total_bytes_on_disk) AS readable_total_bytes_on_disk
-    FROM clusterAllReplicas(default, system.part_log)
+    FROM system.part_log
     WHERE (event_type = 'NewPart') AND (event_time > (now() - toIntervalHour(${lastHours})))
     GROUP BY
         event_time,

@@ -44,6 +44,7 @@ export async function SampleData({
         table,
       }
     )
+    console.log(`Sample data of ${database}.${table}`, data)
   } catch (error) {
     console.log(error)
 
@@ -92,9 +93,19 @@ export async function SampleData({
             <TableBody>
               {data.map((row, idx) => (
                 <TableRow key={idx}>
-                  {Object.values(row).map((value) => (
-                    <TableCell key={value}>{value}</TableCell>
-                  ))}
+                  {Object.values(row).map((value) => {
+                    if (typeof value === 'object') {
+                      return (
+                        <TableCell key={value}>
+                          <pre className="overflow-auto hover:text-clip">
+                            <code>{JSON.stringify(value, null, 2)}</code>
+                          </pre>
+                        </TableCell>
+                      )
+                    }
+
+                    return <TableCell key={value}>{value}</TableCell>
+                  })}
                 </TableRow>
               ))}
             </TableBody>
