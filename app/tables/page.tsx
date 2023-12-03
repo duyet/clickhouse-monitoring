@@ -3,6 +3,7 @@ import type { QueryConfig } from '@/lib/types/query-config'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ColumnFormat } from '@/components/data-table/columns'
 import { DataTable } from '@/components/data-table/data-table'
+import { ErrorAlert } from '@/components/error-alert'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 30
@@ -63,10 +64,12 @@ export default async function TablePage() {
     `)
 
     if (!databases.length) {
-      return <div>Empty</div>
+      return <ErrorAlert title="Message" message="Empty" />
     }
   } catch (e: any) {
-    return <div>Could not getting list database, error: ${e}</div>
+    return (
+      <ErrorAlert title="Could not getting list database" message={`${e}`} />
+    )
   }
 
   // Fetching all tables
