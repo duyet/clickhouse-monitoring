@@ -25,7 +25,7 @@ export function ColoredBadgeFormat({
         value
           .toString()
           .split('')
-          .reduce((acc: string, char: string) => acc + char.charCodeAt(0), 0)
+          .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
       ) % colors.length
     ]
 

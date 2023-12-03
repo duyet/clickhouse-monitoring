@@ -226,6 +226,37 @@ export const queries: Array<QueryConfig> = [
     },
   },
   {
+    name: 'common-errors',
+    description:
+      'This table `system.errors` contains error codes and the number of times each error has been triggered. Furthermore, we can see when the error last occurred coupled with the exact error message',
+    sql: `
+      SELECT
+          name,
+          code,
+          value,
+          last_error_time,
+          last_error_message,
+          last_error_trace AS remote
+      FROM system.errors
+      ORDER BY last_error_time DESC
+      LIMIT 1000
+    `,
+    columns: [
+      'name',
+      'code',
+      'value',
+      'last_error_time',
+      'last_error_message',
+      'remote',
+    ],
+    columnFormats: {
+      name: ColumnFormat.ColoredBadge,
+      code: ColumnFormat.ColoredBadge,
+      last_error_time: ColumnFormat.RelatedTime,
+      remote: ColumnFormat.Code,
+    },
+  },
+  {
     name: 'expensive-queries',
     description: 'Most expensive queries finished over last 24 hours',
     sql: `
