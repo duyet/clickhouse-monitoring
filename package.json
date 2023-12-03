@@ -40,6 +40,7 @@
     "next": "^14.0.3",
     "react": "^18",
     "react-dom": "^18",
+    "react-error-boundary": "^4.0.11",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
     "usehooks-ts": "^2.9.1"

@@ -4,10 +4,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartAvgMemory } from '@/components/charts/avg-memory'
 import { ChartDisksUsage } from '@/components/charts/disks-usage'
 import { ChartMergeCount } from '@/components/charts/merge-count'
-import ChartNewPartCreated from '@/components/charts/new-parts-created'
+import { ChartNewPartCreated } from '@/components/charts/new-parts-created'
 import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
-import { IntervalSelect } from '@/components/interval-select'
+import { ServerComponentLazy } from '@/components/server-component-lazy'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 5
@@ -27,38 +27,52 @@ export default async function Overview() {
             Settings
           </TabsTrigger>
         </TabsList>
-        <div className="flex items-center space-x-2">
-          <IntervalSelect />
-        </div>
       </div>
       <TabsContent value="overview" className="space-y-4">
         <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
-          <ChartAvgMemory
-            title="Memory Usage last 24h (avg / 10 minutes)"
-            className="w-full"
-            chartClassName="h-72"
-            interval="toStartOfTenMinutes"
-            lastHours={24}
-          />
-          <ChartQueryCountByUser title="Query Count" className="w-full p-5" />
-          <ChartMergeCount
-            title="Merge and PartMutation (Avg)"
-            className="w-full p-5"
-            chartClassName="h-72"
-          />
-          <ChartTopTableSize className="w-full p-5" />
-          <ChartDisksUsage
-            className="w-full p-5"
-            title="Disks Usage over last 30 days"
-            interval="toStartOfDay"
-            lastHours={24 * 30}
-          />
-          <ChartNewPartCreated
-            className="w-full p-5"
-            title="New Parts Created over last 24 hours"
-            interval="toStartOfHour"
-            lastHours={24}
-          />
+          <ServerComponentLazy>
+            <ChartAvgMemory
+              title="Memory Usage last 24h (avg / 10 minutes)"
+              className="w-full"
+              chartClassName="h-72"
+              interval="toStartOfTenMinutes"
+              lastHours={24}
+            />
+          </ServerComponentLazy>
+
+          <ServerComponentLazy>
+            <ChartQueryCountByUser title="Query Count" className="w-full p-5" />
+          </ServerComponentLazy>
+
+          <ServerComponentLazy>
+            <ChartMergeCount
+              title="Merge and PartMutation (Avg)"
+              className="w-full p-5"
+              chartClassName="h-72"
+            />
+          </ServerComponentLazy>
+
+          <ServerComponentLazy>
+            <ChartTopTableSize className="w-full p-5" />
+          </ServerComponentLazy>
+
+          <ServerComponentLazy>
+            <ChartDisksUsage
+              className="w-full p-5"
+              title="Disks Usage over last 30 days"
+              interval="toStartOfDay"
+              lastHours={24 * 30}
+            />
+          </ServerComponentLazy>
+
+          <ServerComponentLazy>
+            <ChartNewPartCreated
+              className="w-full p-5"
+              title="New Parts Created over last 24 hours"
+              interval="toStartOfHour"
+              lastHours={24}
+            />
+          </ServerComponentLazy>
         </div>
       </TabsContent>
     </Tabs>

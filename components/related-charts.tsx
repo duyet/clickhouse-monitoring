@@ -4,6 +4,8 @@ import type { QueryConfig } from '@/lib/types/query-config'
 import { cn } from '@/lib/utils'
 import type { ChartProps } from '@/components/charts/chart-props'
 
+import { ServerComponentLazy } from './server-component-lazy'
+
 interface RelatedChartsProps {
   relatedCharts: QueryConfig['relatedCharts']
   className?: string
@@ -39,12 +41,13 @@ export async function RelatedCharts({
   return (
     <div className={cn('mb-5 flex flex-col gap-5 md:flex-row', className)}>
       {charts.map(([Chart, props], i) => (
-        <Chart
-          key={i}
-          className={cn(chartWidth, 'p-0 shadow-none')}
-          chartClassName="h-44"
-          {...props}
-        />
+        <ServerComponentLazy key={i}>
+          <Chart
+            className={cn(chartWidth, 'p-0 shadow-none')}
+            chartClassName="h-44"
+            {...props}
+          />
+        </ServerComponentLazy>
       ))}
     </div>
   )
