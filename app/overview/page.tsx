@@ -1,8 +1,9 @@
 import { unstable_noStore as noStore } from 'next/cache'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChartAvgMemory } from '@/components/charts/avg-memory'
+import { ChartCPUUsage } from '@/components/charts/cpu-usage'
 import { ChartDisksUsage } from '@/components/charts/disks-usage'
+import { ChartMemoryUsage } from '@/components/charts/memory-usage'
 import { ChartMergeCount } from '@/components/charts/merge-count'
 import { ChartNewPartCreated } from '@/components/charts/new-parts-created'
 import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
@@ -29,8 +30,18 @@ export default async function Overview() {
       <TabsContent value="overview" className="space-y-4">
         <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
           <ServerComponentLazy>
-            <ChartAvgMemory
+            <ChartMemoryUsage
               title="Memory Usage last 24h (avg / 10 minutes)"
+              className="w-full"
+              chartClassName="h-72"
+              interval="toStartOfTenMinutes"
+              lastHours={24}
+            />
+          </ServerComponentLazy>
+
+          <ServerComponentLazy>
+            <ChartCPUUsage
+              title="CPU Usage last 24h (avg / 10 minutes)"
               className="w-full"
               chartClassName="h-72"
               interval="toStartOfTenMinutes"

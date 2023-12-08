@@ -1,5 +1,6 @@
 import { CodeIcon } from '@radix-ui/react-icons'
 
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,7 +19,7 @@ interface ChartCardProps {
 
 export function ChartCard({ title, className, sql, children }: ChartCardProps) {
   return (
-    <Card className={className}>
+    <Card className={cn('rounded-md', className)}>
       {title ? (
         <CardHeader className="p-2">
           <CardDescription className="group flex flex-row items-center justify-between">
