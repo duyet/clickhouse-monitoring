@@ -20,7 +20,6 @@ export function LinkFormat({ row, value, options }: LinkFormatProps) {
     if (matches) {
       matches.forEach((match) => {
         const key = match.replace('[', '').replace(']', '').trim()
-        console.debug(href, 'Found match', match, key, row.getValue(key))
         href = href.replace(match, row.getValue(key))
       })
     }

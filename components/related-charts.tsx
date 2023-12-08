@@ -8,11 +8,13 @@ import { ServerComponentLazy } from './server-component-lazy'
 
 interface RelatedChartsProps {
   relatedCharts: QueryConfig['relatedCharts']
+  maxChartsPerRow?: number
   className?: string
 }
 
 export async function RelatedCharts({
   relatedCharts,
+  maxChartsPerRow = 2,
   className,
 }: RelatedChartsProps) {
   // Related charts
@@ -35,8 +37,8 @@ export async function RelatedCharts({
     charts.push([chartsModule.default, props])
   }
 
-  const chartWidth =
-    charts.length > 1 ? `w-full md:w-1/${charts.length}` : 'w-full'
+  const w = charts.length > maxChartsPerRow ? maxChartsPerRow : charts.length
+  const chartWidth = charts.length > 1 ? `w-full md:w-1/${w}` : 'w-full'
 
   return (
     <div className={cn('mb-5 flex flex-col gap-5 md:flex-row', className)}>

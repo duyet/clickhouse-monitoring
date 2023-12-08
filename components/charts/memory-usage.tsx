@@ -4,7 +4,7 @@ import { AreaChart } from '@/components/tremor'
 
 import { ChartCard } from '../chart-card'
 
-export async function ChartAvgMemory({
+export async function ChartMemoryUsage({
   title,
   interval = 'toStartOfTenMinutes',
   lastHours = 24,
@@ -34,4 +34,4 @@ export async function ChartAvgMemory({
   )
 }
 
-export default ChartAvgMemory
+export default ChartMemoryUsage
