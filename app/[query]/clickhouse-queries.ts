@@ -505,6 +505,43 @@ export const queries: Array<QueryConfig> = [
       ],
     ],
   },
+  {
+    name: 'backups',
+    description: `To restore a backup:
+      RESTORE TABLE data_lake.crash_incidents AS data_lake.crash_incidents_restore FROM Disk('s3_backup', 'data_lake.crash_incidents_20231212')`,
+    sql: `
+      SELECT *,
+        formatReadableSize(total_size) as readable_total_size,
+        formatReadableSize(uncompressed_size) as readable_uncompressed_size,
+        formatReadableSize(compressed_size) as readable_compressed_size,
+        formatReadableSize(bytes_read) as readable_bytes_read,
+        formatReadableQuantity(files_read) as readable_files_read,
+        formatReadableQuantity(num_entries) as readable_num_entries
+      FROM system.backups
+      ORDER BY start_time DESC
+    `,
+    columns: [
+      'id',
+      'name',
+      'status',
+      'error',
+      'start_time',
+      'end_time',
+      'num_files',
+      'readable_total_size',
+      'num_entries',
+      'readable_uncompressed_size',
+      'readable_compressed_size',
+      'readable_files_read',
+      'readable_bytes_read',
+    ],
+    columnFormats: {
+      start_time: ColumnFormat.RelatedTime,
+      end_time: ColumnFormat.RelatedTime,
+      error: ColumnFormat.Code,
+      ProfileEvents: ColumnFormat.Code,
+    },
+  },
 ]
 
 export const getQueryConfigByName = (name: string) => {

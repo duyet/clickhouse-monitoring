@@ -1,1 +1,1 @@
-export type Action = 'kill-query'
+export type Action = 'kill-query' | 'restore-backup' | 'delete-backup'
