@@ -56,7 +56,7 @@ function SingleItem({ item }: { item: MenuItem }) {
           <span className="flex flex-row items-center gap-2">
             {item.title}
             {item.countSql ? (
-              <ServerComponentLazy>
+              <ServerComponentLazy fallback={''}>
                 <CountBadge sql={item.countSql} />
               </ServerComponentLazy>
             ) : null}
@@ -74,7 +74,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
         <div className="flex flex-row items-center gap-2">
           {item.title}
           {item.countSql ? (
-            <ServerComponentLazy>
+            <ServerComponentLazy fallback={''}>
               <CountBadge sql={item.countSql} />
             </ServerComponentLazy>
           ) : null}
@@ -89,7 +89,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
                 <span className="flex flex-row items-center gap-2">
                   {childItem.title}
                   {childItem.countSql ? (
-                    <ServerComponentLazy>
+                    <ServerComponentLazy fallback={''}>
                       <CountBadge sql={childItem.countSql} />
                     </ServerComponentLazy>
                   ) : null}

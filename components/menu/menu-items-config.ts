@@ -84,6 +84,12 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'The values of disk settings which can be viewed in the table `system.disks`',
       },
+      {
+        title: 'Backups',
+        href: '/backups',
+        description:
+          'Backups and restores tables and databases. The information is taken from the system.backups table',
+      },
     ],
   },
 ]
