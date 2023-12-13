@@ -517,14 +517,13 @@ export const queries: Array<QueryConfig> = [
         formatReadableSize(bytes_read) as readable_bytes_read,
         formatReadableQuantity(files_read) as readable_files_read,
         formatReadableQuantity(num_entries) as readable_num_entries
-      FROM system.backups
+      FROM system.backup_log
       ORDER BY start_time DESC
     `,
     columns: [
       'id',
       'name',
       'status',
-      'error',
       'start_time',
       'end_time',
       'num_files',
@@ -534,8 +533,10 @@ export const queries: Array<QueryConfig> = [
       'readable_compressed_size',
       'readable_files_read',
       'readable_bytes_read',
+      'error',
     ],
     columnFormats: {
+      status: ColumnFormat.ColoredBadge,
       start_time: ColumnFormat.RelatedTime,
       end_time: ColumnFormat.RelatedTime,
       error: ColumnFormat.Code,
