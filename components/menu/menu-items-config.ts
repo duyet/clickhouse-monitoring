@@ -88,7 +88,7 @@ export const menuItemsConfig: MenuItem[] = [
         title: 'Backups',
         href: '/backups',
         description:
-          'Backups and restores tables and databases. The information is taken from the system.backups table',
+          'Backups and restores tables and databases. The information is taken from the system.backup_log table',
       },
     ],
   },
