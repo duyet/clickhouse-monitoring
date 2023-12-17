@@ -508,7 +508,7 @@ export const queries: Array<QueryConfig> = [
   {
     name: 'backups',
     description: `To restore a backup:
-      RESTORE TABLE data_lake.crash_incidents AS data_lake.crash_incidents_restore FROM Disk('s3_backup', 'data_lake.crash_incidents_20231212')`,
+      RESTORE TABLE data_lake.events AS data_lake.events_restore FROM Disk('s3_backup', 'data_lake.events_20231212')`,
     sql: `
       SELECT *,
         formatReadableSize(total_size) as readable_total_size,
