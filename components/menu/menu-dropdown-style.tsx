@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { menuItemsConfig } from './menu-items-config'
-import type { MenuItem } from './types'
+import { type MenuItem } from './types'
 
 export interface MenuProps {
   items?: MenuItem[]

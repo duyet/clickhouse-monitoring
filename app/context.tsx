@@ -9,7 +9,7 @@ import {
 } from 'react'
 import { usePathname } from 'next/navigation'
 
-import type { ClickHouseInterval } from '@/lib/types/clickhouse-interval'
+import { type ClickHouseInterval } from '@/lib/types/clickhouse-interval'
 
 export interface ContextValue {
   interval: ClickHouseInterval

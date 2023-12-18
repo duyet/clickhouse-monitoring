@@ -8,12 +8,10 @@ import {
   Text,
   AreaChart as TremorAreaChart,
   BarChart as TremorBarChart,
-  BarList as TremorBarList,
-} from '@tremor/react'
-import type {
-  AreaChartProps as TremorAreaChartProps,
   BarChartProps as TremorBarChartProps,
+  BarList as TremorBarList,
   BarListProps as TremorBarListProps,
+  type AreaChartProps as TremorAreaChartProps,
 } from '@tremor/react'
 
 import {
