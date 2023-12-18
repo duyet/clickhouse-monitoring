@@ -63,7 +63,7 @@ export const menuItemsConfig: MenuItem[] = [
     countSql: `SELECT COUNT() FROM system.merges WHERE 1 = 1`,
   },
   {
-    title: 'Settings',
+    title: 'More',
     href: '',
     items: [
       {
