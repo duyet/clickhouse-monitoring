@@ -37,15 +37,15 @@ export async function RelatedCharts({
     charts.push([chartsModule.default, props])
   }
 
-  const w = charts.length > maxChartsPerRow ? maxChartsPerRow : charts.length
-  const chartWidth = charts.length > 1 ? `w-full md:w-1/${w}` : 'w-full'
+  const col = charts.length > maxChartsPerRow ? maxChartsPerRow : charts.length
+  const gridCols = `grid-cols-1 md:grid-cols-${col}`
 
   return (
-    <div className={cn('mb-5 flex flex-col gap-5 md:flex-row', className)}>
+    <div className={cn('mb-5 grid gap-5', gridCols, className)}>
       {charts.map(([Chart, props], i) => (
         <ServerComponentLazy key={i}>
           <Chart
-            className={cn(chartWidth, 'p-0 shadow-none')}
+            className="w-full p-0 shadow-none"
             chartClassName="h-44"
             {...props}
           />
