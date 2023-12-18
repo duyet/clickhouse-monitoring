@@ -11,7 +11,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/components/ui/use-toast'
 
 import { killQuery } from './actions'
-import type { Action } from './types'
+import { type Action } from './types'
 
 type Message = {
   message: string

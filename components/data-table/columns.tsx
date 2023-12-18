@@ -6,10 +6,10 @@ import {
 } from '@radix-ui/react-icons'
 import { ColumnDef } from '@tanstack/react-table'
 
-import type { QueryConfig } from '@/lib/types/query-config'
+import { type QueryConfig } from '@/lib/types/query-config'
 import { Button } from '@/components/ui/button'
 import { formatCell } from '@/components/data-table/cell'
-import type { Action } from '@/components/data-table/cells/actions/types'
+import { type Action } from '@/components/data-table/cells/actions/types'
 
 export enum ColumnFormat {
   ColoredBadge = 'colored-badge',

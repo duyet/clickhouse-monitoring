@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import type { Action } from './types'
+import { type Action } from './types'
 
 export interface ActionMenuProps {
   row?: any

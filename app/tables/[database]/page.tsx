@@ -1,5 +1,5 @@
 import { fetchData } from '@/lib/clickhouse'
-import type { QueryConfig } from '@/lib/types/query-config'
+import { type QueryConfig } from '@/lib/types/query-config'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ColumnFormat } from '@/components/data-table/columns'
 import { DataTable } from '@/components/data-table/data-table'

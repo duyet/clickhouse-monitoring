@@ -10,10 +10,10 @@ import {
   SortingState,
   useReactTable,
   VisibilityState,
+  type RowData,
 } from '@tanstack/react-table'
-import type { RowData } from '@tanstack/react-table'
 
-import type { QueryConfig } from '@/lib/types/query-config'
+import { type QueryConfig } from '@/lib/types/query-config'
 import { uniq } from '@/lib/utils'
 import {
   Table,

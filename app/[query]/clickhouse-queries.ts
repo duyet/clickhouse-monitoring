@@ -401,6 +401,12 @@ export const queries: Array<QueryConfig> = [
     },
     relatedCharts: [
       [
+        'total-memory-used-by-merges',
+        {
+          title: 'Memory used by merges currently',
+        },
+      ],
+      [
         'merge-count',
         {
           title: 'Merge over last 12 hours (avg / 5 minutes)',
@@ -471,6 +477,8 @@ export const queries: Array<QueryConfig> = [
     sql: `
       SELECT name,
              path,
+             (total_space - unreserved_space) AS used_space,
+             formatReadableSize(used_space) AS readable_used_space,
              unreserved_space,
              formatReadableSize(unreserved_space) AS readable_unreserved_space,
              free_space,
@@ -485,16 +493,23 @@ export const queries: Array<QueryConfig> = [
     columns: [
       'name',
       'path',
+      'readable_used_space',
+      'readable_total_space',
       'readable_unreserved_space',
       'readable_free_space',
       'percent_free',
-      'readable_total_space',
       'keep_free_space',
     ],
     columnFormats: {
       name: ColumnFormat.ColoredBadge,
     },
     relatedCharts: [
+      [
+        'disk-size',
+        {
+          title: 'Disk Used',
+        },
+      ],
       [
         'disks-usage',
         {
@@ -542,6 +557,21 @@ export const queries: Array<QueryConfig> = [
       error: ColumnFormat.Code,
       ProfileEvents: ColumnFormat.Code,
     },
+    relatedCharts: [
+      [
+        'backup-size',
+        {
+          title: 'Backup over last day',
+          lastHours: 24,
+        },
+      ],
+      [
+        'backup-size',
+        {
+          title: 'All backup',
+        },
+      ],
+    ],
   },
 ]
 

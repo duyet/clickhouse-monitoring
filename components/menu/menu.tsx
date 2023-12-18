@@ -3,7 +3,7 @@ import React from 'react'
 import { MenuDropdownStyle } from './menu-dropdown-style'
 import { menuItemsConfig } from './menu-items-config'
 import { MenuNavigationStyle } from './menu-navigation-style'
-import type { MenuItem } from './types'
+import { type MenuItem } from './types'
 
 export interface MenuProps {
   items?: MenuItem[]

@@ -1,7 +1,7 @@
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 import { ChartCard } from '@/components/chart-card'
-import type { ChartProps } from '@/components/charts/chart-props'
+import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor'
 
 export async function ChartQueryCount({

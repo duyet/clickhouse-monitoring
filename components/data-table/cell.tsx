@@ -1,4 +1,4 @@
-import type { LinkProps } from 'next/link'
+import { type LinkProps } from 'next/link'
 
 import dayjs from '@/lib/dayjs'
 import { formatReadableQuantity } from '@/lib/format-readable'
@@ -8,7 +8,7 @@ import {
 } from '@/components/data-table/columns'
 
 import { ActionFormat } from './cells/action-format'
-import type { Action } from './cells/actions/types'
+import { type Action } from './cells/actions/types'
 import { BadgeFormat } from './cells/badge-format'
 import { BooleanFormat } from './cells/boolean-format'
 import { CodeToggleFormat } from './cells/code-toggle-format'
