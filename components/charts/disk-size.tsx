@@ -3,7 +3,12 @@ import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { CardMetric } from '@/components/tremor'
 
-export async function ChartDiskSize({ title, className }: ChartProps) {
+export async function ChartDiskSize({
+  name,
+  title,
+  className,
+}: ChartProps & { name?: string }) {
+  const condition = name ? `WHERE name = '${name}'` : ''
   const sql = `
     SELECT name,
            (total_space - unreserved_space) AS used_space,
@@ -11,6 +16,7 @@ export async function ChartDiskSize({ title, className }: ChartProps) {
            total_space,
            formatReadableSize(total_space) AS readable_total_space
     FROM system.disks
+    ${condition}
     ORDER BY name
   `
   const data = await fetchData(sql)

@@ -70,26 +70,27 @@ export default async function ColumnsPage({
   return (
     <div className="flex flex-col">
       <div>
-        <div className="mb-3 flex flex-row gap-3">
-          <Link href="/tables">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-muted-foreground flex flex-row gap-2"
-            >
-              <ArrowLeftIcon className="h-3 w-3" />
-              Back to tables
-            </Button>
-          </Link>
-
-          <AlternativeTables database={database} table={table} />
-          <ShowDDL database={database} table={table} />
-          <TableInfo database={database} table={table} />
-          <SampleData database={database} table={table} />
-        </div>
-
         <DataTable
           title={`${database}.${table}`}
+          extras={
+            <div className="mb-3 flex flex-row gap-3">
+              <Link href={`/tables/${database}`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-muted-foreground flex flex-row gap-2"
+                >
+                  <ArrowLeftIcon className="h-3 w-3" />
+                  Back to {database}
+                </Button>
+              </Link>
+
+              <AlternativeTables database={database} table={table} />
+              <ShowDDL database={database} table={table} />
+              <TableInfo database={database} table={table} />
+              <SampleData database={database} table={table} />
+            </div>
+          }
           config={config}
           data={columns}
         />

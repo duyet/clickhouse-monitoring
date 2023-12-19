@@ -2,6 +2,7 @@ import { unstable_noStore as noStore } from 'next/cache'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartCPUUsage } from '@/components/charts/cpu-usage'
+import ChartDiskSize from '@/components/charts/disk-size'
 import { ChartDisksUsage } from '@/components/charts/disks-usage'
 import { ChartMemoryUsage } from '@/components/charts/memory-usage'
 import { ChartMergeCount } from '@/components/charts/merge-count'
@@ -22,9 +23,7 @@ export default async function Overview() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="disks">Disks</TabsTrigger>
-          <TabsTrigger value="settings" disabled>
-            Settings
-          </TabsTrigger>
+          <TabsTrigger value="backups">Backups</TabsTrigger>
         </TabsList>
       </div>
       <TabsContent value="overview" className="space-y-4">
@@ -79,12 +78,23 @@ export default async function Overview() {
       <TabsContent value="disks" className="space-y-4">
         <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
           <ServerComponentLazy>
+            <ChartDiskSize className="w-full p-5" title="Disk Size" />
+          </ServerComponentLazy>
+          <ServerComponentLazy>
             <ChartDisksUsage
               className="w-full p-5"
               title="Disks Usage over last 30 days"
               interval="toStartOfDay"
               lastHours={24 * 30}
             />
+          </ServerComponentLazy>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="backups" className="space-y-4">
+        <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+          <ServerComponentLazy>
+            <ChartDiskSize className="w-full p-5" title="Disk Size" />
           </ServerComponentLazy>
         </div>
       </TabsContent>
