@@ -4,6 +4,8 @@ import { fetchData } from '@/lib/clickhouse'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ErrorAlert } from '@/components/error-alert'
 
+import { listDatabases } from '../queries'
+
 interface TableListProps {
   params: {
     database: string
@@ -18,17 +20,7 @@ export default async function TableListPage({
   let databases: { name: string; count: number }[] = []
   try {
     // List database names and number of tables
-    databases = await fetchData(`
-      SELECT d.name as name,
-             countDistinct(t.name) as count
-      FROM system.databases AS d
-      LEFT JOIN system.tables AS t ON d.name = t.database
-      WHERE d.engine = 'Atomic' 
-            /* some system tables do not have parts information */
-            AND d.name IN (SELECT database FROM system.parts WHERE active = 1)
-            AND t.name IN (SELECT table FROM system.parts WHERE active = 1)
-      GROUP BY d.name
-    `)
+    databases = await fetchData(listDatabases)
 
     if (!databases.length) {
       return <ErrorAlert title="Message" message="Empty" />
