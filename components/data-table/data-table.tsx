@@ -34,6 +34,7 @@ import { ShowSQLButton } from './buttons/show-sql'
 
 interface DataTableProps<TData extends RowData> {
   title?: string
+  extras?: React.ReactNode
   config: QueryConfig
   data: TData[]
   defaultPageSize?: number
@@ -42,6 +43,7 @@ interface DataTableProps<TData extends RowData> {
 
 export function DataTable<TData extends RowData, TValue>({
   title = '',
+  extras,
   config,
   data,
   defaultPageSize = 50,
@@ -108,6 +110,7 @@ export function DataTable<TData extends RowData, TValue>({
           <ColumnVisibilityButton table={table} />
         </div>
       </div>
+      {extras}
       <div className="mb-5 rounded-md border">
         <Table>
           <TableHeader>

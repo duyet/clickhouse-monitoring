@@ -1,6 +1,18 @@
-describe('Page /tables', () => {
+// describe('Page /tables', () => {
+//   it('should redirect to /tables/[database]', () => {
+//     cy.visit('/tables', { failOnStatusCode: false })
+//
+//     cy.contains('Redirecting to /tables/')
+//
+//     // Should redirect to /tables/[database]
+//     cy.url().should('match', /\/tables\/\w+/)
+//   })
+// })
+
+// Required: https://github.com/duyet/docker-images/blob/master/clickhouse-server/clickhouse_testing/docker-entrypoint-initdb.d/init-db.sh
+describe('Page /tables/data_lake', () => {
   it('renders', () => {
-    cy.visit('/tables')
+    cy.visit('/tables/data_lake')
 
     // Should have table
     cy.get('table').should('exist')
@@ -16,10 +28,13 @@ describe('Page /tables', () => {
   })
 
   it('should able to switch tabs', () => {
-    cy.visit('/tables')
+    cy.visit('/tables/data_lake')
 
     // Click on "system" tab
     cy.get('[role="tab"]').contains('system').click()
+
+    // Going to /tables/system
+    cy.location('pathname').should('match', /\/tables\/system/)
 
     // Should have "system" tab active
     cy.get('[role="tab"]')
