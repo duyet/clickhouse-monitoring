@@ -7,15 +7,17 @@ interface ErrorAlertProps {
   title?: string
   message?: string | React.ReactNode | React.ReactNode[]
   reset?: () => void
+  className?: string
 }
 
 export function ErrorAlert({
   title = 'Something went wrong!',
   message = 'Checking console for more details.',
   reset,
+  className,
 }: ErrorAlertProps) {
   return (
-    <Alert>
+    <Alert className={className}>
       <AlertTitle className="text-lg">{title}</AlertTitle>
       <AlertDescription>
         <div className="mb-5 font-light">

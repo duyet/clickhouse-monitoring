@@ -9,7 +9,9 @@ import { DataTable } from '@/components/data-table/data-table'
 
 import { AlternativeTables } from './alternative-tables'
 import { SampleData } from './sample-data'
+import { SampleDataButton } from './sample-data-button'
 import { ShowDDL } from './show-ddl-button'
+import { TableDDL } from './table-ddl'
 import { TableInfo } from './table-info'
 
 const config: QueryConfig = {
@@ -53,22 +55,26 @@ const config: QueryConfig = {
 }
 
 const Extras = ({ database, table }: { database: string; table: string }) => (
-  <div className="mb-3 flex flex-row gap-3">
-    <Link href={`/tables/${database}`}>
-      <Button
-        variant="outline"
-        size="sm"
-        className="text-muted-foreground flex flex-row gap-2"
-      >
-        <ArrowLeftIcon className="h-3 w-3" />
-        Back to {database}
-      </Button>
-    </Link>
+  <div className="mb-3 flex flex-row justify-between gap-3">
+    <div className="flex flex-row gap-3">
+      <Link href={`/tables/${database}`}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-muted-foreground flex flex-row gap-2"
+        >
+          <ArrowLeftIcon className="h-3 w-3" />
+          Back to {database}
+        </Button>
+      </Link>
+      <AlternativeTables database={database} table={table} />
+    </div>
 
-    <AlternativeTables database={database} table={table} />
-    <ShowDDL database={database} table={table} />
-    <TableInfo database={database} table={table} />
-    <SampleData database={database} table={table} />
+    <div className="flex flex-row gap-3">
+      <ShowDDL database={database} table={table} />
+      <TableInfo database={database} table={table} />
+      <SampleDataButton database={database} table={table} />
+    </div>
   </div>
 )
 
@@ -94,20 +100,44 @@ export default async function ColumnsPage({
   )
 
   if (engine?.[0]?.engine === 'MaterializedView') {
-    return 'MaterializedView'
+    return (
+      <div className="flex flex-col">
+        <Extras database={database} table={table} />
+
+        <div className="mt-3 w-fit overflow-auto">
+          <h2 className="mb-3 text-lg font-semibold">
+            MaterializedView:{' '}
+            <code>
+              {database}.{table}
+            </code>
+          </h2>
+          <TableDDL database={database} table={table} />
+        </div>
+      </div>
+    )
   } else if (engine?.[0]?.engine === 'Dictionary') {
     return (
       <div className="flex flex-col">
         <Extras database={database} table={table} />
 
         <div className="mt-3 w-fit overflow-auto">
-          <h2 className="text-lg font-semibold">Dictionary definition</h2>
-          <pre className="text-sm">...</pre>
+          <h2 className="mb-3 text-lg font-semibold">Dictionary DDL</h2>
+          <TableDDL database={database} table={table} />
         </div>
 
-        <div className="mt-3 w-fit overflow-auto">
-          <h2 className="text-lg font-semibold">Dictionary usage</h2>
-          <pre className="text-sm">...</pre>
+        <div className="mt-6 w-fit overflow-auto">
+          <h2 className="mb-3 text-lg font-semibold">Dictionary Usage</h2>
+          <pre className="text-sm">
+            <code>
+              SELECT dictGet(&apos;{database}.{table}&apos;, &apos;key&apos;,
+              &apos;value&apos;);
+            </code>
+          </pre>
+        </div>
+
+        <div className="mt-6 w-fit overflow-auto">
+          <h2 className="mb-3 text-lg font-semibold">Sample Data</h2>
+          <SampleData database={database} table={table} />
         </div>
       </div>
     )
@@ -119,11 +149,18 @@ export default async function ColumnsPage({
   })
 
   return (
-    <DataTable
-      title={`${database}.${table}`}
-      extras={<Extras database={database} table={table} />}
-      config={config}
-      data={columns}
-    />
+    <div>
+      <DataTable
+        title={`${database}.${table}`}
+        extras={<Extras database={database} table={table} />}
+        config={config}
+        data={columns}
+      />
+
+      <div className="mt-5 w-fit overflow-auto">
+        <h2 className="text-lg font-semibold">Sample Data</h2>
+        <SampleData database={database} table={table} limit={5} />
+      </div>
+    </div>
   )
 }
