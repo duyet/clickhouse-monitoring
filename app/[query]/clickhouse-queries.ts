@@ -78,6 +78,12 @@ export const queries: Array<QueryConfig> = [
           showLegend: false,
         },
       ],
+      [
+        'summary-used-by-running-queries',
+        {
+          title: 'Summary of current running queries',
+        },
+      ],
     ],
   },
   {

@@ -155,11 +155,57 @@ export function CardMetric({
   return (
     <div className={className}>
       <Metric>{currentReadable || current}</Metric>
-      <div className="mt-4 flex flex-row justify-between">
-        <Text className="truncate">{currentReadable || current}</Text>
-        <Text>{targetReadable || target}</Text>
+
+      <div className="flex flex-col justify-between">
+        <div className="mt-4 flex flex-row justify-between">
+          <Text className="truncate">{currentReadable || current}</Text>
+          <Text>{targetReadable || target}</Text>
+        </div>
+        <ProgressBar value={percent} className="mt-2" />
       </div>
-      <ProgressBar value={percent} className="mt-2" />
+    </div>
+  )
+}
+
+export interface CardMultiMetricsProps {
+  primary?: string | number
+  currents: number[]
+  targets: number[]
+  currentReadables?: string[]
+  targetReadables?: string[]
+  className?: string
+}
+
+export function CardMultiMetrics({
+  primary,
+  currents,
+  targets,
+  currentReadables,
+  targetReadables,
+  className,
+}: CardMultiMetricsProps) {
+  return (
+    <div className={className}>
+      <Metric>{primary}</Metric>
+
+      <div className="flex flex-col justify-between">
+        {currents.map((current, i) => {
+          const target = targets[i]
+          const currentReadable = currentReadables?.[i]
+          const targetReadable = targetReadables?.[i]
+          const percent = (current / target) * 100
+
+          return (
+            <div key={i}>
+              <div className="mt-4 flex flex-row justify-between">
+                <Text className="truncate">{currentReadable || current}</Text>
+                <Text>{targetReadable || target}</Text>
+              </div>
+              <ProgressBar value={percent} className="mt-2" />
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

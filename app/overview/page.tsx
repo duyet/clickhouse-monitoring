@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from 'next/cache'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartCPUUsage } from '@/components/charts/cpu-usage'
-import ChartDiskSize from '@/components/charts/disk-size'
+import { ChartDiskSize } from '@/components/charts/disk-size'
 import { ChartDisksUsage } from '@/components/charts/disks-usage'
 import { ChartMemoryUsage } from '@/components/charts/memory-usage'
 import { ChartMergeCount } from '@/components/charts/merge-count'
