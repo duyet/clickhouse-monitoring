@@ -1,4 +1,4 @@
-import { CodeIcon } from '@radix-ui/react-icons'
+import { TableIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -11,19 +11,21 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 
-import { TableDDL } from './table-ddl'
+import { SampleData } from './sample-data'
 
-interface ShowSQLButtonProps {
+interface SampleDataButtonProps {
   database: string
   table: string
+  limit?: number
   className?: string
 }
 
-export async function ShowDDL({
+export async function SampleDataButton({
   database,
   table,
+  limit = 20,
   className,
-}: ShowSQLButtonProps) {
+}: SampleDataButtonProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -34,22 +36,21 @@ export async function ShowDDL({
             'text-muted-foreground flex flex-row items-center gap-2',
             className
           )}
-          aria-label="Show DDL"
-          title="Show Table DDL Table Definition"
+          aria-label="Table Info"
+          title="More about this table"
         >
-          <CodeIcon className="h-3 w-3" />
-          Show DDL
+          <TableIcon className="h-3 w-3" />
+          Sample Data
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-max">
         <DialogHeader>
-          <DialogTitle>SQL DDL Code</DialogTitle>
+          <DialogTitle>Sample Data</DialogTitle>
           <DialogDescription>
-            CREATE query used for creating this table
+            First {limit} rows of {database}.{table}
           </DialogDescription>
         </DialogHeader>
-
-        <TableDDL database={database} table={table} />
+        <SampleData database={database} table={table} limit={limit} />
       </DialogContent>
     </Dialog>
   )
