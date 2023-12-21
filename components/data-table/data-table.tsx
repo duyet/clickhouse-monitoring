@@ -26,7 +26,7 @@ import {
 import {
   getColumnDefs,
   normalizeColumnName,
-} from '@/components/data-table/columns'
+} from '@/components/data-table/column-defs'
 import { DataTablePagination } from '@/components/data-table/pagination'
 
 import { ColumnVisibilityButton } from './buttons/column-visibility'

@@ -35,6 +35,7 @@ export const listTables = `
              table,
              engine
   ),
+
   tables_from_tables AS (
     SELECT database,
            name AS table,
@@ -42,6 +43,7 @@ export const listTables = `
     FROM system.tables
     WHERE database = {database: String}
   ),
+
   summary AS (
     SELECT tables_from_tables.*,
            tables_from_parts.*
@@ -51,10 +53,10 @@ export const listTables = `
   )
   
   SELECT *,
-    100 * compressed / sum(compressed) OVER () AS pct_compressed,
-    100 * uncompressed / sum(uncompressed) OVER () AS pct_uncompressed,
-    100 * total_rows / sum(total_rows) OVER () AS pct_total_rows,
-    100 * part_count / sum(part_count) OVER () AS pct_part_count,
-    100 * compr_rate / sum(compr_rate) OVER () AS pct_compr_rate
+    round(100 * compressed / max(compressed) OVER ()) AS pct_compressed,
+    round(100 * uncompressed / max(uncompressed) OVER ()) AS pct_uncompressed,
+    round(100 * total_rows / max(total_rows) OVER ()) AS pct_total_rows,
+    round(100 * part_count / max(part_count) OVER ()) AS pct_part_count,
+    round(100 * compr_rate / max(compr_rate) OVER ()) AS pct_compr_rate
   FROM summary
 `

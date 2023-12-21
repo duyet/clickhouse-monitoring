@@ -2,7 +2,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import type {
   ColumnFormat,
   ColumnFormatOptions,
-} from '@/components/data-table/columns'
+} from '@/components/data-table/column-defs'
 
 export interface QueryConfig {
   name: string

@@ -1,6 +1,6 @@
 import { QUERY_COMMENT } from '@/lib/clickhouse'
-import type { QueryConfig } from '@/lib/types/query-config'
-import { ColumnFormat } from '@/components/data-table/columns'
+import { type QueryConfig } from '@/lib/types/query-config'
+import { ColumnFormat } from '@/components/data-table/column-defs'
 
 export const queries: Array<QueryConfig> = [
   {

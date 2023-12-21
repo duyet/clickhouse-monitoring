@@ -4,7 +4,7 @@ import { ArrowLeftIcon } from 'lucide-react'
 import { fetchData } from '@/lib/clickhouse'
 import { type QueryConfig } from '@/lib/types/query-config'
 import { Button } from '@/components/ui/button'
-import { ColumnFormat } from '@/components/data-table/columns'
+import { ColumnFormat } from '@/components/data-table/column-defs'
 import { DataTable } from '@/components/data-table/data-table'
 
 import { AlternativeTables } from './alternative-tables'
@@ -41,10 +41,10 @@ const config: QueryConfig = {
       ORDER BY compressed DESC
     )
     SELECT *,
-           100 * compressed / (SELECT sum(compressed) FROM summary) AS pct_compressed,
-           100 * uncompressed / (SELECT sum(uncompressed) FROM summary) AS pct_uncompressed,
-           100 * rows_cnt / (SELECT sum(rows_cnt) FROM summary) AS pct_rows_cnt,
-           100 * compr_ratio / (SELECT sum(compr_ratio) FROM summary) AS pct_compr_ratio
+           round(100 * compressed / max(compressed) OVER ()) AS pct_compressed,
+           round(100 * uncompressed / max(uncompressed) OVER()) AS pct_uncompressed,
+           round(100 * rows_cnt / max(rows_cnt) OVER ()) AS pct_rows_cnt,
+           round(100 * compr_ratio / max(compr_ratio) OVER ()) AS pct_compr_ratio
     FROM summary
   `,
   columns: [
