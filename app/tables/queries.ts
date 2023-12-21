@@ -34,20 +34,17 @@ export const listTables = `
     GROUP BY database,
              table,
              engine
-    ORDER BY database, compressed_bytes DESC
   ),
   tables_from_tables AS (
-    SELECT
-        database,
-        name AS table,
-        engine
+    SELECT database,
+           name AS table,
+           engine
     FROM system.tables
     WHERE database = {database: String}
   )
-  SELECT tables_from_tables.database,
-          tables_from_tables.table,
-          tables_from_tables.engine,
-          tables_from_parts.*
+  SELECT tables_from_tables.*,
+         tables_from_parts.*
   FROM tables_from_tables
   LEFT JOIN tables_from_parts USING database, table
+  ORDER BY database, compressed_bytes DESC
 `

@@ -8,6 +8,11 @@ export const menuItemsConfig: MenuItem[] = [
     href: '/overview',
   },
   {
+    title: 'Tables',
+    href: '/tables',
+    countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
+  },
+  {
     title: 'Queries Monitor',
     href: '',
     countSql: `SELECT COUNT() FROM system.processes WHERE is_cancelled = 0 AND query NOT LIKE '%${QUERY_COMMENT}%'`,
@@ -51,11 +56,6 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'How many (and how often) new parts are created',
       },
     ],
-  },
-  {
-    title: 'Tables',
-    href: '/tables',
-    countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
   },
   {
     title: 'Merges',
