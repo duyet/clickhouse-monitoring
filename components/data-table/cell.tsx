@@ -9,6 +9,7 @@ import {
 
 import { ActionFormat } from './cells/action-format'
 import { type Action } from './cells/actions/types'
+import { BackgroundBarFormat } from './cells/background-bar-format'
 import { BadgeFormat } from './cells/badge-format'
 import { BooleanFormat } from './cells/boolean-format'
 import { CodeToggleFormat } from './cells/code-toggle-format'
@@ -16,12 +17,24 @@ import { ColoredBadgeFormat } from './cells/colored-badge-format'
 import { LinkFormat } from './cells/link-format'
 
 export const formatCell = (
+  table: any,
   row: any,
   value: any,
+  columnName: string,
   format: ColumnFormat,
   columnFormatOptions?: ColumnFormatOptions
 ) => {
   switch (format) {
+    case ColumnFormat.BackgroundBar:
+      return (
+        <BackgroundBarFormat
+          table={table}
+          row={row}
+          columnName={columnName}
+          value={value}
+        />
+      )
+
     case ColumnFormat.ColoredBadge:
       return <ColoredBadgeFormat value={value} />
 

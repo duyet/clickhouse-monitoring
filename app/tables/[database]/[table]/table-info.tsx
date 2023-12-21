@@ -26,7 +26,7 @@ export async function TableInfo({
   let tableInfo: { [key: string]: string }[] = []
   try {
     tableInfo = await fetchData(
-      `SELECT 
+      `SELECT
            engine,
            uuid,
            data_paths,

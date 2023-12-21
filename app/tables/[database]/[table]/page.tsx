@@ -17,40 +17,52 @@ import { TableInfo } from './table-info'
 const config: QueryConfig = {
   name: 'columns',
   sql: `
-    SELECT database,
-           table,
-           column,
-           type,
-           sum(column_data_compressed_bytes) as compressed_bytes,
-           sum(column_data_uncompressed_bytes) AS uncompressed_bytes,
-           formatReadableSize(compressed_bytes) AS compressed,
-           formatReadableSize(uncompressed_bytes) AS uncompressed,
-           round(uncompressed_bytes / compressed_bytes, 2) AS compr_ratio,
-           sum(rows) AS rows_cnt,
-           formatReadableQuantity(rows_cnt) AS readable_rows_cnt,
-           round(uncompressed_bytes / rows_cnt, 2) avg_row_size
-     FROM system.parts_columns
-     WHERE (active = 1)
-       AND (database = {database: String})
-       AND (table = {table: String})
-     GROUP BY database,
-              table,
-              column,
-              type
-     ORDER BY compressed_bytes DESC
+    WITH summary AS (
+      SELECT database,
+             table,
+             column,
+             type,
+             sum(column_data_compressed_bytes) as compressed,
+             sum(column_data_uncompressed_bytes) AS uncompressed,
+             formatReadableSize(compressed) AS readable_compressed,
+             formatReadableSize(uncompressed) AS readable_uncompressed,
+             round(uncompressed / compressed, 2) AS compr_ratio,
+             sum(rows) AS rows_cnt,
+             formatReadableQuantity(rows_cnt) AS readable_rows_cnt,
+             round(uncompressed / rows_cnt, 2) avg_row_size
+      FROM system.parts_columns
+      WHERE (active = 1)
+        AND (database = {database: String})
+        AND (table = {table: String})
+      GROUP BY database,
+               table,
+               column,
+               type
+      ORDER BY compressed DESC
+    )
+    SELECT *,
+           100 * compressed / (SELECT sum(compressed) FROM summary) AS pct_compressed,
+           100 * uncompressed / (SELECT sum(uncompressed) FROM summary) AS pct_uncompressed,
+           100 * rows_cnt / (SELECT sum(rows_cnt) FROM summary) AS pct_rows_cnt,
+           100 * compr_ratio / (SELECT sum(compr_ratio) FROM summary) AS pct_compr_ratio
+    FROM summary
   `,
   columns: [
     'table',
     'column',
     'type',
-    'compressed',
-    'uncompressed',
+    'readable_compressed',
+    'readable_uncompressed',
     'compr_ratio',
     'readable_rows_cnt',
     'avg_row_size',
   ],
   columnFormats: {
     part_count: ColumnFormat.Number,
+    readable_compressed: ColumnFormat.BackgroundBar,
+    readable_uncompressed: ColumnFormat.BackgroundBar,
+    compr_ratio: ColumnFormat.BackgroundBar,
+    readable_rows_cnt: ColumnFormat.BackgroundBar,
   },
 }
 
