@@ -31,7 +31,7 @@ export async function ChartTotalMemoryUsedByMerges({
   try {
     const totalRows = await fetchData(totalSql)
     total = totalRows?.[0]
-    if (!usedRows || !used) return null
+    if (!totalRows || !total) return null
   } catch (e) {
     console.error('Error fetching total memory usage', e)
   }
