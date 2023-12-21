@@ -1,6 +1,6 @@
 import { QUERY_COMMENT } from '@/lib/clickhouse'
 
-import type { MenuItem } from './types'
+import { type MenuItem } from './types'
 
 export const menuItemsConfig: MenuItem[] = [
   {
@@ -13,7 +13,7 @@ export const menuItemsConfig: MenuItem[] = [
     countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
   },
   {
-    title: 'Queries Monitor',
+    title: 'Queries',
     href: '',
     countSql: `SELECT COUNT() FROM system.processes WHERE is_cancelled = 0 AND query NOT LIKE '%${QUERY_COMMENT}%'`,
     items: [

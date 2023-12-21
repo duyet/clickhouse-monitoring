@@ -1,7 +1,5 @@
-import React from 'react'
-
+import { menuItemsConfig } from './config'
 import { MenuDropdownStyle } from './menu-dropdown-style'
-import { menuItemsConfig } from './menu-items-config'
 import { MenuNavigationStyle } from './menu-navigation-style'
 import { type MenuItem } from './types'
 

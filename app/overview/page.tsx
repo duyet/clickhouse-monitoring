@@ -1,6 +1,7 @@
 import { unstable_noStore as noStore } from 'next/cache'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ChartBackupSize } from '@/components/charts/backup-size'
 import { ChartCPUUsage } from '@/components/charts/cpu-usage'
 import { ChartDiskSize } from '@/components/charts/disk-size'
 import { ChartDisksUsage } from '@/components/charts/disks-usage'
@@ -94,7 +95,7 @@ export default async function Overview() {
       <TabsContent value="backups" className="space-y-4">
         <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
           <ServerComponentLazy>
-            <ChartDiskSize className="w-full p-5" title="Disk Size" />
+            <ChartBackupSize className="w-full p-5" title="Backup" />
           </ServerComponentLazy>
         </div>
       </TabsContent>

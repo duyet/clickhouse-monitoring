@@ -21,8 +21,8 @@ export default async function TableListPage({
     columns: [
       'table',
       'engine',
-      'compressed',
-      'uncompressed',
+      'readable_compressed',
+      'readable_uncompressed',
       'compr_rate',
       'readable_total_rows',
       'part_count',
@@ -31,6 +31,10 @@ export default async function TableListPage({
       part_count: ColumnFormat.Number,
       table: [ColumnFormat.Link, { href: `/tables/${database}/[table]` }],
       engine: ColumnFormat.ColoredBadge,
+      readable_compressed: ColumnFormat.BackgroundBar,
+      readable_uncompressed: ColumnFormat.BackgroundBar,
+      readable_total_rows: ColumnFormat.BackgroundBar,
+      compr_rate: ColumnFormat.BackgroundBar,
     },
   }
 

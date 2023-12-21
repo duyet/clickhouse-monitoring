@@ -12,6 +12,7 @@ import { formatCell } from '@/components/data-table/cell'
 import { type Action } from '@/components/data-table/cells/actions/types'
 
 export enum ColumnFormat {
+  BackgroundBar = 'background-bar',
   ColoredBadge = 'colored-badge',
   RelatedTime = 'related-time',
   NumberShort = 'number-short',
@@ -92,11 +93,13 @@ export const getColumnDefs = (config: QueryConfig): ColumnDef<ColumnType>[] => {
         </Button>
       ),
 
-      cell: ({ row, getValue }) => {
+      cell: ({ table, row, getValue }) => {
         const value = getValue()
         const formatted = formatCell(
+          table,
           row,
           value,
+          column,
           columnFormat,
           columnFormatOptions
         )

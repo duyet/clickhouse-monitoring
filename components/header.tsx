@@ -4,6 +4,9 @@ import { ClickHouseHost } from '@/components/clickhouse-host'
 import { Menu } from '@/components/menu/menu'
 import { ReloadButton } from '@/components/reload-button'
 
+const TITLE = process.env.NEXT_PUBLIC_TITLE || 'ClickHouse Monitoring'
+const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'Monitoring'
+
 export function Header() {
   return (
     <div className="flex items-center justify-between space-y-2">
@@ -17,8 +20,8 @@ export function Header() {
         />
         <div>
           <h2 className="min-w-32 flex flex-col text-2xl font-bold tracking-tight">
-            <span className="hidden sm:flex">ClickHouse Monitoring</span>
-            <span className="flex sm:hidden">Monitoring</span>
+            <span className="hidden sm:flex">{TITLE}</span>
+            <span className="flex sm:hidden">{TITLE_SHORT}</span>
           </h2>
           <p className="text-muted-foreground">
             <ClickHouseHost />

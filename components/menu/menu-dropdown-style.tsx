@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { menuItemsConfig } from './menu-items-config'
+import { menuItemsConfig } from './config'
 import { type MenuItem } from './types'
 
 export interface MenuProps {

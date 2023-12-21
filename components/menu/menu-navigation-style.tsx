@@ -13,7 +13,7 @@ import {
 import { CountBadge } from '@/components/menu/count-badge'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
 
-import { menuItemsConfig } from './menu-items-config'
+import { menuItemsConfig } from './config'
 import { type MenuItem } from './types'
 
 export interface MenuProps {
