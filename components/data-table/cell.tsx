@@ -5,7 +5,7 @@ import { formatReadableQuantity } from '@/lib/format-readable'
 import {
   ColumnFormat,
   ColumnFormatOptions,
-} from '@/components/data-table/columns'
+} from '@/components/data-table/column-defs'
 
 import { ActionFormat } from './cells/action-format'
 import { type Action } from './cells/actions/types'

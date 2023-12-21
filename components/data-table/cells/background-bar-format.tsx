@@ -1,5 +1,3 @@
-import { cn } from '@/lib/utils'
-
 interface BackgroundBarFormatProps {
   table: any
   row: any
@@ -28,16 +26,18 @@ export function BackgroundBarFormat({
     return value
   }
 
+  const bgColor = '#F8F4F0'
+
   return (
-    <div className="relative flex h-7 w-full">
-      <div
-        className={cn(
-          'absolute inset-0 rounded bg-gray-100',
-          `w-[calc(${pct}%)]`
-        )}
-        style={{ width: `${pct}%` }}
-      ></div>
-      <div className="absolute inset-0 z-10 p-1 align-middle">{value}</div>
+    <div
+      className="w-full rounded p-1"
+      style={{
+        background: `linear-gradient(to right,
+                ${bgColor} 0%, ${bgColor} ${pct}%,
+                transparent ${pct}%, transparent 100%)`,
+      }}
+    >
+      {value}
     </div>
   )
 }
