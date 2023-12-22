@@ -382,9 +382,14 @@ export const queries: Array<QueryConfig> = [
     name: 'merges',
     sql: `
       SELECT *,
-        (cast(round(progress * 100, 1), 'String') || '%') as readable_progress,
+        round(100 * num_parts / max(num_parts) OVER ()) as pct_num_parts,
+        round(progress * 100, 1) as pct_progress,
+        (cast(pct_progress, 'String') || '%') as readable_progress,
+        round(100 * rows_read / max(rows_read) OVER ()) as pct_rows_read,
         formatReadableQuantity(rows_read) as readable_rows_read,
+        round(100 * rows_written / max(rows_written) OVER ()) as pct_rows_written,
         formatReadableQuantity(rows_written) as readable_rows_written,
+        round(100 * memory_usage / max(memory_usage) OVER ()) as pct_memory_usage,
         formatReadableSize(memory_usage) as readable_memory_usage
       FROM system.merges
       ORDER BY progress DESC
@@ -408,6 +413,11 @@ export const queries: Array<QueryConfig> = [
       query: ColumnFormat.Code,
       elapsed: ColumnFormat.Duration,
       is_mutation: ColumnFormat.Boolean,
+      num_parts: ColumnFormat.BackgroundBar,
+      readable_progress: ColumnFormat.BackgroundBar,
+      readable_memory_usage: ColumnFormat.BackgroundBar,
+      readable_rows_read: ColumnFormat.BackgroundBar,
+      readable_rows_written: ColumnFormat.BackgroundBar,
     },
     relatedCharts: [
       [
