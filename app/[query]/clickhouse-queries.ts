@@ -397,6 +397,7 @@ export const queries: Array<QueryConfig> = [
     `,
     columns: [
       'table',
+      'partition_id',
       'elapsed',
       'readable_progress',
       'num_parts',
