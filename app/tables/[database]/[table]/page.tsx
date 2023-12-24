@@ -6,6 +6,7 @@ import { type QueryConfig } from '@/lib/types/query-config'
 import { Button } from '@/components/ui/button'
 import { ColumnFormat } from '@/components/data-table/column-defs'
 import { DataTable } from '@/components/data-table/data-table'
+import { ServerComponentLazy } from '@/components/server-component-lazy'
 
 import { AlternativeTables } from './alternative-tables'
 import { SampleData } from './sample-data'
@@ -17,7 +18,17 @@ import { TableInfo } from './table-info'
 const config: QueryConfig = {
   name: 'columns',
   sql: `
-    WITH summary AS (
+    WITH columns AS (
+      SELECT database,
+             table,
+             name as column,
+             compression_codec as codec,
+             (default_kind || ' ' || default_expression) as default_expression
+      FROM system.columns
+      WHERE (database = {database: String})
+        AND (table = {table: String})
+    ),
+    summary AS (
       SELECT database,
              table,
              column,
@@ -29,7 +40,11 @@ const config: QueryConfig = {
              round(uncompressed / compressed, 2) AS compr_ratio,
              sum(rows) AS rows_cnt,
              formatReadableQuantity(rows_cnt) AS readable_rows_cnt,
-             round(uncompressed / rows_cnt, 2) avg_row_size
+             round(uncompressed / rows_cnt, 2) avg_row_size,
+             round(100 * compressed / max(compressed) OVER ()) AS pct_compressed,
+             round(100 * uncompressed / max(uncompressed) OVER()) AS pct_uncompressed,
+             round(100 * rows_cnt / max(rows_cnt) OVER ()) AS pct_rows_cnt,
+             round(100 * compr_ratio / max(compr_ratio) OVER ()) AS pct_compr_ratio
       FROM system.parts_columns
       WHERE (active = 1)
         AND (database = {database: String})
@@ -40,29 +55,30 @@ const config: QueryConfig = {
                type
       ORDER BY compressed DESC
     )
-    SELECT *,
-           round(100 * compressed / max(compressed) OVER ()) AS pct_compressed,
-           round(100 * uncompressed / max(uncompressed) OVER()) AS pct_uncompressed,
-           round(100 * rows_cnt / max(rows_cnt) OVER ()) AS pct_rows_cnt,
-           round(100 * compr_ratio / max(compr_ratio) OVER ()) AS pct_compr_ratio
-    FROM summary
+    SELECT s.*, c.codec, c.default_expression
+    FROM summary s
+    LEFT OUTER JOIN columns c USING (database, table, column)
   `,
   columns: [
-    'table',
     'column',
     'type',
+    'codec',
     'readable_compressed',
     'readable_uncompressed',
     'compr_ratio',
     'readable_rows_cnt',
     'avg_row_size',
+    'default_expression',
   ],
   columnFormats: {
+    type: ColumnFormat.Code,
+    codec: ColumnFormat.Code,
     part_count: ColumnFormat.Number,
     readable_compressed: ColumnFormat.BackgroundBar,
     readable_uncompressed: ColumnFormat.BackgroundBar,
     compr_ratio: ColumnFormat.BackgroundBar,
     readable_rows_cnt: ColumnFormat.BackgroundBar,
+    default_expression: ColumnFormat.Code,
   },
 }
 
@@ -128,6 +144,8 @@ export default async function ColumnsPage({
       </div>
     )
   } else if (engine?.[0]?.engine === 'Dictionary') {
+    const dictUsage = `SELECT dictGet('${database}.${table}', 'key', 'value')`
+
     return (
       <div className="flex flex-col">
         <Extras database={database} table={table} />
@@ -140,39 +158,40 @@ export default async function ColumnsPage({
         <div className="mt-6 w-fit overflow-auto">
           <h2 className="mb-3 text-lg font-semibold">Dictionary Usage</h2>
           <pre className="text-sm">
-            <code>
-              SELECT dictGet(&apos;{database}.{table}&apos;, &apos;key&apos;,
-              &apos;value&apos;);
-            </code>
+            <code>{dictUsage}</code>
           </pre>
         </div>
 
-        <div className="mt-6 w-fit overflow-auto">
-          <h2 className="mb-3 text-lg font-semibold">Sample Data</h2>
-          <SampleData database={database} table={table} />
-        </div>
+        <ServerComponentLazy>
+          <div className="mt-6 w-fit overflow-auto">
+            <h2 className="mb-3 text-lg font-semibold">Sample Data</h2>
+            <SampleData database={database} table={table} />
+          </div>
+        </ServerComponentLazy>
+      </div>
+    )
+  } else {
+    const columns = await fetchData(config.sql, {
+      database,
+      table,
+    })
+
+    return (
+      <div>
+        <DataTable
+          title={`${database}.${table}`}
+          extras={<Extras database={database} table={table} />}
+          config={config}
+          data={columns}
+        />
+
+        <ServerComponentLazy>
+          <div className="mt-5 w-fit overflow-auto">
+            <h2 className="text-lg font-semibold">Sample Data</h2>
+            <SampleData database={database} table={table} limit={5} />
+          </div>
+        </ServerComponentLazy>
       </div>
     )
   }
-
-  const columns = await fetchData(config.sql, {
-    database,
-    table,
-  })
-
-  return (
-    <div>
-      <DataTable
-        title={`${database}.${table}`}
-        extras={<Extras database={database} table={table} />}
-        config={config}
-        data={columns}
-      />
-
-      <div className="mt-5 w-fit overflow-auto">
-        <h2 className="text-lg font-semibold">Sample Data</h2>
-        <SampleData database={database} table={table} limit={5} />
-      </div>
-    </div>
-  )
 }
