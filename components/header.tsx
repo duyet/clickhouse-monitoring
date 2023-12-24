@@ -19,7 +19,7 @@ export function Header() {
           className="mr-2"
         />
         <div>
-          <h2 className="min-w-32 flex flex-col text-2xl font-bold tracking-tight">
+          <h2 className="flex min-w-32 flex-col text-2xl font-bold tracking-tight">
             <span className="hidden sm:flex">{TITLE}</span>
             <span className="flex sm:hidden">{TITLE_SHORT}</span>
           </h2>

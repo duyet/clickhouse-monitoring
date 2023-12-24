@@ -36,9 +36,11 @@ export const queries: Array<QueryConfig> = [
     sql: `
       SELECT *,
         formatReadableQuantity(read_rows) as readable_read_rows,
+        round(100 * read_rows / max(read_rows) OVER ()) AS pct_read_rows,
         formatReadableQuantity(total_rows_approx) as readable_total_rows_approx,
-        formatReadableSize(memory_usage) as readable_memory_usage,
         formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
+        formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')' as readable_memory_usage,
+        round(100 * memory_usage / max(memory_usage) OVER ()) AS pct_memory_usage,
         if(total_rows_approx > 0  AND query_kind != 'Insert', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
         (elapsed / (read_rows / total_rows_approx)) * (1 - (read_rows / total_rows_approx)) AS estimated_remaining_time
       FROM system.processes
@@ -59,6 +61,8 @@ export const queries: Array<QueryConfig> = [
       elapsed: ColumnFormat.Duration,
       estimated_remaining_time: ColumnFormat.Duration,
       query_id: [ColumnFormat.Action, ['kill-query']],
+      readable_read_rows: ColumnFormat.BackgroundBar,
+      readable_memory_usage: ColumnFormat.BackgroundBar,
     },
     relatedCharts: [
       [
@@ -378,9 +382,14 @@ export const queries: Array<QueryConfig> = [
     name: 'merges',
     sql: `
       SELECT *,
-        (cast(round(progress * 100, 1), 'String') || '%') as readable_progress,
+        round(100 * num_parts / max(num_parts) OVER ()) as pct_num_parts,
+        round(progress * 100, 1) as pct_progress,
+        (cast(pct_progress, 'String') || '%') as readable_progress,
+        round(100 * rows_read / max(rows_read) OVER ()) as pct_rows_read,
         formatReadableQuantity(rows_read) as readable_rows_read,
+        round(100 * rows_written / max(rows_written) OVER ()) as pct_rows_written,
         formatReadableQuantity(rows_written) as readable_rows_written,
+        round(100 * memory_usage / max(memory_usage) OVER ()) as pct_memory_usage,
         formatReadableSize(memory_usage) as readable_memory_usage
       FROM system.merges
       ORDER BY progress DESC
@@ -404,6 +413,11 @@ export const queries: Array<QueryConfig> = [
       query: ColumnFormat.Code,
       elapsed: ColumnFormat.Duration,
       is_mutation: ColumnFormat.Boolean,
+      num_parts: ColumnFormat.BackgroundBar,
+      readable_progress: ColumnFormat.BackgroundBar,
+      readable_memory_usage: ColumnFormat.BackgroundBar,
+      readable_rows_read: ColumnFormat.BackgroundBar,
+      readable_rows_written: ColumnFormat.BackgroundBar,
     },
     relatedCharts: [
       [
