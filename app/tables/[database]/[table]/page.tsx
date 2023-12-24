@@ -8,12 +8,13 @@ import { ColumnFormat } from '@/components/data-table/column-defs'
 import { DataTable } from '@/components/data-table/data-table'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
 
-import { AlternativeTables } from './alternative-tables'
-import { SampleData } from './sample-data'
-import { SampleDataButton } from './sample-data-button'
-import { ShowDDL } from './show-ddl-button'
-import { TableDDL } from './table-ddl'
-import { TableInfo } from './table-info'
+import { AlternativeTables } from './extras/alternative-tables'
+import { RunningQueriesButton } from './extras/runnning-queries-button'
+import { SampleData } from './extras/sample-data'
+import { SampleDataButton } from './extras/sample-data-button'
+import { ShowDDL } from './extras/show-ddl-button'
+import { TableDDL } from './extras/table-ddl'
+import { TableInfo } from './extras/table-info'
 
 const config: QueryConfig = {
   name: 'columns',
@@ -62,13 +63,12 @@ const config: QueryConfig = {
   columns: [
     'column',
     'type',
-    'codec',
     'readable_compressed',
     'readable_uncompressed',
     'compr_ratio',
     'readable_rows_cnt',
     'avg_row_size',
-    'default_expression',
+    'codec',
   ],
   columnFormats: {
     type: ColumnFormat.Code,
@@ -102,6 +102,7 @@ const Extras = ({ database, table }: { database: string; table: string }) => (
       <ShowDDL database={database} table={table} />
       <TableInfo database={database} table={table} />
       <SampleDataButton database={database} table={table} />
+      <RunningQueriesButton database={database} table={table} />
     </div>
   </div>
 )
