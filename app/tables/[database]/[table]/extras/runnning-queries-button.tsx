@@ -1,4 +1,4 @@
-import { TableIcon } from 'lucide-react'
+import { BarChartIcon } from '@radix-ui/react-icons'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -10,22 +10,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { ServerComponentLazy } from '@/components/server-component-lazy'
 
-import { SampleData } from './sample-data'
+import { RunningQueries } from './running-queries'
 
-interface SampleDataButtonProps {
+interface RunningQueriesButtonProps {
   database: string
   table: string
   limit?: number
   className?: string
 }
 
-export async function SampleDataButton({
+export async function RunningQueriesButton({
   database,
   table,
   limit = 20,
   className,
-}: SampleDataButtonProps) {
+}: RunningQueriesButtonProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -39,18 +40,20 @@ export async function SampleDataButton({
           aria-label="Table Info"
           title="More about this table"
         >
-          <TableIcon className="h-3 w-3" />
-          Sample Data
+          <BarChartIcon className="h-3 w-3" />
+          Running Queries
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-max">
         <DialogHeader>
-          <DialogTitle>Sample Data</DialogTitle>
-          <DialogDescription>
-            First {limit} rows of {database}.{table}
-          </DialogDescription>
+          <DialogTitle>
+            Running Queries on {database}.{table}
+          </DialogTitle>
+          <DialogDescription></DialogDescription>
         </DialogHeader>
-        <SampleData database={database} table={table} limit={limit} />
+        <ServerComponentLazy>
+          <RunningQueries database={database} table={table} limit={limit} />
+        </ServerComponentLazy>
       </DialogContent>
     </Dialog>
   )

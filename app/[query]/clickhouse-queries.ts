@@ -382,6 +382,7 @@ export const queries: Array<QueryConfig> = [
     name: 'merges',
     sql: `
       SELECT *,
+        database || '.' || table as table,
         round(100 * num_parts / max(num_parts) OVER ()) as pct_num_parts,
         round(progress * 100, 1) as pct_progress,
         (cast(pct_progress, 'String') || '%') as readable_progress,
@@ -395,8 +396,8 @@ export const queries: Array<QueryConfig> = [
       ORDER BY progress DESC
     `,
     columns: [
-      'database',
       'table',
+      'partition_id',
       'elapsed',
       'readable_progress',
       'num_parts',
@@ -408,7 +409,6 @@ export const queries: Array<QueryConfig> = [
       'merge_algorithm',
     ],
     columnFormats: {
-      database: ColumnFormat.ColoredBadge,
       table: ColumnFormat.ColoredBadge,
       query: ColumnFormat.Code,
       elapsed: ColumnFormat.Duration,
@@ -421,9 +421,9 @@ export const queries: Array<QueryConfig> = [
     },
     relatedCharts: [
       [
-        'total-memory-used-by-merges',
+        'summary-used-by-merges',
         {
-          title: 'Memory used by merges currently',
+          title: 'Merge Summary',
         },
       ],
       [
