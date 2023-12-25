@@ -5,7 +5,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
-} from '@/components/tremor'
+} from '@/components/tremor/card-multi-metrics'
 
 export async function ChartSummaryUsedByRunningQueries({
   title,

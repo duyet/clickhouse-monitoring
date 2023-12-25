@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { BarList } from './tremor'
+import { BarList } from './bar-list'
 
 describe('<BarList />', () => {
   const data = [
