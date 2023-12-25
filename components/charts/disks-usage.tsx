@@ -2,7 +2,7 @@ import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
-import { AreaChart } from '@/components/tremor'
+import { AreaChart } from '@/components/tremor/area'
 
 export async function ChartDisksUsage({
   title = 'Disks Usage over last 30 days',
