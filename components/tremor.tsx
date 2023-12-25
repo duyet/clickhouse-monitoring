@@ -167,19 +167,18 @@ export function CardMetric({
 
 export interface CardMultiMetricsProps {
   primary?: string | number
-  currents: number[]
-  targets: number[]
-  currentReadables?: string[]
-  targetReadables?: string[]
+  items: {
+    current: number
+    target: number
+    currentReadable?: string
+    targetReadable?: string
+  }[]
   className?: string
 }
 
 export function CardMultiMetrics({
   primary,
-  currents,
-  targets,
-  currentReadables,
-  targetReadables,
+  items,
   className,
 }: CardMultiMetricsProps) {
   return (
@@ -187,17 +186,14 @@ export function CardMultiMetrics({
       <Metric>{primary}</Metric>
 
       <div className="flex flex-col justify-between">
-        {currents.map((current, i) => {
-          const target = targets[i]
-          const currentReadable = currentReadables?.[i]
-          const targetReadable = targetReadables?.[i]
-          const percent = (current / target) * 100
+        {items.map((item, i) => {
+          const percent = (item.current / item.target) * 100
 
           return (
             <div key={i}>
               <div className="mt-4 flex flex-row justify-between">
-                <Text className="truncate">{currentReadable || current}</Text>
-                <Text>{targetReadable || target}</Text>
+                <Text className="truncate">{item.currentReadable}</Text>
+                <Text>{item.targetReadable}</Text>
               </div>
               <ProgressBar value={percent} className="mt-2" />
             </div>

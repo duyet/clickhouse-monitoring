@@ -13,6 +13,7 @@ import {
 import { ServerComponentLazy } from '@/components/server-component-lazy'
 
 import { RunningQueries } from './running-queries'
+import { RunningQueriesCount } from './running-queries-count'
 
 interface RunningQueriesButtonProps {
   database: string
@@ -42,6 +43,7 @@ export async function RunningQueriesButton({
         >
           <BarChartIcon className="h-3 w-3" />
           Running Queries
+          <RunningQueriesCount database={database} table={table} />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-max">

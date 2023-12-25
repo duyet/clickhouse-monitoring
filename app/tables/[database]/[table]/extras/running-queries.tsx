@@ -24,15 +24,14 @@ export async function RunningQueries({
   let data: { [key: string]: string }[] = []
   try {
     data = await fetchData(
-      `
-        SELECT query, user, elapsed,
-          formatReadableQuantity(read_rows) as read_rows,
-          formatReadableQuantity(total_rows_approx) as total_rows_approx,
-          formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
-          formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')' as memory_usage
-        FROM system.processes
-        WHERE (query LIKE '%{database: String}%')
-          AND (query LIKE '%{table: String}%')
+      `SELECT query, user, elapsed,
+         formatReadableQuantity(read_rows) as read_rows,
+         formatReadableQuantity(total_rows_approx) as total_rows_approx,
+         formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
+         formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')' as memory_usage
+       FROM system.processes
+       WHERE (query LIKE '%{database: String}%')
+         AND (query LIKE '%{table: String}%')
        `,
       {
         database,

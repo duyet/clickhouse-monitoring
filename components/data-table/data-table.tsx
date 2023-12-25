@@ -46,7 +46,7 @@ export function DataTable<TData extends RowData, TValue>({
   extras,
   config,
   data,
-  defaultPageSize = 50,
+  defaultPageSize = 100,
   showSQL = true,
 }: DataTableProps<TData>) {
   // Columns available in the data, normalized

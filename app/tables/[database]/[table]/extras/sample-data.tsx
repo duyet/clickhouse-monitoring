@@ -1,4 +1,4 @@
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse'
 import {
   Table,
   TableBody,
@@ -24,7 +24,7 @@ export async function SampleData({
 }: SampleDataProps) {
   let data: { [key: string]: string }[] = []
   try {
-    data = await fetchData(
+    data = await fetchDataWithCache()(
       `SELECT *
        FROM ${database}.${table}
        LIMIT ${limit}`,
