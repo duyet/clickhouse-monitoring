@@ -41,6 +41,8 @@ export const queries: Array<QueryConfig> = [
         round(100 * elapsed / max(elapsed) OVER ()) AS pct_elapsed,
         formatReadableQuantity(read_rows) as readable_read_rows,
         round(100 * read_rows / max(read_rows) OVER ()) AS pct_read_rows,
+        formatReadableQuantity(written_rows) as readable_written_rows,
+        round(100 * written_rows / max(written_rows) OVER ()) AS pct_written_rows,
         formatReadableQuantity(total_rows_approx) as readable_total_rows_approx,
         formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
         multiIf (
@@ -60,6 +62,7 @@ export const queries: Array<QueryConfig> = [
       'user',
       'readable_elapsed',
       'readable_read_rows',
+      'readable_written_rows',
       'readable_memory_usage',
       'progress',
       'query_id',
@@ -70,6 +73,7 @@ export const queries: Array<QueryConfig> = [
       query_id: [ColumnFormat.Action, ['kill-query']],
       readable_elapsed: ColumnFormat.BackgroundBar,
       readable_read_rows: ColumnFormat.BackgroundBar,
+      readable_written_rows: ColumnFormat.BackgroundBar,
       readable_memory_usage: ColumnFormat.BackgroundBar,
     },
     relatedCharts: [

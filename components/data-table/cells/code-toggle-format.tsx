@@ -31,8 +31,8 @@ export function CodeToggleFormat({ row, value }: CodeToggleFormatProps) {
           </code>
         </AccordionTrigger>
         <AccordionContent>
-          <code className="whitespace-pre-wrap font-normal">
-            {value.substring(50)}
+          <code className="whitespace-pre-wrap font-normal text-stone-500">
+            {value}
           </code>
         </AccordionContent>
       </AccordionItem>

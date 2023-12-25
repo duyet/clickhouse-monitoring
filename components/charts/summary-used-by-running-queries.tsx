@@ -59,6 +59,28 @@ export async function ChartSummaryUsedByRunningQueries({
     console.error('Error fetching today query count', e)
   }
 
+  let rowsReadWritten = {
+    rows_read: 0,
+    rows_written: 0,
+    readable_rows_read: '0',
+    readable_rows_written: '0',
+  }
+  const rowsReadWrittenSql = `
+    SELECT SUM(read_rows) as rows_read,
+           SUM(written_rows) as rows_written,
+           formatReadableQuantity(rows_read) as readable_rows_read,
+           formatReadableQuantity(rows_written) as readable_rows_written
+    FROM system.processes
+  `
+  try {
+    const rows = await fetchData(rowsReadWrittenSql)
+    if (!!rows) {
+      rowsReadWritten = rows?.[0]
+    }
+  } catch (e) {
+    console.error('Error fetching rows read', e)
+  }
+
   const allSql = `
     Total current memory usage by running queries:
     ${sql}
@@ -68,6 +90,9 @@ export async function ChartSummaryUsedByRunningQueries({
 
     Total query count today:
     ${todayQueryCountSql}
+
+    Total rows read and written:
+    ${rowsReadWrittenSql}
   `
 
   const items: CardMultiMetricsProps['items'] = []
@@ -83,6 +108,22 @@ export async function ChartSummaryUsedByRunningQueries({
     currentReadable: first.query_count + ' running queries',
     targetReadable: formatReadableQuantity(todayQueryCount) + ' today',
   })
+
+  if (rowsReadWritten.rows_read < rowsReadWritten.rows_written) {
+    items.push({
+      current: rowsReadWritten.rows_read,
+      target: rowsReadWritten.rows_written,
+      currentReadable: rowsReadWritten.readable_rows_read + ' rows read',
+      targetReadable: rowsReadWritten.readable_rows_written + ' rows written',
+    })
+  } else {
+    items.push({
+      current: rowsReadWritten.rows_written,
+      target: rowsReadWritten.rows_read,
+      currentReadable: rowsReadWritten.readable_rows_written + ' rows written',
+      targetReadable: rowsReadWritten.readable_rows_read + ' rows read',
+    })
+  }
 
   return (
     <ChartCard title={title} className={className} sql={allSql}>
