@@ -1,7 +1,10 @@
 import { fetchData } from '@/lib/clickhouse'
 import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
-import { CardMultiMetrics } from '@/components/tremor'
+import {
+  CardMultiMetrics,
+  type CardMultiMetricsProps,
+} from '@/components/tremor'
 
 export async function ChartSummaryUsedByMerges({
   title,
@@ -97,31 +100,57 @@ export async function ChartSummaryUsedByMerges({
     ${bytesReadWrittenSql}
   `
 
+  const items: CardMultiMetricsProps['items'] = []
+
+  if (rowsReadWritten.rows_read < rowsReadWritten.rows_written) {
+    items.push({
+      current: rowsReadWritten.rows_read,
+      target: rowsReadWritten.rows_written,
+      currentReadable: rowsReadWritten.readable_rows_read + ' rows read',
+      targetReadable: rowsReadWritten.readable_rows_written + ' rows written',
+    })
+  } else {
+    items.push({
+      current: rowsReadWritten.rows_written,
+      target: rowsReadWritten.rows_read,
+      currentReadable: rowsReadWritten.readable_rows_written + ' rows written',
+      targetReadable: rowsReadWritten.readable_rows_read + ' rows read',
+    })
+  }
+
+  if (bytesReadWritten.bytes_read < bytesReadWritten.bytes_written) {
+    items.push({
+      current: bytesReadWritten.bytes_read,
+      target: bytesReadWritten.bytes_written,
+      currentReadable:
+        bytesReadWritten.readable_bytes_read + ' read (uncompressed)',
+      targetReadable:
+        bytesReadWritten.readable_bytes_written + ' written (uncompressed)',
+    })
+  } else {
+    items.push({
+      current: bytesReadWritten.bytes_written,
+      target: bytesReadWritten.bytes_read,
+      currentReadable:
+        bytesReadWritten.readable_bytes_written + ' written (uncompressed)',
+      targetReadable:
+        bytesReadWritten.readable_bytes_read + ' read (uncompressed)',
+    })
+  }
+
+  items.push({
+    current: used.memory_usage,
+    target: totalMem.total,
+    currentReadable: used.readable_memory_usage + ' memory used',
+    targetReadable: totalMem.readable_total + ' total',
+  })
+
   return (
     <ChartCard title={title} className={className} sql={sql}>
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics
           primary={`${rowsReadWritten.readable_rows_read} rows read, ${used.readable_memory_usage} memory used`}
-          currents={[
-            rowsReadWritten.rows_written,
-            bytesReadWritten.bytes_written,
-            used.memory_usage,
-          ]}
-          currentReadables={[
-            rowsReadWritten.readable_rows_written + ' rows written',
-            bytesReadWritten.readable_bytes_written + ' written (uncompressed)',
-            used.readable_memory_usage + ' memory used',
-          ]}
-          targets={[
-            rowsReadWritten.rows_read,
-            bytesReadWritten.bytes_read,
-            totalMem.total,
-          ]}
-          targetReadables={[
-            rowsReadWritten.readable_rows_read + ' rows read',
-            bytesReadWritten.readable_bytes_read + ' read',
-            totalMem.readable_total,
-          ]}
+          items={items}
           className="p-2"
         />
         <div className="text-muted-foreground text-right text-sm">

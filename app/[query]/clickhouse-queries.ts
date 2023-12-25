@@ -35,11 +35,18 @@ export const queries: Array<QueryConfig> = [
     name: 'running-queries',
     sql: `
       SELECT *,
+        if (elapsed < 60,
+            'a few seconds ago',
+            formatReadableTimeDelta(elapsed, 'days', 'minutes')) as readable_elapsed,
+        round(100 * elapsed / max(elapsed) OVER ()) AS pct_elapsed,
         formatReadableQuantity(read_rows) as readable_read_rows,
         round(100 * read_rows / max(read_rows) OVER ()) AS pct_read_rows,
         formatReadableQuantity(total_rows_approx) as readable_total_rows_approx,
         formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
-        formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')' as readable_memory_usage,
+        if (memory_usage = peak_memory_usage,
+           formatReadableSize(memory_usage) || ' at peak',
+           formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')'
+        ) as readable_memory_usage,
         round(100 * memory_usage / max(memory_usage) OVER ()) AS pct_memory_usage,
         if(total_rows_approx > 0  AND query_kind != 'Insert', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
         (elapsed / (read_rows / total_rows_approx)) * (1 - (read_rows / total_rows_approx)) AS estimated_remaining_time
@@ -50,7 +57,7 @@ export const queries: Array<QueryConfig> = [
     columns: [
       'query',
       'user',
-      'elapsed',
+      'readable_elapsed',
       'readable_read_rows',
       'readable_memory_usage',
       'progress',
@@ -58,9 +65,9 @@ export const queries: Array<QueryConfig> = [
     ],
     columnFormats: {
       query: ColumnFormat.CodeToggle,
-      elapsed: ColumnFormat.Duration,
       estimated_remaining_time: ColumnFormat.Duration,
       query_id: [ColumnFormat.Action, ['kill-query']],
+      readable_elapsed: ColumnFormat.BackgroundBar,
       readable_read_rows: ColumnFormat.BackgroundBar,
       readable_memory_usage: ColumnFormat.BackgroundBar,
     },

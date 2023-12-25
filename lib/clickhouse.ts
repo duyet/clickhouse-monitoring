@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createClient } from '@clickhouse/client'
 
 export const getClient = () =>
@@ -29,3 +30,5 @@ export const fetchData = async (
   }
   return data
 }
+
+export const fetchDataWithCache = cache(fetchData)
