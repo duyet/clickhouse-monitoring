@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeftIcon } from 'lucide-react'
 
-import { fetchData, fetchDataWithCache } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse'
 import { type QueryConfig } from '@/lib/types/query-config'
 import { Button } from '@/components/ui/button'
 import { ColumnFormat } from '@/components/data-table/column-defs'
@@ -120,7 +120,7 @@ export default async function ColumnsPage({
   params: { database, table },
 }: ColumnsPageProps) {
   // Detect engine
-  const engine = await fetchDataWithCache(
+  const engine = await fetchDataWithCache()(
     `
       SELECT engine
         FROM system.tables
@@ -174,7 +174,7 @@ export default async function ColumnsPage({
       </div>
     )
   } else {
-    const columns = await fetchDataWithCache(config.sql, {
+    const columns = await fetchDataWithCache()(config.sql, {
       database,
       table,
     })

@@ -31,4 +31,4 @@ export const fetchData = async (
   return data
 }
 
-export const fetchDataWithCache = cache(fetchData)
+export const fetchDataWithCache = () => cache(fetchData)

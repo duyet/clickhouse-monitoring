@@ -22,7 +22,7 @@ export default async function TableListPage({
   let databases: { name: string; count: number }[] = []
   try {
     // List database names and number of tables
-    databases = await fetchDataWithCache(listDatabases)
+    databases = await fetchDataWithCache()(listDatabases)
 
     if (!databases.length) {
       return <ErrorAlert title="Message" message="Empty" />

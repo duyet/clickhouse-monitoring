@@ -35,17 +35,18 @@ export const queries: Array<QueryConfig> = [
     name: 'running-queries',
     sql: `
       SELECT *,
-        if (elapsed < 60,
-            'a few seconds ago',
-            formatReadableTimeDelta(elapsed, 'days', 'minutes')) as readable_elapsed,
+        multiIf (elapsed < 30, 'a few seconds',
+                 elapsed < 90, 'a minute',
+                 formatReadableTimeDelta(elapsed, 'days', 'minutes')) as readable_elapsed,
         round(100 * elapsed / max(elapsed) OVER ()) AS pct_elapsed,
         formatReadableQuantity(read_rows) as readable_read_rows,
         round(100 * read_rows / max(read_rows) OVER ()) AS pct_read_rows,
         formatReadableQuantity(total_rows_approx) as readable_total_rows_approx,
         formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
-        if (memory_usage = peak_memory_usage,
-           formatReadableSize(memory_usage) || ' at peak',
-           formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')'
+        multiIf (
+          memory_usage = 0, formatReadableSize(memory_usage),
+          formatReadableSize(memory_usage) = formatReadableSize(peak_memory_usage), formatReadableSize(memory_usage),
+          formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')'
         ) as readable_memory_usage,
         round(100 * memory_usage / max(memory_usage) OVER ()) AS pct_memory_usage,
         if(total_rows_approx > 0  AND query_kind != 'Insert', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
