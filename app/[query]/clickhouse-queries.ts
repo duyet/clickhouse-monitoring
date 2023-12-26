@@ -97,7 +97,13 @@ export const queries: Array<QueryConfig> = [
       [
         'summary-used-by-running-queries',
         {
-          title: 'Summary of current running queries',
+          title: 'Running queries Summary',
+        },
+      ],
+      [
+        'summary-used-by-merges',
+        {
+          title: 'Merge Summary',
         },
       ],
     ],

@@ -1,3 +1,6 @@
+import Link from 'next/link'
+import { ArrowRightIcon } from '@radix-ui/react-icons'
+
 import { fetchData } from '@/lib/clickhouse'
 import { formatReadableQuantity } from '@/lib/format-readable'
 import { ChartCard } from '@/components/chart-card'
@@ -129,7 +132,15 @@ export async function ChartSummaryUsedByRunningQueries({
     <ChartCard title={title} className={className} sql={allSql}>
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics
-          primary={`${first.query_count} running, ${first.readable_memory_usage} memory used`}
+          primary={
+            <span className="flex flex-row items-center gap-2">
+              {first.query_count} queries, {first.readable_memory_usage} memory
+              used for running queries
+              <Link href="/running-queries" className="inline">
+                <ArrowRightIcon className="h-5 w-5" />
+              </Link>
+            </span>
+          }
           items={items}
           className="p-2"
         />
