@@ -1,3 +1,6 @@
+import Link from 'next/link'
+import { ArrowRightIcon } from '@radix-ui/react-icons'
+
 import { fetchData } from '@/lib/clickhouse'
 import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
@@ -149,7 +152,15 @@ export async function ChartSummaryUsedByMerges({
     <ChartCard title={title} className={className} sql={sql}>
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics
-          primary={`${rowsReadWritten.readable_rows_read} rows read, ${used.readable_memory_usage} memory used`}
+          primary={
+            <span className="flex flex-row items-center gap-2">
+              {rowsReadWritten.readable_rows_read} rows read,{' '}
+              {used.readable_memory_usage} memory used for merges
+              <Link href="/merges" className="inline">
+                <ArrowRightIcon className="h-5 w-5" />
+              </Link>
+            </span>
+          }
           items={items}
           className="p-2"
         />

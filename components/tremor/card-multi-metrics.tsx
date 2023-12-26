@@ -3,7 +3,7 @@
 import { Metric, ProgressBar, Text } from '@tremor/react'
 
 export interface CardMultiMetricsProps {
-  primary?: string | number
+  primary?: string | number | React.ReactNode
   items: {
     current: number
     target: number
