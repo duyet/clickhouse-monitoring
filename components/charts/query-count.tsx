@@ -13,23 +13,36 @@ export async function ChartQueryCount({
   ...props
 }: ChartProps) {
   const sql = `
-    SELECT ${interval}(event_time) AS event_time,
-           COUNT() AS query_count,
-           (
-              SELECT groupArray((query_kind, count))
-              FROM (
-                SELECT query_kind, COUNT() AS count
-                FROM system.query_log
-                WHERE type = 'QueryFinish'
-                      AND ${interval}(event_time) = ${interval}(system.query_log.event_time)
-                GROUP BY 1
-                ORDER BY 2 DESC
-              )
-           ) AS breakdown
-    FROM system.query_log
-    WHERE type = 'QueryFinish'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
-    GROUP BY 1
+    WITH event_count AS (
+      SELECT ${interval}(event_time) AS event_time,
+             COUNT() AS query_count
+      FROM system.query_log
+      WHERE type = 'QueryFinish'
+            AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+      GROUP BY 1
+      ORDER BY 1
+    ),
+    query_kind AS (
+        SELECT ${interval}(event_time) AS event_time,
+               query_kind,
+               COUNT() AS count
+        FROM system.query_log
+        WHERE type = 'QueryFinish'
+              AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+        GROUP BY 1, 2
+        ORDER BY 3 DESC
+    ),
+    breakdown AS (
+      SELECT event_time,
+             groupArray((query_kind, count)) AS breakdown
+      FROM query_kind
+      GROUP BY 1
+    )
+    SELECT event_time,
+           query_count,
+           breakdown.breakdown AS breakdown
+    FROM event_count
+    LEFT JOIN breakdown USING event_time
     ORDER BY 1
   `
   const data = await fetchData(sql)
