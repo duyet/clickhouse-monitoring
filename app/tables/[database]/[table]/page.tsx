@@ -120,7 +120,7 @@ export default async function ColumnsPage({
   params: { database, table },
 }: ColumnsPageProps) {
   // Detect engine
-  const engine = await fetchDataWithCache()(
+  const resp = await fetchDataWithCache()(
     `
       SELECT engine
         FROM system.tables
@@ -129,8 +129,9 @@ export default async function ColumnsPage({
     `,
     { database, table }
   )
+  const engine = resp?.[0]?.engine || ''
 
-  if (engine?.[0]?.engine === 'MaterializedView') {
+  if (engine === 'MaterializedView') {
     return (
       <div className="flex flex-col">
         <Extras database={database} table={table} />
@@ -146,23 +147,35 @@ export default async function ColumnsPage({
         </div>
       </div>
     )
-  } else if (engine?.[0]?.engine === 'Dictionary') {
+  } else if (engine === 'View') {
+    return (
+      <div className="flex flex-col">
+        <Extras database={database} table={table} />
+
+        <div className="mt-3 w-fit overflow-auto">
+          <h2 className="mb-3 text-lg font-semibold">View definition:</h2>
+
+          <TableDDL database={database} table={table} />
+        </div>
+      </div>
+    )
+  } else if (engine === 'Dictionary') {
     const dictUsage = `SELECT dictGet('${database}.${table}', 'key', 'value')`
 
     return (
       <div className="flex flex-col">
         <Extras database={database} table={table} />
 
-        <div className="mt-3 w-fit overflow-auto">
-          <h2 className="mb-3 text-lg font-semibold">Dictionary DDL</h2>
-          <TableDDL database={database} table={table} />
-        </div>
-
         <div className="mt-6 w-fit overflow-auto">
           <h2 className="mb-3 text-lg font-semibold">Dictionary Usage</h2>
           <pre className="text-sm">
             <code>{dictUsage}</code>
           </pre>
+        </div>
+
+        <div className="mt-3 w-fit overflow-auto">
+          <h2 className="mb-3 text-lg font-semibold">Dictionary DDL</h2>
+          <TableDDL database={database} table={table} />
         </div>
 
         <ServerComponentLazy>
