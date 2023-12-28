@@ -54,7 +54,7 @@ export const queries: Array<QueryConfig> = [
         if(total_rows_approx > 0  AND query_kind != 'Insert', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
         (elapsed / (read_rows / total_rows_approx)) * (1 - (read_rows / total_rows_approx)) AS estimated_remaining_time
       FROM system.processes
-      WHERE is_cancelled = 0 AND query NOT LIKE '%${QUERY_COMMENT}%'
+      WHERE is_cancelled = 0
       ORDER BY elapsed
     `,
     columns: [
