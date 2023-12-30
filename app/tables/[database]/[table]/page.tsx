@@ -24,7 +24,8 @@ const config: QueryConfig = {
              table,
              name as column,
              compression_codec as codec,
-             (default_kind || ' ' || default_expression) as default_expression
+             (default_kind || ' ' || default_expression) as default_expression,
+             comment
       FROM system.columns
       WHERE (database = {database: String})
         AND (table = {table: String})
@@ -56,7 +57,7 @@ const config: QueryConfig = {
                type
       ORDER BY compressed DESC
     )
-    SELECT s.*, c.codec, c.default_expression
+    SELECT s.*, c.codec, c.default_expression, c.comment
     FROM summary s
     LEFT OUTER JOIN columns c USING (database, table, column)
   `,
@@ -69,6 +70,7 @@ const config: QueryConfig = {
     'readable_rows_cnt',
     'avg_row_size',
     'codec',
+    'comment',
   ],
   columnFormats: {
     type: ColumnFormat.Code,
@@ -192,10 +194,27 @@ export default async function ColumnsPage({
       table,
     })
 
+    let description = ''
+    try {
+      const raw = await fetchDataWithCache()(
+        `
+        SELECT comment
+          FROM system.tables
+         WHERE (database = {database: String})
+           AND (name = {table: String})
+      `,
+        { database, table }
+      )
+      description = raw?.[0]?.comment || ''
+    } catch (e) {
+      console.error('Error fetching table description', e)
+    }
+
     return (
       <div>
         <DataTable
           title={`${database}.${table}`}
+          description={description}
           extras={<Extras database={database} table={table} />}
           config={config}
           data={columns}
