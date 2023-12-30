@@ -34,6 +34,7 @@ import { ShowSQLButton } from './buttons/show-sql'
 
 interface DataTableProps<TData extends RowData> {
   title?: string
+  description?: string
   extras?: React.ReactNode
   config: QueryConfig
   data: TData[]
@@ -43,6 +44,7 @@ interface DataTableProps<TData extends RowData> {
 
 export function DataTable<TData extends RowData, TValue>({
   title = '',
+  description = '',
   extras,
   config,
   data,
@@ -103,7 +105,9 @@ export function DataTable<TData extends RowData, TValue>({
       <div className="flex flex-row items-center justify-between pb-4">
         <div>
           <h1 className="text-muted-foreground text-xl">{title}</h1>
-          <p className="text-muted-foreground text-sm">{config.description}</p>
+          <p className="text-muted-foreground text-sm">
+            {description || config.description}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           {showSQL ? <ShowSQLButton sql={config.sql} /> : null}

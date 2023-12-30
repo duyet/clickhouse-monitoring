@@ -33,7 +33,6 @@ export async function SampleData({
         table,
       }
     )
-    console.debug(`Sample data of ${database}.${table}`, data)
   } catch (error) {
     console.error(error)
 
