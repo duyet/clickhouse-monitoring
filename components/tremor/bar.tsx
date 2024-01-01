@@ -5,27 +5,32 @@ import {
   type BarChartProps as TremorBarChartProps,
 } from '@tremor/react'
 
-import { type ReadableFormat } from './types'
-
 export interface BarChartProps extends TremorBarChartProps {
-  readable?: ReadableFormat
   readableColumn?: string
 }
 
 export function BarChart({
   data,
   index,
-  readable,
+  categories,
   readableColumn,
   ...props
 }: BarChartProps) {
   let valueFormatter = undefined
 
-  if (readable && readableColumn) {
+  if (readableColumn) {
     valueFormatter = (value: number) => {
-      const formated = data.find((d) => d[index] === value)?.[readableColumn]
+      for (let category of categories) {
+        const formated = data.find((row) => row[category] === value)?.[
+          readableColumn
+        ]
 
-      return formated ? formated : value
+        if (formated) {
+          return formated
+        }
+      }
+
+      return value
     }
   }
 
@@ -33,7 +38,9 @@ export function BarChart({
     <TremorBarChart
       data={data}
       index={index}
+      categories={categories}
       valueFormatter={valueFormatter}
+      showYAxis={false}
       {...props}
     />
   )

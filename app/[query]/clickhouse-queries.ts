@@ -163,7 +163,24 @@ export const queries: Array<QueryConfig> = [
       [
         'query-count',
         {
-          title: 'Total Running Queries over last 14 days (query / day)',
+          title: 'Running Queries over last 14 days (query / day)',
+          interval: 'toStartOfDay',
+          lastHours: 24 * 14,
+        },
+      ],
+      [
+        'query-duration',
+        {
+          title:
+            'Avg Queries Duration over last 14 days (AVG(duration in seconds) / day)',
+          interval: 'toStartOfDay',
+          lastHours: 24 * 14,
+        },
+      ],
+      [
+        'query-memory',
+        {
+          title: 'Avg Memory Usage for queries over last 14 days',
           interval: 'toStartOfDay',
           lastHours: 24 * 14,
         },

@@ -57,7 +57,6 @@ export async function ChartNewPartCreated({
         data={barData}
         index="event_time"
         categories={tables}
-        readable="quantity"
         stack
         {...props}
       />

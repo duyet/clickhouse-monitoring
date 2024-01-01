@@ -57,7 +57,6 @@ describe('<BarChart />', () => {
         data={data}
         categories={['A', 'B', 'C']}
         index="date"
-        readable="size"
         readableColumn="readable_A"
       />
     )

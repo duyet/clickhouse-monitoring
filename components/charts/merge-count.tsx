@@ -34,7 +34,6 @@ export async function ChartMergeCount({
           'avg_CurrentMetric_PartMutation',
         ]}
         readable="quantity"
-        stack
       />
     </ChartCard>
   )
