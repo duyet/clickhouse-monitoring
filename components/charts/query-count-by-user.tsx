@@ -48,8 +48,19 @@ export async function ChartQueryCountByUser({
         data={barData}
         index="event_time"
         categories={users}
-        readable="quantity"
         stack
+        colors={[
+          'indigo-300',
+          'rose-200',
+          '#ffcc33',
+          'green-300',
+          'blue-300',
+          'purple-300',
+          'pink-300',
+          'yellow-300',
+          'red-300',
+          'gray-300',
+        ]}
         {...props}
       />
     </ChartCard>

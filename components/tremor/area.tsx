@@ -96,6 +96,14 @@ export function AreaChart({
               category="value"
               index="name"
               variant="pie"
+              colors={[
+                'blue-300',
+                'purple-300',
+                'pink-300',
+                'yellow-300',
+                'red-300',
+                'gray-300',
+              ]}
             />
           </div>
           <div>

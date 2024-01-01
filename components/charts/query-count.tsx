@@ -58,6 +58,7 @@ export async function ChartQueryCount({
         stack
         breakdown="breakdown"
         showLegend={false}
+        colors={['#ffcc33']}
         {...props}
       />
     </ChartCard>
