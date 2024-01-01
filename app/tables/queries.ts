@@ -39,7 +39,8 @@ export const listTables = `
   tables_from_tables AS (
     SELECT database,
            name AS table,
-           engine
+           engine,
+           comment
     FROM system.tables
     WHERE database = {database: String}
   ),
