@@ -26,6 +26,7 @@ export default async function TableListPage({
       'compr_rate',
       'readable_total_rows',
       'part_count',
+      'comment',
     ],
     columnFormats: {
       part_count: ColumnFormat.Number,
