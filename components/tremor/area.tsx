@@ -27,6 +27,13 @@ export function AreaChart({
   readable,
   readableColumns,
   breakdown,
+  intervalType = 'preserveStartEnd',
+  animationDuration = 100,
+  autoMinValue = true,
+  showGridLines = false,
+  startEndOnly = true,
+  allowDecimals = false,
+  showYAxis = false,
   ...props
 }: AreaChartProps) {
   let valueFormatter = undefined
@@ -132,13 +139,13 @@ export function AreaChart({
       index={index}
       categories={categories}
       valueFormatter={valueFormatter}
-      intervalType="preserveStartEnd"
-      animationDuration={100}
-      autoMinValue={true}
-      showGridLines={false}
-      startEndOnly={true}
-      allowDecimals={false}
-      showYAxis={false}
+      intervalType={intervalType}
+      animationDuration={animationDuration}
+      autoMinValue={autoMinValue}
+      showGridLines={showGridLines}
+      startEndOnly={startEndOnly}
+      allowDecimals={allowDecimals}
+      showYAxis={showYAxis}
       {...(breakdown ? { customTooltip } : {})}
       {...props}
     />

@@ -90,6 +90,12 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'Backups and restores tables and databases. The information is taken from the system.backup_log table',
       },
+      {
+        title: 'Custom Dashboard',
+        href: '/dashboard',
+        description:
+          'Custom dashboard for monitoring ClickHouse. You can add your own charts and configure them',
+      },
     ],
   },
 ]

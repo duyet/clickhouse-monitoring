@@ -9,7 +9,7 @@ export const getClient = () =>
     request_timeout: parseInt(process.env.CLICKHOUSE_TIMEOUT ?? '100000'),
   })
 
-export const QUERY_COMMENT = '/* client=clickhouse-monitoring */ '
+export const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */ '
 
 export const fetchData = async (
   query: string,
@@ -32,3 +32,16 @@ export const fetchData = async (
 }
 
 export const fetchDataWithCache = () => cache(fetchData)
+
+export const query = async (
+  query: string,
+  params: Record<string, unknown> = {}
+) => {
+  const resultSet = await getClient().query({
+    query: QUERY_COMMENT + query,
+    format: 'JSON',
+    query_params: params,
+  })
+
+  return resultSet
+}
