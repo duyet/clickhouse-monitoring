@@ -52,7 +52,11 @@ export const queries: Array<QueryConfig> = [
         ) as readable_memory_usage,
         round(100 * memory_usage / max(memory_usage) OVER ()) AS pct_memory_usage,
         if(total_rows_approx > 0  AND query_kind != 'Insert', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
-        (elapsed / (read_rows / total_rows_approx)) * (1 - (read_rows / total_rows_approx)) AS estimated_remaining_time
+        (elapsed / (read_rows / total_rows_approx)) * (1 - (read_rows / total_rows_approx)) AS estimated_remaining_time,
+        formatReadableQuantity(ProfileEvents['Merge']) AS launched_merges,
+        formatReadableQuantity(ProfileEvents['MergedRows']) AS rows_before_merge,
+        formatReadableSize(ProfileEvents['MergedUncompressedBytes']) AS bytes_before_merge,
+        formatReadableTimeDelta(ProfileEvents['MergesTimeMilliseconds'] / 1000, 'days', 'minutes') AS merges_time
       FROM system.processes
       WHERE is_cancelled = 0
       ORDER BY elapsed
@@ -65,6 +69,10 @@ export const queries: Array<QueryConfig> = [
       'readable_written_rows',
       'readable_memory_usage',
       'progress',
+      'launched_merges',
+      'rows_before_merge',
+      'bytes_before_merge',
+      'merges_time',
       'query_id',
     ],
     columnFormats: {

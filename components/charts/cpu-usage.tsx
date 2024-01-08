@@ -11,12 +11,12 @@ export async function ChartCPUUsage({
   className,
 }: ChartProps) {
   const sql = `
-    SELECT ${interval}(event_time)::INT AS event_time,
+    SELECT ${interval}(event_time) AS event_time,
            avg(ProfileEvent_OSCPUVirtualTimeMicroseconds) / 1000000 as avg_cpu
     FROM system.metric_log
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
-    ORDER BY 1 WITH FILL STEP 60`
+    ORDER BY 1`
   const data = await fetchData(sql)
 
   return (

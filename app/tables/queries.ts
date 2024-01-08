@@ -11,7 +11,7 @@ export const listDatabases = `
          countDistinct(t.table) as count
   FROM system.databases AS d
   LEFT JOIN tables_from_tables AS t USING database
-  WHERE d.engine = 'Atomic'
+  WHERE d.engine != 'Memory'
   GROUP BY d.name
 `
 
