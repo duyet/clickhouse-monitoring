@@ -37,7 +37,7 @@ export default async function TableListPage({
     <div className="flex flex-col">
       <div>
         <Tabs defaultValue={database} className="w-full">
-          <TabsList className="mb-3 overflow-hidden">
+          <TabsList className="mb-3">
             {databases.map(({ name, count }) => (
               <TabsTrigger key={name} value={name} asChild>
                 <Link href={`/tables/${name}`}>
