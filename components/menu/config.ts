@@ -30,6 +30,13 @@ export const menuItemsConfig: MenuItem[] = [
           'Queries that have been run including successed, failed queries with resourses usage details',
       },
       {
+        title: 'Mutations',
+        href: '/mutations',
+        description:
+          'Information about mutations of MergeTree tables and their progress',
+        countSql: `SELECT COUNT() FROM system.mutations WHERE is_done = 0`,
+      },
+      {
         title: 'Failed Queries',
         href: '/failed-queries',
         description: 'Which queries have failed?',
