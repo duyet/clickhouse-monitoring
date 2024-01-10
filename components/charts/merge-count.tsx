@@ -1,3 +1,6 @@
+import Link from 'next/link'
+import { ArrowRightIcon } from '@radix-ui/react-icons'
+
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 import { ChartCard } from '@/components/chart-card'
@@ -24,7 +27,11 @@ export async function ChartMergeCount({
   const data = await fetchData(sql)
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard
+      title={title}
+      className={cn('justify-between', className)}
+      sql={sql}
+    >
       <AreaChart
         className={cn('h-52', chartClassName)}
         data={data}
@@ -35,6 +42,17 @@ export async function ChartMergeCount({
         ]}
         readable="quantity"
       />
+
+      <div className="text-muted-foreground flex flex-row justify-between gap-2 text-right text-sm">
+        <Link href="/mutations" className="flex flex-row items-center gap-2">
+          Merges
+          <ArrowRightIcon className="h-3 w-3" />
+        </Link>
+        <Link href="/mutations" className="flex flex-row items-center gap-2">
+          Mutations
+          <ArrowRightIcon className="h-3 w-3" />
+        </Link>
+      </div>
     </ChartCard>
   )
 }
