@@ -346,24 +346,24 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@clickhouse/client-common@0.2.7":
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/@clickhouse/client-common/-/client-common-0.2.7.tgz#c238ef9f5386f7d7a18e09931bb765a4ad4d7ebb"
-  integrity sha512-vgZm+8c5Cu1toIx1/xplF5dEHlCPw+7pJDOOEtLv2CIUVZ0Bl6nGVZ43EWxRdHeah9ivTfoRWhN1zI1PxjH0xQ==
+"@clickhouse/client-common@0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client-common/-/client-common-0.2.8.tgz#cc4206b4143a2c47c1d90906e06131f6a6bdd7a8"
+  integrity sha512-Sv3gYOPyQcj/1q+lRHxS2H/x6V+KCfG+gyoT9gmI3P+rGdM++e/pount5IOcLvIUvacO9f+llYyjlu2ansBr2Q==
 
 "@clickhouse/client-web@^0.2.5":
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/@clickhouse/client-web/-/client-web-0.2.7.tgz#60d401c770e16e15d005275c653d88e08cf8ed15"
-  integrity sha512-X0xwqKh3bdG23HzHxYi6luPEdZOanEWJZHZmiigKlNI4i7WMm4TbXCT2AnXKEBg5+Oa39S/I6Gwh3fLZzN9vzg==
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client-web/-/client-web-0.2.8.tgz#1655d20859ffe3403d219f915a3ce0293389f453"
+  integrity sha512-FzkVrw0TGm2E1Ht+My68x3o3EHuaWCnqOQx9cdhcH3O6ExFwjBVFtuABkqqJ+cYlFLubhGFR081d/kYvbqPhyw==
   dependencies:
-    "@clickhouse/client-common" "0.2.7"
+    "@clickhouse/client-common" "0.2.8"
 
 "@clickhouse/client@^0.2.5":
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/@clickhouse/client/-/client-0.2.7.tgz#f13103d7a4ab39d86307e6211504f46b8c71faae"
-  integrity sha512-ZiyarrGngHc+f5AjZSA7mkQfvnE/71jgXk304B0ps8V+aBpE2CsFB6AQmE/Mk2YkP5j+8r/JfG+m0AZWmE27ig==
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client/-/client-0.2.8.tgz#3e604112a9c4be3749a12706942a3c8c86be563c"
+  integrity sha512-GHOy0RSmMvhGENl7DUHxerPzTsqAgAV6fs5XUmj/wZO0LfMWrAV4zV+7AK3C/yQQ+D7PG6mKFhJxETPBAauBqA==
   dependencies:
-    "@clickhouse/client-common" "0.2.7"
+    "@clickhouse/client-common" "0.2.8"
 
 "@colors/colors@1.5.0":
   version "1.5.0"
@@ -1367,9 +1367,9 @@
   integrity sha512-SYXOBTjJb05rXa2vl55TTwO40A6wKu0R5i1qQwhJYNDIqaIGF7D0HsLw+pJAyi2OvntlEIVusx3xtbbgSUi6zg==
 
 "@tremor/react@^3.11.1":
-  version "3.13.0"
-  resolved "https://registry.yarnpkg.com/@tremor/react/-/react-3.13.0.tgz#5067fb13451212fea7c4f464d146ea430091d4fe"
-  integrity sha512-MkqIVHjGUut/zKoWe+tQlaVCWW6KU4T5SK/Gi7UKANplG15SNpINwltyuIGkM9WeEgFDM80kTe78b6PVSpgxrQ==
+  version "3.13.1"
+  resolved "https://registry.yarnpkg.com/@tremor/react/-/react-3.13.1.tgz#140ce33f380f51ef8ca42d0895cdac5220a10db4"
+  integrity sha512-vWUjWO5cRKaS4jocwmDM2wkVKi8biXyJJtHOmXKAfH7KFLDRcHEmCKjjr5l34wOp97TtSuG6L3gDzAeV/VRzhw==
   dependencies:
     "@floating-ui/react" "^0.19.2"
     "@headlessui/react" "^1.7.18"
@@ -4577,9 +4577,9 @@ prelude-ls@^1.2.1:
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
 prettier@^3.1.0:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.1.1.tgz#6ba9f23165d690b6cbdaa88cb0807278f7019848"
-  integrity sha512-22UbSzg8luF4UuZtzgiUOfcGM8s4tjBv6dJRT7j275NXsy2jb4aJa4NNveul5x4eqlF1wuhuR2RElK71RvmVaw==
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.2.2.tgz#96e580f7ca9c96090ad054616c0c4597e2844b65"
+  integrity sha512-HTByuKZzw7utPiDO523Tt2pLtEyK7OibUD9suEJQrPUCYQqrHr74GGX6VidMrovbf/I50mPqr8j/II6oBAuc5A==
 
 pretty-bytes@^5.6.0:
   version "5.6.0"
@@ -5577,9 +5577,9 @@ use-sidecar@^1.1.2:
     tslib "^2.0.0"
 
 usehooks-ts@^2.9.1:
-  version "2.9.2"
-  resolved "https://registry.yarnpkg.com/usehooks-ts/-/usehooks-ts-2.9.2.tgz#56ff2c3941195505efe6fc17fb57015e2a712576"
-  integrity sha512-fOzPeG01rs51CGYzqgioP/zs9v1Cgpe+zcXeqJPlDHYfdfG/wjsdjBWHJi+Ph1JgQAGUrDo5sJbPlaZd+Z9lxw==
+  version "2.9.4"
+  resolved "https://registry.yarnpkg.com/usehooks-ts/-/usehooks-ts-2.9.4.tgz#188c0428b60e37a7fdc599567c10ea44a77e1d11"
+  integrity sha512-VOSEbA+BGGORLttsICowNb5CG0D2/IEoVvMEl9OuuOoQi99W6XuNipo3SPFhWo3Bhdwi0Swj1D+IMQDQB9KrwQ==
 
 util-deprecate@^1.0.2:
   version "1.0.2"
