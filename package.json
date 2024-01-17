@@ -39,7 +39,7 @@
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
     "dayjs": "^1.11.10",
-    "lucide-react": "^0.311.0",
+    "lucide-react": "^0.312.0",
     "next": "^14.0.4",
     "react": "^18",
     "react-dom": "^18",
