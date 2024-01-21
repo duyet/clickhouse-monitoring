@@ -346,24 +346,24 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@clickhouse/client-common@0.2.8":
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/@clickhouse/client-common/-/client-common-0.2.8.tgz#cc4206b4143a2c47c1d90906e06131f6a6bdd7a8"
-  integrity sha512-Sv3gYOPyQcj/1q+lRHxS2H/x6V+KCfG+gyoT9gmI3P+rGdM++e/pount5IOcLvIUvacO9f+llYyjlu2ansBr2Q==
+"@clickhouse/client-common@0.2.9":
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client-common/-/client-common-0.2.9.tgz#a620d7d9486a68b98dbbba13d3ce4fc2c74daa7a"
+  integrity sha512-ecXcegMbT4HYNWtGcfyidW6lNVRqPogbFMY5kfjJmz4IXJ4WZbQMwj2IQgemwFwE7jyia2OEwPIVfw1sNfDHRA==
 
 "@clickhouse/client-web@^0.2.5":
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/@clickhouse/client-web/-/client-web-0.2.8.tgz#1655d20859ffe3403d219f915a3ce0293389f453"
-  integrity sha512-FzkVrw0TGm2E1Ht+My68x3o3EHuaWCnqOQx9cdhcH3O6ExFwjBVFtuABkqqJ+cYlFLubhGFR081d/kYvbqPhyw==
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client-web/-/client-web-0.2.9.tgz#a38e1a3ae86234c46e6a495fea29b8a67d1d233d"
+  integrity sha512-JQ9sTlfZQA9ikG2nMKUPeLXugJKW6SsJce6pcxZpGC6i+J1glyG47bOk2PKcghv+64FCjeOjJQ2ugEXcieWd8w==
   dependencies:
-    "@clickhouse/client-common" "0.2.8"
+    "@clickhouse/client-common" "0.2.9"
 
 "@clickhouse/client@^0.2.5":
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/@clickhouse/client/-/client-0.2.8.tgz#3e604112a9c4be3749a12706942a3c8c86be563c"
-  integrity sha512-GHOy0RSmMvhGENl7DUHxerPzTsqAgAV6fs5XUmj/wZO0LfMWrAV4zV+7AK3C/yQQ+D7PG6mKFhJxETPBAauBqA==
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client/-/client-0.2.9.tgz#c02239ed05de77527762c66970a3836496742c96"
+  integrity sha512-KqQlO9vZNSLyhMWG9+0/VXqcUZrNk1Hybr9icgI/nLCoX8RD19BJsakZJj38IQvQxNUTxvcItm/kyu/gD/9LXA==
   dependencies:
-    "@clickhouse/client-common" "0.2.8"
+    "@clickhouse/client-common" "0.2.9"
 
 "@colors/colors@1.5.0":
   version "1.5.0"
@@ -1343,23 +1343,23 @@
     tslib "^2.4.0"
 
 "@tanstack/react-table@^8.10.7":
-  version "8.11.6"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-table/-/react-table-8.11.6.tgz#ae234355eaae230ede95ebcbadb3251482eb6087"
-  integrity sha512-i0heTVZtuHF9VPMwcYoZ21hbzGDmLjxHYemDMvbGpjk5fUZ8nLF3S8qjVRU79XfPW8KK9o7iTU2fGFVQQmxMSQ==
+  version "8.11.7"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-table/-/react-table-8.11.7.tgz#a2934c1ee32025d58c9dc4d13cbc15fe0a3e045e"
+  integrity sha512-ZbzfMkLjxUTzNPBXJYH38pv2VpC9WUA+Qe5USSHEBz0dysDTv4z/ARI3csOed/5gmlmrPzVUN3UXGuUMbod3Jg==
   dependencies:
-    "@tanstack/table-core" "8.11.6"
+    "@tanstack/table-core" "8.11.7"
 
 "@tanstack/react-virtual@^3.0.0-beta.60":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.0.1.tgz#b04c492e4dd5733b72b10a974870880f83ff4698"
-  integrity sha512-IFOFuRUTaiM/yibty9qQ9BfycQnYXIDHGP2+cU+0LrFFGNhVxCXSQnaY6wkX8uJVteFEBjUondX0Hmpp7TNcag==
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.0.2.tgz#e5a979f2585d3f583944840319cddf2c2d1b0e51"
+  integrity sha512-9XbRLPKgnhMwwmuQMnJMv+5a9sitGNCSEtf/AZXzmJdesYk7XsjYHaEDny+IrJzvPNwZliIIDwCRiaUqR3zzCA==
   dependencies:
     "@tanstack/virtual-core" "3.0.0"
 
-"@tanstack/table-core@8.11.6":
-  version "8.11.6"
-  resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.11.6.tgz#ab753617b64d72f868f6ea4666059912f0c98441"
-  integrity sha512-69WEY1PaZROaGYUrseng4/4sMYnRGhDe1vM6888CnWekGz/wuCnvqwOoOuKGYivnaiI4BVmZq4WKWhvahyj3/g==
+"@tanstack/table-core@8.11.7":
+  version "8.11.7"
+  resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.11.7.tgz#266af5af8576e8860df8abfe4e32e9c4ffbc76b0"
+  integrity sha512-N3ksnkbPbsF3PjubuZCB/etTqvctpXWRHIXTmYfJFnhynQKjeZu8BCuHvdlLPpumKbA+bjY4Ay9AELYLOXPWBg==
 
 "@tanstack/virtual-core@3.0.0":
   version "3.0.0"
@@ -1367,9 +1367,9 @@
   integrity sha512-SYXOBTjJb05rXa2vl55TTwO40A6wKu0R5i1qQwhJYNDIqaIGF7D0HsLw+pJAyi2OvntlEIVusx3xtbbgSUi6zg==
 
 "@tremor/react@^3.11.1":
-  version "3.13.1"
-  resolved "https://registry.yarnpkg.com/@tremor/react/-/react-3.13.1.tgz#140ce33f380f51ef8ca42d0895cdac5220a10db4"
-  integrity sha512-vWUjWO5cRKaS4jocwmDM2wkVKi8biXyJJtHOmXKAfH7KFLDRcHEmCKjjr5l34wOp97TtSuG6L3gDzAeV/VRzhw==
+  version "3.13.2"
+  resolved "https://registry.yarnpkg.com/@tremor/react/-/react-3.13.2.tgz#968912c9afba7172ebca0c0be0fe104b20d322d4"
+  integrity sha512-Imw5wei9A8fOUIKkqt8+XDzY8NCh88cO/hmzhv0HV+SMydj/Km0WpMvQqeo1Ft6GUIVNhcIo1L/T3/02+OwHWA==
   dependencies:
     "@floating-ui/react" "^0.19.2"
     "@headlessui/react" "^1.7.18"
@@ -5574,9 +5574,9 @@ verror@1.10.0:
     extsprintf "^1.2.0"
 
 victory-vendor@^36.6.8:
-  version "36.8.1"
-  resolved "https://registry.yarnpkg.com/victory-vendor/-/victory-vendor-36.8.1.tgz#c012297de51efbd26dc582f1802aa58445462dc2"
-  integrity sha512-T8cXN8D6J9wEtDEHLiXcgrOE5gyKR39s9fCFTGmcOfqDrT8m2XQLt+2p/n007uxEMRvCDH7GYYqy4vV7GIcGhw==
+  version "36.8.2"
+  resolved "https://registry.yarnpkg.com/victory-vendor/-/victory-vendor-36.8.2.tgz#523e97a78ac8af73c526eb9fd3921d6972100600"
+  integrity sha512-NfSQi7ISCdBbDpn3b6rg+8RpFZmWIM9mcks48BbogHE2F6h1XKdA34oiCKP5hP1OGvTotDRzsexiJKzrK4Exuw==
   dependencies:
     "@types/d3-array" "^3.0.3"
     "@types/d3-ease" "^3.0.0"
