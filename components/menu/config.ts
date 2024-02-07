@@ -102,12 +102,14 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/replicas',
         description:
           'Contains information and status for replicated tables residing on the local server',
+        countSql: `SELECT COUNT() FROM system.replicas`,
       },
       {
         title: 'Replication Queue',
         href: '/replication_queue',
         description:
           'Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family',
+        countSql: `SELECT COUNT() FROM system.replication_queue`,
       },
       {
         title: 'Custom Dashboard',

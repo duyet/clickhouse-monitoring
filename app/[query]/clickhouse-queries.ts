@@ -704,17 +704,20 @@ export const queries: Array<QueryConfig> = [
     columns: [
       'table',
       'engine',
+      'future_parts',
+      'queue_size',
+      'absolute_delay',
+      'total_replicas',
+      'active_replicas',
       'is_leader',
       'can_become_leader',
       'is_readonly',
       'is_session_expired',
-      'future_parts',
       'parts_to_check',
       'zookeeper_path',
       'replica_name',
       'replica_path',
       'columns_version',
-      'queue_size',
       'inserts_in_queue',
       'merges_in_queue',
       'part_mutations_in_queue',
@@ -728,9 +731,6 @@ export const queries: Array<QueryConfig> = [
       'log_max_index',
       'log_pointer',
       'last_queue_update',
-      'absolute_delay',
-      'total_replicas',
-      'active_replicas',
       'last_queue_update_exception',
       'zookeeper_exception',
     ],
@@ -743,6 +743,20 @@ export const queries: Array<QueryConfig> = [
       is_session_expired: ColumnFormat.Boolean,
       replica_name: ColumnFormat.ColoredBadge,
     },
+    relatedCharts: [
+      [
+        'replication-queue-count',
+        {
+          title: 'Replication Status',
+        },
+      ],
+      [
+        'replication-summary-table',
+        {
+          title: 'Replication Summary',
+        },
+      ],
+    ],
   },
   {
     name: 'replication_queue',
@@ -787,7 +801,20 @@ export const queries: Array<QueryConfig> = [
       required_quorum: ColumnFormat.Boolean,
       last_exception: ColumnFormat.CodeToggle,
     },
-    relatedCharts: [],
+    relatedCharts: [
+      [
+        'replication-queue-count',
+        {
+          title: 'Replication Status',
+        },
+      ],
+      [
+        'replication-summary-table',
+        {
+          title: 'Replication Summary',
+        },
+      ],
+    ],
   },
 ]
 
