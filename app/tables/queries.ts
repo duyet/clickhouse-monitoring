@@ -28,7 +28,10 @@ export const listTables = `
         round(uncompressed / compressed, 2) AS compr_rate,
         sum(rows) AS total_rows,
         formatReadableQuantity(sum(rows)) AS readable_total_rows,
-        count() AS part_count
+        count() AS part_count,
+        compressed / part_count AS avg_part_size,
+        formatReadableSize(avg_part_size) AS readable_avg_part_size,
+        round(100 * avg_part_size / MAX(avg_part_size) OVER (), 2) AS pct_avg_part_size
     FROM system.parts
     WHERE active = 1 AND database = {database: String}
     GROUP BY database,
@@ -58,6 +61,7 @@ export const listTables = `
     round(100 * uncompressed / max(uncompressed) OVER ()) AS pct_uncompressed,
     round(100 * total_rows / max(total_rows) OVER ()) AS pct_total_rows,
     round(100 * part_count / max(part_count) OVER ()) AS pct_part_count,
-    round(100 * compr_rate / max(compr_rate) OVER ()) AS pct_compr_rate
+    round(100 * compr_rate / max(compr_rate) OVER ()) AS pct_compr_rate,
+    database || '.' || table as action
   FROM summary
 `

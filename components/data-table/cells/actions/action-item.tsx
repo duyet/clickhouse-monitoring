@@ -10,7 +10,7 @@ import {
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/components/ui/use-toast'
 
-import { killQuery } from './actions'
+import { killQuery, optimizeTable } from './actions'
 import { type Action } from './types'
 
 type Message = {
@@ -35,9 +35,16 @@ export function ActionItem({ action, value }: ActionButtonProps) {
       label: 'Kill Query',
       handler: killQuery.bind(null, value),
     },
+    optimize: {
+      label: 'Optimize Table',
+      handler: optimizeTable.bind(null, value),
+    },
   }
 
-  const { label, handler } = availableActions[action]
+  const { label, handler } = availableActions[action] || {
+    label: action,
+    handler: null,
+  }
 
   return (
     <form
@@ -61,20 +68,20 @@ export function ActionItem({ action, value }: ActionButtonProps) {
       <DropdownMenuItem>
         {status == 'loading' && (
           <span className="flex flex-row items-center gap-2">
-            <UpdateIcon className="h-4 w-4 animate-spin" /> {label}
+            <UpdateIcon className="size-4 animate-spin" /> {label}
           </span>
         )}
 
         {status == 'failed' && (
           <span className="flex flex-row items-center gap-2">
-            <ExclamationTriangleIcon className="h-4 w-4 text-orange-500" />{' '}
+            <ExclamationTriangleIcon className="size-4 text-orange-500" />{' '}
             {label}
           </span>
         )}
 
         {status == 'success' && (
           <span className="flex flex-row items-center gap-2">
-            <CheckCircledIcon className="h-4 w-4 text-lime-600" /> {label}
+            <CheckCircledIcon className="size-4 text-lime-600" /> {label}
           </span>
         )}
 

@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Toaster } from '@/components/ui/toaster'
 import {
   getColumnDefs,
   normalizeColumnName,
@@ -102,6 +103,8 @@ export function DataTable<TData extends RowData, TValue>({
 
   return (
     <div>
+      <Toaster />
+
       <div className="flex flex-row items-center justify-between pb-4">
         <div>
           <h1 className="text-muted-foreground text-xl">{title}</h1>

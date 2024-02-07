@@ -98,6 +98,20 @@ export const menuItemsConfig: MenuItem[] = [
           'Backups and restores tables and databases. The information is taken from the system.backup_log table',
       },
       {
+        title: 'Replicas',
+        href: '/replicas',
+        description:
+          'Contains information and status for replicated tables residing on the local server',
+        countSql: `SELECT COUNT() FROM system.replicas`,
+      },
+      {
+        title: 'Replication Queue',
+        href: '/replication_queue',
+        description:
+          'Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family',
+        countSql: `SELECT COUNT() FROM system.replication_queue`,
+      },
+      {
         title: 'Custom Dashboard',
         href: '/dashboard',
         description:

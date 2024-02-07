@@ -98,7 +98,7 @@ export function AreaChart({
         <div className="flex flex-row gap-2">
           <div className="flex flex-row items-center bg-slate-50 p-3 align-middle">
             <DonutChart
-              className="h-28 w-28"
+              className="size-28"
               data={data}
               category="value"
               index="name"

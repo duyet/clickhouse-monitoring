@@ -46,11 +46,11 @@ export async function ChartMergeCount({
       <div className="text-muted-foreground flex flex-row justify-between gap-2 text-right text-sm">
         <Link href="/mutations" className="flex flex-row items-center gap-2">
           Merges
-          <ArrowRightIcon className="h-3 w-3" />
+          <ArrowRightIcon className="size-3" />
         </Link>
         <Link href="/mutations" className="flex flex-row items-center gap-2">
           Mutations
-          <ArrowRightIcon className="h-3 w-3" />
+          <ArrowRightIcon className="size-3" />
         </Link>
       </div>
     </ChartCard>

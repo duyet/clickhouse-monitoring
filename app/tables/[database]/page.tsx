@@ -26,7 +26,9 @@ export default async function TableListPage({
       'compr_rate',
       'readable_total_rows',
       'part_count',
+      'readable_avg_part_size',
       'comment',
+      'action',
     ],
     columnFormats: {
       part_count: ColumnFormat.Number,
@@ -35,7 +37,9 @@ export default async function TableListPage({
       readable_compressed: ColumnFormat.BackgroundBar,
       readable_uncompressed: ColumnFormat.BackgroundBar,
       readable_total_rows: ColumnFormat.BackgroundBar,
+      readable_avg_part_size: ColumnFormat.BackgroundBar,
       compr_rate: ColumnFormat.BackgroundBar,
+      action: [ColumnFormat.Action, ['optimize']],
     },
   }
 
