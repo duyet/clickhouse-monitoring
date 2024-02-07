@@ -23,7 +23,12 @@ export async function ChartReplicationSummaryTable({
     FROM system.replication_queue
     GROUP BY 1, 2
   `
-  const data = await fetchData(sql) as { table: string, type: string, current_executing: number, total: number }[]
+  const data = (await fetchData(sql)) as {
+    table: string
+    type: string
+    current_executing: number
+    total: number
+  }[]
 
   const headers = Object.keys(data?.[0] || {})
 
@@ -33,7 +38,7 @@ export async function ChartReplicationSummaryTable({
       className={cn('justify-between', className)}
       sql={sql}
     >
-      <div className='flex flex-col justify-between p-0'>
+      <div className="flex flex-col justify-between p-0">
         <Table className={className}>
           <TableHeader>
             <TableRow>
