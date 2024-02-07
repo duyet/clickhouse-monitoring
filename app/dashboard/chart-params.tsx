@@ -72,7 +72,7 @@ export const ChartParams = ({ params }: ChartParamsProps) => {
         <Button type="submit" variant={!error ? 'outline' : 'destructive'}>
           {form.formState.isSubmitting ? (
             <span className="flex-rows flex gap-2">
-              <UpdateIcon className="mr-2 h-3 w-3 animate-spin" />
+              <UpdateIcon className="mr-2 size-3 animate-spin" />
               Updating...
             </span>
           ) : (
