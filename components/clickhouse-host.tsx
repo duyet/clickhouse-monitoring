@@ -2,15 +2,15 @@ import { fetchData } from '@/lib/clickhouse'
 import { getHost } from '@/lib/utils'
 
 const Online = () => (
-  <span className="relative flex h-2 w-2">
-    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
-    <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-500"></span>
+  <span className="relative flex size-2">
+    <span className="absolute inline-flex size-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
+    <span className="relative inline-flex size-2 rounded-full bg-sky-500"></span>
   </span>
 )
 
 const Offline = () => (
-  <span className="relative flex h-2 w-2">
-    <span className="absolute inline-flex h-full w-full rounded-full bg-red-400"></span>
+  <span className="relative flex size-2">
+    <span className="absolute inline-flex size-full rounded-full bg-red-400"></span>
   </span>
 )
 
@@ -22,9 +22,11 @@ export async function ClickHouseHost() {
   let isOnline
   let message
   try {
-    await fetchData('SELECT 1')
+    const rows = await fetchData(
+      'SELECT formatReadableTimeDelta(uptime()) as uptime'
+    )
     isOnline = true
-    message = 'Online'
+    message = 'Online: ' + (rows?.[0]?.uptime ? `: ${rows[0].uptime}` : '')
   } catch (e) {
     isOnline = false
     message = `Offline: ${e}`
