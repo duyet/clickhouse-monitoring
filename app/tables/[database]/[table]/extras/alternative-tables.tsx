@@ -40,10 +40,10 @@ export async function AlternativeTables({
           size="sm"
           className="text-muted-foreground group flex flex-row gap-2"
         >
-          <CardStackMinusIcon className="h-3 w-3" />
+          <CardStackMinusIcon className="size-3" />
           {database}
           <ChevronDownIcon
-            className="h-3 w-3 transition duration-300 group-data-[state=open]:rotate-180"
+            className="size-3 transition duration-300 group-data-[state=open]:rotate-180"
             aria-hidden="true"
           />
         </Button>
@@ -57,11 +57,11 @@ export async function AlternativeTables({
               className="flex flex-row items-center gap-2"
             >
               {name == table ? (
-                <DotFilledIcon className="h-3 w-3" />
+                <DotFilledIcon className="size-3" />
               ) : (
-                <div className="h-3 w-3" />
+                <div className="size-3" />
               )}
-              <TableIcon className="h-3 w-3" />
+              <TableIcon className="size-3" />
               {name}
             </Link>
           </DropdownMenuItem>

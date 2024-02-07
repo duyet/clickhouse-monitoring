@@ -67,7 +67,7 @@ export function ReloadButton({ className }: ReloadButtonProps) {
         >
           <span>{countDown}s</span>
           <ReloadIcon
-            className={cn('h-4 w-4', isLoading ? 'animate-spin' : '')}
+            className={cn('size-4', isLoading ? 'animate-spin' : '')}
           />
         </Button>
       </DropdownMenuTrigger>

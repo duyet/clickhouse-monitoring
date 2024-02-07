@@ -25,7 +25,7 @@ export function ColumnVisibilityButton<TData>({
           aria-label="Column Options"
           title="Column Options"
         >
-          <MixerHorizontalIcon className="h-4 w-4" />
+          <MixerHorizontalIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

@@ -40,7 +40,7 @@ export async function SampleDataButton({
           aria-label="Table Info"
           title="More about this table"
         >
-          <TableIcon className="h-3 w-3" />
+          <TableIcon className="size-3" />
           Sample Data
         </Button>
       </DialogTrigger>

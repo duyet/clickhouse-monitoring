@@ -93,7 +93,7 @@ const Extras = ({ database, table }: { database: string; table: string }) => (
           size="sm"
           className="text-muted-foreground flex flex-row gap-2"
         >
-          <ArrowLeftIcon className="h-3 w-3" />
+          <ArrowLeftIcon className="size-3" />
           Back to {database}
         </Button>
       </Link>

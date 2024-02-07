@@ -28,7 +28,7 @@ export function LinkFormat({ row, value, options }: LinkFormatProps) {
   return (
     <Link href={href} className="group flex flex-row items-center gap-1">
       {value}
-      <ArrowRightIcon className="h-3 w-3 text-transparent group-hover:text-current" />
+      <ArrowRightIcon className="size-3 text-transparent group-hover:text-current" />
     </Link>
   )
 }

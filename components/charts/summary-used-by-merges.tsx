@@ -157,7 +157,7 @@ export async function ChartSummaryUsedByMerges({
               {rowsReadWritten.readable_rows_read} rows read,{' '}
               {used.readable_memory_usage} memory used for merges
               <Link href="/merges" className="inline">
-                <ArrowRightIcon className="h-5 w-5" />
+                <ArrowRightIcon className="size-5" />
               </Link>
             </span>
           }

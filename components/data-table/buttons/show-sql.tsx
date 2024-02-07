@@ -21,7 +21,7 @@ export function ShowSQLButton({ sql }: ShowSQLButtonProps) {
           aria-label="Show SQL"
           title="Show SQL for this table"
         >
-          <CodeIcon className="h-4 w-4" />
+          <CodeIcon className="size-4" />
         </Button>
       }
       sql={sql}

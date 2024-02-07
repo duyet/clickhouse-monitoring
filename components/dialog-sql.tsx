@@ -26,7 +26,7 @@ export function DialogSQL({
       aria-label="Show SQL"
       title="Show SQL for this table"
     >
-      <CodeIcon className="h-4 w-4" />
+      <CodeIcon className="size-4" />
     </Button>
   ),
   title = 'SQL Code',
