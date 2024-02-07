@@ -106,10 +106,22 @@ export const menuItemsConfig: MenuItem[] = [
       },
       {
         title: 'Replication Queue',
-        href: '/replication_queue',
+        href: '/replication-queue',
         description:
           'Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family',
         countSql: `SELECT COUNT() FROM system.replication_queue`,
+      },
+      {
+        title: 'Metrics',
+        href: '/metrics',
+        description:
+          'Contains metrics which can be calculated instantly, or have a current value',
+      },
+      {
+        title: 'Asynchronous Metrics',
+        href: '/asynchronous-metrics',
+        description:
+          'Contains metrics that are calculated periodically in the background',
       },
       {
         title: 'Custom Dashboard',

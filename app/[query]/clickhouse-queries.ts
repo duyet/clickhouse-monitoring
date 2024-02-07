@@ -759,7 +759,7 @@ export const queries: Array<QueryConfig> = [
     ],
   },
   {
-    name: 'replication_queue',
+    name: 'replication-queue',
     description: `Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family`,
     sql: `
       SELECT *,
@@ -815,6 +815,36 @@ export const queries: Array<QueryConfig> = [
         },
       ],
     ],
+  },
+  {
+    name: 'metrics',
+    description:
+      'Contains metrics which can be calculated instantly, or have a current value',
+    sql: `
+      SELECT *
+      FROM system.metrics
+      ORDER BY metric
+    `,
+    columns: ['metric', 'value', 'description'],
+    columnFormats: {
+      metric: ColumnFormat.Code,
+      value: ColumnFormat.Code,
+    },
+  },
+  {
+    name: 'asynchronous-metrics',
+    description:
+      'Contains metrics that are calculated periodically in the background. For example, the amount of RAM in use',
+    sql: `
+      SELECT *
+      FROM system.asynchronous_metrics
+      ORDER BY metric
+    `,
+    columns: ['metric', 'value', 'description'],
+    columnFormats: {
+      metric: ColumnFormat.Code,
+      value: ColumnFormat.Code,
+    },
   },
 ]
 
