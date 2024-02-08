@@ -137,7 +137,7 @@ export async function ChartSummaryUsedByRunningQueries({
               {first.query_count} queries, {first.readable_memory_usage} memory
               used for running queries
               <Link href="/running-queries" className="inline">
-                <ArrowRightIcon className="h-5 w-5" />
+                <ArrowRightIcon className="size-5" />
               </Link>
             </span>
           }

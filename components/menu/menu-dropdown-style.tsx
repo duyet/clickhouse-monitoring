@@ -29,7 +29,7 @@ export function MenuDropdownStyle({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className={className} role="menu">
-          <HamburgerMenuIcon className="h-3 w-3" />
+          <HamburgerMenuIcon className="size-3" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">

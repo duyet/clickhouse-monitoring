@@ -31,7 +31,7 @@ export function ChartCard({ title, className, sql, children }: ChartCardProps) {
                   size="sm"
                   variant="ghost"
                 >
-                  <CodeIcon className="h-3 w-3" />
+                  <CodeIcon className="size-3" />
                 </Button>
               }
               sql={sql}

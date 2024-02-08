@@ -82,13 +82,13 @@ export const getColumnDefs = (config: QueryConfig): ColumnDef<ColumnType>[] => {
           {formatHeader(name, columnFormat)}
 
           {column.getIsSorted() === false ? (
-            <CaretSortIcon className="ml-2 h-4 w-4" />
+            <CaretSortIcon className="ml-2 size-4" />
           ) : null}
           {column.getIsSorted() === 'asc' ? (
-            <CaretUpIcon className="ml-2 h-4 w-4" />
+            <CaretUpIcon className="ml-2 size-4" />
           ) : null}
           {column.getIsSorted() === 'desc' ? (
-            <CaretDownIcon className="ml-2 h-4 w-4" />
+            <CaretDownIcon className="ml-2 size-4" />
           ) : null}
         </Button>
       ),

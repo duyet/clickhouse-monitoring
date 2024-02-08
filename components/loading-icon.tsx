@@ -9,7 +9,7 @@ interface LoadingIconProps {
 export function LoadingIcon({ className }: LoadingIconProps) {
   return (
     <UpdateIcon
-      className={cn('h-3 w-3 animate-spin text-gray-400', className)}
+      className={cn('size-3 animate-spin text-gray-400', className)}
     />
   )
 }

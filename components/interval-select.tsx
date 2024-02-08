@@ -63,7 +63,7 @@ export function IntervalSelect({ values = [] }: IntervalSelectProps) {
                 (i) => i.value.toLowerCase() === interval.toLowerCase()
               )?.label
             : 'Select...'}
-          <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <CaretSortIcon className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[100px] p-0">
@@ -83,7 +83,7 @@ export function IntervalSelect({ values = [] }: IntervalSelectProps) {
                 {i.label}
                 <CheckIcon
                   className={cn(
-                    'ml-auto h-4 w-4',
+                    'ml-auto size-4',
                     interval === i.value ? 'opacity-100' : 'opacity-0'
                   )}
                 />

@@ -75,7 +75,7 @@ export async function TableInfo({
           aria-label="Table Info"
           title="More about this table"
         >
-          <InfoCircledIcon className="h-3 w-3" />
+          <InfoCircledIcon className="size-3" />
           Table Info
         </Button>
       </DialogTrigger>

@@ -41,7 +41,7 @@ export async function RunningQueriesButton({
           aria-label="Table Info"
           title="More about this table"
         >
-          <BarChartIcon className="h-3 w-3" />
+          <BarChartIcon className="size-3" />
           Running Queries
           <RunningQueriesCount database={database} table={table} />
         </Button>

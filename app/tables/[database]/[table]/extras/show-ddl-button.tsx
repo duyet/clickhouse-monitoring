@@ -38,7 +38,7 @@ export async function ShowDDL({
           aria-label="Show DDL"
           title="Show Table DDL Table Definition"
         >
-          <CodeIcon className="h-3 w-3" />
+          <CodeIcon className="size-3" />
           Show DDL
         </Button>
       </DialogTrigger>
