@@ -1,9 +1,20 @@
 import { cache } from 'react'
 import { createClient } from '@clickhouse/client'
 
+export const getClickHouseHosts = () => {
+  const hosts = (process.env.CLICKHOUSE_HOST || '')
+    .split(',')
+    .map((host) => host.trim())
+    .filter(Boolean)
+
+  return hosts
+}
+
+export const getClickHouseHost = () => getClickHouseHosts()[0]
+
 export const getClient = () =>
   createClient({
-    host: process.env.CLICKHOUSE_HOST ?? 'http://localhost:8123',
+    host: getClickHouseHost(),
     username: process.env.CLICKHOUSE_USER ?? 'default',
     password: process.env.CLICKHOUSE_PASSWORD ?? '',
     request_timeout: parseInt(process.env.CLICKHOUSE_TIMEOUT ?? '100000'),
