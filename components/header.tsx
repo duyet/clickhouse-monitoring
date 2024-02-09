@@ -23,9 +23,9 @@ export function Header() {
             <span className="hidden sm:flex">{TITLE}</span>
             <span className="flex sm:hidden">{TITLE_SHORT}</span>
           </h2>
-          <p className="text-muted-foreground">
+          <div className="text-muted-foreground">
             <ClickHouseHost />
-          </p>
+          </div>
         </div>
       </div>
       <div className="flex items-center space-x-2">
