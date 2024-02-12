@@ -12,12 +12,16 @@ interface PageProps {
   params: {
     query: string
   }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 30
 
-export default async function Page({ params: { query } }: PageProps) {
+export default async function Page({
+  params: { query },
+  searchParams,
+}: PageProps) {
   noStore()
 
   // Get the query config
@@ -28,7 +32,7 @@ export default async function Page({ params: { query } }: PageProps) {
 
   // Fetch the data from ClickHouse
   try {
-    const data = await fetchData(config.sql)
+    const data = await fetchData(config.sql, searchParams)
 
     return (
       <div className="flex flex-col">
@@ -36,7 +40,7 @@ export default async function Page({ params: { query } }: PageProps) {
 
         <div>
           <DataTable
-            title={query.replace('-', ' ')}
+            title={query.replaceAll('-', ' ')}
             config={config}
             data={data}
           />
