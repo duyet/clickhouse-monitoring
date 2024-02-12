@@ -193,6 +193,15 @@ export const queries: Array<QueryConfig> = [
           lastHours: 24 * 14,
         },
       ],
+      [
+        'query-count-by-user',
+        {
+          title: 'Total Queries over last 14 days by users',
+          interval: 'toStartOfDay',
+          lastHours: 24 * 14,
+          showLegend: false,
+        },
+      ],
     ],
   },
   {
@@ -232,7 +241,7 @@ export const queries: Array<QueryConfig> = [
           ProfileEvents,
           Settings
       FROM system.query_log
-      WHERE type IN ['3', '4']
+      WHERE type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
       ORDER BY query_start_time DESC
       LIMIT 100
     `,
@@ -273,8 +282,8 @@ export const queries: Array<QueryConfig> = [
       query_duration_ms: ColumnFormat.Duration,
       query_start_time: ColumnFormat.RelatedTime,
       normalized_query: ColumnFormat.Code,
-      exception: ColumnFormat.Code,
-      stack_trace: ColumnFormat.Code,
+      exception: ColumnFormat.CodeToggle,
+      stack_trace: ColumnFormat.CodeToggle,
       client: ColumnFormat.Code,
     },
   },
@@ -844,6 +853,48 @@ export const queries: Array<QueryConfig> = [
     columnFormats: {
       metric: ColumnFormat.Code,
       value: ColumnFormat.Code,
+    },
+  },
+  {
+    name: 'top-usage-tables',
+    description:
+      'Most usage tables, ignore system tables, based on system.query_log (top 50)',
+    sql: `
+      SELECT
+          tables as table,
+          count() as count,
+          round(100 * count() / max(count()) OVER ()) as pct_count
+      FROM system.query_log
+      ARRAY JOIN tables
+      WHERE (tables NOT LIKE '%temp%')
+            AND (tables NOT LIKE '_table_function%')
+            AND (tables NOT LIKE 'system%')
+      GROUP BY 1
+      ORDER BY 2 DESC
+      LIMIT 50`,
+    columns: ['table', 'count'],
+    columnFormats: {
+      table: [ColumnFormat.Link, { href: `/top-usage-columns?table=[table]` }],
+      count: ColumnFormat.BackgroundBar,
+    },
+  },
+  {
+    name: 'top-usage-columns',
+    description: 'Most usage columns of table based on system.query_log',
+    sql: `
+      SELECT
+          columns as column,
+          count() as count,
+          round(100 * count() / max(count()) OVER ()) as pct_count
+      FROM system.query_log
+      ARRAY JOIN columns
+      WHERE has(tables, {table: String})
+            AND (positionCaseInsensitive(column, {table:String}) != 0)
+      GROUP BY 1
+      ORDER BY 2 DESC`,
+    columns: ['column', 'count'],
+    columnFormats: {
+      count: ColumnFormat.BackgroundBar,
     },
   },
 ]

@@ -129,6 +129,11 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'Custom dashboard for monitoring ClickHouse. You can add your own charts and configure them',
       },
+      {
+        title: 'Top Usage Tables',
+        href: '/top-usage-tables',
+        description: 'Most usage tables, ignore system tables (top 50)',
+      },
     ],
   },
 ]
