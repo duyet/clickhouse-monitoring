@@ -866,9 +866,11 @@ export const queries: Array<QueryConfig> = [
           round(100 * count() / max(count()) OVER ()) as pct_count
       FROM system.query_log
       ARRAY JOIN tables
-      WHERE (tables NOT LIKE '%temp%')
-            AND (tables NOT LIKE '_table_function%')
-            AND (tables NOT LIKE 'system%')
+      WHERE (query_kind = 'Select')
+        AND (type = 'QueryFinish')
+        AND (tables NOT LIKE '%temp%')
+        AND (tables NOT LIKE '_table_function%')
+        AND (tables NOT LIKE 'system%')
       GROUP BY 1
       ORDER BY 2 DESC
       LIMIT 50`,
@@ -888,8 +890,10 @@ export const queries: Array<QueryConfig> = [
           round(100 * count() / max(count()) OVER ()) as pct_count
       FROM system.query_log
       ARRAY JOIN columns
-      WHERE has(tables, {table: String})
-            AND (positionCaseInsensitive(column, {table:String}) != 0)
+      WHERE (query_kind = 'Select')
+        AND (type = 'QueryFinish')
+        AND (has(tables, {table: String}))
+        AND (positionCaseInsensitive(column, {table:String}) != 0)
       GROUP BY 1
       ORDER BY 2 DESC`,
     columns: ['column', 'count'],
