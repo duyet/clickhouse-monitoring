@@ -1,3 +1,4 @@
+import type { PartialBy } from '@/lib/types/generic'
 import type { ChartProps } from '@/components/charts/chart-props'
 import type {
   ColumnFormat,
@@ -20,7 +21,7 @@ export interface QueryConfig {
    *   query: ColumnFormat.Code,
    *   changed: ColumnFormat.Boolean,
    *   query_id: [ColumnFormat.Action, ['kill-query']],
-   *   table: [ColumnFormat.Link, { href: '/tables/{table}' }],
+   *   table: [ColumnFormat.Link, { href: '/tables/[table]' }],
    * }
    * ```
    */
@@ -29,3 +30,5 @@ export interface QueryConfig {
   }
   relatedCharts?: string[] | [string, ChartProps][]
 }
+
+export type QueryConfigNoName = PartialBy<QueryConfig, 'name'>
