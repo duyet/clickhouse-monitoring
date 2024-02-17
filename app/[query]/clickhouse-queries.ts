@@ -51,12 +51,16 @@ export const queries: Array<QueryConfig> = [
           formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')'
         ) as readable_memory_usage,
         round(100 * memory_usage / max(memory_usage) OVER ()) AS pct_memory_usage,
-        if(total_rows_approx > 0  AND query_kind != 'Insert', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
+        if(total_rows_approx > 0 AND query_kind = 'Select', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
         (elapsed / (read_rows / total_rows_approx)) * (1 - (read_rows / total_rows_approx)) AS estimated_remaining_time,
         formatReadableQuantity(ProfileEvents['Merge']) AS launched_merges,
         formatReadableQuantity(ProfileEvents['MergedRows']) AS rows_before_merge,
         formatReadableSize(ProfileEvents['MergedUncompressedBytes']) AS bytes_before_merge,
-        formatReadableTimeDelta(ProfileEvents['MergesTimeMilliseconds'] / 1000, 'days', 'minutes') AS merges_time
+        formatReadableTimeDelta(ProfileEvents['MergesTimeMilliseconds'] / 1000, 'days', 'minutes') AS merges_time,
+        formatReadableTimeDelta(ProfileEvents['PartsLockHoldMicroseconds'] / 1000 / 1000) AS parts_lock_hold,
+        ProfileEvents['FileOpen'] AS file_open,
+        ProfileEvents['ContextLock'] AS context_lock,
+        ProfileEvents['RWLockAcquiredReadLocks'] AS rw_lock_acquired_read_locks
       FROM system.processes
       WHERE is_cancelled = 0
       ORDER BY elapsed
@@ -73,16 +77,21 @@ export const queries: Array<QueryConfig> = [
       'rows_before_merge',
       'bytes_before_merge',
       'merges_time',
+      'file_open',
+      'parts_lock_hold',
+      'context_lock',
+      'rw_lock_acquired_read_locks',
       'query_id',
     ],
     columnFormats: {
       query: ColumnFormat.CodeToggle,
       estimated_remaining_time: ColumnFormat.Duration,
-      query_id: [ColumnFormat.Action, ['kill-query']],
+      query_id: [ColumnFormat.Action, ['kill-query', 'query-settings']],
       readable_elapsed: ColumnFormat.BackgroundBar,
       readable_read_rows: ColumnFormat.BackgroundBar,
       readable_written_rows: ColumnFormat.BackgroundBar,
       readable_memory_usage: ColumnFormat.BackgroundBar,
+      file_open: ColumnFormat.Number,
     },
     relatedCharts: [
       [

@@ -4,6 +4,7 @@ import Script from 'next/script'
 
 import '@/app/globals.css'
 
+import { Toaster } from '@/components/ui/toaster'
 import { Header } from '@/components/header'
 import { AppProvider } from '@/app/context'
 
@@ -30,6 +31,7 @@ export default function RootLayout({
           <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
             <Header />
             {children}
+            <Toaster />
           </div>
         </AppProvider>
 
