@@ -10,7 +10,7 @@ import {
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/components/ui/use-toast'
 
-import { killQuery, optimizeTable } from './actions'
+import { killQuery, optimizeTable, querySettings } from './actions'
 import { type Action } from './types'
 
 type Message = {
@@ -38,6 +38,10 @@ export function ActionItem({ action, value }: ActionButtonProps) {
     optimize: {
       label: 'Optimize Table',
       handler: optimizeTable.bind(null, value),
+    },
+    'query-settings': {
+      label: 'Query Settings',
+      handler: querySettings.bind(null, value),
     },
   }
 

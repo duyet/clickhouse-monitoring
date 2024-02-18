@@ -21,3 +21,15 @@ export async function optimizeTable(table: string) {
     message: `Running query optimize table ${table}`,
   }
 }
+
+export async function querySettings(queryId: string) {
+  console.log('Getting query SETTINGS', queryId)
+  const res = await fetchData(
+    `SELECT Settings FROM system.processes WHERE query_id = '${queryId}'`
+  )
+  console.log('Query SETTINGS', queryId, res)
+
+  return {
+    message: JSON.stringify(res),
+  }
+}
