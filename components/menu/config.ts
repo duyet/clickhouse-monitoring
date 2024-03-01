@@ -81,6 +81,12 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/merge-performance',
         description: 'Merge performance over day, avg duration, avg rows read',
       },
+      {
+        title: 'Mutations',
+        href: '/mutations',
+        description:
+          'Information about mutations of MergeTree tables and their progress',
+      },
     ],
   },
   {
