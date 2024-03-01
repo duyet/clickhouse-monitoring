@@ -2,9 +2,9 @@ import { type QueryConfig } from '@/lib/types/query-config'
 import { ColumnFormat } from '@/components/data-table/column-defs'
 
 export const expensiveQueriesByMemoryConfig: QueryConfig = {
-    name: 'expensive-queries-by-memory',
-    description: 'Most expensive queries by memory finished over last 24 hours',
-    sql: `
+  name: 'expensive-queries-by-memory',
+  description: 'Most expensive queries by memory finished over last 24 hours',
+  sql: `
       SELECT
           query,
           user,
@@ -26,15 +26,14 @@ export const expensiveQueriesByMemoryConfig: QueryConfig = {
       ORDER BY avg_memory DESC
       LIMIT 1000
     `,
-    columns: [
-      'query',
-      'user',
-      'cnt',
-      'readable_avg_memory',
-      'readable_sum_memory',
-    ],
-    columnFormats: {
-      query: ColumnFormat.CodeToggle,
-    },
-
+  columns: [
+    'query',
+    'user',
+    'cnt',
+    'readable_avg_memory',
+    'readable_sum_memory',
+  ],
+  columnFormats: {
+    query: ColumnFormat.CodeToggle,
+  },
 }

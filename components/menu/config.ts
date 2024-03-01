@@ -72,7 +72,8 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'Merges',
         href: '/merges',
-        description: 'Merges and part mutations currently in process for tables in the MergeTree family',
+        description:
+          'Merges and part mutations currently in process for tables in the MergeTree family',
         countSql: `SELECT COUNT() FROM system.merges WHERE 1 = 1`,
       },
       {

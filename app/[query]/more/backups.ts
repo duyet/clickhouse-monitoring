@@ -53,5 +53,4 @@ export const backupsConfig: QueryConfig = {
       },
     ],
   ],
-
 }

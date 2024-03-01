@@ -1,8 +1,7 @@
 import { type QueryConfig } from '@/lib/types/query-config'
 import { ColumnFormat } from '@/components/data-table/column-defs'
 
-export const expensiveQueriesConfig: QueryConfig =
-{
+export const expensiveQueriesConfig: QueryConfig = {
   name: 'expensive-queries',
   description: 'Most expensive queries finished over last 24 hours',
   sql: `
@@ -78,4 +77,3 @@ export const expensiveQueriesConfig: QueryConfig =
   },
   relatedCharts: [],
 }
-

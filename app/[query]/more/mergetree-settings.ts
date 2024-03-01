@@ -26,5 +26,4 @@ export const mergeTreeSettingsConfig: QueryConfig = {
     value: ColumnFormat.Code,
     type: ColumnFormat.ColoredBadge,
   },
-
 }

@@ -60,6 +60,4 @@ export const mergesConfig: QueryConfig = {
       },
     ],
   ],
-
-
 }

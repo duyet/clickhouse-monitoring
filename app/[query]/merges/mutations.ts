@@ -54,5 +54,4 @@ export const mutationsConfig: QueryConfig = {
       },
     ],
   ],
-
 }

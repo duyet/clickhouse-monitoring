@@ -31,5 +31,4 @@ export const commonErrorsConfig: QueryConfig = {
     last_error_time: ColumnFormat.RelatedTime,
     remote: ColumnFormat.Code,
   },
-
 }
