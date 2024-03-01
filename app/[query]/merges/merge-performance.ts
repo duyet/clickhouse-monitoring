@@ -45,9 +45,17 @@ export const mergePerformanceConfig: QueryConfig = {
   },
   relatedCharts: [
     [
-      'summary-used-by-merges',
+      'merge-avg-duration',
       {
-        title: 'Merge Summary',
+        title: 'Merge Avg Duration in last 30 days',
+        lastHours: 24 * 30,
+      },
+    ],
+    [
+      'merge-sum-read-rows',
+      {
+        title: 'Merge Total Read Rows in last 30 days',
+        lastHours: 24 * 30,
       },
     ],
   ],
