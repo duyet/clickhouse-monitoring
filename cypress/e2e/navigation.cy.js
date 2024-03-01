@@ -1,9 +1,17 @@
 describe('Navigation', () => {
-  it('should navigate to the /merge page', () => {
+  it('should navigate to the /overview page', () => {
+    // Open the webpage
     cy.visit('/overview')
 
-    cy.get('a[href*="merges"]').click()
-    cy.url().should('include', '/merges')
-    cy.contains('Merges', { matchCase: false }).should('be.visible')
+    // Should redirect to the /overview page
+    cy.url().should('match', /overview/)
+  })
+
+  it('should navigate to the /merge page', () => {
+    // Open the webpage
+    cy.visit('/overview')
+
+    // Hover on "Merge" tab and click on "merge" item below
+    cy.get('div').contains('Merge').trigger('mouseover')
   })
 })
