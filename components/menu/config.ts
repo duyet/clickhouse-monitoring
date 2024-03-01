@@ -68,6 +68,19 @@ export const menuItemsConfig: MenuItem[] = [
     title: 'Merges',
     href: '/merges',
     countSql: `SELECT COUNT() FROM system.merges WHERE 1 = 1`,
+    items: [
+      {
+        title: 'Merges',
+        href: '/merges',
+        description: 'Merges and part mutations currently in process for tables in the MergeTree family',
+        countSql: `SELECT COUNT() FROM system.merges WHERE 1 = 1`,
+      },
+      {
+        title: 'Merge Performance',
+        href: '/merge-performance',
+        description: 'Merge performance over day, avg duration, avg rows read',
+      },
+    ],
   },
   {
     title: 'More',

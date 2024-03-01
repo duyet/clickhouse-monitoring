@@ -3,7 +3,7 @@ import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/tremor/bar'
 
-export async function ChartNewPartCreated({
+export async function ChartNewPartsCreated({
   title = 'New Parts Created over last 24 hours (part counts / 15 minutes)',
   interval = 'toStartOfFifteenMinutes',
   lastHours = 24,
@@ -16,8 +16,8 @@ export async function ChartNewPartCreated({
         count() AS new_parts,
         ${interval}(event_time) AS event_time,
         table,
-        sum(rows) AS total_written_rows,
-        formatReadableQuantity(total_written_rows) AS readable_total_written_rows,
+        sum(rows) AS total_rows,
+        formatReadableQuantity(total_rows) AS readable_total_rows,
         sum(size_in_bytes) AS total_bytes_on_disk,
         formatReadableSize(total_bytes_on_disk) AS readable_total_bytes_on_disk
     FROM system.part_log
@@ -45,7 +45,7 @@ export async function ChartNewPartCreated({
     return { event_time, ...obj }
   })
 
-  // All users
+  // Group by table
   const tables = Object.values(data).reduce((acc, cur) => {
     return Array.from(new Set([...acc, ...Object.keys(cur)]))
   }, [] as string[])
@@ -64,4 +64,4 @@ export async function ChartNewPartCreated({
   )
 }
 
-export default ChartNewPartCreated
+export default ChartNewPartsCreated
