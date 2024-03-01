@@ -1,7 +1,5 @@
 import { notFound } from 'next/navigation'
 
-import { RelatedCharts } from '@/components/related-charts'
-
 interface PageProps {
   params: {
     chart: string
@@ -12,7 +10,6 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 30
 
 export default async function Page({ params: { chart } }: PageProps) {
-  const title = chart.replace(/-/g, ' ')
   let Chart
   let props = {}
 

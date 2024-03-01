@@ -7,7 +7,7 @@ import { ChartDiskSize } from '@/components/charts/disk-size'
 import { ChartDisksUsage } from '@/components/charts/disks-usage'
 import { ChartMemoryUsage } from '@/components/charts/memory-usage'
 import { ChartMergeCount } from '@/components/charts/merge-count'
-import { ChartNewPartCreated } from '@/components/charts/new-parts-created'
+import { ChartNewPartsCreated } from '@/components/charts/new-parts-created'
 import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
@@ -66,7 +66,7 @@ export default async function Overview() {
           </ServerComponentLazy>
 
           <ServerComponentLazy>
-            <ChartNewPartCreated
+            <ChartNewPartsCreated
               className="w-full p-5"
               title="New Parts Created over last 24 hours"
               interval="toStartOfHour"
