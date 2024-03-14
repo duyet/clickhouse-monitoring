@@ -4,7 +4,8 @@
     "config:recommended",
     "group:allNonMajor",
     "group:nextjsMonorepo",
-    "schedule:automergeDaily",
+    "schedule:weekly",
+    "schedule:automergeWeekly",
     "security:openssf-scorecard"
   ]
 }
