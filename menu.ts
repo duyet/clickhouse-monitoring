@@ -1,6 +1,6 @@
 import { QUERY_COMMENT } from '@/lib/clickhouse'
 
-import { type MenuItem } from './types'
+import { type MenuItem } from './components/menu/types'
 
 export const menuItemsConfig: MenuItem[] = [
   {
@@ -153,6 +153,12 @@ export const menuItemsConfig: MenuItem[] = [
         title: 'Top Usage Tables',
         href: '/top-usage-tables',
         description: 'Most usage tables, ignore system tables (top 50)',
+      },
+      {
+        title: 'Clusters',
+        href: '/clusters',
+        description:
+          'Information about clusters available in the config file and the servers in them',
       },
     ],
   },
