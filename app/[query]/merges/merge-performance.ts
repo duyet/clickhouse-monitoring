@@ -27,8 +27,6 @@ export const mergePerformanceConfig: QueryConfig = {
       FROM merge(system, '^part_log')
       WHERE (event_type = 'MergeParts')
         AND (merge_reason = 'RegularMerge')
-        AND (database = 'data_lake')
-        AND (table = 'terminal_events')
       GROUP BY 1, 2
       ORDER BY 1, 2 ASC
     `,

@@ -14,6 +14,7 @@ export async function ChartMergeSumReadRows({
     SELECT
         ${interval}(event_time) as event_time,
         SUM(read_rows) AS sum_read_rows,
+        (sum_read_rows / max(sum_read_rows) OVER ()) * 100 AS sum_read_rows_scale,
         formatReadableQuantity(sum_read_rows) AS readable_sum_read_rows
     FROM merge(system, '^part_log')
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
@@ -29,7 +30,7 @@ export async function ChartMergeSumReadRows({
       <BarChart
         data={data}
         index="event_time"
-        categories={['sum_read_rows']}
+        categories={['sum_read_rows_scale']}
         readableColumn="readable_sum_read_rows"
         className={className}
         colors={['orange']}
