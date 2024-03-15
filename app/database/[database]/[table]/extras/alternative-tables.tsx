@@ -1,8 +1,7 @@
-import Link from 'next/link'
 import { CardStackMinusIcon, DotFilledIcon } from '@radix-ui/react-icons'
 import { ChevronDownIcon, TableIcon } from 'lucide-react'
+import Link from 'next/link'
 
-import { fetchData } from '@/lib/clickhouse'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { fetchData } from '@/lib/clickhouse'
 
 interface AlternativeTablesProps {
   database: string
@@ -38,7 +38,7 @@ export async function AlternativeTables({
         <Button
           variant="outline"
           size="sm"
-          className="text-muted-foreground group flex flex-row gap-2"
+          className="group flex flex-row gap-2 text-muted-foreground"
         >
           <CardStackMinusIcon className="size-3" />
           {database}

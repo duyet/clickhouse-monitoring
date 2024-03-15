@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import packageInfo from '@/package.json'
+import { NextResponse } from 'next/server'
 
 import { fetchData } from '@/lib/clickhouse'
 

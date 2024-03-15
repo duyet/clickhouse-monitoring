@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { default as ErrorPage } from './error'
 
 describe('<Error />', () => {

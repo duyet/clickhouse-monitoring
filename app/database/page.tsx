@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 
-import { fetchData } from '@/lib/clickhouse'
 import { ErrorAlert } from '@/components/error-alert'
+import { fetchData } from '@/lib/clickhouse'
 
 import { listDatabases } from './queries'
 

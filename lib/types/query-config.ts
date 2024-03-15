@@ -1,9 +1,9 @@
-import type { PartialBy } from '@/lib/types/generic'
 import type { ChartProps } from '@/components/charts/chart-props'
 import type {
   ColumnFormat,
   ColumnFormatOptions,
 } from '@/components/data-table/column-defs'
+import type { PartialBy } from '@/lib/types/generic'
 
 export interface QueryConfig {
   name: string

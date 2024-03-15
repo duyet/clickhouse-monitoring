@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { ChevronDownIcon, SlashIcon } from '@radix-ui/react-icons'
+import Link from 'next/link'
 
-import { fetchDataWithCache } from '@/lib/clickhouse'
+import { ErrorAlert } from '@/components/error-alert'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ErrorAlert } from '@/components/error-alert'
+import { fetchDataWithCache } from '@/lib/clickhouse'
 
 import { listDatabases } from '../queries'
 

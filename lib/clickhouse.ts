@@ -1,5 +1,5 @@
-import { cache } from 'react'
 import { createClient } from '@clickhouse/client'
+import { cache } from 'react'
 
 export const getClickHouseHosts = () => {
   const hosts = (process.env.CLICKHOUSE_HOST || '')

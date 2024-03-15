@@ -1,7 +1,7 @@
-import { fetchData } from '@/lib/clickhouse'
-import { type QueryConfig } from '@/lib/types/query-config'
 import { ColumnFormat } from '@/components/data-table/column-defs'
 import { DataTable } from '@/components/data-table/data-table'
+import { fetchData } from '@/lib/clickhouse'
+import { type QueryConfig } from '@/lib/types/query-config'
 
 import { listTables } from '../../database/queries'
 

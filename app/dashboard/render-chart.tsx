@@ -1,8 +1,8 @@
-import { fetchData } from '@/lib/clickhouse'
 import { ChartCard } from '@/components/chart-card'
 import { GithubHeatmapChart } from '@/components/github-heatmap-chart'
 import { AreaChart } from '@/components/tremor/area'
 import { BarChart } from '@/components/tremor/bar'
+import { fetchData } from '@/lib/clickhouse'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 30

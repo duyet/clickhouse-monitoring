@@ -1,4 +1,4 @@
-import { fetchDataWithCache } from '@/lib/clickhouse'
+import { ErrorAlert } from '@/components/error-alert'
 import {
   Table,
   TableBody,
@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ErrorAlert } from '@/components/error-alert'
+import { fetchDataWithCache } from '@/lib/clickhouse'
 
 interface SampleDataProps {
   database: string

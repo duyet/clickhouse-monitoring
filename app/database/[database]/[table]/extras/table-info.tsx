@@ -1,7 +1,5 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 
-import { fetchData } from '@/lib/clickhouse'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -11,6 +9,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { fetchData } from '@/lib/clickhouse'
+import { cn } from '@/lib/utils'
 
 interface TableInfoProps {
   database: string
@@ -69,7 +69,7 @@ export async function TableInfo({
           variant="outline"
           size="sm"
           className={cn(
-            'text-muted-foreground flex flex-row items-center gap-2',
+            'flex flex-row items-center gap-2 text-muted-foreground',
             className
           )}
           aria-label="Table Info"

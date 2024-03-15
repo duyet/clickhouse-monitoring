@@ -1,7 +1,7 @@
-import { fetchData } from '@/lib/clickhouse'
 import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/tremor/bar'
+import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartNewPartsCreated({
   title = 'New Parts Created over last 24 hours (part counts / 15 minutes)',

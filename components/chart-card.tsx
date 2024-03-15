@@ -1,6 +1,6 @@
 import { CodeIcon } from '@radix-ui/react-icons'
 
-import { cn } from '@/lib/utils'
+import { DialogSQL } from '@/components/dialog-sql'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
 } from '@/components/ui/card'
-import { DialogSQL } from '@/components/dialog-sql'
+import { cn } from '@/lib/utils'
 
 interface ChartCardProps {
   title?: string | React.ReactNode

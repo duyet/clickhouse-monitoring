@@ -1,6 +1,6 @@
 import { BarChartIcon } from '@radix-ui/react-icons'
 
-import { cn } from '@/lib/utils'
+import { ServerComponentLazy } from '@/components/server-component-lazy'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { ServerComponentLazy } from '@/components/server-component-lazy'
+import { cn } from '@/lib/utils'
 
 import { RunningQueries } from './running-queries'
 import { RunningQueriesCount } from './running-queries-count'
@@ -35,7 +35,7 @@ export async function RunningQueriesButton({
           variant="outline"
           size="sm"
           className={cn(
-            'text-muted-foreground flex flex-row items-center gap-2',
+            'flex flex-row items-center gap-2 text-muted-foreground',
             className
           )}
           aria-label="Table Info"

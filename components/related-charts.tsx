@@ -1,8 +1,8 @@
 import { ComponentType } from 'react'
 
+import { type ChartProps } from '@/components/charts/chart-props'
 import { type QueryConfig } from '@/lib/types/query-config'
 import { cn } from '@/lib/utils'
-import { type ChartProps } from '@/components/charts/chart-props'
 
 import { ServerComponentLazy } from './server-component-lazy'
 

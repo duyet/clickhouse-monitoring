@@ -1,10 +1,10 @@
-import { fetchData } from '@/lib/clickhouse'
 import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
 } from '@/components/tremor/card-multi-metrics'
+import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartSummaryUsedByMutations({
   title,

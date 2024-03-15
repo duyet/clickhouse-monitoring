@@ -4,9 +4,9 @@ import Script from 'next/script'
 
 import '@/app/globals.css'
 
-import { Toaster } from '@/components/ui/toaster'
-import { Header } from '@/components/header'
 import { AppProvider } from '@/app/context'
+import { Header } from '@/components/header'
+import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ subsets: ['latin'] })
 

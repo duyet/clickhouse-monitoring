@@ -1,10 +1,10 @@
 import { unstable_noStore as noStore } from 'next/cache'
 import { notFound } from 'next/navigation'
 
-import { fetchData } from '@/lib/clickhouse'
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { RelatedCharts } from '@/components/related-charts'
+import { fetchData } from '@/lib/clickhouse'
 
 import { getQueryConfigByName } from './clickhouse-queries'
 

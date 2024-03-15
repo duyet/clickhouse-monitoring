@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { GithubHeatmapChart } from './github-heatmap-chart'
 
 describe('<GithubHeatmapChart />', () => {

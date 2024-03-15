@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { type QueryConfig } from '@/lib/types/query-config'
 
 import { DataTable } from './data-table'

@@ -1,13 +1,13 @@
-import Link from 'next/link'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
+import Link from 'next/link'
 
-import { fetchData } from '@/lib/clickhouse'
 import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
 } from '@/components/tremor/card-multi-metrics'
+import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartSummaryUsedByMerges({
   title,
@@ -164,7 +164,7 @@ export async function ChartSummaryUsedByMerges({
           items={items}
           className="p-2"
         />
-        <div className="text-muted-foreground text-right text-sm">
+        <div className="text-right text-sm text-muted-foreground">
           Total memory used by merges estimated from CGroupMemoryUsed or
           OSMemoryTotal
         </div>

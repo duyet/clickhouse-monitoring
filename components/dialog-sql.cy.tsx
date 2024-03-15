@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { DialogSQL } from './dialog-sql'
 
 describe('<DialogSQL />', () => {

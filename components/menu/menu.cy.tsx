@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Menu } from './menu'
 import { MenuDropdownStyle } from './menu-dropdown-style'
 import { MenuNavigationStyle } from './menu-navigation-style'

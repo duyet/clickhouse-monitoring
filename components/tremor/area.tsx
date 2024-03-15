@@ -6,11 +6,11 @@ import {
   type AreaChartProps as TremorAreaChartProps,
 } from '@tremor/react'
 
+import { DonutChart, type DonutChartProps } from '@/components/tremor/donut'
 import {
   formatReadableQuantity,
   formatReadableSize,
 } from '@/lib/format-readable'
-import { DonutChart, type DonutChartProps } from '@/components/tremor/donut'
 
 import { type ReadableFormat } from './types'
 

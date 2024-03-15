@@ -1,4 +1,4 @@
-import { fetchData } from '@/lib/clickhouse'
+import { ErrorAlert } from '@/components/error-alert'
 import {
   Table,
   TableBody,
@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ErrorAlert } from '@/components/error-alert'
+import { fetchData } from '@/lib/clickhouse'
 
 interface RunningQueriesProps {
   database: string

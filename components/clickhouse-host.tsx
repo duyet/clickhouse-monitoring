@@ -1,5 +1,3 @@
-import { fetchData, getClickHouseHosts } from '@/lib/clickhouse'
-import { getHost } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -7,6 +5,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { fetchData, getClickHouseHosts } from '@/lib/clickhouse'
+import { getHost } from '@/lib/utils'
 
 const Online = () => (
   <span className="relative flex size-2">

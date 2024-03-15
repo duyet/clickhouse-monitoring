@@ -1,5 +1,5 @@
-import { fetchData } from '@/lib/clickhouse'
-import { cn } from '@/lib/utils'
+import { ChartCard } from '@/components/chart-card'
+import { type ChartProps } from '@/components/charts/chart-props'
 import {
   Table,
   TableBody,
@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ChartCard } from '@/components/chart-card'
-import { type ChartProps } from '@/components/charts/chart-props'
+import { fetchData } from '@/lib/clickhouse'
+import { cn } from '@/lib/utils'
 
 export async function ChartReplicationSummaryTable({
   title,

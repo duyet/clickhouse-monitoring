@@ -1,10 +1,10 @@
-import Link from 'next/link'
 import { ArrowLeftIcon } from 'lucide-react'
+import Link from 'next/link'
 
-import { fetchDataWithCache } from '@/lib/clickhouse'
-import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/data-table/data-table'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
+import { Button } from '@/components/ui/button'
+import { fetchDataWithCache } from '@/lib/clickhouse'
 
 import { config } from './config'
 import { AlternativeTables } from './extras/alternative-tables'
@@ -22,7 +22,7 @@ const Extras = ({ database, table }: { database: string; table: string }) => (
         <Button
           variant="outline"
           size="sm"
-          className="text-muted-foreground flex flex-row gap-2"
+          className="flex flex-row gap-2 text-muted-foreground"
         >
           <ArrowLeftIcon className="size-3" />
           Back to {database}

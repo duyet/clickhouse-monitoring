@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ShowSQLButton } from './show-sql'
 
 describe('<ShowSQLButton />', () => {
