@@ -17,47 +17,43 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ErrorAlert } from '@/components/error-alert'
 
-import { config, type Row } from '../config'
+import { listDatabases } from '../queries'
 
-interface ClusterListProps {
+interface TableListProps {
   params: {
-    cluster: string
+    database: string
   }
   children: React.ReactNode
 }
 
 export const revalidate = 600
 
-export default async function ClusterTabListLayout({
-  params: { cluster },
+export default async function TableListPage({
+  params: { database },
   children,
-}: ClusterListProps) {
-  let clusters: Row[] = []
-
+}: TableListProps) {
+  let databases: { name: string; count: number }[] = []
   try {
-    // List cluster name
-    clusters = await fetchDataWithCache()(config.sql)
+    // List database names and number of tables
+    databases = await fetchDataWithCache()(listDatabases)
 
-    if (!clusters.length) {
-      return (
-        <ErrorAlert
-          title="Message"
-          message="No cluster found on system.clusters"
-        />
-      )
+    if (!databases.length) {
+      return <ErrorAlert title="Message" message="Empty" />
     }
   } catch (e: any) {
     return (
-      <ErrorAlert title="Could not getting list of clusters" message={`${e}`} />
+      <ErrorAlert title="Could not getting list database" message={`${e}`} />
     )
   }
+
+  let currentCount = databases.find((db) => db.name === database)?.count
 
   return (
     <div className="flex flex-col gap-5">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/clusters">Clusters</BreadcrumbLink>
+            <BreadcrumbLink href="/database">Database</BreadcrumbLink>
           </BreadcrumbItem>
 
           <BreadcrumbSeparator>
@@ -66,18 +62,18 @@ export default async function ClusterTabListLayout({
 
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-1">
-              {cluster}
+              {database} ({currentCount}{' '}
+              {currentCount == 1 ? 'table' : 'tables'})
               <ChevronDownIcon />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
-              {clusters.map(({ cluster: name, replica_count }) => (
+              {databases.map(({ name, count }) => (
                 <DropdownMenuItem key={name}>
                   <Link
-                    href={`/clusters/${name}/replicas-status`}
-                    className={name == cluster ? 'font-bold' : ''}
+                    href={`/database/${name}`}
+                    className={name == database ? 'font-bold' : ''}
                   >
-                    {name} ({replica_count}{' '}
-                    {replica_count > 1 ? 'replicas' : 'replica'})
+                    {name} ({count})
                   </Link>
                 </DropdownMenuItem>
               ))}

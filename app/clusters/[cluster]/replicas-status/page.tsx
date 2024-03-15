@@ -14,12 +14,10 @@ export default async function ClustersPage({ params: { cluster } }: PageProps) {
   const tables = await fetchData(config.sql, { cluster })
 
   return (
-    <TabsContent value={cluster}>
-      <DataTable
-        title={`Row counts across '${cluster}' cluster`}
-        config={config}
-        data={tables}
-      />
-    </TabsContent>
+    <DataTable
+      title={`Row counts across '${cluster}' cluster`}
+      config={config}
+      data={tables}
+    />
   )
 }
