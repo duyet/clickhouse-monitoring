@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   ColumnDef,
   flexRender,
@@ -12,9 +11,13 @@ import {
   VisibilityState,
   type RowData,
 } from '@tanstack/react-table'
+import { useState } from 'react'
 
-import { type QueryConfig } from '@/lib/types/query-config'
-import { uniq } from '@/lib/utils'
+import {
+  getColumnDefs,
+  normalizeColumnName,
+} from '@/components/data-table/column-defs'
+import { DataTablePagination } from '@/components/data-table/pagination'
 import {
   Table,
   TableBody,
@@ -24,11 +27,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Toaster } from '@/components/ui/toaster'
-import {
-  getColumnDefs,
-  normalizeColumnName,
-} from '@/components/data-table/column-defs'
-import { DataTablePagination } from '@/components/data-table/pagination'
+import { type QueryConfig } from '@/lib/types/query-config'
+import { uniq } from '@/lib/utils'
 
 import { ColumnVisibilityButton } from './buttons/column-visibility'
 import { ShowSQLButton } from './buttons/show-sql'
@@ -107,8 +107,8 @@ export function DataTable<TData extends RowData, TValue>({
 
       <div className="flex flex-row items-center justify-between pb-4">
         <div>
-          <h1 className="text-muted-foreground text-xl">{title}</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="text-xl text-muted-foreground">{title}</h1>
+          <p className="text-sm text-muted-foreground">
             {description || config.description}
           </p>
         </div>

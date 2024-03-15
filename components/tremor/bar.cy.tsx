@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { BarChart } from './bar'
 
 describe('<BarChart />', () => {

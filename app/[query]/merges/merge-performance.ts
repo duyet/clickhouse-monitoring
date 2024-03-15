@@ -1,5 +1,5 @@
-import { type QueryConfig } from '@/lib/types/query-config'
 import { ColumnFormat } from '@/components/data-table/column-defs'
+import { type QueryConfig } from '@/lib/types/query-config'
 
 export const mergePerformanceConfig: QueryConfig = {
   name: 'merge-performance',

@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
+import { useState } from 'react'
 
-import { ClickHouseInterval } from '@/lib/types/clickhouse-interval'
-import { cn } from '@/lib/utils'
+import { useAppContext } from '@/app/context'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -18,7 +17,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { useAppContext } from '@/app/context'
+import { ClickHouseInterval } from '@/lib/types/clickhouse-interval'
+import { cn } from '@/lib/utils'
 
 const defaultIntervals: { value: ClickHouseInterval; label: string }[] = [
   {

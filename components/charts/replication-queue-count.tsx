@@ -1,7 +1,7 @@
-import { fetchData } from '@/lib/clickhouse'
-import { cn } from '@/lib/utils'
 import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
+import { fetchData } from '@/lib/clickhouse'
+import { cn } from '@/lib/utils'
 
 import { CardMultiMetrics } from '../tremor/card-multi-metrics'
 
@@ -33,7 +33,7 @@ export async function ChartReplicationQueueCount({
           items={[]}
           className="p-2"
         />
-        <div className="text-muted-foreground pl-2 text-sm">
+        <div className="pl-2 text-sm text-muted-foreground">
           {count.count_all} in total
         </div>
       </div>

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ErrorAlert } from './error-alert'
 
 describe('<ErrorAlert />', () => {

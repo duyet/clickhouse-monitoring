@@ -1,5 +1,5 @@
-import { fetchData } from '@/lib/clickhouse'
 import { Badge } from '@/components/ui/badge'
+import { fetchData } from '@/lib/clickhouse'
 
 interface CountBadgeProps {
   sql?: string

@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
 import { ReloadIcon } from '@radix-ui/react-icons'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState, useTransition } from 'react'
 import { useInterval } from 'usehooks-ts'
 
-import { cn } from '@/lib/utils'
+import { useAppContext } from '@/app/context'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -15,7 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useAppContext } from '@/app/context'
+import { cn } from '@/lib/utils'
 
 interface ReloadButtonProps {
   className?: string

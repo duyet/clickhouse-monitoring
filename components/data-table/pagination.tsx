@@ -6,7 +6,6 @@ import {
 } from '@radix-ui/react-icons'
 import { Table } from '@tanstack/react-table'
 
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>
@@ -29,7 +29,7 @@ export function DataTablePagination<TData>({
 
   return (
     <div className="flex items-center justify-between px-2">
-      <div className="text-muted-foreground flex-1 text-sm">
+      <div className="flex-1 text-sm text-muted-foreground">
         {table.getFilteredSelectedRowModel().rows.length} of{' '}
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>

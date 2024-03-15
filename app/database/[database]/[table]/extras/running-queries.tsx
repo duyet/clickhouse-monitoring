@@ -1,4 +1,4 @@
-import { fetchDataWithCache } from '@/lib/clickhouse'
+import { ErrorAlert } from '@/components/error-alert'
 import {
   Table,
   TableBody,
@@ -7,27 +7,32 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ErrorAlert } from '@/components/error-alert'
+import { fetchData } from '@/lib/clickhouse'
 
-interface SampleDataProps {
+interface RunningQueriesProps {
   database: string
   table: string
   limit?: number
   className?: string
 }
 
-export async function SampleData({
+export async function RunningQueries({
   database,
   table,
-  limit = 10,
   className,
-}: SampleDataProps) {
+}: RunningQueriesProps) {
   let data: { [key: string]: string }[] = []
   try {
-    data = await fetchDataWithCache()(
-      `SELECT *
-       FROM ${database}.${table}
-       LIMIT ${limit}`,
+    data = await fetchData(
+      `SELECT query, user, elapsed,
+         formatReadableQuantity(read_rows) as read_rows,
+         formatReadableQuantity(total_rows_approx) as total_rows_approx,
+         formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
+         formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')' as memory_usage
+       FROM system.processes
+       WHERE (query LIKE '%{database: String}%')
+         AND (query LIKE '%{table: String}%')
+       `,
       {
         database,
         table,
@@ -38,7 +43,7 @@ export async function SampleData({
 
     return (
       <ErrorAlert
-        title="Could not getting sample data"
+        title={`Could not getting running queries on ${database}.${table}`}
         message={`${error}`}
         className="w-full"
       />

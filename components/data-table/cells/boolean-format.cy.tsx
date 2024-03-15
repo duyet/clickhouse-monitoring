@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { BooleanFormat } from './boolean-format'
 
 describe('<BooleanFormat />', () => {

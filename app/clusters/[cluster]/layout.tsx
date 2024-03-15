@@ -1,10 +1,21 @@
+import { ChevronDownIcon, SlashIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
-import { ArrowLeftIcon } from '@radix-ui/react-icons'
 
-import { fetchDataWithCache } from '@/lib/clickhouse'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ErrorAlert } from '@/components/error-alert'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { fetchDataWithCache } from '@/lib/clickhouse'
 
 import { config, type Row } from '../config'
 
@@ -42,38 +53,40 @@ export default async function ClusterTabListLayout({
   }
 
   return (
-    <div className="flex flex-col">
-      <div className="mb-3 flex flex-row justify-between gap-3">
-        <div className="flex flex-row gap-3">
-          <Link href={`/clusters`}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-muted-foreground flex flex-row gap-2"
-            >
-              <ArrowLeftIcon className="size-3" />
-              Back to list of clusters
-            </Button>
-          </Link>
-        </div>
-      </div>
+    <div className="flex flex-col gap-5">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/clusters">Clusters</BreadcrumbLink>
+          </BreadcrumbItem>
 
-      <div>
-        <Tabs defaultValue={cluster} className="w-full">
-          <TabsList className="mb-3">
-            {clusters.map(({ cluster, replica_count }) => (
-              <TabsTrigger key={cluster} value={cluster} asChild>
-                <Link href={`/clusters/${cluster}/count-across-replicas`}>
-                  {cluster} ({replica_count}{' '}
-                  {replica_count > 1 ? 'replicas' : 'replica'})
-                </Link>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <BreadcrumbSeparator>
+            <SlashIcon />
+          </BreadcrumbSeparator>
 
-          {children}
-        </Tabs>
-      </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-1">
+              {cluster}
+              <ChevronDownIcon />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {clusters.map(({ cluster: name, replica_count }) => (
+                <DropdownMenuItem key={name}>
+                  <Link
+                    href={`/clusters/${name}/replicas-status`}
+                    className={name == cluster ? 'font-bold' : ''}
+                  >
+                    {name} ({replica_count}{' '}
+                    {replica_count > 1 ? 'replicas' : 'replica'})
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {children}
     </div>
   )
 }

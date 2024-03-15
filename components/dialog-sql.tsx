@@ -1,6 +1,5 @@
 import { CodeIcon } from '@radix-ui/react-icons'
 
-import { dedent } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { dedent } from '@/lib/utils'
 
 interface ShowSQLButtonProps {
   button?: React.ReactNode

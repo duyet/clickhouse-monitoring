@@ -1,7 +1,8 @@
-import React from 'react'
 import Link from 'next/link'
+import React from 'react'
 
-import { cn } from '@/lib/utils'
+import { CountBadge } from '@/components/menu/count-badge'
+import { ServerComponentLazy } from '@/components/server-component-lazy'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -10,8 +11,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu'
-import { CountBadge } from '@/components/menu/count-badge'
-import { ServerComponentLazy } from '@/components/server-component-lazy'
+import { cn } from '@/lib/utils'
 
 import { menuItemsConfig } from '../../menu'
 import { type MenuItem } from './types'
@@ -50,7 +50,7 @@ function SingleItem({ item }: { item: MenuItem }) {
       <Link href={item.href} legacyBehavior passHref>
         <NavigationMenuLink
           className={cn(
-            'bg-background hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[active]:bg-accent/50 data-[state=open]:bg-accent/50 group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50'
+            'group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50'
           )}
         >
           <span className="flex flex-row items-center gap-2">
@@ -122,14 +122,14 @@ function ListItem({
       <NavigationMenuLink asChild>
         <a
           className={cn(
-            'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors',
+            'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
             className
           )}
           href={href}
           {...props}
         >
           <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {description}
           </p>
         </a>

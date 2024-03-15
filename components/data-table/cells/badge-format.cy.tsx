@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { BadgeFormat } from './badge-format'
 
 describe('<BadgeFormat />', () => {

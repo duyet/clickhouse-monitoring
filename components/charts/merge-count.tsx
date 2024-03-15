@@ -1,11 +1,11 @@
-import Link from 'next/link'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
+import Link from 'next/link'
 
-import { fetchData } from '@/lib/clickhouse'
-import { cn } from '@/lib/utils'
 import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor/area'
+import { fetchData } from '@/lib/clickhouse'
+import { cn } from '@/lib/utils'
 
 export async function ChartMergeCount({
   title,
@@ -43,7 +43,7 @@ export async function ChartMergeCount({
         readable="quantity"
       />
 
-      <div className="text-muted-foreground flex flex-row justify-between gap-2 text-right text-sm">
+      <div className="flex flex-row justify-between gap-2 text-right text-sm text-muted-foreground">
         <Link href="/mutations" className="flex flex-row items-center gap-2">
           Merges
           <ArrowRightIcon className="size-3" />

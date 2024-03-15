@@ -1,5 +1,6 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import {
   createContext,
   Dispatch,
@@ -7,7 +8,6 @@ import {
   useContext,
   useState,
 } from 'react'
-import { usePathname } from 'next/navigation'
 
 import { type ClickHouseInterval } from '@/lib/types/clickhouse-interval'
 

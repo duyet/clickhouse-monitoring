@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ChartCard } from './chart-card'
 
 describe('<ChartCard />', () => {

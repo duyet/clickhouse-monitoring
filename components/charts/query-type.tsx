@@ -1,6 +1,6 @@
-import { fetchData } from '@/lib/clickhouse'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { DonutChart } from '@/components/tremor/donut'
+import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartQueryType({
   title,

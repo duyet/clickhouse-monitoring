@@ -1,6 +1,6 @@
-import { TableIcon } from '@radix-ui/react-icons'
+import { CodeIcon } from '@radix-ui/react-icons'
 
-import { cn } from '@/lib/utils'
+import { ServerComponentLazy } from '@/components/server-component-lazy'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,23 +10,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { ServerComponentLazy } from '@/components/server-component-lazy'
+import { cn } from '@/lib/utils'
 
-import { SampleData } from './sample-data'
+import { TableDDL } from './table-ddl'
 
-interface SampleDataButtonProps {
+interface ShowSQLButtonProps {
   database: string
   table: string
-  limit?: number
   className?: string
 }
 
-export async function SampleDataButton({
+export async function ShowDDL({
   database,
   table,
-  limit = 20,
   className,
-}: SampleDataButtonProps) {
+}: ShowSQLButtonProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -34,25 +32,26 @@ export async function SampleDataButton({
           variant="outline"
           size="sm"
           className={cn(
-            'text-muted-foreground flex flex-row items-center gap-2',
+            'flex flex-row items-center gap-2 text-muted-foreground',
             className
           )}
-          aria-label="Table Info"
-          title="More about this table"
+          aria-label="Show DDL"
+          title="Show Table DDL Table Definition"
         >
-          <TableIcon className="size-3" />
-          Sample Data
+          <CodeIcon className="size-3" />
+          Show DDL
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-max">
         <DialogHeader>
-          <DialogTitle>Sample Data</DialogTitle>
+          <DialogTitle>SQL DDL Code</DialogTitle>
           <DialogDescription>
-            First {limit} rows of {database}.{table}
+            CREATE query used for creating this table
           </DialogDescription>
         </DialogHeader>
+
         <ServerComponentLazy>
-          <SampleData database={database} table={table} limit={limit} />
+          <TableDDL database={database} table={table} />
         </ServerComponentLazy>
       </DialogContent>
     </Dialog>

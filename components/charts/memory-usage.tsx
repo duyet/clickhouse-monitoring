@@ -1,6 +1,6 @@
-import { fetchData } from '@/lib/clickhouse'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor/area'
+import { fetchData } from '@/lib/clickhouse'
 
 import { ChartCard } from '../chart-card'
 

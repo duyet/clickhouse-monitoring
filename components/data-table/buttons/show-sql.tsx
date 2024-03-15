@@ -1,7 +1,7 @@
 import { CodeIcon } from '@radix-ui/react-icons'
 
-import { Button } from '@/components/ui/button'
 import { DialogSQL } from '@/components/dialog-sql'
+import { Button } from '@/components/ui/button'
 
 interface ShowSQLButtonProps {
   sql?: string

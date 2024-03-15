@@ -1,6 +1,5 @@
 import { unstable_noStore as noStore } from 'next/cache'
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartBackupSize } from '@/components/charts/backup-size'
 import { ChartCPUUsage } from '@/components/charts/cpu-usage'
 import { ChartDiskSize } from '@/components/charts/disk-size'
@@ -11,6 +10,7 @@ import { ChartNewPartsCreated } from '@/components/charts/new-parts-created'
 import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 5

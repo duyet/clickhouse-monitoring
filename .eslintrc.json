@@ -1,12 +1,12 @@
 {
+  "root": true,
   "extends": [
+    "prettier",
     "next/core-web-vitals",
-    "plugin:tailwindcss/recommended",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
-    "prettier"
+    "plugin:tailwindcss/recommended"
   ],
-  "plugins": ["tailwindcss"],
   "rules": {
     "@next/next/no-html-link-for-pages": "off",
     "tailwindcss/no-custom-classname": "off",
@@ -17,11 +17,27 @@
   },
   "settings": {
     "tailwindcss": {
-      "callees": ["cn", "cva"],
+      "callees": [
+        "cn",
+        "cva",
+        "clsx"
+      ],
       "config": "tailwind.config.cjs"
     },
     "next": {
-      "rootDir": ["app/*/"]
+      "rootDir": [
+        "app/*/"
+      ]
     }
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.ts",
+        "*.tsx",
+        "*.js"
+      ],
+      "parser": "@typescript-eslint/parser"
+    }
+  ]
 }

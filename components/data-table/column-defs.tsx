@@ -1,15 +1,15 @@
-import { LinkProps } from 'next/link'
 import {
   CaretDownIcon,
   CaretSortIcon,
   CaretUpIcon,
 } from '@radix-ui/react-icons'
 import { ColumnDef } from '@tanstack/react-table'
+import { LinkProps } from 'next/link'
 
-import { type QueryConfig } from '@/lib/types/query-config'
-import { Button } from '@/components/ui/button'
 import { formatCell } from '@/components/data-table/cell'
 import { type Action } from '@/components/data-table/cells/actions/types'
+import { Button } from '@/components/ui/button'
+import { type QueryConfig } from '@/lib/types/query-config'
 
 export enum ColumnFormat {
   BackgroundBar = 'background-bar',
