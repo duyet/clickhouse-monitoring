@@ -1,16 +1,12 @@
 {
   "root": true,
   "extends": [
-    "prettier",
+    "next",
     "next/core-web-vitals",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:tailwindcss/recommended"
+    "prettier"
   ],
   "rules": {
     "@next/next/no-html-link-for-pages": "off",
-    "tailwindcss/no-custom-classname": "off",
-    "tailwindcss/classnames-order": "error",
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
     "react/no-unknown-property": "off"
@@ -29,15 +25,5 @@
         "app/*/"
       ]
     }
-  },
-  "overrides": [
-    {
-      "files": [
-        "*.ts",
-        "*.tsx",
-        "*.js"
-      ],
-      "parser": "@typescript-eslint/parser"
-    }
-  ]
+  }
 }
