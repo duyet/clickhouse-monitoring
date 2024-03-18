@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from 'lucide-react'
+import { ArrowLeftIcon, TextAlignBottomIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
 import { DataTable } from '@/components/data-table/data-table'
@@ -14,31 +14,6 @@ import { SampleDataButton } from './extras/sample-data-button'
 import { ShowDDL } from './extras/show-ddl-button'
 import { TableDDL } from './extras/table-ddl'
 import { TableInfo } from './extras/table-info'
-
-const Extras = ({ database, table }: { database: string; table: string }) => (
-  <div className="mb-3 flex flex-row justify-between gap-3">
-    <div className="flex flex-row gap-3">
-      <Link href={`/database/${database}`}>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex flex-row gap-2 text-muted-foreground"
-        >
-          <ArrowLeftIcon className="size-3" />
-          Back to {database}
-        </Button>
-      </Link>
-      <AlternativeTables database={database} table={table} />
-    </div>
-
-    <div className="flex flex-row gap-3">
-      <ShowDDL database={database} table={table} />
-      <TableInfo database={database} table={table} />
-      <SampleDataButton database={database} table={table} />
-      <RunningQueriesButton database={database} table={table} />
-    </div>
-  </div>
-)
 
 export const revalidate = 600
 
@@ -147,6 +122,7 @@ export default async function ColumnsPage({
           title={`Table: ${database}.${table}`}
           description={description}
           extras={<Extras database={database} table={table} />}
+          toolbarExtras={<ToolbarExtras database={database} table={table} />}
           config={config}
           data={columns}
         />
@@ -161,3 +137,46 @@ export default async function ColumnsPage({
     )
   }
 }
+
+const Extras = ({ database, table }: { database: string; table: string }) => (
+  <div className="mb-3 flex flex-row justify-between gap-3">
+    <div className="flex flex-row gap-3">
+      <Link href={`/database/${database}`}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex flex-row gap-2 text-muted-foreground"
+        >
+          <ArrowLeftIcon className="size-3" />
+          Back to {database}
+        </Button>
+      </Link>
+      <AlternativeTables database={database} table={table} />
+    </div>
+
+    <div className="flex flex-row gap-3">
+      <ShowDDL database={database} table={table} />
+      <TableInfo database={database} table={table} />
+      <SampleDataButton database={database} table={table} />
+      <RunningQueriesButton database={database} table={table} />
+    </div>
+  </div>
+)
+
+const ToolbarExtras = ({
+  database,
+  table,
+}: {
+  database: string
+  table: string
+}) => (
+  <Link href={`/top-usage-columns?table=${database}.${table}`}>
+    <Button
+      variant="outline"
+      className="flex flex-row gap-2 text-muted-foreground"
+    >
+      <TextAlignBottomIcon className="size-3" />
+      Top usage columns
+    </Button>
+  </Link>
+)

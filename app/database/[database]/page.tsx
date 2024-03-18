@@ -3,6 +3,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { Button } from '@/components/ui/button'
 import { fetchData } from '@/lib/clickhouse'
 import { type QueryConfig } from '@/lib/types/query-config'
+import { TextAlignBottomIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
 import { listTables } from '../../database/queries'
@@ -51,17 +52,18 @@ export default async function TableListPage({
       title={`Database: ${database}`}
       config={config}
       data={tables}
-      toolbarExtras={<Extras database={database} />}
+      toolbarExtras={<ToolbarExtras database={database} />}
     />
   )
 }
 
-const Extras = ({ database }: { database: string }) => (
+const ToolbarExtras = ({ database }: { database: string }) => (
   <Link href={`/top-usage-tables?database=${database}`}>
     <Button
       variant="outline"
       className="flex flex-row gap-2 text-muted-foreground"
     >
+      <TextAlignBottomIcon className="size-3" />
       Top usage tables
     </Button>
   </Link>
