@@ -55,7 +55,9 @@ export const queries: Array<QueryConfig> = [
   asynchronousMetricsConfig,
 ]
 
-export const getQueryConfigByName = (name: string) => {
+export const getQueryConfigByName = (
+  name: string
+): QueryConfig | undefined | null => {
   if (!name) {
     return null
   }

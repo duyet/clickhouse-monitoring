@@ -1,7 +1,9 @@
 import { ColumnFormat } from '@/components/data-table/column-defs'
 import { DataTable } from '@/components/data-table/data-table'
+import { Button } from '@/components/ui/button'
 import { fetchData } from '@/lib/clickhouse'
 import { type QueryConfig } from '@/lib/types/query-config'
+import Link from 'next/link'
 
 import { listTables } from '../../database/queries'
 
@@ -45,6 +47,22 @@ export default async function TableListPage({
   const tables = await fetchData(config.sql, { database })
 
   return (
-    <DataTable title={`Database: ${database}`} config={config} data={tables} />
+    <DataTable
+      title={`Database: ${database}`}
+      config={config}
+      data={tables}
+      toolbarExtras={<Extras database={database} />}
+    />
   )
 }
+
+const Extras = ({ database }: { database: string }) => (
+  <Link href={`/top-usage-tables?database=${database}`}>
+    <Button
+      variant="outline"
+      className="flex flex-row gap-2 text-muted-foreground"
+    >
+      Top usage tables
+    </Button>
+  </Link>
+)

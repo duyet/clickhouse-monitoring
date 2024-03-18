@@ -29,6 +29,18 @@ export interface QueryConfig {
     [key: string]: ColumnFormat | [ColumnFormat, ColumnFormatOptions]
   }
   relatedCharts?: string[] | [string, ChartProps][]
+  /**
+   * Default parameters for the query
+   * For example in the query:
+   * ```sql
+   * SELECT * FROM system.tables WHERE database = {database: String}
+   * ```
+   * The default parameters would be:
+   * ```json
+   * { defaultParams: { database: 'default' } }
+   * ```
+   */
+  defaultParams?: Record<string, string | number | boolean>
 }
 
 export type QueryConfigNoName = PartialBy<QueryConfig, 'name'>

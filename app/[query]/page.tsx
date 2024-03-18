@@ -32,7 +32,11 @@ export default async function Page({
 
   // Fetch the data from ClickHouse
   try {
-    const data = await fetchData(config.sql, searchParams)
+    const queryParams = {
+      ...searchParams,
+      ...config.defaultParams,
+    }
+    const data = await fetchData(config.sql, queryParams)
 
     return (
       <div className="flex flex-col">

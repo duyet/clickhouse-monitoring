@@ -37,6 +37,7 @@ interface DataTableProps<TData extends RowData> {
   title?: string
   description?: string
   extras?: React.ReactNode
+  toolbarExtras?: React.ReactNode
   config: QueryConfig
   data: TData[]
   defaultPageSize?: number
@@ -47,6 +48,7 @@ export function DataTable<TData extends RowData, TValue>({
   title = '',
   description = '',
   extras,
+  toolbarExtras,
   config,
   data,
   defaultPageSize = 100,
@@ -113,11 +115,14 @@ export function DataTable<TData extends RowData, TValue>({
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {toolbarExtras}
           {showSQL ? <ShowSQLButton sql={config.sql} /> : null}
           <ColumnVisibilityButton table={table} />
         </div>
       </div>
+
       {extras}
+
       <div className="mb-5 rounded-md border">
         <Table>
           <TableHeader>
