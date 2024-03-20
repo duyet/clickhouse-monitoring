@@ -73,8 +73,9 @@ export default async function TableListPage({
                     href={`/database/${name}`}
                     className={name == database ? 'font-bold' : ''}
                   >
-                    {name} ({count})
+                    {name}
                   </Link>
+                  <div className="ml-auto flex pl-2">({count})</div>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>

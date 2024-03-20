@@ -13,6 +13,7 @@ export const topUsageTablesConfig: QueryConfig = {
       FROM system.query_log
       ARRAY JOIN tables
       WHERE (query_kind = 'Select')
+        AND (if({database: String} != '', startsWith(table, {database: String}), true))
         AND (type = 'QueryFinish')
         AND (tables NOT LIKE '%temp%')
         AND (tables NOT LIKE '_table_function%')
@@ -25,4 +26,5 @@ export const topUsageTablesConfig: QueryConfig = {
     table: [ColumnFormat.Link, { href: `/top-usage-columns?table=[table]` }],
     count: ColumnFormat.BackgroundBar,
   },
+  defaultParams: { database: '' },
 }
