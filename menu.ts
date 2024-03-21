@@ -62,6 +62,11 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/charts/new-parts-created',
         description: 'How many (and how often) new parts are created',
       },
+      {
+        title: 'Explain',
+        href: '/explain',
+        description: 'Shows the execution plan of a statement',
+      },
     ],
   },
   {
