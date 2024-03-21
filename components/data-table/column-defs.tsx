@@ -3,7 +3,7 @@ import {
   CaretSortIcon,
   CaretUpIcon,
 } from '@radix-ui/react-icons'
-import { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, Row, RowData, Table } from '@tanstack/react-table'
 import { LinkProps } from 'next/link'
 
 import { formatCell } from '@/components/data-table/cell'
@@ -52,7 +52,9 @@ export const normalizeColumnName = (column: string) => {
  *
  * @returns {ColumnDef<ColumnType>[]} - An array of column definitions.
  */
-export const getColumnDefs = (config: QueryConfig): ColumnDef<ColumnType>[] => {
+export const getColumnDefs = <TData extends RowData, TValue>(
+  config: QueryConfig
+): ColumnDef<TData, TValue>[] => {
   const configColumns = config.columns || []
 
   return configColumns.map((column) => {
@@ -93,9 +95,17 @@ export const getColumnDefs = (config: QueryConfig): ColumnDef<ColumnType>[] => {
         </Button>
       ),
 
-      cell: ({ table, row, getValue }) => {
+      cell: ({
+        table,
+        row,
+        getValue,
+      }: {
+        table: Table<TData>
+        row: Row<TData>
+        getValue: () => any
+      }) => {
         const value = getValue()
-        const formatted = formatCell(
+        const formatted = formatCell<TData, TValue>(
           table,
           row,
           value,

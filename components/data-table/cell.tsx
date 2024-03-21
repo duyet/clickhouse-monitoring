@@ -1,3 +1,4 @@
+import type { Row, RowData, Table } from '@tanstack/react-table'
 import { type LinkProps } from 'next/link'
 
 import {
@@ -16,10 +17,10 @@ import { CodeToggleFormat } from './cells/code-toggle-format'
 import { ColoredBadgeFormat } from './cells/colored-badge-format'
 import { LinkFormat } from './cells/link-format'
 
-export const formatCell = (
-  table: any,
-  row: any,
-  value: any,
+export const formatCell = <TData extends RowData, TValue>(
+  table: Table<TData>,
+  row: Row<TData>,
+  value: TValue,
   columnName: string,
   format: ColumnFormat,
   columnFormatOptions?: ColumnFormatOptions
@@ -39,24 +40,26 @@ export const formatCell = (
       return <ColoredBadgeFormat value={value} />
 
     case ColumnFormat.Code:
-      return <code>{value}</code>
+      return <code>{value as string}</code>
 
     case ColumnFormat.Number:
-      return formatReadableQuantity(value, 'long')
+      return formatReadableQuantity(value as number, 'long')
 
     case ColumnFormat.NumberShort:
-      return formatReadableQuantity(value, 'short')
+      return formatReadableQuantity(value as number, 'short')
 
     case ColumnFormat.CodeToggle:
       return <CodeToggleFormat row={row} value={value} />
 
     case ColumnFormat.RelatedTime:
-      let fromNow = dayjs(value).fromNow()
-      return <span title={value}>{fromNow}</span>
+      let fromNow = dayjs(value as string).fromNow()
+      return <span title={value as string}>{fromNow}</span>
 
     case ColumnFormat.Duration:
-      let humanized = dayjs.duration({ seconds: parseFloat(value) }).humanize()
-      return <span title={value}>{humanized}</span>
+      let humanized = dayjs
+        .duration({ seconds: parseFloat(value as string) })
+        .humanize()
+      return <span title={value as string}>{humanized}</span>
 
     case ColumnFormat.Boolean:
       return <BooleanFormat value={value} />

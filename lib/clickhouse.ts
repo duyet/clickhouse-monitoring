@@ -1,4 +1,5 @@
-import { createClient, type DataFormat } from '@clickhouse/client'
+import type { ClickHouseSettings, DataFormat } from '@clickhouse/client'
+import { createClient } from '@clickhouse/client'
 import { cache } from 'react'
 
 export const getClickHouseHosts = () => {
@@ -25,24 +26,23 @@ export const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */ '
 export const fetchData = async (
   query: string,
   params: Record<string, unknown> = {},
-  format: DataFormat = 'JSONEachRow'
+  format: DataFormat = 'JSONEachRow',
+  clickhouse_settings: ClickHouseSettings = {}
 ) => {
   const sql = QUERY_COMMENT + query
 
-  console.debug('Querying:', sql)
   const resultSet = await getClient().query({
     query: sql,
     format,
     query_params: params,
+    clickhouse_settings,
   })
 
-  const data: any[] = []
+  const query_id = resultSet.query_id
+  const data: any[] = await resultSet.json()
+  console.debug(`--> Query (${query_id}):`, sql)
+  console.debug(`<-- Response (${query_id}):`, data.length, 'rows\n')
 
-  for await (const rows of resultSet.stream()) {
-    rows.forEach((row: any) => {
-      data.push(row.json())
-    })
-  }
   return data
 }
 

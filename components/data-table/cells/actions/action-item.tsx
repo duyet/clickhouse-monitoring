@@ -10,30 +10,45 @@ import { useState } from 'react'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/components/ui/use-toast'
 
-import { killQuery, optimizeTable, querySettings } from './actions'
-import { type Action } from './types'
+import type { Row, RowData } from '@tanstack/react-table'
+import { redirect } from 'next/navigation'
+import {
+  explainQuery,
+  killQuery,
+  optimizeTable,
+  querySettings,
+} from './actions'
+import type { Action, ActionResponse } from './types'
 
-type Message = {
-  message: string
-}
-
-interface ActionButtonProps {
+interface ActionButtonProps<TData extends RowData, TValue> {
+  row: Row<TData>
   action: Action
-  value: any
+  value: TValue
 }
 
-export function ActionItem({ action, value }: ActionButtonProps) {
+export function ActionItem<TData extends RowData, TValue>({
+  row,
+  action,
+  value,
+}: ActionButtonProps<TData, TValue>) {
   const { toast, dismiss } = useToast()
   const [status, updateStatus] = useState<
     'none' | 'loading' | 'success' | 'failed'
   >('none')
 
   const availableActions: {
-    [key: string]: { label: string; handler: (_: FormData) => Promise<Message> }
+    [key: string]: {
+      label: string
+      handler: (_: FormData) => Promise<ActionResponse>
+    }
   } = {
     'kill-query': {
       label: 'Kill Query',
       handler: killQuery.bind(null, value),
+    },
+    'explain-query': {
+      label: 'Explain Query',
+      handler: (formData: FormData) => explainQuery(row, formData),
     },
     optimize: {
       label: 'Optimize Table',
@@ -57,11 +72,17 @@ export function ActionItem({ action, value }: ActionButtonProps) {
         toast({ title: 'Message', description: 'Loading...' })
 
         try {
-          const msg: Message = await handler(formData)
-          console.debug('Action Response', msg)
-          updateStatus('success')
-          toast({ title: 'Message', description: msg.message })
+          const resp: ActionResponse = await handler(formData)
+          console.log('Trigger Action', resp)
+
+          if (resp.action === 'toast') {
+            updateStatus('success')
+            toast({ title: 'Message', description: resp.message })
+          } else if (resp.action === 'redirect') {
+            redirect(resp.message)
+          }
         } catch (e) {
+          console.error('Action Error', e)
           updateStatus('failed')
           toast({ title: 'Error', description: `${e}`, variant: 'destructive' })
         } finally {

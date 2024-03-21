@@ -10,15 +10,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+import type { Row, RowData } from '@tanstack/react-table'
 import { type Action } from './types'
 
-export interface ActionMenuProps {
-  row?: any
-  value: any
+export interface ActionMenuProps<TData extends RowData, TValue> {
+  row: Row<TData>
+  value: TValue
   actions: Action[]
 }
 
-export function ActionMenu({ value, actions }: ActionMenuProps) {
+export function ActionMenu<TData extends RowData, TValue>({
+  row,
+  value,
+  actions,
+}: ActionMenuProps<TData, TValue>) {
   // Using dynamic import to avoid cypress components test error
   const ActionItem = dynamic(() =>
     import('./action-item').then((res) => res.ActionItem)
@@ -36,7 +41,12 @@ export function ActionMenu({ value, actions }: ActionMenuProps) {
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {actions.map((action) => (
-          <ActionItem key={action} value={value} action={action} />
+          <ActionItem
+            key={action}
+            value={value}
+            row={row as Row<RowData>}
+            action={action}
+          />
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

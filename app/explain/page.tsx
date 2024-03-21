@@ -1,25 +1,45 @@
 'use client'
 
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 
 import { DialogSQL } from '@/components/dialog-sql'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
+import { useState } from 'react'
 import { useFormState } from 'react-dom'
-import { explainAction, type Explains, type ExplainType } from './actions'
+import {
+  explainAction,
+  type ActionError,
+  type ExplainType,
+  type Explains,
+} from './actions'
 
-const initialState: Explains = {
+const initialState: Explains & Partial<ActionError> = {
   PLAN: { explain: '', sql: '' },
   ESTIMATE: { explain: '', sql: '' },
   PIPELINE: { explain: '', sql: '' },
   SYNTAX: { explain: '', sql: '' },
   'QUERY TREE': { explain: '', sql: '' },
   AST: { explain: '', sql: '' },
+  error: null,
 }
 
-export default function ExplainPage() {
+type ExplainPageProps = {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default function ExplainPage({ searchParams }: ExplainPageProps) {
+  const [query, setQuery] = useState(
+    searchParams.query || 'SELECT * FROM numbers(100)'
+  )
   const [state, formAction] = useFormState(explainAction, initialState)
+
+  const keys = Object.keys(state).filter(
+    (key) => key !== 'error' && state[key as ExplainType].explain
+  )
 
   return (
     <form action={formAction}>
@@ -41,7 +61,8 @@ export default function ExplainPage() {
         <Textarea
           name="query"
           placeholder="SELECT .. FROM ..."
-          defaultValue={'SELECT * FROM numbers(100)'}
+          defaultValue={query}
+          onChange={(e) => setQuery(e.target.value)}
         />
 
         <div className="flex gap-2">
@@ -54,24 +75,37 @@ export default function ExplainPage() {
           </div>
         </div>
 
-        <Tabs defaultValue={Object.keys(state)[0]} className="">
-          <TabsList>
-            {Object.keys(state).map((key) => (
-              <TabsTrigger value={key} key={key}>
-                {key}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        {state.error && (
+          <Alert variant="destructive">
+            <ExclamationTriangleIcon className="size-4" />
+            <AlertDescription>{state.error}</AlertDescription>
+          </Alert>
+        )}
 
-          {Object.keys(state).map((key) => (
-            <TabsContent value={key} key={key}>
-              <pre className="p-4">{state[key as ExplainType].explain}</pre>
-              <div className="mt-4">
-                <DialogSQL sql={state[key as ExplainType].sql} />
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+        {keys.length > 0 && (
+          <Tabs defaultValue={keys[0]} className="">
+            <TabsList>
+              {keys.map((key) => (
+                <TabsTrigger value={key} key={key}>
+                  {key}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {keys
+              .filter(
+                (key) => key !== 'error' && state[key as ExplainType].explain
+              )
+              .map((key) => (
+                <TabsContent value={key} key={key}>
+                  <pre className="p-4">{state[key as ExplainType].explain}</pre>
+                  <div className="mt-4">
+                    <DialogSQL sql={state[key as ExplainType].sql} />
+                  </div>
+                </TabsContent>
+              ))}
+          </Tabs>
+        )}
       </div>
     </form>
   )
