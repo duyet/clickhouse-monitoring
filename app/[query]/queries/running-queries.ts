@@ -56,7 +56,10 @@ export const runningQueriesConfig: QueryConfig = {
   columnFormats: {
     query: ColumnFormat.CodeToggle,
     estimated_remaining_time: ColumnFormat.Duration,
-    query_id: [ColumnFormat.Action, ['kill-query', 'query-settings']],
+    query_id: [
+      ColumnFormat.Action,
+      ['kill-query', 'explain-query', 'query-settings'],
+    ],
     readable_elapsed: ColumnFormat.BackgroundBar,
     readable_read_rows: ColumnFormat.BackgroundBar,
     readable_written_rows: ColumnFormat.BackgroundBar,

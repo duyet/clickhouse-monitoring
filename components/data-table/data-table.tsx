@@ -66,7 +66,10 @@ export function DataTable<TData extends RowData, TValue>({
   const configuredColumns = config.columns.map(normalizeColumnName)
 
   // Column definitions for the table
-  const columnDefs = getColumnDefs(config) as ColumnDef<TData, TValue>[]
+  const columnDefs = getColumnDefs<TData, TValue>(config) as ColumnDef<
+    TData,
+    TValue
+  >[]
 
   // Only show the columns in QueryConfig['columns'] list by initial
   const initialColumnVisibility = allColumns.reduce(
