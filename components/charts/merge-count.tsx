@@ -18,7 +18,7 @@ export async function ChartMergeCount({
     SELECT ${interval}(event_time) AS event_time,
            avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
            avg(CurrentMetric_PartMutation) AS avg_CurrentMetric_PartMutation
-    FROM system.metric_log
+    FROM merge(system, '^metric_log')
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1
