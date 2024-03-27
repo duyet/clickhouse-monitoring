@@ -17,7 +17,7 @@ export async function ChartQueryMemory({
     SELECT ${interval}(event_time) AS event_time,
            AVG(memory_usage) AS memory_usage,
            formatReadableSize(memory_usage) AS readable_memory_usage
-    FROM system.query_log
+    FROM merge(system, '^query_log')
     WHERE type = 'QueryFinish'
           AND query_kind = 'Select'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)

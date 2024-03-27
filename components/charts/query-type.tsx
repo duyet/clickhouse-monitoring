@@ -12,7 +12,7 @@ export async function ChartQueryType({
   const sql = `
     SELECT type,
            COUNT() AS query_count
-    FROM system.query_log
+    FROM merge(system, '^query_log')
     WHERE type = 'QueryFinish'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1

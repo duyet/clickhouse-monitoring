@@ -17,7 +17,7 @@ export async function ChartQueryDuration({
     SELECT ${interval}(event_time) AS event_time,
            AVG(query_duration_ms) AS query_duration_ms,
            query_duration_ms / 1000 AS query_duration_s
-    FROM system.query_log
+    FROM merge(system, '^query_log')
     WHERE type = 'QueryFinish'
           AND query_kind = 'Select'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)

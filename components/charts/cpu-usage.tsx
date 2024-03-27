@@ -13,7 +13,7 @@ export async function ChartCPUUsage({
   const sql = `
     SELECT ${interval}(event_time) AS event_time,
            avg(ProfileEvent_OSCPUVirtualTimeMicroseconds) / 1000000 as avg_cpu
-    FROM system.metric_log
+    FROM merge(system, '^metric_log')
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1`

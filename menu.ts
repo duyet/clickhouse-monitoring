@@ -10,7 +10,42 @@ export const menuItemsConfig: MenuItem[] = [
   {
     title: 'Tables',
     href: '/tables',
-    countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
+    countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%' SETTINGS use_query_cache = 1`,
+    items: [
+      {
+        title: 'Tables Explorer',
+        href: '/tables',
+        countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%' SETTINGS use_query_cache = 1`,
+        description: 'List of databases, tables and their details',
+      },
+      {
+        title: 'Distributed DDL Queue',
+        href: '/distributed-ddl-queue',
+        countSql: `SELECT COUNT() FROM system.distributed_ddl_queue WHERE status != 'Finished'`,
+        description:
+          'Distributed ddl queries (ON CLUSTER clause) that were executed on a cluster',
+      },
+      {
+        title: 'Table Replicas',
+        href: '/replicas',
+        description:
+          'Contains information and status for replicated tables residing on the local server',
+        countSql: `SELECT COUNT() FROM system.replicas`,
+      },
+      {
+        title: 'Replication Queue',
+        href: '/replication-queue',
+        description:
+          'Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family',
+        countSql: `SELECT COUNT() FROM system.replication_queue`,
+      },
+      {
+        title: 'Readonly Tables',
+        href: '/readonly-tables',
+        description: 'Readonly tables and their replicas',
+        countSql: `SELECT COUNT() FROM system.replicas WHERE is_readonly = 1`,
+      },
+    ],
   },
   {
     title: 'Queries',
@@ -115,26 +150,14 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/disks',
         description:
           'The values of disk settings which can be viewed in the table `system.disks`',
+        countSql: `SELECT COUNT() FROM system.disks SETTINGS use_query_cache = 1`,
       },
       {
         title: 'Backups',
         href: '/backups',
         description:
           'Backups and restores tables and databases. The information is taken from the system.backup_log table',
-      },
-      {
-        title: 'Replicas',
-        href: '/replicas',
-        description:
-          'Contains information and status for replicated tables residing on the local server',
-        countSql: `SELECT COUNT() FROM system.replicas`,
-      },
-      {
-        title: 'Replication Queue',
-        href: '/replication-queue',
-        description:
-          'Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family',
-        countSql: `SELECT COUNT() FROM system.replication_queue`,
+        countSql: `SELECT COUNT() FROM system.backup_log WHERE type = 'create' SETTINGS use_query_cache = 1`,
       },
       {
         title: 'Metrics',

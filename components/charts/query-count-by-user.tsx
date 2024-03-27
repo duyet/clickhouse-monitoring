@@ -15,7 +15,7 @@ export async function ChartQueryCountByUser({
     SELECT ${interval}(event_time) AS event_time,
            user,
            COUNT(*) AS count
-    FROM system.query_log
+    FROM merge(system, '^query_log')
     WHERE type = 'QueryFinish'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1, 2

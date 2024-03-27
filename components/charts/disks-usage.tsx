@@ -20,7 +20,7 @@ export async function ChartDisksUsage({
         map['DiskUsed_default'] as DiskUsed_default,
         formatReadableSize(DiskAvailable_default) as readable_DiskAvailable_default,
         formatReadableSize(DiskUsed_default) as readable_DiskUsed_default
-    FROM system.asynchronous_metric_log
+    FROM merge(system, '^asynchronous_metric_log')
     WHERE event_time >= (now() - toIntervalHour(${lastHours}))
     GROUP BY 1
     ORDER BY 1 ASC
