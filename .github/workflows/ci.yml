@@ -81,7 +81,10 @@ jobs:
           cache-to: type=gha,mode=max
           allow: network.host,security.insecure
           network: host
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
+          # TODO: Error on arm64, not sure why but will enable arm64 again later
+          # An unexpected error occurred: "https://registry.yarnpkg.com/date-fns/-/date-fns-2.30.0.tgz: ESOCKETTIMEDOUT1
+          # platforms: linux/amd64,linux/arm64
 
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
