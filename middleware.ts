@@ -36,8 +36,17 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, logo.svg (favicon file)
+     * 
+     * And have the following headers: next-router-prefetch, purpose=prefetch
      */
-    '/((?!api|healthz|_next/static|_next/image|favicon.ico|logo.svg).*)',
+    {
+      source:
+        '/((?!api|healthz|_next/static|_next/image|favicon.ico|logo.svg).*)',
+      has: [
+        { type: 'header', key: 'next-router-prefetch' },
+        { type: 'header', key: 'purpose', value: 'prefetch' },
+      ],
+    },
   ],
 }
 
