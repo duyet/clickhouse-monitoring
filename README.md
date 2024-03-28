@@ -63,6 +63,34 @@ EOF
 helm install -f values.yaml clickhouse-monitoring-release duyet/clickhouse-monitoring
 ```
 
+#### Suggested role for "monitoring" user
+
+```xml
+# File: users.d/monitoring_role.xml
+<clickhouse>
+  <users>
+    <monitoring>
+      <!-- define password here -->
+      <profile>default</profile>
+      <networks><ip>::/0</ip></networks>
+      <grants>
+        <query>GRANT monitoring_role</query>
+      </grants>
+    </monitoring>
+  </users>
+
+  <roles>
+    <monitoring_role>
+      <grants>
+        <query>REVOKE ALL ON *.*</query>
+        <query>GRANT SELECT,SHOW,dictGet,REMOTE ON *.*</query>
+        <query>GRANT SELECT,INSERT,ALTER,CREATE,DROP,TRUNCATE,OPTIMIZE,SHOW,dictGet ON system.*</query>
+      </grants>
+    </monitoring_role>
+  </roles>
+</clickhouse>
+```
+
 ## Feedback and Contributions
 
 Feedback and contributions are welcome! Feel free to open issues or submit pull requests.
