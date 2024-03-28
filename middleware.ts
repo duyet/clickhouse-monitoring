@@ -32,11 +32,12 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api (API routes)
+     * - healthz (health check)
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - favicon.ico, logo.svg (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|logo.svg).*)',
+    '/((?!api|healthz|_next/static|_next/image|favicon.ico|logo.svg).*)',
   ],
 }
 
