@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@clickhouse/client": "^0.2.5",
-    "@clickhouse/client-web": "^0.2.5",
+    "@clickhouse/client-web": "^0.3.1",
     "@headlessui/tailwindcss": "^0.2.0",
     "@hookform/resolvers": "^3.3.3",
     "@radix-ui/react-accordion": "^1.1.2",
