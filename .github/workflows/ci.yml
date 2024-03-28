@@ -70,6 +70,13 @@ jobs:
         uses: docker/metadata-action@c314eea2b27e3cb3c7d7be0618510234d8f6178e
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=
+            type=schedule,pattern={{date 'YYYYMMDD'}}
 
       - name: Build and push
         uses: docker/build-push-action@v5
