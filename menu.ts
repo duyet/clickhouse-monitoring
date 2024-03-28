@@ -157,7 +157,7 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/backups',
         description:
           'Backups and restores tables and databases. The information is taken from the system.backup_log table',
-        countSql: `SELECT COUNT() FROM system.backup_log WHERE type = 'create' SETTINGS use_query_cache = 1`,
+        countSql: `SELECT COUNT() FROM system.backup_log WHERE status = 'BACKUP_CREATED' SETTINGS use_query_cache = 1`,
       },
       {
         title: 'Metrics',
