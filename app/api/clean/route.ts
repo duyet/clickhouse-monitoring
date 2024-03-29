@@ -57,7 +57,7 @@ async function cleanupHangQuery(
     QUERY_CLEANUP_MAX_DURATION_SECONDS * 1000
   ) {
     throw new Error(
-      `[Middleware] Last cleanup was less than ${QUERY_CLEANUP_MAX_DURATION_SECONDS}s`
+      `Last cleanup was ${lastCleanup} less than ${QUERY_CLEANUP_MAX_DURATION_SECONDS}s`
     )
   }
 
@@ -83,13 +83,14 @@ async function cleanupHangQuery(
 
     killQueryResp = await resp.json<KillQueryResponse>()
     console.log(
-      '[Middleware] Cleanup hang queries:',
+      '[Middleware] queries found:',
       killQueryResp.data.map((row) => row.query_id).join(', ')
     )
 
     // Nothing to cleanup
     if (!killQueryResp || killQueryResp?.rows === 0) {
       return {
+        lastCleanup,
         message: 'Nothing to cleanup',
       }
     }
@@ -99,7 +100,7 @@ async function cleanupHangQuery(
       error instanceof Error &&
       error.message.includes('Unexpected end of JSON input')
     ) {
-      return { message: 'Nothing to cleanup' }
+      return { lastCleanup, message: 'Nothing to cleanup' }
     } else {
       console.error(error)
       throw new Error(`Error when killing queries: ${error}`)
