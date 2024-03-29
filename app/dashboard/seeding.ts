@@ -1,7 +1,13 @@
 import { fetchData, getClient, query } from '@/lib/clickhouse'
 import { dedent } from '@/lib/utils'
 
-import { TABLE_CHARTS, TABLE_SETTINGS } from './config'
+import type { TableChartsRow, TableSettingsRow } from './config'
+import {
+  TABLE_CHARTS,
+  TABLE_CHARTS_DDL,
+  TABLE_SETTINGS,
+  TABLE_SETTINGS_DDL,
+} from './config'
 
 const clean = async () => {
   const prepare = await Promise.all([
@@ -13,27 +19,8 @@ const clean = async () => {
 
 const create = async () => {
   const init = await Promise.all([
-    query(`
-      CREATE TABLE IF NOT EXISTS ${TABLE_CHARTS} (
-        kind Enum('area' = 1, 'bar' = 2, 'calendar' = 3),
-        title String,
-        query String,
-        ordering UInt16,
-        created_at DateTime DEFAULT now(),
-        updated_at DateTime DEFAULT now()
-      ) ENGINE = ReplacingMergeTree()
-      ORDER BY (title)
-      SETTINGS clean_deleted_rows = 'Always'
-    `),
-    query(`
-      CREATE TABLE IF NOT EXISTS ${TABLE_SETTINGS} (
-        key String,
-        value String,
-        updated_at DateTime DEFAULT now()
-      ) ENGINE = ReplacingMergeTree()
-      ORDER BY (key)
-      SETTINGS clean_deleted_rows = 'Always'
-    `),
+    query(TABLE_CHARTS_DDL),
+    query(TABLE_SETTINGS_DDL),
   ])
   console.log('Intitial tables', init)
 }
@@ -48,12 +35,16 @@ const migrateSettings = async () => {
   ]
 
   for (const seed of seeds) {
-    const exists = await fetchData(
-      `SELECT * FROM ${TABLE_SETTINGS} FINAL
-       WHERE key = '${seed.key}'`
-    )
+    const exists = await fetchData<TableSettingsRow[]>({
+      query: `
+        SELECT * FROM ${TABLE_SETTINGS}
+        FINAL
+        WHERE key = {key: String}`,
+      query_params: { key: seed.key }
+    })
+
     if (exists.length == 0) {
-      const resp = await getClient().insert({
+      const resp = await getClient({ web: false }).insert({
         table: TABLE_SETTINGS,
         values: [seed],
         format: 'JSONEachRow',
@@ -64,7 +55,7 @@ const migrateSettings = async () => {
 }
 
 const migrateDashboard = async () => {
-  const seeds = [
+  const seeds: Omit<TableChartsRow, 'created_at' | 'updated_at'>[] = [
     {
       title: 'Query / Second',
       kind: 'area',
@@ -108,11 +99,12 @@ const migrateDashboard = async () => {
   ]
 
   for (const seed of seeds) {
-    const exists = await fetchData(
-      `SELECT * FROM ${TABLE_CHARTS} FINAL WHERE title = '${seed.title}'`
-    )
+    const exists = await fetchData<TableChartsRow[]>({
+      query: `SELECT * FROM ${TABLE_CHARTS} FINAL WHERE title = '${seed.title}'`,
+    })
+
     if (exists.length == 0) {
-      const resp = await getClient().insert({
+      const resp = await getClient({ web: false }).insert({
         table: TABLE_CHARTS,
         values: [seed],
         format: 'JSONEachRow',

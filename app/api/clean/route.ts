@@ -2,13 +2,14 @@ import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 import { NextResponse } from 'next/server'
 
 import { getClient } from '@/lib/clickhouse'
+import type { ClickHouseClient } from '@clickhouse/client'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
 
 export async function GET() {
   try {
-    const client = getClient(true)
+    const client = getClient({ web: false })
     const resp = await cleanupHangQuery(client)
 
     return NextResponse.json(
@@ -19,7 +20,7 @@ export async function GET() {
       { status: 200 }
     )
   } catch (error) {
-    console.error(`[Middleware] ${error}`)
+    console.error(error)
     return NextResponse.json(
       {
         status: false,
@@ -31,7 +32,7 @@ export async function GET() {
 }
 
 async function cleanupHangQuery(
-  client: WebClickHouseClient
+  client: ClickHouseClient | WebClickHouseClient
 ): Promise<undefined | object> {
   // Last cleanup event
   let lastCleanup = null
@@ -57,7 +58,7 @@ async function cleanupHangQuery(
     QUERY_CLEANUP_MAX_DURATION_SECONDS * 1000
   ) {
     throw new Error(
-      `[Middleware] Last cleanup was less than ${QUERY_CLEANUP_MAX_DURATION_SECONDS}s`
+      `Last cleanup was ${lastCleanup} less than ${QUERY_CLEANUP_MAX_DURATION_SECONDS}s`
     )
   }
 
@@ -83,13 +84,14 @@ async function cleanupHangQuery(
 
     killQueryResp = await resp.json<KillQueryResponse>()
     console.log(
-      '[Middleware] Cleanup hang queries:',
+      '[Middleware] queries found:',
       killQueryResp.data.map((row) => row.query_id).join(', ')
     )
 
     // Nothing to cleanup
     if (!killQueryResp || killQueryResp?.rows === 0) {
       return {
+        lastCleanup,
         message: 'Nothing to cleanup',
       }
     }
@@ -99,7 +101,7 @@ async function cleanupHangQuery(
       error instanceof Error &&
       error.message.includes('Unexpected end of JSON input')
     ) {
-      return { message: 'Nothing to cleanup' }
+      return { lastCleanup, message: 'Nothing to cleanup' }
     } else {
       console.error(error)
       throw new Error(`Error when killing queries: ${error}`)

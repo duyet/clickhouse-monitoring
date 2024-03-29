@@ -23,8 +23,8 @@ export async function RunningQueries({
 }: RunningQueriesProps) {
   let data: { [key: string]: string }[] = []
   try {
-    data = await fetchData(
-      `SELECT query, user, elapsed,
+    data = await fetchData({
+      query: `SELECT query, user, elapsed,
          formatReadableQuantity(read_rows) as read_rows,
          formatReadableQuantity(total_rows_approx) as total_rows_approx,
          formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
@@ -33,11 +33,11 @@ export async function RunningQueries({
        WHERE (query LIKE '%{database: String}%')
          AND (query LIKE '%{table: String}%')
        `,
-      {
+      query_params: {
         database,
         table,
-      }
-    )
+      },
+    })
   } catch (error) {
     console.error(error)
 

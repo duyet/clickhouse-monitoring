@@ -9,7 +9,7 @@ export async function ChartDiskSize({
   className,
 }: ChartProps & { name?: string }) {
   const condition = name ? `WHERE name = '${name}'` : ''
-  const sql = `
+  const query = `
     SELECT name,
            (total_space - unreserved_space) AS used_space,
            formatReadableSize(used_space) AS readable_used_space,
@@ -19,13 +19,21 @@ export async function ChartDiskSize({
     ${condition}
     ORDER BY name
   `
-  const data = await fetchData(sql)
+  const data = await fetchData<
+    {
+      name: string
+      used_space: number
+      readable_used_space: string
+      total_space: number
+      readable_total_space: string
+    }[]
+  >({ query })
   const first = data?.[0]
 
   if (!data || !first) return null
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <CardMetric
         current={first.used_space}
         currentReadable={`${first.readable_used_space} used (${first.name})`}

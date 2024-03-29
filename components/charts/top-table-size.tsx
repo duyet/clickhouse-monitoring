@@ -10,25 +10,51 @@ export async function ChartTopTableSize({
   ...props
 }: ChartProps) {
   const limit = 7
-  const topBySizeQuery = fetchData(`
-      SELECT 
-        (database || '.' || table) as table,
-        sum(data_compressed_bytes) as compressed_bytes,
-        sum(data_uncompressed_bytes) AS uncompressed_bytes,
-        formatReadableSize(compressed_bytes) AS compressed,
-        formatReadableSize(uncompressed_bytes) AS uncompressed,
-        round(uncompressed_bytes / compressed_bytes, 2) AS compr_rate,
-        sum(rows) AS total_rows,
-        formatReadableQuantity(sum(rows)) AS readable_total_rows,
-        count() AS part_count
-    FROM system.parts
-    WHERE (active = 1) AND (database != 'system') AND (table LIKE '%')
-    GROUP BY 1
-    ORDER BY compressed_bytes DESC
-    LIMIT ${limit}
-  `)
+  const topBySizeQuery = fetchData<
+    {
+      table: string
+      compressed_bytes: number
+      uncompressed_bytes: number
+      compressed: string
+      uncompressed: string
+      compr_rate: number
+      total_rows: number
+      readable_total_rows: string
+      part_count: number
+    }[]
+  >({
+    query: `
+        SELECT 
+          (database || '.' || table) as table,
+          sum(data_compressed_bytes) as compressed_bytes,
+          sum(data_uncompressed_bytes) AS uncompressed_bytes,
+          formatReadableSize(compressed_bytes) AS compressed,
+          formatReadableSize(uncompressed_bytes) AS uncompressed,
+          round(uncompressed_bytes / compressed_bytes, 2) AS compr_rate,
+          sum(rows) AS total_rows,
+          formatReadableQuantity(sum(rows)) AS readable_total_rows,
+          count() AS part_count
+      FROM system.parts
+      WHERE (active = 1) AND (database != 'system') AND (table LIKE '%')
+      GROUP BY 1
+      ORDER BY compressed_bytes DESC
+      LIMIT ${limit}`,
+  })
 
-  const topByRowCountQuery = fetchData(`
+  const topByRowCountQuery = fetchData<
+    {
+      table: string
+      compressed_bytes: number
+      uncompressed_bytes: number
+      compressed: string
+      uncompressed: string
+      compr_rate: number
+      total_rows: number
+      readable_total_rows: string
+      part_count: number
+    }[]
+  >({
+    query: `
       SELECT 
         (database || '.' || table) as table,
         sum(data_compressed_bytes) as compressed_bytes,
@@ -43,8 +69,8 @@ export async function ChartTopTableSize({
     WHERE (active = 1) AND (database != 'system') AND (table LIKE '%')
     GROUP BY 1
     ORDER BY total_rows DESC
-    LIMIT ${limit}
-  `)
+    LIMIT ${limit}`,
+  })
 
   const [topBySize, topByRowCount] = await Promise.all([
     topBySizeQuery,

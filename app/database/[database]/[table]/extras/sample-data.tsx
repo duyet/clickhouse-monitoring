@@ -24,15 +24,15 @@ export async function SampleData({
 }: SampleDataProps) {
   let data: { [key: string]: string }[] = []
   try {
-    data = await fetchDataWithCache()(
-      `SELECT *
+    data = await fetchDataWithCache()({
+      query: `SELECT *
        FROM ${database}.${table}
        LIMIT ${limit}`,
-      {
+      query_params: {
         database,
         table,
-      }
-    )
+      },
+    })
   } catch (error) {
     console.error(error)
 

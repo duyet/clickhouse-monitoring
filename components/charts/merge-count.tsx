@@ -14,7 +14,7 @@ export async function ChartMergeCount({
   className,
   chartClassName,
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT ${interval}(event_time) AS event_time,
            avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
            avg(CurrentMetric_PartMutation) AS avg_CurrentMetric_PartMutation
@@ -24,13 +24,19 @@ export async function ChartMergeCount({
     ORDER BY 1
   `
 
-  const data = await fetchData(sql)
+  const data = await fetchData<
+    {
+      event_time: string
+      avg_CurrentMetric_Merge: number
+      avg_CurrentMetric_PartMutation: number
+    }[]
+  >({ query })
 
   return (
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
-      sql={sql}
+      sql={query}
     >
       <AreaChart
         className={cn('h-52', chartClassName)}

@@ -36,7 +36,7 @@ export default async function ClusterTabListLayout({
 
   try {
     // List cluster name
-    clusters = await fetchDataWithCache()(config.sql)
+    clusters = await fetchDataWithCache()<Row[]>({ query: config.sql })
 
     if (!clusters.length) {
       return (

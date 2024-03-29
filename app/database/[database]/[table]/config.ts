@@ -1,6 +1,18 @@
 import { ColumnFormat } from '@/components/data-table/column-defs'
 import { type QueryConfig } from '@/lib/types/query-config'
 
+export type Row = {
+  column: string
+  type: string
+  readable_compressed: string
+  readable_uncompressed: string
+  compr_ratio: number
+  readable_rows_cnt: string
+  avg_row_size: number
+  codec: string
+  comment: string
+}
+
 export const config: QueryConfig = {
   name: 'columns',
   sql: `

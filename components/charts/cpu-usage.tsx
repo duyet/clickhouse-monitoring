@@ -10,17 +10,19 @@ export async function ChartCPUUsage({
   lastHours = 24,
   className,
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT ${interval}(event_time) AS event_time,
            avg(ProfileEvent_OSCPUVirtualTimeMicroseconds) / 1000000 as avg_cpu
     FROM merge(system, '^metric_log')
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1`
-  const data = await fetchData(sql)
+  const data = await fetchData<{ event_time: string; avg_cpu: number }[]>({
+    query,
+  })
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <AreaChart
         data={data}
         index="event_time"

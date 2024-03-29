@@ -9,19 +9,25 @@ export async function ChartReplicationQueueCount({
   title,
   className,
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT COUNT() as count_all,
            countIf(is_currently_executing) AS count_executing
     FROM system.replication_queue
   `
-  const rows = await fetchData(sql)
+  const rows = await fetchData<
+    {
+      count_all: number
+      count_executing: number
+    }[]
+  >({ query })
+
   const count = rows?.[0] || { count_all: 0, count_executing: 0 }
 
   return (
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
-      sql={sql}
+      sql={query}
     >
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics

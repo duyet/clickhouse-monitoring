@@ -25,8 +25,8 @@ export async function TableInfo({
 }: TableInfoProps) {
   let tableInfo: { [key: string]: string }[] = []
   try {
-    tableInfo = await fetchData(
-      `SELECT
+    tableInfo = await fetchData({
+      query: `SELECT
            engine,
            uuid,
            data_paths,
@@ -45,11 +45,11 @@ export async function TableInfo({
        FROM system.tables
        WHERE database = {database: String} AND name = {table: String}
       `,
-      {
+      query_params: {
         database,
         table,
-      }
-    )
+      },
+    })
   } catch (error) {
     console.log(error)
 

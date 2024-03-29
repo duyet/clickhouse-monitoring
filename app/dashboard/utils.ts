@@ -3,16 +3,19 @@
 import { fetchData, getClient } from '@/lib/clickhouse'
 
 import { FormSchema } from './chart-params'
+import type { TableChartsRow, TableSettingsRow } from './config'
 import { TABLE_CHARTS, TABLE_SETTINGS } from './config'
 import { seeding } from './seeding'
 
 export const getCustomDashboards = async () => {
   await seeding()
 
-  const dashboards = await fetchData(
-    `SELECT * FROM ${TABLE_CHARTS} FINAL ORDER BY ordering ASC`
-  )
-  const settings = await fetchData(`SELECT * FROM ${TABLE_SETTINGS} FINAL`)
+  const dashboards = await fetchData<TableChartsRow[]>({
+    query: `SELECT * FROM ${TABLE_CHARTS} FINAL ORDER BY ordering ASC`,
+  })
+  const settings = await fetchData<TableSettingsRow[]>({
+    query: `SELECT * FROM ${TABLE_SETTINGS} FINAL`,
+  })
 
   return { settings, dashboards }
 }
@@ -30,7 +33,7 @@ export async function updateSettingParams(
     value: JSON.stringify(data),
   }
 
-  const resp = await getClient().command({
+  const resp = await getClient({ web: false }).command({
     query,
     query_params,
   })
@@ -53,7 +56,7 @@ export async function updateChart(data: Record<string, string> | FormSchema) {
     value: JSON.stringify(data),
   }
 
-  const resp = await getClient().command({
+  const resp = await getClient({ web: false }).command({
     query,
     query_params,
   })

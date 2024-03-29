@@ -15,7 +15,7 @@ export async function ChartReplicationSummaryTable({
   title,
   className,
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT (database || '.' || table) as table,
            type,
            countIf(is_currently_executing) AS current_executing,
@@ -23,12 +23,14 @@ export async function ChartReplicationSummaryTable({
     FROM system.replication_queue
     GROUP BY 1, 2
   `
-  const data = (await fetchData(sql)) as {
-    table: string
-    type: string
-    current_executing: number
-    total: number
-  }[]
+  const data = await fetchData<
+    {
+      table: string
+      type: string
+      current_executing: number
+      total: number
+    }[]
+  >({ query })
 
   const headers = Object.keys(data?.[0] || {})
 
@@ -36,7 +38,7 @@ export async function ChartReplicationSummaryTable({
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
-      sql={sql}
+      sql={query}
     >
       <div className="flex flex-col justify-between p-0">
         <Table className={className}>

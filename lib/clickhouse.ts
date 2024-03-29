@@ -1,6 +1,6 @@
 import type { ClickHouseClient, DataFormat } from '@clickhouse/client'
 import { createClient } from '@clickhouse/client'
-import type { ClickHouseSettings } from '@clickhouse/client-common'
+import type { QueryParams } from '@clickhouse/client-common'
 import { createClient as createClientWeb } from '@clickhouse/client-web'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 import { cache } from 'react'
@@ -16,10 +16,12 @@ export const getClickHouseHosts = () => {
 
 export const getClickHouseHost = () => getClickHouseHosts()[0]
 
-export const getClient = <B extends boolean>(
+export const getClient = <B extends boolean>({
+  web,
+}: {
   web?: B
-): B extends true ? WebClickHouseClient : ClickHouseClient => {
-  const client = web ? createClientWeb : createClient
+}): B extends true ? WebClickHouseClient : ClickHouseClient => {
+  const client = web === true ? createClientWeb : createClient
 
   return client({
     host: getClickHouseHost(),
@@ -31,25 +33,30 @@ export const getClient = <B extends boolean>(
 
 export const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */ '
 
-export const fetchData = async (
-  query: string,
-  params: Record<string, unknown> = {},
-  format: DataFormat = 'JSONEachRow',
-  clickhouse_settings: ClickHouseSettings = {}
-) => {
+export const fetchData = async <T>({
+  query,
+  query_params,
+  format = 'JSONEachRow',
+  clickhouse_settings,
+}: QueryParams): Promise<T> => {
   const sql = QUERY_COMMENT + query
 
-  const resultSet = await getClient(false).query({
+  const client = getClient({ web: false })
+  const resultSet = await client.query({
     query: sql,
     format,
-    query_params: params,
+    query_params,
     clickhouse_settings,
   })
 
   const query_id = resultSet.query_id
-  const data: any[] = await resultSet.json()
-  console.debug(`--> Query (${query_id}):`, sql)
-  console.debug(`<-- Response (${query_id}):`, data.length, 'rows\n')
+  const data = await resultSet.json<T>()
+
+  console.debug(
+    `--> Query (${query_id}):`,
+    sql.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
+  )
+  console.debug(`<-- Response (${query_id}):`, data, 'rows\n')
 
   return data
 }
@@ -61,7 +68,7 @@ export const query = async (
   params: Record<string, unknown> = {},
   format: DataFormat = 'JSON'
 ) => {
-  const resultSet = await getClient().query({
+  const resultSet = await getClient({ web: false }).query({
     query: QUERY_COMMENT + query,
     format,
     query_params: params,

@@ -12,7 +12,7 @@ export async function ChartBackupSize({
     ? `AND start_time > (now() - INTERVAL ${lastHours} HOUR)`
     : ''
 
-  const sql = `
+  const query = `
     SELECT
       SUM(total_size) as total_size,
       SUM(uncompressed_size) as uncompressed_size,
@@ -24,13 +24,22 @@ export async function ChartBackupSize({
     WHERE status = 'BACKUP_CREATED'
           ${startTimeCondition}
   `
-  const data = await fetchData(sql)
+  const data = await fetchData<
+    {
+      total_size: number
+      uncompressed_size: number
+      compressed_size: number
+      readable_total_size: string
+      readable_uncompressed_size: string
+      readable_compressed_size: string
+    }[]
+  >({ query })
   const first = data?.[0]
 
   if (!data || !first) return null
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <CardMetric
         current={first.compressed_size}
         currentReadable={`${first.readable_compressed_size} compressed`}

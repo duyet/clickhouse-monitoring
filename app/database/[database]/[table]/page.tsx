@@ -6,7 +6,7 @@ import { ServerComponentLazy } from '@/components/server-component-lazy'
 import { Button } from '@/components/ui/button'
 import { fetchDataWithCache } from '@/lib/clickhouse'
 
-import { config } from './config'
+import { config, type Row } from './config'
 import { AlternativeTables } from './extras/alternative-tables'
 import { RunningQueriesButton } from './extras/runnning-queries-button'
 import { SampleData } from './extras/sample-data'
@@ -28,15 +28,16 @@ export default async function ColumnsPage({
   params: { database, table },
 }: ColumnsPageProps) {
   // Detect engine
-  const resp = await fetchDataWithCache()(
-    `
+  const resp = await fetchDataWithCache()<{ engine: string }[]>({
+    query: `
       SELECT engine
         FROM system.tables
        WHERE (database = {database: String})
          AND (name = {table: String})
     `,
-    { database, table }
-  )
+    query_params: { database, table },
+  })
+
   const engine = resp?.[0]?.engine || ''
 
   if (engine === 'MaterializedView') {
@@ -95,22 +96,26 @@ export default async function ColumnsPage({
       </div>
     )
   } else {
-    const columns = await fetchDataWithCache()(config.sql, {
-      database,
-      table,
+    const columns = await fetchDataWithCache()<Row[]>({
+      query: config.sql,
+      query_params: {
+        database,
+        table,
+      },
     })
 
     let description = ''
     try {
-      const raw = await fetchDataWithCache()(
-        `
-        SELECT comment
-          FROM system.tables
-         WHERE (database = {database: String})
-           AND (name = {table: String})
-      `,
-        { database, table }
-      )
+      const raw = await fetchDataWithCache()<{ comment: string }[]>({
+        query: `
+          SELECT comment
+            FROM system.tables
+           WHERE (database = {database: String})
+             AND (name = {table: String})
+        `,
+        query_params: { database, table },
+      })
+
       description = raw?.[0]?.comment || ''
     } catch (e) {
       console.error('Error fetching table description', e)

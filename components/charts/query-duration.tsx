@@ -13,7 +13,7 @@ export async function ChartQueryDuration({
   lastHours = 24 * 7,
   ...props
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT ${interval}(event_time) AS event_time,
            AVG(query_duration_ms) AS query_duration_ms,
            query_duration_ms / 1000 AS query_duration_s
@@ -24,10 +24,16 @@ export async function ChartQueryDuration({
     GROUP BY event_time
     ORDER BY event_time ASC
   `
-  const data = await fetchData(sql)
+  const data = await fetchData<
+    {
+      event_time: string
+      query_duration_ms: number
+      query_duration_s: number
+    }[]
+  >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <BarChart
         className={cn('h-52', chartClassName)}
         data={data}

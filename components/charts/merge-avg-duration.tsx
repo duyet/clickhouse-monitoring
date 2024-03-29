@@ -10,7 +10,7 @@ export async function ChartMergeAvgDuration({
   lastHours = 24 * 14,
   className,
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT
         ${interval}(event_time) as event_time,
         AVG(duration_ms) AS avg_duration_ms,
@@ -23,10 +23,17 @@ export async function ChartMergeAvgDuration({
     GROUP BY 1
     ORDER BY 1 ASC
   `
-  const data = await fetchData(sql)
+  const data = await fetchData<
+    {
+      event_time: string
+      avg_duration_ms: number
+      readable_avg_duration_ms: string
+      bar: number
+    }[]
+  >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <BarChart
         data={data}
         index="event_time"

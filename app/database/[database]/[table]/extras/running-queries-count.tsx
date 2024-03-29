@@ -11,18 +11,19 @@ export async function RunningQueriesCount({
   database,
   table,
 }: RunningQueriesProps) {
-  let data: { [key: string]: string }[] = []
+  let data: { count: number }[] = []
   try {
-    data = await fetchData(
-      `SELECT COUNT() as count
-       FROM system.processes
-       WHERE (query LIKE '%{database: String}%')
-         AND (query LIKE '%{table: String}%')`,
-      {
+    data = await fetchData<{ count: number }[]>({
+      query: `
+        SELECT COUNT() as count
+        FROM system.processes
+        WHERE (query LIKE '%{database: String}%')
+          AND (query LIKE '%{table: String}%')`,
+      query_params: {
         database,
         table,
-      }
-    )
+      },
+    })
   } catch (error) {
     console.error(error)
     return null

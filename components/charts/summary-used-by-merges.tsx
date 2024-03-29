@@ -19,7 +19,12 @@ export async function ChartSummaryUsedByMerges({
       formatReadableSize(memory_usage) as readable_memory_usage
     FROM system.merges
   `
-  const usedRows = await fetchData(usedSql)
+  const usedRows = await fetchData<
+    {
+      memory_usage: number
+      readable_memory_usage: string
+    }[]
+  >({ query: usedSql })
   const used = usedRows?.[0]
   if (!usedRows || !used) return null
 
@@ -38,7 +43,13 @@ export async function ChartSummaryUsedByMerges({
     readable_total: used.readable_memory_usage,
   }
   try {
-    const rows = await fetchData(totalMemSql)
+    const rows = await fetchData<
+      {
+        metric: string
+        total: number
+        readable_total: string
+      }[]
+    >({ query: totalMemSql })
     if (!rows) return null
     totalMem = rows?.[0]
   } catch (e) {
@@ -59,7 +70,14 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const rows = await fetchData(rowsReadWrittenSql)
+    const rows = await fetchData<
+      {
+        rows_read: number
+        rows_written: number
+        readable_rows_read: string
+        readable_rows_written: string
+      }[]
+    >({ query: rowsReadWrittenSql })
     if (!!rows) {
       rowsReadWritten = rows?.[0]
     }
@@ -81,7 +99,15 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const rows = await fetchData(bytesReadWrittenSql)
+    const rows = await fetchData<
+      {
+        bytes_read: number
+        bytes_written: number
+        readable_bytes_read: string
+        readable_bytes_written: string
+      }[]
+    >({ query: bytesReadWrittenSql })
+
     if (!!rows) {
       bytesReadWritten = rows?.[0]
     }
@@ -89,7 +115,7 @@ export async function ChartSummaryUsedByMerges({
     console.error('Error fetching bytes read', e)
   }
 
-  const sql = `
+  const query = `
     Current memory used by merges:
     ${usedSql}
 
@@ -149,7 +175,7 @@ export async function ChartSummaryUsedByMerges({
   })
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics
           primary={

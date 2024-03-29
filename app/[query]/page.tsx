@@ -5,6 +5,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { RelatedCharts } from '@/components/related-charts'
 import { fetchData } from '@/lib/clickhouse'
+import type { RowData } from '@tanstack/react-table'
 
 import { getQueryConfigByName } from './clickhouse-queries'
 
@@ -36,7 +37,11 @@ export default async function Page({
       ...searchParams,
       ...config.defaultParams,
     }
-    const data = await fetchData(config.sql, queryParams)
+    const data = await fetchData<RowData[]>({
+      query: config.sql,
+      format: 'JSONEachRow',
+      query_params: queryParams,
+    })
 
     return (
       <div className="flex flex-col">
