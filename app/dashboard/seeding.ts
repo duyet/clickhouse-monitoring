@@ -36,8 +36,11 @@ const migrateSettings = async () => {
 
   for (const seed of seeds) {
     const exists = await fetchData<TableSettingsRow[]>({
-      query: `SELECT * FROM ${TABLE_SETTINGS} FINAL
-       WHERE key = '${seed.key}'`,
+      query: `
+        SELECT * FROM ${TABLE_SETTINGS}
+        FINAL
+        WHERE key = {key: String}`,
+      query_params: { key: seed.key }
     })
 
     if (exists.length == 0) {
