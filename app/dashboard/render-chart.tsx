@@ -37,7 +37,10 @@ export const RenderChart = async ({
   className,
   chartClassName,
 }: RenderChartProps) => {
-  const data = await fetchData(query, params)
+  const data = await fetchData<{ [key: string]: string | number }[]>({
+    query,
+    query_params: params,
+  })
 
   // event_time is a must
   if (!data[0]?.event_time) {

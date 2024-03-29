@@ -10,12 +10,12 @@ export const menuItemsConfig: MenuItem[] = [
   {
     title: 'Tables',
     href: '/tables',
-    countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%' SETTINGS use_query_cache = 1`,
+    countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
     items: [
       {
         title: 'Tables Explorer',
         href: '/tables',
-        countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%' SETTINGS use_query_cache = 1`,
+        countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
         description: 'List of databases, tables and their details',
       },
       {
@@ -150,14 +150,14 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/disks',
         description:
           'The values of disk settings which can be viewed in the table `system.disks`',
-        countSql: `SELECT COUNT() FROM system.disks SETTINGS use_query_cache = 1`,
+        countSql: `SELECT COUNT() FROM system.disks`,
       },
       {
         title: 'Backups',
         href: '/backups',
         description:
           'Backups and restores tables and databases. The information is taken from the system.backup_log table',
-        countSql: `SELECT COUNT() FROM system.backup_log WHERE status = 'BACKUP_CREATED' SETTINGS use_query_cache = 1`,
+        countSql: `SELECT COUNT() FROM system.backup_log WHERE status = 'BACKUP_CREATED'`,
       },
       {
         title: 'Metrics',

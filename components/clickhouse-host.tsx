@@ -25,10 +25,12 @@ const HostStatus = async ({ host }: { host: string }) => {
   let isOnline
   let message
   try {
-    const uptime = await fetchData(
-      'SELECT formatReadableTimeDelta(uptime()) as uptime'
-    )
-    const hostName = await fetchData('SELECT hostName() as hostName')
+    const uptime = await fetchData<{ uptime: string }[]>({
+      query: 'SELECT formatReadableTimeDelta(uptime()) as uptime',
+    })
+    const hostName = await fetchData<{ hostName: string }[]>({
+      query: 'SELECT hostName() as hostName',
+    })
 
     isOnline = true
     message = `${hostName[0].hostName} online: ${uptime[0].uptime}`

@@ -11,7 +11,7 @@ export async function ChartNewPartsCreated({
   chartClassName,
   ...props
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT
         count() AS new_parts,
         ${interval}(event_time) AS event_time,
@@ -30,16 +30,26 @@ export async function ChartNewPartsCreated({
         table DESC
   `
 
-  const raw = await fetchData(sql)
+  const raw = await fetchData<
+    {
+      event_time: string
+      table: string
+      new_parts: number
+    }[]
+  >({ query })
 
-  const data = raw.reduce((acc, cur) => {
-    const { event_time, table, new_parts } = cur
-    if (acc[event_time] === undefined) {
-      acc[event_time] = {}
-    }
-    acc[event_time][table] = new_parts
-    return acc
-  }, {}) as Record<string, Record<string, number>>
+  const data = raw.reduce(
+    (acc, cur) => {
+      const { event_time, table, new_parts } = cur
+      if (acc[event_time] === undefined) {
+        acc[event_time] = {}
+      }
+
+      acc[event_time][table] = new_parts
+      return acc
+    },
+    {} as Record<string, Record<string, number>>
+  )
 
   const barData = Object.entries(data).map(([event_time, obj]) => {
     return { event_time, ...obj }
@@ -51,7 +61,7 @@ export async function ChartNewPartsCreated({
   }, [] as string[])
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <BarChart
         className={chartClassName}
         data={barData}

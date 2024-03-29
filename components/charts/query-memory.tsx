@@ -13,7 +13,7 @@ export async function ChartQueryMemory({
   lastHours = 24 * 7,
   ...props
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT ${interval}(event_time) AS event_time,
            AVG(memory_usage) AS memory_usage,
            formatReadableSize(memory_usage) AS readable_memory_usage
@@ -24,10 +24,16 @@ export async function ChartQueryMemory({
     GROUP BY event_time
     ORDER BY event_time ASC
   `
-  const data = await fetchData(sql)
+  const data = await fetchData<
+    {
+      event_time: string
+      memory_usage: number
+      readable_memory_usage: string
+    }[]
+  >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <BarChart
         className={cn('h-52', chartClassName)}
         data={data}

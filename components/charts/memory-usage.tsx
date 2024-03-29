@@ -10,7 +10,7 @@ export async function ChartMemoryUsage({
   lastHours = 24,
   className,
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT ${interval}(event_time) as event_time,
            avg(CurrentMetric_MemoryTracking) AS avg_memory,
            formatReadableSize(avg_memory) AS readable_avg_memory
@@ -18,10 +18,16 @@ export async function ChartMemoryUsage({
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1 ASC`
-  const data = await fetchData(sql)
+  const data = await fetchData<
+    {
+      event_time: string
+      avg_memory: number
+      readable_avg_memory: string
+    }[]
+  >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <AreaChart
         data={data}
         index="event_time"

@@ -2,13 +2,14 @@ import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 import { NextResponse } from 'next/server'
 
 import { getClient } from '@/lib/clickhouse'
+import type { ClickHouseClient } from '@clickhouse/client'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
 
 export async function GET() {
   try {
-    const client = getClient(true)
+    const client = getClient({ web: false })
     const resp = await cleanupHangQuery(client)
 
     return NextResponse.json(
@@ -19,7 +20,7 @@ export async function GET() {
       { status: 200 }
     )
   } catch (error) {
-    console.error(`[Middleware] ${error}`)
+    console.error(error)
     return NextResponse.json(
       {
         status: false,
@@ -31,7 +32,7 @@ export async function GET() {
 }
 
 async function cleanupHangQuery(
-  client: WebClickHouseClient
+  client: ClickHouseClient | WebClickHouseClient
 ): Promise<undefined | object> {
   // Last cleanup event
   let lastCleanup = null

@@ -1,14 +1,7 @@
-import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 import type { NextRequest } from 'next/server'
-import { NextResponse, userAgent } from 'next/server'
-import { getClient } from './lib/clickhouse'
-import { initTrackingTable } from './lib/tracking'
+import { NextResponse } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  const client = getClient(true)
-  await initTrackingTable(client)
-  await trackingPageView(client, request)
-
   // Store current request url in a custom header, which you can read later
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-url', request.url)
@@ -45,37 +38,4 @@ export const config = {
       ],
     },
   ],
-}
-
-async function trackingPageView(
-  client: WebClickHouseClient,
-  request: NextRequest
-) {
-  // https://nextjs.org/docs/app/api-reference/functions/userAgent
-  const ua = userAgent(request)
-
-  try {
-    await client.insert({
-      table: 'system.monitoring_events',
-      format: 'JSONEachRow',
-      values: [
-        {
-          kind: 'PageView',
-          data: request.url,
-          actor: 'user',
-          extra: JSON.stringify({
-            browser: ua.browser,
-            os: ua.os,
-            device: ua.device,
-            engine: ua.engine,
-            cpu: ua.cpu,
-            isBot: ua.isBot,
-          }),
-        },
-      ],
-    })
-    console.log(`[Middleware] 'PageView' event created:`, request.url)
-  } catch (error) {
-    console.error("[Middleware] 'PageView' event create error:", error)
-  }
 }

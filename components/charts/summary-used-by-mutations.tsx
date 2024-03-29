@@ -10,18 +10,22 @@ export async function ChartSummaryUsedByMutations({
   title,
   className,
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT COUNT() as running_count
     FROM system.mutations
     WHERE is_done = 0
   `
-  const rows = await fetchData(sql)
+  const rows = await fetchData<
+    {
+      running_count: number
+    }[]
+  >({ query })
   const count = rows?.[0] || { running_count: 0 }
 
   const items: CardMultiMetricsProps['items'] = []
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics
           primary={

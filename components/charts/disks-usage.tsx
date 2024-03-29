@@ -12,7 +12,7 @@ export async function ChartDisksUsage({
   lastHours = 24 * 30,
   ...props
 }: ChartProps) {
-  const sql = `
+  const query = `
     WITH CAST(sumMap(map(metric, value)), 'Map(LowCardinality(String), UInt32)') AS map
     SELECT
         ${interval}(event_time) as event_time,
@@ -26,10 +26,18 @@ export async function ChartDisksUsage({
     ORDER BY 1 ASC
   `
 
-  const data = await fetchData(sql)
+  const data = await fetchData<
+    {
+      event_time: string
+      DiskAvailable_default: number
+      DiskUsed_default: number
+      readable_DiskAvailable_default: string
+      readable_DiskUsed_default: string
+    }[]
+  >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={sql}>
+    <ChartCard title={title} className={className} sql={query}>
       <AreaChart
         className={cn('h-52', chartClassName)}
         data={data}

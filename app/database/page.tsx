@@ -12,7 +12,7 @@ export default async function TablePage() {
   let databases: { name: string; count: number }[] = []
   try {
     // List database names and number of tables
-    databases = await fetchData(listDatabases)
+    databases = await fetchData({ query: listDatabases })
 
     if (!databases.length) {
       return <ErrorAlert title="Message" message="Empty" />

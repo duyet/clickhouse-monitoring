@@ -9,7 +9,7 @@ export async function ChartQueryType({
   lastHours = 24,
   ...props
 }: ChartProps) {
-  const sql = `
+  const query = `
     SELECT type,
            COUNT() AS query_count
     FROM merge(system, '^query_log')
@@ -18,7 +18,12 @@ export async function ChartQueryType({
     GROUP BY 1
     ORDER BY 1
   `
-  const data = await fetchData(sql)
+  const data = await fetchData<
+    {
+      type: string
+      query_count: number
+    }[]
+  >({ query })
 
   return (
     <DonutChart

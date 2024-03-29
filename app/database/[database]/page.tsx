@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { fetchData } from '@/lib/clickhouse'
 import { type QueryConfig } from '@/lib/types/query-config'
 import { TextAlignBottomIcon } from '@radix-ui/react-icons'
+import { type RowData } from '@tanstack/react-table'
 import Link from 'next/link'
 
 import { listTables } from '../../database/queries'
@@ -45,7 +46,11 @@ export default async function TableListPage({
     },
   }
 
-  const tables = await fetchData(config.sql, { database })
+  const tables = await fetchData<RowData[]>({
+    query: config.sql,
+    format: 'JSONEachRow',
+    query_params: { database },
+  })
 
   return (
     <DataTable

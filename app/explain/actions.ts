@@ -52,7 +52,10 @@ export async function explainAction(
     const sql = `EXPLAIN ${kind} ${query}`
 
     try {
-      const data = await fetchData(sql, {}, 'JSONEachRow', clickhouse_settings)
+      const data = await fetchData<{ explain: string }[]>({
+        query: sql,
+        clickhouse_settings,
+      })
       console.log(data)
 
       if (data.length === 0) {

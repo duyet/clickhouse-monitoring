@@ -1,6 +1,16 @@
 import { ColumnFormat } from '@/components/data-table/column-defs'
 import { type QueryConfig } from '@/lib/types/query-config'
 
+export type Row = {
+  host: string
+  readable_total_rows: string
+  readable_total_bytes: string
+  readable_primary_key_size: string
+  readable_marks_bytes: string
+  part_count: number
+  last_modification_time: string
+}
+
 export const config: QueryConfig = {
   name: 'count-across-replicas',
   description: 'Count across replicas for all tables in the cluster',
