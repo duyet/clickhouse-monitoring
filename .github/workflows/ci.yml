@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  release:
+    types:
+      - published
   pull_request:
     types:
       - opened
@@ -124,7 +127,7 @@ jobs:
         env:
           CLICKHOUSE_HOST: http://clickhouse:8123
           CLICKHOST_USER: default
-          CLICKHOST_PASS: ""
+          CLICKHOST_PASS: ''
         ports:
           - 3000:3000
     steps:
