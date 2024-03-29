@@ -58,11 +58,12 @@ export const fetchDataWithCache = () => cache(fetchData)
 
 export const query = async (
   query: string,
-  params: Record<string, unknown> = {}
+  params: Record<string, unknown> = {},
+  format: DataFormat = 'JSON'
 ) => {
   const resultSet = await getClient().query({
     query: QUERY_COMMENT + query,
-    format: 'JSON',
+    format,
     query_params: params,
   })
 
