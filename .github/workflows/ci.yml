@@ -95,6 +95,7 @@ jobs:
 
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
+      first_tag: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
 
   validate-docker-build:
     runs-on: ubuntu-latest
@@ -119,7 +120,7 @@ jobs:
           --health-retries 5
           --health-start-period 30s
       test-image:
-        image: ${{ needs.build-docker.outputs.tags }}
+        image: ${{ needs.build-docker.outputs.first_tag }}
         env:
           CLICKHOUSE_HOST: http://clickhouse:8123
           CLICKHOST_USER: default
