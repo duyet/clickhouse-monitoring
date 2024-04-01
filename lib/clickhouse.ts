@@ -33,30 +33,56 @@ export const getClient = <B extends boolean>({
 
 export const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */ '
 
-export const fetchData = async <T>({
+export const fetchData = async <
+  T extends
+  | unknown[]
+  | object[] // format = '*EachRow'
+  | Record<string, unknown> // format = 'JSONObjectEachRow' | 'JSONColumns
+  | { length: number; rows: number; statistics: Record<string, unknown> }, // format = 'JSON' | 'JSONStrings' | 'JSONCompact' | 'JSONColumnsWithMetadata' | ...
+>({
   query,
   query_params,
   format = 'JSONEachRow',
   clickhouse_settings,
 }: QueryParams): Promise<T> => {
-  const sql = QUERY_COMMENT + query
-
   const client = getClient({ web: false })
   const resultSet = await client.query({
-    query: sql,
+    query: QUERY_COMMENT + query,
     format,
     query_params,
     clickhouse_settings,
   })
 
   const query_id = resultSet.query_id
+
   const data = await resultSet.json<T>()
 
   console.debug(
     `--> Query (${query_id}):`,
-    sql.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
+    query.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
   )
-  console.debug(`<-- Response (${query_id}):`, data, 'rows\n')
+
+  if (data === null) {
+    console.debug(`<-- Response (${query_id}):`, 'null\n')
+  } else if (Array.isArray(data)) {
+    console.debug(`<-- Response (${query_id}):`, data.length, 'rows\n')
+  } else if (
+    typeof data === 'object' &&
+    data.hasOwnProperty('rows') &&
+    data.hasOwnProperty('statistics')
+  ) {
+    console.debug(
+      `<-- Response (${query_id}):`,
+      data.rows || 0,
+      'rows',
+      JSON.stringify(data.statistics),
+      '\n'
+    )
+  } else if (typeof data === 'object' && data.hasOwnProperty('rows')) {
+    console.debug(`<-- Response (${query_id}):`, data.rows, 'rows\n')
+  } else {
+    console.debug(`<-- Response (${query_id}):`, data, '\n')
+  }
 
   return data
 }

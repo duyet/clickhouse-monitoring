@@ -2,6 +2,8 @@ import { getClient } from '@/lib/clickhouse'
 import { initTrackingTable } from '@/lib/tracking'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const client = getClient({ web: false })
 

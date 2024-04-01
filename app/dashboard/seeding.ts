@@ -40,7 +40,7 @@ const migrateSettings = async () => {
         SELECT * FROM ${TABLE_SETTINGS}
         FINAL
         WHERE key = {key: String}`,
-      query_params: { key: seed.key }
+      query_params: { key: seed.key },
     })
 
     if (exists.length == 0) {

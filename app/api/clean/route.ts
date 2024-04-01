@@ -7,6 +7,8 @@ import type { ClickHouseClient } from '@clickhouse/client'
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const client = getClient({ web: false })

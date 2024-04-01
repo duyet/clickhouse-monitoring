@@ -1,22 +1,52 @@
+import {
+  ArchiveIcon,
+  BarChartIcon,
+  CopyIcon,
+  CounterClockwiseClockIcon,
+  CrossCircledIcon,
+  DashboardIcon,
+  ExclamationTriangleIcon,
+  GearIcon,
+  HamburgerMenuIcon,
+  HomeIcon,
+  InfoCircledIcon,
+  LightningBoltIcon,
+  MixIcon,
+  ShuffleIcon,
+  TableIcon,
+  TextAlignBottomIcon,
+  UpdateIcon,
+} from '@radix-ui/react-icons'
+
 import { QUERY_COMMENT } from '@/lib/clickhouse'
 
+import {
+  CircleDollarSignIcon,
+  CombineIcon,
+  FilePlus2Icon,
+  HardDriveIcon,
+  UngroupIcon,
+} from 'lucide-react'
 import { type MenuItem } from './components/menu/types'
 
 export const menuItemsConfig: MenuItem[] = [
   {
     title: 'Overview',
     href: '/overview',
+    icon: HomeIcon,
   },
   {
     title: 'Tables',
     href: '/tables',
     countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
+    icon: TableIcon,
     items: [
       {
         title: 'Tables Explorer',
         href: '/tables',
         countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
         description: 'List of databases, tables and their details',
+        icon: TableIcon,
       },
       {
         title: 'Distributed DDL Queue',
@@ -24,6 +54,7 @@ export const menuItemsConfig: MenuItem[] = [
         countSql: `SELECT COUNT() FROM system.distributed_ddl_queue WHERE status != 'Finished'`,
         description:
           'Distributed ddl queries (ON CLUSTER clause) that were executed on a cluster',
+        icon: ShuffleIcon,
       },
       {
         title: 'Table Replicas',
@@ -31,6 +62,7 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'Contains information and status for replicated tables residing on the local server',
         countSql: `SELECT COUNT() FROM system.replicas`,
+        icon: CopyIcon,
       },
       {
         title: 'Replication Queue',
@@ -38,17 +70,20 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family',
         countSql: `SELECT COUNT() FROM system.replication_queue`,
+        icon: ShuffleIcon,
       },
       {
         title: 'Readonly Tables',
         href: '/readonly-tables',
         description: 'Readonly tables and their replicas',
         countSql: `SELECT COUNT() FROM system.replicas WHERE is_readonly = 1`,
+        icon: ExclamationTriangleIcon,
       },
       {
         title: 'Top Usage Tables',
         href: '/top-usage-tables',
         description: 'Most usage tables, ignore system tables (top 50)',
+        icon: TextAlignBottomIcon,
       },
     ],
   },
@@ -56,56 +91,58 @@ export const menuItemsConfig: MenuItem[] = [
     title: 'Queries',
     href: '',
     countSql: `SELECT COUNT() FROM system.processes WHERE is_cancelled = 0 AND query NOT LIKE '%${QUERY_COMMENT}%'`,
+    icon: MixIcon,
     items: [
       {
         title: 'Running Queries',
         href: '/running-queries',
         description: 'Queries that are currently running',
         countSql: `SELECT COUNT() FROM system.processes WHERE is_cancelled = 0 AND query NOT LIKE '%${QUERY_COMMENT}%'`,
+        icon: MixIcon,
       },
       {
         title: 'History Queries',
         href: '/history-queries',
         description:
           'Queries that have been run including successed, failed queries with resourses usage details',
-      },
-      {
-        title: 'Mutations',
-        href: '/mutations',
-        description:
-          'Information about mutations of MergeTree tables and their progress',
-        countSql: `SELECT COUNT() FROM system.mutations WHERE is_done = 0`,
+        icon: CounterClockwiseClockIcon,
       },
       {
         title: 'Failed Queries',
         href: '/failed-queries',
         description: 'Which queries have failed?',
+        icon: CrossCircledIcon,
       },
       {
         title: 'Latest Common Errors',
         href: '/common-errors',
         description:
           'Exploring the system.errors table to see when the error last occurred',
+        icon: CrossCircledIcon,
       },
       {
         title: 'Most Expensive Queries',
         href: '/expensive-queries',
         description: 'Most expensive queries by many factors',
+        icon: CircleDollarSignIcon,
       },
       {
         title: 'Most Expensive Queries by Memory',
         href: '/expensive-queries-by-memory',
         description: 'Most expensive queries by memory',
+        icon: CircleDollarSignIcon,
       },
       {
         title: 'New Parts Created',
         href: '/charts/new-parts-created',
         description: 'How many (and how often) new parts are created',
+        icon: FilePlus2Icon,
       },
       {
         title: 'Explain',
         href: '/explain',
         description: 'Shows the execution plan of a statement',
+        icon: InfoCircledIcon,
       },
     ],
   },
@@ -113,6 +150,7 @@ export const menuItemsConfig: MenuItem[] = [
     title: 'Merges',
     href: '/merges',
     countSql: `SELECT COUNT() FROM system.merges WHERE 1 = 1`,
+    icon: CombineIcon,
     items: [
       {
         title: 'Merges',
@@ -120,35 +158,41 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'Merges and part mutations currently in process for tables in the MergeTree family',
         countSql: `SELECT COUNT() FROM system.merges WHERE 1 = 1`,
+        icon: CombineIcon,
       },
       {
         title: 'Merge Performance',
         href: '/merge-performance',
         description: 'Merge performance over day, avg duration, avg rows read',
+        icon: LightningBoltIcon,
       },
       {
         title: 'Mutations',
         href: '/mutations',
         description:
           'Information about mutations of MergeTree tables and their progress',
+        icon: UpdateIcon,
       },
     ],
   },
   {
     title: 'More',
     href: '',
+    icon: HamburgerMenuIcon,
     items: [
       {
         title: 'Settings',
         href: '/settings',
         description:
           'The values of global server settings which can be viewed in the table `system.settings`',
+        icon: GearIcon,
       },
       {
         title: 'MergeTree Settings',
         href: '/mergetree-settings',
         description:
           'The values of merge_tree settings (for all MergeTree tables) which can be viewed in the table `system.merge_tree_settings`',
+        icon: TableIcon,
       },
       {
         title: 'Disks',
@@ -156,6 +200,7 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'The values of disk settings which can be viewed in the table `system.disks`',
         countSql: `SELECT COUNT() FROM system.disks`,
+        icon: HardDriveIcon,
       },
       {
         title: 'Backups',
@@ -163,30 +208,35 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'Backups and restores tables and databases. The information is taken from the system.backup_log table',
         countSql: `SELECT COUNT() FROM system.backup_log WHERE status = 'BACKUP_CREATED'`,
+        icon: ArchiveIcon,
       },
       {
         title: 'Metrics',
         href: '/metrics',
         description:
           'Contains metrics which can be calculated instantly, or have a current value',
+        icon: BarChartIcon,
       },
       {
         title: 'Asynchronous Metrics',
         href: '/asynchronous-metrics',
         description:
           'Contains metrics that are calculated periodically in the background',
+        icon: BarChartIcon,
       },
       {
         title: 'Custom Dashboard',
         href: '/dashboard',
         description:
           'Custom dashboard for monitoring ClickHouse. You can add your own charts and configure them',
+        icon: DashboardIcon,
       },
       {
         title: 'Clusters',
         href: '/clusters',
         description:
           'Information about clusters available in the config file and the servers in them',
+        icon: UngroupIcon,
       },
     ],
   },
