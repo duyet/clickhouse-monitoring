@@ -45,6 +45,11 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Readonly tables and their replicas',
         countSql: `SELECT COUNT() FROM system.replicas WHERE is_readonly = 1`,
       },
+      {
+        title: 'Top Usage Tables',
+        href: '/top-usage-tables',
+        description: 'Most usage tables, ignore system tables (top 50)',
+      },
     ],
   },
   {
@@ -176,11 +181,6 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/dashboard',
         description:
           'Custom dashboard for monitoring ClickHouse. You can add your own charts and configure them',
-      },
-      {
-        title: 'Top Usage Tables',
-        href: '/top-usage-tables',
-        description: 'Most usage tables, ignore system tables (top 50)',
       },
       {
         title: 'Clusters',
