@@ -58,7 +58,7 @@ function SingleItem({ item }: { item: MenuItem }) {
             {item.title}
             {item.countSql ? (
               <ServerComponentLazy fallback={''}>
-                <CountBadge sql={item.countSql} />
+                <CountBadge sql={item.countSql} variant={item.countVariant} />
               </ServerComponentLazy>
             ) : null}
           </span>
@@ -77,7 +77,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
           {item.title}
           {item.countSql ? (
             <ServerComponentLazy fallback={''}>
-              <CountBadge sql={item.countSql} />
+              <CountBadge sql={item.countSql} variant={item.countVariant} />
             </ServerComponentLazy>
           ) : null}
         </div>
@@ -93,7 +93,10 @@ function HasChildItems({ item }: { item: MenuItem }) {
                   {childItem.title}
                   {childItem.countSql ? (
                     <ServerComponentLazy fallback={''}>
-                      <CountBadge sql={childItem.countSql} />
+                      <CountBadge
+                        sql={childItem.countSql}
+                        variant={item.countVariant}
+                      />
                     </ServerComponentLazy>
                   ) : null}
                 </span>

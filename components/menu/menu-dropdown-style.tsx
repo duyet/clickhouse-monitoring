@@ -52,7 +52,10 @@ function MenuItem({ item }: { item: MenuItem }) {
 function SingleItem({ item }: { item: MenuItem }) {
   return (
     <DropdownMenuItem>
-      <Link href={item.href}>{item.title}</Link>
+      <Link href={item.href} className="flex flex-row items-center gap-2">
+        {item.icon && <item.icon className="size-3" />}
+        {item.title}
+      </Link>
     </DropdownMenuItem>
   )
 }
@@ -60,7 +63,10 @@ function SingleItem({ item }: { item: MenuItem }) {
 function HasChildItems({ item }: { item: MenuItem }) {
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger>{item.title}</DropdownMenuSubTrigger>
+      <DropdownMenuSubTrigger className="flex flex-row items-center gap-2">
+        {item.icon && <item.icon className="size-3" />}
+        {item.title}
+      </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
           {item.items?.map((childItem) => (

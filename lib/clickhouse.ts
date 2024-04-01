@@ -35,10 +35,10 @@ export const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */ '
 
 export const fetchData = async <
   T extends
-  | unknown[]
-  | object[] // format = '*EachRow'
-  | Record<string, unknown> // format = 'JSONObjectEachRow' | 'JSONColumns
-  | { length: number; rows: number; statistics: Record<string, unknown> }, // format = 'JSON' | 'JSONStrings' | 'JSONCompact' | 'JSONColumnsWithMetadata' | ...
+    | unknown[]
+    | object[] // format = '*EachRow'
+    | Record<string, unknown> // format = 'JSONObjectEachRow' | 'JSONColumns
+    | { length: number; rows: number; statistics: Record<string, unknown> }, // format = 'JSON' | 'JSONStrings' | 'JSONCompact' | 'JSONColumnsWithMetadata' | ...
 >({
   query,
   query_params,
