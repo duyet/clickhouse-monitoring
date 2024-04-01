@@ -1,14 +1,16 @@
-import { Badge } from '@/components/ui/badge'
+import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { fetchData } from '@/lib/clickhouse'
 
-interface CountBadgeProps {
+export interface CountBadgeProps {
   sql?: string
   className?: string
+  variant?: BadgeProps['variant']
 }
 
 export async function CountBadge({
   sql,
   className,
+  variant = 'outline',
 }: CountBadgeProps): Promise<JSX.Element | null> {
   if (!sql) return null
 
@@ -31,7 +33,7 @@ export async function CountBadge({
   if (count == 0) return null
 
   return (
-    <Badge className={className} variant="outline">
+    <Badge className={className} variant={variant}>
       {count}
     </Badge>
   )

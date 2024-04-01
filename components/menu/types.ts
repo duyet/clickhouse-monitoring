@@ -1,3 +1,4 @@
+import type { CountBadgeProps } from '@/components/menu/count-badge'
 import type { IconProps } from '@radix-ui/react-icons/dist/types'
 import type { LucideProps } from 'lucide-react'
 
@@ -12,6 +13,7 @@ export interface MenuItem {
   href: string
   description?: string
   countSql?: string
+  countVariant?: CountBadgeProps['variant']
   items?: MenuItem[]
   icon?: typeof RadixIcon
 }

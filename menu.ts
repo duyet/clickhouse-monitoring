@@ -77,6 +77,7 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/readonly-tables',
         description: 'Readonly tables and their replicas',
         countSql: `SELECT COUNT() FROM system.replicas WHERE is_readonly = 1`,
+        countVariant: 'destructive',
         icon: ExclamationTriangleIcon,
       },
       {
