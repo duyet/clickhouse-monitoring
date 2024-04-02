@@ -8,7 +8,7 @@ export const historyQueriesConfig: QueryConfig = {
           type,
           query_id,
           query_duration_ms,
-          query_duration_ms as query_duration,
+          query_duration_ms / 1000 as query_duration,
           event_time,
           query,
           formatted_query AS readable_query,
