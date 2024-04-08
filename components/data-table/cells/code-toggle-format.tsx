@@ -10,7 +10,7 @@ interface CodeToggleFormatProps {
   value: any
 }
 
-const CODE_TRUNCATE_LENGTH = 50
+const CODE_TRUNCATE_LENGTH = 75
 
 export function CodeToggleFormat({ row, value }: CodeToggleFormatProps) {
   if (value.length < CODE_TRUNCATE_LENGTH) {
@@ -27,7 +27,7 @@ export function CodeToggleFormat({ row, value }: CodeToggleFormatProps) {
       <AccordionItem value="code" className="border-0">
         <AccordionTrigger className="py-0 hover:no-underline">
           <code className="truncate break-words font-normal">
-            {value.substring(0, 50)}...
+            {value.substring(0, CODE_TRUNCATE_LENGTH)}...
           </code>
         </AccordionTrigger>
         <AccordionContent>
