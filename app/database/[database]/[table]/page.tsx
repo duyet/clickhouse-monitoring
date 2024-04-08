@@ -126,8 +126,10 @@ export default async function ColumnsPage({
         <DataTable
           title={`Table: ${database}.${table}`}
           description={description}
-          extras={<Extras database={database} table={table} />}
-          toolbarExtras={<ToolbarExtras database={database} table={table} />}
+          toolbarExtras={<Extras database={database} table={table} />}
+          topRightToolbarExtras={
+            <TopRightToolbarExtras database={database} table={table} />
+          }
           config={config}
           data={columns}
         />
@@ -168,7 +170,7 @@ const Extras = ({ database, table }: { database: string; table: string }) => (
   </div>
 )
 
-const ToolbarExtras = ({
+const TopRightToolbarExtras = ({
   database,
   table,
 }: {
