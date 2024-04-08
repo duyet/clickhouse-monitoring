@@ -26,8 +26,11 @@ export const config: QueryConfig = {
           formatReadableSize(sum(bytes)) AS readable_total_bytes,
           (100 * total_bytes / max(total_bytes) OVER ()) AS pct_total_bytes,
 
-          count() as part_count,
-          (100 * count() / max(count()) OVER ()) AS pct_part_count,
+          countIf(active) as active_part_count,
+          (100 * active_part_count / max(active_part_count) OVER ()) AS pct_active_part_count,
+
+          count() as all_part_count,
+          (100 * all_part_count / max(all_part_count) OVER ()) AS pct_all_part_count,
 
           sum(primary_key_size) AS primary_key_size,
           formatReadableSize(primary_key_size) AS readable_primary_key_size,
@@ -52,7 +55,8 @@ export const config: QueryConfig = {
     'readable_total_bytes',
     'readable_primary_key_size',
     'readable_marks_bytes',
-    'part_count',
+    'active_part_count',
+    'all_part_count',
     'last_modification_time',
   ],
   columnFormats: {
@@ -60,6 +64,7 @@ export const config: QueryConfig = {
     readable_total_bytes: ColumnFormat.BackgroundBar,
     readable_primary_key_size: ColumnFormat.BackgroundBar,
     readable_marks_bytes: ColumnFormat.BackgroundBar,
-    part_count: ColumnFormat.BackgroundBar,
+    active_part_count: ColumnFormat.BackgroundBar,
+    all_part_count: ColumnFormat.BackgroundBar,
   },
 }
