@@ -233,12 +233,17 @@
   resolved "https://registry.yarnpkg.com/@clickhouse/client-common/-/client-common-0.3.1.tgz#25db4d5fc4d2d01a57e941afc2482c4330d5e6ea"
   integrity sha512-SXErzkCLLp/cRs2P8ihEgOiz1D0RMcQGcccnxrU5+DKWpYMu5/ZR48gBLaUVpVg/hXdBR/9n9XH8CB8d1xKiuQ==
 
-"@clickhouse/client-web@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@clickhouse/client-web/-/client-web-0.3.1.tgz#660effcbb8600f8231b908e425a3bc58d87edb89"
-  integrity sha512-cOmiooy33TYBY9lqAHE3xMZgzSzlQ/cmKOglxRNqfdo5d+NVgBXUAH2QERXvzmw2o3hOHLkROwAMN1gd9MZ4bA==
+"@clickhouse/client-common@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client-common/-/client-common-1.0.1.tgz#c7dde5eafaad8189649373ecc23354c7a32847b3"
+  integrity sha512-3L6e0foP6VOktScoi6XWMjJyOpKCWgLUYgPVxP2c7gm6Kotq+iRmmmXtXTSg7B7uozcLZycTtPfIw2d80SYsYw==
+
+"@clickhouse/client-web@^1.0.0":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client-web/-/client-web-1.0.1.tgz#f7eb259bf953eda76b685b0560e101b2f5c9052c"
+  integrity sha512-gKmfOxJ3+6kFtlmQaBd0sOz8t8lAiJcBfR9sx1Cmk4M38T5xxza7ZWhyGs3O6I7nJkU60RuM1MY8Woct6vMtRg==
   dependencies:
-    "@clickhouse/client-common" "0.3.1"
+    "@clickhouse/client-common" "1.0.1"
 
 "@clickhouse/client@^0.3.0":
   version "0.3.1"
