@@ -4,6 +4,7 @@ import type {
   ColumnFormatOptions,
 } from '@/components/data-table/column-defs'
 import type { PartialBy } from '@/lib/types/generic'
+import type { Icon } from '@/lib/types/icon'
 
 export interface QueryConfig {
   name: string
@@ -41,6 +42,24 @@ export interface QueryConfig {
    * ```
    */
   defaultParams?: Record<string, string | number | boolean>
+  /**
+   * Filter presets are predefined filters that can be applied to the query
+   * For example:
+   * ```ts
+   * filterPresets: [
+   *  {
+   *    name: 'Changed only',
+   *    key: 'changed',
+   *    sql: 'changed = 1',
+   *  },
+   * ]
+   */
+  filterParamPresets?: {
+    name: string
+    key: string
+    sql: string
+    icon?: Icon
+  }[]
 }
 
 export type QueryConfigNoName = PartialBy<QueryConfig, 'name'>

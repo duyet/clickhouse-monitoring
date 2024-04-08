@@ -18,6 +18,7 @@ export function BackgroundBarFormat({
   const colName = columnName.replace('readable_', '')
   const pctColName = `pct_${colName}`
   const pct = row.original[pctColName]
+  const orgValue = row.original[colName]
 
   if (pct === undefined) {
     console.warn(
@@ -36,6 +37,7 @@ export function BackgroundBarFormat({
                 ${bgColor} 0%, ${bgColor} ${pct}%,
                 transparent ${pct}%, transparent 100%)`,
       }}
+      title={`${orgValue} (${pct}%)`}
     >
       {value}
     </div>

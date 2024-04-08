@@ -32,12 +32,13 @@ import { uniq } from '@/lib/utils'
 
 import { ColumnVisibilityButton } from './buttons/column-visibility'
 import { ShowSQLButton } from './buttons/show-sql'
+import { DataTableToolbar } from './data-table-toolbar'
 
 interface DataTableProps<TData extends RowData> {
   title?: string
   description?: string
-  extras?: React.ReactNode
   toolbarExtras?: React.ReactNode
+  topRightToolbarExtras?: React.ReactNode
   config: QueryConfig
   data: TData[]
   defaultPageSize?: number
@@ -47,8 +48,8 @@ interface DataTableProps<TData extends RowData> {
 export function DataTable<TData extends RowData, TValue>({
   title = '',
   description = '',
-  extras,
   toolbarExtras,
+  topRightToolbarExtras,
   config,
   data,
   defaultPageSize = 100,
@@ -118,13 +119,17 @@ export function DataTable<TData extends RowData, TValue>({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {toolbarExtras}
+          {topRightToolbarExtras}
           {showSQL ? <ShowSQLButton sql={config.sql} /> : null}
           <ColumnVisibilityButton table={table} />
         </div>
       </div>
 
-      {extras}
+      <DataTableToolbar
+        config={config}
+        extras={toolbarExtras}
+        className="mb-2"
+      />
 
       <div className="mb-5 rounded-md border">
         <Table>

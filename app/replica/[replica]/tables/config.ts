@@ -12,7 +12,7 @@ export type Row = {
 }
 
 export const config: QueryConfig = {
-  name: 'count-across-replicas',
+  name: 'count-in-replicas',
   description: 'Count across replicas for all tables in the cluster',
   sql: `
       SELECT
@@ -47,7 +47,7 @@ export const config: QueryConfig = {
 
       FROM clusterAllReplicas({cluster: String}, system.parts)
       WHERE active
-      GROUP BY host
+      GROUP BY 1
       ORDER BY
           1 ASC,
           2 DESC

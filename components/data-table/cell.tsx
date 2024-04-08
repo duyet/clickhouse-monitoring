@@ -86,6 +86,6 @@ export const formatCell = <TData extends RowData, TValue>(
       )
 
     default:
-      return <span className='text-nowrap'>{value as string}</span>
+      return <span className="text-nowrap">{value as string}</span>
   }
 }

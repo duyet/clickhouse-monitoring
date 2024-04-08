@@ -57,7 +57,7 @@ export default async function TableListPage({
       title={`Database: ${database}`}
       config={config}
       data={tables}
-      toolbarExtras={<ToolbarExtras database={database} />}
+      topRightToolbarExtras={<ToolbarExtras database={database} />}
     />
   )
 }

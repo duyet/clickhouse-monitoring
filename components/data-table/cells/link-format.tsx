@@ -27,7 +27,7 @@ export function LinkFormat({ row, value, options }: LinkFormatProps) {
 
   return (
     <Link href={href} className="group flex flex-row items-center gap-1">
-      {value}
+      <span className="text-nowrap">{value}</span>
       <ArrowRightIcon className="size-3 text-transparent group-hover:text-current" />
     </Link>
   )
