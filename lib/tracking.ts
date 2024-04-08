@@ -1,10 +1,14 @@
 import { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 
+const log = (...args: string[]) => console.log(`[/api/init] ${args.join(' ')}`)
+const error = (...args: string[]) =>
+  console.error(`[/api/init] ${args.join(' ')}`)
+
 export async function initTrackingTable(
   client: WebClickHouseClient | ClickHouseClient
 ) {
-  console.log('[Middleware] initializing system.monitoring_events')
+  log('initializing system.monitoring_events')
 
   try {
     const response = await client.query({
@@ -20,14 +24,8 @@ export async function initTrackingTable(
         PARTITION BY event_date
         ORDER BY (kind, actor, event_time)`,
     })
-    console.log(
-      '[Middleware] Created table system.monitoring_events',
-      await response.text()
-    )
-  } catch (error) {
-    console.error(
-      '[Middleware] Error initializing table system.monitoring_events',
-      error
-    )
+    log('created table system.monitoring_events', await response.text())
+  } catch (err) {
+    error('error initializing table system.monitoring_events', `${err}`)
   }
 }
