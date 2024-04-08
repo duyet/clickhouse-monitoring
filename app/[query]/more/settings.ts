@@ -7,7 +7,7 @@ export const settingsConfig: QueryConfig = {
       SELECT *
       FROM system.settings
       ORDER BY name
-    `,
+  `,
   columns: ['name', 'value', 'changed', 'description', 'default'],
   columnFormats: {
     name: ColumnFormat.Code,
@@ -15,4 +15,14 @@ export const settingsConfig: QueryConfig = {
     value: ColumnFormat.Code,
     default: ColumnFormat.Code,
   },
+  defaultParams: {
+    changed: '0',
+  },
+  filterParamPresets: [
+    {
+      name: 'Changed only',
+      key: 'changed',
+      sql: 'changed = 1',
+    },
+  ],
 }
