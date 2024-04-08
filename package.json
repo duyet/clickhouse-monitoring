@@ -16,7 +16,7 @@
     "fmt": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache"
   },
   "dependencies": {
-    "@clickhouse/client": "^0.3.0",
+    "@clickhouse/client": "^1.0.0",
     "@clickhouse/client-web": "^0.3.1",
     "@headlessui/tailwindcss": "^0.2.0",
     "@hookform/resolvers": "^3.3.3",
