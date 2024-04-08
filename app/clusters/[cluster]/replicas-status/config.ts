@@ -26,6 +26,9 @@ export const config: QueryConfig = {
           formatReadableSize(sum(bytes)) AS readable_total_bytes,
           (100 * total_bytes / max(total_bytes) OVER ()) AS pct_total_bytes,
 
+          countDistinct(database) AS database_count,
+          countDistinct(database || table) AS table_count,
+
           countIf(active) as active_part_count,
           (100 * active_part_count / max(active_part_count) OVER ()) AS pct_active_part_count,
 
@@ -44,7 +47,7 @@ export const config: QueryConfig = {
 
       FROM clusterAllReplicas({cluster: String}, system.parts)
       WHERE active
-      GROUP BY 1
+      GROUP BY host
       ORDER BY
           1 ASC,
           2 DESC
@@ -58,6 +61,8 @@ export const config: QueryConfig = {
     'active_part_count',
     'all_part_count',
     'last_modification_time',
+    'database_count',
+    'table_count',
   ],
   columnFormats: {
     readable_total_rows: ColumnFormat.BackgroundBar,
@@ -66,5 +71,7 @@ export const config: QueryConfig = {
     readable_marks_bytes: ColumnFormat.BackgroundBar,
     active_part_count: ColumnFormat.BackgroundBar,
     all_part_count: ColumnFormat.BackgroundBar,
+    database_count: ColumnFormat.BackgroundBar,
+    table_count: ColumnFormat.BackgroundBar,
   },
 }
