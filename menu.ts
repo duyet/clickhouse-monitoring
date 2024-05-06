@@ -25,6 +25,7 @@ import {
   CombineIcon,
   FilePlus2Icon,
   HardDriveIcon,
+  RollerCoasterIcon,
   UngroupIcon,
 } from 'lucide-react'
 import { type MenuItem } from './components/menu/types'
@@ -238,6 +239,13 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'Information about clusters available in the config file and the servers in them',
         icon: UngroupIcon,
+      },
+      {
+        title: 'Zookeeper',
+        href: '/zookeeper?path=/',
+        description:
+          'Exposes data from the Keeper cluster defined in the config',
+        icon: RollerCoasterIcon,
       },
     ],
   },
