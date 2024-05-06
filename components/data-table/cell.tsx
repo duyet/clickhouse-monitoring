@@ -5,7 +5,6 @@ import {
   ColumnFormat,
   ColumnFormatOptions,
 } from '@/components/data-table/column-defs'
-import dayjs from '@/lib/dayjs'
 import { formatReadableQuantity } from '@/lib/format-readable'
 
 import { ActionFormat } from './cells/action-format'
@@ -15,7 +14,9 @@ import { BadgeFormat } from './cells/badge-format'
 import { BooleanFormat } from './cells/boolean-format'
 import { CodeToggleFormat } from './cells/code-toggle-format'
 import { ColoredBadgeFormat } from './cells/colored-badge-format'
+import { DurationFormat } from './cells/duration-format'
 import { LinkFormat } from './cells/link-format'
+import { RelatedTimeFormat } from './cells/related-time-format'
 
 export const formatCell = <TData extends RowData, TValue>(
   table: Table<TData>,
@@ -52,14 +53,10 @@ export const formatCell = <TData extends RowData, TValue>(
       return <CodeToggleFormat row={row} value={value} />
 
     case ColumnFormat.RelatedTime:
-      let fromNow = dayjs(value as string).fromNow()
-      return <span title={value as string}>{fromNow}</span>
+      return <RelatedTimeFormat value={value} />
 
     case ColumnFormat.Duration:
-      let humanized = dayjs
-        .duration({ seconds: parseFloat(value as string) })
-        .humanize()
-      return <span title={value as string}>{humanized}</span>
+      return <DurationFormat value={value} />
 
     case ColumnFormat.Boolean:
       return <BooleanFormat value={value} />
