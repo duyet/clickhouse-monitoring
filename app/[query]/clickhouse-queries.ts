@@ -13,6 +13,7 @@ import { settingsConfig } from './more/settings'
 import { topUsageColumnsConfig } from './more/top-usage-columns'
 import { topUsageTablesConfig } from './more/top-usage-tables'
 import { usersConfig } from './more/users'
+import { zookeeperConfig } from './more/zookeeper'
 import { commonErrorsConfig } from './queries/common-errors'
 import { expensiveQueriesConfig } from './queries/expensive-queries'
 import { expensiveQueriesByMemoryConfig } from './queries/expensive-queries-by-memory'
@@ -61,6 +62,7 @@ export const queries: Array<QueryConfig> = [
   asynchronousMetricsConfig,
   usersConfig,
   rolesConfig,
+  zookeeperConfig,
 ]
 
 export const getQueryConfigByName = (
