@@ -24,7 +24,7 @@ export const getClient = <B extends boolean>({
   const client = web === true ? createClientWeb : createClient
 
   return client({
-    url: getClickHouseHost(),
+    host: getClickHouseHost(),
     username: process.env.CLICKHOUSE_USER ?? 'default',
     password: process.env.CLICKHOUSE_PASSWORD ?? '',
     request_timeout: parseInt(process.env.CLICKHOUSE_TIMEOUT ?? '100000'),
