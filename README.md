@@ -29,6 +29,7 @@ To get the project up and running on your local machine, follow these steps:
     - `CLICKHOUSE_HOST`: ClickHouse host, for example `http://localhost:8123`
     - `CLICKHOUSE_USER`: ClickHouse user with permission to query the `system` database.
     - `CLICKHOUSE_PASSWORD`: ClickHouse password for the specified user.
+    - `CLICKHOUSE_TIMEOUT`: Timeout for ClickHouse queries in milliseconds. Default is `100000`.
 4. Run the development server with `npm run dev` or `yarn dev`
 5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the dashboard.
 
