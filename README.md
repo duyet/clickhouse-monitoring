@@ -2,7 +2,15 @@
 
 [![Build and Test](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml/badge.svg)](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml)
 
-This is a simple monitoring dashboard for ClickHouse, built with [Next.js](https://nextjs.org/).
+The simple Next.js dashboard that relies on `system.*` tables to help monitor and provide an overview of your ClickHouse cluster.
+
+Features:
+
+- Query monitor: current queries, query history, query resources (memory, parts read, file_open, ...), most expensive queries, most used tables or columns, etc.
+- Cluster monitor: total memory/CPU usage, distributed queue, global settings, mergetree settings, metrics, etc.
+- Tables and parts information: size, row count, compression, part size, etc., at the column level detail.
+- Useful tools: Zookeeper data exploration, query EXPLAIN, kill queries, etc.
+- Visualization metric charts: queries and resource usage, number of merges/mutation, merge performance, query performance, etc.
 
 ![](.github/screenshots/screenshot_1.png)
 ![](.github/screenshots/screenshot_2.png)
