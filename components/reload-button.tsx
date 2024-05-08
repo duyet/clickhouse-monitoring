@@ -87,6 +87,9 @@ export function ReloadButton({ className }: ReloadButtonProps) {
         <DropdownMenuItem onClick={() => setReloadInterval(10 * 60 * 1000)}>
           10m
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setReloadInterval(1800000)}>
+          30m
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setReloadInterval(null)}>
           Disable Auto
