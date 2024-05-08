@@ -5,20 +5,29 @@ export const zookeeperConfig: QueryConfig = {
   name: 'zookeeper',
   description: 'Zookeeper browser',
   sql: `
-      SELECT *
+      SELECT
+          name,
+          path,
+          value,
+          dataLength,
+          numChildren,
+          ctime AS created_at,
+          mtime AS updated_at,
+          version,
+          cversion,
+          aversion,
+          ephemeralOwner
       FROM system.zookeeper
       WHERE path = replaceOne({path: String}, '//', '/')
   `,
   columns: [
     'name',
-    'value',
     'path',
+    'value',
     'dataLength',
     'numChildren',
-    'czxid',
-    'mzxid',
-    'ctime',
-    'mtime',
+    'created_at',
+    'updated_at',
     'version',
     'cversion',
     'aversion',

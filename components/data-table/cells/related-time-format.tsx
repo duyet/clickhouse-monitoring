@@ -4,7 +4,7 @@ interface RelatedTimeFormatProps {
   value: any
 }
 
-let tz: string = ""
+let tz: string = ''
 
 export async function RelatedTimeFormat({ value }: RelatedTimeFormatProps) {
   let fromNow
