@@ -38,9 +38,9 @@ export const zookeeperConfig: QueryConfig = {
   defaultParams: { path: '/' },
   relatedCharts: [
     [
-      'ZooKeeperRequestsChart',
+      'zookeeper-requests',
       {
-        title: 'ZooKeeper Requests Over Time',
+        title: 'ZooKeeper Requests/Watch Over Time (Last 7 days)',
         interval: 'toStartOfHour',
         lastHours: 24 * 7,
       },
