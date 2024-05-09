@@ -51,5 +51,22 @@ export const readOnlyTablesConfig: QueryConfig = {
     is_session_expired: ColumnFormat.Boolean,
     replica_name: ColumnFormat.ColoredBadge,
   },
-  relatedCharts: [],
+  relatedCharts: [
+    [
+      'readonly-replica',
+      {
+        title: 'Readonly Replica Last 7 days (Max / hour)',
+        interval: 'toStartOfHour',
+        lastHours: 24 * 7,
+      },
+    ],
+    [
+      'readonly-replica',
+      {
+        title: 'Readonly Replica Last 24 hours (Max / 15 minutes)',
+        interval: 'toStartOfFifteenMinutes',
+        lastHours: 24,
+      },
+    ],
+  ],
 }
