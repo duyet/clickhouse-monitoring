@@ -36,4 +36,14 @@ export const zookeeperConfig: QueryConfig = {
     updated_at: ColumnFormat.RelatedTime,
   },
   defaultParams: { path: '/' },
+  relatedCharts: [
+    [
+      'ZooKeeperRequestsChart',
+      {
+        title: 'ZooKeeper Requests Over Time',
+        interval: 'toStartOfHour',
+        lastHours: 24 * 7,
+      },
+    ],
+  ],
 }
