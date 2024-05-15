@@ -39,6 +39,15 @@ export const listTables = `
              engine
   ),
 
+  detached_parts_count AS (
+    SELECT
+        database,
+        table,
+        count() AS detached_parts
+    FROM system.detached_parts
+    GROUP BY database, table
+  ),
+
   tables_from_tables AS (
     SELECT database,
            name AS table,
@@ -50,9 +59,11 @@ export const listTables = `
 
   summary AS (
     SELECT tables_from_tables.*,
-           tables_from_parts.*
+           tables_from_parts.*,
+           coalesce(detached_parts_count.detached_parts, 0) AS detached_parts
     FROM tables_from_tables
     LEFT JOIN tables_from_parts USING database, table
+    LEFT JOIN detached_parts_count USING database, table
     ORDER BY database, compressed DESC
   )
   
