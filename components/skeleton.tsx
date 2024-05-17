@@ -19,8 +19,8 @@ export function TableSkeleton() {
   return (
     <div className="flex items-center space-x-4 pt-5">
       <div className="space-y-2">
-        <Skeleton className="h-6 w-[500px] bg-slate-50" />
-        <Skeleton className="h-6 w-[450px] bg-slate-50" />
+        <Skeleton className="h-6 w-[500px] bg-slate-200" />
+        <Skeleton className="h-6 w-[450px] bg-slate-200" />
       </div>
     </div>
   )
