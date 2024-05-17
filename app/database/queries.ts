@@ -28,8 +28,8 @@ export const listTables = `
         round(uncompressed / compressed, 2) AS compr_rate,
         sum(rows) AS total_rows,
         formatReadableQuantity(sum(rows)) AS readable_total_rows,
-        count() AS part_count,
-        compressed / part_count AS avg_part_size,
+        count() AS parts_count,
+        compressed / parts_count AS avg_part_size,
         formatReadableSize(avg_part_size) AS readable_avg_part_size,
         round(100 * avg_part_size / MAX(avg_part_size) OVER (), 2) AS pct_avg_part_size
     FROM system.parts
@@ -39,11 +39,13 @@ export const listTables = `
              engine
   ),
 
-  detached_parts_count AS (
+  detached_parts AS (
     SELECT
         database,
         table,
-        count() AS detached_parts
+        count() AS detached_parts_count,
+        sum(bytes_on_disk) AS detached_bytes_on_disk,
+        formatReadableSize(detached_bytes_on_disk) AS readable_detached_bytes_on_disk
     FROM system.detached_parts
     GROUP BY database, table
   ),
@@ -59,20 +61,25 @@ export const listTables = `
 
   summary AS (
     SELECT tables_from_tables.*,
-           tables_from_parts.*,
-           coalesce(detached_parts_count.detached_parts, 0) AS detached_parts
+           tables_from_parts.*
     FROM tables_from_tables
     LEFT JOIN tables_from_parts USING database, table
-    LEFT JOIN detached_parts_count USING database, table
-    ORDER BY database, compressed DESC
+  ),
+
+  with_detached_parts AS (
+    SELECT summary.*,
+           detached_parts.*
+    FROM summary
+    LEFT JOIN detached_parts USING database, table
   )
-  
+
   SELECT *,
     round(100 * compressed / max(compressed) OVER ()) AS pct_compressed,
     round(100 * uncompressed / max(uncompressed) OVER ()) AS pct_uncompressed,
     round(100 * total_rows / max(total_rows) OVER ()) AS pct_total_rows,
-    round(100 * part_count / max(part_count) OVER ()) AS pct_part_count,
+    round(100 * parts_count / max(parts_count) OVER ()) AS pct_parts_count,
     round(100 * compr_rate / max(compr_rate) OVER ()) AS pct_compr_rate,
     database || '.' || table as action
-  FROM summary
+  FROM with_detached_parts
+  ORDER BY database, compressed DESC
 `
