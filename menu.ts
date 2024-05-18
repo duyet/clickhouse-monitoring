@@ -27,6 +27,7 @@ import {
   HardDriveIcon,
   RollerCoasterIcon,
   UngroupIcon,
+  UnplugIcon,
 } from 'lucide-react'
 import { type MenuItem } from './components/menu/types'
 
@@ -246,6 +247,12 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'Exposes data from the Keeper cluster defined in the config',
         icon: RollerCoasterIcon,
+      },
+      {
+        title: 'Connections',
+        href: '/charts/connections-http,connections-interserver',
+        description: 'Number of connections over time',
+        icon: UnplugIcon,
       },
     ],
   },
