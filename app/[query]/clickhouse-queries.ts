@@ -20,6 +20,7 @@ import { expensiveQueriesByMemoryConfig } from './queries/expensive-queries-by-m
 import { failedQueriesConfig } from './queries/failed-queries'
 import { historyQueriesConfig } from './queries/history-queries'
 import { runningQueriesConfig } from './queries/running-queries'
+import { detachedPartsConfig } from './tables/detached-parts'
 import { distributedDdlQueueConfig } from './tables/distributed-ddl-queue'
 import { readOnlyTablesConfig } from './tables/readonly-tables'
 import { replicasConfig } from './tables/replicas'
@@ -33,6 +34,7 @@ export const queries: Array<QueryConfig> = [
   replicasConfig,
   replicationQueueConfig,
   readOnlyTablesConfig,
+  detachedPartsConfig,
 
   // Queries
   runningQueriesConfig,
