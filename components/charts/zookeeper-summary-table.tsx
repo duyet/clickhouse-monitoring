@@ -11,25 +11,20 @@ import {
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 
-export async function ChartReplicationSummaryTable({
-  title,
+export async function ChartZookeeperSummaryTable({
+  title = 'ZooKeeper Current Metrics',
   className,
 }: ChartProps) {
   const query = `
-    SELECT (database || '.' || table) as table,
-           type,
-           countIf(is_currently_executing) AS current_executing,
-           COUNT() as total
-    FROM system.replication_queue
-    GROUP BY 1, 2
-    ORDER BY total DESC
+    SELECT metric, value, description
+    FROM system.metrics
+    WHERE metric LIKE 'ZooKeeper%'
   `
   const data = await fetchData<
     {
-      table: string
-      type: string
-      current_executing: number
-      total: number
+      metric: string
+      value: string
+      desc: string
     }[]
   >({ query })
 
@@ -65,4 +60,4 @@ export async function ChartReplicationSummaryTable({
   )
 }
 
-export default ChartReplicationSummaryTable
+export default ChartZookeeperSummaryTable
