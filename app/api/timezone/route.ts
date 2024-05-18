@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 
 import { fetchData } from '@/lib/clickhouse'
 
+export const revalidate = false
+
 export async function GET() {
   try {
     const resp = await fetchData<{ tz: string }[]>({
