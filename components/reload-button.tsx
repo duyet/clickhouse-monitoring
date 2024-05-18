@@ -21,6 +21,9 @@ interface ReloadButtonProps {
   className?: string
 }
 
+const SECOND = 1000
+const MINUTE = 60 * SECOND
+
 export function ReloadButton({ className }: ReloadButtonProps) {
   const router = useRouter()
   const [isLoading, startTransition] = useTransition()
@@ -78,16 +81,16 @@ export function ReloadButton({ className }: ReloadButtonProps) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => setReloadInterval(10 * 1000)}>
+        <DropdownMenuItem onClick={() => setReloadInterval(10 * SECOND)}>
           10s
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setReloadInterval(30 * 1000)}>
+        <DropdownMenuItem onClick={() => setReloadInterval(30 * SECOND)}>
           30s
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setReloadInterval(10 * 60 * 1000)}>
+        <DropdownMenuItem onClick={() => setReloadInterval(10 * MINUTE)}>
           10m
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setReloadInterval(1800000)}>
+        <DropdownMenuItem onClick={() => setReloadInterval(30 * MINUTE)}>
           30m
         </DropdownMenuItem>
         <DropdownMenuSeparator />

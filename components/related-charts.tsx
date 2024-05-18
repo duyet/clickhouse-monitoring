@@ -18,13 +18,16 @@ export async function RelatedCharts({
   className,
 }: RelatedChartsProps) {
   // Related charts
-  const charts: [ComponentType<ChartProps>, ChartProps][] = []
+  type ChartName = string
+  const charts: [ChartName, ComponentType<ChartProps>, ChartProps][] = []
 
   if (!relatedCharts) return null
 
   for (const chart of relatedCharts) {
     let component,
-      props = {}
+      props: ChartProps = {}
+
+    if (!chart) continue
 
     if (typeof chart === 'string') {
       component = chart
@@ -33,8 +36,13 @@ export async function RelatedCharts({
       props = chart[1]
     }
 
+    if (!component) {
+      console.warn('Component not found for chart:', chart)
+      continue
+    }
+
     const chartsModule = await import(`@/components/charts/${component}`)
-    charts.push([chartsModule.default, props])
+    charts.push([component, chartsModule.default, props])
   }
 
   const col = charts.length > maxChartsPerRow ? maxChartsPerRow : charts.length
@@ -42,15 +50,42 @@ export async function RelatedCharts({
 
   return (
     <div className={cn('mb-5 grid gap-5', gridCols, className)}>
-      {charts.map(([Chart, props], i) => (
-        <ServerComponentLazy key={i}>
-          <Chart
-            className="w-full p-0 shadow-none"
-            chartClassName="h-44"
-            {...props}
-          />
-        </ServerComponentLazy>
-      ))}
+      {charts.map(([_name, Chart, props], i) => {
+        let className = ''
+
+        // If next chart is a break, add a 'col-span-2' class to the current chart
+        // For example:
+        // relatedCharts: [['chart1', {}], 'break', ['chart2', {}], ['chart3', {}]]]
+        // -----------------------
+        // |        chart1       |
+        // | chart2   |  chart3  |
+        // -----------------------
+        if (charts[i + 1] && charts[i + 1][0] === 'break') {
+          className = 'col-span-2'
+        }
+
+        // If this is the last chart, but still have space in the row, add a 'col-span-2' class
+        // TODO: implement for maxChartsPerRow > 2
+        // For example:
+        // relatedCharts: [['chart1', {}], ['chart2', {}], ['chart3', {}]]]
+        // -----------------------
+        // | chart1   |  chart2  |
+        // |       chart3        |
+        // -----------------------
+        if (charts.length > 2 && i === charts.length - 1 && col === 2) {
+          className = 'col-span-2'
+        }
+
+        return (
+          <ServerComponentLazy key={i}>
+            <Chart
+              className={cn('w-full p-0 shadow-none', className)}
+              chartClassName="h-44"
+              {...props}
+            />
+          </ServerComponentLazy>
+        )
+      })}
     </div>
   )
 }
