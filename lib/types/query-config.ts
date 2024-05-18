@@ -29,7 +29,10 @@ export interface QueryConfig {
   columnFormats?: {
     [key: string]: ColumnFormat | [ColumnFormat, ColumnFormatOptions]
   }
-  relatedCharts?: string[] | [string, ChartProps][]
+  relatedCharts?:
+    | string[]
+    | [string, ChartProps][]
+    | (string | [string, ChartProps])[]
   /**
    * Default parameters for the query
    * For example in the query:
