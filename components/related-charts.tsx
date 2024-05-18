@@ -37,8 +37,8 @@ export async function RelatedCharts({
     }
 
     if (!component) {
-      console.warn('Component not found for chart:', chart);
-      continue;
+      console.warn('Component not found for chart:', chart)
+      continue
     }
 
     const chartsModule = await import(`@/components/charts/${component}`)
