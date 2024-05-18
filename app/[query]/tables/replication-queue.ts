@@ -9,7 +9,7 @@ export const replicationQueueConfig: QueryConfig = {
              database || '.' || table as table
       FROM system.replication_queue
       ORDER BY is_currently_executing DESC, create_time DESC
-      LIMIT 5000
+      LIMIT 1000
     `,
   columns: [
     'table',

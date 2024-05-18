@@ -54,5 +54,8 @@ export const zookeeperConfig: QueryConfig = {
         lastHours: 24 * 7,
       },
     ],
+    'break',
+    'zookeeper-uptime',
+    'zookeeper-summary-table',
   ],
 }
