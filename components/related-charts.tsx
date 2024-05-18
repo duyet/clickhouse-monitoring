@@ -36,7 +36,10 @@ export async function RelatedCharts({
       props = chart[1]
     }
 
-    if (!component) continue
+    if (!component) {
+      console.warn('Component not found for chart:', chart);
+      continue;
+    }
 
     const chartsModule = await import(`@/components/charts/${component}`)
     charts.push([component, chartsModule.default, props])
