@@ -28,12 +28,22 @@ export default async function Page({ params: { cluster } }: PageProps) {
 }
 
 const TopRightToolbarExtras = ({ cluster }: PageProps['params']) => (
-  <Link href={`/clusters/${cluster}/parts-across-replicas`}>
-    <Button
-      variant="outline"
-      className="flex flex-row gap-2 text-muted-foreground"
-    >
-      Parts on each tables
-    </Button>
-  </Link>
+  <div className="flex flex-row gap-2">
+    <Link href={`/clusters/${cluster}/parts-across-replicas`}>
+      <Button
+        variant="outline"
+        className="flex flex-row gap-2 text-muted-foreground"
+      >
+        Parts on each tables
+      </Button>
+    </Link>
+    <Link href={`/clusters/${cluster}/count-across-replicas`}>
+      <Button
+        variant="outline"
+        className="flex flex-row gap-2 text-muted-foreground"
+      >
+        Count on each tables
+      </Button>
+    </Link>
+  </div>
 )
