@@ -18,6 +18,7 @@ export function PageView() {
     async function pageViewTrack() {
       const url = `${pathname}${searchParams ? '?' + searchParams.toString() : ''}`
       console.log('PageView', url)
+      await fetch('/api/pageview?' + new URLSearchParams({ url }).toString())
     }
 
     pageViewTrack()

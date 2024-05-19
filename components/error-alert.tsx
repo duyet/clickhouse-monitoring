@@ -21,9 +21,7 @@ export function ErrorAlert({
       <AlertTitle className="text-lg">{title}</AlertTitle>
       <AlertDescription>
         <div className="mb-5 font-light">
-          <code className="overflow-auto hover:text-clip">
-            {message}
-          </code>
+          <code className="overflow-auto hover:text-clip">{message}</code>
         </div>
 
         {reset ? (
