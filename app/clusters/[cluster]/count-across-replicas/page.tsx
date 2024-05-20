@@ -24,7 +24,7 @@ export default async function Page({ params: { cluster } }: PageProps) {
   const query = `
     SELECT
       format('{}.{}', database, table) as table,
-      ${replicas.map(({ replica }) => `countIf(active AND hostName() = '${replica}') as \`${replica}\``).join(', ')},
+      ${replicas.map(({ replica }) => `sumIf(rows, active AND hostName() = '${replica}') as \`${replica}\``).join(', ')},
       ${replicas.map(({ replica }) => `formatReadableQuantity(\`${replica}\`) as \`readable_${replica}\``).join(', ')},
       ${replicas.map(({ replica }) => `(100 * \`${replica}\` / max(\`${replica}\`) OVER ()) as \`pct_${replica}\``).join(', ')}
     FROM clusterAllReplicas({cluster: String}, system.parts)
@@ -34,8 +34,8 @@ export default async function Page({ params: { cluster } }: PageProps) {
   `
 
   const config: QueryConfig = {
-    name: 'count-across-replicas',
-    description: 'Part count across replicas',
+    name: 'rows-across-replicas',
+    description: 'Part total rows across replicas',
     sql: query,
     columns: ['table', ...replicas.map(({ replica }) => `readable_${replica}`)],
     columnFormats: {
@@ -59,7 +59,7 @@ export default async function Page({ params: { cluster } }: PageProps) {
 
   return (
     <DataTable
-      title={`Count of active parts across replicas in the '${cluster}' cluster`}
+      title={`Total rows of active parts across replicas in the '${cluster}' cluster`}
       config={config}
       data={rows}
     />
