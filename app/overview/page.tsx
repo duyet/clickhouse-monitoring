@@ -97,9 +97,9 @@ export default async function Overview() {
         <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
           <ServerComponentLazy>
             <ChartBackupSize className="w-full p-5" title="Backup" />
+          </ServerComponentLazy>
         </div>
       </TabsContent>
     </Tabs>
   )
 }
-
