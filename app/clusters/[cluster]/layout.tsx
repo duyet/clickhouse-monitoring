@@ -48,7 +48,7 @@ export default async function ClusterTabListLayout({
     }
   } catch (e: any) {
     return (
-      <ErrorAlert title="Could not retrieve the list of clusters" message={`${e}`} />
+      <ErrorAlert title="Unable to retrieve the list of clusters" message={`${e}`} />
     )
   }
 
