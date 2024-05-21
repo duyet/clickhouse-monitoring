@@ -4,20 +4,12 @@ interface RelatedTimeFormatProps {
   value: any
 }
 
-let tz: string = ''
+const CLICKHOUSE_TZ: string = process.env.CLICKHOUSE_TZ || ''
 
 export async function RelatedTimeFormat({ value }: RelatedTimeFormatProps) {
   let fromNow
   try {
-    if (!tz) {
-      // Getting timezone from server
-      tz = await fetch('/api/timezone')
-        .then((res) => res.json())
-        .then((data) => data.tz)
-      console.log('Server timezone:', tz)
-    }
-
-    let parsed = dayjs.tz(value as string, tz)
+    let parsed = dayjs.tz(value as string, CLICKHOUSE_TZ)
     fromNow = parsed.fromNow()
   } catch (e) {
     console.error('Error parsing time:', e)
