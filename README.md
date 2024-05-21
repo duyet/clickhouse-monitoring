@@ -30,6 +30,7 @@ To get the project up and running on your local machine, follow these steps:
     - `CLICKHOUSE_USER`: ClickHouse user with permission to query the `system` database.
     - `CLICKHOUSE_PASSWORD`: ClickHouse password for the specified user.
     - `CLICKHOUSE_TIMEOUT`: Timeout for ClickHouse queries in milliseconds. Default is `100000`.
+    - `CLICKHOUSE_TZ`: ClickHouse server timezone. Default: `''`.
 4. Run the development server with `npm run dev` or `yarn dev`
 5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the dashboard.
 
@@ -48,6 +49,7 @@ docker run -it \
     -e CLICKHOUSE_HOST='http://localhost' \
     -e CLICKHOUSE_USER='default' \
     -e CLICKHOUSE_PASSWORD='' \
+    -e CLICKHOUSE_TZ='Asia/Ho_Chi_Minh' \
     --name clickhouse-monitoring \
     ghcr.io/duyet/clickhouse-monitoring:main
 ```
@@ -67,6 +69,8 @@ env:
     value: default
   - name: CLICKHOUSE_PASSWORD
     value: ''
+  - name: CLICKHOUSE_TZ
+    value: 'Asia/Ho_Chi_Minh'
 EOF
 
 helm install -f values.yaml clickhouse-monitoring-release duyet/clickhouse-monitoring
