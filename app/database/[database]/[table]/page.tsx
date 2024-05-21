@@ -27,7 +27,7 @@ interface ColumnsPageProps {
 export default async function ColumnsPage({
   params: { database, table },
 }: ColumnsPageProps) {
-  // Detect engine
+  // Detects the engine type.
   const resp = await fetchDataWithCache()<{ engine: string }[]>({
     query: `
       SELECT engine
@@ -76,7 +76,7 @@ export default async function ColumnsPage({
         <Extras database={database} table={table} />
 
         <div className="mt-6 w-fit overflow-auto">
-          <h2 className="mb-3 text-lg font-semibold">Dictionary Usage</h2>
+          <h2 className="mb-3 text-lg font-semibold">Dictionary usage</h2>
           <pre className="text-sm">
             <code>{dictUsage}</code>
           </pre>

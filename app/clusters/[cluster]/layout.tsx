@@ -35,7 +35,7 @@ export default async function ClusterTabListLayout({
   let clusters: Row[] = []
 
   try {
-    // List cluster name
+    // Lists cluster names.
     clusters = await fetchDataWithCache()<Row[]>({ query: config.sql })
 
     if (!clusters.length) {
@@ -48,7 +48,7 @@ export default async function ClusterTabListLayout({
     }
   } catch (e: any) {
     return (
-      <ErrorAlert title="Could not getting list of clusters" message={`${e}`} />
+      <ErrorAlert title="Could not retrieve the list of clusters" message={`${e}`} />
     )
   }
 
@@ -90,3 +90,4 @@ export default async function ClusterTabListLayout({
     </div>
   )
 }
+

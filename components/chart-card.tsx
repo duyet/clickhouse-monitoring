@@ -45,3 +45,4 @@ export function ChartCard({ title, className, sql, children }: ChartCardProps) {
     </Card>
   )
 }
+
