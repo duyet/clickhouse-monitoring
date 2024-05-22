@@ -24,7 +24,7 @@ export default async function Page({
 }: PageProps) {
   noStore()
 
-  // Get the query config
+  // Retrieves the query configuration by name.
   const config = getQueryConfigByName(query)
   if (!config) {
     return notFound()

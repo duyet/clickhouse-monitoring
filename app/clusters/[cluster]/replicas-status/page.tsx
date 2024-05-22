@@ -34,7 +34,7 @@ const TopRightToolbarExtras = ({ cluster }: PageProps['params']) => (
         variant="outline"
         className="flex flex-row gap-2 text-muted-foreground"
       >
-        Parts on each tables
+        Parts on each table
       </Button>
     </Link>
     <Link href={`/clusters/${cluster}/count-across-replicas`}>

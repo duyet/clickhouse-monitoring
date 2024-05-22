@@ -16,7 +16,7 @@ export default async function Table({
   config,
   searchParams,
 }: TableProps) {
-  // Get valid query params from URL (existing on QueryConfig['defaultParams'])
+  // Filters valid query parameters from the URL.
   const validQueryParams = Object.entries(searchParams).filter(([key, _]) => {
     return config.defaultParams && config.defaultParams[key] !== undefined
   })
@@ -52,7 +52,7 @@ export default async function Table({
       sql.slice(index)
   }
 
-  // Fetch the data from ClickHouse
+  // Retrieve data from ClickHouse.
   try {
     const queryParams = {
       ...config.defaultParams,

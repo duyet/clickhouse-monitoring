@@ -3,6 +3,7 @@ import { fetchData } from '@/lib/clickhouse'
 
 import { config, type Row } from './config'
 
+// Redirects to the first database.
 export default async function ClustersPage() {
   const tables = await fetchData<Row[]>({ query: config.sql })
 

@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 export const dynamic = 'force-dynamic'
 export const revalidate = 5
 
+// Displays an overview of system metrics.
 export default async function Overview() {
   noStore()
 
