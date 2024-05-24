@@ -35,7 +35,7 @@ describe('<DialogSQL />', () => {
     cy.mount(<DialogSQL sql="SELECT 1000" />)
     cy.get('button').click()
     cy.get('pre').should('be.visible')
-    cy.get('button[aria-label="Close"]').click()
+    cy.get('[aria-label="Close"]').click()
     cy.get('pre').should('not.exist')
   })
 
