@@ -26,11 +26,11 @@ describe('<ErrorAlert />', () => {
   it('renders with different types of messages', () => {
     const messages = [
       "This is a string message",
-      <span className="text-blue-500">This is a JSX message</span>,
+      <span key="jsxMessage" className="text-blue-500">This is a JSX message</span>,
     ];
 
-    messages.forEach((message) => {
-      cy.mount(<ErrorAlert title="Error occurred" message={message} />);
+    messages.forEach((message, index) => {
+      cy.mount(<ErrorAlert key={`message-${index}`} title="Error occurred" message={message} />);
       cy.contains('Error occurred').should('be.visible');
       if (typeof message === 'string') {
         cy.contains(message).should('be.visible');
