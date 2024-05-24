@@ -29,4 +29,21 @@ describe('<DialogSQL />', () => {
     cy.get('button').click()
     cy.get('p').should('be.visible').contains('My Description')
   })
+
+  // Verify the dialog opens and closes correctly upon button clicks
+  it('dialog opens and closes correctly', () => {
+    cy.mount(<DialogSQL sql="SELECT 1000" />)
+    cy.get('button').click()
+    cy.get('pre').should('be.visible')
+    cy.get('button[aria-label="Close"]').click()
+    cy.get('pre').should('not.exist')
+  })
+
+  // Ensure the SQL content is displayed correctly within the dialog
+  it('SQL content is displayed correctly', () => {
+    const sqlContent = "SELECT * FROM table WHERE id > 1000"
+    cy.mount(<DialogSQL sql={sqlContent} />)
+    cy.get('button').click()
+    cy.get('pre').should('contain', sqlContent)
+  })
 })

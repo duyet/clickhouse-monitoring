@@ -27,7 +27,7 @@ describe('<GithubHeatmapChart />', () => {
     })),
   ]
 
-  it('renders', () => {
+  it('renders with default data set', () => {
     cy.mount(
       <GithubHeatmapChart data={data} startDate={new Date(2024, 1, 1)} />
     )
@@ -43,12 +43,6 @@ describe('<GithubHeatmapChart />', () => {
     cy.get('@root')
       .contains(/Mon|Tue|Wed|Thu|Fri|Sat|Sun/)
       .should('be.visible')
-
-    // 2024/01/01 should be filled with color
-    // cy.get('[data-date="2024/1/1"]')
-    //   .should('exist')
-    //   .should('have.attr', 'fill')
-    //   .and('match', /^#[A-z0-9]+/)
   })
 
   it('renders with empty data', () => {
@@ -62,17 +56,9 @@ describe('<GithubHeatmapChart />', () => {
     const month = today.getMonth() + 1
     const day = today.getDay()
     const todayLabel = `${year}/${month}/${day}`
-    // cy.get(`[data-date="${todayLabel}"`).should('exist')
   })
 
-  it('hover tooltip', () => {
-    cy.mount(<GithubHeatmapChart data={data} />)
-    cy.get('svg').as('root').should('be.visible')
-
-    // cy.get('[data-date="2024/1/1"]').trigger('mouseover')
-  })
-
-  it('render 2 years', () => {
+  it('renders with multiple data sets', () => {
     cy.mount(
       <GithubHeatmapChart
         data={data2}
@@ -81,5 +67,40 @@ describe('<GithubHeatmapChart />', () => {
       />
     )
     cy.get('svg').as('root').should('be.visible')
+  })
+
+  it('verifies rendering with different data sets', () => {
+    const data3 = [
+      ...[...Array(12)].map((_, idx) => ({
+        date: `2025/03/${idx + 1}`,
+        count: (idx + 1) * 5,
+        content: `Content ${idx + 1}`,
+      })),
+    ]
+
+    cy.mount(
+      <GithubHeatmapChart
+        data={data3}
+        startDate={new Date(2025, 2, 1)}
+        endDate={new Date(2025, 2, 31)}
+      />
+    )
+
+    cy.get('svg').as('root').should('be.visible')
+    cy.get('@root').find('rect').its('length').should('be.gte', 1)
+    data3.forEach((item) => {
+      cy.get(`[data-date="${item.date}"]`).should('have.attr', 'fill').and('match', /^#[A-z0-9]+/)
+    })
+  })
+
+  it('hover tooltip displays correct data', () => {
+    cy.mount(<GithubHeatmapChart data={data} />)
+    cy.get('svg').as('root').should('be.visible')
+
+    data.slice(0, 3).forEach((item) => {
+      cy.get(`[data-date="${item.date}"]`).trigger('mouseover')
+      cy.get('.cy-tooltip').should('contain', item.date)
+      cy.get('.cy-tooltip').should('contain', item.count.toString())
+    })
   })
 })
