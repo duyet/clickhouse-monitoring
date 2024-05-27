@@ -45,6 +45,7 @@ export const fetchData = async <
   format = 'JSONEachRow',
   clickhouse_settings,
 }: QueryParams): Promise<T> => {
+  const start = new Date()
   const client = getClient({ web: false })
   const resultSet = await client.query({
     query: QUERY_COMMENT + query,
@@ -56,6 +57,8 @@ export const fetchData = async <
   const query_id = resultSet.query_id
 
   const data = await resultSet.json<T>()
+  const end = new Date()
+  const duration = (end.getTime() - start.getTime()) / 1000
 
   console.debug(
     `--> Query (${query_id}):`,
@@ -65,7 +68,13 @@ export const fetchData = async <
   if (data === null) {
     console.debug(`<-- Response (${query_id}):`, 'null\n')
   } else if (Array.isArray(data)) {
-    console.debug(`<-- Response (${query_id}):`, data.length, 'rows\n')
+    console.debug(
+      `<-- Response (${query_id}):`,
+      data.length,
+      `rows in`,
+      duration,
+      's\n'
+    )
   } else if (
     typeof data === 'object' &&
     data.hasOwnProperty('rows') &&
@@ -79,7 +88,7 @@ export const fetchData = async <
       '\n'
     )
   } else if (typeof data === 'object' && data.hasOwnProperty('rows')) {
-    console.debug(`<-- Response (${query_id}):`, data.rows, 'rows\n')
+    console.debug(`<-- Response (${query_id}): ${data.rows} rows\n`)
   } else {
     console.debug(`<-- Response (${query_id}):`, data, '\n')
   }
