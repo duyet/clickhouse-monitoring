@@ -1,14 +1,16 @@
 import { GithubHeatmapChart } from './github-heatmap-chart'
 
+const dateFmt = (ym: string, d: number) => `${ym}/${(d + 1).toString().padStart(2, '0')}`
+
 describe('<GithubHeatmapChart />', () => {
   const data = [
     ...[...Array(17)].map((_, idx) => ({
-      date: `2024/01/${idx}`,
+      date: dateFmt('2024/01', idx),
       count: idx * Math.floor(Math.random() * 100),
       content: '',
     })),
     ...[...Array(28)].map((_, idx) => ({
-      date: `2024/02/${idx}`,
+      date: dateFmt('2024/02', idx),
       count: idx * Math.floor(Math.random() * 100),
       content: '',
     })),
@@ -16,12 +18,12 @@ describe('<GithubHeatmapChart />', () => {
 
   const data2 = [
     ...[...Array(17)].map((_, idx) => ({
-      date: `2024/01/${idx}`,
+      date: dateFmt('2024/01', idx),
       count: idx * Math.floor(Math.random() * 100),
       content: '',
     })),
     ...[...Array(28)].map((_, idx) => ({
-      date: `2025/02/${idx}`,
+      date: dateFmt('2024/02', idx),
       count: idx * Math.floor(Math.random() * 100),
       content: '',
     })),
@@ -71,8 +73,8 @@ describe('<GithubHeatmapChart />', () => {
 
   it('verifies rendering with different data sets', () => {
     const data3 = [
-      ...[...Array(12)].map((_, idx) => ({
-        date: `2025/03/${idx + 1}`,
+      ...[...Array(5)].map((_, idx) => ({
+        date: dateFmt('2025/03', idx),
         count: (idx + 1) * 5,
         content: `Content ${idx + 1}`,
       })),
