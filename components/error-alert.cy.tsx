@@ -25,29 +25,34 @@ describe('<ErrorAlert />', () => {
 
   it('renders with different types of messages', () => {
     const messages = [
-      "This is a string message",
-      <span key="jsxMessage" className="text-blue-500">This is a JSX message</span>,
-    ];
+      'This is a string message',
+      <span key="jsxMessage" className="text-blue-500">
+        This is a JSX message
+      </span>,
+    ]
 
     messages.forEach((message, index) => {
-      cy.mount(<ErrorAlert key={`message-${index}`} title="Error occurred" message={message} />);
-      cy.contains('Error occurred').should('be.visible');
+      cy.mount(
+        <ErrorAlert
+          key={`message-${index}`}
+          title="Error occurred"
+          message={message}
+        />
+      )
+      cy.contains('Error occurred').should('be.visible')
       if (typeof message === 'string') {
-        cy.contains(message).should('be.visible');
+        cy.contains(message).should('be.visible')
       } else {
-        cy.get(message.type).should('have.class', message.props.className);
+        cy.get(message.type).should('have.class', message.props.className)
       }
-    });
-  });
+    })
+  })
 
   it('ensures title and message content are correctly displayed', () => {
     cy.mount(
-      <ErrorAlert
-        title="Alert Title"
-        message="This is the alert message"
-      />
-    );
-    cy.contains('Alert Title').should('be.visible');
-    cy.contains('This is the alert message').should('be.visible');
-  });
+      <ErrorAlert title="Alert Title" message="This is the alert message" />
+    )
+    cy.contains('Alert Title').should('be.visible')
+    cy.contains('This is the alert message').should('be.visible')
+  })
 })

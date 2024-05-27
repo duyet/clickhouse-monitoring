@@ -15,7 +15,9 @@ describe('<BadgeFormat />', () => {
     const statuses = ['success', 'warning', 'error', 'info']
     const colors = ['green', 'yellow', 'red', 'blue']
     statuses.forEach((status, index) => {
-      cy.mount(<BadgeFormat value={status} className={`bg-${colors[index]}-100`} />)
+      cy.mount(
+        <BadgeFormat value={status} className={`bg-${colors[index]}-100`} />
+      )
       cy.get('span').should('have.class', `bg-${colors[index]}-100`)
     })
   })

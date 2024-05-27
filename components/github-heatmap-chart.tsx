@@ -25,6 +25,7 @@ export const GithubHeatmapChart = ({
   data,
   index = 'date',
   weekLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  startDate,
   endDate,
   className,
   ...props
@@ -44,6 +45,7 @@ export const GithubHeatmapChart = ({
       <HeatMap
         value={value}
         weekLabels={weekLabels}
+        startDate={startDate}
         endDate={endDate}
         rectRender={(props, data) => {
           return (

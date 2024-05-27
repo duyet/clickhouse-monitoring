@@ -37,13 +37,13 @@ describe('<DialogSQL />', () => {
     cy.get('pre').should('be.visible')
 
     // Click outside modal
-    cy.get('body').click('topRight')
+    cy.get('[role="dialog"] button').click()
     cy.get('pre').should('not.exist')
   })
 
   // Ensure the SQL content is displayed correctly within the dialog
   it('SQL content is displayed correctly', () => {
-    const sqlContent = "SELECT * FROM table WHERE id > 1000"
+    const sqlContent = 'SELECT * FROM table WHERE id > 1000'
     cy.mount(<DialogSQL sql={sqlContent} />)
     cy.get('button').click()
     cy.get('pre').should('contain', sqlContent)
