@@ -3,6 +3,8 @@ import Image from 'next/image'
 import { ClickHouseHost } from '@/components/clickhouse-host'
 import { Menu } from '@/components/menu/menu'
 import { ReloadButton } from '@/components/reload-button'
+import { Suspense } from 'react'
+import { SingleLineSkeleton } from './skeleton'
 
 const TITLE = process.env.NEXT_PUBLIC_TITLE || 'ClickHouse Monitoring'
 const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'Monitoring'
@@ -24,13 +26,19 @@ export function Header() {
             <span className="flex sm:hidden">{TITLE_SHORT}</span>
           </h2>
           <div className="text-muted-foreground">
-            <ClickHouseHost />
+            <Suspense>
+              <ClickHouseHost />
+            </Suspense>
           </div>
         </div>
       </div>
       <div className="flex items-center space-x-2">
-        <Menu />
-        <ReloadButton />
+        <Suspense
+          fallback={<SingleLineSkeleton className="w-[200px] space-x-0 pt-0" />}
+        >
+          <Menu />
+          <ReloadButton />
+        </Suspense>
       </div>
     </div>
   )
