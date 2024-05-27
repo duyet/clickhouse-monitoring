@@ -5,8 +5,10 @@ export const replicationQueueConfig: QueryConfig = {
   name: 'replication-queue',
   description: `Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family`,
   sql: `
-      SELECT *,
-             database || '.' || table as table
+      SELECT
+        * EXCEPT (table, parts_to_merge),
+        concat(database, '.', table) AS table,
+        arrayStringConcat(parts_to_merge, ', ') AS parts_to_merge
       FROM system.replication_queue
       ORDER BY is_currently_executing DESC, create_time DESC
       LIMIT 1000
@@ -44,6 +46,7 @@ export const replicationQueueConfig: QueryConfig = {
     is_currently_executing: ColumnFormat.Boolean,
     required_quorum: ColumnFormat.Boolean,
     last_exception: ColumnFormat.CodeToggle,
+    parts_to_merge: ColumnFormat.CodeToggle,
   },
   relatedCharts: [
     [

@@ -8,6 +8,7 @@ import { AppProvider } from '@/app/context'
 import { Header } from '@/components/header'
 import { Toaster } from '@/components/ui/toaster'
 import { Suspense } from 'react'
+import { Background } from './background'
 import { PageView } from './pageview'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -49,6 +50,7 @@ export default function RootLayout({
 
         <Suspense fallback={null}>
           <PageView />
+          <Background />
         </Suspense>
       </body>
     </html>
