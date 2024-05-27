@@ -7,7 +7,7 @@ interface BooleanFormatProps {
 export function BooleanFormat({ value }: BooleanFormatProps) {
   const isTrue =
     typeof value === 'string'
-      ? ['true', '1', 'yes', 'y'].includes(value.toLowerCase())
+      ? ['true', '1', 'yes', 'y', 't'].includes(value.toLowerCase())
       : !!value
 
   return isTrue ? (
