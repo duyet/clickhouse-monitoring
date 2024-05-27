@@ -54,16 +54,14 @@ export async function ClickHouseHost() {
 
   if (hosts.length === 1) {
     return (
-      <div className="mt-2">
-        <div className="flex flex-row items-center gap-2">
-          <HostStatus host={hosts[0]} />
-        </div>
+      <div className="flex flex-row items-center gap-2">
+        <HostStatus host={hosts[0]} />
       </div>
     )
   }
 
   return (
-    <div className="mt-2">
+    <div>
       <Select>
         <SelectTrigger>
           <SelectValue placeholder={hosts[0]} />
