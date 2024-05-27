@@ -1,4 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
 export function ChartSkeleton() {
   return (
@@ -35,11 +36,20 @@ export function TableSkeleton({
   )
 }
 
-export function SingleLineSkeleton() {
+export function SingleLineSkeleton({
+  className = 'w-[500px]',
+}: {
+  className?: string
+}) {
   return (
-    <div className="flex flex-row items-center space-x-4 pt-5">
-      <Skeleton className="h-6 w-[300px] bg-slate-200" />
-      <Skeleton className="h-6 w-[200px] bg-slate-200" />
+    <div
+      className={cn(
+        'flex flex-row items-center gap-2 space-x-4 pt-5',
+        className
+      )}
+    >
+      <Skeleton className="h-6 w-3/5 bg-slate-200" />
+      <Skeleton className="h-6 w-2/5 bg-slate-200" />
     </div>
   )
 }
