@@ -14,19 +14,22 @@ function defaultFallbackRender({ error, resetErrorBoundary }: FallbackProps) {
 
 export type ServerComponentLazyProps = {
   children: ReactNode
-  fallback?: null | string | number | ((props: FallbackProps) => ReactNode)
+  errorFallback?: null | string | number | ((props: FallbackProps) => ReactNode)
 }
 
 export function ServerComponentLazy({
   children,
-  fallback,
+  errorFallback,
 }: ServerComponentLazyProps) {
   let fallbackRender: (props: FallbackProps) => ReactNode
 
-  if (fallback === null) {
+  if (errorFallback === null) {
     fallbackRender = () => null
-  } else if (typeof fallback === 'string' || typeof fallback === 'number') {
-    fallbackRender = () => <span>{fallback}</span>
+  } else if (
+    typeof errorFallback === 'string' ||
+    typeof errorFallback === 'number'
+  ) {
+    fallbackRender = () => <span>{errorFallback}</span>
   } else {
     fallbackRender = defaultFallbackRender
   }

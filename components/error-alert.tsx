@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 interface ErrorAlertProps {
   title?: string
   message?: string | React.ReactNode | React.ReactNode[]
+  query?: string
   reset?: () => void
   className?: string
 }
@@ -13,6 +14,7 @@ interface ErrorAlertProps {
 export function ErrorAlert({
   title = 'Something went wrong!',
   message = 'Checking console for more details.',
+  query,
   reset,
   className,
 }: ErrorAlertProps) {
@@ -23,6 +25,12 @@ export function ErrorAlert({
         <div className="mb-5 font-light">
           <code className="overflow-auto hover:text-clip">{message}</code>
         </div>
+
+        {query ? (
+          <div className="mb-5 font-light">
+            <code className="overflow-auto hover:text-clip">{query}</code>
+          </div>
+        ) : null}
 
         {reset ? (
           <Button

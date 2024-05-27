@@ -15,13 +15,31 @@ export function ChartSkeleton() {
   )
 }
 
-export function TableSkeleton() {
+export function TableSkeleton({
+  rows = 3,
+  cols = 4,
+}: {
+  rows?: number
+  cols?: number
+}) {
   return (
-    <div className="flex items-center space-x-4 pt-5">
-      <div className="space-y-2">
-        <Skeleton className="h-6 w-[500px] bg-slate-200" />
-        <Skeleton className="h-6 w-[450px] bg-slate-200" />
-      </div>
+    <div className="flex flex-col gap-3">
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={`row-${i}`} className="flex flex-row items-center gap-3">
+          {Array.from({ length: cols }).map((_, j) => (
+            <Skeleton key={`col-${j}`} className="h-6 w-[200px] bg-slate-200" />
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function SingleLineSkeleton() {
+  return (
+    <div className="flex flex-row items-center space-x-4 pt-5">
+      <Skeleton className="h-6 w-[300px] bg-slate-200" />
+      <Skeleton className="h-6 w-[200px] bg-slate-200" />
     </div>
   )
 }
