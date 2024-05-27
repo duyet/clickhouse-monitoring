@@ -66,4 +66,17 @@ describe('<ErrorAlert />', () => {
     )
     cy.contains('SELECT 1').should('be.visible')
   })
+
+  it('renders with debug query and JSX message', () => {
+    cy.mount(
+      <ErrorAlert
+        title="Something went wrong"
+        message={<div className="bg-green-300 p-3">Green message</div>}
+        query="SELECT 1"
+      />
+    )
+    cy.contains('Something went wrong').should('be.visible')
+    cy.get('div').should('have.class', 'bg-green-300')
+    cy.contains('SELECT 1').should('be.visible')
+  })
 })
