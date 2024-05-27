@@ -50,7 +50,7 @@ async function cleanupHangQuery(
     })
     const data: { last_cleanup: string }[] = await response.json()
     lastCleanup = data.length > 0 ? new Date(data[0].last_cleanup) : new Date()
-    console.debug('[Middleware] Last cleanup:', lastCleanup)
+    console.debug('[/api/clean] Last cleanup:', lastCleanup)
   } catch (error) {
     throw new Error(`Error when getting last cleanup: ${error}`)
   }
@@ -86,7 +86,7 @@ async function cleanupHangQuery(
 
     killQueryResp = await resp.json<KillQueryResponse>()
     console.log(
-      '[Middleware] queries found:',
+      '[/api/clean] queries found:',
       killQueryResp.data.map((row) => row.query_id).join(', ')
     )
 
@@ -134,7 +134,7 @@ async function cleanupHangQuery(
       },
       {} as Record<string, number>
     )
-    console.log('[Middleware] Kill status:', killStatus)
+    console.log('[/api/clean] Kill status:', killStatus)
 
     const value = {
       kind: 'SystemKillQuery',
@@ -154,7 +154,7 @@ async function cleanupHangQuery(
 
     return value
   } catch (error) {
-    console.error("[Middleware] 'SystemKillQuery' event creating error:", error)
+    console.error("[/api/clean] 'SystemKillQuery' event creating error:", error)
     return
   }
 }
