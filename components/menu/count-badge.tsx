@@ -20,10 +20,12 @@ export async function CountBadge({
     data = await fetchData<{ 'count()': string }[]>({
       query: sql,
       format: 'JSONEachRow',
-      clickhouse_settings: { use_query_cache: 1, query_cache_ttl: 60 },
+      clickhouse_settings: { use_query_cache: 1, query_cache_ttl: 120 },
     })
   } catch (e: any) {
-    console.error(`Could not get count for sql: ${sql}, error: ${e}`)
+    console.error(
+      `<CountBadge />: could not get count for sql: ${sql}, error: ${e}`
+    )
     return null
   }
 

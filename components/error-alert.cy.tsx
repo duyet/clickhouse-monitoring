@@ -55,4 +55,15 @@ describe('<ErrorAlert />', () => {
     cy.contains('Alert Title').should('be.visible')
     cy.contains('This is the alert message').should('be.visible')
   })
+
+  it('renders with debug query', () => {
+    cy.mount(
+      <ErrorAlert
+        title="Something went wrong"
+        message={'Checking query below'}
+        query="SELECT 1"
+      />
+    )
+    cy.contains('SELECT 1').should('be.visible')
+  })
 })

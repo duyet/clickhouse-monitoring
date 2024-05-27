@@ -1,13 +1,11 @@
 import { ColumnFormat } from '@/components/data-table/column-defs'
 import { DataTable } from '@/components/data-table/data-table'
-import { Button } from '@/components/ui/button'
 import { fetchData } from '@/lib/clickhouse'
 import { type QueryConfig } from '@/lib/types/query-config'
-import { TextAlignBottomIcon } from '@radix-ui/react-icons'
 import { type RowData } from '@tanstack/react-table'
-import Link from 'next/link'
 
 import { listTables } from '../../database/queries'
+import { Toolbar } from './toolbar'
 
 interface TableListProps {
   params: {
@@ -63,19 +61,7 @@ export default async function TableListPage({
       title={`Database: ${database}`}
       config={config}
       data={tables}
-      topRightToolbarExtras={<ToolbarExtras database={database} />}
+      topRightToolbarExtras={<Toolbar database={database} />}
     />
   )
 }
-
-const ToolbarExtras = ({ database }: { database: string }) => (
-  <Link href={`/top-usage-tables?database=${database}`}>
-    <Button
-      variant="outline"
-      className="flex flex-row gap-2 text-muted-foreground"
-    >
-      <TextAlignBottomIcon className="size-3" />
-      Top usage tables
-    </Button>
-  </Link>
-)
