@@ -1,7 +1,6 @@
-import React from 'react'
-
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import React from 'react'
 
 interface ErrorAlertProps {
   title?: string
@@ -18,31 +17,25 @@ export function ErrorAlert({
   reset,
   className,
 }: ErrorAlertProps) {
+  const renderContent = (
+    content: string | React.ReactNode | React.ReactNode[]
+  ) => (
+    <div className="mb-5 font-light">
+      <code className="overflow-auto hover:text-clip">{content}</code>
+    </div>
+  )
+
   return (
     <Alert className={className}>
       <AlertTitle className="text-lg">{title}</AlertTitle>
       <AlertDescription>
-        <div className="mb-5 font-light">
-          <code className="overflow-auto hover:text-clip">{message}</code>
-        </div>
-
-        {query ? (
-          <div className="mb-5 font-light">
-            <code className="overflow-auto hover:text-clip">{query}</code>
-          </div>
-        ) : null}
-
-        {reset ? (
-          <Button
-            variant="outline"
-            onClick={
-              // Attempt to recover by trying to re-render the segment
-              () => reset()
-            }
-          >
+        {renderContent(message)}
+        {query && renderContent(query)}
+        {reset && (
+          <Button variant="outline" onClick={() => reset()}>
             Try again
           </Button>
-        ) : null}
+        )}
       </AlertDescription>
     </Alert>
   )
