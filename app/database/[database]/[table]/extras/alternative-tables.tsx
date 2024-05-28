@@ -41,7 +41,7 @@ export async function AlternativeTables({
           className="group flex flex-row gap-2 text-muted-foreground"
         >
           <CardStackMinusIcon className="size-3" />
-          {database}
+          {table}
           <ChevronDownIcon
             className="size-3 transition duration-300 group-data-[state=open]:rotate-180"
             aria-hidden="true"
