@@ -10,8 +10,11 @@ export interface MenuProps {
 export function Menu({ items = menuItemsConfig }: MenuProps) {
   return (
     <>
-      <MenuNavigationStyle className="hidden md:flex" items={items} />
-      <MenuDropdownStyle className="flex md:hidden" items={items} />
+      <MenuNavigationStyle
+        className="hidden transition md:flex"
+        items={items}
+      />
+      <MenuDropdownStyle className="flex transition md:hidden" items={items} />
     </>
   )
 }

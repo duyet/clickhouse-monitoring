@@ -1,6 +1,6 @@
-import { DatabaseBreadcrumb } from './breadcrumb'
+import { DatabaseBreadcrumb, DatabaseBreadcrumbSkeleton } from './breadcrumb'
 
-import { SingleLineSkeleton, TableSkeleton } from '@/components/skeleton'
+import { TableSkeleton } from '@/components/skeleton'
 import { Suspense } from 'react'
 
 interface TableListProps {
@@ -18,9 +18,10 @@ export default async function TableListPage({
 }: TableListProps) {
   return (
     <div className="flex flex-col gap-5">
-      <Suspense fallback={<SingleLineSkeleton />}>
+      <Suspense fallback={<DatabaseBreadcrumbSkeleton database={database} />}>
         <DatabaseBreadcrumb database={database} />
       </Suspense>
+
       <Suspense fallback={<TableSkeleton />}>{children}</Suspense>
     </div>
   )
