@@ -23,8 +23,17 @@ interface Props {
   database: string
 }
 
+interface DatabaseCount {
+  name: string
+  count: number
+}
+
 export async function DatabaseBreadcrumb({ database }: Props) {
-  let databases: { name: string; count: number }[] = []
+  // Default
+  let databases: { name: string; count: number }[] = [
+    { name: database, count: 0 },
+  ]
+
   try {
     // List database names and number of tables
     databases = await fetchDataWithCache()({
@@ -46,7 +55,29 @@ export async function DatabaseBreadcrumb({ database }: Props) {
     )
   }
 
-  let currentCount = databases.find((db) => db.name === database)?.count
+  return <Internal current={database} databases={databases} />
+}
+
+export async function DatabaseBreadcrumbSkeleton({ database }: Props) {
+  return (
+    <Internal
+      current={database}
+      databases={[
+        { name: database, count: 0 },
+        { name: 'Loading ...', count: 0 },
+      ]}
+    />
+  )
+}
+
+function Internal({
+  current,
+  databases,
+}: {
+  current: string
+  databases: DatabaseCount[]
+}) {
+  let currentCount = databases.find((db) => db.name === current)?.count
 
   return (
     <Breadcrumb>
@@ -61,7 +92,7 @@ export async function DatabaseBreadcrumb({ database }: Props) {
 
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-1">
-            {database} ({currentCount} {currentCount == 1 ? 'table' : 'tables'})
+            {current} ({currentCount} {currentCount == 1 ? 'table' : 'tables'})
             <ChevronDownIcon />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -69,7 +100,7 @@ export async function DatabaseBreadcrumb({ database }: Props) {
               <DropdownMenuItem key={name}>
                 <Link
                   href={`/database/${name}`}
-                  className={name == database ? 'font-bold' : ''}
+                  className={name == current ? 'font-bold' : ''}
                 >
                   {name}
                 </Link>
