@@ -5,25 +5,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+
 import { fetchData, getClickHouseHosts } from '@/lib/clickhouse'
 import { getHost } from '@/lib/utils'
+import { Suspense } from 'react'
 
-const Online = () => (
-  <span className="relative flex size-2">
-    <span className="absolute inline-flex size-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
-    <span className="relative inline-flex size-2 rounded-full bg-sky-500"></span>
-  </span>
+const Online = ({ title }: { title: string }) => (
+  <TooltipProvider delayDuration={0}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="relative flex size-2 cursor-pointer">
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
+          <span className="relative inline-flex size-2 rounded-full bg-sky-500"></span>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        <p>{title}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
 )
 
-const Offline = () => (
-  <span className="relative flex size-2">
-    <span className="absolute inline-flex size-full rounded-full bg-red-400"></span>
-  </span>
+const Offline = ({ title }: { title: string }) => (
+  <TooltipProvider delayDuration={0}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="relative flex size-2 cursor-pointer">
+          <span className="absolute inline-flex size-full rounded-full bg-red-400"></span>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        <p>{title}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
 )
 
-const HostStatus = async ({ host }: { host: string }) => {
+const HostStatus = async () => {
   let isOnline
-  let message
+  let title
   try {
     const uptime = await fetchData<{ uptime: string }[]>({
       query: 'SELECT formatReadableTimeDelta(uptime()) as uptime',
@@ -33,18 +59,13 @@ const HostStatus = async ({ host }: { host: string }) => {
     })
 
     isOnline = true
-    message = `${hostName[0].hostName} online: ${uptime[0].uptime}`
+    title = `${hostName[0].hostName} online: ${uptime[0].uptime}`
   } catch (e) {
     isOnline = false
-    message = `Offline: ${e}`
+    title = `Offline: ${e}`
   }
 
-  return (
-    <div className="flex flex-row items-center gap-2" title={message}>
-      {getHost(host)}
-      {isOnline ? <Online /> : <Offline />}
-    </div>
-  )
+  return isOnline ? <Online title={title} /> : <Offline title={title} />
 }
 
 export async function ClickHouseHost() {
@@ -55,7 +76,10 @@ export async function ClickHouseHost() {
   if (hosts.length === 1) {
     return (
       <div className="flex flex-row items-center gap-2">
-        <HostStatus host={hosts[0]} />
+        {getHost(hosts[0])}
+        <Suspense>
+          <HostStatus />
+        </Suspense>
       </div>
     )
   }
@@ -69,7 +93,12 @@ export async function ClickHouseHost() {
         <SelectContent>
           {hosts.map((host) => (
             <SelectItem key={host} value={host}>
-              <HostStatus host={host} />
+              <div className="flex flex-row items-center gap-2">
+                {getHost(host)}
+                <Suspense>
+                  <HostStatus />
+                </Suspense>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>

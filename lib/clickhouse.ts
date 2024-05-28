@@ -47,6 +47,7 @@ export const fetchData = async <
 }: QueryParams): Promise<T> => {
   const start = new Date()
   const client = getClient({ web: false })
+
   const resultSet = await client.query({
     query: QUERY_COMMENT + query,
     format,
