@@ -1,4 +1,5 @@
 import { type Metadata } from 'next'
+import { AxiomWebVitals } from 'next-axiom'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
 
@@ -47,6 +48,8 @@ export default function RootLayout({
             gtag('config', '${GA_MEASUREMENT_ID}');
           `}
         </Script>
+
+        <AxiomWebVitals />
 
         <Suspense fallback={null}>
           <PageView />

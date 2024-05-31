@@ -1,4 +1,5 @@
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
+import { Logger } from 'next-axiom'
 import { NextResponse } from 'next/server'
 
 import { getClient } from '@/lib/clickhouse'
@@ -36,9 +37,10 @@ export async function GET() {
 async function cleanupHangQuery(
   client: ClickHouseClient | WebClickHouseClient
 ): Promise<undefined | object> {
+  const log = new Logger()
+
   // Last cleanup event
   let lastCleanup = null
-
   try {
     const response = await client.query({
       query: `
@@ -105,7 +107,7 @@ async function cleanupHangQuery(
     ) {
       return { lastCleanup, message: 'Nothing to cleanup' }
     } else {
-      console.error(error)
+      log.info('Error when killing queries: ' + error)
       throw new Error(`Error when killing queries: ${error}`)
     }
   }
@@ -146,6 +148,7 @@ async function cleanupHangQuery(
       ].join(' '),
     }
 
+    log.info('SystemKillQuery event', value)
     await client.insert({
       table: 'system.monitoring_events',
       format: 'JSONEachRow',
@@ -154,6 +157,7 @@ async function cleanupHangQuery(
 
     return value
   } catch (error) {
+    log.info('SystemKillQuery error', { error })
     console.error("[/api/clean] 'SystemKillQuery' event creating error:", error)
     return
   }

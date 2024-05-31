@@ -1,13 +1,21 @@
-import type { NextRequest } from 'next/server'
+import { Logger } from 'next-axiom'
+import type { NextFetchEvent, NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
+  // Axiom
+  const logger = new Logger({ source: 'middleware' })
+  logger.middleware(request)
+
   // Store current request url in a custom header, which you can read later
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-url', request.url)
 
   const url = new URL(request.url)
   requestHeaders.set('x-pathname', url.pathname)
+
+  // Axiom
+  event.waitUntil(logger.flush())
 
   return NextResponse.next({
     request: {
