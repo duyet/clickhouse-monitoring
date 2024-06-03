@@ -227,33 +227,33 @@ describe('<DataTable />', () => {
     cy.get('pre').should('not.exist')
   })
 
-  it('should display with footer prop as text', () => {
+  it('should display with footnote prop as text', () => {
     cy.mount(
       <DataTable
         title="Test Table"
         config={config}
         data={[]}
-        footer="This is footer"
+        footnote="This is footnote"
       />
     )
 
-    cy.get('div').contains('This is footer')
+    cy.get('div').contains('This is footnote')
   })
 
-  it('should display with footer prop as elemenent', () => {
+  it('should display with footnote prop as elemenent', () => {
     cy.mount(
       <DataTable
         title="Test Table"
         config={config}
         data={[]}
-        footer={<div className="footer">This is footer</div>}
+        footnote={<div className="footnote">This is footnote</div>}
       />
     )
 
-    cy.get('.footer').contains('This is footer').should('exist')
+    cy.get('.footnote').contains('This is footnote').should('exist')
   })
 
-  it('should display without footer props, with 1 row, pageSize=10', () => {
+  it('should display without footnote props, with 1 row, pageSize=10', () => {
     cy.mount(
       <DataTable
         config={config}
@@ -266,7 +266,7 @@ describe('<DataTable />', () => {
     cy.get('[aria-label="Pagination"]').should('is.not.visible')
   })
 
-  it('should display without footer, with 10 row, pageSize=10', () => {
+  it('should display without footnote, with 10 row, pageSize=10', () => {
     const data = []
     for (let i = 0; i < 10; i++) {
       data.push({ col1: '1', col2: '2' })

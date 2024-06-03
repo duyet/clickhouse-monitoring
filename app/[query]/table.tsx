@@ -76,7 +76,7 @@ export default async function Table({
         title={title}
         config={config}
         data={data}
-        footer={footerText}
+        footnote={footerText}
       />
     )
   } catch (error) {
