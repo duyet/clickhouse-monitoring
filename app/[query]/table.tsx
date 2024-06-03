@@ -58,7 +58,7 @@ export default async function Table({
       ...config.defaultParams,
       ...validQueryParamsObj,
     }
-    const { data } = await fetchData<RowData[]>({
+    const { data, metadata } = await fetchData<RowData[]>({
       query: sql,
       format: 'JSONEachRow',
       query_params: queryParams,
@@ -69,7 +69,14 @@ export default async function Table({
       },
     })
 
-    return <DataTable title={title} config={config} data={data} />
+    return (
+      <DataTable
+        title={title}
+        config={config}
+        data={data}
+        footer={`${metadata.rows} row(s) in ${metadata.duration} seconds.`}
+      />
+    )
   } catch (error) {
     return <ErrorAlert title="ClickHouse Error" message={`${error}`} />
   }

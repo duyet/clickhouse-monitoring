@@ -226,4 +226,30 @@ describe('<DataTable />', () => {
     // Dialog should be closed
     cy.get('pre').should('not.exist')
   })
+
+  it('should display footer text', () => {
+    cy.mount(
+      <DataTable
+        title="Test Table"
+        config={config}
+        data={[]}
+        footer="This is footer"
+      />
+    )
+
+    cy.get('div').contains('This is footer')
+  })
+
+  it('should display footer component', () => {
+    cy.mount(
+      <DataTable
+        title="Test Table"
+        config={config}
+        data={[]}
+        footer={<div className="footer">This is footer</div>}
+      />
+    )
+
+    cy.get('.footer').contains('This is footer').should('exist')
+  })
 })
