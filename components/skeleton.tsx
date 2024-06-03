@@ -5,12 +5,12 @@ export function ChartSkeleton() {
   return (
     <div className="flex flex-col gap-4 p-5">
       <div className="grid grid-cols-2 gap-2">
-        <Skeleton className="h-12 rounded-md" />
-        <Skeleton className="h-12 rounded-md" />
+        <Skeleton className="h-12 rounded-md bg-slate-200" />
+        <Skeleton className="h-12 rounded-md bg-slate-200" />
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-4 w-16" />
+        <Skeleton className="h-4 w-16 bg-slate-200" />
+        <Skeleton className="h-4 w-16 bg-slate-200" />
       </div>
     </div>
   )
