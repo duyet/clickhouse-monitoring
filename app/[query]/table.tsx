@@ -69,12 +69,14 @@ export default async function Table({
       },
     })
 
+    const footerText = `${metadata.rows} row(s) in ${metadata.duration} seconds.`
+
     return (
       <DataTable
         title={title}
         config={config}
         data={data}
-        footer={`${metadata.rows} row(s) in ${metadata.duration} seconds.`}
+        footnote={footerText}
       />
     )
   } catch (error) {

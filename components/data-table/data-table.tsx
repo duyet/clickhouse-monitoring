@@ -33,6 +33,7 @@ import { uniq } from '@/lib/utils'
 import { ColumnVisibilityButton } from './buttons/column-visibility'
 import { ShowSQLButton } from './buttons/show-sql'
 import { DataTableToolbar } from './data-table-toolbar'
+import { Footnote, type FootnoteProps } from './footnote'
 
 interface DataTableProps<TData extends RowData> {
   title?: string
@@ -43,7 +44,7 @@ interface DataTableProps<TData extends RowData> {
   data: TData[]
   defaultPageSize?: number
   showSQL?: boolean
-  footer?: string | React.ReactNode
+  footnote?: FootnoteProps<TData>['footnote']
 }
 
 export function DataTable<TData extends RowData, TValue>({
@@ -55,7 +56,7 @@ export function DataTable<TData extends RowData, TValue>({
   data,
   defaultPageSize = 100,
   showSQL = true,
-  footer,
+  footnote,
 }: DataTableProps<TData>) {
   // Columns available in the data, normalized
   const allColumns: string[] = uniq(
@@ -185,16 +186,7 @@ export function DataTable<TData extends RowData, TValue>({
       </div>
 
       <div className="flex items-center justify-between px-2">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {footer ? (
-            footer
-          ) : (
-            <>
-              {table.getFilteredSelectedRowModel().rows.length} of{' '}
-              {table.getFilteredRowModel().rows.length} row(s) selected.
-            </>
-          )}
-        </div>
+        <Footnote table={table} footnote={footnote} />
         <DataTablePagination table={table} />
       </div>
     </div>
