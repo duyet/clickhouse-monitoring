@@ -65,7 +65,6 @@ describe('<DataTablePagination />', () => {
   it('renders table with 1 row', () => {
     cy.mount(<TestTable data={[{ col1: '1', col2: '2' }]} pageSize={10} />)
 
-    cy.contains('0 of 1 row(s)')
     cy.get('[aria-label="Pagination"]').should('is.not.visible')
   })
 
@@ -76,7 +75,6 @@ describe('<DataTablePagination />', () => {
     }
 
     cy.mount(<TestTable data={data} pageSize={10} />)
-    cy.contains('0 of 10 row(s)')
     cy.get('[aria-label="Pagination"]').should('is.not.visible')
   })
 

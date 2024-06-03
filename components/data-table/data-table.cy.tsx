@@ -226,4 +226,53 @@ describe('<DataTable />', () => {
     // Dialog should be closed
     cy.get('pre').should('not.exist')
   })
+
+  it('should display with footer prop as text', () => {
+    cy.mount(
+      <DataTable
+        title="Test Table"
+        config={config}
+        data={[]}
+        footer="This is footer"
+      />
+    )
+
+    cy.get('div').contains('This is footer')
+  })
+
+  it('should display with footer prop as elemenent', () => {
+    cy.mount(
+      <DataTable
+        title="Test Table"
+        config={config}
+        data={[]}
+        footer={<div className="footer">This is footer</div>}
+      />
+    )
+
+    cy.get('.footer').contains('This is footer').should('exist')
+  })
+
+  it('should display without footer props, with 1 row, pageSize=10', () => {
+    cy.mount(
+      <DataTable
+        config={config}
+        data={[{ col1: '1', col2: '2' }]}
+        defaultPageSize={10}
+      />
+    )
+
+    cy.contains('0 of 1 row(s)')
+    cy.get('[aria-label="Pagination"]').should('is.not.visible')
+  })
+
+  it('should display without footer, with 10 row, pageSize=10', () => {
+    const data = []
+    for (let i = 0; i < 10; i++) {
+      data.push({ col1: '1', col2: '2' })
+    }
+
+    cy.mount(<DataTable config={config} data={data} defaultPageSize={10} />)
+    cy.contains('0 of 10 row(s)')
+  })
 })

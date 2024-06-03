@@ -54,7 +54,10 @@ export const fetchData = async <
   query_params,
   format = 'JSONEachRow',
   clickhouse_settings,
-}: QueryParams): Promise<{ data: T }> => {
+}: QueryParams): Promise<{
+  data: T
+  metadata: Record<string, string | number>
+}> => {
   const start = new Date()
   const client = getClient({ web: false })
 
@@ -70,6 +73,7 @@ export const fetchData = async <
   const data = await resultSet.json<T>()
   const end = new Date()
   const duration = (end.getTime() - start.getTime()) / 1000
+  let rows: number = 0
 
   console.debug(
     `--> Query (${query_id}):`,
@@ -77,34 +81,28 @@ export const fetchData = async <
   )
 
   if (data === null) {
-    console.debug(`<-- Response (${query_id}):`, 'null\n')
+    rows = -1
   } else if (Array.isArray(data)) {
-    console.debug(
-      `<-- Response (${query_id}):`,
-      data.length,
-      `rows in`,
-      duration,
-      's\n'
-    )
+    rows = data.length
   } else if (
     typeof data === 'object' &&
     data.hasOwnProperty('rows') &&
     data.hasOwnProperty('statistics')
   ) {
-    console.debug(
-      `<-- Response (${query_id}):`,
-      data.rows || 0,
-      'rows',
-      JSON.stringify(data.statistics),
-      '\n'
-    )
+    rows = data.rows as number
   } else if (typeof data === 'object' && data.hasOwnProperty('rows')) {
-    console.debug(`<-- Response (${query_id}): ${data.rows} rows\n`)
-  } else {
-    console.debug(`<-- Response (${query_id}):`, data, '\n')
+    rows = data.rows as number
   }
 
-  return { data }
+  console.debug(`<-- Response (${query_id}):`, rows, `rows in`, duration, 's\n')
+
+  const metadata = {
+    queryId: query_id,
+    duration,
+    rows,
+  }
+
+  return { data, metadata }
 }
 
 export const fetchDataWithCache = () => cache(fetchData)
