@@ -15,12 +15,12 @@ export async function ChartSummaryUsedByMutations({
     FROM system.mutations
     WHERE is_done = 0
   `
-  const rows = await fetchData<
+  const { data } = await fetchData<
     {
       running_count: number
     }[]
   >({ query })
-  const count = rows?.[0] || { running_count: 0 }
+  const count = data?.[0] || { running_count: 0 }
 
   const items: CardMultiMetricsProps['items'] = []
 

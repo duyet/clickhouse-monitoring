@@ -10,14 +10,16 @@ import { seeding } from './seeding'
 export const getCustomDashboards = async () => {
   await seeding()
 
-  const dashboards = await fetchData<TableChartsRow[]>({
+  const q1 = fetchData<TableChartsRow[]>({
     query: `SELECT * FROM ${TABLE_CHARTS} FINAL ORDER BY ordering ASC`,
-  })
-  const settings = await fetchData<TableSettingsRow[]>({
+  }).then((res) => res.data)
+  const q2 = fetchData<TableSettingsRow[]>({
     query: `SELECT * FROM ${TABLE_SETTINGS} FINAL`,
-  })
+  }).then((res) => res.data)
 
-  return { settings, dashboards }
+  const [dashboards, settings] = await Promise.all([q1, q2])
+
+  return { dashboards, settings }
 }
 
 export async function updateSettingParams(

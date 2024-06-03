@@ -24,7 +24,7 @@ export async function ChartQueryDuration({
     GROUP BY event_time
     ORDER BY event_time ASC
   `
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       event_time: string
       query_duration_ms: number

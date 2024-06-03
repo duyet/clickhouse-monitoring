@@ -18,7 +18,7 @@ export async function ChartQueryType({
     GROUP BY 1
     ORDER BY 1
   `
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       type: string
       query_count: number

@@ -36,15 +36,18 @@ export async function DatabaseBreadcrumb({ database }: Props) {
 
   try {
     // List database names and number of tables
-    databases = await fetchDataWithCache()({
-      query: listDatabases,
-    })
+    const { data: databases }: { data: DatabaseCount[] } =
+      await fetchDataWithCache()({
+        query: listDatabases,
+      })
 
     if (!databases.length) {
       return (
         <ErrorAlert title="Message" message="Empty" query={listDatabases} />
       )
     }
+
+    return <Internal current={database} databases={databases} />
   } catch (e: any) {
     return (
       <ErrorAlert
@@ -54,8 +57,6 @@ export async function DatabaseBreadcrumb({ database }: Props) {
       />
     )
   }
-
-  return <Internal current={database} databases={databases} />
 }
 
 export async function DatabaseBreadcrumbSkeleton({ database }: Props) {

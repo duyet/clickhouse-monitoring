@@ -45,7 +45,7 @@ export async function ChartQueryCount({
     LEFT JOIN breakdown USING event_time
     ORDER BY 1
   `
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       event_time: string
       query_count: number

@@ -14,14 +14,14 @@ export async function ChartReplicationQueueCount({
            countIf(is_currently_executing) AS count_executing
     FROM system.replication_queue
   `
-  const rows = await fetchData<
+  const { data } = await fetchData<
     {
       count_all: number
       count_executing: number
     }[]
   >({ query })
 
-  const count = rows?.[0] || { count_all: 0, count_executing: 0 }
+  const count = data?.[0] || { count_all: 0, count_executing: 0 }
 
   return (
     <ChartCard

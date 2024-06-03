@@ -12,7 +12,7 @@ interface PageProps {
 }
 
 export default async function Page({ params: { cluster } }: PageProps) {
-  const tables = await fetchData<Row[]>({
+  const { data } = await fetchData<Row[]>({
     query: config.sql,
     query_params: { cluster },
   })
@@ -21,7 +21,7 @@ export default async function Page({ params: { cluster } }: PageProps) {
     <DataTable
       title={`Row counts across '${cluster}' cluster`}
       config={config}
-      data={tables}
+      data={data}
       topRightToolbarExtras={<TopRightToolbarExtras cluster={cluster} />}
     />
   )

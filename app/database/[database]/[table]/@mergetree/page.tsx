@@ -22,7 +22,7 @@ export default async function MergeTree({
   const engine = await engineType(database, table)
   if (engine.includes('MergeTree') === false) return <></>
 
-  const columns = await fetchDataWithCache()<Row[]>({
+  const { data: columns } = await fetchDataWithCache()<Row[]>({
     query: config.sql,
     query_params: {
       database,
@@ -30,9 +30,29 @@ export default async function MergeTree({
     },
   })
 
-  let description = ''
+  return (
+    <DataTable
+      title={`Table: ${database}.${table}`}
+      description={<Description database={database} table={table} />}
+      toolbarExtras={<Extras database={database} table={table} />}
+      topRightToolbarExtras={
+        <TopRightToolbarExtras database={database} table={table} />
+      }
+      config={config}
+      data={columns}
+    />
+  )
+}
+
+async function Description({
+  database,
+  table,
+}: {
+  database: string
+  table: string
+}) {
   try {
-    const raw = await fetchDataWithCache()<{ comment: string }[]>({
+    const { data } = await fetchDataWithCache()<{ comment: string }[]>({
       query: `
           SELECT comment
             FROM system.tables
@@ -42,23 +62,11 @@ export default async function MergeTree({
       query_params: { database, table },
     })
 
-    description = raw?.[0]?.comment || ''
+    return data?.[0]?.comment || ''
   } catch (e) {
     console.error('Error fetching table description', e)
+    return ''
   }
-
-  return (
-    <DataTable
-      title={`Table: ${database}.${table}`}
-      description={description}
-      toolbarExtras={<Extras database={database} table={table} />}
-      topRightToolbarExtras={
-        <TopRightToolbarExtras database={database} table={table} />
-      }
-      config={config}
-      data={columns}
-    />
-  )
 }
 
 const TopRightToolbarExtras = ({

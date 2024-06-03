@@ -50,7 +50,7 @@ export default async function TableListPage({
     },
   }
 
-  const tables = await fetchData<RowData[]>({
+  const { data } = await fetchData<RowData[]>({
     query: config.sql,
     format: 'JSONEachRow',
     query_params: { database },
@@ -60,7 +60,7 @@ export default async function TableListPage({
     <DataTable
       title={`Database: ${database}`}
       config={config}
-      data={tables}
+      data={data}
       topRightToolbarExtras={<Toolbar database={database} />}
     />
   )

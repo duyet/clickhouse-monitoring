@@ -35,7 +35,7 @@ const migrateSettings = async () => {
   ]
 
   for (const seed of seeds) {
-    const exists = await fetchData<TableSettingsRow[]>({
+    const { data: exists } = await fetchData<TableSettingsRow[]>({
       query: `
         SELECT * FROM ${TABLE_SETTINGS}
         FINAL
@@ -99,7 +99,7 @@ const migrateDashboard = async () => {
   ]
 
   for (const seed of seeds) {
-    const exists = await fetchData<TableChartsRow[]>({
+    const { data: exists } = await fetchData<TableChartsRow[]>({
       query: `SELECT * FROM ${TABLE_CHARTS} FINAL WHERE title = '${seed.title}'`,
     })
 

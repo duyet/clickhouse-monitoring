@@ -1,9 +1,11 @@
 import type { ClickHouseClient, DataFormat } from '@clickhouse/client'
 import { createClient } from '@clickhouse/client'
-import type { QueryParams } from '@clickhouse/client-common'
+import type { ClickHouseSettings, QueryParams } from '@clickhouse/client-common'
 import { createClient as createClientWeb } from '@clickhouse/client-web'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 import { cache } from 'react'
+
+const DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME = '60'
 
 export const getClickHouseHosts = () => {
   const hosts = (process.env.CLICKHOUSE_HOST || '')
@@ -18,8 +20,10 @@ export const getClickHouseHost = () => getClickHouseHosts()[0]
 
 export const getClient = <B extends boolean>({
   web,
+  clickhouse_settings,
 }: {
   web?: B
+  clickhouse_settings?: ClickHouseSettings
 }): B extends true ? WebClickHouseClient : ClickHouseClient => {
   const client = web === true ? createClientWeb : createClient
 
@@ -27,7 +31,13 @@ export const getClient = <B extends boolean>({
     host: getClickHouseHost(),
     username: process.env.CLICKHOUSE_USER ?? 'default',
     password: process.env.CLICKHOUSE_PASSWORD ?? '',
-    request_timeout: parseInt(process.env.CLICKHOUSE_TIMEOUT ?? '100000'),
+    clickhouse_settings: {
+      max_execution_time: parseInt(
+        process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
+          DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME
+      ),
+      ...clickhouse_settings,
+    },
   }) as B extends true ? WebClickHouseClient : ClickHouseClient
 }
 
@@ -44,7 +54,7 @@ export const fetchData = async <
   query_params,
   format = 'JSONEachRow',
   clickhouse_settings,
-}: QueryParams): Promise<T> => {
+}: QueryParams): Promise<{ data: T }> => {
   const start = new Date()
   const client = getClient({ web: false })
 
@@ -94,7 +104,7 @@ export const fetchData = async <
     console.debug(`<-- Response (${query_id}):`, data, '\n')
   }
 
-  return data
+  return { data }
 }
 
 export const fetchDataWithCache = () => cache(fetchData)

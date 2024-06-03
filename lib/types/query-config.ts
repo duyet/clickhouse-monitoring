@@ -5,6 +5,7 @@ import type {
 } from '@/components/data-table/column-defs'
 import type { PartialBy } from '@/lib/types/generic'
 import type { Icon } from '@/lib/types/icon'
+import type { ClickHouseSettings } from '@clickhouse/client'
 
 export interface QueryConfig {
   name: string
@@ -63,6 +64,10 @@ export interface QueryConfig {
     sql: string
     icon?: Icon
   }[]
+  /**
+   * ClickHouse settings to be used for this query
+   */
+  clickhouseSettings?: ClickHouseSettings
 }
 
 export type QueryConfigNoName = PartialBy<QueryConfig, 'name'>

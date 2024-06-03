@@ -19,7 +19,7 @@ export async function ChartReadonlyReplica({
     ORDER BY event_time
   `
 
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       event_time: string
       ReadonlyReplica: number

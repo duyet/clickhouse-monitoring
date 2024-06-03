@@ -12,11 +12,12 @@ export async function TableDDL({
   table,
   className,
 }: ShowSQLButtonProps) {
-  let showCreateTable: { statement: string }[] = []
+  let showCreateTable = []
   try {
-    showCreateTable = await fetchData({
+    const { data }: { data: { statement: string }[] } = await fetchData({
       query: `SHOW CREATE TABLE ${database}.${table}`,
     })
+    showCreateTable = data
   } catch (error) {
     console.log(error)
 

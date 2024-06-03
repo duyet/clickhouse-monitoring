@@ -19,7 +19,7 @@ export async function ChartDiskSize({
     ${condition}
     ORDER BY name
   `
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       name: string
       used_space: number

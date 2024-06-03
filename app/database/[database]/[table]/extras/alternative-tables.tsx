@@ -22,10 +22,16 @@ export async function AlternativeTables({
 }: AlternativeTablesProps) {
   let anotherTables: { name: string }[] = []
   try {
-    anotherTables = await fetchData<{ name: string }[]>({
-      query: `SELECT name FROM system.tables WHERE database = {database: String}`,
+    const res = await fetchData<{ name: string }[]>({
+      query: `
+        SELECT name
+        FROM system.tables
+        WHERE database = {database: String}
+      `,
       query_params: { database },
     })
+
+    anotherTables = res.data
   } catch (error) {
     console.log(error)
 

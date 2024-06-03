@@ -17,7 +17,7 @@ export async function ChartCPUUsage({
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1`
-  const data = await fetchData<{ event_time: string; avg_cpu: number }[]>({
+  const { data } = await fetchData<{ event_time: string; avg_cpu: number }[]>({
     query,
   })
 

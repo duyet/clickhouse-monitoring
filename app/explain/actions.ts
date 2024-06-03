@@ -52,7 +52,7 @@ export async function explainAction(
     const sql = `EXPLAIN ${kind} ${query}`
 
     try {
-      const data = await fetchData<{ explain: string }[]>({
+      const { data } = await fetchData<{ explain: string }[]>({
         query: sql,
         clickhouse_settings,
       })

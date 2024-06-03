@@ -20,7 +20,7 @@ export async function ChartZookeeperWait({
     ORDER BY event_time
   `
 
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       event_time: string
       AVG_ProfileEvent_ZooKeeperWaitSeconds: number

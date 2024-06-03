@@ -21,7 +21,7 @@ export async function ChartQueryCountByUser({
     GROUP BY 1, 2
     ORDER BY 1 ASC, 3 DESC
   `
-  const raw = await fetchData<
+  const { data: raw } = await fetchData<
     {
       event_time: string
       user: string

@@ -2,7 +2,7 @@ import { fetchDataWithCache } from '@/lib/clickhouse'
 
 export const engineType = async (database: string, table: string) => {
   try {
-    const resp = await fetchDataWithCache()<{ engine: string }[]>({
+    const { data } = await fetchDataWithCache()<{ engine: string }[]>({
       query: `
         SELECT engine
         FROM system.tables
@@ -12,9 +12,9 @@ export const engineType = async (database: string, table: string) => {
       query_params: { database, table },
     })
 
-    return resp?.[0]?.engine || ''
+    return data?.[0]?.engine || ''
   } catch (error) {
-    console.error(error)
+    console.error(`Fetch engine type for ${database}.${table} error:`, error)
     return ''
   }
 }

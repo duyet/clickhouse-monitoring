@@ -6,11 +6,12 @@ export const revalidate = false
 
 export async function GET() {
   try {
-    const resp = await fetchData<{ tz: string }[]>({
+    const { data } = await fetchData<{ tz: string }[]>({
       query: 'SELECT timezone() as tz',
     })
+
     return NextResponse.json({
-      tz: resp[0].tz,
+      tz: data[0].tz,
     })
   } catch {
     return NextResponse.json({}, { status: 500 })
