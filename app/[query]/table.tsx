@@ -58,10 +58,15 @@ export default async function Table({
       ...config.defaultParams,
       ...validQueryParamsObj,
     }
-    const data = await fetchData<RowData[]>({
+    const { data } = await fetchData<RowData[]>({
       query: sql,
       format: 'JSONEachRow',
       query_params: queryParams,
+      clickhouse_settings: {
+        // The main data table takes longer to load.
+        max_execution_time: 300,
+        ...config.clickhouseSettings,
+      },
     })
 
     return <DataTable title={title} config={config} data={data} />

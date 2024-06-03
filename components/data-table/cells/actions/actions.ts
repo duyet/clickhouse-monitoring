@@ -50,14 +50,14 @@ export async function querySettings<TValue>(
   _formData: FormData
 ): Promise<ActionResponse> {
   console.log('Getting query SETTINGS', queryId)
-  const res = await fetchData<{ Settings: string }[]>({
+  const { data } = await fetchData<{ Settings: string }[]>({
     query: `SELECT Settings FROM system.processes WHERE query_id = {queryId: String}`,
     query_params: { queryId },
   })
-  console.log('Query SETTINGS', queryId, res)
+  console.log('Query SETTINGS', queryId, data)
 
   return {
     action: 'toast',
-    message: JSON.stringify(res),
+    message: JSON.stringify(data),
   }
 }

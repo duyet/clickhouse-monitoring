@@ -23,7 +23,7 @@ export async function ChartMergeSumReadRows({
     GROUP BY 1
     ORDER BY 1 ASC
   `
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       event_time: string
       sum_read_rows: number

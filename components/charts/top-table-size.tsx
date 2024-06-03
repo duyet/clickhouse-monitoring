@@ -39,7 +39,7 @@ export async function ChartTopTableSize({
       GROUP BY 1
       ORDER BY compressed_bytes DESC
       LIMIT ${limit}`,
-  })
+  }).then((res) => res.data)
 
   const topByRowCountQuery = fetchData<
     {
@@ -70,7 +70,7 @@ export async function ChartTopTableSize({
     GROUP BY 1
     ORDER BY total_rows DESC
     LIMIT ${limit}`,
-  })
+  }).then((res) => res.data)
 
   const [topBySize, topByRowCount] = await Promise.all([
     topBySizeQuery,

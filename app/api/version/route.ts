@@ -5,7 +5,10 @@ import { fetchData } from '@/lib/clickhouse'
 
 export async function GET() {
   try {
-    const clickhouse = await fetchData({ query: 'SELECT version()' })
+    const { data: clickhouse } = await fetchData({
+      query: 'SELECT version() as version',
+    })
+
     return NextResponse.json({
       ui: packageInfo.version,
       clickhouse,

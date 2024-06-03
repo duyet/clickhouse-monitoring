@@ -27,7 +27,7 @@ export async function ChartConnectionsHttp({
     ORDER BY event_time
   `
 
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       event_time: string
       CurrentMetric_HTTPConnection: number

@@ -22,7 +22,7 @@ export async function SampleData({
   limit = 10,
   className,
 }: SampleDataProps) {
-  let data: { [key: string]: string }[] = []
+  let data: { data: { [key: string]: string }[] } = { data: [] }
   try {
     data = await fetchDataWithCache()({
       query: `SELECT *
@@ -45,11 +45,11 @@ export async function SampleData({
     )
   }
 
-  if (!data?.length) {
+  if (!data.data?.length) {
     return <span className="text-muted-foreground">No rows</span>
   }
 
-  const headers = Object.keys(data[0])
+  const headers = Object.keys(data.data[0])
 
   return (
     <div className="w-full overflow-auto">
@@ -62,7 +62,7 @@ export async function SampleData({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row, idx) => (
+          {data.data.map((row, idx) => (
             <TableRow key={idx}>
               {Object.values(row).map((value) => {
                 if (typeof value === 'object') {

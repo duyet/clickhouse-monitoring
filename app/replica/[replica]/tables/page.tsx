@@ -10,7 +10,7 @@ interface PageProps {
 }
 
 export default async function ClustersPage({ params: { replica } }: PageProps) {
-  const tables = await fetchData<Row[]>({
+  const { data } = await fetchData<Row[]>({
     query: config.sql,
     query_params: { replica },
   })
@@ -19,7 +19,7 @@ export default async function ClustersPage({ params: { replica } }: PageProps) {
     <DataTable
       title={`Tables in replica - ${replica}`}
       config={config}
-      data={tables}
+      data={data}
     />
   )
 }

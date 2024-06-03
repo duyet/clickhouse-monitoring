@@ -24,7 +24,7 @@ export async function ChartQueryMemory({
     GROUP BY event_time
     ORDER BY event_time ASC
   `
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       event_time: string
       memory_usage: number

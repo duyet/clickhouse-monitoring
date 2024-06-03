@@ -24,7 +24,7 @@ export async function ChartReplicationSummaryTable({
     GROUP BY 1, 2
     ORDER BY total DESC
   `
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       table: string
       type: string

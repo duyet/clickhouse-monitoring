@@ -5,7 +5,7 @@ import { config, type Row } from './config'
 
 // Redirects to the first database.
 export default async function ClustersPage() {
-  const tables = await fetchData<Row[]>({ query: config.sql })
+  const { data } = await fetchData<Row[]>({ query: config.sql })
 
-  return <DataTable config={config} data={tables} />
+  return <DataTable config={config} data={data} />
 }

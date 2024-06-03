@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 export default async function Page({ params: { cluster } }: PageProps) {
-  const replicas = await fetchData<{ replica: string }[]>({
+  const { data: replicas } = await fetchData<{ replica: string }[]>({
     query: `SELECT hostName() as replica FROM clusterAllReplicas({cluster: String}) ORDER BY 1`,
     query_params: { cluster },
   })
@@ -47,7 +47,7 @@ export default async function Page({ params: { cluster } }: PageProps) {
     },
   }
 
-  const rows = await fetchData<
+  const { data } = await fetchData<
     {
       table: string
       [replica: string]: string | number
@@ -61,7 +61,7 @@ export default async function Page({ params: { cluster } }: PageProps) {
     <DataTable
       title={`Count of active parts across replicas in the '${cluster}' cluster`}
       config={config}
-      data={rows}
+      data={data}
     />
   )
 }

@@ -24,7 +24,7 @@ export async function ChartMergeCount({
     ORDER BY 1
   `
 
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       event_time: string
       avg_CurrentMetric_Merge: number

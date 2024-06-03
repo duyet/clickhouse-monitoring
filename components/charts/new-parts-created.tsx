@@ -30,7 +30,7 @@ export async function ChartNewPartsCreated({
         table DESC
   `
 
-  const raw = await fetchData<
+  const { data: raw } = await fetchData<
     {
       event_time: string
       table: string

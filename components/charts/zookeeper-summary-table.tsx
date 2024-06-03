@@ -20,7 +20,7 @@ export async function ChartZookeeperSummaryTable({
     FROM system.metrics
     WHERE metric LIKE 'ZooKeeper%'
   `
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       metric: string
       value: string

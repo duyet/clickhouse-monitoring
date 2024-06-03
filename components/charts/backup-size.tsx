@@ -24,7 +24,7 @@ export async function ChartBackupSize({
     WHERE status = 'BACKUP_CREATED'
           ${startTimeCondition}
   `
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       total_size: number
       uncompressed_size: number

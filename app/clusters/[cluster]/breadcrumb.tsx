@@ -24,13 +24,11 @@ interface Props {
 }
 
 export async function ClusterListBreadcrumb({ cluster }: Props) {
-  let clusters: Row[] = []
-
   try {
     // Lists cluster names.
-    clusters = await fetchDataWithCache()<Row[]>({ query: config.sql })
+    const { data } = await fetchDataWithCache()<Row[]>({ query: config.sql })
 
-    if (!clusters.length) {
+    if (!data.length) {
       return (
         <ErrorAlert
           title="Message"
@@ -38,6 +36,8 @@ export async function ClusterListBreadcrumb({ cluster }: Props) {
         />
       )
     }
+
+    return <Internal cluster={cluster} clusters={data} />
   } catch (e: any) {
     return (
       <ErrorAlert
@@ -46,8 +46,6 @@ export async function ClusterListBreadcrumb({ cluster }: Props) {
       />
     )
   }
-
-  return <Internal cluster={cluster} clusters={clusters} />
 }
 
 export function ClusterListBreadcrumbSkeleton({ cluster }: Props) {

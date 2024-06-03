@@ -19,7 +19,7 @@ export async function ChartSummaryUsedByMerges({
       formatReadableSize(memory_usage) as readable_memory_usage
     FROM system.merges
   `
-  const usedRows = await fetchData<
+  const { data: usedRows } = await fetchData<
     {
       memory_usage: number
       readable_memory_usage: string
@@ -43,7 +43,7 @@ export async function ChartSummaryUsedByMerges({
     readable_total: used.readable_memory_usage,
   }
   try {
-    const rows = await fetchData<
+    const { data: rows } = await fetchData<
       {
         metric: string
         total: number
@@ -70,7 +70,7 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const rows = await fetchData<
+    const { data } = await fetchData<
       {
         rows_read: number
         rows_written: number
@@ -78,8 +78,9 @@ export async function ChartSummaryUsedByMerges({
         readable_rows_written: string
       }[]
     >({ query: rowsReadWrittenSql })
-    if (!!rows) {
-      rowsReadWritten = rows?.[0]
+
+    if (!!data) {
+      rowsReadWritten = data?.[0]
     }
   } catch (e) {
     console.error('Error fetching rows read', e)
@@ -99,7 +100,7 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const rows = await fetchData<
+    const { data } = await fetchData<
       {
         bytes_read: number
         bytes_written: number
@@ -108,8 +109,8 @@ export async function ChartSummaryUsedByMerges({
       }[]
     >({ query: bytesReadWrittenSql })
 
-    if (!!rows) {
-      bytesReadWritten = rows?.[0]
+    if (!!data) {
+      bytesReadWritten = data?.[0]
     }
   } catch (e) {
     console.error('Error fetching bytes read', e)

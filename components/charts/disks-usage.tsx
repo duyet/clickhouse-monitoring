@@ -26,7 +26,7 @@ export async function ChartDisksUsage({
     ORDER BY 1 ASC
   `
 
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       event_time: string
       DiskAvailable_default: number

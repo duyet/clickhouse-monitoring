@@ -20,7 +20,7 @@ export async function ChartSummaryUsedByRunningQueries({
            formatReadableSize(memory_usage) as readable_memory_usage
     FROM system.processes
   `
-  const rows = await fetchData<
+  const { data } = await fetchData<
     {
       query_count: number
       memory_usage: number
@@ -28,8 +28,8 @@ export async function ChartSummaryUsedByRunningQueries({
     }[]
   >({ query: sql })
 
-  const first = rows?.[0]
-  if (!rows || !first) return null
+  const first = data?.[0]
+  if (!data || !first) return null
 
   // Workaround for getting total memory usage
   const totalMemSql = `
@@ -47,7 +47,7 @@ export async function ChartSummaryUsedByRunningQueries({
     readable_total: first.readable_memory_usage,
   }
   try {
-    const totalRows = await fetchData<
+    const { data: totalRows } = await fetchData<
       {
         metric: string
         total: number
@@ -68,7 +68,7 @@ export async function ChartSummaryUsedByRunningQueries({
           AND query_start_time >= today()
   `
   try {
-    const todayQueryCountRows = await fetchData<
+    const { data: todayQueryCountRows } = await fetchData<
       {
         query_count: number
       }[]
@@ -93,7 +93,7 @@ export async function ChartSummaryUsedByRunningQueries({
     FROM system.processes
   `
   try {
-    const rows = await fetchData<
+    const { data } = await fetchData<
       {
         rows_read: number
         rows_written: number
@@ -101,8 +101,8 @@ export async function ChartSummaryUsedByRunningQueries({
         readable_rows_written: string
       }[]
     >({ query: rowsReadWrittenSql })
-    if (!!rows) {
-      rowsReadWritten = rows?.[0]
+    if (!!data) {
+      rowsReadWritten = data?.[0]
     }
   } catch (e) {
     console.error('Error fetching rows read', e)

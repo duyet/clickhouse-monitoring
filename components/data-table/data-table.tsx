@@ -36,7 +36,7 @@ import { DataTableToolbar } from './data-table-toolbar'
 
 interface DataTableProps<TData extends RowData> {
   title?: string
-  description?: string
+  description?: string | React.ReactNode
   toolbarExtras?: React.ReactNode
   topRightToolbarExtras?: React.ReactNode
   config: QueryConfig

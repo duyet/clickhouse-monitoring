@@ -11,9 +11,8 @@ export async function RunningQueriesCount({
   database,
   table,
 }: RunningQueriesProps) {
-  let data: { count: number }[] = []
   try {
-    data = await fetchData<{ count: number }[]>({
+    const { data } = await fetchData<{ count: number }[]>({
       query: `
         SELECT COUNT() as count
         FROM system.processes
@@ -24,14 +23,14 @@ export async function RunningQueriesCount({
         table,
       },
     })
+
+    if (!data?.length) {
+      return null
+    }
+
+    return <Badge variant="outline">{data[0].count || 0}</Badge>
   } catch (error) {
     console.error(error)
     return null
   }
-
-  if (!data?.length) {
-    return null
-  }
-
-  return <Badge variant="outline">{data[0].count || 0}</Badge>
 }

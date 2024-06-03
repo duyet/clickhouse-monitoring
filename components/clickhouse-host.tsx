@@ -55,14 +55,15 @@ const HostStatus = async () => {
   let isOnline
   let title = []
   try {
-    const detail = await fetchData<
+    const { data: detail } = await fetchData<
       { uptime: string; hostName: string; version: string }[]
     >({
       query: `
         SELECT
           formatReadableTimeDelta(uptime()) as uptime,
           hostName() as hostName,
-          version() as version`,
+          version() as version
+      `,
     })
 
     isOnline = true

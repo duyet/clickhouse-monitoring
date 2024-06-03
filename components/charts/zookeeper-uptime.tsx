@@ -12,13 +12,13 @@ export async function ChartZookeeperUptime({
   const query =
     'SELECT formatReadableTimeDelta(zookeeperSessionUptime()) AS uptime'
 
-  const rows = await fetchData<
+  const { data } = await fetchData<
     {
       uptime: string
     }[]
   >({ query })
 
-  const uptime = rows[0] || { uptime: 'N/A' }
+  const uptime = data[0] || { uptime: 'N/A' }
 
   return (
     <ChartCard

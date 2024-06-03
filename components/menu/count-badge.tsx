@@ -14,29 +14,27 @@ export async function CountBadge({
 }: CountBadgeProps): Promise<JSX.Element | null> {
   if (!sql) return null
 
-  let data: any[] = []
-
   try {
-    data = await fetchData<{ 'count()': string }[]>({
+    const { data } = await fetchData<{ 'count()': string }[]>({
       query: sql,
       format: 'JSONEachRow',
       clickhouse_settings: { use_query_cache: 1, query_cache_ttl: 120 },
     })
+
+    if (!data || !data.length || !data?.[0]?.['count()']) return null
+
+    const count = data[0]['count()'] || 0
+    if (count == 0) return null
+
+    return (
+      <Badge className={className} variant={variant}>
+        {count}
+      </Badge>
+    )
   } catch (e: any) {
     console.error(
       `<CountBadge />: could not get count for sql: ${sql}, error: ${e}`
     )
     return null
   }
-
-  if (!data || !data.length || !data?.[0]?.['count()']) return null
-
-  const count = data[0]['count()'] || data[0]['count'] || 0
-  if (count == 0) return null
-
-  return (
-    <Badge className={className} variant={variant}>
-      {count}
-    </Badge>
-  )
 }

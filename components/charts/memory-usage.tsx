@@ -18,7 +18,7 @@ export async function ChartMemoryUsage({
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1 ASC`
-  const data = await fetchData<
+  const { data } = await fetchData<
     {
       event_time: string
       avg_memory: number

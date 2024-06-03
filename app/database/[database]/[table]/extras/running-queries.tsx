@@ -21,7 +21,7 @@ export async function RunningQueries({
   table,
   className,
 }: RunningQueriesProps) {
-  let data: { [key: string]: string }[] = []
+  let data: { data: { [key: string]: string }[] } = { data: [] }
   try {
     data = await fetchData({
       query: `SELECT query, user, elapsed,
@@ -50,11 +50,11 @@ export async function RunningQueries({
     )
   }
 
-  if (!data?.length) {
+  if (!data.data?.length) {
     return <span className="text-muted-foreground">No rows</span>
   }
 
-  const headers = Object.keys(data[0])
+  const headers = Object.keys(data.data[0])
 
   return (
     <div className="w-full overflow-auto">
@@ -67,7 +67,7 @@ export async function RunningQueries({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row, idx) => (
+          {data.data.map((row, idx) => (
             <TableRow key={idx}>
               {Object.values(row).map((value) => {
                 if (typeof value === 'object') {
