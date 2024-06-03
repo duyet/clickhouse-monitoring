@@ -16,7 +16,7 @@ import { fetchData, getClickHouseHosts } from '@/lib/clickhouse'
 import { getHost } from '@/lib/utils'
 import { Suspense } from 'react'
 
-const Online = ({ title }: { title: string }) => (
+const Online = ({ title }: { title: string[] }) => (
   <TooltipProvider delayDuration={0}>
     <Tooltip>
       <TooltipTrigger asChild>
@@ -26,13 +26,15 @@ const Online = ({ title }: { title: string }) => (
         </span>
       </TooltipTrigger>
       <TooltipContent side="bottom">
-        <p>{title}</p>
+        {title.map((t, i) => (
+          <p key={i}>{t}</p>
+        ))}
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
 )
 
-const Offline = ({ title }: { title: string }) => (
+const Offline = ({ title }: { title: string[] }) => (
   <TooltipProvider delayDuration={0}>
     <Tooltip>
       <TooltipTrigger asChild>
@@ -41,7 +43,9 @@ const Offline = ({ title }: { title: string }) => (
         </span>
       </TooltipTrigger>
       <TooltipContent side="bottom">
-        <p>{title}</p>
+        {title.map((t, i) => (
+          <p key={i}>{t}</p>
+        ))}
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
@@ -49,20 +53,27 @@ const Offline = ({ title }: { title: string }) => (
 
 const HostStatus = async () => {
   let isOnline
-  let title
+  let title = []
   try {
-    const uptime = await fetchData<{ uptime: string }[]>({
-      query: 'SELECT formatReadableTimeDelta(uptime()) as uptime',
-    })
-    const hostName = await fetchData<{ hostName: string }[]>({
-      query: 'SELECT hostName() as hostName',
+    const detail = await fetchData<
+      { uptime: string; hostName: string; version: string }[]
+    >({
+      query: `
+        SELECT
+          formatReadableTimeDelta(uptime()) as uptime,
+          hostName() as hostName,
+          version() as version`,
     })
 
     isOnline = true
-    title = `${hostName[0].hostName} online: ${uptime[0].uptime}`
+    title = [
+      `Host: ${detail[0].hostName}`,
+      `Online: ${detail[0].uptime}`,
+      `Version: ${detail[0].version}`,
+    ]
   } catch (e) {
     isOnline = false
-    title = `Offline: ${e}`
+    title = [`Offline: ${e}`]
   }
 
   return isOnline ? <Online title={title} /> : <Offline title={title} />
