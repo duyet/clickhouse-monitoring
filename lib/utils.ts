@@ -22,6 +22,7 @@ export function uniq<T>(arr: T[]) {
 }
 
 export function dedent(str: string) {
+  str = str.replace(/^\n/, '').replace(/\n\s*$/, '') // Remove leading and trailing newlines
   const match = str.match(/^[ \t]*(?=\S)/gm)
   if (!match) return str
 

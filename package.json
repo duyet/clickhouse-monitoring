@@ -13,7 +13,8 @@
     "e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
     "component": "cypress open --component",
     "component:headless": "cypress run --component",
-    "fmt": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache"
+    "fmt": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache",
+    "test": "jest"
   },
   "dependencies": {
     "@clickhouse/client": "^0.3.0",
@@ -56,6 +57,7 @@
     "@cypress/code-coverage": "^3.12.10",
     "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
     "@next/eslint-plugin-next": "^14.2.3",
+    "@types/jest": "^29.5.12",
     "@types/node": "^20.11.28",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18",
@@ -69,12 +71,14 @@
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-tailwindcss": "^3.15.1",
+    "jest": "^29.7.0",
     "postcss": "^8",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^3.2.4",
     "prettier-plugin-tailwindcss": "^0.6.0",
     "start-server-and-test": "^2.0.3",
     "tailwindcss": "^3.4.3",
+    "ts-jest": "^29.1.4",
     "typescript": "^5"
   }
 }
