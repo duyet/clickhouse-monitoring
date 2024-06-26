@@ -22,6 +22,7 @@ export const runningQueriesConfig: QueryConfig = {
         ) as readable_memory_usage,
         round(100 * memory_usage / max(memory_usage) OVER ()) AS pct_memory_usage,
         if(total_rows_approx > 0 AND query_kind = 'Select', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
+        if(total_rows_approx > 0 AND query_kind = 'Select', round((100 * read_rows) / total_rows_approx, 2), 0) AS pct_progress,
         (elapsed / (read_rows / total_rows_approx)) * (1 - (read_rows / total_rows_approx)) AS estimated_remaining_time,
         formatReadableQuantity(ProfileEvents['Merge']) AS launched_merges,
         formatReadableQuantity(ProfileEvents['MergedRows']) AS rows_before_merge,
@@ -38,11 +39,11 @@ export const runningQueriesConfig: QueryConfig = {
   columns: [
     'query',
     'user',
+    'readable_memory_usage',
     'readable_elapsed',
+    'progress',
     'readable_read_rows',
     'readable_written_rows',
-    'readable_memory_usage',
-    'progress',
     'launched_merges',
     'rows_before_merge',
     'bytes_before_merge',
@@ -55,6 +56,7 @@ export const runningQueriesConfig: QueryConfig = {
   ],
   columnFormats: {
     query: ColumnFormat.CodeToggle,
+    user: ColumnFormat.ColoredBadge,
     estimated_remaining_time: ColumnFormat.Duration,
     query_id: [
       ColumnFormat.Action,
@@ -64,6 +66,7 @@ export const runningQueriesConfig: QueryConfig = {
     readable_read_rows: ColumnFormat.BackgroundBar,
     readable_written_rows: ColumnFormat.BackgroundBar,
     readable_memory_usage: ColumnFormat.BackgroundBar,
+    progress: ColumnFormat.BackgroundBar,
     file_open: ColumnFormat.Number,
   },
   relatedCharts: [
