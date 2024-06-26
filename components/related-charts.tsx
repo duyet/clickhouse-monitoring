@@ -49,7 +49,7 @@ export async function RelatedCharts({
   const gridCols = `grid-cols-1 md:grid-cols-${col}`
 
   return (
-    <div className={cn('mb-5 grid gap-5', gridCols, className)}>
+    <div className={cn('grid gap-5', gridCols, className)}>
       {charts.map(([name, Chart, props], i) => {
         let className = ''
 

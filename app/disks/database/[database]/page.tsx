@@ -1,46 +1,38 @@
-import { unstable_noStore as noStore } from 'next/cache'
-import { notFound } from 'next/navigation'
-
 import { RelatedCharts } from '@/components/related-charts'
 
 import { ChartSkeleton, TableSkeleton } from '@/components/skeleton'
 import { Table } from '@/components/table'
 import { Suspense } from 'react'
-import { getQueryConfigByName } from './clickhouse-queries'
+
+import { databaseDiskSpaceByDatabaseConfig as config } from '../../config'
 
 interface PageProps {
   params: {
-    query: string
+    database: string
   }
   searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 30
-
 export default async function Page({
-  params: { query },
+  params: { database },
   searchParams,
 }: PageProps) {
-  noStore()
-
-  // Retrieves the query configuration by name.
-  const config = getQueryConfigByName(query)
-  if (!config) {
-    return notFound()
+  let params = {
+    ...searchParams,
+    database: database,
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col">
       <Suspense fallback={<ChartSkeleton />}>
         <RelatedCharts relatedCharts={config.relatedCharts} />
       </Suspense>
 
       <Suspense fallback={<TableSkeleton />}>
         <Table
-          title={query.replaceAll('-', ' ')}
+          title={'Disks usage by database: ' + database}
           config={config}
-          searchParams={searchParams}
+          searchParams={params}
         />
       </Suspense>
     </div>

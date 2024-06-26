@@ -5,7 +5,6 @@ import { mergesConfig } from './merges/merges'
 import { mutationsConfig } from './merges/mutations'
 import { asynchronousMetricsConfig } from './more/asynchronous-metrics'
 import { backupsConfig } from './more/backups'
-import { disksConfig } from './more/disks'
 import { mergeTreeSettingsConfig } from './more/mergetree-settings'
 import { metricsConfig } from './more/metrics'
 import { rolesConfig } from './more/roles'
@@ -52,7 +51,6 @@ export const queries: Array<QueryConfig> = [
   // Settings
   settingsConfig,
   mergeTreeSettingsConfig,
-  disksConfig,
 
   // Top Usage
   topUsageTablesConfig,

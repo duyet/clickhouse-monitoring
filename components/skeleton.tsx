@@ -19,12 +19,14 @@ export function ChartSkeleton() {
 export function TableSkeleton({
   rows = 3,
   cols = 4,
+  className,
 }: {
   rows?: number
   cols?: number
+  className?: string
 }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className={cn('flex flex-col gap-3', className)}>
       {Array.from({ length: rows }).map((_, i) => (
         <div key={`row-${i}`} className="flex flex-row items-center gap-3">
           {Array.from({ length: cols }).map((_, j) => (
