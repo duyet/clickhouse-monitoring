@@ -33,7 +33,7 @@ export async function CountBadge({
     )
   } catch (e: any) {
     console.error(
-      `<CountBadge />: could not get count for sql: ${sql}, error: ${e}`
+      `<CountBadge />: failed to get count, error: "${e}", query: ${sql}`
     )
     return null
   }

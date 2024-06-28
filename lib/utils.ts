@@ -38,3 +38,7 @@ export function getHost(url?: string) {
   const { host } = new URL(url)
   return host
 }
+
+export function normalizeUrl(url: string) {
+  return url.trim().replace(/(\/|\?)$/, '')
+}

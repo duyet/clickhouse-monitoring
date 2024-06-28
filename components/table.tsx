@@ -7,14 +7,18 @@ import type { QueryConfig } from '@/lib/types/query-config'
 
 interface TableProps {
   title: string
+  description?: string
   config: QueryConfig
   searchParams: { [key: string]: string | string[] | undefined }
+  className?: string
 }
 
-export default async function Table({
+export async function Table({
   title,
+  description,
   config,
   searchParams,
+  className,
 }: TableProps) {
   // Filters valid query parameters from the URL.
   const validQueryParams = Object.entries(searchParams).filter(([key, _]) => {
@@ -74,12 +78,15 @@ export default async function Table({
     return (
       <DataTable
         title={title}
+        description={description}
         config={config}
         data={data}
         footnote={footerText}
+        className={className}
       />
     )
   } catch (error) {
+    console.error(`<Table /> failed render, error: "${error}"`)
     return <ErrorAlert title="ClickHouse Error" message={`${error}`} />
   }
 }

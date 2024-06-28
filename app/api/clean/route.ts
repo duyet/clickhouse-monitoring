@@ -22,7 +22,7 @@ export async function GET() {
       { status: 200 }
     )
   } catch (error) {
-    console.error(error)
+    console.error('[/api/clean] error', error)
     return NextResponse.json(
       {
         status: false,

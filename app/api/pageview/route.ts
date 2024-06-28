@@ -1,4 +1,5 @@
 import { getClient } from '@/lib/clickhouse'
+import { normalizeUrl } from '@/lib/utils'
 import type { NextRequest } from 'next/server'
 import { NextResponse, userAgent } from 'next/server'
 
@@ -36,17 +37,15 @@ export async function GET(request: NextRequest) {
         },
       ],
     })
-    console.log(`'PageView' event created:`, request.url)
+    console.log(`[/api/pageview] 'PageView' event created: ${request.url}`)
     return NextResponse.json({ message: 'PageView event created', url })
   } catch (error) {
-    console.error("'PageView' event create error:", error)
+    console.error(
+      `[/api/pageview] 'PageView' failed create event, error: "${error}"`
+    )
     return NextResponse.json(
       { error: `Error creating PageView event: ${error}` },
       { status: 500 }
     )
   }
-}
-
-function normalizeUrl(url: string) {
-  return url.trim().replace(/(\/|\?)$/, '')
 }

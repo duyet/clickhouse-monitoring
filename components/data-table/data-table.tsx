@@ -45,6 +45,7 @@ interface DataTableProps<TData extends RowData> {
   defaultPageSize?: number
   showSQL?: boolean
   footnote?: FootnoteProps<TData>['footnote']
+  className?: string
 }
 
 export function DataTable<TData extends RowData, TValue>({
@@ -57,6 +58,7 @@ export function DataTable<TData extends RowData, TValue>({
   defaultPageSize = 100,
   showSQL = true,
   footnote,
+  className,
 }: DataTableProps<TData>) {
   // Columns available in the data, normalized
   const allColumns: string[] = uniq(
@@ -111,7 +113,7 @@ export function DataTable<TData extends RowData, TValue>({
   })
 
   return (
-    <div>
+    <div className={className}>
       <Toaster />
 
       <div className="flex flex-row items-center justify-between pb-4">

@@ -21,7 +21,9 @@ export function ErrorAlert({
     content: string | React.ReactNode | React.ReactNode[]
   ) => (
     <div className="mb-5 font-light">
-      <code className="overflow-auto hover:text-clip">{content}</code>
+      <code className="overflow-auto font-mono text-gray-500 hover:text-clip">
+        {content}
+      </code>
     </div>
   )
 
