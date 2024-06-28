@@ -4,31 +4,11 @@ import {
   CaretUpIcon,
 } from '@radix-ui/react-icons'
 import type { ColumnDef, Row, RowData, Table } from '@tanstack/react-table'
-import { LinkProps } from 'next/link'
 
-import { formatCell } from '@/components/data-table/cell'
-import { type Action } from '@/components/data-table/cells/actions/types'
+import { formatCell } from '@/components/data-table/format-cell'
 import { Button } from '@/components/ui/button'
+import { ColumnFormat, ColumnFormatOptions } from '@/lib/types/column-format'
 import { type QueryConfig } from '@/lib/types/query-config'
-
-export enum ColumnFormat {
-  BackgroundBar = 'background-bar',
-  ColoredBadge = 'colored-badge',
-  RelatedTime = 'related-time',
-  NumberShort = 'number-short',
-  CodeToggle = 'code-toggle',
-  Duration = 'duration',
-  Boolean = 'boolean',
-  Action = 'action',
-  Number = 'number',
-  Badge = 'badge',
-  Code = 'code',
-  Link = 'link',
-  None = 'none',
-}
-
-// Union of all possible format options
-export type ColumnFormatOptions = Action[] | LinkProps
 
 export type ColumnType = { [key: string]: string }
 

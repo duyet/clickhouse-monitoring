@@ -1,4 +1,4 @@
-import { ColumnFormat } from '@/components/data-table/column-defs'
+import { ColumnFormat } from '@/lib/types/column-format'
 import { type QueryConfig } from '@/lib/types/query-config'
 
 export const commonErrorsConfig: QueryConfig = {

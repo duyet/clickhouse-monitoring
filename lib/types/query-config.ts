@@ -1,8 +1,8 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 import type {
   ColumnFormat,
-  ColumnFormatOptions,
-} from '@/components/data-table/column-defs'
+  ColumnFormatWithArgs,
+} from '@/lib/types/column-format'
 import type { PartialBy } from '@/lib/types/generic'
 import type { Icon } from '@/lib/types/icon'
 import type { ClickHouseSettings } from '@clickhouse/client'
@@ -28,7 +28,7 @@ export interface QueryConfig {
    * ```
    */
   columnFormats?: {
-    [key: string]: ColumnFormat | [ColumnFormat, ColumnFormatOptions]
+    [key: string]: ColumnFormat | ColumnFormatWithArgs
   }
   relatedCharts?:
     | string[]

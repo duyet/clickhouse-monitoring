@@ -1,4 +1,4 @@
-import { ColumnFormat } from '@/components/data-table/column-defs'
+import { ColumnFormat } from '@/lib/types/column-format'
 import { type QueryConfig } from '@/lib/types/query-config'
 
 export type Row = {
@@ -70,6 +70,7 @@ export const config: QueryConfig = {
     'comment',
   ],
   columnFormats: {
+    column: [ColumnFormat.HoverCard, { content: 'Column note: [comment]' }],
     type: ColumnFormat.Code,
     codec: ColumnFormat.Code,
     part_count: ColumnFormat.Number,

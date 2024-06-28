@@ -1,10 +1,5 @@
-import { UpdateIcon } from '@radix-ui/react-icons'
+import { TableSkeleton } from '@/components/skeleton'
 
 export default function Loading() {
-  return (
-    <div className="flex flex-row items-center gap-3">
-      <UpdateIcon className="size-4 animate-spin" />
-      Loading table detail ...
-    </div>
-  )
+  return <TableSkeleton className="mb-4" />
 }
