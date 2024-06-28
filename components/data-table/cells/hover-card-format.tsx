@@ -20,16 +20,22 @@ interface HoverCardProps {
 export function HoverCardFormat({ row, value, options }: HoverCardProps) {
   let { content } = options || {}
 
-  if (!content) {
-    content = value
-  }
-
   // Content replacement, e.g. "Hover content: [column_name]"
-  if (
-    typeof content === 'string' &&
-    content.includes('[') &&
-    content.includes(']')
-  ) {
+  content = contentReplacement(content, row)
+
+  return (
+    <HoverCard openDelay={0}>
+      <HoverCardTrigger>{value}</HoverCardTrigger>
+      <HoverCardContent>{content}</HoverCardContent>
+    </HoverCard>
+  )
+}
+
+function contentReplacement(
+  content: string | React.ReactNode,
+  row: any
+): string | React.ReactNode {
+  if (typeof content === 'string') {
     const matches = content.match(/\[(.*?)\]/g)
     if (matches) {
       matches.forEach((match) => {
@@ -40,11 +46,19 @@ export function HoverCardFormat({ row, value, options }: HoverCardProps) {
         }
       })
     }
+    return content
+  } else {
+    return React.Children.map(content, (child) => {
+      if (typeof child === 'string') {
+        return contentReplacement(child, row)
+      } else if (React.isValidElement(child)) {
+        return React.cloneElement(child as React.ReactElement, {
+          children: contentReplacement(child.props.children, row),
+        })
+      }
+
+      // If it's not a string or a valid element, just return it
+      return child
+    })
   }
-  return (
-    <HoverCard>
-      <HoverCardTrigger>{value}</HoverCardTrigger>
-      <HoverCardContent>{content}</HoverCardContent>
-    </HoverCard>
-  )
 }
