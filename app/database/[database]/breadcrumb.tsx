@@ -1,5 +1,6 @@
 import { ChevronDownIcon, SlashIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
+import React from 'react'
 
 import { ErrorAlert } from '@/components/error-alert'
 import {
@@ -115,9 +116,10 @@ function Internal({
   )
 }
 
-function Count({ count }: { count?: number }) {
+const Count = React.memo(({ count }: { count?: number }) => {
   if (count == undefined || count == -1) return 'loading ...'
   if (count == 0) return '0 table'
   if (count == 1) return '1 table'
   return `${count} tables`
-}
+})
+Count.displayName = 'Count'

@@ -70,7 +70,7 @@ export const config: QueryConfig = {
     'comment',
   ],
   columnFormats: {
-    column: [ColumnFormat.HoverCard, { content: 'Column note: [comment]' }],
+    column: [ColumnFormat.HoverCard, { content: 'Column comment: [comment]' }],
     type: ColumnFormat.Code,
     codec: ColumnFormat.Code,
     part_count: ColumnFormat.Number,
