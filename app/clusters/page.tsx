@@ -3,6 +3,8 @@ import { fetchData } from '@/lib/clickhouse'
 
 import { config, type Row } from './config'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ClustersPage() {
   const { data } = await fetchData<Row[]>({ query: config.sql })
 

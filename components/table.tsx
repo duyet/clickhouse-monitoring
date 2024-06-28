@@ -86,6 +86,7 @@ export async function Table({
       />
     )
   } catch (error) {
+    console.error(`<Table /> failed render, error: "${error}"`)
     return <ErrorAlert title="ClickHouse Error" message={`${error}`} />
   }
 }

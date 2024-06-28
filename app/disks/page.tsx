@@ -6,6 +6,9 @@ import { Suspense } from 'react'
 
 import { databaseDiskSpaceConfig, diskSpaceConfig } from './config'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 30
+
 interface PageProps {
   searchParams: { [key: string]: string | string[] | undefined }
 }
