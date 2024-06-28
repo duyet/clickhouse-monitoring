@@ -31,7 +31,7 @@ interface DatabaseCount {
 export async function DatabaseBreadcrumb({ database }: Props) {
   // Default
   let databases: { name: string; count: number }[] = [
-    { name: database, count: 0 },
+    { name: database, count: -1 },
   ]
 
   try {
@@ -64,8 +64,8 @@ export async function DatabaseBreadcrumbSkeleton({ database }: Props) {
     <Internal
       current={database}
       databases={[
-        { name: database, count: 0 },
-        { name: 'Loading ...', count: 0 },
+        { name: database, count: -1 },
+        { name: 'Loading ...', count: -1 },
       ]}
     />
   )
@@ -93,7 +93,7 @@ function Internal({
 
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-1">
-            {current} ({currentCount} {currentCount == 1 ? 'table' : 'tables'})
+            {current} (<Count count={currentCount} />)
             <ChevronDownIcon />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -113,4 +113,11 @@ function Internal({
       </BreadcrumbList>
     </Breadcrumb>
   )
+}
+
+function Count({ count }: { count?: number }) {
+  if (count == undefined || count == -1) return 'loading ...'
+  if (count == 0) return '0 table'
+  if (count == 1) return '1 table'
+  return `${count} tables`
 }

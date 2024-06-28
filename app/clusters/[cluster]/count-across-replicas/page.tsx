@@ -1,6 +1,6 @@
-import { ColumnFormat } from '@/components/data-table/column-defs'
 import { DataTable } from '@/components/data-table/data-table'
 import { fetchData } from '@/lib/clickhouse'
+import { ColumnFormat } from '@/lib/types/column-format'
 
 import type { QueryConfig } from '@/lib/types/query-config'
 

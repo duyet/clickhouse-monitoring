@@ -1,11 +1,8 @@
 import type { Row, RowData, Table } from '@tanstack/react-table'
 import { type LinkProps } from 'next/link'
 
-import {
-  ColumnFormat,
-  ColumnFormatOptions,
-} from '@/components/data-table/column-defs'
 import { formatReadableQuantity } from '@/lib/format-readable'
+import { ColumnFormat, ColumnFormatOptions } from '@/lib/types/column-format'
 
 import { ActionFormat } from './cells/action-format'
 import { type Action } from './cells/actions/types'
@@ -15,6 +12,7 @@ import { BooleanFormat } from './cells/boolean-format'
 import { CodeToggleFormat } from './cells/code-toggle-format'
 import { ColoredBadgeFormat } from './cells/colored-badge-format'
 import { DurationFormat } from './cells/duration-format'
+import { HoverCardFormat, HoverCardOptions } from './cells/hover-card-format'
 import { LinkFormat } from './cells/link-format'
 import { RelatedTimeFormat } from './cells/related-time-format'
 
@@ -79,6 +77,15 @@ export const formatCell = <TData extends RowData, TValue>(
           row={row}
           value={value}
           options={columnFormatOptions as LinkProps}
+        />
+      )
+
+    case ColumnFormat.HoverCard:
+      return (
+        <HoverCardFormat
+          row={row}
+          value={value}
+          options={columnFormatOptions as unknown as HoverCardOptions}
         />
       )
 
