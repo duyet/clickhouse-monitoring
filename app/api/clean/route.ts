@@ -8,6 +8,7 @@ const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 30
 
 export async function GET() {
   try {
@@ -47,6 +48,10 @@ async function cleanupHangQuery(
         WHERE kind = 'LastCleanup'
         `,
       format: 'JSONEachRow',
+      clickhouse_settings: {
+        max_execution_time: 15,
+        timeout_overflow_mode: 'break',
+      },
     })
     const data: { last_cleanup: string }[] = await response.json()
     lastCleanup = data.length > 0 ? new Date(data[0].last_cleanup) : new Date()
