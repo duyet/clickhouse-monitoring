@@ -18,7 +18,11 @@ export async function CountBadge({
     const { data } = await fetchData<{ 'count()': string }[]>({
       query: sql,
       format: 'JSONEachRow',
-      clickhouse_settings: { use_query_cache: 1, query_cache_ttl: 120 },
+      clickhouse_settings: {
+        use_query_cache: 1,
+        query_cache_system_table_handling: 'save',
+        query_cache_ttl: 120,
+      },
     })
 
     if (!data || !data.length || !data?.[0]?.['count()']) return null

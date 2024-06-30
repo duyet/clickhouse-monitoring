@@ -39,3 +39,6 @@ next-env.d.ts
 # cypress
 cypress/videos
 cypress/screenshots
+
+# Turborepo
+.turbo

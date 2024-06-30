@@ -7,6 +7,12 @@ import { cache } from 'react'
 
 const DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME = '60'
 
+type QuerySettings = QueryParams['clickhouse_settings'] &
+  Partial<{
+    // @since 24.4
+    query_cache_system_table_handling: 'throw' | 'save' | 'ignore'
+  }>
+
 export const getClickHouseHosts = () => {
   const hosts = (process.env.CLICKHOUSE_HOST || '')
     .split(',')
@@ -54,7 +60,7 @@ export const fetchData = async <
   query_params,
   format = 'JSONEachRow',
   clickhouse_settings,
-}: QueryParams): Promise<{
+}: QueryParams & Partial<{ clickhouse_settings: QuerySettings }>): Promise<{
   data: T
   metadata: Record<string, string | number>
 }> => {
