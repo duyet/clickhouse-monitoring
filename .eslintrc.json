@@ -1,10 +1,6 @@
 {
   "root": true,
-  "extends": [
-    "next",
-    "next/core-web-vitals",
-    "prettier"
-  ],
+  "extends": ["next", "next/core-web-vitals", "prettier"],
   "rules": {
     "@next/next/no-html-link-for-pages": "off",
     "react/react-in-jsx-scope": "off",
@@ -13,17 +9,11 @@
   },
   "settings": {
     "tailwindcss": {
-      "callees": [
-        "cn",
-        "cva",
-        "clsx"
-      ],
+      "callees": ["cn", "cva", "clsx"],
       "config": "tailwind.config.cjs"
     },
     "next": {
-      "rootDir": [
-        "app/*/"
-      ]
+      "rootDir": ["app/*/"]
     }
   }
 }
