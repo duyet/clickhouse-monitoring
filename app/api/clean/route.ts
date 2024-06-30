@@ -67,6 +67,8 @@ async function cleanupHangQuery(
     throw new Error(
       `Last cleanup was ${lastCleanup} less than ${QUERY_CLEANUP_MAX_DURATION_SECONDS}s`
     )
+  } else {
+    console.log('[/api/clean] Starting clean up hang queries')
   }
 
   type KillQueryResponse = {
@@ -97,6 +99,7 @@ async function cleanupHangQuery(
 
     // Nothing to cleanup
     if (!killQueryResp || killQueryResp?.rows === 0) {
+      console.log('[/api/clean] Done, nothing to cleanup')
       return {
         lastCleanup,
         message: 'Nothing to cleanup',
@@ -108,9 +111,10 @@ async function cleanupHangQuery(
       error instanceof Error &&
       error.message.includes('Unexpected end of JSON input')
     ) {
+      console.log('[/api/clean] Done, nothing to cleanup')
       return { lastCleanup, message: 'Nothing to cleanup' }
     } else {
-      console.error(error)
+      console.error('[/api/clean] Error when killing queries:', error)
       throw new Error(`Error when killing queries: ${error}`)
     }
   }
@@ -126,7 +130,9 @@ async function cleanupHangQuery(
       ],
       format: 'JSONEachRow',
     })
+    console.log('[/api/clean] LastCleanup event created')
   } catch (error) {
+    console.error("[/api/clean] 'LastCleanup' event creating error:", error)
     throw new Error(`'LastCleanup' event creating error: ${error}`)
   }
 
