@@ -9,7 +9,7 @@ export const topUsageColumnsConfig: QueryConfig = {
           columns as column,
           count() as count,
           round(100 * count() / max(count()) OVER ()) as pct_count
-      FROM system.query_log
+      FROM merge(system, '^query_log')
       ARRAY JOIN columns
       WHERE (query_kind = 'Select')
         AND (type = 'QueryFinish')
@@ -21,4 +21,5 @@ export const topUsageColumnsConfig: QueryConfig = {
   columnFormats: {
     count: ColumnFormat.BackgroundBar,
   },
+  defaultParams: { table: '' },
 }
