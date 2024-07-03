@@ -38,23 +38,27 @@ export async function initTrackingTable(
     error('error initializing table system.monitoring_events', `${err}`)
   }
 
+  const expected = latest.hash
+
   try {
-    const expected = latest.hash
     const resp = await client.query({
       query: `
         SELECT cityHash64(groupArray(concat(name, ' ', type))) AS schema_hash
         FROM system.columns
         WHERE (database = 'system') AND (table = 'monitoring_events')
       `,
+      format: 'TabSeparated',
     })
 
-    const current = await resp.text()
+    const current = (await resp.text()).trim()
 
     log('Schema hash', current)
     log('Schema hash (expected)', expected)
 
     if (current != expected) {
-      console.log('TODO: do schema migration')
+      log('TODO: do schema migration')
+    } else {
+      log('schema hash matched, skip migrate')
     }
   } catch (err) {
     error('error getting schema hash system.monitoring_events', `${err}`)
