@@ -30,11 +30,6 @@ interface DatabaseCount {
 }
 
 export async function DatabaseBreadcrumb({ database }: Props) {
-  // Default
-  let databases: { name: string; count: number }[] = [
-    { name: database, count: -1 },
-  ]
-
   try {
     // List database names and number of tables
     const { data: databases }: { data: DatabaseCount[] } =
@@ -106,7 +101,9 @@ function Internal({
                 >
                   {name}
                 </Link>
-                <div className="ml-auto flex pl-2">({count})</div>
+                <div className="ml-auto flex pl-2">
+                  (<Count count={count} />)
+                </div>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
