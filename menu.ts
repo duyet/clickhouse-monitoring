@@ -23,6 +23,7 @@ import { QUERY_COMMENT } from '@/lib/clickhouse'
 import {
   CircleDollarSignIcon,
   CombineIcon,
+  DatabaseZapIcon,
   FilePlus2Icon,
   HardDriveIcon,
   RollerCoasterIcon,
@@ -146,6 +147,12 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/explain',
         description: 'Shows the execution plan of a statement',
         icon: InfoCircledIcon,
+      },
+      {
+        title: 'Query Cache',
+        href: '/query-cache',
+        description: 'Query cache usage',
+        icon: DatabaseZapIcon,
       },
     ],
   },

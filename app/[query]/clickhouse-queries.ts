@@ -18,6 +18,7 @@ import { expensiveQueriesConfig } from './queries/expensive-queries'
 import { expensiveQueriesByMemoryConfig } from './queries/expensive-queries-by-memory'
 import { failedQueriesConfig } from './queries/failed-queries'
 import { historyQueriesConfig } from './queries/history-queries'
+import { queryCacheConfig } from './queries/query-cache'
 import { runningQueriesConfig } from './queries/running-queries'
 import { detachedPartsConfig } from './tables/detached-parts'
 import { distributedDdlQueueConfig } from './tables/distributed-ddl-queue'
@@ -36,6 +37,7 @@ export const queries: Array<QueryConfig> = [
   detachedPartsConfig,
 
   // Queries
+  queryCacheConfig,
   runningQueriesConfig,
   historyQueriesConfig,
   failedQueriesConfig,
