@@ -31,7 +31,7 @@ export async function ChartQueryCache({
     <ChartCard title={title} className={className} sql={query}>
       <CardMetric
         current={first.total_result_size}
-        currentReadable={first.readable_total_result_size + ' cached'}
+        currentReadable={`${first.readable_total_result_size} cached`}
         target={first.total_staled_result_size}
         targetReadable={first.readable_total_staled_result_size + ' staled'}
         className="p-2"
