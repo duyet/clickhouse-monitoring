@@ -86,8 +86,15 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'Top Usage Tables',
         href: '/top-usage-tables',
-        description: 'Most usage tables, ignore system tables (top 50)',
+        description: 'Most used tables, excluding system tables',
         icon: TextAlignBottomIcon,
+      },
+      {
+        title: 'Projections',
+        href: '/projections',
+        description:
+          'Projections store data in a format that optimizes query execution',
+        icon: DatabaseZapIcon,
       },
     ],
   },

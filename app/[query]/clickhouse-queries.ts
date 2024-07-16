@@ -22,6 +22,7 @@ import { queryCacheConfig } from './queries/query-cache'
 import { runningQueriesConfig } from './queries/running-queries'
 import { detachedPartsConfig } from './tables/detached-parts'
 import { distributedDdlQueueConfig } from './tables/distributed-ddl-queue'
+import { projectionsConfig } from './tables/projections'
 import { readOnlyTablesConfig } from './tables/readonly-tables'
 import { replicasConfig } from './tables/replicas'
 import { replicationQueueConfig } from './tables/replication-queue'
@@ -35,6 +36,7 @@ export const queries: Array<QueryConfig> = [
   replicationQueueConfig,
   readOnlyTablesConfig,
   detachedPartsConfig,
+  projectionsConfig,
 
   // Queries
   queryCacheConfig,
