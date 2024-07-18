@@ -25,6 +25,7 @@ import {
   CombineIcon,
   DatabaseZapIcon,
   FilePlus2Icon,
+  Grid2x2CheckIcon,
   HardDriveIcon,
   RollerCoasterIcon,
   UngroupIcon,
@@ -50,6 +51,14 @@ export const menuItemsConfig: MenuItem[] = [
         countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
         description: 'List of databases, tables and their details',
         icon: TableIcon,
+      },
+      {
+        title: 'Tables Overview',
+        href: '/tables-overview',
+        countSql:
+          'SELECT countDistinct(database || table) as `count()` FROM system.parts',
+        description: 'Overview of all tables and their parts',
+        icon: Grid2x2CheckIcon,
       },
       {
         title: 'Distributed DDL Queue',
