@@ -26,7 +26,7 @@ import { projectionsConfig } from './tables/projections'
 import { readOnlyTablesConfig } from './tables/readonly-tables'
 import { replicasConfig } from './tables/replicas'
 import { replicationQueueConfig } from './tables/replication-queue'
-import { tablesOverviewConfig } from './tables/table-overview'
+import { tablesOverviewConfig } from './tables/tables-overview'
 
 export const queries: Array<QueryConfig> = [
   // Tables
