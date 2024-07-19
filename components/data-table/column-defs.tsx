@@ -33,7 +33,8 @@ export const normalizeColumnName = (column: string) => {
  * @returns {ColumnDef<ColumnType>[]} - An array of column definitions.
  */
 export const getColumnDefs = <TData extends RowData, TValue>(
-  config: QueryConfig
+  config: QueryConfig,
+  data: TData[]
 ): ColumnDef<TData, TValue>[] => {
   const configColumns = config.columns || []
 
@@ -87,6 +88,7 @@ export const getColumnDefs = <TData extends RowData, TValue>(
         const value = getValue()
         const formatted = formatCell<TData, TValue>(
           table,
+          data,
           row,
           value,
           column,
