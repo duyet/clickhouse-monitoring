@@ -1,7 +1,7 @@
+import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
-import { BarChart } from '../tremor/bar'
 import { type ChartProps } from './chart-props'
 
 export async function ChartConnectionsHttp({
@@ -51,6 +51,7 @@ export async function ChartConnectionsHttp({
         ]}
         className={cn('h-52', chartClassName)}
         stack
+        showLabel={false}
       />
     </ChartCard>
   )

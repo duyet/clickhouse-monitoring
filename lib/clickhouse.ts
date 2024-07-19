@@ -11,6 +11,7 @@ type QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{
     // @since 24.4
     query_cache_system_table_handling: 'throw' | 'save' | 'ignore'
+    query_cache_nondeterministic_function_handling: 'throw' | 'save' | 'ignore'
   }>
 
 export const getClickHouseHosts = () => {

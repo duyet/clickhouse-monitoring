@@ -1,5 +1,5 @@
 import { type ChartProps } from '@/components/charts/chart-props'
-import { BarChart } from '@/components/tremor/bar'
+import { BarChart } from '@/components/generic-charts/bar'
 import { fetchData } from '@/lib/clickhouse'
 
 import { ChartCard } from '../generic-charts/chart-card'
@@ -39,8 +39,11 @@ export async function ChartMergeSumReadRows({
         index="event_time"
         categories={['sum_read_rows_scale']}
         readableColumn="readable_sum_read_rows"
+        labelPosition="inside"
+        labelAngle={-90}
+        colorLabel="--foreground"
         className={className}
-        colors={['orange']}
+        colors={['--chart-orange-600']}
         autoMinValue={true}
         relative={false}
         allowDecimals={true}

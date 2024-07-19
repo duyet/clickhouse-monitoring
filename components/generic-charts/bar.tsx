@@ -8,6 +8,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
+import { cn } from '@/lib/utils'
 import { type BarChartProps } from '@/types/charts'
 import {
   Bar,
@@ -22,90 +23,72 @@ export function BarChart({
   index,
   categories,
   readableColumn,
+  labelPosition,
+  labelAngle,
   showLegend = true,
+  showLabel = true,
   stack = false,
+  colors,
+  colorLabel,
   tickFormatter,
+  className,
 }: BarChartProps) {
   const chartConfig = categories.reduce(
     (acc, category, index) => {
       acc[category] = {
         label: category,
-        color: `hsl(var(--chart-${index + 1}))`,
+        color: colors
+          ? `hsl(var(${colors[index]}))`
+          : `hsl(var(--chart-${index + 1}))`,
       }
 
       return acc
     },
     {
       label: {
-        color: 'hsl(var(--background))',
+        color: colorLabel
+          ? `hsl(var(${colorLabel}))`
+          : 'hsl(var(--background))',
       },
     } as ChartConfig
   )
-
-  const labelContent = (props: any) => {
-    const { x, y, width, height, value } = props
-
-    const render = (value: string | number) => (
-      <g>
-        <text
-          x={x + width / 2}
-          y={y - 10}
-          textAnchor="middle"
-          dominantBaseline="middle"
-        >
-          {value}
-        </text>
-      </g>
-    )
-
-    if (!readableColumn) {
-      return render(value)
-    }
-
-    for (let category of categories) {
-      const formated = data.find((row) => row[category] === value)?.[
-        readableColumn
-      ]
-
-      if (formated) {
-        return render(formated)
-      }
-    }
-
-    return render(value)
-  }
 
   const getRadius = (
     index: number,
     length: number,
     stack: boolean
   ): number | [number, number, number, number] => {
+    const radius = 6
+
     if (!stack) {
-      return 8
+      return radius
     }
 
     if (length === 1) {
-      return 8
+      return radius
     }
 
     if (index === 0) {
-      return [0, 0, 8, 8]
+      return [0, 0, radius, radius]
     }
 
     if (index === length - 1) {
-      return [8, 8, 0, 0]
+      return [radius, radius, 0, 0]
     }
 
     return [0, 0, 0, 0]
   }
 
   return (
-    <ChartContainer config={chartConfig}>
+    <ChartContainer
+      config={chartConfig}
+      className={cn('min-h-[200px] w-full', className)}
+    >
       <RechartBarChart
         accessibilityLayer
         data={data}
         margin={{
-          top: 20,
+          top: 5,
         }}
       >
         <CartesianGrid vertical={false} />
@@ -128,29 +111,84 @@ export function BarChart({
             stackId={stack ? 'a' : undefined}
             radius={getRadius(index, categories.length, stack)}
           >
-            {/* TODO: hide or move outside if column height too small */}
-            {stack ? (
-              <LabelList
-                position="inside"
-                offset={8}
-                className="fill-[--color-label]"
-                fontSize={12}
-                content={readableColumn ? labelContent : undefined}
-              />
-            ) : (
-              <LabelList
-                position="top"
-                offset={12}
-                className="fill-foreground"
-                fontSize={12}
-                content={readableColumn ? labelContent : undefined}
-              />
-            )}
+            {renderChartLabel({
+              showLabel,
+              labelPosition,
+              labelAngle,
+              stack,
+              data,
+              categories,
+              readableColumn,
+            })}
           </Bar>
         ))}
 
         {showLegend && <ChartLegend content={<ChartLegendContent />} />}
       </RechartBarChart>
     </ChartContainer>
+  )
+}
+
+function renderChartLabel({
+  showLabel,
+  labelPosition,
+  labelAngle,
+  data,
+  stack,
+  categories,
+  readableColumn,
+}: Pick<
+  BarChartProps,
+  | 'showLabel'
+  | 'labelPosition'
+  | 'labelAngle'
+  | 'data'
+  | 'stack'
+  | 'categories'
+  | 'readableColumn'
+  | 'labelFormatter'
+>) {
+  if (!showLabel) return null
+
+  const labelFormatter = (value: string) => {
+    if (!readableColumn) {
+      return value
+    }
+
+    for (let category of categories) {
+      const formated = data.find((row) => row[category] === value)?.[
+        readableColumn
+      ]
+
+      if (formated) {
+        return formated
+      }
+    }
+
+    return value
+  }
+
+  if (stack) {
+    return (
+      <LabelList
+        position={labelPosition || 'inside'}
+        offset={8}
+        className="fill-[--color-label]"
+        fontSize={12}
+        formatter={readableColumn ? labelFormatter : undefined}
+        angle={labelAngle}
+      />
+    )
+  }
+
+  return (
+    <LabelList
+      position={labelPosition || 'top'}
+      offset={12}
+      className="fill-foreground"
+      fontSize={12}
+      formatter={readableColumn ? labelFormatter : undefined}
+      angle={labelAngle}
+    />
   )
 }

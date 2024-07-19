@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react'
+import type { LabelPosition } from 'recharts/types/component/Label'
 
 interface BaseAnimationTimingProps {
   animationDuration?: number
@@ -10,6 +11,10 @@ type ValueFormatter = {
 }
 
 type TickFormatter = {
+  (value: string): string
+}
+
+type LabelFormatter = {
   (value: string): string
 }
 
@@ -67,15 +72,20 @@ export interface BaseChartProps
   data: any[]
   categories: string[]
   index: string
+  labelPosition?: LabelPosition
+  labelAngle?: number
   colors?: Color[]
+  colorLabel?: Color
   valueFormatter?: ValueFormatter
   tickFormatter?: TickFormatter
+  labelFormatter?: LabelFormatter
   startEndOnly?: boolean
   showXAxis?: boolean
   showYAxis?: boolean
   yAxisWidth?: number
   showTooltip?: boolean
   showLegend?: boolean
+  showLabel?: boolean
   showGridLines?: boolean
   autoMinValue?: boolean
   minValue?: number

@@ -1,6 +1,6 @@
+import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
-import { BarChart } from '../tremor/bar'
 import { type ChartProps } from './chart-props'
 
 export async function ChartReadonlyReplica({

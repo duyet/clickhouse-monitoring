@@ -1,9 +1,8 @@
 import { type ChartProps } from '@/components/charts/chart-props'
+import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
-
-import { BarChart } from '../tremor/bar'
 
 export async function ChartQueryDuration({
   title,
@@ -16,7 +15,7 @@ export async function ChartQueryDuration({
   const query = `
     SELECT ${interval}(event_time) AS event_time,
            AVG(query_duration_ms) AS query_duration_ms,
-           query_duration_ms / 1000 AS query_duration_s
+           ROUND(query_duration_ms / 1000, 1) AS query_duration_s
     FROM merge(system, '^query_log')
     WHERE type = 'QueryFinish'
           AND query_kind = 'Select'
@@ -30,7 +29,14 @@ export async function ChartQueryDuration({
       query_duration_ms: number
       query_duration_s: number
     }[]
-  >({ query })
+  >({
+    query,
+    clickhouse_settings: {
+      use_query_cache: 1,
+      query_cache_ttl: 300,
+      query_cache_nondeterministic_function_handling: 'save',
+    },
+  })
 
   return (
     <ChartCard title={title} className={className} sql={query}>
@@ -39,7 +45,8 @@ export async function ChartQueryDuration({
         data={data}
         index="event_time"
         categories={['query_duration_s']}
-        colors={['rose-200']}
+        colors={['--chart-rose-200']}
+        colorLabel="--foreground"
         stack
         showLegend={false}
         {...props}
