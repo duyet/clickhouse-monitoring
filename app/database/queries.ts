@@ -6,11 +6,10 @@ export const listDatabases = `
         engine
     FROM system.tables
   )
-
   SELECT d.name as name,
          countDistinct(t.table) as count
   FROM system.databases AS d
-  LEFT JOIN tables_from_tables AS t USING database
+  JOIN tables_from_tables AS t USING database
   WHERE d.engine != 'Memory'
   GROUP BY d.name
 `

@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { fetchDataWithCache } from '@/lib/clickhouse'
 
+import { redirect } from 'next/navigation'
 import { listDatabases } from '../queries'
 
 interface Props {
@@ -30,20 +31,20 @@ interface DatabaseCount {
 }
 
 export async function DatabaseBreadcrumb({ database }: Props) {
+  let databases: DatabaseCount[] = []
+
   try {
     // List database names and number of tables
-    const { data: databases }: { data: DatabaseCount[] } =
-      await fetchDataWithCache()({
-        query: listDatabases,
-      })
+    const data = (await fetchDataWithCache()({
+      query: listDatabases,
+      clickhouse_settings: {
+        use_query_cache: 1,
+        query_cache_system_table_handling: 'save',
+        query_cache_ttl: 300,
+      },
+    })) satisfies { data: DatabaseCount[] }
 
-    if (!databases.length) {
-      return (
-        <ErrorAlert title="Message" message="Empty" query={listDatabases} />
-      )
-    }
-
-    return <Internal current={database} databases={databases} />
+    databases = data.data
   } catch (e: any) {
     return (
       <ErrorAlert
@@ -53,6 +54,23 @@ export async function DatabaseBreadcrumb({ database }: Props) {
       />
     )
   }
+
+  if (!databases.length) {
+    return (
+      <ErrorAlert
+        title="Message"
+        message="No database found"
+        query={listDatabases}
+      />
+    )
+  }
+
+  // Current database not found in database list
+  if (!databases.find((db) => db.name === database)) {
+    redirect('/database/' + databases[0].name)
+  }
+
+  return <Internal current={database} databases={databases} />
 }
 
 export async function DatabaseBreadcrumbSkeleton({ database }: Props) {
