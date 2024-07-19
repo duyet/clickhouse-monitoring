@@ -18,6 +18,7 @@ import { RelatedTimeFormat } from './cells/related-time-format'
 
 export const formatCell = <TData extends RowData, TValue>(
   table: Table<TData>,
+  data: TData[],
   row: Row<TData>,
   value: TValue,
   columnName: string,
@@ -75,6 +76,7 @@ export const formatCell = <TData extends RowData, TValue>(
       return (
         <LinkFormat
           row={row}
+          data={data}
           value={value}
           options={columnFormatOptions as LinkProps}
         />

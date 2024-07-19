@@ -72,7 +72,7 @@ export function DataTable<TData extends RowData, TValue>({
   const configuredColumns = config.columns.map(normalizeColumnName)
 
   // Column definitions for the table
-  const columnDefs = getColumnDefs<TData, TValue>(config) as ColumnDef<
+  const columnDefs = getColumnDefs<TData, TValue>(config, data) as ColumnDef<
     TData,
     TValue
   >[]
