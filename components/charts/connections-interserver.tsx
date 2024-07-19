@@ -1,4 +1,4 @@
-import { ChartCard } from '@/components/chart-card'
+import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 import { BarChart } from '../tremor/bar'

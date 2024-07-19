@@ -3,7 +3,7 @@ import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse'
 import type { RowData } from '@tanstack/react-table'
 
-import type { QueryConfig } from '@/lib/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 
 interface TableProps {
   title: string

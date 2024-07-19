@@ -1,4 +1,4 @@
-import { ChartCard } from '@/components/chart-card'
+import { ChartCard } from '@/components/generic-charts/chart-card'
 import { GithubHeatmapChart } from '@/components/github-heatmap-chart'
 import { AreaChart } from '@/components/tremor/area'
 import { BarChart } from '@/components/tremor/bar'

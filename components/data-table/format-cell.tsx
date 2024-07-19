@@ -2,7 +2,7 @@ import type { Row, RowData, Table } from '@tanstack/react-table'
 import { type LinkProps } from 'next/link'
 
 import { formatReadableQuantity } from '@/lib/format-readable'
-import { ColumnFormat, ColumnFormatOptions } from '@/lib/types/column-format'
+import { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
 
 import { ActionFormat } from './cells/action-format'
 import { type Action } from './cells/actions/types'

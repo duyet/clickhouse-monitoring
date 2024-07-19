@@ -27,8 +27,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Toaster } from '@/components/ui/toaster'
-import { type QueryConfig } from '@/lib/types/query-config'
 import { uniq } from '@/lib/utils'
+import { type QueryConfig } from '@/types/query-config'
 
 import { ColumnVisibilityButton } from './buttons/column-visibility'
 import { ShowSQLButton } from './buttons/show-sql'

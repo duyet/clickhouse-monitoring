@@ -7,8 +7,8 @@ import type { ColumnDef, Row, RowData, Table } from '@tanstack/react-table'
 
 import { formatCell } from '@/components/data-table/format-cell'
 import { Button } from '@/components/ui/button'
-import { ColumnFormat, ColumnFormatOptions } from '@/lib/types/column-format'
-import { type QueryConfig } from '@/lib/types/query-config'
+import { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
+import { type QueryConfig } from '@/types/query-config'
 
 export type ColumnType = { [key: string]: string }
 

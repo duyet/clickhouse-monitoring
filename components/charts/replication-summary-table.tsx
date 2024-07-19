@@ -1,5 +1,5 @@
-import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
+import { ChartCard } from '@/components/generic-charts/chart-card'
 import {
   Table,
   TableBody,
