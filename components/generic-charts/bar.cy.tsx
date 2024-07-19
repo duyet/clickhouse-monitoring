@@ -25,7 +25,7 @@ describe('<BarChart />', () => {
     },
   ]
 
-  it('renders default', () => {
+  it('renders with default props', () => {
     cy.mount(<BarChart data={data} categories={['A', 'B', 'C']} index="date" />)
     cy.screenshot()
 
@@ -47,9 +47,16 @@ describe('<BarChart />', () => {
 
     // Display tooltip of the 2nd data
     cy.get('div').should('contain', '2025-02-01')
+
+    // Show label
+    cy.get('@chart')
+      .should('be.visible')
+      .and('contain', '1000')
+      .and('contain', '2000')
+      .and('contain', '501')
   })
 
-  it('renders with readableColumn="readable_A"', () => {
+  it('renders with readableColumn', () => {
     cy.mount(
       <BarChart
         data={data}
@@ -63,11 +70,20 @@ describe('<BarChart />', () => {
     cy.get('svg:first').as('chart').should('be.visible')
 
     // Display data from readable_A instead of A
-    cy.get('@chart').should('contain', 'one hundred')
-    cy.get('@chart').should('contain', 'six hundred and forty one')
+    cy.get('@chart')
+      .children()
+      .should('contain', 'one')
+      .and('contain', 'hundred')
+
+    cy.get('@chart')
+      .children()
+      .should('contain', 'six')
+      .and('contain', 'hundred')
+      .and('contain', 'forty')
+      .and('contain', 'one')
   })
 
-  it('renders showLegend={false}', () => {
+  it('renders with showLegend={false}', () => {
     cy.mount(
       <BarChart
         data={data}
@@ -82,6 +98,23 @@ describe('<BarChart />', () => {
 
     // No legend
     cy.get('.recharts-legend-wrapper').should('not.exist')
+  })
+
+  it('renders with showLabel={false}', () => {
+    cy.mount(
+      <BarChart
+        data={data}
+        categories={['A', 'B', 'C']}
+        index="date"
+        showLabel={false}
+      />
+    )
+
+    // Render as svg
+    cy.get('svg:first').as('chart').should('be.visible')
+
+    // No label
+    cy.get('.recharts-label-list').should('not.exist')
   })
 
   it('renders tickFormatter={(value) => value.slice(0, 4)}', () => {
