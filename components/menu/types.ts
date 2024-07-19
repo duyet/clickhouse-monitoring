@@ -1,5 +1,5 @@
 import type { CountBadgeProps } from '@/components/menu/count-badge'
-import type { Icon } from '@/lib/types/icon'
+import type { Icon } from '@/types/icon'
 
 export interface MenuItem {
   title: string

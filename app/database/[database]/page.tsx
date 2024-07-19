@@ -1,7 +1,7 @@
 import { DataTable } from '@/components/data-table/data-table'
 import { fetchData } from '@/lib/clickhouse'
-import { ColumnFormat } from '@/lib/types/column-format'
-import { type QueryConfig } from '@/lib/types/query-config'
+import { ColumnFormat } from '@/types/column-format'
+import { type QueryConfig } from '@/types/query-config'
 import { type RowData } from '@tanstack/react-table'
 
 import { listTables } from '../../database/queries'

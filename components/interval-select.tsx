@@ -17,8 +17,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { ClickHouseInterval } from '@/lib/types/clickhouse-interval'
 import { cn } from '@/lib/utils'
+import { ClickHouseInterval } from '@/types/clickhouse-interval'
 
 const defaultIntervals: { value: ClickHouseInterval; label: string }[] = [
   {

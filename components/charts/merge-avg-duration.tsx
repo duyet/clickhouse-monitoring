@@ -1,8 +1,8 @@
 import { type ChartProps } from '@/components/charts/chart-props'
-import { BarChart } from '@/components/tremor/bar'
+import { BarChart } from '@/components/generic-charts/bar'
 import { fetchData } from '@/lib/clickhouse'
 
-import { ChartCard } from '../chart-card'
+import { ChartCard } from '../generic-charts/chart-card'
 
 export async function ChartMergeAvgDuration({
   title,
@@ -40,6 +40,7 @@ export async function ChartMergeAvgDuration({
         categories={['avg_duration_ms']}
         readableColumn="readable_avg_duration_ms"
         className={className}
+        showLabel={false}
       />
     </ChartCard>
   )

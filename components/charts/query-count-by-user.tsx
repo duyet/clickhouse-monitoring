@@ -1,6 +1,6 @@
-import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
-import { BarChart } from '@/components/tremor/bar'
+import { BarChart } from '@/components/generic-charts/bar'
+import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartQueryCountByUser({
@@ -58,18 +58,6 @@ export async function ChartQueryCountByUser({
         index="event_time"
         categories={users}
         stack
-        colors={[
-          'indigo-300',
-          'rose-200',
-          '#ffcc33',
-          'green-300',
-          'blue-300',
-          'purple-300',
-          'pink-300',
-          'yellow-300',
-          'red-300',
-          'gray-300',
-        ]}
         {...props}
       />
     </ChartCard>

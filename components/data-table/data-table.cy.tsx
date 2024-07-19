@@ -1,4 +1,4 @@
-import { type QueryConfig } from '@/lib/types/query-config'
+import { type QueryConfig } from '@/types/query-config'
 
 import { DataTable } from './data-table'
 

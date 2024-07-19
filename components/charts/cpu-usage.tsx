@@ -2,7 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/tremor/area'
 import { fetchData } from '@/lib/clickhouse'
 
-import { ChartCard } from '../chart-card'
+import { ChartCard } from '../generic-charts/chart-card'
 
 export async function ChartCPUUsage({
   title,

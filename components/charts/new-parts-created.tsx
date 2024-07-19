@@ -1,6 +1,6 @@
-import { ChartCard } from '@/components/chart-card'
 import { type ChartProps } from '@/components/charts/chart-props'
-import { BarChart } from '@/components/tremor/bar'
+import { BarChart } from '@/components/generic-charts/bar'
+import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartNewPartsCreated({

@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react'
 
-import { type ClickHouseInterval } from '@/lib/types/clickhouse-interval'
+import { type ClickHouseInterval } from '@/types/clickhouse-interval'
 
 export interface ContextValue {
   interval: ClickHouseInterval

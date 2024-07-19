@@ -1,10 +1,7 @@
 import type { ChartProps } from '@/components/charts/chart-props'
-import type {
-  ColumnFormat,
-  ColumnFormatWithArgs,
-} from '@/lib/types/column-format'
-import type { PartialBy } from '@/lib/types/generic'
-import type { Icon } from '@/lib/types/icon'
+import type { ColumnFormat, ColumnFormatWithArgs } from '@/types/column-format'
+import type { PartialBy } from '@/types/generic'
+import type { Icon } from '@/types/icon'
 import type { ClickHouseSettings } from '@clickhouse/client'
 
 export interface QueryConfig {

@@ -1,7 +1,7 @@
 'use client'
 
-import type { QueryConfig } from '@/lib/types/query-config'
 import { cn } from '@/lib/utils'
+import type { QueryConfig } from '@/types/query-config'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 
 interface DataTableToolbarProps {

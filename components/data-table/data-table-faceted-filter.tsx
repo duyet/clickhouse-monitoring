@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { Button } from '@/components/ui/button'
-import type { QueryConfig } from '@/lib/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 import Link from 'next/link'
 import { redirect, usePathname, useSearchParams } from 'next/navigation'
 
