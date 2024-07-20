@@ -39,7 +39,7 @@ export const distributedDdlQueueConfig: QueryConfig = {
   ],
   columnFormats: {
     status: ColumnFormat.ColoredBadge,
-    query: ColumnFormat.CodeToggle,
-    settings: ColumnFormat.CodeToggle,
+    query: ColumnFormat.CodeDialog,
+    settings: ColumnFormat.CodeDialog,
   },
 }

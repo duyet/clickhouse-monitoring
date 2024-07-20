@@ -55,7 +55,14 @@ export const runningQueriesConfig: QueryConfig = {
     'query_id',
   ],
   columnFormats: {
-    query: ColumnFormat.CodeToggle,
+    query: [
+      ColumnFormat.CodeDialog,
+      {
+        max_truncate: 70,
+        hide_query_comment: true,
+        dialog_title: 'Running Query',
+      },
+    ],
     user: ColumnFormat.ColoredBadge,
     estimated_remaining_time: ColumnFormat.Duration,
     query_id: [

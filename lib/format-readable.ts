@@ -60,3 +60,36 @@ export function formatReadableSecondDuration(seconds: number) {
   const s = seconds % 60
   return `${m}m ${s}s`
 }
+
+/**
+ * Format a query string.
+ */
+export function formatQuery({
+  query,
+  comment_remove = false,
+  truncate,
+  trim = true,
+}: {
+  query: string
+  comment_remove?: boolean
+  truncate?: number
+  trim?: boolean
+  remove_extra_whitespace?: boolean
+}) {
+  let formattedQuery = comment_remove
+    ? query.replace(/\/\*[\s\S]*?\*\//g, '')
+    : query
+
+  if (trim) {
+    formattedQuery = formattedQuery
+      .replace(/\n/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
+  if (truncate && formattedQuery.length > truncate) {
+    formattedQuery = formattedQuery.slice(0, truncate) + '...'
+  }
+
+  return formattedQuery
+}

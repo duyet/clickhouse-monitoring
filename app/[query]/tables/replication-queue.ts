@@ -45,8 +45,8 @@ export const replicationQueueConfig: QueryConfig = {
     is_detach: ColumnFormat.Boolean,
     is_currently_executing: ColumnFormat.Boolean,
     required_quorum: ColumnFormat.Boolean,
-    last_exception: ColumnFormat.CodeToggle,
-    parts_to_merge: ColumnFormat.CodeToggle,
+    last_exception: ColumnFormat.CodeDialog,
+    parts_to_merge: ColumnFormat.CodeDialog,
   },
   relatedCharts: [
     [

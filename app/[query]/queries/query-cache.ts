@@ -30,7 +30,7 @@ export const queryCacheConfig: QueryConfig = {
     'key_hash',
   ],
   columnFormats: {
-    query: ColumnFormat.CodeToggle,
+    query: ColumnFormat.CodeDialog,
     readable_result_size: ColumnFormat.BackgroundBar,
     stale: ColumnFormat.Boolean,
     shared: ColumnFormat.Boolean,

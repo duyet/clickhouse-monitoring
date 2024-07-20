@@ -1,6 +1,7 @@
 import { LinkProps } from 'next/link'
 
 import { type Action } from '@/components/data-table/cells/actions/types'
+import { type CodeDialogOptions } from '@/components/data-table/cells/code-dialog-format'
 import { type HoverCardOptions } from '@/components/data-table/cells/hover-card-format'
 
 export enum ColumnFormat {
@@ -9,6 +10,7 @@ export enum ColumnFormat {
   RelatedTime = 'related-time',
   NumberShort = 'number-short',
   CodeToggle = 'code-toggle',
+  CodeDialog = 'code-dialog',
   HoverCard = 'hover-card',
   Duration = 'duration',
   Boolean = 'boolean',
@@ -24,6 +26,7 @@ export type ColumnFormatWithArgs =
   | [ColumnFormat.Action, Action[]]
   | [ColumnFormat.Link, LinkProps]
   | [ColumnFormat.HoverCard, HoverCardOptions]
+  | [ColumnFormat.CodeDialog, CodeDialogOptions]
 
 // Union of all possible format options
 export type ColumnFormatOptions = ColumnFormatWithArgs[1]

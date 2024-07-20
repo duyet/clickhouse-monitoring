@@ -9,6 +9,7 @@ import { type Action } from './cells/actions/types'
 import { BackgroundBarFormat } from './cells/background-bar-format'
 import { BadgeFormat } from './cells/badge-format'
 import { BooleanFormat } from './cells/boolean-format'
+import { CodeDialogFormat, CodeDialogOptions } from './cells/code-dialog-format'
 import { CodeToggleFormat } from './cells/code-toggle-format'
 import { ColoredBadgeFormat } from './cells/colored-badge-format'
 import { DurationFormat } from './cells/duration-format'
@@ -50,6 +51,15 @@ export const formatCell = <TData extends RowData, TValue>(
 
     case ColumnFormat.CodeToggle:
       return <CodeToggleFormat row={row} value={value} />
+
+    case ColumnFormat.CodeDialog:
+      return (
+        <CodeDialogFormat
+          row={row}
+          value={value}
+          options={columnFormatOptions as CodeDialogOptions}
+        />
+      )
 
     case ColumnFormat.RelatedTime:
       return <RelatedTimeFormat value={value} />
