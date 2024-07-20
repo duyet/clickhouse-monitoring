@@ -102,4 +102,9 @@ describe('formatReadableSecondDuration', () => {
     expect(formatReadableSecondDuration(3600)).toBe('60m 0s')
     expect(formatReadableSecondDuration(7200)).toBe('120m 0s')
   })
+
+  it('should handle negative values by returning 0s', () => {
+    expect(formatReadableSecondDuration(-30)).toBe('0s')
+    expect(formatReadableSecondDuration(-3600)).toBe('0s')
+  })
 })
