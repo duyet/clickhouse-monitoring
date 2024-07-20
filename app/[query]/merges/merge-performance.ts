@@ -9,7 +9,7 @@ export const mergePerformanceConfig: QueryConfig = {
           event_date,
           merge_reason,
 
-          -- Merge count
+          -- Merge Count
           count() AS count,
 
           -- Merge Duration

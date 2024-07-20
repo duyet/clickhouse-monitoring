@@ -105,6 +105,7 @@ async function killHangingQueries(
     })
 
     const killQueryResp = await resp.json<KillQueryResponse>()
+
     console.log(
       '[/api/clean] queries found:',
       killQueryResp.data.map((row) => row.query_id).join(', ')
