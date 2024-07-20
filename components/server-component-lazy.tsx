@@ -27,10 +27,7 @@ export function ServerComponentLazy({
 
   if (onError === null) {
     fallbackRender = () => null
-  } else if (
-    typeof onError === 'string' ||
-    typeof onError === 'number'
-  ) {
+  } else if (typeof onError === 'string' || typeof onError === 'number') {
     fallbackRender = () => <div>{onError}</div>
   } else {
     fallbackRender = defaultFallbackRender

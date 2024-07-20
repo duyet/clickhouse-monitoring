@@ -15,8 +15,8 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { cn } from '@/lib/utils'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
+import { cn } from '@/lib/utils'
 
 interface ReloadButtonProps {
   className?: string
