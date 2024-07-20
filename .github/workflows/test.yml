@@ -27,10 +27,11 @@ jobs:
       matrix:
         containers: [1]
         browser: [chrome, firefox, edge]
+        clickhouse: [24.5, 24.6]
 
     services:
       clickhouse:
-        image: ghcr.io/duyet/docker-images:clickhouse_testing
+        image: ghcr.io/duyet/docker-images:clickhouse_${{ matrix.clickhouse}}
         ports:
           - 8123:8123
           - 9000:9000
@@ -84,10 +85,11 @@ jobs:
       matrix:
         node: [20, 21]
         browser: [chrome, firefox]
+        clickhouse: [24.5, 24.6]
 
     services:
       clickhouse:
-        image: ghcr.io/duyet/docker-images:clickhouse_testing
+        image: ghcr.io/duyet/docker-images:clickhouse_${{ matrix.clickhouse }}
         ports:
           - 8123:8123
           - 9000:9000
