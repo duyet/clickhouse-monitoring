@@ -33,6 +33,14 @@ describe('<ServerComponentLazy />', () => {
     )
   })
 
+  it('renders <div /> with null onError', () => {
+    cy.mount(
+      <ServerComponentLazy onError={null}>
+        <div />
+      </ServerComponentLazy>
+    )
+  })
+
   it('renders <div /> with fallback', () => {
     cy.mount(
       <ServerComponentLazy fallback={<div>loading ...</div>}>

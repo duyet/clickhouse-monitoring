@@ -15,7 +15,7 @@ function defaultFallbackRender({ error, resetErrorBoundary }: FallbackProps) {
 export type ServerComponentLazyProps = {
   children: ReactNode
   fallback?: ReactNode
-  onError?: null | string | number | ((props: FallbackProps) => ReactNode)
+  onError?: null | ReactNode | ((props: FallbackProps) => ReactNode)
 }
 
 export function ServerComponentLazy({
