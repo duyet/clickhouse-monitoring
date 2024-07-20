@@ -17,6 +17,7 @@ permissions:
   contents: read
   id-token: write
 
+
 jobs:
   build:
     uses: ./.github/workflows/base.yml
@@ -30,15 +31,17 @@ jobs:
 
   build-docker:
     runs-on: ubuntu-latest
+    
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
+
     permissions:
       contents: read
       packages: write
     services:
       clickhouse:
-        image: ghcr.io/duyet/docker-images:clickhouse_testing
+        image: ghcr.io/duyet/docker-images:clickhouse_24.6
         ports:
           - 8123:8123
           - 9000:9000
