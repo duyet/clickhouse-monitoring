@@ -191,4 +191,40 @@ describe('<BarChart />', () => {
     // Should have two columns
     cy.get('.recharts-bar-rectangles').should('have.length', 2)
   })
+
+  it('renders horizontal', () => {
+    cy.mount(
+      <BarChart data={data} categories={['A', 'B']} index="date" horizontal />
+    )
+    cy.screenshot()
+
+    // Render as svg
+    cy.get('svg:first').as('chart').should('be.visible')
+  })
+
+  it('renders horizontal single category', () => {
+    cy.mount(
+      <BarChart data={data} categories={['A']} index="date" horizontal />
+    )
+    cy.screenshot()
+
+    // Render as svg
+    cy.get('svg:first').as('chart').should('be.visible')
+  })
+
+  it('renders horizontal with stack', () => {
+    cy.mount(
+      <BarChart
+        data={data}
+        categories={['A', 'B']}
+        index="date"
+        horizontal
+        stack
+      />
+    )
+    cy.screenshot()
+
+    // Render as svg
+    cy.get('svg:first').as('chart').should('be.visible')
+  })
 })

@@ -24,24 +24,32 @@ export function ChartCard({ title, className, sql, children }: ChartCardProps) {
         <CardHeader className="p-2">
           <CardDescription className="group flex flex-row items-center justify-between">
             {title}
-            <DialogSQL
-              button={
-                <Button
-                  className="group-hover:border-1 border-0"
-                  size="sm"
-                  variant="ghost"
-                >
-                  <CodeIcon className="size-3" />
-                </Button>
-              }
-              sql={sql}
-              description="SQL Query for this chart"
-            />
+            <CardToolbar sql={sql} />
           </CardDescription>
         </CardHeader>
       ) : null}
 
       <CardContent className="p-2">{children}</CardContent>
     </Card>
+  )
+}
+
+function CardToolbar({ sql }: Pick<ChartCardProps, 'sql'>) {
+  return (
+    <div className="flex flex-row gap-1">
+      <DialogSQL
+        button={
+          <Button
+            className="group-hover:border-1 border-0"
+            size="sm"
+            variant="ghost"
+          >
+            <CodeIcon className="size-3" />
+          </Button>
+        }
+        sql={sql}
+        description="SQL Query for this chart"
+      />
+    </div>
   )
 }
