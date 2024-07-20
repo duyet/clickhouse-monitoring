@@ -26,7 +26,7 @@ interface Props {
 export async function ClusterListBreadcrumb({ cluster }: Props) {
   try {
     // Lists cluster names.
-    const { data } = await fetchDataWithCache()<Row[]>({ query: config.sql })
+    const { data } = await fetchDataWithCache<Row[]>({ query: config.sql })
 
     if (!data.length) {
       return (

@@ -22,7 +22,7 @@ export default async function MergeTree({
   const engine = await engineType(database, table)
   if (engine.includes('MergeTree') === false) return <></>
 
-  const { data: columns } = await fetchDataWithCache()<Row[]>({
+  const { data: columns } = await fetchDataWithCache<Row[]>({
     query: config.sql,
     query_params: {
       database,
@@ -52,7 +52,7 @@ async function Description({
   table: string
 }) {
   try {
-    const { data } = await fetchDataWithCache()<{ comment: string }[]>({
+    const { data } = await fetchDataWithCache<{ comment: string }[]>({
       query: `
           SELECT comment
             FROM system.tables

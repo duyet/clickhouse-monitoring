@@ -35,7 +35,7 @@ export async function DatabaseBreadcrumb({ database }: Props) {
 
   try {
     // List database names and number of tables
-    const data = (await fetchDataWithCache()({
+    const data = (await fetchDataWithCache({
       query: listDatabases,
       clickhouse_settings: {
         use_query_cache: 1,

@@ -24,7 +24,7 @@ export async function SampleData({
 }: SampleDataProps) {
   let data: { data: { [key: string]: string }[] } = { data: [] }
   try {
-    data = await fetchDataWithCache()({
+    data = await fetchDataWithCache({
       query: `SELECT *
        FROM ${database}.${table}
        LIMIT ${limit}`,
