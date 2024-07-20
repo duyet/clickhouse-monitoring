@@ -22,10 +22,10 @@ export function ChartCard({ title, className, sql, children }: ChartCardProps) {
     <Card className={cn('rounded-md', className)}>
       {title ? (
         <CardHeader className="p-2">
-          <CardDescription className="group flex flex-row items-center justify-between">
-            {title}
+          <div className="group flex flex-row items-center justify-between">
+            <CardDescription>{title}</CardDescription>
             <CardToolbar sql={sql} />
-          </CardDescription>
+          </div>
         </CardHeader>
       ) : null}
 

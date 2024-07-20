@@ -41,7 +41,7 @@ export async function ChartQueryMemory({
         readableColumn="readable_memory_usage"
         stack
         showLegend={false}
-        colors={['indigo-300']}
+        colors={['--chart-indigo-300']}
         {...props}
       />
     </ChartCard>
