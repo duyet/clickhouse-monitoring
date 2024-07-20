@@ -1,10 +1,10 @@
 import { ComponentType } from 'react'
 
 import { type ChartProps } from '@/components/charts/chart-props'
+import { ServerComponentLazy } from '@/components/server-component-lazy'
+import { ChartSkeleton } from '@/components/skeleton'
 import { cn } from '@/lib/utils'
 import { type QueryConfig } from '@/types/query-config'
-
-import { ServerComponentLazy } from './server-component-lazy'
 
 interface RelatedChartsProps {
   relatedCharts: QueryConfig['relatedCharts']
@@ -83,7 +83,7 @@ export async function RelatedCharts({
         }
 
         return (
-          <ServerComponentLazy key={i}>
+          <ServerComponentLazy key={i} fallback={<ChartSkeleton />}>
             <Chart
               className={cn('w-full p-0 shadow-none', className)}
               chartClassName="h-44"

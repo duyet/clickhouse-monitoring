@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AppProvider>
+        <AppProvider reloadIntervalSecond={120}>
           <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
             <Header />
             {children}

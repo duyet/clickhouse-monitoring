@@ -42,3 +42,7 @@ cypress/screenshots
 
 # Turborepo
 .turbo
+
+# IDE
+.idea
+.vscode

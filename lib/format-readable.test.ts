@@ -1,5 +1,9 @@
 import { expect } from '@jest/globals'
-import { formatReadableQuantity, formatReadableSize } from './format-readable'
+import {
+  formatReadableQuantity,
+  formatReadableSecondDuration,
+  formatReadableSize,
+} from './format-readable'
 
 describe('formatReadableSize', () => {
   it('should format 0 bytes correctly', () => {
@@ -77,5 +81,25 @@ describe('formatReadableQuantity', () => {
   it('should handle negative numbers in long format correctly', () => {
     const result = formatReadableQuantity(-123456789, 'long')
     expect(result).toBe('-123,456,789')
+  })
+})
+
+describe('formatReadableSecondDuration', () => {
+  it('should format seconds correctly when less than 60 seconds', () => {
+    expect(formatReadableSecondDuration(30)).toBe('30s')
+    expect(formatReadableSecondDuration(0)).toBe('0s')
+    expect(formatReadableSecondDuration(59)).toBe('59s')
+  })
+
+  it('should format minutes and seconds correctly when 60 seconds or more', () => {
+    expect(formatReadableSecondDuration(60)).toBe('1m 0s')
+    expect(formatReadableSecondDuration(65)).toBe('1m 5s')
+    expect(formatReadableSecondDuration(120)).toBe('2m 0s')
+    expect(formatReadableSecondDuration(3599)).toBe('59m 59s')
+  })
+
+  it('should handle large durations correctly', () => {
+    expect(formatReadableSecondDuration(3600)).toBe('60m 0s')
+    expect(formatReadableSecondDuration(7200)).toBe('120m 0s')
   })
 })

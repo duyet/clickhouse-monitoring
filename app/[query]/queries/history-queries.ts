@@ -15,8 +15,10 @@ export const historyQueriesConfig: QueryConfig = {
           user,
           read_rows,
           formatReadableQuantity(read_rows) AS readable_read_rows,
+          round(100 * read_rows / MAX(read_rows) OVER ()) AS pct_read_rows,
           written_rows,
           formatReadableQuantity(written_rows) AS readable_written_rows,
+          round(100 * written_rows / MAX(written_rows) OVER ()) AS pct_written_rows,
           result_rows,
           formatReadableQuantity(result_rows) AS readable_result_rows,
           memory_usage,
@@ -50,6 +52,8 @@ export const historyQueriesConfig: QueryConfig = {
     readable_query: ColumnFormat.Code,
     query: ColumnFormat.CodeToggle,
     event_time: ColumnFormat.RelatedTime,
+    readable_read_rows: ColumnFormat.BackgroundBar,
+    readable_written_rows: ColumnFormat.BackgroundBar,
   },
 
   relatedCharts: [
