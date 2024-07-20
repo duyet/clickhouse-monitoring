@@ -16,7 +16,9 @@ import {
   LabelList,
   BarChart as RechartBarChart,
   XAxis,
+  type LabelListProps,
 } from 'recharts'
+import { type ViewBox } from 'recharts/types/util/types'
 
 export function BarChart({
   data,
@@ -110,8 +112,10 @@ export function BarChart({
             fill={`var(--color-${category})`}
             stackId={stack ? 'a' : undefined}
             radius={getRadius(index, categories.length, stack)}
+            maxBarSize={60}
           >
             {renderChartLabel({
+              dataKey: category,
               showLabel,
               labelPosition,
               labelAngle,
@@ -129,7 +133,14 @@ export function BarChart({
   )
 }
 
-function renderChartLabel({
+interface Data {
+  value?: number | string | Array<number | string>
+  payload?: any
+  parentViewBox?: ViewBox
+}
+
+function renderChartLabel<T extends Data>({
+  dataKey,
   showLabel,
   labelPosition,
   labelAngle,
@@ -147,7 +158,8 @@ function renderChartLabel({
   | 'categories'
   | 'readableColumn'
   | 'labelFormatter'
->) {
+> &
+  Pick<LabelListProps<T>, 'dataKey'>) {
   if (!showLabel) return null
 
   const labelFormatter = (value: string) => {
@@ -171,6 +183,7 @@ function renderChartLabel({
   if (stack) {
     return (
       <LabelList
+        dataKey={dataKey}
         position={labelPosition || 'inside'}
         offset={8}
         className="fill-[--color-label]"
@@ -183,6 +196,7 @@ function renderChartLabel({
 
   return (
     <LabelList
+      dataKey={dataKey}
       position={labelPosition || 'top'}
       offset={12}
       className="fill-foreground"

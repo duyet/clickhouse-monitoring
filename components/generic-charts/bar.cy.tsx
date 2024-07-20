@@ -65,6 +65,7 @@ describe('<BarChart />', () => {
         readableColumn="readable_A"
       />
     )
+    cy.screenshot()
 
     // Render as svg
     cy.get('svg:first').as('chart').should('be.visible')
@@ -92,6 +93,7 @@ describe('<BarChart />', () => {
         showLegend={false}
       />
     )
+    cy.screenshot()
 
     // Render as svg
     cy.get('svg:first').as('chart').should('be.visible')
@@ -109,6 +111,7 @@ describe('<BarChart />', () => {
         showLabel={false}
       />
     )
+    cy.screenshot()
 
     // Render as svg
     cy.get('svg:first').as('chart').should('be.visible')
@@ -126,6 +129,7 @@ describe('<BarChart />', () => {
         tickFormatter={(value) => '--' + value.slice(0, 4)}
       />
     )
+    cy.screenshot()
 
     // Render as svg
     cy.get('svg:first').as('chart').should('be.visible')
@@ -138,8 +142,53 @@ describe('<BarChart />', () => {
     cy.mount(
       <BarChart data={data} categories={['A', 'B', 'C']} index="date" stack />
     )
+    cy.screenshot()
 
     // Render as svg
     cy.get('svg:first').as('chart').should('be.visible')
+  })
+
+  it('renders with single column', () => {
+    const single_column = data[0]
+
+    cy.mount(
+      <BarChart data={[single_column]} categories={['A']} index="date" />
+    )
+    cy.screenshot()
+
+    // Render as svg
+    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-bar-rectangles').should('have.length', 1)
+  })
+
+  it('renders with incomplete data', () => {
+    const incomplete_data = [
+      {
+        date: '2025-01-01',
+        A: 1000,
+        // Missing B
+      },
+      {
+        date: '2025-02-01',
+        A: 6411,
+        B: 1241,
+      },
+    ]
+
+    cy.mount(
+      <BarChart
+        data={incomplete_data}
+        categories={['A', 'B']}
+        index="date"
+        stack
+      />
+    )
+    cy.screenshot()
+
+    // Render as svg
+    cy.get('svg:first').as('chart').should('be.visible')
+
+    // Should have two columns
+    cy.get('.recharts-bar-rectangles').should('have.length', 2)
   })
 })
