@@ -16,7 +16,10 @@ import {
   LabelList,
   BarChart as RechartBarChart,
   XAxis,
+  YAxis,
+  type LabelListProps,
 } from 'recharts'
+import { type ViewBox } from 'recharts/types/util/types'
 
 export function BarChart({
   data,
@@ -28,6 +31,7 @@ export function BarChart({
   showLegend = true,
   showLabel = true,
   stack = false,
+  horizontal = false,
   colors,
   colorLabel,
   tickFormatter,
@@ -53,11 +57,15 @@ export function BarChart({
     } as ChartConfig
   )
 
-  const getRadius = (
-    index: number,
-    length: number,
-    stack: boolean
-  ): number | [number, number, number, number] => {
+  const getRadius = ({
+    index,
+    categories,
+    stack,
+    horizontal,
+  }: Pick<BarChartProps, 'categories' | 'horizontal' | 'stack'> & {
+    index: number
+  }): number | [number, number, number, number] => {
+    const length = categories.length
     const radius = 6
 
     if (!stack) {
@@ -69,11 +77,19 @@ export function BarChart({
     }
 
     if (index === 0) {
-      return [0, 0, radius, radius]
+      if (horizontal) {
+        return [radius, 0, 0, radius]
+      } else {
+        return [0, 0, radius, radius]
+      }
     }
 
     if (index === length - 1) {
-      return [radius, radius, 0, 0]
+      if (horizontal) {
+        return [0, radius, radius, 0]
+      } else {
+        return [radius, radius, 0, 0]
+      }
     }
 
     return [0, 0, 0, 0]
@@ -87,19 +103,35 @@ export function BarChart({
       <RechartBarChart
         accessibilityLayer
         data={data}
+        layout={horizontal ? 'vertical' : 'horizontal'}
         margin={{
           top: 5,
         }}
       >
-        <CartesianGrid vertical={false} />
+        <CartesianGrid vertical={horizontal} horizontal={!horizontal} />
 
-        <XAxis
-          dataKey={index}
-          tickLine={false}
-          tickMargin={10}
-          axisLine={false}
-          tickFormatter={tickFormatter}
-        />
+        {horizontal ? (
+          <>
+            <XAxis dataKey={categories[0]} type="number" hide />
+            <YAxis
+              dataKey={index}
+              type="category"
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={tickFormatter}
+            />
+          </>
+        ) : (
+          <>
+            <XAxis
+              dataKey={index}
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={tickFormatter}
+            />
+          </>
+        )}
 
         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
 
@@ -107,11 +139,15 @@ export function BarChart({
           <Bar
             key={category}
             dataKey={category}
+            layout={horizontal ? 'vertical' : 'horizontal'}
             fill={`var(--color-${category})`}
             stackId={stack ? 'a' : undefined}
-            radius={getRadius(index, categories.length, stack)}
+            radius={getRadius({ index, categories, stack, horizontal })}
+            maxBarSize={120}
+            minPointSize={3}
           >
             {renderChartLabel({
+              dataKey: category,
               showLabel,
               labelPosition,
               labelAngle,
@@ -119,6 +155,7 @@ export function BarChart({
               data,
               categories,
               readableColumn,
+              horizontal,
             })}
           </Bar>
         ))}
@@ -129,7 +166,14 @@ export function BarChart({
   )
 }
 
-function renderChartLabel({
+interface Data {
+  value?: number | string | Array<number | string>
+  payload?: any
+  parentViewBox?: ViewBox
+}
+
+function renderChartLabel<T extends Data>({
+  dataKey,
   showLabel,
   labelPosition,
   labelAngle,
@@ -137,6 +181,7 @@ function renderChartLabel({
   stack,
   categories,
   readableColumn,
+  horizontal,
 }: Pick<
   BarChartProps,
   | 'showLabel'
@@ -147,7 +192,9 @@ function renderChartLabel({
   | 'categories'
   | 'readableColumn'
   | 'labelFormatter'
->) {
+  | 'horizontal'
+> &
+  Pick<LabelListProps<T>, 'dataKey'>) {
   if (!showLabel) return null
 
   const labelFormatter = (value: string) => {
@@ -171,7 +218,8 @@ function renderChartLabel({
   if (stack) {
     return (
       <LabelList
-        position={labelPosition || 'inside'}
+        dataKey={dataKey}
+        position={labelPosition || (horizontal ? 'insideLeft' : 'inside')}
         offset={8}
         className="fill-[--color-label]"
         fontSize={12}
@@ -183,8 +231,9 @@ function renderChartLabel({
 
   return (
     <LabelList
-      position={labelPosition || 'top'}
-      offset={12}
+      dataKey={dataKey}
+      position={labelPosition || (horizontal ? 'right' : 'top')}
+      offset={8}
       className="fill-foreground"
       fontSize={12}
       formatter={readableColumn ? labelFormatter : undefined}

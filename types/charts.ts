@@ -111,4 +111,5 @@ export interface BarChartProps extends BaseChartProps {
   relative?: boolean
   barCategoryGap?: string | number
   readableColumn?: string
+  horizontal?: boolean
 }

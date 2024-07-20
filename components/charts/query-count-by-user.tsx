@@ -19,7 +19,9 @@ export async function ChartQueryCountByUser({
     WHERE type = 'QueryFinish'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1, 2
-    ORDER BY 1 ASC, 3 DESC
+    ORDER BY
+      1 ASC WITH FILL STEP toIntervalDay(1),
+      3 DESC
   `
   const { data: raw } = await fetchData<
     {
