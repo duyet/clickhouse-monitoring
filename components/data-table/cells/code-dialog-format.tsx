@@ -16,7 +16,6 @@ export type CodeDialogOptions = {
 }
 
 interface CodeDialogFormatProps {
-  row: any
   value: any
   options?: CodeDialogOptions
 }
@@ -26,21 +25,31 @@ const CODE_TRUNCATE_LENGTH = 50
 export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
   const truncate_length = options?.max_truncate || CODE_TRUNCATE_LENGTH
 
-  if (value.length < truncate_length) {
-    return <code>{value}</code>
-  }
-
-  let code = formatQuery({
+  let formatted = formatQuery({
     query: value,
     comment_remove: options?.hide_query_comment,
     truncate: truncate_length,
   })
 
+  if (formatted.length < truncate_length) {
+    return <code>{formatted}</code>
+  }
+
+  // If the code is not truncated, show the full code
+  if (!formatted.endsWith('...')) {
+    return <code>{formatted}</code>
+  }
+
   return (
     <Dialog>
       <DialogTrigger className="flex flex-row items-center gap-1">
-        <code className="truncate break-words font-normal">{code}</code>
-        <SizeIcon className="size-4" />
+        <code
+          className="truncate break-words font-normal"
+          aria-description="shorten-code"
+        >
+          {formatted}
+        </code>
+        <SizeIcon className="size-4" role="open-dialog" />
       </DialogTrigger>
       <DialogContent className="max-w-fit">
         {(options?.dialog_title || options?.dialog_description) && (
