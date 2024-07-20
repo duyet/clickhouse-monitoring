@@ -50,7 +50,10 @@ export const historyQueriesConfig: QueryConfig = {
     query_duration: ColumnFormat.Duration,
     query_kind: ColumnFormat.ColoredBadge,
     readable_query: ColumnFormat.Code,
-    query: ColumnFormat.CodeToggle,
+    query: [
+      ColumnFormat.CodeDialog,
+      { max_truncate: 50, hide_query_comment: true, dialog_title: 'Query' },
+    ],
     event_time: ColumnFormat.RelatedTime,
     readable_read_rows: ColumnFormat.BackgroundBar,
     readable_written_rows: ColumnFormat.BackgroundBar,

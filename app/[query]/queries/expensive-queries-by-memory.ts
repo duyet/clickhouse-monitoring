@@ -34,6 +34,9 @@ export const expensiveQueriesByMemoryConfig: QueryConfig = {
     'readable_sum_memory',
   ],
   columnFormats: {
-    query: ColumnFormat.CodeToggle,
+    query: [
+      ColumnFormat.CodeDialog,
+      { max_truncate: 100, hide_query_comment: true },
+    ],
   },
 }

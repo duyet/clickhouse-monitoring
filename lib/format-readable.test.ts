@@ -1,5 +1,6 @@
 import { expect } from '@jest/globals'
 import {
+  formatQuery,
   formatReadableQuantity,
   formatReadableSecondDuration,
   formatReadableSize,
@@ -106,5 +107,83 @@ describe('formatReadableSecondDuration', () => {
   it('should handle negative values by returning 0s', () => {
     expect(formatReadableSecondDuration(-30)).toBe('0s')
     expect(formatReadableSecondDuration(-3600)).toBe('0s')
+  })
+})
+
+describe('formatQuery', () => {
+  it('should return the original query when comment_remove is false', () => {
+    const query = 'SELECT * FROM table /* This is a comment */'
+    const result = formatQuery({ query, comment_remove: false })
+    expect(result).toBe(query.trim()) // Note: trim is applied by default
+  })
+
+  it('should remove comments when comment_remove is true', () => {
+    const query = 'SELECT * FROM table /* This is a comment */'
+    const expected = 'SELECT * FROM table'
+    const result = formatQuery({ query, comment_remove: true })
+    expect(result).toBe(expected)
+  })
+
+  it('should handle multiple comments', () => {
+    const query = 'SELECT * /* Comment 1 */ FROM table /* Comment 2 */'
+    const expected = 'SELECT * FROM table'
+    const result = formatQuery({ query, comment_remove: true })
+    expect(result).toBe(expected)
+  })
+
+  it('should handle multiline comments', () => {
+    const query = `
+      SELECT *
+      /* This is a
+         multiline comment */
+      FROM table
+    `
+    const expected = 'SELECT * FROM table'
+    const result = formatQuery({ query, comment_remove: true })
+    expect(result).toBe(expected)
+  })
+
+  it('should not remove comments when comment_remove is undefined', () => {
+    const query = 'SELECT * FROM table /* This is a comment */'
+    const result = formatQuery({ query })
+    expect(result).toBe(query.trim()) // Note: trim is applied by default
+  })
+
+  it('should truncate the query when truncate option is provided', () => {
+    const query = 'SELECT * FROM table WHERE column = "value"'
+    const result = formatQuery({ query, truncate: 20 })
+    expect(result.length).toBe(20 + 3) // 3 characters are added for the ellipsis
+    expect(result).toBe('SELECT * FROM table ...')
+  })
+
+  it('should not truncate the query when it is shorter than the truncate limit', () => {
+    const query = 'SELECT * FROM table'
+    const result = formatQuery({ query, truncate: 30 })
+    expect(result).toBe(query)
+  })
+
+  it('should trim the query by default', () => {
+    const query = '  SELECT * FROM table  '
+    const result = formatQuery({ query })
+    expect(result).toBe('SELECT * FROM table')
+  })
+
+  it('should not trim the query when trim and remove_extra_whitespace is set to false', () => {
+    const query = '  SELECT * FROM table  '
+    const result = formatQuery({ query, trim: false })
+    expect(result).toBe(query)
+  })
+
+  it('should apply all options correctly', () => {
+    const query = '  SELECT * /* comment */ FROM table WHERE column = "value"  '
+    const result = formatQuery({
+      query,
+      comment_remove: true,
+      truncate: 25,
+      trim: true,
+    })
+
+    expect(result.length).toBe(25 + 3) // 3 characters are added for the ellipsis
+    expect(result).toBe('SELECT * FROM table WHERE...')
   })
 })
