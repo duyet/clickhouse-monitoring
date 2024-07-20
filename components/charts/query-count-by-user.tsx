@@ -12,7 +12,7 @@ export async function ChartQueryCountByUser({
   ...props
 }: ChartProps) {
   const query = `
-    SELECT ${interval}(event_time) AS event_time,
+    SELECT toDate(${interval}(event_time)) AS event_time,
            user,
            COUNT(*) AS count
     FROM merge(system, '^query_log')

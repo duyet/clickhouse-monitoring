@@ -15,7 +15,7 @@ export async function ChartQueryDuration({
   const query = `
     SELECT ${interval}(event_time) AS event_time,
            AVG(query_duration_ms) AS query_duration_ms,
-           ROUND(query_duration_ms / 1000, 1) AS query_duration_s
+           ROUND(query_duration_ms / 1000, 2) AS query_duration_s
     FROM merge(system, '^query_log')
     WHERE type = 'QueryFinish'
           AND query_kind = 'Select'

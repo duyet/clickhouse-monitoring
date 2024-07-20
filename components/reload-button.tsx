@@ -15,6 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
 
 interface ReloadButtonProps {
@@ -68,12 +69,13 @@ export function ReloadButton({ className }: ReloadButtonProps) {
             isLoading ? 'animate-pulse' : ''
           )}
         >
-          <span>{countDown}s</span>
+          <span>{formatReadableSecondDuration(countDown)}</span>
           <ReloadIcon
             className={cn('size-4', isLoading ? 'animate-spin' : '')}
           />
         </Button>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent className="w-56">
         <DropdownMenuItem onClick={onClickReload}>
           Reload Now
@@ -81,11 +83,14 @@ export function ReloadButton({ className }: ReloadButtonProps) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => setReloadInterval(10 * SECOND)}>
-          10s
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setReloadInterval(30 * SECOND)}>
           30s
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setReloadInterval(1 * MINUTE)}>
+          1m
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setReloadInterval(2 * MINUTE)}>
+          2m
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setReloadInterval(10 * MINUTE)}>
           10m

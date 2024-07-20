@@ -21,14 +21,22 @@ export interface ContextValue {
 
 export const Context = createContext<ContextValue | undefined>(undefined)
 
-export const AppProvider = ({ children }: { children: React.ReactNode }) => {
+export const AppProvider = ({
+  children,
+  reloadIntervalSecond = 30,
+}: {
+  children: React.ReactNode
+  reloadIntervalSecond: number
+}) => {
   const [interval, setInterval] = useState<ClickHouseInterval>(
     'toStartOfFiveMinutes'
   )
 
   // Set reload interval to 30s by default
   // setReloadInterval(null) to stop it
-  const [reloadInterval, setReloadInterval] = useState<number | null>(30000)
+  const [reloadInterval, setReloadInterval] = useState<number | null>(
+    reloadIntervalSecond * 1000
+  )
 
   const pathname = usePathname()
 
