@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryMemory({
@@ -23,7 +23,7 @@ export async function ChartQueryMemory({
     GROUP BY event_time
     ORDER BY event_time ASC
   `
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithCache<
     {
       event_time: string
       memory_usage: number

@@ -1,4 +1,5 @@
 import { type QueryConfig } from '@/types/query-config'
+import { cache } from 'react'
 
 import { mergePerformanceConfig } from './merges/merge-performance'
 import { mergesConfig } from './merges/merges'
@@ -69,12 +70,12 @@ export const queries: Array<QueryConfig> = [
   zookeeperConfig,
 ]
 
-export const getQueryConfigByName = (
-  name: string
-): QueryConfig | undefined | null => {
-  if (!name) {
-    return null
-  }
+export const getQueryConfigByName = cache(
+  (name: string): QueryConfig | undefined | null => {
+    if (!name) {
+      return null
+    }
 
-  return queries.find((q) => q.name === name)
-}
+    return queries.find((q) => q.name === name)
+  }
+)

@@ -29,7 +29,7 @@ interface Props {
 export async function DatabaseListBreadcrumb({ database }: Props) {
   try {
     // Lists cluster names.
-    const { data } = await fetchDataWithCache()<DatabaseUsedSpace[]>({
+    const { data } = await fetchDataWithCache<DatabaseUsedSpace[]>({
       query: config.sql,
     })
 

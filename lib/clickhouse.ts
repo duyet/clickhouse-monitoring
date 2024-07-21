@@ -3,9 +3,10 @@ import { createClient } from '@clickhouse/client'
 import type { ClickHouseSettings, QueryParams } from '@clickhouse/client-common'
 import { createClient as createClientWeb } from '@clickhouse/client-web'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
-import { cache } from 'react'
+import { unstable_cache } from 'next/cache'
 
-const DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME = '60'
+export const DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME = '60'
+export const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */ '
 
 type QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{
@@ -47,8 +48,6 @@ export const getClient = <B extends boolean>({
     },
   }) as B extends true ? WebClickHouseClient : ClickHouseClient
 }
-
-export const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */ '
 
 export const fetchData = async <
   T extends
@@ -112,7 +111,7 @@ export const fetchData = async <
   return { data, metadata }
 }
 
-export const fetchDataWithCache = () => cache(fetchData)
+export const fetchDataWithCache = unstable_cache(fetchData)
 
 export const query = async (
   query: string,
