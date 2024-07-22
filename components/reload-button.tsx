@@ -15,7 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { revalidateClickHouse } from '@/lib/clickhouse-cache'
+import { revalidateClickHouse } from '@/lib/clickhouse-action'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
 
