@@ -3,6 +3,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 
+import { ArrowUpIcon } from '@radix-ui/react-icons'
 import { CardMultiMetrics } from '../tremor/card-multi-metrics'
 
 export async function ChartZookeeperUptime({
@@ -30,6 +31,7 @@ export async function ChartZookeeperUptime({
         <CardMultiMetrics
           primary={
             <span className="flex flex-row items-center gap-2">
+              <ArrowUpIcon className="h-6 w-6" />
               {uptime.uptime}
             </span>
           }

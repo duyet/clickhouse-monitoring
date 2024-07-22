@@ -34,14 +34,11 @@ export function ReloadButton({ className }: ReloadButtonProps) {
   const initCountDown = reloadInterval ? reloadInterval / 1000 : 10
   const [countDown, setCountDown] = useState(initCountDown)
 
-  const refreshRouter = () => {
-    startTransition(() => router.refresh())
-  }
-
-  const revalidateCacheAndReload = () => {
-    revalidateClickHouse()
-    refreshRouter()
-  }
+  const revalidateCacheAndReload = () =>
+    startTransition(async () => {
+      await revalidateClickHouse()
+      router.refresh()
+    })
 
   useEffect(() => {
     if (reloadInterval) {

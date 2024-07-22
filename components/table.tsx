@@ -43,17 +43,30 @@ export async function Table({
 
   let sql = config.sql
   if (condition.length > 0) {
-    // Adding condition to the query after WHERE (if WHERE exists)
-    // or after FROM (if WHERE doesn't exist)
-    const whereIndex = sql.indexOf('WHERE')
-    const fromIndex = sql.indexOf('FROM')
-    const index = whereIndex !== -1 ? whereIndex : fromIndex
-    sql =
-      sql.slice(0, index) +
-      ' WHERE ' +
-      condition.join(' AND ') +
-      ' AND ' +
-      sql.slice(index)
+    // Check if WHERE clause exists
+    const whereIndex = sql.toUpperCase().indexOf('WHERE')
+    if (whereIndex !== -1) {
+      // If WHERE exists, add conditions after it
+      sql =
+        sql.slice(0, whereIndex + 5) +
+        ' ' +
+        condition.join(' AND ') +
+        ' AND ' +
+        sql.slice(whereIndex + 5)
+    } else {
+      // If WHERE doesn't exist, add it before ORDER BY or at the end
+      const orderByIndex = sql.toUpperCase().indexOf('ORDER BY')
+      if (orderByIndex !== -1) {
+        sql =
+          sql.slice(0, orderByIndex) +
+          ' WHERE ' +
+          condition.join(' AND ') +
+          ' ' +
+          sql.slice(orderByIndex)
+      } else {
+        sql += ' WHERE ' + condition.join(' AND ')
+      }
+    }
   }
 
   // Retrieve data from ClickHouse.
@@ -87,6 +100,12 @@ export async function Table({
     )
   } catch (error) {
     console.error(`<Table /> failed render, error: "${error}"`)
-    return <ErrorAlert title="ClickHouse Error" message={`${error}`} />
+    return (
+      <ErrorAlert
+        title="ClickHouse Query Error"
+        message={`${error}`}
+        query={sql}
+      />
+    )
   }
 }

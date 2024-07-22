@@ -41,5 +41,6 @@ export const distributedDdlQueueConfig: QueryConfig = {
     status: ColumnFormat.ColoredBadge,
     query: ColumnFormat.CodeDialog,
     settings: ColumnFormat.CodeDialog,
+    exception_text: ColumnFormat.CodeDialog,
   },
 }

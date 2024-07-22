@@ -13,6 +13,7 @@ export interface CodeDialogOptions {
   dialog_description?: string
   max_truncate?: number
   hide_query_comment?: boolean
+  json?: boolean
 }
 
 interface CodeDialogFormatProps {
@@ -40,6 +41,17 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
     return <code>{formatted}</code>
   }
 
+  let content = value
+  if (options?.json) {
+    let json = content
+    try {
+      json = JSON.parse(value)
+    } catch {}
+    try {
+      content = JSON.stringify(json, null, 2)
+    } catch {}
+  }
+
   return (
     <Dialog>
       <DialogTrigger className="flex flex-row items-center gap-1">
@@ -57,8 +69,8 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
         )}
 
         <div>
-          <code className="whitespace-pre-wrap font-normal text-stone-500">
-            {value}
+          <code className="whitespace-pre-wrap text-sm text-stone-500">
+            {content}
           </code>
         </div>
       </DialogContent>

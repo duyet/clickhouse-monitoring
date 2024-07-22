@@ -32,6 +32,7 @@ export function BarChart({
   showLabel = false,
   stack = false,
   horizontal = false,
+  tooltipTotal = false,
   colors,
   colorLabel,
   tickFormatter,
@@ -133,7 +134,7 @@ export function BarChart({
           </>
         )}
 
-        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+        {renderChartTooltip({ tooltipTotal, chartConfig, categories })}
 
         {categories.map((category, index) => (
           <Bar
@@ -238,6 +239,62 @@ function renderChartLabel<T extends Data>({
       fontSize={12}
       formatter={readableColumn ? labelFormatter : undefined}
       angle={labelAngle}
+    />
+  )
+}
+
+function renderChartTooltip({
+  tooltipTotal,
+  chartConfig,
+  categories,
+}: Pick<BarChartProps, 'categories' | 'tooltipTotal'> & {
+  chartConfig: ChartConfig
+}) {
+  if (!tooltipTotal) {
+    return <ChartTooltip content={<ChartTooltipContent />} />
+  }
+
+  return (
+    <ChartTooltip
+      content={
+        <ChartTooltipContent
+          hideLabel
+          className="w-fit"
+          formatter={(value, name, item, index) => (
+            <>
+              <div
+                className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                style={
+                  {
+                    '--color-bg': `var(--color-${name})`,
+                  } as React.CSSProperties
+                }
+              />
+
+              {chartConfig[name as keyof typeof chartConfig]?.label || name}
+
+              <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                {value}
+                <span className="font-normal text-muted-foreground"></span>
+              </div>
+
+              {index === 1 && (
+                <div className="mt-1.5 flex basis-full items-center border-t pt-1.5 text-xs font-medium text-foreground">
+                  Total
+                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                    {categories
+                      .map((cat) => parseInt(item.payload[cat]) || 0)
+                      .reduce((a, b) => a + b, 0)}
+                    <span className="font-normal text-muted-foreground"></span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        />
+      }
+      cursor={false}
+      defaultIndex={1}
     />
   )
 }
