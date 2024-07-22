@@ -1,8 +1,15 @@
+import { formatReadableQuantity } from '@/lib/format-readable'
+
+export interface BackgroundBarOptions {
+  numberFormat?: boolean
+}
+
 interface BackgroundBarFormatProps {
   table: any
   row: any
   columnName: string
   value: any
+  options?: BackgroundBarOptions
 }
 
 export function BackgroundBarFormat({
@@ -10,6 +17,7 @@ export function BackgroundBarFormat({
   row,
   columnName,
   value,
+  options,
 }: BackgroundBarFormatProps) {
   // Disable if row count <= 1
   if (table.getCoreRowModel()?.rows?.length <= 1) return value
@@ -38,8 +46,10 @@ export function BackgroundBarFormat({
                 transparent ${pct}%, transparent 100%)`,
       }}
       title={`${orgValue} (${pct}%)`}
+      aria-label={`${orgValue} (${pct}%)`}
+      aria-roledescription="background-bar"
     >
-      {value}
+      {options?.numberFormat ? formatReadableQuantity(value, 'long') : value}
     </div>
   )
 }
