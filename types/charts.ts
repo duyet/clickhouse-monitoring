@@ -113,3 +113,11 @@ export interface BarChartProps extends BaseChartProps {
   readableColumn?: string
   horizontal?: boolean
 }
+
+export interface AreaChartProps extends BaseChartProps {
+  type?: string
+  stack?: boolean
+  relative?: boolean
+  readableColumn?: string
+  opacity?: number
+}

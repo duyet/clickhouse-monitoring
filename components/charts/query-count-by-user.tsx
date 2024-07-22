@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithCache } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
 export async function ChartQueryCountByUser({
   title,
@@ -18,6 +18,7 @@ export async function ChartQueryCountByUser({
     FROM merge(system, '^query_log')
     WHERE type = 'QueryFinish'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+          AND user != ''
     GROUP BY 1, 2
     ORDER BY
       1 ASC WITH FILL STEP toIntervalDay(1),
@@ -59,6 +60,7 @@ export async function ChartQueryCountByUser({
         data={barData}
         index="event_time"
         categories={users}
+        showLabel={false}
         stack
         {...props}
       />

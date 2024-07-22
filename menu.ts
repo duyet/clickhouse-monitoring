@@ -42,7 +42,6 @@ export const menuItemsConfig: MenuItem[] = [
   {
     title: 'Tables',
     href: '/tables',
-    countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
     icon: TableIcon,
     items: [
       {

@@ -8,7 +8,7 @@ import { formatQuery } from '@/lib/format-readable'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { SizeIcon } from '@radix-ui/react-icons'
 
-export type CodeDialogOptions = {
+export interface CodeDialogOptions {
   dialog_title?: string
   dialog_description?: string
   max_truncate?: number

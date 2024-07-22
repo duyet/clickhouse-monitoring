@@ -7,7 +7,7 @@ import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
 } from '@/components/tremor/card-multi-metrics'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
 export async function ChartSummaryUsedByMerges({
   title,
@@ -19,7 +19,7 @@ export async function ChartSummaryUsedByMerges({
       formatReadableSize(memory_usage) as readable_memory_usage
     FROM system.merges
   `
-  const { data: usedRows } = await fetchData<
+  const { data: usedRows } = await fetchDataWithCache<
     {
       memory_usage: number
       readable_memory_usage: string
@@ -43,7 +43,7 @@ export async function ChartSummaryUsedByMerges({
     readable_total: used.readable_memory_usage,
   }
   try {
-    const { data: rows } = await fetchData<
+    const { data: rows } = await fetchDataWithCache<
       {
         metric: string
         total: number
@@ -70,7 +70,7 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const { data } = await fetchData<
+    const { data } = await fetchDataWithCache<
       {
         rows_read: number
         rows_written: number
@@ -100,7 +100,7 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const { data } = await fetchData<
+    const { data } = await fetchDataWithCache<
       {
         bytes_read: number
         bytes_written: number
