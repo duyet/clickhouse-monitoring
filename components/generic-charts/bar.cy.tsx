@@ -32,12 +32,6 @@ describe('<BarChart />', () => {
     // Render as svg
     cy.get('svg:first').as('chart').should('be.visible')
 
-    // Contains legend
-    cy.get('.recharts-legend-wrapper').as('legend').should('be.visible')
-    cy.get('@legend').contains('A')
-    cy.get('@legend').contains('B')
-    cy.get('@legend').contains('C')
-
     // Contains date
     cy.get('@chart').should('contain', '2025-01-01')
 
@@ -47,6 +41,42 @@ describe('<BarChart />', () => {
 
     // Display tooltip of the 2nd data
     cy.get('div').should('contain', '2025-02-01')
+  })
+
+  it('renders with showLegend', () => {
+    cy.mount(
+      <BarChart
+        data={data}
+        categories={['A', 'B', 'C']}
+        index="date"
+        showLegend
+      />
+    )
+    cy.screenshot()
+
+    // Render as svg
+    cy.get('svg:first').as('chart').should('be.visible')
+
+    // Contains legend
+    cy.get('.recharts-legend-wrapper').as('legend').should('be.visible')
+    cy.get('@legend').contains('A')
+    cy.get('@legend').contains('B')
+    cy.get('@legend').contains('C')
+  })
+
+  it('renders with showLabel', () => {
+    cy.mount(
+      <BarChart
+        data={data}
+        categories={['A', 'B', 'C']}
+        index="date"
+        showLabel
+      />
+    )
+    cy.screenshot()
+
+    // Render as svg
+    cy.get('svg:first').as('chart').should('be.visible')
 
     // Show label
     cy.get('@chart')
@@ -63,6 +93,8 @@ describe('<BarChart />', () => {
         categories={['A', 'B', 'C']}
         index="date"
         readableColumn="readable_A"
+        showLegend
+        showLabel
       />
     )
     cy.screenshot()
@@ -70,7 +102,7 @@ describe('<BarChart />', () => {
     // Render as svg
     cy.get('svg:first').as('chart').should('be.visible')
 
-    // Display data from readable_A instead of A
+    // Display label data from readable_A instead of A
     cy.get('@chart')
       .children()
       .should('contain', 'one')

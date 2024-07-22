@@ -43,10 +43,7 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
   return (
     <Dialog>
       <DialogTrigger className="flex flex-row items-center gap-1">
-        <code
-          className="truncate break-words font-normal"
-          role="shorten-code"
-        >
+        <code className="truncate break-words font-normal" role="shorten-code">
           {formatted}
         </code>
         <SizeIcon className="size-4" role="open-dialog" />

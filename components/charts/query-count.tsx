@@ -1,6 +1,6 @@
 import { type ChartProps } from '@/components/charts/chart-props'
+import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { AreaChart } from '@/components/tremor/area'
 import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 import { cn } from '@/lib/utils'
 
@@ -54,7 +54,7 @@ export async function ChartQueryCount({
   >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={query}>
+    <ChartCard title={title} className={className} sql={query} data={data}>
       <AreaChart
         className={cn('h-52', chartClassName)}
         data={data}
@@ -62,9 +62,9 @@ export async function ChartQueryCount({
         categories={['query_count']}
         readable="quantity"
         stack
-        breakdown="breakdown"
         showLegend={false}
-        colors={['#ffcc33']}
+        colors={['--chart-yellow']}
+        breakdown="breakdown"
         {...props}
       />
     </ChartCard>
