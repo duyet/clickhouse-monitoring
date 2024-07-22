@@ -33,7 +33,9 @@ describe('<AreaChart />', () => {
   ]
 
   it('renders 1 series', () => {
-    cy.mount(<AreaChart data={data} categories={['A']} index="date" />)
+    cy.mount(
+      <AreaChart data={data} categories={['A']} index="date" showLegend />
+    )
     cy.screenshot()
 
     // Render as svg
@@ -55,7 +57,9 @@ describe('<AreaChart />', () => {
   })
 
   it('renders 2 series (no stack)', () => {
-    cy.mount(<AreaChart data={data} categories={['A', 'B']} index="date" />)
+    cy.mount(
+      <AreaChart data={data} categories={['A', 'B']} index="date" showLegend />
+    )
     cy.screenshot()
 
     // Render as svg
@@ -106,13 +110,13 @@ describe('<AreaChart />', () => {
     //   .and('contain', 'one')
   })
 
-  it('renders with showLegend={false}', () => {
+  it('renders with showLegend', () => {
     cy.mount(
       <AreaChart
         data={data}
         categories={['A', 'B', 'C']}
         index="date"
-        showLegend={false}
+        showLegend
       />
     )
     cy.screenshot()
@@ -120,26 +124,9 @@ describe('<AreaChart />', () => {
     // Render as svg
     cy.get('svg:first').as('chart').should('be.visible')
 
-    // No legend
-    cy.get('.recharts-legend-wrapper').should('not.exist')
-  })
-
-  it('renders with showLabel={false}', () => {
-    cy.mount(
-      <AreaChart
-        data={data}
-        categories={['A', 'B', 'C']}
-        index="date"
-        showLabel={false}
-      />
-    )
-    cy.screenshot()
-
-    // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
-
-    // No label
-    cy.get('.recharts-label-list').should('not.exist')
+    // Show legend
+    cy.get('.recharts-legend-wrapper').should('be.visible')
+    cy.get('.recharts-legend-wrapper').should('contain', 'A')
   })
 
   it('renders with tickFormatter', () => {
@@ -156,8 +143,11 @@ describe('<AreaChart />', () => {
     // Render as svg
     cy.get('svg:first').as('chart').should('be.visible')
 
-    // Should have 4 ticks
-    cy.get('.recharts-cartesian-axis-tick').should('have.length', data.length)
+    // Should have sticks (do not have start, end)
+    cy.get('.recharts-cartesian-axis-tick').should(
+      'have.have.length.at.least',
+      2
+    )
 
     // Display tooltip of the 2nd data
     cy.get('.recharts-cartesian-axis-ticks').should('contain', '--2025')

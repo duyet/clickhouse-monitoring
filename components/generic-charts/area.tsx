@@ -21,7 +21,7 @@ export function AreaChart({
   data,
   index,
   categories,
-  showLegend = true,
+  showLegend = false,
   stack = false,
   opacity = 0.6,
   colors,
