@@ -1,6 +1,8 @@
+'use client'
+
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 interface ErrorAlertProps {
   title?: string
@@ -17,6 +19,25 @@ export function ErrorAlert({
   reset,
   className,
 }: ErrorAlertProps) {
+  const [countdown, setCountdown] = useState(3)
+
+  useEffect(() => {
+    if (!reset) return
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          reset()
+          return 3
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [reset])
+
   const renderContent = (
     content: string | React.ReactNode | React.ReactNode[]
   ) => (
@@ -35,7 +56,7 @@ export function ErrorAlert({
         {query && renderContent(query)}
         {reset && (
           <Button variant="outline" onClick={() => reset()}>
-            Try again
+            Try again {countdown >= 0 && `(${countdown}s)`}
           </Button>
         )}
       </AlertDescription>
