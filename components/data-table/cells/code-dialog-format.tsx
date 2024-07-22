@@ -8,7 +8,7 @@ import { formatQuery } from '@/lib/format-readable'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { SizeIcon } from '@radix-ui/react-icons'
 
-export type CodeDialogOptions = {
+export interface CodeDialogOptions {
   dialog_title?: string
   dialog_description?: string
   max_truncate?: number
@@ -45,7 +45,7 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
       <DialogTrigger className="flex flex-row items-center gap-1">
         <code
           className="truncate break-words font-normal"
-          aria-description="shorten-code"
+          role="shorten-code"
         >
           {formatted}
         </code>

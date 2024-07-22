@@ -15,6 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { revalidateClickHouse } from '@/lib/clickhouse-action'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
 
@@ -37,7 +38,10 @@ export function ReloadButton({ className }: ReloadButtonProps) {
     startTransition(() => router.refresh())
   }
 
-  const onClickReload = refreshRouter
+  const revalidateCacheAndReload = () => {
+    revalidateClickHouse()
+    refreshRouter()
+  }
 
   useEffect(() => {
     if (reloadInterval) {
@@ -48,7 +52,7 @@ export function ReloadButton({ className }: ReloadButtonProps) {
   useInterval(
     () => {
       if (countDown <= 0) {
-        refreshRouter()
+        revalidateCacheAndReload()
         setCountDown(initCountDown)
         return
       } else {
@@ -77,7 +81,7 @@ export function ReloadButton({ className }: ReloadButtonProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="w-56">
-        <DropdownMenuItem onClick={onClickReload}>
+        <DropdownMenuItem onClick={revalidateCacheAndReload}>
           Reload Now
           <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
         </DropdownMenuItem>

@@ -1,6 +1,6 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { DonutChart } from '@/components/tremor/donut'
-import { fetchDataWithCache } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
 export async function ChartQueryType({
   title,

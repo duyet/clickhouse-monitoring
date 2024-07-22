@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 import { DataTable } from '@/components/data-table/data-table'
 import { Button } from '@/components/ui/button'
-import { fetchDataWithCache } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 import { Extras } from '../extras/extras'
 
 import { config, type Row } from '../config'

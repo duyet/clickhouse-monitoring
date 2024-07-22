@@ -33,7 +33,7 @@ export async function ChartMergeAvgDuration({
   >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={query}>
+    <ChartCard title={title} className={className} sql={query} data={data}>
       <BarChart
         data={data}
         index="event_time"

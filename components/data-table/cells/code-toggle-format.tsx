@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/accordion'
 import { formatQuery } from '@/lib/format-readable'
 
-export type CodeToggleOptions = {
+export interface CodeToggleOptions {
   max_truncate?: number
   hide_query_comment?: boolean
 }

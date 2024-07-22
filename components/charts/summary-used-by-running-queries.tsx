@@ -7,7 +7,7 @@ import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
 } from '@/components/tremor/card-multi-metrics'
-import { fetchDataWithCache } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 import { formatReadableQuantity } from '@/lib/format-readable'
 
 export async function ChartSummaryUsedByRunningQueries({
