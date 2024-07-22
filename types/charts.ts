@@ -70,8 +70,6 @@ export interface BaseChartProps
   extends BaseAnimationTimingProps,
     React.HTMLAttributes<HTMLDivElement> {
   data: any[]
-  categories: string[]
-  index: string
   labelPosition?: LabelPosition
   labelAngle?: number
   colors?: Color[]
@@ -106,6 +104,8 @@ export interface BaseChartProps
 }
 
 export interface BarChartProps extends BaseChartProps {
+  categories: string[]
+  index?: string
   layout?: 'vertical' | 'horizontal'
   stack?: boolean
   relative?: boolean
@@ -116,6 +116,8 @@ export interface BarChartProps extends BaseChartProps {
 }
 
 export interface AreaChartProps extends BaseChartProps {
+  categories: string[]
+  index?: string
   type?: string
   stack?: boolean
   relative?: boolean
@@ -126,4 +128,11 @@ export interface AreaChartProps extends BaseChartProps {
   breakdown?: string
   readableColumn?: string
   readableColumns?: string[]
+}
+
+export interface RadialChartProps extends BaseChartProps {
+  data: Record<string, string | number>[]
+  nameKey: string
+  dataKey: string
+  onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 }
