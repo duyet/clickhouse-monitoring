@@ -6,6 +6,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -33,7 +34,8 @@ export function DataTableFacetedFilter({
     searchParams
       ?.get('__presets')
       ?.split(',')
-      .map((key) => key.trim()) || []
+      .map((key) => key.trim())
+      .filter(Boolean) || []
 
   console.log('selectedValues', selectedValues)
 
@@ -48,7 +50,7 @@ export function DataTableFacetedFilter({
           {selectedValues.length > 0 && ` (${selectedValues.length})`}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[250px]">
+      <DropdownMenuContent className="w-[170px]">
         {presets.map((preset) => {
           const isSelected = selectedValues.indexOf(preset.key) > -1
 
@@ -89,12 +91,12 @@ export function DataTableFacetedFilter({
         {selectedValues.length > 0 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuCheckboxItem
+            <DropdownMenuItem
               onSelect={() => resetFilter()}
               className="justify-center text-center"
             >
               Clear filters
-            </DropdownMenuCheckboxItem>
+            </DropdownMenuItem>
           </>
         )}
       </DropdownMenuContent>
