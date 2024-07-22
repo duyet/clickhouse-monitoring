@@ -34,14 +34,14 @@ export async function ChartZookeeperRequests({
   })
 
   return (
-    <ChartCard title={title} sql={query} className={className}>
+    <ChartCard title={title} sql={query} data={data} className={className}>
       <BarChart
         data={data}
         index="event_time"
         categories={['ZookeeperRequests', 'ZooKeeperWatch']}
         className="h-52"
+        showLegend
         stack
-        showLabel={false}
       />
     </ChartCard>
   )

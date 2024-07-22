@@ -32,14 +32,14 @@ export async function ChartZookeeperWait({
   })
 
   return (
-    <ChartCard title={title} sql={query} className={className}>
+    <ChartCard title={title} sql={query} data={data} className={className}>
       <BarChart
         data={data}
         index="event_time"
         categories={['AVG_ProfileEvent_ZooKeeperWaitSeconds']}
         readableColumn="readable_AVG_ProfileEvent_ZooKeeperWaitSeconds"
         className="h-52"
-        showLabel={false}
+        showLegend
         stack
       />
     </ChartCard>

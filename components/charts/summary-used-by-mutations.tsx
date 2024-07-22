@@ -26,10 +26,10 @@ export async function ChartSummaryUsedByMutations({
 
   return (
     <ChartCard title={title} className={className} sql={query} data={data}>
-      <div className="flex flex-col justify-between p-0">
+      <div className="flex flex-col content-stretch items-center p-0">
         <CardMultiMetrics
           primary={
-            <span className="flex flex-row items-center gap-2">
+            <span className="flex flex-row items-center gap-2 self-center text-center">
               {count.running_count} running mutations
             </span>
           }

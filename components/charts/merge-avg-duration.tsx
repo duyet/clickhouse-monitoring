@@ -9,6 +9,7 @@ export async function ChartMergeAvgDuration({
   interval = 'toStartOfDay',
   lastHours = 24 * 14,
   className,
+  chartClassName,
 }: ChartProps) {
   const query = `
     SELECT
@@ -39,7 +40,7 @@ export async function ChartMergeAvgDuration({
         index="event_time"
         categories={['avg_duration_ms']}
         readableColumn="readable_avg_duration_ms"
-        className={className}
+        className={chartClassName}
         showLabel={false}
       />
     </ChartCard>

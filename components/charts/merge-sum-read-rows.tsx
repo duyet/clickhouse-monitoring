@@ -9,6 +9,7 @@ export async function ChartMergeSumReadRows({
   interval = 'toStartOfDay',
   lastHours = 24 * 14,
   className,
+  chartClassName,
 }: ChartProps) {
   const query = `
     SELECT
@@ -42,8 +43,8 @@ export async function ChartMergeSumReadRows({
         labelPosition="inside"
         labelAngle={-90}
         colorLabel="--foreground"
-        className={className}
-        colors={['--chart-orange-600']}
+        className={chartClassName}
+        colors={['--chart-indigo-300']}
         autoMinValue={true}
         relative={false}
         allowDecimals={true}

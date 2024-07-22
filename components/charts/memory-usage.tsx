@@ -33,7 +33,7 @@ export async function ChartMemoryUsage({
         index="event_time"
         categories={['avg_memory']}
         className={chartClassName}
-        showLabel={false}
+        colors={['--chart-12']}
       />
     </ChartCard>
   )
