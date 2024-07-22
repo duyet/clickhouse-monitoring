@@ -19,7 +19,7 @@ export const topUsageColumnsConfig: QueryConfig = {
       ORDER BY 2 DESC`,
   columns: ['column', 'count'],
   columnFormats: {
-    count: ColumnFormat.BackgroundBar,
+    count: [ColumnFormat.BackgroundBar, { numberFormat: true }],
   },
   defaultParams: { table: '' },
 }

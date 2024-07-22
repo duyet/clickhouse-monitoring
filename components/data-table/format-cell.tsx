@@ -6,7 +6,10 @@ import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
 
 import { ActionFormat } from './cells/action-format'
 import { type Action } from './cells/actions/types'
-import { BackgroundBarFormat } from './cells/background-bar-format'
+import {
+  BackgroundBarFormat,
+  type BackgroundBarOptions,
+} from './cells/background-bar-format'
 import { BadgeFormat } from './cells/badge-format'
 import { BooleanFormat } from './cells/boolean-format'
 import {
@@ -43,6 +46,7 @@ export const formatCell = <TData extends RowData, TValue>(
           row={row}
           columnName={columnName}
           value={value}
+          options={columnFormatOptions as BackgroundBarOptions}
         />
       )
 
