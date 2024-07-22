@@ -1,6 +1,6 @@
 import { type ChartProps } from '@/components/charts/chart-props'
+import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { AreaChart } from '@/components/tremor/area'
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 
@@ -43,11 +43,11 @@ export async function ChartDisksUsage({
         data={data}
         index="event_time"
         categories={['DiskAvailable_default', 'DiskUsed_default']}
-        readable={true}
         readableColumns={[
           'readable_DiskAvailable_default',
           'readable_DiskUsed_default',
         ]}
+        stack
         {...props}
       />
     </ChartCard>

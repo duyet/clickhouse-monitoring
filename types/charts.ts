@@ -118,6 +118,11 @@ export interface AreaChartProps extends BaseChartProps {
   type?: string
   stack?: boolean
   relative?: boolean
-  readableColumn?: string
   opacity?: number
+
+  // TODO: support these features
+  readable?: string
+  breakdown?: string
+  readableColumn?: string
+  readableColumns?: string[]
 }

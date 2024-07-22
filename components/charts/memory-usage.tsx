@@ -1,14 +1,14 @@
 import { type ChartProps } from '@/components/charts/chart-props'
-import { AreaChart } from '@/components/tremor/area'
-import { fetchData } from '@/lib/clickhouse'
-
-import { ChartCard } from '../generic-charts/chart-card'
+import { AreaChart } from '@/components/generic-charts/area'
+import { ChartCard } from '@/components/generic-charts/chart-card'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
 export async function ChartMemoryUsage({
   title,
   interval = 'toStartOfTenMinutes',
   lastHours = 24,
   className,
+  chartClassName,
 }: ChartProps) {
   const query = `
     SELECT ${interval}(event_time) as event_time,
@@ -18,7 +18,7 @@ export async function ChartMemoryUsage({
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1 ASC`
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithCache<
     {
       event_time: string
       avg_memory: number
@@ -27,14 +27,13 @@ export async function ChartMemoryUsage({
   >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={query}>
+    <ChartCard title={title} className={className} sql={query} data={data}>
       <AreaChart
         data={data}
         index="event_time"
         categories={['avg_memory']}
-        className={className}
-        readable={true}
-        readableColumns={['readable_avg_memory']}
+        className={chartClassName}
+        showLabel={false}
       />
     </ChartCard>
   )

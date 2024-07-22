@@ -51,7 +51,11 @@ export default async function Overview() {
           </ServerComponentLazy>
 
           <ServerComponentLazy>
-            <ChartQueryCountByUser title="Query Count" className="w-full p-5" />
+            <ChartQueryCountByUser
+              title="Query Count"
+              className="w-full p-5"
+              chartClassName="h-72"
+            />
           </ServerComponentLazy>
 
           <ServerComponentLazy>

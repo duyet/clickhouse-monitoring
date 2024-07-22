@@ -32,7 +32,7 @@ export async function ChartQueryMemory({
   >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={query}>
+    <ChartCard title={title} className={className} sql={query} data={data}>
       <BarChart
         className={cn('h-52', chartClassName)}
         data={data}
@@ -41,6 +41,7 @@ export async function ChartQueryMemory({
         readableColumn="readable_memory_usage"
         stack
         showLegend={false}
+        showLabel={false}
         colors={['--chart-indigo-300']}
         {...props}
       />
