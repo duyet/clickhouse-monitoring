@@ -112,6 +112,7 @@ export interface BarChartProps extends BaseChartProps {
   barCategoryGap?: string | number
   readableColumn?: string
   horizontal?: boolean
+  tooltipTotal?: boolean
 }
 
 export interface AreaChartProps extends BaseChartProps {
