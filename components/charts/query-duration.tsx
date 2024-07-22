@@ -39,7 +39,7 @@ export async function ChartQueryDuration({
   })
 
   return (
-    <ChartCard title={title} className={className} sql={query}>
+    <ChartCard title={title} className={className} sql={query} data={data}>
       <BarChart
         className={cn('h-52', chartClassName)}
         data={data}

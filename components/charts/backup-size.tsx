@@ -39,7 +39,7 @@ export async function ChartBackupSize({
   if (!data || !first) return null
 
   return (
-    <ChartCard title={title} className={className} sql={query}>
+    <ChartCard title={title} className={className} sql={query} data={data}>
       <CardMetric
         current={first.compressed_size}
         currentReadable={`${first.readable_compressed_size} compressed`}

@@ -56,7 +56,7 @@ export const RenderChart = async ({
 
   if (kind === 'area') {
     return (
-      <ChartCard title={title} className={className} sql={query}>
+      <ChartCard title={title} className={className} sql={query} data={data}>
         <AreaChart
           className={chartClassName}
           data={data}
@@ -73,7 +73,7 @@ export const RenderChart = async ({
 
   if (kind === 'bar') {
     return (
-      <ChartCard title={title} className={className} sql={query}>
+      <ChartCard title={title} className={className} sql={query} data={data}>
         <BarChart
           className={chartClassName}
           data={data}
@@ -90,7 +90,7 @@ export const RenderChart = async ({
 
   if (kind === 'calendar') {
     return (
-      <ChartCard title={title} className={className} sql={query}>
+      <ChartCard title={title} className={className} sql={query} data={data}>
         <GithubHeatmapChart
           className={chartClassName}
           data={data}

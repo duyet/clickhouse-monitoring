@@ -45,7 +45,7 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
       <DialogTrigger className="flex flex-row items-center gap-1">
         <code
           className="truncate break-words font-normal"
-          aria-description="shorten-code"
+          role="shorten-code"
         >
           {formatted}
         </code>

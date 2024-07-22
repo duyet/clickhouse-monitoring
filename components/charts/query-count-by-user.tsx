@@ -54,13 +54,13 @@ export async function ChartQueryCountByUser({
   }, [] as string[])
 
   return (
-    <ChartCard title={title} className={className} sql={query}>
+    <ChartCard title={title} className={className} sql={query} data={barData}>
       <BarChart
         className={chartClassName}
         data={barData}
         index="event_time"
         categories={users}
-        showLabel={false}
+        showLegend
         stack
         {...props}
       />

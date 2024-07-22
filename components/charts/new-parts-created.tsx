@@ -61,7 +61,7 @@ export async function ChartNewPartsCreated({
   }, [] as string[])
 
   return (
-    <ChartCard title={title} className={className} sql={query}>
+    <ChartCard title={title} className={className} sql={query} data={barData}>
       <BarChart
         className={chartClassName}
         data={barData}
