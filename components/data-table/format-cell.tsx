@@ -57,7 +57,11 @@ export const formatCell = <TData extends RowData, TValue>(
       return <code>{value as string}</code>
 
     case ColumnFormat.Number:
-      return formatReadableQuantity(value as number, 'long')
+      return (
+        <span className="text-nowrap text-center">
+          {formatReadableQuantity(value as number, 'long')}
+        </span>
+      )
 
     case ColumnFormat.NumberShort:
       return formatReadableQuantity(value as number, 'short')
@@ -120,6 +124,6 @@ export const formatCell = <TData extends RowData, TValue>(
       )
 
     default:
-      return <span className="text-nowrap">{value as string}</span>
+      return <span className="text-nowrap text-center">{value as string}</span>
   }
 }
