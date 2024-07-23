@@ -48,7 +48,10 @@ interface DataTableProps<TData extends RowData> {
   className?: string
 }
 
-export function DataTable<TData extends RowData, TValue>({
+export function DataTable<
+  TData extends RowData,
+  TValue extends React.ReactNode,
+>({
   title = '',
   description = '',
   toolbarExtras,
