@@ -29,7 +29,10 @@ import {
 import { LinkFormat } from './cells/link-format'
 import { RelatedTimeFormat } from './cells/related-time-format'
 
-export const formatCell = <TData extends RowData, TValue>(
+export const formatCell = <
+  TData extends RowData,
+  TValue extends React.ReactNode,
+>(
   table: Table<TData>,
   data: TData[],
   row: Row<TData>,

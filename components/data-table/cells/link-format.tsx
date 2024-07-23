@@ -2,19 +2,20 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 import { Row, RowData } from '@tanstack/react-table'
 import Link, { LinkProps } from 'next/link'
 
-interface LinkFormatProps<TData extends RowData, TValue> {
+interface LinkFormatProps<
+  TData extends RowData,
+  TValue extends React.ReactNode,
+> {
   row: Row<TData>
   data: TData[]
-  value: string
+  value: TValue
   options?: LinkProps
 }
 
-export function LinkFormat<TData extends RowData, TValue>({
-  row,
-  data,
-  value,
-  options,
-}: LinkFormatProps<TData, TValue>) {
+export function LinkFormat<
+  TData extends RowData,
+  TValue extends React.ReactNode,
+>({ row, data, value, options }: LinkFormatProps<TData, TValue>) {
   let href = options?.href
 
   // No href provided, return value as is
