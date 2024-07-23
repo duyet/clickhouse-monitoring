@@ -35,8 +35,13 @@ export function ReloadButton({ className }: ReloadButtonProps) {
   const [countDown, setCountDown] = useState(initCountDown)
 
   const revalidateCacheAndReload = () =>
-    startTransition(() => {
-      revalidateClickHouse()
+    startTransition(async () => {
+      try {
+        await revalidateClickHouse()
+      } catch (e) {
+        console.error('Error revalidating cache', e)
+      }
+
       router.refresh()
     })
 
