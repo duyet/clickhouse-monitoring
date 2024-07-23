@@ -35,8 +35,8 @@ export function ReloadButton({ className }: ReloadButtonProps) {
   const [countDown, setCountDown] = useState(initCountDown)
 
   const revalidateCacheAndReload = () =>
-    startTransition(async () => {
-      await revalidateClickHouse()
+    startTransition(() => {
+      revalidateClickHouse()
       router.refresh()
     })
 
@@ -79,7 +79,7 @@ export function ReloadButton({ className }: ReloadButtonProps) {
 
       <DropdownMenuContent className="w-56">
         <DropdownMenuItem onClick={revalidateCacheAndReload}>
-          Reload Now
+          Reload (Clear Cache)
           <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
