@@ -6,12 +6,12 @@ export const replicasConfig: QueryConfig = {
   description: `Contains information and status for replicated tables residing on the local server`,
   sql: `
       SELECT *,
-             format('{}.{}', database, table) as \`database.table\`
+             (database || '.' || table) as database_table
       FROM system.replicas
       ORDER BY database, table
     `,
   columns: [
-    'database.table',
+    'database_table',
     'future_parts',
     'queue_size',
     'absolute_delay',
@@ -44,10 +44,7 @@ export const replicasConfig: QueryConfig = {
     'zookeeper_exception',
   ],
   columnFormats: {
-    'database.table': [
-      ColumnFormat.Link,
-      { href: '/tables/[database]/[table]' },
-    ],
+    database_table: [ColumnFormat.Link, { href: '/tables/[database]/[table]' }],
     engine: ColumnFormat.ColoredBadge,
     is_leader: ColumnFormat.Boolean,
     can_become_leader: ColumnFormat.Boolean,
