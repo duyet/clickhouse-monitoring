@@ -6,14 +6,14 @@ describe('<LinkFormat />', () => {
     const row = { index: 0 } as Row<any>
     const data = [{ database: 'testDB', table: 'testTable' }]
     const value = 'Test Link'
-    const options = { href: '/tables/[database]/[table]' }
+    const options = { href: '/database/[database]/[table]' }
 
     cy.mount(
       <LinkFormat row={row} data={data} value={value} options={options} />
     )
 
     cy.get('a')
-      .should('have.attr', 'href', '/tables/testDB/testTable')
+      .should('have.attr', 'href', '/database/testDB/testTable')
       .and('contain.text', 'Test Link')
   })
 
