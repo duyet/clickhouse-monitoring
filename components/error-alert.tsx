@@ -19,7 +19,7 @@ export function ErrorAlert({
   reset,
   className,
 }: ErrorAlertProps) {
-  const [countdown, setCountdown] = useState(3)
+  const [countdown, setCountdown] = useState(10)
 
   useEffect(() => {
     if (!reset) return
@@ -29,7 +29,7 @@ export function ErrorAlert({
         if (prev <= 1) {
           clearInterval(timer)
           reset()
-          return 3
+          return 0
         }
         return prev - 1
       })
