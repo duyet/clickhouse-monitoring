@@ -64,6 +64,9 @@ describe('<ErrorAlert />', () => {
         query="SELECT 1"
       />
     )
+
+    cy.get('button[role="open-query"]').should('be.visible')
+    cy.get('button[role="open-query"]').click()
     cy.contains('SELECT 1').should('be.visible')
   })
 
@@ -77,6 +80,9 @@ describe('<ErrorAlert />', () => {
     )
     cy.contains('Something went wrong').should('be.visible')
     cy.get('div').should('have.class', 'bg-green-300')
+
+    cy.get('button[role="open-query"]').should('be.visible')
+    cy.get('button[role="open-query"]').click()
     cy.contains('SELECT 1').should('be.visible')
   })
 })

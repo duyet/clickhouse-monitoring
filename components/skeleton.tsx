@@ -26,7 +26,7 @@ export function TableSkeleton({
   className?: string
 }) {
   return (
-    <div className={cn('mb-5 flex flex-col gap-3', className)}>
+    <div className={cn('mb-5 flex w-fit flex-col gap-3', className)}>
       {Array.from({ length: rows }).map((_, i) => (
         <div key={`row-${i}`} className="flex flex-row items-center gap-3">
           {Array.from({ length: cols }).map((_, j) => (
