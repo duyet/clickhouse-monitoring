@@ -123,6 +123,8 @@ export interface AreaChartProps extends BaseChartProps {
   relative?: boolean
   opacity?: number
   breakdown?: string
+  breakdownLabel?: string
+  tooltipActive?: boolean
 
   // TODO: support these features
   readable?: string

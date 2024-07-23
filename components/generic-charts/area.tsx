@@ -16,6 +16,11 @@ import {
   AreaChart as RechartAreaChart,
   XAxis,
 } from 'recharts'
+import {
+  NameType,
+  Payload,
+  ValueType,
+} from 'recharts/types/component/DefaultTooltipContent'
 
 export function AreaChart({
   data,
@@ -27,6 +32,9 @@ export function AreaChart({
   colors,
   colorLabel,
   tickFormatter,
+  breakdown,
+  breakdownLabel,
+  tooltipActive,
   className,
 }: AreaChartProps) {
   const chartConfig = categories.reduce(
@@ -74,7 +82,13 @@ export function AreaChart({
           interval={'equidistantPreserveStart'}
         />
 
-        <ChartTooltip cursor content={<ChartTooltipContent />} />
+        {renderChartTooltip({
+          breakdown,
+          breakdownLabel,
+          tooltipActive,
+          chartConfig,
+          categories,
+        })}
 
         {categories.map((category, index) => (
           <Area
@@ -92,5 +106,108 @@ export function AreaChart({
         {showLegend && <ChartLegend content={<ChartLegendContent />} />}
       </RechartAreaChart>
     </ChartContainer>
+  )
+}
+
+function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
+  breakdown,
+  breakdownLabel,
+  tooltipActive,
+  chartConfig,
+  categories,
+}: Pick<
+  AreaChartProps,
+  'breakdown' | 'breakdownLabel' | 'tooltipActive' | 'categories'
+> & {
+  chartConfig: ChartConfig
+}) {
+  if (!breakdown) {
+    return <ChartTooltip cursor content={<ChartTooltipContent />} />
+  }
+
+  if (categories.length > 1) {
+    throw new Error('Only support single category for breakdown')
+  }
+
+  return (
+    <ChartTooltip
+      active={tooltipActive}
+      content={
+        <ChartTooltipContent
+          hideLabel
+          className="w-fit"
+          formatter={(
+            value,
+            name,
+            item,
+            index,
+            payload: Array<Payload<ValueType, NameType>>
+          ) => {
+            const breakdownData = payload[
+              breakdown as keyof typeof payload
+            ] as any[]
+
+            return (
+              <>
+                <div
+                  className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                  style={
+                    {
+                      '--color-bg': `var(--color-${name})`,
+                    } as React.CSSProperties
+                  }
+                />
+
+                {chartConfig[name as keyof typeof chartConfig]?.label || name}
+
+                <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                  {value}
+                  <span className="font-normal text-muted-foreground"></span>
+                </div>
+
+                {breakdownData.length > 0 && (
+                  <>
+                    <div
+                      className="mt-1 flex basis-full flex-col border-t text-xs font-medium text-foreground"
+                      role="breakdown"
+                    >
+                      <div className="mt-1.5">
+                        {breakdownLabel || 'Breakdown'}
+                      </div>
+                      {breakdownData.map(([name, value], index) => (
+                        <div
+                          key={name + index}
+                          className="mt-1.5 flex items-center gap-1.5"
+                          role="row"
+                        >
+                          <div
+                            className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                            style={
+                              {
+                                '--color-bg': `hsl(var(--chart-${10 - index}))`,
+                              } as React.CSSProperties
+                            }
+                          />
+
+                          {chartConfig[name as keyof typeof chartConfig]
+                            ?.label || name}
+
+                          <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                            {value}
+                            <span className="font-normal text-muted-foreground"></span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )
+          }}
+        />
+      }
+      cursor={false}
+      defaultIndex={1}
+    />
   )
 }

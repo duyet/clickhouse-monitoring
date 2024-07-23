@@ -209,4 +209,78 @@ describe('<AreaChart />', () => {
     // Should have two layer
     cy.get('.recharts-area').should('have.length', 2)
   })
+
+  const dataWithBreakdown = [
+    {
+      date: '2025-01-01',
+      query_count: 1000,
+      query_duration: 1000,
+      breakdown: [
+        ['select', '500'],
+        ['insert', '500'],
+      ],
+    },
+    {
+      date: '2025-01-02',
+      query_count: 2000,
+      query_duration: 2000,
+      breakdown: [
+        ['select', '1000'],
+        ['insert', '1000'],
+      ],
+    },
+  ]
+
+  it('renders with breakdown', () => {
+    cy.mount(
+      <AreaChart
+        data={dataWithBreakdown}
+        categories={['query_count']}
+        index="date"
+        showLegend
+        breakdown="breakdown"
+        tooltipActive={true /* always show tooltip for test/debugging */}
+      />
+    )
+    cy.screenshot()
+
+    // Render as svg
+    cy.get('svg:first').as('chart').should('be.visible')
+
+    // Hover to show tooltip
+    cy.get('@chart').trigger('mouseover')
+
+    // Show breakdown in tooltip
+    cy.get('.recharts-tooltip-wrapper [role="breakdown"]').should(
+      'contain',
+      'Breakdown'
+    )
+    cy.get('[role="breakdown"] [role="row"]').should(
+      'have.length',
+      dataWithBreakdown[0].breakdown.length
+    )
+  })
+
+  it('renders with breakdown custom breakdownLabel', () => {
+    const breakdownLabel = 'Custom breakdown'
+
+    cy.mount(
+      <AreaChart
+        data={dataWithBreakdown}
+        categories={['query_count']}
+        index="date"
+        showLegend
+        breakdown="breakdown"
+        breakdownLabel={breakdownLabel}
+        tooltipActive={true /* always show tooltip for test/debugging */}
+      />
+    )
+    cy.screenshot()
+
+    // Show breakdown in tooltip
+    cy.get('.recharts-tooltip-wrapper [role="breakdown"]').should(
+      'contain',
+      breakdownLabel
+    )
+  })
 })

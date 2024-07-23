@@ -7,7 +7,7 @@ export const expensiveQueriesConfig: QueryConfig = {
   sql: `
       SELECT
           normalized_query_hash,
-          replace(substr(argMax(query, utime), 1, 200), '\n', ' ') AS query,
+          replace(substr(argMax(query, utime), 1, 500), '\n', ' ') AS query,
           count() AS cnt,
           sum(query_duration_ms) / 1000 AS queries_duration,
           sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'RealTimeMicroseconds')]) / 1000000 AS real_time,
@@ -59,6 +59,7 @@ export const expensiveQueriesConfig: QueryConfig = {
     'result_bytes',
   ],
   columnFormats: {
+    query: ColumnFormat.CodeDialog,
     queries_duration: ColumnFormat.Duration,
     real_time: ColumnFormat.Duration,
     user_time: ColumnFormat.Duration,
