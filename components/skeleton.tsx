@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 
 export function ChartSkeleton() {
   return (
-    <div className="flex flex-col gap-4 p-5">
+    <div className="mb-5 flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-2">
         <Skeleton className="h-12 rounded-md bg-slate-200" />
         <Skeleton className="h-12 rounded-md bg-slate-200" />
@@ -26,7 +26,7 @@ export function TableSkeleton({
   className?: string
 }) {
   return (
-    <div className={cn('flex flex-col gap-3 p-5', className)}>
+    <div className={cn('mb-5 flex flex-col gap-3', className)}>
       {Array.from({ length: rows }).map((_, i) => (
         <div key={`row-${i}`} className="flex flex-row items-center gap-3">
           {Array.from({ length: cols }).map((_, j) => (

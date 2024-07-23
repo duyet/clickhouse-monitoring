@@ -32,7 +32,10 @@ export const normalizeColumnName = (column: string) => {
  *
  * @returns {ColumnDef<ColumnType>[]} - An array of column definitions.
  */
-export const getColumnDefs = <TData extends RowData, TValue>(
+export const getColumnDefs = <
+  TData extends RowData,
+  TValue extends React.ReactNode,
+>(
   config: QueryConfig,
   data: TData[]
 ): ColumnDef<TData, TValue>[] => {

@@ -29,7 +29,10 @@ import {
 import { LinkFormat } from './cells/link-format'
 import { RelatedTimeFormat } from './cells/related-time-format'
 
-export const formatCell = <TData extends RowData, TValue>(
+export const formatCell = <
+  TData extends RowData,
+  TValue extends React.ReactNode,
+>(
   table: Table<TData>,
   data: TData[],
   row: Row<TData>,
@@ -57,7 +60,11 @@ export const formatCell = <TData extends RowData, TValue>(
       return <code>{value as string}</code>
 
     case ColumnFormat.Number:
-      return formatReadableQuantity(value as number, 'long')
+      return (
+        <span className="text-nowrap text-center">
+          {formatReadableQuantity(value as number, 'long')}
+        </span>
+      )
 
     case ColumnFormat.NumberShort:
       return formatReadableQuantity(value as number, 'short')
@@ -120,6 +127,6 @@ export const formatCell = <TData extends RowData, TValue>(
       )
 
     default:
-      return <span className="text-nowrap">{value as string}</span>
+      return <span className="text-nowrap text-center">{value as string}</span>
   }
 }

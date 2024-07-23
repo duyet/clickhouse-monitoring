@@ -6,13 +6,12 @@ export const replicasConfig: QueryConfig = {
   description: `Contains information and status for replicated tables residing on the local server`,
   sql: `
       SELECT *,
-             database || '.' || table as table
+             (database || '.' || table) as database_table
       FROM system.replicas
       ORDER BY database, table
     `,
   columns: [
-    'table',
-    'engine',
+    'database_table',
     'future_parts',
     'queue_size',
     'absolute_delay',
@@ -24,6 +23,7 @@ export const replicasConfig: QueryConfig = {
     'is_session_expired',
     'parts_to_check',
     'zookeeper_path',
+    'engine',
     'replica_name',
     'replica_path',
     'columns_version',
@@ -44,13 +44,12 @@ export const replicasConfig: QueryConfig = {
     'zookeeper_exception',
   ],
   columnFormats: {
-    table: ColumnFormat.ColoredBadge,
+    database_table: [ColumnFormat.Link, { href: '/tables/[database]/[table]' }],
     engine: ColumnFormat.ColoredBadge,
     is_leader: ColumnFormat.Boolean,
     can_become_leader: ColumnFormat.Boolean,
     is_readonly: ColumnFormat.Boolean,
     is_session_expired: ColumnFormat.Boolean,
-    replica_name: ColumnFormat.ColoredBadge,
   },
   relatedCharts: [
     [

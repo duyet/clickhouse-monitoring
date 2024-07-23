@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 import { cn } from '@/lib/utils'
 
 export async function ChartDisksUsage({
@@ -26,7 +26,7 @@ export async function ChartDisksUsage({
     ORDER BY 1 ASC
   `
 
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithCache<
     {
       event_time: string
       DiskAvailable_default: number
