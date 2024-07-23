@@ -1,5 +1,11 @@
 'use client'
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import React, { useEffect, useState } from 'react'
@@ -19,7 +25,7 @@ export function ErrorAlert({
   reset,
   className,
 }: ErrorAlertProps) {
-  const [countdown, setCountdown] = useState(3)
+  const [countdown, setCountdown] = useState(10)
 
   useEffect(() => {
     if (!reset) return
@@ -29,7 +35,7 @@ export function ErrorAlert({
         if (prev <= 1) {
           clearInterval(timer)
           reset()
-          return 3
+          return 0
         }
         return prev - 1
       })
@@ -48,12 +54,24 @@ export function ErrorAlert({
     </div>
   )
 
+  const renderAccordion = (
+    title: string,
+    content: string | React.ReactNode
+  ) => (
+    <Accordion type="single" collapsible className="w-full">
+      <AccordionItem className="border-none" value="item-1">
+        <AccordionTrigger role="open-query">{title}</AccordionTrigger>
+        <AccordionContent>{content}</AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  )
+
   return (
     <Alert className={className}>
       <AlertTitle className="text-lg">{title}</AlertTitle>
       <AlertDescription>
         {renderContent(message)}
-        {query && renderContent(query)}
+        {query && renderAccordion('View Full Query Details', query)}
         {reset && (
           <Button variant="outline" onClick={() => reset()}>
             Try again {countdown >= 0 && `(${countdown}s)`}

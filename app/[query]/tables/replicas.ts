@@ -44,7 +44,10 @@ export const replicasConfig: QueryConfig = {
     'zookeeper_exception',
   ],
   columnFormats: {
-    database_table: [ColumnFormat.Link, { href: '/tables/[database]/[table]' }],
+    database_table: [
+      ColumnFormat.Link,
+      { href: '/database/[database]/[table]' },
+    ],
     engine: ColumnFormat.ColoredBadge,
     is_leader: ColumnFormat.Boolean,
     can_become_leader: ColumnFormat.Boolean,

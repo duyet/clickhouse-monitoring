@@ -29,7 +29,7 @@ export function LinkFormat<
 
   const originalRow = data[row.index] as Record<string, string | undefined>
 
-  // Href contains placeholders, e.g. /tables/[database]/[table]
+  // Href contains placeholders, e.g. /database/[database]/[table]
   // Replace placeholders with values from the row
   let hrefBinding = href
   if (href.includes('[') && href.includes(']')) {

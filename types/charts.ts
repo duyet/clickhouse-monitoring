@@ -122,10 +122,10 @@ export interface AreaChartProps extends BaseChartProps {
   stack?: boolean
   relative?: boolean
   opacity?: number
+  breakdown?: string
 
   // TODO: support these features
   readable?: string
-  breakdown?: string
   readableColumn?: string
   readableColumns?: string[]
 }
@@ -135,4 +135,12 @@ export interface RadialChartProps extends BaseChartProps {
   nameKey: string
   dataKey: string
   onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+}
+
+export interface NumberChartProps extends BaseChartProps {
+  data: Record<string, string | number>[]
+  nameKey: string
+  dataKey: string
+  title?: string
+  description?: string
 }
