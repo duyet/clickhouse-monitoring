@@ -3,6 +3,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { BarList } from '@/components/tremor/bar-list'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
 export async function ChartTopTableSize({
   title,
@@ -10,7 +11,7 @@ export async function ChartTopTableSize({
   ...props
 }: ChartProps) {
   const limit = 7
-  const topBySizeQuery = fetchData<
+  const topBySizeQuery = fetchDataWithCache<
     {
       table: string
       compressed_bytes: number
@@ -41,7 +42,7 @@ export async function ChartTopTableSize({
       LIMIT ${limit}`,
   }).then((res) => res.data)
 
-  const topByRowCountQuery = fetchData<
+  const topByRowCountQuery = fetchDataWithCache<
     {
       table: string
       compressed_bytes: number

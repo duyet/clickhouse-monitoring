@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
 export async function ChartNewPartsCreated({
   title = 'New Parts Created over last 24 hours (part counts / 15 minutes)',
@@ -30,7 +30,7 @@ export async function ChartNewPartsCreated({
         table DESC
   `
 
-  const { data: raw } = await fetchData<
+  const { data: raw } = await fetchDataWithCache<
     {
       event_time: string
       table: string

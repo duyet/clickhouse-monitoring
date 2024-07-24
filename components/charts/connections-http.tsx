@@ -1,6 +1,6 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 import { cn } from '@/lib/utils'
 import { type ChartProps } from './chart-props'
 
@@ -27,7 +27,7 @@ export async function ChartConnectionsHttp({
     ORDER BY event_time
   `
 
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithCache<
     {
       event_time: string
       CurrentMetric_HTTPConnection: number
@@ -41,7 +41,7 @@ export async function ChartConnectionsHttp({
   })
 
   return (
-    <ChartCard title={title} sql={query} className={className}>
+    <ChartCard title={title} sql={query} className={className} data={data}>
       <BarChart
         data={data}
         index="event_time"

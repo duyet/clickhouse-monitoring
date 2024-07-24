@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
-import { fetchData } from '@/lib/clickhouse'
 
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 import { ChartCard } from '../generic-charts/chart-card'
 
 export async function ChartMergeAvgDuration({
@@ -24,7 +24,7 @@ export async function ChartMergeAvgDuration({
     GROUP BY 1
     ORDER BY 1 ASC
   `
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithCache<
     {
       event_time: string
       avg_duration_ms: number
