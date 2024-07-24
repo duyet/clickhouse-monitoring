@@ -31,6 +31,8 @@ To get the project up and running on your local machine, follow these steps:
     - `CLICKHOUSE_PASSWORD`: ClickHouse password for the specified user.
     - `CLICKHOUSE_MAX_EXECUTION_TIME`: [`max_execution_time`](https://clickhouse.com/docs/en/operations/settings/query-complexity#max-execution-time) timeout in seconds. Default is `10`.
     - `CLICKHOUSE_TZ`: ClickHouse server timezone. Default: `''`.
+    - `NEXT_QUERY_CACHE_TTL`: TTL of [`unstable_cache`](https://nextjs.org/docs/app/api-reference/functions/unstable_cache) - cache the results of most charts to speed up and reuse them across multiple requests. Default: `86400`.
+
 4. Run the development server with `npm run dev` or `yarn dev`
 5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the dashboard.
 
@@ -51,6 +53,7 @@ docker run -it \
     -e CLICKHOUSE_PASSWORD='' \
     -e CLICKHOUSE_TZ='Asia/Ho_Chi_Minh' \
     -e CLICKHOUSE_MAX_EXECUTION_TIME='15' \
+    -e NEXT_QUERY_CACHE_TTL='86400' \
     --name clickhouse-monitoring \
     ghcr.io/duyet/clickhouse-monitoring:main
 ```
@@ -74,6 +77,8 @@ env:
     value: 'Asia/Ho_Chi_Minh'
   - name: CLICKHOUSE_MAX_EXECUTION_TIME
     value: '15'
+  - name: NEXT_QUERY_CACHE_TTL
+    value: '86400'
 EOF
 
 helm install -f values.yaml clickhouse-monitoring-release duyet/clickhouse-monitoring
