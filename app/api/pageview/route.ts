@@ -1,5 +1,6 @@
 import { getClient } from '@/lib/clickhouse'
 import { normalizeUrl } from '@/lib/utils'
+import { geolocation } from '@vercel/functions'
 import type { NextRequest } from 'next/server'
 import { NextResponse, userAgent } from 'next/server'
 
@@ -17,6 +18,12 @@ export async function GET(request: NextRequest) {
   // https://nextjs.org/docs/app/api-reference/functions/userAgent
   const ua = userAgent(request)
 
+  // https://vercel.com/guides/geo-ip-headers-geolocation-vercel-functions#further-reading
+  const { city, country, region } = geolocation(request)
+  const realIp = request.headers.get('x-real-ip') ?? ''
+  const forwardedFor = request.headers.get('x-forwarded-for') ?? realIp
+  const ip = (forwardedFor.split(',')[0] || '').trim()
+
   try {
     await client.insert({
       table: 'system.monitoring_events',
@@ -33,6 +40,10 @@ export async function GET(request: NextRequest) {
             engine: ua.engine,
             cpu: ua.cpu,
             isBot: ua.isBot,
+            ip,
+            city,
+            country,
+            region,
           }),
         },
       ],
