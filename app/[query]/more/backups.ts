@@ -35,7 +35,7 @@ export const backupsConfig: QueryConfig = {
     status: ColumnFormat.ColoredBadge,
     start_time: ColumnFormat.RelatedTime,
     end_time: ColumnFormat.RelatedTime,
-    error: ColumnFormat.Code,
+    error: ColumnFormat.CodeDialog,
     ProfileEvents: ColumnFormat.Code,
   },
   relatedCharts: [
