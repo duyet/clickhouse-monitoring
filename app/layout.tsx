@@ -14,7 +14,10 @@ import { PageView } from './pageview'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_MEASUREMENT_ID
+const GA_ANALYTICS_ENABLED = process.env.NEXT_PUBLIC_MEASUREMENT_ID !== ''
+const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
+const VERCEL_ANALYTICS_ENABLED =
+  process.env.NEXT_PUBLIC_VERCEL_ANALYTICS_ENABLED === 'true'
 
 export const metadata: Metadata = {
   title: 'ClickHouse Monitoring',
@@ -33,22 +36,28 @@ export default function RootLayout({
           <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
             <Header />
             {children}
-            <Toaster />
           </div>
         </AppProvider>
 
-        <Analytics />
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-        />
-        <Script id="google-analytics">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}');
-          `}
-        </Script>
+        <Toaster />
+
+        {VERCEL_ANALYTICS_ENABLED && <Analytics />}
+        {SELINE_ENABLED && <Script src="https://cdn.seline.so/seline.js" async />}
+        {GA_ANALYTICS_ENABLED && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_MEASUREMENT_ID}`}
+            />
+            <Script id="google-analytics">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.NEXT_PUBLIC_MEASUREMENT_ID}');
+              `}
+            </Script>
+          </>
+        )}
 
         <Suspense fallback={null}>
           <PageView />
