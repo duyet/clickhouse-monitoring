@@ -2,7 +2,6 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { BarList } from '@/components/tremor/bar-list'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { fetchData } from '@/lib/clickhouse'
 import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
 export async function ChartTopTableSize({

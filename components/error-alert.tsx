@@ -61,7 +61,9 @@ export function ErrorAlert({
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem className="border-none" value="item-1">
         <AccordionTrigger role="open-query">{title}</AccordionTrigger>
-        <AccordionContent>{content}</AccordionContent>
+        <AccordionContent>
+          <code className="text-muted-foreground">{content}</code>
+        </AccordionContent>
       </AccordionItem>
     </Accordion>
   )
