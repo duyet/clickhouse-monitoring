@@ -1,9 +1,8 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 import { cn } from '@/lib/utils'
 import { type ChartProps } from './chart-props'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
 export async function ChartConnectionsInterserver({
   title = 'Interserver Connections Last 7 days (Total Requests / Hour)',

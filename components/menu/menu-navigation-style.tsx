@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
 
-import { menuItemsConfig } from '../../menu'
+import { LoadingIcon } from '@/components/loading-icon'
+import { menuItemsConfig } from '@/menu'
 import { type MenuItem } from './types'
 
 export interface MenuProps {
@@ -57,7 +58,7 @@ function SingleItem({ item }: { item: MenuItem }) {
             {item.icon && <item.icon className="size-4" />}
             {item.title}
             {item.countSql ? (
-              <ServerComponentLazy onError={''}>
+              <ServerComponentLazy fallback={<LoadingIcon />} onError={''}>
                 <CountBadge sql={item.countSql} variant={item.countVariant} />
               </ServerComponentLazy>
             ) : null}
@@ -76,7 +77,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
           {item.icon && <item.icon className="size-4" />}
           {item.title}
           {item.countSql ? (
-            <ServerComponentLazy onError={''}>
+            <ServerComponentLazy fallback={<LoadingIcon />} onError={''}>
               <CountBadge sql={item.countSql} variant={item.countVariant} />
             </ServerComponentLazy>
           ) : null}
@@ -92,7 +93,10 @@ function HasChildItems({ item }: { item: MenuItem }) {
                   {childItem.icon && <childItem.icon className="size-4" />}
                   {childItem.title}
                   {childItem.countSql ? (
-                    <ServerComponentLazy onError={''}>
+                    <ServerComponentLazy
+                      fallback={<LoadingIcon />}
+                      onError={''}
+                    >
                       <CountBadge
                         sql={childItem.countSql}
                         variant={item.countVariant}
