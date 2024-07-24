@@ -14,7 +14,7 @@ import { PageView } from './pageview'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const GA_ANALYTICS_ENABLED = process.env.NEXT_PUBLIC_MEASUREMENT_ID !== ''
+const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
 const VERCEL_ANALYTICS_ENABLED =
   process.env.NEXT_PUBLIC_VERCEL_ANALYTICS_ENABLED === 'true'
@@ -42,7 +42,9 @@ export default function RootLayout({
         <Toaster />
 
         {VERCEL_ANALYTICS_ENABLED && <Analytics />}
-        {SELINE_ENABLED && <Script src="https://cdn.seline.so/seline.js" async />}
+        {SELINE_ENABLED && (
+          <Script src="https://cdn.seline.so/seline.js" async />
+        )}
         {GA_ANALYTICS_ENABLED && (
           <>
             <Script

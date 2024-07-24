@@ -3,6 +3,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 import { type ChartProps } from './chart-props'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
 export async function ChartConnectionsInterserver({
   title = 'Interserver Connections Last 7 days (Total Requests / Hour)',
@@ -22,7 +23,7 @@ export async function ChartConnectionsInterserver({
     ORDER BY event_time
   `
 
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithCache<
     {
       event_time: string
       CurrentMetric_InterserverConnection: number
@@ -34,7 +35,7 @@ export async function ChartConnectionsInterserver({
   })
 
   return (
-    <ChartCard title={title} sql={query} className={className}>
+    <ChartCard title={title} sql={query} data={data} className={className}>
       <BarChart
         data={data}
         index="event_time"

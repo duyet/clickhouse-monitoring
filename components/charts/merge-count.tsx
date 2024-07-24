@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 import { cn } from '@/lib/utils'
 
 export async function ChartMergeCount({
@@ -24,7 +24,7 @@ export async function ChartMergeCount({
     ORDER BY 1
   `
 
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithCache<
     {
       event_time: string
       avg_CurrentMetric_Merge: number
@@ -37,6 +37,7 @@ export async function ChartMergeCount({
       title={title}
       className={cn('justify-between', className)}
       sql={query}
+      data={data}
     >
       <AreaChart
         className={cn('h-52', chartClassName)}
