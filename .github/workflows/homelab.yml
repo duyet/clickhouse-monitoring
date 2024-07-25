@@ -1,0 +1,42 @@
+name: Homelab Deploy
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types:
+      - published
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  homelab-deploy:
+    runs-on: ubuntu-latest
+    env:
+      USER: duyet
+      # Tailscale machine name
+      MACHINE: duet-ubuntu
+      # Generate key to get a private key to add to GitHub: ssh-keygen -t ed25519
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+    steps:
+      - name: Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - run: |
+          set -e
+          mkdir -p ~/.ssh/
+          chmod 0700 ~/.ssh
+          eval $(ssh-agent -s)
+          ssh-add <(echo "$SSH_KEY")
+          MACHINE_IP="$(tailscale ip -4 $MACHINE)"
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t $USER@$MACHINE_IP "cd ~/project/clickhouse-monitoring; NODE_VERSION=v22.5.1 /home/duyet/.nvm/nvm-exec yarn build"
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t $USER@$MACHINE_IP "sudo systemctl restart clickhouse-monitoring.service"

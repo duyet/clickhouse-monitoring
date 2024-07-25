@@ -1,0 +1,28 @@
+# Assuming:
+#   - Source code located at: /home/duyet/project/clickhouse-monitoring
+#   - NVM installed, NODE_VERSION=v22.5.1
+#   - Port 3000 is available
+#
+# Put this file at: /etc/systemd/system/clickhouse-monitoring.service
+#
+# sudo systemctl enable clickhouse-monitoring.service
+# sudo systemctl daemon-reload
+# sudo systemctl start clickhouse-monitoring.service
+# sudo systemctl status clickhouse-monitoring.service
+
+[Unit]
+Description=ClickHouse Monitoring
+
+[Service]
+Restart=always
+RestartSec=3
+Environment=NODE_VERSION=v22.5.1
+WorkingDirectory=/home/duyet/project/clickhouse-monitoring
+# ExecStartPre=/home/duyet/.nvm/nvm-exec yarn build
+ExecStart=/home/duyet/.nvm/nvm-exec yarn start -H 0.0.0.0 -p 3000
+Type=simple
+StandardOutput=append:/var/log/clickhouse-monitoring/clickhouse-monitoring.log
+StandardError=app-end:/var/log/clickhouse-monitoring/clickhouse-monitoring.err
+
+[Install]
+WantedBy=multi-user.target
