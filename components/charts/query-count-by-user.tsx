@@ -2,6 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { applyInterval } from '@/lib/clickhouse-query'
 
 export async function ChartQueryCountByUser({
   title,
@@ -12,7 +13,7 @@ export async function ChartQueryCountByUser({
   ...props
 }: ChartProps) {
   const query = `
-    SELECT toDate(${interval}(event_time)) AS event_time,
+    SELECT ${applyInterval(interval, 'event_time')},
            user,
            COUNT(*) AS count
     FROM merge(system, '^query_log')
@@ -21,7 +22,7 @@ export async function ChartQueryCountByUser({
           AND user != ''
     GROUP BY 1, 2
     ORDER BY
-      1 ASC WITH FILL STEP toIntervalDay(1),
+      1 ASC,
       3 DESC
   `
   const { data: raw } = await fetchDataWithCache<
