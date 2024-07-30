@@ -52,7 +52,9 @@ export default async function Overview() {
 
           <ServerComponentLazy>
             <ChartQueryCountByUser
-              title="Query Count"
+              title="Query Count last 24h"
+              lastHours={24}
+              interval="toStartOfHour"
               className="w-full p-5"
               chartClassName="h-72"
             />
@@ -60,7 +62,9 @@ export default async function Overview() {
 
           <ServerComponentLazy>
             <ChartMergeCount
-              title="Merge and PartMutation (Avg)"
+              title="Merge and PartMutation last 24h (avg)"
+              lastHours={24}
+              interval="toStartOfHour"
               className="w-full p-5"
               chartClassName="h-72"
             />
@@ -73,9 +77,9 @@ export default async function Overview() {
           <ServerComponentLazy>
             <ChartNewPartsCreated
               className="w-full p-5"
-              title="New Parts Created over last 24 hours"
+              title="New Parts Created over last 7 days"
               interval="toStartOfHour"
-              lastHours={24}
+              lastHours={24 * 7}
             />
           </ServerComponentLazy>
         </div>

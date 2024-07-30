@@ -2,6 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 
 export async function ChartDisksUsage({
@@ -15,7 +16,7 @@ export async function ChartDisksUsage({
   const query = `
     WITH CAST(sumMap(map(metric, value)), 'Map(LowCardinality(String), UInt32)') AS map
     SELECT
-        ${interval}(event_time) as event_time,
+        ${applyInterval(interval, 'event_time')},
         map['DiskAvailable_default'] as DiskAvailable_default,
         map['DiskUsed_default'] as DiskUsed_default,
         formatReadableSize(DiskAvailable_default) as readable_DiskAvailable_default,
