@@ -455,7 +455,7 @@
     js-yaml "4.1.0"
     nyc "15.1.0"
 
-"@cypress/request@^3.0.0":
+"@cypress/request@^3.0.1":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@cypress/request/-/request-3.0.1.tgz#72d7d5425236a2413bd3d8bb66d02d9dc3168960"
   integrity sha512-TWivJlJi8ZDx2wGOw1dbLuHJKUYX7bWySw377nlnGOW3hP9/MUKIsEdXT/YngWxVdgNCHRBmFlBipE+5/2ZZlQ==
@@ -1768,9 +1768,9 @@
     undici-types "~6.13.0"
 
 "@types/node@^20.11.28":
-  version "20.14.14"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.14.14.tgz#6b655d4a88623b0edb98300bb9dd2107225f885e"
-  integrity sha512-d64f00982fS9YoOgJkAMolK7MN8Iq3TDdVjchbYHdEmjth/DHowx82GnoA+tVUAN+7vxfYUgAzi+JXbKNd2SDQ==
+  version "20.14.15"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.14.15.tgz#e59477ab7bc7db1f80c85540bfd192a0becc588b"
+  integrity sha512-Fz1xDMCF/B00/tYSVMlmK7hVeLh7jE5f3B7X1/hmV0MJBwE27KlS7EvD/Yp+z1lm8mVhwV5w+n8jOZG8AfTlKw==
   dependencies:
     undici-types "~5.26.4"
 
@@ -2754,12 +2754,12 @@ cypress-real-events@^1.13.0:
   resolved "https://registry.yarnpkg.com/cypress-real-events/-/cypress-real-events-1.13.0.tgz#6b7cd32dcac172db1493608f97a2576c7d0bd5af"
   integrity sha512-LoejtK+dyZ1jaT8wGT5oASTPfsNV8/ClRp99ruN60oPj8cBJYod80iJDyNwfPAu4GCxTXOhhAv9FO65Hpwt6Hg==
 
-cypress@13.13.1:
-  version "13.13.1"
-  resolved "https://registry.yarnpkg.com/cypress/-/cypress-13.13.1.tgz#860c1142a6e58ea412a764f0ce6ad07567721129"
-  integrity sha512-8F9UjL5MDUdgC/S5hr8CGLHbS5gGht5UOV184qc2pFny43fnkoaKxlzH/U6//zmGu/xRTaKimNfjknLT8+UDFg==
+cypress@13.13.2:
+  version "13.13.2"
+  resolved "https://registry.yarnpkg.com/cypress/-/cypress-13.13.2.tgz#c71f8d92056c430b1b879e5313f6de25ccce0eda"
+  integrity sha512-PvJQU33933NvS1StfzEb8/mu2kMy4dABwCF+yd5Bi7Qly1HOVf+Bufrygee/tlmty/6j5lX+KIi8j9Q3JUMbhA==
   dependencies:
-    "@cypress/request" "^3.0.0"
+    "@cypress/request" "^3.0.1"
     "@cypress/xvfb" "^1.2.4"
     "@types/sinonjs__fake-timers" "8.1.1"
     "@types/sizzle" "^2.3.2"
@@ -3794,9 +3794,9 @@ foreground-child@^2.0.0:
     signal-exit "^3.0.2"
 
 foreground-child@^3.1.0:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/foreground-child/-/foreground-child-3.2.1.tgz#767004ccf3a5b30df39bed90718bab43fe0a59f7"
-  integrity sha512-PXUUyLqrR2XCWICfv6ukppP96sdFwWbNEnfEMt7jNsISjMsvaLNinAHNDYyvkyU+SZG2BTSbT5NjG+vZslfGTA==
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/foreground-child/-/foreground-child-3.3.0.tgz#0ac8644c06e431439f8561db8ecf29a7b5519c77"
+  integrity sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==
   dependencies:
     cross-spawn "^7.0.0"
     signal-exit "^4.0.1"
@@ -5215,10 +5215,10 @@ lru-cache@^5.1.1:
   dependencies:
     yallist "^3.0.2"
 
-lucide-react@^0.412.0:
-  version "0.412.0"
-  resolved "https://registry.yarnpkg.com/lucide-react/-/lucide-react-0.412.0.tgz#d4673e8cdb41661dd9bf7964502967980b46b843"
-  integrity sha512-m7argY/PhSfjhwP2Dxey+VzFBvusfd8ULt+vWWFnzQhURLOtNyD1qWmMVdtJ4Nn+d+DTcoOiILrjThSjY9kaow==
+lucide-react@^0.427.0:
+  version "0.427.0"
+  resolved "https://registry.yarnpkg.com/lucide-react/-/lucide-react-0.427.0.tgz#e06974514bbd591049f9d736b3d3ae99d4ede8c9"
+  integrity sha512-lv9s6c5BDF/ccuA0EgTdskTxIe11qpwBDmzRZHJAKtp8LTewAvDvOM+pTES9IpbBuTqkjiMhOmGpJ/CB+mKjFw==
 
 make-dir@^3.0.0, make-dir@^3.0.2:
   version "3.1.0"
@@ -5792,9 +5792,9 @@ prettier-plugin-organize-imports@^4.0.0:
   integrity sha512-vnKSdgv9aOlqKeEFGhf9SCBsTyzDSyScy1k7E0R1Uo4L0cTcOV7c1XQaT7jfXIOc/p08WLBfN2QUQA9zDSZMxA==
 
 prettier-plugin-tailwindcss@^0.6.0:
-  version "0.6.5"
-  resolved "https://registry.yarnpkg.com/prettier-plugin-tailwindcss/-/prettier-plugin-tailwindcss-0.6.5.tgz#e05202784a3f41889711ae38c75c5b8cad72f368"
-  integrity sha512-axfeOArc/RiGHjOIy9HytehlC0ZLeMaqY09mm8YCkMzznKiDkwFzOpBvtuhuv3xG5qB73+Mj7OCe2j/L1ryfuQ==
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/prettier-plugin-tailwindcss/-/prettier-plugin-tailwindcss-0.6.6.tgz#93e524d3c30f3fb45dc9e99de985b2a584ff063f"
+  integrity sha512-OPva5S7WAsPLEsOuOWXATi13QrCKACCiIonFgIR6V4lYv4QLp++UXVhZSzRbZxXGimkQtQT86CC6fQqTOybGng==
 
 prettier@^3.2.5:
   version "3.3.3"
@@ -6617,9 +6617,9 @@ tailwind-merge@^1.14.0:
   integrity sha512-3mFKyCo/MBcgyOTlrY8T7odzZFx+w+qKSMAmdFzRvqBfLlSigU6TZnlFHK0lkMwj9Bj8OYU+9yW9lmGuS0QEnQ==
 
 tailwind-merge@^2.0.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/tailwind-merge/-/tailwind-merge-2.4.0.tgz#1345209dc1f484f15159c9180610130587703042"
-  integrity sha512-49AwoOQNKdqKPd9CViyH5wJoSKsCDjUlzL8DxuGp3P1FsGY36NJDAa18jLZcaHAUUuTj+JB8IAo8zWgBNvBF7A==
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/tailwind-merge/-/tailwind-merge-2.5.0.tgz#b4ccecd0c762afa0a270364e42b560678771367d"
+  integrity sha512-a6Q/isR5XAo9IR7Hjh80BQDkn8PG9ONJpSO/U3vGzdKyKG125lPHNXdiPfeQ5X0EOG0qKlS/0qnxdBYkLlD6tA==
 
 tailwindcss-animate@^1.0.7:
   version "1.0.7"
@@ -6627,9 +6627,9 @@ tailwindcss-animate@^1.0.7:
   integrity sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==
 
 tailwindcss@^3.4.3:
-  version "3.4.7"
-  resolved "https://registry.yarnpkg.com/tailwindcss/-/tailwindcss-3.4.7.tgz#6092f18767f5933f59375b9afe558e592fc77201"
-  integrity sha512-rxWZbe87YJb4OcSopb7up2Ba4U82BoiSGUdoDr3Ydrg9ckxFS/YWsvhN323GMcddgU65QRy7JndC7ahhInhvlQ==
+  version "3.4.9"
+  resolved "https://registry.yarnpkg.com/tailwindcss/-/tailwindcss-3.4.9.tgz#9e04cddce1924d530df62af37d3520f0e2a9d85e"
+  integrity sha512-1SEOvRr6sSdV5IDf9iC+NU4dhwdqzF4zKKq3sAbasUWHEM6lsMhX+eNN5gkPx1BvLFEnZQEUFbXnGj8Qlp83Pg==
   dependencies:
     "@alloc/quick-lru" "^5.2.0"
     arg "^5.0.2"
@@ -6781,47 +6781,47 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-turbo-darwin-64@2.0.11:
-  version "2.0.11"
-  resolved "https://registry.yarnpkg.com/turbo-darwin-64/-/turbo-darwin-64-2.0.11.tgz#9734155718c2980e49d0f69de874c792691dcdc2"
-  integrity sha512-YlHEEhcm+jI1BSZoLugGHUWDfRXaNaQIv7tGQBfadYjo9kixBnqoTOU6s1ubOrQMID+lizZZQs79GXwqM6vohg==
+turbo-darwin-64@2.0.12:
+  version "2.0.12"
+  resolved "https://registry.yarnpkg.com/turbo-darwin-64/-/turbo-darwin-64-2.0.12.tgz#3ca5b781adf0bb68a5e35bc70ce35c791ae52145"
+  integrity sha512-NAgfgbXxX/JScWQmmQnGbPuFZq7LIswHfcMk5JwyBXQM/xmklNOxxac7MnGGIOf19Z2f6S3qHy17VIj0SeGfnA==
 
-turbo-darwin-arm64@2.0.11:
-  version "2.0.11"
-  resolved "https://registry.yarnpkg.com/turbo-darwin-arm64/-/turbo-darwin-arm64-2.0.11.tgz#31277b9cd1d927da881016e1893374099e3f582c"
-  integrity sha512-K/YW+hWzRQ/wGmtffxllH4M1tgy8OlwgXODrIiAGzkSpZl9+pIsem/F86UULlhsIeavBYK/LS5+dzV3DPMjJ9w==
+turbo-darwin-arm64@2.0.12:
+  version "2.0.12"
+  resolved "https://registry.yarnpkg.com/turbo-darwin-arm64/-/turbo-darwin-arm64-2.0.12.tgz#563af59a4629f2741f4e1fda68f47ff756f3c71c"
+  integrity sha512-cP02uer5KSJ+fXL+OfRRk5hnVjV0c60hxDgNcJxrZpfhun7HHoKDDR7w2xhQntiA45aC6ZZEXRqMKpj6GAmKbg==
 
-turbo-linux-64@2.0.11:
-  version "2.0.11"
-  resolved "https://registry.yarnpkg.com/turbo-linux-64/-/turbo-linux-64-2.0.11.tgz#c0639719d5d8e1ccf99cdecc0a8a4abe1836b74b"
-  integrity sha512-mv8CwGP06UPweMh1Vlp6PI6OWnkuibxfIJ4Vlof7xqjohAaZU5FLqeOeHkjQflH/6YrCVuS9wrK0TFOu+meTtA==
+turbo-linux-64@2.0.12:
+  version "2.0.12"
+  resolved "https://registry.yarnpkg.com/turbo-linux-64/-/turbo-linux-64-2.0.12.tgz#7714dd67f8f8514ef19cce47d42de185c45f52ac"
+  integrity sha512-+mQgGfg1eq5qF+wenK/FKJaNMNAo5DQLC4htQy+8osW+fx6U+8+6UlPQPaycAWDEqwOI7NwuqkeHfkEQLQUTyQ==
 
-turbo-linux-arm64@2.0.11:
-  version "2.0.11"
-  resolved "https://registry.yarnpkg.com/turbo-linux-arm64/-/turbo-linux-arm64-2.0.11.tgz#2fdd73e006f5220ef30c060ea7ecaa3a47589b25"
-  integrity sha512-wLE5tl4oriTmHbuayc0ki0csaCplmVLj+uCWtecM/mfBuZgNS9ICNM9c4sB+Cfl5tlBBFeepqRNgvRvn8WeVZg==
+turbo-linux-arm64@2.0.12:
+  version "2.0.12"
+  resolved "https://registry.yarnpkg.com/turbo-linux-arm64/-/turbo-linux-arm64-2.0.12.tgz#04f54cddbb80db532151efffec556e363399737d"
+  integrity sha512-KFyEZDXfPU1DK4zimxdCcqAcK7IIttX4mfsgB7NsSEOmH0dhHOih/YFYiyEDC1lTRx0C2RlzQ0Kjjdz48AN5Eg==
 
-turbo-windows-64@2.0.11:
-  version "2.0.11"
-  resolved "https://registry.yarnpkg.com/turbo-windows-64/-/turbo-windows-64-2.0.11.tgz#5362884c625e1c02736552ec970a86830cb70bfe"
-  integrity sha512-tja3zvVCSWu3HizOoeQv0qDJ+GeWGWRFOOM6a8i3BYnXLgGKAaDZFcjwzgC50tWiAw4aowIVR4OouwIyRhLBaQ==
+turbo-windows-64@2.0.12:
+  version "2.0.12"
+  resolved "https://registry.yarnpkg.com/turbo-windows-64/-/turbo-windows-64-2.0.12.tgz#b10d9190bee532d4989ab7acf637e4643c50eac3"
+  integrity sha512-kJj4KCkZTkDTDCqsSw1m1dbO4WeoQq1mYUm/thXOH0OkeqYbSMt0EyoTcJOgKUDsrMnzZD2gPfYrlYHtV69lVA==
 
-turbo-windows-arm64@2.0.11:
-  version "2.0.11"
-  resolved "https://registry.yarnpkg.com/turbo-windows-arm64/-/turbo-windows-arm64-2.0.11.tgz#4e871f273754018df0ec170908ef29a5ac04af9a"
-  integrity sha512-sYjXP6k94Bqh99R+y3M1Ks6LRIEZybMz+7enA8GKl6JJ2ZFaXxTnS6q+/2+ii1+rRwxohj5OBb4gxODcF8Jd4w==
+turbo-windows-arm64@2.0.12:
+  version "2.0.12"
+  resolved "https://registry.yarnpkg.com/turbo-windows-arm64/-/turbo-windows-arm64-2.0.12.tgz#35548e30614d6cc15bc4486d609335dfc971cd76"
+  integrity sha512-TY3ROxguDilN2olCwcZMaePdW01Xhma0pZU7bNhsQEqca9RGAmsZBuzfGnTMcWPmv4tpnb/PlX1hrt1Hod/44Q==
 
 turbo@^2.0.6:
-  version "2.0.11"
-  resolved "https://registry.yarnpkg.com/turbo/-/turbo-2.0.11.tgz#de8bb6558b00199867db992066fbb0c5dec582d4"
-  integrity sha512-imDlFFAvitbCm1JtDFJ6eG882qwxHUmVT2noPb3p2jq5o5DuXOchMbkVS9kUeC3/4WpY5N0GBZ3RvqNyjHZw1Q==
+  version "2.0.12"
+  resolved "https://registry.yarnpkg.com/turbo/-/turbo-2.0.12.tgz#0a3221d1cfc83b4631552a18f1b982e84ec3fb0e"
+  integrity sha512-8s2KwqjwQj7z8Z53SUZSKVkQOZ2/Sl4D2F440oaBY/k2lGju60dW6srEpnn8/RIDeICZmQn3pQHF79Jfnc5Skw==
   optionalDependencies:
-    turbo-darwin-64 "2.0.11"
-    turbo-darwin-arm64 "2.0.11"
-    turbo-linux-64 "2.0.11"
-    turbo-linux-arm64 "2.0.11"
-    turbo-windows-64 "2.0.11"
-    turbo-windows-arm64 "2.0.11"
+    turbo-darwin-64 "2.0.12"
+    turbo-darwin-arm64 "2.0.12"
+    turbo-linux-64 "2.0.12"
+    turbo-linux-arm64 "2.0.12"
+    turbo-windows-64 "2.0.12"
+    turbo-windows-arm64 "2.0.12"
 
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
