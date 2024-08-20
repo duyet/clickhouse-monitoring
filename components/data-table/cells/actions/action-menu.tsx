@@ -1,3 +1,5 @@
+'use client'
+
 import { MoreHorizontal } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
@@ -10,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+import { useToast } from '@/components/ui/use-toast'
 import type { Row, RowData } from '@tanstack/react-table'
 import { type Action } from './types'
 
@@ -24,6 +27,8 @@ export function ActionMenu<TData extends RowData, TValue>({
   value,
   actions,
 }: ActionMenuProps<TData, TValue>) {
+  const { toast, dismiss } = useToast()
+
   // Using dynamic import to avoid cypress components test error
   const ActionItem = dynamic(() =>
     import('./action-item').then((res) => res.ActionItem)
@@ -46,6 +51,8 @@ export function ActionMenu<TData extends RowData, TValue>({
             value={value}
             row={row as Row<RowData>}
             action={action}
+            toast={toast}
+            dismiss={dismiss}
           />
         ))}
       </DropdownMenuContent>
