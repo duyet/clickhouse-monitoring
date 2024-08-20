@@ -30,8 +30,12 @@ export function ActionItem<TData extends RowData, TValue>({
   row,
   action,
   value,
-}: ActionButtonProps<TData, TValue>) {
-  const { toast, dismiss } = useToast()
+  toast,
+  dismiss,
+}: ActionButtonProps<TData, TValue> & {
+  toast: ReturnType<typeof useToast>['toast']
+  dismiss: ReturnType<typeof useToast>['dismiss']
+}) {
   const [status, updateStatus] = useState<
     'none' | 'loading' | 'success' | 'failed'
   >('none')

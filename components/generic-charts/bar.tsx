@@ -19,6 +19,11 @@ import {
   YAxis,
   type LabelListProps,
 } from 'recharts'
+import {
+  NameType,
+  Payload,
+  ValueType,
+} from 'recharts/types/component/DefaultTooltipContent'
 import { type ViewBox } from 'recharts/types/util/types'
 
 export function BarChart({
@@ -251,7 +256,43 @@ function renderChartTooltip({
   chartConfig: ChartConfig
 }) {
   if (!tooltipTotal) {
-    return <ChartTooltip content={<ChartTooltipContent />} />
+    return (
+      <ChartTooltip
+        content={
+          <ChartTooltipContent
+            className="w-fit"
+            formatter={(
+              value,
+              name,
+              item,
+              index,
+              payload: Array<Payload<ValueType, NameType>>
+            ) => {
+              return (
+                <>
+                  <div
+                    className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                    style={
+                      {
+                        '--color-bg': `var(--color-${name})`,
+                      } as React.CSSProperties
+                    }
+                  />
+
+                  {chartConfig[name as keyof typeof chartConfig]?.label || name}
+
+                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                    {item['payload'][`readable_${name}` as keyof typeof item] ||
+                      value.toLocaleString()}
+                    <span className="font-normal text-muted-foreground"></span>
+                  </div>
+                </>
+              )
+            }}
+          />
+        }
+      />
+    )
   }
 
   return (
@@ -274,7 +315,8 @@ function renderChartTooltip({
               {chartConfig[name as keyof typeof chartConfig]?.label || name}
 
               <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
-                {value}
+                {item['payload'][`readable_${name}` as keyof typeof item] ||
+                  value.toLocaleString()}
                 <span className="font-normal text-muted-foreground"></span>
               </div>
 

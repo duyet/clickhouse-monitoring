@@ -122,7 +122,44 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
   chartConfig: ChartConfig
 }) {
   if (!breakdown) {
-    return <ChartTooltip cursor content={<ChartTooltipContent />} />
+    return (
+      <ChartTooltip
+        cursor
+        content={
+          <ChartTooltipContent
+            className="w-fit"
+            formatter={(
+              value,
+              name,
+              item,
+              index,
+              payload: Array<Payload<ValueType, NameType>>
+            ) => {
+              return (
+                <>
+                  <div
+                    className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                    style={
+                      {
+                        '--color-bg': `var(--color-${name})`,
+                      } as React.CSSProperties
+                    }
+                  />
+
+                  {chartConfig[name as keyof typeof chartConfig]?.label || name}
+
+                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                    {item['payload'][`readable_${name}` as keyof typeof item] ||
+                      value.toLocaleString()}
+                    <span className="font-normal text-muted-foreground"></span>
+                  </div>
+                </>
+              )
+            }}
+          />
+        }
+      />
+    )
   }
 
   if (categories.length > 1) {
