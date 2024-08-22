@@ -124,6 +124,8 @@ export interface AreaChartProps extends BaseChartProps {
   opacity?: number
   breakdown?: string
   breakdownLabel?: string
+  breakdownValue?: string
+  breakdownHeading?: string
   tooltipActive?: boolean
 
   // TODO: support these features

@@ -49,7 +49,7 @@ export async function ChartQueryCount({
     {
       event_time: string
       query_count: number
-      breakdown: Array<[string, number]>
+      breakdown: Array<[string, number] | Record<string, string>>
     }[]
   >({ query })
 
@@ -65,6 +65,8 @@ export async function ChartQueryCount({
         showLegend={false}
         colors={['--chart-yellow']}
         breakdown="breakdown"
+        breakdownLabel="query_kind"
+        breakdownValue="count"
         {...props}
       />
     </ChartCard>
