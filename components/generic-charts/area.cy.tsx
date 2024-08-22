@@ -231,7 +231,28 @@ describe('<AreaChart />', () => {
     },
   ]
 
-  it('renders with breakdown', () => {
+  const dataWithBreakdown2 = [
+    {
+      date: '2025-01-01',
+      query_count: 1000,
+      query_duration: 1000,
+      breakdown: [
+        { query_kind: 'select', count: '500' },
+        { query_kind: 'insert', count: '500' },
+      ],
+    },
+    {
+      date: '2025-01-02',
+      query_count: 2000,
+      query_duration: 2000,
+      breakdown: [
+        { query_kind: 'select', count: '1000' },
+        { query_kind: 'insert', count: '1000' },
+      ],
+    },
+  ]
+
+  it('renders with breakdown as array of array format (old clickhouse)', () => {
     cy.mount(
       <AreaChart
         data={dataWithBreakdown}
@@ -261,8 +282,40 @@ describe('<AreaChart />', () => {
     )
   })
 
-  it('renders with breakdown custom breakdownLabel', () => {
-    const breakdownLabel = 'Custom breakdown'
+  it('renders with breakdown as array of object', () => {
+    cy.mount(
+      <AreaChart
+        data={dataWithBreakdown2}
+        categories={['query_count']}
+        index="date"
+        showLegend
+        breakdown="breakdown"
+        breakdownLabel="query_kind"
+        breakdownValue="count"
+        tooltipActive={true /* always show tooltip for test/debugging */}
+      />
+    )
+    cy.screenshot()
+
+    // Render as svg
+    cy.get('svg:first').as('chart').should('be.visible')
+
+    // Hover to show tooltip
+    cy.get('@chart').trigger('mouseover')
+
+    // Show breakdown in tooltip
+    cy.get('.recharts-tooltip-wrapper [role="breakdown"]').should(
+      'contain',
+      'Breakdown'
+    )
+    cy.get('[role="breakdown"] [role="row"]').should(
+      'have.length',
+      dataWithBreakdown[0].breakdown.length
+    )
+  })
+
+  it('renders with breakdown custom breakdownHeading', () => {
+    const breakdownHeading = 'Custom breakdown'
 
     cy.mount(
       <AreaChart
@@ -271,7 +324,7 @@ describe('<AreaChart />', () => {
         index="date"
         showLegend
         breakdown="breakdown"
-        breakdownLabel={breakdownLabel}
+        breakdownHeading={breakdownHeading}
         tooltipActive={true /* always show tooltip for test/debugging */}
       />
     )
@@ -280,7 +333,7 @@ describe('<AreaChart />', () => {
     // Show breakdown in tooltip
     cy.get('.recharts-tooltip-wrapper [role="breakdown"]').should(
       'contain',
-      breakdownLabel
+      breakdownHeading
     )
   })
 })

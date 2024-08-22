@@ -34,6 +34,8 @@ export function AreaChart({
   tickFormatter,
   breakdown,
   breakdownLabel,
+  breakdownValue,
+  breakdownHeading,
   tooltipActive,
   className,
 }: AreaChartProps) {
@@ -85,6 +87,8 @@ export function AreaChart({
         {renderChartTooltip({
           breakdown,
           breakdownLabel,
+          breakdownValue,
+          breakdownHeading,
           tooltipActive,
           chartConfig,
           categories,
@@ -112,12 +116,19 @@ export function AreaChart({
 function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
   breakdown,
   breakdownLabel,
+  breakdownValue,
+  breakdownHeading,
   tooltipActive,
   chartConfig,
   categories,
 }: Pick<
   AreaChartProps,
-  'breakdown' | 'breakdownLabel' | 'tooltipActive' | 'categories'
+  | 'breakdown'
+  | 'breakdownLabel'
+  | 'breakdownValue'
+  | 'breakdownHeading'
+  | 'tooltipActive'
+  | 'categories'
 > & {
   chartConfig: ChartConfig
 }) {
@@ -173,16 +184,29 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
         <ChartTooltipContent
           hideLabel
           className="w-fit"
-          formatter={(
-            value,
-            name,
-            item,
-            index,
-            payload: Array<Payload<ValueType, NameType>>
-          ) => {
+          formatter={(value, name, item, index, payload: any) => {
             const breakdownData = payload[
               breakdown as keyof typeof payload
-            ] as any[]
+            ] as Array<any>
+            const breakdownDataMap = breakdownData.map((item) => {
+              // breakdown: [('A', 1000)]
+              if (Array.isArray(item) && item.length === 2) {
+                return item
+              }
+
+              // breakdown: [{ name: 'A', value: 1000 }]
+              if (typeof item === 'object') {
+                if (!breakdownLabel || !breakdownValue) {
+                  throw new Error('Missing breakdownLabel or breakdownValue')
+                }
+
+                return [item[breakdownLabel], item[breakdownValue]]
+              }
+
+              throw new Error(
+                'Invalid breakdown data, expected array(2) or object'
+              )
+            })
 
             return (
               <>
@@ -209,9 +233,9 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
                       role="breakdown"
                     >
                       <div className="mt-1.5">
-                        {breakdownLabel || 'Breakdown'}
+                        {breakdownHeading || 'Breakdown'}
                       </div>
-                      {breakdownData.map(([name, value], index) => (
+                      {breakdownDataMap.map(([name, value], index) => (
                         <div
                           key={name + index}
                           className="mt-1.5 flex items-center gap-1.5"
@@ -226,11 +250,10 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
                             }
                           />
 
-                          {chartConfig[name as keyof typeof chartConfig]
-                            ?.label || name}
+                          {item[breakdownLabel as keyof typeof item] || name}
 
                           <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
-                            {value}
+                            {value.toLocaleString()}
                             <span className="font-normal text-muted-foreground"></span>
                           </div>
                         </div>

@@ -28,13 +28,34 @@ export default async function Overview() {
           <TabsTrigger value="backups">Backups</TabsTrigger>
         </TabsList>
       </div>
+
       <TabsContent value="overview" className="space-y-4">
         <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+          <ServerComponentLazy>
+            <ChartQueryCountByUser
+              title="Query Count last 24h"
+              lastHours={24}
+              interval="toStartOfHour"
+              className="w-full p-5"
+              chartClassName="h-64"
+            />
+          </ServerComponentLazy>
+
+          <ServerComponentLazy>
+            <ChartQueryCountByUser
+              title="Query Count last 14d"
+              lastHours={24 * 14}
+              interval="toStartOfDay"
+              className="w-full p-5"
+              chartClassName="h-64"
+            />
+          </ServerComponentLazy>
+
           <ServerComponentLazy>
             <ChartMemoryUsage
               title="Memory Usage last 24h (avg / 10 minutes)"
               className="w-full"
-              chartClassName="h-72"
+              chartClassName="h-64"
               interval="toStartOfTenMinutes"
               lastHours={24}
             />
@@ -44,19 +65,9 @@ export default async function Overview() {
             <ChartCPUUsage
               title="CPU Usage last 24h (avg / 10 minutes)"
               className="w-full"
-              chartClassName="h-72"
+              chartClassName="h-64"
               interval="toStartOfTenMinutes"
               lastHours={24}
-            />
-          </ServerComponentLazy>
-
-          <ServerComponentLazy>
-            <ChartQueryCountByUser
-              title="Query Count last 24h"
-              lastHours={24}
-              interval="toStartOfHour"
-              className="w-full p-5"
-              chartClassName="h-72"
             />
           </ServerComponentLazy>
 
@@ -66,7 +77,7 @@ export default async function Overview() {
               lastHours={24}
               interval="toStartOfHour"
               className="w-full p-5"
-              chartClassName="h-72"
+              chartClassName="h-64"
             />
           </ServerComponentLazy>
 
@@ -77,6 +88,7 @@ export default async function Overview() {
           <ServerComponentLazy>
             <ChartNewPartsCreated
               className="w-full p-5"
+              chartClassName="h-64"
               title="New Parts Created over last 7 days"
               interval="toStartOfHour"
               lastHours={24 * 7}
@@ -93,6 +105,7 @@ export default async function Overview() {
           <ServerComponentLazy>
             <ChartDisksUsage
               className="w-full p-5"
+              chartClassName="h-64"
               title="Disks Usage over last 30 days"
               interval="toStartOfDay"
               lastHours={24 * 30}
@@ -104,7 +117,11 @@ export default async function Overview() {
       <TabsContent value="backups" className="space-y-4">
         <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
           <ServerComponentLazy>
-            <ChartBackupSize className="w-full p-5" title="Backup" />
+            <ChartBackupSize
+              className="w-full p-5"
+              title="Backup"
+              chartClassName="h-64"
+            />
           </ServerComponentLazy>
         </div>
       </TabsContent>
