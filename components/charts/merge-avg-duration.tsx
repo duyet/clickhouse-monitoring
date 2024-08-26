@@ -13,9 +13,9 @@ export async function ChartMergeAvgDuration({
 }: ChartProps) {
   const query = `
     SELECT
-        ${interval}(event_time) as event_time,
+        ${interval}(event_time)${interval.includes('Day') ? '::date' : ''} as event_time,
         AVG(duration_ms) AS avg_duration_ms,
-        formatReadableTimeDelta(avg_duration_ms / 1000) AS readable_avg_duration_ms,
+        formatReadableTimeDelta(avg_duration_ms / 1000, 'seconds', 'milliseconds') AS readable_avg_duration_ms,
         bar(avg_duration_ms, 0, MAX(avg_duration_ms) OVER ()) AS bar
     FROM merge(system, '^part_log')
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)

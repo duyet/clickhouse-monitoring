@@ -14,7 +14,7 @@ export const mergePerformanceConfig: QueryConfig = {
 
           -- Merge Duration
           AVG(duration_ms) AS avg_duration_ms,
-          formatReadableTimeDelta(avg_duration_ms / 1000) AS readable_avg_duration,
+          formatReadableTimeDelta(avg_duration_ms / 1000, 'minutes', 'milliseconds') AS readable_avg_duration,
           round(100 * avg_duration_ms / max(avg_duration_ms) OVER ()) as pct_avg_duration,
 
           -- Rows Read

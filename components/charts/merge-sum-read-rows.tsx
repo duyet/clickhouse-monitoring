@@ -13,7 +13,7 @@ export async function ChartMergeSumReadRows({
 }: ChartProps) {
   const query = `
     SELECT
-        ${interval}(event_time) as event_time,
+        ${interval}(event_time)${interval.includes('Day') ? '::date' : ''} as event_time,
         SUM(read_rows) AS sum_read_rows,
         log10(sum_read_rows) * 100 AS sum_read_rows_scale,
         formatReadableQuantity(sum_read_rows) AS readable_sum_read_rows

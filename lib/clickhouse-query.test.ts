@@ -9,12 +9,12 @@ describe('applyInterval', () => {
 
   it('should apply toStartOfWeek for toStartOfWeek interval', () => {
     const result = applyInterval('toStartOfWeek', 'myColumn')
-    expect(result).toEqual('toDate(toStartOfDay(myColumn)) as myColumn') // Change to toEqual
+    expect(result).toEqual('toDate(toStartOfWeek(myColumn)) as myColumn') // Change to toEqual
   })
 
   it('should apply toStartOfMonth for toStartOfMonth interval', () => {
     const result = applyInterval('toStartOfMonth', 'myColumn', 'myAlias')
-    expect(result).toEqual('toDate(toStartOfDay(myColumn)) as myAlias') // Change to toEqual
+    expect(result).toEqual('toDate(toStartOfMonth(myColumn)) as myAlias') // Change to toEqual
   })
 
   it('should apply toStartOfHour for other intervals', () => {
