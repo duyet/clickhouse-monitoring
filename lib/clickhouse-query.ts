@@ -10,8 +10,8 @@ export function applyInterval(
     interval === 'toStartOfWeek' ||
     interval === 'toStartOfDay'
   ) {
-    return `toDate(toStartOfDay(${column})) as ${alias || column}`
+    return `toDate(${interval}(${column})) as ${alias || column}`
   }
 
-  return `toStartOfHour(${column}) as ${alias || column}`
+  return `${interval}(${column}) as ${alias || column}`
 }
