@@ -2,7 +2,6 @@ import { ChevronDownIcon, SlashIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 import React from 'react'
 
-import { ErrorAlert } from '@/components/error-alert'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,10 +15,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
-
-import { redirect } from 'next/navigation'
-import { listDatabases } from '../queries'
 
 interface Props {
   database: string
@@ -30,52 +25,9 @@ interface DatabaseCount {
   count: number
 }
 
-export async function DatabaseBreadcrumb({ database }: Props) {
-  let databases: DatabaseCount[] = []
-
-  try {
-    // List database names and number of tables
-    const data = (await fetchDataWithCache({
-      query: listDatabases,
-      clickhouse_settings: {
-        use_query_cache: 1,
-        query_cache_system_table_handling: 'save',
-        query_cache_ttl: 300,
-      },
-    })) satisfies { data: DatabaseCount[] }
-
-    databases = data.data
-  } catch (e: any) {
-    return (
-      <ErrorAlert
-        title="Breadcrumb: could not getting list database"
-        message={`${e}`}
-        query={listDatabases}
-      />
-    )
-  }
-
-  if (!databases.length) {
-    return (
-      <ErrorAlert
-        title="Message"
-        message="No database found"
-        query={listDatabases}
-      />
-    )
-  }
-
-  // Current database not found in database list
-  if (!databases.find((db) => db.name === database)) {
-    redirect('/database/' + databases[0].name)
-  }
-
-  return <Internal current={database} databases={databases} />
-}
-
 export async function DatabaseBreadcrumbSkeleton({ database }: Props) {
   return (
-    <Internal
+    <DatabaseBreadcrumb
       current={database}
       databases={[
         { name: database, count: -1 },
@@ -85,7 +37,7 @@ export async function DatabaseBreadcrumbSkeleton({ database }: Props) {
   )
 }
 
-function Internal({
+export function DatabaseBreadcrumb({
   current,
   databases,
 }: {

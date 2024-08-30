@@ -4,7 +4,7 @@ import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 import { type RowData } from '@tanstack/react-table'
 
-import { listTables } from '../../database/queries'
+import { listTables } from '../queries'
 import { Toolbar } from './toolbar'
 
 interface TableListProps {
