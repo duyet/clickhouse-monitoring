@@ -12,20 +12,25 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
-import { fetchData, getClickHouseHosts } from '@/lib/clickhouse'
+import {
+  fetchData,
+  getClickHouseHost,
+  getClickHouseHosts,
+} from '@/lib/clickhouse'
 import { getHost } from '@/lib/utils'
+import Link from 'next/link'
 import { Suspense } from 'react'
 
 const Online = ({ title }: { title: string[] }) => (
   <TooltipProvider delayDuration={0}>
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="relative flex size-2 cursor-pointer">
-          <span className="absolute inline-flex size-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
-          <span className="relative inline-flex size-2 rounded-full bg-sky-500"></span>
+        <span className='relative flex size-2 cursor-pointer'>
+          <span className='absolute inline-flex size-full animate-ping rounded-full bg-sky-400 opacity-75'></span>
+          <span className='relative inline-flex size-2 rounded-full bg-sky-500'></span>
         </span>
       </TooltipTrigger>
-      <TooltipContent side="bottom">
+      <TooltipContent side='bottom'>
         {title.map((t, i) => (
           <p key={i}>{t}</p>
         ))}
@@ -38,11 +43,11 @@ const Offline = ({ title }: { title: string[] }) => (
   <TooltipProvider delayDuration={0}>
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="relative flex size-2 cursor-pointer">
-          <span className="absolute inline-flex size-full rounded-full bg-red-400"></span>
+        <span className='relative flex size-2 cursor-pointer'>
+          <span className='absolute inline-flex size-full rounded-full bg-red-400'></span>
         </span>
       </TooltipTrigger>
-      <TooltipContent side="bottom">
+      <TooltipContent side='bottom'>
         {title.map((t, i) => (
           <p key={i}>{t}</p>
         ))}
@@ -87,7 +92,7 @@ export async function ClickHouseHost() {
 
   if (hosts.length === 1) {
     return (
-      <div className="flex flex-row items-center gap-2">
+      <div className='flex flex-row items-center gap-2'>
         {getHost(hosts[0])}
         <Suspense>
           <HostStatus />
@@ -99,18 +104,21 @@ export async function ClickHouseHost() {
   return (
     <div>
       <Select>
-        <SelectTrigger>
-          <SelectValue placeholder={hosts[0]} />
+        <SelectTrigger className='border-0 shadow-none'>
+          <SelectValue placeholder={getClickHouseHost()} />
         </SelectTrigger>
         <SelectContent>
-          {hosts.map((host) => (
+          {hosts.map((host, id) => (
             <SelectItem key={host} value={host}>
-              <div className="flex flex-row items-center gap-2">
+              <Link
+                href={`/${id}/overview`}
+                className='flex flex-row items-center gap-2'
+              >
                 {getHost(host)}
                 <Suspense>
                   <HostStatus />
                 </Suspense>
-              </div>
+              </Link>
             </SelectItem>
           ))}
         </SelectContent>
