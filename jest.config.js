@@ -7,4 +7,15 @@ module.exports = {
     react: 'next/dist/compiled/react/cjs/react.development.js',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-};
+  collectCoverage: true,
+  coverageDirectory: 'jest-reports/coverage',
+  reporters: [
+    'default',
+    [
+      'jest-junit',
+      { outputDirectory: 'jest-reports', outputName: 'junit.xml' },
+    ],
+    ['github-actions', { silent: false }],
+    'summary',
+  ],
+}
