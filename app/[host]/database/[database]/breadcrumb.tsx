@@ -16,8 +16,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
+import { fetchData } from '@/lib/clickhouse'
+import { getScopedLink } from '@/lib/context'
 import { redirect } from 'next/navigation'
 import { listDatabases } from '../queries'
 
@@ -35,7 +36,7 @@ export async function DatabaseBreadcrumb({ database }: Props) {
 
   try {
     // List database names and number of tables
-    const data = (await fetchDataWithCache({
+    const data = (await fetchData({
       query: listDatabases,
       clickhouse_settings: {
         use_query_cache: 1,
@@ -98,7 +99,9 @@ function Internal({
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/database">Database</BreadcrumbLink>
+          <BreadcrumbLink href={getScopedLink('/database')}>
+            Database
+          </BreadcrumbLink>
         </BreadcrumbItem>
 
         <BreadcrumbSeparator>
@@ -114,7 +117,7 @@ function Internal({
             {databases.map(({ name, count }) => (
               <DropdownMenuItem key={name}>
                 <Link
-                  href={`/database/${name}`}
+                  href={getScopedLink(`/database/${name}`)}
                   className={name == current ? 'font-bold' : ''}
                 >
                   {name}

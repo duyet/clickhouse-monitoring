@@ -9,8 +9,9 @@ const NEXT_QUERY_CACHE_TTL = parseInt(
 ) // 60 minutes by default
 
 export const fetchDataWithCache = unstable_cache(
-  fetchData,
-  [CLICKHOUSE_CACHE_TAG],
+  (param: (typeof fetchData.arguments)[0], id?: number | string) =>
+    fetchData(param, id),
+  undefined,
   {
     tags: [CLICKHOUSE_CACHE_TAG],
     revalidate: NEXT_QUERY_CACHE_TTL,

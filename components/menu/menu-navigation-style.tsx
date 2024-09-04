@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import React from 'react'
 
 import { CountBadge } from '@/components/menu/count-badge'
@@ -15,6 +14,7 @@ import { cn } from '@/lib/utils'
 
 import { LoadingIcon } from '@/components/loading-icon'
 import { menuItemsConfig } from '@/menu'
+import { HostPrefixedLink } from './link-with-context'
 import { type MenuItem } from './types'
 
 export interface MenuProps {
@@ -48,7 +48,7 @@ function MenuItem({ item }: { item: MenuItem }) {
 function SingleItem({ item }: { item: MenuItem }) {
   return (
     <NavigationMenuItem>
-      <Link href={item.href} legacyBehavior passHref>
+      <HostPrefixedLink href={item.href}>
         <NavigationMenuLink
           className={cn(
             'group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50'
@@ -64,7 +64,7 @@ function SingleItem({ item }: { item: MenuItem }) {
             ) : null}
           </span>
         </NavigationMenuLink>
-      </Link>
+      </HostPrefixedLink>
     </NavigationMenuItem>
   )
 }
@@ -130,19 +130,20 @@ function ListItem({
   return (
     <li>
       <NavigationMenuLink asChild>
-        <a
-          className={cn(
-            'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-            className
-          )}
-          href={href}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {description}
-          </p>
-        </a>
+        <HostPrefixedLink href={href}>
+          <span
+            className={cn(
+              'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+              className
+            )}
+            {...props}
+          >
+            <div className="text-sm font-medium leading-none">{title}</div>
+            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+              {description}
+            </p>
+          </span>
+        </HostPrefixedLink>
       </NavigationMenuLink>
     </li>
   )

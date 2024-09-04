@@ -3,9 +3,10 @@ import Link from 'next/link'
 
 import { DataTable } from '@/components/data-table/data-table'
 import { Button } from '@/components/ui/button'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 import { Extras } from '../extras/extras'
 
+import { fetchData } from '@/lib/clickhouse'
+import { getScopedLink } from '@/lib/context'
 import { config, type Row } from '../config'
 import { engineType } from '../engine-type'
 
@@ -22,7 +23,7 @@ export default async function MergeTree({
   const engine = await engineType(database, table)
   if (engine.includes('MergeTree') === false) return <></>
 
-  const { data: columns } = await fetchDataWithCache<Row[]>({
+  const { data: columns } = await fetchData<Row[]>({
     query: config.sql,
     query_params: {
       database,
@@ -52,7 +53,7 @@ async function Description({
   table: string
 }) {
   try {
-    const { data } = await fetchDataWithCache<{ comment: string }[]>({
+    const { data } = await fetchData<{ comment: string }[]>({
       query: `
           SELECT comment
             FROM system.tables
@@ -76,7 +77,7 @@ const TopRightToolbarExtras = ({
   database: string
   table: string
 }) => (
-  <Link href={`/top-usage-columns?table=${database}.${table}`}>
+  <Link href={getScopedLink(`/top-usage-columns?table=${database}.${table}`)}>
     <Button
       variant="outline"
       className="flex flex-row gap-2 text-muted-foreground"

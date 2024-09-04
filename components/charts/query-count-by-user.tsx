@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
 
 export async function ChartQueryCountByUser({
@@ -25,7 +25,7 @@ export async function ChartQueryCountByUser({
       1 ASC,
       3 DESC
   `
-  const { data: raw } = await fetchDataWithCache<
+  const { data: raw } = await fetchData<
     {
       event_time: string
       user: string

@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { CardMetric } from '@/components/tremor/card-metric'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartBackupSize({
   title,
@@ -24,7 +24,7 @@ export async function ChartBackupSize({
     WHERE status = 'BACKUP_CREATED'
           ${startTimeCondition}
   `
-  const { data } = await fetchDataWithCache<
+  const { data } = await fetchData<
     {
       total_size: number
       uncompressed_size: number

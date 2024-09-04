@@ -7,7 +7,8 @@ import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
 } from '@/components/tremor/card-multi-metrics'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
+import { getScopedLink } from '@/lib/context'
 
 export async function ChartSummaryUsedByMerges({
   title,
@@ -19,7 +20,7 @@ export async function ChartSummaryUsedByMerges({
       formatReadableSize(memory_usage) as readable_memory_usage
     FROM system.merges
   `
-  const { data: usedRows } = await fetchDataWithCache<
+  const { data: usedRows } = await fetchData<
     {
       memory_usage: number
       readable_memory_usage: string
@@ -43,7 +44,7 @@ export async function ChartSummaryUsedByMerges({
     readable_total: used.readable_memory_usage,
   }
   try {
-    const { data: rows } = await fetchDataWithCache<
+    const { data: rows } = await fetchData<
       {
         metric: string
         total: number
@@ -70,7 +71,7 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const { data } = await fetchDataWithCache<
+    const { data } = await fetchData<
       {
         rows_read: number
         rows_written: number
@@ -100,7 +101,7 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const { data } = await fetchDataWithCache<
+    const { data } = await fetchData<
       {
         bytes_read: number
         bytes_written: number
@@ -183,7 +184,7 @@ export async function ChartSummaryUsedByMerges({
             <span className="flex flex-row items-center gap-2">
               {rowsReadWritten.readable_rows_read} rows read,{' '}
               {used.readable_memory_usage} memory used for merges
-              <Link href="/merges" className="inline">
+              <Link href={getScopedLink('/merges')} className="inline">
                 <ArrowRightIcon className="size-5" />
               </Link>
             </span>

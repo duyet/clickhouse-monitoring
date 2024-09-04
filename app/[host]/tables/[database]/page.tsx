@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { redirectScoped } from '@/lib/context'
 
 interface TableListProps {
   params: {
@@ -9,5 +9,5 @@ interface TableListProps {
 export default async function TableListPage({
   params: { database },
 }: TableListProps) {
-  redirect(`/database/${database}`)
+  redirectScoped(`/database/${database}`)
 }

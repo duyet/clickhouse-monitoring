@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { fetchData } from '@/lib/clickhouse'
+import { getScopedLink } from '@/lib/context'
 
 interface AlternativeTablesProps {
   database: string
@@ -59,7 +60,7 @@ export async function AlternativeTables({
         {anotherTables.map(({ name }) => (
           <DropdownMenuItem key={name}>
             <Link
-              href={`/tables/${database}/${name}`}
+              href={getScopedLink(`/tables/${database}/${name}`)}
               className="flex flex-row items-center gap-2"
             >
               {name == table ? (

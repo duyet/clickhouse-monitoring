@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation'
+import { redirectScoped } from '@/lib/context'
 
 export default async function TablePage() {
-  redirect('/database')
+  redirectScoped('/database/default')
 }

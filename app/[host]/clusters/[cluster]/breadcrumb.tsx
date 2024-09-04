@@ -15,8 +15,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
+import { fetchData } from '@/lib/clickhouse'
+import { getScopedLink } from '@/lib/context'
 import { config, type Row } from '../config'
 
 interface Props {
@@ -26,7 +27,7 @@ interface Props {
 export async function ClusterListBreadcrumb({ cluster }: Props) {
   try {
     // Lists cluster names.
-    const { data } = await fetchDataWithCache<Row[]>({ query: config.sql })
+    const { data } = await fetchData<Row[]>({ query: config.sql })
 
     if (!data.length) {
       return (
@@ -75,7 +76,9 @@ function Internal({ cluster, clusters }: Props & { clusters: Row[] }) {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/clusters">Clusters</BreadcrumbLink>
+          <BreadcrumbLink href={getScopedLink('/clusters')}>
+            Clusters
+          </BreadcrumbLink>
         </BreadcrumbItem>
 
         <BreadcrumbSeparator>
@@ -91,7 +94,7 @@ function Internal({ cluster, clusters }: Props & { clusters: Row[] }) {
             {clusters.map(({ cluster: name, replica_count }) => (
               <DropdownMenuItem key={name}>
                 <Link
-                  href={`/clusters/${name}/replicas-status`}
+                  href={getScopedLink(`/clusters/${name}/replicas-status`)}
                   className={name == cluster ? 'font-bold' : ''}
                 >
                   {name} ({replica_count}{' '}

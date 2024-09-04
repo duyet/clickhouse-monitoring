@@ -1,8 +1,8 @@
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
 
 export const engineType = async (database: string, table: string) => {
   try {
-    const { data } = await fetchDataWithCache<{ engine: string }[]>({
+    const { data } = await fetchData<{ engine: string }[]>({
       query: `
         SELECT engine
         FROM system.tables

@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { redirectScoped } from '@/lib/context'
 
 interface ColumnsPageProps {
   params: {
@@ -10,5 +10,5 @@ interface ColumnsPageProps {
 export default async function ColumnsPage({
   params: { database, table },
 }: ColumnsPageProps) {
-  redirect(`/database/${database}/${table}`)
+  redirectScoped(`/database/${database}/${table}`)
 }

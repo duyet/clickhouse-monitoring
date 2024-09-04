@@ -1,5 +1,5 @@
 import { Badge, type BadgeProps } from '@/components/ui/badge'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
 
 export interface CountBadgeProps {
   sql?: string
@@ -15,7 +15,7 @@ export async function CountBadge({
   if (!sql) return null
 
   try {
-    const { data } = await fetchDataWithCache<{ 'count()': string }[]>({
+    const { data } = await fetchData<{ 'count()': string }[]>({
       query: sql,
       format: 'JSONEachRow',
       clickhouse_settings: {

@@ -7,7 +7,8 @@ import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
 } from '@/components/tremor/card-multi-metrics'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
+import { getScopedLink } from '@/lib/context'
 import { formatReadableQuantity } from '@/lib/format-readable'
 
 export async function ChartSummaryUsedByRunningQueries({
@@ -20,7 +21,7 @@ export async function ChartSummaryUsedByRunningQueries({
            formatReadableSize(memory_usage) as readable_memory_usage
     FROM system.processes
   `
-  const { data } = await fetchDataWithCache<
+  const { data } = await fetchData<
     {
       query_count: number
       memory_usage: number
@@ -47,7 +48,7 @@ export async function ChartSummaryUsedByRunningQueries({
     readable_total: first.readable_memory_usage,
   }
   try {
-    const { data: totalRows } = await fetchDataWithCache<
+    const { data: totalRows } = await fetchData<
       {
         metric: string
         total: number
@@ -68,7 +69,7 @@ export async function ChartSummaryUsedByRunningQueries({
           AND query_start_time >= today()
   `
   try {
-    const { data: todayQueryCountRows } = await fetchDataWithCache<
+    const { data: todayQueryCountRows } = await fetchData<
       {
         query_count: number
       }[]
@@ -93,7 +94,7 @@ export async function ChartSummaryUsedByRunningQueries({
     FROM system.processes
   `
   try {
-    const { data } = await fetchDataWithCache<
+    const { data } = await fetchData<
       {
         rows_read: number
         rows_written: number
@@ -160,7 +161,7 @@ export async function ChartSummaryUsedByRunningQueries({
             <span className="flex flex-row items-center gap-2">
               {first.query_count} queries, {first.readable_memory_usage} memory
               used for running queries
-              <Link href="/running-queries" className="inline">
+              <Link href={getScopedLink('/running-queries')} className="inline">
                 <ArrowRightIcon className="size-5" />
               </Link>
             </span>

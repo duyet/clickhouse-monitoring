@@ -15,8 +15,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
 
+import { fetchData } from '@/lib/clickhouse'
+import { getScopedLink } from '@/lib/context'
 import {
   databaseDiskSpaceConfig as config,
   type DatabaseUsedSpace,
@@ -29,7 +30,7 @@ interface Props {
 export async function DatabaseListBreadcrumb({ database }: Props) {
   try {
     // Lists cluster names.
-    const { data } = await fetchDataWithCache<DatabaseUsedSpace[]>({
+    const { data } = await fetchData<DatabaseUsedSpace[]>({
       query: config.sql,
     })
 
@@ -85,7 +86,9 @@ function Internal({
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/disks">All Disks</BreadcrumbLink>
+          <BreadcrumbLink href={getScopedLink('/disks')}>
+            All Disks
+          </BreadcrumbLink>
         </BreadcrumbItem>
 
         <BreadcrumbSeparator>
@@ -101,7 +104,7 @@ function Internal({
             {databases.map(({ database: name, readable_used_space }) => (
               <DropdownMenuItem key={name}>
                 <Link
-                  href={`/disks/database/${name}`}
+                  href={getScopedLink(`/disks/database/${name}`)}
                   className={name == database ? 'font-bold' : ''}
                 >
                   {name} ({readable_used_space})
