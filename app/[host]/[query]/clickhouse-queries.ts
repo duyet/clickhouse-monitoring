@@ -28,7 +28,6 @@ import { readOnlyTablesConfig } from './tables/readonly-tables'
 import { replicasConfig } from './tables/replicas'
 import { replicationQueueConfig } from './tables/replication-queue'
 import { tablesOverviewConfig } from './tables/tables-overview'
-import { getQuery } from '../../../lib/context'
 
 export const queries: Array<QueryConfig> = [
   // Tables
