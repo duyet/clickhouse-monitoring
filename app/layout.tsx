@@ -6,11 +6,11 @@ import Script from 'next/script'
 import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
+import { BackgroundJobs } from '@/components/background-jobs'
 import { Header } from '@/components/header'
+import { PageView } from '@/components/pageview'
 import { Toaster } from '@/components/ui/toaster'
 import { Suspense } from 'react'
-import { BackgroundJobs } from './background-jobs'
-import { PageView } from './pageview'
 
 const inter = Inter({ subsets: ['latin'] })
 

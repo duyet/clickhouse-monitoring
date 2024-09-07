@@ -1,7 +1,7 @@
 'use client'
 
-import { cn, getHost } from '@/lib/utils'
-import { useRouter } from 'next/navigation'
+import { cn, getHost, removeHostPrefix } from '@/lib/utils'
+import { usePathname, useRouter } from 'next/navigation'
 import { Suspense } from 'react'
 import {
   Select,
@@ -30,7 +30,13 @@ export function ClickHouseHostSelector({
   }[]
 }) {
   const router = useRouter()
+  const pathname = usePathname()
+  const pathnameWithoutPrefix = removeHostPrefix(pathname)
+
   const current = configs[parseInt(currentHostId)]
+  if (!current) {
+    return null
+  }
 
   return (
     <div>
@@ -39,7 +45,7 @@ export function ClickHouseHostSelector({
           if (typeof window !== 'undefined') {
             document.cookie = `hostId=${val}; path=/`
           }
-          router.push(`/${val}/overview`)
+          router.push(`/${val}/${pathnameWithoutPrefix}`)
         }}
       >
         <SelectTrigger className="border-0 p-1 shadow-none">
