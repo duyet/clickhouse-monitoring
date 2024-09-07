@@ -12,8 +12,9 @@ export const HostPrefixedLink = ({
   children: React.ReactNode
 } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
   const params = useParams()
+
   return (
-    <Link prefetch={false} href={`/${params.host}${href}`} {...props}>
+    <Link prefetch={false} href={`/${params.host || 0}${href}`} {...props}>
       {children}
     </Link>
   )

@@ -48,22 +48,25 @@ function MenuItem({ item }: { item: MenuItem }) {
 function SingleItem({ item }: { item: MenuItem }) {
   return (
     <NavigationMenuItem>
-      <HostPrefixedLink href={item.href}>
-        <NavigationMenuLink
-          className={cn(
-            'group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50'
-          )}
-        >
-          <span className="flex flex-row items-center gap-2">
-            {item.icon && <item.icon className="size-4" />}
-            {item.title}
-            {item.countSql ? (
-              <ServerComponentLazy fallback={<LoadingIcon />} onError={''}>
-                <CountBadge sql={item.countSql} variant={item.countVariant} />
-              </ServerComponentLazy>
-            ) : null}
-          </span>
-        </NavigationMenuLink>
+      <HostPrefixedLink
+        href={item.href}
+        className={cn(
+          'group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors',
+          'hover:bg-accent hover:text-accent-foreground',
+          'focus:bg-accent focus:text-accent-foreground focus:outline-none',
+          'disabled:pointer-events-none disabled:opacity-50',
+          'data-[active]:bg-accent/50 data-[state=open]:bg-accent/50'
+        )}
+      >
+        <div className="flex flex-row items-center gap-2">
+          {item.icon && <item.icon className="size-4" />}
+          {item.title}
+          {item.countSql ? (
+            <ServerComponentLazy fallback={<LoadingIcon />} onError={''}>
+              <CountBadge sql={item.countSql} variant={item.countVariant} />
+            </ServerComponentLazy>
+          ) : null}
+        </div>
       </HostPrefixedLink>
     </NavigationMenuItem>
   )
@@ -131,9 +134,11 @@ function ListItem({
     <li>
       <NavigationMenuLink asChild>
         <HostPrefixedLink href={href}>
-          <span
+          <div
             className={cn(
-              'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+              'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors',
+              'hover:bg-accent hover:text-accent-foreground',
+              'focus:bg-accent focus:text-accent-foreground',
               className
             )}
             {...props}
@@ -142,7 +147,7 @@ function ListItem({
             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
               {description}
             </p>
-          </span>
+          </div>
         </HostPrefixedLink>
       </NavigationMenuLink>
     </li>
