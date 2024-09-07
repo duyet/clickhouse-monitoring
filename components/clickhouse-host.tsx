@@ -15,11 +15,11 @@ async function fetchHostStatus(hostId: number) {
     >(
       {
         query: `
-    SELECT
-      formatReadableTimeDelta(uptime()) as uptime,
-      hostName() as hostName,
-      version() as version
-  `,
+          SELECT
+            formatReadableTimeDelta(uptime()) as uptime,
+            hostName() as hostName,
+            version() as version
+        `,
       },
       hostId
     )

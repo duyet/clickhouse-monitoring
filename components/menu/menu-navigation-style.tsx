@@ -1,6 +1,7 @@
+import dynamic from 'next/dynamic'
 import React from 'react'
 
-import { CountBadge } from '@/components/menu/count-badge'
+import { LoadingIcon } from '@/components/loading-icon'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
 import {
   NavigationMenu,
@@ -11,11 +12,13 @@ import {
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
-
-import { LoadingIcon } from '@/components/loading-icon'
 import { menuItemsConfig } from '@/menu'
 import { HostPrefixedLink } from './link-with-context'
 import { type MenuItem } from './types'
+
+const CountBadge = dynamic(() =>
+  import('@/components/menu/count-badge').then((mod) => mod.CountBadge)
+)
 
 export interface MenuProps {
   items?: MenuItem[]

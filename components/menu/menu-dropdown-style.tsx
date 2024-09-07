@@ -11,8 +11,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { menuItemsConfig } from '@/menu'
 
-import { menuItemsConfig } from '../../menu'
 import { HostPrefixedLink } from './link-with-context'
 import { type MenuItem } from './types'
 

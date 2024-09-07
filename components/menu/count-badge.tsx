@@ -1,4 +1,5 @@
-import { Badge, type BadgeProps } from '@/components/ui/badge'
+import type { BadgeProps } from '@/components/ui/badge'
+import { Badge } from '@/components/ui/badge'
 import { fetchData } from '@/lib/clickhouse'
 
 export interface CountBadgeProps {

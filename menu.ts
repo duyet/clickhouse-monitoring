@@ -18,8 +18,8 @@ import {
   UpdateIcon,
 } from '@radix-ui/react-icons'
 
+import { type MenuItem } from '@/components/menu/types'
 import { QUERY_COMMENT } from '@/lib/clickhouse'
-
 import {
   CircleDollarSignIcon,
   CombineIcon,
@@ -31,7 +31,6 @@ import {
   UngroupIcon,
   UnplugIcon,
 } from 'lucide-react'
-import { type MenuItem } from './components/menu/types'
 
 export const menuItemsConfig: MenuItem[] = [
   {
