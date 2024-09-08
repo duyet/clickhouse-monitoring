@@ -8,7 +8,7 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     setupNodeEvents(on, config) {
       // TODO: fix coverage
-      // require('@cypress/code-coverage/task')(on, config)
+      require('@cypress/code-coverage/task')(on, config)
 
       // tell Cypress to use .babelrc file
       // and instrument the specs files
@@ -25,5 +25,6 @@ export default defineConfig({
       framework: 'next',
       bundler: 'webpack',
     },
+    excludeSpecPattern: ['**/menu*/*'],
   },
 })

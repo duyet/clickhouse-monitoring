@@ -1,3 +1,5 @@
+import { getHostIdCookie } from '@/lib/scoped-link'
+import { getHostId } from '@/lib/server-context'
 import type { ClickHouseClient, DataFormat } from '@clickhouse/client'
 import { createClient } from '@clickhouse/client'
 import type { ClickHouseSettings, QueryParams } from '@clickhouse/client-common'
@@ -6,6 +8,14 @@ import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 
 export const DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME = '60'
 export const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */ '
+
+export type ClickHouseConfig = {
+  id: number
+  host: string
+  user: string
+  password: string
+  customName?: string
+}
 
 type QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{
@@ -23,21 +33,55 @@ export const getClickHouseHosts = () => {
   return hosts
 }
 
-export const getClickHouseHost = () => getClickHouseHosts()[0]
+function splitByComma(value: string) {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+export const getClickHouseConfigs = (): ClickHouseConfig[] => {
+  const hosts = splitByComma(process.env.CLICKHOUSE_HOST || '')
+  const users = splitByComma(process.env.CLICKHOUSE_USER || '')
+  const passwords = splitByComma(process.env.CLICKHOUSE_PASSWORD || '')
+  const customLabels = splitByComma(process.env.CLICKHOUSE_NAME || '')
+
+  return hosts.map((host, index) => {
+    return {
+      id: index,
+      host,
+      user: users[index] || 'default',
+      password: passwords[index] || '',
+      customName: customLabels[index],
+    }
+  })
+}
+
+export const getClickHouseHost = () => {
+  const hostId = getHostId() || 0
+
+  return getClickHouseConfigs()[hostId]
+}
 
 export const getClient = <B extends boolean>({
   web,
   clickhouse_settings,
+  forceHostId,
 }: {
   web?: B
   clickhouse_settings?: ClickHouseSettings
+  forceHostId?: number
 }): B extends true ? WebClickHouseClient : ClickHouseClient => {
   const client = web === true ? createClientWeb : createClient
 
+  const currentConfig = forceHostId
+    ? getClickHouseConfigs()[forceHostId]
+    : getClickHouseConfigs()[Number(getHostIdCookie())]
+
   return client({
-    host: getClickHouseHost(),
-    username: process.env.CLICKHOUSE_USER ?? 'default',
-    password: process.env.CLICKHOUSE_PASSWORD ?? '',
+    host: currentConfig.host,
+    username: currentConfig.user ?? 'default',
+    password: currentConfig.password ?? '',
     clickhouse_settings: {
       max_execution_time: parseInt(
         process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
@@ -54,17 +98,26 @@ export const fetchData = async <
     | object[] // format = '*EachRow'
     | Record<string, unknown> // format = 'JSONObjectEachRow' | 'JSONColumns
     | { length: number; rows: number; statistics: Record<string, unknown> }, // format = 'JSON' | 'JSONStrings' | 'JSONCompact' | 'JSONColumnsWithMetadata' | ...
->({
-  query,
-  query_params,
-  format = 'JSONEachRow',
-  clickhouse_settings,
-}: QueryParams & Partial<{ clickhouse_settings: QuerySettings }>): Promise<{
+>(
+  {
+    query,
+    query_params,
+    format = 'JSONEachRow',
+    clickhouse_settings,
+  }: QueryParams &
+    Partial<{
+      clickhouse_settings: QuerySettings
+    }>,
+  forceHostId?: number | string
+): Promise<{
   data: T
   metadata: Record<string, string | number>
 }> => {
   const start = new Date()
-  const client = getClient({ web: false })
+  const client = getClient({
+    web: false,
+    forceHostId: forceHostId ? Number(forceHostId) : undefined,
+  })
 
   const resultSet = await client.query({
     query: QUERY_COMMENT + query,
@@ -115,7 +168,10 @@ export const query = async (
   params: Record<string, unknown> = {},
   format: DataFormat = 'JSON'
 ) => {
-  const resultSet = await getClient({ web: false }).query({
+  const resultSet = await getClient({
+    web: false,
+    clickhouse_settings: {},
+  }).query({
     query: QUERY_COMMENT + query,
     format,
     query_params: params,

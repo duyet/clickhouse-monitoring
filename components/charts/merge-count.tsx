@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
+import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartMergeCount({
@@ -24,7 +25,7 @@ export async function ChartMergeCount({
     ORDER BY 1
   `
 
-  const { data } = await fetchDataWithCache<
+  const { data } = await fetchData<
     {
       event_time: string
       avg_CurrentMetric_Merge: number
@@ -51,11 +52,17 @@ export async function ChartMergeCount({
       />
 
       <div className="flex flex-row justify-between gap-2 text-right text-sm text-muted-foreground">
-        <Link href="/mutations" className="flex flex-row items-center gap-2">
+        <Link
+          href={getScopedLink('/mutations')}
+          className="flex flex-row items-center gap-2"
+        >
           Merges
           <ArrowRightIcon className="size-3" />
         </Link>
-        <Link href="/mutations" className="flex flex-row items-center gap-2">
+        <Link
+          href={getScopedLink('/mutations')}
+          className="flex flex-row items-center gap-2"
+        >
           Mutations
           <ArrowRightIcon className="size-3" />
         </Link>

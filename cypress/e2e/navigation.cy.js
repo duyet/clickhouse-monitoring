@@ -1,15 +1,15 @@
 describe('Navigation', () => {
-  it('should navigate to the /overview page', () => {
+  it('should open /0/overview page', () => {
     // Open the webpage
-    cy.visit('/overview')
+    cy.visit('/0/overview')
 
-    // Should redirect to the /overview page
-    cy.url().should('match', /overview/)
+    // Should redirect to the /0/overview page
+    cy.url().should('match', /0\/overview/)
   })
 
-  it('should navigate to the /merge page', () => {
+  it('should able to hover to menu items', () => {
     // Open the webpage
-    cy.visit('/overview')
+    cy.visit('/0/overview')
 
     // Hover on "Merge" tab and click on "merge" item below
     cy.get('div').contains('Merge').trigger('mouseover')

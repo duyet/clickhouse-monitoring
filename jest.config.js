@@ -5,6 +5,17 @@ module.exports = {
   moduleNameMapper: {
     // resolve react module with the next.js inset one.
     react: 'next/dist/compiled/react/cjs/react.development.js',
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/(.*)$': '<rootDir>/$1',
   },
-};
+  collectCoverage: true,
+  coverageDirectory: 'jest-reports/coverage',
+  reporters: [
+    'default',
+    [
+      'jest-junit',
+      { outputDirectory: 'jest-reports', outputName: 'junit.xml' },
+    ],
+    ['github-actions', { silent: false }],
+    'summary',
+  ],
+}

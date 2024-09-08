@@ -1,3 +1,5 @@
+import { CodeIcon } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -8,7 +10,6 @@ import {
   DialogContent as UIDialogContent,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import { CodeIcon } from 'lucide-react'
 
 interface DialogContentProps {
   button?: React.ReactNode

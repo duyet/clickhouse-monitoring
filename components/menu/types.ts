@@ -1,4 +1,4 @@
-import type { CountBadgeProps } from '@/components/menu/count-badge'
+import type { BadgeProps } from '@/components/ui/badge'
 import type { Icon } from '@/types/icon'
 
 export interface MenuItem {
@@ -6,7 +6,7 @@ export interface MenuItem {
   href: string
   description?: string
   countSql?: string
-  countVariant?: CountBadgeProps['variant']
+  countVariant?: BadgeProps['variant']
   items?: MenuItem[]
   icon?: Icon
 }

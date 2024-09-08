@@ -88,6 +88,13 @@ jobs:
           parallel: true
           record: true
 
+      - name: Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: coverage
+          flags: e2e,${{ matrix.browser }}
+
   components-test:
     runs-on: ubuntu-latest
 
@@ -144,6 +151,13 @@ jobs:
           parallel: true
           record: true
 
+      - name: Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: coverage
+          flags: components,${{ matrix.browser }}
+
   unittest:
     runs-on: ubuntu-latest
 
@@ -193,4 +207,18 @@ jobs:
 
       - name: Jest
         run: |
-          yarn test
+          yarn jest
+
+      - name: Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: jest-reports/coverage
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: jest-reports
+          flags: jest,node-${{ matrix.node }}

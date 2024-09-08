@@ -2,7 +2,7 @@ import { expect, jest } from '@jest/globals'
 
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { cn, dedent, getHost, uniq } from './utils'
+import { cn, dedent, getHost, removeHostPrefix, uniq } from './utils'
 
 jest.mock('clsx', () => ({
   clsx: jest.fn(),
@@ -145,6 +145,13 @@ describe('utils', () => {
       const input = 'invalid-url'
 
       expect(() => getHost(input)).toThrow(new TypeError('Invalid URL'))
+    })
+  })
+
+  describe('removeHostPrefix', () => {
+    it('should works', () => {
+      expect(removeHostPrefix('/0/overview')).toEqual('overview')
+      expect(removeHostPrefix('/0/a/b')).toEqual('a/b')
     })
   })
 })

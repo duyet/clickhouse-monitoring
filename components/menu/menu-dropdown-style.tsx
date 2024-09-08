@@ -1,5 +1,4 @@
 import { HamburgerMenuIcon } from '@radix-ui/react-icons'
-import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,8 +11,9 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { menuItemsConfig } from '@/menu'
 
-import { menuItemsConfig } from '../../menu'
+import { HostPrefixedLink } from './link-with-context'
 import { type MenuItem } from './types'
 
 export interface MenuProps {
@@ -41,22 +41,37 @@ export function MenuDropdownStyle({
   )
 }
 
+function SingleItemDropdown({
+  href,
+  title,
+  children,
+}: {
+  href: string
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <DropdownMenuItem>
+      <HostPrefixedLink
+        href={href}
+        className="flex flex-row items-center gap-2"
+      >
+        {children}
+        {title}
+      </HostPrefixedLink>
+    </DropdownMenuItem>
+  )
+}
+
 function MenuItem({ item }: { item: MenuItem }) {
   if (item.items) {
     return <HasChildItems item={item} />
   }
 
-  return <SingleItem item={item} />
-}
-
-function SingleItem({ item }: { item: MenuItem }) {
   return (
-    <DropdownMenuItem>
-      <Link href={item.href} className="flex flex-row items-center gap-2">
-        {item.icon && <item.icon className="size-3" />}
-        {item.title}
-      </Link>
-    </DropdownMenuItem>
+    <SingleItemDropdown href={item.href} title={item.title}>
+      {item.icon && <item.icon className="size-3" />}
+    </SingleItemDropdown>
   )
 }
 

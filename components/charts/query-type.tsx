@@ -1,6 +1,6 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { DonutChart } from '@/components/tremor/donut'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartQueryType({
   title,
@@ -18,7 +18,7 @@ export async function ChartQueryType({
     GROUP BY 1
     ORDER BY 1
   `
-  const { data } = await fetchDataWithCache<
+  const { data } = await fetchData<
     {
       type: string
       query_count: number

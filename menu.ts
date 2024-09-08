@@ -18,8 +18,8 @@ import {
   UpdateIcon,
 } from '@radix-ui/react-icons'
 
+import { type MenuItem } from '@/components/menu/types'
 import { QUERY_COMMENT } from '@/lib/clickhouse'
-
 import {
   CircleDollarSignIcon,
   CombineIcon,
@@ -31,7 +31,6 @@ import {
   UngroupIcon,
   UnplugIcon,
 } from 'lucide-react'
-import { type MenuItem } from './components/menu/types'
 
 export const menuItemsConfig: MenuItem[] = [
   {
@@ -46,7 +45,7 @@ export const menuItemsConfig: MenuItem[] = [
     items: [
       {
         title: 'Tables Explorer',
-        href: '/tables',
+        href: '/database',
         countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
         description: 'List of databases, tables and their details',
         icon: TableIcon,

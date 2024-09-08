@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
 import { ChartCard } from '../generic-charts/chart-card'
 
 export async function ChartMergeSumReadRows({
@@ -24,7 +24,7 @@ export async function ChartMergeSumReadRows({
     GROUP BY 1
     ORDER BY 1 ASC
   `
-  const { data } = await fetchDataWithCache<
+  const { data } = await fetchData<
     {
       event_time: string
       sum_read_rows: number

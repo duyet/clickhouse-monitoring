@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryCount({
@@ -45,7 +45,7 @@ export async function ChartQueryCount({
     LEFT JOIN breakdown USING event_time
     ORDER BY 1
   `
-  const { data } = await fetchDataWithCache<
+  const { data } = await fetchData<
     {
       event_time: string
       query_count: number
