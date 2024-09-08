@@ -54,6 +54,7 @@
     "react-error-boundary": "^4.0.11",
     "react-hook-form": "^7.49.2",
     "recharts": "^2.12.7",
+    "server-only-context": "^0.1.0",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
     "usehooks-ts": "^3.0.0",

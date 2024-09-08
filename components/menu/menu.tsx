@@ -1,4 +1,4 @@
-import { menuItemsConfig } from '../../menu'
+import { menuItemsConfig } from '@/menu'
 import { MenuDropdownStyle } from './menu-dropdown-style'
 import { MenuNavigationStyle } from './menu-navigation-style'
 import { type MenuItem } from './types'

@@ -114,6 +114,7 @@ describe('getClient', () => {
     process.env.CLICKHOUSE_USER = 'testuser'
     process.env.CLICKHOUSE_PASSWORD = 'testpassword'
     process.env.CLICKHOUSE_MAX_EXECUTION_TIME = '120'
+
     const mockClient = {}
     ;(createClient as jest.Mock).mockReturnValue(mockClient)
 

@@ -42,3 +42,7 @@ export function getHost(url?: string) {
 export function normalizeUrl(url: string) {
   return url.trim().replace(/(\/|\?)$/, '')
 }
+
+export function removeHostPrefix(pathname: string) {
+  return pathname.split('/').filter(Boolean).slice(1).join('/')
+}

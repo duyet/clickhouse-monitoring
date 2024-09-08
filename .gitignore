@@ -47,3 +47,4 @@ cypress/screenshots
 # IDE
 .idea
 .vscode
+.env

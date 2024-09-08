@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithCache } from '@/lib/clickhouse-cache'
+import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartCPUUsage({
   title,
@@ -18,9 +18,7 @@ export async function ChartCPUUsage({
     GROUP BY 1
     ORDER BY 1`
 
-  const { data } = await fetchDataWithCache<
-    { event_time: string; avg_cpu: number }[]
-  >({
+  const { data } = await fetchData<{ event_time: string; avg_cpu: number }[]>({
     query,
   })
 

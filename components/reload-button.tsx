@@ -15,7 +15,6 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { revalidateClickHouse } from '@/lib/clickhouse-action'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
 
@@ -36,12 +35,6 @@ export function ReloadButton({ className }: ReloadButtonProps) {
 
   const revalidateCacheAndReload = () =>
     startTransition(async () => {
-      try {
-        await revalidateClickHouse()
-      } catch (e) {
-        console.error('Error revalidating cache', e)
-      }
-
       router.refresh()
     })
 
@@ -75,7 +68,9 @@ export function ReloadButton({ className }: ReloadButtonProps) {
             isLoading ? 'animate-pulse' : ''
           )}
         >
-          <span>{formatReadableSecondDuration(countDown)}</span>
+          <span className="font-mono">
+            {formatReadableSecondDuration(countDown)}
+          </span>
           <ReloadIcon
             className={cn('size-4', isLoading ? 'animate-spin' : '')}
           />
