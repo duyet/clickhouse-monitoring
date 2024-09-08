@@ -1,4 +1,4 @@
-import { redirectScoped } from '@/lib/context'
+import { redirectScoped } from '@/lib/scoped-link'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 30

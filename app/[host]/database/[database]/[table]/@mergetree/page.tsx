@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Extras } from '../extras/extras'
 
 import { fetchData } from '@/lib/clickhouse'
-import { getScopedLink } from '@/lib/context'
+import { getScopedLink } from '@/lib/scoped-link'
 import { config, type Row } from '../config'
 import { engineType } from '../engine-type'
 

@@ -8,8 +8,8 @@ import {
   type CardMultiMetricsProps,
 } from '@/components/tremor/card-multi-metrics'
 import { fetchData } from '@/lib/clickhouse'
-import { getScopedLink } from '@/lib/context'
 import { formatReadableQuantity } from '@/lib/format-readable'
+import { getScopedLink } from '@/lib/scoped-link'
 
 export async function ChartSummaryUsedByRunningQueries({
   title,

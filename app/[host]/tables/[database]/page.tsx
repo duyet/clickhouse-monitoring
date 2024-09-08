@@ -1,4 +1,4 @@
-import { redirectScoped } from '@/lib/context'
+import { redirectScoped } from '@/lib/scoped-link'
 
 interface TableListProps {
   params: {

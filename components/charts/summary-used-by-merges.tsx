@@ -8,7 +8,7 @@ import {
   type CardMultiMetricsProps,
 } from '@/components/tremor/card-multi-metrics'
 import { fetchData } from '@/lib/clickhouse'
-import { getScopedLink } from '@/lib/context'
+import { getScopedLink } from '@/lib/scoped-link'
 
 export async function ChartSummaryUsedByMerges({
   title,
