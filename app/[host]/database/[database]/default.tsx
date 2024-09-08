@@ -14,8 +14,6 @@ interface TableListProps {
   }
 }
 
-export const dynamic = 'force-dynamic'
-
 export default async function TableListPage({
   params: { host, database },
 }: TableListProps) {

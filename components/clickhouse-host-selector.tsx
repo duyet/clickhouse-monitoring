@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { Suspense } from 'react'
+import { Suspense, use } from 'react'
 
 import {
   Select,
@@ -85,8 +85,8 @@ export function ClickHouseHostSelector({
   )
 }
 
-export async function HostStatus({ promise }: { promise: UptimePromise }) {
-  const res = await promise
+export function HostStatus({ promise }: { promise: UptimePromise }) {
+  const res = use(promise)
 
   const isOnline = res !== null
   if (isOnline) {
