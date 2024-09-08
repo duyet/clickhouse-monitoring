@@ -9,15 +9,17 @@ import { ShowDDL } from './show-ddl-button'
 import { TableInfo } from './table-info'
 
 export const Extras = ({
+  host,
   database,
   table,
 }: {
+  host: number
   database: string
   table: string
 }) => (
   <div className="mb-3 flex flex-row justify-between gap-3">
     <div className="flex flex-row gap-3">
-      <Link href={`/database/${database}`}>
+      <Link href={`/${host}/database/${database}`}>
         <Button
           variant="outline"
           size="sm"

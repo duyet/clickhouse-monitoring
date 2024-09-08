@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 
 interface TableListProps {
   params: {
+    host: number
     database: string
   }
   children: React.ReactNode

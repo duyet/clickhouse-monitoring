@@ -1,8 +1,8 @@
-import { RelatedCharts } from '@/components/related-charts'
+import { Suspense } from 'react'
 
+import { RelatedCharts } from '@/components/related-charts'
 import { ChartSkeleton, TableSkeleton } from '@/components/skeleton'
 import { Table } from '@/components/table'
-import { Suspense } from 'react'
 
 import { databaseDiskSpaceByDatabaseConfig as config } from '../../config'
 

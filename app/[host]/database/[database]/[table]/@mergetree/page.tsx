@@ -12,13 +12,14 @@ import { engineType } from '../engine-type'
 
 interface Props {
   params: {
+    host: number
     database: string
     table: string
   }
 }
 
 export default async function MergeTree({
-  params: { database, table },
+  params: { host, database, table },
 }: Props) {
   const engine = await engineType(database, table)
   if (engine.includes('MergeTree') === false) return <></>
@@ -35,7 +36,7 @@ export default async function MergeTree({
     <DataTable
       title={`Table: ${database}.${table}`}
       description={<Description database={database} table={table} />}
-      toolbarExtras={<Extras database={database} table={table} />}
+      toolbarExtras={<Extras host={host} database={database} table={table} />}
       topRightToolbarExtras={
         <TopRightToolbarExtras database={database} table={table} />
       }

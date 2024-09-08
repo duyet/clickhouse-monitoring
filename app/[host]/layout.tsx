@@ -1,17 +1,18 @@
 import { setHostId } from '@/lib/server-context'
+import { redirect } from 'next/navigation'
 
 export default function Layout({
   children,
   params: { host },
 }: {
   children: React.ReactNode
-  params: { host: string }
+  params: { host: number }
 }) {
   if (Number.isNaN(Number(host))) {
-    return children
+    redirect('/')
   }
 
-  setHostId(host)
+  setHostId(Number(host))
 
   return (
     <>

@@ -4,11 +4,7 @@ import {
   ClickHouseHostSelector,
   HostStatus,
 } from '@/components/clickhouse-host-selector'
-import {
-  fetchData,
-  getClickHouseConfigs,
-  getClickHouseHost,
-} from '@/lib/clickhouse'
+import { fetchData, getClickHouseConfigs } from '@/lib/clickhouse'
 import { getHostId } from '@/lib/server-context'
 import { getHost } from '@/lib/utils'
 
@@ -36,7 +32,6 @@ async function fetchHostStatus(hostId: number) {
 
 export async function ClickHouseHost() {
   const configs = getClickHouseConfigs()
-
   if (!configs) return null
 
   if (configs.length === 1) {
@@ -49,16 +44,13 @@ export async function ClickHouseHost() {
       </div>
     )
   }
-  const currentHost = getClickHouseHost()
 
   return (
     <ClickHouseHostSelector
       currentHostId={getHostId()}
-      configs={configs.map((c, id) => ({
-        id: id.toString(),
-        host: c.host,
-        customName: c.customName,
-        promise: fetchHostStatus(id),
+      configs={configs.map((config) => ({
+        ...config,
+        promise: fetchHostStatus(config.id),
       }))}
     />
   )

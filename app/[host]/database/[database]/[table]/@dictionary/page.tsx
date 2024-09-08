@@ -6,13 +6,14 @@ import { TableDDL } from '../extras/table-ddl'
 
 interface Props {
   params: {
+    host: number
     database: string
     table: string
   }
 }
 
 export default async function Dictionary({
-  params: { database, table },
+  params: { host, database, table },
 }: Props) {
   const engine = await engineType(database, table)
   if (engine !== 'Dictionary') return <></>
@@ -21,7 +22,7 @@ export default async function Dictionary({
 
   return (
     <div className="flex flex-col">
-      <Extras database={database} table={table} />
+      <Extras host={host} database={database} table={table} />
 
       <div className="mt-6 w-fit overflow-auto">
         <h2 className="mb-3 text-lg font-semibold">Dictionary usage</h2>

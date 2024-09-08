@@ -9,6 +9,7 @@ import { Toolbar } from './toolbar'
 
 interface TableListProps {
   params: {
+    host: number
     database: string
   }
 }
@@ -16,7 +17,7 @@ interface TableListProps {
 export const dynamic = 'force-dynamic'
 
 export default async function TableListPage({
-  params: { database },
+  params: { host, database },
 }: TableListProps) {
   const config: QueryConfig = {
     name: 'tables',
@@ -39,9 +40,12 @@ export default async function TableListPage({
       part_count: ColumnFormat.Number,
       detached_parts_count: [
         ColumnFormat.Link,
-        { href: `/detached_parts/?table=${database}.[table]` },
+        { href: `/${host}/detached_parts/?table=${database}.[table]` },
       ],
-      table: [ColumnFormat.Link, { href: `/database/${database}/[table]` }],
+      table: [
+        ColumnFormat.Link,
+        { href: `/${host}/database/${database}/[table]` },
+      ],
       engine: ColumnFormat.ColoredBadge,
       readable_compressed: ColumnFormat.BackgroundBar,
       readable_uncompressed: ColumnFormat.BackgroundBar,

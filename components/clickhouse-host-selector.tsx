@@ -16,25 +16,33 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import type { ClickHouseConfig } from '@/lib/clickhouse'
 import { cn, getHost, removeHostPrefix } from '@/lib/utils'
 
+type UptimePromise = Promise<{
+  uptime: string
+  hostName: string
+  version: string
+} | null>
+
+type ClickHouseHostSelectorProps = {
+  currentHostId: number
+  configs: Array<
+    Omit<ClickHouseConfig, 'user' | 'password'> & {
+      promise: UptimePromise
+    }
+  >
+}
+
 export function ClickHouseHostSelector({
+  currentHostId = 0,
   configs,
-  currentHostId,
-}: {
-  currentHostId: string
-  configs: {
-    host: string
-    id: string
-    customName?: string
-    promise: UptimePromise
-  }[]
-}) {
+}: ClickHouseHostSelectorProps) {
   const router = useRouter()
   const pathname = usePathname()
   const pathnameWithoutPrefix = removeHostPrefix(pathname)
 
-  const current = configs[parseInt(currentHostId)]
+  const current = configs[currentHostId]
   if (!current) {
     return null
   }
@@ -48,14 +56,13 @@ export function ClickHouseHostSelector({
           }
           router.push(`/${val}/${pathnameWithoutPrefix}`)
         }}
+        defaultValue={current.id.toString()}
       >
-        <SelectTrigger className="border-0 p-1 shadow-none">
-          <div className="flex items-center gap-2">
-            <SelectValue
-              placeholder={current.customName || current.host}
-              defaultValue={current.id}
-            />
-          </div>
+        <SelectTrigger className="w-auto border-0 p-1 shadow-none focus:ring-0">
+          <SelectValue
+            placeholder={current.customName || getHost(current.host)}
+            className="mr-2 w-fit truncate"
+          />
         </SelectTrigger>
         <SelectContent>
           {configs.map((config, id) => (
@@ -77,12 +84,6 @@ export function ClickHouseHostSelector({
     </div>
   )
 }
-
-type UptimePromise = Promise<{
-  uptime: string
-  hostName: string
-  version: string
-} | null>
 
 export async function HostStatus({ promise }: { promise: UptimePromise }) {
   const res = await promise

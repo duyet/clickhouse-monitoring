@@ -9,6 +9,14 @@ import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 export const DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME = '60'
 export const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */ '
 
+export type ClickHouseConfig = {
+  id: number
+  host: string
+  user: string
+  password: string
+  customName?: string
+}
+
 type QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{
     // @since 24.4
@@ -32,7 +40,7 @@ function splitByComma(value: string) {
     .filter(Boolean)
 }
 
-export const getClickHouseConfigs = () => {
+export const getClickHouseConfigs = (): ClickHouseConfig[] => {
   const hosts = splitByComma(process.env.CLICKHOUSE_HOST || '')
   const users = splitByComma(process.env.CLICKHOUSE_USER || '')
   const passwords = splitByComma(process.env.CLICKHOUSE_PASSWORD || '')
@@ -40,6 +48,7 @@ export const getClickHouseConfigs = () => {
 
   return hosts.map((host, index) => {
     return {
+      id: index,
       host,
       user: users[index] || 'default',
       password: passwords[index] || '',
@@ -49,7 +58,7 @@ export const getClickHouseConfigs = () => {
 }
 
 export const getClickHouseHost = () => {
-  const hostId = parseInt(getHostId() || '0')
+  const hostId = getHostId() || 0
 
   return getClickHouseConfigs()[hostId]
 }

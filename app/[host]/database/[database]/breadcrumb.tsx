@@ -18,8 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { fetchData } from '@/lib/clickhouse'
-import { getScopedLink } from '@/lib/scoped-link'
-import { redirect } from 'next/navigation'
+import { getScopedLink, redirectScoped } from '@/lib/scoped-link'
 import { listDatabases } from '../queries'
 
 interface Props {
@@ -68,7 +67,7 @@ export async function DatabaseBreadcrumb({ database }: Props) {
 
   // Current database not found in database list
   if (!databases.find((db) => db.name === database)) {
-    redirect('/database/' + databases[0].name)
+    redirectScoped('/database/' + databases[0].name)
   }
 
   return <Internal current={database} databases={databases} />
