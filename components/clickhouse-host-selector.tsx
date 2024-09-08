@@ -1,21 +1,22 @@
 'use client'
 
-import { cn, getHost, removeHostPrefix } from '@/lib/utils'
 import { usePathname, useRouter } from 'next/navigation'
 import { Suspense } from 'react'
+
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select'
+} from '@/components/ui/select'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from './ui/tooltip'
+} from '@/components/ui/tooltip'
+import { cn, getHost, removeHostPrefix } from '@/lib/utils'
 
 export function ClickHouseHostSelector({
   configs,

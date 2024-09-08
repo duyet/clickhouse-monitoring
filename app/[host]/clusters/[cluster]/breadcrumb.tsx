@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { fetchData } from '@/lib/clickhouse'
-import { getScopedLink } from '@/lib/context'
+import { getScopedLink } from '@/lib/scoped-link'
 import { config, type Row } from '../config'
 
 interface Props {

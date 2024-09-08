@@ -5,7 +5,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
-import { getScopedLink } from '@/lib/context'
+import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartMergeCount({

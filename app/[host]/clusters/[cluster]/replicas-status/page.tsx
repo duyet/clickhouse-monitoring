@@ -2,7 +2,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { fetchData } from '@/lib/clickhouse'
 
 import { Button } from '@/components/ui/button'
-import { getScopedLink } from '@/lib/context'
+import { getScopedLink } from '@/lib/scoped-link'
 import Link from 'next/link'
 import { config, type Row } from './config'
 

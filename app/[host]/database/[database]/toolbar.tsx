@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { getScopedLink } from '@/lib/context'
+import { getScopedLink } from '@/lib/scoped-link'
 import { TextAlignBottomIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 

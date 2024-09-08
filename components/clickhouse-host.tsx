@@ -1,12 +1,16 @@
+import { Suspense } from 'react'
+
+import {
+  ClickHouseHostSelector,
+  HostStatus,
+} from '@/components/clickhouse-host-selector'
 import {
   fetchData,
   getClickHouseConfigs,
   getClickHouseHost,
 } from '@/lib/clickhouse'
-import { getHostId } from '@/lib/context'
+import { getHostId } from '@/lib/server-context'
 import { getHost } from '@/lib/utils'
-import { Suspense } from 'react'
-import { ClickHouseHostSelector, HostStatus } from './clickhouse-host-selector'
 
 async function fetchHostStatus(hostId: number) {
   try {

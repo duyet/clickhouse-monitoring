@@ -1,10 +1,10 @@
 import Image from 'next/image'
+import { Suspense } from 'react'
 
 import { ClickHouseHost } from '@/components/clickhouse-host'
 import { Menu } from '@/components/menu/menu'
 import { ReloadButton } from '@/components/reload-button'
-import { Suspense } from 'react'
-import { SingleLineSkeleton } from './skeleton'
+import { SingleLineSkeleton } from '@/components/skeleton'
 
 const TITLE = process.env.NEXT_PUBLIC_TITLE || 'ClickHouse Monitoring'
 const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'Monitoring'

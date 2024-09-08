@@ -1,4 +1,4 @@
-import { setHostId } from '@/lib/context'
+import { setHostId } from '@/lib/server-context'
 
 export default function Layout({
   children,
