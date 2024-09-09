@@ -47,11 +47,22 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
   const customLabels = splitByComma(process.env.CLICKHOUSE_NAME || '')
 
   return hosts.map((host, index) => {
+    // User and password fallback to the first value,
+    // supporting multiple hosts with the same user/password
+    let user, password
+    if (users.length === 1 && passwords.length === 1) {
+      user = users[0]
+      password = passwords[0]
+    } else {
+      user = users[index] || 'default'
+      password = passwords[index] || ''
+    }
+
     return {
       id: index,
       host,
-      user: users[index] || 'default',
-      password: passwords[index] || '',
+      user,
+      password,
       customName: customLabels[index],
     }
   })
