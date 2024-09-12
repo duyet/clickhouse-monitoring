@@ -18,6 +18,8 @@ Features:
 ![](.github/screenshots/screenshot_4.png)
 ![](.github/screenshots/screenshot_5.png)
 ![](.github/screenshots/screenshot_6.png)
+![](.github/screenshots/screenshot_7.png)
+![](.github/screenshots/screenshot_8.png)
 
 ## Getting Started
 
