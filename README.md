@@ -12,6 +12,12 @@ Features:
 - Useful tools: Zookeeper data exploration, query EXPLAIN, kill queries, etc.
 - Visualization metric charts: queries and resource usage, number of merges/mutation, merge performance, query performance, etc.
 
+**Demo** (*The ClickHouse server running on my homelab so can be slow sometimes*):
+
+- [clickhouse-monitoring.vercel.app](https://clickhouse-monitoring.vercel.app)
+- [clickhouse.duyet.net](https://clickhouse.duyet.net)
+
+
 ![](.github/screenshots/screenshot_1.png)
 ![](.github/screenshots/screenshot_2.png)
 ![](.github/screenshots/screenshot_3.png)
