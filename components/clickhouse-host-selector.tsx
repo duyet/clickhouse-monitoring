@@ -50,13 +50,13 @@ export function ClickHouseHostSelector({
   return (
     <div>
       <Select
+        defaultValue={current.id.toString()}
         onValueChange={(val) => {
           if (typeof window !== 'undefined') {
             document.cookie = `hostId=${val}; path=/`
           }
           router.push(`/${val}/${pathnameWithoutPrefix}`)
         }}
-        defaultValue={current.id.toString()}
       >
         <SelectTrigger className="w-auto border-0 p-1 shadow-none focus:ring-0">
           <SelectValue

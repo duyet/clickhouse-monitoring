@@ -14,6 +14,7 @@ import { TableIcon } from 'lucide-react'
 interface ChartCardProps {
   title?: string | React.ReactNode
   className?: string
+  contentClassName?: string
   sql?: string
   data?: any[]
   children: string | React.ReactNode
@@ -21,9 +22,10 @@ interface ChartCardProps {
 
 export function ChartCard({
   title,
-  className,
   sql,
   data,
+  className,
+  contentClassName,
   children,
 }: ChartCardProps) {
   return (
@@ -37,7 +39,9 @@ export function ChartCard({
         </CardHeader>
       ) : null}
 
-      <CardContent className="p-2">{children}</CardContent>
+      <CardContent className={cn('p-2', contentClassName)}>
+        {children}
+      </CardContent>
     </Card>
   )
 }

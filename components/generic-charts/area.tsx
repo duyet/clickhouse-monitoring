@@ -27,6 +27,8 @@ export function AreaChart({
   index,
   categories,
   showLegend = false,
+  showXAxis = true,
+  showCartesianGrid = true,
   stack = false,
   opacity = 0.6,
   colors,
@@ -37,9 +39,10 @@ export function AreaChart({
   breakdownValue,
   breakdownHeading,
   tooltipActive,
+  chartConfig: customChartConfig,
   className,
 }: AreaChartProps) {
-  const chartConfig = categories.reduce(
+  const config = categories.reduce(
     (acc, category, index) => {
       acc[category] = {
         label: category,
@@ -58,6 +61,10 @@ export function AreaChart({
       },
     } as ChartConfig
   )
+  const chartConfig = {
+    ...config,
+    ...(customChartConfig || {}),
+  }
 
   return (
     <ChartContainer
@@ -73,16 +80,18 @@ export function AreaChart({
           right: 12,
         }}
       >
-        <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey={index}
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          tickFormatter={tickFormatter}
-          domain={['auto', 'auto']}
-          interval={'equidistantPreserveStart'}
-        />
+        {showCartesianGrid && <CartesianGrid vertical={false} />}
+        {showXAxis && (
+          <XAxis
+            dataKey={index}
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={tickFormatter}
+            domain={['auto', 'auto']}
+            interval={'equidistantPreserveStart'}
+          />
+        )}
 
         {renderChartTooltip({
           breakdown,
@@ -267,7 +276,6 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
         />
       }
       cursor={false}
-      defaultIndex={1}
     />
   )
 }
