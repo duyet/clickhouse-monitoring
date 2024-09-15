@@ -5,10 +5,8 @@ import {
   type DonutChartProps as TremorDonutChartProps,
 } from '@tremor/react'
 
-type ReadableFormat = 'size' | 'quantity'
-
 export interface DonutChartProps extends TremorDonutChartProps {
-  readable?: ReadableFormat
+  readable?: string
   readableColumn?: string
 }
 
