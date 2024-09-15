@@ -55,3 +55,22 @@ export function SingleLineSkeleton({
     </div>
   )
 }
+
+export function MultiLineSkeleton({
+  className = 'w-[500px]',
+}: {
+  className?: string
+}) {
+  return (
+    <div className={cn('flex flex-col items-center gap-2', className)}>
+      <div className="flex w-full flex-row items-center gap-2">
+        <Skeleton className="h-6 w-3/5 bg-slate-200" />
+        <Skeleton className="h-6 w-2/5 bg-slate-200" />
+      </div>
+      <div className="flex w-full flex-row items-center gap-2">
+        <Skeleton className="h-6 w-2/5 bg-slate-200" />
+        <Skeleton className="h-6 w-2/5 bg-slate-200" />
+      </div>
+    </div>
+  )
+}

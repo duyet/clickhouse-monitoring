@@ -1,7 +1,11 @@
 'use client'
 
 import { ErrorAlert } from '@/components/error-alert'
-import { SingleLineSkeleton, TableSkeleton } from '@/components/skeleton'
+import {
+  MultiLineSkeleton,
+  SingleLineSkeleton,
+  TableSkeleton,
+} from '@/components/skeleton'
 import { Button } from '@/components/ui/button'
 import { ToastAction } from '@/components/ui/toast'
 import { useToast } from '@/components/ui/use-toast'
@@ -16,6 +20,12 @@ export default function Play() {
       <SingleLineSkeleton />
       <SingleLineSkeleton className="w-[300px]" />
       <SingleLineSkeleton className="w-[200px] space-x-0 pt-0" />
+
+      <hr />
+      <div>
+        MultiLineSkeleton
+        <MultiLineSkeleton />
+      </div>
 
       <Button
         variant="outline"
