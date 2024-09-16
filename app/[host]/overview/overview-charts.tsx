@@ -52,100 +52,41 @@ export async function RunningQueries({ className }: { className?: string }) {
   )
 }
 
-export async function LinkDatabaseCount({ className }: { className?: string }) {
-  const query = `SELECT countDistinct(database) as count FROM system.tables`
-  const { data } = await fetchData<
-    {
-      count: number
-    }[]
-  >({ query })
-
-  if (!data) return <div />
-
-  return (
-    <Link
-      className={cn(
-        'inline-flex items-baseline gap-1 gap-2 p-1 opacity-80 hover:opacity-100',
-        className
-      )}
-      href={getScopedLink('/database')}
-    >
-      <div className="inline-flex items-baseline gap-2 text-3xl font-bold">
-        <Database className="opacity-70 hover:opacity-100" />
-        <span className="p-0">{data[0].count}</span>
-      </div>
-      <div className="text-xs text-muted-foreground">database(s) →</div>
-    </Link>
-  )
-}
-
-export async function LinkTableCount({ className }: { className?: string }) {
-  const query = `SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables`
-  const { data } = await fetchData<
-    {
-      count: number
-    }[]
-  >({ query })
-
-  if (!data) return <div />
-
-  return (
-    <Link
-      className={cn(
-        'inline-flex items-baseline gap-1 gap-2 p-1 opacity-80 hover:opacity-100',
-        className
-      )}
-      href={getScopedLink('/database')}
-    >
-      <div className="inline-flex items-baseline gap-2 text-3xl font-bold">
-        <Database className="opacity-70 hover:opacity-100" />
-        <span className="p-0">{data[0].count}</span>
-      </div>
-      <div className="text-xs text-muted-foreground">table(s) →</div>
-    </Link>
-  )
-}
-
-export async function LinkReadonlyTableCount({
-  className,
-}: {
+type LinkCountProps = {
+  query: string
+  icon: React.ReactNode
+  label: string
+  href: string
+  hideZero?: boolean
   className?: string
-}) {
-  let data
-  try {
-    const resp = await fetchData<
-      {
-        count: number
-      }[]
-    >({
-      query: `
-        SELECT countDistinct(format('{}.{}', database, table)) as count
-        FROM system.replicas
-        WHERE is_readonly = 1`,
-    })
-    data = resp.data
-  } catch (e) {
-    console.error('<LinkReadonlyTableCount /> error:', e)
+}
 
-    // Possible issue when no-replica cluster setup
-    return <div />
-  }
+async function LinkCount({
+  query,
+  icon,
+  label,
+  href,
+  hideZero = true,
+  className,
+}: LinkCountProps) {
+  const { data } = await fetchData<{ count: number }[]>({ query })
 
-  if (!data || (data.length && data[0].count == 0)) return <div />
+  if (!data || data.length === 0) return null
+  if (hideZero && data[0].count == 0) return null
 
   return (
     <Link
       className={cn(
-        'inline-flex items-baseline gap-1 gap-2 p-1 text-orange-500 opacity-80 hover:opacity-100',
+        'inline-flex items-baseline gap-1 gap-2 p-1 opacity-80 hover:opacity-100',
         className
       )}
-      href={getScopedLink('/readonly-tables')}
+      href={href}
     >
       <div className="inline-flex items-baseline gap-2 text-3xl font-bold">
-        <CircleAlert className="opacity-70 hover:opacity-100" />
+        {icon}
         <span className="p-0">{data[0].count}</span>
       </div>
-      <div className="text-xs text-orange-500">readonly table(s) →</div>
+      <div className="text-xs text-muted-foreground">{label} →</div>
     </Link>
   )
 }
@@ -164,13 +105,30 @@ export async function DatabaseTableCount({
     >
       <CardContent className="flex flex-col content-center p-2 pt-2">
         <Suspense fallback={<SingleLineSkeleton />}>
-          <LinkDatabaseCount />
+          <LinkCount
+            query="SELECT countDistinct(database) as count FROM system.tables"
+            icon={<Database className="opacity-70 hover:opacity-100" />}
+            label="database(s)"
+            href={getScopedLink('/database')}
+          />
         </Suspense>
         <Suspense fallback={<SingleLineSkeleton />}>
-          <LinkTableCount />
+          <LinkCount
+            query="SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables"
+            icon={<Database className="opacity-70 hover:opacity-100" />}
+            label="table(s)"
+            href={getScopedLink('/database')}
+          />
         </Suspense>
         <Suspense fallback={<SingleLineSkeleton />}>
-          <LinkReadonlyTableCount />
+          <LinkCount
+            query="SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.replicas WHERE is_readonly = 1"
+            icon={<CircleAlert className="opacity-70 hover:opacity-100" />}
+            label="readonly table(s)"
+            href={getScopedLink('/readonly-tables')}
+            className="text-orange-500"
+            hideZero
+          />
         </Suspense>
       </CardContent>
     </Card>
