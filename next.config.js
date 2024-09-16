@@ -10,6 +10,16 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*',
+        port: '',
+      },
+    ],
+  },
+
   // https://nextjs.org/docs/app/api-reference/next-config-js/webpack
   webpack: (
     config,
