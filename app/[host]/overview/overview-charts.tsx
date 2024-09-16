@@ -104,23 +104,23 @@ export async function DatabaseTableCount({
       )}
     >
       <CardContent className="flex flex-col content-center p-2 pt-2">
-        <Suspense fallback={<SingleLineSkeleton />}>
+        <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
           <LinkCount
-            query="SELECT countDistinct(database) as count FROM system.tables"
+            query="SELECT countDistinct(database) as count FROM system.tables WHERE database != 'system'"
             icon={<Database className="opacity-70 hover:opacity-100" />}
             label="database(s)"
             href={getScopedLink('/database')}
           />
         </Suspense>
-        <Suspense fallback={<SingleLineSkeleton />}>
+        <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
           <LinkCount
-            query="SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables"
+            query="SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables WHERE database != 'system'"
             icon={<Database className="opacity-70 hover:opacity-100" />}
             label="table(s)"
             href={getScopedLink('/database')}
           />
         </Suspense>
-        <Suspense fallback={<SingleLineSkeleton />}>
+        <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
           <LinkCount
             query="SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.replicas WHERE is_readonly = 1"
             icon={<CircleAlert className="opacity-70 hover:opacity-100" />}
