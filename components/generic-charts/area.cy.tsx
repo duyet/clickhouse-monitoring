@@ -330,10 +330,12 @@ describe('<AreaChart />', () => {
     )
     cy.screenshot()
 
+    cy.get('svg:first').as('chart').should('be.visible')
+
+    // Hover to show tooltip
+    cy.get('@chart').trigger('mouseover')
+
     // Show breakdown in tooltip
-    cy.get('.recharts-tooltip-wrapper [role="breakdown"]').should(
-      'contain',
-      breakdownHeading
-    )
+    cy.get('[role="breakdown"]').should('contain', breakdownHeading)
   })
 })
