@@ -9,7 +9,12 @@ export async function ChartQueryCount({
   interval = 'toStartOfMinute',
   className,
   chartClassName,
+  chartCardContentClassName,
   lastHours = 24,
+  showXAxis = true,
+  showLegend = false,
+  showCartesianGrid = true,
+  breakdown = 'breakdown',
   ...props
 }: ChartProps) {
   const query = `
@@ -54,7 +59,13 @@ export async function ChartQueryCount({
   >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data}>
+    <ChartCard
+      title={title}
+      className={className}
+      contentClassName={chartCardContentClassName}
+      sql={query}
+      data={data}
+    >
       <AreaChart
         className={cn('h-52', chartClassName)}
         data={data}
@@ -62,9 +73,11 @@ export async function ChartQueryCount({
         categories={['query_count']}
         readable="quantity"
         stack
-        showLegend={false}
+        showLegend={showLegend}
+        showXAxis={showXAxis}
+        showCartesianGrid={showCartesianGrid}
         colors={['--chart-yellow']}
-        breakdown="breakdown"
+        breakdown={breakdown}
         breakdownLabel="query_kind"
         breakdownValue="count"
         {...props}

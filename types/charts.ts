@@ -1,6 +1,8 @@
 import React, { ReactNode } from 'react'
 import type { LabelPosition } from 'recharts/types/component/Label'
 
+import type { ChartConfig } from '@/components/ui/chart'
+
 interface BaseAnimationTimingProps {
   animationDuration?: number
   showAnimation?: boolean
@@ -101,6 +103,7 @@ export interface BaseChartProps
   tickGap?: number
   xAxisLabel?: string
   yAxisLabel?: string
+  chartConfig?: ChartConfig
 }
 
 export interface BarChartProps extends BaseChartProps {
@@ -127,6 +130,7 @@ export interface AreaChartProps extends BaseChartProps {
   breakdownValue?: string
   breakdownHeading?: string
   tooltipActive?: boolean
+  showCartesianGrid?: boolean
 
   // TODO: support these features
   readable?: string
