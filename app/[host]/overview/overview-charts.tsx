@@ -1,14 +1,15 @@
+import { CircleAlert, Database } from 'lucide-react'
+import Link from 'next/link'
+import { Suspense } from 'react'
+
 import ChartQueryCount from '@/components/charts/query-count'
 import { SingleLineSkeleton } from '@/components/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
 import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
-import { CircleAlert, Database } from 'lucide-react'
-import Link from 'next/link'
-import { Suspense } from 'react'
 
-export async function RunningQueries({ className }: { className?: string }) {
+async function RunningQueries({ className }: { className?: string }) {
   const query = `SELECT COUNT() as count FROM system.processes`
   const { data } = await fetchData<
     {
@@ -91,11 +92,7 @@ async function LinkCount({
   )
 }
 
-export async function DatabaseTableCount({
-  className,
-}: {
-  className?: string
-}) {
+async function DatabaseTableCount({ className }: { className?: string }) {
   return (
     <Card
       className={cn(
