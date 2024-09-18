@@ -10,12 +10,14 @@ import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 async function RunningQueries({ className }: { className?: string }) {
-  const query = `SELECT COUNT() as count FROM system.processes`
   const { data } = await fetchData<
     {
       count: number
     }[]
-  >({ query })
+  >({
+    query:
+      'SELECT COUNT() as count FROM system.processes WHERE is_cancelled = 0',
+  })
 
   if (!data || !data.length) return <div />
 
