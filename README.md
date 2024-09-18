@@ -17,7 +17,6 @@ Features:
 - [clickhouse-monitoring.vercel.app](https://clickhouse-monitoring.vercel.app)
 - [clickhouse.duyet.net](https://clickhouse.duyet.net)
 
-
 ![](.github/screenshots/screenshot_1.png)
 ![](.github/screenshots/screenshot_2.png)
 ![](.github/screenshots/screenshot_3.png)
@@ -42,6 +41,7 @@ To get the project up and running on your local machine, follow these steps:
     - `CLICKHOUSE_TZ`: ClickHouse server timezone. Default: `''`.
     - `NEXT_QUERY_CACHE_TTL`: TTL of [`unstable_cache`](https://nextjs.org/docs/app/api-reference/functions/unstable_cache) - cache the results of most charts to speed up and reuse them across multiple requests. Default: `86400`.
     - `NEXT_PUBLIC_LOGO`: (Optional) HTTP path to logo image.
+    - `EVENTS_TABLE_NAME`: The table name for storing dashboard self-tracking events. Default: `system.monitoring_events`
 
 4. Run the development server with `npm run dev` or `yarn dev`
 5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the dashboard.
