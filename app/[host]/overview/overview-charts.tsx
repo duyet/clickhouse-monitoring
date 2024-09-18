@@ -89,7 +89,7 @@ async function LinkCount({
         {icon}
         <span className="p-0">{data[0].count}</span>
       </div>
-      <div className="text-xs text-muted-foreground">{label} →</div>
+      <div className="truncate text-xs text-muted-foreground">{label} →</div>
     </Link>
   )
 }
@@ -150,11 +150,11 @@ async function InfoLine({
   return (
     <div
       className={cn(
-        'inline-flex items-baseline gap-1 gap-2 truncate p-1 opacity-80 hover:opacity-100',
+        'inline-flex items-baseline gap-1 gap-2 p-1 opacity-80 hover:opacity-100',
         className
       )}
     >
-      <div className="flex-1 text-2xl font-bold">{data[0].val}</div>
+      <div className="flex-1 truncate text-xl">{data[0].val}</div>
       <div className="flex-none text-xs text-muted-foreground">{label}</div>
     </div>
   )
