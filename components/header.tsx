@@ -15,21 +15,15 @@ const LOGO = process.env.NEXT_PUBLIC_LOGO || '/logo-bw.svg'
 export function Header() {
   return (
     <div className="flex items-center justify-between space-y-2">
-      <div className="flex flex-row items-center">
-        <Link href={getScopedLink('/overview')}>
-          <Image
-            src={LOGO}
-            width={45}
-            height={45}
-            alt="Logo"
-            className="mr-2"
-          />
+      <div className="flex flex-row items-stretch gap-2">
+        <Link href={getScopedLink('/overview')} className="flex-none">
+          <Image src={LOGO} width={45} height={45} alt="Logo" />
         </Link>
-        <div>
-          <h2 className="flex min-w-32 flex-col text-2xl font-bold tracking-tight">
+        <div className="flex-auto truncate">
+          <h2 className="min-w-32 text-2xl font-bold tracking-tight">
             <Link href={getScopedLink('/overview')}>
-              <span className="hidden sm:flex">{TITLE}</span>
-              <span className="flex sm:hidden">{TITLE_SHORT}</span>
+              <span className="hidden truncate sm:flex">{TITLE}</span>
+              <span className="flex truncate sm:hidden">{TITLE_SHORT}</span>
             </Link>
           </h2>
           <div className="text-muted-foreground">

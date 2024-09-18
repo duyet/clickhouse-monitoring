@@ -62,7 +62,7 @@ function SingleItem({ item }: { item: MenuItem }) {
         )}
       >
         <div className="flex flex-row items-center gap-2">
-          {item.icon && <item.icon className="size-4" />}
+          {item.icon && <item.icon className="size-4" strokeWidth={1} />}
           {item.title}
           {item.countSql ? (
             <ServerComponentLazy fallback={<LoadingIcon />} onError={''}>
@@ -80,7 +80,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
     <NavigationMenuItem>
       <NavigationMenuTrigger>
         <div className="flex flex-row items-center gap-2">
-          {item.icon && <item.icon className="size-4" />}
+          {item.icon && <item.icon className="size-4" strokeWidth={1} />}
           {item.title}
           {item.countSql ? (
             <ServerComponentLazy fallback={<LoadingIcon />} onError={''}>
@@ -96,7 +96,9 @@ function HasChildItems({ item }: { item: MenuItem }) {
               key={childItem.href}
               title={
                 <span className="flex flex-row items-center gap-2">
-                  {childItem.icon && <childItem.icon className="size-4" />}
+                  {childItem.icon && (
+                    <childItem.icon className="size-4" strokeWidth={1} />
+                  )}
                   {childItem.title}
                   {childItem.countSql ? (
                     <ServerComponentLazy

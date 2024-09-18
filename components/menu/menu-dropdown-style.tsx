@@ -70,7 +70,7 @@ function MenuItem({ item }: { item: MenuItem }) {
 
   return (
     <SingleItemDropdown href={item.href} title={item.title}>
-      {item.icon && <item.icon className="size-3" />}
+      {item.icon && <item.icon className="size-3" strokeWidth={1} />}
     </SingleItemDropdown>
   )
 }
@@ -79,7 +79,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="flex flex-row items-center gap-2">
-        {item.icon && <item.icon className="size-3" />}
+        {item.icon && <item.icon className="size-3" strokeWidth={1} />}
         {item.title}
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
