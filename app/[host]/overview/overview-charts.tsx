@@ -1,4 +1,4 @@
-import { CircleAlert, Database } from 'lucide-react'
+import { CircleAlert, Database, TableIcon, TagIcon } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
 
@@ -114,7 +114,7 @@ async function DatabaseTableCount({ className }: { className?: string }) {
         <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
           <LinkCount
             query="SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables WHERE database != 'system'"
-            icon={<Database className="opacity-70 hover:opacity-100" />}
+            icon={<TableIcon className="opacity-70 hover:opacity-100" />}
             label="table(s)"
             href={getScopedLink('/database')}
           />
@@ -134,6 +134,63 @@ async function DatabaseTableCount({ className }: { className?: string }) {
   )
 }
 
+async function InfoLine({
+  query,
+  label,
+  className,
+}: {
+  query: string
+  label: string | React.ReactNode
+  className?: string
+}) {
+  const { data } = await fetchData<{ val: string }[]>({ query })
+
+  if (!data || data.length === 0) return null
+
+  return (
+    <div
+      className={cn(
+        'inline-flex items-baseline gap-1 gap-2 truncate p-1 opacity-80 hover:opacity-100',
+        className
+      )}
+    >
+      <div className="flex-1 text-2xl font-bold">{data[0].val}</div>
+      <div className="flex-none text-xs text-muted-foreground">{label}</div>
+    </div>
+  )
+}
+
+async function ClickHouseInfo({ className }: { className?: string }) {
+  return (
+    <Card
+      className={cn(
+        'min-w-xs content-center rounded-sm shadow-none',
+        className
+      )}
+    >
+      <CardContent className="flex flex-col content-center p-2 pt-2">
+        <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
+          <InfoLine
+            query="SELECT version() as val"
+            label={
+              <div className="inline-flex gap-1">
+                <TagIcon className="size-4" />
+                version
+              </div>
+            }
+          />
+        </Suspense>
+        <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
+          <InfoLine
+            query="SELECT splitByString(' and ', formatReadableTimeDelta(uptime()))[1] as val"
+            label="uptime"
+          />
+        </Suspense>
+      </CardContent>
+    </Card>
+  )
+}
+
 export async function OverviewCharts({ className }: { className?: string }) {
   return (
     <div
@@ -145,7 +202,7 @@ export async function OverviewCharts({ className }: { className?: string }) {
     >
       <RunningQueries />
       <DatabaseTableCount />
-      <Card className="min-w-xs rounded-sm border-0 shadow-none" />
+      <ClickHouseInfo />
       <Card className="min-w-xs rounded-sm border-0 shadow-none" />
     </div>
   )
