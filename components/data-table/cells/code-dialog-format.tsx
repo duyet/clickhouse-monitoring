@@ -5,15 +5,18 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { formatQuery } from '@/lib/format-readable'
+import { cn } from '@/lib/utils'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { SizeIcon } from '@radix-ui/react-icons'
 
 export interface CodeDialogOptions {
   dialog_title?: string
   dialog_description?: string
+  trigger_classname?: string
   max_truncate?: number
   hide_query_comment?: boolean
   json?: boolean
+  dialog_classname?: string
 }
 
 interface CodeDialogFormatProps {
@@ -54,13 +57,25 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
 
   return (
     <Dialog>
-      <DialogTrigger className="flex flex-row items-center gap-1">
-        <code className="truncate break-words font-normal" role="shorten-code">
-          {formatted}
-        </code>
-        <SizeIcon className="size-4" role="open-dialog" />
+      <DialogTrigger asChild>
+        <div
+          className={cn(
+            'flex max-w-fit cursor-pointer flex-row items-center gap-1'
+          )}
+        >
+          <code
+            className={cn(
+              'break-words font-normal',
+              options?.trigger_classname
+            )}
+            role="shorten-code"
+          >
+            {formatted}
+          </code>
+          <SizeIcon className="size-4 flex-none" role="open-dialog" />
+        </div>
       </DialogTrigger>
-      <DialogContent className="max-w-fit">
+      <DialogContent className={cn('max-w-fit', options?.dialog_classname)}>
         {(options?.dialog_title || options?.dialog_description) && (
           <DialogHeader>
             <DialogTitle>{options.dialog_title}</DialogTitle>
