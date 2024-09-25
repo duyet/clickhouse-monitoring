@@ -105,7 +105,7 @@ async function DatabaseTableCount({ className }: { className?: string }) {
       <CardContent className="flex flex-col content-center p-2 pt-2">
         <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
           <LinkCount
-            query="SELECT countDistinct(database) as count FROM system.tables WHERE database != 'system'"
+            query="SELECT countDistinct(database) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')"
             icon={<Database className="opacity-70 hover:opacity-100" />}
             label="database(s)"
             href={getScopedLink('/database')}
@@ -113,7 +113,7 @@ async function DatabaseTableCount({ className }: { className?: string }) {
         </Suspense>
         <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
           <LinkCount
-            query="SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables WHERE database != 'system'"
+            query="SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')"
             icon={<TableIcon className="opacity-70 hover:opacity-100" />}
             label="table(s)"
             href={getScopedLink('/database')}
