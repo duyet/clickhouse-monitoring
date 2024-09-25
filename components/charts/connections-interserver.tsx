@@ -1,6 +1,7 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 import { type ChartProps } from './chart-props'
 
@@ -13,7 +14,7 @@ export async function ChartConnectionsInterserver({
 }: ChartProps) {
   const query = `
     SELECT
-      ${interval}(event_time) AS event_time,
+      ${applyInterval(interval, 'event_time')},
       SUM(CurrentMetric_InterserverConnection) AS CurrentMetric_InterserverConnection,
       formatReadableQuantity(CurrentMetric_InterserverConnection) AS readable_CurrentMetric_InterserverConnection
     FROM system.metric_log

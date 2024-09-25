@@ -2,6 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 
 export async function ChartMemoryUsage({
   title,
@@ -11,7 +12,7 @@ export async function ChartMemoryUsage({
   chartClassName,
 }: ChartProps) {
   const query = `
-    SELECT ${interval}(event_time) as event_time,
+    SELECT ${applyInterval(interval, 'event_time')},
            avg(CurrentMetric_MemoryTracking) AS avg_memory,
            formatReadableSize(avg_memory) AS readable_avg_memory
     FROM merge(system, '^metric_log')

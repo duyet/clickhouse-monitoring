@@ -2,6 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 
 export async function ChartFailedQueryCount({
@@ -19,7 +20,7 @@ export async function ChartFailedQueryCount({
 }: ChartProps) {
   const query = `
     WITH event_count AS (
-      SELECT ${interval}(event_time) AS event_time,
+      SELECT ${applyInterval(interval, 'event_time')},
              COUNT() AS query_count
       FROM merge(system, '^query_log')
       WHERE
@@ -29,7 +30,7 @@ export async function ChartFailedQueryCount({
       ORDER BY 1
     ),
     query_type AS (
-        SELECT ${interval}(event_time) AS event_time,
+        SELECT ${applyInterval(interval, 'event_time')},
                type AS query_type,
                COUNT() AS count
         FROM merge(system, '^query_log')

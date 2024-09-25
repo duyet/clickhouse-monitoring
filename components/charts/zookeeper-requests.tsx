@@ -1,6 +1,7 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { type ChartProps } from './chart-props'
 
 export async function ChartZookeeperRequests({
@@ -11,12 +12,12 @@ export async function ChartZookeeperRequests({
 }: ChartProps) {
   const query = `
     SELECT
-      ${interval}(event_time) AS event_time,
+      ${applyInterval(interval, 'event_time')},
       SUM(CurrentMetric_ZooKeeperRequest) AS ZookeeperRequests,
       formatReadableQuantity(ZookeeperRequests) AS readable_ZookeeperRequests,
       SUM(CurrentMetric_ZooKeeperWatch) AS ZooKeeperWatch,
       formatReadableQuantity(ZooKeeperWatch) AS readable_ZooKeeperWatch
-    FROM system.metric_log
+    FROM merge(system, '^metric_log')
     WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
     GROUP BY event_time
     ORDER BY event_time

@@ -2,6 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryDuration({
@@ -13,7 +14,7 @@ export async function ChartQueryDuration({
   ...props
 }: ChartProps) {
   const query = `
-    SELECT ${interval}(event_time) AS event_time,
+    SELECT ${applyInterval(interval, 'event_time')},
            AVG(query_duration_ms) AS query_duration_ms,
            ROUND(query_duration_ms / 1000, 2) AS query_duration_s
     FROM merge(system, '^query_log')

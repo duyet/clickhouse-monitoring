@@ -13,6 +13,9 @@ export const expensiveQueriesByMemoryConfig: QueryConfig = {
           avg(memory_usage) AS avg_memory,
           formatReadableSize(sum_memory) AS readable_sum_memory,
           formatReadableSize(avg_memory) AS readable_avg_memory,
+          round(100 * cnt / max(cnt) OVER ()) AS pct_cnt,
+          round(100 * sum_memory / max(sum_memory) OVER ()) AS pct_sum_memory,
+          round(100 * avg_memory / max(avg_memory) OVER ()) AS pct_avg_memory,
           normalized_query_hash
       FROM system.query_log
       WHERE
@@ -38,5 +41,9 @@ export const expensiveQueriesByMemoryConfig: QueryConfig = {
       ColumnFormat.CodeDialog,
       { max_truncate: 100, hide_query_comment: true },
     ],
+    user: ColumnFormat.Badge,
+    cnt: [ColumnFormat.BackgroundBar, { numberFormat: true }],
+    readable_sum_memory: ColumnFormat.BackgroundBar,
+    readable_avg_memory: ColumnFormat.BackgroundBar,
   },
 }

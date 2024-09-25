@@ -1,6 +1,7 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 import { type ChartProps } from './chart-props'
 
@@ -16,7 +17,7 @@ export async function ChartConnectionsHttp({
     /* HTTPConnectionsTotal: Total count of all sessions: stored in the pool and actively used right now for http hosts */
 
     SELECT
-      ${interval}(event_time) AS event_time,
+      ${applyInterval(interval, 'event_time')},
       SUM(CurrentMetric_HTTPConnection) AS CurrentMetric_HTTPConnection,
       formatReadableQuantity(CurrentMetric_HTTPConnection) AS readable_CurrentMetric_HTTPConnection,
       SUM(CurrentMetric_HTTPConnectionsTotal) AS CurrentMetric_HTTPConnectionsTotal,

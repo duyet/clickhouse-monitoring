@@ -1,8 +1,8 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
-
+import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
-import { ChartCard } from '../generic-charts/chart-card'
+import { applyInterval } from '@/lib/clickhouse-query'
 
 export async function ChartMergeSumReadRows({
   title,
@@ -13,7 +13,7 @@ export async function ChartMergeSumReadRows({
 }: ChartProps) {
   const query = `
     SELECT
-        ${interval}(event_time)${interval.includes('Day') ? '::date' : ''} as event_time,
+        ${applyInterval(interval, 'event_time')},
         SUM(read_rows) AS sum_read_rows,
         log10(sum_read_rows) * 100 AS sum_read_rows_scale,
         formatReadableQuantity(sum_read_rows) AS readable_sum_read_rows

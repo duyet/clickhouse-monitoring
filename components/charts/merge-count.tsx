@@ -5,6 +5,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
@@ -16,7 +17,7 @@ export async function ChartMergeCount({
   chartClassName,
 }: ChartProps) {
   const query = `
-    SELECT ${interval}(event_time) AS event_time,
+    SELECT ${applyInterval(interval, 'event_time')},
            avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
            avg(CurrentMetric_PartMutation) AS avg_CurrentMetric_PartMutation
     FROM merge(system, '^metric_log')
