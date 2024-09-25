@@ -28,7 +28,11 @@ export function ColumnVisibilityButton<TData>({
           <MixerHorizontalIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="overflow-x-auto">
+      <DropdownMenuContent
+        align="end"
+        className="overflow-x-auto"
+        sticky="always"
+      >
         {table
           .getAllColumns()
           .filter((column) => column.getCanHide())
@@ -38,6 +42,7 @@ export function ColumnVisibilityButton<TData>({
                 key={column.id}
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                onSelect={(event) => event.preventDefault()}
                 role="checkbox"
                 aria-label={column.id}
               >
