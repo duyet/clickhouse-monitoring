@@ -42,7 +42,11 @@ export function ColumnVisibilityButton<TData>({
                 key={column.id}
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                onSelect={(event) => event.preventDefault()}
+                onSelect={(event) => {
+                  event.preventDefault()
+                  // Prevent default selection behavior to avoid
+                  // unintended interactions with checkbox state
+                }}
                 role="checkbox"
                 aria-label={column.id}
               >
