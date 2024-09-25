@@ -1,6 +1,7 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { type ChartProps } from './chart-props'
 
 export async function ChartZookeeperWait({
@@ -11,10 +12,10 @@ export async function ChartZookeeperWait({
 }: ChartProps) {
   const query = `
     SELECT
-      ${interval}(event_time) AS event_time,
+      ${applyInterval(interval, 'event_time')},
       AVG(ProfileEvent_ZooKeeperWaitMicroseconds) / 1000000 AS AVG_ProfileEvent_ZooKeeperWaitSeconds,
       formatReadableTimeDelta(AVG_ProfileEvent_ZooKeeperWaitSeconds) AS readable_AVG_ProfileEvent_ZooKeeperWaitSeconds
-    FROM system.metric_log
+    FROM merge(system, '^metric_log')
     WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
     GROUP BY event_time
     ORDER BY event_time

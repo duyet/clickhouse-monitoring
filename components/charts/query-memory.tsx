@@ -2,6 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryMemory({
@@ -13,7 +14,7 @@ export async function ChartQueryMemory({
   ...props
 }: ChartProps) {
   const query = `
-    SELECT ${interval}(event_time) AS event_time,
+    SELECT ${applyInterval(interval, 'event_time')},
            AVG(memory_usage) AS memory_usage,
            formatReadableSize(memory_usage) AS readable_memory_usage
     FROM merge(system, '^query_log')

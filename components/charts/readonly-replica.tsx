@@ -1,6 +1,7 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { type ChartProps } from './chart-props'
 
 export async function ChartReadonlyReplica({
@@ -10,9 +11,8 @@ export async function ChartReadonlyReplica({
   className,
 }: ChartProps) {
   const query = `
-    SELECT
-      ${interval}(event_time) AS event_time,
-      MAX(CurrentMetric_ReadonlyReplica) AS ReadonlyReplica
+    SELECT ${applyInterval(interval, 'event_time')},
+           MAX(CurrentMetric_ReadonlyReplica) AS ReadonlyReplica
     FROM merge(system, '^metric_log')
     WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
     GROUP BY event_time

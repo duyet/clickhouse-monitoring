@@ -2,6 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 import { ChartCard } from '../generic-charts/chart-card'
 
 export async function ChartMergeAvgDuration({
@@ -13,7 +14,7 @@ export async function ChartMergeAvgDuration({
 }: ChartProps) {
   const query = `
     SELECT
-        ${interval}(event_time)${interval.includes('Day') ? '::date' : ''} as event_time,
+        ${applyInterval(interval, 'event_time')},
         AVG(duration_ms) AS avg_duration_ms,
         formatReadableTimeDelta(avg_duration_ms / 1000, 'seconds', 'milliseconds') AS readable_avg_duration_ms,
         bar(avg_duration_ms, 0, MAX(avg_duration_ms) OVER ()) AS bar

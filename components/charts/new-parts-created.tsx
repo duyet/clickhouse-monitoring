@@ -2,6 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { applyInterval } from '@/lib/clickhouse-query'
 
 export async function ChartNewPartsCreated({
   title = 'New Parts Created over last 24 hours (part counts / 15 minutes)',
@@ -13,15 +14,16 @@ export async function ChartNewPartsCreated({
 }: ChartProps) {
   const query = `
     SELECT
+        ${applyInterval(interval, 'event_time')},
         count() AS new_parts,
-        ${interval}(event_time) AS event_time,
         table,
         sum(rows) AS total_rows,
         formatReadableQuantity(total_rows) AS readable_total_rows,
         sum(size_in_bytes) AS total_bytes_on_disk,
         formatReadableSize(total_bytes_on_disk) AS readable_total_bytes_on_disk
     FROM merge(system, '^part_log')
-    WHERE (event_type = 'NewPart') AND (event_time > (now() - toIntervalHour(${lastHours})))
+    WHERE (event_type = 'NewPart')
+      AND (event_time > (now() - toIntervalHour(${lastHours})))
     GROUP BY
         event_time,
         table
