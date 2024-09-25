@@ -17,7 +17,7 @@ export function ColumnVisibilityButton<TData>({
   table,
 }: ColumnVisibilityButtonProps<TData>) {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -28,7 +28,7 @@ export function ColumnVisibilityButton<TData>({
           <MixerHorizontalIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="overflow-x-auto">
         {table
           .getAllColumns()
           .filter((column) => column.getCanHide())
