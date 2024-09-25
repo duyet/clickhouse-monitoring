@@ -57,5 +57,7 @@ export const zookeeperConfig: QueryConfig = {
     'break',
     'zookeeper-uptime',
     'zookeeper-summary-table',
+    ['zookeeper-error', {}],
+    'break',
   ],
 }

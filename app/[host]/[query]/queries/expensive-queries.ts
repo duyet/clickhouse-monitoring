@@ -8,26 +8,53 @@ export const expensiveQueriesConfig: QueryConfig = {
       SELECT
           normalized_query_hash,
           replace(substr(argMax(query, utime), 1, 500), '\n', ' ') AS query,
+
           count() AS cnt,
+          round(100 * cnt / max(cnt) OVER ()) AS pct_cnt,
+
           sum(query_duration_ms) / 1000 AS queries_duration,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'RealTimeMicroseconds')]) / 1000000 AS real_time,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'UserTimeMicroseconds')] AS utime) / 1000000 AS user_time,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'SystemTimeMicroseconds')]) / 1000000 AS system_time,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'DiskReadElapsedMicroseconds')]) / 1000000 AS disk_read_time,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'DiskWriteElapsedMicroseconds')]) / 1000000 AS disk_write_time,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'NetworkSendElapsedMicroseconds')]) / 1000000 AS network_send_time,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'NetworkReceiveElapsedMicroseconds')]) / 1000000 AS network_receive_time,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'ZooKeeperWaitMicroseconds')]) / 1000000 AS zookeeper_wait_time,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'OSIOWaitMicroseconds')]) / 1000000 AS os_io_wait_time,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'OSCPUWaitMicroseconds')]) / 1000000 AS os_cpu_wait_time,
-          sum(ProfileEvents.Values[indexOf(ProfileEvents.Names, 'OSCPUVirtualTimeMicroseconds')]) / 1000000 AS os_cpu_virtual_time,
+          round(100 * queries_duration / max(queries_duration) OVER ()) AS pct_queries_duration,
+
+          sum(ProfileEvents['RealTimeMicroseconds']) / 1000000 AS real_time,
+          sum(ProfileEvents['UserTimeMicroseconds'] as utime) / 1000000 AS user_time,
+          sum(ProfileEvents['SystemTimeMicroseconds']) / 1000000 AS system_time,
+          sum(ProfileEvents['DiskReadElapsedMicroseconds']) / 1000000 AS disk_read_time,
+          sum(ProfileEvents['DiskWriteElapsedMicroseconds']) / 1000000 AS disk_write_time,
+          sum(ProfileEvents['NetworkSendElapsedMicroseconds']) / 1000000 AS network_send_time,
+          sum(ProfileEvents['NetworkReceiveElapsedMicroseconds']) / 1000000 AS network_receive_time,
+          sum(ProfileEvents['ZooKeeperWaitMicroseconds']) / 1000000 AS zookeeper_wait_time,
+          sum(ProfileEvents['OSIOWaitMicroseconds']) / 1000000 AS os_io_wait_time, /* IO waits, usually disks - that metric is 'orthogonal' to other */ 
+          sum(ProfileEvents['OSCPUWaitMicroseconds']) / 1000000 AS os_cpu_wait_time, /* waiting for a 'free' CPU - usually high when the other load on the server creates a lot of contention for cpu */ 
+          sum(ProfileEvents['OSCPUVirtualTimeMicroseconds']) / 1000000 AS os_cpu_virtual_time, /* similar to usertime + system time */
+
+          formatReadableSize(sum(ProfileEvents['NetworkReceiveBytes'])) AS network_receive_bytes,
+          formatReadableSize(sum(ProfileEvents['NetworkSendBytes'])) AS network_send_bytes,
+
+          sum(ProfileEvents['SelectedParts']) as selected_parts,
+          sum(ProfileEvents['SelectedRanges']) as selected_ranges,
+          sum(ProfileEvents['SelectedMarks']) as selected_marks,
+          sum(ProfileEvents['SelectedBytes']) as Selected_bytes,
+          sum(ProfileEvents['FileOpen']) as file_open,
+          sum(ProfileEvents['ZooKeeperTransactions']) as zookeeper_transactions,
+
+          quantile(0.97)(memory_usage) as memory_usage_q97,
+          formatReadableSize(memory_usage_q97) as readable_memory_usage_q97,
+          round(100 * memory_usage_q97 / max(memory_usage_q97) OVER ()) AS pct_memory_usage_q97,
+
+          /* those may different from read_rows - here the number or rows potentially matching the where conditions, not neccessary all will be read */
+          sum(ProfileEvents['SelectedRows']) as selected_rows,
           sum(read_rows) AS read_rows,
-          formatReadableSize(sum(read_bytes)) AS read_bytes,
           sum(written_rows) AS written_rows,
-          formatReadableSize(sum(written_bytes)) AS written_bytes,
           sum(result_rows) AS result_rows,
+          round(100 * read_rows / max(read_rows) OVER ()) AS pct_read_rows,
+          round(100 * written_rows / max(written_rows) OVER ()) AS pct_written_rows,
+          round(100 * result_rows / max(result_rows) OVER ()) AS pct_result_rows,
+          round(100 * selected_rows / max(selected_rows) OVER ()) AS pct_selected_rows,
+
+          formatReadableSize(sum(read_bytes)) AS read_bytes,
+          formatReadableSize(sum(written_bytes)) AS written_bytes,
           formatReadableSize(sum(result_bytes)) AS result_bytes
-      FROM system.query_log
+      FROM merge(system, '^query_log')
       WHERE (event_time > (now() - interval 24 hours)) AND (type IN (2, 4))
       GROUP BY
           GROUPING SETS (
@@ -51,15 +78,22 @@ export const expensiveQueriesConfig: QueryConfig = {
     'os_io_wait_time',
     'os_cpu_wait_time',
     'os_cpu_virtual_time',
+    'readable_memory_usage_q97',
+    'selected_rows',
     'read_rows',
-    'read_bytes',
     'written_rows',
-    'written_bytes',
     'result_rows',
+    'read_bytes',
+    'written_bytes',
     'result_bytes',
+    'selected_parts',
+    'selected_marks',
+    'selected_ranges',
+    'selected_bytes',
   ],
   columnFormats: {
-    query: ColumnFormat.CodeDialog,
+    query: [ColumnFormat.CodeDialog, { hide_query_comment: true }],
+    cnt: [ColumnFormat.BackgroundBar, { numberFormat: true }],
     queries_duration: ColumnFormat.Duration,
     real_time: ColumnFormat.Duration,
     user_time: ColumnFormat.Duration,
@@ -72,9 +106,11 @@ export const expensiveQueriesConfig: QueryConfig = {
     os_io_wait_time: ColumnFormat.Duration,
     os_cpu_wait_time: ColumnFormat.Duration,
     os_cpu_virtual_time: ColumnFormat.Duration,
-    read_rows: ColumnFormat.Number,
-    written_rows: ColumnFormat.Number,
-    result_rows: ColumnFormat.Number,
+    readable_memory_usage_q97: ColumnFormat.BackgroundBar,
+    selected_rows: [ColumnFormat.BackgroundBar, { numberFormat: true }],
+    read_rows: [ColumnFormat.BackgroundBar, { numberFormat: true }],
+    written_rows: [ColumnFormat.BackgroundBar, { numberFormat: true }],
+    result_rows: [ColumnFormat.BackgroundBar, { numberFormat: true }],
   },
   relatedCharts: [],
 }

@@ -13,7 +13,7 @@ export const commonErrorsConfig: QueryConfig = {
           round(100 * value / max(value) OVER ()) AS pct_value,
           last_error_time,
           last_error_message,
-          last_error_trace AS remote
+          toString(last_error_trace) AS remote
       FROM system.errors
       ORDER BY last_error_time DESC
       LIMIT 1000
@@ -31,7 +31,7 @@ export const commonErrorsConfig: QueryConfig = {
     code: ColumnFormat.ColoredBadge,
     value: ColumnFormat.BackgroundBar,
     last_error_time: ColumnFormat.RelatedTime,
-    remote: ColumnFormat.Code,
+    remote: ColumnFormat.CodeDialog,
     last_error_message: [ColumnFormat.CodeDialog, { max_truncate: 100 }],
   },
 }
