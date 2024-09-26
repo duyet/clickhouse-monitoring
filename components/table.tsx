@@ -26,49 +26,6 @@ export async function Table({
   })
   const validQueryParamsObj = Object.fromEntries(validQueryParams)
 
-  // Filter presets
-  let condition = []
-  const searchParamsKeys = ('' + searchParams['__presets'])
-    .split(',')
-    .map((key) => key.trim())
-    .filter((key) => key !== '')
-  for (const key of searchParamsKeys) {
-    const preset = config.filterParamPresets?.find(
-      (preset) => preset.key === key
-    )
-    if (preset) {
-      condition.push(preset.sql)
-    }
-  }
-
-  let sql = config.sql
-  if (condition.length > 0) {
-    // Check if WHERE clause exists
-    const whereIndex = sql.toUpperCase().indexOf('WHERE')
-    if (whereIndex !== -1) {
-      // If WHERE exists, add conditions after it
-      sql =
-        sql.slice(0, whereIndex + 5) +
-        ' ' +
-        condition.join(' AND ') +
-        ' AND ' +
-        sql.slice(whereIndex + 5)
-    } else {
-      // If WHERE doesn't exist, add it before ORDER BY or at the end
-      const orderByIndex = sql.toUpperCase().indexOf('ORDER BY')
-      if (orderByIndex !== -1) {
-        sql =
-          sql.slice(0, orderByIndex) +
-          ' WHERE ' +
-          condition.join(' AND ') +
-          ' ' +
-          sql.slice(orderByIndex)
-      } else {
-        sql += ' WHERE ' + condition.join(' AND ')
-      }
-    }
-  }
-
   // Retrieve data from ClickHouse.
   try {
     const queryParams = {
@@ -76,7 +33,7 @@ export async function Table({
       ...validQueryParamsObj,
     }
     const { data, metadata } = await fetchData<RowData[]>({
-      query: sql,
+      query: config.sql,
       format: 'JSONEachRow',
       query_params: queryParams,
       clickhouse_settings: {
@@ -104,7 +61,7 @@ export async function Table({
       <ErrorAlert
         title="ClickHouse Query Error"
         message={`${error}`}
-        query={sql}
+        query={config.sql}
       />
     )
   }

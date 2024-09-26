@@ -2,7 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryCount({
@@ -25,8 +25,8 @@ export async function ChartQueryCount({
       FROM merge(system, '^query_log')
       WHERE type = 'QueryFinish'
             AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
-      GROUP BY 1
-      ORDER BY 1
+      GROUP BY event_time
+      ORDER BY event_time WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
     ),
     query_kind AS (
       SELECT ${applyInterval(interval, 'event_time')},

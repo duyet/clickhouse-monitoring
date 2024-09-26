@@ -4,7 +4,6 @@ import { PlusCircledIcon } from '@radix-ui/react-icons'
 
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -12,9 +11,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
 import Link from 'next/link'
-import { redirect, usePathname, useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 interface DataTableFacetedFilterProps {
   title?: string
@@ -32,14 +32,12 @@ export function DataTableFacetedFilter({
 
   const selectedValues =
     searchParams
-      ?.get('__presets')
+      ?.get('_presets')
       ?.split(',')
       .map((key) => key.trim())
       .filter(Boolean) || []
 
   console.log('selectedValues', selectedValues)
-
-  const resetFilter = () => redirect(pathname)
 
   return (
     <DropdownMenu>
@@ -50,52 +48,49 @@ export function DataTableFacetedFilter({
           {selectedValues.length > 0 && ` (${selectedValues.length})`}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[170px]">
-        {presets.map((preset) => {
-          const isSelected = selectedValues.indexOf(preset.key) > -1
-
-          const newSelectedValues = selectedValues.filter(
-            (key) => key !== preset.key
-          )
+      <DropdownMenuContent align="start" className="w-fit min-w-[170px]">
+        {presets.map(({ name, key, value, ...preset }) => {
           const newParams = new URLSearchParams(searchParams)
+          const isSelected = newParams.get(key) === value
 
-          let href
-          if (isSelected) {
-            newParams.set('__presets', newSelectedValues.join(','))
-            href = pathname + '?' + newParams.toString()
+          if (!isSelected) {
+            newParams.set(key, value)
           } else {
-            newSelectedValues.push(preset.key)
-            newParams.set('__presets', newSelectedValues.join(','))
-            href = pathname + '?' + newParams.toString()
+            newParams.delete(key)
           }
 
+          const href = pathname + '?' + newParams.toString()
+
           return (
-            <DropdownMenuCheckboxItem
-              checked={isSelected}
-              key={preset.key}
-              onCheckedChange={() => redirect(href)}
-            >
+            <DropdownMenuItem key={key + value}>
               <Link
                 href={href}
-                className="flex flex-row content-between items-center gap-3"
+                replace={true}
+                data-selected={isSelected ? 'true' : 'false'}
+                className={cn(
+                  'flex flex-row content-between items-center gap-3',
+                  'data-[selected=true]:font-bold'
+                )}
               >
                 {preset.icon && (
                   <preset.icon className="mr-2 size-4 text-muted-foreground" />
                 )}
-                <span>{preset.name}</span>
+                <span>{name}</span>
               </Link>
-            </DropdownMenuCheckboxItem>
+            </DropdownMenuItem>
           )
         })}
 
         {selectedValues.length > 0 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => resetFilter()}
-              className="justify-center text-center"
-            >
-              Clear filters
+            <DropdownMenuItem className="justify-center text-center">
+              <Link
+                href={pathname}
+                className="flex flex-row content-between items-center gap-3"
+              >
+                Clear filters
+              </Link>
             </DropdownMenuItem>
           </>
         )}

@@ -26,7 +26,7 @@ export function ErrorAlert({
   reset,
   className,
 }: ErrorAlertProps) {
-  const [countdown, setCountdown] = useState(10)
+  const [countdown, setCountdown] = useState(30)
 
   useEffect(() => {
     if (!reset) return

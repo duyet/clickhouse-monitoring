@@ -2,7 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryDuration({
@@ -23,6 +23,7 @@ export async function ChartQueryDuration({
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY event_time
     ORDER BY event_time ASC
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
   `
   const { data } = await fetchData<
     {

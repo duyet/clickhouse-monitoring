@@ -58,7 +58,7 @@ export interface QueryConfig {
   filterParamPresets?: {
     name: string
     key: string
-    sql: string
+    value: string
     icon?: Icon
   }[]
   /**
