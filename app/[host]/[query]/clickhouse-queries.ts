@@ -6,6 +6,7 @@ import { mergesConfig } from './merges/merges'
 import { mutationsConfig } from './merges/mutations'
 import { asynchronousMetricsConfig } from './more/asynchronous-metrics'
 import { backupsConfig } from './more/backups'
+import { errorsConfig } from './more/errors'
 import { mergeTreeSettingsConfig } from './more/mergetree-settings'
 import { metricsConfig } from './more/metrics'
 import { rolesConfig } from './more/roles'
@@ -68,6 +69,7 @@ export const queries: Array<QueryConfig> = [
   usersConfig,
   rolesConfig,
   zookeeperConfig,
+  errorsConfig,
 ]
 
 export const getQueryConfigByName = cache(

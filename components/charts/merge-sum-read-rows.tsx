@@ -2,7 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
 
 export async function ChartMergeSumReadRows({
   title,
@@ -23,6 +23,7 @@ export async function ChartMergeSumReadRows({
       AND merge_reason = 'RegularMerge'
     GROUP BY 1
     ORDER BY 1 ASC
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
   `
   const { data } = await fetchData<
     {

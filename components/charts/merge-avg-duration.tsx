@@ -2,7 +2,7 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 
 import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
 import { ChartCard } from '../generic-charts/chart-card'
 
 export async function ChartMergeAvgDuration({
@@ -24,6 +24,7 @@ export async function ChartMergeAvgDuration({
       AND merge_reason = 'RegularMerge'
     GROUP BY 1
     ORDER BY 1 ASC
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
   `
   const { data } = await fetchData<
     {
