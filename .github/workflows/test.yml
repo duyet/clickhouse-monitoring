@@ -158,7 +158,7 @@ jobs:
           directory: coverage
           flags: components,${{ matrix.browser }}
 
-  unittest:
+  jest:
     runs-on: ubuntu-latest
 
     strategy:
