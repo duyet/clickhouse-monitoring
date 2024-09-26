@@ -1,7 +1,10 @@
 'use client'
 
-import { PlusCircledIcon } from '@radix-ui/react-icons'
+import { ListFilterIcon } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname, useSearchParams } from 'next/navigation'
 
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,12 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
-import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
 
 interface DataTableFacetedFilterProps {
   title?: string
@@ -42,7 +41,7 @@ export function DataTableFacetedFilter({
           variant="outline"
           className={cn(selectedValues.length > 0 && 'bg-accent')}
         >
-          <PlusCircledIcon className="mr-2 h-4 w-4" />
+          <ListFilterIcon className="mr-2 h-4 w-4" />
           {title}
           {selectedValues.length > 0 && ` (${selectedValues.length})`}
         </Button>
