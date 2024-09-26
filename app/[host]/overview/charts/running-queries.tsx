@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import { CodeIcon } from 'lucide-react'
+import Link from 'next/link'
 
 import ChartQueryCount from '@/components/charts/query-count'
 import { DialogSQL } from '@/components/dialog-sql'

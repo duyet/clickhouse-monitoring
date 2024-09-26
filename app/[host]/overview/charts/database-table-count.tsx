@@ -10,6 +10,32 @@ import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
+const metrics = [
+  {
+    query:
+      "SELECT countDistinct(database) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')",
+    icon: <Database className="size-4 opacity-70 hover:opacity-100" />,
+    label: 'database(s)',
+    href: getScopedLink('/database'),
+  },
+  {
+    query:
+      "SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')",
+    icon: <TableIcon className="size-4 opacity-70 hover:opacity-100" />,
+    label: 'table(s)',
+    href: getScopedLink('/database'),
+  },
+  {
+    query:
+      "SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.replicas WHERE is_readonly = 1",
+    icon: <CircleAlert className="size-4 opacity-70 hover:opacity-100" />,
+    label: 'readonly table(s)',
+    href: getScopedLink('/readonly-tables'),
+    className: 'text-orange-500',
+    hideZero: true,
+  },
+]
+
 export async function DatabaseTableCount({
   className,
 }: {
@@ -23,34 +49,14 @@ export async function DatabaseTableCount({
       )}
     >
       <CardContent className="flex flex-col content-center p-2 pt-2">
-        <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
-          <LinkCount
-            query="SELECT countDistinct(database) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')"
-            icon={<Database className="size-4 opacity-70 hover:opacity-100" />}
-            label="database(s)"
-            href={getScopedLink('/database')}
-          />
-        </Suspense>
-        <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
-          <LinkCount
-            query="SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')"
-            icon={<TableIcon className="size-4 opacity-70 hover:opacity-100" />}
-            label="table(s)"
-            href={getScopedLink('/database')}
-          />
-        </Suspense>
-        <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
-          <LinkCount
-            query="SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.replicas WHERE is_readonly = 1"
-            icon={
-              <CircleAlert className="size-4 opacity-70 hover:opacity-100" />
-            }
-            label="readonly table(s)"
-            href={getScopedLink('/readonly-tables')}
-            className="text-orange-500"
-            hideZero
-          />
-        </Suspense>
+        {metrics.map((metric) => (
+          <Suspense
+            key={metric.query}
+            fallback={<SingleLineSkeleton className="w-full" />}
+          >
+            <LinkCount {...metric} />
+          </Suspense>
+        ))}
       </CardContent>
     </Card>
   )
