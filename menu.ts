@@ -279,7 +279,7 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'Errors',
         href: '/charts/zookeeper-exception',
-        description: 'History of error values from table system.errors',
+        description: 'System error logs and history',
         icon: ShieldAlertIcon,
       },
     ],

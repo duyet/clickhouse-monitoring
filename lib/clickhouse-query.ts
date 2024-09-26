@@ -16,38 +16,22 @@ export function applyInterval(
   return `${interval}(${column}) AS ${alias || column}`
 }
 
-export function fillStep(interval: ClickHouseInterval) {
-  switch (interval) {
-    case 'toStartOfMinute':
-      return 'toIntervalMinute(1)'
-    case 'toStartOfFiveMinutes':
-      return 'toIntervalMinute(5)'
-    case 'toStartOfTenMinutes':
-      return 'toIntervalMinute(10)'
-    case 'toStartOfFifteenMinutes':
-      return 'toIntervalMinute(15)'
-    case 'toStartOfHour':
-      return 'toIntervalHour(1)'
-    case 'toStartOfDay':
-      return 'toIntervalDay(1)'
-    case 'toStartOfWeek':
-      return 'toIntervalDay(7)'
-    case 'toStartOfMonth':
-      return 'toIntervalMonth(1)'
-  }
+// prettier-ignore
+const intervalMap = new Map<ClickHouseInterval, { fillStep: string; nowOrToday: string }>([
+  ['toStartOfMinute',        { fillStep: 'toIntervalMinute(1)',  nowOrToday: 'now()' }],
+  ['toStartOfFiveMinutes',   { fillStep: 'toIntervalMinute(5)',  nowOrToday: 'now()' }],
+  ['toStartOfTenMinutes',    { fillStep: 'toIntervalMinute(10)', nowOrToday: 'now()' }],
+  ['toStartOfFifteenMinutes',{ fillStep: 'toIntervalMinute(15)', nowOrToday: 'now()' }],
+  ['toStartOfHour',          { fillStep: 'toIntervalHour(1)',    nowOrToday: 'now()' }],
+  ['toStartOfDay',           { fillStep: 'toIntervalDay(1)',     nowOrToday: 'today()' }],
+  ['toStartOfWeek',          { fillStep: 'toIntervalDay(7)',     nowOrToday: 'today()' }],
+  ['toStartOfMonth',         { fillStep: 'toIntervalMonth(1)',   nowOrToday: 'today()' }],
+])
+
+export function fillStep(interval: ClickHouseInterval): string {
+  return intervalMap.get(interval)?.fillStep ?? ''
 }
 
-export function nowOrToday(interval: ClickHouseInterval) {
-  switch (interval) {
-    case 'toStartOfMinute':
-    case 'toStartOfFiveMinutes':
-    case 'toStartOfTenMinutes':
-    case 'toStartOfFifteenMinutes':
-    case 'toStartOfHour':
-      return 'now()'
-    case 'toStartOfDay':
-    case 'toStartOfWeek':
-    case 'toStartOfMonth':
-      return 'today()'
-  }
+export function nowOrToday(interval: ClickHouseInterval): string {
+  return intervalMap.get(interval)?.nowOrToday ?? ''
 }
