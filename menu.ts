@@ -28,6 +28,7 @@ import {
   Grid2x2CheckIcon,
   HardDriveIcon,
   RollerCoasterIcon,
+  ShieldAlertIcon,
   UngroupIcon,
   UnplugIcon,
 } from 'lucide-react'
@@ -274,6 +275,12 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/charts/connections-http,connections-interserver',
         description: 'Number of connections over time',
         icon: UnplugIcon,
+      },
+      {
+        title: 'Errors',
+        href: '/charts/zookeeper-exception',
+        description: 'History of error values from table system.errors',
+        icon: ShieldAlertIcon,
       },
     ],
   },

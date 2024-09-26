@@ -1,13 +1,13 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { applyInterval, fillStep } from '@/lib/clickhouse-query'
 import Link from 'next/link'
 import { ChartWarnMessage } from '../chart-warn-message'
 import { type ChartProps } from './chart-props'
 
-export async function ChartZookeeperError({
-  title = 'ZooKeeper Errors',
+export async function ChartKeeperException({
+  title = 'KEEPER_EXCEPTION last 7 days',
   interval = 'toStartOfHour',
   lastHours = 24 * 7,
   className,
@@ -15,12 +15,12 @@ export async function ChartZookeeperError({
   const query = `
     SELECT
       ${applyInterval(interval, 'event_time')},
-      sum(value) AS error_count
+      sum(value) AS KEEPER_EXCEPTION 
     FROM merge(system, '^error_log')
     WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
       AND error = 'KEEPER_EXCEPTION'
     GROUP BY event_time
-    ORDER BY event_time
+    ORDER BY event_time WITH FILL TO now() STEP ${fillStep(interval)}
   `
 
   let data
@@ -29,7 +29,7 @@ export async function ChartZookeeperError({
     const resp = await fetchData<
       {
         event_time: string
-        error_count: number
+        KEEPER_EXCEPTION: number
       }[]
     >({
       query,
@@ -65,7 +65,7 @@ export async function ChartZookeeperError({
       <BarChart
         data={data}
         index="event_time"
-        categories={['error_count']}
+        categories={['KEEPER_EXCEPTION']}
         className="h-52"
         showLegend
         stack
@@ -74,4 +74,4 @@ export async function ChartZookeeperError({
   )
 }
 
-export default ChartZookeeperError
+export default ChartKeeperException
