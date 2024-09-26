@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic'
 export default async function TableListPage({
   params: { host, database },
 }: TableListProps) {
-  const config: QueryConfig = {
+  const queryConfig: QueryConfig = {
     name: 'tables',
     sql: listTables,
     columns: [
@@ -57,7 +57,7 @@ export default async function TableListPage({
   }
 
   const { data } = await fetchData<RowData[]>({
-    query: config.sql,
+    query: queryConfig.sql,
     format: 'JSONEachRow',
     query_params: { database },
   })
@@ -65,7 +65,7 @@ export default async function TableListPage({
   return (
     <DataTable
       title={`${database}`}
-      queryConfig={config}
+      queryConfig={queryConfig}
       data={data}
       topRightToolbarExtras={<Toolbar database={database} />}
     />

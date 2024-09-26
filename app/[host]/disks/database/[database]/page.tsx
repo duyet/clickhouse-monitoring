@@ -4,7 +4,7 @@ import { RelatedCharts } from '@/components/related-charts'
 import { ChartSkeleton, TableSkeleton } from '@/components/skeleton'
 import { Table } from '@/components/table'
 
-import { databaseDiskSpaceByDatabaseConfig as config } from '../../config'
+import { databaseDiskSpaceByDatabaseConfig as queryConfig } from '../../config'
 
 interface PageProps {
   params: {
@@ -25,13 +25,13 @@ export default async function Page({
   return (
     <div className="flex flex-col">
       <Suspense fallback={<ChartSkeleton />}>
-        <RelatedCharts relatedCharts={config.relatedCharts} />
+        <RelatedCharts relatedCharts={queryConfig.relatedCharts} />
       </Suspense>
 
       <Suspense fallback={<TableSkeleton />}>
         <Table
           title={'Disks usage by database: ' + database}
-          config={config}
+          queryConfig={queryConfig}
           searchParams={params}
         />
       </Suspense>

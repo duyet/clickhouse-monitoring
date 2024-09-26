@@ -11,7 +11,7 @@ export type Row = {
   last_modification_time: string
 }
 
-export const config: QueryConfig = {
+export const queryConfig: QueryConfig = {
   name: 'count-across-replicas',
   description: 'Count across replicas for all tables in the cluster',
   sql: `

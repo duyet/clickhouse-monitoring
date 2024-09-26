@@ -4,7 +4,7 @@ import { fetchData } from '@/lib/clickhouse'
 import { Button } from '@/components/ui/button'
 import { getScopedLink } from '@/lib/scoped-link'
 import Link from 'next/link'
-import { config, type Row } from './config'
+import { queryConfig, type Row } from './config'
 
 interface PageProps {
   params: {
@@ -14,14 +14,14 @@ interface PageProps {
 
 export default async function Page({ params: { cluster } }: PageProps) {
   const { data } = await fetchData<Row[]>({
-    query: config.sql,
+    query: queryConfig.sql,
     query_params: { cluster },
   })
 
   return (
     <DataTable
       title={`Row counts across '${cluster}' cluster`}
-      queryConfig={config}
+      queryConfig={queryConfig}
       data={data}
       topRightToolbarExtras={<TopRightToolbarExtras cluster={cluster} />}
     />

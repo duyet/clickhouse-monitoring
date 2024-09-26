@@ -7,7 +7,7 @@ import { Extras } from '../extras/extras'
 
 import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
-import { config, type Row } from '../config'
+import { queryConfig, type Row } from '../config'
 import { engineType } from '../engine-type'
 
 interface Props {
@@ -25,7 +25,7 @@ export default async function MergeTree({
   if (engine.includes('MergeTree') === false) return <></>
 
   const { data: columns } = await fetchData<Row[]>({
-    query: config.sql,
+    query: queryConfig.sql,
     query_params: {
       database,
       table,
@@ -40,7 +40,7 @@ export default async function MergeTree({
       topRightToolbarExtras={
         <TopRightToolbarExtras database={database} table={table} />
       }
-      queryConfig={config}
+      queryConfig={queryConfig}
       data={columns}
     />
   )
