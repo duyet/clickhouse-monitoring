@@ -18,7 +18,7 @@ export default async function ClustersPage({ params: { replica } }: PageProps) {
   return (
     <DataTable
       title={`Tables in replica - ${replica}`}
-      config={config}
+      queryConfig={config}
       data={data}
     />
   )

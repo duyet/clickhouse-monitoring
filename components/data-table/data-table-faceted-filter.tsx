@@ -30,19 +30,18 @@ export function DataTableFacetedFilter({
 
   if (!presets) return null
 
-  const selectedValues =
-    searchParams
-      ?.get('_presets')
-      ?.split(',')
-      .map((key) => key.trim())
-      .filter(Boolean) || []
-
-  console.log('selectedValues', selectedValues)
+  const selected = new URLSearchParams(searchParams)
+  const selectedValues = presets.filter(
+    ({ key, value }) => selected.has(key) && selected.get(key) === value
+  )
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="border-dashed">
+        <Button
+          variant="outline"
+          className={cn(selectedValues.length > 0 && 'bg-accent')}
+        >
           <PlusCircledIcon className="mr-2 h-4 w-4" />
           {title}
           {selectedValues.length > 0 && ` (${selectedValues.length})`}

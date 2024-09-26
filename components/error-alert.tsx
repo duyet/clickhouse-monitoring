@@ -1,5 +1,6 @@
 'use client'
 
+import dedent from 'dedent'
 import React, { useEffect, useState } from 'react'
 
 import {
@@ -63,7 +64,13 @@ export function ErrorAlert({
       <AccordionItem className="border-none" value="item-1">
         <AccordionTrigger role="open-query">{title}</AccordionTrigger>
         <AccordionContent>
-          <code className="text-muted-foreground">{content}</code>
+          <code className="text-wrap text-muted-foreground">
+            {typeof content === 'string' ? (
+              <pre>{dedent(content)}</pre>
+            ) : (
+              content
+            )}
+          </code>
         </AccordionContent>
       </AccordionItem>
     </Accordion>

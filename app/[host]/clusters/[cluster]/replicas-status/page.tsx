@@ -21,7 +21,7 @@ export default async function Page({ params: { cluster } }: PageProps) {
   return (
     <DataTable
       title={`Row counts across '${cluster}' cluster`}
-      config={config}
+      queryConfig={config}
       data={data}
       topRightToolbarExtras={<TopRightToolbarExtras cluster={cluster} />}
     />

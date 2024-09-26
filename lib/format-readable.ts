@@ -77,7 +77,7 @@ export function formatQuery({
   remove_extra_whitespace?: boolean
 }) {
   let formattedQuery = comment_remove
-    ? query.replace(/\/\*[\s\S]*?\*\//g, '')
+    ? query.replace(/\/\*[\s\S]*?\*\//g, '/* ... */')
     : query
 
   if (trim) {

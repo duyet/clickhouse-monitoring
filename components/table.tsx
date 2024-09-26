@@ -8,7 +8,7 @@ import type { QueryConfig } from '@/types/query-config'
 interface TableProps {
   title: string
   description?: string
-  config: QueryConfig
+  queryConfig: QueryConfig
   searchParams: { [key: string]: string | string[] | undefined }
   className?: string
 }
@@ -16,30 +16,32 @@ interface TableProps {
 export async function Table({
   title,
   description,
-  config,
+  queryConfig,
   searchParams,
   className,
 }: TableProps) {
   // Filters valid query parameters from the URL.
   const validQueryParams = Object.entries(searchParams).filter(([key, _]) => {
-    return config.defaultParams && config.defaultParams[key] !== undefined
+    return (
+      queryConfig.defaultParams && queryConfig.defaultParams[key] !== undefined
+    )
   })
   const validQueryParamsObj = Object.fromEntries(validQueryParams)
 
   // Retrieve data from ClickHouse.
   try {
     const queryParams = {
-      ...config.defaultParams,
+      ...queryConfig.defaultParams,
       ...validQueryParamsObj,
     }
     const { data, metadata } = await fetchData<RowData[]>({
-      query: config.sql,
+      query: queryConfig.sql,
       format: 'JSONEachRow',
       query_params: queryParams,
       clickhouse_settings: {
         // The main data table takes longer to load.
         max_execution_time: 300,
-        ...config.clickhouseSettings,
+        ...queryConfig.clickhouseSettings,
       },
     })
 
@@ -49,7 +51,8 @@ export async function Table({
       <DataTable
         title={title}
         description={description}
-        config={config}
+        queryConfig={queryConfig}
+        queryParams={queryParams}
         data={data}
         footnote={footerText}
         className={className}
@@ -61,7 +64,7 @@ export async function Table({
       <ErrorAlert
         title="ClickHouse Query Error"
         message={`${error}`}
-        query={config.sql}
+        query={queryConfig.sql}
       />
     )
   }

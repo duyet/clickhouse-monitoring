@@ -1,4 +1,5 @@
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+import dedent from 'dedent'
 
 export function applyInterval(
   interval: ClickHouseInterval,
@@ -34,4 +35,26 @@ export function fillStep(interval: ClickHouseInterval): string {
 
 export function nowOrToday(interval: ClickHouseInterval): string {
   return intervalMap.get(interval)?.nowOrToday ?? ''
+}
+
+export function withQueryParams(
+  query: string,
+  params?: Record<string, string | number>
+) {
+  if (!params || Object.keys(params).length === 0) {
+    return query
+  }
+
+  const setParams = Object.entries(params)
+    .map(([key, value]) => {
+      if (typeof value === 'string') {
+        // Escape single quotes by doubling them
+        const escapedValue = value.replace(/'/g, "''")
+        return `SET param_${key}='${escapedValue}'`
+      }
+      return `SET param_${key}=${value}`
+    })
+    .join(';\n')
+
+  return `${setParams};\n${dedent(query)}`
 }

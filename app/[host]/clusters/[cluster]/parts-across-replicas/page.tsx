@@ -60,7 +60,7 @@ export default async function Page({ params: { cluster } }: PageProps) {
   return (
     <DataTable
       title={`Count of active parts across replicas in the '${cluster}' cluster`}
-      config={config}
+      queryConfig={config}
       data={data}
     />
   )

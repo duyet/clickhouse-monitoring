@@ -40,7 +40,7 @@ export default async function MergeTree({
       topRightToolbarExtras={
         <TopRightToolbarExtras database={database} table={table} />
       }
-      config={config}
+      queryConfig={config}
       data={columns}
     />
   )

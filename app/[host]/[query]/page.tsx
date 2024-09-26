@@ -25,21 +25,21 @@ export default async function Page({
   noStore()
 
   // Retrieves the query configuration by name.
-  const config = getQueryConfigByName(query)
-  if (!config) {
+  const queryConfig = getQueryConfigByName(query)
+  if (!queryConfig) {
     return notFound()
   }
 
   return (
     <div className="flex flex-col gap-4">
       <Suspense fallback={<ChartSkeleton />}>
-        <RelatedCharts relatedCharts={config.relatedCharts} />
+        <RelatedCharts relatedCharts={queryConfig.relatedCharts} />
       </Suspense>
 
       <Suspense fallback={<TableSkeleton />}>
         <Table
           title={query.replaceAll('-', ' ')}
-          config={config}
+          queryConfig={queryConfig}
           searchParams={searchParams}
         />
       </Suspense>

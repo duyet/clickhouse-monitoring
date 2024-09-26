@@ -63,7 +63,7 @@ export default async function TableListPage({
   return (
     <DataTable
       title={`${database}`}
-      config={config}
+      queryConfig={config}
       data={data}
       topRightToolbarExtras={<Toolbar database={database} />}
     />
