@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
-interface DialogContentProps {
+export interface DialogContentProps {
   button?: React.ReactNode
   title?: string
   description?: string
