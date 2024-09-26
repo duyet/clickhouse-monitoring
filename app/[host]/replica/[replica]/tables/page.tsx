@@ -1,7 +1,7 @@
 import { DataTable } from '@/components/data-table/data-table'
 import { fetchData } from '@/lib/clickhouse'
 
-import { config, type Row } from './config'
+import { queryConfig, type Row } from './config'
 
 interface PageProps {
   params: {
@@ -11,14 +11,14 @@ interface PageProps {
 
 export default async function ClustersPage({ params: { replica } }: PageProps) {
   const { data } = await fetchData<Row[]>({
-    query: config.sql,
+    query: queryConfig.sql,
     query_params: { replica },
   })
 
   return (
     <DataTable
       title={`Tables in replica - ${replica}`}
-      config={config}
+      queryConfig={queryConfig}
       data={data}
     />
   )

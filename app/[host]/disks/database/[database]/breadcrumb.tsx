@@ -19,7 +19,7 @@ import {
 import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
 import {
-  databaseDiskSpaceConfig as config,
+  databaseDiskSpaceConfig as queryConfig,
   type DatabaseUsedSpace,
 } from '../../config'
 
@@ -31,7 +31,7 @@ export async function DatabaseListBreadcrumb({ database }: Props) {
   try {
     // Lists cluster names.
     const { data } = await fetchData<DatabaseUsedSpace[]>({
-      query: config.sql,
+      query: queryConfig.sql,
     })
 
     if (!data.length) {

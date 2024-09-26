@@ -58,9 +58,10 @@ export const runningQueriesConfig: QueryConfig = {
     query: [
       ColumnFormat.CodeDialog,
       {
-        max_truncate: 70,
+        max_truncate: 100,
         hide_query_comment: true,
         dialog_title: 'Running Query',
+        trigger_classname: 'min-w-96',
       },
     ],
     user: ColumnFormat.ColoredBadge,

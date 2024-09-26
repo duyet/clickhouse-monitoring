@@ -3,6 +3,8 @@ import { type QueryConfig } from '@/types/query-config'
 
 export const historyQueriesConfig: QueryConfig = {
   name: 'history-queries',
+  description:
+    'Contains information about executed queries: start time, duration of processing, error messages',
   sql: `
       SELECT
           type,
@@ -23,26 +25,30 @@ export const historyQueriesConfig: QueryConfig = {
           formatReadableQuantity(result_rows) AS readable_result_rows,
           memory_usage,
           formatReadableSize(memory_usage) AS readable_memory_usage,
+          round(100 * memory_usage / MAX(memory_usage) OVER ()) AS pct_memory_usage,
           query_kind,
           client_name
       FROM system.query_log
-      WHERE type != 'QueryStart'
+      WHERE
+        if ({type: String} != '', type = {type: String}, type != 'QueryStart')
+        AND if ({duration_1m: String} = '1', query_duration >= 60, true)
       ORDER BY event_time DESC
       LIMIT 1000
-    `,
+  `,
+
   columns: [
     'user',
-    'type',
     'query',
     'query_duration',
+    'readable_memory_usage',
     'event_time',
-    'query_id',
     'readable_read_rows',
     'readable_written_rows',
     'readable_result_rows',
-    'readable_memory_usage',
     'query_kind',
+    'type',
     'client_name',
+    'query_id',
   ],
   columnFormats: {
     user: ColumnFormat.ColoredBadge,
@@ -52,12 +58,46 @@ export const historyQueriesConfig: QueryConfig = {
     readable_query: ColumnFormat.Code,
     query: [
       ColumnFormat.CodeDialog,
-      { max_truncate: 50, hide_query_comment: true, dialog_title: 'Query' },
+      { max_truncate: 100, hide_query_comment: true, dialog_title: 'Query' },
     ],
     event_time: ColumnFormat.RelatedTime,
     readable_read_rows: ColumnFormat.BackgroundBar,
     readable_written_rows: ColumnFormat.BackgroundBar,
+    readable_memory_usage: ColumnFormat.BackgroundBar,
   },
+
+  defaultParams: {
+    type: '',
+    duration_1m: '',
+  },
+
+  filterParamPresets: [
+    {
+      name: 'type = QueryStart',
+      key: 'type',
+      value: 'QueryStart',
+    },
+    {
+      name: 'type = QueryFinish',
+      key: 'type',
+      value: 'QueryFinish',
+    },
+    {
+      name: 'type = ExceptionBeforeStart',
+      key: 'type',
+      value: 'ExceptionBeforeStart',
+    },
+    {
+      name: 'type = ExceptionWhileProcessing',
+      key: 'type',
+      value: 'ExceptionWhileProcessing',
+    },
+    {
+      name: 'query_duration > 1m',
+      key: 'duration_1m',
+      value: '1',
+    },
+  ],
 
   relatedCharts: [
     [

@@ -29,6 +29,7 @@ import {
 import { uniq } from '@/lib/utils'
 import { type QueryConfig } from '@/types/query-config'
 
+import { withQueryParams } from '@/lib/clickhouse-query'
 import { ColumnVisibilityButton } from './buttons/column-visibility'
 import { ShowSQLButton } from './buttons/show-sql'
 import { DataTableToolbar } from './data-table-toolbar'
@@ -39,7 +40,8 @@ interface DataTableProps<TData extends RowData> {
   description?: string | React.ReactNode
   toolbarExtras?: React.ReactNode
   topRightToolbarExtras?: React.ReactNode
-  config: QueryConfig
+  queryConfig: QueryConfig
+  queryParams?: Record<string, any>
   data: TData[]
   defaultPageSize?: number
   showSQL?: boolean
@@ -55,7 +57,8 @@ export function DataTable<
   description = '',
   toolbarExtras,
   topRightToolbarExtras,
-  config,
+  queryConfig,
+  queryParams,
   data,
   defaultPageSize = 100,
   showSQL = true,
@@ -71,13 +74,13 @@ export function DataTable<
   )
 
   // Configured columns available, normalized
-  const configuredColumns = config.columns.map(normalizeColumnName)
+  const configuredColumns = queryConfig.columns.map(normalizeColumnName)
 
   // Column definitions for the table
-  const columnDefs = getColumnDefs<TData, TValue>(config, data) as ColumnDef<
-    TData,
-    TValue
-  >[]
+  const columnDefs = getColumnDefs<TData, TValue>(
+    queryConfig,
+    data
+  ) as ColumnDef<TData, TValue>[]
 
   // Only show the columns in QueryConfig['columns'] list by initial
   const initialColumnVisibility = allColumns.reduce(
@@ -118,23 +121,28 @@ export function DataTable<
     <div className={className}>
       <div className="flex flex-row items-center justify-between pb-4">
         <div>
-          <h1 className="text-xl text-muted-foreground">{title}</h1>
+          <div className="mb-4 inline-flex items-center gap-2">
+            <h1 className="text-xl text-muted-foreground">{title}</h1>
+            <DataTableToolbar
+              queryConfig={queryConfig}
+              extras={toolbarExtras}
+            />
+          </div>
           <p className="text-sm text-muted-foreground">
-            {description || config.description}
+            {description || queryConfig.description}
           </p>
         </div>
+
         <div className="flex items-center gap-3">
           {topRightToolbarExtras}
-          {showSQL ? <ShowSQLButton sql={config.sql} /> : null}
+          {showSQL && (
+            <ShowSQLButton
+              sql={withQueryParams(queryConfig.sql, queryParams)}
+            />
+          )}
           <ColumnVisibilityButton table={table} />
         </div>
       </div>
-
-      <DataTableToolbar
-        config={config}
-        extras={toolbarExtras}
-        className="mb-2"
-      />
 
       <div className="mb-5 rounded-md border">
         <Table>

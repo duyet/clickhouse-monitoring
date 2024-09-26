@@ -23,7 +23,7 @@ export default async function Disks({ searchParams }: PageProps) {
       <Suspense fallback={<TableSkeleton />}>
         <Table
           title="Disks"
-          config={diskSpaceConfig}
+          queryConfig={diskSpaceConfig}
           searchParams={searchParams}
         />
       </Suspense>
@@ -32,7 +32,7 @@ export default async function Disks({ searchParams }: PageProps) {
         <Table
           title="Disk usage by databases"
           description="Click on database name to see table level details"
-          config={databaseDiskSpaceConfig}
+          queryConfig={databaseDiskSpaceConfig}
           searchParams={searchParams}
         />
       </Suspense>

@@ -13,7 +13,7 @@ export type Row = {
   comment: string
 }
 
-export const config: QueryConfig = {
+export const queryConfig: QueryConfig = {
   name: 'columns',
   sql: `
     WITH columns AS (

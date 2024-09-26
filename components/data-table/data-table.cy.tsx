@@ -4,7 +4,7 @@ import { DataTable } from './data-table'
 
 describe('<DataTable />', () => {
   // Define mock config
-  const config: QueryConfig = {
+  const queryConfig: QueryConfig = {
     name: 'settings',
     sql: '/* No need */',
     columns: ['col1', 'col2'],
@@ -18,7 +18,9 @@ describe('<DataTable />', () => {
       { col1: 'val3', col2: 'val3' },
     ]
 
-    cy.mount(<DataTable title="Test Table" config={config} data={data} />)
+    cy.mount(
+      <DataTable title="Test Table" queryConfig={queryConfig} data={data} />
+    )
 
     cy.get('h1').contains('Test Table')
     cy.get('table').should('have.length', 1)
@@ -40,7 +42,7 @@ describe('<DataTable />', () => {
     cy.mount(
       <DataTable
         title="Test Table"
-        config={config}
+        queryConfig={queryConfig}
         data={data}
         defaultPageSize={50}
       />
@@ -77,7 +79,7 @@ describe('<DataTable />', () => {
     cy.mount(
       <DataTable
         title="Test Table"
-        config={config}
+        queryConfig={queryConfig}
         data={data}
         defaultPageSize={2}
       />
@@ -104,7 +106,9 @@ describe('<DataTable />', () => {
       { col1: 'val3', col2: 'val3' },
     ]
 
-    cy.mount(<DataTable title="Test Table" config={config} data={data} />)
+    cy.mount(
+      <DataTable title="Test Table" queryConfig={queryConfig} data={data} />
+    )
 
     const $optionBtn = cy.get('button[aria-label="Column Options"]')
 
@@ -130,7 +134,9 @@ describe('<DataTable />', () => {
       { col1: 'val3', col2: 'val3' },
     ]
 
-    cy.mount(<DataTable title="Test Table" config={config} data={data} />)
+    cy.mount(
+      <DataTable title="Test Table" queryConfig={queryConfig} data={data} />
+    )
 
     cy.get('button[aria-label="Column Options"]').as('btn')
 
@@ -155,7 +161,9 @@ describe('<DataTable />', () => {
       { col1: 'val3', col2: 'val3' },
     ]
 
-    cy.mount(<DataTable title="Test Table" config={config} data={data} />)
+    cy.mount(
+      <DataTable title="Test Table" queryConfig={queryConfig} data={data} />
+    )
 
     cy.get('button[aria-label="Column Options"]').as('btn')
 
@@ -183,7 +191,12 @@ describe('<DataTable />', () => {
 
   it('should have "Show Code" button when showSQL={true}', () => {
     cy.mount(
-      <DataTable title="Test Table" config={config} data={[]} showSQL={true} />
+      <DataTable
+        title="Test Table"
+        queryConfig={queryConfig}
+        data={[]}
+        showSQL={true}
+      />
     )
 
     cy.get('button[aria-label="Show SQL"]').should('exist')
@@ -191,7 +204,12 @@ describe('<DataTable />', () => {
 
   it('should not have "Show Code" button when showSQL={false}', () => {
     cy.mount(
-      <DataTable title="Test Table" config={config} data={[]} showSQL={false} />
+      <DataTable
+        title="Test Table"
+        queryConfig={queryConfig}
+        data={[]}
+        showSQL={false}
+      />
     )
 
     cy.get('button[aria-label="Show SQL"]').should('not.exist')
@@ -208,7 +226,7 @@ describe('<DataTable />', () => {
     cy.mount(
       <DataTable
         title="Test Table"
-        config={config}
+        queryConfig={queryConfig}
         data={data}
         showSQL={true}
       />
@@ -218,7 +236,7 @@ describe('<DataTable />', () => {
     cy.get('button[aria-label="Show SQL"]').click()
 
     // Showing dialog contains the current SQL code
-    cy.get('pre').contains(config.sql)
+    cy.get('pre').contains(queryConfig.sql)
 
     // Click to dismiss the dialog
     cy.contains('[role="dialog"] button', 'Close', { matchCase: false }).click()
@@ -231,7 +249,7 @@ describe('<DataTable />', () => {
     cy.mount(
       <DataTable
         title="Test Table"
-        config={config}
+        queryConfig={queryConfig}
         data={[]}
         footnote="This is footnote"
       />
@@ -244,7 +262,7 @@ describe('<DataTable />', () => {
     cy.mount(
       <DataTable
         title="Test Table"
-        config={config}
+        queryConfig={queryConfig}
         data={[]}
         footnote={<div className="footnote">This is footnote</div>}
       />
@@ -256,7 +274,7 @@ describe('<DataTable />', () => {
   it('should display without footnote props, with 1 row, pageSize=10', () => {
     cy.mount(
       <DataTable
-        config={config}
+        queryConfig={queryConfig}
         data={[{ col1: '1', col2: '2' }]}
         defaultPageSize={10}
       />
@@ -272,7 +290,9 @@ describe('<DataTable />', () => {
       data.push({ col1: '1', col2: '2' })
     }
 
-    cy.mount(<DataTable config={config} data={data} defaultPageSize={10} />)
+    cy.mount(
+      <DataTable queryConfig={queryConfig} data={data} defaultPageSize={10} />
+    )
     cy.contains('0 of 10 row(s)')
   })
 })

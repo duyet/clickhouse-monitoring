@@ -8,6 +8,7 @@ import { formatQuery } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { SizeIcon } from '@radix-ui/react-icons'
+import dedent from 'dedent'
 
 export interface CodeDialogOptions {
   dialog_title?: string
@@ -84,8 +85,12 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
         )}
 
         <div>
-          <code className="whitespace-pre-wrap text-sm text-stone-500">
-            {content}
+          <code className="whitespace-pre-wrap text-wrap text-sm text-stone-500">
+            {typeof content === 'string' ? (
+              <pre>{dedent(content)}</pre>
+            ) : (
+              content
+            )}
           </code>
         </div>
       </DialogContent>

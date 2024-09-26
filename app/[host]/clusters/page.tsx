@@ -1,12 +1,12 @@
 import { DataTable } from '@/components/data-table/data-table'
 import { fetchData } from '@/lib/clickhouse'
 
-import { config, type Row } from './config'
+import { queryConfig, type Row } from './config'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ClustersPage() {
-  const { data } = await fetchData<Row[]>({ query: config.sql })
+  const { data } = await fetchData<Row[]>({ query: queryConfig.sql })
 
-  return <DataTable config={config} data={data} />
+  return <DataTable queryConfig={queryConfig} data={data} />
 }

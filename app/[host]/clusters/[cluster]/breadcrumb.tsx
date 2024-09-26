@@ -18,7 +18,7 @@ import {
 
 import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
-import { config, type Row } from '../config'
+import { queryConfig, type Row } from '../config'
 
 interface Props {
   cluster: string
@@ -27,7 +27,7 @@ interface Props {
 export async function ClusterListBreadcrumb({ cluster }: Props) {
   try {
     // Lists cluster names.
-    const { data } = await fetchData<Row[]>({ query: config.sql })
+    const { data } = await fetchData<Row[]>({ query: queryConfig.sql })
 
     if (!data.length) {
       return (

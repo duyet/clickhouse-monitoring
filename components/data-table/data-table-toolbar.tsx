@@ -5,13 +5,13 @@ import type { QueryConfig } from '@/types/query-config'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 
 interface DataTableToolbarProps {
-  config: QueryConfig
+  queryConfig: QueryConfig
   extras?: React.ReactNode
   className?: string
 }
 
 export function DataTableToolbar({
-  config,
+  queryConfig,
   extras,
   className,
 }: DataTableToolbarProps) {
@@ -20,10 +20,10 @@ export function DataTableToolbar({
       <div className="flex flex-1 items-center space-x-2">
         {extras}
 
-        {config.filterParamPresets && (
+        {queryConfig.filterParamPresets && (
           <DataTableFacetedFilter
             title="Filters"
-            presets={config.filterParamPresets}
+            presets={queryConfig.filterParamPresets}
           />
         )}
       </div>

@@ -8,7 +8,7 @@ export type Row = {
   count_replica: string
 }
 
-export const config: QueryConfig = {
+export const queryConfig: QueryConfig = {
   name: 'clusters',
   description:
     'Contains information about clusters available in the config file and the servers in them',

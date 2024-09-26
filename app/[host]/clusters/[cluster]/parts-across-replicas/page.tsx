@@ -33,7 +33,7 @@ export default async function Page({ params: { cluster } }: PageProps) {
     ORDER BY 2 DESC
   `
 
-  const config: QueryConfig = {
+  const queryConfig: QueryConfig = {
     name: 'count-across-replicas',
     description: 'Part count across replicas',
     sql: query,
@@ -53,14 +53,14 @@ export default async function Page({ params: { cluster } }: PageProps) {
       [replica: string]: string | number
     }[]
   >({
-    query: config.sql,
+    query: queryConfig.sql,
     query_params: { cluster },
   })
 
   return (
     <DataTable
       title={`Count of active parts across replicas in the '${cluster}' cluster`}
-      config={config}
+      queryConfig={queryConfig}
       data={data}
     />
   )
