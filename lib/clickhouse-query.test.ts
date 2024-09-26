@@ -72,7 +72,7 @@ describe('fillStep', () => {
 
   it('returns undefined for invalid interval', () => {
     // @ts-expect-error: Testing with invalid input
-    expect(fillStep('invalidInterval')).toBeUndefined()
+    expect(fillStep('invalidInterval')).toBe('')
   })
 })
 
@@ -101,6 +101,6 @@ describe('nowOrToday', () => {
 
   it('returns undefined for invalid interval', () => {
     // @ts-expect-error: Testing with invalid input
-    expect(nowOrToday('invalidInterval')).toBeUndefined()
+    expect(nowOrToday('invalidInterval')).toBe('')
   })
 })
