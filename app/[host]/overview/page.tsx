@@ -9,6 +9,7 @@ import { ChartMergeCount } from '@/components/charts/merge-count'
 import { ChartNewPartsCreated } from '@/components/charts/new-parts-created'
 import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
+import ChartKeeperException from '@/components/charts/zookeeper-exception'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { OverviewCharts } from './overview-charts'
@@ -28,6 +29,7 @@ export default async function Overview() {
         <div className="flex items-center justify-between space-y-2">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="errors">Errors</TabsTrigger>
             <TabsTrigger value="disks">Disks</TabsTrigger>
             <TabsTrigger value="backups">Backups</TabsTrigger>
           </TabsList>
@@ -97,6 +99,14 @@ export default async function Overview() {
                 interval="toStartOfHour"
                 lastHours={24 * 7}
               />
+            </ServerComponentLazy>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="errors" className="space-y-4">
+          <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+            <ServerComponentLazy>
+              <ChartKeeperException className="w-full p-5" />
             </ServerComponentLazy>
           </div>
         </TabsContent>

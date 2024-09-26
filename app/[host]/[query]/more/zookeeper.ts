@@ -30,7 +30,7 @@ export const zookeeperConfig: QueryConfig = {
     'num_child_changes',
   ],
   columnFormats: {
-    _path: [ColumnFormat.Link, { href: `/zookeeper?path=[_path]` }],
+    _path: [ColumnFormat.Link, { href: `?path=[_path]` }],
     value: ColumnFormat.CodeToggle,
     created_at: ColumnFormat.RelatedTime,
     updated_at: ColumnFormat.RelatedTime,
@@ -57,7 +57,7 @@ export const zookeeperConfig: QueryConfig = {
     'break',
     'zookeeper-uptime',
     'zookeeper-summary-table',
-    ['zookeeper-error', {}],
+    ['zookeeper-exception', {}],
     'break',
   ],
 }
