@@ -128,7 +128,7 @@ Feedback and contributions are welcome! Feel free to open issues or submit pull 
 
 ## License
 
-MIT. See [LICENSE](LICENSE) for more details.
+See [LICENSE](LICENSE).
 
 ---
 
