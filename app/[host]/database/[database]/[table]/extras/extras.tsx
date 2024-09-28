@@ -1,12 +1,15 @@
 import { ArrowLeftIcon } from '@radix-ui/react-icons'
+import { DatabaseIcon } from 'lucide-react'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
-import { AlternativeTables } from './alternative-tables'
+
+import { HistoryQueriesButton } from './history-queries-button'
 import { RunningQueriesButton } from './runnning-queries-button'
 import { SampleDataButton } from './sample-data-button'
 import { ShowDDL } from './show-ddl-button'
 import { TableInfo } from './table-info'
+import { TableSelector } from './table-selector'
 
 export const Extras = ({
   host,
@@ -26,17 +29,21 @@ export const Extras = ({
           className="flex flex-row gap-2 text-muted-foreground"
         >
           <ArrowLeftIcon className="size-3" />
-          Back to {database}
+          Back to{' '}
+          <div className="inline-flex items-center gap-1">
+            <DatabaseIcon className="size-3" /> {database}
+          </div>
         </Button>
       </Link>
-      <AlternativeTables database={database} table={table} />
+      <TableSelector database={database} table={table} />
     </div>
 
-    <div className="flex flex-row gap-3">
+    <div className="flex flex-row flex-wrap gap-3">
       <ShowDDL database={database} table={table} />
       <TableInfo database={database} table={table} />
       <SampleDataButton database={database} table={table} />
       <RunningQueriesButton database={database} table={table} />
+      <HistoryQueriesButton database={database} table={table} />
     </div>
   </div>
 )

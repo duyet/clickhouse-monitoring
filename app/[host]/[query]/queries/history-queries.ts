@@ -32,6 +32,8 @@ export const historyQueriesConfig: QueryConfig = {
       WHERE
         if ({type: String} != '', type = {type: String}, type != 'QueryStart')
         AND if ({duration_1m: String} = '1', query_duration >= 60, true)
+        AND if ({event_time: String} != '', toDate(event_time) = toDate({event_time: String}), true)
+        AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
       ORDER BY event_time DESC
       LIMIT 1000
   `,
@@ -69,6 +71,9 @@ export const historyQueriesConfig: QueryConfig = {
   defaultParams: {
     type: '',
     duration_1m: '',
+    event_time: '',
+    database: '',
+    table: '',
   },
 
   filterParamPresets: [
@@ -100,37 +105,12 @@ export const historyQueriesConfig: QueryConfig = {
   ],
 
   relatedCharts: [
-    [
-      'query-count',
-      {
-        title: 'Running Queries over last 14 days (query / day)',
-        interval: 'toStartOfDay',
-        lastHours: 24 * 14,
-      },
-    ],
-    [
-      'query-duration',
-      {
-        title:
-          'Avg Queries Duration over last 14 days (AVG(duration in seconds) / day)',
-        interval: 'toStartOfDay',
-        lastHours: 24 * 14,
-      },
-    ],
-    [
-      'query-memory',
-      {
-        title: 'Avg Memory Usage for queries over last 14 days',
-        interval: 'toStartOfDay',
-        lastHours: 24 * 14,
-      },
-    ],
+    ['query-count', {}],
+    ['query-duration', {}],
+    ['query-memory', {}],
     [
       'query-count-by-user',
       {
-        title: 'Total Queries over last 14 days by users',
-        interval: 'toStartOfDay',
-        lastHours: 24 * 14,
         showLegend: false,
       },
     ],

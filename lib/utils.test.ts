@@ -2,7 +2,14 @@ import { expect, jest } from '@jest/globals'
 
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { cn, dedent, getHost, removeHostPrefix, uniq } from './utils'
+import {
+  cn,
+  dedent,
+  getHost,
+  redirectBinding,
+  removeHostPrefix,
+  uniq,
+} from './utils'
 
 jest.mock('clsx', () => ({
   clsx: jest.fn(),
@@ -153,5 +160,56 @@ describe('utils', () => {
       expect(removeHostPrefix('/0/overview')).toEqual('overview')
       expect(removeHostPrefix('/0/a/b')).toEqual('a/b')
     })
+  })
+})
+
+describe('redirectBinding', () => {
+  it('should replace placeholders with values from data object', () => {
+    const template = '/users/[id]/profile'
+    const data = { id: '123' }
+    const result = redirectBinding(template, data)
+    expect(result).toBe('/users/123/profile')
+  })
+
+  it('should handle multiple placeholders', () => {
+    const template = '/[category]/[product]/[id]'
+    const data = { category: 'electronics', product: 'laptop', id: '456' }
+    const result = redirectBinding(template, data)
+    expect(result).toBe('/electronics/laptop/456')
+  })
+
+  it('should remove placeholders when no matching data is found', () => {
+    const template = '/users/[id]/[action]'
+    const data = { id: '789' }
+    const result = redirectBinding(template, data)
+    expect(result).toBe('/users/789/')
+  })
+
+  it('should handle empty data object', () => {
+    const template = '/[category]/[product]'
+    const data = {}
+    const result = redirectBinding(template, data)
+    expect(result).toBe('//')
+  })
+
+  it('should handle template without placeholders', () => {
+    const template = '/static/page'
+    const data = { id: '123' }
+    const result = redirectBinding(template, data)
+    expect(result).toBe('/static/page')
+  })
+
+  it('should handle empty string template', () => {
+    const template = ''
+    const data = { id: '123' }
+    const result = redirectBinding(template, data)
+    expect(result).toBe('')
+  })
+
+  it('should handle placeholders with special characters in data', () => {
+    const template = '/[path]/[query]'
+    const data = { path: 'search', query: 'foo=bar&baz=qux' }
+    const result = redirectBinding(template, data)
+    expect(result).toBe('/search/foo=bar&baz=qux')
   })
 })
