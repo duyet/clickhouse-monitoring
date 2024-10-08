@@ -116,6 +116,7 @@ export interface BarChartProps extends BaseChartProps {
   readableColumn?: string
   horizontal?: boolean
   tooltipTotal?: boolean
+  onClickHref?: string
 }
 
 export interface AreaChartProps extends BaseChartProps {

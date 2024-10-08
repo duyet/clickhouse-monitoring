@@ -8,8 +8,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import { cn } from '@/lib/utils'
+import { cn, redirectBinding } from '@/lib/utils'
 import { type BarChartProps } from '@/types/charts'
+import { useRouter } from 'next/navigation'
 import {
   Bar,
   CartesianGrid,
@@ -38,11 +39,14 @@ export function BarChart({
   stack = false,
   horizontal = false,
   tooltipTotal = false,
+  onClickHref,
   colors,
   colorLabel,
   tickFormatter,
   className,
 }: BarChartProps) {
+  const router = useRouter()
+
   const chartConfig = categories.reduce(
     (acc, category, index) => {
       acc[category] = {
@@ -151,6 +155,11 @@ export function BarChart({
             radius={getRadius({ index, categories, stack, horizontal })}
             maxBarSize={120}
             minPointSize={3}
+            onClick={(data) =>
+              onClickHref !== undefined &&
+              router.push(redirectBinding(onClickHref, data))
+            }
+            cursor={onClickHref !== undefined ? 'pointer' : 'default'}
           >
             {renderChartLabel({
               dataKey: category,

@@ -3,14 +3,15 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
+import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryDuration({
-  title,
-  interval = 'toStartOfHour',
+  title = 'Avg Queries Duration over last 14 days (AVG(duration in seconds) / day)',
+  interval = 'toStartOfDay',
   className,
   chartClassName,
-  lastHours = 24 * 7,
+  lastHours = 24 * 14,
   ...props
 }: ChartProps) {
   const query = `
@@ -51,6 +52,7 @@ export async function ChartQueryDuration({
         colorLabel="--foreground"
         stack
         showLegend={false}
+        onClickHref={getScopedLink('/history-queries?event_time=[event_time]')}
         {...props}
       />
     </ChartCard>

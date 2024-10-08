@@ -51,6 +51,7 @@ export async function RunningQueries({ className }: { className?: string }) {
         </div>
 
         <ChartQueryCount
+          title=""
           interval="toStartOfDay"
           lastHours={24 * 7}
           className="border-0 p-0 shadow-none"

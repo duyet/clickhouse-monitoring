@@ -3,14 +3,15 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
+import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryMemory({
-  title,
-  interval = 'toStartOfHour',
+  title = 'Avg Memory Usage for queries over last 14 days',
+  interval = 'toStartOfDay',
   className,
   chartClassName,
-  lastHours = 24 * 7,
+  lastHours = 24 * 14,
   ...props
 }: ChartProps) {
   const query = `
@@ -44,6 +45,7 @@ export async function ChartQueryMemory({
         showLegend={false}
         showLabel={false}
         colors={['--chart-indigo-300']}
+        onClickHref={getScopedLink('/history-queries?event_time=[event_time]')}
         {...props}
       />
     </ChartCard>

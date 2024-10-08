@@ -12,15 +12,12 @@ import {
 import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
 
-interface AlternativeTablesProps {
+interface TableSelectorProps {
   database: string
   table: string
 }
 
-export async function AlternativeTables({
-  database,
-  table,
-}: AlternativeTablesProps) {
+export async function TableSelector({ database, table }: TableSelectorProps) {
   let anotherTables: { name: string }[] = []
   try {
     const res = await fetchData<{ name: string }[]>({
