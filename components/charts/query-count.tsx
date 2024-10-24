@@ -6,12 +6,12 @@ import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryCount({
-  title,
-  interval = 'toStartOfMinute',
+  title = 'Running Queries over last 14 days (query / day)',
+  interval = 'toStartOfDay',
   className,
   chartClassName,
   chartCardContentClassName,
-  lastHours = 24,
+  lastHours = 24 * 14,
   showXAxis = true,
   showLegend = false,
   showCartesianGrid = true,

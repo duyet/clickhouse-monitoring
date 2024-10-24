@@ -5,7 +5,7 @@ import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
 
 export async function ChartQueryCountByUser({
-  title,
+  title = 'Total Queries over last 14 days by users',
   interval = 'toStartOfDay',
   lastHours = 24 * 14,
   className,
