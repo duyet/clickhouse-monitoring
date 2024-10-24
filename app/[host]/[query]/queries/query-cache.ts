@@ -13,7 +13,7 @@ export const queryCacheConfig: QueryConfig = {
           shared,
           compressed,
           expires_at,
-          (now() - expires_at) AS expires_in,
+          (expires_at - now()) AS expires_in,
           key_hash
       FROM system.query_cache
       ORDER BY expires_at DESC
