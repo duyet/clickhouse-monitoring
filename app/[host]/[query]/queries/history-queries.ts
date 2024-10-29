@@ -32,7 +32,7 @@ export const historyQueriesConfig: QueryConfig = {
       WHERE
         if ({type: String} != '', type = {type: String}, type != 'QueryStart')
         AND if ({duration_1m: String} = '1', query_duration >= 60, true)
-        AND if ({event_time: String} != '', toDate(event_time) = toDate({event_time: String}), true)
+        AND if (notEmpty({event_time: String}), toDate(event_time) = toDate({event_time: String}), true)
         AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
       ORDER BY event_time DESC
       LIMIT 1000

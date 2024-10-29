@@ -34,7 +34,7 @@ export const mutationsConfig: QueryConfig = {
   ],
   columnFormats: {
     table: ColumnFormat.ColoredBadge,
-    command: ColumnFormat.Code,
+    command: ColumnFormat.CodeDialog,
     is_done: ColumnFormat.Boolean,
     readable_parts_to_do: ColumnFormat.BackgroundBar,
   },
