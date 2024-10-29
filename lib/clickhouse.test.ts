@@ -12,6 +12,10 @@ jest.mock('@clickhouse/client-web', () => ({
   createClient: jest.fn(),
 }))
 
+jest.mock('next/headers', () => ({
+  cookies: jest.fn(),
+}))
+
 describe('getClickHouseHosts', () => {
   const originalEnv = process.env
 
