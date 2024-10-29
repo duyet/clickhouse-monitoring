@@ -26,7 +26,9 @@ describe('<BarChart />', () => {
   ]
 
   it('renders with default props', () => {
-    cy.mount(<BarChart data={data} categories={['A', 'B', 'C']} index="date" />)
+    cy.nextMount(
+      <BarChart data={data} categories={['A', 'B', 'C']} index="date" />
+    )
     cy.screenshot()
 
     // Render as svg
