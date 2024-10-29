@@ -26,7 +26,7 @@ describe('<BarChart />', () => {
   ]
 
   it('renders with default props', () => {
-    cy.nextMount(
+    cy.mount(
       <BarChart data={data} categories={['A', 'B', 'C']} index="date" />
     )
     cy.screenshot()

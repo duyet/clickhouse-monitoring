@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/chart'
 import { cn, redirectBinding } from '@/lib/utils'
 import { type BarChartProps } from '@/types/charts'
-import { useRouter } from 'next/navigation'
+import { useHistory } from 'react-router-dom'
 import {
   Bar,
   CartesianGrid,
@@ -45,7 +45,7 @@ export function BarChart({
   tickFormatter,
   className,
 }: BarChartProps) {
-  const router = useRouter()
+  const history = useHistory()
 
   const chartConfig = categories.reduce(
     (acc, category, index) => {
@@ -157,7 +157,7 @@ export function BarChart({
             minPointSize={3}
             onClick={(data) =>
               onClickHref !== undefined &&
-              router.push(redirectBinding(onClickHref, data))
+              history.push(redirectBinding(onClickHref, data))
             }
             cursor={onClickHref !== undefined ? 'pointer' : 'default'}
           >
