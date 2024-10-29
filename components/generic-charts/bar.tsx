@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/chart'
 import { binding, cn } from '@/lib/utils'
 import { type BarChartProps } from '@/types/charts'
-import { useHistory } from 'react-router-dom'
 import {
   Bar,
   CartesianGrid,
@@ -45,8 +44,6 @@ export function BarChart({
   tickFormatter,
   className,
 }: BarChartProps) {
-  const history = useHistory()
-
   const chartConfig = categories.reduce(
     (acc, category, index) => {
       acc[category] = {
@@ -155,10 +152,11 @@ export function BarChart({
             radius={getRadius({ index, categories, stack, horizontal })}
             maxBarSize={120}
             minPointSize={3}
-            onClick={(data) =>
-              onClickHref !== undefined &&
-              history.push(binding(onClickHref, data))
-            }
+            onClick={(data) => {
+              if (onClickHref) {
+                window.location.href = binding(onClickHref, data)
+              }
+            }}
             cursor={onClickHref !== undefined ? 'pointer' : 'default'}
           >
             {renderChartLabel({
