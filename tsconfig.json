@@ -29,7 +29,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "cypress.d.ts"
+    "cypress.d.ts",
+    "cypress/support/index.d.ts"
   ],
   "exclude": ["node_modules", "cypress.config.ts", "cypress"],
   "ts-node": {

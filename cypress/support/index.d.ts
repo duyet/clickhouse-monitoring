@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 declare namespace Cypress {
-  interface Chainable<Subject> {
+  interface Chainable {
     /**
      * Custom command to visit a page and validate its title
      *
@@ -13,6 +13,6 @@ declare namespace Cypress {
       clickOn: string,
       shouldMatchRoute?: string,
       shouldMatchTitle?: string
-    ): Chainable<void>
+    ): Chainable
   }
 }

@@ -3,7 +3,14 @@
     "baseUrl": "./",
     "target": "es5",
     "lib": ["es5", "dom"],
-    "types": ["cypress", "node"]
+    "types": ["cypress", "node"],
+    "jsx": "react-jsx"
   },
-  "include": ["**/*.ts", "../cypress.config.ts", "../cypress.d.ts"]
+  "include": [
+    "**/*.ts",
+    "../cypress.config.ts",
+    "../cypress.d.ts",
+    "support/index.d.ts",
+    "support/visitAndValidate.ts"
+  ]
 }

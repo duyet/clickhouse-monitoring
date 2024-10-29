@@ -8,7 +8,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import { cn } from '@/lib/utils'
+import { binding, cn } from '@/lib/utils'
 import { type BarChartProps } from '@/types/charts'
 import {
   Bar,
@@ -38,6 +38,7 @@ export function BarChart({
   stack = false,
   horizontal = false,
   tooltipTotal = false,
+  onClickHref,
   colors,
   colorLabel,
   tickFormatter,
@@ -151,6 +152,12 @@ export function BarChart({
             radius={getRadius({ index, categories, stack, horizontal })}
             maxBarSize={120}
             minPointSize={3}
+            onClick={(data) => {
+              if (onClickHref) {
+                window.location.href = binding(onClickHref, data)
+              }
+            }}
+            cursor={onClickHref !== undefined ? 'pointer' : 'default'}
           >
             {renderChartLabel({
               dataKey: category,

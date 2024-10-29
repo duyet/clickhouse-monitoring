@@ -12,17 +12,14 @@
 // You can read more here:
 // https://on.cypress.io/configuration
 // ***********************************************************
+/// <reference types="cypress" />
 
 import '@cypress/code-coverage/support'
 import 'cypress-real-events'
+import { mount } from 'cypress/react18'
 
 import '../../app/globals.css'
-import './commands'
-
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
-
-import { mount } from 'cypress/react18'
+import { nextMount } from './nextMount'
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -32,11 +29,14 @@ declare global {
   namespace Cypress {
     interface Chainable {
       mount: typeof mount
+      nextMount: typeof nextMount
     }
   }
 }
 
 Cypress.Commands.add('mount', mount)
+Cypress.Commands.add('nextMount', nextMount)
 
 // Example use:
 // cy.mount(<MyComponent />)
+// cy.nextMount(<MyComponent />)
