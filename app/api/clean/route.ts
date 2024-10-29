@@ -11,7 +11,7 @@ export const maxDuration = 30
 
 export async function GET() {
   try {
-    const client = getClient({ web: false })
+    const client = await getClient({ web: false })
     const resp = await cleanupHangQuery(client)
     return NextResponse.json({ status: true, ...resp }, { status: 200 })
   } catch (error) {

@@ -1,13 +1,18 @@
-import { setHostId } from '@/lib/server-context'
 import { redirect } from 'next/navigation'
 
-export default function Layout({
+import { setHostId } from '@/lib/server-context'
+
+type Params = Promise<{ host: number }>
+
+export default async function Layout({
   children,
-  params: { host },
+  params,
 }: {
   children: React.ReactNode
-  params: { host: number }
+  params: Params
 }) {
+  const { host } = await params
+
   if (Number.isNaN(Number(host))) {
     redirect('/')
   }

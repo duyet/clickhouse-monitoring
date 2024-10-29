@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   }
 
   const url = normalizeUrl(rawUrl)
-  const client = getClient({ web: true })
+  const client = await getClient({ web: true })
 
   // https://nextjs.org/docs/app/api-reference/functions/userAgent
   const ua = userAgent(request)

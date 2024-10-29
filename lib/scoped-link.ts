@@ -1,9 +1,13 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-export function getHostIdCookie(defaultValue: string = '0') {
+export async function getHostIdCookie(
+  defaultValue: number = 0
+): Promise<number> {
+  const cookieStore = await cookies()
+
   try {
-    return cookies().get('hostId')?.value || defaultValue
+    return parseInt(cookieStore.get('hostId')?.value || '' + defaultValue)
   } catch (e) {
     // e.g. `cookies` was called outside a request scope.
     console.error('getHostIdCookie exception:', e)
@@ -11,10 +15,10 @@ export function getHostIdCookie(defaultValue: string = '0') {
   }
 }
 
-export function getScopedLink(path: string) {
-  return `/${getHostIdCookie()}${path}`
+export async function getScopedLink(path: string) {
+  return `/${await getHostIdCookie()}${path}`
 }
 
-export function redirectScoped(path: string) {
-  return redirect(`/${getHostIdCookie()}${path}`)
+export async function redirectScoped(path: string) {
+  return redirect(`/${await getHostIdCookie()}${path}`)
 }

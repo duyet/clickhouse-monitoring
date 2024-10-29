@@ -66,7 +66,7 @@ type LinkCountProps = {
   query: string
   icon: React.ReactNode
   label: string
-  href: string
+  href: string | Promise<string>
   hideZero?: boolean
   className?: string
 }
@@ -93,7 +93,7 @@ async function LinkCount({
     >
       <Link
         className="inline-flex items-baseline justify-between gap-2"
-        href={href}
+        href={href instanceof Promise ? await href : href}
       >
         <div className="inline-flex items-baseline gap-2 text-3xl font-bold">
           <span className="p-0">{data[0].count}</span>

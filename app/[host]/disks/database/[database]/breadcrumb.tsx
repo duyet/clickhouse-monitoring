@@ -18,6 +18,7 @@ import {
 
 import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
+import { use } from 'react'
 import {
   databaseDiskSpaceConfig as queryConfig,
   type DatabaseUsedSpace,
@@ -86,7 +87,7 @@ function Internal({
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href={getScopedLink('/disks')}>
+          <BreadcrumbLink href={use(getScopedLink('/disks'))}>
             All Disks
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -104,7 +105,7 @@ function Internal({
             {databases.map(({ database: name, readable_used_space }) => (
               <DropdownMenuItem key={name}>
                 <Link
-                  href={getScopedLink(`/disks/database/${name}`)}
+                  href={use(getScopedLink(`/disks/database/${name}`))}
                   className={name == database ? 'font-bold' : ''}
                 >
                   {name} ({readable_used_space})

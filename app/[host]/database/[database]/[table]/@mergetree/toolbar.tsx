@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { getScopedLink } from '@/lib/scoped-link'
 
-export function Toolbar({
+export async function Toolbar({
   database,
   table,
 }: {
@@ -12,7 +12,11 @@ export function Toolbar({
   table: string
 }) {
   return (
-    <Link href={getScopedLink(`/top-usage-columns?table=${database}.${table}`)}>
+    <Link
+      href={await getScopedLink(
+        `/top-usage-columns?table=${database}.${table}`
+      )}
+    >
       <Button
         variant="outline"
         className="flex flex-row gap-2 text-muted-foreground"

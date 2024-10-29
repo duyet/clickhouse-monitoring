@@ -8,17 +8,16 @@ import { listTables } from '../queries'
 import { Toolbar } from './toolbar'
 
 interface TableListProps {
-  params: {
+  params: Promise<{
     host: number
     database: string
-  }
+  }>
 }
 
 export const dynamic = 'force-dynamic'
 
-export default async function TableListPage({
-  params: { host, database },
-}: TableListProps) {
+export default async function TableListPage({ params }: TableListProps) {
+  const { host, database } = await params
   const queryConfig: QueryConfig = {
     name: 'tables',
     sql: listTables,

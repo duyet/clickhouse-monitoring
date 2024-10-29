@@ -38,7 +38,7 @@ export async function DatabaseBreadcrumbSkeleton({ database }: Props) {
   )
 }
 
-export function DatabaseBreadcrumb({
+export async function DatabaseBreadcrumb({
   current,
   databases,
 }: {
@@ -51,7 +51,7 @@ export function DatabaseBreadcrumb({
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href={getScopedLink('/database')}>
+          <BreadcrumbLink href={await getScopedLink('/database')}>
             Database
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -66,10 +66,10 @@ export function DatabaseBreadcrumb({
             <ChevronDownIcon />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            {databases.map(({ name, count }) => (
+            {databases.map(async ({ name, count }) => (
               <DropdownMenuItem key={name}>
                 <Link
-                  href={getScopedLink(`/database/${name}`)}
+                  href={await getScopedLink(`/database/${name}`)}
                   className={name == current ? 'font-bold' : ''}
                 >
                   {name}

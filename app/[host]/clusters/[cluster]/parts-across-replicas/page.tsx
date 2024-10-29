@@ -5,12 +5,13 @@ import { ColumnFormat } from '@/types/column-format'
 import type { QueryConfig } from '@/types/query-config'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     cluster: string
-  }
+  }>
 }
 
-export default async function Page({ params: { cluster } }: PageProps) {
+export default async function Page({ params }: PageProps) {
+  const { cluster } = await params
   const { data: replicas } = await fetchData<{ replica: string }[]>({
     query: `SELECT hostName() as replica FROM clusterAllReplicas({cluster: String}) ORDER BY 1`,
     query_params: { cluster },

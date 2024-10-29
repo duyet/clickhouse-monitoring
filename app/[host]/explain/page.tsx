@@ -2,7 +2,7 @@
 
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
-import { useState } from 'react'
+import { use, useState } from 'react'
 import { useFormState } from 'react-dom'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -29,12 +29,12 @@ const initialState: Explains & Partial<ActionError> = {
 }
 
 type ExplainPageProps = {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export default function ExplainPage({ searchParams }: ExplainPageProps) {
   const [query, setQuery] = useState(
-    searchParams.query || 'SELECT * FROM numbers(100)'
+    use(searchParams).query || 'SELECT * FROM numbers(100)'
   )
   const [state, formAction] = useFormState(explainAction, initialState)
 

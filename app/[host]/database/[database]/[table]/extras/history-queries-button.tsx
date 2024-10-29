@@ -23,7 +23,7 @@ export async function HistoryQueriesButton({
         <Link
           aria-label="History Queries"
           title="History Queries"
-          href={getScopedLink(
+          href={await getScopedLink(
             `/history-queries?database=${database}&table=${table}`
           )}
         >

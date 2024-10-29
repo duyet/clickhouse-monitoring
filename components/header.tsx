@@ -12,16 +12,16 @@ const TITLE = process.env.NEXT_PUBLIC_TITLE || 'ClickHouse Monitoring'
 const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'Monitoring'
 const LOGO = process.env.NEXT_PUBLIC_LOGO || '/logo-bw.svg'
 
-export function Header() {
+export async function Header() {
   return (
     <div className="flex items-center justify-between space-y-2">
       <div className="flex flex-row items-stretch gap-2">
-        <Link href={getScopedLink('/overview')} className="flex-none">
+        <Link href={await getScopedLink('/overview')} className="flex-none">
           <Image src={LOGO} width={45} height={45} alt="Logo" />
         </Link>
         <div className="flex-auto truncate">
           <h2 className="min-w-32 text-2xl font-bold tracking-tight">
-            <Link href={getScopedLink('/overview')}>
+            <Link href={await getScopedLink('/overview')}>
               <span className="hidden truncate sm:flex">{TITLE}</span>
               <span className="flex truncate sm:hidden">{TITLE_SHORT}</span>
             </Link>

@@ -74,7 +74,7 @@ export const getClickHouseHost = () => {
   return getClickHouseConfigs()[hostId]
 }
 
-export const getClient = <B extends boolean>({
+export const getClient = async <B extends boolean>({
   web,
   clickhouse_settings,
   forceHostId,
@@ -82,17 +82,15 @@ export const getClient = <B extends boolean>({
   web?: B
   clickhouse_settings?: ClickHouseSettings
   forceHostId?: number
-}): B extends true ? WebClickHouseClient : ClickHouseClient => {
+}): Promise<B extends true ? WebClickHouseClient : ClickHouseClient> => {
   const client = web === true ? createClientWeb : createClient
+  const hostId = forceHostId ? forceHostId : await getHostIdCookie()
+  const config = getClickHouseConfigs()[hostId]
 
-  const currentConfig = forceHostId
-    ? getClickHouseConfigs()[forceHostId]
-    : getClickHouseConfigs()[Number(getHostIdCookie())]
-
-  return client({
-    host: currentConfig.host,
-    username: currentConfig.user ?? 'default',
-    password: currentConfig.password ?? '',
+  const c = client({
+    host: config.host,
+    username: config.user ?? 'default',
+    password: config.password ?? '',
     clickhouse_settings: {
       max_execution_time: parseInt(
         process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
@@ -100,7 +98,11 @@ export const getClient = <B extends boolean>({
       ),
       ...clickhouse_settings,
     },
-  }) as B extends true ? WebClickHouseClient : ClickHouseClient
+  })
+
+  return Promise.resolve(
+    c as B extends true ? WebClickHouseClient : ClickHouseClient
+  )
 }
 
 export const fetchData = async <
@@ -125,7 +127,7 @@ export const fetchData = async <
   metadata: Record<string, string | number>
 }> => {
   const start = new Date()
-  const client = getClient({
+  const client = await getClient({
     web: false,
     forceHostId: forceHostId ? Number(forceHostId) : undefined,
   })
@@ -179,10 +181,11 @@ export const query = async (
   params: Record<string, unknown> = {},
   format: DataFormat = 'JSON'
 ) => {
-  const resultSet = await getClient({
+  const client = await getClient({
     web: false,
     clickhouse_settings: {},
-  }).query({
+  })
+  const resultSet = await client.query({
     query: QUERY_COMMENT + query,
     format,
     query_params: params,

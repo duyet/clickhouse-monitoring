@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const client = getClient({ web: false })
+  const client = await getClient({ web: false })
 
   try {
     await initTrackingTable(client)

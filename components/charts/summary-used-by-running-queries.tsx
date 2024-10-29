@@ -161,7 +161,10 @@ export async function ChartSummaryUsedByRunningQueries({
             <span className="flex flex-row items-center gap-2">
               {first.query_count} queries, {first.readable_memory_usage} memory
               used for running queries
-              <Link href={getScopedLink('/running-queries')} className="inline">
+              <Link
+                href={await getScopedLink('/running-queries')}
+                className="inline"
+              >
                 <ArrowRightIcon className="size-5" />
               </Link>
             </span>

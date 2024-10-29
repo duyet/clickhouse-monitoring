@@ -1,13 +1,12 @@
 import { redirectScoped } from '@/lib/scoped-link'
 
 interface TableListProps {
-  params: {
+  params: Promise<{
     database: string
-  }
+  }>
 }
 
-export default async function TableListPage({
-  params: { database },
-}: TableListProps) {
-  redirectScoped(`/database/${database}`)
+export default async function TableListPage({ params }: TableListProps) {
+  const { database } = await params
+  await redirectScoped(`/database/${database}`)
 }
