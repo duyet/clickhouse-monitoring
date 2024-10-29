@@ -8,7 +8,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import { cn, redirectBinding } from '@/lib/utils'
+import { binding, cn } from '@/lib/utils'
 import { type BarChartProps } from '@/types/charts'
 import { useHistory } from 'react-router-dom'
 import {
@@ -157,7 +157,7 @@ export function BarChart({
             minPointSize={3}
             onClick={(data) =>
               onClickHref !== undefined &&
-              history.push(redirectBinding(onClickHref, data))
+              history.push(binding(onClickHref, data))
             }
             cursor={onClickHref !== undefined ? 'pointer' : 'default'}
           >
