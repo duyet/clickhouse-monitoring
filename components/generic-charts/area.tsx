@@ -156,7 +156,7 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
               payload: Array<Payload<ValueType, NameType>>
             ) => {
               return (
-                <div key={'' + name}>
+                <div key={'' + name + index}>
                   <div
                     className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
                     style={
