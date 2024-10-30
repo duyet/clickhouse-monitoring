@@ -45,7 +45,9 @@ export async function ChartQueryMemory({
         showLegend={false}
         showLabel={false}
         colors={['--chart-indigo-300']}
-        onClickHref={getScopedLink('/history-queries?event_time=[event_time]')}
+        onClickHref={await getScopedLink(
+          '/history-queries?event_time=[event_time]'
+        )}
         {...props}
       />
     </ChartCard>

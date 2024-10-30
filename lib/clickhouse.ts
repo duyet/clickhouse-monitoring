@@ -1,4 +1,3 @@
-import { getHostIdCookie } from '@/lib/scoped-link'
 import { getHostId } from '@/lib/server-context'
 import type { ClickHouseClient, DataFormat } from '@clickhouse/client'
 import { createClient } from '@clickhouse/client'
@@ -68,31 +67,22 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
   })
 }
 
-export const getClickHouseHost = () => {
-  const hostId = getHostId() || 0
-
-  return getClickHouseConfigs()[hostId]
-}
-
-export const getClient = <B extends boolean>({
+export const getClient = async <B extends boolean>({
   web,
   clickhouse_settings,
-  forceHostId,
+  hostId,
 }: {
   web?: B
   clickhouse_settings?: ClickHouseSettings
-  forceHostId?: number
-}): B extends true ? WebClickHouseClient : ClickHouseClient => {
+  hostId?: number
+}): Promise<B extends true ? WebClickHouseClient : ClickHouseClient> => {
   const client = web === true ? createClientWeb : createClient
+  const config = getClickHouseConfigs()[hostId || getHostId()]
 
-  const currentConfig = forceHostId
-    ? getClickHouseConfigs()[forceHostId]
-    : getClickHouseConfigs()[Number(getHostIdCookie())]
-
-  return client({
-    host: currentConfig.host,
-    username: currentConfig.user ?? 'default',
-    password: currentConfig.password ?? '',
+  const c = client({
+    host: config.host,
+    username: config.user ?? 'default',
+    password: config.password ?? '',
     clickhouse_settings: {
       max_execution_time: parseInt(
         process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
@@ -100,7 +90,11 @@ export const getClient = <B extends boolean>({
       ),
       ...clickhouse_settings,
     },
-  }) as B extends true ? WebClickHouseClient : ClickHouseClient
+  })
+
+  return Promise.resolve(
+    c as B extends true ? WebClickHouseClient : ClickHouseClient
+  )
 }
 
 export const fetchData = async <
@@ -119,15 +113,15 @@ export const fetchData = async <
     Partial<{
       clickhouse_settings: QuerySettings
     }>,
-  forceHostId?: number | string
+  hostId?: number | string
 ): Promise<{
   data: T
   metadata: Record<string, string | number>
 }> => {
   const start = new Date()
-  const client = getClient({
+  const client = await getClient({
     web: false,
-    forceHostId: forceHostId ? Number(forceHostId) : undefined,
+    hostId: hostId ? Number(hostId) : undefined,
   })
 
   const resultSet = await client.query({
@@ -179,10 +173,11 @@ export const query = async (
   params: Record<string, unknown> = {},
   format: DataFormat = 'JSON'
 ) => {
-  const resultSet = await getClient({
+  const client = await getClient({
     web: false,
     clickhouse_settings: {},
-  }).query({
+  })
+  const resultSet = await client.query({
     query: QUERY_COMMENT + query,
     format,
     query_params: params,

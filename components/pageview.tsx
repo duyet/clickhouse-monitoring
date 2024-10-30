@@ -3,13 +3,13 @@
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
-export function PageView() {
+export function PageView({ hostId }: { hostId: number }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   useEffect(() => {
     async function callInit() {
-      await fetch('/api/init')
+      await fetch(`/api/init?hostId=${hostId}`)
     }
     callInit()
   }, [])
@@ -18,11 +18,14 @@ export function PageView() {
     async function pageViewTrack() {
       const url = `${pathname}${searchParams ? '?' + searchParams.toString() : ''}`
       console.log('PageView', url)
-      await fetch('/api/pageview?' + new URLSearchParams({ url }).toString())
+      await fetch(
+        '/api/pageview?' +
+          new URLSearchParams({ url, hostId: hostId.toString() }).toString()
+      )
     }
 
     pageViewTrack()
-  }, [pathname, searchParams])
+  }, [pathname, searchParams, hostId])
 
   return null
 }

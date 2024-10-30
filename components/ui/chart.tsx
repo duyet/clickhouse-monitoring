@@ -239,7 +239,7 @@ const ChartTooltipContent = React.forwardRef<
                         </span>
                       </div>
                       {item.value && (
-                        <span className="ml-2 font-mono font-medium tabular-nums text-foreground">
+                        <span className="font-mono font-medium tabular-nums text-foreground">
                           {item.value.toLocaleString()}
                         </span>
                       )}
@@ -280,7 +280,7 @@ const ChartLegendContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          'flex gap-4 overflow-y-scroll',
+          'flex items-center justify-center gap-4',
           verticalAlign === 'top' ? 'pb-3' : 'pt-3',
           className
         )}
@@ -293,7 +293,7 @@ const ChartLegendContent = React.forwardRef<
             <div
               key={item.value}
               className={cn(
-                'flex items-center gap-1.5 whitespace-nowrap [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground'
+                'flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground'
               )}
             >
               {itemConfig?.icon && !hideIcon ? (

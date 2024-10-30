@@ -5,12 +5,14 @@ import {
 } from '@/components/resizable'
 import { cn } from '@/lib/utils'
 
+type Params = Promise<{
+  host: number
+  database: string
+  table: string
+}>
+
 interface TableListProps {
-  params: {
-    host: number
-    database: string
-    table: string
-  }
+  params: Params
   nav: React.ReactNode
   children: React.ReactNode
 }

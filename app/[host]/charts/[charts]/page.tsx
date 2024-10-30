@@ -3,15 +3,16 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     charts: string
-  }
+  }>
 }
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 30
 
-export default async function Page({ params: { charts } }: PageProps) {
+export default async function Page({ params }: PageProps) {
+  const { charts } = await params
   let chartComponents = []
   let props = {}
 

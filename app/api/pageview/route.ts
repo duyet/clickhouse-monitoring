@@ -1,21 +1,23 @@
+import type { NextRequest } from 'next/server'
+import { NextResponse, userAgent } from 'next/server'
+
 import { getClient } from '@/lib/clickhouse'
 import { normalizeUrl } from '@/lib/utils'
 import { geolocation } from '@vercel/functions'
-import type { NextRequest } from 'next/server'
-import { NextResponse, userAgent } from 'next/server'
 
 const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const rawUrl = searchParams.get('url') || request.headers.get('referer')
+  const hostId = parseInt(searchParams.get('hostId') || '0')
 
   if (!rawUrl) {
     return NextResponse.json({ error: 'No URL provided' }, { status: 400 })
   }
 
   const url = normalizeUrl(rawUrl)
-  const client = getClient({ web: true })
+  const client = await getClient({ web: true, hostId })
 
   // https://nextjs.org/docs/app/api-reference/functions/userAgent
   const ua = userAgent(request)

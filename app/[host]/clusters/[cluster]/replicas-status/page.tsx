@@ -7,12 +7,14 @@ import Link from 'next/link'
 import { queryConfig, type Row } from './config'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     cluster: string
-  }
+  }>
 }
 
-export default async function Page({ params: { cluster } }: PageProps) {
+export default async function Page({ params }: PageProps) {
+  const { cluster } = await params
+
   const { data } = await fetchData<Row[]>({
     query: queryConfig.sql,
     query_params: { cluster },
@@ -28,9 +30,13 @@ export default async function Page({ params: { cluster } }: PageProps) {
   )
 }
 
-const TopRightToolbarExtras = ({ cluster }: PageProps['params']) => (
+const TopRightToolbarExtras = async ({
+  cluster,
+}: Awaited<PageProps['params']>) => (
   <div className="flex flex-row gap-2">
-    <Link href={getScopedLink(`/clusters/${cluster}/parts-across-replicas`)}>
+    <Link
+      href={await getScopedLink(`/clusters/${cluster}/parts-across-replicas`)}
+    >
       <Button
         variant="outline"
         className="flex flex-row gap-2 text-muted-foreground"
@@ -38,7 +44,9 @@ const TopRightToolbarExtras = ({ cluster }: PageProps['params']) => (
         Parts on each table
       </Button>
     </Link>
-    <Link href={getScopedLink(`/clusters/${cluster}/count-across-replicas`)}>
+    <Link
+      href={await getScopedLink(`/clusters/${cluster}/count-across-replicas`)}
+    >
       <Button
         variant="outline"
         className="flex flex-row gap-2 text-muted-foreground"

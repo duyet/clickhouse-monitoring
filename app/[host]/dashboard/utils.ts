@@ -35,7 +35,8 @@ export async function updateSettingParams(
     value: JSON.stringify(data),
   }
 
-  const resp = await getClient({ web: false }).command({
+  const client = await getClient({ web: false })
+  const resp = await client.command({
     query,
     query_params,
   })
@@ -58,7 +59,8 @@ export async function updateChart(data: Record<string, string> | FormSchema) {
     value: JSON.stringify(data),
   }
 
-  const resp = await getClient({ web: false }).command({
+  const client = await getClient({ web: false })
+  const resp = await client.command({
     query,
     query_params,
   })

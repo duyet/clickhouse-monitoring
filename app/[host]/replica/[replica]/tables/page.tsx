@@ -4,12 +4,13 @@ import { fetchData } from '@/lib/clickhouse'
 import { queryConfig, type Row } from './config'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     replica: string
-  }
+  }>
 }
 
-export default async function ClustersPage({ params: { replica } }: PageProps) {
+export default async function ClustersPage({ params }: PageProps) {
+  const { replica } = await params
   const { data } = await fetchData<Row[]>({
     query: queryConfig.sql,
     query_params: { replica },

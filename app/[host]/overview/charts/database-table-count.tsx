@@ -16,21 +16,21 @@ const metrics = [
       "SELECT countDistinct(database) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')",
     icon: <Database className="size-4 opacity-70 hover:opacity-100" />,
     label: 'database(s)',
-    href: getScopedLink('/database'),
+    href: '/database',
   },
   {
     query:
       "SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')",
     icon: <TableIcon className="size-4 opacity-70 hover:opacity-100" />,
     label: 'table(s)',
-    href: getScopedLink('/database'),
+    href: '/database',
   },
   {
     query:
       "SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.replicas WHERE is_readonly = 1",
     icon: <CircleAlert className="size-4 opacity-70 hover:opacity-100" />,
     label: 'readonly table(s)',
-    href: getScopedLink('/readonly-tables'),
+    href: '/readonly-tables',
     className: 'text-orange-500',
     hideZero: true,
   },
@@ -93,7 +93,7 @@ async function LinkCount({
     >
       <Link
         className="inline-flex items-baseline justify-between gap-2"
-        href={href}
+        href={await getScopedLink(href)}
       >
         <div className="inline-flex items-baseline gap-2 text-3xl font-bold">
           <span className="p-0">{data[0].count}</span>

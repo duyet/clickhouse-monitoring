@@ -1,5 +1,6 @@
 import { ChevronDownIcon, SlashIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
+import { use } from 'react'
 
 import { ErrorAlert } from '@/components/error-alert'
 import {
@@ -76,7 +77,7 @@ function Internal({ cluster, clusters }: Props & { clusters: Row[] }) {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href={getScopedLink('/clusters')}>
+          <BreadcrumbLink href={use(getScopedLink('/clusters'))}>
             Clusters
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -94,7 +95,7 @@ function Internal({ cluster, clusters }: Props & { clusters: Row[] }) {
             {clusters.map(({ cluster: name, replica_count }) => (
               <DropdownMenuItem key={name}>
                 <Link
-                  href={getScopedLink(`/clusters/${name}/replicas-status`)}
+                  href={use(getScopedLink(`/clusters/${name}/replicas-status`))}
                   className={name == cluster ? 'font-bold' : ''}
                 >
                   {name} ({replica_count}{' '}

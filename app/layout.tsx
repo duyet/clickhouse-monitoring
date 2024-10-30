@@ -2,14 +2,11 @@ import { Analytics } from '@vercel/analytics/react'
 import { type Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
-import { Suspense } from 'react'
 
 import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
-import { BackgroundJobs } from '@/components/background-jobs'
 import { Header } from '@/components/header'
-import { PageView } from '@/components/pageview'
 import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -60,11 +57,6 @@ export default function RootLayout({
             </Script>
           </>
         )}
-
-        <Suspense fallback={null}>
-          <PageView />
-          <BackgroundJobs />
-        </Suspense>
       </body>
     </html>
   )

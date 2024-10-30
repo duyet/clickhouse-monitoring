@@ -33,11 +33,10 @@ export async function initTrackingTable(
   if (!latest) return error('no latest schema found')
 
   try {
-    log(`creating table ${EVENTS_TABLE}`)
     const resp = await client.query({ query: latest.schema })
-    log(`created table ${EVENTS_TABLE}`, await resp.text())
+    log(`CREATE TABLE IF NOT EXISTS ${EVENTS_TABLE}: done`, await resp.text())
   } catch (err) {
-    error(`error initializing table ${EVENTS_TABLE}`, `${err}`)
+    log(`CREATE TABLE IF NOT EXISTS ${EVENTS_TABLE}: failed ${err}`)
   }
 
   const expected = latest.hash
@@ -62,7 +61,7 @@ export async function initTrackingTable(
       )
     } else {
       log(
-        `schema hash (${current}) matched with expected (${expected}), skip migrate`
+        `schema hash (${current}) matched with expected (${expected}), skip migration`
       )
     }
   } catch (err) {

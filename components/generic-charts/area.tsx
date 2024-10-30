@@ -103,9 +103,9 @@ export function AreaChart({
           categories,
         })}
 
-        {categories.map((category, index) => (
+        {categories.map((category) => (
           <Area
-            key={category + index}
+            key={'' + category}
             dataKey={category}
             fill={`var(--color-${category})`}
             stroke={`var(--color-${category})`}
@@ -156,7 +156,7 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
               payload: Array<Payload<ValueType, NameType>>
             ) => {
               return (
-                <>
+                <div key={'' + name + index}>
                   <div
                     className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
                     style={
@@ -173,7 +173,7 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
                       value.toLocaleString()}
                     <span className="font-normal text-muted-foreground"></span>
                   </div>
-                </>
+                </div>
               )
             }}
           />

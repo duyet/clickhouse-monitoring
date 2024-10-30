@@ -9,19 +9,18 @@ import { Suspense } from 'react'
 import { getQueryConfigByName } from './clickhouse-queries'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     query: string
-  }
-  searchParams: { [key: string]: string | string[] | undefined }
+  }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 300
 
-export default async function Page({
-  params: { query },
-  searchParams,
-}: PageProps) {
+export default async function Page({ params, searchParams }: PageProps) {
+  const { query } = await params
+
   noStore()
 
   // Retrieves the query configuration by name.
@@ -40,7 +39,7 @@ export default async function Page({
         <Table
           title={query.replaceAll('-', ' ')}
           queryConfig={queryConfig}
-          searchParams={searchParams}
+          searchParams={await searchParams}
         />
       </Suspense>
     </div>

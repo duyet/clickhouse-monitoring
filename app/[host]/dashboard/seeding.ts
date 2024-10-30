@@ -44,7 +44,8 @@ const migrateSettings = async () => {
     })
 
     if (exists.length == 0) {
-      const resp = await getClient({ web: false }).insert({
+      const client = await getClient({ web: false })
+      const resp = await client.insert({
         table: TABLE_SETTINGS,
         values: [seed],
         format: 'JSONEachRow',
@@ -104,7 +105,8 @@ const migrateDashboard = async () => {
     })
 
     if (exists.length == 0) {
-      const resp = await getClient({ web: false }).insert({
+      const client = await getClient({ web: false })
+      const resp = await client.insert({
         table: TABLE_CHARTS,
         values: [seed],
         format: 'JSONEachRow',

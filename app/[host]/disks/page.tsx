@@ -10,10 +10,12 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 30
 
 interface PageProps {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export default async function Disks({ searchParams }: PageProps) {
+  const search = await searchParams
+
   return (
     <div className="flex flex-col gap-8">
       <Suspense fallback={<ChartSkeleton />}>
@@ -24,7 +26,7 @@ export default async function Disks({ searchParams }: PageProps) {
         <Table
           title="Disks"
           queryConfig={diskSpaceConfig}
-          searchParams={searchParams}
+          searchParams={search}
         />
       </Suspense>
 
@@ -33,7 +35,7 @@ export default async function Disks({ searchParams }: PageProps) {
           title="Disk usage by databases"
           description="Click on database name to see table level details"
           queryConfig={databaseDiskSpaceConfig}
-          searchParams={searchParams}
+          searchParams={search}
         />
       </Suspense>
     </div>

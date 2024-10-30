@@ -1,14 +1,23 @@
-const path = require("path");
-const { codecovWebpackPlugin } = require("@codecov/webpack-plugin");
+import { codecovWebpackPlugin } from '@codecov/webpack-plugin'
+import type { NextConfig } from 'next'
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   output: 'standalone',
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+
+  experimental: {
+    reactCompiler: false,
+    turbo: {},
+  },
+
+  // Automatically bundle external packages in the Pages Router:
+  bundlePagesRouterDependencies: true,
+  // Opt specific packages out of bundling for both App and Pages Router:
+  // serverExternalPackages: [],
 
   images: {
     remotePatterns: [
@@ -21,15 +30,13 @@ const nextConfig = {
   },
 
   // https://nextjs.org/docs/app/api-reference/next-config-js/webpack
-  webpack: (
-    config,
-  ) => {
+  webpack: (config) => {
     config.plugins.push(
       codecovWebpackPlugin({
         enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
-        bundleName: "clickhouse-monitoring-bundle",
+        bundleName: 'clickhouse-monitoring-bundle',
         uploadToken: process.env.CODECOV_TOKEN,
-      }),
+      })
     )
 
     // Important: return the modified config
@@ -37,4 +44,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+export default nextConfig

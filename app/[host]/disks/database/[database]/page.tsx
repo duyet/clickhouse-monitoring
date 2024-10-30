@@ -7,19 +7,19 @@ import { Table } from '@/components/table'
 import { databaseDiskSpaceByDatabaseConfig as queryConfig } from '../../config'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     database: string
-  }
-  searchParams: { [key: string]: string | string[] | undefined }
+  }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-export default async function Page({
-  params: { database },
-  searchParams,
-}: PageProps) {
-  let params = {
-    ...searchParams,
-    database: database,
+export default async function Page({ params, searchParams }: PageProps) {
+  const { database } = await params
+  const _searchParams = await searchParams
+
+  let searchParamsCombine = {
+    ..._searchParams,
+    database,
   }
 
   return (
@@ -32,7 +32,7 @@ export default async function Page({
         <Table
           title={'Disks usage by database: ' + database}
           queryConfig={queryConfig}
-          searchParams={params}
+          searchParams={searchParamsCombine}
         />
       </Suspense>
     </div>

@@ -52,7 +52,9 @@ export async function ChartQueryDuration({
         colorLabel="--foreground"
         stack
         showLegend={false}
-        onClickHref={getScopedLink('/history-queries?event_time=[event_time]')}
+        onClickHref={await getScopedLink(
+          '/history-queries?event_time=[event_time]'
+        )}
         {...props}
       />
     </ChartCard>

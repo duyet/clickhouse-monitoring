@@ -12,6 +12,10 @@ jest.mock('@clickhouse/client-web', () => ({
   createClient: jest.fn(),
 }))
 
+jest.mock('next/headers', () => ({
+  cookies: jest.fn(),
+}))
+
 describe('getClickHouseHosts', () => {
   const originalEnv = process.env
 
@@ -73,12 +77,12 @@ describe('getClient', () => {
     process.env = originalEnv // Restores the original environment variables
   })
 
-  it('should create a ClickHouse client using the standard library', () => {
+  it('should create a ClickHouse client using the standard library', async () => {
     process.env.CLICKHOUSE_HOST = 'localhost'
     const mockClient = {}
     ;(createClient as jest.Mock).mockReturnValue(mockClient)
 
-    const client = getClient({ web: false })
+    const client = await getClient({ web: false })
 
     expect(createClient).toHaveBeenCalledWith({
       host: 'localhost',
@@ -91,12 +95,12 @@ describe('getClient', () => {
     expect(client).toBe(mockClient)
   })
 
-  it('should create a ClickHouse client using the web library', () => {
+  it('should create a ClickHouse client using the web library', async () => {
     process.env.CLICKHOUSE_HOST = 'localhost'
     const mockClient = {}
     ;(createClientWeb as jest.Mock).mockReturnValue(mockClient)
 
-    const client = getClient({ web: true })
+    const client = await getClient({ web: true })
 
     expect(createClientWeb).toHaveBeenCalledWith({
       host: 'localhost',
@@ -109,7 +113,7 @@ describe('getClient', () => {
     expect(client).toBe(mockClient)
   })
 
-  it('should use environment variables for username, password, and max_execution_time', () => {
+  it('should use environment variables for username, password, and max_execution_time', async () => {
     process.env.CLICKHOUSE_HOST = 'localhost'
     process.env.CLICKHOUSE_USER = 'testuser'
     process.env.CLICKHOUSE_PASSWORD = 'testpassword'
@@ -118,7 +122,7 @@ describe('getClient', () => {
     const mockClient = {}
     ;(createClient as jest.Mock).mockReturnValue(mockClient)
 
-    const client = getClient({ web: false })
+    const client = await getClient({ web: false })
 
     expect(createClient).toHaveBeenCalledWith({
       host: 'localhost',

@@ -1,7 +1,8 @@
 import { getClient } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
@@ -9,9 +10,14 @@ const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams
+  const hostId = searchParams.get('hostId')
+    ? parseInt(searchParams.get('hostId')!)
+    : await getHostIdCookie()
+
   try {
-    const client = getClient({ web: false })
+    const client = await getClient({ web: false, hostId })
     const resp = await cleanupHangQuery(client)
     return NextResponse.json({ status: true, ...resp }, { status: 200 })
   } catch (error) {
@@ -70,7 +76,6 @@ async function getLastCleanup(
       format: 'JSONEachRow',
       clickhouse_settings: {
         max_execution_time: 15,
-        timeout_overflow_mode: 'break',
       },
     })
 

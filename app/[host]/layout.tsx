@@ -1,15 +1,21 @@
-import { setHostId } from '@/lib/server-context'
-import { redirect } from 'next/navigation'
+import Script from 'next/script'
 
-export default function Layout({
+import { BackgroundJobs } from '@/components/background-jobs'
+import { PageView } from '@/components/pageview'
+import { setHostId } from '@/lib/server-context'
+import { Suspense } from 'react'
+
+export default async function Layout({
   children,
-  params: { host },
+  params,
 }: {
   children: React.ReactNode
-  params: { host: number }
+  params: Promise<{ host: number }>
 }) {
+  const { host } = await params
+
   if (Number.isNaN(Number(host))) {
-    redirect('/')
+    setHostId(0)
   }
 
   setHostId(Number(host))
@@ -18,12 +24,18 @@ export default function Layout({
     <>
       {children}
 
-      <script
-        // We have to set a cookie here because cookies() is not allowed in server components
+      <Script
+        id="setHostId"
         dangerouslySetInnerHTML={{
+          // We have to set a cookie here because cookies() is not allowed in server components
           __html: `document.cookie = "hostId=${host}; path=/";`,
         }}
       />
+
+      <Suspense fallback={null}>
+        <PageView hostId={host} />
+        <BackgroundJobs hostId={host} />
+      </Suspense>
     </>
   )
 }

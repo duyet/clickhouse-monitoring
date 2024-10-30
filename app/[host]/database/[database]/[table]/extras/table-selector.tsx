@@ -54,10 +54,10 @@ export async function TableSelector({ database, table }: TableSelectorProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent>
-        {anotherTables.map(({ name }) => (
+        {anotherTables.map(async ({ name }) => (
           <DropdownMenuItem key={name}>
             <Link
-              href={getScopedLink(`/tables/${database}/${name}`)}
+              href={await getScopedLink(`/tables/${database}/${name}`)}
               className="flex flex-row items-center gap-2"
             >
               {name == table ? (

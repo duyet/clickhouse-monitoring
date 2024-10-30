@@ -1,4 +1,5 @@
 import { CodeIcon } from '@radix-ui/react-icons'
+import { TableIcon } from 'lucide-react'
 
 import { DialogContent } from '@/components/dialog-content'
 import { Button } from '@/components/ui/button'
@@ -9,7 +10,6 @@ import {
   CardHeader,
 } from '@/components/ui/card'
 import { cn, dedent } from '@/lib/utils'
-import { TableIcon } from 'lucide-react'
 
 interface ChartCardProps {
   title?: string | React.ReactNode

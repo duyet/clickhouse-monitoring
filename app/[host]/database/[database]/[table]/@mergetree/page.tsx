@@ -8,16 +8,16 @@ import { TableComment } from './table-comment'
 import { Toolbar } from './toolbar'
 
 interface Props {
-  params: {
+  params: Promise<{
     host: number
     database: string
     table: string
-  }
+  }>
 }
 
-export default async function MergeTree({
-  params: { host, database, table },
-}: Props) {
+export default async function MergeTree({ params }: Props) {
+  const { host, database, table } = await params
+
   const engine = await engineType(database, table)
   if (engine.includes('MergeTree') === false) return <></>
 

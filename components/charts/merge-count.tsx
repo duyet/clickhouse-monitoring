@@ -55,14 +55,14 @@ export async function ChartMergeCount({
 
       <div className="flex flex-row justify-between gap-2 text-right text-sm text-muted-foreground">
         <Link
-          href={getScopedLink('/mutations')}
+          href={await getScopedLink('/mutations')}
           className="flex flex-row items-center gap-2"
         >
           Merges
           <ArrowRightIcon className="size-3" />
         </Link>
         <Link
-          href={getScopedLink('/mutations')}
+          href={await getScopedLink('/mutations')}
           className="flex flex-row items-center gap-2"
         >
           Mutations

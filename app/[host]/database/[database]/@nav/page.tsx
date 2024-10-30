@@ -1,13 +1,14 @@
 import { Nav } from './nav'
 
 interface Props {
-  params: {
+  params: Promise<{
     host: number
     database: string
-  }
+  }>
 }
 
-export default function Page({ params: { host, database } }: Props) {
+export default async function Page({ params }: Props) {
+  const { host, database } = await params
   return (
     <Nav
       host={host}

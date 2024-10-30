@@ -1,22 +1,24 @@
-import { Suspense } from 'react'
+import { Suspense, use } from 'react'
 import {
   DatabaseListBreadcrumb,
   DatabaseListBreadcrumbSkeleton,
 } from './breadcrumb'
 
 interface ClusterListProps {
-  params: {
+  params: Promise<{
     database: string
-  }
+  }>
   children: React.ReactNode
 }
 
 export const revalidate = 600
 
 export default async function ClusterTabListLayout({
-  params: { database },
+  params,
   children,
 }: ClusterListProps) {
+  const { database } = use(params)
+
   return (
     <div className="flex flex-col gap-5">
       <Suspense

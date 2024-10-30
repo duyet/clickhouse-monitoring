@@ -184,7 +184,7 @@ export async function ChartSummaryUsedByMerges({
             <span className="flex flex-row items-center gap-2">
               {rowsReadWritten.readable_rows_read} rows read,{' '}
               {used.readable_memory_usage} memory used for merges
-              <Link href={getScopedLink('/merges')} className="inline">
+              <Link href={await getScopedLink('/merges')} className="inline">
                 <ArrowRightIcon className="size-5" />
               </Link>
             </span>

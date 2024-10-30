@@ -1,7 +1,7 @@
-import packageInfo from '@/package.json'
 import { NextResponse } from 'next/server'
 
 import { fetchData } from '@/lib/clickhouse'
+import packageInfo from '@/package.json'
 
 export async function GET() {
   try {
