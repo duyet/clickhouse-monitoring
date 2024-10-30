@@ -140,13 +140,13 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
 
       - name: Install dependencies
-        run: yarn install
+        run: npm install --legacy-peer-deps
 
       - name: Test components
         uses: cypress-io/github-action@v6
         with:
           component: true
-          command: yarn component:headless
+          command: npm run component:headless
           browser: ${{ matrix.browser }}
           parallel: true
           record: true
