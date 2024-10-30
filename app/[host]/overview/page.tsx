@@ -1,5 +1,3 @@
-import { unstable_noStore as noStore } from 'next/cache'
-
 import { ChartBackupSize } from '@/components/charts/backup-size'
 import { ChartCPUUsage } from '@/components/charts/cpu-usage'
 import { ChartDiskSize } from '@/components/charts/disk-size'
@@ -17,10 +15,7 @@ import { OverviewCharts } from './overview-charts'
 export const dynamic = 'force-dynamic'
 export const revalidate = 5
 
-// Displays an overview of system metrics.
 export default async function Overview() {
-  noStore()
-
   return (
     <div>
       <OverviewCharts className="mb-10" />

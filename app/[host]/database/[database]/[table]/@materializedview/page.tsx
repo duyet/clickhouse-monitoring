@@ -3,16 +3,16 @@ import { Extras } from '../extras/extras'
 import { TableDDL } from '../extras/table-ddl'
 
 interface Props {
-  params: {
+  params: Promise<{
     host: number
     database: string
     table: string
-  }
+  }>
 }
 
-export default async function MaterializedView({
-  params: { host, database, table },
-}: Props) {
+export default async function MaterializedView({ params }: Props) {
+  const { host, database, table } = await params
+
   const engine = await engineType(database, table)
   if (engine !== 'MaterializedView') return <></>
 

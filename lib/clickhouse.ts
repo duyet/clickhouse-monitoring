@@ -1,4 +1,3 @@
-import { getHostIdCookie } from '@/lib/scoped-link'
 import { getHostId } from '@/lib/server-context'
 import type { ClickHouseClient, DataFormat } from '@clickhouse/client'
 import { createClient } from '@clickhouse/client'
@@ -68,24 +67,17 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
   })
 }
 
-export const getClickHouseHost = () => {
-  const hostId = getHostId() || 0
-
-  return getClickHouseConfigs()[hostId]
-}
-
 export const getClient = async <B extends boolean>({
   web,
   clickhouse_settings,
-  forceHostId,
+  hostId,
 }: {
   web?: B
   clickhouse_settings?: ClickHouseSettings
-  forceHostId?: number
+  hostId?: number
 }): Promise<B extends true ? WebClickHouseClient : ClickHouseClient> => {
   const client = web === true ? createClientWeb : createClient
-  const hostId = forceHostId ? forceHostId : await getHostIdCookie()
-  const config = getClickHouseConfigs()[hostId]
+  const config = getClickHouseConfigs()[hostId || getHostId()]
 
   const c = client({
     host: config.host,
@@ -121,7 +113,7 @@ export const fetchData = async <
     Partial<{
       clickhouse_settings: QuerySettings
     }>,
-  forceHostId?: number | string
+  hostId?: number | string
 ): Promise<{
   data: T
   metadata: Record<string, string | number>
@@ -129,7 +121,7 @@ export const fetchData = async <
   const start = new Date()
   const client = await getClient({
     web: false,
-    forceHostId: forceHostId ? Number(forceHostId) : undefined,
+    hostId: hostId ? Number(hostId) : undefined,
   })
 
   const resultSet = await client.query({

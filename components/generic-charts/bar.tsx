@@ -1,16 +1,6 @@
 'use client'
 
 import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart'
-import { binding, cn } from '@/lib/utils'
-import { type BarChartProps } from '@/types/charts'
-import {
   Bar,
   CartesianGrid,
   LabelList,
@@ -25,6 +15,17 @@ import {
   ValueType,
 } from 'recharts/types/component/DefaultTooltipContent'
 import { type ViewBox } from 'recharts/types/util/types'
+
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
+import { binding, cn } from '@/lib/utils'
+import { type BarChartProps } from '@/types/charts'
 
 export function BarChart({
   data,
