@@ -16,8 +16,7 @@
     "component:headless": "cypress run --component",
     "fmt": "prettier --write \"**/*.{ts,tsx,mdx,json}\" --cache",
     "test": "jest --coverage",
-    "jest": "jest --coverage",
-    "preinstall": "npx npm-force-resolutions"
+    "jest": "jest --coverage"
   },
   "dependencies": {
     "@clickhouse/client": "^0.3.0",

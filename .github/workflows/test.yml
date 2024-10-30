@@ -139,13 +139,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
 
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
       - name: Test components
         uses: cypress-io/github-action@v6
         with:
           component: true
+          install-command: npm install --legacy-peer-deps
           command: npm run component:headless
           browser: ${{ matrix.browser }}
           parallel: true
