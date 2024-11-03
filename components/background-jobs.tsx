@@ -8,7 +8,7 @@ export function BackgroundJobs({ hostId }: { hostId: number }) {
       await fetch(`/api/clean?hostId=${hostId}`)
     }
     callCleanApi()
-  }, [])
+  }, [hostId])
 
   return null
 }

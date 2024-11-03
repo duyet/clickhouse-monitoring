@@ -12,7 +12,7 @@ export function PageView({ hostId }: { hostId: number }) {
       await fetch(`/api/init?hostId=${hostId}`)
     }
     callInit()
-  }, [])
+  }, [hostId])
 
   useEffect(() => {
     async function pageViewTrack() {

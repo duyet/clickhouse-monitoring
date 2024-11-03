@@ -1,4 +1,5 @@
-import { Suspense, use } from 'react'
+import { Suspense } from 'react'
+
 import {
   DatabaseListBreadcrumb,
   DatabaseListBreadcrumbSkeleton,
@@ -17,7 +18,7 @@ export default async function ClusterTabListLayout({
   params,
   children,
 }: ClusterListProps) {
-  const { database } = use(params)
+  const { database } = await params
 
   return (
     <div className="flex flex-col gap-5">
