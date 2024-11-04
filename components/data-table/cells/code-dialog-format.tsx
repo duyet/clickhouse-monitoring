@@ -1,4 +1,6 @@
-import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
+import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
+import { SizeIcon } from '@radix-ui/react-icons'
+import dedent from 'dedent'
 
 import {
   Dialog,
@@ -8,9 +10,6 @@ import {
 } from '@/components/ui/dialog'
 import { formatQuery } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
-import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
-import { SizeIcon } from '@radix-ui/react-icons'
-import dedent from 'dedent'
 
 export interface CodeDialogOptions {
   dialog_title?: string
@@ -78,13 +77,14 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
           <SizeIcon className="size-4 flex-none" role="open-dialog" />
         </div>
       </DialogTrigger>
-      <DialogContent className={cn('max-w-fit', options?.dialog_classname)}>
-        <VisuallyHidden.Root>
-          <DialogHeader>
-            <DialogTitle>{options?.dialog_title || 'Code'}</DialogTitle>
-            <DialogDescription>{options?.dialog_description}</DialogDescription>
-          </DialogHeader>
-        </VisuallyHidden.Root>
+      <DialogContent
+        className={cn('max-w-fit', options?.dialog_classname)}
+        aria-describedby={options?.dialog_description}
+      >
+        <DialogHeader>
+          <DialogTitle>{options?.dialog_title}</DialogTitle>
+          <DialogDescription>{options?.dialog_description}</DialogDescription>
+        </DialogHeader>
 
         <div>
           <code className="whitespace-pre-wrap text-wrap text-sm text-stone-500">
