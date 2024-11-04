@@ -4,7 +4,7 @@ import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 
 import { ArrowUpIcon } from '@radix-ui/react-icons'
-import { CardMultiMetrics } from '../tremor/card-multi-metrics'
+import { CardMultiMetrics } from '../generic-charts/card-multi-metrics'
 
 export async function ChartZookeeperUptime({
   title = 'Zookeeper Uptime',

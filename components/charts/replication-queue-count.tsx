@@ -1,6 +1,6 @@
 import { type ChartProps } from '@/components/charts/chart-props'
+import { CardMultiMetrics } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { CardMultiMetrics } from '@/components/tremor/card-multi-metrics'
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 

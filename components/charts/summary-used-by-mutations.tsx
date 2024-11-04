@@ -1,9 +1,6 @@
 import { type ChartProps } from '@/components/charts/chart-props'
+import { CardMultiMetrics } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import {
-  CardMultiMetrics,
-  type CardMultiMetricsProps,
-} from '@/components/tremor/card-multi-metrics'
 import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartSummaryUsedByMutations({
@@ -22,8 +19,6 @@ export async function ChartSummaryUsedByMutations({
   >({ query })
   const count = data?.[0] || { running_count: 0 }
 
-  const items: CardMultiMetricsProps['items'] = []
-
   return (
     <ChartCard title={title} className={className} sql={query} data={data}>
       <div className="flex flex-col content-stretch items-center p-0">
@@ -33,7 +28,6 @@ export async function ChartSummaryUsedByMutations({
               {count.running_count} running mutations
             </span>
           }
-          items={items}
           className="p-2"
         />
       </div>
