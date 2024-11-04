@@ -83,7 +83,10 @@ export async function RelatedCharts({
         }
 
         return (
-          <ServerComponentLazy key={name} fallback={<ChartSkeleton />}>
+          <ServerComponentLazy
+            key={name + props.title}
+            fallback={<ChartSkeleton />}
+          >
             <Chart
               className={cn('w-full p-0 shadow-none', className)}
               chartClassName="h-44"

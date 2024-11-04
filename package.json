@@ -38,6 +38,7 @@
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
     "@radix-ui/react-tooltip": "^1.1.3",
+    "@radix-ui/react-visually-hidden": "^1.1.0",
     "@tanstack/react-table": "^8.20.5",
     "@tremor/react": "^3.18.3",
     "@uiw/react-heat-map": "^2.2.1",

@@ -1,3 +1,5 @@
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
+
 import {
   Dialog,
   DialogContent,
@@ -77,17 +79,19 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
         </div>
       </DialogTrigger>
       <DialogContent className={cn('max-w-fit', options?.dialog_classname)}>
-        {(options?.dialog_title || options?.dialog_description) && (
+        <VisuallyHidden.Root>
           <DialogHeader>
-            <DialogTitle>{options.dialog_title}</DialogTitle>
-            <DialogDescription>{options.dialog_description}</DialogDescription>
+            <DialogTitle>{options?.dialog_title || 'Code'}</DialogTitle>
+            <DialogDescription>{options?.dialog_description}</DialogDescription>
           </DialogHeader>
-        )}
+        </VisuallyHidden.Root>
 
         <div>
           <code className="whitespace-pre-wrap text-wrap text-sm text-stone-500">
             {typeof content === 'string' ? (
-              <pre>{dedent(content)}</pre>
+              <pre className="whitespace-pre-wrap text-wrap">
+                {dedent(content)}
+              </pre>
             ) : (
               content
             )}

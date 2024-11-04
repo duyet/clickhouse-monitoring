@@ -11,7 +11,7 @@ export async function ChartFailedQueryCount({
   className,
   chartClassName,
   chartCardContentClassName,
-  lastHours = 24,
+  lastHours = 24 * 7,
   showXAxis = true,
   showLegend = false,
   showCartesianGrid = true,
