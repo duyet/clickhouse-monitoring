@@ -1,22 +1,22 @@
+import { type RowData } from '@tanstack/react-table'
+
 import { DataTable } from '@/components/data-table/data-table'
 import { fetchData } from '@/lib/clickhouse'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
-import { type RowData } from '@tanstack/react-table'
-
 import { listTables } from '../queries'
 import { Toolbar } from './toolbar'
 
 interface TableListProps {
-  params: {
+  params: Promise<{
     host: number
     database: string
-  }
+  }>
 }
 
-export default async function TableListPage({
-  params: { host, database },
-}: TableListProps) {
+export default async function TableListPage({ params }: TableListProps) {
+  const { host, database } = await params
+
   const queryConfig: QueryConfig = {
     name: 'tables',
     sql: listTables,

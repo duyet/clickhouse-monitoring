@@ -1,9 +1,8 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
-
+import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
-import { ChartCard } from '../generic-charts/chart-card'
 
 export async function ChartMergeAvgDuration({
   title,

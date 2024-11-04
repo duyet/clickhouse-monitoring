@@ -1,8 +1,7 @@
 import { DataTable } from '@/components/data-table/data-table'
 import { fetchData } from '@/lib/clickhouse'
 import { ColumnFormat } from '@/types/column-format'
-
-import type { QueryConfig } from '@/types/query-config'
+import { type QueryConfig } from '@/types/query-config'
 
 interface PageProps {
   params: Promise<{
