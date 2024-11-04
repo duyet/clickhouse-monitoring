@@ -14,7 +14,7 @@
     "e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
     "component": "cypress open --component",
     "component:headless": "cypress run --component",
-    "fmt": "prettier --write \"**/*.{ts,tsx,mdx,json}\" --cache",
+    "fmt": "prettier --write \"**/*.{ts,tsx,md,mdx,json}\" --cache",
     "test": "jest --coverage",
     "jest": "jest --coverage"
   },
