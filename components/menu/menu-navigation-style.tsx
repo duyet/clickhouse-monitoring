@@ -33,7 +33,7 @@ export function MenuNavigationStyle({
     <NavigationMenu className={className}>
       <NavigationMenuList>
         {items.map((item) => (
-          <MenuItem key={item.href} item={item} />
+          <MenuItem key={item.title} item={item} />
         ))}
       </NavigationMenuList>
     </NavigationMenu>

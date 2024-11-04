@@ -6,7 +6,7 @@ interface RelatedTimeFormatProps {
 
 const CLICKHOUSE_TZ: string = process.env.CLICKHOUSE_TZ || ''
 
-export async function RelatedTimeFormat({ value }: RelatedTimeFormatProps) {
+export function RelatedTimeFormat({ value }: RelatedTimeFormatProps) {
   let fromNow
   try {
     let parsed = dayjs.tz(value as string, CLICKHOUSE_TZ)

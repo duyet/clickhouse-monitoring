@@ -1,9 +1,8 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/generic-charts/chart-card'
+import { CardMultiMetrics } from '@/components/tremor/card-multi-metrics'
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
-
-import { CardMultiMetrics } from '../tremor/card-multi-metrics'
 
 export async function ChartReplicationQueueCount({
   title,

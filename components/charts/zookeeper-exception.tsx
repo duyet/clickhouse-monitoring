@@ -1,8 +1,9 @@
+import Link from 'next/link'
+
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep } from '@/lib/clickhouse-query'
-import Link from 'next/link'
 import { ChartWarnMessage } from '../chart-warn-message'
 import { type ChartProps } from './chart-props'
 

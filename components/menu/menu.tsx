@@ -11,10 +11,15 @@ export function Menu({ items = menuItemsConfig }: MenuProps) {
   return (
     <>
       <MenuNavigationStyle
+        key="navigation-menu"
         className="hidden transition md:flex"
         items={items}
       />
-      <MenuDropdownStyle className="flex transition md:hidden" items={items} />
+      <MenuDropdownStyle
+        key="dropdown-menu"
+        className="flex transition md:hidden"
+        items={items}
+      />
     </>
   )
 }

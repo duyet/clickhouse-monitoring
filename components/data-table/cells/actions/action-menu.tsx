@@ -1,5 +1,6 @@
 'use client'
 
+import type { Row, RowData } from '@tanstack/react-table'
 import { MoreHorizontal } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
@@ -11,9 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
 import { useToast } from '@/components/ui/use-toast'
-import type { Row, RowData } from '@tanstack/react-table'
 import { type Action } from './types'
 
 export interface ActionMenuProps<TData extends RowData, TValue> {

@@ -1,11 +1,9 @@
-import { unstable_noStore as noStore } from 'next/cache'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
 import { RelatedCharts } from '@/components/related-charts'
-
 import { ChartSkeleton, TableSkeleton } from '@/components/skeleton'
 import { Table } from '@/components/table'
-import { Suspense } from 'react'
 import { getQueryConfigByName } from './clickhouse-queries'
 
 interface PageProps {
@@ -20,8 +18,6 @@ export const revalidate = 300
 
 export default async function Page({ params, searchParams }: PageProps) {
   const { query } = await params
-
-  noStore()
 
   // Retrieves the query configuration by name.
   const queryConfig = getQueryConfigByName(query)

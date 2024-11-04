@@ -5,13 +5,13 @@ import {
   ExclamationTriangleIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
+import type { Row, RowData } from '@tanstack/react-table'
+import { redirect } from 'next/navigation'
 import { useState } from 'react'
 
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/components/ui/use-toast'
 
-import type { Row, RowData } from '@tanstack/react-table'
-import { redirect } from 'next/navigation'
 import {
   explainQuery,
   killQuery,
