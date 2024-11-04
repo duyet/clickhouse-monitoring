@@ -21,14 +21,19 @@ export function CardMultiMetrics({
   className,
 }: CardMultiMetricsProps) {
   return (
-    <div className={cn('flex flex-col gap-4', className)}>
+    <div
+      className={cn('flex flex-col gap-4', className)}
+      aria-description="card-metrics"
+    >
       <div className="text-xl md:text-3xl">{primary}</div>
 
       <div className="flex flex-col justify-between text-sm">
-        <div className="mt-2 flex flex-row justify-between font-bold">
-          <span className="truncate">{currentLabel}</span>
-          <span className="truncate">{targetLabel}</span>
-        </div>
+        {items.length ? (
+          <div className="mt-2 flex flex-row justify-between font-bold">
+            <span className="truncate">{currentLabel}</span>
+            <span className="truncate">{targetLabel}</span>
+          </div>
+        ) : null}
 
         {items.map((item, i) => {
           const _percent = (item.current / item.target) * 100
