@@ -2,11 +2,11 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
 import { type ChartProps } from '@/components/charts/chart-props'
-import { ChartCard } from '@/components/generic-charts/chart-card'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
-} from '@/components/tremor/card-multi-metrics'
+} from '@/components/generic-charts/card-multi-metrics'
+import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
 
@@ -181,13 +181,15 @@ export async function ChartSummaryUsedByMerges({
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics
           primary={
-            <span className="flex flex-row items-center gap-2">
-              {rowsReadWritten.readable_rows_read} rows read,{' '}
-              {used.readable_memory_usage} memory used for merges
-              <Link href={await getScopedLink('/merges')} className="inline">
-                <ArrowRightIcon className="size-5" />
-              </Link>
-            </span>
+            <div className="flex flex-col">
+              <div>{rowsReadWritten.readable_rows_read} rows read</div>
+              <div className="flex flex-row items-center gap-2">
+                {used.readable_memory_usage} memory used for merges
+                <Link href={await getScopedLink('/merges')} className="inline">
+                  <ArrowRightIcon className="size-5" />
+                </Link>
+              </div>
+            </div>
           }
           items={items}
           className="p-2"

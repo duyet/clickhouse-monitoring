@@ -8,16 +8,24 @@ import type { ColumnDef, Row, RowData, Table } from '@tanstack/react-table'
 import { formatCell } from '@/components/data-table/format-cell'
 import { Button } from '@/components/ui/button'
 import { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
+import { type Icon } from '@/types/icon'
 import { type QueryConfig } from '@/types/query-config'
 
 export type ColumnType = { [key: string]: string }
 
-const formatHeader = (name: string, format: ColumnFormat) => {
+const formatHeader = (name: string, format: ColumnFormat, icon?: Icon) => {
+  const CustomIcon = icon
+
   switch (format) {
     case ColumnFormat.Action:
       return <div className="text-muted-foreground">action</div>
     default:
-      return <div className="text-muted-foreground">{name}</div>
+      return (
+        <div className="text-muted-foreground">
+          {CustomIcon ? <CustomIcon /> : null}
+          {name}
+        </div>
+      )
   }
 }
 
@@ -65,7 +73,7 @@ export const getColumnDefs = <
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          {formatHeader(name, columnFormat)}
+          {formatHeader(name, columnFormat, config.columnIcons?.[name])}
 
           {column.getIsSorted() === false ? (
             <CaretSortIcon className="ml-2 size-4" />

@@ -5,7 +5,7 @@ export const runningQueriesConfig: QueryConfig = {
   name: 'running-queries',
   sql: `
       SELECT *,
-        multiIf (elapsed < 30, 'a few seconds',
+        multiIf (elapsed < 30, format('{} seconds', round(elapsed, 1)),
                  elapsed < 90, 'a minute',
                  formatReadableTimeDelta(elapsed, 'days', 'minutes')) as readable_elapsed,
         round(100 * elapsed / max(elapsed) OVER ()) AS pct_elapsed,

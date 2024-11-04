@@ -2,11 +2,11 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
 import { type ChartProps } from '@/components/charts/chart-props'
-import { ChartCard } from '@/components/generic-charts/chart-card'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
-} from '@/components/tremor/card-multi-metrics'
+} from '@/components/generic-charts/card-multi-metrics'
+import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { formatReadableQuantity } from '@/lib/format-readable'
 import { getScopedLink } from '@/lib/scoped-link'
@@ -158,16 +158,18 @@ export async function ChartSummaryUsedByRunningQueries({
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics
           primary={
-            <span className="flex flex-row items-center gap-2">
-              {first.query_count} queries, {first.readable_memory_usage} memory
-              used for running queries
-              <Link
-                href={await getScopedLink('/running-queries')}
-                className="inline"
-              >
-                <ArrowRightIcon className="size-5" />
-              </Link>
-            </span>
+            <div className="flex flex-col">
+              <div>{first.query_count} queries</div>
+              <div className="flex flex-row items-center gap-2">
+                {first.readable_memory_usage} memory used for running queries
+                <Link
+                  href={await getScopedLink('/running-queries')}
+                  className="inline"
+                >
+                  <ArrowRightIcon className="size-5" />
+                </Link>
+              </div>
+            </div>
           }
           items={items}
           className="p-2"

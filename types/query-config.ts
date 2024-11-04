@@ -27,6 +27,22 @@ export interface QueryConfig {
   columnFormats?: {
     [key: string]: ColumnFormat | ColumnFormatWithArgs
   }
+  /**
+   * Column icons can be specified as React Component name.
+   *
+   * Example:
+   * ```ts
+   * import { CalendarIcon } from 'lucide-react'
+   * import { GlobeIcon } from '@radix-ui/react-icons'
+   * columnIcons: {
+   *  date: CalendarIcon,
+   *  language: GlobeIcon
+   * }
+   * ```
+   */
+  columnIcons?: {
+    [key: string]: Icon
+  }
   relatedCharts?:
     | string[]
     | [string, ChartProps][]

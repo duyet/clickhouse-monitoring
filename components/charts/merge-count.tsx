@@ -39,6 +39,7 @@ export async function ChartMergeCount({
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
+      contentClassName="flex flex-col justify-between"
       sql={query}
       data={data}
     >
