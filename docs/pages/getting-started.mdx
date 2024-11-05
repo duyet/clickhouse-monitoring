@@ -1,0 +1,20 @@
+# Getting Started
+
+To get the project up and running on your local machine, follow these steps:
+
+1. Clone the repository
+2. Install dependencies using `npm install` or `yarn install`
+3. Create a `.env.local` file by copying the `.env.example` file and filling in the required environment variables:
+
+   - `CLICKHOUSE_HOST`: ClickHouse host(s), for example `http://localhost:8123` or `http://ch-1:8123,http://ch-2:8123`
+   - `CLICKHOUSE_NAME`: (Optional) Name of ClickHouse instance, must match the number of hosts in `CLICKHOUSE_HOST`, for example `localhost` or `ch-1,ch-2`.
+   - `CLICKHOUSE_USER`: ClickHouse user with permission to query the `system` database.
+   - `CLICKHOUSE_PASSWORD`: ClickHouse password for the specified user.
+   - `CLICKHOUSE_MAX_EXECUTION_TIME`: [`max_execution_time`](https://clickhouse.com/docs/en/operations/settings/query-complexity#max-execution-time) timeout in seconds. Default is `10`.
+   - `CLICKHOUSE_TZ`: ClickHouse server timezone. Default: `''`.
+   - `NEXT_QUERY_CACHE_TTL`: TTL of [`unstable_cache`](https://nextjs.org/docs/app/api-reference/functions/unstable_cache) - cache the results of most charts to speed up and reuse them across multiple requests. Default: `86400`.
+   - `NEXT_PUBLIC_LOGO`: (Optional) HTTP path to logo image.
+   - `EVENTS_TABLE_NAME`: The table name for storing dashboard self-tracking events. Default: `system.monitoring_events`
+
+4. Run the development server with `npm run dev` or `yarn dev`
+5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the dashboard.
