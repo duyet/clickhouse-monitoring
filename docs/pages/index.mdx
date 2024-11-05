@@ -1,0 +1,37 @@
+import { Cards } from 'nextra/components'
+import { Rocket, ChartNoAxesCombined } from 'lucide-react'
+
+# Introduction
+
+The simple Next.js dashboard that relies on `system.*` tables to help monitor and provide an overview of your ClickHouse cluster.
+
+Features:
+
+- Query monitor: current queries, query history, query resources (memory, parts read, file_open, ...), most expensive queries, most used tables or columns, etc.
+- Cluster monitor: total memory/CPU usage, distributed queue, global settings, mergetree settings, metrics, etc.
+- Tables and parts information: size, row count, compression, part size, etc., at the column level detail.
+- Useful tools: Zookeeper data exploration, query EXPLAIN, kill queries, etc.
+- Visualization metric charts: queries and resource usage, number of merges/mutation, merge performance, query performance, etc.
+
+**Demo** (_The ClickHouse server running on my homelab so can be slow sometimes_):
+
+- [clickhouse-monitoring.vercel.app](https://clickhouse-monitoring.vercel.app)
+- [clickhouse.duyet.net](https://clickhouse.duyet.net)
+
+![](../../.github/screenshots/screenshot_1.png)
+![](../../.github/screenshots/screenshot_2.png)
+![](../../.github/screenshots/screenshot_3.png)
+![](../../.github/screenshots/screenshot_4.png)
+![](../../.github/screenshots/screenshot_5.png)
+![](../../.github/screenshots/screenshot_6.png)
+![](../../.github/screenshots/screenshot_7.png)
+![](../../.github/screenshots/screenshot_8.png)
+
+<Cards>
+  <Cards.Card
+    icon={<ChartNoAxesCombined />}
+    title="Getting Started"
+    href="/getting-started"
+  />
+  <Cards.Card icon={<Rocket />} title="Deployments" href="/deploy" />
+</Cards>

@@ -1,0 +1,13 @@
+# Multiple Hosts
+
+![](/multiple-hosts.png)
+
+You can configure the UI to have multiple ClickHouse hosts by using these environment variables:
+
+- `CLICKHOUSE_HOST`: Separated by commas, for example: `http://ch-1:8123,http://ch-2:8123`
+- `CLICKHOUSE_NAME`: (Optional) Name of the ClickHouse instance, must match the number of hosts in `CLICKHOUSE_HOST`, for example `ch-1,ch-2`.
+
+All these hosts will share the same `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD`. If you want to have multiple users/passwords for each host, specify them in the usual way:
+
+- `CLICKHOUSE_USER`: `user1,user2`
+- `CLICKHOUSE_PASSWORD`: `password1,password2`

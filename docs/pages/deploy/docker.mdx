@@ -1,0 +1,15 @@
+# Docker
+
+Using the latest image here: https://github.com/duyet/clickhouse-monitoring/pkgs/container/clickhouse-monitoring
+
+```bash
+docker run -it \
+    -e CLICKHOUSE_HOST='http://localhost' \
+    -e CLICKHOUSE_USER='default' \
+    -e CLICKHOUSE_PASSWORD='' \
+    -e CLICKHOUSE_TZ='Asia/Ho_Chi_Minh' \
+    -e CLICKHOUSE_MAX_EXECUTION_TIME='15' \
+    -e NEXT_QUERY_CACHE_TTL='86400' \
+    --name clickhouse-monitoring \
+    ghcr.io/duyet/clickhouse-monitoring:main
+```

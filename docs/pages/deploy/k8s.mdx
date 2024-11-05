@@ -1,0 +1,25 @@
+# Kubernetes Helm Chart
+
+Using the latest helm chart here: https://github.com/duyet/charts/tree/master/clickhouse-monitoring
+
+```bash
+helm repo add duyet https://duyet.github.io/charts
+
+cat <<EOF >> values.yaml
+env:
+  - name: CLICKHOUSE_HOST
+    value: http://localhost:8123
+  - name: CLICKHOUSE_USER
+    value: default
+  - name: CLICKHOUSE_PASSWORD
+    value: ''
+  - name: CLICKHOUSE_TZ
+    value: 'Asia/Ho_Chi_Minh'
+  - name: CLICKHOUSE_MAX_EXECUTION_TIME
+    value: '15'
+  - name: NEXT_QUERY_CACHE_TTL
+    value: '86400'
+EOF
+
+helm install -f values.yaml clickhouse-monitoring-release duyet/clickhouse-monitoring
+```
