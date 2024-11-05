@@ -18,6 +18,12 @@ Features:
 - [clickhouse-monitoring.vercel.app](https://clickhouse-monitoring.vercel.app)
 - [clickhouse.duyet.net](https://clickhouse.duyet.net)
 
+**Documentation**:
+
+- https://duyet.github.io/clickhouse-monitoring/
+
+**Screenshots**:
+
 ![](.github/screenshots/screenshot_1.png)
 ![](.github/screenshots/screenshot_2.png)
 ![](.github/screenshots/screenshot_3.png)
