@@ -1,0 +1,72 @@
+# ClickHouse Enable System Tables
+
+ClickHouse monitoring relies on the system tables. You will need to enable some required tables in your cluster using these settings; otherwise, you will receive a missing error message.
+
+- Enable `system.query_log`: https://clickhouse.com/docs/en/operations/server-configuration-parameters/settings#query-log
+- Enable `system.metric_log`: https://clickhouse.com/docs/en/operations/server-configuration-parameters/settings#metric_log
+- Enable `system.part_log`: https://clickhouse.com/docs/en/operations/server-configuration-parameters/settings#part-log
+- Enable `system.error_log`: https://clickhouse.com/docs/en/operations/server-configuration-parameters/settings#error_log
+
+Example settings:
+
+Create `/etc/clickhouse-server/config.d/enable_system_log_tables.xml` with the following content:
+
+```xml
+<clickhouse>
+  <query_log>
+    <database>system</database>
+    <table>query_log</table>
+    <engine>Engine = MergeTree PARTITION BY event_date ORDER BY event_time TTL event_date + INTERVAL 30 day</engine>
+    <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    <max_size_rows>1048576</max_size_rows>
+    <reserved_size_rows>8192</reserved_size_rows>
+    <buffer_size_rows_flush_threshold>524288</buffer_size_rows_flush_threshold>
+    <flush_on_crash>false</flush_on_crash>
+  </query_log>
+
+  <metric_log>
+    <database>system</database>
+    <table>metric_log</table>
+    <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    <collect_interval_milliseconds>1000</collect_interval_milliseconds>
+    <max_size_rows>1048576</max_size_rows>
+    <reserved_size_rows>8192</reserved_size_rows>
+    <buffer_size_rows_flush_threshold>524288</buffer_size_rows_flush_threshold>
+    <flush_on_crash>false</flush_on_crash>
+  </metric_log>
+
+  <query_metric_log>
+    <database>system</database>
+    <table>query_metric_log</table>
+    <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    <collect_interval_milliseconds>1000</collect_interval_milliseconds>
+    <max_size_rows>1048576</max_size_rows>
+    <reserved_size_rows>8192</reserved_size_rows>
+    <buffer_size_rows_flush_threshold>524288</buffer_size_rows_flush_threshold>
+    <flush_on_crash>false</flush_on_crash>
+  </query_metric_log>
+
+  <part_log>
+    <database>system</database>
+    <table>part_log</table>
+    <partition_by>toMonday(event_date)</partition_by>
+    <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    <max_size_rows>1048576</max_size_rows>
+    <reserved_size_rows>8192</reserved_size_rows>
+    <buffer_size_rows_flush_threshold>524288</buffer_size_rows_flush_threshold>
+    <flush_on_crash>false</flush_on_crash>
+  </part_log>
+
+  <error_log>
+    <database>system</database>
+    <table>error_log</table>
+    <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    <collect_interval_milliseconds>1000</collect_interval_milliseconds>
+    <max_size_rows>1048576</max_size_rows>
+    <reserved_size_rows>8192</reserved_size_rows>
+    <buffer_size_rows_flush_threshold>524288</buffer_size_rows_flush_threshold>
+    <flush_on_crash>false</flush_on_crash>
+  </error_log>
+
+</clickhouse>
+```
