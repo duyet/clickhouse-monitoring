@@ -37,6 +37,7 @@ export async function ChartQueryDuration({
     clickhouse_settings: {
       use_query_cache: 1,
       query_cache_ttl: 300,
+      query_cache_system_table_handling: 'save',
       query_cache_nondeterministic_function_handling: 'save',
     },
   })

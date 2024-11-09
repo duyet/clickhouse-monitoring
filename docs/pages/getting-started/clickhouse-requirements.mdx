@@ -46,6 +46,8 @@ Suggested role for "monitoring" user must have these privileges on `system` data
       <use_query_cache>1</use_query_cache>
       <query_cache_ttl>50</query_cache_ttl>
       <query_cache_max_entries>0</query_cache_max_entries>
+      <query_cache_system_table_handling>save</query_cache_system_table_handling>
+      <query_cache_nondeterministic_function_handling>save</query_cache_nondeterministic_function_handling>
     </monitoring_profile>
   </profiles>
 </clickhouse>
