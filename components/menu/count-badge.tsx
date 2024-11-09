@@ -22,6 +22,7 @@ export async function CountBadge({
       clickhouse_settings: {
         use_query_cache: 1,
         query_cache_system_table_handling: 'save',
+        query_cache_nondeterministic_function_handling: 'save',
         query_cache_ttl: 120,
       },
     })
