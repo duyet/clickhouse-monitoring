@@ -1,3 +1,4 @@
+import { BACKUP_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
@@ -5,6 +6,7 @@ export const backupsConfig: QueryConfig = {
   name: 'backups',
   description: `To restore a backup:
       RESTORE TABLE data_lake.events AS data_lake.events_restore FROM Disk('s3_backup', 'data_lake.events_20231212')`,
+  docs: BACKUP_LOG,
   sql: `
       SELECT *,
         formatReadableSize(total_size) as readable_total_size,

@@ -11,10 +11,12 @@ import {
 } from '@/components/ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { NotebookPenIcon } from 'lucide-react'
 
 interface ErrorAlertProps {
   title?: string
   message?: string | React.ReactNode | React.ReactNode[]
+  docs?: string | React.ReactNode | React.ReactNode[]
   query?: string
   reset?: () => void
   className?: string
@@ -23,6 +25,7 @@ interface ErrorAlertProps {
 export function ErrorAlert({
   title = 'Something went wrong!',
   message = 'Checking console for more details.',
+  docs,
   query,
   reset,
   className,
@@ -76,12 +79,24 @@ export function ErrorAlert({
     </Accordion>
   )
 
+  const renderDocs = (docs: string | React.ReactNode) => (
+    <>
+      {docs ? (
+        <div className="flex items-center gap-2">
+          <NotebookPenIcon className="w-4 flex-none" />
+          {docs}
+        </div>
+      ) : null}
+    </>
+  )
+
   return (
     <Alert className={className}>
       <AlertTitle className="text-lg">{title}</AlertTitle>
       <AlertDescription>
         {renderContent(message)}
-        {query && renderAccordion('View Full Query Details', query)}
+        {Boolean(query) && renderAccordion('View Full Query Details', query)}
+        {Boolean(docs) && renderDocs(docs)}
         {reset && (
           <Button variant="outline" onClick={() => reset()}>
             Try again {countdown >= 0 && `(${countdown}s)`}

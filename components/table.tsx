@@ -65,6 +65,7 @@ export async function Table({
         title="ClickHouse Query Error"
         message={`${error}`}
         query={queryConfig.sql}
+        docs={queryConfig.docs}
       />
     )
   }

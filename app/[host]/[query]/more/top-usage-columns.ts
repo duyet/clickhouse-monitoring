@@ -1,9 +1,11 @@
+import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
 export const topUsageColumnsConfig: QueryConfig = {
   name: 'top-usage-columns',
   description: 'Most usage columns of table based on system.query_log',
+  docs: QUERY_LOG,
   sql: `
       SELECT
           columns as column,
