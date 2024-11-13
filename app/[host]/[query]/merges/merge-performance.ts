@@ -1,9 +1,11 @@
+import { PART_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
 export const mergePerformanceConfig: QueryConfig = {
   name: 'merge-performance',
   description: 'Merge performance over day, avg duration, avg rows read',
+  docs: PART_LOG,
   sql: `
       SELECT
           event_date,

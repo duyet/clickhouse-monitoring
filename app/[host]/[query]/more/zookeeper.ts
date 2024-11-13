@@ -1,3 +1,4 @@
+import { ZOOKEEPER } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
@@ -5,6 +6,7 @@ export const zookeeperConfig: QueryConfig = {
   name: 'zookeeper',
   description:
     'Exposes data from the Keeper cluster defined in the config. https://clickhouse.com/docs/en/operations/system-tables/zookeeper',
+  docs: ZOOKEEPER,
   sql: `
       SELECT
           replaceOne(format('{}/{}', path, name), '//', '/') AS _path,

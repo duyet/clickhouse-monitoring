@@ -1,9 +1,11 @@
+import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
 export const expensiveQueriesByMemoryConfig: QueryConfig = {
   name: 'expensive-queries-by-memory',
   description: 'Most expensive queries by memory finished over last 24 hours',
+  docs: QUERY_LOG,
   sql: `
       SELECT
           query,

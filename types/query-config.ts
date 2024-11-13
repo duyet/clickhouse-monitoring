@@ -81,6 +81,10 @@ export interface QueryConfig {
    * ClickHouse settings to be used for this query
    */
   clickhouseSettings?: ClickHouseSettings
+  /**
+   * The documents or url to be used when query is errors. e.g. log table missing due to cluster configuration.
+   */
+  docs?: string
 }
 
 export type QueryConfigNoName = PartialBy<QueryConfig, 'name'>

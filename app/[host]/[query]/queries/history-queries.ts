@@ -1,3 +1,4 @@
+import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
@@ -5,6 +6,7 @@ export const historyQueriesConfig: QueryConfig = {
   name: 'history-queries',
   description:
     'Contains information about executed queries: start time, duration of processing, error messages',
+  docs: QUERY_LOG,
   sql: `
       SELECT
           type,

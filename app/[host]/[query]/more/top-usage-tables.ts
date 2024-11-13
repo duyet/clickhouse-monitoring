@@ -1,3 +1,4 @@
+import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
@@ -5,6 +6,7 @@ export const topUsageTablesConfig: QueryConfig = {
   name: 'top-usage-tables',
   description:
     'Most usage tables, ignore system tables, based on system.query_log (top 50). Click on table name to see top usage columns.',
+  docs: QUERY_LOG,
   sql: `
       SELECT
           tables as table,

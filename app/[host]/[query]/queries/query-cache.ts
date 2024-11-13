@@ -1,8 +1,12 @@
+import { QUERY_CACHE } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
 export const queryCacheConfig: QueryConfig = {
   name: 'query-cache',
+  description:
+    'https://clickhouse.com/blog/introduction-to-the-clickhouse-query-cache-and-design',
+  docs: QUERY_CACHE,
   sql: `
       SELECT
           query,

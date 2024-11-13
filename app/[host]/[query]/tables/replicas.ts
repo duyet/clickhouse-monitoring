@@ -5,8 +5,7 @@ export const replicasConfig: QueryConfig = {
   name: 'replicas',
   description: `Contains information and status for replicated tables residing on the local server`,
   sql: `
-      SELECT *,
-             (database || '.' || table) as database_table
+      SELECT *, (database || '.' || table) as database_table
       FROM system.replicas
       ORDER BY database, table
     `,

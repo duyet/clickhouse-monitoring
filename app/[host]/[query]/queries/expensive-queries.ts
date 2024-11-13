@@ -1,9 +1,11 @@
+import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
 export const expensiveQueriesConfig: QueryConfig = {
   name: 'expensive-queries',
   description: 'Most expensive queries finished over last 24 hours',
+  docs: QUERY_LOG,
   sql: `
     WITH base_metrics AS (
         SELECT
