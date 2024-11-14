@@ -1,8 +1,8 @@
+import { ClickHouseInfo } from '@/components/overview-charts/clickhouse-info'
+import { DatabaseTableCount } from '@/components/overview-charts/database-table-count'
+import { RunningQueries } from '@/components/overview-charts/running-queries'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import { ClickHouseInfo } from './charts/clickhouse-info'
-import { DatabaseTableCount } from './charts/database-table-count'
-import { RunningQueries } from './charts/running-queries'
 
 export async function OverviewCharts({ className }: { className?: string }) {
   return (
@@ -15,7 +15,7 @@ export async function OverviewCharts({ className }: { className?: string }) {
     >
       <RunningQueries />
       <DatabaseTableCount />
-      <ClickHouseInfo />
+      <ClickHouseInfo hostName version uptime />
       <Card className="min-w-xs rounded-sm border-0 shadow-none" />
     </div>
   )

@@ -282,6 +282,12 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'System error logs and history',
         icon: ShieldAlertIcon,
       },
+      {
+        title: 'About',
+        href: '/about',
+        description: 'About dashboard UI and ClickHouse server',
+        icon: InfoCircledIcon,
+      },
     ],
   },
 ]

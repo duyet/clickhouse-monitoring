@@ -1,3 +1,6 @@
+ARG GITHUB_SHA
+ARG GITHUB_REF
+
 FROM node:22-alpine AS base
 
 # Install dependencies only when needed
@@ -18,6 +21,8 @@ RUN \
 
 # Rebuild the source code only when needed
 FROM base AS builder
+ENV GITHUB_SHA=${GITHUB_SHA}
+ENV GITHUB_REF=${GITHUB_REF}
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -51,6 +56,8 @@ ENV HOSTNAME="0.0.0.0"
 ENV CLICKHOUSE_HOST="http://localhost:8123"
 ENV CLICKHOUSE_USER="default"
 ENV CLICKHOUSE_PASSWORD=""
+ENV GITHUB_SHA=${GITHUB_SHA}
+ENV GITHUB_REF=${GITHUB_REF}
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
