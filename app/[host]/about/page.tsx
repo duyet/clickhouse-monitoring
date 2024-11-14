@@ -1,6 +1,7 @@
 import { GitHubLogoIcon } from '@radix-ui/react-icons'
 import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 import { ClickHouseInfo } from '@/components/overview-charts/clickhouse-info'
 import {
@@ -11,6 +12,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { description, repository } from '@/package.json'
+
+export const dynamic = 'force-static'
 
 function getVersion(): { version: string; url: string | null } {
   // Get env variables
@@ -88,16 +91,18 @@ export default async function AboutPage() {
         </CardContent>
       </Card>
 
-      <ClickHouseInfo
-        className="min-w-md max-w-md content-normal"
-        contentClassName="p-6 pt-0 gap-2"
-        title="ClickHouse Cluster Info"
-        description="Server Version and Uptime"
-        uptime
-        version
-        hostName
-        currentUser
-      />
+      <Suspense>
+        <ClickHouseInfo
+          className="min-w-md max-w-md content-normal"
+          contentClassName="p-6 pt-0 gap-2"
+          title="ClickHouse Cluster Info"
+          description="Server Version and Uptime"
+          uptime
+          version
+          hostName
+          currentUser
+        />
+      </Suspense>
     </div>
   )
 }
