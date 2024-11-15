@@ -23,7 +23,7 @@ export default async function TableListPage({ nav, children }: TableListProps) {
   return (
     <ResizablePanelGroup
       direction="horizontal"
-      className="h-full max-h-[800px] items-stretch gap-4"
+      className="h-full min-h-screen items-stretch gap-4"
     >
       <ResizablePanel
         defaultSize={10}
