@@ -28,6 +28,7 @@ import {
 } from './cells/hover-card-format'
 import { LinkFormat } from './cells/link-format'
 import { RelatedTimeFormat } from './cells/related-time-format'
+import { TextFormat, type TextFormatOptions } from './cells/text-format'
 
 export const formatCell = <
   TData extends RowData,
@@ -117,6 +118,14 @@ export const formatCell = <
         />
       )
 
+    case ColumnFormat.Text:
+      return (
+        <TextFormat
+          value={value}
+          options={columnFormatOptions as TextFormatOptions}
+        />
+      )
+
     case ColumnFormat.HoverCard:
       return (
         <HoverCardFormat
@@ -127,6 +136,6 @@ export const formatCell = <
       )
 
     default:
-      return <span className="text-nowrap text-center">{value as string}</span>
+      return <span className="truncate text-wrap">{value as string}</span>
   }
 }

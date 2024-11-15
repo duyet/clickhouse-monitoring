@@ -72,6 +72,7 @@ export const getColumnDefs = <
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="truncate"
         >
           {formatHeader(name, columnFormat, config.columnIcons?.[name])}
 
