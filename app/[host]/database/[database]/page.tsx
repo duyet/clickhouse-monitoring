@@ -51,6 +51,12 @@ export default async function TableListPage({ params }: TableListProps) {
       readable_total_rows: ColumnFormat.BackgroundBar,
       readable_avg_part_size: ColumnFormat.BackgroundBar,
       compr_rate: ColumnFormat.BackgroundBar,
+      comment: [
+        ColumnFormat.Text,
+        {
+          className: 'line-clamp-1	hover:text-nowrap',
+        },
+      ],
       action: [ColumnFormat.Action, ['optimize']],
     },
   }

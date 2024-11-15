@@ -5,6 +5,7 @@ import { type BackgroundBarOptions } from '@/components/data-table/cells/backgro
 import { type CodeDialogOptions } from '@/components/data-table/cells/code-dialog-format'
 import { type CodeToggleOptions } from '@/components/data-table/cells/code-toggle-format'
 import { type HoverCardOptions } from '@/components/data-table/cells/hover-card-format'
+import { type TextFormatOptions } from '@/components/data-table/cells/text-format'
 
 export enum ColumnFormat {
   BackgroundBar = 'background-bar',
@@ -21,12 +22,14 @@ export enum ColumnFormat {
   Badge = 'badge',
   Code = 'code',
   Link = 'link',
+  Text = 'text',
   None = 'none',
 }
 
 export type ColumnFormatWithArgs =
   | [ColumnFormat.Action, Action[]]
   | [ColumnFormat.Link, LinkProps]
+  | [ColumnFormat.Text, TextFormatOptions]
   | [ColumnFormat.HoverCard, HoverCardOptions]
   | [ColumnFormat.CodeDialog, CodeDialogOptions]
   | [ColumnFormat.CodeToggle, CodeToggleOptions]
