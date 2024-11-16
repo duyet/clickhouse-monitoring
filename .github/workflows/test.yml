@@ -89,7 +89,7 @@ jobs:
           record: true
 
       - name: Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: coverage
@@ -150,7 +150,7 @@ jobs:
           record: true
 
       - name: Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: coverage
@@ -208,7 +208,7 @@ jobs:
           yarn jest
 
       - name: Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: jest-reports/coverage
