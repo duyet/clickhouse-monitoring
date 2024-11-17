@@ -4,6 +4,7 @@ import { type Action } from '@/components/data-table/cells/actions/types'
 import { type BackgroundBarOptions } from '@/components/data-table/cells/background-bar-format'
 import { type CodeDialogOptions } from '@/components/data-table/cells/code-dialog-format'
 import { type CodeToggleOptions } from '@/components/data-table/cells/code-toggle-format'
+import { type ColoredBadgeOptions } from '@/components/data-table/cells/colored-badge-format'
 import { type HoverCardOptions } from '@/components/data-table/cells/hover-card-format'
 import { type TextFormatOptions } from '@/components/data-table/cells/text-format'
 
@@ -28,8 +29,9 @@ export enum ColumnFormat {
 
 export type ColumnFormatWithArgs =
   | [ColumnFormat.Action, Action[]]
-  | [ColumnFormat.Link, LinkProps]
+  | [ColumnFormat.Link, LinkProps & { className?: string }]
   | [ColumnFormat.Text, TextFormatOptions]
+  | [ColumnFormat.ColoredBadge, ColoredBadgeOptions]
   | [ColumnFormat.HoverCard, HoverCardOptions]
   | [ColumnFormat.CodeDialog, CodeDialogOptions]
   | [ColumnFormat.CodeToggle, CodeToggleOptions]

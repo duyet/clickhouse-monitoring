@@ -43,9 +43,12 @@ export default async function TableListPage({ params }: TableListProps) {
       ],
       table: [
         ColumnFormat.Link,
-        { href: `/${host}/database/${database}/[table]` },
+        {
+          href: `/${host}/database/${database}/[table]`,
+          className: 'truncate max-w-48',
+        },
       ],
-      engine: ColumnFormat.ColoredBadge,
+      engine: [ColumnFormat.ColoredBadge, { className: 'truncate max-w-40' }],
       readable_compressed: ColumnFormat.BackgroundBar,
       readable_uncompressed: ColumnFormat.BackgroundBar,
       readable_total_rows: ColumnFormat.BackgroundBar,

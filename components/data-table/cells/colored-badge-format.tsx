@@ -1,13 +1,17 @@
 import { cn } from '@/lib/utils'
 
+export interface ColoredBadgeOptions {
+  className?: string
+}
+
 interface ColoredBadgeFormatProps {
   value: any
-  className?: string
+  options?: ColoredBadgeOptions
 }
 
 export function ColoredBadgeFormat({
   value,
-  className,
+  options,
 }: ColoredBadgeFormatProps) {
   if (!value || value === '') {
     return
@@ -36,9 +40,9 @@ export function ColoredBadgeFormat({
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+        'inline-block rounded-full px-2.5 py-0.5 text-xs font-medium',
         pickedColor,
-        className
+        options?.className
       )}
     >
       {value}

@@ -3,7 +3,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/resizable'
-import { cn } from '@/lib/utils'
 
 type Params = Promise<{
   host: number
@@ -23,22 +22,21 @@ export default async function TableListPage({ nav, children }: TableListProps) {
   return (
     <ResizablePanelGroup
       direction="horizontal"
-      className="h-full min-h-screen items-stretch gap-4"
+      className="h-full min-h-screen items-stretch"
     >
       <ResizablePanel
-        defaultSize={10}
-        collapsible={true}
-        minSize={5}
-        maxSize={25}
-        className={cn('min-w-[35px] transition-all duration-300 ease-in-out')}
+        defaultSize={17}
+        minSize={17}
+        maxSize={35}
+        className="rounded-l bg-sidebar"
       >
-        <div>{nav}</div>
+        {nav}
       </ResizablePanel>
 
       <ResizableHandle withHandle />
 
-      <ResizablePanel minSize={30} defaultSize={90}>
-        <div>{children}</div>
+      <ResizablePanel minSize={30} defaultSize={90} className="p-4">
+        {children}
       </ResizablePanel>
     </ResizablePanelGroup>
   )

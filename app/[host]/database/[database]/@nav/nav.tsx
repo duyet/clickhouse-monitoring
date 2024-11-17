@@ -93,8 +93,8 @@ function Sidebar({
   isCollapsed?: boolean
 }) {
   return (
-    <div className="">
-      <div className="space-y-1">
+    <div className="flex h-full flex-col bg-sidebar p-2 text-sidebar-foreground">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden">
         {databases.map((db) => (
           <Link
             key={db.name}
@@ -107,10 +107,10 @@ function Sidebar({
               db.name === current && 'bg-secondary'
             )}
           >
-            <div className="inline-flex w-full items-center justify-start gap-2 p-2">
+            <div className="inline-flex w-full items-center justify-start gap-2 p-1">
               <Database className="m-0 h-4 w-4 flex-none p-0" />
               <span className="flex-1 overflow-hidden truncate">{db.name}</span>
-              <span className="ml-auto overflow-hidden">({db.count})</span>
+              <Count>{db.count}</Count>
             </div>
           </Link>
         ))}
@@ -118,3 +118,15 @@ function Sidebar({
     </div>
   )
 }
+
+const Count = ({ children }: { children: React.ReactNode }) => (
+  <span
+    className={cn(
+      'ml-auto overflow-hidden border-transparent',
+      'inline-flex items-center rounded-full border px-1.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+      'bg-gray-200 text-primary-foreground hover:bg-primary/80'
+    )}
+  >
+    {children}
+  </span>
+)
