@@ -2184,9 +2184,9 @@
     eslint-visitor-keys "^3.4.3"
 
 "@uiw/react-heat-map@^2.2.1":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@uiw/react-heat-map/-/react-heat-map-2.3.0.tgz#a0834b93c6c51ea1dbfa275294284f6f279c0b5e"
-  integrity sha512-d2PizT4StPej8GrqR0x2SEDRb9JUMjm2o0hfbWS3HzRs9o+jB6V2Uo/e5olPXoTl+Lx54ERbd4drVPogXCQ+NQ==
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@uiw/react-heat-map/-/react-heat-map-2.3.1.tgz#e058c2763358fb6f0bccde8fb8367d0b51610425"
+  integrity sha512-PoCbS6Wda5bzt8ocYqbTCNxjlmHi3cRCl+v02S0DV1CG+Iyx1SIjvfqtdLe8a9cPd31g9UxgIK3B6hmY2TQQbQ==
 
 "@ungap/structured-clone@^1.2.0":
   version "1.2.0"
@@ -6154,9 +6154,9 @@ react-remove-scroll@2.6.0:
     use-sidecar "^1.1.2"
 
 react-resizable-panels@^2.1.6:
-  version "2.1.6"
-  resolved "https://registry.npmjs.org/react-resizable-panels/-/react-resizable-panels-2.1.6.tgz"
-  integrity sha512-oIqo/7pp2TsR+Dp1qZMr1l4RBDV4Zz/0HEG5zxliBJoHqqFnG0MbmFbk+5Q1VMGfPQ4uhXxefunLC1o7v38PDQ==
+  version "2.1.7"
+  resolved "https://registry.yarnpkg.com/react-resizable-panels/-/react-resizable-panels-2.1.7.tgz#afd29d8a3d708786a9f95183a38803c89f13c2e7"
+  integrity sha512-JtT6gI+nURzhMYQYsx8DKkx6bSoOGFp7A3CwMrOb8y5jFHFyqwo9m68UhmXRw57fRVJksFn1TSlm3ywEQ9vMgA==
 
 react-smooth@^4.0.0:
   version "4.0.1"
