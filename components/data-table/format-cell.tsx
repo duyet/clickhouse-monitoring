@@ -20,7 +20,10 @@ import {
   CodeToggleFormat,
   type CodeToggleOptions,
 } from './cells/code-toggle-format'
-import { ColoredBadgeFormat } from './cells/colored-badge-format'
+import {
+  ColoredBadgeFormat,
+  ColoredBadgeOptions,
+} from './cells/colored-badge-format'
 import { DurationFormat } from './cells/duration-format'
 import {
   HoverCardFormat,
@@ -55,7 +58,12 @@ export const formatCell = <
       )
 
     case ColumnFormat.ColoredBadge:
-      return <ColoredBadgeFormat value={value} />
+      return (
+        <ColoredBadgeFormat
+          value={value}
+          options={columnFormatOptions as ColoredBadgeOptions}
+        />
+      )
 
     case ColumnFormat.Code:
       return <code>{value as string}</code>

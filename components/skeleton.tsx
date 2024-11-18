@@ -74,3 +74,19 @@ export function MultiLineSkeleton({
     </div>
   )
 }
+
+export function ListSkeleton({
+  nrows = 4,
+  className = 'w-[500px]',
+}: {
+  nrows?: number
+  className?: string
+}) {
+  return (
+    <div className={cn('flex flex-col items-center gap-2', className)}>
+      {Array.from({ length: nrows }).map((_, i) => (
+        <Skeleton key={i} className="h-6 w-full bg-slate-200" />
+      ))}
+    </div>
+  )
+}

@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import { Row, RowData } from '@tanstack/react-table'
 import Link, { LinkProps } from 'next/link'
@@ -9,14 +10,14 @@ interface LinkFormatProps<
   row: Row<TData>
   data: TData[]
   value: TValue
-  options?: LinkProps
+  options?: LinkProps & { className?: string }
 }
 
 export function LinkFormat<
   TData extends RowData,
   TValue extends React.ReactNode,
 >({ row, data, value, options }: LinkFormatProps<TData, TValue>) {
-  let href = options?.href
+  let { href, className, ...rest } = options ?? {}
 
   // No href provided, return value as is
   if (!href) return value
@@ -43,8 +44,12 @@ export function LinkFormat<
   }
 
   return (
-    <Link href={hrefBinding} className="group flex flex-row items-center gap-1">
-      <span className="text-nowrap">{value}</span>
+    <Link
+      href={hrefBinding}
+      className={cn('group flex flex-row items-center gap-1', className)}
+      {...rest}
+    >
+      <span className="truncate text-nowrap">{value}</span>
       <ArrowRightIcon className="size-3 text-transparent group-hover:text-current" />
     </Link>
   )

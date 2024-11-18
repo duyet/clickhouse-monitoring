@@ -75,4 +75,62 @@ describe('<LinkFormat />', () => {
     cy.get('a').should('have.attr', 'href', 'https://duyet.net/item/789')
     cy.contains('Non-string Href').should('be.visible')
   })
+
+  describe('options.className', () => {
+    it('applies custom className from options', () => {
+      const row = { index: 0 } as Row<any>
+      const data = [{ id: '123' }]
+      const value = 'Custom Class'
+      const options = {
+        href: '/item/[id]',
+        className: 'custom-class text-red-500',
+      }
+
+      cy.mount(
+        <LinkFormat row={row} data={data} value={value} options={options} />
+      )
+
+      cy.get('a')
+        .should('have.class', 'custom-class')
+        .and('have.class', 'text-red-500')
+    })
+
+    it('merges custom className with default classes', () => {
+      const row = { index: 0 } as Row<any>
+      const data = [{ id: '123' }]
+      const value = 'Merged Classes'
+      const options = {
+        href: '/item/[id]',
+        className: 'custom-class',
+      }
+
+      cy.mount(
+        <LinkFormat row={row} data={data} value={value} options={options} />
+      )
+
+      cy.get('a')
+        .should('have.class', 'group')
+        .and('have.class', 'flex')
+        .and('have.class', 'custom-class')
+    })
+
+    it('applies custom className from options with override', () => {
+      const row = { index: 0 } as Row<any>
+      const data = [{ id: '123' }]
+      const value = 'Custom Class'
+      const options = {
+        href: '/item/[id]',
+        className: 'text-red-300 text-red-400 text-red-500',
+      }
+
+      cy.mount(
+        <LinkFormat row={row} data={data} value={value} options={options} />
+      )
+
+      cy.get('a')
+        .should('not.have.class', 'text-red-300')
+        .and('not.have.class', 'text-red-400')
+        .and('have.class', 'text-red-500')
+    })
+  })
 })

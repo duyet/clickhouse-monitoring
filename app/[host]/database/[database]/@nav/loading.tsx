@@ -1,5 +1,5 @@
-import { MultiLineSkeleton } from '@/components/skeleton'
+import { ListSkeleton } from '@/components/skeleton'
 
 export default function Loading() {
-  return <MultiLineSkeleton className="w-[250px]" />
+  return <ListSkeleton className="w-full p-2" nrows={5} />
 }
