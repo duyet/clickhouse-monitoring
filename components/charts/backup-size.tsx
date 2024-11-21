@@ -1,6 +1,6 @@
 import { type ChartProps } from '@/components/charts/chart-props'
+import { CardMetric } from '@/components/generic-charts/card-metric'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { CardMetric } from '@/components/tremor/card-metric'
 import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartBackupSize({

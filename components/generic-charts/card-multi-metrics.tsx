@@ -36,12 +36,15 @@ export function CardMultiMetrics({
         ) : null}
 
         {items.map((item, i) => {
-          const _percent = (item.current / item.target) * 100
+          const percent = (item.current / item.target) * 100
 
           return (
             <div key={i}>
               <div className="mt-2 flex flex-row items-center justify-between gap-2">
-                <span className="truncate text-muted-foreground">
+                <span
+                  className="truncate text-muted-foreground"
+                  title={`${percent}%`}
+                >
                   {item.currentReadable}
                 </span>
                 <hr className="shrink grow border-dotted" />
