@@ -1,0 +1,40 @@
+'use client'
+
+import { cn } from '@/lib/utils'
+
+export interface CardMetricProps {
+  current: number
+  target: number
+  currentReadable?: string
+  targetReadable?: string
+  className?: string
+}
+
+export function CardMetric({
+  current,
+  target,
+  currentReadable,
+  targetReadable,
+  className,
+}: CardMetricProps) {
+  const percent = (current / target) * 100
+
+  return (
+    <div className={cn('flex flex-col gap-4', className)}>
+      <div className="text-xl md:text-3xl">{currentReadable || current}</div>
+
+      <div>
+        <div className="mt-2 flex flex-row items-center justify-between gap-2">
+          <span
+            className="truncate text-muted-foreground"
+            title={`${percent}%`}
+          >
+            {currentReadable || current}
+          </span>
+          <hr className="shrink grow border-dotted" />
+          <span className="text-nowrap">{targetReadable || target}</span>
+        </div>
+      </div>
+    </div>
+  )
+}

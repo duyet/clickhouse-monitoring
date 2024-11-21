@@ -30,6 +30,10 @@ import {
   type HoverCardOptions,
 } from './cells/hover-card-format'
 import { LinkFormat } from './cells/link-format'
+import {
+  MarkdownFormat,
+  type MarkdownFormatOptions,
+} from './cells/markdown-format'
 import { RelatedTimeFormat } from './cells/related-time-format'
 import { TextFormat, type TextFormatOptions } from './cells/text-format'
 
@@ -131,6 +135,14 @@ export const formatCell = <
         <TextFormat
           value={value}
           options={columnFormatOptions as TextFormatOptions}
+        />
+      )
+
+    case ColumnFormat.Markdown:
+      return (
+        <MarkdownFormat
+          value={value}
+          options={columnFormatOptions as MarkdownFormatOptions}
         />
       )
 
