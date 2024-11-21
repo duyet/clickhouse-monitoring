@@ -15,6 +15,7 @@ export const settingsConfig: QueryConfig = {
     changed: ColumnFormat.Boolean,
     value: ColumnFormat.Code,
     default: ColumnFormat.Code,
+    description: ColumnFormat.Markdown,
   },
   defaultParams: {
     changed: '',
