@@ -23,3 +23,11 @@ EOF
 
 helm install -f values.yaml clickhouse-monitoring-release duyet/clickhouse-monitoring
 ```
+
+import { Cards } from 'nextra/components'
+import { Triangle, Container, Blocks } from 'lucide-react'
+
+<Cards>
+  <Cards.Card icon={<Triangle />} title="Vercel" href="/deploy/vercel" arrow />
+  <Cards.Card icon={<Container />} title="Docker" href="/deploy/docker" arrow />
+</Cards>

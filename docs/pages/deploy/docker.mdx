@@ -13,3 +13,11 @@ docker run -it \
     --name clickhouse-monitoring \
     ghcr.io/duyet/clickhouse-monitoring:main
 ```
+
+import { Cards } from 'nextra/components'
+import { Triangle, Container, Blocks } from 'lucide-react'
+
+<Cards>
+  <Cards.Card icon={<Triangle />} title="Vercel" href="/deploy/vercel" arrow />
+  <Cards.Card icon={<Blocks />} title="Kubernetes" href="/deploy/k8s" arrow />
+</Cards>
