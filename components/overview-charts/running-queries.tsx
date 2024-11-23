@@ -25,10 +25,10 @@ export async function RunningQueries({ className }: { className?: string }) {
   return (
     <Card className={cn('min-w-xs rounded-sm border-0 shadow-none', className)}>
       <CardContent className="group relative content-between p-0">
-        <div className="absolute left-0 top-0 z-50 flex flex-row items-center gap-2 p-4 pb-0">
+        <div className="absolute bottom-0 left-0 z-50 flex flex-row items-center gap-2 p-4 pb-0">
           <div className="text-2xl font-bold">{data[0].count}</div>
           <Link
-            className="text-xs text-muted-foreground"
+            className="text-xs text-black text-muted-foreground"
             href={await getScopedLink('/running-queries')}
           >
             running queries →

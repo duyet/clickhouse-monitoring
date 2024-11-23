@@ -156,17 +156,22 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
               payload: Array<Payload<ValueType, NameType>>
             ) => {
               return (
-                <div key={'' + name + index}>
-                  <div
-                    className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
-                    style={
-                      {
-                        '--color-bg': `var(--color-${name})`,
-                      } as React.CSSProperties
-                    }
-                  />
-
-                  {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                <div
+                  key={'' + name + index}
+                  className="flex flex-row items-baseline justify-between gap-3"
+                >
+                  <div className="flex flex-row items-baseline gap-1">
+                    <div
+                      className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                      style={
+                        {
+                          '--color-bg': `var(--color-${name})`,
+                        } as React.CSSProperties
+                      }
+                    />
+                    {chartConfig[name as keyof typeof chartConfig]?.label ||
+                      name}
+                  </div>
 
                   <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
                     {item['payload'][`readable_${name}` as keyof typeof item] ||
@@ -219,20 +224,22 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
 
             return (
               <>
-                <div
-                  className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
-                  style={
-                    {
-                      '--color-bg': `var(--color-${name})`,
-                    } as React.CSSProperties
-                  }
-                />
+                <div className="flex flex-row">
+                  <div
+                    className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                    style={
+                      {
+                        '--color-bg': `var(--color-${name})`,
+                      } as React.CSSProperties
+                    }
+                  />
 
-                {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                  {chartConfig[name as keyof typeof chartConfig]?.label || name}
 
-                <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
-                  {value}
-                  <span className="font-normal text-muted-foreground"></span>
+                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                    {value}
+                    <span className="font-normal text-muted-foreground"></span>
+                  </div>
                 </div>
 
                 {breakdownData.length > 0 && (
