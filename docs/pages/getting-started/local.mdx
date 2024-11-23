@@ -1,0 +1,63 @@
+import { Steps, Tabs, Cards } from 'nextra/components'
+import { Code, UserCog, Grid2x2Check } from 'lucide-react'
+
+# Local Development
+
+To get the project up and running on your local machine, follow these steps:
+
+<Steps>
+### Clone the repository
+
+```bash
+git clone https://github.com/duyet/clickhouse-monitoring
+```
+
+### Install dependencies
+
+<Tabs items={['npm', 'yarn']}>
+  <Tabs.Tab>```bash npm install ```</Tabs.Tab>
+  <Tabs.Tab>```bash yarn ```</Tabs.Tab>
+</Tabs>
+
+### Setup env
+
+Create a `.env.local` file by copying the `.env.example` file and filling in the required environment variables:
+
+- `CLICKHOUSE_HOST`: ClickHouse host, for example `http://localhost:8123`
+- `CLICKHOUSE_USER`: ClickHouse user with permission to query the `system` database.
+- `CLICKHOUSE_PASSWORD`: ClickHouse password for the specified user.
+- `CLICKHOUSE_MAX_EXECUTION_TIME`: [`max_execution_time`](https://clickhouse.com/docs/en/operations/settings/query-complexity#max-execution-time) timeout in seconds. Default is `10`.
+- `CLICKHOUSE_TZ`: ClickHouse server timezone. Default: `''`.
+- `NEXT_QUERY_CACHE_TTL`: TTL of [`unstable_cache`](https://nextjs.org/docs/app/api-reference/functions/unstable_cache) - cache the results of most charts to speed up and reuse them across multiple requests. Default: `86400`.
+- `NEXT_PUBLIC_LOGO`: (Optional) HTTP path to logo image.
+- `EVENTS_TABLE_NAME`: The table name for storing dashboard self-tracking events. Default: `system.monitoring_events`
+
+### Config ClickHouse
+
+<Cards>
+  <Cards.Card
+    icon={<UserCog />}
+    title="1. User Roles and Profile"
+    href="/getting-started/clickhouse-requirements"
+    arrow
+  />
+  <Cards.Card
+    icon={<Grid2x2Check />}
+    title="2. Enable System Tables"
+    href="/getting-started/clickhouse-enable-system-tables"
+    arrow
+  />
+</Cards>
+
+### Run the development server
+
+<Tabs items={['npm', 'yarn']}>
+  <Tabs.Tab>```bash npm run dev ```</Tabs.Tab>
+  <Tabs.Tab>```bash yarn dev ```</Tabs.Tab>
+</Tabs>
+
+### Final
+
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the dashboard.
+
+</Steps>

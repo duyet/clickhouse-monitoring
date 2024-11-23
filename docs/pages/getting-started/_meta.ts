@@ -1,4 +1,7 @@
-export default {
-  'clickhouse-requirements': 'Clickhouse User Roles and Settings',
-  'clickhouse-enable-system-tables': 'Clickhouse Enable System Tables',
+export const meta = {
+  local: 'Local Development',
+  'clickhouse-requirements': 'User Roles and Profile',
+  'clickhouse-enable-system-tables': 'Enable System Tables',
 }
+
+export default meta

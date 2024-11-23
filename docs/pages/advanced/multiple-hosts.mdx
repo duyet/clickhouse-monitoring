@@ -1,3 +1,5 @@
+import { Tabs } from 'nextra/components'
+
 # Multiple Hosts
 
 ![](/multiple-hosts.png)
@@ -11,3 +13,65 @@ All these hosts will share the same `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD`.
 
 - `CLICKHOUSE_USER`: `user1,user2`
 - `CLICKHOUSE_PASSWORD`: `password1,password2`
+
+# Examples Docker
+
+<Tabs items={['Docker (same user)', 'Docker (different user)']}>
+  <Tabs.Tab>
+    ```bash docker run -it \ -e
+    CLICKHOUSE_HOST='http://ch-1:8123,http://ch-2:8123' \ -e
+    CLICKHOUSE_NAME='ch-1,ch-2' \ -e CLICKHOUSE_USER='default' \ -e
+    CLICKHOUSE_PASSWORD='' \ --name clickhouse-monitoring \
+    ghcr.io/duyet/clickhouse-monitoring:main ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash docker run -it \ -e
+    CLICKHOUSE_HOST='http://ch-1:8123,http://ch-2:8123' \ -e
+    CLICKHOUSE_NAME='ch-1,ch-2' \ -e CLICKHOUSE_USER='user1,user2' \ -e
+    CLICKHOUSE_PASSWORD='password1,password2' \ --name clickhouse-monitoring \
+    ghcr.io/duyet/clickhouse-monitoring:main ```
+  </Tabs.Tab>
+</Tabs>
+
+# Examples Kubernetes
+
+<Tabs items={['Kubernetes (same user)', 'Kubernetes (different user)']}>
+  <Tabs.Tab>
+    ```bash
+    helm repo add duyet https://duyet.github.io/charts
+    
+    cat <<EOF >> values.yaml
+    env:
+    - name: CLICKHOUSE_HOST
+      value: http://ch-1:8123,http://ch-2:8123
+    - name: CLICKHOUSE_NAME
+      value: ch-1,ch-2
+    - name: CLICKHOUSE_USER
+      value: default
+    - name: CLICKHOUSE_PASSWORD
+      value: ''
+    EOF
+    
+    helm install -f values.yaml clickhouse-monitoring-release duyet/clickhouse-monitoring
+    ```
+ </Tabs.Tab>
+ <Tabs.Tab>
+    ```bash
+    helm repo add duyet https://duyet.github.io/charts
+    
+    cat <<EOF >> values.yaml
+    env:
+    - name: CLICKHOUSE_HOST
+      value: http://ch-1:8123,http://ch-2:8123
+    - name: CLICKHOUSE_NAME
+      value: ch-1,ch-2
+    - name: CLICKHOUSE_USER
+      value: user1,user2
+    - name: CLICKHOUSE_PASSWORD
+      value: password1,password2
+    EOF
+    
+    helm install -f values.yaml clickhouse-monitoring-release duyet/clickhouse-monitoring
+    ```
+ </Tabs.Tab>
+</Tabs>
