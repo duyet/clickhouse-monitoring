@@ -25,6 +25,7 @@ export default async function Page({ params }: PageProps) {
       title={`Row counts across '${cluster}' cluster`}
       queryConfig={queryConfig}
       data={data}
+      context={{ cluster }}
       topRightToolbarExtras={<TopRightToolbarExtras cluster={cluster} />}
     />
   )

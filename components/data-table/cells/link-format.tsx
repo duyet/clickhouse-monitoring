@@ -3,6 +3,11 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 import { Row, RowData } from '@tanstack/react-table'
 import Link, { LinkProps } from 'next/link'
 
+export interface LinkFormatOptions extends LinkProps {
+  className?: string
+  title?: string
+}
+
 interface LinkFormatProps<
   TData extends RowData,
   TValue extends React.ReactNode,
@@ -10,13 +15,14 @@ interface LinkFormatProps<
   row: Row<TData>
   data: TData[]
   value: TValue
-  options?: LinkProps & { className?: string }
+  context: Record<string, string>
+  options?: LinkFormatOptions
 }
 
 export function LinkFormat<
   TData extends RowData,
   TValue extends React.ReactNode,
->({ row, data, value, options }: LinkFormatProps<TData, TValue>) {
+>({ row, data, value, context, options }: LinkFormatProps<TData, TValue>) {
   let { href, className, ...rest } = options ?? {}
 
   // No href provided, return value as is
@@ -29,6 +35,10 @@ export function LinkFormat<
   }
 
   const originalRow = data[row.index] as Record<string, string | undefined>
+  const mappingKeyValue = {
+    ...originalRow,
+    ...context,
+  }
 
   // Href contains placeholders, e.g. /database/[database]/[table]
   // Replace placeholders with values from the row
@@ -38,7 +48,7 @@ export function LinkFormat<
     if (matches) {
       matches.forEach((match) => {
         const key = match.replace('[', '').replace(']', '').trim()
-        hrefBinding = hrefBinding.replace(match, originalRow[key] ?? '')
+        hrefBinding = hrefBinding.replace(match, mappingKeyValue[key] ?? '')
       })
     }
   }
@@ -50,7 +60,7 @@ export function LinkFormat<
       {...rest}
     >
       <span className="truncate text-nowrap">{value}</span>
-      <ArrowRightIcon className="size-3 text-transparent group-hover:text-current" />
+      <ArrowRightIcon className="size-3 flex-none text-transparent group-hover:text-current" />
     </Link>
   )
 }

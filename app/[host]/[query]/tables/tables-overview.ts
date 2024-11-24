@@ -63,7 +63,10 @@ export const tablesOverviewConfig: QueryConfig = {
     'readable_detached_bytes_on_disk',
   ],
   columnFormats: {
-    table: [ColumnFormat.Link, { href: '/tables/[_database]/[_table]' }],
+    table: [
+      ColumnFormat.Link,
+      { href: '/[ctx.hostId]/database/[_database]/[_table]' },
+    ],
     engine: ColumnFormat.ColoredBadge,
     readable_total_rows: ColumnFormat.BackgroundBar,
     readable_compressed: ColumnFormat.BackgroundBar,

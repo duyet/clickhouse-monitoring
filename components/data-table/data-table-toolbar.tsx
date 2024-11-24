@@ -17,7 +17,7 @@ export function DataTableToolbar({
 }: DataTableToolbarProps) {
   return (
     <div className={cn('flex items-center justify-between', className)}>
-      <div className="flex flex-1 items-center space-x-2">
+      <div className="flex flex-1 flex-wrap items-center space-x-2">
         {children}
         {queryConfig.filterParamPresets && (
           <DataTableFacetedFilter title="Filters" queryConfig={queryConfig} />

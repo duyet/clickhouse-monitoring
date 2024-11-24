@@ -43,6 +43,7 @@ interface DataTableProps<TData extends RowData> {
   queryConfig: QueryConfig
   queryParams?: Record<string, any>
   data: TData[]
+  context: Record<string, string>
   defaultPageSize?: number
   showSQL?: boolean
   footnote?: FootnoteProps<TData>['footnote']
@@ -60,6 +61,7 @@ export function DataTable<
   queryConfig,
   queryParams,
   data,
+  context,
   defaultPageSize = 100,
   showSQL = true,
   footnote,
@@ -76,10 +78,20 @@ export function DataTable<
   // Configured columns available, normalized
   const configuredColumns = queryConfig.columns.map(normalizeColumnName)
 
+  // Add `ctx.` prefix to all keys
+  const contextWithPrefix = Object.entries(context).reduce(
+    (acc, [key, value]) => ({
+      ...acc,
+      [`ctx.${key}`]: value,
+    }),
+    {}
+  )
+
   // Column definitions for the table
   const columnDefs = getColumnDefs<TData, TValue>(
     queryConfig,
-    data
+    data,
+    contextWithPrefix
   ) as ColumnDef<TData, TValue>[]
 
   // Only show the columns in QueryConfig['columns'] list by initial
@@ -119,7 +131,7 @@ export function DataTable<
 
   return (
     <div className={className}>
-      <div className="flex flex-row items-center justify-between pb-4">
+      <div className="flex flex-row items-start justify-between pb-4">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <h1 className="flex-none text-xl text-muted-foreground">{title}</h1>

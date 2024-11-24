@@ -36,6 +36,7 @@ export const historyQueriesConfig: QueryConfig = {
         AND if ({duration_1m: String} = '1', query_duration >= 60, true)
         AND if (notEmpty({event_time: String}), toDate(event_time) = {event_time: String}, true)
         AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
+        AND if ({user: String} != '', user = {user: String}, true)
       ORDER BY event_time DESC
       LIMIT 1000
   `,
@@ -43,6 +44,7 @@ export const historyQueriesConfig: QueryConfig = {
   columns: [
     'user',
     'query',
+    'query_id',
     'query_duration',
     'readable_memory_usage',
     'event_time',
@@ -52,7 +54,6 @@ export const historyQueriesConfig: QueryConfig = {
     'query_kind',
     'type',
     'client_name',
-    'query_id',
   ],
   columnFormats: {
     user: ColumnFormat.ColoredBadge,
@@ -68,6 +69,14 @@ export const historyQueriesConfig: QueryConfig = {
     readable_read_rows: ColumnFormat.BackgroundBar,
     readable_written_rows: ColumnFormat.BackgroundBar,
     readable_memory_usage: ColumnFormat.BackgroundBar,
+    query_id: [
+      ColumnFormat.Link,
+      {
+        href: '/[ctx.hostId]/query/[query_id]',
+        className: 'truncate max-w-48 text-wrap',
+        title: 'Query Detail',
+      },
+    ],
   },
 
   defaultParams: {
@@ -76,6 +85,7 @@ export const historyQueriesConfig: QueryConfig = {
     event_time: '',
     database: '',
     table: '',
+    user: '',
   },
 
   filterParamPresets: [

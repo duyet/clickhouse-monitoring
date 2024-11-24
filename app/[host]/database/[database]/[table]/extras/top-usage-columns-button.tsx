@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { getScopedLink } from '@/lib/scoped-link'
 
-export async function Toolbar({
+export async function TopUsageColumnsButton({
   database,
   table,
 }: {
@@ -20,6 +20,7 @@ export async function Toolbar({
       <Button
         variant="outline"
         className="flex flex-row gap-2 text-muted-foreground"
+        size="sm"
       >
         <TextAlignBottomIcon className="size-3" />
         Top usage columns

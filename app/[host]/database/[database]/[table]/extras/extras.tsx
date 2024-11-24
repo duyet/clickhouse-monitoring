@@ -10,6 +10,7 @@ import { SampleDataButton } from './sample-data-button'
 import { ShowDDL } from './show-ddl-button'
 import { TableInfo } from './table-info'
 import { TableSelector } from './table-selector'
+import { TopUsageColumnsButton } from './top-usage-columns-button'
 
 export const Extras = ({
   host,
@@ -20,7 +21,7 @@ export const Extras = ({
   database: string
   table: string
 }) => (
-  <div className="mb-3 flex flex-row justify-between gap-3">
+  <div className="mb-3 flex flex-row flex-wrap justify-between gap-3">
     <div className="flex flex-row gap-3">
       <Link href={`/${host}/database/${database}`}>
         <Button
@@ -44,6 +45,7 @@ export const Extras = ({
       <SampleDataButton database={database} table={table} />
       <RunningQueriesButton database={database} table={table} />
       <HistoryQueriesButton database={database} table={table} />
+      <TopUsageColumnsButton database={database} table={table} />
     </div>
   </div>
 )

@@ -1,5 +1,4 @@
 import type { Row, RowData, Table } from '@tanstack/react-table'
-import { type LinkProps } from 'next/link'
 
 import { formatReadableQuantity } from '@/lib/format-readable'
 import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
@@ -29,7 +28,7 @@ import {
   HoverCardFormat,
   type HoverCardOptions,
 } from './cells/hover-card-format'
-import { LinkFormat } from './cells/link-format'
+import { LinkFormat, type LinkFormatOptions } from './cells/link-format'
 import {
   MarkdownFormat,
   type MarkdownFormatOptions,
@@ -46,6 +45,7 @@ export const formatCell = <
   row: Row<TData>,
   value: TValue,
   columnName: string,
+  context: Record<string, string>,
   format: ColumnFormat,
   columnFormatOptions?: ColumnFormatOptions
 ) => {
@@ -126,7 +126,8 @@ export const formatCell = <
           row={row}
           data={data}
           value={value}
-          options={columnFormatOptions as LinkProps}
+          context={context}
+          options={columnFormatOptions as LinkFormatOptions}
         />
       )
 

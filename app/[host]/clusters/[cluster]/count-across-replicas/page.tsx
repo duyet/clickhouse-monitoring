@@ -1,5 +1,6 @@
 import { DataTable } from '@/components/data-table/data-table'
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
@@ -45,7 +46,7 @@ export default async function Page({ params }: PageProps) {
     columnFormats: {
       database_table: [
         ColumnFormat.Link,
-        { href: `/database/[database]/[table]` },
+        { href: `/[ctx.hostId]/database/[database]/[table]` },
       ],
       ...replicas
         .map(({ replica }) => ({
@@ -70,6 +71,7 @@ export default async function Page({ params }: PageProps) {
       title={`Total rows of active parts across replicas in the '${cluster}' cluster`}
       queryConfig={queryConfig}
       data={data}
+      context={{ hostId: '' + (await getHostIdCookie()) }}
     />
   )
 }
