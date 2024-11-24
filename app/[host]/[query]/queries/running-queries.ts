@@ -73,6 +73,7 @@ export const runningQueriesConfig: QueryConfig = {
       {
         href: '/[ctx.hostId]/query/[query_id]',
         className: 'truncate max-w-48 text-wrap',
+        title: 'Query Detail',
       },
     ],
     query_id: [

@@ -45,7 +45,7 @@ export const replicasConfig: QueryConfig = {
   columnFormats: {
     database_table: [
       ColumnFormat.Link,
-      { href: '/database/[database]/[table]' },
+      { href: '/[ctx.hostId]/database/[database]/[table]' },
     ],
     engine: ColumnFormat.ColoredBadge,
     is_leader: ColumnFormat.Boolean,

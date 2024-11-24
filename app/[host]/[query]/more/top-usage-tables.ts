@@ -25,7 +25,10 @@ export const topUsageTablesConfig: QueryConfig = {
       LIMIT 50`,
   columns: ['table', 'count'],
   columnFormats: {
-    table: [ColumnFormat.Link, { href: `/top-usage-columns?table=[table]` }],
+    table: [
+      ColumnFormat.Link,
+      { href: `/[ctx.hostId]/top-usage-columns?table=[table]` },
+    ],
     count: ColumnFormat.BackgroundBar,
   },
   defaultParams: { database: '' },

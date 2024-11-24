@@ -5,6 +5,7 @@ import Link, { LinkProps } from 'next/link'
 
 export interface LinkFormatOptions extends LinkProps {
   className?: string
+  title?: string
 }
 
 interface LinkFormatProps<
