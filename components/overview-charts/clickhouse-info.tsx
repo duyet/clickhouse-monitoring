@@ -128,7 +128,8 @@ async function InfoLine({
         className
       )}
     >
-      <div className="flex-1 truncate text-xl">{data[0].val}</div>
+      <div className="truncate text-xl">{data[0].val}</div>
+      <hr className="flex-auto grow border-dotted" />
       <div className="flex-none text-xs text-muted-foreground">{label}</div>
     </div>
   )

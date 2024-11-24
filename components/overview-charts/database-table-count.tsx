@@ -49,6 +49,13 @@ export async function DatabaseTableCount({
       )}
     >
       <CardContent className="flex flex-col content-center p-2 pt-2">
+        <Link
+          className="mb-2 mt-2 text-right text-xs text-muted-foreground"
+          href={await getScopedLink('/tables-overview')}
+        >
+          Tables Overview →
+        </Link>
+
         {metrics.map((metric) => (
           <Suspense
             key={metric.query}
@@ -87,36 +94,38 @@ async function LinkCount({
   return (
     <div
       className={cn(
-        'group inline-flex w-full items-baseline gap-2 p-1 opacity-80 hover:opacity-100',
+        'group inline-flex w-full items-center gap-2 p-1 opacity-80 hover:opacity-100',
         className
       )}
     >
-      <Link
-        className="inline-flex items-baseline justify-between gap-2"
-        href={await getScopedLink(href)}
-      >
+      <div className="inline-flex w-full items-center justify-between gap-2">
         <div className="inline-flex items-baseline gap-2 text-3xl font-bold">
           <span className="p-0">{data[0].count}</span>
         </div>
-        <div className="inline-flex gap-1 truncate text-xs text-muted-foreground">
-          {icon} {label} →
-        </div>
-      </Link>
-      <DialogSQL
-        sql={query}
-        description=""
-        button={
-          <Button
-            variant="outline"
-            className="ml-auto h-fit border-0 p-2 opacity-0 shadow-none group-hover:opacity-100"
-            aria-label="Show SQL"
-            title="SQL of this"
-          >
-            <CodeIcon className="size-3" />
-          </Button>
-        }
-        contentClassName="max-w-screen-lg"
-      />
+        <hr className="flex-auto grow border-dotted" />
+
+        <DialogSQL
+          sql={query}
+          description=""
+          button={
+            <Button
+              variant="outline"
+              className="ml-auto hidden h-fit border-0 p-2 shadow-none group-hover:inline"
+              aria-label="Show SQL"
+              title="SQL of this"
+            >
+              <CodeIcon className="size-3" />
+            </Button>
+          }
+          contentClassName="max-w-screen-lg"
+        />
+
+        <Link href={await getScopedLink(href)}>
+          <div className="inline-flex gap-1 truncate text-xs text-muted-foreground">
+            {icon} {label} →
+          </div>
+        </Link>
+      </div>
     </div>
   )
 }
