@@ -28,7 +28,7 @@ export async function RunningQueries({ className }: { className?: string }) {
         <div className="absolute bottom-0 left-0 z-50 flex flex-row items-center gap-2 p-4 pb-0">
           <div className="text-2xl font-bold">{data[0].count}</div>
           <Link
-            className="text-xs text-black text-muted-foreground"
+            className="text-xs text-black"
             href={await getScopedLink('/running-queries')}
           >
             running queries →
@@ -63,7 +63,7 @@ export async function RunningQueries({ className }: { className?: string }) {
           showLegend={false}
           chartConfig={{
             query_count: {
-              color: 'hsl(var(--chart-5))',
+              color: 'hsl(var(--chart-12))',
             },
           }}
         />

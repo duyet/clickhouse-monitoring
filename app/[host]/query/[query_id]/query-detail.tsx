@@ -30,11 +30,12 @@ export async function QueryDetail({
       ...queryConfig.defaultParams,
       ...params,
     }
-    const { data, metadata } = await fetchData<RowData[]>({
+    const { data } = await fetchData<RowData[]>({
       query: queryConfig.sql,
       format: 'JSONEachRow',
       query_params: queryParams,
       clickhouse_settings: {
+        use_query_cache: 0,
         ...queryConfig.clickhouseSettings,
       },
     })
@@ -68,6 +69,7 @@ export async function QueryDetail({
       views,
       exception_code,
       exception,
+      interface_query_initial_from,
       stack_trace,
       http_method,
       http_user_agent,
@@ -137,12 +139,12 @@ export async function QueryDetail({
         <div className="grid grid-cols-1 md:grid-cols-2">
           {(
             [
-              ['Host name', hostname],
+              ['Hostname of the server executing the query', hostname],
               ['Client host name', client_hostname],
               ['Client name', client_name],
               ['Client revision', client_revision],
               [
-                'Initial user',
+                'Initial user (for distributed query execution)',
                 initial_user ? (
                   <Link
                     className="flex flex-row items-center gap-1"
@@ -160,7 +162,7 @@ export async function QueryDetail({
                 ),
               ],
               [
-                'Initial query id',
+                'Initial query id (for distributed query execution)',
                 <Link
                   className="flex flex-row items-center gap-1"
                   href={await getScopedLink(`/query/${initial_query_id}`)}
@@ -171,9 +173,18 @@ export async function QueryDetail({
                   <ExternalLinkIcon className="size-3" />
                 </Link>,
               ],
-              ['Initial address', initial_address],
-              ['Initial port', initial_port],
-              ['Initial query start time', initial_query_start_time],
+              [
+                'initial_address (IP address that the parent query was launched from)',
+                initial_address,
+              ],
+              [
+                'initial_port (The client port that was used to make the parent query)',
+                initial_port,
+              ],
+              [
+                'Initial query starting time (for distributed query execution)',
+                initial_query_start_time,
+              ],
               ['Databases', bindingDatabaseLink(databases)],
               ['Tables', bindingTableLink(tables)],
               ['Columns', JSON.stringify(columns, null, 2)],
@@ -183,7 +194,11 @@ export async function QueryDetail({
               ['Exception code', exception_code],
               ['Exception', exception],
               ['Stack trace', stack_trace],
-              ['HTTP method', http_method],
+              [
+                'Interface that the query was initiated from (1 — TCP, 2 — HTTP)',
+                interface_query_initial_from,
+              ],
+              ['HTTP method (0 = TCP, 1 = GET, 2 = POST)', http_method],
               ['HTTP user agent', http_user_agent],
               ['HTTP referer', http_referer],
               ['Forwarded for', forwarded_for],

@@ -10,6 +10,7 @@ export interface RowData {
   user: string
   duration_ms: string
 
+  interface_query_initial_from: string
   hostname: string
   client_hostname: string
   client_name: string
@@ -90,15 +91,16 @@ export const config: QueryConfig = {
         peak_threads_usage,
 
         -- General query info
+        interface as interface_query_initial_from,
+        hostname,
+        client_hostname,
+        client_name,
+        client_revision,
         initial_user,
         initial_query_id,
         initial_address,
         initial_port,
         initial_query_start_time,
-        hostname,
-        client_hostname,
-        client_name,
-        client_revision,
         databases,
         tables,
         columns,
