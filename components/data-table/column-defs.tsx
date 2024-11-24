@@ -7,7 +7,7 @@ import type { ColumnDef, Row, RowData, Table } from '@tanstack/react-table'
 
 import { formatCell } from '@/components/data-table/format-cell'
 import { Button } from '@/components/ui/button'
-import { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
+import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
 import { type Icon } from '@/types/icon'
 import { type QueryConfig } from '@/types/query-config'
 
@@ -45,7 +45,8 @@ export const getColumnDefs = <
   TValue extends React.ReactNode,
 >(
   config: QueryConfig,
-  data: TData[]
+  data: TData[],
+  context: Record<string, string>
 ): ColumnDef<TData, TValue>[] => {
   const configColumns = config.columns || []
 
@@ -104,6 +105,7 @@ export const getColumnDefs = <
           row,
           value,
           column,
+          context,
           columnFormat,
           columnFormatOptions
         )

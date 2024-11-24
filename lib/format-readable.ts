@@ -74,7 +74,6 @@ export function formatQuery({
   comment_remove?: boolean
   truncate?: number
   trim?: boolean
-  remove_extra_whitespace?: boolean
 }) {
   let formattedQuery = comment_remove
     ? query.replace(

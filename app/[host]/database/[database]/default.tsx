@@ -38,11 +38,11 @@ export default async function TableListPage({ params }: TableListProps) {
       part_count: ColumnFormat.Number,
       detached_parts_count: [
         ColumnFormat.Link,
-        { href: `/${host}/detached_parts/?table=${database}.[table]` },
+        { href: '/[ctx.host]/detached_parts/?table=[ctx.database].[table]' },
       ],
       table: [
         ColumnFormat.Link,
-        { href: `/${host}/database/${database}/[table]` },
+        { href: '/[ctx.host]/database/[ctx.database]/[table]' },
       ],
       engine: ColumnFormat.ColoredBadge,
       readable_compressed: ColumnFormat.BackgroundBar,
@@ -65,6 +65,7 @@ export default async function TableListPage({ params }: TableListProps) {
       title={`${database}`}
       queryConfig={queryConfig}
       data={data}
+      context={{ host: `${host}`, database }}
       topRightToolbarExtras={<Toolbar database={database} />}
     />
   )

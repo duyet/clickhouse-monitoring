@@ -75,6 +75,7 @@ export default async function TableListPage({ params }: TableListProps) {
       title={`${database}`}
       queryConfig={queryConfig}
       data={data}
+      context={{ host: `${host}`, database }}
       topRightToolbarExtras={<Toolbar database={database} />}
     />
   )

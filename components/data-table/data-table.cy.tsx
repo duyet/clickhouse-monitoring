@@ -19,7 +19,12 @@ describe('<DataTable />', () => {
     ]
 
     cy.mount(
-      <DataTable title="Test Table" queryConfig={queryConfig} data={data} />
+      <DataTable
+        title="Test Table"
+        queryConfig={queryConfig}
+        data={data}
+        context={{}}
+      />
     )
 
     cy.get('h1').contains('Test Table')
@@ -44,6 +49,7 @@ describe('<DataTable />', () => {
         title="Test Table"
         queryConfig={queryConfig}
         data={data}
+        context={{}}
         defaultPageSize={50}
       />
     )
@@ -81,6 +87,7 @@ describe('<DataTable />', () => {
         title="Test Table"
         queryConfig={queryConfig}
         data={data}
+        context={{}}
         defaultPageSize={2}
       />
     )
@@ -107,7 +114,12 @@ describe('<DataTable />', () => {
     ]
 
     cy.mount(
-      <DataTable title="Test Table" queryConfig={queryConfig} data={data} />
+      <DataTable
+        title="Test Table"
+        queryConfig={queryConfig}
+        data={data}
+        context={{}}
+      />
     )
 
     const $optionBtn = cy.get('button[aria-label="Column Options"]')
@@ -135,7 +147,12 @@ describe('<DataTable />', () => {
     ]
 
     cy.mount(
-      <DataTable title="Test Table" queryConfig={queryConfig} data={data} />
+      <DataTable
+        title="Test Table"
+        queryConfig={queryConfig}
+        data={data}
+        context={{}}
+      />
     )
 
     cy.get('button[aria-label="Column Options"]').as('btn')
@@ -162,7 +179,12 @@ describe('<DataTable />', () => {
     ]
 
     cy.mount(
-      <DataTable title="Test Table" queryConfig={queryConfig} data={data} />
+      <DataTable
+        title="Test Table"
+        queryConfig={queryConfig}
+        data={data}
+        context={{}}
+      />
     )
 
     cy.get('button[aria-label="Column Options"]').as('btn')
@@ -195,6 +217,7 @@ describe('<DataTable />', () => {
         title="Test Table"
         queryConfig={queryConfig}
         data={[]}
+        context={{}}
         showSQL={true}
       />
     )
@@ -208,6 +231,7 @@ describe('<DataTable />', () => {
         title="Test Table"
         queryConfig={queryConfig}
         data={[]}
+        context={{}}
         showSQL={false}
       />
     )
@@ -228,6 +252,7 @@ describe('<DataTable />', () => {
         title="Test Table"
         queryConfig={queryConfig}
         data={data}
+        context={{}}
         showSQL={true}
       />
     )
@@ -251,6 +276,7 @@ describe('<DataTable />', () => {
         title="Test Table"
         queryConfig={queryConfig}
         data={[]}
+        context={{}}
         footnote="This is footnote"
       />
     )
@@ -264,6 +290,7 @@ describe('<DataTable />', () => {
         title="Test Table"
         queryConfig={queryConfig}
         data={[]}
+        context={{}}
         footnote={<div className="footnote">This is footnote</div>}
       />
     )
@@ -276,6 +303,7 @@ describe('<DataTable />', () => {
       <DataTable
         queryConfig={queryConfig}
         data={[{ col1: '1', col2: '2' }]}
+        context={{}}
         defaultPageSize={10}
       />
     )
@@ -291,7 +319,12 @@ describe('<DataTable />', () => {
     }
 
     cy.mount(
-      <DataTable queryConfig={queryConfig} data={data} defaultPageSize={10} />
+      <DataTable
+        queryConfig={queryConfig}
+        data={data}
+        defaultPageSize={10}
+        context={{}}
+      />
     )
     cy.contains('0 of 10 row(s)')
   })

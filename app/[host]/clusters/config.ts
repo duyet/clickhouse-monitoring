@@ -23,10 +23,10 @@ export const queryConfig: QueryConfig = {
   `,
   columns: ['cluster', 'shard_count', 'replica_count', 'replica_status'],
   columnFormats: {
-    cluster: [ColumnFormat.Link, { href: `/clusters/[cluster]` }],
+    cluster: [ColumnFormat.Link, { href: `/[ctx.hostId]/clusters/[cluster]` }],
     replica_status: [
       ColumnFormat.Link,
-      { href: `/clusters/[cluster]/replicas-status` },
+      { href: `/[ctx.hostId]/clusters/[cluster]/replicas-status` },
     ],
   },
 }

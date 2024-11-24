@@ -9,7 +9,13 @@ describe('<LinkFormat />', () => {
     const options = { href: '/database/[database]/[table]' }
 
     cy.mount(
-      <LinkFormat row={row} data={data} value={value} options={options} />
+      <LinkFormat
+        row={row}
+        data={data}
+        value={value}
+        context={{}}
+        options={options}
+      />
     )
 
     cy.get('a')
@@ -22,7 +28,7 @@ describe('<LinkFormat />', () => {
     const data = [{}]
     const value = 'Plain Text'
 
-    cy.mount(<LinkFormat row={row} data={data} value={value} />)
+    cy.mount(<LinkFormat row={row} data={data} context={{}} value={value} />)
 
     cy.get('a').should('not.exist')
     cy.contains('Plain Text').should('be.visible')
@@ -35,7 +41,13 @@ describe('<LinkFormat />', () => {
     const options = { href: '/item/[id]' }
 
     cy.mount(
-      <LinkFormat row={row} data={data} value={value} options={options} />
+      <LinkFormat
+        row={row}
+        data={data}
+        value={value}
+        context={{}}
+        options={options}
+      />
     )
 
     cy.get('a').as('link')
@@ -51,7 +63,13 @@ describe('<LinkFormat />', () => {
     const options = { href: '/[type]/[id]/[action]' }
 
     cy.mount(
-      <LinkFormat row={row} data={data} value={value} options={options} />
+      <LinkFormat
+        row={row}
+        data={data}
+        value={value}
+        context={{}}
+        options={options}
+      />
     )
 
     cy.get('a').should('have.attr', 'href', '/user/456/edit')
@@ -68,6 +86,7 @@ describe('<LinkFormat />', () => {
         row={row}
         data={data}
         value={value}
+        context={{}}
         options={options as any}
       />
     )
@@ -87,7 +106,13 @@ describe('<LinkFormat />', () => {
       }
 
       cy.mount(
-        <LinkFormat row={row} data={data} value={value} options={options} />
+        <LinkFormat
+          row={row}
+          data={data}
+          value={value}
+          context={{}}
+          options={options}
+        />
       )
 
       cy.get('a')
@@ -105,7 +130,13 @@ describe('<LinkFormat />', () => {
       }
 
       cy.mount(
-        <LinkFormat row={row} data={data} value={value} options={options} />
+        <LinkFormat
+          row={row}
+          data={data}
+          value={value}
+          context={{}}
+          options={options}
+        />
       )
 
       cy.get('a')
@@ -124,13 +155,103 @@ describe('<LinkFormat />', () => {
       }
 
       cy.mount(
-        <LinkFormat row={row} data={data} value={value} options={options} />
+        <LinkFormat
+          row={row}
+          data={data}
+          value={value}
+          context={{}}
+          options={options}
+        />
       )
 
       cy.get('a')
         .should('not.have.class', 'text-red-300')
         .and('not.have.class', 'text-red-400')
         .and('have.class', 'text-red-500')
+    })
+  })
+
+  describe('context prop', () => {
+    it('uses context values to replace placeholders', () => {
+      const row = { index: 0 } as Row<any>
+      const data = [{ database: 'testDB' }]
+      const value = 'Context Test'
+      const options = { href: '/[database]/[ctx.table]' }
+      const context = { 'ctx.table': 'contextTable' }
+
+      cy.mount(
+        <LinkFormat
+          row={row}
+          data={data}
+          value={value}
+          context={context}
+          options={options}
+        />
+      )
+
+      cy.get('a').should('have.attr', 'href', '/testDB/contextTable')
+    })
+
+    it('context values override data values', () => {
+      const row = { index: 0 } as Row<any>
+      const data = [{ database: 'testDB', table: 'dataTable' }]
+      const value = 'Override Test'
+      const options = { href: '/[database]/[ctx.table]' }
+      const context = { 'ctx.table': 'contextTable' }
+
+      cy.mount(
+        <LinkFormat
+          row={row}
+          data={data}
+          value={value}
+          context={context}
+          options={options}
+        />
+      )
+
+      cy.get('a').should('have.attr', 'href', '/testDB/contextTable')
+    })
+
+    it('handles empty context values gracefully', () => {
+      const row = { index: 0 } as Row<any>
+      const data = [{ database: 'testDB' }]
+      const value = 'Empty Context'
+      const options = { href: '/[database]/[ctx.table]/end' }
+      const context = { 'ctx.table': '' }
+
+      cy.mount(
+        <LinkFormat
+          row={row}
+          data={data}
+          value={value}
+          context={context}
+          options={options}
+        />
+      )
+
+      cy.get('a').should('have.attr', 'href', '/testDB//end')
+    })
+
+    it('handles missing context keys gracefully', () => {
+      const row = { index: 0 } as Row<any>
+      const data = [{ database: 'testDB' }]
+      const value = 'Missing Context'
+      const options = {
+        href: '/[database]/[missing_key]/[another_missing]/end',
+      }
+      const context = { some_other_key: 'value' }
+
+      cy.mount(
+        <LinkFormat
+          row={row}
+          data={data}
+          value={value}
+          context={context}
+          options={options}
+        />
+      )
+
+      cy.get('a').should('have.attr', 'href', '/testDB///end')
     })
   })
 })

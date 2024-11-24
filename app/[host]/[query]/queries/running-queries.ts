@@ -5,6 +5,7 @@ export const runningQueriesConfig: QueryConfig = {
   name: 'running-queries',
   sql: `
       SELECT *,
+        query_id as query_detail,
         multiIf (elapsed < 30, format('{} seconds', round(elapsed, 1)),
                  elapsed < 90, 'a minute',
                  formatReadableTimeDelta(elapsed, 'days', 'minutes')) as readable_elapsed,
@@ -38,6 +39,7 @@ export const runningQueriesConfig: QueryConfig = {
     `,
   columns: [
     'query',
+    'query_detail',
     'user',
     'readable_memory_usage',
     'readable_elapsed',
@@ -66,6 +68,13 @@ export const runningQueriesConfig: QueryConfig = {
     ],
     user: ColumnFormat.ColoredBadge,
     estimated_remaining_time: ColumnFormat.Duration,
+    query_detail: [
+      ColumnFormat.Link,
+      {
+        href: '/[ctx.hostId]/query/[query_id]',
+        className: 'truncate max-w-48 text-wrap',
+      },
+    ],
     query_id: [
       ColumnFormat.Action,
       ['kill-query', 'explain-query', 'query-settings'],

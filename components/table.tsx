@@ -3,6 +3,7 @@ import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse'
 import type { RowData } from '@tanstack/react-table'
 
+import { getHostIdCookie } from '@/lib/scoped-link'
 import type { QueryConfig } from '@/types/query-config'
 
 interface TableProps {
@@ -54,6 +55,7 @@ export async function Table({
         queryConfig={queryConfig}
         queryParams={queryParams}
         data={data}
+        context={{ ...queryParams, hostId: '' + (await getHostIdCookie()) }}
         footnote={footerText}
         className={className}
       />

@@ -21,6 +21,7 @@ export default async function ClustersPage({ params }: PageProps) {
       title={`Tables in replica - ${replica}`}
       queryConfig={queryConfig}
       data={data}
+      context={{ replica }}
     />
   )
 }

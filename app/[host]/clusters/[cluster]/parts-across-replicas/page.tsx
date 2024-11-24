@@ -62,6 +62,7 @@ export default async function Page({ params }: PageProps) {
       title={`Count of active parts across replicas in the '${cluster}' cluster`}
       queryConfig={queryConfig}
       data={data}
+      context={{}}
     />
   )
 }
