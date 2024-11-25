@@ -329,8 +329,6 @@ function bindingTableLink(tables: Array<string>): React.ReactNode[] {
 }
 
 function bindingReference(value: Array<string>): React.ReactNode[] {
-  console.log('used_functionsused_functionsused_functions', value)
-
   const getSearchLink = (item: string) => {
     const searchParams = new URLSearchParams({
       q: `repo:ClickHouse/ClickHouse path:docs/en/sql-reference path:*.md "# ${item}"`,
