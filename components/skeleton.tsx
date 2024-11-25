@@ -70,6 +70,7 @@ export function MultiLineSkeleton({
       <div className="flex w-full flex-row items-center gap-2">
         <Skeleton className="h-6 w-2/5 bg-slate-200" />
         <Skeleton className="h-6 w-2/5 bg-slate-200" />
+        <Skeleton className="h-6 w-1/5 bg-slate-200" />
       </div>
     </div>
   )
