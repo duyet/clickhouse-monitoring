@@ -21,6 +21,8 @@ export async function Table({
   searchParams,
   className,
 }: TableProps) {
+  const hostId = await getHostIdCookie()
+
   // Filters valid query parameters from the URL.
   const validQueryParams = Object.entries(searchParams).filter(([key, _]) => {
     return (
@@ -44,6 +46,7 @@ export async function Table({
         max_execution_time: 300,
         ...queryConfig.clickhouseSettings,
       },
+      hostId,
     })
 
     const footerText = `${metadata.rows} row(s) in ${metadata.duration} seconds.`
@@ -55,7 +58,7 @@ export async function Table({
         queryConfig={queryConfig}
         queryParams={queryParams}
         data={data}
-        context={{ ...queryParams, hostId: '' + (await getHostIdCookie()) }}
+        context={{ ...queryParams, hostId: '' + hostId }}
         footnote={footerText}
         className={className}
       />

@@ -69,15 +69,19 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
 
 export const getClient = async <B extends boolean>({
   web,
-  clickhouse_settings,
+  clickhouseSettings,
+  clientConfig,
   hostId,
 }: {
   web?: B
-  clickhouse_settings?: ClickHouseSettings
+  clickhouseSettings?: ClickHouseSettings
+  clientConfig?: ClickHouseConfig
   hostId?: number
 }): Promise<B extends true ? WebClickHouseClient : ClickHouseClient> => {
   const client = web === true ? createClientWeb : createClient
-  const config = getClickHouseConfigs()[hostId || getHostId()]
+  const config = clientConfig
+    ? clientConfig
+    : getClickHouseConfigs()[hostId || getHostId()]
 
   const c = client({
     host: config.host,
@@ -88,7 +92,7 @@ export const getClient = async <B extends boolean>({
         process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
           DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME
       ),
-      ...clickhouse_settings,
+      ...clickhouseSettings,
     },
   })
 
@@ -103,25 +107,26 @@ export const fetchData = async <
     | object[] // format = '*EachRow'
     | Record<string, unknown> // format = 'JSONObjectEachRow' | 'JSONColumns
     | { length: number; rows: number; statistics: Record<string, unknown> }, // format = 'JSON' | 'JSONStrings' | 'JSONCompact' | 'JSONColumnsWithMetadata' | ...
->(
-  {
-    query,
-    query_params,
-    format = 'JSONEachRow',
-    clickhouse_settings,
-  }: QueryParams &
-    Partial<{
-      clickhouse_settings: QuerySettings
-    }>,
-  hostId?: number | string
-): Promise<{
+>({
+  query,
+  query_params,
+  format = 'JSONEachRow',
+  clickhouse_settings,
+  hostId,
+}: QueryParams &
+  Partial<{
+    clickhouse_settings: QuerySettings
+    hostId?: number | string
+  }>): Promise<{
   data: T
   metadata: Record<string, string | number>
 }> => {
   const start = new Date()
+  const currentHostId = hostId ? Number(hostId) : getHostId()
+  const clientConfig = getClickHouseConfigs()[currentHostId]
   const client = await getClient({
     web: false,
-    hostId: hostId ? Number(hostId) : undefined,
+    clientConfig,
   })
 
   const resultSet = await client.query({
@@ -139,7 +144,7 @@ export const fetchData = async <
   let rows: number = 0
 
   console.debug(
-    `--> Query (${query_id}):`,
+    `--> Query (${query_id}, host: ${clientConfig.host}):`,
     query.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
   )
 
@@ -175,7 +180,7 @@ export const query = async (
 ) => {
   const client = await getClient({
     web: false,
-    clickhouse_settings: {},
+    clickhouseSettings: {},
   })
   const resultSet = await client.query({
     query: QUERY_COMMENT + query,

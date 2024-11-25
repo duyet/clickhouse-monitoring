@@ -12,17 +12,15 @@ async function fetchHostStatus(hostId: number) {
   try {
     const { data: detail } = await fetchData<
       { uptime: string; hostName: string; version: string }[]
-    >(
-      {
-        query: `
-          SELECT
-            formatReadableTimeDelta(uptime()) as uptime,
-            hostName() as hostName,
-            version() as version
-        `,
-      },
-      hostId
-    )
+    >({
+      query: `
+        SELECT
+          formatReadableTimeDelta(uptime()) as uptime,
+          hostName() as hostName,
+          version() as version
+      `,
+      hostId,
+    })
 
     return detail[0]
   } catch (e) {

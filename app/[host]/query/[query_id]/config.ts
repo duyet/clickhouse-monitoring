@@ -65,6 +65,8 @@ export const config: QueryConfig = {
         query_cache_usage,
         query_duration_ms as duration_ms,
         query_duration_ms / 1000 as duration,
+        event_time_microseconds,
+        query_start_time_microseconds,
 
         -- The time in seconds since this stage started
         (now() - query_start_time) as elapsed,
@@ -136,12 +138,14 @@ export const config: QueryConfig = {
         toString(transaction_id) as transaction_id
     FROM system.query_log
     WHERE
-      query_id = {query_id: String}
-    ORDER BY query_start_time DESC
+      initial_query_id = {query_id: String}
+    ORDER BY event_time_microseconds
     LIMIT 1000
   `,
   columns: [
+    'hostname',
     'type',
+    'query_start_time_microseconds',
     'readable_elapsed',
     'duration_ms',
     'readable_memory_usage',
