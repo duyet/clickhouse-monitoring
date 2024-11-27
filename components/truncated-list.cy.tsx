@@ -20,15 +20,15 @@ describe('TruncatedList', () => {
   })
 
   it('shows "Show more" button when items exceed limit', () => {
-    cy.mount(<TruncatedList>{items}</TruncatedList>)
+    cy.mount(<TruncatedList items={3}>{items}</TruncatedList>)
 
-    cy.contains('Show more').should('be.visible')
+    cy.contains('Show 2 more').should('be.visible')
   })
 
   it('expands to show all items when "Show more" is clicked', () => {
-    cy.mount(<TruncatedList>{items}</TruncatedList>)
+    cy.mount(<TruncatedList items={3}>{items}</TruncatedList>)
 
-    cy.contains('Show more').click()
+    cy.contains('Show 2 more').click()
 
     cy.contains('Item 4').should('be.visible')
     cy.contains('Item 5').should('be.visible')
@@ -36,19 +36,20 @@ describe('TruncatedList', () => {
   })
 
   it('collapses back when "Show less" is clicked', () => {
-    cy.mount(<TruncatedList>{items}</TruncatedList>)
+    cy.mount(<TruncatedList items={3}>{items}</TruncatedList>)
 
-    cy.contains('Show more').click()
+    cy.contains('Show 2 more').click()
     cy.contains('Show less').click()
 
     cy.contains('Item 4').should('not.exist')
     cy.contains('Item 5').should('not.exist')
-    cy.contains('Show more').should('be.visible')
+    cy.contains('Show 2 more').should('be.visible')
   })
 
   it('respects custom items prop', () => {
     cy.mount(<TruncatedList items={2}>{items}</TruncatedList>)
 
+    cy.contains('Show 3 more').should('be.visible')
     cy.contains('Item 1').should('be.visible')
     cy.contains('Item 2').should('be.visible')
     cy.contains('Item 3').should('not.exist')
