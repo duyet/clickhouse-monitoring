@@ -28,12 +28,12 @@ jobs:
         containers: [1]
         browser: [chrome, firefox, edge]
         clickhouse:
-          - "24.5"
-          - "24.6"
-          - "24.7"
-          - "24.8"
-          - "24.9"
-          - "24.10"
+          - '24.5'
+          - '24.6'
+          - '24.7'
+          - '24.8'
+          - '24.9'
+          - '24.10'
 
     services:
       clickhouse:
@@ -233,14 +233,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [21]
         clickhouse:
-          - "24.5"
-          - "24.6"
-          - "24.7"
-          - "24.8"
-          - "24.9"
-          - "24.10"
+          - '24.5'
+          - '24.6'
+          - '24.7'
+          - '24.8'
+          - '24.9'
+          - '24.10'
+          - '24.11'
 
     services:
       clickhouse:
@@ -250,10 +250,20 @@ jobs:
           - 9000:9000
         options: >-
           --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8123/?query=SELECT%201 || exit 1"
-          --health-interval 30s
+          --health-interval 5s
           --health-timeout 10s
-          --health-retries 5
-          --health-start-period 30s
+          --health-retries 20
+          --health-start-period 5s
+
+      keeper:
+        image: ghcr.io/duyet/docker-images:clickhouse_${{ matrix.clickhouse}}
+        options: >-
+          --entrypoint /keeper/entrypoint.sh
+          --health-cmd /keeper/healthcheck.sh
+          --health-interval 5s
+          --health-timeout 10s
+          --health-retries 20
+          --health-start-period 5s
 
     steps:
       - run: |
@@ -265,7 +275,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 21
           cache: yarn
 
       - name: Get yarn cache directory path
