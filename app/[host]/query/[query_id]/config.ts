@@ -161,6 +161,7 @@ export const config: QueryConfig = {
     'thread_ids_count',
     'peak_threads_usage',
     'file_open',
+    'query_id',
   ],
   columnFormats: {
     type: ColumnFormat.ColoredBadge,
@@ -184,6 +185,12 @@ export const config: QueryConfig = {
     progress: ColumnFormat.BackgroundBar,
     file_open: ColumnFormat.Number,
     query_cache_usage: ColumnFormat.ColoredBadge,
+    query_id: [
+      ColumnFormat.Link,
+      {
+        href: '/[ctx.hostId]/query/[query_id]',
+      },
+    ],
   },
   defaultParams: {
     query_id: '',

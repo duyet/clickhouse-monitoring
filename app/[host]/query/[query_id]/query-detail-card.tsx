@@ -1,3 +1,11 @@
+import {
+  ExternalLinkIcon,
+  FilterIcon,
+  InfoIcon,
+  MoveRightIcon,
+} from 'lucide-react'
+import Link from 'next/link'
+
 import { ErrorAlert } from '@/components/error-alert'
 import { TruncatedList } from '@/components/truncated-list'
 import { TruncatedParagraph } from '@/components/truncated-paragraph'
@@ -12,8 +20,7 @@ import { formatQuery } from '@/lib/format-readable'
 import { getHostIdCookie, getScopedLink } from '@/lib/scoped-link'
 import { dedent } from '@/lib/utils'
 import { QueryConfig } from '@/types/query-config'
-import { ExternalLinkIcon } from 'lucide-react'
-import Link from 'next/link'
+
 import { type RowData } from './config'
 import { PageProps } from './types'
 
@@ -42,7 +49,7 @@ export async function QueryDetailCard({
     })
 
     if (!data.length) {
-      return <div className="text-xs text-muted-foreground">No data</div>
+      return <div className="text-muted-foreground">No data</div>
     }
 
     const { query } = data[0]
@@ -139,7 +146,7 @@ export async function QueryDetailCard({
                     key="initial_user"
                   >
                     {initial_user}
-                    <ExternalLinkIcon className="size-3" />
+                    <FilterIcon className="size-3" />
                   </Link>
                 ) : (
                   ''
@@ -154,7 +161,7 @@ export async function QueryDetailCard({
                   key="initial_query_id"
                 >
                   {initial_query_id}
-                  <ExternalLinkIcon className="size-3" />
+                  <FilterIcon className="size-3" />
                 </Link>,
               ],
               [
@@ -224,13 +231,7 @@ export async function QueryDetailCard({
                 JSON.stringify(used_data_type_families, null, 2),
               ],
               ['Used dictionaries', JSON.stringify(used_dictionaries, null, 2)],
-              [
-                {
-                  key: 'Used formats',
-                  link: 'https://clickhouse.com/docs/en/chdb/data-formats',
-                },
-                JSON.stringify(used_formats, null, 2),
-              ],
+              ['Used formats', bindingDataFormat(used_formats)],
               ['Used functions', bindingReference(used_functions)],
               ['Used storages', JSON.stringify(used_storages, null, 2)],
               [
@@ -285,6 +286,17 @@ export async function QueryDetailCard({
               </div>
             ))}
         </div>
+
+        <div className="mt-4 inline-flex items-center gap-1 rounded border p-3 text-sm text-muted-foreground">
+          <InfoIcon className="size-4" />
+          See the detailed explanation at the{' '}
+          <Link
+            href="https://clickhouse.com/docs/en/operations/system-tables/query_log"
+            className="inline-flex items-center gap-1"
+          >
+            system.query_log document <ExternalLinkIcon className="size-3" />
+          </Link>
+        </div>
       </div>
     )
   } catch (error) {
@@ -299,36 +311,70 @@ export async function QueryDetailCard({
   }
 }
 
-function bindingDatabaseLink(databases: Array<string>): React.ReactNode[] {
+function bindingDatabaseLink(
+  databases: Array<string>
+): React.ReactNode[] | null {
+  if (!databases.length) {
+    return null
+  }
+
   return databases.map(async (database) => {
+    if (database.startsWith('_table_function')) {
+      return database
+    }
+
     return (
       <Link
         className="flex flex-row items-center gap-1"
         key={database}
         href={await getScopedLink(`/database/${database}`)}
       >
-        {database} <ExternalLinkIcon className="size-3" />
+        {database} <MoveRightIcon className="size-3" />
       </Link>
     )
   })
 }
 
-function bindingTableLink(tables: Array<string>): React.ReactNode[] {
+function bindingTableLink(tables: Array<string>): React.ReactNode[] | null {
+  if (!tables.length) {
+    return null
+  }
+
   return tables.map(async (databaseTable) => {
     const [database, table] = databaseTable.split('.')
+
+    // Link to ClickHouse docs
+    if (database.startsWith('_table_function')) {
+      return (
+        <Link
+          className="flex flex-row items-center gap-1"
+          key={databaseTable}
+          href={`https://clickhouse.com/docs/en/sql-reference/table-functions/${table}`}
+          title="Open ClickHouse Docs"
+        >
+          {databaseTable} <ExternalLinkIcon className="size-3" />
+        </Link>
+      )
+    }
+
     return (
       <Link
         className="flex flex-row items-center gap-1"
         key={databaseTable}
         href={await getScopedLink(`/database/${database}/${table}`)}
+        title="Open Database Table Detail"
       >
-        {databaseTable} <ExternalLinkIcon className="size-3" />
+        {databaseTable} <MoveRightIcon className="size-3" />
       </Link>
     )
   })
 }
 
-function bindingReference(value: Array<string>): React.ReactNode[] {
+function bindingReference(value: Array<string>): React.ReactNode[] | null {
+  if (!value.length) {
+    return null
+  }
+
   const getSearchLink = (item: string) => {
     const searchParams = new URLSearchParams({
       q: `repo:ClickHouse/ClickHouse path:docs/en/sql-reference path:*.md "# ${item}"`,
@@ -345,6 +391,25 @@ function bindingReference(value: Array<string>): React.ReactNode[] {
         className="flex flex-row items-center gap-1"
         key={item}
         href={getSearchLink(item)}
+        target="_blank"
+      >
+        {item} <ExternalLinkIcon className="size-3" />
+      </Link>
+    )
+  })
+}
+
+function bindingDataFormat(value: Array<string>): React.ReactNode[] | null {
+  if (!value.length) {
+    return null
+  }
+
+  return value.map((item) => {
+    return (
+      <Link
+        className="flex flex-row items-center gap-1"
+        key={item}
+        href="https://clickhouse.com/docs/en/chdb/data-formats"
         target="_blank"
       >
         {item} <ExternalLinkIcon className="size-3" />

@@ -16,6 +16,7 @@ export function TruncatedList({
 }: TruncatedListProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const isClamped = Children.count(children) > items
+  const length = Children.count(children)
 
   return (
     <div className={cn('transition-all duration-300 ease-in-out', className)}>
@@ -26,7 +27,7 @@ export function TruncatedList({
           onClick={() => setIsExpanded(!isExpanded)}
           className="mt-2 text-sm text-blue-500 hover:text-blue-700 focus:outline-none"
         >
-          {isExpanded ? 'Show less' : 'Show more'}
+          {isExpanded ? 'Show less' : `Show ${length - items} more`}
         </button>
       )}
     </div>

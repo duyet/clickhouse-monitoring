@@ -30,7 +30,7 @@ export async function QueryDetailBadge({
     })
 
     if (!data.length) {
-      return <div className="text-xs text-muted-foreground">No data</div>
+      return null
     }
 
     const { user } = data[0]

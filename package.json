@@ -19,8 +19,9 @@
     "component": "cypress open --component",
     "component:headless": "cypress run --component",
     "fmt": "prettier --write \"**/*.{ts,tsx,md,mdx,json}\" --cache",
-    "test": "jest --coverage",
-    "jest": "jest --coverage"
+    "test": "yarn jest",
+    "jest": "jest --coverage --testPathIgnorePatterns=query-config",
+    "test-queries-config": "jest --coverage --testPathPattern=query-config"
   },
   "dependencies": {
     "@clickhouse/client": "^0.3.0",

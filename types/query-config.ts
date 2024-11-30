@@ -85,6 +85,13 @@ export interface QueryConfig {
    * The documents or url to be used when query is errors. e.g. log table missing due to cluster configuration.
    */
   docs?: string
+  /**
+   * Whether the query is optional or not. If the query is optional, it can be raised as a error due to missing table or view.
+   * e.g. system.error_log (when there is no error), system.zookeeper (when zookeeper is not configured), system.backup_log (when there is no backup).
+   *
+   * Default: false
+   */
+  optional?: boolean
 }
 
 export type QueryConfigNoName = PartialBy<QueryConfig, 'name'>
