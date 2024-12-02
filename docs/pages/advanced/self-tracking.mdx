@@ -1,0 +1,12 @@
+# Dashboard Self Tracking
+
+The monitoring dashboard tracks user behavior by default. It's useful for debugging and improving the dashboard.
+
+Use these environment variables to configure the dashboard's self-tracking:
+
+- `EVENTS_TABLE_NAME`: The table name for storing dashboard self-tracking events.
+    Default: [`system.monitoring_events`](https://clickhouse-monitoring.vercel.app/0/database/system/monitoring_events)
+
+![](/self-tracking-1.png)
+
+![](/self-tracking-2.png)

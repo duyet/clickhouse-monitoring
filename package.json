@@ -18,7 +18,7 @@
     "e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
     "component": "cypress open --component",
     "component:headless": "cypress run --component",
-    "fmt": "prettier --write \"**/*.{ts,tsx,md,mdx,json}\" --cache",
+    "fmt": "prettier --write \"**/*.{ts,tsx,md,json}\" --cache",
     "test": "yarn jest",
     "jest": "jest --coverage --testPathIgnorePatterns=query-config",
     "test-queries-config": "jest --coverage --testPathPattern=query-config"
