@@ -37,6 +37,7 @@ export const historyQueriesConfig: QueryConfig = {
         AND if (notEmpty({event_time: String}), toDate(event_time) = {event_time: String}, true)
         AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
         AND if ({user: String} != '', user = {user: String}, true)
+        AND if ({excluded_users: String} != '', not(has(splitByChar(',', {excluded_users: String}), user)), true)
       ORDER BY event_time DESC
       LIMIT 1000
   `,
@@ -86,6 +87,7 @@ export const historyQueriesConfig: QueryConfig = {
     database: '',
     table: '',
     user: '',
+    excluded_users: process.env.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '',
   },
 
   filterParamPresets: [
@@ -113,6 +115,11 @@ export const historyQueriesConfig: QueryConfig = {
       name: 'query_duration > 1m',
       key: 'duration_1m',
       value: '1',
+    },
+    {
+      name: `user != ${process.env.CLICKHOUSE_EXCLUDE_USER_DEFAULT || ''}`,
+      key: 'excluded_users',
+      value: process.env.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '',
     },
   ],
 

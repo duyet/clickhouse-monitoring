@@ -18,18 +18,26 @@ All these hosts will share the same `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD`.
 
 <Tabs items={['Docker (same user)', 'Docker (different user)']}>
   <Tabs.Tab>
-    ```bash docker run -it \ -e
-    CLICKHOUSE_HOST='http://ch-1:8123,http://ch-2:8123' \ -e
-    CLICKHOUSE_NAME='ch-1,ch-2' \ -e CLICKHOUSE_USER='default' \ -e
-    CLICKHOUSE_PASSWORD='' \ --name clickhouse-monitoring \
-    ghcr.io/duyet/clickhouse-monitoring:main ```
+    ```bash
+    docker run -it \
+      -e CLICKHOUSE_HOST='http://ch-1:8123,http://ch-2:8123' \
+      -e CLICKHOUSE_NAME='ch-1,ch-2' \
+      -e CLICKHOUSE_USER='default' \
+      -e CLICKHOUSE_PASSWORD='' \
+      --name clickhouse-monitoring \
+    ghcr.io/duyet/clickhouse-monitoring:main
+    ```
   </Tabs.Tab>
   <Tabs.Tab>
-    ```bash docker run -it \ -e
-    CLICKHOUSE_HOST='http://ch-1:8123,http://ch-2:8123' \ -e
-    CLICKHOUSE_NAME='ch-1,ch-2' \ -e CLICKHOUSE_USER='user1,user2' \ -e
-    CLICKHOUSE_PASSWORD='password1,password2' \ --name clickhouse-monitoring \
-    ghcr.io/duyet/clickhouse-monitoring:main ```
+    ```bash
+    docker run -it \
+      -e CLICKHOUSE_HOST='http://ch-1:8123,http://ch-2:8123' \
+      -e CLICKHOUSE_NAME='ch-1,ch-2' \
+      -e CLICKHOUSE_USER='user1,user2' \
+      -e CLICKHOUSE_PASSWORD='password1,password2' \
+      --name clickhouse-monitoring \
+    ghcr.io/duyet/clickhouse-monitoring:main
+    ```
   </Tabs.Tab>
 </Tabs>
 

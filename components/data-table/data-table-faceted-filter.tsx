@@ -30,16 +30,25 @@ export function DataTableFacetedFilter({
   const pathname = usePathname()
   const { filterParamPresets = [], defaultParams = {} } = queryConfig
 
-  const selected = useMemo(
-    () => new URLSearchParams(searchParams),
-    [searchParams]
-  )
+  const selected = useMemo(() => {
+    const params = new URLSearchParams(searchParams)
+
+    // Add default params have not null value
+    Object.entries(defaultParams).forEach(([key, value]) => {
+      if (value !== '' && !params.has(key)) {
+        params.set(key, value as string)
+      }
+    })
+
+    return params
+  }, [searchParams, defaultParams])
+  console.log('selected', selected.toString())
 
   const filters = useMemo<
     NonNullable<QueryConfig['filterParamPresets']>
   >(() => {
     const filterNotFromPreset = Object.keys(defaultParams)
-      // key in URL Params
+      // Key in URL Params
       .filter((key) => selected.has(key))
       // And custom that value is not in presets
       .filter(
@@ -50,8 +59,10 @@ export function DataTableFacetedFilter({
           )
       )
       .map((key) => ({
-        name: `${key} = ${selected.get(key)} *`,
         key,
+        name: selected.get(key)
+          ? filterParamPresets.find((preset) => preset.key === key)?.name
+          : `${key} = N/A`,
         value: selected.get(key),
       })) as NonNullable<QueryConfig['filterParamPresets']>
     console.log('filterNotFromPreset', filterNotFromPreset)
@@ -90,7 +101,13 @@ export function DataTableFacetedFilter({
             name={name}
             value={value}
             isSelected={selected.get(key) === value}
-            href={getUpdatedHref(pathname, searchParams, key, value)}
+            href={getUpdatedHref(
+              pathname,
+              searchParams,
+              key,
+              value,
+              defaultParams
+            )}
             icon={preset?.icon}
             filterKey={key}
             filterValue={value}
@@ -133,9 +150,8 @@ function FilterMenuItem({
 }: FilterMenuItemProps) {
   return (
     <DropdownMenuItem>
-      <Link
+      <a
         href={href}
-        replace={true}
         data-selected={isSelected}
         className={cn(
           'flex flex-row content-between items-center gap-3',
@@ -144,7 +160,7 @@ function FilterMenuItem({
       >
         {Icon && <Icon className="mr-2 size-4 text-muted-foreground" />}
         <span>{name}</span>
-      </Link>
+      </a>
     </DropdownMenuItem>
   )
 }
@@ -154,12 +170,34 @@ function getUpdatedHref(
   pathname: string,
   searchParams: URLSearchParams,
   key: string,
-  value: string
+  value: string,
+  defaultParams: QueryConfig['defaultParams']
 ) {
   const newParams = new URLSearchParams(searchParams)
   if (newParams.get(key) === value) {
-    newParams.delete(key)
+    /**
+     * For example the query config has defaultParams = { type: 'abc' }
+     * and the URL has ?type=abc. If the user clicks on the filter to toggle it off,
+     * We should set the URL to ?type= instead of removing the key completely,
+     * as the default value is still 'abc'.
+     */
+    if (defaultParams?.[key] !== '') {
+      newParams.set(key, '')
+    } else {
+      /**
+       * If the default value is an empty string, we can just remove the key from the URL
+       * as there is no default value to fall back to.
+       *
+       * For example, if the query config has defaultParams = { type: '' }
+       * and the URL has ?type=abc. If the user clicks on the filter to toggle it off,
+       * We can set the URL to ? instead of ?type=abc.
+       */
+      newParams.delete(key)
+    }
   } else {
+    /**
+     * If the filter is not selected, we should set the URL to ?key=value
+     */
     newParams.set(key, value)
   }
   return `${pathname}?${newParams.toString()}`

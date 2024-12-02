@@ -1,0 +1,50 @@
+import { Tabs } from 'nextra/components'
+
+# Query History
+
+## 1. Excluding monitoring users by default
+
+![](/excluding-users.png)
+
+You can configured the [`/history-queries`](http://clickhouse-monitoring.vercel.app/0/history-queries) page to filter out the `monitoring` users by default.
+To do this, using these environment variables:
+
+- `CLICKHOUSE_EXCLUDE_USER_DEFAULT`: for example `monitoring,healthcheck`.
+
+Examples
+
+<Tabs items={['Docker', 'Kubernetes']}>
+  <Tabs.Tab>
+    ```bash
+    docker run -it \
+        -e CLICKHOUSE_HOST='http://ch-1:8123' \
+        -e CLICKHOUSE_NAME='ch-1' \
+        -e CLICKHOUSE_USER='monitoring' \
+        -e CLICKHOUSE_PASSWORD='' \
+        -e CLICKHOUSE_EXCLUDE_USER_DEFAULT='monitoring,healthcheck' \
+        --name clickhouse-monitoring \
+    ghcr.io/duyet/clickhouse-monitoring:main
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    helm repo add duyet https://duyet.github.io/charts
+    
+    cat <<EOF >> values.yaml
+    env:
+    - name: CLICKHOUSE_HOST
+      value: http://ch-1:8123
+    - name: CLICKHOUSE_NAME
+      value: ch-1
+    - name: CLICKHOUSE_USER
+      value: monitoring
+    - name: CLICKHOUSE_PASSWORD
+      value: ''
+    - name: CLICKHOUSE_EXCLUDE_USER_DEFAULT
+      value: monitoring,healthcheck
+    EOF
+    
+    helm install -f values.yaml clickhouse-monitoring-release duyet/clickhouse-monitoring
+    ```
+  </Tabs.Tab>
+</Tabs>
