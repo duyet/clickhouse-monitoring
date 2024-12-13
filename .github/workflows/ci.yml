@@ -94,7 +94,7 @@ jobs:
           cache-to: type=gha,mode=max
           allow: network.host,security.insecure
           network: host
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           build-args: |
             GITHUB_REF=$GITHUB_REF
             GITHUB_SHA=$GITHUB_SHA
