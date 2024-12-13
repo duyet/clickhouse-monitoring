@@ -12,7 +12,7 @@ export async function CountBadge({
   sql,
   className,
   variant = 'outline',
-}: CountBadgeProps): Promise<JSX.Element | null> {
+}: CountBadgeProps) {
   if (!sql) return null
 
   try {
