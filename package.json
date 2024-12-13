@@ -101,16 +101,5 @@
     "ts-jest": "^29.2.5",
     "turbo": "^2.0.6",
     "typescript": "^5"
-  },
-  "overrides": {
-    "react": "^19.0.0-rc-0bc30748-20241028",
-    "react-dom": "^19.0.0-rc-0bc30748-20241028",
-    "react-is": "^19.0.0-rc-0bc30748-20241028",
-    "@tremor/react": {
-      "recharts": "^2.13.1"
-    },
-    "recharts": {
-      "react-is": "^19.0.0-rc-0bc30748-20241028"
-    }
   }
 }

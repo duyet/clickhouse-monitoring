@@ -12,7 +12,7 @@ export type HoverCardOptions = {
 }
 
 interface HoverCardProps {
-  row: any
+  row: { getValue: (key: string) => string }
   value: any
   options?: HoverCardOptions
 }
@@ -31,34 +31,63 @@ export function HoverCardFormat({ row, value, options }: HoverCardProps) {
   )
 }
 
+/**
+ * Content replacement function
+ *
+ * e.g. string content
+ *  content: 'Hover content: [column_name]'
+ *  row: { getValue: (key: string) => `value-for-${key}` }
+ *  result: 'Hover content: value-for-column_name'
+ *
+ * e.g. ReactNode content
+ *  content: <div id="hover-content">Hover content: [column_name]</div>
+ *  row: { getValue: (key: string) => `value-for-${key}` }
+ *  result: <div id="hover-content">Hover content: value-for-column_name</div>
+ *
+ * e.g. Nested content replacement
+ *  content: <div><div>[col1]</div><p>[col2]</p></div>
+ *  row: { getValue: (key: string) => `value-for-${key}` }
+ *  result: <div><div>value-for-col1</div><p>value-for-col2</p></div>
+ *
+ * @param content
+ * @param row
+ * @returns
+ */
 function contentReplacement(
   content: string | React.ReactNode,
-  row: any
+  row: HoverCardProps['row']
 ): string | React.ReactNode {
+  // Handle string content
   if (typeof content === 'string') {
-    const matches = content.match(/\[(.*?)\]/g)
-    if (matches) {
-      matches.forEach((match) => {
-        const key = match.replace('[', '').replace(']', '').trim()
-        const replacementValue = row.getValue(key)
-        if (typeof content === 'string') {
-          content = content.replace(match, replacementValue)
-        }
-      })
-    }
-    return content
-  } else {
-    return React.Children.map(content, (child) => {
-      if (typeof child === 'string') {
-        return contentReplacement(child, row)
-      } else if (React.isValidElement(child)) {
-        return React.cloneElement(child as React.ReactElement, {
-          children: contentReplacement(child.props.children, row),
-        })
-      }
-
-      // If it's not a string or a valid element, just return it
-      return child
+    return content.replace(/\[(.*?)\]/g, (match) => {
+      const key = match.slice(1, -1).trim()
+      return row.getValue(key)
     })
   }
+
+  // Handle React elements
+  if (React.isValidElement(content)) {
+    const props = content.props as { children?: React.ReactNode }
+
+    const childContent = contentReplacement(
+      React.isValidElement(props.children)
+        ? props.children
+        : String(props.children || ''),
+      row
+    )
+
+    if (childContent === props.children) {
+      return content
+    }
+
+    return React.cloneElement(content, {}, childContent)
+  }
+
+  // Handle arrays of children
+  if (Array.isArray(content)) {
+    return content.map((child, index) => contentReplacement(child, row))
+  }
+
+  // Return unchanged if content is neither string nor React element
+  return content
 }
