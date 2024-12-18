@@ -22,16 +22,22 @@ Suggested role for **monitoring** user must have these privileges on `system` da
     <monitoring_role>
       <grants>
         <query>REVOKE ALL ON *.*</query>
-        <query>GRANT SELECT,SHOW,dictGet,REMOTE ON *.*</query>
-        <query>GRANT SELECT,INSERT,ALTER,CREATE,DROP,TRUNCATE,OPTIMIZE,SHOW,dictGet ON system.*</query>
+        <query>GRANT SELECT,SHOW,OPTIMIZE,dictGet,REMOTE ON *.*</query>
         <query>GRANT CREATE TEMPORARY TABLE ON *.*</query>
+        <query>GRANT CREATE KILL QUERY ON *.*</query>
+        <query>GRANT SELECT,INSERT,ALTER,CREATE,DROP,TRUNCATE ON system.monitoring_events</query>
       </grants>
     </monitoring_role>
   </roles>
 </clickhouse>
 ```
 
-`CREATE TEMPORARY TABLE` is needed because the UI using `FROM merge(system, '^query_log')` allows retrieving all the data from old tables that were renamed during the upgrade.
+Privileges explains:
+
+- `CREATE TEMPORARY TABLE` is needed because the UI uses `FROM merge(system, '^query_log')`, which allows retrieving all the data from old tables that were renamed during the upgrade.
+- `OPTIMIZE` is needed for the table optimization action on Data Explorer.
+- `KILL QUERY` is needed for the "Kill query" action on Running Queries.
+- `INSERT`, `ALTER`, `CREATE`, `DROP`, and `TRUNCATE` are needed for the [feat: add pageview tracking #243](https://github.com/duyet/clickhouse-monitoring/pull/243) feature, which is [configurable](https://github.com/duyet/clickhouse-monitoring/pull/357). You should change `system.monitoring_events` to your own database and table.
 
 ## 2. Monitoring user profile
 
