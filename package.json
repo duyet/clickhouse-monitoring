@@ -47,7 +47,7 @@
     "@tremor/react": "^3.18.3",
     "@uiw/react-heat-map": "^2.2.1",
     "@vercel/analytics": "^1.3.1",
-    "@vercel/functions": "^1.4.0",
+    "@vercel/functions": "^2.0.0",
     "babel-plugin-react-compiler": "^19.0.0-beta-6fc168f-20241025",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
