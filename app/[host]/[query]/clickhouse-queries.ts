@@ -29,6 +29,7 @@ import { readOnlyTablesConfig } from './tables/readonly-tables'
 import { replicasConfig } from './tables/replicas'
 import { replicationQueueConfig } from './tables/replication-queue'
 import { tablesOverviewConfig } from './tables/tables-overview'
+import { viewRefreshesConfig } from './tables/view-refreshes'
 
 export const queries: Array<QueryConfig> = [
   // Tables
@@ -39,6 +40,7 @@ export const queries: Array<QueryConfig> = [
   readOnlyTablesConfig,
   detachedPartsConfig,
   projectionsConfig,
+  viewRefreshesConfig,
 
   // Queries
   queryCacheConfig,

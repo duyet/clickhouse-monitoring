@@ -4,7 +4,8 @@ interface RelatedTimeFormatProps {
   value: any
 }
 
-const CLICKHOUSE_TZ: string = process.env.CLICKHOUSE_TZ || ''
+const CLICKHOUSE_TZ: string =
+  process.env.NEXT_PUBLIC_CLICKHOUSE_TZ || process.env.CLICKHOUSE_TZ || ''
 
 export function RelatedTimeFormat({ value }: RelatedTimeFormatProps) {
   let fromNow
