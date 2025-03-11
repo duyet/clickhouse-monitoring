@@ -104,6 +104,14 @@ export const menuItemsConfig: MenuItem[] = [
           'Projections store data in a format that optimizes query execution',
         icon: DatabaseZapIcon,
       },
+      {
+        title: 'View Refreshes',
+        href: '/view-refreshes',
+        description:
+          "Information about Refreshable Materialized Views. Contains all refreshable materialized views, regardless of whether there's a refresh in progress or not.",
+        countSql: `SELECT COUNT() FROM system.view_refreshes`,
+        icon: UpdateIcon,
+      },
     ],
   },
   {
