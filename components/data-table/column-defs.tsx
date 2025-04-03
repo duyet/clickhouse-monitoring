@@ -3,13 +3,20 @@ import {
   CaretSortIcon,
   CaretUpIcon,
 } from '@radix-ui/react-icons'
-import type { ColumnDef, Row, RowData, Table } from '@tanstack/react-table'
+import type {
+  BuiltInSortingFn,
+  ColumnDef,
+  Row,
+  RowData,
+  Table,
+} from '@tanstack/react-table'
 
 import { formatCell } from '@/components/data-table/format-cell'
 import { Button } from '@/components/ui/button'
 import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
 import { type Icon } from '@/types/icon'
 import { type QueryConfig } from '@/types/query-config'
+import { CustomSortingFnNames, getCustomSortingFns } from './sorting-fns'
 
 export type ColumnType = { [key: string]: string }
 
@@ -49,6 +56,7 @@ export const getColumnDefs = <
   context: Record<string, string>
 ): ColumnDef<TData, TValue>[] => {
   const configColumns = config.columns || []
+  const customSortingFns = getCustomSortingFns<TData>()
 
   return configColumns.map((column) => {
     const name = normalizeColumnName(column)
@@ -66,7 +74,8 @@ export const getColumnDefs = <
       columnFormat = format as ColumnFormat
     }
 
-    return {
+    // Create the column definition
+    const columnDef: ColumnDef<TData, TValue> = {
       id: name,
       accessorKey: column,
       header: ({ column }) => (
@@ -113,5 +122,31 @@ export const getColumnDefs = <
         return formatted
       },
     }
+
+    // Add the sorting function if specified
+    const sortingFnName = config.sortingFns?.[name]
+    console.log(`${name} => sortingFnName: ${sortingFnName}`)
+    if (sortingFnName) {
+      // Check if it's one of our custom sorting functions
+      if (sortingFnName in customSortingFns) {
+        columnDef.sortingFn =
+          customSortingFns[sortingFnName as CustomSortingFnNames]
+      }
+      // Check if it's a built-in sorting function name
+      else if (
+        [
+          'alphanumeric',
+          'alphanumericCaseSensitive',
+          'text',
+          'textCaseSensitive',
+          'datetime',
+          'basic',
+        ].includes(sortingFnName)
+      ) {
+        columnDef.sortingFn = sortingFnName as BuiltInSortingFn
+      }
+    }
+
+    return columnDef
   })
 }

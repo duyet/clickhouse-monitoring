@@ -1,8 +1,10 @@
+import type { ClickHouseSettings } from '@clickhouse/client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import type { CustomSortingFnNames } from '@/components/data-table/sorting-fns'
 import type { ColumnFormat, ColumnFormatWithArgs } from '@/types/column-format'
 import type { PartialBy } from '@/types/generic'
 import type { Icon } from '@/types/icon'
-import type { ClickHouseSettings } from '@clickhouse/client'
 
 export interface QueryConfig {
   name: string
@@ -92,6 +94,18 @@ export interface QueryConfig {
    * Default: false
    */
   optional?: boolean
+  /**
+   * Sorting functions to be used for table.
+   *
+   * Example:
+   * ```ts
+   * sortingFns: {
+   *   readable_avg_part_size_compressed: 'sort_column_using_pct',
+   *   readable_avg_part_size_uncompressed: 'sort_column_using_pct',
+   * }
+   * ```
+   */
+  sortingFns?: Record<string, CustomSortingFnNames>
 }
 
 export type QueryConfigNoName = PartialBy<QueryConfig, 'name'>

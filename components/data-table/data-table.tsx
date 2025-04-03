@@ -34,6 +34,7 @@ import { ColumnVisibilityButton } from './buttons/column-visibility'
 import { ShowSQLButton } from './buttons/show-sql'
 import { DataTableToolbar } from './data-table-toolbar'
 import { Footnote, type FootnoteProps } from './footnote'
+import { getCustomSortingFns } from './sorting-fns'
 
 interface DataTableProps<TData extends RowData> {
   title?: string
@@ -115,6 +116,9 @@ export function DataTable<
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
+    // Add custom sorting functions
+    // Ref: https://tanstack.com/table/v8/docs/guide/sorting#custom-sorting-functions
+    sortingFns: getCustomSortingFns<TData>(),
     getPaginationRowModel: getPaginationRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     state: {
