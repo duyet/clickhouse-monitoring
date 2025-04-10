@@ -95,7 +95,10 @@ export const tablesOverviewConfig: QueryConfig = {
     readable_avg_part_size_uncompressed: ColumnFormat.BackgroundBar,
     readable_primary_keys_size: ColumnFormat.BackgroundBar,
     compr_rate: ColumnFormat.BackgroundBar,
-    parts_count: ColumnFormat.BackgroundBar,
+    parts_count: [
+      ColumnFormat.Link,
+      { href: '/[ctx.hostId]/part-info/[_database]/[_table]' },
+    ],
     readable_max_part_size_compressed: ColumnFormat.BackgroundBar,
     readable_max_part_size_uncompressed: ColumnFormat.BackgroundBar,
   },

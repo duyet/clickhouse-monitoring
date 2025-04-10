@@ -112,6 +112,13 @@ export const menuItemsConfig: MenuItem[] = [
         countSql: `SELECT COUNT() FROM system.view_refreshes`,
         icon: UpdateIcon,
       },
+      {
+        title: 'Part Info',
+        href: '/part-info',
+        description:
+          'Information about currently table active parts and levels',
+        icon: DatabaseZapIcon,
+      },
     ],
   },
   {
