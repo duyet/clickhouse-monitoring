@@ -1,8 +1,13 @@
 Dockerfile
 .dockerignore
 node_modules
+docs/node_modules
 npm-debug.log
 README.md
 .next
 docker
 .git
+.turbo
+.vscode
+.swc
+.nyc_output
