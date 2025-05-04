@@ -67,7 +67,7 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
         >
           <code
             className={cn(
-              'break-words font-normal',
+              'font-normal break-words',
               options?.trigger_classname
             )}
             role="shorten-code"
@@ -87,9 +87,9 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
         </DialogHeader>
 
         <div>
-          <code className="whitespace-pre-wrap text-wrap text-sm text-stone-500">
+          <code className="text-sm text-wrap whitespace-pre-wrap text-stone-500">
             {typeof content === 'string' ? (
-              <pre className="whitespace-pre-wrap text-wrap">
+              <pre className="text-wrap whitespace-pre-wrap">
                 {dedent(content)}
               </pre>
             ) : (

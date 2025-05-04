@@ -29,18 +29,14 @@ export function RadialChart({
       (acc, category, index) => {
         acc[category] = {
           label: category,
-          color: colors
-            ? `hsl(var(${colors[index]}))`
-            : `hsl(var(--chart-${index + 1}))`,
+          color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
         }
 
         return acc
       },
       {
         label: {
-          color: colorLabel
-            ? `hsl(var(${colorLabel}))`
-            : 'hsl(var(--background))',
+          color: colorLabel ? `var(${colorLabel})` : 'var(--background)',
         },
       } as ChartConfig
     )

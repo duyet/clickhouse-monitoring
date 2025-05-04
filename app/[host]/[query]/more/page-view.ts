@@ -12,13 +12,7 @@ export const pageViewConfig: QueryConfig = {
     ORDER BY event_time DESC
     LIMIT 100
   `,
-  columns: [
-    'event_time',
-    'event_date',
-    'actor',
-    'data',
-    'extra',
-  ],
+  columns: ['event_time', 'event_date', 'actor', 'data', 'extra'],
   columnFormats: {
     event_time: ColumnFormat.RelatedTime,
     data: ColumnFormat.Code,

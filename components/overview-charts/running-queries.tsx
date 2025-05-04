@@ -34,7 +34,7 @@ export async function RunningQueries({ className }: { className?: string }) {
             running queries →
           </Link>
         </div>
-        <div className="absolute right-0 top-0 z-50">
+        <div className="absolute top-0 right-0 z-50">
           <DialogSQL
             sql={query}
             button={
@@ -63,7 +63,7 @@ export async function RunningQueries({ className }: { className?: string }) {
           showLegend={false}
           chartConfig={{
             query_count: {
-              color: 'hsl(var(--chart-12))',
+              color: 'var(--chart-12)',
             },
           }}
         />

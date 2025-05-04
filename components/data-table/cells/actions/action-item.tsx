@@ -8,9 +8,9 @@ import {
 import type { Row, RowData } from '@tanstack/react-table'
 import { redirect } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
-import { useToast } from '@/components/ui/use-toast'
 
 import {
   explainQuery,
@@ -30,12 +30,7 @@ export function ActionItem<TData extends RowData, TValue>({
   row,
   action,
   value,
-  toast,
-  dismiss,
-}: ActionButtonProps<TData, TValue> & {
-  toast: ReturnType<typeof useToast>['toast']
-  dismiss: ReturnType<typeof useToast>['dismiss']
-}) {
+}: ActionButtonProps<TData, TValue>) {
   const [status, updateStatus] = useState<
     'none' | 'loading' | 'success' | 'failed'
   >('none')
@@ -73,7 +68,7 @@ export function ActionItem<TData extends RowData, TValue>({
     <form
       action={async (formData: FormData) => {
         updateStatus('loading')
-        toast({ title: 'Message', description: 'Loading...' })
+        toast.loading('Loading...')
 
         try {
           const resp: ActionResponse = await handler(formData)
@@ -81,16 +76,14 @@ export function ActionItem<TData extends RowData, TValue>({
 
           if (resp.action === 'toast') {
             updateStatus('success')
-            toast({ title: 'Message', description: resp.message })
+            toast(resp.message)
           } else if (resp.action === 'redirect') {
             redirect(resp.message)
           }
         } catch (e) {
           console.error('Action Error', e)
           updateStatus('failed')
-          toast({ title: 'Error', description: `${e}`, variant: 'destructive' })
-        } finally {
-          dismiss()
+          toast.error(`${e}`)
         }
       }}
     >

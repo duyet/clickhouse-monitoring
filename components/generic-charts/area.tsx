@@ -46,18 +46,14 @@ export function AreaChart({
     (acc, category, index) => {
       acc[category] = {
         label: category,
-        color: colors
-          ? `hsl(var(${colors[index]}))`
-          : `hsl(var(--chart-${index + 1}))`,
+        color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
       }
 
       return acc
     },
     {
       label: {
-        color: colorLabel
-          ? `hsl(var(${colorLabel}))`
-          : 'hsl(var(--background))',
+        color: colorLabel ? `var(${colorLabel})` : 'var(--background)',
       },
     } as ChartConfig
   )
@@ -162,7 +158,7 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
                 >
                   <div className="flex flex-row items-baseline gap-1">
                     <div
-                      className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                      className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
                       style={
                         {
                           '--color-bg': `var(--color-${name})`,
@@ -173,10 +169,10 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
                       name}
                   </div>
 
-                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                  <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                     {item['payload'][`readable_${name}` as keyof typeof item] ||
                       value.toLocaleString()}
-                    <span className="font-normal text-muted-foreground"></span>
+                    <span className="text-muted-foreground font-normal"></span>
                   </div>
                 </div>
               )
@@ -226,7 +222,7 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
               <>
                 <div className="flex flex-row">
                   <div
-                    className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                    className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
                     style={
                       {
                         '--color-bg': `var(--color-${name})`,
@@ -236,16 +232,16 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
 
                   {chartConfig[name as keyof typeof chartConfig]?.label || name}
 
-                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                  <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                     {value}
-                    <span className="font-normal text-muted-foreground"></span>
+                    <span className="text-muted-foreground font-normal"></span>
                   </div>
                 </div>
 
                 {breakdownData.length > 0 && (
                   <>
                     <div
-                      className="mt-1 flex basis-full flex-col border-t text-xs font-medium text-foreground"
+                      className="text-foreground mt-1 flex basis-full flex-col border-t text-xs font-medium"
                       role="breakdown"
                     >
                       <div className="mt-1.5">
@@ -258,19 +254,19 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
                           role="row"
                         >
                           <div
-                            className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                            className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
                             style={
                               {
-                                '--color-bg': `hsl(var(--chart-${10 - index}))`,
+                                '--color-bg': `var(--chart-${10 - index})`,
                               } as React.CSSProperties
                             }
                           />
 
                           {item[breakdownLabel as keyof typeof item] || name}
 
-                          <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                          <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                             {value.toLocaleString()}
-                            <span className="font-normal text-muted-foreground"></span>
+                            <span className="text-muted-foreground font-normal"></span>
                           </div>
                         </div>
                       ))}

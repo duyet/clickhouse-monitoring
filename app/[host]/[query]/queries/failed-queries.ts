@@ -82,7 +82,7 @@ export const failedQueriesConfig: QueryConfig = {
       ColumnFormat.CodeDialog,
       {
         trigger_classname: 'w-80 line-clamp-4',
-        dialog_classname: 'max-w-screen-xl',
+        dialog_classname: 'max-w-(--breakpoint-xl)',
         max_truncate: 200,
       },
     ],

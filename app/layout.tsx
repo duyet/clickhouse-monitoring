@@ -7,7 +7,7 @@ import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
 import { Header } from '@/components/header'
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster } from '@/components/ui/sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 

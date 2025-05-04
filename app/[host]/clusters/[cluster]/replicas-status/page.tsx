@@ -40,7 +40,7 @@ const TopRightToolbarExtras = async ({
     >
       <Button
         variant="outline"
-        className="flex flex-row gap-2 text-muted-foreground"
+        className="text-muted-foreground flex flex-row gap-2"
       >
         Parts on each table
       </Button>
@@ -50,7 +50,7 @@ const TopRightToolbarExtras = async ({
     >
       <Button
         variant="outline"
-        className="flex flex-row gap-2 text-muted-foreground"
+        className="text-muted-foreground flex flex-row gap-2"
       >
         Count on each tables
       </Button>

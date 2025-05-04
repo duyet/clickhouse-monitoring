@@ -38,7 +38,7 @@ export async function ChartZookeeperUptime({
           items={[]}
           className="p-2"
         />
-        <div className="pl-2 text-sm text-muted-foreground"></div>
+        <div className="text-muted-foreground pl-2 text-sm"></div>
       </div>
     </ChartCard>
   )

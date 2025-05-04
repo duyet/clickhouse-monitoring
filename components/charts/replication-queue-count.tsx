@@ -38,7 +38,7 @@ export async function ChartReplicationQueueCount({
           items={[]}
           className="p-2"
         />
-        <div className="pl-2 text-sm text-muted-foreground">
+        <div className="text-muted-foreground pl-2 text-sm">
           {count.count_all} in total
         </div>
       </div>

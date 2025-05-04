@@ -7,7 +7,7 @@ export interface FootnoteProps<TData> {
 
 export function Footnote<TData>({ table, footnote }: FootnoteProps<TData>) {
   return (
-    <div className="flex-1 text-sm text-muted-foreground">
+    <div className="text-muted-foreground flex-1 text-sm">
       {footnote ? (
         footnote
       ) : (

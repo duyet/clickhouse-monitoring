@@ -47,8 +47,8 @@ export default function ExplainPage({ searchParams }: ExplainPageProps) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-row items-center justify-between pb-4">
           <div>
-            <h1 className="text-xl text-muted-foreground">Explain Query</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-muted-foreground text-xl">Explain Query</h1>
+            <p className="text-muted-foreground text-sm">
               <Link
                 href="https://clickhouse.com/docs/en/sql-reference/statements/explain"
                 target="_blank"
@@ -72,7 +72,7 @@ export default function ExplainPage({ searchParams }: ExplainPageProps) {
 
         <div className="mt-4 flex flex-row items-center justify-between">
           <div>
-            <h1 className="text-xl text-muted-foreground">Explain</h1>
+            <h1 className="text-muted-foreground text-xl">Explain</h1>
           </div>
         </div>
 

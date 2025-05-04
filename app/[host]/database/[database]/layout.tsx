@@ -28,7 +28,7 @@ export default async function TableListPage({ nav, children }: TableListProps) {
         defaultSize={17}
         minSize={17}
         maxSize={35}
-        className="rounded-l bg-sidebar"
+        className="bg-sidebar rounded-l"
       >
         {nav}
       </ResizablePanel>

@@ -13,7 +13,7 @@ export default async function About() {
 
       <Suspense fallback={<MultiLineSkeleton />}>
         <ClickHouseInfo
-          className="min-w-md max-w-md content-normal"
+          className="max-w-md min-w-md content-normal"
           contentClassName="p-6 pt-0 gap-2"
           title="ClickHouse Cluster Info"
           description="Server Version and Uptime"

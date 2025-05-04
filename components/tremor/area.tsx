@@ -114,7 +114,7 @@ export function AreaChart({
             />
           </div>
           <div>
-            <div className="flex w-48 flex-col p-2 pr-3 pt-3 text-xs text-slate-500">
+            <div className="flex w-48 flex-col p-2 pt-3 pr-3 text-xs text-slate-500">
               {data.map(({ name, value }) => (
                 <div
                   key={name}

@@ -27,7 +27,7 @@ export const Extras = ({
         <Button
           variant="outline"
           size="sm"
-          className="flex flex-row gap-2 text-muted-foreground"
+          className="text-muted-foreground flex flex-row gap-2"
         >
           <ArrowLeftIcon className="size-3" />
           Back to{' '}

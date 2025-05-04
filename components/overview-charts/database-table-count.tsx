@@ -50,7 +50,7 @@ export async function DatabaseTableCount({
     >
       <CardContent className="flex flex-col content-center p-2 pt-2">
         <Link
-          className="mb-2 mt-2 text-right text-xs text-muted-foreground"
+          className="text-muted-foreground mt-2 mb-2 text-right text-xs"
           href={await getScopedLink('/tables-overview')}
         >
           Tables Overview →
@@ -117,11 +117,11 @@ async function LinkCount({
               <CodeIcon className="size-3" />
             </Button>
           }
-          contentClassName="max-w-screen-lg"
+          contentClassName="max-w-(--breakpoint-lg)"
         />
 
         <Link href={await getScopedLink(href)}>
-          <div className="inline-flex gap-1 truncate text-xs text-muted-foreground">
+          <div className="text-muted-foreground inline-flex gap-1 truncate text-xs">
             {icon} {label} →
           </div>
         </Link>

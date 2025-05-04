@@ -1,11 +1,8 @@
 'use client'
 
 import { AreaChart } from '@/components/generic-charts/area'
-import { useToast } from '@/components/ui/use-toast'
 
 export default function Play() {
-  const { toast } = useToast()
-
   const data = [
     {
       date: '2025-01-01',

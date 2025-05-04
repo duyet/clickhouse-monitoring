@@ -54,7 +54,7 @@ export async function ChartMergeCount({
         readable="quantity"
       />
 
-      <div className="flex flex-row justify-between gap-2 text-right text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex flex-row justify-between gap-2 text-right text-sm">
         <Link
           href={await getScopedLink('/mutations')}
           className="flex flex-row items-center gap-2"
