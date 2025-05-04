@@ -21,16 +21,16 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-l
 FROM base AS builder
 ENV GITHUB_SHA=${GITHUB_SHA}
 ENV GITHUB_REF=${GITHUB_REF}
+ENV NODE_ENV=production
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile \
+  && pnpm build
 
 # Production image, copy all the files and run next
 FROM base AS runner
-
 ENV NODE_ENV=production
-RUN addgroup --system --gid 1001 app
-RUN adduser --system --uid 1001 app
+
+RUN addgroup --system --gid 1001 app && adduser --system --uid 1001 app
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
