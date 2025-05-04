@@ -115,6 +115,6 @@
     }
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["cypress", "sharp25h"]
+    "onlyBuiltDependencies": ["cypress", "sharp"]
   }
 }
