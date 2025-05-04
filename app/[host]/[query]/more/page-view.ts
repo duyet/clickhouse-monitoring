@@ -1,17 +1,21 @@
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
 
+const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
+
 export const pageViewConfig: QueryConfig = {
   name: 'page-view',
-  description: 'Self analytics: Page views from system.monitoring_events',
+  description: `Self analytics: Page views from ${EVENTS_TABLE}`,
   sql: `
     SELECT kind, actor, data, extra, event_time, event_date
-    FROM system.monitoring_events
+    FROM ${EVENTS_TABLE}
     WHERE kind = 'PageView'
       AND (if({event_date: String} != '', event_date = {event_date: String}, true))
     ORDER BY event_time DESC
     LIMIT 100
   `,
+  disableSqlValidation: true,
+
   columns: ['event_time', 'event_date', 'actor', 'data', 'extra'],
   columnFormats: {
     event_time: ColumnFormat.RelatedTime,

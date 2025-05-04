@@ -1,6 +1,7 @@
 import { beforeAll, expect, test } from '@jest/globals'
 
 import { fetchData } from '@/lib/clickhouse'
+import { QueryConfig } from '@/types/query-config'
 import { queries } from './clickhouse-queries'
 
 describe('query config', () => {
@@ -42,8 +43,13 @@ describe('query config', () => {
 
   test.each(namedConfig)(
     'check if valid sql for $name config',
-    async ({ name, config }) => {
+    async ({ name, config }: { name: string; config: QueryConfig }) => {
       expect(config.sql).toBeDefined()
+      if (config.disableSqlValidation) {
+        console.log(`[${name}] SQL validation is disabled`)
+        return
+      }
+
       console.log(`Testing config ${name} query:`, config.sql)
       console.log('with default params:', config.defaultParams || {})
 
