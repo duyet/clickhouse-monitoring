@@ -55,7 +55,7 @@ export function TruncatedParagraph({
       {isClamped && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="mt-2 text-sm text-blue-500 hover:text-blue-700 focus:outline-none"
+          className="mt-2 text-sm text-blue-500 hover:text-blue-700 focus:outline-hidden"
         >
           {isExpanded ? 'Show less' : 'Show more'}
         </button>

@@ -1,4 +1,4 @@
-import { mount } from 'cypress/react18'
+import { mount } from 'cypress/react'
 import { HeadManagerContext } from 'next/dist/shared/lib/head-manager-context.shared-runtime'
 import { RouterContext } from 'next/dist/shared/lib/router-context.shared-runtime'
 

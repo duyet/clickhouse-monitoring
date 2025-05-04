@@ -158,7 +158,7 @@ function FilterMenuItem({
           'data-[selected=true]:font-bold'
         )}
       >
-        {Icon && <Icon className="mr-2 size-4 text-muted-foreground" />}
+        {Icon && <Icon className="text-muted-foreground mr-2 size-4" />}
         <span>{name}</span>
       </a>
     </DropdownMenuItem>

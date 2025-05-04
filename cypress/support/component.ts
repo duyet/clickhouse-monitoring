@@ -16,7 +16,7 @@
 
 import '@cypress/code-coverage/support'
 import 'cypress-real-events'
-import { mount } from 'cypress/react18'
+import { mount } from 'cypress/react'
 
 import '../../app/globals.css'
 import { nextMount } from './nextMount'

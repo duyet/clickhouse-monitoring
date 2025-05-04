@@ -194,7 +194,7 @@ export async function ChartSummaryUsedByMerges({
           items={items}
           className="p-2"
         />
-        <div className="text-right text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-right text-sm">
           Total memory used by merges estimated from CGroupMemoryUsed or
           OSMemoryTotal
         </div>

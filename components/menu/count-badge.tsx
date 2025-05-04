@@ -1,11 +1,11 @@
-import type { BadgeProps } from '@/components/ui/badge'
 import { Badge } from '@/components/ui/badge'
 import { fetchData } from '@/lib/clickhouse'
+import { type BadgeVariant } from '@/types/badge-variant'
 
 export interface CountBadgeProps {
   sql?: string
   className?: string
-  variant?: BadgeProps['variant']
+  variant?: BadgeVariant
 }
 
 export async function CountBadge({

@@ -38,7 +38,7 @@ export function DialogContent({
   return (
     <Dialog>
       <DialogTrigger asChild>{button}</DialogTrigger>
-      <UIDialogContent className={cn('min-w-96 max-w-fit', contentClassName)}>
+      <UIDialogContent className={cn('max-w-fit min-w-96', contentClassName)}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

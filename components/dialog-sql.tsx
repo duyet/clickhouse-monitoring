@@ -37,7 +37,7 @@ export function DialogSQL({
       }
       title={title}
       description={description}
-      content={<pre className="text-wrap text-sm">{dedent(sql)}</pre>}
+      content={<pre className="text-sm text-wrap">{dedent(sql)}</pre>}
       {...props}
     />
   )

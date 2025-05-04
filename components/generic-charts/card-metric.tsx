@@ -26,7 +26,7 @@ export function CardMetric({
       <div>
         <div className="mt-2 flex flex-row items-center justify-between gap-2">
           <span
-            className="truncate text-muted-foreground"
+            className="text-muted-foreground truncate"
             title={`${percent}%`}
           >
             {currentReadable || current}

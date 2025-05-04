@@ -67,7 +67,7 @@ export function ErrorAlert({
       <AccordionItem className="border-none" value="item-1">
         <AccordionTrigger role="open-query">{title}</AccordionTrigger>
         <AccordionContent>
-          <code className="text-wrap text-muted-foreground">
+          <code className="text-muted-foreground text-wrap">
             {typeof content === 'string' ? (
               <pre>{dedent(content)}</pre>
             ) : (

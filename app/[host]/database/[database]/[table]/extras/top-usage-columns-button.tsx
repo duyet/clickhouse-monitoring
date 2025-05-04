@@ -19,7 +19,7 @@ export async function TopUsageColumnsButton({
     >
       <Button
         variant="outline"
-        className="flex flex-row gap-2 text-muted-foreground"
+        className="text-muted-foreground flex flex-row gap-2"
         size="sm"
       >
         <TextAlignBottomIcon className="size-3" />

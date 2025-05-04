@@ -42,7 +42,7 @@ export async function TableSelector({ database, table }: TableSelectorProps) {
         <Button
           variant="outline"
           size="sm"
-          className="group flex flex-row gap-2 text-muted-foreground"
+          className="group text-muted-foreground flex flex-row gap-2"
         >
           <CardStackMinusIcon className="size-3" />
           {table}

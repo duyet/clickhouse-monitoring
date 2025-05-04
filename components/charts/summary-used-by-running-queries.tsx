@@ -174,7 +174,7 @@ export async function ChartSummaryUsedByRunningQueries({
           items={items}
           className="p-2"
         />
-        <div className="text-right text-sm text-muted-foreground"></div>
+        <div className="text-muted-foreground text-right text-sm"></div>
       </div>
     </ChartCard>
   )

@@ -256,11 +256,11 @@ export async function QueryDetailCard({
             )
             .map(([key, value]) => (
               <div
-                className="mt-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground"
+                className="hover:bg-accent hover:text-accent-foreground mt-2 flex items-start space-x-4 rounded-md p-2 transition-all"
                 key={typeof key === 'string' ? key : key.key}
               >
                 <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none">
+                  <p className="text-sm leading-none font-medium">
                     {typeof key === 'string' ? (
                       key
                     ) : (
@@ -274,11 +274,11 @@ export async function QueryDetailCard({
                     )}
                   </p>
                   {typeof value === 'string' ? (
-                    <TruncatedParagraph className="text-sm text-muted-foreground">
+                    <TruncatedParagraph className="text-muted-foreground text-sm">
                       {value}
                     </TruncatedParagraph>
                   ) : (
-                    <div className="flex flex-col flex-wrap gap-1 text-sm text-muted-foreground">
+                    <div className="text-muted-foreground flex flex-col flex-wrap gap-1 text-sm">
                       <TruncatedList>{value}</TruncatedList>
                     </div>
                   )}
@@ -287,7 +287,7 @@ export async function QueryDetailCard({
             ))}
         </div>
 
-        <div className="mt-4 inline-flex items-center gap-1 rounded border p-3 text-sm text-muted-foreground">
+        <div className="text-muted-foreground mt-4 inline-flex items-center gap-1 rounded border p-3 text-sm">
           <InfoIcon className="size-4" />
           See the detailed explanation at the{' '}
           <Link

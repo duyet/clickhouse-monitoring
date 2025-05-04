@@ -8,7 +8,7 @@ export const Toolbar = async ({ database }: { database: string }) => (
   <Link href={await getScopedLink(`/top-usage-tables?database=${database}`)}>
     <Button
       variant="outline"
-      className="flex flex-row gap-2 text-muted-foreground"
+      className="text-muted-foreground flex flex-row gap-2"
     >
       <TextAlignBottomIcon className="size-3" />
       Top usage tables

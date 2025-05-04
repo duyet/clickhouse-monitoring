@@ -45,12 +45,12 @@ export function CodeToggleFormat({
     >
       <AccordionItem value="code" className="border-0">
         <AccordionTrigger className="py-0 hover:no-underline">
-          <code className="line-clamp-2 truncate break-words font-normal">
+          <code className="line-clamp-2 truncate font-normal break-words">
             {code}
           </code>
         </AccordionTrigger>
         <AccordionContent>
-          <code className="whitespace-pre-wrap font-normal text-stone-500">
+          <code className="font-normal whitespace-pre-wrap text-stone-500">
             {value}
           </code>
         </AccordionContent>

@@ -138,12 +138,12 @@ export function DataTable<
       <div className="flex flex-row items-start justify-between pb-4">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <h1 className="flex-none text-xl text-muted-foreground">{title}</h1>
+            <h1 className="text-muted-foreground flex-none text-xl">{title}</h1>
             <DataTableToolbar queryConfig={queryConfig}>
               {toolbarExtras}
             </DataTableToolbar>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {description || queryConfig.description}
           </p>
         </div>

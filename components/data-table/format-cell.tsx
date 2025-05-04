@@ -74,7 +74,7 @@ export const formatCell = <
 
     case ColumnFormat.Number:
       return (
-        <span className="text-nowrap text-center">
+        <span className="text-center text-nowrap">
           {formatReadableQuantity(value as number, 'long')}
         </span>
       )

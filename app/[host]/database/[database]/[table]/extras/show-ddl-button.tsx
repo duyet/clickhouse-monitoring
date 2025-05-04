@@ -32,7 +32,7 @@ export async function ShowDDL({
           variant="outline"
           size="sm"
           className={cn(
-            'flex flex-row items-center gap-2 text-muted-foreground',
+            'text-muted-foreground flex flex-row items-center gap-2',
             className
           )}
           aria-label="Show DDL"

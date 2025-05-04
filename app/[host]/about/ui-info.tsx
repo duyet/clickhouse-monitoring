@@ -47,7 +47,7 @@ export async function UIInfo() {
   const { version, url } = getVersion()
 
   return (
-    <Card className="min-w-md max-w-md rounded shadow-none">
+    <Card className="max-w-md min-w-md rounded shadow-none">
       <CardHeader>
         <CardTitle className="text-xl font-bold">
           ClickHouse Monitoring

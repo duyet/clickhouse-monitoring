@@ -43,24 +43,21 @@ export function BarChart({
   colors,
   colorLabel,
   tickFormatter,
+  showXAxis = true,
   className,
 }: BarChartProps) {
   const chartConfig = categories.reduce(
     (acc, category, index) => {
       acc[category] = {
         label: category,
-        color: colors
-          ? `hsl(var(${colors[index]}))`
-          : `hsl(var(--chart-${index + 1}))`,
+        color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
       }
 
       return acc
     },
     {
       label: {
-        color: colorLabel
-          ? `hsl(var(${colorLabel}))`
-          : 'hsl(var(--background))',
+        color: colorLabel ? `var(${colorLabel})` : 'var(--background)',
       },
     } as ChartConfig
   )
@@ -120,7 +117,7 @@ export function BarChart({
 
         {horizontal ? (
           <>
-            <XAxis dataKey={categories[0]} type="number" hide />
+            {showXAxis && <XAxis dataKey={categories[0]} type="number" hide />}
             <YAxis
               dataKey={index}
               type="category"
@@ -131,17 +128,24 @@ export function BarChart({
           </>
         ) : (
           <>
-            <XAxis
-              dataKey={index}
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={tickFormatter}
-            />
+            {showXAxis && (
+              <XAxis
+                dataKey={index}
+                tickLine={false}
+                tickMargin={10}
+                axisLine={true}
+                tickFormatter={tickFormatter}
+              />
+            )}
           </>
         )}
 
-        {renderChartTooltip({ tooltipTotal, chartConfig, categories })}
+        {renderChartTooltip({
+          tooltipTotal,
+          chartConfig,
+          categories,
+          xAxisDataKey: index,
+        })}
 
         {categories.map((category, index) => (
           <Bar
@@ -235,7 +239,7 @@ function renderChartLabel<T extends Data>({
         dataKey={dataKey}
         position={labelPosition || (horizontal ? 'insideLeft' : 'inside')}
         offset={8}
-        className="fill-[--color-label]"
+        className="fill-(--color-label)"
         fontSize={12}
         formatter={readableColumn ? labelFormatter : undefined}
         angle={labelAngle}
@@ -260,8 +264,10 @@ function renderChartTooltip({
   tooltipTotal,
   chartConfig,
   categories,
+  xAxisDataKey,
 }: Pick<BarChartProps, 'categories' | 'tooltipTotal'> & {
   chartConfig: ChartConfig
+  xAxisDataKey?: string
 }) {
   if (!tooltipTotal) {
     return (
@@ -269,6 +275,21 @@ function renderChartTooltip({
         content={
           <ChartTooltipContent
             className="w-fit"
+            labelFormatter={
+              xAxisDataKey
+                ? (label, payload) => {
+                    return (
+                      <div>
+                        {
+                          payload[0]['payload'][
+                            xAxisDataKey as keyof typeof payload
+                          ]
+                        }
+                      </div>
+                    )
+                  }
+                : undefined
+            }
             formatter={(
               value,
               name,
@@ -279,7 +300,7 @@ function renderChartTooltip({
               return (
                 <>
                   <div
-                    className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                    className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
                     style={
                       {
                         '--color-bg': `var(--color-${name})`,
@@ -289,10 +310,10 @@ function renderChartTooltip({
 
                   {chartConfig[name as keyof typeof chartConfig]?.label || name}
 
-                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                  <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                     {item['payload'][`readable_${name}` as keyof typeof item] ||
                       value.toLocaleString()}
-                    <span className="font-normal text-muted-foreground"></span>
+                    <span className="text-muted-foreground font-normal"></span>
                   </div>
                 </>
               )
@@ -312,7 +333,7 @@ function renderChartTooltip({
           formatter={(value, name, item, index) => (
             <>
               <div
-                className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
                 style={
                   {
                     '--color-bg': `var(--color-${name})`,
@@ -322,20 +343,20 @@ function renderChartTooltip({
 
               {chartConfig[name as keyof typeof chartConfig]?.label || name}
 
-              <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+              <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                 {item['payload'][`readable_${name}` as keyof typeof item] ||
                   value.toLocaleString()}
-                <span className="font-normal text-muted-foreground"></span>
+                <span className="text-muted-foreground font-normal"></span>
               </div>
 
               {index === 1 && (
-                <div className="mt-1.5 flex basis-full items-center border-t pt-1.5 text-xs font-medium text-foreground">
+                <div className="text-foreground mt-1.5 flex basis-full items-center border-t pt-1.5 text-xs font-medium">
                   Total
-                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                  <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                     {categories
                       .map((cat) => parseInt(item.payload[cat]) || 0)
                       .reduce((a, b) => a + b, 0)}
-                    <span className="font-normal text-muted-foreground"></span>
+                    <span className="text-muted-foreground font-normal"></span>
                   </div>
                 </div>
               )}

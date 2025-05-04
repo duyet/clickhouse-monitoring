@@ -130,7 +130,7 @@ async function InfoLine({
     >
       <div className="truncate text-xl">{data[0].val}</div>
       <hr className="flex-auto grow border-dotted" />
-      <div className="flex-none text-xs text-muted-foreground">{label}</div>
+      <div className="text-muted-foreground flex-none text-xs">{label}</div>
     </div>
   )
 }

@@ -16,7 +16,7 @@ export function NumberChart({
     return (
       <div
         className={cn(
-          'p-6 text-center text-xs text-muted-foreground',
+          'text-muted-foreground p-6 text-center text-xs',
           className
         )}
       >
@@ -32,12 +32,12 @@ export function NumberChart({
       {title || description ? (
         <header className="flex flex-col space-y-1.5 p-4 pb-0">
           <h3
-            className="text-2xl font-semibold leading-none tracking-tight"
+            className="text-2xl leading-none font-semibold tracking-tight"
             role="title"
           >
             {title}
           </h3>
-          <p className="text-sm text-muted-foreground" role="description">
+          <p className="text-muted-foreground text-sm" role="description">
             {description}
           </p>
         </header>
@@ -52,7 +52,7 @@ export function NumberChart({
           {chartData[dataKey] || ''}
         </div>
         {showLabel && (
-          <div className="text-center text-xs text-muted-foreground">
+          <div className="text-muted-foreground text-center text-xs">
             {chartData[nameKey] || ''}
           </div>
         )}

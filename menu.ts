@@ -298,6 +298,12 @@ export const menuItemsConfig: MenuItem[] = [
         icon: ShieldAlertIcon,
       },
       {
+        title: 'Page Views',
+        href: '/page-views',
+        description: 'Self-analytics page views',
+        icon: BarChartIcon,
+      },
+      {
         title: 'About',
         href: '/about',
         description: 'About dashboard UI and ClickHouse server',

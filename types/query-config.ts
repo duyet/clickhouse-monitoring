@@ -10,6 +10,12 @@ export interface QueryConfig {
   name: string
   description?: string
   sql: string
+  /**
+   * Whether to disable the SQL validation by [query-config.test.ts](query-config.test.ts).
+   *
+   * Default: false
+   */
+  disableSqlValidation?: boolean
   columns: string[]
   /**
    * Column format can be specified as a enum ColumnFormat
