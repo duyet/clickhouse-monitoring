@@ -3,7 +3,7 @@
   "description": "Simple ClickHouse UI that relies on system tables to help monitor and provide overview of your cluster",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "yarn@1.22.22",
+  "packageManager": "pnpm@10.10.0",
   "repository": {
     "url": "https://github.com/duyet/clickhouse-monitoring"
   },
@@ -19,9 +19,10 @@
     "component": "cypress open --component",
     "component:headless": "cypress run --component",
     "fmt": "prettier --write \"**/*.{ts,tsx,md,json}\" --cache",
-    "test": "yarn jest",
+    "test": "pnpm jest",
     "jest": "jest --coverage --testPathIgnorePatterns=query-config",
-    "test-queries-config": "jest --coverage --testPathPattern=query-config"
+    "test-queries-config": "jest --coverage --testPathPattern=query-config",
+    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
     "@clickhouse/client": "^0.3.0",

@@ -9,6 +9,7 @@ import { backupsConfig } from './more/backups'
 import { errorsConfig } from './more/errors'
 import { mergeTreeSettingsConfig } from './more/mergetree-settings'
 import { metricsConfig } from './more/metrics'
+import { pageViewsConfig } from './more/page-views'
 import { rolesConfig } from './more/roles'
 import { settingsConfig } from './more/settings'
 import { topUsageColumnsConfig } from './more/top-usage-columns'
@@ -72,6 +73,7 @@ export const queries: Array<QueryConfig> = [
   rolesConfig,
   zookeeperConfig,
   errorsConfig,
+  pageViewsConfig,
 ]
 
 export const getQueryConfigByName = cache(

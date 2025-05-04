@@ -1,7 +1,7 @@
 import { getHostId } from '@/lib/server-context'
 import type { ClickHouseClient, DataFormat } from '@clickhouse/client'
 import { createClient } from '@clickhouse/client'
-import type { ClickHouseSettings, QueryParams } from '@clickhouse/client-common'
+import type { ClickHouseSettings, QueryParams } from '@clickhouse/client'
 import { createClient as createClientWeb } from '@clickhouse/client-web'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 

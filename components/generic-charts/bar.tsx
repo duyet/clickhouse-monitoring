@@ -141,7 +141,12 @@ export function BarChart({
           </>
         )}
 
-        {renderChartTooltip({ tooltipTotal, chartConfig, categories })}
+        {renderChartTooltip({
+          tooltipTotal,
+          chartConfig,
+          categories,
+          xAxisDataKey: index,
+        })}
 
         {categories.map((category, index) => (
           <Bar
@@ -260,8 +265,10 @@ function renderChartTooltip({
   tooltipTotal,
   chartConfig,
   categories,
+  xAxisDataKey,
 }: Pick<BarChartProps, 'categories' | 'tooltipTotal'> & {
   chartConfig: ChartConfig
+  xAxisDataKey?: string
 }) {
   if (!tooltipTotal) {
     return (
@@ -269,6 +276,21 @@ function renderChartTooltip({
         content={
           <ChartTooltipContent
             className="w-fit"
+            labelFormatter={
+              xAxisDataKey
+                ? (label, payload) => {
+                    return (
+                      <div>
+                        {
+                          payload[0]['payload'][
+                            xAxisDataKey as keyof typeof payload
+                          ]
+                        }
+                      </div>
+                    )
+                  }
+                : undefined
+            }
             formatter={(
               value,
               name,

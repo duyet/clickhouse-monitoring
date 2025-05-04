@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "ClickHouse Monitoring Docs",
   "license": "AGPL-3.0-only",
+  "packageManager": "pnpm@10.10.0",
   "scripts": {
     "dev": "next",
     "build": "next build",
