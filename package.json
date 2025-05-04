@@ -78,6 +78,8 @@
   "devDependencies": {
     "@codecov/webpack-plugin": "^1.0.0",
     "@cypress/code-coverage": "^3.14.0",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.26.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
     "@next/eslint-plugin-next": "^15.0.0",
     "@types/jest": "^29.5.14",

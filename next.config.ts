@@ -9,9 +9,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  experimental: {
-    turbo: {},
-  },
+  experimental: {},
 
   // Automatically bundle external packages in the Pages Router:
   bundlePagesRouterDependencies: true,
