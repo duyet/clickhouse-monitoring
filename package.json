@@ -113,5 +113,8 @@
     "recharts": {
       "react-is": "^19.0.0-rc-0bc30748-20241028"
     }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["cypress", "sharp25h"]
   }
 }
