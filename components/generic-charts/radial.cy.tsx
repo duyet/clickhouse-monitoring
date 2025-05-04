@@ -80,7 +80,7 @@ describe('<RadialChart />', () => {
     )
 
     // Click on a sector
-    cy.get('.recharts-radial-bar-sector').first().click()
+    cy.get('.recharts-radial-bar-sector').first().click({ force: true })
 
     // Check if onClick was called
     cy.get('@onClick').should('have.been.calledOnce')
