@@ -127,11 +127,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile && pnpm approve-builds
+
       - name: Test components
         uses: cypress-io/github-action@v6
         with:
           component: true
-          install-command: pnpm install
           command: pnpm run component:headless
           browser: ${{ matrix.browser }}
           parallel: true
