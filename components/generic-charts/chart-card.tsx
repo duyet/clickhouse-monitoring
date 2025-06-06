@@ -53,7 +53,7 @@ function CardToolbar({ sql, data }: Pick<ChartCardProps, 'sql' | 'data'>) {
         <DialogContent
           button={
             <Button
-              className="border-0 group-hover:border-1"
+              className="border-0 group-hover:border"
               size="sm"
               variant="ghost"
             >
@@ -71,7 +71,7 @@ function CardToolbar({ sql, data }: Pick<ChartCardProps, 'sql' | 'data'>) {
         <DialogContent
           button={
             <Button
-              className="border-0 group-hover:border-1"
+              className="border-0 group-hover:border"
               size="sm"
               variant="ghost"
             >
