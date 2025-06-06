@@ -1,0 +1,220 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Query System & Menu Configuration
+
+This project features a sophisticated query management system that dynamically loads ClickHouse queries with configuration-driven menus and parameterization.
+
+## Menu-Driven Navigation
+
+### Menu Configuration
+[menu.ts](mdc:menu.ts) defines the entire navigation structure:
+```typescript
+export const menuItemsConfig: MenuItem[] = [
+  {
+    title: 'Tables',
+    href: '/tables',
+    icon: TableIcon,
+    countSql: 'SELECT COUNT() FROM system.tables WHERE...',
+    items: [
+      {
+        title: 'Running Queries',
+        href: '/running-queries',
+        description: 'Queries that are currently running',
+        countSql: 'SELECT COUNT() FROM system.processes WHERE...',
+        icon: MixIcon,
+      }
+    ]
+  }
+]
+```
+
+### Menu Features
+- **Hierarchical Structure**: Nested menu items with icons and descriptions
+- **Dynamic Counts**: SQL queries that populate badge counts in real-time
+- **Count Variants**: Support for different badge styles (destructive, default)
+- **Icons**: Radix UI and Lucide React icon integration
+- **Descriptions**: Contextual help text for each menu item
+
+## Dynamic Query System
+
+### Query Configuration Structure
+Located in [app/[host]/[query]/clickhouse-queries/](mdc:app/[host]/[query]/clickhouse-queries/):
+```
+clickhouse-queries/
+├── expensive-queries/
+│   ├── config.ts
+│   └── sql.ts
+├── running-queries/
+│   ├── config.ts
+│   └── sql.ts
+└── index.ts
+```
+
+### Query Config Pattern
+Each query follows this structure:
+```typescript
+import { ColumnFormat } from '@/types/column-format'
+import { QueryConfig } from '@/types/query-config'
+
+export const queryConfig: QueryConfig = {
+  name: 'expensive-queries',
+  sql: './sql.ts', // or inline SQL string
+  defaultParams: {
+    interval: '1 HOUR',
+    limit: 100
+  },
+  columns: [
+    {
+      name: 'query_duration_ms',
+      header: 'Duration (ms)',
+      type: ColumnFormat.Number
+    }
+  ],
+  clickhouseSettings: {
+    max_execution_time: 300
+  },
+  relatedCharts: ['query-performance-over-time'],
+  docs: 'https://clickhouse.com/docs/...'
+}
+```
+
+### SQL File Structure
+SQL files support parameterization:
+```sql
+-- sql.ts
+export default `
+SELECT 
+  query_id,
+  query_duration_ms,
+  memory_usage
+FROM system.query_log 
+WHERE event_time >= now() - INTERVAL {interval:String}
+  AND type = 'QueryFinish'
+ORDER BY query_duration_ms DESC 
+LIMIT {limit:UInt32}
+`
+```
+
+## Parameter Management
+
+### Default Parameters
+Query configs specify default parameters that can be overridden via URL search params:
+```typescript
+defaultParams: {
+  database: 'default',
+  limit: 1000,
+  interval: '1 HOUR'
+}
+```
+
+### URL Parameter Mapping
+Search parameters are automatically mapped to query parameters:
+- `/expensive-queries?limit=500&interval=2 HOUR`
+- Validates against `defaultParams` keys
+- Type-safe parameter substitution in SQL
+
+### Parameter Validation
+Parameters are validated against the query config before execution.
+
+## Chart Integration
+
+### Related Charts
+Queries can specify related visualizations:
+```typescript
+relatedCharts: [
+  'query-performance-over-time',
+  'memory-usage-distribution'
+]
+```
+
+### Chart Loading
+Charts are dynamically loaded from [components/charts/](mdc:components/charts):
+- URL-based chart combinations: `/charts/chart1,chart2,chart3`
+- Suspense-wrapped for progressive loading
+- Error boundaries for graceful fallback
+
+## System Tables Focus
+
+### ClickHouse System Tables
+The project heavily utilizes ClickHouse system tables:
+- `system.processes` - Running queries
+- `system.query_log` - Query history
+- `system.tables` - Table metadata
+- `system.parts` - Table parts information
+- `system.merges` - Merge operations
+- `system.replicas` - Replication status
+- `system.clusters` - Cluster configuration
+
+### Query Patterns
+Common patterns for system table queries:
+```sql
+-- Exclude monitoring queries
+WHERE query NOT LIKE '%${QUERY_COMMENT}%'
+
+-- Time-based filtering
+WHERE event_time >= now() - INTERVAL {interval:String}
+
+-- Database filtering
+WHERE database NOT IN ('system', 'information_schema')
+
+-- Active status filtering
+WHERE is_cancelled = 0
+```
+
+## Performance Optimization
+
+### Query Caching
+- ClickHouse query cache integration
+- Page-level revalidation controls
+- Client-side caching for navigation
+
+### Query Timeouts
+Different timeout strategies:
+- Default: 60 seconds
+- Table queries: 300 seconds (5 minutes)
+- Chart queries: Configurable per chart
+
+### Resource Monitoring
+Built-in resource usage tracking:
+- Query execution time
+- Memory usage
+- Rows processed
+- Query metadata in response
+
+## Error Handling
+
+### Query Errors
+[components/error-alert.tsx](mdc:components/error-alert.tsx) provides:
+- SQL syntax highlighting
+- ClickHouse error message parsing
+- Documentation links for troubleshooting
+- Query retry mechanisms
+
+### Validation Errors
+Parameter validation prevents invalid queries:
+- Type checking for parameters
+- Required parameter validation
+- Safe SQL parameter substitution
+
+## Advanced Features
+
+### Multi-Host Queries
+Queries can target different ClickHouse hosts:
+- Host context management
+- Cross-host comparisons
+- Host-specific configurations
+
+### Query Commenting
+All queries include metadata comments:
+```sql
+/* { "client": "clickhouse-monitoring" } */
+SELECT ...
+```
+
+This enables:
+- Query identification in logs
+- Filtering monitoring queries from results
+- Analytics and usage tracking

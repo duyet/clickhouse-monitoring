@@ -1,4 +1,4 @@
-import { CalendarCheckIcon, TagIcon, UserIcon } from 'lucide-react'
+import { CalendarCheckIcon, TagIcon } from 'lucide-react'
 import { Suspense } from 'react'
 
 import { SingleLineSkeleton } from '@/components/skeleton'
@@ -32,48 +32,18 @@ export async function ClickHouseInfo({
   contentClassName?: string
 }) {
   return (
-    <Card
-      className={cn(
-        'min-w-xs content-center rounded-sm shadow-none',
-        className
-      )}
-    >
-      {title || description ? (
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-      ) : null}
-
-      <CardContent
-        className={cn(
-          'flex flex-col content-center gap-2 p-2 pt-2',
-          contentClassName
-        )}
-      >
+    <Card className={cn('', className)}>
+      <CardHeader className="pb-0">
+        <CardTitle className="text-sm">System Info</CardTitle>
+        <CardDescription className="text-xs">ClickHouse</CardDescription>
+      </CardHeader>
+      <CardContent className={cn('space-y-3 pt-0', contentClassName)}>
         {hostName && (
           <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
             <InfoLine
               query="SELECT hostName() as val"
-              label={
-                <div className="inline-flex gap-1">
-                  <TagIcon className="size-4" />
-                  hostName()
-                </div>
-              }
-            />
-          </Suspense>
-        )}
-        {currentUser && (
-          <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
-            <InfoLine
-              query="SELECT currentUser() as val"
-              label={
-                <div className="inline-flex gap-1">
-                  <UserIcon className="size-4" />
-                  currentUser()
-                </div>
-              }
+              label="Host"
+              icon={<TagIcon className="size-4" />}
             />
           </Suspense>
         )}
@@ -81,12 +51,8 @@ export async function ClickHouseInfo({
           <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
             <InfoLine
               query="SELECT version() as val"
-              label={
-                <div className="inline-flex gap-1">
-                  <TagIcon className="size-4" />
-                  version()
-                </div>
-              }
+              label="Version"
+              icon={<TagIcon className="size-4" />}
             />
           </Suspense>
         )}
@@ -94,12 +60,8 @@ export async function ClickHouseInfo({
           <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
             <InfoLine
               query="SELECT splitByString(' and ', formatReadableTimeDelta(uptime()))[1] as val"
-              label={
-                <div className="inline-flex gap-1">
-                  <CalendarCheckIcon className="size-4" />
-                  uptime()
-                </div>
-              }
+              label="Uptime"
+              icon={<CalendarCheckIcon className="size-4" />}
             />
           </Suspense>
         )}
@@ -111,10 +73,12 @@ export async function ClickHouseInfo({
 async function InfoLine({
   query,
   label,
+  icon,
   className,
 }: {
   query: string
-  label: string | React.ReactNode
+  label: string
+  icon?: React.ReactNode
   className?: string
 }) {
   const { data } = await fetchData<{ val: string }[]>({ query })
@@ -122,15 +86,14 @@ async function InfoLine({
   if (!data || data.length === 0) return null
 
   return (
-    <div
-      className={cn(
-        'flex flex-col items-baseline justify-between gap-1 opacity-80 hover:opacity-100 sm:flex-row sm:items-center sm:gap-4',
-        className
-      )}
-    >
-      <div className="truncate text-xl">{data[0].val}</div>
-      <hr className="flex-auto grow border-dotted" />
-      <div className="text-muted-foreground flex-none text-xs">{label}</div>
+    <div className={cn('flex items-center justify-between gap-3', className)}>
+      <div className="flex items-center gap-2">
+        {icon}
+        <span className="text-muted-foreground text-sm">{label}</span>
+      </div>
+      <div className="truncate text-sm font-medium" title={data[0].val}>
+        {data[0].val}
+      </div>
     </div>
   )
 }

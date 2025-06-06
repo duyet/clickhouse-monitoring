@@ -1,0 +1,117 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Data Fetching & ClickHouse Integration
+
+This project uses a centralized data fetching pattern with the ClickHouse client for all database interactions.
+
+## Core Data Fetching
+
+### Main Functions
+- **`fetchData`** in [lib/clickhouse.ts](mdc:lib/clickhouse.ts) - Primary data fetching function
+- **`getClient`** - ClickHouse client factory (server/web variants)
+- **`query`** - Direct query execution for specific use cases
+
+### Fetch Data Pattern
+```typescript
+const { data, metadata } = await fetchData<RowType[]>({
+  query: 'SELECT * FROM system.tables',
+  format: 'JSONEachRow', // Default format
+  query_params: { database: 'default' },
+  clickhouse_settings: { max_execution_time: 300 },
+  hostId: 0 // Optional, defaults to current host
+})
+```
+
+### Query Configuration System
+Each page uses a **QueryConfig** pattern defined in [types/query-config.ts](mdc:types/query-config.ts):
+
+```typescript
+interface QueryConfig {
+  sql: string
+  defaultParams?: Record<string, any>
+  clickhouseSettings?: ClickHouseSettings
+  columns: ColumnFormat[]
+  relatedCharts?: string[]
+  docs?: string
+}
+```
+
+## Component Patterns
+
+### Table Component
+[components/table.tsx](mdc:components/table.tsx) is the main data display component:
+- Handles query execution with error boundaries
+- Supports search parameters as query params
+- Provides metadata (rows, duration) in footer
+- Integrates with [components/data-table/data-table.tsx](mdc:components/data-table/data-table.tsx)
+
+### Data Table Component
+[components/data-table/](mdc:components/data-table) provides:
+- Sorting, filtering, pagination
+- Column formatting via [types/column-format.ts](mdc:types/column-format.ts)
+- Export capabilities
+- Responsive design
+
+### Error Handling
+[components/error-alert.tsx](mdc:components/error-alert.tsx) displays ClickHouse errors with:
+- SQL query display
+- Error message formatting
+- Documentation links
+- Retry mechanisms
+
+## Multi-Host Architecture
+
+### Host Configuration
+Environment variables support multiple ClickHouse hosts:
+```env
+CLICKHOUSE_HOST=host1:8123,host2:8123
+CLICKHOUSE_USER=user1,user2
+CLICKHOUSE_PASSWORD=pass1,pass2
+CLICKHOUSE_NAME=Production,Staging
+```
+
+### Host Context Management
+- [lib/server-context.ts](mdc:lib/server-context.ts) - Server-side host context
+- [components/clickhouse-host-selector.tsx](mdc:components/clickhouse-host-selector.tsx) - UI for host switching
+- [lib/scoped-link.ts](mdc:lib/scoped-link.ts) - Host-aware navigation
+
+## Query Management
+
+### Dynamic Query System
+[app/[host]/[query]/](mdc:app/[host]/[query]/) loads queries dynamically:
+- Query configs in `clickhouse-queries/` subdirectory
+- URL-based query loading (`/[host]/expensive-queries`)
+- Supports parameterized queries via search params
+
+### Menu-Driven Queries
+[menu.ts](mdc:menu.ts) defines navigation with embedded SQL:
+- Each menu item can have `countSql` for badge counts
+- Supports nested menu structure
+- Icons and descriptions for each query
+
+## Performance & Caching
+
+### Query Optimization
+- Default `max_execution_time: 60` seconds
+- Table queries get extended `max_execution_time: 300`
+- Query caching via ClickHouse query cache system
+- Page-level revalidation controls
+
+### Loading States
+- [components/skeleton.tsx](mdc:components/skeleton.tsx) - Loading skeletons
+- Suspense boundaries for async components
+- Progressive loading for complex pages
+
+## Chart Integration
+
+### Chart Data Fetching
+Charts use the same `fetchData` pattern:
+- [components/charts/](mdc:components/charts) - Chart components
+- [components/tremor/](mdc:components/tremor) - Tremor chart wrappers
+- Dynamic chart loading in `/[host]/charts/[charts]`
+
+### Related Charts
+Pages can specify `relatedCharts` in query configs for contextual chart displays.
