@@ -3,7 +3,7 @@
   "description": "Simple ClickHouse UI that relies on system tables to help monitor and provide overview of your cluster",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.10.0",
+  "packageManager": "pnpm@10.13.1",
   "repository": {
     "url": "https://github.com/duyet/clickhouse-monitoring"
   },
@@ -56,7 +56,7 @@
     "cmdk": "^1.1.1",
     "dayjs": "^1.11.10",
     "dedent": "^1.5.3",
-    "lucide-react": "^0.507.0",
+    "lucide-react": "^0.525.0",
     "next": "^15.3.1",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.0.1",
