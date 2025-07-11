@@ -11,6 +11,7 @@ env:
   CLICKHOUSE_HOST: http://localhost:8123
   CLICKHOST_USER: default
   CLICKHOST_PASS: ''
+  CLICKHOUSE_SKIP_USER_SETUP: 1
   CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -39,6 +40,9 @@ jobs:
           - '25.1'
           - '25.2'
           - '25.3'
+          - '25.4'
+          - '25.5'
+          - '25.6'
 
     services:
       clickhouse:
@@ -52,7 +56,7 @@ jobs:
           --health-timeout 10s
           --health-retries 5
           --health-start-period 30s
-
+          --env CLICKHOUSE_SKIP_USER_SETUP=1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -214,6 +218,9 @@ jobs:
           - '25.1'
           - '25.2'
           - '25.3'
+          - '25.4'
+          - '25.5'
+          - '25.6'
 
     services:
       clickhouse:
@@ -227,6 +234,7 @@ jobs:
           --health-timeout 10s
           --health-retries 20
           --health-start-period 5s
+          --env CLICKHOUSE_SKIP_USER_SETUP=1
 
       keeper:
         image: ghcr.io/duyet/docker-images:clickhouse_${{ matrix.clickhouse}}
@@ -237,7 +245,7 @@ jobs:
           --health-timeout 10s
           --health-retries 20
           --health-start-period 5s
-
+          --env CLICKHOUSE_SKIP_USER_SETUP=1
     steps:
       - run: |
           echo Testing queries configured from /app/[host]/[query]/**.ts on ClickHouse ${{ matrix.clickhouse }}
