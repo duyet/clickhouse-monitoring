@@ -37,6 +37,7 @@ jobs:
           --health-timeout 10s
           --health-retries 5
           --health-start-period 30s
+          --env CLICKHOUSE_SKIP_USER_SETUP=1
 
     steps:
       - name: Checkout
