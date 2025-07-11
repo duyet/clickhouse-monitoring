@@ -41,4 +41,5 @@ export const pageViewsConfig: QueryConfig = {
       },
     ],
   ],
+  disableSqlValidation: true,
 }
