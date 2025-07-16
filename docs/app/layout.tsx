@@ -1,8 +1,9 @@
 import Script from 'next/script'
 import { Footer, Layout, Navbar } from 'nextra-theme-docs'
-import 'nextra-theme-docs/style.css'
 import { Head } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
+
+import 'nextra-theme-docs/style.css'
 
 export const metadata = {
   title: 'ClickHouse Monitoring',
