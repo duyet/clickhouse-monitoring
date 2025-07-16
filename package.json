@@ -62,7 +62,7 @@
     "radix-ui": "^1.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-error-boundary": "^5.0.0",
+    "react-error-boundary": "^6.0.0",
     "react-hook-form": "^7.53.1",
     "react-markdown": "^10.0.0",
     "react-resizable-panels": "^3.0.0",
