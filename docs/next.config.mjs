@@ -13,7 +13,7 @@ const nextConfig = {
 }
 
 const withNextra = nextra({
-  contentDirBasePath: '/clickhouse-monitoring',
+  // config for nextra
 })
 
 export default withNextra(nextConfig)
