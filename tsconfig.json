@@ -32,7 +32,7 @@
     "cypress.d.ts",
     "cypress/support/index.d.ts"
   ],
-  "exclude": ["node_modules", "cypress.config.ts", "cypress"],
+  "exclude": ["node_modules", "cypress.config.ts", "cypress", "docs"],
   "ts-node": {
     "compilerOptions": {
       "module": "ESNext",

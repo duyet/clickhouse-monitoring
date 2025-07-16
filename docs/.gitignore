@@ -48,3 +48,5 @@ cypress/screenshots
 .idea
 .vscode
 .env
+
+_pagefind/
