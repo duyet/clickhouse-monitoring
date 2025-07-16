@@ -13,9 +13,7 @@ const nextConfig = {
 }
 
 const withNextra = nextra({
-  theme: 'nextra-theme-docs',
-  themeConfig: './theme.config.jsx',
-  search: true,
+  contentDirBasePath: '/clickhouse-monitoring',
 })
 
 export default withNextra(nextConfig)
