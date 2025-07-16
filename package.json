@@ -73,7 +73,7 @@
     "tailwindcss": "^4.1.5",
     "tw-animate-css": "^1.2.9",
     "usehooks-ts": "^3.1.0",
-    "zod": "^3.23.8"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@codecov/webpack-plugin": "^1.0.0",
