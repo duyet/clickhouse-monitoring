@@ -29,7 +29,7 @@ export async function TableSelector({ database, table }: TableSelectorProps) {
       query_params: { database },
     })
 
-    anotherTables = res.data
+    anotherTables = res.data || []
   } catch (error) {
     console.log(error)
 

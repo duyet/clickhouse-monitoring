@@ -8,6 +8,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fetchData } from '@/lib/clickhouse'
+import {
+  formatErrorMessage,
+  formatErrorTitle,
+  getErrorDocumentation,
+} from '@/lib/error-utils'
 
 interface SampleDataProps {
   database: string
@@ -22,34 +27,33 @@ export async function SampleData({
   limit = 10,
   className,
 }: SampleDataProps) {
-  let data: { data: { [key: string]: string }[] } = { data: [] }
-  try {
-    data = await fetchData({
-      query: `SELECT *
-       FROM ${database}.${table}
-       LIMIT ${limit}`,
-      query_params: {
-        database,
-        table,
-      },
-    })
-  } catch (error) {
-    console.error(error)
+  const { data, error } = await fetchData<{ [key: string]: string }[]>({
+    query: `SELECT *
+     FROM ${database}.${table}
+     LIMIT ${limit}`,
+    query_params: {
+      database,
+      table,
+    },
+  })
 
+  if (error) {
+    console.error('Failed to fetch sample data', error)
     return (
       <ErrorAlert
-        title="Could not getting sample data"
-        message={`${error}`}
+        title={formatErrorTitle(error)}
+        message={formatErrorMessage(error)}
+        docs={getErrorDocumentation(error)}
         className="w-full"
       />
     )
   }
 
-  if (!data.data?.length) {
+  if (!data?.length) {
     return <span className="text-muted-foreground">No rows</span>
   }
 
-  const headers = Object.keys(data.data[0])
+  const headers = Object.keys(data[0])
 
   return (
     <div className="w-full overflow-auto">
@@ -62,7 +66,7 @@ export async function SampleData({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.data.map((row, idx) => (
+          {data.map((row, idx) => (
             <TableRow key={idx}>
               {Object.values(row).map((value) => {
                 if (typeof value === 'object') {

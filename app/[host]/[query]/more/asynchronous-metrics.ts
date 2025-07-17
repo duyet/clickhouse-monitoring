@@ -5,6 +5,7 @@ export const asynchronousMetricsConfig: QueryConfig = {
   name: 'asynchronous-metrics',
   description:
     'Contains metrics that are calculated periodically in the background. For example, the amount of RAM in use',
+  tableCheck: 'system.asynchronous_metrics',
   sql: `
       SELECT *
       FROM system.asynchronous_metrics

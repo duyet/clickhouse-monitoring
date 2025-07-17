@@ -7,6 +7,7 @@ export const historyQueriesConfig: QueryConfig = {
   description:
     'Contains information about executed queries: start time, duration of processing, error messages',
   docs: QUERY_LOG,
+  tableCheck: 'system.query_log',
   sql: `
       SELECT
           type,

@@ -1,4 +1,6 @@
 import { getHostId } from '@/lib/server-context'
+import { validateTableExistence } from '@/lib/table-validator'
+import type { QueryConfig } from '@/types/query-config'
 import type {
   ClickHouseClient,
   ClickHouseSettings,
@@ -105,76 +107,194 @@ export const getClient = async <B extends boolean>({
   )
 }
 
+export type FetchDataErrorType =
+  | 'table_not_found'
+  | 'validation_error'
+  | 'query_error'
+  | 'network_error'
+  | 'permission_error'
+
+export interface FetchDataError {
+  readonly type: FetchDataErrorType
+  readonly message: string
+  readonly details?: {
+    readonly missingTables?: readonly string[]
+    readonly queryId?: string
+    readonly originalError?: Error
+    readonly host?: string
+  }
+}
+
+export interface FetchDataResult<T> {
+  readonly data: T | null
+  readonly metadata: Record<string, string | number>
+  readonly error?: FetchDataError
+}
+
 export const fetchData = async <
   T extends
     | unknown[]
-    | object[] // format = '*EachRow'
-    | Record<string, unknown> // format = 'JSONObjectEachRow' | 'JSONColumns
-    | { length: number; rows: number; statistics: Record<string, unknown> }, // format = 'JSON' | 'JSONStrings' | 'JSONCompact' | 'JSONColumnsWithMetadata' | ...
+    | object[]
+    | Record<string, unknown>
+    | { length: number; rows: number; statistics: Record<string, unknown> },
 >({
   query,
   query_params,
   format = 'JSONEachRow',
   clickhouse_settings,
   hostId,
+  queryConfig,
 }: QueryParams &
   Partial<{
     clickhouse_settings: QuerySettings
     hostId?: number | string
-  }>): Promise<{
-  data: T
-  metadata: Record<string, string | number>
-}> => {
+    queryConfig?: QueryConfig
+  }>): Promise<FetchDataResult<T>> => {
   const start = new Date()
   const currentHostId = hostId ? Number(hostId) : getHostId()
   const clientConfig = getClickHouseConfigs()[currentHostId]
-  const client = await getClient({
-    web: false,
-    clientConfig,
-  })
 
-  const resultSet = await client.query({
-    query: QUERY_COMMENT + query,
-    format,
-    query_params,
-    clickhouse_settings,
-  })
+  try {
+    // Perform table validation if queryConfig is provided and query is optional
+    if (queryConfig?.optional) {
+      const validation = await validateTableExistence(
+        queryConfig,
+        currentHostId
+      )
 
-  const query_id = resultSet.query_id
+      if (!validation.shouldProceed) {
+        const missingTables = validation.missingTables
+        const errorMessage =
+          validation.error ||
+          `Missing required tables: ${missingTables.join(', ')}`
 
-  const data = await resultSet.json<T>()
-  const end = new Date()
-  const duration = (end.getTime() - start.getTime()) / 1000
-  let rows: number = 0
+        console.warn(
+          `Skipping query "${queryConfig.name}" due to missing tables:`,
+          missingTables
+        )
 
-  console.debug(
-    `--> Query (${query_id}, host: ${clientConfig.host}):`,
-    query.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
-  )
+        return {
+          data: null,
+          metadata: {
+            queryId: '',
+            duration: 0,
+            rows: 0,
+            host: clientConfig.host,
+          },
+          error: {
+            type: 'table_not_found',
+            message: errorMessage,
+            details: {
+              missingTables,
+              host: clientConfig.host,
+            },
+          },
+        }
+      }
+    }
 
-  if (data === null) {
-    rows = -1
-  } else if (Array.isArray(data)) {
-    rows = data.length
-  } else if (
-    typeof data === 'object' &&
-    data.hasOwnProperty('rows') &&
-    data.hasOwnProperty('statistics')
-  ) {
-    rows = data.rows as number
-  } else if (typeof data === 'object' && data.hasOwnProperty('rows')) {
-    rows = data.rows as number
+    const client = await getClient({
+      web: false,
+      clientConfig,
+    })
+
+    const effectiveQuery = queryConfig?.sql || query
+    const resultSet = await client.query({
+      query: QUERY_COMMENT + effectiveQuery,
+      format,
+      query_params,
+      clickhouse_settings,
+    })
+
+    const query_id = resultSet.query_id
+    const data = await resultSet.json<T>()
+    const end = new Date()
+    const duration = (end.getTime() - start.getTime()) / 1000
+    let rows: number = 0
+
+    console.debug(
+      `--> Query (${query_id}, host: ${clientConfig.host}):`,
+      effectiveQuery.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
+    )
+
+    if (data === null) {
+      rows = -1
+    } else if (Array.isArray(data)) {
+      rows = data.length
+    } else if (
+      typeof data === 'object' &&
+      data.hasOwnProperty('rows') &&
+      data.hasOwnProperty('statistics')
+    ) {
+      rows = data.rows as number
+    } else if (typeof data === 'object' && data.hasOwnProperty('rows')) {
+      rows = data.rows as number
+    }
+
+    console.debug(
+      `<-- Response (${query_id}):`,
+      rows,
+      `rows in`,
+      duration,
+      's\n'
+    )
+
+    const metadata = {
+      queryId: query_id,
+      duration,
+      rows,
+      host: clientConfig.host,
+    }
+
+    return { data, metadata }
+  } catch (originalError) {
+    const errorMessage =
+      originalError instanceof Error
+        ? originalError.message
+        : String(originalError)
+
+    // Categorize error types based on error message patterns
+    let errorType: FetchDataErrorType = 'query_error'
+
+    if (
+      errorMessage.toLowerCase().includes('table') &&
+      errorMessage.toLowerCase().includes('not') &&
+      errorMessage.toLowerCase().includes('exist')
+    ) {
+      errorType = 'table_not_found'
+    } else if (
+      errorMessage.toLowerCase().includes('permission') ||
+      errorMessage.toLowerCase().includes('access')
+    ) {
+      errorType = 'permission_error'
+    } else if (
+      errorMessage.toLowerCase().includes('network') ||
+      errorMessage.toLowerCase().includes('connection')
+    ) {
+      errorType = 'network_error'
+    }
+
+    console.error(`Query failed (host: ${clientConfig.host}):`, errorMessage)
+
+    return {
+      data: null,
+      metadata: {
+        queryId: '',
+        duration: (new Date().getTime() - start.getTime()) / 1000,
+        rows: 0,
+        host: clientConfig.host,
+      },
+      error: {
+        type: errorType,
+        message: errorMessage,
+        details: {
+          originalError:
+            originalError instanceof Error ? originalError : undefined,
+          host: clientConfig.host,
+        },
+      },
+    }
   }
-
-  console.debug(`<-- Response (${query_id}):`, rows, `rows in`, duration, 's\n')
-
-  const metadata = {
-    queryId: query_id,
-    duration,
-    rows,
-  }
-
-  return { data, metadata }
 }
 
 export const query = async (

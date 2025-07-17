@@ -6,6 +6,9 @@ const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 export const pageViewConfig: QueryConfig = {
   name: 'page-view',
   description: `Self analytics: Page views from ${EVENTS_TABLE}`,
+  // Disable e2e test for this query
+  disableSqlValidation: true,
+  tableCheck: EVENTS_TABLE,
   sql: `
     SELECT kind, actor, data, extra, event_time, event_date
     FROM ${EVENTS_TABLE}
@@ -14,8 +17,6 @@ export const pageViewConfig: QueryConfig = {
     ORDER BY event_time DESC
     LIMIT 100
   `,
-  disableSqlValidation: true,
-
   columns: ['event_time', 'event_date', 'actor', 'data', 'extra'],
   columnFormats: {
     event_time: ColumnFormat.RelatedTime,

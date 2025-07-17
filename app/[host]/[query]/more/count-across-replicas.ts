@@ -6,6 +6,7 @@ export const countAcrossReplicasConfig: QueryConfig = {
   name: 'count-across-replicas',
   description: 'All table count across replicas',
   docs: QUERY_LOG,
+  tableCheck: ['system.parts', 'system.query_log'],
   sql: `
       SELECT
           hostName(),
