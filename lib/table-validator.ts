@@ -47,75 +47,35 @@ export function parseTableFromSQL(sql: string): string[] {
   return tables
 }
 
-export function parseTableName(fullTableName: string): {
-  database: string
-  table: string
-} {
-  const parts = fullTableName.split('.')
-  if (parts.length !== 2) {
-    throw new Error(
-      `Invalid table name format: ${fullTableName}. Expected format: database.table`
-    )
-  }
-  return { database: parts[0], table: parts[1] }
-}
 
 export async function validateTableExistence(
   queryConfig: QueryConfig,
   hostId: number
 ): Promise<TableValidationResult> {
-  try {
-    const tablesToCheck: string[] = []
+  // Force into string[] and add SQL parsing fallback
+  const tablesToCheck = ([] as string[]).concat(
+    queryConfig.tableCheck ?? 
+    (queryConfig.sql ? parseTableFromSQL(queryConfig.sql) : [])
+  )
+  
+  if (tablesToCheck.length === 0) {
+    return { shouldProceed: true, missingTables: [] }
+  }
 
-    // If tableCheck is explicitly provided, use it
-    if (queryConfig.tableCheck) {
-      if (Array.isArray(queryConfig.tableCheck)) {
-        tablesToCheck.push(...queryConfig.tableCheck)
-      } else {
-        tablesToCheck.push(queryConfig.tableCheck)
-      }
-    }
+  // Check all tables in parallel
+  const missingTables = (
+    await Promise.all(
+      tablesToCheck.map(async (fullName) => {
+        const [db, tbl] = fullName.split('.')
+        if (!db || !tbl) return fullName // malformed name
+        const exists = await tableExistenceCache.checkTableExists(hostId, db, tbl)
+        return exists ? null : fullName
+      })
+    )
+  ).filter(Boolean) as string[]
 
-    if (tablesToCheck.length === 0) {
-      return { shouldProceed: true, missingTables: [] }
-    }
-
-    const missingTables: string[] = []
-
-    for (const fullTableName of tablesToCheck) {
-      let database: string
-      let table: string
-      try {
-        const { database: parsedDatabase, table: parsedTable } =
-          parseTableName(fullTableName)
-        database = parsedDatabase
-        table = parsedTable
-      } catch (error) {
-        console.error(`Error parsing table name: ${fullTableName}`, error)
-        missingTables.push(fullTableName)
-        continue
-      }
-
-      const exists = await tableExistenceCache.checkTableExists(
-        hostId,
-        database,
-        table
-      )
-      if (!exists) {
-        missingTables.push(fullTableName)
-      }
-    }
-
-    return {
-      shouldProceed: missingTables.length === 0,
-      missingTables,
-    }
-  } catch (error) {
-    console.error('Error validating table existence:', error)
-    return {
-      shouldProceed: false,
-      missingTables: [],
-      error: error instanceof Error ? error.message : 'Unknown error',
-    }
+  return {
+    shouldProceed: missingTables.length === 0,
+    missingTables,
   }
 }

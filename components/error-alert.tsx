@@ -85,8 +85,11 @@ export function ErrorAlert({
   const getVariantStyles = () => {
     switch (variant) {
       case 'warning':
+        return 'border-yellow-200 bg-yellow-50 text-yellow-900 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-50'
       case 'info':
+        return 'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-50'
       case 'destructive':
+        return 'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-50'
       default:
         return 'border-border bg-card text-card-foreground'
     }
@@ -143,7 +146,7 @@ export function ErrorAlert({
   )
 
   return (
-    <div className={`${className} bg-card rounded-lg border p-4`}>
+    <div className={`${className} ${getVariantStyles()} rounded-lg border p-4`}>
       <div className="flex items-start gap-3">
         {getErrorIcon()}
         <div className="flex-1 space-y-2">

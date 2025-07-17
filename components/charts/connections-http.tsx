@@ -52,9 +52,9 @@ export async function ChartConnectionsHttp({
   }
 
   return (
-    <ChartCard title={title} sql={query} className={className} data={data}>
+    <ChartCard title={title} sql={query} className={className} data={data || []}>
       <BarChart
-        data={data}
+        data={data || []}
         index="event_time"
         categories={[
           'CurrentMetric_HTTPConnectionsTotal',

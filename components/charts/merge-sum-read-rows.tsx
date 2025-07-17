@@ -35,9 +35,9 @@ export async function ChartMergeSumReadRows({
   >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data}>
+    <ChartCard title={title} className={className} sql={query} data={data || []}>
       <BarChart
-        data={data}
+        data={data || []}
         index="event_time"
         categories={['sum_read_rows_scale']}
         readableColumn="readable_sum_read_rows"

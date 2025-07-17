@@ -35,9 +35,9 @@ export async function ChartMergeAvgDuration({
   >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data}>
+    <ChartCard title={title} className={className} sql={query} data={data || []}>
       <BarChart
-        data={data}
+        data={data || []}
         index="event_time"
         categories={['avg_duration_ms']}
         readableColumn="readable_avg_duration_ms"
