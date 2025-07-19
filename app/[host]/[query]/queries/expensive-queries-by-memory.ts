@@ -6,6 +6,7 @@ export const expensiveQueriesByMemoryConfig: QueryConfig = {
   name: 'expensive-queries-by-memory',
   description: 'Most expensive queries by memory finished over last 24 hours',
   docs: QUERY_LOG,
+  tableCheck: 'system.query_log',
   sql: `
       SELECT
           query,

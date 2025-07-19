@@ -51,34 +51,35 @@ export async function explainAction(
   ): Promise<ExplainResponse> => {
     const sql = `EXPLAIN ${kind} ${query}`
 
-    try {
-      const { data } = await fetchData<{ explain: string }[]>({
-        query: sql,
-        clickhouse_settings,
-      })
-      console.log(data)
+    const { data, error } = await fetchData<{ explain: string }[]>({
+      query: sql,
+      clickhouse_settings,
+    })
 
-      if (data.length === 0) {
-        return { explain: 'Ok.', sql }
-      }
-
-      let raw = ''
-      for (const row of data) {
-        raw += row.explain + '\n'
-      }
-
-      return { explain: raw, sql }
-    } catch (error) {
+    if (error) {
       if (
         kind == 'QUERY TREE' &&
-        `${error}`.includes('only supported with a new analyzer')
+        error.message.includes('only supported with a new analyzer')
       ) {
         return explainKind(kind, query, { allow_experimental_analyzer: 1 })
       }
 
       console.error(error)
-      return { explain: `${error}`, sql }
+      return { explain: error.message, sql }
     }
+
+    console.log(data)
+
+    if (!data || data.length === 0) {
+      return { explain: 'Ok.', sql }
+    }
+
+    let raw = ''
+    for (const row of data) {
+      raw += row.explain + '\n'
+    }
+
+    return { explain: raw, sql }
   }
 
   const kinds = Object.keys(prevState).filter(

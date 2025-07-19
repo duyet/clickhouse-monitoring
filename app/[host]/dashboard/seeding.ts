@@ -43,7 +43,7 @@ const migrateSettings = async () => {
       query_params: { key: seed.key },
     })
 
-    if (exists.length == 0) {
+    if (!exists || exists.length == 0) {
       const client = await getClient({ web: false })
       const resp = await client.insert({
         table: TABLE_SETTINGS,
@@ -104,7 +104,7 @@ const migrateDashboard = async () => {
       query: `SELECT * FROM ${TABLE_CHARTS} FINAL WHERE title = '${seed.title}'`,
     })
 
-    if (exists.length == 0) {
+    if (!exists || exists.length == 0) {
       const client = await getClient({ web: false })
       const resp = await client.insert({
         table: TABLE_CHARTS,

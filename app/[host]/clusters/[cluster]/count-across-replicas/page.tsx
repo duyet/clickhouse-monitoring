@@ -1,4 +1,5 @@
 import { DataTable } from '@/components/data-table/data-table'
+import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse'
 import { getHostIdCookie } from '@/lib/scoped-link'
 import { ColumnFormat } from '@/types/column-format'
@@ -19,7 +20,7 @@ export default async function Page({ params }: PageProps) {
   })
   console.log('Replicas', replicas)
 
-  if (replicas.length === 0) {
+  if (!replicas || replicas.length === 0) {
     return <div>No replicas found in cluster: {cluster}</div>
   }
 
@@ -56,7 +57,7 @@ export default async function Page({ params }: PageProps) {
     },
   }
 
-  const { data } = await fetchData<
+  const { data, error } = await fetchData<
     {
       database_table: string
       [replica: string]: string | number
@@ -65,6 +66,26 @@ export default async function Page({ params }: PageProps) {
     query: queryConfig.sql,
     query_params: { cluster },
   })
+
+  if (error) {
+    return (
+      <ErrorAlert
+        title="Failed to load cluster data"
+        message={error.message}
+        query={queryConfig.sql}
+      />
+    )
+  }
+
+  if (!data) {
+    return (
+      <ErrorAlert
+        title="No Data Available"
+        message="No data was returned from the query."
+        query={queryConfig.sql}
+      />
+    )
+  }
 
   return (
     <DataTable

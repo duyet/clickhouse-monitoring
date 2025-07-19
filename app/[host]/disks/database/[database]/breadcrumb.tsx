@@ -35,7 +35,7 @@ export async function DatabaseListBreadcrumb({ database }: Props) {
       query: queryConfig.sql,
     })
 
-    if (!data.length) {
+    if (!data || !data.length) {
       return (
         <ErrorAlert
           title="Message"

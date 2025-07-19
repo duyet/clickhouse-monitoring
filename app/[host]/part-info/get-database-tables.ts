@@ -43,8 +43,10 @@ export const getDatabaseTables = async (host: string) => {
     hostId: host,
   })
 
-  return data.map((table: { database: string; table: string }) => ({
-    database: table.database,
-    table: table.table,
-  }))
+  return (
+    data?.map((table: { database: string; table: string }) => ({
+      database: table.database,
+      table: table.table,
+    })) || []
+  )
 }

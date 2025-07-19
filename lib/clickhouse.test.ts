@@ -79,6 +79,8 @@ describe('getClient', () => {
 
   it('should create a ClickHouse client using the standard library', async () => {
     process.env.CLICKHOUSE_HOST = 'localhost'
+    process.env.CLICKHOUSE_USER = 'default'
+    process.env.CLICKHOUSE_PASSWORD = ''
     const mockClient = {}
     ;(createClient as jest.Mock).mockReturnValue(mockClient)
 
@@ -97,6 +99,8 @@ describe('getClient', () => {
 
   it('should create a ClickHouse client using the web library', async () => {
     process.env.CLICKHOUSE_HOST = 'localhost'
+    process.env.CLICKHOUSE_USER = 'default'
+    process.env.CLICKHOUSE_PASSWORD = ''
     const mockClient = {}
     ;(createClientWeb as jest.Mock).mockReturnValue(mockClient)
 

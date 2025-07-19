@@ -33,7 +33,7 @@ describe('<RadialChart />', () => {
     cy.get('.recharts-radial-bar-sector').as('bar').should('be.visible')
 
     // Hover over the first sector
-    cy.get('@bar').trigger('mouseover')
+    cy.get('@bar').trigger('mouseover', { force: true })
     // cy.contains(data[0].browser)
   })
 

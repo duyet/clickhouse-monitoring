@@ -6,6 +6,7 @@ export const failedQueriesConfig: QueryConfig = {
   name: 'failed-queries',
   description: "type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']",
   docs: QUERY_LOG,
+  tableCheck: 'system.query_log',
   sql: `
     SELECT
         type,

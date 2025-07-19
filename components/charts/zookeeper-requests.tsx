@@ -35,9 +35,9 @@ export async function ChartZookeeperRequests({
   })
 
   return (
-    <ChartCard title={title} sql={query} data={data} className={className}>
+    <ChartCard title={title} sql={query} data={data || []} className={className}>
       <BarChart
-        data={data}
+        data={data || []}
         index="event_time"
         categories={['ZookeeperRequests', 'ZooKeeperWatch']}
         className="h-52"

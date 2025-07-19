@@ -3,6 +3,7 @@ import { type QueryConfig } from '@/types/query-config'
 
 export const mergeTreeSettingsConfig: QueryConfig = {
   name: 'mergetree-settings',
+  tableCheck: 'system.merge_tree_settings',
   sql: `
       SELECT name, value, changed, description, readonly, min, max, type, is_obsolete
       FROM system.merge_tree_settings

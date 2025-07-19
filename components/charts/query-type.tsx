@@ -27,7 +27,7 @@ export async function ChartQueryType({
 
   return (
     <DonutChart
-      data={data}
+      data={data || []}
       index="type"
       categories={['query_count']}
       readable="quantity"

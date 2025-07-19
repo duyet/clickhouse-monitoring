@@ -9,6 +9,7 @@ export const zookeeperConfig: QueryConfig = {
   docs: ZOOKEEPER,
   // system.zookeeper can be not exist if no zookeeper is configured
   optional: true,
+  tableCheck: 'system.zookeeper',
   sql: `
       SELECT
           replaceOne(format('{}/{}', path, name), '//', '/') AS _path,
