@@ -7,6 +7,7 @@ export const queryCacheConfig: QueryConfig = {
   description:
     'https://clickhouse.com/blog/introduction-to-the-clickhouse-query-cache-and-design',
   docs: QUERY_CACHE,
+  tableCheck: 'system.query_cache',
   sql: `
       SELECT
           query,

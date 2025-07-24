@@ -5,15 +5,15 @@ import { fetchData } from '@/lib/clickhouse'
 export const revalidate = false
 
 export async function GET() {
-  try {
-    const { data } = await fetchData<{ tz: string }[]>({
-      query: 'SELECT timezone() as tz',
-    })
+  const { data, error } = await fetchData<{ tz: string }[]>({
+    query: 'SELECT timezone() as tz',
+  })
 
-    return NextResponse.json({
-      tz: data[0].tz,
-    })
-  } catch {
+  if (error || !data?.length) {
     return NextResponse.json({}, { status: 500 })
   }
+
+  return NextResponse.json({
+    tz: data[0].tz,
+  })
 }

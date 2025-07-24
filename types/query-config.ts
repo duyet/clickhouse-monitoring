@@ -101,6 +101,21 @@ export interface QueryConfig {
    */
   optional?: boolean
   /**
+   * Explicit table(s) to check for existence when the query is marked as optional.
+   * If not provided, tables will be automatically extracted from the SQL query.
+   *
+   * Example:
+   * ```ts
+   * tableCheck: "system.backup_log"
+   * ```
+   *
+   * For multiple tables:
+   * ```ts
+   * tableCheck: ["system.backup_log", "system.error_log"]
+   * ```
+   */
+  tableCheck?: string | string[]
+  /**
    * Sorting functions to be used for table.
    *
    * Example:

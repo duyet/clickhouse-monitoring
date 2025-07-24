@@ -3,10 +3,14 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   moduleNameMapper: {
-    // resolve react module with the next.js inset one.
-    react: 'next/dist/compiled/react/cjs/react.development.js',
+    // Remove the React mapping that's causing issues with react-is
+    // Only use path aliases for the workspace
     '^@/(.*)$': '<rootDir>/$1',
   },
+  // Ensure Jest can find react-is properly
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-is)/)',
+  ],
   collectCoverage: true,
   coverageDirectory: 'jest-reports/coverage',
   reporters: [

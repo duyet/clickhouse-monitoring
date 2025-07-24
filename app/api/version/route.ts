@@ -4,16 +4,11 @@ import { fetchData } from '@/lib/clickhouse'
 import packageInfo from '@/package.json'
 
 export async function GET() {
-  try {
-    const { data: clickhouse } = await fetchData({
-      query: 'SELECT version() as version',
-    })
+  const { data: clickhouse, error } = await fetchData({
+    query: 'SELECT version() as version',
+  })
 
-    return NextResponse.json({
-      ui: packageInfo.version,
-      clickhouse,
-    })
-  } catch {
+  if (error) {
     return NextResponse.json(
       {
         ui: packageInfo.version,
@@ -22,4 +17,9 @@ export async function GET() {
       { status: 500 }
     )
   }
+
+  return NextResponse.json({
+    ui: packageInfo.version,
+    clickhouse,
+  })
 }

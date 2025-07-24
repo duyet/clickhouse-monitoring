@@ -22,7 +22,7 @@ async function fetchHostStatus(hostId: number) {
       hostId,
     })
 
-    return detail[0]
+    return (detail || [])[0]
   } catch (e) {
     return null
   }

@@ -8,6 +8,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fetchData } from '@/lib/clickhouse'
+import {
+  formatErrorMessage,
+  formatErrorTitle,
+  getErrorDocumentation,
+} from '@/lib/error-utils'
 
 interface RunningQueriesProps {
   database: string
@@ -21,40 +26,39 @@ export async function RunningQueries({
   table,
   className,
 }: RunningQueriesProps) {
-  let data: { data: { [key: string]: string }[] } = { data: [] }
-  try {
-    data = await fetchData({
-      query: `SELECT query, user, elapsed,
-         formatReadableQuantity(read_rows) as read_rows,
-         formatReadableQuantity(total_rows_approx) as total_rows_approx,
-         formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
-         formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')' as memory_usage
-       FROM system.processes
-       WHERE (query LIKE '%{database: String}%')
-         AND (query LIKE '%{table: String}%')
-       `,
-      query_params: {
-        database,
-        table,
-      },
-    })
-  } catch (error) {
-    console.error(error)
+  const { data, error } = await fetchData<{ [key: string]: string }[]>({
+    query: `SELECT query, user, elapsed,
+       formatReadableQuantity(read_rows) as read_rows,
+       formatReadableQuantity(total_rows_approx) as total_rows_approx,
+       formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
+       formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')' as memory_usage
+     FROM system.processes
+     WHERE (query LIKE '%{database: String}%')
+       AND (query LIKE '%{table: String}%')
+     `,
+    query_params: {
+      database,
+      table,
+    },
+  })
 
+  if (error) {
+    console.error('Failed to fetch running queries', error)
     return (
       <ErrorAlert
-        title={`Could not getting running queries on ${database}.${table}`}
-        message={`${error}`}
+        title={formatErrorTitle(error)}
+        message={formatErrorMessage(error)}
+        docs={getErrorDocumentation(error)}
         className="w-full"
       />
     )
   }
 
-  if (!data.data?.length) {
+  if (!data?.length) {
     return <span className="text-muted-foreground">No rows</span>
   }
 
-  const headers = Object.keys(data.data[0])
+  const headers = Object.keys(data[0])
 
   return (
     <div className="w-full overflow-auto">
@@ -67,7 +71,7 @@ export async function RunningQueries({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.data.map((row, idx) => (
+          {data.map((row, idx) => (
             <TableRow key={idx}>
               {Object.values(row).map((value) => {
                 if (typeof value === 'object') {

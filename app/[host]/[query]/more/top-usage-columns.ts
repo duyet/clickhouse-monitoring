@@ -6,6 +6,7 @@ export const topUsageColumnsConfig: QueryConfig = {
   name: 'top-usage-columns',
   description: 'Most usage columns of table based on system.query_log',
   docs: QUERY_LOG,
+  tableCheck: 'system.query_log',
   sql: `
       SELECT
           columns as column,

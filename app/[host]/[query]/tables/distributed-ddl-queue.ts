@@ -5,6 +5,7 @@ export const distributedDdlQueueConfig: QueryConfig = {
   name: 'distributed-ddl-queue',
   description:
     'Distributed ddl queries (ON CLUSTER clause) that were executed on a cluster',
+  tableCheck: 'system.distributed_ddl_queue',
   sql: `
       SELECT
         entry,

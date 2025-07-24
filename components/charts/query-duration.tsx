@@ -43,10 +43,10 @@ export async function ChartQueryDuration({
   })
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data}>
+    <ChartCard title={title} className={className} sql={query} data={data || []}>
       <BarChart
         className={cn('h-52', chartClassName)}
-        data={data}
+        data={data || []}
         index="event_time"
         categories={['query_duration_s']}
         colors={['--chart-rose-200']}

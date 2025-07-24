@@ -4,6 +4,7 @@ import { type QueryConfig } from '@/types/query-config'
 export const viewRefreshesConfig: QueryConfig = {
   name: 'view-refreshes',
   description: `Contains information about refresh operations for materialized views using the REFRESH keyword. https://clickhouse.com/docs/operations/system-tables/view_refreshes`,
+  tableCheck: 'system.view_refreshes',
   sql: `
     SELECT *
     FROM system.view_refreshes

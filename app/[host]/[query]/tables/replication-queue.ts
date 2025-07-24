@@ -4,6 +4,7 @@ import { type QueryConfig } from '@/types/query-config'
 export const replicationQueueConfig: QueryConfig = {
   name: 'replication-queue',
   description: `Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family`,
+  tableCheck: 'system.replication_queue',
   sql: `
       SELECT
         * EXCEPT (table, parts_to_merge),
