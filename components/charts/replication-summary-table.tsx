@@ -9,12 +9,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartReplicationSummaryTable({
   title,
   className,
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT (database || '.' || table) as table,
            type,
@@ -31,7 +33,7 @@ export async function ChartReplicationSummaryTable({
       current_executing: number
       total: number
     }[]
-  >({ query })
+  >({ query, hostId })
 
   const headers = Object.keys(data?.[0] || {})
 

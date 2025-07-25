@@ -3,6 +3,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 export async function ChartQueryCountByUser({
   title = 'Total Queries over last 14 days by users',
@@ -12,6 +13,7 @@ export async function ChartQueryCountByUser({
   chartClassName,
   ...props
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT ${applyInterval(interval, 'event_time')},
            user,
@@ -31,7 +33,7 @@ export async function ChartQueryCountByUser({
       user: string
       count: number
     }[]
-  >({ query })
+  >({ query, hostId })
 
   const data = raw.reduce(
     (acc, cur) => {

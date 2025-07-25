@@ -2,6 +2,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import { type ChartProps } from './chart-props'
 
 export async function ChartReadonlyReplica({
@@ -10,6 +11,7 @@ export async function ChartReadonlyReplica({
   lastHours = 24,
   className,
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT ${applyInterval(interval, 'event_time')},
            MAX(CurrentMetric_ReadonlyReplica) AS ReadonlyReplica
@@ -27,6 +29,8 @@ export async function ChartReadonlyReplica({
   >({
     query,
     format: 'JSONEachRow',
+
+    hostId,
   })
 
   return (

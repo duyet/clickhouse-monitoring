@@ -4,6 +4,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep } from '@/lib/clickhouse-query'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import { ChartWarnMessage } from '../chart-warn-message'
 import { type ChartProps } from './chart-props'
 
@@ -13,6 +14,7 @@ export async function ChartKeeperException({
   lastHours = 24 * 7,
   className,
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT
       ${applyInterval(interval, 'event_time')},
@@ -35,6 +37,8 @@ export async function ChartKeeperException({
     >({
       query,
       format: 'JSONEachRow',
+
+      hostId,
     })
 
     data = resp.data

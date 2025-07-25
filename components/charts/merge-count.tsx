@@ -6,7 +6,7 @@ import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
-import { getScopedLink } from '@/lib/scoped-link'
+import { getHostIdCookie, getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartMergeCount({
@@ -16,6 +16,7 @@ export async function ChartMergeCount({
   className,
   chartClassName,
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT ${applyInterval(interval, 'event_time')},
            avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
@@ -33,7 +34,7 @@ export async function ChartMergeCount({
       avg_CurrentMetric_Merge: number
       avg_CurrentMetric_PartMutation: number
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <ChartCard

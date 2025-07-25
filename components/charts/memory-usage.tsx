@@ -3,6 +3,7 @@ import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 export async function ChartMemoryUsage({
   title,
@@ -11,6 +12,7 @@ export async function ChartMemoryUsage({
   className,
   chartClassName,
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT ${applyInterval(interval, 'event_time')},
            avg(CurrentMetric_MemoryTracking) AS avg_memory,
@@ -25,7 +27,7 @@ export async function ChartMemoryUsage({
       avg_memory: number
       readable_avg_memory: string
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <ChartCard title={title} className={className} sql={query} data={data}>

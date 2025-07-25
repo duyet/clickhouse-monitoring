@@ -33,7 +33,7 @@ export async function PageViewBarChart({
       event_time: string
       page_views: number
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <ChartCard

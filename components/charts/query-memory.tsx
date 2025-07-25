@@ -3,7 +3,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
-import { getScopedLink } from '@/lib/scoped-link'
+import { getHostIdCookie, getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryMemory({
@@ -14,6 +14,7 @@ export async function ChartQueryMemory({
   lastHours = 24 * 14,
   ...props
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT ${applyInterval(interval, 'event_time')},
            AVG(memory_usage) AS memory_usage,
@@ -31,7 +32,7 @@ export async function ChartQueryMemory({
       memory_usage: number
       readable_memory_usage: string
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <ChartCard title={title} className={className} sql={query} data={data}>

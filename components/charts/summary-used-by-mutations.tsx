@@ -2,11 +2,13 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { CardMultiMetrics } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 export async function ChartSummaryUsedByMutations({
   title,
   className,
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT COUNT() as running_count
     FROM system.mutations
@@ -16,7 +18,7 @@ export async function ChartSummaryUsedByMutations({
     {
       running_count: number
     }[]
-  >({ query })
+  >({ query, hostId })
   const count = data?.[0] || { running_count: 0 }
 
   return (

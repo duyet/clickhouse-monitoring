@@ -2,12 +2,14 @@ import { type ChartProps } from '@/components/charts/chart-props'
 import { CardMetric } from '@/components/generic-charts/card-metric'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 export async function ChartDiskSize({
   name,
   title,
   className,
 }: ChartProps & { name?: string }) {
+  const hostId = await getHostIdCookie()
   const condition = name ? `WHERE name = '${name}'` : ''
   const query = `
     SELECT name,
@@ -27,7 +29,7 @@ export async function ChartDiskSize({
       total_space: number
       readable_total_space: string
     }[]
-  >({ query })
+  >({ query, hostId })
   const first = data?.[0]
 
   if (!data || !first) return null

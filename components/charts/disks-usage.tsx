@@ -3,6 +3,7 @@ import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartDisksUsage({
@@ -13,6 +14,7 @@ export async function ChartDisksUsage({
   lastHours = 24 * 30,
   ...props
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     WITH CAST(sumMap(map(metric, value)), 'Map(LowCardinality(String), UInt32)') AS map
     SELECT
@@ -35,7 +37,7 @@ export async function ChartDisksUsage({
       readable_DiskAvailable_default: string
       readable_DiskUsed_default: string
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <ChartCard title={title} className={className} sql={query} data={data}>

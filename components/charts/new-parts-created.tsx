@@ -38,7 +38,7 @@ export async function ChartNewPartsCreated({
       table: string
       new_parts: number
     }[]
-  >({ query })
+  >({ query, hostId })
 
   const data = raw.reduce(
     (acc, cur) => {

@@ -9,12 +9,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartZookeeperSummaryTable({
   title = 'ZooKeeper Current Metrics',
   className,
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT metric, value, description
     FROM system.metrics
@@ -26,7 +28,7 @@ export async function ChartZookeeperSummaryTable({
       value: string
       desc: string
     }[]
-  >({ query })
+  >({ query, hostId })
 
   const headers = Object.keys(data?.[0] || {})
 
