@@ -3,12 +3,14 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { BarList } from '@/components/tremor/bar-list'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 export async function ChartTopTableSize({
   title,
   className,
   ...props
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const limit = 7
   const topBySizeQuery = fetchData<
     {
@@ -39,6 +41,7 @@ export async function ChartTopTableSize({
       GROUP BY 1
       ORDER BY compressed_bytes DESC
       LIMIT ${limit}`,
+    hostId,
   }).then((res) => res.data)
 
   const topByRowCountQuery = fetchData<
@@ -70,6 +73,7 @@ export async function ChartTopTableSize({
     GROUP BY 1
     ORDER BY total_rows DESC
     LIMIT ${limit}`,
+    hostId,
   }).then((res) => res.data)
 
   const [topBySize, topByRowCount] = await Promise.all([

@@ -3,7 +3,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
-import { getScopedLink } from '@/lib/scoped-link'
+import { getHostIdCookie, getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartQueryDuration({
@@ -14,6 +14,7 @@ export async function ChartQueryDuration({
   lastHours = 24 * 14,
   ...props
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT ${applyInterval(interval, 'event_time')},
            AVG(query_duration_ms) AS query_duration_ms,
@@ -34,6 +35,7 @@ export async function ChartQueryDuration({
     }[]
   >({
     query,
+    hostId,
     clickhouse_settings: {
       use_query_cache: 1,
       query_cache_ttl: 300,

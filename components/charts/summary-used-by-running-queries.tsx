@@ -9,12 +9,13 @@ import {
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { formatReadableQuantity } from '@/lib/format-readable'
-import { getScopedLink } from '@/lib/scoped-link'
+import { getHostIdCookie, getScopedLink } from '@/lib/scoped-link'
 
 export async function ChartSummaryUsedByRunningQueries({
   title,
   className,
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const sql = `
     SELECT COUNT() as query_count,
            SUM(memory_usage) as memory_usage,
@@ -27,7 +28,7 @@ export async function ChartSummaryUsedByRunningQueries({
       memory_usage: number
       readable_memory_usage: string
     }[]
-  >({ query: sql })
+  >({ query: sql, hostId })
 
   const first = data?.[0]
   if (!data || !first) return null
@@ -54,7 +55,7 @@ export async function ChartSummaryUsedByRunningQueries({
         total: number
         readable_total: string
       }[]
-    >({ query: totalMemSql })
+    >({ query: totalMemSql, hostId })
     totalMem = totalRows?.[0]
     if (!totalRows || !totalMem) return null
   } catch (e) {
@@ -73,7 +74,7 @@ export async function ChartSummaryUsedByRunningQueries({
       {
         query_count: number
       }[]
-    >({ query: todayQueryCountSql })
+    >({ query: todayQueryCountSql, hostId })
     todayQueryCount = todayQueryCountRows?.[0]?.query_count
     if (!todayQueryCountRows || !todayQueryCount) return null
   } catch (e) {
@@ -101,7 +102,7 @@ export async function ChartSummaryUsedByRunningQueries({
         readable_rows_read: string
         readable_rows_written: string
       }[]
-    >({ query: rowsReadWrittenSql })
+    >({ query: rowsReadWrittenSql, hostId })
     if (!!data) {
       rowsReadWritten = data?.[0]
     }

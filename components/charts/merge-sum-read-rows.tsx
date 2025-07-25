@@ -3,6 +3,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 export async function ChartMergeSumReadRows({
   title,
@@ -11,6 +12,7 @@ export async function ChartMergeSumReadRows({
   className,
   chartClassName,
 }: ChartProps) {
+  const hostId = await getHostIdCookie()
   const query = `
     SELECT
         ${applyInterval(interval, 'event_time')},
@@ -32,7 +34,7 @@ export async function ChartMergeSumReadRows({
       sum_read_rows_scale: number
       readable_sum_read_rows: string
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <ChartCard title={title} className={className} sql={query} data={data}>
