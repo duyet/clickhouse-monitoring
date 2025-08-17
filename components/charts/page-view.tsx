@@ -3,6 +3,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function PageViewBarChart({
@@ -18,6 +19,7 @@ export async function PageViewBarChart({
   colors = ['--chart-indigo-300'],
   ...props
 }: ChartProps & { colors?: string[] }) {
+  const hostId = await getHostIdCookie()
   const eventTimeExpr = applyInterval(interval, 'event_time', 'event_time')
   const query = `
     SELECT ${eventTimeExpr},

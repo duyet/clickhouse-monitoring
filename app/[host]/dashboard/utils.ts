@@ -1,6 +1,7 @@
 'use server'
 
 import { fetchData, getClient } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 import { FormSchema } from './chart-params'
 import type { TableChartsRow, TableSettingsRow } from './config'
@@ -10,11 +11,14 @@ import { seeding } from './seeding'
 export const getCustomDashboards = async () => {
   await seeding()
 
+  const hostId = await getHostIdCookie()
   const q1 = fetchData<TableChartsRow[]>({
     query: `SELECT * FROM ${TABLE_CHARTS} FINAL ORDER BY ordering ASC`,
+    hostId,
   }).then((res) => res.data)
   const q2 = fetchData<TableSettingsRow[]>({
     query: `SELECT * FROM ${TABLE_SETTINGS} FINAL`,
+    hostId,
   }).then((res) => res.data)
 
   const [dashboards, settings] = await Promise.all([q1, q2])

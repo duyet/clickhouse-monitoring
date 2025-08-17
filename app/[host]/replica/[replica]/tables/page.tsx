@@ -5,15 +5,17 @@ import { queryConfig, type Row } from './config'
 
 interface PageProps {
   params: Promise<{
+    host: number
     replica: string
   }>
 }
 
 export default async function ClustersPage({ params }: PageProps) {
-  const { replica } = await params
+  const { host, replica } = await params
   const { data } = await fetchData<Row[]>({
     query: queryConfig.sql,
     query_params: { replica },
+    hostId: host,
   })
 
   return (

@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 interface TableInfoProps {
@@ -25,6 +26,7 @@ export async function TableInfo({
 }: TableInfoProps) {
   let tableInfo = []
   try {
+    const hostId = await getHostIdCookie()
     const { data }: { data: { [key: string]: string }[] } = await fetchData({
       query: `SELECT
            engine,
@@ -49,6 +51,7 @@ export async function TableInfo({
         database,
         table,
       },
+      hostId,
     })
     tableInfo = data
   } catch (error) {

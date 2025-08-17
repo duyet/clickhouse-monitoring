@@ -1,4 +1,5 @@
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 export async function TableComment({
   database,
@@ -8,6 +9,7 @@ export async function TableComment({
   table: string
 }) {
   try {
+    const hostId = await getHostIdCookie()
     const { data } = await fetchData<{ comment: string }[]>({
       query: `
           SELECT comment
@@ -16,6 +18,7 @@ export async function TableComment({
              AND (name = {table: String})
         `,
       query_params: { database, table },
+      hostId,
     })
 
     return data?.[0]?.comment || ''

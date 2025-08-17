@@ -1,6 +1,7 @@
 'use server'
 
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import type { Row, RowData } from '@tanstack/react-table'
 import type { ActionResponse } from './types'
 
@@ -9,8 +10,10 @@ export async function killQuery<TValue>(
   _formData: FormData
 ): Promise<ActionResponse> {
   console.log('Killing query', queryId)
+  const hostId = await getHostIdCookie()
   const res = await fetchData({
     query: `KILL QUERY WHERE query_id = '${queryId}'`,
+    hostId,
   })
   console.log('Killed query', queryId, res)
 
@@ -36,7 +39,11 @@ export async function optimizeTable<TValue>(
   _formData: FormData
 ): Promise<ActionResponse> {
   console.log('Optimize table', table)
-  const res = await fetchData({ query: `OPTIMIZE TABLE ${table}` })
+  const hostId = await getHostIdCookie()
+  const res = await fetchData({ 
+    query: `OPTIMIZE TABLE ${table}`,
+    hostId,
+  })
   console.log('Optimize table', table, res)
 
   return {

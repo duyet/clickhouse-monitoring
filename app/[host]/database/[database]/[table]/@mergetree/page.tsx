@@ -26,6 +26,7 @@ export default async function MergeTree({ params }: Props) {
       database,
       table,
     },
+    hostId: host,
   })
 
   return (

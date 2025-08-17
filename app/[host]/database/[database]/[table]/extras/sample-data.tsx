@@ -8,6 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 interface SampleDataProps {
   database: string
@@ -24,6 +25,7 @@ export async function SampleData({
 }: SampleDataProps) {
   let data: { data: { [key: string]: string }[] } = { data: [] }
   try {
+    const hostId = await getHostIdCookie()
     data = await fetchData({
       query: `SELECT *
        FROM ${database}.${table}
@@ -32,6 +34,7 @@ export async function SampleData({
         database,
         table,
       },
+      hostId,
     })
   } catch (error) {
     console.error(error)

@@ -58,6 +58,7 @@ export default async function TableListPage({ params }: TableListProps) {
     query: queryConfig.sql,
     format: 'JSONEachRow',
     query_params: { database },
+    hostId: host,
   })
 
   return (

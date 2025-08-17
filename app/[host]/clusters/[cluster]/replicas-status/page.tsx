@@ -8,16 +8,18 @@ import { queryConfig, type Row } from './config'
 
 interface PageProps {
   params: Promise<{
+    host: number
     cluster: string
   }>
 }
 
 export default async function Page({ params }: PageProps) {
-  const { cluster } = await params
+  const { host, cluster } = await params
 
   const { data } = await fetchData<Row[]>({
     query: queryConfig.sql,
     query_params: { cluster },
+    hostId: host,
   })
 
   return (
@@ -26,12 +28,13 @@ export default async function Page({ params }: PageProps) {
       queryConfig={queryConfig}
       data={data}
       context={{ cluster }}
-      topRightToolbarExtras={<TopRightToolbarExtras cluster={cluster} />}
+      topRightToolbarExtras={<TopRightToolbarExtras host={host} cluster={cluster} />}
     />
   )
 }
 
 const TopRightToolbarExtras = async ({
+  host,
   cluster,
 }: Awaited<PageProps['params']>) => (
   <div className="flex flex-row gap-2">

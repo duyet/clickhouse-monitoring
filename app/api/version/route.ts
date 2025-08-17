@@ -7,6 +7,7 @@ export async function GET() {
   try {
     const { data: clickhouse } = await fetchData({
       query: 'SELECT version() as version',
+      hostId: 0, // Default to first host for API route
     })
 
     return NextResponse.json({

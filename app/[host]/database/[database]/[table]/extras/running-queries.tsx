@@ -8,6 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 interface RunningQueriesProps {
   database: string
@@ -23,6 +24,7 @@ export async function RunningQueries({
 }: RunningQueriesProps) {
   let data: { data: { [key: string]: string }[] } = { data: [] }
   try {
+    const hostId = await getHostIdCookie()
     data = await fetchData({
       query: `SELECT query, user, elapsed,
          formatReadableQuantity(read_rows) as read_rows,
@@ -37,6 +39,7 @@ export async function RunningQueries({
         database,
         table,
       },
+      hostId,
     })
   } catch (error) {
     console.error(error)

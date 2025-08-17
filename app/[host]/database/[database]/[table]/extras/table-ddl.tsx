@@ -1,4 +1,5 @@
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import { cn, dedent } from '@/lib/utils'
 
 interface ShowSQLButtonProps {
@@ -14,8 +15,10 @@ export async function TableDDL({
 }: ShowSQLButtonProps) {
   let showCreateTable = []
   try {
+    const hostId = await getHostIdCookie()
     const { data }: { data: { statement: string }[] } = await fetchData({
       query: `SHOW CREATE TABLE ${database}.${table}`,
+      hostId,
     })
     showCreateTable = data
   } catch (error) {

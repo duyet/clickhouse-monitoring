@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { fetchData } from '@/lib/clickhouse'
-import { getScopedLink } from '@/lib/scoped-link'
+import { getScopedLink, getHostIdCookie } from '@/lib/scoped-link'
 import { queryConfig, type Row } from '../config'
 
 interface Props {
@@ -28,7 +28,11 @@ interface Props {
 export async function ClusterListBreadcrumb({ cluster }: Props) {
   try {
     // Lists cluster names.
-    const { data } = await fetchData<Row[]>({ query: queryConfig.sql })
+    const hostId = await getHostIdCookie()
+    const { data } = await fetchData<Row[]>({ 
+      query: queryConfig.sql,
+      hostId
+    })
 
     if (!data.length) {
       return (

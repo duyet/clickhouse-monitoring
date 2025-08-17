@@ -22,9 +22,10 @@ interface DatabaseCount {
   count: number
 }
 
-export const getListDatabaseCached = cache(async () => {
+export const getListDatabaseCached = cache(async (hostId: number) => {
   return fetchData({
     query: listDatabases,
+    hostId,
     clickhouse_settings: {
       use_query_cache: 1,
       query_cache_system_table_handling: 'save',
@@ -34,7 +35,7 @@ export const getListDatabaseCached = cache(async () => {
 })
 
 export const preload = async (host: number) => {
-  void (await getListDatabaseCached())
+  void (await getListDatabaseCached(host))
 }
 
 export async function Nav({ host, database, collapsible }: Props) {
@@ -42,7 +43,7 @@ export async function Nav({ host, database, collapsible }: Props) {
   let databases: DatabaseCount[] = []
 
   try {
-    const data = await getListDatabaseCached()
+    const data = await getListDatabaseCached(host)
     databases = data.data as DatabaseCount[]
   } catch (e: any) {
     return (
