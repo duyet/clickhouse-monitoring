@@ -14,7 +14,7 @@ export default async function Page() {
   console.log('Dashboard data', dashboards)
 
   const params: Record<string, string> = JSON.parse(
-    settings.find((s) => s.key === 'params')?.value || '{}'
+    settings?.find((s) => s.key === 'params')?.value || '{}'
   )
 
   return (
@@ -24,7 +24,7 @@ export default async function Page() {
         <Button>Add Chart</Button>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        {dashboards.map((dashboard, i) => (
+        {dashboards?.map((dashboard, i) => (
           <RenderChart key={'dashboard' + i} {...dashboard} params={params} />
         ))}
       </div>

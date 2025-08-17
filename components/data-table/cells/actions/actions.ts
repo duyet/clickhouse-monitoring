@@ -9,11 +9,19 @@ export async function killQuery<TValue>(
   _formData: FormData
 ): Promise<ActionResponse> {
   console.log('Killing query', queryId)
-  const res = await fetchData({
+  const { data, error } = await fetchData({
     query: `KILL QUERY WHERE query_id = '${queryId}'`,
   })
-  console.log('Killed query', queryId, res)
 
+  if (error) {
+    console.error('Failed to kill query', queryId, error)
+    return {
+      action: 'toast',
+      message: `Failed to kill query ${queryId}: ${error.message}`,
+    }
+  }
+
+  console.log('Killed query', queryId, data)
   return {
     action: 'toast',
     message: `Killed query ${queryId}`,
@@ -36,9 +44,17 @@ export async function optimizeTable<TValue>(
   _formData: FormData
 ): Promise<ActionResponse> {
   console.log('Optimize table', table)
-  const res = await fetchData({ query: `OPTIMIZE TABLE ${table}` })
-  console.log('Optimize table', table, res)
+  const { data, error } = await fetchData({ query: `OPTIMIZE TABLE ${table}` })
 
+  if (error) {
+    console.error('Failed to optimize table', table, error)
+    return {
+      action: 'toast',
+      message: `Failed to optimize table ${table}: ${error.message}`,
+    }
+  }
+
+  console.log('Optimize table', table, data)
   return {
     action: 'toast',
     message: `Running query optimize table ${table}`,
@@ -50,12 +66,20 @@ export async function querySettings<TValue>(
   _formData: FormData
 ): Promise<ActionResponse> {
   console.log('Getting query SETTINGS', queryId)
-  const { data } = await fetchData<{ Settings: string }[]>({
+  const { data, error } = await fetchData<{ Settings: string }[]>({
     query: `SELECT Settings FROM system.processes WHERE query_id = {queryId: String}`,
     query_params: { queryId },
   })
-  console.log('Query SETTINGS', queryId, data)
 
+  if (error) {
+    console.error('Failed to get query settings', queryId, error)
+    return {
+      action: 'toast',
+      message: `Failed to get query settings ${queryId}: ${error.message}`,
+    }
+  }
+
+  console.log('Query SETTINGS', queryId, data)
   return {
     action: 'toast',
     message: JSON.stringify(data),

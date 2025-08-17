@@ -37,13 +37,23 @@ export const RenderChart = async ({
   className,
   chartClassName,
 }: RenderChartProps) => {
-  const { data } = await fetchData<{ [key: string]: string | number }[]>({
-    query,
-    query_params: params,
-  })
+  const { data, error } = await fetchData<{ [key: string]: string | number }[]>(
+    {
+      query,
+      query_params: params,
+    }
+  )
+
+  if (error) {
+    return (
+      <div className="rounded border p-4">
+        <div className="text-sm text-red-600">Error: {error.message}</div>
+      </div>
+    )
+  }
 
   // event_time is a must
-  if (!data[0]?.event_time) {
+  if (!data || !data[0]?.event_time) {
     return (
       <div>
         <code>event_time</code> column is a must from query result

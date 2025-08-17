@@ -3,6 +3,12 @@ import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse'
 import type { RowData } from '@tanstack/react-table'
 
+import {
+  formatErrorMessage,
+  formatErrorTitle,
+  getErrorDocumentation,
+  getErrorVariant,
+} from '@/lib/error-utils'
 import { getHostIdCookie } from '@/lib/scoped-link'
 import type { QueryConfig } from '@/types/query-config'
 
@@ -32,46 +38,63 @@ export async function Table({
   const validQueryParamsObj = Object.fromEntries(validQueryParams)
 
   // Retrieve data from ClickHouse.
-  try {
-    const queryParams = {
-      ...queryConfig.defaultParams,
-      ...validQueryParamsObj,
-    }
-    const { data, metadata } = await fetchData<RowData[]>({
-      query: queryConfig.sql,
-      format: 'JSONEachRow',
-      query_params: queryParams,
-      clickhouse_settings: {
-        // The main data table takes longer to load.
-        max_execution_time: 300,
-        ...queryConfig.clickhouseSettings,
-      },
-      hostId,
-    })
+  const queryParams = {
+    ...queryConfig.defaultParams,
+    ...validQueryParamsObj,
+  }
 
-    const footerText = `${metadata.rows} row(s) in ${metadata.duration} seconds.`
+  const { data, metadata, error } = await fetchData<RowData[]>({
+    query: queryConfig.sql,
+    format: 'JSONEachRow',
+    query_params: queryParams,
+    clickhouse_settings: {
+      // The main data table takes longer to load.
+      max_execution_time: 300,
+      ...queryConfig.clickhouseSettings,
+    },
+    hostId,
+    queryConfig,
+  })
 
-    return (
-      <DataTable
-        title={title}
-        description={description}
-        queryConfig={queryConfig}
-        queryParams={queryParams}
-        data={data}
-        context={{ ...queryParams, hostId: '' + hostId }}
-        footnote={footerText}
-        className={className}
-      />
-    )
-  } catch (error) {
-    console.error(`<Table /> failed render, error: "${error}"`)
+  if (error) {
+    console.error(`<Table /> failed render, error: "${error.message}"`)
     return (
       <ErrorAlert
-        title="ClickHouse Query Error"
-        message={`${error}`}
+        title={formatErrorTitle(error)}
+        message={formatErrorMessage(error)}
+        query={queryConfig.sql}
+        docs={getErrorDocumentation(error) || queryConfig.docs}
+        variant={getErrorVariant(error)}
+        errorType={error.type}
+      />
+    )
+  }
+
+  // Safety check for null data
+  if (!data) {
+    console.error(`<Table /> received null data without error`)
+    return (
+      <ErrorAlert
+        title="No Data Available"
+        message="No data was returned from the query."
         query={queryConfig.sql}
         docs={queryConfig.docs}
       />
     )
   }
+
+  const footerText = `${metadata.rows} row(s) in ${metadata.duration} seconds.`
+
+  return (
+    <DataTable
+      title={title}
+      description={description}
+      queryConfig={queryConfig}
+      queryParams={queryParams}
+      data={data}
+      context={{ ...queryParams, hostId: '' + hostId }}
+      footnote={footerText}
+      className={className}
+    />
+  )
 }

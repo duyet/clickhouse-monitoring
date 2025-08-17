@@ -1,3 +1,4 @@
+import { backupsConfig } from '@/app/[host]/[query]/more/backups'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { CardMetric } from '@/components/generic-charts/card-metric'
 import { ChartCard } from '@/components/generic-charts/chart-card'
@@ -24,7 +25,14 @@ export async function ChartBackupSize({
     WHERE status = 'BACKUP_CREATED'
           ${startTimeCondition}
   `
-  const { data } = await fetchData<
+
+  // Create a temporary query config based on the backup config
+  const chartQueryConfig = {
+    ...backupsConfig,
+    sql: query,
+  }
+
+  const { data, error } = await fetchData<
     {
       total_size: number
       uncompressed_size: number
@@ -33,13 +41,19 @@ export async function ChartBackupSize({
       readable_uncompressed_size: string
       readable_compressed_size: string
     }[]
-  >({ query })
-  const first = data?.[0]
+  >({
+    query,
+    queryConfig: chartQueryConfig,
+  })
 
-  if (!data || !first) return null
+  // If validation failed or no data, return null
+  const first = data?.[0]
+  if (!data || !first || error) {
+    return null
+  }
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data}>
+    <ChartCard title={title} className={className} sql={query} data={data || []}>
       <CardMetric
         current={first.compressed_size}
         currentReadable={`${first.readable_compressed_size} compressed`}

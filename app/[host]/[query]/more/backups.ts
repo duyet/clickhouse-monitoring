@@ -9,6 +9,7 @@ export const backupsConfig: QueryConfig = {
   docs: BACKUP_LOG,
   // system.backup_log can be not exist if no backups were made
   optional: true,
+  tableCheck: 'system.backup_log',
   sql: `
       SELECT *,
         formatReadableSize(total_size) as readable_total_size,

@@ -3,6 +3,7 @@ import { type QueryConfig } from '@/types/query-config'
 export const detachedPartsConfig: QueryConfig = {
   name: 'detached_parts',
   description: `Contains information about detached parts of MergeTree tables. The reason column specifies why the part was detached`,
+  tableCheck: 'system.detached_parts',
   sql: `
       SELECT *,
              format('{}.{}', database, table) AS table,

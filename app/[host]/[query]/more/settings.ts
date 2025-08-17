@@ -3,6 +3,7 @@ import { type QueryConfig } from '@/types/query-config'
 
 export const settingsConfig: QueryConfig = {
   name: 'settings',
+  tableCheck: 'system.settings',
   sql: `
       SELECT *
       FROM system.settings

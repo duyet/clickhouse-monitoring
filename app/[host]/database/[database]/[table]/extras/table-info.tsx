@@ -23,37 +23,36 @@ export async function TableInfo({
   table,
   className,
 }: TableInfoProps) {
-  let tableInfo = []
-  try {
-    const { data }: { data: { [key: string]: string }[] } = await fetchData({
-      query: `SELECT
-           engine,
-           uuid,
-           data_paths,
-           metadata_path,
-           metadata_modification_time,
-           storage_policy,
-           parts,
-           active_parts,
-           total_marks,
-           formatReadableQuantity(total_rows) as total_rows,
-           formatReadableSize(total_bytes) as compressed,
-           partition_key,
-           sorting_key,
-           primary_key,
-           active_parts
-       FROM system.tables
-       WHERE database = {database: String} AND name = {table: String}
-      `,
-      query_params: {
-        database,
-        table,
-      },
-    })
-    tableInfo = data
-  } catch (error) {
-    console.log(error)
+  const { data: tableInfo, error } = await fetchData<
+    { [key: string]: string }[]
+  >({
+    query: `SELECT
+         engine,
+         uuid,
+         data_paths,
+         metadata_path,
+         metadata_modification_time,
+         storage_policy,
+         parts,
+         active_parts,
+         total_marks,
+         formatReadableQuantity(total_rows) as total_rows,
+         formatReadableSize(total_bytes) as compressed,
+         partition_key,
+         sorting_key,
+         primary_key,
+         active_parts
+     FROM system.tables
+     WHERE database = {database: String} AND name = {table: String}
+    `,
+    query_params: {
+      database,
+      table,
+    },
+  })
 
+  if (error) {
+    console.error('Failed to fetch table info', error)
     return null
   }
 

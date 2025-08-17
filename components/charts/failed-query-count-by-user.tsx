@@ -33,7 +33,7 @@ export async function ChartFailedQueryCountByType({
     }[]
   >({ query })
 
-  const data = raw.reduce(
+  const data = (raw || []).reduce(
     (acc, cur) => {
       const { event_time, user, count } = cur
       if (acc[event_time] === undefined) {
