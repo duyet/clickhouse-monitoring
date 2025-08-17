@@ -115,6 +115,38 @@ Two chart systems are used:
 - Query parameters are properly sanitized through `query_params`
 - Host selection is handled through server context
 
+#### Table Validation System
+
+The application includes a robust table validation system to handle optional ClickHouse system tables that may not exist depending on configuration:
+
+**Optional Tables** (marked with `optional: true`):
+- `system.backup_log` - Only exists if backup configuration is enabled
+- `system.error_log` - Requires error logging configuration
+- `system.zookeeper` - Only available if ZooKeeper/ClickHouse Keeper is configured
+- `system.monitoring_events` - Custom table created by the monitoring application
+
+**Key Components**:
+- `lib/table-validator.ts` - Validates table existence before queries
+- `lib/table-existence-cache.ts` - Caches validation results (5-minute TTL)
+- `lib/error-utils.ts` - Provides user-friendly error messages
+
+**Usage Pattern**:
+```typescript
+export const backupsConfig: QueryConfig = {
+  name: 'backups',
+  optional: true,                    // Mark as optional
+  tableCheck: 'system.backup_log',   // Explicit table to check
+  sql: 'SELECT * FROM system.backup_log',
+  // ... other config
+}
+```
+
+**Automatic Features**:
+- SQL parsing automatically extracts table names from complex queries
+- Handles JOINs, subqueries, CTEs, and EXISTS clauses
+- Graceful error handling with informative user messages
+- Caching prevents repeated validation calls
+
 #### Testing Strategy
 
 - **Jest** for unit tests and utilities

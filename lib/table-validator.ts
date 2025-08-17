@@ -32,17 +32,45 @@ export type TableValidationResult = {
 export function parseTableFromSQL(sql: string): string[] {
   const tables: string[] = []
 
-  // Match patterns like "FROM system.backup_log", "JOIN system.error_log", "FROM system.tables"
-  // This regex looks for FROM or JOIN followed by table names in database.table format
-  const tableMatches = sql.match(/(?:FROM|JOIN)\s+(\w+\.\w+)/gi)
-  if (tableMatches) {
-    tableMatches.forEach((match) => {
-      const table = match.replace(/(?:FROM|JOIN)\s+/i, '').trim()
-      if (table && !tables.includes(table)) {
-        tables.push(table)
-      }
-    })
-  }
+  // Enhanced regex patterns to match various SQL constructs
+  const patterns = [
+    // FROM and JOIN patterns - handles spaces, tabs, newlines
+    /(?:FROM|JOIN|LEFT\s+JOIN|RIGHT\s+JOIN|INNER\s+JOIN|OUTER\s+JOIN|FULL\s+JOIN)\s+(\w+\.\w+)/gi,
+    
+    // EXISTS patterns - SELECT ... WHERE EXISTS (SELECT ... FROM table)
+    /EXISTS\s*\(\s*SELECT\s+[^)]*FROM\s+(\w+\.\w+)/gi,
+    
+    // IN patterns with subqueries - WHERE col IN (SELECT ... FROM table)
+    /IN\s*\(\s*SELECT\s+[^)]*FROM\s+(\w+\.\w+)/gi,
+    
+    // INSERT INTO patterns
+    /INSERT\s+INTO\s+(\w+\.\w+)/gi,
+    
+    // UPDATE patterns
+    /UPDATE\s+(\w+\.\w+)/gi,
+    
+    // DELETE FROM patterns
+    /DELETE\s+FROM\s+(\w+\.\w+)/gi,
+    
+    // CTE (WITH clause) patterns - WITH cte AS (SELECT ... FROM table)
+    /WITH\s+\w+\s+AS\s*\(\s*SELECT\s+[^)]*FROM\s+(\w+\.\w+)/gi,
+  ]
+
+  patterns.forEach(pattern => {
+    const matches = sql.match(pattern)
+    if (matches) {
+      matches.forEach((match) => {
+        // Extract table name from the match
+        const tableMatch = match.match(/(\w+\.\w+)/)
+        if (tableMatch) {
+          const table = tableMatch[1]
+          if (table && !tables.includes(table)) {
+            tables.push(table)
+          }
+        }
+      })
+    }
+  })
 
   return tables
 }
