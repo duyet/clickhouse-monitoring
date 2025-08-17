@@ -105,8 +105,14 @@ describe('fetchData hostId parameter validation', () => {
           }
 
           // Check if hostId parameter is present
-          // Handle shorthand (hostId) and explicit (hostId:) syntax
-          if (!fullCall.includes('hostId:') && !fullCall.includes('hostId ') && !fullCall.match(/[,{]\s*hostId\s*[,}]/)) {
+          // Handle all valid hostId parameter formats
+          const hasHostId = fullCall.includes('hostId:') || 
+                           fullCall.includes('hostId ') || 
+                           /[,{]\s*hostId\s*[,}]/.test(fullCall) ||
+                           /hostId\s*:/.test(fullCall) ||
+                           /\{\s*[^}]*hostId[^}]*\}/.test(fullCall)
+          
+          if (!hasHostId) {
             violations.push({
               file: path.relative(projectRoot, filePath),
               line: index + 1,

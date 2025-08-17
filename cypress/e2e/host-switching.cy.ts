@@ -3,12 +3,21 @@
  * Tests to prevent regression of GitHub issue #509
  */
 
+// Helper function to check if multi-host testing is available
+function isMultiHostAvailable() {
+  if (Cypress.env('SKIP_MULTI_HOST_TESTS')) {
+    return false
+  }
+  
+  const clickhouseHost = Cypress.env('CLICKHOUSE_HOST') || 'http://localhost:8123'
+  return typeof clickhouseHost === 'string' && clickhouseHost.includes(',')
+}
+
 describe('Host Switching E2E Tests', () => {
-  beforeEach(() => {
-    // Skip if running in CI without multiple hosts configured
-    if (Cypress.env('SKIP_MULTI_HOST_TESTS')) {
+  beforeEach(function() {
+    if (!isMultiHostAvailable()) {
       cy.log('Skipping multi-host tests - not configured')
-      return
+      this.skip()
     }
 
     // Visit the first host
@@ -163,10 +172,10 @@ describe('Host Switching E2E Tests', () => {
 })
 
 describe('Host Switching Network Requests', () => {
-  beforeEach(() => {
-    if (Cypress.env('SKIP_MULTI_HOST_TESTS')) {
+  beforeEach(function() {
+    if (!isMultiHostAvailable()) {
       cy.log('Skipping multi-host tests - not configured')
-      return
+      this.skip()
     }
   })
 
