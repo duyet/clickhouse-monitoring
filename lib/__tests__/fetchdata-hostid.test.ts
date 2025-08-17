@@ -105,7 +105,8 @@ describe('fetchData hostId parameter validation', () => {
           }
 
           // Check if hostId parameter is present
-          if (!fullCall.includes('hostId:') && !fullCall.includes('hostId ')) {
+          // Handle shorthand (hostId) and explicit (hostId:) syntax
+          if (!fullCall.includes('hostId:') && !fullCall.includes('hostId ') && !fullCall.match(/[,{]\s*hostId\s*[,}]/)) {
             violations.push({
               file: path.relative(projectRoot, filePath),
               line: index + 1,
