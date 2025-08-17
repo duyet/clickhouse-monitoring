@@ -18,9 +18,11 @@ describe('query config', () => {
       console.log('prepare data for system.error_log')
       await fetchData({
         query: 'SELECT * FROM not_found_table_will_fail',
+        hostId: 0,
       })
       await fetchData({
         query: 'INSERT INTO not_found',
+        hostId: 0,
       })
     } catch (e) {
       console.log('generated a record in system.error_log', e)
@@ -30,6 +32,7 @@ describe('query config', () => {
       console.log('prepare data for system.backup_log')
       await fetchData({
         query: "BACKUP DATABASE default TO File('/tmp/backup')",
+        hostId: 0,
       })
       console.log('generated a record in system.backup_log')
     } catch (e) {
@@ -58,6 +61,7 @@ describe('query config', () => {
           query: config.sql,
           query_params: config.defaultParams || {},
           format: 'JSONEachRow',
+          hostId: 0,
         })
 
         console.log('Response:', data)
