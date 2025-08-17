@@ -36,7 +36,7 @@ export async function ChartReadonlyReplica({
   return (
     <ChartCard title={title} sql={query} className={className}>
       <BarChart
-        data={data}
+        data={data || []}
         index="event_time"
         categories={['ReadonlyReplica']}
         className="h-52"

@@ -18,6 +18,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { fetchData } from '@/lib/clickhouse'
+import {
+  formatErrorMessage,
+  formatErrorTitle,
+  getErrorDocumentation,
+} from '@/lib/error-utils'
 import { getScopedLink, getHostIdCookie } from '@/lib/scoped-link'
 import { queryConfig, type Row } from '../config'
 
@@ -26,32 +31,33 @@ interface Props {
 }
 
 export async function ClusterListBreadcrumb({ cluster }: Props) {
-  try {
-    // Lists cluster names.
-    const hostId = await getHostIdCookie()
-    const { data } = await fetchData<Row[]>({ 
-      query: queryConfig.sql,
-      hostId
-    })
+  // Lists cluster names.
+  const hostId = await getHostIdCookie()
+  const { data, error } = await fetchData<Row[]>({ 
+    query: queryConfig.sql,
+    hostId
+  })
 
-    if (!data.length) {
-      return (
-        <ErrorAlert
-          title="Message"
-          message="No cluster found on system.clusters"
-        />
-      )
-    }
-
-    return <Internal cluster={cluster} clusters={data} />
-  } catch (e: any) {
+  if (error) {
     return (
       <ErrorAlert
-        title="Unable to retrieve the list of clusters"
-        message={`${e}`}
+        title={formatErrorTitle(error)}
+        message={formatErrorMessage(error)}
+        docs={getErrorDocumentation(error)}
       />
     )
   }
+
+  if (!data?.length) {
+    return (
+      <ErrorAlert
+        title="Message"
+        message="No cluster found on system.clusters"
+      />
+    )
+  }
+
+  return <Internal cluster={cluster} clusters={data} />
 }
 
 export function ClusterListBreadcrumbSkeleton({ cluster }: Props) {

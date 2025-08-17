@@ -42,7 +42,7 @@ export async function ChartNewPartsCreated({
     }[]
   >({ query, hostId })
 
-  const data = raw.reduce(
+  const data = (raw || []).reduce(
     (acc, cur) => {
       const { event_time, table, new_parts } = cur
       if (acc[event_time] === undefined) {

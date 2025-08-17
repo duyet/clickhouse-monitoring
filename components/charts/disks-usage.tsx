@@ -40,10 +40,10 @@ export async function ChartDisksUsage({
   >({ query, hostId })
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data}>
+    <ChartCard title={title} className={className} sql={query} data={data || []}>
       <AreaChart
         className={cn('h-52', chartClassName)}
-        data={data}
+        data={data || []}
         index="event_time"
         categories={['DiskAvailable_default', 'DiskUsed_default']}
         readableColumns={[

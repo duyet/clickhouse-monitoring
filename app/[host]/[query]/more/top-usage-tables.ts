@@ -7,6 +7,7 @@ export const topUsageTablesConfig: QueryConfig = {
   description:
     'Most usage tables, ignore system tables, based on system.query_log (top 50). Click on table name to see top usage columns.',
   docs: QUERY_LOG,
+  tableCheck: 'system.query_log',
   sql: `
       SELECT
           tables as table,

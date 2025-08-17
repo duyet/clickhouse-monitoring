@@ -43,11 +43,11 @@ export async function PageViewBarChart({
       className={className}
       contentClassName={chartCardContentClassName}
       sql={query}
-      data={data}
+      data={data || []}
     >
       <BarChart
         className={cn('h-52', chartClassName)}
-        data={data}
+        data={data || []}
         index="event_time"
         categories={['page_views']}
         readable="quantity"

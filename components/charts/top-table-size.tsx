@@ -81,13 +81,13 @@ export async function ChartTopTableSize({
     topByRowCountQuery,
   ])
 
-  const dataTopBySize = topBySize.map((row) => ({
+  const dataTopBySize = (topBySize || []).map((row) => ({
     name: row.table,
     value: row.compressed_bytes,
     compressed: row.compressed,
   }))
 
-  const dataTopByCount = topByRowCount.map((row) => ({
+  const dataTopByCount = (topByRowCount || []).map((row) => ({
     name: row.table,
     value: row.total_rows,
     readable_total_rows: row.readable_total_rows,

@@ -21,7 +21,7 @@ export async function ChartZookeeperUptime({
     }[]
   >({ query, hostId })
 
-  const uptime = data[0] || { uptime: 'N/A' }
+  const uptime = (data || [])[0] || { uptime: 'N/A' }
 
   return (
     <ChartCard

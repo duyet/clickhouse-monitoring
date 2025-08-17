@@ -56,7 +56,7 @@ export async function ChartSummaryUsedByRunningQueries({
         readable_total: string
       }[]
     >({ query: totalMemSql, hostId })
-    totalMem = totalRows?.[0]
+    totalMem = totalRows?.[0] || totalMem
     if (!totalRows || !totalMem) return null
   } catch (e) {
     console.error('Error fetching total memory usage', e)
@@ -75,7 +75,7 @@ export async function ChartSummaryUsedByRunningQueries({
         query_count: number
       }[]
     >({ query: todayQueryCountSql, hostId })
-    todayQueryCount = todayQueryCountRows?.[0]?.query_count
+    todayQueryCount = todayQueryCountRows?.[0]?.query_count || todayQueryCount
     if (!todayQueryCountRows || !todayQueryCount) return null
   } catch (e) {
     console.error('Error fetching today query count', e)

@@ -11,12 +11,20 @@ export async function killQuery<TValue>(
 ): Promise<ActionResponse> {
   console.log('Killing query', queryId)
   const hostId = await getHostIdCookie()
-  const res = await fetchData({
+  const { data, error } = await fetchData({
     query: `KILL QUERY WHERE query_id = '${queryId}'`,
     hostId,
   })
-  console.log('Killed query', queryId, res)
 
+  if (error) {
+    console.error('Failed to kill query', queryId, error)
+    return {
+      action: 'toast',
+      message: `Failed to kill query ${queryId}: ${error.message}`,
+    }
+  }
+
+  console.log('Killed query', queryId, data)
   return {
     action: 'toast',
     message: `Killed query ${queryId}`,
@@ -40,12 +48,20 @@ export async function optimizeTable<TValue>(
 ): Promise<ActionResponse> {
   console.log('Optimize table', table)
   const hostId = await getHostIdCookie()
-  const res = await fetchData({ 
+  const { data, error } = await fetchData({ 
     query: `OPTIMIZE TABLE ${table}`,
     hostId,
   })
-  console.log('Optimize table', table, res)
 
+  if (error) {
+    console.error('Failed to optimize table', table, error)
+    return {
+      action: 'toast',
+      message: `Failed to optimize table ${table}: ${error.message}`,
+    }
+  }
+
+  console.log('Optimize table', table, data)
   return {
     action: 'toast',
     message: `Running query optimize table ${table}`,
@@ -57,12 +73,22 @@ export async function querySettings<TValue>(
   _formData: FormData
 ): Promise<ActionResponse> {
   console.log('Getting query SETTINGS', queryId)
-  const { data } = await fetchData<{ Settings: string }[]>({
+  const hostId = await getHostIdCookie()
+  const { data, error } = await fetchData<{ Settings: string }[]>({
     query: `SELECT Settings FROM system.processes WHERE query_id = {queryId: String}`,
     query_params: { queryId },
+    hostId,
   })
-  console.log('Query SETTINGS', queryId, data)
 
+  if (error) {
+    console.error('Failed to get query settings', queryId, error)
+    return {
+      action: 'toast',
+      message: `Failed to get query settings ${queryId}: ${error.message}`,
+    }
+  }
+
+  console.log('Query SETTINGS', queryId, data)
   return {
     action: 'toast',
     message: JSON.stringify(data),

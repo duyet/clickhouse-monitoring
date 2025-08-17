@@ -35,10 +35,10 @@ export async function ChartQueryMemory({
   >({ query, hostId })
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data}>
+    <ChartCard title={title} className={className} sql={query} data={data || []}>
       <BarChart
         className={cn('h-52', chartClassName)}
-        data={data}
+        data={data || []}
         index="event_time"
         categories={['memory_usage']}
         readableColumn="readable_memory_usage"

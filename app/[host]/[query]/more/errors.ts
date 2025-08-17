@@ -5,6 +5,7 @@ export const errorsConfig: QueryConfig = {
   name: 'errors',
   description: 'System error logs and history',
   optional: true,
+  tableCheck: 'system.error_log',
   sql: `
       SELECT *
       FROM system.error_log

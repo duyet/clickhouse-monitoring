@@ -53,7 +53,7 @@ export async function ChartReplicationSummaryTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((row, idx) => (
+            {(data || []).map((row, idx) => (
               <TableRow key={idx}>
                 {Object.values(row).map((value, i) => {
                   return <TableCell key={i}>{value || ''} </TableCell>

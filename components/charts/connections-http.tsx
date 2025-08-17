@@ -44,10 +44,20 @@ export async function ChartConnectionsHttp({
     hostId,
   })
 
+  if (!data) {
+    return (
+      <ChartCard title={title} sql={query} className={className} data={[]}>
+        <div className="text-muted-foreground p-4 text-center">
+          No data available
+        </div>
+      </ChartCard>
+    )
+  }
+
   return (
-    <ChartCard title={title} sql={query} className={className} data={data}>
+    <ChartCard title={title} sql={query} className={className} data={data || []}>
       <BarChart
-        data={data}
+        data={data || []}
         index="event_time"
         categories={[
           'CurrentMetric_HTTPConnectionsTotal',

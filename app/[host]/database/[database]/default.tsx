@@ -1,6 +1,7 @@
 import { type RowData } from '@tanstack/react-table'
 
 import { DataTable } from '@/components/data-table/data-table'
+import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
@@ -54,12 +55,32 @@ export default async function TableListPage({ params }: TableListProps) {
     },
   }
 
-  const { data } = await fetchData<RowData[]>({
+  const { data, error } = await fetchData<RowData[]>({
     query: queryConfig.sql,
     format: 'JSONEachRow',
     query_params: { database },
     hostId: host,
   })
+
+  if (error) {
+    return (
+      <ErrorAlert
+        title="Failed to load database data"
+        message={error.message}
+        query={queryConfig.sql}
+      />
+    )
+  }
+
+  if (!data) {
+    return (
+      <ErrorAlert
+        title="No Data Available"
+        message="No data was returned from the query."
+        query={queryConfig.sql}
+      />
+    )
+  }
 
   return (
     <DataTable

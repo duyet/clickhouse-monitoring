@@ -4,6 +4,11 @@ import { redirect } from 'next/navigation'
 
 import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse'
+import {
+  formatErrorMessage,
+  formatErrorTitle,
+  getErrorDocumentation,
+} from '@/lib/error-utils'
 import { cn } from '@/lib/utils'
 
 import { cache } from 'react'
@@ -40,22 +45,23 @@ export const preload = async (host: number) => {
 
 export async function Nav({ host, database, collapsible }: Props) {
   preload(host)
-  let databases: DatabaseCount[] = []
+  const { data: databases, error } = (await getListDatabaseCached(host)) as {
+    data: DatabaseCount[] | null
+    error?: any
+  }
 
-  try {
-    const data = await getListDatabaseCached(host)
-    databases = data.data as DatabaseCount[]
-  } catch (e: any) {
+  if (error) {
     return (
       <ErrorAlert
-        title="Breadcrumb: could not get list database"
-        message={`${e}`}
+        title={formatErrorTitle(error)}
+        message={formatErrorMessage(error)}
+        docs={getErrorDocumentation(error)}
         query={listDatabases}
       />
     )
   }
 
-  if (!databases.length) {
+  if (!databases?.length) {
     return (
       <ErrorAlert
         title="Message"

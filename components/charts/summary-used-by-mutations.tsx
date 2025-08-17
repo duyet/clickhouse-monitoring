@@ -22,7 +22,7 @@ export async function ChartSummaryUsedByMutations({
   const count = data?.[0] || { running_count: 0 }
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data}>
+    <ChartCard title={title} className={className} sql={query} data={data || []}>
       <div className="flex flex-col content-stretch items-center p-0">
         <CardMultiMetrics
           primary={

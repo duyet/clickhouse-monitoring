@@ -69,11 +69,11 @@ export async function ChartFailedQueryCount({
       className={className}
       contentClassName={chartCardContentClassName}
       sql={query}
-      data={data}
+      data={data || []}
     >
       <AreaChart
         className={cn('h-52', chartClassName)}
-        data={data}
+        data={data || []}
         index="event_time"
         categories={['query_count']}
         readable="quantity"

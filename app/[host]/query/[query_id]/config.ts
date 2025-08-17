@@ -57,6 +57,7 @@ export interface RowData {
 
 export const config: QueryConfig = {
   name: 'query',
+  tableCheck: 'system.query_log',
   sql: `
     SELECT
         type,

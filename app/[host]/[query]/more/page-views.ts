@@ -4,6 +4,9 @@ import { type QueryConfig } from '@/types/query-config'
 export const pageViewsConfig: QueryConfig = {
   name: 'page-views',
   description: 'Self analytics: Page views from system.monitoring_events',
+  // system.monitoring_events may not exist if the monitoring app hasn't created it yet
+  optional: true,
+  tableCheck: 'system.monitoring_events',
   sql: `
     SELECT kind, actor, data, extra, event_time, event_date
     FROM system.monitoring_events

@@ -37,7 +37,7 @@ export async function DatabaseListBreadcrumb({ database }: Props) {
       hostId,
     })
 
-    if (!data.length) {
+    if (!data || !data.length) {
       return (
         <ErrorAlert
           title="Message"

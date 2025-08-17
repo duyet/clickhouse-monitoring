@@ -42,11 +42,11 @@ export async function ChartMergeCount({
       className={cn('justify-between', className)}
       contentClassName="flex flex-col justify-between"
       sql={query}
-      data={data}
+      data={data || []}
     >
       <AreaChart
         className={cn('h-52', chartClassName)}
-        data={data}
+        data={data || []}
         index="event_time"
         categories={[
           'avg_CurrentMetric_Merge',

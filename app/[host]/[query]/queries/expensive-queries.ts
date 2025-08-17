@@ -6,6 +6,7 @@ export const expensiveQueriesConfig: QueryConfig = {
   name: 'expensive-queries',
   description: 'Most expensive queries finished over last 24 hours',
   docs: QUERY_LOG,
+  tableCheck: 'system.query_log',
   sql: `
     WITH base_metrics AS (
         SELECT
