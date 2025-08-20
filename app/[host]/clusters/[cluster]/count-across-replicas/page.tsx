@@ -1,6 +1,6 @@
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { getHostIdCookie } from '@/lib/scoped-link'
 import { ColumnFormat } from '@/types/column-format'
 import { type QueryConfig } from '@/types/query-config'
@@ -14,7 +14,7 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   const { cluster } = await params
 
-  const { data: replicas } = await fetchData<{ replica: string }[]>({
+  const { data: replicas } = await fetchDataWithHost<{ replica: string }[]>({
     query: `SELECT hostName() as replica FROM clusterAllReplicas({cluster: String}) ORDER BY 1`,
     query_params: { cluster },
   })
@@ -57,7 +57,7 @@ export default async function Page({ params }: PageProps) {
     },
   }
 
-  const { data, error } = await fetchData<
+  const { data, error } = await fetchDataWithHost<
     {
       database_table: string
       [replica: string]: string | number

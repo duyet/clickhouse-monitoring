@@ -2,15 +2,13 @@ import { backupsConfig } from '@/app/[host]/[query]/more/backups'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { CardMetric } from '@/components/generic-charts/card-metric'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { getHostIdCookie } from '@/lib/scoped-link'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 
 export async function ChartBackupSize({
   title,
   lastHours,
   className,
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const startTimeCondition = lastHours
     ? `AND start_time > (now() - INTERVAL ${lastHours} HOUR)`
     : ''
@@ -34,7 +32,7 @@ export async function ChartBackupSize({
     sql: query,
   }
 
-  const { data, error } = await fetchData<
+  const { data, error } = await fetchDataWithHost<
     {
       total_size: number
       uncompressed_size: number
@@ -46,7 +44,6 @@ export async function ChartBackupSize({
   >({
     query,
     queryConfig: chartQueryConfig,
-    hostId,
   })
 
   // If validation failed or no data, return null

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { ErrorAlert } from '@/components/error-alert'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
@@ -28,7 +28,7 @@ interface DatabaseCount {
 }
 
 export const getListDatabaseCached = cache(async (hostId: number) => {
-  return fetchData({
+  return fetchDataWithHost({
     query: listDatabases,
     hostId,
     clickhouse_settings: {

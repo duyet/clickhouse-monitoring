@@ -1,8 +1,7 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval } from '@/lib/clickhouse-query'
-import { getHostIdCookie } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 import { type ChartProps } from './chart-props'
 
@@ -13,7 +12,6 @@ export async function ChartConnectionsInterserver({
   className,
   chartClassName,
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const query = `
     SELECT
       ${applyInterval(interval, 'event_time')},
@@ -25,7 +23,7 @@ export async function ChartConnectionsInterserver({
     ORDER BY event_time
   `
 
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       event_time: string
       CurrentMetric_InterserverConnection: number
@@ -34,7 +32,6 @@ export async function ChartConnectionsInterserver({
   >({
     query,
     format: 'JSONEachRow',
-    hostId,
   })
 
   return (

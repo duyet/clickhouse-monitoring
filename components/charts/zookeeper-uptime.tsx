@@ -1,9 +1,8 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { cn } from '@/lib/utils'
 
-import { getHostIdCookie } from '@/lib/scoped-link'
 import { ArrowUpIcon } from '@radix-ui/react-icons'
 import { CardMultiMetrics } from '../generic-charts/card-multi-metrics'
 
@@ -11,15 +10,14 @@ export async function ChartZookeeperUptime({
   title = 'Zookeeper Uptime',
   className,
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const query =
     'SELECT formatReadableTimeDelta(zookeeperSessionUptime()) AS uptime'
 
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       uptime: string
     }[]
-  >({ query, hostId })
+  >({ query })
 
   const uptime = (data || [])[0] || { uptime: 'N/A' }
 

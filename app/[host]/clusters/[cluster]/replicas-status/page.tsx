@@ -1,6 +1,6 @@
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 
 import { Button } from '@/components/ui/button'
 import { getScopedLink } from '@/lib/scoped-link'
@@ -17,7 +17,7 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   const { host, cluster } = await params
 
-  const { data, error } = await fetchData<Row[]>({
+  const { data, error } = await fetchDataWithHost<Row[]>({
     query: queryConfig.sql,
     query_params: { cluster },
     hostId: host,

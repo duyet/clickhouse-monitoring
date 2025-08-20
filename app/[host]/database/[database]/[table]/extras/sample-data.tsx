@@ -7,13 +7,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
   getErrorDocumentation,
 } from '@/lib/error-utils'
-import { getHostIdCookie } from '@/lib/scoped-link'
 
 interface SampleDataProps {
   database: string
@@ -28,8 +27,7 @@ export async function SampleData({
   limit = 10,
   className,
 }: SampleDataProps) {
-  const hostId = await getHostIdCookie()
-  const { data, error } = await fetchData<{ [key: string]: string }[]>({
+  const { data, error } = await fetchDataWithHost<{ [key: string]: string }[]>({
     query: `SELECT *
      FROM ${database}.${table}
      LIMIT ${limit}`,
@@ -37,7 +35,6 @@ export async function SampleData({
       database,
       table,
     },
-    hostId,
   })
 
   if (error) {

@@ -15,14 +15,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
   getErrorDocumentation,
 } from '@/lib/error-utils'
 import { formatQuery } from '@/lib/format-readable'
-import { getHostIdCookie, getScopedLink } from '@/lib/scoped-link'
+import { getScopedLink } from '@/lib/scoped-link'
 import { dedent } from '@/lib/utils'
 import { QueryConfig } from '@/types/query-config'
 
@@ -41,7 +41,7 @@ export async function QueryDetailCard({
     ...queryConfig.defaultParams,
     ...params,
   }
-  const { data, error } = await fetchData<RowData[]>({
+  const { data, error } = await fetchDataWithHost<RowData[]>({
     query: queryConfig.sql,
     format: 'JSONEachRow',
     query_params: queryParams,
@@ -49,7 +49,6 @@ export async function QueryDetailCard({
       use_query_cache: 0,
       ...queryConfig.clickhouseSettings,
     },
-    hostId: await getHostIdCookie(),
   })
 
   if (error) {

@@ -1,9 +1,8 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval } from '@/lib/clickhouse-query'
-import { getHostIdCookie } from '@/lib/scoped-link'
 
 export async function ChartFailedQueryCountByType({
   title,
@@ -13,7 +12,6 @@ export async function ChartFailedQueryCountByType({
   chartClassName,
   ...props
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const query = `
     SELECT ${applyInterval(interval, 'event_time')},
            user,
@@ -27,13 +25,13 @@ export async function ChartFailedQueryCountByType({
       1 ASC,
       3 DESC
   `
-  const { data: raw } = await fetchData<
+  const { data: raw } = await fetchDataWithHost<
     {
       event_time: string
       user: string
       count: number
     }[]
-  >({ query, hostId })
+  >({ query })
 
   const data = (raw || []).reduce(
     (acc, cur) => {

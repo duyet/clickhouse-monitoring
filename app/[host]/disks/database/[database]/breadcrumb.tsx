@@ -16,8 +16,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { fetchData } from '@/lib/clickhouse'
-import { getScopedLink, getHostIdCookie } from '@/lib/scoped-link'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { getScopedLink } from '@/lib/scoped-link'
 import { use } from 'react'
 import {
   databaseDiskSpaceConfig as queryConfig,
@@ -31,10 +31,8 @@ interface Props {
 export async function DatabaseListBreadcrumb({ database }: Props) {
   try {
     // Lists cluster names.
-    const hostId = await getHostIdCookie()
-    const { data } = await fetchData<DatabaseUsedSpace[]>({
+    const { data } = await fetchDataWithHost<DatabaseUsedSpace[]>({
       query: queryConfig.sql,
-      hostId,
     })
 
     if (!data || !data.length) {

@@ -1,9 +1,8 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval } from '@/lib/clickhouse-query'
-import { getHostIdCookie } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function ChartFailedQueryCount({
@@ -19,7 +18,6 @@ export async function ChartFailedQueryCount({
   breakdown = 'breakdown',
   ...props
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const query = `
     WITH event_count AS (
       SELECT ${applyInterval(interval, 'event_time')},
@@ -55,13 +53,13 @@ export async function ChartFailedQueryCount({
     LEFT JOIN breakdown USING event_time
     ORDER BY 1
   `
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       event_time: string
       query_count: number
       breakdown: Array<[string, number] | Record<string, string>>
     }[]
-  >({ query, hostId })
+  >({ query })
 
   return (
     <ChartCard

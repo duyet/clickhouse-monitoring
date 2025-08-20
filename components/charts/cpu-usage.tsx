@@ -1,9 +1,8 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval } from '@/lib/clickhouse-query'
-import { getHostIdCookie } from '@/lib/scoped-link'
 
 export async function ChartCPUUsage({
   title,
@@ -12,7 +11,6 @@ export async function ChartCPUUsage({
   className,
   chartClassName,
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const query = `
     SELECT
        ${applyInterval(interval, 'event_time')},
@@ -22,9 +20,8 @@ export async function ChartCPUUsage({
     GROUP BY 1
     ORDER BY 1`
 
-  const { data } = await fetchData<{ event_time: string; avg_cpu: number }[]>({
+  const { data } = await fetchDataWithHost<{ event_time: string; avg_cpu: number }[]>({
     query,
-    hostId,
   })
 
   return (

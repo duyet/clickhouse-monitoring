@@ -2,7 +2,7 @@ import { type RowData } from '@tanstack/react-table'
 
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
@@ -71,7 +71,7 @@ export default async function TableListPage({ params }: TableListProps) {
     },
   }
 
-  const { data, error } = await fetchData<RowData[]>({
+  const { data, error } = await fetchDataWithHost<RowData[]>({
     query: queryConfig.sql,
     format: 'JSONEachRow',
     query_params: { database },

@@ -1,9 +1,8 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
-import { getHostIdCookie } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function PageViewBarChart({
@@ -19,7 +18,6 @@ export async function PageViewBarChart({
   colors = ['--chart-indigo-300'],
   ...props
 }: ChartProps & { colors?: string[] }) {
-  const hostId = await getHostIdCookie()
   const eventTimeExpr = applyInterval(interval, 'event_time', 'event_time')
   const query = `
     SELECT ${eventTimeExpr},
@@ -30,12 +28,12 @@ export async function PageViewBarChart({
     GROUP BY event_time
     ORDER BY event_time WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
   `
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       event_time: string
       page_views: number
     }[]
-  >({ query, hostId })
+  >({ query })
 
   return (
     <ChartCard

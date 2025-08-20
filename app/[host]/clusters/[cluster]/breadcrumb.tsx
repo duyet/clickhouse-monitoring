@@ -17,13 +17,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
   getErrorDocumentation,
 } from '@/lib/error-utils'
-import { getScopedLink, getHostIdCookie } from '@/lib/scoped-link'
+import { getScopedLink } from '@/lib/scoped-link'
 import { queryConfig, type Row } from '../config'
 
 interface Props {
@@ -32,10 +32,8 @@ interface Props {
 
 export async function ClusterListBreadcrumb({ cluster }: Props) {
   // Lists cluster names.
-  const hostId = await getHostIdCookie()
-  const { data, error } = await fetchData<Row[]>({ 
+  const { data, error } = await fetchDataWithHost<Row[]>({ 
     query: queryConfig.sql,
-    hostId
   })
 
   if (error) {

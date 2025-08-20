@@ -8,27 +8,25 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { fetchData } from '@/lib/clickhouse'
-import { getHostIdCookie } from '@/lib/scoped-link'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { cn } from '@/lib/utils'
 
 export async function ChartZookeeperSummaryTable({
   title = 'ZooKeeper Current Metrics',
   className,
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const query = `
     SELECT metric, value, description
     FROM system.metrics
     WHERE metric LIKE 'ZooKeeper%'
   `
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       metric: string
       value: string
       desc: string
     }[]
-  >({ query, hostId })
+  >({ query })
 
   const headers = Object.keys(data?.[0] || {})
 

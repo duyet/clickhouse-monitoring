@@ -7,28 +7,27 @@ import {
   type CardMultiMetricsProps,
 } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { formatReadableQuantity } from '@/lib/format-readable'
-import { getHostIdCookie, getScopedLink } from '@/lib/scoped-link'
+import { getScopedLink } from '@/lib/scoped-link'
 
 export async function ChartSummaryUsedByRunningQueries({
   title,
   className,
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const sql = `
     SELECT COUNT() as query_count,
            SUM(memory_usage) as memory_usage,
            formatReadableSize(memory_usage) as readable_memory_usage
     FROM system.processes
   `
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       query_count: number
       memory_usage: number
       readable_memory_usage: string
     }[]
-  >({ query: sql, hostId })
+  >({ query: sql })
 
   const first = data?.[0]
   if (!data || !first) return null
@@ -49,13 +48,13 @@ export async function ChartSummaryUsedByRunningQueries({
     readable_total: first.readable_memory_usage,
   }
   try {
-    const { data: totalRows } = await fetchData<
+    const { data: totalRows } = await fetchDataWithHost<
       {
         metric: string
         total: number
         readable_total: string
       }[]
-    >({ query: totalMemSql, hostId })
+    >({ query: totalMemSql })
     totalMem = totalRows?.[0] || totalMem
     if (!totalRows || !totalMem) return null
   } catch (e) {
@@ -70,11 +69,11 @@ export async function ChartSummaryUsedByRunningQueries({
           AND query_start_time >= today()
   `
   try {
-    const { data: todayQueryCountRows } = await fetchData<
+    const { data: todayQueryCountRows } = await fetchDataWithHost<
       {
         query_count: number
       }[]
-    >({ query: todayQueryCountSql, hostId })
+    >({ query: todayQueryCountSql })
     todayQueryCount = todayQueryCountRows?.[0]?.query_count || todayQueryCount
     if (!todayQueryCountRows || !todayQueryCount) return null
   } catch (e) {
@@ -95,14 +94,14 @@ export async function ChartSummaryUsedByRunningQueries({
     FROM system.processes
   `
   try {
-    const { data } = await fetchData<
+    const { data } = await fetchDataWithHost<
       {
         rows_read: number
         rows_written: number
         readable_rows_read: string
         readable_rows_written: string
       }[]
-    >({ query: rowsReadWrittenSql, hostId })
+    >({ query: rowsReadWrittenSql })
     if (!!data) {
       rowsReadWritten = data?.[0]
     }

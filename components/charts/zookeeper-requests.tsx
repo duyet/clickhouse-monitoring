@@ -1,8 +1,7 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval } from '@/lib/clickhouse-query'
-import { getHostIdCookie } from '@/lib/scoped-link'
 import { type ChartProps } from './chart-props'
 
 export async function ChartZookeeperRequests({
@@ -11,7 +10,6 @@ export async function ChartZookeeperRequests({
   lastHours = 24 * 7,
   className,
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const query = `
     SELECT
       ${applyInterval(interval, 'event_time')},
@@ -25,7 +23,7 @@ export async function ChartZookeeperRequests({
     ORDER BY event_time
   `
 
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       event_time: string
       ZookeeperRequests: number
@@ -34,8 +32,6 @@ export async function ChartZookeeperRequests({
   >({
     query,
     format: 'JSONEachRow',
-
-    hostId,
   })
 
   return (

@@ -60,7 +60,7 @@ describe('fetchData hostId parameter validation', () => {
     return allFiles
   }
 
-  it.skip('should ensure all fetchData calls include hostId parameter', () => {
+  it('should ensure all fetchData calls use either fetchDataWithHost or include hostId parameter', () => {
     const files = getFilesToCheck()
     const violations: Array<{ file: string; line: number; content: string }> =
       []
@@ -71,8 +71,11 @@ describe('fetchData hostId parameter validation', () => {
       const content = fs.readFileSync(filePath, 'utf-8')
       const lines = content.split('\n')
 
-      // Check if file imports fetchData
+      // Check if file imports fetchData or fetchDataWithHost
       if (!content.includes('fetchData')) continue
+      
+      // Skip if file uses fetchDataWithHost wrapper (which handles hostId automatically)
+      if (content.includes('fetchDataWithHost')) continue
 
       // Look for fetchData calls
       lines.forEach((line, index) => {
@@ -87,8 +90,8 @@ describe('fetchData hostId parameter validation', () => {
           return
         }
 
-        // Look for fetchData calls
-        const fetchDataMatch = trimmed.match(/fetchData[<\w\[\]>]*\s*\(\s*{/)
+        // Look for fetchData calls (not fetchDataWithHost)
+        const fetchDataMatch = trimmed.match(/(?<!With)fetchData[<\w\[\]>]*\s*\(\s*{/)
         if (fetchDataMatch) {
           // Check if this is a multiline call - look ahead for the closing brace
           let fullCall = line
@@ -106,11 +109,13 @@ describe('fetchData hostId parameter validation', () => {
 
           // Check if hostId parameter is present
           // Handle all valid hostId parameter formats
-          const hasHostId = fullCall.includes('hostId:') || 
-                           fullCall.includes('hostId ') || 
-                           /[,{]\s*hostId\s*[,}]/.test(fullCall) ||
-                           /hostId\s*:/.test(fullCall) ||
-                           /\{\s*[^}]*hostId[^}]*\}/.test(fullCall)
+          const hasHostId = 
+            fullCall.includes('hostId:') || 
+            fullCall.includes('hostId ') || 
+            /[,{]\s*hostId\s*[,}]/.test(fullCall) ||
+            /hostId\s*:/.test(fullCall) ||
+            /\{\s*[^}]*hostId[^}]*\}/.test(fullCall) ||
+            fullCall.match(/hostId\s*[,}\s]/) !== null
           
           if (!hasHostId) {
             violations.push({
@@ -132,8 +137,10 @@ describe('fetchData hostId parameter validation', () => {
 
       throw new Error(
         `Found ${violations.length} fetchData calls missing hostId parameter:\n\n${violationMessages}\n\n` +
-          'All fetchData calls must include the hostId parameter to ensure correct multi-host functionality. ' +
-          'See HOST_SWITCHING_FIX.md for implementation patterns.'
+          'All fetchData calls must either:\n' +
+          '1. Use fetchDataWithHost wrapper (recommended), or\n' +
+          '2. Include the hostId parameter explicitly\n' +
+          'This ensures correct multi-host functionality.'
       )
     }
   })

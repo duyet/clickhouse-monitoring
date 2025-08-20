@@ -9,8 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { fetchData } from '@/lib/clickhouse'
-import { getHostIdCookie } from '@/lib/scoped-link'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { cn } from '@/lib/utils'
 
 interface TableInfoProps {
@@ -24,8 +23,7 @@ export async function TableInfo({
   table,
   className,
 }: TableInfoProps) {
-  const hostId = await getHostIdCookie()
-  const { data: tableInfo, error } = await fetchData<
+  const { data: tableInfo, error } = await fetchDataWithHost<
     { [key: string]: string }[]
   >({
     query: `SELECT
@@ -51,7 +49,6 @@ export async function TableInfo({
       database,
       table,
     },
-    hostId,
   })
 
   if (error) {

@@ -7,13 +7,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
   getErrorDocumentation,
 } from '@/lib/error-utils'
-import { getHostIdCookie } from '@/lib/scoped-link'
 
 interface RunningQueriesProps {
   database: string
@@ -27,8 +26,7 @@ export async function RunningQueries({
   table,
   className,
 }: RunningQueriesProps) {
-  const hostId = await getHostIdCookie()
-  const { data, error } = await fetchData<{ [key: string]: string }[]>({
+  const { data, error } = await fetchDataWithHost<{ [key: string]: string }[]>({
     query: `SELECT query, user, elapsed,
        formatReadableQuantity(read_rows) as read_rows,
        formatReadableQuantity(total_rows_approx) as total_rows_approx,
@@ -42,7 +40,6 @@ export async function RunningQueries({
       database,
       table,
     },
-    hostId,
   })
 
   if (error) {

@@ -1,8 +1,7 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval } from '@/lib/clickhouse-query'
-import { getHostIdCookie } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 import { type ChartProps } from './chart-props'
 
@@ -13,7 +12,6 @@ export async function ChartConnectionsHttp({
   className,
   chartClassName,
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const query = `
     /* HTTPConnection: Number of connections to HTTP server */
     /* HTTPConnectionsTotal: Total count of all sessions: stored in the pool and actively used right now for http hosts */
@@ -30,7 +28,7 @@ export async function ChartConnectionsHttp({
     ORDER BY event_time
   `
 
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       event_time: string
       CurrentMetric_HTTPConnection: number
@@ -41,7 +39,6 @@ export async function ChartConnectionsHttp({
   >({
     query,
     format: 'JSONEachRow',
-    hostId,
   })
 
   if (!data) {

@@ -7,26 +7,25 @@ import {
   type CardMultiMetricsProps,
 } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { getHostIdCookie, getScopedLink } from '@/lib/scoped-link'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { getScopedLink } from '@/lib/scoped-link'
 
 export async function ChartSummaryUsedByMerges({
   title,
   className,
 }: ChartProps) {
-  const hostId = await getHostIdCookie()
   const usedSql = `
     SELECT
       SUM(memory_usage) as memory_usage,
       formatReadableSize(memory_usage) as readable_memory_usage
     FROM system.merges
   `
-  const { data: usedRows } = await fetchData<
+  const { data: usedRows } = await fetchDataWithHost<
     {
       memory_usage: number
       readable_memory_usage: string
     }[]
-  >({ query: usedSql, hostId })
+  >({ query: usedSql })
   const used = usedRows?.[0]
   if (!usedRows || !used) return null
 
@@ -45,13 +44,13 @@ export async function ChartSummaryUsedByMerges({
     readable_total: used.readable_memory_usage,
   }
   try {
-    const { data: rows } = await fetchData<
+    const { data: rows } = await fetchDataWithHost<
       {
         metric: string
         total: number
         readable_total: string
       }[]
-    >({ query: totalMemSql, hostId })
+    >({ query: totalMemSql })
     if (!rows) return null
     totalMem = rows?.[0]
   } catch (e) {
@@ -72,14 +71,14 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const { data } = await fetchData<
+    const { data } = await fetchDataWithHost<
       {
         rows_read: number
         rows_written: number
         readable_rows_read: string
         readable_rows_written: string
       }[]
-    >({ query: rowsReadWrittenSql, hostId })
+    >({ query: rowsReadWrittenSql })
 
     if (!!data) {
       rowsReadWritten = data?.[0]
@@ -102,14 +101,14 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const { data } = await fetchData<
+    const { data } = await fetchDataWithHost<
       {
         bytes_read: number
         bytes_written: number
         readable_bytes_read: string
         readable_bytes_written: string
       }[]
-    >({ query: bytesReadWrittenSql, hostId })
+    >({ query: bytesReadWrittenSql })
 
     if (!!data) {
       bytesReadWritten = data?.[0]
