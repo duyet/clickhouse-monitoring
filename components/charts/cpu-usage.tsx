@@ -25,7 +25,7 @@ export async function ChartCPUUsage({
   })
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data || []}>
+    <ChartCard title={title} className={className} sql={query} data={data || []} data-testid="cpu-usage-chart">
       <AreaChart
         data={data || []}
         index="event_time"

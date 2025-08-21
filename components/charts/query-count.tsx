@@ -66,6 +66,7 @@ export async function ChartQueryCount({
       contentClassName={chartCardContentClassName}
       sql={query}
       data={data || []}
+      data-testid="query-count-chart"
     >
       <AreaChart
         className={cn('h-52', chartClassName)}

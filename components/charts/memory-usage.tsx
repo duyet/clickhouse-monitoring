@@ -28,7 +28,7 @@ export async function ChartMemoryUsage({
   >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data || []}>
+    <ChartCard title={title} className={className} sql={query} data={data || []} data-testid="memory-usage-chart">
       <AreaChart
         data={data || []}
         index="event_time"
