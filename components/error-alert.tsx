@@ -149,7 +149,7 @@ export function ErrorAlert({
   )
 
   return (
-    <div className={`${className} ${getVariantStyles()} rounded-lg border p-4`}>
+    <div className={`${className} ${getVariantStyles()} rounded-lg border p-4`} data-testid="error-message">
       <div className="flex items-start gap-3">
         {getErrorIcon()}
         <div className="flex-1 space-y-2">

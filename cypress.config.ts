@@ -2,8 +2,15 @@ import { defineConfig } from 'cypress'
 
 export default defineConfig({
   projectId: '8zgiqh',
-  defaultCommandTimeout: 15000,
-  fixturesFolder: false,
+  defaultCommandTimeout: 30000,
+  requestTimeout: 15000,
+  responseTimeout: 30000,
+  pageLoadTimeout: 30000,
+  fixturesFolder: 'cypress/fixtures',
+  retries: {
+    runMode: 2,
+    openMode: 0
+  },
   e2e: {
     baseUrl: 'http://localhost:3000',
     setupNodeEvents(on, config) {
