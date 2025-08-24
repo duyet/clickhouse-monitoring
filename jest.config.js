@@ -22,4 +22,8 @@ module.exports = {
     ['github-actions', { silent: false }],
     'summary',
   ],
+  // Add timeout configuration to prevent hanging tests
+  testTimeout: 30000, // 30 seconds default timeout
+  // Setup file for test utilities and mocks
+  // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 }
