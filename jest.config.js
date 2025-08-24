@@ -3,14 +3,21 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   moduleNameMapper: {
-    // Remove the React mapping that's causing issues with react-is
     // Only use path aliases for the workspace
     '^@/(.*)$': '<rootDir>/$1',
+    // Mock potentially problematic modules
+    '^@clickhouse/client$': '<rootDir>/__mocks__/clickhouse-client.js',
+    '^@clickhouse/client-web$': '<rootDir>/__mocks__/clickhouse-client.js',
   },
-  // Ensure Jest can find react-is properly
+  // Ensure Jest can handle ESM and problematic modules
   transformIgnorePatterns: [
-    'node_modules/(?!(react-is)/)',
+    'node_modules/(?!(react-is|@clickhouse)/)',
   ],
+  // Force single worker to prevent concurrency issues
+  maxWorkers: 1,
+  forceExit: true,
+  detectOpenHandles: true,
+  // Coverage configuration
   collectCoverage: true,
   coverageDirectory: 'jest-reports/coverage',
   reporters: [
@@ -22,8 +29,8 @@ module.exports = {
     ['github-actions', { silent: false }],
     'summary',
   ],
-  // Add timeout configuration to prevent hanging tests
-  testTimeout: 30000, // 30 seconds default timeout
+  // Timeout configuration
+  testTimeout: 30000,
   // Setup file for test utilities and mocks
-  // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 }
