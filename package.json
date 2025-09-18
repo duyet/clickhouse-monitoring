@@ -20,7 +20,7 @@
     "component:headless": "cypress run --component",
     "fmt": "prettier --write \"**/*.{ts,tsx,md,json}\" --cache",
     "test": "pnpm jest",
-    "jest": "jest --coverage --testPathIgnorePatterns=query-config",
+    "jest": "jest --coverage",
     "test-queries-config": "jest --coverage --testPathPattern=query-config",
     "preinstall": "npx only-allow pnpm"
   },

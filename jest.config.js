@@ -17,6 +17,11 @@ module.exports = {
   maxWorkers: 1,
   forceExit: true,
   detectOpenHandles: true,
+  // Ignore query-config files as per original setup
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    'query-config'
+  ],
   // Coverage configuration
   collectCoverage: true,
   coverageDirectory: 'jest-reports/coverage',
@@ -30,7 +35,7 @@ module.exports = {
     'summary',
   ],
   // Timeout configuration
-  testTimeout: 20000,
+  testTimeout: 15000,
   // Prevent hanging tests
   bail: true,
   // Setup file for test utilities and mocks

@@ -50,3 +50,38 @@ global.console = {
   warn: console.warn,
   error: console.error,
 };
+
+// Test utilities for integration tests
+const mockFetchData = jest.fn(() => Promise.resolve({
+  data: [],
+  metadata: { queryId: 'test', duration: 0, rows: 0, host: 'test' }
+}));
+
+const mockGetHostIdCookie = jest.fn(() => Promise.resolve(0));
+
+const testUtils = {
+  switchHost: (hostId) => {
+    mockGetHostIdCookie.mockResolvedValue(hostId);
+  },
+  assertHostIdUsed: (expectedHostId) => {
+    const lastCall = mockFetchData.mock.calls[mockFetchData.mock.calls.length - 1];
+    if (!lastCall || !lastCall[0] || lastCall[0].hostId !== expectedHostId) {
+      throw new Error(`Expected hostId ${expectedHostId}, but got ${lastCall?.[0]?.hostId}`);
+    }
+  },
+  assertAllCallsHaveHostId: () => {
+    const callsWithoutHostId = mockFetchData.mock.calls.filter(call =>
+      !call[0] || call[0].hostId === undefined || call[0].hostId === null
+    );
+    if (callsWithoutHostId.length > 0) {
+      throw new Error(`Found ${callsWithoutHostId.length} fetchData calls without hostId parameter`);
+    }
+  }
+};
+
+// Export for integration tests
+module.exports = {
+  mockFetchData,
+  mockGetHostIdCookie,
+  testUtils
+};
