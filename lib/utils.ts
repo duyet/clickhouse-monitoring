@@ -52,3 +52,66 @@ export function binding(template: string, data: Record<string, any>): string {
     return data[p1] ? `${data[p1]}` : ''
   })
 }
+
+// Chart utility functions
+
+/**
+ * Format bytes to human readable format (GB, MB, KB, B)
+ * @param bytes Number of bytes
+ * @returns Formatted string
+ */
+export function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B'
+
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
+}
+
+/**
+ * Format percentage values
+ * @param value Percentage value (0-100)
+ * @returns Formatted string
+ */
+export function formatPercentage(value: number): string {
+  return `${value.toFixed(1)}%`
+}
+
+/**
+ * Format count values with appropriate units (K, M, B)
+ * @param count Number to format
+ * @returns Formatted string
+ */
+export function formatCount(count: number): string {
+  if (count < 1000) return count.toString()
+
+  const units = ['', 'K', 'M', 'B', 'T']
+  const unitIndex = Math.floor(Math.log(count) / Math.log(1000))
+
+  return `${(count / Math.pow(1000, unitIndex)).toFixed(1)}${units[unitIndex]}`
+}
+
+/**
+ * Format duration in milliseconds to human readable format
+ * @param ms Duration in milliseconds
+ * @returns Formatted string
+ */
+export function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms}ms`
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
+  if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`
+  return `${(ms / 3600000).toFixed(1)}h`
+}
+
+/**
+ * Chart tick formatter factory for different units
+ */
+export const chartTickFormatters = {
+  bytes: (value: string | number) => formatBytes(Number(value)),
+  percentage: (value: string | number) => formatPercentage(Number(value)),
+  count: (value: string | number) => formatCount(Number(value)),
+  duration: (value: string | number) => formatDuration(Number(value)),
+  default: (value: string | number) => value.toString(),
+}

@@ -3,6 +3,7 @@ import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
+import { chartTickFormatters } from '@/lib/utils'
 
 export async function ChartCPUUsage({
   title,
@@ -31,6 +32,9 @@ export async function ChartCPUUsage({
         index="event_time"
         categories={['avg_cpu']}
         className={chartClassName}
+        xAxisLabel="Time"
+        yAxisLabel="CPU Usage (seconds)"
+        yAxisTickFormatter={chartTickFormatters.duration}
       />
     </ChartCard>
   )

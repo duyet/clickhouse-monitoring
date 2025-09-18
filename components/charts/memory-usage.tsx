@@ -3,6 +3,7 @@ import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
+import { chartTickFormatters } from '@/lib/utils'
 
 export async function ChartMemoryUsage({
   title,
@@ -35,6 +36,9 @@ export async function ChartMemoryUsage({
         categories={['avg_memory']}
         className={chartClassName}
         colors={['--chart-12']}
+        xAxisLabel="Time"
+        yAxisLabel="Memory Usage"
+        yAxisTickFormatter={chartTickFormatters.bytes}
       />
     </ChartCard>
   )
