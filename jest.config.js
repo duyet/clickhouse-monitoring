@@ -30,7 +30,9 @@ module.exports = {
     'summary',
   ],
   // Timeout configuration
-  testTimeout: 30000,
+  testTimeout: 20000,
+  // Prevent hanging tests
+  bail: true,
   // Setup file for test utilities and mocks
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 }
