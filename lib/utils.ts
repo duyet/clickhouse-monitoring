@@ -61,7 +61,10 @@ export function binding(template: string, data: Record<string, any>): string {
  * @returns Formatted string
  */
 export function formatBytes(bytes: number): string {
+  // Handle edge cases
   if (bytes === 0) return '0 B'
+  if (bytes < 0) return '-'
+  if (!isFinite(bytes) || isNaN(bytes)) return '-'
 
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -85,12 +88,18 @@ export function formatPercentage(value: number): string {
  * @returns Formatted string
  */
 export function formatCount(count: number): string {
+  // Handle edge cases
+  if (!isFinite(count) || isNaN(count)) return '-'
+  if (count < 0) return '-'
   if (count < 1000) return count.toString()
 
   const units = ['', 'K', 'M', 'B', 'T']
   const unitIndex = Math.floor(Math.log(count) / Math.log(1000))
 
-  return `${(count / Math.pow(1000, unitIndex)).toFixed(1)}${units[unitIndex]}`
+  // Prevent array overflow for extremely large numbers
+  const safeUnitIndex = Math.min(unitIndex, units.length - 1)
+
+  return `${(count / Math.pow(1000, safeUnitIndex)).toFixed(1)}${units[safeUnitIndex]}`
 }
 
 /**
@@ -99,6 +108,10 @@ export function formatCount(count: number): string {
  * @returns Formatted string
  */
 export function formatDuration(ms: number): string {
+  // Handle edge cases
+  if (!isFinite(ms) || isNaN(ms)) return '-'
+  if (ms < 0) return '-'
+
   if (ms < 1000) return `${ms}ms`
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
   if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`
@@ -109,9 +122,14 @@ export function formatDuration(ms: number): string {
  * Chart tick formatter factory for different units
  */
 export const chartTickFormatters = {
-  bytes: (value: string | number) => formatBytes(Number(value)),
-  percentage: (value: string | number) => formatPercentage(Number(value)),
-  count: (value: string | number) => formatCount(Number(value)),
-  duration: (value: string | number) => formatDuration(Number(value)),
-  default: (value: string | number) => value.toString(),
+  bytes: (value: string | number | null | undefined) =>
+    value === null || value === undefined ? '-' : formatBytes(Number(value)),
+  percentage: (value: string | number | null | undefined) =>
+    value === null || value === undefined ? '-' : formatPercentage(Number(value)),
+  count: (value: string | number | null | undefined) =>
+    value === null || value === undefined ? '-' : formatCount(Number(value)),
+  duration: (value: string | number | null | undefined) =>
+    value === null || value === undefined ? '-' : formatDuration(Number(value)),
+  default: (value: string | number | null | undefined) =>
+    value === null || value === undefined ? '-' : value.toString(),
 }
