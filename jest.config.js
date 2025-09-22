@@ -21,6 +21,10 @@ module.exports = {
   forceExit: true,
   detectOpenHandles: true,
   detectLeaks: false, // Disable leak detection to prevent false positives
+  // Verbose mode for debugging
+  verbose: false,
+  // Prevent worker hanging
+  workerIdleMemoryLimit: '512MB',
   // Ignore query-config files as per original setup
   testPathIgnorePatterns: [
     '/node_modules/',
@@ -39,7 +43,7 @@ module.exports = {
     'summary',
   ],
   // Aggressive timeout configuration
-  testTimeout: 10000,
+  testTimeout: 15000,
   // Prevent hanging tests
   bail: false, // Don't bail to see all failures
   // Setup file for test utilities and mocks

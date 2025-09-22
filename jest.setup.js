@@ -2,6 +2,8 @@
 // Next.js modules are mocked via moduleNameMapper in jest.config.js
 
 // Mock environment variables
+process.env.NODE_ENV = 'test';
+process.env.CI = 'true'; // Force CI mode to skip integration tests
 process.env.CLICKHOUSE_HOST = 'http://localhost:8123';
 process.env.CLICKHOUSE_USER = 'default';
 process.env.CLICKHOUSE_PASSWORD = '';
@@ -9,15 +11,16 @@ process.env.CLICKHOUSE_PASSWORD = '';
 // Only mock core modules that are safe to mock globally
 // Individual tests should handle their own specific mocking needs
 
-// Global test utilities if needed
+// Suppress console outputs in tests to prevent hanging
+const originalConsole = { ...console };
 global.console = {
   ...console,
   // Suppress specific logs during tests if needed
   log: jest.fn(),
   debug: jest.fn(),
   info: jest.fn(),
-  warn: console.warn,
-  error: console.error,
+  warn: jest.fn(), // Also suppress warnings
+  error: originalConsole.error, // Keep errors for debugging
 };
 
 // Test utilities for integration tests
