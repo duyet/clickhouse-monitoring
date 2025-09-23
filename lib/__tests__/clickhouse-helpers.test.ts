@@ -187,7 +187,7 @@ describe('fetchDataWithHost', () => {
 
       expect(result.data).toBeNull()
       expect(result.error).toBeDefined()
-      expect(result.error?.type).toBe('unknown')
+      expect(result.error?.type).toBe('query_error')
       expect(result.error?.message).toBe('Database connection failed')
       expect(result.error?.details?.originalError).toBe(error)
     })
@@ -219,7 +219,7 @@ describe('fetchDataWithHost', () => {
 
       expect(result.data).toBeNull()
       expect(result.error).toBeDefined()
-      expect(result.error?.type).toBe('unknown')
+      expect(result.error?.type).toBe('query_error')
       expect(result.error?.message).toBe('An unknown error occurred')
     })
 

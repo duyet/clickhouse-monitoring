@@ -48,27 +48,16 @@ export async function fetchDataWithHost<
     
     if (finalHostId === undefined || finalHostId === null) {
       // Get hostId from cookie with proper error handling
-      finalHostId = await getHostIdCookie(0)
+      try {
+        finalHostId = await getHostIdCookie(0)
+      } catch (error) {
+        console.warn('Failed to get hostId from cookie, using default 0:', error)
+        finalHostId = 0
+      }
     }
 
-    // Validate hostId
-    if (typeof finalHostId === 'string') {
-      const parsed = parseInt(finalHostId, 10)
-      if (isNaN(parsed) || parsed < 0) {
-        console.warn(`Invalid hostId: ${finalHostId}, using default host 0`)
-        finalHostId = 0
-      } else {
-        finalHostId = parsed
-      }
-    } else if (typeof finalHostId === 'number') {
-      if (finalHostId < 0 || !Number.isInteger(finalHostId)) {
-        console.warn(`Invalid hostId: ${finalHostId}, using default host 0`)
-        finalHostId = 0
-      }
-    } else {
-      console.warn(`Invalid hostId type: ${typeof finalHostId}, using default host 0`)
-      finalHostId = 0
-    }
+    // Validate hostId using the helper function
+    finalHostId = validateHostId(finalHostId)
 
     // Call the original fetchData with the resolved hostId
     return await fetchData<T>({
@@ -113,6 +102,10 @@ export function validateHostId(hostId: unknown): number {
   }
 
   if (typeof hostId === 'string') {
+    // Check if string contains only digits (no decimals, no other characters)
+    if (!/^\d+$/.test(hostId.trim())) {
+      return 0
+    }
     const parsed = parseInt(hostId, 10)
     if (isNaN(parsed) || parsed < 0) {
       return 0
