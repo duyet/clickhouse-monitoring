@@ -92,7 +92,7 @@ export async function fetchDataWithHost<
         host: 'unknown',
       },
       error: {
-        type: 'unknown',
+        type: 'query_error',
         message: error instanceof Error ? error.message : 'An unknown error occurred',
         details: {
           originalError: error instanceof Error ? error : new Error(String(error)),

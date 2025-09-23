@@ -150,6 +150,10 @@ export const backupsConfig: QueryConfig = {
 #### Testing Strategy
 
 - **Jest** for unit tests and utilities
+  - **Known Issue**: Jest hangs indefinitely in current environment, even with minimal configuration
+  - Issue persists with default settings, no ts-jest, no coverage, and bare minimum config
+  - Alternative test files (test-without-jest.js) work fine, indicating Node.js environment is functional
+  - Temporary workaround: Use Cypress for testing until Jest hanging issue is resolved
 - **Cypress** for component and e2e tests
 - Component tests include visual regression testing
 - Test files are co-located with components (`.cy.tsx` files)
