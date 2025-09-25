@@ -113,7 +113,7 @@ jobs:
           start: pnpm start
           wait-on: 'http://localhost:3000'
           wait-on-timeout: 120
-          command: cypress run --e2e
+          command: pnpm exec cypress run --e2e
           browser: ${{ matrix.browser }}
           parallel: true
           record: true
