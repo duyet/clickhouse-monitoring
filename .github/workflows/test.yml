@@ -112,16 +112,11 @@ jobs:
         with:
           start: pnpm start
           wait-on: 'http://localhost:3000'
-          wait-on-timeout: 60
-          command: cypress run --e2e --config defaultCommandTimeout=30000,requestTimeout=15000,responseTimeout=30000,pageLoadTimeout=60000
+          wait-on-timeout: 120
+          command: cypress run --e2e
           browser: ${{ matrix.browser }}
           parallel: true
           record: true
-          env:
-            CYPRESS_CLICKHOUSE_HOST: http://localhost:8123,http://127.0.0.1:8123
-            CYPRESS_CLICKHOUSE_USER: default,default
-            CYPRESS_CLICKHOUSE_PASSWORD: ","
-            CYPRESS_CLICKHOUSE_NAME: "Test Host 1,Test Host 2"
 
       - name: Codecov
         uses: codecov/codecov-action@v5
