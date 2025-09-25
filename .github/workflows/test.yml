@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  CLICKHOUSE_HOST: http://localhost:8123,http://localhost:8123
+  CLICKHOUSE_HOST: http://localhost:8123,http://127.0.0.1:8123
   CLICKHOUSE_USER: default,default
   CLICKHOUSE_PASSWORD: ","
   CLICKHOUSE_NAME: "Test Host 1,Test Host 2"
@@ -18,7 +18,7 @@ env:
   CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   # Cypress specific environment variables
-  CYPRESS_CLICKHOUSE_HOST: http://localhost:8123,http://localhost:8123
+  CYPRESS_CLICKHOUSE_HOST: http://localhost:8123,http://127.0.0.1:8123
   CYPRESS_CLICKHOUSE_USER: default,default
   CYPRESS_CLICKHOUSE_PASSWORD: ","
   CYPRESS_CLICKHOUSE_NAME: "Test Host 1,Test Host 2"
@@ -60,10 +60,10 @@ jobs:
           - 9000:9000
         options: >-
           --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8123/?query=SELECT%201 || exit 1"
-          --health-interval 30s
-          --health-timeout 10s
-          --health-retries 5
-          --health-start-period 30s
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 20s
           --env CLICKHOUSE_SKIP_USER_SETUP=1
     steps:
       - name: Checkout
@@ -93,13 +93,27 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Wait for ClickHouse to be ready
+        run: |
+          echo "Waiting for ClickHouse to be fully ready..."
+          timeout 60 bash -c 'until curl -s http://localhost:8123/ping | grep -q "Ok"; do sleep 2; echo "Waiting for ClickHouse..."; done'
+          echo "ClickHouse is ready!"
+
       - name: Test e2e
         uses: cypress-io/github-action@v6
         with:
-          command: pnpm e2e:headless
+          start: pnpm start
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 60
+          command: cypress run --e2e --config defaultCommandTimeout=30000,requestTimeout=15000,responseTimeout=30000,pageLoadTimeout=60000
           browser: ${{ matrix.browser }}
           parallel: true
           record: true
+          env:
+            CYPRESS_CLICKHOUSE_HOST: http://localhost:8123,http://127.0.0.1:8123
+            CYPRESS_CLICKHOUSE_USER: default,default
+            CYPRESS_CLICKHOUSE_PASSWORD: ","
+            CYPRESS_CLICKHOUSE_NAME: "Test Host 1,Test Host 2"
 
       - name: Codecov
         uses: codecov/codecov-action@v5

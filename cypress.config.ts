@@ -5,7 +5,9 @@ export default defineConfig({
   defaultCommandTimeout: 30000,
   requestTimeout: 15000,
   responseTimeout: 30000,
-  pageLoadTimeout: 30000,
+  pageLoadTimeout: 60000,
+  taskTimeout: 60000,
+  execTimeout: 60000,
   fixturesFolder: 'cypress/fixtures',
   retries: {
     runMode: 2,
