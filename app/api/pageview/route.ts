@@ -5,6 +5,8 @@ import { getClient } from '@/lib/clickhouse'
 import { normalizeUrl } from '@/lib/utils'
 import { geolocation } from '@vercel/functions'
 
+export const dynamic = 'force-dynamic'
+
 const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 
 export async function GET(request: NextRequest) {

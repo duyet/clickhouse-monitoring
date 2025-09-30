@@ -12,6 +12,10 @@
     "build": "next build --turbopack",
     "start": "next start",
     "start:coverage": "nyc --silent node server",
+    "cf:preview": "pnpm run build && wrangler dev",
+    "cf:deploy": "pnpm run build && wrangler deploy",
+    "cf:upload": "pnpm run build && wrangler versions upload",
+    "cf:typegen": "wrangler types",
     "lint": "next lint",
     "cy:open": "start-server-and-test dev http://localhost:3000 \"cypress open\"",
     "e2e": "start-server-and-test dev http://localhost:3000 \"cypress open --e2e\"",
@@ -83,6 +87,7 @@
     "@eslint/js": "^9.26.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
     "@next/eslint-plugin-next": "^15.0.0",
+    "@opennextjs/cloudflare": "^1.9.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.0.0",
     "@types/react": "^18.3.12",
@@ -105,7 +110,8 @@
     "start-server-and-test": "^2.0.3",
     "ts-jest": "^29.2.5",
     "turbo": "^2.0.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.40.2"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

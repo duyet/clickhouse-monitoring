@@ -1,8 +1,14 @@
 import { codecovWebpackPlugin } from '@codecov/webpack-plugin'
 import type { NextConfig } from 'next'
 
+// Note: initOpenNextCloudflareForDev is not used here because:
+// 1. It requires top-level await which doesn't work with Next.js config compilation
+// 2. Cloudflare Pages deployment is handled separately via wrangler.jsonc
+// 3. For local Cloudflare Workers development, use: npx @cloudflare/next-on-pages
+
 const nextConfig: NextConfig = {
   output: 'standalone',
+
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
