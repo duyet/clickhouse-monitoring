@@ -82,6 +82,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Clear Next.js config cache
+        run: rm -f next.config.compiled.js .next/next.config.compiled.js
+
       - name: Build
         run: pnpm build
 
@@ -134,6 +137,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile && pnpm approve-builds
 
+      - name: Clear Next.js config cache
+        run: rm -f next.config.compiled.js .next/next.config.compiled.js
+
       - name: Test components
         uses: cypress-io/github-action@v6
         with:
@@ -182,6 +188,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Clear Next.js config cache
+        run: rm -f next.config.compiled.js .next/next.config.compiled.js
 
       - name: Jest
         run: pnpm jest
@@ -273,6 +282,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Clear Next.js config cache
+        run: rm -f next.config.compiled.js .next/next.config.compiled.js
 
       - name: Test queries config
         run: pnpm test-queries-config
