@@ -1,6 +1,6 @@
-# Cloudflare Pages Deployment Guide
+# Cloudflare Pages
 
-This guide explains how to deploy the ClickHouse Monitor application to Cloudflare Pages using OpenNext Cloudflare adapter.
+Deploy to Cloudflare Pages using OpenNext Cloudflare adapter.
 
 ## Prerequisites
 
@@ -147,3 +147,12 @@ The application requires these Cloudflare resources:
 - [Cloudflare Pages Documentation](https://developers.cloudflare.com/pages/)
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
 - [Next.js Deployment Guide](https://nextjs.org/docs/deployment)
+
+import { Cards } from 'nextra/components'
+import { Triangle, Container, Blocks } from 'lucide-react'
+
+<Cards>
+  <Cards.Card icon={<Triangle />} title="Vercel" href="/deploy/vercel" arrow />
+  <Cards.Card icon={<Container />} title="Docker" href="/deploy/docker" arrow />
+  <Cards.Card icon={<Blocks />} title="Kubernetes" href="/deploy/k8s" arrow />
+</Cards>
