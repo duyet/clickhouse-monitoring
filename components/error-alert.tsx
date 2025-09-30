@@ -110,7 +110,7 @@ export function ErrorAlert({
     <div className="mt-3">
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem className="border-0" value="item-1">
-          <AccordionTrigger 
+          <AccordionTrigger
             className="px-0 py-2 text-sm hover:no-underline"
             role="open-query"
           >

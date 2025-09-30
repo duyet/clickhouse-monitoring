@@ -36,27 +36,27 @@ export function parseTableFromSQL(sql: string): string[] {
   const patterns = [
     // FROM and JOIN patterns - handles spaces, tabs, newlines
     /(?:FROM|JOIN|LEFT\s+JOIN|RIGHT\s+JOIN|INNER\s+JOIN|OUTER\s+JOIN|FULL\s+JOIN)\s+(\w+\.\w+)/gi,
-    
+
     // EXISTS patterns - SELECT ... WHERE EXISTS (SELECT ... FROM table)
     /EXISTS\s*\(\s*SELECT\s+[^)]*FROM\s+(\w+\.\w+)/gi,
-    
+
     // IN patterns with subqueries - WHERE col IN (SELECT ... FROM table)
     /IN\s*\(\s*SELECT\s+[^)]*FROM\s+(\w+\.\w+)/gi,
-    
+
     // INSERT INTO patterns
     /INSERT\s+INTO\s+(\w+\.\w+)/gi,
-    
+
     // UPDATE patterns
     /UPDATE\s+(\w+\.\w+)/gi,
-    
+
     // DELETE FROM patterns
     /DELETE\s+FROM\s+(\w+\.\w+)/gi,
-    
+
     // CTE (WITH clause) patterns - WITH cte AS (SELECT ... FROM table)
     /WITH\s+\w+\s+AS\s*\(\s*SELECT\s+[^)]*FROM\s+(\w+\.\w+)/gi,
   ]
 
-  patterns.forEach(pattern => {
+  patterns.forEach((pattern) => {
     const matches = sql.match(pattern)
     if (matches) {
       matches.forEach((match) => {
@@ -75,17 +75,16 @@ export function parseTableFromSQL(sql: string): string[] {
   return tables
 }
 
-
 export async function validateTableExistence(
   queryConfig: QueryConfig,
   hostId: number
 ): Promise<TableValidationResult> {
   // Force into string[] and add SQL parsing fallback
   const tablesToCheck = ([] as string[]).concat(
-    queryConfig.tableCheck ?? 
-    (queryConfig.sql ? parseTableFromSQL(queryConfig.sql) : [])
+    queryConfig.tableCheck ??
+      (queryConfig.sql ? parseTableFromSQL(queryConfig.sql) : [])
   )
-  
+
   if (tablesToCheck.length === 0) {
     return { shouldProceed: true, missingTables: [] }
   }
@@ -96,7 +95,11 @@ export async function validateTableExistence(
       tablesToCheck.map(async (fullName) => {
         const [db, tbl] = fullName.split('.')
         if (!db || !tbl) return fullName // malformed name
-        const exists = await tableExistenceCache.checkTableExists(hostId, db, tbl)
+        const exists = await tableExistenceCache.checkTableExists(
+          hostId,
+          db,
+          tbl
+        )
         return exists ? null : fullName
       })
     )

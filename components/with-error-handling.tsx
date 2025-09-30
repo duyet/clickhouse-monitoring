@@ -1,11 +1,11 @@
 import { ErrorAlert } from '@/components/error-alert'
+import { type FetchDataError } from '@/lib/clickhouse'
 import {
   formatErrorMessage,
   formatErrorTitle,
   getErrorDocumentation,
   getErrorVariant,
 } from '@/lib/error-utils'
-import { type FetchDataError } from '@/lib/clickhouse'
 
 interface WithErrorHandlingProps {
   error?: FetchDataError | null
@@ -17,7 +17,11 @@ interface WithErrorHandlingProps {
  * HOC component that handles error states consistently across the application.
  * Renders ErrorAlert for error states, otherwise renders children.
  */
-export function WithErrorHandling({ error, query, children }: WithErrorHandlingProps) {
+export function WithErrorHandling({
+  error,
+  query,
+  children,
+}: WithErrorHandlingProps) {
   if (error) {
     return (
       <ErrorAlert
