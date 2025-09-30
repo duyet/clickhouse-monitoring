@@ -48,3 +48,8 @@ cypress/screenshots
 .idea
 .vscode
 .env
+
+# Cloudflare
+.open-next
+.wrangler
+.dev.vars

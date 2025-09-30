@@ -1,8 +1,12 @@
 import { codecovWebpackPlugin } from '@codecov/webpack-plugin'
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
 import type { NextConfig } from 'next'
 
+if (process.env.NODE_ENV === 'development') {
+  await initOpenNextCloudflareForDev()
+}
+
 const nextConfig: NextConfig = {
-  output: 'standalone',
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
