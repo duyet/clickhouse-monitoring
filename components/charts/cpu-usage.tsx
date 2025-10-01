@@ -25,7 +25,12 @@ export async function ChartCPUUsage({
   })
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data || []}>
+    <ChartCard
+      title={title}
+      className={className}
+      sql={query}
+      data={data || []}
+    >
       <AreaChart
         data={data || []}
         index="event_time"

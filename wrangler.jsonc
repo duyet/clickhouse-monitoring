@@ -1,5 +1,70 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "clickhouse-monitor",
-  "compatibility_date": "2024-09-23",
-  "compatibility_flags": ["nodejs_compat_v2"]
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-09-15",
+  "compatibility_flags": [
+    // Enable Node.js API
+    // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#nodejs-compatibility-flag
+    "nodejs_compat",
+    // Allow to fetch URLs in your app
+    // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#global-fetch-strictly-public
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      // The service should match the "name" of your worker
+      "service": "clickhouse-monitor"
+    }
+  ],
+  "r2_buckets": [
+    // Create a R2 binding with the binding name "NEXT_INC_CACHE_R2_BUCKET"
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "clickhouse-monitoring-inc-cache"
+    }
+  ],
+  // Minification helps to keep the Worker bundle size down and improve start up time.
+  "minify": true,
+  "observability": {
+    "enabled": true
+  },
+  /**
+   * Smart Placement
+   * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
+   */
+  "placement": { "mode": "smart" },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler"]
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "NEXT_TAG_CACHE_D1",
+      "database_name": "clickhouse-monitor",
+      "database_id": "f289f509-c33b-4218-8602-7a19d5d567bc",
+      "migrations_dir": "src/db/migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "NEXT_INC_CACHE_KV",
+      "id": "78782c1fcf4141d9b6f26f2046f50ceb"
+    }
+  ]
 }

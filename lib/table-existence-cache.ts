@@ -41,7 +41,11 @@ export async function checkTableExists(
 }
 
 // If you still need manual invalidation/metrics:
-export const invalidateTable = (hostId: number, database: string, table: string) => {
+export const invalidateTable = (
+  hostId: number,
+  database: string,
+  table: string
+) => {
   cache.delete(`${hostId}:${database}.${table}`)
 }
 export const clearTableCache = () => cache.clear()

@@ -38,7 +38,12 @@ export async function ChartDisksUsage({
   >({ query })
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data || []}>
+    <ChartCard
+      title={title}
+      className={className}
+      sql={query}
+      data={data || []}
+    >
       <AreaChart
         className={cn('h-52', chartClassName)}
         data={data || []}
