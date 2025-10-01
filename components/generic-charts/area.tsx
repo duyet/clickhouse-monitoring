@@ -15,6 +15,7 @@ import {
   CartesianGrid,
   AreaChart as RechartAreaChart,
   XAxis,
+  YAxis,
 } from 'recharts'
 import {
   NameType,
@@ -28,12 +29,16 @@ export function AreaChart({
   categories,
   showLegend = false,
   showXAxis = true,
+  showYAxis = true,
   showCartesianGrid = true,
   stack = false,
   opacity = 0.6,
   colors,
   colorLabel,
   tickFormatter,
+  yAxisTickFormatter,
+  xAxisLabel,
+  yAxisLabel,
   breakdown,
   breakdownLabel,
   breakdownValue,
@@ -41,7 +46,7 @@ export function AreaChart({
   tooltipActive,
   chartConfig: customChartConfig,
   className,
-}: AreaChartProps) {
+}: AreaChartProps & { yAxisTickFormatter?: (value: string | number) => string }) {
   const config = categories.reduce(
     (acc, category, index) => {
       acc[category] = {
@@ -86,6 +91,16 @@ export function AreaChart({
             tickFormatter={tickFormatter}
             domain={['auto', 'auto']}
             interval={'equidistantPreserveStart'}
+            label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined}
+          />
+        )}
+        {showYAxis && (
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={yAxisTickFormatter}
+            label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
           />
         )}
 
