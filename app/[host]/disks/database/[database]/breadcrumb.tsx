@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { getScopedLink } from '@/lib/scoped-link'
 import { use } from 'react'
 import {
@@ -31,7 +31,7 @@ interface Props {
 export async function DatabaseListBreadcrumb({ database }: Props) {
   try {
     // Lists cluster names.
-    const { data } = await fetchData<DatabaseUsedSpace[]>({
+    const { data } = await fetchDataWithHost<DatabaseUsedSpace[]>({
       query: queryConfig.sql,
     })
 

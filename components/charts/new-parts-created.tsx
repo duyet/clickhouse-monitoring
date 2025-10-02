@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval } from '@/lib/clickhouse-query'
 
 export async function ChartNewPartsCreated({
@@ -32,7 +32,7 @@ export async function ChartNewPartsCreated({
         table DESC
   `
 
-  const { data: raw } = await fetchData<
+  const { data: raw } = await fetchDataWithHost<
     {
       event_time: string
       table: string

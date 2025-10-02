@@ -2,7 +2,7 @@ import { backupsConfig } from '@/app/[host]/[query]/more/backups'
 import { type ChartProps } from '@/components/charts/chart-props'
 import { CardMetric } from '@/components/generic-charts/card-metric'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 
 export async function ChartBackupSize({
   title,
@@ -32,7 +32,7 @@ export async function ChartBackupSize({
     sql: query,
   }
 
-  const { data, error } = await fetchData<
+  const { data, error } = await fetchDataWithHost<
     {
       total_size: number
       uncompressed_size: number

@@ -2,7 +2,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { GithubHeatmapChart } from '@/components/github-heatmap-chart'
 import { AreaChart } from '@/components/tremor/area'
 import { BarChart } from '@/components/tremor/bar'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 30
@@ -37,7 +37,7 @@ export const RenderChart = async ({
   className,
   chartClassName,
 }: RenderChartProps) => {
-  const { data, error } = await fetchData<{ [key: string]: string | number }[]>(
+  const { data, error } = await fetchDataWithHost<{ [key: string]: string | number }[]>(
     {
       query,
       query_params: params,

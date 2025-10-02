@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { ErrorAlert } from '@/components/error-alert'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
@@ -27,9 +27,10 @@ interface DatabaseCount {
   count: number
 }
 
-export const getListDatabaseCached = cache(async () => {
-  return fetchData({
+export const getListDatabaseCached = cache(async (hostId: number) => {
+  return fetchDataWithHost({
     query: listDatabases,
+    hostId,
     clickhouse_settings: {
       use_query_cache: 1,
       query_cache_system_table_handling: 'save',
@@ -39,12 +40,12 @@ export const getListDatabaseCached = cache(async () => {
 })
 
 export const preload = async (host: number) => {
-  void (await getListDatabaseCached())
+  void (await getListDatabaseCached(host))
 }
 
 export async function Nav({ host, database, collapsible }: Props) {
   preload(host)
-  const { data: databases, error } = (await getListDatabaseCached()) as {
+  const { data: databases, error } = (await getListDatabaseCached(host)) as {
     data: DatabaseCount[] | null
     error?: any
   }

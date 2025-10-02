@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { cn } from '@/lib/utils'
 
 export async function ChartReplicationSummaryTable({
@@ -24,7 +24,7 @@ export async function ChartReplicationSummaryTable({
     GROUP BY 1, 2
     ORDER BY total DESC
   `
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       table: string
       type: string

@@ -7,7 +7,7 @@ import {
   type CardMultiMetricsProps,
 } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { formatReadableQuantity } from '@/lib/format-readable'
 import { getScopedLink } from '@/lib/scoped-link'
 
@@ -21,7 +21,7 @@ export async function ChartSummaryUsedByRunningQueries({
            formatReadableSize(memory_usage) as readable_memory_usage
     FROM system.processes
   `
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       query_count: number
       memory_usage: number
@@ -48,7 +48,7 @@ export async function ChartSummaryUsedByRunningQueries({
     readable_total: first.readable_memory_usage,
   }
   try {
-    const { data: totalRows } = await fetchData<
+    const { data: totalRows } = await fetchDataWithHost<
       {
         metric: string
         total: number
@@ -69,7 +69,7 @@ export async function ChartSummaryUsedByRunningQueries({
           AND query_start_time >= today()
   `
   try {
-    const { data: todayQueryCountRows } = await fetchData<
+    const { data: todayQueryCountRows } = await fetchDataWithHost<
       {
         query_count: number
       }[]
@@ -94,7 +94,7 @@ export async function ChartSummaryUsedByRunningQueries({
     FROM system.processes
   `
   try {
-    const { data } = await fetchData<
+    const { data } = await fetchDataWithHost<
       {
         rows_read: number
         rows_written: number

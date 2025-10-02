@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { CardMetric } from '@/components/generic-charts/card-metric'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 
 export async function ChartQueryCache({
   title = 'Query Cache',
@@ -15,7 +15,7 @@ export async function ChartQueryCache({
       formatReadableSize(total_staled_result_size) AS readable_total_staled_result_size
     FROM system.query_cache
   `
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       total_result_size: number
       total_staled_result_size: number

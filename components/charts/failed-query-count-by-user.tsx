@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval } from '@/lib/clickhouse-query'
 
 export async function ChartFailedQueryCountByType({
@@ -25,7 +25,7 @@ export async function ChartFailedQueryCountByType({
       1 ASC,
       3 DESC
   `
-  const { data: raw } = await fetchData<
+  const { data: raw } = await fetchDataWithHost<
     {
       event_time: string
       user: string

@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval, fillStep } from '@/lib/clickhouse-query'
 import { ChartWarnMessage } from '../chart-warn-message'
 import { type ChartProps } from './chart-props'
@@ -27,7 +27,7 @@ export async function ChartKeeperException({
   let data
 
   try {
-    const resp = await fetchData<
+    const resp = await fetchDataWithHost<
       {
         event_time: string
         KEEPER_EXCEPTION: number

@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { getScopedLink } from '@/lib/scoped-link'
 
 interface TableSelectorProps {
@@ -20,7 +20,7 @@ interface TableSelectorProps {
 export async function TableSelector({ database, table }: TableSelectorProps) {
   let anotherTables: { name: string }[] = []
   try {
-    const res = await fetchData<{ name: string }[]>({
+    const res = await fetchDataWithHost<{ name: string }[]>({
       query: `
         SELECT name
         FROM system.tables

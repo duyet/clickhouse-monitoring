@@ -1,6 +1,6 @@
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 
 import { Button } from '@/components/ui/button'
 import { getScopedLink } from '@/lib/scoped-link'
@@ -9,16 +9,18 @@ import { queryConfig, type Row } from './config'
 
 interface PageProps {
   params: Promise<{
+    host: number
     cluster: string
   }>
 }
 
 export default async function Page({ params }: PageProps) {
-  const { cluster } = await params
+  const { host, cluster } = await params
 
-  const { data, error } = await fetchData<Row[]>({
+  const { data, error } = await fetchDataWithHost<Row[]>({
     query: queryConfig.sql,
     query_params: { cluster },
+    hostId: host,
   })
 
   if (error) {
@@ -47,12 +49,13 @@ export default async function Page({ params }: PageProps) {
       queryConfig={queryConfig}
       data={data}
       context={{ cluster }}
-      topRightToolbarExtras={<TopRightToolbarExtras cluster={cluster} />}
+      topRightToolbarExtras={<TopRightToolbarExtras host={host} cluster={cluster} />}
     />
   )
 }
 
 const TopRightToolbarExtras = async ({
+  host,
   cluster,
 }: Awaited<PageProps['params']>) => (
   <div className="flex flex-row gap-2">

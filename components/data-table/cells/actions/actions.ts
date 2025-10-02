@@ -1,6 +1,7 @@
 'use server'
 
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import type { Row, RowData } from '@tanstack/react-table'
 import type { ActionResponse } from './types'
 
@@ -9,8 +10,10 @@ export async function killQuery<TValue>(
   _formData: FormData
 ): Promise<ActionResponse> {
   console.log('Killing query', queryId)
+  const hostId = await getHostIdCookie()
   const { data, error } = await fetchData({
     query: `KILL QUERY WHERE query_id = '${queryId}'`,
+    hostId,
   })
 
   if (error) {
@@ -44,7 +47,11 @@ export async function optimizeTable<TValue>(
   _formData: FormData
 ): Promise<ActionResponse> {
   console.log('Optimize table', table)
-  const { data, error } = await fetchData({ query: `OPTIMIZE TABLE ${table}` })
+  const hostId = await getHostIdCookie()
+  const { data, error } = await fetchData({ 
+    query: `OPTIMIZE TABLE ${table}`,
+    hostId,
+  })
 
   if (error) {
     console.error('Failed to optimize table', table, error)
@@ -66,9 +73,11 @@ export async function querySettings<TValue>(
   _formData: FormData
 ): Promise<ActionResponse> {
   console.log('Getting query SETTINGS', queryId)
+  const hostId = await getHostIdCookie()
   const { data, error } = await fetchData<{ Settings: string }[]>({
     query: `SELECT Settings FROM system.processes WHERE query_id = {queryId: String}`,
     query_params: { queryId },
+    hostId,
   })
 
   if (error) {

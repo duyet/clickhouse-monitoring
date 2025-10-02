@@ -1,7 +1,9 @@
 import { fetchData } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 export const engineType = async (database: string, table: string) => {
   try {
+    const hostId = await getHostIdCookie()
     const { data } = await fetchData<{ engine: string }[]>({
       query: `
         SELECT engine
@@ -10,6 +12,7 @@ export const engineType = async (database: string, table: string) => {
           AND (name = {table: String})
       `,
       query_params: { database, table },
+      hostId,
     })
 
     return data?.[0]?.engine || ''

@@ -5,6 +5,7 @@ import { ChartDisksUsage } from '@/components/charts/disks-usage'
 import { ChartMemoryUsage } from '@/components/charts/memory-usage'
 import { ChartMergeCount } from '@/components/charts/merge-count'
 import { ChartNewPartsCreated } from '@/components/charts/new-parts-created'
+import { ChartQueryCount } from '@/components/charts/query-count'
 import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
 import { ChartKeeperException } from '@/components/charts/zookeeper-exception'
@@ -33,8 +34,18 @@ export default async function Overview() {
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
             <ServerComponentLazy>
-              <ChartQueryCountByUser
+              <ChartQueryCount
                 title="Query Count last 24h"
+                lastHours={24}
+                interval="toStartOfHour"
+                className="w-full p-5"
+                chartClassName="h-64"
+              />
+            </ServerComponentLazy>
+
+            <ServerComponentLazy>
+              <ChartQueryCountByUser
+                title="Query Count by User last 24h"
                 lastHours={24}
                 interval="toStartOfHour"
                 className="w-full p-5"

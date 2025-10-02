@@ -10,6 +10,7 @@ export function LoadingIcon({ className }: LoadingIconProps) {
   return (
     <UpdateIcon
       className={cn('size-3 animate-spin text-gray-400', className)}
+      data-testid="loading-indicator"
     />
   )
 }

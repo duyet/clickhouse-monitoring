@@ -7,7 +7,7 @@ import {
   type CardMultiMetricsProps,
 } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { getScopedLink } from '@/lib/scoped-link'
 
 export async function ChartSummaryUsedByMerges({
@@ -20,7 +20,7 @@ export async function ChartSummaryUsedByMerges({
       formatReadableSize(memory_usage) as readable_memory_usage
     FROM system.merges
   `
-  const { data: usedRows } = await fetchData<
+  const { data: usedRows } = await fetchDataWithHost<
     {
       memory_usage: number
       readable_memory_usage: string
@@ -44,7 +44,7 @@ export async function ChartSummaryUsedByMerges({
     readable_total: used.readable_memory_usage,
   }
   try {
-    const { data: rows } = await fetchData<
+    const { data: rows } = await fetchDataWithHost<
       {
         metric: string
         total: number
@@ -71,7 +71,7 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const { data } = await fetchData<
+    const { data } = await fetchDataWithHost<
       {
         rows_read: number
         rows_written: number
@@ -101,7 +101,7 @@ export async function ChartSummaryUsedByMerges({
     FROM system.merges
   `
   try {
-    const { data } = await fetchData<
+    const { data } = await fetchDataWithHost<
       {
         bytes_read: number
         bytes_written: number

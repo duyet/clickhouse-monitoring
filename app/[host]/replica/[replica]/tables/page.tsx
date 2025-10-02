@@ -1,6 +1,6 @@
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
@@ -11,15 +11,17 @@ import { queryConfig, type Row } from './config'
 
 interface PageProps {
   params: Promise<{
+    host: number
     replica: string
   }>
 }
 
 export default async function ClustersPage({ params }: PageProps) {
-  const { replica } = await params
-  const { data, error } = await fetchData<Row[]>({
+  const { host, replica } = await params
+  const { data, error } = await fetchDataWithHost<Row[]>({
     query: queryConfig.sql,
     query_params: { replica },
+    hostId: host,
   })
 
   if (error) {

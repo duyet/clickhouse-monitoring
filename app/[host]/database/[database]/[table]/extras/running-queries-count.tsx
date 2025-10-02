@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 
 interface RunningQueriesProps {
   database: string
@@ -12,7 +12,7 @@ export async function RunningQueriesCount({
   table,
 }: RunningQueriesProps) {
   try {
-    const { data } = await fetchData<{ count: number }[]>({
+    const { data } = await fetchDataWithHost<{ count: number }[]>({
       query: `
         SELECT COUNT() as count
         FROM system.processes

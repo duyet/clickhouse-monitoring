@@ -60,6 +60,11 @@ function SingleItem({ item }: { item: MenuItem }) {
           'disabled:pointer-events-none disabled:opacity-50',
           'data-active:bg-accent/50 data-[state=open]:bg-accent/50'
         )}
+        data-testid={
+          item.href === '/clusters' ? 'nav-clusters' :
+          item.href === '/database' ? 'nav-databases' :
+          undefined
+        }
       >
         <div className="flex flex-row items-center gap-2">
           {item.icon && <item.icon className="size-4" strokeWidth={1} />}
@@ -138,7 +143,14 @@ function ListItem({
   return (
     <li>
       <NavigationMenuLink asChild>
-        <HostPrefixedLink href={href}>
+        <HostPrefixedLink 
+          href={href}
+          data-testid={
+            href === '/clusters' ? 'nav-clusters' :
+            href === '/database' ? 'nav-databases' :
+            undefined
+          }
+        >
           <div
             className={cn(
               'block space-y-1 rounded-md p-3 leading-none no-underline outline-hidden transition-colors select-none',

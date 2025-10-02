@@ -1,4 +1,5 @@
 import { fetchData, getClient, query } from '@/lib/clickhouse'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import { dedent } from '@/lib/utils'
 
 import type { TableChartsRow, TableSettingsRow } from './config'
@@ -35,12 +36,14 @@ const migrateSettings = async () => {
   ]
 
   for (const seed of seeds) {
+    const hostId = await getHostIdCookie()
     const { data: exists } = await fetchData<TableSettingsRow[]>({
       query: `
         SELECT * FROM ${TABLE_SETTINGS}
         FINAL
         WHERE key = {key: String}`,
       query_params: { key: seed.key },
+      hostId,
     })
 
     if (!exists || exists.length == 0) {
@@ -100,8 +103,10 @@ const migrateDashboard = async () => {
   ]
 
   for (const seed of seeds) {
+    const hostId = await getHostIdCookie()
     const { data: exists } = await fetchData<TableChartsRow[]>({
       query: `SELECT * FROM ${TABLE_CHARTS} FINAL WHERE title = '${seed.title}'`,
+      hostId,
     })
 
     if (!exists || exists.length == 0) {

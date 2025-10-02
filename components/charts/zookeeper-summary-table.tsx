@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { cn } from '@/lib/utils'
 
 export async function ChartZookeeperSummaryTable({
@@ -20,7 +20,7 @@ export async function ChartZookeeperSummaryTable({
     FROM system.metrics
     WHERE metric LIKE 'ZooKeeper%'
   `
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       metric: string
       value: string

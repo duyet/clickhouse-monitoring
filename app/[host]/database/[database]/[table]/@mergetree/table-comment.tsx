@@ -1,4 +1,4 @@
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 
 export async function TableComment({
   database,
@@ -8,7 +8,7 @@ export async function TableComment({
   table: string
 }) {
   try {
-    const { data } = await fetchData<{ comment: string }[]>({
+    const { data } = await fetchDataWithHost<{ comment: string }[]>({
       query: `
           SELECT comment
             FROM system.tables

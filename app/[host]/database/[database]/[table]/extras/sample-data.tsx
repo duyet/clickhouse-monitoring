@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
@@ -27,7 +27,7 @@ export async function SampleData({
   limit = 10,
   className,
 }: SampleDataProps) {
-  const { data, error } = await fetchData<{ [key: string]: string }[]>({
+  const { data, error } = await fetchDataWithHost<{ [key: string]: string }[]>({
     query: `SELECT *
      FROM ${database}.${table}
      LIMIT ${limit}`,

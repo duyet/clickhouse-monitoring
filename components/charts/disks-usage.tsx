@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 
@@ -27,7 +27,7 @@ export async function ChartDisksUsage({
     ORDER BY 1 ASC
   `
 
-  const { data } = await fetchData<
+  const { data } = await fetchDataWithHost<
     {
       event_time: string
       DiskAvailable_default: number
@@ -43,6 +43,7 @@ export async function ChartDisksUsage({
       className={className}
       sql={query}
       data={data || []}
+      data-testid="disk-usage-chart"
     >
       <AreaChart
         className={cn('h-52', chartClassName)}

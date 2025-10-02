@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   const { data: clickhouse, error } = await fetchData({
     query: 'SELECT version() as version',
+    hostId: 0, // Default to first host for API route
   })
 
   if (error) {
