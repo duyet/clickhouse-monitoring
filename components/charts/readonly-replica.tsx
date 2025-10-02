@@ -1,6 +1,6 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
 import { type ChartProps } from './chart-props'
 
@@ -9,6 +9,7 @@ export async function ChartReadonlyReplica({
   interval = 'toStartOfFifteenMinutes',
   lastHours = 24,
   className,
+  hostId,
 }: ChartProps) {
   const query = `
     SELECT ${applyInterval(interval, 'event_time')},
@@ -19,7 +20,7 @@ export async function ChartReadonlyReplica({
     ORDER BY event_time
   `
 
-  const { data } = await fetchDataWithHost<
+  const { data } = await fetchData<
     {
       event_time: string
       ReadonlyReplica: number
@@ -27,6 +28,7 @@ export async function ChartReadonlyReplica({
   >({
     query,
     format: 'JSONEachRow',
+    hostId,
   })
 
   return (

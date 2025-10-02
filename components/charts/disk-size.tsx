@@ -1,12 +1,13 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { CardMetric } from '@/components/generic-charts/card-metric'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartDiskSize({
   name,
   title,
   className,
+  hostId,
 }: ChartProps & { name?: string }) {
   const condition = name ? `WHERE name = '${name}'` : ''
   const query = `
@@ -19,7 +20,7 @@ export async function ChartDiskSize({
     ${condition}
     ORDER BY name
   `
-  const { data } = await fetchDataWithHost<
+  const { data } = await fetchData<
     {
       name: string
       used_space: number
@@ -27,7 +28,7 @@ export async function ChartDiskSize({
       total_space: number
       readable_total_space: string
     }[]
-  >({ query })
+  >({ query, hostId })
   const first = data?.[0]
 
   if (!data || !first) return null

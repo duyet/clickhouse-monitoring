@@ -8,4 +8,5 @@ export interface ChartProps extends Partial<AreaChartProps> {
   chartClassName?: string
   chartCardContentClassName?: string
   lastHours?: number
+  hostId: number
 }

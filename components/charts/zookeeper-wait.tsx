@@ -1,6 +1,6 @@
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
 import { type ChartProps } from './chart-props'
 
@@ -9,6 +9,7 @@ export async function ChartZookeeperWait({
   interval = 'toStartOfHour',
   lastHours = 24 * 7,
   className,
+  hostId,
 }: ChartProps) {
   const query = `
     SELECT
@@ -21,7 +22,7 @@ export async function ChartZookeeperWait({
     ORDER BY event_time
   `
 
-  const { data } = await fetchDataWithHost<
+  const { data } = await fetchData<
     {
       event_time: string
       AVG_ProfileEvent_ZooKeeperWaitSeconds: number
@@ -30,6 +31,7 @@ export async function ChartZookeeperWait({
   >({
     query,
     format: 'JSONEachRow',
+    hostId,
   })
 
   return (

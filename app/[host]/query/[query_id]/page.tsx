@@ -12,7 +12,8 @@ export const revalidate = 3600
 export const maxDuration = 30
 
 export default async function Page({ params, searchParams }: PageProps) {
-  const { query_id } = await params
+  const { host, query_id } = await params
+  const hostId = Number(host)
   const { cluster } = await searchParams
 
   // Binding the query_id to the config
@@ -33,7 +34,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   return (
     <div className="flex flex-col gap-4">
       <Suspense fallback={<ChartSkeleton />}>
-        <RelatedCharts relatedCharts={queryConfig.relatedCharts} />
+        <RelatedCharts relatedCharts={queryConfig.relatedCharts} hostId={hostId} />
       </Suspense>
 
       <Suspense fallback={<TableSkeleton />}>

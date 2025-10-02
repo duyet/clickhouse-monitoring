@@ -10,22 +10,24 @@ interface RelatedChartsProps {
   relatedCharts: QueryConfig['relatedCharts']
   maxChartsPerRow?: number
   className?: string
+  hostId: number
 }
 
 export async function RelatedCharts({
   relatedCharts,
   maxChartsPerRow = 2,
   className,
+  hostId,
 }: RelatedChartsProps) {
   // Related charts
   type ChartName = string
-  const charts: [ChartName, ComponentType<ChartProps>, ChartProps][] = []
+  const charts: [ChartName, ComponentType<ChartProps>, Omit<ChartProps, 'hostId'>][] = []
 
   if (!relatedCharts) return null
 
   for (const chart of relatedCharts) {
     let component,
-      props: ChartProps = {}
+      props: Omit<ChartProps, 'hostId'> = {}
 
     if (!chart) continue
 
@@ -91,6 +93,7 @@ export async function RelatedCharts({
               className={cn('w-full p-0 shadow-none', className)}
               chartClassName="h-44"
               {...props}
+              hostId={hostId}
             />
           </ServerComponentLazy>
         )

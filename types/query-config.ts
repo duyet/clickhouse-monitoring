@@ -53,8 +53,8 @@ export interface QueryConfig {
   }
   relatedCharts?:
     | string[]
-    | [string, ChartProps][]
-    | (string | [string, ChartProps])[]
+    | [string, Omit<ChartProps, 'hostId'>][]
+    | (string | [string, Omit<ChartProps, 'hostId'>])[]
   /**
    * Default parameters for the query
    * For example in the query:

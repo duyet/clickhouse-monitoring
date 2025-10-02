@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
 
 export async function ChartMergeAvgDuration({
@@ -10,6 +10,7 @@ export async function ChartMergeAvgDuration({
   lastHours = 24 * 14,
   className,
   chartClassName,
+  hostId,
 }: ChartProps) {
   const query = `
     SELECT
@@ -25,14 +26,14 @@ export async function ChartMergeAvgDuration({
     ORDER BY 1 ASC
     WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
   `
-  const { data } = await fetchDataWithHost<
+  const { data } = await fetchData<
     {
       event_time: string
       avg_duration_ms: number
       readable_avg_duration_ms: string
       bar: number
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <ChartCard

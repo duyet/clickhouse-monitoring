@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
 import { chartTickFormatters } from '@/lib/utils'
 
@@ -11,6 +11,7 @@ export async function ChartMemoryUsage({
   lastHours = 24,
   className,
   chartClassName,
+  hostId,
 }: ChartProps) {
   const query = `
     SELECT ${applyInterval(interval, 'event_time')},
@@ -20,13 +21,13 @@ export async function ChartMemoryUsage({
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1 ASC`
-  const { data } = await fetchDataWithHost<
+  const { data } = await fetchData<
     {
       event_time: string
       avg_memory: number
       readable_avg_memory: string
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <ChartCard

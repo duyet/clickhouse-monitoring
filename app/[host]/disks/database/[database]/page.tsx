@@ -8,13 +8,15 @@ import { databaseDiskSpaceByDatabaseConfig as queryConfig } from '../../config'
 
 interface PageProps {
   params: Promise<{
+    host: string
     database: string
   }>
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export default async function Page({ params, searchParams }: PageProps) {
-  const { database } = await params
+  const { host, database } = await params
+  const hostId = Number(host)
   const _searchParams = await searchParams
 
   let searchParamsCombine = {
@@ -25,7 +27,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   return (
     <div className="flex flex-col">
       <Suspense fallback={<ChartSkeleton />}>
-        <RelatedCharts relatedCharts={queryConfig.relatedCharts} />
+        <RelatedCharts relatedCharts={queryConfig.relatedCharts} hostId={hostId} />
       </Suspense>
 
       <Suspense fallback={<TableSkeleton />}>
