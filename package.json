@@ -26,7 +26,7 @@
     "fmt": "prettier --write \"**/*.{ts,tsx,md,json}\" --cache",
     "test": "pnpm jest",
     "jest": "jest --coverage",
-    "test-queries-config": "jest --coverage --testPathPattern=query-config",
+    "test-queries-config": "jest --coverage --testPathPattern=query-config --testPathIgnorePatterns=/node_modules/",
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {

@@ -259,7 +259,7 @@ describe('Host Switching Integration Tests', () => {
       // Simulate all components loading with host 0
       mockGetHostIdCookie.mockResolvedValue('0')
       const host0Results = await Promise.all(
-        componentQueries.map((query) =>
+        componentQueries.map(async (query) =>
           mockFetchData({ query, hostId: await mockGetHostIdCookie() })
         )
       )
@@ -267,7 +267,7 @@ describe('Host Switching Integration Tests', () => {
       // Switch to host 1
       testUtils.switchHost('1')
       const host1Results = await Promise.all(
-        componentQueries.map((query) =>
+        componentQueries.map(async (query) =>
           mockFetchData({ query, hostId: await mockGetHostIdCookie() })
         )
       )
