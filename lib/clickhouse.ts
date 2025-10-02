@@ -85,9 +85,21 @@ export const getClient = async <B extends boolean>({
   hostId?: number
 }): Promise<B extends true ? WebClickHouseClient : ClickHouseClient> => {
   const client = web === true ? createClientWeb : createClient
-  const config = clientConfig
-    ? clientConfig
-    : getClickHouseConfigs()[hostId || getHostId()]
+
+  let config: ClickHouseConfig
+  if (clientConfig) {
+    config = clientConfig
+  } else {
+    const configs = getClickHouseConfigs()
+    const targetHostId = hostId ?? getHostId()
+    config = configs[targetHostId]
+
+    if (!config) {
+      throw new Error(
+        `Invalid hostId: ${targetHostId}. Available hosts: 0-${configs.length - 1}`
+      )
+    }
+  }
 
   const c = client({
     host: config.host,
