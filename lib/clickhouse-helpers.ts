@@ -18,7 +18,7 @@ type QuerySettings = QueryParams['clickhouse_settings'] &
 /**
  * Wrapper function for fetchData that automatically handles hostId
  * This reduces boilerplate across components and ensures consistent host handling
- * 
+ *
  * @param params - Query parameters (same as fetchData but hostId is optional)
  * @param hostId - Optional hostId override (useful for pages that get it from params)
  * @returns Promise with query results
@@ -45,13 +45,16 @@ export async function fetchDataWithHost<
   try {
     // If hostId is not provided, get it from cookie
     let finalHostId = hostId
-    
+
     if (finalHostId === undefined || finalHostId === null) {
       // Get hostId from cookie with proper error handling
       try {
         finalHostId = await getHostIdCookie(0)
       } catch (error) {
-        console.warn('Failed to get hostId from cookie, using default 0:', error)
+        console.warn(
+          'Failed to get hostId from cookie, using default 0:',
+          error
+        )
         finalHostId = 0
       }
     }
@@ -70,7 +73,7 @@ export async function fetchDataWithHost<
     })
   } catch (error) {
     console.error('Error in fetchDataWithHost:', error)
-    
+
     // Return a properly typed error result
     return {
       data: null,
@@ -82,9 +85,11 @@ export async function fetchDataWithHost<
       },
       error: {
         type: 'query_error',
-        message: error instanceof Error ? error.message : 'An unknown error occurred',
+        message:
+          error instanceof Error ? error.message : 'An unknown error occurred',
         details: {
-          originalError: error instanceof Error ? error : new Error(String(error)),
+          originalError:
+            error instanceof Error ? error : new Error(String(error)),
         },
       },
     }
@@ -104,10 +109,12 @@ export function validateHostId(hostId: unknown): number {
   if (typeof hostId === 'string') {
     // Check if string contains only digits (no decimals, no other characters)
     if (!/^\d+$/.test(hostId.trim())) {
+      console.warn(`Invalid hostId: ${hostId}`)
       return 0
     }
     const parsed = parseInt(hostId, 10)
     if (isNaN(parsed) || parsed < 0) {
+      console.warn(`Invalid hostId: ${hostId}`)
       return 0
     }
     return parsed
@@ -115,6 +122,7 @@ export function validateHostId(hostId: unknown): number {
 
   if (typeof hostId === 'number') {
     if (hostId < 0 || !Number.isInteger(hostId)) {
+      console.warn(`Invalid hostId: ${hostId}`)
       return 0
     }
     return hostId
