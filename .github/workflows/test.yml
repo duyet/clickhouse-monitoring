@@ -8,20 +8,12 @@ on:
   workflow_dispatch:
 
 env:
-  CLICKHOUSE_HOST: http://localhost:8123,http://127.0.0.1:8123
-  CLICKHOUSE_USER: default,default
-  CLICKHOUSE_PASSWORD: ","
-  CLICKHOUSE_NAME: "Test Host 1,Test Host 2"
+  CLICKHOUSE_HOST: http://localhost:8123
   CLICKHOST_USER: default
-  CLICKHOST_PASS: ""
+  CLICKHOST_PASS: ''
   CLICKHOUSE_SKIP_USER_SETUP: 1
   CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # Cypress specific environment variables
-  CYPRESS_CLICKHOUSE_HOST: http://localhost:8123,http://127.0.0.1:8123
-  CYPRESS_CLICKHOUSE_USER: default,default
-  CYPRESS_CLICKHOUSE_PASSWORD: ","
-  CYPRESS_CLICKHOUSE_NAME: "Test Host 1,Test Host 2"
 
 permissions:
   contents: read
@@ -60,21 +52,21 @@ jobs:
           - 9000:9000
         options: >-
           --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8123/?query=SELECT%201 || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --health-start-period 20s
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 5
+          --health-start-period 30s
           --env CLICKHOUSE_SKIP_USER_SETUP=1
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: pnpm/action-setup@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - name: Next Cache
@@ -90,30 +82,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Clear Next.js config cache
+        run: rm -f next.config.compiled.js .next/next.config.compiled.js
+
       - name: Build
         run: pnpm build
-
-      - name: Wait for ClickHouse to be ready
-        run: |
-          echo "Waiting for ClickHouse to be fully ready..."
-          for i in {1..30}; do
-            if curl -s http://localhost:8123/ping | grep -q "Ok"; then
-              echo "ClickHouse is ready!"
-              exit 0
-            fi
-            echo "Waiting for ClickHouse... (attempt $i/30)"
-            sleep 2
-          done
-          echo "ClickHouse failed to become ready within 60 seconds"
-          exit 1
 
       - name: Test e2e
         uses: cypress-io/github-action@v6
         with:
-          start: pnpm start
-          wait-on: 'http://localhost:3000'
-          wait-on-timeout: 120
-          command: pnpm exec cypress run --e2e
+          command: pnpm e2e:headless
           browser: ${{ matrix.browser }}
           parallel: true
           record: true
@@ -136,7 +114,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: pnpm/action-setup@v4
 
@@ -159,6 +137,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile && pnpm approve-builds
 
+      - name: Clear Next.js config cache
+        run: rm -f next.config.compiled.js .next/next.config.compiled.js
+
       - name: Test components
         uses: cypress-io/github-action@v6
         with:
@@ -177,7 +158,6 @@ jobs:
 
   jest:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
 
     strategy:
       fail-fast: false
@@ -186,7 +166,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: pnpm/action-setup@v4
 
@@ -209,11 +189,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Jest (temporarily disabled due to hanging issue)
-        run: |
-          echo "Jest tests temporarily disabled due to hanging issue in CI"
-          echo "Using basic Node.js test as placeholder until Jest is fixed"
-          node -e "console.log('Basic test passed'); process.exit(0)"
+      - name: Clear Next.js config cache
+        run: rm -f next.config.compiled.js .next/next.config.compiled.js
+
+      - name: Jest
+        run: pnpm jest
 
       - name: Codecov
         uses: codecov/codecov-action@v5
@@ -280,7 +260,7 @@ jobs:
           echo Testing queries configured from /app/[host]/[query]/**.ts on ClickHouse ${{ matrix.clickhouse }}
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: pnpm/action-setup@v4
 
@@ -303,8 +283,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Test queries config (temporarily disabled due to Jest hanging issue)
-        run: |
-          echo "Query config tests temporarily disabled due to Jest hanging issue in CI"
-          echo "Query config files will be tested via component tests instead"
-          node -e "console.log('Query config placeholder test passed'); process.exit(0)"
+      - name: Clear Next.js config cache
+        run: rm -f next.config.compiled.js .next/next.config.compiled.js
+
+      - name: Test queries config
+        run: pnpm test-queries-config

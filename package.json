@@ -3,15 +3,20 @@
   "description": "Simple ClickHouse UI that relies on system tables to help monitor and provide overview of your cluster",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@10.17.1",
   "repository": {
     "url": "https://github.com/duyet/clickhouse-monitoring"
   },
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "start:coverage": "nyc --silent node server",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "pnpm run cf:build && opennextjs-cloudflare preview",
+    "cf:deploy": "pnpm run cf:build && opennextjs-cloudflare deploy",
+    "cf:upload": "pnpm run cf:build && opennextjs-cloudflare upload",
+    "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "lint": "next lint",
     "cy:open": "start-server-and-test dev http://localhost:3000 \"cypress open\"",
     "e2e": "start-server-and-test dev http://localhost:3000 \"cypress open --e2e\"",
@@ -57,7 +62,7 @@
     "dayjs": "^1.11.10",
     "dedent": "^1.5.3",
     "lru-cache": "^11.1.0",
-    "lucide-react": "^0.525.0",
+    "lucide-react": "^0.544.0",
     "next": "^15.3.1",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.0.1",
@@ -83,6 +88,7 @@
     "@eslint/js": "^9.26.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
     "@next/eslint-plugin-next": "^15.0.0",
+    "@opennextjs/cloudflare": "^1.9.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.0.0",
     "@types/react": "^18.3.12",
@@ -105,7 +111,8 @@
     "start-server-and-test": "^2.0.3",
     "ts-jest": "^29.2.5",
     "turbo": "^2.0.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.40.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

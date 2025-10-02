@@ -33,7 +33,12 @@ export async function ChartDiskSize({
   if (!data || !first) return null
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data || []}>
+    <ChartCard
+      title={title}
+      className={className}
+      sql={query}
+      data={data || []}
+    >
       <CardMetric
         current={first.used_space}
         currentReadable={`${first.readable_used_space} used (${first.name})`}

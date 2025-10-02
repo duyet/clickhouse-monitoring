@@ -1,4 +1,5 @@
 {
+  "buildCommand": "pnpm build",
   "crons": [
     {
       "path": "/api/clean",

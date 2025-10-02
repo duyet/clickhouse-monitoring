@@ -3,6 +3,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
 import { applyInterval } from '@/lib/clickhouse-query'
+import { chartTickFormatters } from '@/lib/utils'
 
 export async function ChartQueryCountByUser({
   title = 'Total Queries over last 14 days by users',
@@ -63,6 +64,9 @@ export async function ChartQueryCountByUser({
         categories={users}
         showLegend
         stack
+        xAxisLabel="Date"
+        yAxisLabel="Query Count"
+        yAxisTickFormatter={chartTickFormatters.count}
         {...props}
       />
     </ChartCard>

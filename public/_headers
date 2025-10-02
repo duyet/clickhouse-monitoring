@@ -1,0 +1,17 @@
+# Static assets caching for Cloudflare Pages
+# Cache static assets for 1 year
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache other static assets
+/logo.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/clickhouse.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+/logo.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+/logo-bw.svg
+  Cache-Control: public, max-age=31536000, immutable

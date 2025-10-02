@@ -1,8 +1,5 @@
 import { type QueryConfig } from '@/types/query-config'
-import {
-  parseTableFromSQL,
-  validateTableExistence,
-} from './table-validator'
+import { parseTableFromSQL, validateTableExistence } from './table-validator'
 
 // Mock the table existence cache
 jest.mock('./table-existence-cache', () => ({
@@ -77,13 +74,15 @@ describe('Table Validator', () => {
     })
 
     it('should extract tables from INSERT statements', () => {
-      const sql = 'INSERT INTO system.monitoring_events (kind, actor) VALUES ("test", "user")'
+      const sql =
+        'INSERT INTO system.monitoring_events (kind, actor) VALUES ("test", "user")'
       const result = parseTableFromSQL(sql)
       expect(result).toEqual(['system.monitoring_events'])
     })
 
     it('should extract tables from UPDATE statements', () => {
-      const sql = 'UPDATE system.monitoring_events SET actor = "new_user" WHERE kind = "test"'
+      const sql =
+        'UPDATE system.monitoring_events SET actor = "new_user" WHERE kind = "test"'
       const result = parseTableFromSQL(sql)
       expect(result).toEqual(['system.monitoring_events'])
     })
@@ -95,7 +94,8 @@ describe('Table Validator', () => {
     })
 
     it('should handle case insensitive SQL', () => {
-      const sql = 'select * from System.BACKUP_LOG join system.error_log on true'
+      const sql =
+        'select * from System.BACKUP_LOG join system.error_log on true'
       const result = parseTableFromSQL(sql)
       expect(result).toContain('System.BACKUP_LOG')
       expect(result).toContain('system.error_log')
@@ -154,7 +154,6 @@ describe('Table Validator', () => {
       expect(result).toEqual([])
     })
   })
-
 
   describe('validateTableExistence', () => {
     beforeEach(() => {

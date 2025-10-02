@@ -43,9 +43,13 @@ export function BarChart({
   colors,
   colorLabel,
   tickFormatter,
+  yAxisTickFormatter,
   showXAxis = true,
+  showYAxis = true,
+  xAxisLabel,
+  yAxisLabel,
   className,
-}: BarChartProps) {
+}: BarChartProps & { yAxisTickFormatter?: (value: string | number) => string }) {
   const chartConfig = categories.reduce(
     (acc, category, index) => {
       acc[category] = {
@@ -117,14 +121,24 @@ export function BarChart({
 
         {horizontal ? (
           <>
-            {showXAxis && <XAxis dataKey={categories[0]} type="number" hide />}
-            <YAxis
-              dataKey={index}
-              type="category"
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={tickFormatter}
-            />
+            {showXAxis && (
+              <XAxis
+                dataKey={categories[0]}
+                type="number"
+                hide
+                label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined}
+              />
+            )}
+            {showYAxis && (
+              <YAxis
+                dataKey={index}
+                type="category"
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={tickFormatter || yAxisTickFormatter}
+                label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
+              />
+            )}
           </>
         ) : (
           <>
@@ -135,6 +149,16 @@ export function BarChart({
                 tickMargin={10}
                 axisLine={true}
                 tickFormatter={tickFormatter}
+                label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined}
+              />
+            )}
+            {showYAxis && (
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={yAxisTickFormatter}
+                label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
               />
             )}
           </>

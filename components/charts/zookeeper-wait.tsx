@@ -33,7 +33,12 @@ export async function ChartZookeeperWait({
   })
 
   return (
-    <ChartCard title={title} sql={query} data={data || []} className={className}>
+    <ChartCard
+      title={title}
+      sql={query}
+      data={data || []}
+      className={className}
+    >
       <BarChart
         data={data || []}
         index="event_time"

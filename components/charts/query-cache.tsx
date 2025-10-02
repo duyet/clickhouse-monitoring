@@ -28,7 +28,12 @@ export async function ChartQueryCache({
   if (!data || !first) return null
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={data || []}>
+    <ChartCard
+      title={title}
+      className={className}
+      sql={query}
+      data={data || []}
+    >
       <CardMetric
         current={first.total_result_size}
         currentReadable={`${first.readable_total_result_size} cached`}
