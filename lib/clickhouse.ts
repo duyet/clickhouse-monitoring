@@ -163,7 +163,19 @@ export const fetchData = async <
     queryConfig?: QueryConfig
   }>): Promise<FetchDataResult<T>> => {
   const start = new Date()
-  const currentHostId = hostId ? Number(hostId) : getHostId()
+
+  // Parse and validate hostId to prevent NaN
+  let currentHostId: number
+  if (hostId !== undefined && hostId !== null && hostId !== '') {
+    const parsed = Number(hostId)
+    if (isNaN(parsed)) {
+      throw new Error(`Invalid hostId: ${hostId}. Must be a valid number.`)
+    }
+    currentHostId = parsed
+  } else {
+    currentHostId = getHostId()
+  }
+
   const clientConfig = getClickHouseConfigs()[currentHostId]
 
   try {
