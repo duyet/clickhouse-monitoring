@@ -1,4 +1,4 @@
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse-helpers'
 import { cn, dedent } from '@/lib/utils'
 
 interface ShowSQLButtonProps {
@@ -12,7 +12,7 @@ export async function TableDDL({
   table,
   className,
 }: ShowSQLButtonProps) {
-  const { data: showCreateTable, error } = await fetchDataWithHost<
+  const { data: showCreateTable, error } = await fetchData<
     { statement: string }[]
   >({
     query: `SHOW CREATE TABLE ${database}.${table}`,

@@ -2,7 +2,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { Extras } from '../extras/extras'
 
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse-helpers'
 import { queryConfig, type Row } from '../config'
 import { engineType } from '../engine-type'
 import { TableComment } from './table-comment'
@@ -21,7 +21,7 @@ export default async function MergeTree({ params }: Props) {
   const engine = await engineType(database, table)
   if (engine.includes('MergeTree') === false) return <></>
 
-  const { data: columns, error } = await fetchDataWithHost<Row[]>({
+  const { data: columns, error } = await fetchData<Row[]>({
     query: queryConfig.sql,
     query_params: {
       database,

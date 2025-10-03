@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
@@ -26,7 +26,7 @@ export async function RunningQueries({
   table,
   className,
 }: RunningQueriesProps) {
-  const { data, error } = await fetchDataWithHost<{ [key: string]: string }[]>({
+  const { data, error } = await fetchData<{ [key: string]: string }[]>({
     query: `SELECT query, user, elapsed,
        formatReadableQuantity(read_rows) as read_rows,
        formatReadableQuantity(total_rows_approx) as total_rows_approx,
