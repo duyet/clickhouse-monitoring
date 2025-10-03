@@ -8,6 +8,9 @@ import { getHostIdCookie } from '@/lib/scoped-link'
 import type { QueryConfig } from '@/types/query-config'
 import type { DataFormat, QueryParams } from '@clickhouse/client'
 
+// Re-export fetchData for direct use
+export { fetchData, type FetchDataResult } from '@/lib/clickhouse'
+
 type QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{
     // @since 24.4
