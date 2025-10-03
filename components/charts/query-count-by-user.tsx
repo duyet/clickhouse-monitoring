@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
 import { chartTickFormatters } from '@/lib/utils'
 
@@ -11,6 +11,7 @@ export async function ChartQueryCountByUser({
   lastHours = 24 * 14,
   className,
   chartClassName,
+  hostId,
   ...props
 }: ChartProps) {
   const query = `
@@ -26,13 +27,13 @@ export async function ChartQueryCountByUser({
       1 ASC,
       3 DESC
   `
-  const { data: raw } = await fetchDataWithHost<
+  const { data: raw } = await fetchData<
     {
       event_time: string
       user: string
       count: number
     }[]
-  >({ query })
+  >({ query, hostId })
 
   const data = (raw || []).reduce(
     (acc, cur) => {

@@ -10,16 +10,21 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 30
 
 interface PageProps {
+  params: Promise<{
+    host: string
+  }>
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-export default async function Disks({ searchParams }: PageProps) {
+export default async function Disks({ params, searchParams }: PageProps) {
+  const { host } = await params
+  const hostId = Number(host)
   const search = await searchParams
 
   return (
     <div className="flex flex-col gap-8">
       <Suspense fallback={<ChartSkeleton />}>
-        <RelatedCharts relatedCharts={diskSpaceConfig.relatedCharts} />
+        <RelatedCharts relatedCharts={diskSpaceConfig.relatedCharts} hostId={hostId} />
       </Suspense>
 
       <Suspense fallback={<TableSkeleton />}>

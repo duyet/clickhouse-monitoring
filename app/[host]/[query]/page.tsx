@@ -8,6 +8,7 @@ import { getQueryConfigByName } from './clickhouse-queries'
 
 interface PageProps {
   params: Promise<{
+    host: string
     query: string
   }>
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -17,7 +18,8 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 300
 
 export default async function Page({ params, searchParams }: PageProps) {
-  const { query } = await params
+  const { host, query } = await params
+  const hostId = Number(host)
 
   // Retrieves the query configuration by name.
   const queryConfig = getQueryConfigByName(query)
@@ -28,7 +30,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   return (
     <div className="flex flex-col gap-4">
       <Suspense fallback={<ChartSkeleton />}>
-        <RelatedCharts relatedCharts={queryConfig.relatedCharts} />
+        <RelatedCharts relatedCharts={queryConfig.relatedCharts} hostId={hostId} />
       </Suspense>
 
       <Suspense fallback={<TableSkeleton />}>

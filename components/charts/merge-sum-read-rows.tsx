@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
 
 export async function ChartMergeSumReadRows({
@@ -10,6 +10,7 @@ export async function ChartMergeSumReadRows({
   lastHours = 24 * 14,
   className,
   chartClassName,
+  hostId,
 }: ChartProps) {
   const query = `
     SELECT
@@ -25,14 +26,14 @@ export async function ChartMergeSumReadRows({
     ORDER BY 1 ASC
     WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
   `
-  const { data } = await fetchDataWithHost<
+  const { data } = await fetchData<
     {
       event_time: string
       sum_read_rows: number
       sum_read_rows_scale: number
       readable_sum_read_rows: string
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <ChartCard

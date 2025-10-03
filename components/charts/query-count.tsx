@@ -1,7 +1,7 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +16,7 @@ export async function ChartQueryCount({
   showLegend = false,
   showCartesianGrid = true,
   breakdown = 'breakdown',
+  hostId,
   ...props
 }: ChartProps) {
   const query = `
@@ -51,13 +52,13 @@ export async function ChartQueryCount({
     LEFT JOIN breakdown USING event_time
     ORDER BY 1
   `
-  const { data } = await fetchDataWithHost<
+  const { data } = await fetchData<
     {
       event_time: string
       query_count: number
       breakdown: Array<[string, number] | Record<string, string>>
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <ChartCard

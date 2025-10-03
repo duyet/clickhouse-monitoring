@@ -1,24 +1,25 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { CardMultiMetrics } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 
 export async function ChartReplicationQueueCount({
   title,
   className,
+  hostId,
 }: ChartProps) {
   const query = `
     SELECT COUNT() as count_all,
            countIf(is_currently_executing) AS count_executing
     FROM system.replication_queue
   `
-  const { data } = await fetchDataWithHost<
+  const { data } = await fetchData<
     {
       count_all: number
       count_executing: number
     }[]
-  >({ query })
+  >({ query, hostId })
 
   const count = data?.[0] || { count_all: 0, count_executing: 0 }
 

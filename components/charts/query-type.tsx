@@ -1,12 +1,13 @@
 import { type ChartProps } from '@/components/charts/chart-props'
 import { DonutChart } from '@/components/tremor/donut'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartQueryType({
   title,
   className,
   chartClassName,
   lastHours = 24,
+  hostId,
   ...props
 }: ChartProps) {
   const query = `
@@ -18,12 +19,12 @@ export async function ChartQueryType({
     GROUP BY 1
     ORDER BY 1
   `
-  const { data } = await fetchDataWithHost<
+  const { data } = await fetchData<
     {
       type: string
       query_count: number
     }[]
-  >({ query })
+  >({ query, hostId })
 
   return (
     <DonutChart

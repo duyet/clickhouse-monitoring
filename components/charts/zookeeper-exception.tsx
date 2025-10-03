@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep } from '@/lib/clickhouse-query'
 import { ChartWarnMessage } from '../chart-warn-message'
 import { type ChartProps } from './chart-props'
@@ -12,6 +12,7 @@ export async function ChartKeeperException({
   interval = 'toStartOfHour',
   lastHours = 24 * 7,
   className,
+  hostId,
 }: ChartProps) {
   const query = `
     SELECT
@@ -27,7 +28,7 @@ export async function ChartKeeperException({
   let data
 
   try {
-    const resp = await fetchDataWithHost<
+    const resp = await fetchData<
       {
         event_time: string
         KEEPER_EXCEPTION: number
@@ -35,6 +36,7 @@ export async function ChartKeeperException({
     >({
       query,
       format: 'JSONEachRow',
+      hostId,
     })
 
     data = resp.data

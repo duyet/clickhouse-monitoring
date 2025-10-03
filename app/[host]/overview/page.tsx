@@ -16,7 +16,14 @@ import { OverviewCharts } from './overview-charts'
 export const dynamic = 'force-dynamic'
 export const revalidate = 5
 
-export default async function Overview() {
+export default async function Overview({
+  params,
+}: {
+  params: Promise<{ host: string }>
+}) {
+  const { host } = await params
+  const hostId = Number(host)
+
   return (
     <div>
       <OverviewCharts className="mb-10" />
@@ -40,6 +47,7 @@ export default async function Overview() {
                 interval="toStartOfHour"
                 className="w-full p-5"
                 chartClassName="h-64"
+                hostId={hostId}
               />
             </ServerComponentLazy>
 
@@ -50,6 +58,7 @@ export default async function Overview() {
                 interval="toStartOfHour"
                 className="w-full p-5"
                 chartClassName="h-64"
+                hostId={hostId}
               />
             </ServerComponentLazy>
 
@@ -60,6 +69,7 @@ export default async function Overview() {
                 interval="toStartOfDay"
                 className="w-full p-5"
                 chartClassName="h-64"
+                hostId={hostId}
               />
             </ServerComponentLazy>
 
@@ -70,6 +80,7 @@ export default async function Overview() {
                 chartClassName="h-64"
                 interval="toStartOfTenMinutes"
                 lastHours={24}
+                hostId={hostId}
               />
             </ServerComponentLazy>
 
@@ -80,6 +91,7 @@ export default async function Overview() {
                 chartClassName="h-64"
                 interval="toStartOfTenMinutes"
                 lastHours={24}
+                hostId={hostId}
               />
             </ServerComponentLazy>
 
@@ -90,11 +102,12 @@ export default async function Overview() {
                 interval="toStartOfHour"
                 className="w-full p-5"
                 chartClassName="h-64"
+                hostId={hostId}
               />
             </ServerComponentLazy>
 
             <ServerComponentLazy>
-              <ChartTopTableSize className="w-full p-5" />
+              <ChartTopTableSize className="w-full p-5" hostId={hostId} />
             </ServerComponentLazy>
 
             <ServerComponentLazy>
@@ -104,6 +117,7 @@ export default async function Overview() {
                 title="New Parts Created over last 7 days"
                 interval="toStartOfHour"
                 lastHours={24 * 7}
+                hostId={hostId}
               />
             </ServerComponentLazy>
           </div>
@@ -112,7 +126,7 @@ export default async function Overview() {
         <TabsContent value="errors" className="space-y-4">
           <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
             <ServerComponentLazy>
-              <ChartKeeperException className="w-full p-5" />
+              <ChartKeeperException className="w-full p-5" hostId={hostId} />
             </ServerComponentLazy>
           </div>
         </TabsContent>
@@ -120,7 +134,11 @@ export default async function Overview() {
         <TabsContent value="disks" className="space-y-4">
           <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
             <ServerComponentLazy>
-              <ChartDiskSize className="w-full p-5" title="Disk Size" />
+              <ChartDiskSize
+                className="w-full p-5"
+                title="Disk Size"
+                hostId={hostId}
+              />
             </ServerComponentLazy>
             <ServerComponentLazy>
               <ChartDisksUsage
@@ -129,6 +147,7 @@ export default async function Overview() {
                 title="Disks Usage over last 30 days"
                 interval="toStartOfDay"
                 lastHours={24 * 30}
+                hostId={hostId}
               />
             </ServerComponentLazy>
           </div>
@@ -141,6 +160,7 @@ export default async function Overview() {
                 className="w-full p-5"
                 title="Backup"
                 chartClassName="h-64"
+                hostId={hostId}
               />
             </ServerComponentLazy>
           </div>
