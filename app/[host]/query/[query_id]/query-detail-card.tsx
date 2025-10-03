@@ -15,7 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
@@ -41,7 +41,7 @@ export async function QueryDetailCard({
     ...queryConfig.defaultParams,
     ...params,
   }
-  const { data, error } = await fetchDataWithHost<RowData[]>({
+  const { data, error } = await fetchData<RowData[]>({
     query: queryConfig.sql,
     format: 'JSONEachRow',
     query_params: queryParams,

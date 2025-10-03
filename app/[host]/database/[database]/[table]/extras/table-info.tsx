@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse-helpers'
 import { cn } from '@/lib/utils'
 
 interface TableInfoProps {
@@ -23,7 +23,7 @@ export async function TableInfo({
   table,
   className,
 }: TableInfoProps) {
-  const { data: tableInfo, error } = await fetchDataWithHost<
+  const { data: tableInfo, error } = await fetchData<
     { [key: string]: string }[]
   >({
     query: `SELECT

@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { fetchDataWithHost } from '@/lib/clickhouse-helpers'
+import { fetchData } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
@@ -32,7 +32,7 @@ interface Props {
 
 export async function ClusterListBreadcrumb({ cluster }: Props) {
   // Lists cluster names.
-  const { data, error } = await fetchDataWithHost<Row[]>({ 
+  const { data, error } = await fetchData<Row[]>({ 
     query: queryConfig.sql,
   })
 
