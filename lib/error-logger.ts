@@ -139,6 +139,7 @@ export function formatErrorForDisplay(error: Error & { digest?: string }): {
   // Production: More helpful message with error type hints
   let userMessage =
     'An unexpected error occurred. Please try again or contact support if the issue persists.'
+  let adminNote = ''
 
   // Provide slightly more context in production without exposing sensitive details
   if (
@@ -147,23 +148,28 @@ export function formatErrorForDisplay(error: Error & { digest?: string }): {
   ) {
     userMessage =
       'Server configuration error. The database connection is not properly configured. Please contact your administrator.'
+    adminNote =
+      'Note for administrator: No ClickHouse hosts configured. Please set CLICKHOUSE_HOST environment variable. Check deployment environment settings or Cloudflare Workers environment variables.'
   } else if (error.message.includes('Invalid hostId')) {
     userMessage =
       'Invalid server configuration. Please contact your administrator.'
+    adminNote = `Note for administrator: ${error.message}`
   } else if (error.message.includes('table')) {
     userMessage =
       'A required database table is not available. Please contact your administrator.'
+    adminNote = `Note for administrator: ${error.message}`
   } else if (
     error.message.includes('network') ||
     error.message.includes('connection')
   ) {
     userMessage =
       'Unable to connect to the database. Please check your network connection and try again.'
+    adminNote = `Note for administrator: ${error.message}`
   }
 
   return {
     title: 'Something went wrong',
-    message: userMessage,
+    message: adminNote ? `${userMessage}\n\n${adminNote}` : userMessage,
     details: {
       digest: error.digest,
     },
