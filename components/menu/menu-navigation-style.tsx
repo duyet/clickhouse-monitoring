@@ -95,7 +95,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
         </div>
       </NavigationMenuTrigger>
       <NavigationMenuContent>
-        <ul className="grid w-fit min-w-[400px] grid-cols-1 content-center items-stretch gap-2 p-4 md:min-w-[700px] md:grid-cols-2">
+        <ul className="grid w-fit min-w-[400px] grid-cols-1 content-center items-stretch gap-2 p-2 md:min-w-[700px] md:grid-cols-2">
           {item.items?.filter((childItem) => childItem.title && childItem.href).map((childItem) => (
             <ListItem
               key={childItem.href}
@@ -153,7 +153,7 @@ function ListItem({
         >
           <div
             className={cn(
-              'block space-y-1 rounded-md p-3 leading-none no-underline outline-hidden transition-colors select-none',
+              'block space-y-1 rounded-md p-2 leading-none no-underline outline-hidden transition-colors select-none',
               'hover:bg-accent hover:text-accent-foreground',
               'focus:bg-accent focus:text-accent-foreground',
               className
