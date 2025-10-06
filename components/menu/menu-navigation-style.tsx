@@ -112,7 +112,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
                     >
                       <CountBadge
                         sql={childItem.countSql}
-                        variant={item.countVariant}
+                        variant={childItem.countVariant}
                       />
                     </ServerComponentLazy>
                   ) : null}
@@ -160,8 +160,10 @@ function ListItem({
             )}
             {...props}
           >
-            <div className="text-sm leading-none font-medium">{title}</div>
-            <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
+            <div className="text-sm leading-none font-medium overflow-hidden text-ellipsis">
+              {title}
+            </div>
+            <p className="text-muted-foreground line-clamp-2 text-sm leading-snug break-words">
               {description}
             </p>
           </div>
