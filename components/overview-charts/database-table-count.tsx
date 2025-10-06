@@ -58,10 +58,11 @@ async function DatabaseCount() {
   if (error) {
     return (
       <ErrorAlert
-        title="Failed to load databases"
+        title="Configuration error"
         message={error.message}
         errorType={error.type}
         query={query}
+        compact={true}
       />
     )
   }
@@ -107,10 +108,11 @@ async function TablesCount() {
   if (totalData?.error) {
     return (
       <ErrorAlert
-        title="Failed to load tables"
+        title="Configuration error"
         message={totalData.error.message}
         errorType={totalData.error.type}
         query={totalQuery}
+        compact={true}
       />
     )
   }

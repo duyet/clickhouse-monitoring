@@ -36,10 +36,11 @@ export async function RunningQueries({ className }: { className?: string }) {
         </CardHeader>
         <CardContent>
           <ErrorAlert
-            title="Failed to load"
+            title="Configuration error"
             message={error.message}
             errorType={error.type}
             query={query}
+            compact={true}
           />
         </CardContent>
       </Card>

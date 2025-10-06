@@ -39,6 +39,7 @@ interface ErrorAlertProps {
     | 'query_error'
   digest?: string
   stack?: string
+  compact?: boolean
 }
 
 export function ErrorAlert({
@@ -52,10 +53,16 @@ export function ErrorAlert({
   errorType,
   digest,
   stack,
+  compact = false,
 }: ErrorAlertProps) {
   const [countdown, setCountdown] = useState(30)
   const showDetails = shouldShowDetailedErrors()
   const environment = getEnvironment()
+
+  // Extract just the first line for compact mode
+  const compactMessage = compact && typeof message === 'string'
+    ? message.split('\n')[0]
+    : message
 
   useEffect(() => {
     if (!reset) return
@@ -158,31 +165,38 @@ export function ErrorAlert({
   )
 
   return (
-    <div className={`${className} ${getVariantStyles()} rounded-lg border p-4`} data-testid="error-message">
+    <div className={`${className} ${getVariantStyles()} rounded-lg border ${compact ? 'p-2' : 'p-4'}`} data-testid="error-message">
       <div className="flex items-start gap-3">
-        {getErrorIcon()}
+        {!compact && getErrorIcon()}
         <div className="flex-1 space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <div className="text-foreground font-medium">{title}</div>
-            {showDetails && (
+            <div className={`text-foreground ${compact ? 'text-sm' : 'font-medium'}`}>{title}</div>
+            {!compact && showDetails && (
               <Badge variant="outline" className="text-xs">
                 {environment}
               </Badge>
             )}
           </div>
-          {message && renderContent(message)}
+          {message && !compact && renderContent(compactMessage)}
+          {message && compact && (
+            <div className="text-muted-foreground text-xs">
+              {typeof compactMessage === 'string'
+                ? compactMessage.substring(0, 50) + (compactMessage.length > 50 ? '...' : '')
+                : compactMessage}
+            </div>
+          )}
 
           {/* Development: Show stack trace */}
-          {showDetails && stack && renderAccordion('Stack Trace', stack)}
+          {!compact && showDetails && stack && renderAccordion('Stack Trace', stack)}
 
           {/* Always show query if available */}
           {Boolean(query) && renderAccordion('View Query Details', query)}
 
           {/* Show documentation */}
-          {Boolean(docs) && renderDocs(docs)}
+          {!compact && Boolean(docs) && renderDocs(docs)}
 
           {/* Show error digest for tracking */}
-          {digest && (
+          {!compact && digest && (
             <div className="mt-3 border-t pt-3">
               <div className="flex items-start gap-2">
                 <BugIcon className="text-muted-foreground mt-0.5 h-4 w-4 flex-none" />
@@ -196,7 +210,7 @@ export function ErrorAlert({
             </div>
           )}
 
-          {reset && (
+          {!compact && reset && (
             <div className="pt-2">
               <Button
                 variant="outline"

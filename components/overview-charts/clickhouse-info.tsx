@@ -87,10 +87,11 @@ async function InfoLine({
   if (error) {
     return (
       <ErrorAlert
-        title={`Failed to load ${label}`}
+        title="Configuration error"
         message={error.message}
         errorType={error.type}
         query={query}
+        compact={true}
       />
     )
   }
