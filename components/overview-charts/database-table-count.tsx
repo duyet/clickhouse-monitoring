@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 
 import { DialogSQL } from '@/components/dialog-sql'
+import { ErrorAlert } from '@/components/error-alert'
 import { SingleLineSkeleton } from '@/components/skeleton'
 import { Button } from '@/components/ui/button'
 import {
@@ -52,7 +53,19 @@ export async function DatabaseTableCount({
 async function DatabaseCount() {
   const query =
     "SELECT countDistinct(database) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')"
-  const { data } = await fetchData<{ count: number }[]>({ query })
+  const { data, error } = await fetchData<{ count: number }[]>({ query })
+
+  if (error) {
+    return (
+      <ErrorAlert
+        title="Configuration error"
+        message={error.message}
+        errorType={error.type}
+        query={query}
+        compact={true}
+      />
+    )
+  }
 
   if (!data || data.length === 0) return null
 
@@ -91,6 +104,18 @@ async function TablesCount() {
     fetchData<{ count: number }[]>({ query: totalQuery }),
     fetchData<{ count: number }[]>({ query: readonlyQuery }),
   ])
+
+  if (totalData?.error) {
+    return (
+      <ErrorAlert
+        title="Configuration error"
+        message={totalData.error.message}
+        errorType={totalData.error.type}
+        query={totalQuery}
+        compact={true}
+      />
+    )
+  }
 
   if (!totalData?.data || totalData.data.length === 0) return null
 

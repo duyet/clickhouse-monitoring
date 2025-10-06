@@ -1,0 +1,31 @@
+# Environment for loading .env files during local development
+NEXTJS_ENV=development
+
+# ClickHouse connection settings (REQUIRED)
+# These are loaded by wrangler for local development
+# For production, set these in Cloudflare Dashboard -> Workers -> Settings -> Variables
+
+# Single host example:
+# CLICKHOUSE_HOST=http://localhost:8123
+# CLICKHOUSE_USER=default
+# CLICKHOUSE_PASSWORD=your-password
+
+# Multiple hosts example (comma-separated):
+# CLICKHOUSE_HOST=http://host1:8123,http://host2:8123
+# CLICKHOUSE_USER=user1,user2
+# CLICKHOUSE_PASSWORD=pass1,pass2
+
+# Or single user/password for all hosts:
+# CLICKHOUSE_HOST=http://host1:8123,http://host2:8123
+# CLICKHOUSE_USER=default
+# CLICKHOUSE_PASSWORD=your-password
+
+CLICKHOUSE_HOST=
+CLICKHOUSE_USER=
+CLICKHOUSE_PASSWORD=
+
+# Optional ClickHouse settings (defaults set in wrangler.jsonc)
+# CLICKHOUSE_MAX_EXECUTION_TIME=60
+# CLICKHOUSE_DEFAULT_CLUSTER={cluster}
+# CLICKHOUSE_TZ=UTC
+# CLICKHOUSE_NAME=Custom Name 1,Custom Name 2

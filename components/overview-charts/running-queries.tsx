@@ -2,6 +2,7 @@ import { CodeIcon } from 'lucide-react'
 import Link from 'next/link'
 
 import { DialogSQL } from '@/components/dialog-sql'
+import { ErrorAlert } from '@/components/error-alert'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -17,13 +18,34 @@ import { cn } from '@/lib/utils'
 export async function RunningQueries({ className }: { className?: string }) {
   const query =
     'SELECT COUNT() as count FROM system.processes WHERE is_cancelled = 0'
-  const { data } = await fetchData<
+  const { data, error } = await fetchData<
     {
       count: number
     }[]
   >({
     query,
   })
+
+  // Show error if query failed
+  if (error) {
+    return (
+      <Card className={cn('', className)}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Running Queries</CardTitle>
+          <CardDescription className="text-xs">Active</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ErrorAlert
+            title="Configuration error"
+            message={error.message}
+            errorType={error.type}
+            query={query}
+            compact={true}
+          />
+        </CardContent>
+      </Card>
+    )
+  }
 
   if (!data || !data.length) return <div />
 

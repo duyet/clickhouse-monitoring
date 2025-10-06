@@ -7,6 +7,9 @@
     // Enable Node.js API
     // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#nodejs-compatibility-flag
     "nodejs_compat",
+    // Populate process.env with environment variables
+    // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/
+    "nodejs_compat_populate_process_env",
     // Allow to fetch URLs in your app
     // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#global-fetch-strictly-public
     "global_fetch_strictly_public"
@@ -66,5 +69,36 @@
       "binding": "NEXT_INC_CACHE_KV",
       "id": "78782c1fcf4141d9b6f26f2046f50ceb"
     }
-  ]
+  ],
+  /**
+   * Environment Variables
+   *
+   * For local development: Set these in .dev.vars file (not committed to git)
+   * For production: Set these in Cloudflare Dashboard or wrangler secret
+   *
+   * Required variables:
+   * - CLICKHOUSE_HOST: Comma-separated list of ClickHouse host URLs
+   * - CLICKHOUSE_USER: Comma-separated list of usernames (or single value for all hosts)
+   * - CLICKHOUSE_PASSWORD: Comma-separated list of passwords (or single value for all hosts)
+   *
+   * Optional variables:
+   * - CLICKHOUSE_NAME: Comma-separated list of custom names for hosts
+   * - CLICKHOUSE_MAX_EXECUTION_TIME: Query timeout in seconds (default: 60)
+   * - CLICKHOUSE_DEFAULT_CLUSTER: Default cluster name
+   * - CLICKHOUSE_TZ: Timezone for ClickHouse queries
+   *
+   * Example .dev.vars:
+   * CLICKHOUSE_HOST=http://localhost:8123
+   * CLICKHOUSE_USER=default
+   * CLICKHOUSE_PASSWORD=your-password
+   */
+  "vars": {
+    // Non-sensitive default values
+    "CLICKHOUSE_MAX_EXECUTION_TIME": "60",
+    "CLICKHOUSE_DEFAULT_CLUSTER": "{cluster}",
+    "CLICKHOUSE_TABLE_MAX_PARTS_WARN": "10000",
+    "CLICKHOUSE_QUERY_STUCK_DETECTION_MAX_SECONDS": "3600"
+    // Sensitive values (CLICKHOUSE_HOST, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD)
+    // should be set in .dev.vars (local) or Cloudflare Dashboard (production)
+  }
 }

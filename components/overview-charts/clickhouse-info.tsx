@@ -1,6 +1,7 @@
 import { CalendarCheckIcon, TagIcon } from 'lucide-react'
 import { Suspense } from 'react'
 
+import { ErrorAlert } from '@/components/error-alert'
 import { SingleLineSkeleton } from '@/components/skeleton'
 import {
   Card,
@@ -81,7 +82,19 @@ async function InfoLine({
   icon?: React.ReactNode
   className?: string
 }) {
-  const { data } = await fetchData<{ val: string }[]>({ query })
+  const { data, error } = await fetchData<{ val: string }[]>({ query })
+
+  if (error) {
+    return (
+      <ErrorAlert
+        title="Configuration error"
+        message={error.message}
+        errorType={error.type}
+        query={query}
+        compact={true}
+      />
+    )
+  }
 
   if (!data || data.length === 0) return null
 
