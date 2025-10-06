@@ -84,7 +84,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
-          {item.items?.map((childItem) => (
+          {item.items?.filter((childItem) => childItem.title && childItem.href).map((childItem) => (
             <MenuItem key={childItem.href} item={childItem} />
           ))}
         </DropdownMenuSubContent>

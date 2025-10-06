@@ -96,7 +96,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
       </NavigationMenuTrigger>
       <NavigationMenuContent>
         <ul className="grid w-fit min-w-[400px] grid-cols-1 content-center items-stretch gap-2 p-4 md:min-w-[700px] md:grid-cols-2">
-          {item.items?.map((childItem) => (
+          {item.items?.filter((childItem) => childItem.title && childItem.href).map((childItem) => (
             <ListItem
               key={childItem.href}
               title={
