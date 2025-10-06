@@ -12,6 +12,30 @@ describe('<ErrorAlert />', () => {
     cy.contains('Checking console for more details').should('be.visible')
   })
 
+  it('renders with digest', () => {
+    cy.mount(
+      <ErrorAlert
+        title="Error occurred"
+        message="An error happened"
+        digest="test-digest-123"
+      />
+    )
+    cy.contains('Error ID').should('be.visible')
+    cy.contains('test-digest-123').should('be.visible')
+  })
+
+  it('renders with stack trace in development', () => {
+    cy.mount(
+      <ErrorAlert
+        title="Error occurred"
+        message="An error happened"
+        stack="Error: Test error\n  at line 1\n  at line 2"
+      />
+    )
+    // Stack trace should be in an accordion
+    cy.contains('Stack Trace').should('be.visible')
+  })
+
   it('renders with JSX message', () => {
     cy.mount(
       <ErrorAlert

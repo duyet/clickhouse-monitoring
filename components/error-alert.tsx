@@ -3,6 +3,7 @@
 import dedent from 'dedent'
 import {
   AlertTriangleIcon,
+  BugIcon,
   DatabaseIcon,
   NetworkIcon,
   NotebookPenIcon,
@@ -19,6 +20,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
+import { shouldShowDetailedErrors } from '@/lib/env-utils'
 
 interface ErrorAlertProps {
   title?: string
@@ -34,6 +36,8 @@ interface ErrorAlertProps {
     | 'network_error'
     | 'validation_error'
     | 'query_error'
+  digest?: string
+  stack?: string
 }
 
 export function ErrorAlert({
@@ -45,8 +49,11 @@ export function ErrorAlert({
   className,
   variant = 'destructive',
   errorType,
+  digest,
+  stack,
 }: ErrorAlertProps) {
   const [countdown, setCountdown] = useState(30)
+  const showDetails = shouldShowDetailedErrors()
 
   useEffect(() => {
     if (!reset) return
@@ -155,8 +162,30 @@ export function ErrorAlert({
         <div className="flex-1 space-y-2">
           <div className="text-foreground font-medium">{title}</div>
           {message && renderContent(message)}
+
+          {/* Development: Show stack trace */}
+          {showDetails && stack && renderAccordion('Stack Trace', stack)}
+
+          {/* Always show query if available */}
           {Boolean(query) && renderAccordion('View Query Details', query)}
+
+          {/* Show documentation */}
           {Boolean(docs) && renderDocs(docs)}
+
+          {/* Show error digest for tracking */}
+          {digest && (
+            <div className="mt-3 border-t pt-3">
+              <div className="flex items-start gap-2">
+                <BugIcon className="text-muted-foreground mt-0.5 h-4 w-4 flex-none" />
+                <div className="text-muted-foreground text-xs">
+                  <div className="font-medium">Error ID (for support):</div>
+                  <code className="bg-muted/30 mt-1 block rounded px-2 py-1 font-mono">
+                    {digest}
+                  </code>
+                </div>
+              </div>
+            </div>
+          )}
 
           {reset && (
             <div className="pt-2">
