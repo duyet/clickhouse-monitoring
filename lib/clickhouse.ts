@@ -176,7 +176,34 @@ export const fetchData = async <
     currentHostId = getHostId()
   }
 
-  const clientConfig = getClickHouseConfigs()[currentHostId]
+  const configs = getClickHouseConfigs()
+  const clientConfig = configs[currentHostId]
+
+  // Check if clientConfig exists before using it
+  if (!clientConfig) {
+    const availableHosts = configs.map((c) => c.id).join(', ')
+    const errorMessage = `Invalid hostId: ${currentHostId}. Available hosts: ${availableHosts} (total: ${configs.length})`
+
+    console.error(errorMessage)
+
+    return {
+      data: null,
+      metadata: {
+        queryId: '',
+        duration: 0,
+        rows: 0,
+        host: 'unknown',
+      },
+      error: {
+        type: 'validation_error',
+        message: errorMessage,
+        details: {
+          originalError: new Error(errorMessage),
+          host: 'unknown',
+        },
+      },
+    }
+  }
 
   try {
     // Perform table validation if queryConfig is provided and query is optional

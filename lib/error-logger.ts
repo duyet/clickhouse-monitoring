@@ -100,9 +100,25 @@ export function formatErrorForDisplay(error: Error & { digest?: string }): {
   }
 } {
   if (isDevelopment()) {
+    // In development, show full error details
+    // Check if this is a more specific error with additional context
+    let detailedMessage = error.message
+
+    // Extract backend error information if available
+    if (error.message.includes('Invalid hostId')) {
+      detailedMessage = `Configuration Error: ${error.message}`
+    } else if (
+      error.message.includes('table') &&
+      error.message.includes('not')
+    ) {
+      detailedMessage = `Database Error: ${error.message}`
+    } else if (error.message.includes('Cannot read properties')) {
+      detailedMessage = `Runtime Error: ${error.message}\n\nThis usually indicates a configuration issue or missing data.`
+    }
+
     return {
       title: `Error: ${error.name}`,
-      message: error.message,
+      message: detailedMessage,
       details: {
         stack: error.stack,
         digest: error.digest,
@@ -111,11 +127,28 @@ export function formatErrorForDisplay(error: Error & { digest?: string }): {
     }
   }
 
-  // Production: Generic message with tracking digest
+  // Production: More helpful message with error type hints
+  let userMessage =
+    'An unexpected error occurred. Please try again or contact support if the issue persists.'
+
+  // Provide slightly more context in production without exposing sensitive details
+  if (error.message.includes('Invalid hostId')) {
+    userMessage =
+      'Invalid server configuration. Please contact your administrator.'
+  } else if (error.message.includes('table')) {
+    userMessage =
+      'A required database table is not available. Please contact your administrator.'
+  } else if (
+    error.message.includes('network') ||
+    error.message.includes('connection')
+  ) {
+    userMessage =
+      'Unable to connect to the database. Please check your network connection and try again.'
+  }
+
   return {
     title: 'Something went wrong',
-    message:
-      'An unexpected error occurred. Please try again or contact support if the issue persists.',
+    message: userMessage,
     details: {
       digest: error.digest,
     },

@@ -19,8 +19,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { shouldShowDetailedErrors } from '@/lib/env-utils'
+import { getEnvironment, shouldShowDetailedErrors } from '@/lib/env-utils'
 
 interface ErrorAlertProps {
   title?: string
@@ -54,6 +55,7 @@ export function ErrorAlert({
 }: ErrorAlertProps) {
   const [countdown, setCountdown] = useState(30)
   const showDetails = shouldShowDetailedErrors()
+  const environment = getEnvironment()
 
   useEffect(() => {
     if (!reset) return
@@ -160,7 +162,14 @@ export function ErrorAlert({
       <div className="flex items-start gap-3">
         {getErrorIcon()}
         <div className="flex-1 space-y-2">
-          <div className="text-foreground font-medium">{title}</div>
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-foreground font-medium">{title}</div>
+            {showDetails && (
+              <Badge variant="outline" className="text-xs">
+                {environment}
+              </Badge>
+            )}
+          </div>
           {message && renderContent(message)}
 
           {/* Development: Show stack trace */}
