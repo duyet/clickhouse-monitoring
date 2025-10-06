@@ -14,13 +14,32 @@ export default function Error({
 }) {
   useEffect(() => {
     // Log the error with structured logging
-    ErrorLogger.logError(error, {
-      digest: error.digest,
-      component: 'ErrorBoundary',
-    })
+    try {
+      ErrorLogger.logError(error, {
+        digest: error.digest,
+        component: 'ErrorBoundary',
+      })
+    } catch (logError) {
+      // Fallback if logging fails
+      console.error('Failed to log error:', logError)
+      console.error('Original error:', error)
+    }
   }, [error])
 
-  const formattedError = formatErrorForDisplay(error)
+  let formattedError
+  try {
+    formattedError = formatErrorForDisplay(error)
+  } catch (formatError) {
+    // Fallback if formatting fails
+    console.error('Failed to format error:', formatError)
+    formattedError = {
+      title: 'Something went wrong',
+      message: error?.message || 'An unexpected error occurred',
+      details: {
+        digest: error?.digest,
+      },
+    }
+  }
 
   return (
     <ErrorAlert
