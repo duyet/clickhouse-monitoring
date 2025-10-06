@@ -105,7 +105,16 @@ export function formatErrorForDisplay(error: Error & { digest?: string }): {
     let detailedMessage = error.message
 
     // Extract backend error information if available
-    if (error.message.includes('Invalid hostId')) {
+    if (
+      error.message.includes('No ClickHouse hosts configured') ||
+      error.message.includes('CLICKHOUSE_HOST')
+    ) {
+      detailedMessage =
+        `Environment Configuration Error:\n\n${error.message}\n\n` +
+        `This means the CLICKHOUSE_HOST environment variable is not set or empty.\n` +
+        `Check your .env.local file or deployment environment settings.\n` +
+        `See the browser console for detailed debug logs.`
+    } else if (error.message.includes('Invalid hostId')) {
       detailedMessage = `Configuration Error: ${error.message}`
     } else if (
       error.message.includes('table') &&
@@ -132,7 +141,13 @@ export function formatErrorForDisplay(error: Error & { digest?: string }): {
     'An unexpected error occurred. Please try again or contact support if the issue persists.'
 
   // Provide slightly more context in production without exposing sensitive details
-  if (error.message.includes('Invalid hostId')) {
+  if (
+    error.message.includes('No ClickHouse hosts configured') ||
+    error.message.includes('CLICKHOUSE_HOST')
+  ) {
+    userMessage =
+      'Server configuration error. The database connection is not properly configured. Please contact your administrator.'
+  } else if (error.message.includes('Invalid hostId')) {
     userMessage =
       'Invalid server configuration. Please contact your administrator.'
   } else if (error.message.includes('table')) {

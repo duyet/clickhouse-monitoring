@@ -46,10 +46,52 @@ function splitByComma(value: string) {
 }
 
 export const getClickHouseConfigs = (): ClickHouseConfig[] => {
-  const hosts = splitByComma(process.env.CLICKHOUSE_HOST || '')
-  const users = splitByComma(process.env.CLICKHOUSE_USER || '')
-  const passwords = splitByComma(process.env.CLICKHOUSE_PASSWORD || '')
-  const customLabels = splitByComma(process.env.CLICKHOUSE_NAME || '')
+  const hostEnv = process.env.CLICKHOUSE_HOST || ''
+  const userEnv = process.env.CLICKHOUSE_USER || ''
+  const passwordEnv = process.env.CLICKHOUSE_PASSWORD || ''
+  const customNameEnv = process.env.CLICKHOUSE_NAME || ''
+
+  // Debug logging for environment variables
+  if (!hostEnv) {
+    console.error(
+      '[ClickHouse Config] CRITICAL: CLICKHOUSE_HOST environment variable is not set!'
+    )
+    console.error(
+      '[ClickHouse Config] Available env keys:',
+      Object.keys(process.env).filter((k) => k.includes('CLICK'))
+    )
+  } else {
+    console.debug('[ClickHouse Config] CLICKHOUSE_HOST:', hostEnv)
+    console.debug(
+      '[ClickHouse Config] CLICKHOUSE_USER:',
+      userEnv ? '***' : '(empty)'
+    )
+    console.debug(
+      '[ClickHouse Config] CLICKHOUSE_PASSWORD:',
+      passwordEnv ? '***' : '(empty)'
+    )
+    console.debug(
+      '[ClickHouse Config] CLICKHOUSE_NAME:',
+      customNameEnv || '(empty)'
+    )
+  }
+
+  const hosts = splitByComma(hostEnv)
+  const users = splitByComma(userEnv)
+  const passwords = splitByComma(passwordEnv)
+  const customLabels = splitByComma(customNameEnv)
+
+  console.debug('[ClickHouse Config] Parsed hosts count:', hosts.length)
+
+  if (hosts.length === 0) {
+    console.error(
+      '[ClickHouse Config] No hosts configured! Please set CLICKHOUSE_HOST environment variable.'
+    )
+    console.error(
+      '[ClickHouse Config] Example: CLICKHOUSE_HOST=http://localhost:8123'
+    )
+    return []
+  }
 
   return hosts.map((host, index) => {
     // User and password fallback to the first value,
@@ -63,13 +105,23 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
       password = passwords[index] || ''
     }
 
-    return {
+    const config = {
       id: index,
       host,
       user,
       password,
       customName: customLabels[index],
     }
+
+    console.debug(`[ClickHouse Config] Host ${index}:`, {
+      id: config.id,
+      host: config.host,
+      user: config.user,
+      hasPassword: !!config.password,
+      customName: config.customName,
+    })
+
+    return config
   })
 }
 
@@ -177,6 +229,39 @@ export const fetchData = async <
   }
 
   const configs = getClickHouseConfigs()
+
+  // Check if any configs are available
+  if (configs.length === 0) {
+    const errorMessage =
+      'No ClickHouse hosts configured. Please set CLICKHOUSE_HOST environment variable.\n' +
+      'Example: CLICKHOUSE_HOST=http://localhost:8123\n' +
+      'See console logs for more details.'
+
+    console.error('[fetchData] No ClickHouse configurations available!')
+    console.error('[fetchData] Make sure environment variables are loaded.')
+    console.error(
+      '[fetchData] Check .env, .env.local, or deployment environment settings.'
+    )
+
+    return {
+      data: null,
+      metadata: {
+        queryId: '',
+        duration: 0,
+        rows: 0,
+        host: 'unknown',
+      },
+      error: {
+        type: 'validation_error',
+        message: errorMessage,
+        details: {
+          originalError: new Error(errorMessage),
+          host: 'unknown',
+        },
+      },
+    }
+  }
+
   const clientConfig = configs[currentHostId]
 
   // Check if clientConfig exists before using it
@@ -184,7 +269,7 @@ export const fetchData = async <
     const availableHosts = configs.map((c) => c.id).join(', ')
     const errorMessage = `Invalid hostId: ${currentHostId}. Available hosts: ${availableHosts} (total: ${configs.length})`
 
-    console.error(errorMessage)
+    console.error('[fetchData]', errorMessage)
 
     return {
       data: null,
