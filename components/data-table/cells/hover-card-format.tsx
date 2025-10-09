@@ -52,9 +52,13 @@ function contentReplacement(
       if (typeof child === 'string') {
         return contentReplacement(child, row)
       } else if (React.isValidElement(child)) {
-        return React.cloneElement(child as React.ReactElement, {
-          children: contentReplacement(child.props.children, row),
-        })
+        // Type-safe access to props.children
+        const childElement = child as React.ReactElement<{ children?: React.ReactNode }>
+        return React.cloneElement(
+          child,
+          {},
+          contentReplacement(childElement.props.children, row)
+        )
       }
 
       // If it's not a string or a valid element, just return it

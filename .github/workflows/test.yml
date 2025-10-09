@@ -109,7 +109,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 21]
+        # TODO: Re-enable Node 21 when Cypress 15 + Tailwind CSS 4 compatibility is resolved
+        # Issue: Cypress 15's new ESM loader conflicts with Tailwind CSS 4's PostCSS configuration
+        node: [20]
         browser: [chrome, firefox]
 
     steps:
