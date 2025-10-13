@@ -32,7 +32,7 @@ interface Props {
 
 export async function ClusterListBreadcrumb({ cluster }: Props) {
   // Lists cluster names.
-  const { data, error } = await fetchData<Row[]>({ 
+  const { data, error } = await fetchData<Row[]>({
     query: queryConfig.sql,
   })
 

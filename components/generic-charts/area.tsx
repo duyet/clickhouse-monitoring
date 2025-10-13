@@ -46,12 +46,28 @@ export function AreaChart({
   tooltipActive,
   chartConfig: customChartConfig,
   className,
-}: AreaChartProps & { yAxisTickFormatter?: (value: string | number) => string }) {
+}: AreaChartProps & {
+  yAxisTickFormatter?: (value: string | number) => string
+}) {
+  // Handle null/undefined or empty data
+  const safeData = data ?? []
+
+  // Handle null/undefined or empty categories
+  if (!categories || categories.length === 0) {
+    return (
+      <div className="text-muted-foreground flex min-h-[200px] items-center justify-center">
+        No categories specified
+      </div>
+    )
+  }
+
   const config = categories.reduce(
-    (acc, category, index) => {
+    (acc, category, categoryIndex) => {
       acc[category] = {
         label: category,
-        color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
+        color: colors?.[categoryIndex]
+          ? `var(${colors[categoryIndex]})`
+          : `var(--chart-${categoryIndex + 1})`,
       }
 
       return acc
@@ -64,7 +80,7 @@ export function AreaChart({
   )
   const chartConfig = {
     ...config,
-    ...(customChartConfig || {}),
+    ...(customChartConfig ?? {}),
   }
 
   return (
@@ -74,7 +90,7 @@ export function AreaChart({
     >
       <RechartAreaChart
         accessibilityLayer
-        data={data}
+        data={safeData}
         margin={{
           top: 4,
           left: 12,
@@ -91,7 +107,11 @@ export function AreaChart({
             tickFormatter={tickFormatter}
             domain={['auto', 'auto']}
             interval={'equidistantPreserveStart'}
-            label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined}
+            label={
+              xAxisLabel
+                ? { value: xAxisLabel, position: 'insideBottom', offset: -10 }
+                : undefined
+            }
           />
         )}
         {showYAxis && (
@@ -100,7 +120,11 @@ export function AreaChart({
             axisLine={false}
             tickMargin={8}
             tickFormatter={yAxisTickFormatter}
-            label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
+            label={
+              yAxisLabel
+                ? { value: yAxisLabel, angle: -90, position: 'insideLeft' }
+                : undefined
+            }
           />
         )}
 

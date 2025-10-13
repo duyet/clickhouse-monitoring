@@ -49,7 +49,9 @@ export function BarChart({
   xAxisLabel,
   yAxisLabel,
   className,
-}: BarChartProps & { yAxisTickFormatter?: (value: string | number) => string }) {
+}: BarChartProps & {
+  yAxisTickFormatter?: (value: string | number) => string
+}) {
   const chartConfig = categories.reduce(
     (acc, category, index) => {
       acc[category] = {
@@ -126,7 +128,15 @@ export function BarChart({
                 dataKey={categories[0]}
                 type="number"
                 hide
-                label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined}
+                label={
+                  xAxisLabel
+                    ? {
+                        value: xAxisLabel,
+                        position: 'insideBottom',
+                        offset: -10,
+                      }
+                    : undefined
+                }
               />
             )}
             {showYAxis && (
@@ -136,7 +146,11 @@ export function BarChart({
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={tickFormatter || yAxisTickFormatter}
-                label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
+                label={
+                  yAxisLabel
+                    ? { value: yAxisLabel, angle: -90, position: 'insideLeft' }
+                    : undefined
+                }
               />
             )}
           </>
@@ -149,7 +163,15 @@ export function BarChart({
                 tickMargin={10}
                 axisLine={true}
                 tickFormatter={tickFormatter}
-                label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined}
+                label={
+                  xAxisLabel
+                    ? {
+                        value: xAxisLabel,
+                        position: 'insideBottom',
+                        offset: -10,
+                      }
+                    : undefined
+                }
               />
             )}
             {showYAxis && (
@@ -158,7 +180,11 @@ export function BarChart({
                 axisLine={false}
                 tickMargin={8}
                 tickFormatter={yAxisTickFormatter}
-                label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
+                label={
+                  yAxisLabel
+                    ? { value: yAxisLabel, angle: -90, position: 'insideLeft' }
+                    : undefined
+                }
               />
             )}
           </>

@@ -1,18 +1,28 @@
-import dayjs from '@/lib/dayjs'
+import { formatDuration } from '@/lib/date-utils'
 
 interface DurationFormatProps {
-  value: any
+  value: unknown
 }
 
 export function DurationFormat({ value }: DurationFormatProps) {
-  let humanized = value
-  const seconds = parseFloat(value as string)
-
-  if (!Number.isNaN(seconds)) {
-    humanized = dayjs
-      .duration({ seconds: parseFloat(value as string) })
-      .humanize(seconds < 0 ? true : false) // 2 minutes "ago" for negative values
+  // Handle null/undefined
+  if (value === null || value === undefined) {
+    return <span>-</span>
   }
 
-  return <span title={value as string}>{humanized}</span>
+  // Parse value to number
+  const seconds = typeof value === 'number' ? value : parseFloat(String(value))
+
+  // Handle invalid numbers
+  if (isNaN(seconds)) {
+    return <span title={String(value)}>{String(value)}</span>
+  }
+
+  const formatted = formatDuration(seconds, { precision: 2 })
+
+  return (
+    <span title={`${seconds} seconds`} className="tabular-nums">
+      {formatted}
+    </span>
+  )
 }

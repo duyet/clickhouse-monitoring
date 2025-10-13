@@ -125,7 +125,9 @@ export const chartTickFormatters = {
   bytes: (value: string | number | null | undefined) =>
     value === null || value === undefined ? '-' : formatBytes(Number(value)),
   percentage: (value: string | number | null | undefined) =>
-    value === null || value === undefined ? '-' : formatPercentage(Number(value)),
+    value === null || value === undefined
+      ? '-'
+      : formatPercentage(Number(value)),
   count: (value: string | number | null | undefined) =>
     value === null || value === undefined ? '-' : formatCount(Number(value)),
   duration: (value: string | number | null | undefined) =>

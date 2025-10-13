@@ -14,11 +14,17 @@ export default async function Layout({
 }) {
   const { host } = await params
 
-  if (Number.isNaN(Number(host))) {
-    setHostId(0)
-  }
+  // BUG-007 FIX: Validate and sanitize host parameter to prevent XSS attacks
+  // Convert to number and validate range to ensure only safe values are used
+  const hostNumber = Number(host)
+  const sanitizedHost =
+    Number.isNaN(hostNumber) || hostNumber < 0 ? 0 : hostNumber
 
-  setHostId(Number(host))
+  if (Number.isNaN(hostNumber)) {
+    setHostId(0)
+  } else {
+    setHostId(sanitizedHost)
+  }
 
   return (
     <>
@@ -27,14 +33,16 @@ export default async function Layout({
       <Script
         id="setHostId"
         dangerouslySetInnerHTML={{
-          // We have to set a cookie here because cookies() is not allowed in server components
-          __html: `document.cookie = "hostId=${host}; path=/";`,
+          // BUG-007 FIX: Sanitize host value before injecting into script
+          // Use sanitizedHost (validated number) instead of raw host parameter
+          // This prevents XSS attacks through malicious host parameters
+          __html: `document.cookie = "hostId=${sanitizedHost}; path=/";`,
         }}
       />
 
       <Suspense fallback={null}>
-        <PageView hostId={host} />
-        <BackgroundJobs hostId={host} />
+        <PageView hostId={sanitizedHost} />
+        <BackgroundJobs hostId={sanitizedHost} />
       </Suspense>
     </>
   )

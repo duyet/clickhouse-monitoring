@@ -54,7 +54,9 @@ export default function GlobalError({
             <h1 className="text-foreground mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
               {formattedError.title}
             </h1>
-            <p className="text-muted-foreground mt-4">{formattedError.message}</p>
+            <p className="text-muted-foreground mt-4">
+              {formattedError.message}
+            </p>
 
             {/* Show stack trace in development */}
             {formattedError.details?.stack && (
@@ -74,9 +76,11 @@ export default function GlobalError({
               <div className="bg-muted/30 mt-4 rounded-lg border p-4 text-left">
                 <div className="mb-2 flex items-center gap-2">
                   <BugIcon className="h-4 w-4" />
-                  <span className="text-sm font-medium">Error ID (for support):</span>
+                  <span className="text-sm font-medium">
+                    Error ID (for support):
+                  </span>
                 </div>
-                <code className="text-muted-foreground block break-all text-xs font-mono">
+                <code className="text-muted-foreground block font-mono text-xs break-all">
                   {formattedError.details.digest}
                 </code>
               </div>

@@ -16,7 +16,7 @@ interface ChartCardProps {
   className?: string
   contentClassName?: string
   sql?: string
-  data?: any[]
+  data?: unknown[]
   children: string | React.ReactNode
 }
 
@@ -47,17 +47,25 @@ export function ChartCard({
 }
 
 function CardToolbar({ sql, data }: Pick<ChartCardProps, 'sql' | 'data'>) {
+  // Handle null/undefined data array
+  const hasData =
+    data !== null &&
+    data !== undefined &&
+    Array.isArray(data) &&
+    data.length > 0
+
   return (
     <div className="flex flex-row gap-1">
-      {data && (
+      {hasData && (
         <DialogContent
           button={
             <Button
               className="border-0 group-hover:border"
               size="sm"
               variant="ghost"
+              aria-label="View raw data"
             >
-              <TableIcon className="size-3" />
+              <TableIcon className="size-3" aria-hidden="true" />
             </Button>
           }
           content={
@@ -74,8 +82,9 @@ function CardToolbar({ sql, data }: Pick<ChartCardProps, 'sql' | 'data'>) {
               className="border-0 group-hover:border"
               size="sm"
               variant="ghost"
+              aria-label="View SQL query"
             >
-              <CodeIcon className="size-3" />
+              <CodeIcon className="size-3" aria-hidden="true" />
             </Button>
           }
           content={<pre className="text-sm">{dedent(sql)}</pre>}

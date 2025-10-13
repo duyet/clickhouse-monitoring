@@ -6,7 +6,7 @@ interface PageProps {
 
 export default async function HostPage({ params }: PageProps) {
   const { host } = await params
-  
+
   // Redirect to overview page for the selected host
   redirect(`/${host}/overview`)
 }

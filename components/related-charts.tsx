@@ -21,7 +21,11 @@ export async function RelatedCharts({
 }: RelatedChartsProps) {
   // Related charts
   type ChartName = string
-  const charts: [ChartName, ComponentType<ChartProps>, Omit<ChartProps, 'hostId'>][] = []
+  const charts: [
+    ChartName,
+    ComponentType<ChartProps>,
+    Omit<ChartProps, 'hostId'>,
+  ][] = []
 
   if (!relatedCharts) return null
 

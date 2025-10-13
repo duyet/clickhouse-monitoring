@@ -60,26 +60,38 @@ export function ErrorAlert({
   const environment = getEnvironment()
 
   // Extract just the first line for compact mode
-  const compactMessage = compact && typeof message === 'string'
-    ? message.split('\n')[0]
-    : message
+  const compactMessage =
+    compact && typeof message === 'string' ? message.split('\n')[0] : message
 
+  // BUG-004 FIX: Properly clean up interval timer to prevent memory leaks
+  // Timer must be cleaned up when component unmounts or when reset/countdown changes
   useEffect(() => {
     if (!reset) return
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          clearInterval(timer)
-          reset()
+          // Don't call reset inside setInterval - it will be handled by reaching 0
           return 0
         }
         return prev - 1
       })
     }, 1000)
 
-    return () => clearInterval(timer)
+    // BUG-004 FIX: Always return cleanup function to prevent memory leak
+    // This ensures the interval is cleared when component unmounts or dependencies change
+    return () => {
+      clearInterval(timer)
+    }
   }, [reset])
+
+  // BUG-004 FIX: Separate effect to handle reset when countdown reaches 0
+  // This prevents calling reset inside the interval callback which could cause issues
+  useEffect(() => {
+    if (countdown === 0 && reset) {
+      reset()
+    }
+  }, [countdown, reset])
 
   const getErrorIcon = () => {
     switch (errorType) {
@@ -165,12 +177,19 @@ export function ErrorAlert({
   )
 
   return (
-    <div className={`${className} ${getVariantStyles()} rounded-lg border ${compact ? 'p-2' : 'p-4'}`} data-testid="error-message">
+    <div
+      className={`${className} ${getVariantStyles()} rounded-lg border ${compact ? 'p-2' : 'p-4'}`}
+      data-testid="error-message"
+    >
       <div className="flex items-start gap-3">
         {!compact && getErrorIcon()}
         <div className="flex-1 space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <div className={`text-foreground ${compact ? 'text-sm' : 'font-medium'}`}>{title}</div>
+            <div
+              className={`text-foreground ${compact ? 'text-sm' : 'font-medium'}`}
+            >
+              {title}
+            </div>
             {!compact && showDetails && (
               <Badge variant="outline" className="text-xs">
                 {environment}
@@ -181,13 +200,17 @@ export function ErrorAlert({
           {message && compact && (
             <div className="text-muted-foreground text-xs">
               {typeof compactMessage === 'string'
-                ? compactMessage.substring(0, 50) + (compactMessage.length > 50 ? '...' : '')
+                ? compactMessage.substring(0, 50) +
+                  (compactMessage.length > 50 ? '...' : '')
                 : compactMessage}
             </div>
           )}
 
           {/* Development: Show stack trace */}
-          {!compact && showDetails && stack && renderAccordion('Stack Trace', stack)}
+          {!compact &&
+            showDetails &&
+            stack &&
+            renderAccordion('Stack Trace', stack)}
 
           {/* Always show query if available */}
           {Boolean(query) && renderAccordion('View Query Details', query)}

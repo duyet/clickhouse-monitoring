@@ -1,21 +1,27 @@
-import dayjs from '@/lib/dayjs'
+import { formatDate, formatRelativeTime, parseDate } from '@/lib/date-utils'
 
 interface RelatedTimeFormatProps {
-  value: any
+  value: unknown
 }
 
-const CLICKHOUSE_TZ: string =
-  process.env.NEXT_PUBLIC_CLICKHOUSE_TZ || process.env.CLICKHOUSE_TZ || ''
-
 export function RelatedTimeFormat({ value }: RelatedTimeFormatProps) {
-  let fromNow
-  try {
-    let parsed = dayjs.tz(value as string, CLICKHOUSE_TZ)
-    fromNow = parsed.fromNow()
-  } catch (e) {
-    console.error('Error parsing time:', e)
-    fromNow = dayjs(value as string).fromNow()
+  // Handle null/undefined
+  if (value === null || value === undefined) {
+    return <span>-</span>
   }
 
-  return <span title={value as string}>{fromNow}</span>
+  // Validate the date
+  const date = parseDate(value as string | number | Date)
+  if (!date) {
+    return <span title={String(value)}>Invalid date</span>
+  }
+
+  const relativeTime = formatRelativeTime(date)
+  const absoluteTime = formatDate(date, { includeSeconds: true })
+
+  return (
+    <span title={absoluteTime} className="cursor-help">
+      {relativeTime}
+    </span>
+  )
 }

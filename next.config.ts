@@ -46,5 +46,5 @@ export default nextConfig
 
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
 initOpenNextCloudflareForDev({
-  experimental: { remoteBindings: true }
+  experimental: { remoteBindings: true },
 })

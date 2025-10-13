@@ -3,8 +3,15 @@
  * Tests edge cases and error scenarios for the fetchDataWithHost wrapper
  */
 
-import { describe, expect, it, jest, beforeEach, afterEach } from '@jest/globals'
 import { fetchDataWithHost, validateHostId } from '@/lib/clickhouse-helpers'
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from '@jest/globals'
 
 // Mock the dependencies
 jest.mock('@/lib/clickhouse', () => ({
@@ -22,20 +29,25 @@ describe('fetchDataWithHost', () => {
   beforeEach(() => {
     // Reset all mocks before each test
     jest.clearAllMocks()
-    
+
     // Get mock references
     const clickhouse = require('@/lib/clickhouse')
     const scopedLink = require('@/lib/scoped-link')
-    
+
     mockFetchData = clickhouse.fetchData as jest.Mock
     mockGetHostIdCookie = scopedLink.getHostIdCookie as jest.Mock
-    
+
     // Set default mock implementations
     mockFetchData.mockResolvedValue({
       data: [{ test: 'data' }],
-      metadata: { queryId: 'test-id', duration: 100, rows: 1, host: 'test-host' },
+      metadata: {
+        queryId: 'test-id',
+        duration: 100,
+        rows: 1,
+        host: 'test-host',
+      },
     })
-    
+
     mockGetHostIdCookie.mockResolvedValue(0)
   })
 
@@ -62,7 +74,7 @@ describe('fetchDataWithHost', () => {
 
     it('should get hostId from cookie when not provided', async () => {
       mockGetHostIdCookie.mockResolvedValue(3)
-      
+
       const result = await fetchDataWithHost({
         query: 'SELECT 1',
       })
@@ -131,7 +143,7 @@ describe('fetchDataWithHost', () => {
 
     it('should handle null hostId by getting from cookie', async () => {
       mockGetHostIdCookie.mockResolvedValue(4)
-      
+
       const result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: null as any,
@@ -147,7 +159,7 @@ describe('fetchDataWithHost', () => {
 
     it('should handle undefined hostId by getting from cookie', async () => {
       mockGetHostIdCookie.mockResolvedValue(1)
-      
+
       const result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: undefined,
