@@ -58,7 +58,10 @@ export function ClickHouseHostSelector({
           router.push(`/${val}/${pathnameWithoutPrefix}`)
         }}
       >
-        <SelectTrigger className="w-auto border-0 p-1 shadow-none focus:ring-0" data-testid="host-selector">
+        <SelectTrigger
+          className="w-auto border-0 p-1 shadow-none focus:ring-0"
+          data-testid="host-selector"
+        >
           <SelectValue
             placeholder={current.customName || getHost(current.host)}
             className="mr-2 w-fit truncate"
@@ -66,7 +69,11 @@ export function ClickHouseHostSelector({
         </SelectTrigger>
         <SelectContent data-testid="host-options">
           {configs.map((config, id) => (
-            <SelectItem key={config.host + id} value={id.toString()} data-testid={`host-option-${id}`}>
+            <SelectItem
+              key={config.host + id}
+              value={id.toString()}
+              data-testid={`host-option-${id}`}
+            >
               <div className="flex items-center gap-2">
                 <span>{config.customName || getHost(config.host)}</span>
                 <Suspense

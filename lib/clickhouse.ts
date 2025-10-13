@@ -96,21 +96,29 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
   return hosts.map((host, index) => {
     // User and password fallback to the first value,
     // supporting multiple hosts with the same user/password
-    let user, password
+    let user: string
+    let password: string
+
     if (users.length === 1 && passwords.length === 1) {
-      user = users[0]
-      password = passwords[0]
+      // Safe array access - already validated arrays have length >= 1
+      user = users[0]!
+      password = passwords[0]!
     } else {
-      user = users[index] || 'default'
-      password = passwords[index] || ''
+      // Safe array access with bounds checking and defaults
+      user = index < users.length ? users[index]! : 'default'
+      password = index < passwords.length ? passwords[index]! : ''
     }
+
+    // Safe array access for custom labels with bounds checking
+    const customName =
+      index < customLabels.length ? customLabels[index] : undefined
 
     const config = {
       id: index,
       host,
       user,
       password,
-      customName: customLabels[index],
+      customName,
     }
 
     console.debug(`[ClickHouse Config] Host ${index}:`, {
@@ -144,11 +152,19 @@ export const getClient = async <B extends boolean>({
   } else {
     const configs = getClickHouseConfigs()
     const targetHostId = hostId ?? getHostId()
-    config = configs[targetHostId]
+
+    // Safe array access with bounds checking
+    if (targetHostId < 0 || targetHostId >= configs.length) {
+      throw new Error(
+        `Invalid hostId: ${targetHostId}. Available hosts: 0-${configs.length - 1} (total: ${configs.length})`
+      )
+    }
+
+    config = configs[targetHostId]!
 
     if (!config) {
       throw new Error(
-        `Invalid hostId: ${targetHostId}. Available hosts: 0-${configs.length - 1}`
+        `Configuration not found for hostId: ${targetHostId}. Available hosts: 0-${configs.length - 1}`
       )
     }
   }
@@ -262,12 +278,37 @@ export const fetchData = async <
     }
   }
 
-  const clientConfig = configs[currentHostId]
-
-  // Check if clientConfig exists before using it
-  if (!clientConfig) {
+  // Safe array access with bounds checking
+  if (currentHostId < 0 || currentHostId >= configs.length) {
     const availableHosts = configs.map((c) => c.id).join(', ')
     const errorMessage = `Invalid hostId: ${currentHostId}. Available hosts: ${availableHosts} (total: ${configs.length})`
+
+    console.error('[fetchData]', errorMessage)
+
+    return {
+      data: null,
+      metadata: {
+        queryId: '',
+        duration: 0,
+        rows: 0,
+        host: 'unknown',
+      },
+      error: {
+        type: 'validation_error',
+        message: errorMessage,
+        details: {
+          originalError: new Error(errorMessage),
+          host: 'unknown',
+        },
+      },
+    }
+  }
+
+  const clientConfig = configs[currentHostId]!
+
+  // Additional check if clientConfig exists
+  if (!clientConfig) {
+    const errorMessage = `Configuration not found for hostId: ${currentHostId}`
 
     console.error('[fetchData]', errorMessage)
 

@@ -48,7 +48,7 @@ export async function optimizeTable<TValue>(
 ): Promise<ActionResponse> {
   console.log('Optimize table', table)
   const hostId = await getHostIdCookie()
-  const { data, error } = await fetchData({ 
+  const { data, error } = await fetchData({
     query: `OPTIMIZE TABLE ${table}`,
     hostId,
   })

@@ -5,14 +5,31 @@ export interface TextFormatOptions {
 }
 
 interface TextFormatProps {
-  value: any
+  value: unknown
   options?: TextFormatOptions
 }
 
 export function TextFormat({ value, options }: TextFormatProps) {
+  // Handle null/undefined explicitly
+  if (value === null || value === undefined) {
+    return (
+      <span
+        className={cn(
+          'text-muted-foreground truncate text-wrap',
+          options?.className
+        )}
+      >
+        -
+      </span>
+    )
+  }
+
+  // Convert value to string safely
+  const displayValue = String(value)
+
   return (
     <span className={cn('truncate text-wrap', options?.className)}>
-      {`${!!value ? value : ''}`}
+      {displayValue}
     </span>
   )
 }

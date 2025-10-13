@@ -1,11 +1,19 @@
 import { cn } from '@/lib/utils'
 
 interface BadgeFormatProps {
-  value: any
+  value: unknown
   className?: string
 }
 
 export function BadgeFormat({ value, className }: BadgeFormatProps) {
+  // Handle null/undefined
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  // Convert to string safely
+  const displayValue = String(value)
+
   return (
     <span
       className={cn(
@@ -13,7 +21,7 @@ export function BadgeFormat({ value, className }: BadgeFormatProps) {
         className
       )}
     >
-      {value}
+      {displayValue}
     </span>
   )
 }

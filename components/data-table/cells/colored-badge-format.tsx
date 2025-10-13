@@ -5,7 +5,7 @@ export interface ColoredBadgeOptions {
 }
 
 interface ColoredBadgeFormatProps {
-  value: any
+  value: unknown
   options?: ColoredBadgeOptions
 }
 
@@ -13,8 +13,9 @@ export function ColoredBadgeFormat({
   value,
   options,
 }: ColoredBadgeFormatProps) {
-  if (!value || value === '') {
-    return
+  // Handle null/undefined or empty string
+  if (value === null || value === undefined || value === '') {
+    return null
   }
 
   const colors = [
@@ -26,16 +27,16 @@ export function ColoredBadgeFormat({
     'bg-pink-100 text-pink-800',
   ]
 
+  // Convert to string safely
+  const stringValue = String(value)
+
   // Picked consistently based on the value
-  const pickedColor =
-    colors[
-      Math.abs(
-        value
-          .toString()
-          .split('')
-          .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
-      ) % colors.length
-    ]
+  const hash = stringValue
+    .split('')
+    .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
+
+  const colorIndex = Math.abs(hash) % colors.length
+  const pickedColor = colors[colorIndex]
 
   return (
     <span
@@ -44,8 +45,10 @@ export function ColoredBadgeFormat({
         pickedColor,
         options?.className
       )}
+      role="status"
+      aria-label={`Badge: ${stringValue}`}
     >
-      {value}
+      {stringValue}
     </span>
   )
 }

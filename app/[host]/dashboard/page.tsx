@@ -32,7 +32,12 @@ export default async function Page({
       </div>
       <div className="grid grid-cols-2 gap-4">
         {dashboards?.map((dashboard, i) => (
-          <RenderChart key={'dashboard' + i} {...dashboard} params={params} hostId={hostId} />
+          <RenderChart
+            key={'dashboard' + i}
+            {...dashboard}
+            params={params}
+            hostId={hostId}
+          />
         ))}
       </div>
     </div>

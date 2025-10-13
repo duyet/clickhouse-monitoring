@@ -1,5 +1,6 @@
 import { getClient } from '@/lib/clickhouse'
 import { getHostIdCookie } from '@/lib/scoped-link'
+import { validateHostId } from '@/lib/validation'
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 import { NextResponse, type NextRequest } from 'next/server'
@@ -11,19 +12,48 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const hostId = searchParams.get('hostId')
-    ? parseInt(searchParams.get('hostId')!)
-    : await getHostIdCookie()
-
   try {
+    const searchParams = request.nextUrl.searchParams
+    const hostIdParam = searchParams.get('hostId')
+
+    // Validate hostId parameter
+    let hostId: number
+    if (hostIdParam) {
+      const validation = validateHostId(hostIdParam)
+      if (!validation.isValid) {
+        return NextResponse.json(
+          { status: false, error: validation.error },
+          { status: 400 }
+        )
+      }
+      hostId = validation.value!
+    } else {
+      hostId = await getHostIdCookie()
+    }
+
+    // Get client with validated hostId
     const client = await getClient({ web: false, hostId })
+
+    // Execute cleanup with proper error handling
     const resp = await cleanupHangQuery(client)
+
     return NextResponse.json({ status: true, ...resp }, { status: 200 })
   } catch (error) {
-    console.error('[/api/clean] error', error)
+    // Enhanced error logging with context
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+
+    console.error('[/api/clean] Error during cleanup:', {
+      message: errorMessage,
+      stack: errorStack,
+    })
+
     return NextResponse.json(
-      { status: false, error: `${error}` },
+      {
+        status: false,
+        error: errorMessage,
+        message: 'Failed to cleanup hanging queries',
+      },
       { status: 500 }
     )
   }

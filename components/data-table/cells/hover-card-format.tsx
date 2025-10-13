@@ -53,7 +53,9 @@ function contentReplacement(
         return contentReplacement(child, row)
       } else if (React.isValidElement(child)) {
         // Type-safe access to props.children
-        const childElement = child as React.ReactElement<{ children?: React.ReactNode }>
+        const childElement = child as React.ReactElement<{
+          children?: React.ReactNode
+        }>
         return React.cloneElement(
           child,
           {},

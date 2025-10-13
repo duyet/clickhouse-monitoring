@@ -30,20 +30,29 @@ export function ActionMenu<TData extends RowData, TValue>({
     import('./action-item').then((res) => res.ActionItem)
   )
 
+  // Handle empty or null actions array
+  if (!actions || actions.length === 0) {
+    return null
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="size-8 p-0">
+        <Button
+          variant="ghost"
+          className="size-8 p-0"
+          aria-label="Open row actions menu"
+        >
           <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="size-4" />
+          <MoreHorizontal className="size-4" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {actions.map((action) => (
+        {actions.map((action, index) => (
           <ActionItem
-            key={action}
+            key={`${action}-${index}`}
             value={value}
             row={row as Row<RowData>}
             action={action}
