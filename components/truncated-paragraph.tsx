@@ -35,7 +35,7 @@ export function TruncatedParagraph({
 
     // Remove event listener on cleanup
     return () => window.removeEventListener('resize', handleResize)
-  }, []) // Empty array ensures that it would only run on mount
+  }, [children]) // Re-run when children change to recalculate clamping
 
   return (
     <div>
