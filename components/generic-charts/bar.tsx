@@ -378,7 +378,7 @@ function renderChartTooltip({
                   Total
                   <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                     {categories
-                      .map((cat) => parseInt(item.payload[cat]) || 0)
+                      .map((cat) => parseInt(item.payload[cat], 10) || 0)
                       .reduce((a, b) => a + b, 0)}
                     <span className="text-muted-foreground font-normal"></span>
                   </div>

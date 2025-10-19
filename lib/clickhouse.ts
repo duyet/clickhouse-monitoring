@@ -160,7 +160,8 @@ export const getClient = async <B extends boolean>({
     clickhouse_settings: {
       max_execution_time: parseInt(
         process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
-          DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME
+          DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME,
+        10
       ),
       ...clickhouseSettings,
     },

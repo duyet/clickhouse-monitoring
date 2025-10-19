@@ -12,8 +12,9 @@ export const maxDuration = 30
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
-  const hostId = searchParams.get('hostId')
-    ? parseInt(searchParams.get('hostId')!)
+  const hostIdParam = searchParams.get('hostId')
+  const hostId = hostIdParam
+    ? parseInt(hostIdParam, 10)
     : await getHostIdCookie()
 
   try {
@@ -103,10 +104,13 @@ async function killHangingQueries(
         KILL QUERY
         WHERE user = currentUser()
           AND read_rows = 0
-          AND elapsed > ${QUERY_CLEANUP_MAX_DURATION_SECONDS}
+          AND elapsed > {duration:UInt32}
         ASYNC
       `,
       format: 'JSON',
+      query_params: {
+        duration: QUERY_CLEANUP_MAX_DURATION_SECONDS,
+      },
     })
 
     const killQueryResp = await resp.json<KillQueryResponse>()

@@ -83,7 +83,7 @@ export function AreaChart({
     const data: DonutChartProps['data'] = breakdownData.map(
       ([name, value]: [string, string]) => ({
         name,
-        value: parseInt(value),
+        value: parseInt(value, 10),
       })
     )
     console.log('data', data)

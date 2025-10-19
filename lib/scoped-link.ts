@@ -7,7 +7,9 @@ export async function getHostIdCookie(
   const cookieStore = await cookies()
 
   try {
-    return parseInt(cookieStore.get('hostId')?.value || '' + defaultValue)
+    const hostIdValue = cookieStore.get('hostId')?.value
+    // Use strict null check and proper parseInt with radix parameter
+    return hostIdValue ? parseInt(hostIdValue, 10) : defaultValue
   } catch (e) {
     // e.g. `cookies` was called outside a request scope.
     console.error('getHostIdCookie exception:', e)

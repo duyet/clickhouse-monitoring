@@ -2,15 +2,17 @@ import dayjs from '@/lib/dayjs'
 
 interface RelatedTimeFormatProps {
   value: any
+  timezone?: string
 }
 
-const CLICKHOUSE_TZ: string =
-  process.env.NEXT_PUBLIC_CLICKHOUSE_TZ || process.env.CLICKHOUSE_TZ || ''
+// Use only NEXT_PUBLIC_ variables that are available in client components
+const CLICKHOUSE_TZ: string = process.env.NEXT_PUBLIC_CLICKHOUSE_TZ || ''
 
-export function RelatedTimeFormat({ value }: RelatedTimeFormatProps) {
+export function RelatedTimeFormat({ value, timezone }: RelatedTimeFormatProps) {
+  const tz = timezone || CLICKHOUSE_TZ
   let fromNow
   try {
-    let parsed = dayjs.tz(value as string, CLICKHOUSE_TZ)
+    let parsed = tz ? dayjs.tz(value as string, tz) : dayjs(value as string)
     fromNow = parsed.fromNow()
   } catch (e) {
     console.error('Error parsing time:', e)
