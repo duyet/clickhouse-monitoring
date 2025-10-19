@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { Suspense, use } from 'react'
 
+import { ErrorBoundary } from '@/components/error-boundary'
 import {
   Select,
   SelectContent,
@@ -69,13 +70,19 @@ export function ClickHouseHostSelector({
             <SelectItem key={config.host + id} value={id.toString()} data-testid={`host-option-${id}`}>
               <div className="flex items-center gap-2">
                 <span>{config.customName || getHost(config.host)}</span>
-                <Suspense
+                <ErrorBoundary
                   fallback={
-                    <StatusIndicator title={['']} className="bg-gray-500" />
+                    <StatusIndicator title={['Failed to load']} className="bg-red-500" />
                   }
                 >
-                  <HostStatus promise={config.promise} />
-                </Suspense>
+                  <Suspense
+                    fallback={
+                      <StatusIndicator title={['']} className="bg-gray-500" />
+                    }
+                  >
+                    <HostStatus promise={config.promise} />
+                  </Suspense>
+                </ErrorBoundary>
               </div>
             </SelectItem>
           ))}

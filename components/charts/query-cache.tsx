@@ -24,16 +24,20 @@ export async function ChartQueryCache({
       readable_total_staled_result_size: string
     }[]
   >({ query, hostId })
-  const first = data?.[0]
 
-  if (!data || !first) return null
+  // Validate data before accessing properties
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return null
+  }
+
+  const first = data[0]
 
   return (
     <ChartCard
       title={title}
       className={className}
       sql={query}
-      data={data || []}
+      data={data}
     >
       <CardMetric
         current={first.total_result_size}

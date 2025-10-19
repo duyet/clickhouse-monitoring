@@ -30,6 +30,7 @@ export function ReloadButton({ className }: ReloadButtonProps) {
   const [isLoading, startTransition] = useTransition()
   const { reloadInterval, setReloadInterval } = useAppContext()
 
+  // Calculate initial count down once on mount or when reloadInterval changes
   const initCountDown = reloadInterval ? reloadInterval / 1000 : 10
   const [countDown, setCountDown] = useState(initCountDown)
 
@@ -39,10 +40,8 @@ export function ReloadButton({ className }: ReloadButtonProps) {
     })
 
   useEffect(() => {
-    if (reloadInterval) {
-      setCountDown(reloadInterval / 1000)
-    }
-  }, [reloadInterval])
+    setCountDown(initCountDown)
+  }, [initCountDown])
 
   useInterval(
     () => {

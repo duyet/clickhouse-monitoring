@@ -13,23 +13,23 @@ export default async function Layout({
 }) {
   const { host } = await params
 
-  if (Number.isNaN(Number(host))) {
-    setHostId(0)
-  }
+  // Convert and validate host parameter
+  const hostId = Number(host)
+  const validHostId = Number.isNaN(hostId) ? 0 : hostId
 
-  setHostId(Number(host))
+  setHostId(validHostId)
 
   // Set cookie server-side to prevent XSS vulnerability
   const cookieStore = await cookies()
-  cookieStore.set('hostId', String(host), { path: '/' })
+  cookieStore.set('hostId', String(validHostId), { path: '/' })
 
   return (
     <>
       {children}
 
       <Suspense fallback={null}>
-        <PageView hostId={host} />
-        <BackgroundJobs hostId={host} />
+        <PageView hostId={validHostId} />
+        <BackgroundJobs hostId={validHostId} />
       </Suspense>
     </>
   )

@@ -18,8 +18,8 @@ export function TruncatedParagraph({
   const [isClamped, setClamped] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
+  // Recalculate clamping when children change
   useEffect(() => {
-    // Function that should be called on window resize
     function handleResize() {
       if (contentRef && contentRef.current) {
         setClamped(
@@ -29,13 +29,34 @@ export function TruncatedParagraph({
     }
 
     handleResize()
+  }, [children]) // Re-run when children change to recalculate clamping
+
+  // Separate effect for window resize listener to prevent re-adding on every children change
+  useEffect(() => {
+    function handleResize() {
+      if (contentRef && contentRef.current) {
+        setClamped(
+          contentRef.current.scrollHeight > contentRef.current.clientHeight
+        )
+      }
+    }
 
     // Add event listener to window resize
     window.addEventListener('resize', handleResize)
 
     // Remove event listener on cleanup
     return () => window.removeEventListener('resize', handleResize)
-  }, [children]) // Re-run when children change to recalculate clamping
+  }, []) // Empty dependency array - only add listener once
+
+  // Map lineClamp value to pre-defined Tailwind classes
+  const lineClamClasses: Record<number, string> = {
+    1: 'line-clamp-1',
+    2: 'line-clamp-2',
+    3: 'line-clamp-3',
+    4: 'line-clamp-4',
+    5: 'line-clamp-5',
+    6: 'line-clamp-6',
+  }
 
   return (
     <div>
@@ -43,7 +64,7 @@ export function TruncatedParagraph({
         data-expanded={isExpanded ? 'true' : 'false'}
         className={cn(
           'text-sm leading-normal',
-          isExpanded ? '' : `line-clamp-${lineClamp}`,
+          isExpanded ? '' : lineClamClasses[lineClamp] || 'line-clamp-2',
           'transition-all duration-300 ease-in-out',
           className
         )}

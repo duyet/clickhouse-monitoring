@@ -29,8 +29,23 @@ export async function checkTableExists(
       query_params: { database, table },
       format: 'JSONEachRow',
     })
-    const data = (await result.json()) as { count: string }[]
-    const exists = parseInt(data?.[0]?.count || '0', 10) > 0
+    const rawData = await result.json()
+
+    // Runtime validation: ensure data is an array
+    if (!Array.isArray(rawData)) {
+      throw new Error('Expected array response from query')
+    }
+
+    const data = rawData as { count: string }[]
+
+    // Validate first element exists and has count property
+    if (data.length === 0 || typeof data[0]?.count !== 'string') {
+      throw new Error(
+        'Invalid response format: missing or invalid count property'
+      )
+    }
+
+    const exists = parseInt(data[0].count, 10) > 0
 
     cache.set(key, exists)
     return exists

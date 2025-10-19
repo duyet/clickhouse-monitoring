@@ -9,16 +9,19 @@ export function PageView({ hostId }: { hostId: number }) {
 
   // Initialize once on mount
   useEffect(() => {
-    let isMounted = true
+    const abortController = new AbortController()
 
     async function callInit() {
       try {
-        const response = await fetch(`/api/init?hostId=${hostId}`)
-        if (!response.ok && isMounted) {
+        const response = await fetch(`/api/init?hostId=${hostId}`, {
+          signal: abortController.signal,
+        })
+        if (!response.ok) {
           console.error('Init API failed:', response.statusText)
         }
       } catch (error) {
-        if (isMounted) {
+        // Ignore AbortError when component unmounts
+        if (error instanceof Error && error.name !== 'AbortError') {
           console.error('Init API error:', error)
         }
       }
@@ -26,13 +29,13 @@ export function PageView({ hostId }: { hostId: number }) {
     callInit()
 
     return () => {
-      isMounted = false
+      abortController.abort()
     }
   }, [hostId])
 
   // Track page views
   useEffect(() => {
-    let isMounted = true
+    const abortController = new AbortController()
 
     async function pageViewTrack() {
       const url = `${pathname}${searchParams ? '?' + searchParams.toString() : ''}`
@@ -40,13 +43,17 @@ export function PageView({ hostId }: { hostId: number }) {
       try {
         const response = await fetch(
           '/api/pageview?' +
-            new URLSearchParams({ url, hostId: hostId.toString() }).toString()
+            new URLSearchParams({ url, hostId: hostId.toString() }).toString(),
+          {
+            signal: abortController.signal,
+          }
         )
-        if (!response.ok && isMounted) {
+        if (!response.ok) {
           console.error('PageView API failed:', response.statusText)
         }
       } catch (error) {
-        if (isMounted) {
+        // Ignore AbortError when component unmounts
+        if (error instanceof Error && error.name !== 'AbortError') {
           console.error('PageView API error:', error)
         }
       }
@@ -55,7 +62,7 @@ export function PageView({ hostId }: { hostId: number }) {
     pageViewTrack()
 
     return () => {
-      isMounted = false
+      abortController.abort()
     }
   }, [pathname, searchParams, hostId])
 

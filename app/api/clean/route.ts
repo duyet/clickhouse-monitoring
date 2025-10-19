@@ -115,17 +115,24 @@ async function killHangingQueries(
 
     const killQueryResp = await resp.json<KillQueryResponse>()
 
+    // Check if there are no rows in the response
+    if (!killQueryResp || killQueryResp.rows === 0) {
+      console.log('[/api/clean] Done, nothing to cleanup')
+      return null
+    }
+
     console.log(
       '[/api/clean] queries found:',
       killQueryResp.data.map((row) => row.query_id).join(', ')
     )
     return killQueryResp
   } catch (error) {
+    // Handle empty response gracefully - some ClickHouse versions return empty JSON for KILL QUERY
     if (
       error instanceof Error &&
       error.message.includes('Unexpected end of JSON input')
     ) {
-      console.log('[/api/clean] Done, nothing to cleanup')
+      console.log('[/api/clean] Done, nothing to cleanup (empty response)')
       return null
     }
     throw new Error(`Error when killing queries: ${error}`)

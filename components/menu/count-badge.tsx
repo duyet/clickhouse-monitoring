@@ -47,10 +47,18 @@ export async function CountBadge({
     return null
   }
 
-  if (!data || !data.length || !data?.[0]?.['count()']) return null
+  // Consistent null checking pattern
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return null
+  }
 
-  const count = data[0]['count()'] || 0
-  if (count == 0) return null
+  const firstRow = data[0]
+  if (!firstRow || typeof firstRow['count()'] !== 'string') {
+    return null
+  }
+
+  const count = parseInt(firstRow['count()'], 10)
+  if (count === 0) return null
 
   return (
     <Badge className={className} variant={variant}>
