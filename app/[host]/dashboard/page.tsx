@@ -20,9 +20,16 @@ export default async function Page({
   console.log('Dashboard settings', settings)
   console.log('Dashboard data', dashboards)
 
-  const params: Record<string, string> = JSON.parse(
-    settings?.find((s) => s.key === 'params')?.value || '{}'
-  )
+  let params: Record<string, string> = {}
+  try {
+    params = JSON.parse(
+      settings?.find((s) => s.key === 'params')?.value || '{}'
+    )
+  } catch (error) {
+    console.error('Error parsing dashboard params:', error)
+    // Default to empty params object on parse error
+    params = {}
+  }
 
   return (
     <div>

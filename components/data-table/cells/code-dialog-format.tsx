@@ -51,10 +51,14 @@ export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
     let json = content
     try {
       json = JSON.parse(value)
-    } catch {}
+    } catch (error) {
+      console.warn('Failed to parse JSON value:', error)
+    }
     try {
       content = JSON.stringify(json, null, 2)
-    } catch {}
+    } catch (error) {
+      console.warn('Failed to stringify JSON value:', error)
+    }
   }
 
   return (

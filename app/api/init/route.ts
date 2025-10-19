@@ -8,8 +8,9 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
-  const hostId = searchParams.get('hostId')
-    ? parseInt(searchParams.get('hostId')!)
+  const hostIdParam = searchParams.get('hostId')
+  const hostId = hostIdParam
+    ? parseInt(hostIdParam, 10)
     : await getHostIdCookie()
 
   const client = await getClient({ web: false, hostId })

@@ -105,7 +105,8 @@ const migrateDashboard = async () => {
   for (const seed of seeds) {
     const hostId = await getHostIdCookie()
     const { data: exists } = await fetchData<TableChartsRow[]>({
-      query: `SELECT * FROM ${TABLE_CHARTS} FINAL WHERE title = '${seed.title}'`,
+      query: `SELECT * FROM ${TABLE_CHARTS} FINAL WHERE title = {title:String}`,
+      query_params: { title: seed.title },
       hostId,
     })
 
@@ -123,10 +124,10 @@ const migrateDashboard = async () => {
 
 export const seeding = async (force = false) => {
   if (force) {
-    clean()
+    await clean()
   }
 
-  create()
-  migrateSettings()
-  migrateDashboard()
+  await create()
+  await migrateSettings()
+  await migrateDashboard()
 }

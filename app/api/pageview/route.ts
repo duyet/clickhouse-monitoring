@@ -12,7 +12,7 @@ const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const rawUrl = searchParams.get('url') || request.headers.get('referer')
-  const hostId = parseInt(searchParams.get('hostId') || '0')
+  const hostId = parseInt(searchParams.get('hostId') || '0', 10)
 
   if (!rawUrl) {
     return NextResponse.json({ error: 'No URL provided' }, { status: 400 })

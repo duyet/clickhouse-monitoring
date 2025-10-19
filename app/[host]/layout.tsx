@@ -1,9 +1,8 @@
-import Script from 'next/script'
-
 import { BackgroundJobs } from '@/components/background-jobs'
 import { PageView } from '@/components/pageview'
 import { setHostId } from '@/lib/server-context'
 import { Suspense } from 'react'
+import { cookies } from 'next/headers'
 
 export default async function Layout({
   children,
@@ -14,27 +13,23 @@ export default async function Layout({
 }) {
   const { host } = await params
 
-  if (Number.isNaN(Number(host))) {
-    setHostId(0)
-  }
+  // Convert and validate host parameter
+  const hostId = Number(host)
+  const validHostId = Number.isNaN(hostId) ? 0 : hostId
 
-  setHostId(Number(host))
+  setHostId(validHostId)
+
+  // Set cookie server-side to prevent XSS vulnerability
+  const cookieStore = await cookies()
+  cookieStore.set('hostId', String(validHostId), { path: '/' })
 
   return (
     <>
       {children}
 
-      <Script
-        id="setHostId"
-        dangerouslySetInnerHTML={{
-          // We have to set a cookie here because cookies() is not allowed in server components
-          __html: `document.cookie = "hostId=${host}; path=/";`,
-        }}
-      />
-
       <Suspense fallback={null}>
-        <PageView hostId={host} />
-        <BackgroundJobs hostId={host} />
+        <PageView hostId={validHostId} />
+        <BackgroundJobs hostId={validHostId} />
       </Suspense>
     </>
   )

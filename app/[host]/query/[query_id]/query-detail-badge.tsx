@@ -35,7 +35,7 @@ export async function QueryDetailBadge({
   const { user } = data[0]
   const finalType = data[data.length - 1].type
   const query_duration_ms = data
-    .map((row) => parseInt(row.duration_ms))
+    .map((row) => parseInt(row.duration_ms, 10))
     .reduce((a, b) => a + b, 0)
 
   return (

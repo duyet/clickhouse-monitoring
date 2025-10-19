@@ -12,8 +12,9 @@ export const maxDuration = 30
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
-  const hostId = searchParams.get('hostId')
-    ? parseInt(searchParams.get('hostId')!)
+  const hostIdParam = searchParams.get('hostId')
+  const hostId = hostIdParam
+    ? parseInt(hostIdParam, 10)
     : await getHostIdCookie()
 
   try {
@@ -103,13 +104,22 @@ async function killHangingQueries(
         KILL QUERY
         WHERE user = currentUser()
           AND read_rows = 0
-          AND elapsed > ${QUERY_CLEANUP_MAX_DURATION_SECONDS}
+          AND elapsed > {duration:UInt32}
         ASYNC
       `,
       format: 'JSON',
+      query_params: {
+        duration: QUERY_CLEANUP_MAX_DURATION_SECONDS,
+      },
     })
 
     const killQueryResp = await resp.json<KillQueryResponse>()
+
+    // Check if there are no rows in the response
+    if (!killQueryResp || killQueryResp.rows === 0) {
+      console.log('[/api/clean] Done, nothing to cleanup')
+      return null
+    }
 
     console.log(
       '[/api/clean] queries found:',
@@ -117,11 +127,12 @@ async function killHangingQueries(
     )
     return killQueryResp
   } catch (error) {
+    // Handle empty response gracefully - some ClickHouse versions return empty JSON for KILL QUERY
     if (
       error instanceof Error &&
       error.message.includes('Unexpected end of JSON input')
     ) {
-      console.log('[/api/clean] Done, nothing to cleanup')
+      console.log('[/api/clean] Done, nothing to cleanup (empty response)')
       return null
     }
     throw new Error(`Error when killing queries: ${error}`)

@@ -27,8 +27,13 @@ export async function ChartSummaryUsedByMerges({
       readable_memory_usage: string
     }[]
   >({ query: usedSql, hostId })
-  const used = usedRows?.[0]
-  if (!usedRows || !used) return null
+
+  // Validate data before accessing properties
+  if (!usedRows || !Array.isArray(usedRows) || usedRows.length === 0) {
+    return null
+  }
+
+  const used = usedRows[0]
 
   // Workaround for getting total memory usage
   const totalMemSql = `
