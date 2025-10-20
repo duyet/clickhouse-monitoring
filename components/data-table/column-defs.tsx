@@ -11,6 +11,7 @@ import type {
   Table,
 } from '@tanstack/react-table'
 
+import { debug } from '@/lib/logger'
 import { formatCell } from '@/components/data-table/format-cell'
 import { Button } from '@/components/ui/button'
 import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
@@ -125,7 +126,7 @@ export const getColumnDefs = <
 
     // Add the sorting function if specified
     const sortingFnName = config.sortingFns?.[name]
-    console.log(`${name} => sortingFnName: ${sortingFnName}`)
+    debug(`${name} => sortingFnName: ${sortingFnName}`)
     if (sortingFnName) {
       // Check if it's one of our custom sorting functions
       if (sortingFnName in customSortingFns) {

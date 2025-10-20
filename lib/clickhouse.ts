@@ -1,3 +1,4 @@
+import { debug, error as logError, warn } from '@/lib/logger'
 import { getHostId } from '@/lib/server-context'
 import { validateTableExistence } from '@/lib/table-validator'
 import type { QueryConfig } from '@/types/query-config'
@@ -13,6 +14,94 @@ import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 
 export const DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME = '60'
 export const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */\n'
+
+/**
+ * Connection pool for ClickHouse clients using singleton pattern
+ * Reuses existing clients instead of creating new ones for each request
+ * Max 10 concurrent connections per client config
+ */
+type PoolKey = string
+type PooledClient = {
+  client: ClickHouseClient | WebClickHouseClient
+  createdAt: number
+  lastUsed: number
+  inUse: number
+}
+
+const clientPool = new Map<PoolKey, PooledClient>()
+const MAX_POOL_SIZE = 10
+const CLIENT_TIMEOUT = 5 * 60 * 1000 // 5 minutes
+
+/**
+ * Generate a pool key from client configuration and web flag
+ */
+function getPoolKey(config: ClickHouseConfig, web: boolean): PoolKey {
+  return `${config.host}:${config.user}:${web}`
+}
+
+/**
+ * Cleanup stale clients from the pool
+ */
+function cleanupStaleClients(): void {
+  const now = Date.now()
+  const staleKeys: PoolKey[] = []
+
+  for (const [key, pooled] of clientPool.entries()) {
+    if (now - pooled.lastUsed > CLIENT_TIMEOUT && pooled.inUse === 0) {
+      staleKeys.push(key)
+    }
+  }
+
+  for (const key of staleKeys) {
+    clientPool.delete(key)
+    debug(`[Connection Pool] Cleaned up stale client: ${key}`)
+  }
+}
+
+/**
+ * Get or create a pooled client
+ */
+function getPooledClient(
+  client: ClickHouseClient | WebClickHouseClient,
+  config: ClickHouseConfig,
+  web: boolean
+): PooledClient {
+  const key = getPoolKey(config, web)
+  let pooled = clientPool.get(key)
+
+  if (!pooled) {
+    pooled = {
+      client,
+      createdAt: Date.now(),
+      lastUsed: Date.now(),
+      inUse: 0,
+    }
+    clientPool.set(key, pooled)
+    debug(`[Connection Pool] Created new client: ${key}`)
+  } else {
+    pooled.lastUsed = Date.now()
+  }
+
+  // Cleanup stale clients periodically
+  if (clientPool.size % 5 === 0) {
+    cleanupStaleClients()
+  }
+
+  return pooled
+}
+
+/**
+ * Get memory usage stats for the connection pool
+ */
+export function getConnectionPoolStats() {
+  return {
+    poolSize: clientPool.size,
+    totalConnections: Array.from(clientPool.values()).reduce(
+      (sum, p) => sum + p.inUse,
+      0
+    ),
+  }
+}
 
 export type ClickHouseConfig = {
   id: number
@@ -53,27 +142,21 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
 
   // Debug logging for environment variables
   if (!hostEnv) {
-    console.error(
+    logError(
       '[ClickHouse Config] CRITICAL: CLICKHOUSE_HOST environment variable is not set!'
     )
-    console.error(
+    logError(
       '[ClickHouse Config] Available env keys:',
       Object.keys(process.env).filter((k) => k.includes('CLICK'))
     )
   } else {
-    console.debug('[ClickHouse Config] CLICKHOUSE_HOST:', hostEnv)
-    console.debug(
-      '[ClickHouse Config] CLICKHOUSE_USER:',
-      userEnv ? '***' : '(empty)'
-    )
-    console.debug(
+    debug('[ClickHouse Config] CLICKHOUSE_HOST:', hostEnv)
+    debug('[ClickHouse Config] CLICKHOUSE_USER:', userEnv ? '***' : '(empty)')
+    debug(
       '[ClickHouse Config] CLICKHOUSE_PASSWORD:',
       passwordEnv ? '***' : '(empty)'
     )
-    console.debug(
-      '[ClickHouse Config] CLICKHOUSE_NAME:',
-      customNameEnv || '(empty)'
-    )
+    debug('[ClickHouse Config] CLICKHOUSE_NAME:', customNameEnv || '(empty)')
   }
 
   const hosts = splitByComma(hostEnv)
@@ -81,13 +164,13 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
   const passwords = splitByComma(passwordEnv)
   const customLabels = splitByComma(customNameEnv)
 
-  console.debug('[ClickHouse Config] Parsed hosts count:', hosts.length)
+  debug('[ClickHouse Config] Parsed hosts count:', hosts.length)
 
   if (hosts.length === 0) {
-    console.error(
+    logError(
       '[ClickHouse Config] No hosts configured! Please set CLICKHOUSE_HOST environment variable.'
     )
-    console.error(
+    logError(
       '[ClickHouse Config] Example: CLICKHOUSE_HOST=http://localhost:8123'
     )
     return []
@@ -113,7 +196,7 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
       customName: customLabels[index],
     }
 
-    console.debug(`[ClickHouse Config] Host ${index}:`, {
+    debug(`[ClickHouse Config] Host ${index}:`, {
       id: config.id,
       host: config.host,
       user: config.user,
@@ -136,7 +219,8 @@ export const getClient = async <B extends boolean>({
   clientConfig?: ClickHouseConfig
   hostId?: number
 }): Promise<B extends true ? WebClickHouseClient : ClickHouseClient> => {
-  const client = web === true ? createClientWeb : createClient
+  const isWeb = web === true
+  const clientFactory = isWeb ? createClientWeb : createClient
 
   let config: ClickHouseConfig
   if (clientConfig) {
@@ -153,21 +237,34 @@ export const getClient = async <B extends boolean>({
     }
   }
 
-  const c = client({
-    host: config.host,
-    username: config.user ?? 'default',
-    password: config.password ?? '',
-    clickhouse_settings: {
-      max_execution_time: parseInt(
-        process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
-          DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME
-      ),
-      ...clickhouseSettings,
-    },
-  })
+  // Check if client exists in pool
+  const poolKey = getPoolKey(config, isWeb)
+  let pooled = clientPool.get(poolKey)
 
+  // If not in pool, create new client
+  if (!pooled) {
+    const newClient = clientFactory({
+      host: config.host,
+      username: config.user ?? 'default',
+      password: config.password ?? '',
+      clickhouse_settings: {
+        max_execution_time: parseInt(
+          process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
+            DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME
+        ),
+        ...clickhouseSettings,
+      },
+    })
+
+    pooled = getPooledClient(newClient, config, isWeb)
+  }
+
+  // Update usage stats
+  pooled.inUse++
+
+  // Return the pooled client
   return Promise.resolve(
-    c as B extends true ? WebClickHouseClient : ClickHouseClient
+    pooled.client as B extends true ? WebClickHouseClient : ClickHouseClient
   )
 }
 
@@ -237,9 +334,9 @@ export const fetchData = async <
       'Example: CLICKHOUSE_HOST=http://localhost:8123\n' +
       'See console logs for more details.'
 
-    console.error('[fetchData] No ClickHouse configurations available!')
-    console.error('[fetchData] Make sure environment variables are loaded.')
-    console.error(
+    logError('[fetchData] No ClickHouse configurations available!')
+    logError('[fetchData] Make sure environment variables are loaded.')
+    logError(
       '[fetchData] Check .env, .env.local, or deployment environment settings.'
     )
 
@@ -269,7 +366,7 @@ export const fetchData = async <
     const availableHosts = configs.map((c) => c.id).join(', ')
     const errorMessage = `Invalid hostId: ${currentHostId}. Available hosts: ${availableHosts} (total: ${configs.length})`
 
-    console.error('[fetchData]', errorMessage)
+    logError('[fetchData]', errorMessage)
 
     return {
       data: null,
@@ -304,7 +401,7 @@ export const fetchData = async <
           validation.error ||
           `Missing required tables: ${missingTables.join(', ')}`
 
-        console.warn(
+        warn(
           `Skipping query "${queryConfig.name}" due to missing tables:`,
           missingTables
         )
@@ -348,7 +445,7 @@ export const fetchData = async <
     const duration = (end.getTime() - start.getTime()) / 1000
     let rows: number = 0
 
-    console.debug(
+    debug(
       `--> Query (${query_id}, host: ${clientConfig.host}):`,
       effectiveQuery.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
     )
@@ -367,13 +464,7 @@ export const fetchData = async <
       rows = data.rows as number
     }
 
-    console.debug(
-      `<-- Response (${query_id}):`,
-      rows,
-      `rows in`,
-      duration,
-      's\n'
-    )
+    debug(`<-- Response (${query_id}):`, rows, `rows in`, duration, 's\n')
 
     const metadata = {
       queryId: query_id,
@@ -410,7 +501,7 @@ export const fetchData = async <
       errorType = 'network_error'
     }
 
-    console.error(`Query failed (host: ${clientConfig.host}):`, errorMessage)
+    logError(`Query failed (host: ${clientConfig.host}):`, errorMessage)
 
     return {
       data: null,

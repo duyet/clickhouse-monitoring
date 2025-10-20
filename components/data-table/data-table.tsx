@@ -11,7 +11,7 @@ import {
   VisibilityState,
   type RowData,
 } from '@tanstack/react-table'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   getColumnDefs,
@@ -68,40 +68,59 @@ export function DataTable<
   footnote,
   className,
 }: DataTableProps<TData>) {
-  // Columns available in the data, normalized
-  const allColumns: string[] = uniq(
-    (data.filter((row) => typeof row === 'object') as object[])
-      .map((row) => Object.keys(row))
-      .flat()
-      .map(normalizeColumnName)
+  // Columns available in the data, normalized (memoized to prevent recalculation)
+  const allColumns: string[] = useMemo(
+    () =>
+      uniq(
+        (data.filter((row) => typeof row === 'object') as object[])
+          .map((row) => Object.keys(row))
+          .flat()
+          .map(normalizeColumnName)
+      ),
+    [data]
   )
 
   // Configured columns available, normalized
-  const configuredColumns = queryConfig.columns.map(normalizeColumnName)
-
-  // Add `ctx.` prefix to all keys
-  const contextWithPrefix = Object.entries(context).reduce(
-    (acc, [key, value]) => ({
-      ...acc,
-      [`ctx.${key}`]: value,
-    }),
-    {}
+  const configuredColumns = useMemo(
+    () => queryConfig.columns.map(normalizeColumnName),
+    [queryConfig.columns]
   )
 
-  // Column definitions for the table
-  const columnDefs = getColumnDefs<TData, TValue>(
-    queryConfig,
-    data,
-    contextWithPrefix
-  ) as ColumnDef<TData, TValue>[]
+  // Add `ctx.` prefix to all keys (memoized to prevent recalculation)
+  const contextWithPrefix = useMemo(
+    () =>
+      Object.entries(context).reduce(
+        (acc, [key, value]) => ({
+          ...acc,
+          [`ctx.${key}`]: value,
+        }),
+        {} as Record<string, string>
+      ),
+    [context]
+  )
+
+  // Column definitions for the table (memoized to prevent recalculation)
+  const columnDefs = useMemo(
+    () =>
+      getColumnDefs<TData, TValue>(
+        queryConfig,
+        data,
+        contextWithPrefix
+      ) as ColumnDef<TData, TValue>[],
+    [queryConfig, data, contextWithPrefix]
+  )
 
   // Only show the columns in QueryConfig['columns'] list by initial
-  const initialColumnVisibility = allColumns.reduce(
-    (state, col) => ({
-      ...state,
-      [col]: configuredColumns.includes(col),
-    }),
-    {}
+  const initialColumnVisibility = useMemo(
+    () =>
+      allColumns.reduce(
+        (state, col) => ({
+          ...state,
+          [col]: configuredColumns.includes(col),
+        }),
+        {} as VisibilityState
+      ),
+    [allColumns, configuredColumns]
   )
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     initialColumnVisibility
