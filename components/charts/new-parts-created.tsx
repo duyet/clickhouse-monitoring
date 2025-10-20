@@ -41,9 +41,12 @@ export async function ChartNewPartsCreated({
     }[]
   >({ query, hostId })
 
+  // Single-pass algorithm: collect data and track tables simultaneously
+  const tableSet = new Set<string>()
   const data = (raw || []).reduce(
     (acc, cur) => {
       const { event_time, table, new_parts } = cur
+      tableSet.add(table)
       if (acc[event_time] === undefined) {
         acc[event_time] = {}
       }
@@ -58,10 +61,8 @@ export async function ChartNewPartsCreated({
     return { event_time, ...obj }
   })
 
-  // Group by table
-  const tables = Object.values(data).reduce((acc, cur) => {
-    return Array.from(new Set([...acc, ...Object.keys(cur)]))
-  }, [] as string[])
+  // Convert set to array for categories
+  const tables = Array.from(tableSet)
 
   return (
     <ChartCard title={title} className={className} sql={query} data={barData}>

@@ -35,9 +35,12 @@ export async function ChartQueryCountByUser({
     }[]
   >({ query, hostId })
 
+  // Single-pass algorithm: collect data and track users simultaneously
+  const userSet = new Set<string>()
   const data = (raw || []).reduce(
     (acc, cur) => {
       const { event_time, user, count } = cur
+      userSet.add(user)
       if (acc[event_time] === undefined) {
         acc[event_time] = {}
       }
@@ -51,10 +54,8 @@ export async function ChartQueryCountByUser({
     return { event_time, ...obj }
   })
 
-  // All users
-  const users = Object.values(data).reduce((acc, cur) => {
-    return Array.from(new Set([...acc, ...Object.keys(cur)]))
-  }, [] as string[])
+  // Convert set to array for categories
+  const users = Array.from(userSet)
 
   return (
     <ChartCard title={title} className={className} sql={query} data={barData}>
