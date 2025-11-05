@@ -24,7 +24,10 @@ export default async function Disks({ params, searchParams }: PageProps) {
   return (
     <div className="flex flex-col gap-8">
       <Suspense fallback={<ChartSkeleton />}>
-        <RelatedCharts relatedCharts={diskSpaceConfig.relatedCharts} hostId={hostId} />
+        <RelatedCharts
+          relatedCharts={diskSpaceConfig.relatedCharts}
+          hostId={hostId}
+        />
       </Suspense>
 
       <Suspense fallback={<TableSkeleton />}>

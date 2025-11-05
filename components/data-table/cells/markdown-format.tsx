@@ -6,7 +6,7 @@ export interface MarkdownFormatOptions {
 }
 
 interface MarkdownFormatProps {
-  value: any
+  value: unknown
   options?: MarkdownFormatOptions
 }
 

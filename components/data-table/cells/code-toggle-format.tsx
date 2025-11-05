@@ -12,8 +12,8 @@ export interface CodeToggleOptions {
 }
 
 interface CodeToggleFormatProps {
-  row: any
-  value: any
+  row: unknown
+  value: unknown
   options?: CodeToggleOptions
 }
 

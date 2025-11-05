@@ -17,7 +17,6 @@ export default async function Page({ params }: PageProps) {
   let props = {}
 
   for (const chart of decodeURIComponent(charts).split(',')) {
-    console.log(`Rendering chart: ${chart}`)
     try {
       chartComponents.push(
         (await import(`@/components/charts/${chart}`)).default

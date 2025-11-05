@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 
 interface BadgeFormatProps {
-  value: any
+  value: unknown
   className?: string
 }
 

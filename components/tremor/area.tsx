@@ -78,7 +78,6 @@ export function AreaChart({
 
     const col = breakdown as string
     const breakdownData = payload[0].payload[col]
-    console.log('breakdownData', breakdownData)
 
     const data: DonutChartProps['data'] = breakdownData.map(
       ([name, value]: [string, string]) => ({
@@ -86,7 +85,6 @@ export function AreaChart({
         value: parseInt(value),
       })
     )
-    console.log('data', data)
 
     return (
       <div className="z-50 flex flex-col content-center rounded-lg bg-white shadow-lg">

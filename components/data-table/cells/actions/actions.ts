@@ -9,7 +9,6 @@ export async function killQuery<TValue>(
   queryId: TValue,
   _formData: FormData
 ): Promise<ActionResponse> {
-  console.log('Killing query', queryId)
   const hostId = await getHostIdCookie()
   const { data, error } = await fetchData({
     query: `KILL QUERY WHERE query_id = '${queryId}'`,
@@ -24,7 +23,6 @@ export async function killQuery<TValue>(
     }
   }
 
-  console.log('Killed query', queryId, data)
   return {
     action: 'toast',
     message: `Killed query ${queryId}`,
@@ -46,9 +44,8 @@ export async function optimizeTable<TValue>(
   table: TValue,
   _formData: FormData
 ): Promise<ActionResponse> {
-  console.log('Optimize table', table)
   const hostId = await getHostIdCookie()
-  const { data, error } = await fetchData({ 
+  const { data, error } = await fetchData({
     query: `OPTIMIZE TABLE ${table}`,
     hostId,
   })
@@ -61,7 +58,6 @@ export async function optimizeTable<TValue>(
     }
   }
 
-  console.log('Optimize table', table, data)
   return {
     action: 'toast',
     message: `Running query optimize table ${table}`,
@@ -72,7 +68,6 @@ export async function querySettings<TValue>(
   queryId: TValue,
   _formData: FormData
 ): Promise<ActionResponse> {
-  console.log('Getting query SETTINGS', queryId)
   const hostId = await getHostIdCookie()
   const { data, error } = await fetchData<{ Settings: string }[]>({
     query: `SELECT Settings FROM system.processes WHERE query_id = {queryId: String}`,
@@ -88,7 +83,6 @@ export async function querySettings<TValue>(
     }
   }
 
-  console.log('Query SETTINGS', queryId, data)
   return {
     action: 'toast',
     message: JSON.stringify(data),

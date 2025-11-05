@@ -22,7 +22,7 @@ export interface CodeDialogOptions {
 }
 
 interface CodeDialogFormatProps {
-  value: any
+  value: unknown
   options?: CodeDialogOptions
 }
 

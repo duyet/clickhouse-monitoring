@@ -5,7 +5,7 @@ export interface TextFormatOptions {
 }
 
 interface TextFormatProps {
-  value: any
+  value: unknown
   options?: TextFormatOptions
 }
 

@@ -1,7 +1,7 @@
 import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons'
 
 interface BooleanFormatProps {
-  value: any
+  value: unknown
 }
 
 export function BooleanFormat({ value }: BooleanFormatProps) {

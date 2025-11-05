@@ -5,7 +5,7 @@ export interface ColoredBadgeOptions {
 }
 
 interface ColoredBadgeFormatProps {
-  value: any
+  value: unknown
   options?: ColoredBadgeOptions
 }
 

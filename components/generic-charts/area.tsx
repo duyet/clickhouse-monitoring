@@ -46,7 +46,9 @@ export function AreaChart({
   tooltipActive,
   chartConfig: customChartConfig,
   className,
-}: AreaChartProps & { yAxisTickFormatter?: (value: string | number) => string }) {
+}: AreaChartProps & {
+  yAxisTickFormatter?: (value: string | number) => string
+}) {
   const config = categories.reduce(
     (acc, category, index) => {
       acc[category] = {
@@ -91,7 +93,11 @@ export function AreaChart({
             tickFormatter={tickFormatter}
             domain={['auto', 'auto']}
             interval={'equidistantPreserveStart'}
-            label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined}
+            label={
+              xAxisLabel
+                ? { value: xAxisLabel, position: 'insideBottom', offset: -10 }
+                : undefined
+            }
           />
         )}
         {showYAxis && (
@@ -100,7 +106,11 @@ export function AreaChart({
             axisLine={false}
             tickMargin={8}
             tickFormatter={yAxisTickFormatter}
-            label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
+            label={
+              yAxisLabel
+                ? { value: yAxisLabel, angle: -90, position: 'insideLeft' }
+                : undefined
+            }
           />
         )}
 

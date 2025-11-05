@@ -1,7 +1,7 @@
 import dayjs from '@/lib/dayjs'
 
 interface DurationFormatProps {
-  value: any
+  value: unknown
 }
 
 export function DurationFormat({ value }: DurationFormatProps) {

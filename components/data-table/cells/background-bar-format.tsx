@@ -5,10 +5,10 @@ export interface BackgroundBarOptions {
 }
 
 interface BackgroundBarFormatProps {
-  table: any
-  row: any
+  table: unknown
+  row: unknown
   columnName: string
-  value: any
+  value: unknown
   options?: BackgroundBarOptions
 }
 

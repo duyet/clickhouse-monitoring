@@ -12,8 +12,8 @@ export type HoverCardOptions = {
 }
 
 interface HoverCardProps {
-  row: any
-  value: any
+  row: unknown
+  value: unknown
   options?: HoverCardOptions
 }
 
@@ -33,7 +33,7 @@ export function HoverCardFormat({ row, value, options }: HoverCardProps) {
 
 function contentReplacement(
   content: string | React.ReactNode,
-  row: any
+  row: unknown
 ): string | React.ReactNode {
   if (typeof content === 'string') {
     const matches = content.match(/\[(.*?)\]/g)
@@ -53,7 +53,9 @@ function contentReplacement(
         return contentReplacement(child, row)
       } else if (React.isValidElement(child)) {
         // Type-safe access to props.children
-        const childElement = child as React.ReactElement<{ children?: React.ReactNode }>
+        const childElement = child as React.ReactElement<{
+          children?: React.ReactNode
+        }>
         return React.cloneElement(
           child,
           {},
