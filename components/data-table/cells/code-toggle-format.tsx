@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { formatQuery } from '@/lib/format-readable'
+import { type Row } from '@tanstack/react-table'
 
 export interface CodeToggleOptions {
   max_truncate?: number
@@ -12,8 +13,8 @@ export interface CodeToggleOptions {
 }
 
 interface CodeToggleFormatProps {
-  row: any
-  value: any
+  row: Row<any>
+  value: string
   options?: CodeToggleOptions
 }
 
@@ -23,7 +24,7 @@ export function CodeToggleFormat({
   row,
   value,
   options,
-}: CodeToggleFormatProps) {
+}: CodeToggleFormatProps): React.ReactNode {
   const truncate_length = options?.max_truncate || CODE_TRUNCATE_LENGTH
 
   if (value.length < truncate_length) {

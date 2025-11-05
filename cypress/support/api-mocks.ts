@@ -21,10 +21,10 @@ export const setupApiMocks = () => {
             breakdown: [
               ['Select', hostId === '0' ? 89 : 102],
               ['Insert', hostId === '0' ? 45 : 52],
-              ['Create', hostId === '0' ? 11 : 13]
-            ]
-          }
-        ]
+              ['Create', hostId === '0' ? 11 : 13],
+            ],
+          },
+        ],
       }
     } else if (query.includes('memory') || query.includes('MemoryTracking')) {
       // Memory usage chart data
@@ -33,19 +33,22 @@ export const setupApiMocks = () => {
           {
             event_time: '2024-01-01 00:00:00',
             avg_memory: hostId === '0' ? 1073741824 : 1234567890,
-            readable_avg_memory: hostId === '0' ? '1.00 GiB' : '1.15 GiB'
-          }
-        ]
+            readable_avg_memory: hostId === '0' ? '1.00 GiB' : '1.15 GiB',
+          },
+        ],
       }
-    } else if (query.includes('CPU') || query.includes('OSCPUWaitMicroseconds')) {
+    } else if (
+      query.includes('CPU') ||
+      query.includes('OSCPUWaitMicroseconds')
+    ) {
       // CPU usage chart data
       responseData = {
         data: [
           {
             event_time: '2024-01-01 00:00:00',
-            avg_cpu: hostId === '0' ? 0.15 : 0.25
-          }
-        ]
+            avg_cpu: hostId === '0' ? 0.15 : 0.25,
+          },
+        ],
       }
     } else {
       // Generic response for other queries
@@ -53,9 +56,9 @@ export const setupApiMocks = () => {
         data: [
           {
             count: hostId === '0' ? 5 : 8,
-            name: `test-data-${hostId}`
-          }
-        ]
+            name: `test-data-${hostId}`,
+          },
+        ],
       }
     }
 
@@ -65,20 +68,23 @@ export const setupApiMocks = () => {
         queryId: `test-query-${hostId}-${Date.now()}`,
         duration: 0.025,
         rows: responseData.data.length,
-        host: `host-${hostId}:8123`
-      }
+        host: `host-${hostId}:8123`,
+      },
     }
 
     req.reply(fullResponse)
   }).as('queryRequest')
 
   // Mock health check endpoint
-  cy.intercept('GET', '/healthz', { statusCode: 200, body: { status: 'ok' } }).as('healthCheck')
+  cy.intercept('GET', '/healthz', {
+    statusCode: 200,
+    body: { status: 'ok' },
+  }).as('healthCheck')
 
   // Mock version endpoint
   cy.intercept('GET', '/api/version', {
     statusCode: 200,
-    body: { version: '1.0.0', build: 'test' }
+    body: { version: '1.0.0', build: 'test' },
   }).as('versionCheck')
 
   // Mock uptime endpoint for host status
@@ -89,7 +95,7 @@ export const setupApiMocks = () => {
     req.reply({
       uptime: `${Math.floor(Math.random() * 30) + 1} days`,
       hostName: `test-host-${hostId}`,
-      version: '24.12.0.0'
+      version: '24.12.0.0',
     })
   }).as('uptimeCheck')
 }

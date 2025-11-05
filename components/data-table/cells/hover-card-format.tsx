@@ -3,6 +3,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
+import { type Row } from '@tanstack/react-table'
 import React from 'react'
 
 export type HoverCardContent = string | React.ReactNode
@@ -12,12 +13,16 @@ export type HoverCardOptions = {
 }
 
 interface HoverCardProps {
-  row: any
-  value: any
+  row: Row<any>
+  value: React.ReactNode
   options?: HoverCardOptions
 }
 
-export function HoverCardFormat({ row, value, options }: HoverCardProps) {
+export function HoverCardFormat({
+  row,
+  value,
+  options,
+}: HoverCardProps): React.ReactNode {
   let { content } = options || {}
 
   // Content replacement, e.g. "Hover content: [column_name]"
@@ -33,7 +38,7 @@ export function HoverCardFormat({ row, value, options }: HoverCardProps) {
 
 function contentReplacement(
   content: string | React.ReactNode,
-  row: any
+  row: Row<any>
 ): string | React.ReactNode {
   if (typeof content === 'string') {
     const matches = content.match(/\[(.*?)\]/g)
@@ -42,7 +47,7 @@ function contentReplacement(
         const key = match.replace('[', '').replace(']', '').trim()
         const replacementValue = row.getValue(key)
         if (typeof content === 'string') {
-          content = content.replace(match, replacementValue)
+          content = content.replace(match, String(replacementValue))
         }
       })
     }
@@ -53,7 +58,9 @@ function contentReplacement(
         return contentReplacement(child, row)
       } else if (React.isValidElement(child)) {
         // Type-safe access to props.children
-        const childElement = child as React.ReactElement<{ children?: React.ReactNode }>
+        const childElement = child as React.ReactElement<{
+          children?: React.ReactNode
+        }>
         return React.cloneElement(
           child,
           {},

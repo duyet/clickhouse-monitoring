@@ -5,11 +5,14 @@ export interface TextFormatOptions {
 }
 
 interface TextFormatProps {
-  value: any
+  value: React.ReactNode
   options?: TextFormatOptions
 }
 
-export function TextFormat({ value, options }: TextFormatProps) {
+export function TextFormat({
+  value,
+  options,
+}: TextFormatProps): React.ReactNode {
   return (
     <span className={cn('truncate text-wrap', options?.className)}>
       {`${!!value ? value : ''}`}

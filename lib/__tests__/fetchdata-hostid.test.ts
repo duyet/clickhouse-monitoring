@@ -92,53 +92,55 @@ describe('fetchData hostId parameter validation', () => {
 
         // Look for fetchData calls
         lines.forEach((line, index) => {
-        const trimmed = line.trim()
+          const trimmed = line.trim()
 
-        // Skip comments and type definitions
-        if (
-          trimmed.startsWith('//') ||
-          trimmed.startsWith('*') ||
-          trimmed.startsWith('/*')
-        ) {
-          return
-        }
-
-        // Look for fetchData calls (not fetchDataWithHost)
-        const fetchDataMatch = trimmed.match(/(?<!With)fetchData[<\w\[\]>]*\s*\(\s*{/)
-        if (fetchDataMatch) {
-          // Check if this is a multiline call - look ahead for the closing brace
-          let fullCall = line
-          let lineIndex = index
-          let braceCount =
-            (line.match(/{/g) || []).length - (line.match(/}/g) || []).length
-
-          while (braceCount > 0 && lineIndex < lines.length - 1) {
-            lineIndex++
-            fullCall += '\n' + lines[lineIndex]
-            braceCount +=
-              (lines[lineIndex].match(/{/g) || []).length -
-              (lines[lineIndex].match(/}/g) || []).length
+          // Skip comments and type definitions
+          if (
+            trimmed.startsWith('//') ||
+            trimmed.startsWith('*') ||
+            trimmed.startsWith('/*')
+          ) {
+            return
           }
 
-          // Check if hostId parameter is present
-          // Handle all valid hostId parameter formats
-          const hasHostId = 
-            fullCall.includes('hostId:') || 
-            fullCall.includes('hostId ') || 
-            /[,{]\s*hostId\s*[,}]/.test(fullCall) ||
-            /hostId\s*:/.test(fullCall) ||
-            /\{\s*[^}]*hostId[^}]*\}/.test(fullCall) ||
-            fullCall.match(/hostId\s*[,}\s]/) !== null
-          
-          if (!hasHostId) {
-            violations.push({
-              file: path.relative(projectRoot, filePath),
-              line: index + 1,
-              content: fullCall.trim(),
-            })
+          // Look for fetchData calls (not fetchDataWithHost)
+          const fetchDataMatch = trimmed.match(
+            /(?<!With)fetchData[<\w\[\]>]*\s*\(\s*{/
+          )
+          if (fetchDataMatch) {
+            // Check if this is a multiline call - look ahead for the closing brace
+            let fullCall = line
+            let lineIndex = index
+            let braceCount =
+              (line.match(/{/g) || []).length - (line.match(/}/g) || []).length
+
+            while (braceCount > 0 && lineIndex < lines.length - 1) {
+              lineIndex++
+              fullCall += '\n' + lines[lineIndex]
+              braceCount +=
+                (lines[lineIndex].match(/{/g) || []).length -
+                (lines[lineIndex].match(/}/g) || []).length
+            }
+
+            // Check if hostId parameter is present
+            // Handle all valid hostId parameter formats
+            const hasHostId =
+              fullCall.includes('hostId:') ||
+              fullCall.includes('hostId ') ||
+              /[,{]\s*hostId\s*[,}]/.test(fullCall) ||
+              /hostId\s*:/.test(fullCall) ||
+              /\{\s*[^}]*hostId[^}]*\}/.test(fullCall) ||
+              fullCall.match(/hostId\s*[,}\s]/) !== null
+
+            if (!hasHostId) {
+              violations.push({
+                file: path.relative(projectRoot, filePath),
+                line: index + 1,
+                content: fullCall.trim(),
+              })
+            }
           }
-        }
-      })
+        })
       } catch (error) {
         // Skip files that can't be read
         console.warn(`Skipping file ${filePath}: ${error.message}`)

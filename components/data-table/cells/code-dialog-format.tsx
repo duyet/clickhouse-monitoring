@@ -22,13 +22,16 @@ export interface CodeDialogOptions {
 }
 
 interface CodeDialogFormatProps {
-  value: any
+  value: string
   options?: CodeDialogOptions
 }
 
 const CODE_TRUNCATE_LENGTH = 50
 
-export function CodeDialogFormat({ value, options }: CodeDialogFormatProps) {
+export function CodeDialogFormat({
+  value,
+  options,
+}: CodeDialogFormatProps): React.ReactNode {
   const truncate_length = options?.max_truncate || CODE_TRUNCATE_LENGTH
 
   let formatted = formatQuery({

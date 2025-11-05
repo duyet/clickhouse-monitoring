@@ -27,7 +27,10 @@ export default async function Page({ params, searchParams }: PageProps) {
   return (
     <div className="flex flex-col">
       <Suspense fallback={<ChartSkeleton />}>
-        <RelatedCharts relatedCharts={queryConfig.relatedCharts} hostId={hostId} />
+        <RelatedCharts
+          relatedCharts={queryConfig.relatedCharts}
+          hostId={hostId}
+        />
       </Suspense>
 
       <Suspense fallback={<TableSkeleton />}>

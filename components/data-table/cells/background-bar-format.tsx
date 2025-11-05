@@ -1,14 +1,15 @@
 import { formatReadableQuantity } from '@/lib/format-readable'
+import { type Row, type Table } from '@tanstack/react-table'
 
 export interface BackgroundBarOptions {
   numberFormat?: boolean
 }
 
 interface BackgroundBarFormatProps {
-  table: any
-  row: any
+  table: Table<any>
+  row: Row<any>
   columnName: string
-  value: any
+  value: React.ReactNode
   options?: BackgroundBarOptions
 }
 
@@ -18,7 +19,7 @@ export function BackgroundBarFormat({
   columnName,
   value,
   options,
-}: BackgroundBarFormatProps) {
+}: BackgroundBarFormatProps): React.ReactNode {
   // Disable if row count <= 1
   if (table.getCoreRowModel()?.rows?.length <= 1) return value
 
@@ -49,7 +50,9 @@ export function BackgroundBarFormat({
       aria-label={`${orgValue} (${pct}%)`}
       aria-roledescription="background-bar"
     >
-      {options?.numberFormat ? formatReadableQuantity(value, 'long') : value}
+      {options?.numberFormat
+        ? formatReadableQuantity(value as number, 'long')
+        : value}
     </div>
   )
 }

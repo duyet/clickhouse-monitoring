@@ -42,7 +42,6 @@ export function DataTableFacetedFilter({
 
     return params
   }, [searchParams, defaultParams])
-  console.log('selected', selected.toString())
 
   const filters = useMemo<
     NonNullable<QueryConfig['filterParamPresets']>
@@ -65,7 +64,6 @@ export function DataTableFacetedFilter({
           : `${key} = N/A`,
         value: selected.get(key),
       })) as NonNullable<QueryConfig['filterParamPresets']>
-    console.log('filterNotFromPreset', filterNotFromPreset)
 
     return [...filterParamPresets, ...filterNotFromPreset]
   }, [filterParamPresets, defaultParams, selected])
