@@ -5,14 +5,14 @@ export interface ColoredBadgeOptions {
 }
 
 interface ColoredBadgeFormatProps {
-  value: unknown
+  value: React.ReactNode
   options?: ColoredBadgeOptions
 }
 
 export function ColoredBadgeFormat({
   value,
   options,
-}: ColoredBadgeFormatProps) {
+}: ColoredBadgeFormatProps): React.ReactNode {
   if (!value || value === '') {
     return
   }

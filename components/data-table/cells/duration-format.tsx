@@ -1,10 +1,12 @@
 import dayjs from '@/lib/dayjs'
 
 interface DurationFormatProps {
-  value: unknown
+  value: string | number
 }
 
-export function DurationFormat({ value }: DurationFormatProps) {
+export function DurationFormat({
+  value,
+}: DurationFormatProps): React.ReactNode {
   let humanized = value
   const seconds = parseFloat(value as string)
 
