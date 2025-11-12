@@ -31,10 +31,17 @@ export async function TableSelector({ database, table }: TableSelectorProps) {
 
     anotherTables = res.data || []
   } catch (error) {
-    console.log(error)
-
+    // Error logging - will be removed in a later fix
     return null
   }
+
+  // Pre-compute all links to avoid async operations in map callback
+  const tablesWithLinks = await Promise.all(
+    anotherTables.map(async ({ name }) => ({
+      name,
+      href: await getScopedLink(`/tables/${database}/${name}`),
+    }))
+  )
 
   return (
     <DropdownMenu>
@@ -54,13 +61,10 @@ export async function TableSelector({ database, table }: TableSelectorProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent>
-        {anotherTables.map(async ({ name }) => (
+        {tablesWithLinks.map(({ name, href }) => (
           <DropdownMenuItem key={name}>
-            <Link
-              href={await getScopedLink(`/tables/${database}/${name}`)}
-              className="flex flex-row items-center gap-2"
-            >
-              {name == table ? (
+            <Link href={href} className="flex flex-row items-center gap-2">
+              {name === table ? (
                 <DotFilledIcon className="size-3" />
               ) : (
                 <div className="size-3" />

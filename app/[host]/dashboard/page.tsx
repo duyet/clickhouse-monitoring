@@ -17,9 +17,6 @@ export default async function Page({
 
   const { dashboards, settings } = await getCustomDashboards()
 
-  console.log('Dashboard settings', settings)
-  console.log('Dashboard data', dashboards)
-
   const params: Record<string, string> = JSON.parse(
     settings?.find((s) => s.key === 'params')?.value || '{}'
   )

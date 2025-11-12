@@ -30,9 +30,7 @@ export function BackgroundBarFormat({
   const orgValue = row.original[colName]
 
   if (pct === undefined) {
-    console.warn(
-      `${pctColName} is not defined, you should configure it in the query`
-    )
+    // Column pct_{columnName} is not defined in the query
     return value
   }
 

@@ -43,7 +43,7 @@ export async function RelatedCharts({
     }
 
     if (!component) {
-      console.warn('Component not found for chart:', chart)
+      // Component not found for chart, skip it
       continue
     }
 
@@ -52,7 +52,16 @@ export async function RelatedCharts({
   }
 
   const col = charts.length > maxChartsPerRow ? maxChartsPerRow : charts.length
-  const gridCols = `grid-cols-1 md:grid-cols-${col}`
+
+  // Use a mapping object for Tailwind classes to ensure they're included in the build
+  // Dynamic class generation doesn't work with Tailwind's JIT compiler
+  const gridColsMap: Record<number, string> = {
+    1: 'grid-cols-1',
+    2: 'grid-cols-1 md:grid-cols-2',
+    3: 'grid-cols-1 md:grid-cols-3',
+    4: 'grid-cols-1 md:grid-cols-4',
+  }
+  const gridCols = gridColsMap[col] || 'grid-cols-1 md:grid-cols-2'
 
   return (
     <div className={cn('grid gap-5', gridCols, className)}>
@@ -67,9 +76,6 @@ export async function RelatedCharts({
         // | chart2   |  chart3  |
         // -----------------------
         if (charts[i + 1] && charts[i + 1][0] === 'break') {
-          console.debug(
-            `${name} add col-span-2 due to next chart being a break`
-          )
           className = 'col-span-2'
         }
 
@@ -83,9 +89,6 @@ export async function RelatedCharts({
         // -----------------------
         if (charts.length > 2 && i === charts.length - 1 && col === 2) {
           className = 'auto-cols-max'
-          console.debug(
-            `${name} add classname ${className} due to this chart is at the end of the row`
-          )
         }
 
         return (

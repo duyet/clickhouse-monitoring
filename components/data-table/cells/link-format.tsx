@@ -29,9 +29,14 @@ export function LinkFormat<
   if (!href) return value
 
   if (typeof href === 'object' && href !== null) {
-    // Handle UrlObject case here
-    // For example, we might want to convert it to a string
-    href = href.toString()
+    // Handle UrlObject case - convert to string pathname
+    // If it's a UrlObject, use pathname or convert to string representation
+    href = (href as any).pathname || String(href)
+  }
+
+  // Ensure href is a string at this point
+  if (typeof href !== 'string') {
+    return value
   }
 
   const originalRow = data[row.index] as Record<string, string | undefined>
