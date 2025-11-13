@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import type { ClickHouseConfig } from '@/lib/clickhouse'
+import { setSecureCookie } from '@/lib/cookie-utils'
 import { cn, getHost, removeHostPrefix } from '@/lib/utils'
 
 type UptimePromise = Promise<{
@@ -52,10 +53,12 @@ export function ClickHouseHostSelector({
       <Select
         defaultValue={current.id.toString()}
         onValueChange={(val) => {
-          if (typeof window !== 'undefined') {
-            document.cookie = `hostId=${val}; path=/`
+          // Validate that val is a valid number before setting cookie
+          const hostId = parseInt(val, 10)
+          if (!isNaN(hostId) && hostId >= 0) {
+            setSecureCookie('hostId', hostId, { path: '/' })
+            router.push(`/${hostId}/${pathnameWithoutPrefix}`)
           }
-          router.push(`/${val}/${pathnameWithoutPrefix}`)
         }}
       >
         <SelectTrigger

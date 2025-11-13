@@ -2,6 +2,7 @@ import Script from 'next/script'
 
 import { BackgroundJobs } from '@/components/background-jobs'
 import { PageView } from '@/components/pageview'
+import { generateSafeCookieScript } from '@/lib/cookie-utils'
 import { setHostId } from '@/lib/server-context'
 import { Suspense } from 'react'
 
@@ -13,12 +14,16 @@ export default async function Layout({
   params: Promise<{ host: number }>
 }) {
   const { host } = await params
+  const hostNumber = Number(host)
 
-  if (Number.isNaN(Number(host))) {
+  if (Number.isNaN(hostNumber)) {
     setHostId(0)
+  } else {
+    setHostId(hostNumber)
   }
 
-  setHostId(Number(host))
+  // Use the validated hostNumber for cookie script
+  const validHostId = Number.isNaN(hostNumber) ? 0 : hostNumber
 
   return (
     <>
@@ -28,7 +33,8 @@ export default async function Layout({
         id="setHostId"
         dangerouslySetInnerHTML={{
           // We have to set a cookie here because cookies() is not allowed in server components
-          __html: `document.cookie = "hostId=${host}; path=/";`,
+          // Using generateSafeCookieScript to prevent XSS/cookie injection
+          __html: generateSafeCookieScript('hostId', validHostId),
         }}
       />
 

@@ -14,7 +14,7 @@ export function ColoredBadgeFormat({
   options,
 }: ColoredBadgeFormatProps): React.ReactNode {
   if (!value || value === '') {
-    return
+    return null
   }
 
   const colors = [

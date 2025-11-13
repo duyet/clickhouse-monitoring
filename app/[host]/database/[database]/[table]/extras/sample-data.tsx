@@ -13,6 +13,10 @@ import {
   formatErrorTitle,
   getErrorDocumentation,
 } from '@/lib/error-utils'
+import {
+  escapeQualifiedIdentifier,
+  validateLimit,
+} from '@/lib/sql-utils'
 
 interface SampleDataProps {
   database: string
@@ -27,18 +31,32 @@ export async function SampleData({
   limit = 10,
   className,
 }: SampleDataProps) {
+  // Validate and sanitize inputs to prevent SQL injection
+  let sanitizedLimit: number
+  try {
+    sanitizedLimit = validateLimit(limit)
+  } catch (error) {
+    return (
+      <ErrorAlert
+        title="Invalid limit parameter"
+        message={error instanceof Error ? error.message : 'Invalid limit value'}
+        className="w-full"
+      />
+    )
+  }
+
+  // Escape database and table names to prevent SQL injection
+  const qualifiedTable = escapeQualifiedIdentifier(database, table)
+
   const { data, error } = await fetchData<{ [key: string]: string }[]>({
     query: `SELECT *
-     FROM ${database}.${table}
-     LIMIT ${limit}`,
-    query_params: {
-      database,
-      table,
-    },
+     FROM ${qualifiedTable}
+     LIMIT ${sanitizedLimit}`,
+    query_params: {},
   })
 
   if (error) {
-    console.error('Failed to fetch sample data', error)
+    // Error logging - will be removed in a later fix
     return (
       <ErrorAlert
         title={formatErrorTitle(error)}

@@ -23,7 +23,8 @@ ENV GITHUB_SHA=${GITHUB_SHA}
 ENV GITHUB_REF=${GITHUB_REF}
 ENV NODE_ENV=production
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile \
+# Skip optional dependencies (like @cloudflare/workerd) to avoid architecture-specific build issues
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --no-optional \
   && pnpm build
 
 # Production image, copy all the files and run next
