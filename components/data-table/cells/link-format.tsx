@@ -29,9 +29,13 @@ export function LinkFormat<
   if (!href) return value
 
   if (typeof href === 'object' && href !== null) {
-    // Handle UrlObject case - convert to string pathname
-    // If it's a UrlObject, use pathname or convert to string representation
-    href = (href as any).pathname || String(href)
+    // Handle URL object - convert to full string including protocol and host
+    if (href instanceof URL) {
+      href = href.toString()
+    } else {
+      // Handle other UrlObject cases (Next.js UrlObject with pathname, query, etc.)
+      href = (href as any).pathname || String(href)
+    }
   }
 
   // Ensure href is a string at this point
