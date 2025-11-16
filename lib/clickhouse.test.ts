@@ -1,19 +1,19 @@
-import { afterAll, expect, jest } from '@jest/globals'
+import { afterAll, expect, jest } from 'vitest'
 import { getClickHouseHosts, getClient } from './clickhouse'
 
 import { createClient } from '@clickhouse/client'
 import { createClient as createClientWeb } from '@clickhouse/client-web'
 
-jest.mock('@clickhouse/client', () => ({
-  createClient: jest.fn(),
+vi.mock('@clickhouse/client', () => ({
+  createClient: vi.fn(),
 }))
 
-jest.mock('@clickhouse/client-web', () => ({
-  createClient: jest.fn(),
+vi.mock('@clickhouse/client-web', () => ({
+  createClient: vi.fn(),
 }))
 
-jest.mock('next/headers', () => ({
-  cookies: jest.fn(),
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(),
 }))
 
 describe('getClickHouseHosts', () => {
@@ -82,7 +82,7 @@ describe('getClient', () => {
     process.env.CLICKHOUSE_USER = 'default'
     process.env.CLICKHOUSE_PASSWORD = ''
     const mockClient = {}
-    ;(createClient as jest.Mock).mockReturnValue(mockClient)
+    ;(createClient as ReturnType<typeof vi.fn>).mockReturnValue(mockClient)
 
     const client = await getClient({ web: false })
 
@@ -102,7 +102,7 @@ describe('getClient', () => {
     process.env.CLICKHOUSE_USER = 'default'
     process.env.CLICKHOUSE_PASSWORD = ''
     const mockClient = {}
-    ;(createClientWeb as jest.Mock).mockReturnValue(mockClient)
+    ;(createClientWeb as ReturnType<typeof vi.fn>).mockReturnValue(mockClient)
 
     const client = await getClient({ web: true })
 
@@ -124,7 +124,7 @@ describe('getClient', () => {
     process.env.CLICKHOUSE_MAX_EXECUTION_TIME = '120'
 
     const mockClient = {}
-    ;(createClient as jest.Mock).mockReturnValue(mockClient)
+    ;(createClient as ReturnType<typeof vi.fn>).mockReturnValue(mockClient)
 
     const client = await getClient({ web: false })
 

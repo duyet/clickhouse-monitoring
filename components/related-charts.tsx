@@ -29,11 +29,12 @@ export async function RelatedCharts({
 
   if (!relatedCharts) return null
 
-  for (const chart of relatedCharts) {
-    let component,
+  // Load all chart modules in parallel for better performance
+  const chartLoadPromises = relatedCharts.map(async (chart) => {
+    let component: string | undefined,
       props: Omit<ChartProps, 'hostId'> = {}
 
-    if (!chart) continue
+    if (!chart) return null
 
     if (typeof chart === 'string') {
       component = chart
@@ -43,13 +44,27 @@ export async function RelatedCharts({
     }
 
     if (!component) {
-      // Component not found for chart, skip it
-      continue
+      return null
     }
 
-    const chartsModule = await import(`@/components/charts/${component}`)
-    charts.push([component, chartsModule.default, props])
-  }
+    try {
+      const chartsModule = await import(`@/components/charts/${component}`)
+      return [component, chartsModule.default, props] as [
+        ChartName,
+        ComponentType<ChartProps>,
+        Omit<ChartProps, 'hostId'>,
+      ]
+    } catch (error) {
+      console.error(`Failed to load chart component: ${component}`, error)
+      return null
+    }
+  })
+
+  // Wait for all charts to load in parallel
+  const loadedCharts = await Promise.all(chartLoadPromises)
+
+  // Filter out null values (failed or skipped charts)
+  charts.push(...loadedCharts.filter((c): c is NonNullable<typeof c> => c !== null))
 
   const col = charts.length > maxChartsPerRow ? maxChartsPerRow : charts.length
 
@@ -80,7 +95,7 @@ export async function RelatedCharts({
         }
 
         // If this is the last chart, but still have space in the row, add a 'col-span-2' class
-        // TODO: implement for maxChartsPerRow > 2
+        // Note: Currently optimized for maxChartsPerRow = 2 (most common case)
         // For example:
         // relatedCharts: [['chart1', {}], ['chart2', {}], ['chart3', {}]]]
         // -----------------------

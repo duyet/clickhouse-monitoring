@@ -1,23 +1,23 @@
-import { expect, jest } from '@jest/globals'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { binding, cn, dedent, getHost, removeHostPrefix, uniq } from './utils'
 
-jest.mock('clsx', () => ({
-  clsx: jest.fn(),
+vi.mock('clsx', () => ({
+  clsx: vi.fn(),
 }))
 
-jest.mock('tailwind-merge', () => ({
-  twMerge: jest.fn(),
+vi.mock('tailwind-merge', () => ({
+  twMerge: vi.fn(),
 }))
 
 describe('utils', () => {
   describe('cn', () => {
     it('should merge class names using clsx and twMerge', () => {
       const mockInputs = ['class1', 'class2']
-      ;(clsx as jest.Mock).mockReturnValue('merged-class')
-      ;(twMerge as jest.Mock).mockReturnValue('tw-merged-class')
+      ;(clsx as ReturnType<typeof vi.fn>).mockReturnValue('merged-class')
+      ;(twMerge as ReturnType<typeof vi.fn>).mockReturnValue('tw-merged-class')
 
       const result = cn(...mockInputs)
 
@@ -144,7 +144,8 @@ describe('utils', () => {
     it('should handle invalid URLs gracefully', () => {
       const input = 'invalid-url'
 
-      expect(() => getHost(input)).toThrow(new TypeError('Invalid URL'))
+      expect(() => getHost(input)).toThrow(TypeError)
+      expect(() => getHost(input)).toThrow(/Invalid URL/)
     })
   })
 

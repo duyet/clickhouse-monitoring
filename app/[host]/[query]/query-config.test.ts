@@ -1,8 +1,8 @@
-import { beforeAll, expect, jest, test } from '@jest/globals'
+import { beforeAll, expect, jest, test } from 'vitest'
 
 // Mock ClickHouse client to prevent real database connections
-jest.mock('@/lib/clickhouse', () => ({
-  fetchData: jest.fn(),
+vi.mock('@/lib/clickhouse', () => ({
+  fetchData: vi.fn(),
 }))
 
 import { fetchData } from '@/lib/clickhouse'
@@ -20,7 +20,7 @@ describe('query config', () => {
 
   beforeAll(async () => {
     // Mock fetchData to simulate database responses instead of making real calls
-    const mockedFetchData = fetchData as jest.MockedFunction<typeof fetchData>
+    const mockedFetchData = fetchData as ReturnType<typeof vi.fn>edFunction<typeof fetchData>
 
     // Setup mock responses for different query types
     mockedFetchData.mockImplementation(async ({ query, hostId }) => {
