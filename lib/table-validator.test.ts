@@ -2,9 +2,9 @@ import { type QueryConfig } from '@/types/query-config'
 import { parseTableFromSQL, validateTableExistence } from './table-validator'
 
 // Mock the table existence cache
-jest.mock('./table-existence-cache', () => ({
+vi.mock('./table-existence-cache', () => ({
   tableExistenceCache: {
-    checkTableExists: jest.fn(),
+    checkTableExists: vi.fn(),
   },
 }))
 
@@ -158,7 +158,7 @@ describe('Table Validator', () => {
   describe('validateTableExistence', () => {
     beforeEach(() => {
       // Reset mocks before each test
-      jest.clearAllMocks()
+      vi.clearAllMocks()
     })
 
     it('should return shouldProceed true when no tables to check', async () => {
@@ -177,7 +177,7 @@ describe('Table Validator', () => {
     it('should use explicit tableCheck when provided', async () => {
       const { tableExistenceCache } = await import('./table-existence-cache')
       const mockCheckTableExists =
-        tableExistenceCache.checkTableExists as jest.MockedFunction<
+        tableExistenceCache.checkTableExists as ReturnType<typeof vi.fn>edFunction<
           typeof tableExistenceCache.checkTableExists
         >
 
@@ -205,7 +205,7 @@ describe('Table Validator', () => {
     it('should fallback to SQL parsing when tableCheck is not provided', async () => {
       const { tableExistenceCache } = await import('./table-existence-cache')
       const mockCheckTableExists =
-        tableExistenceCache.checkTableExists as jest.MockedFunction<
+        tableExistenceCache.checkTableExists as ReturnType<typeof vi.fn>edFunction<
           typeof tableExistenceCache.checkTableExists
         >
 

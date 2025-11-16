@@ -7,16 +7,16 @@ describe('error-logger', () => {
   let consoleDebugSpy: jest.SpyInstance
 
   beforeEach(() => {
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
-    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation()
-    consoleDebugSpy = jest.spyOn(console, 'debug').mockImplementation()
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation()
+    consoleDebugSpy = vi.spyOn(console, 'debug').mockImplementation()
   })
 
   afterEach(() => {
     process.env.NODE_ENV = originalNodeEnv
-    consoleErrorSpy.mockRestore()
-    consoleWarnSpy.mockRestore()
-    consoleDebugSpy.mockRestore()
+    consoleErrorSpy.mockReset()
+    consoleWarnSpy.mockReset()
+    consoleDebugSpy.mockReset()
   })
 
   describe('ErrorLogger.logError', () => {

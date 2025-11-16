@@ -28,7 +28,8 @@ export const errorsConfig: QueryConfig = {
   },
   defaultParams: { error: '' },
   filterParamPresets: [
-    // TODO: dynamic based on query
+    // Common error types based on production monitoring
+    // Future enhancement: Query `SELECT DISTINCT error FROM system.error_log` for dynamic list
     ...[
       'KEEPER_EXCEPTION',
       'PART_IS_TEMPORARILY_LOCKED',

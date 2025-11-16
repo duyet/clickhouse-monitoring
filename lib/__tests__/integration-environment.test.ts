@@ -4,7 +4,7 @@
  */
 
 import { fetchData, getClickHouseConfigs } from '@/lib/clickhouse'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'vitest'
 
 // Helper function to check if ClickHouse is available
 async function isClickHouseAvailable(): Promise<boolean> {

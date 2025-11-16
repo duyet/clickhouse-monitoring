@@ -4,12 +4,12 @@
  * to prevent host switching issues (GitHub issue #509)
  */
 
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'vitest'
 import fs, { readdirSync } from 'fs'
 import path from 'path'
 
 describe('fetchData hostId parameter validation', () => {
-  jest.setTimeout(10000) // 10 second timeout for these tests
+  // Timeout configured in vitest.config.ts // 10 second timeout for these tests
   const projectRoot = path.resolve(__dirname, '../..')
 
   // Find all TypeScript/JavaScript files that might contain fetchData calls

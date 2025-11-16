@@ -11,31 +11,31 @@ import {
   expect,
   it,
   jest,
-} from '@jest/globals'
+} from 'vitest'
 
 // Mock the dependencies
-jest.mock('@/lib/clickhouse', () => ({
-  fetchData: jest.fn(),
+vi.mock('@/lib/clickhouse', () => ({
+  fetchData: vi.fn(),
 }))
 
-jest.mock('@/lib/scoped-link', () => ({
-  getHostIdCookie: jest.fn(),
+vi.mock('@/lib/scoped-link', () => ({
+  getHostIdCookie: vi.fn(),
 }))
 
 describe('fetchDataWithHost', () => {
-  let mockFetchData: jest.Mock
-  let mockGetHostIdCookie: jest.Mock
+  let mockFetchData: ReturnType<typeof vi.fn>
+  let mockGetHostIdCookie: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     // Reset all mocks before each test
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     // Get mock references
     const clickhouse = require('@/lib/clickhouse')
     const scopedLink = require('@/lib/scoped-link')
 
-    mockFetchData = clickhouse.fetchData as jest.Mock
-    mockGetHostIdCookie = scopedLink.getHostIdCookie as jest.Mock
+    mockFetchData = clickhouse.fetchData as ReturnType<typeof vi.fn>
+    mockGetHostIdCookie = scopedLink.getHostIdCookie as ReturnType<typeof vi.fn>
 
     // Set default mock implementations
     mockFetchData.mockResolvedValue({
@@ -52,7 +52,7 @@ describe('fetchDataWithHost', () => {
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   describe('hostId parameter handling', () => {
@@ -261,13 +261,13 @@ describe('fetchDataWithHost', () => {
     let consoleErrorSpy: jest.SpyInstance
 
     beforeEach(() => {
-      consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation()
-      consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation()
+      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
     })
 
     afterEach(() => {
-      consoleWarnSpy.mockRestore()
-      consoleErrorSpy.mockRestore()
+      consoleWarnSpy.mockReset()
+      consoleErrorSpy.mockReset()
     })
 
     it('should log warning for invalid string hostId', async () => {

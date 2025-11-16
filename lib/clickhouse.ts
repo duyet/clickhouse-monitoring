@@ -1,5 +1,6 @@
 import { getHostId } from '@/lib/server-context'
 import { validateTableExistence } from '@/lib/table-validator'
+import { deduplicateByParams } from '@/lib/request-dedup'
 import type { QueryConfig } from '@/types/query-config'
 import type {
   ClickHouseClient,
@@ -214,102 +215,112 @@ export const fetchData = async <
     hostId?: number | string
     queryConfig?: QueryConfig
   }>): Promise<FetchDataResult<T>> => {
-  const start = new Date()
-
-  // Parse and validate hostId to prevent NaN
-  let currentHostId: number
-  if (hostId !== undefined && hostId !== null && hostId !== '') {
-    const parsed = Number(hostId)
-    if (isNaN(parsed)) {
-      throw new Error(`Invalid hostId: ${hostId}. Must be a valid number.`)
-    }
-    currentHostId = parsed
-  } else {
-    currentHostId = getHostId()
+  // Deduplicate concurrent identical requests to prevent duplicate queries
+  const dedupKey = {
+    query: queryConfig?.sql || query,
+    query_params,
+    format,
+    hostId,
+    name: queryConfig?.name,
   }
 
-  const configs = getClickHouseConfigs()
+  return deduplicateByParams(dedupKey, async () => {
+    const start = new Date()
 
-  // Check if any configs are available
-  if (configs.length === 0) {
-    const errorMessage =
-      'No ClickHouse hosts configured. Please set CLICKHOUSE_HOST environment variable.\n' +
-      'Example: CLICKHOUSE_HOST=http://localhost:8123\n' +
-      'See console logs for more details.'
-
-    console.error('[fetchData] No ClickHouse configurations available!')
-    console.error('[fetchData] Make sure environment variables are loaded.')
-    console.error(
-      '[fetchData] Check .env, .env.local, or deployment environment settings.'
-    )
-
-    return {
-      data: null,
-      metadata: {
-        queryId: '',
-        duration: 0,
-        rows: 0,
-        host: 'unknown',
-      },
-      error: {
-        type: 'validation_error',
-        message: errorMessage,
-        details: {
-          originalError: new Error(errorMessage),
-          host: 'unknown',
-        },
-      },
+    // Parse and validate hostId to prevent NaN
+    let currentHostId: number
+    if (hostId !== undefined && hostId !== null && hostId !== '') {
+      const parsed = Number(hostId)
+      if (isNaN(parsed)) {
+        throw new Error(`Invalid hostId: ${hostId}. Must be a valid number.`)
+      }
+      currentHostId = parsed
+    } else {
+      currentHostId = getHostId()
     }
-  }
 
-  const clientConfig = configs[currentHostId]
+    const configs = getClickHouseConfigs()
 
-  // Check if clientConfig exists before using it
-  if (!clientConfig) {
-    const availableHosts = configs.map((c) => c.id).join(', ')
-    const errorMessage = `Invalid hostId: ${currentHostId}. Available hosts: ${availableHosts} (total: ${configs.length})`
+    // Check if any configs are available
+    if (configs.length === 0) {
+      const errorMessage =
+        'No ClickHouse hosts configured. Please set CLICKHOUSE_HOST environment variable.\n' +
+        'Example: CLICKHOUSE_HOST=http://localhost:8123\n' +
+        'See console logs for more details.'
 
-    console.error('[fetchData]', errorMessage)
-
-    return {
-      data: null,
-      metadata: {
-        queryId: '',
-        duration: 0,
-        rows: 0,
-        host: 'unknown',
-      },
-      error: {
-        type: 'validation_error',
-        message: errorMessage,
-        details: {
-          originalError: new Error(errorMessage),
-          host: 'unknown',
-        },
-      },
-    }
-  }
-
-  try {
-    // Perform table validation if queryConfig is provided and query is optional
-    if (queryConfig?.optional) {
-      const validation = await validateTableExistence(
-        queryConfig,
-        currentHostId
+      console.error('[fetchData] No ClickHouse configurations available!')
+      console.error('[fetchData] Make sure environment variables are loaded.')
+      console.error(
+        '[fetchData] Check .env, .env.local, or deployment environment settings.'
       )
 
-      if (!validation.shouldProceed) {
-        const missingTables = validation.missingTables
-        const errorMessage =
-          validation.error ||
-          `Missing required tables: ${missingTables.join(', ')}`
+      return {
+        data: null,
+        metadata: {
+          queryId: '',
+          duration: 0,
+          rows: 0,
+          host: 'unknown',
+        },
+        error: {
+          type: 'validation_error',
+          message: errorMessage,
+          details: {
+            originalError: new Error(errorMessage),
+            host: 'unknown',
+          },
+        },
+      }
+    }
 
-        console.warn(
-          `Skipping query "${queryConfig.name}" due to missing tables:`,
-          missingTables
+    const clientConfig = configs[currentHostId]
+
+    // Check if clientConfig exists before using it
+    if (!clientConfig) {
+      const availableHosts = configs.map((c) => c.id).join(', ')
+      const errorMessage = `Invalid hostId: ${currentHostId}. Available hosts: ${availableHosts} (total: ${configs.length})`
+
+      console.error('[fetchData]', errorMessage)
+
+      return {
+        data: null,
+        metadata: {
+          queryId: '',
+          duration: 0,
+          rows: 0,
+          host: 'unknown',
+        },
+        error: {
+          type: 'validation_error',
+          message: errorMessage,
+          details: {
+            originalError: new Error(errorMessage),
+            host: 'unknown',
+          },
+        },
+      }
+    }
+
+    try {
+      // Perform table validation if queryConfig is provided and query is optional
+      if (queryConfig?.optional) {
+        const validation = await validateTableExistence(
+          queryConfig,
+          currentHostId
         )
 
-        return {
+        if (!validation.shouldProceed) {
+          const missingTables = validation.missingTables
+          const errorMessage =
+            validation.error ||
+            `Missing required tables: ${missingTables.join(', ')}`
+
+          console.warn(
+            `Skipping query "${queryConfig.name}" due to missing tables:`,
+            missingTables
+          )
+
+          return {
           data: null,
           metadata: {
             queryId: '',
@@ -382,55 +393,56 @@ export const fetchData = async <
       host: clientConfig.host,
     }
 
-    return { data, metadata }
-  } catch (originalError) {
-    const errorMessage =
-      originalError instanceof Error
-        ? originalError.message
-        : String(originalError)
+      return { data, metadata }
+    } catch (originalError) {
+      const errorMessage =
+        originalError instanceof Error
+          ? originalError.message
+          : String(originalError)
 
-    // Categorize error types based on error message patterns
-    let errorType: FetchDataErrorType = 'query_error'
+      // Categorize error types based on error message patterns
+      let errorType: FetchDataErrorType = 'query_error'
 
-    if (
-      errorMessage.toLowerCase().includes('table') &&
-      errorMessage.toLowerCase().includes('not') &&
-      errorMessage.toLowerCase().includes('exist')
-    ) {
-      errorType = 'table_not_found'
-    } else if (
-      errorMessage.toLowerCase().includes('permission') ||
-      errorMessage.toLowerCase().includes('access')
-    ) {
-      errorType = 'permission_error'
-    } else if (
-      errorMessage.toLowerCase().includes('network') ||
-      errorMessage.toLowerCase().includes('connection')
-    ) {
-      errorType = 'network_error'
-    }
+      if (
+        errorMessage.toLowerCase().includes('table') &&
+        errorMessage.toLowerCase().includes('not') &&
+        errorMessage.toLowerCase().includes('exist')
+      ) {
+        errorType = 'table_not_found'
+      } else if (
+        errorMessage.toLowerCase().includes('permission') ||
+        errorMessage.toLowerCase().includes('access')
+      ) {
+        errorType = 'permission_error'
+      } else if (
+        errorMessage.toLowerCase().includes('network') ||
+        errorMessage.toLowerCase().includes('connection')
+      ) {
+        errorType = 'network_error'
+      }
 
-    console.error(`Query failed (host: ${clientConfig.host}):`, errorMessage)
+      console.error(`Query failed (host: ${clientConfig.host}):`, errorMessage)
 
-    return {
-      data: null,
-      metadata: {
-        queryId: '',
-        duration: (new Date().getTime() - start.getTime()) / 1000,
-        rows: 0,
-        host: clientConfig.host,
-      },
-      error: {
-        type: errorType,
-        message: errorMessage,
-        details: {
-          originalError:
-            originalError instanceof Error ? originalError : undefined,
+      return {
+        data: null,
+        metadata: {
+          queryId: '',
+          duration: (new Date().getTime() - start.getTime()) / 1000,
+          rows: 0,
           host: clientConfig.host,
         },
-      },
+        error: {
+          type: errorType,
+          message: errorMessage,
+          details: {
+            originalError:
+              originalError instanceof Error ? originalError : undefined,
+            host: clientConfig.host,
+          },
+        },
+      }
     }
-  }
+  })
 }
 
 export const query = async (

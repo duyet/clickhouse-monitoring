@@ -3,7 +3,7 @@
  * Tests the complete flow of switching between ClickHouse hosts
  */
 
-import { beforeEach, describe, expect, it, jest } from '@jest/globals'
+import { beforeEach, describe, expect, it, jest } from 'vitest'
 
 // Import the test utilities
 const {
@@ -15,7 +15,7 @@ const {
 describe('Host Switching Integration Tests', () => {
   beforeEach(() => {
     // Reset all mocks
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('Chart Components Host Switching', () => {
