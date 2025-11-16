@@ -75,7 +75,15 @@ const ENV_CACHE_TTL = process.env.NEXT_QUERY_CACHE_TTL
  * Uses different TTLs based on data type for optimal freshness
  */
 export const fetchDataWithCache = cache(
-  async <T>(params: Parameters<typeof fetchData<T>>[0]) => {
+  async <
+    T extends
+      | unknown[]
+      | object[]
+      | Record<string, unknown>
+      | { length: number; rows: number; statistics: Record<string, unknown> }
+  >(
+    params: Parameters<typeof fetchData<T>>[0]
+  ) => {
     const ttl = ENV_CACHE_TTL ?? getCacheTTL(params.queryConfig)
 
     // Log cache strategy in development
