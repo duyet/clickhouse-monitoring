@@ -98,7 +98,7 @@ export function ClickHouseHostSelector({
 export function HostStatus({ promise }: { promise: UptimePromise }) {
   const res = use(promise)
 
-  const isOnline = res !== null
+  const isOnline = res != null
   if (isOnline) {
     return (
       <StatusIndicator
