@@ -3,8 +3,8 @@
  * This test will be skipped in CI and local environments without ClickHouse
  */
 
-import { describe, expect, it } from '@jest/globals'
 import { fetchData, getClickHouseConfigs } from '@/lib/clickhouse'
+import { describe, expect, it } from '@jest/globals'
 
 // Helper function to check if ClickHouse is available
 async function isClickHouseAvailable(): Promise<boolean> {
@@ -56,8 +56,12 @@ describe('ClickHouse Integration Tests (Optional)', () => {
     }
 
     if (!clickHouseAvailable) {
-      console.log('⏭️  Skipping ClickHouse integration tests - database not available')
-      console.log('   To run these tests, ensure ClickHouse is running on localhost:8123')
+      console.log(
+        '⏭️  Skipping ClickHouse integration tests - database not available'
+      )
+      console.log(
+        '   To run these tests, ensure ClickHouse is running on localhost:8123'
+      )
       console.log('   and CLICKHOUSE_HOST environment variable is set')
     }
   }, 5000) // Reduced timeout for CI
@@ -83,7 +87,7 @@ describe('ClickHouse Integration Tests (Optional)', () => {
     }
 
     const configs = getClickHouseConfigs()
-    
+
     if (configs.length <= 1) {
       console.log('⏭️  Skipping multi-host test - only one host configured')
       return
@@ -109,7 +113,7 @@ describe('ClickHouse Integration Tests (Optional)', () => {
     // Test a few essential system tables
     const essentialTables = [
       'system.query_log',
-      'system.metrics', 
+      'system.metrics',
       'system.tables',
     ]
 
@@ -129,13 +133,15 @@ describe('ClickHouse Integration Tests (Optional)', () => {
 describe('Integration Test Configuration', () => {
   it('should have valid ClickHouse configuration when CLICKHOUSE_HOST is set', () => {
     if (!process.env.CLICKHOUSE_HOST) {
-      console.log('ℹ️  CLICKHOUSE_HOST not set - integration tests will be skipped')
+      console.log(
+        'ℹ️  CLICKHOUSE_HOST not set - integration tests will be skipped'
+      )
       return
     }
 
     const configs = getClickHouseConfigs()
     expect(configs.length).toBeGreaterThan(0)
-    
+
     configs.forEach((config, index) => {
       expect(config.host).toBeDefined()
       expect(config.user).toBeDefined()
@@ -156,13 +162,13 @@ describe('Integration Test Configuration', () => {
         'Integration tests are automatically skipped in CI environments',
         'Tests are skipped when ClickHouse is not available locally',
         'Use Docker for consistent local testing environment',
-      ]
+      ],
     }
 
     expect(guidance).toBeDefined()
     console.log('\n📚 Integration Test Guidance:')
-    guidance.steps.forEach(step => console.log(`   ${step}`))
+    guidance.steps.forEach((step) => console.log(`   ${step}`))
     console.log('\n📝 Notes:')
-    guidance.notes.forEach(note => console.log(`   • ${note}`))
+    guidance.notes.forEach((note) => console.log(`   • ${note}`))
   })
 })

@@ -1,11 +1,14 @@
 import { cn } from '@/lib/utils'
 
 interface BadgeFormatProps {
-  value: any
+  value: React.ReactNode
   className?: string
 }
 
-export function BadgeFormat({ value, className }: BadgeFormatProps) {
+export function BadgeFormat({
+  value,
+  className,
+}: BadgeFormatProps): React.ReactNode {
   return (
     <span
       className={cn(

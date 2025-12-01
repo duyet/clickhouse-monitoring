@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import type { ClickHouseConfig } from '@/lib/clickhouse'
+import { setSecureCookie } from '@/lib/cookie-utils'
 import { cn, getHost, removeHostPrefix } from '@/lib/utils'
 
 type UptimePromise = Promise<{
@@ -52,13 +53,18 @@ export function ClickHouseHostSelector({
       <Select
         defaultValue={current.id.toString()}
         onValueChange={(val) => {
-          if (typeof window !== 'undefined') {
-            document.cookie = `hostId=${val}; path=/`
+          // Validate that val is a valid number before setting cookie
+          const hostId = parseInt(val, 10)
+          if (!isNaN(hostId) && hostId >= 0) {
+            setSecureCookie('hostId', hostId, { path: '/' })
+            router.push(`/${hostId}/${pathnameWithoutPrefix}`)
           }
-          router.push(`/${val}/${pathnameWithoutPrefix}`)
         }}
       >
-        <SelectTrigger className="w-auto border-0 p-1 shadow-none focus:ring-0" data-testid="host-selector">
+        <SelectTrigger
+          className="w-auto border-0 p-1 shadow-none focus:ring-0"
+          data-testid="host-selector"
+        >
           <SelectValue
             placeholder={current.customName || getHost(current.host)}
             className="mr-2 w-fit truncate"
@@ -66,7 +72,11 @@ export function ClickHouseHostSelector({
         </SelectTrigger>
         <SelectContent data-testid="host-options">
           {configs.map((config, id) => (
-            <SelectItem key={config.host + id} value={id.toString()} data-testid={`host-option-${id}`}>
+            <SelectItem
+              key={config.host + id}
+              value={id.toString()}
+              data-testid={`host-option-${id}`}
+            >
               <div className="flex items-center gap-2">
                 <span>{config.customName || getHost(config.host)}</span>
                 <Suspense
@@ -88,7 +98,7 @@ export function ClickHouseHostSelector({
 export function HostStatus({ promise }: { promise: UptimePromise }) {
   const res = use(promise)
 
-  const isOnline = res !== null
+  const isOnline = res != null
   if (isOnline) {
     return (
       <StatusIndicator

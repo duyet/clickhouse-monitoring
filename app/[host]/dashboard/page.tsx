@@ -17,9 +17,6 @@ export default async function Page({
 
   const { dashboards, settings } = await getCustomDashboards()
 
-  console.log('Dashboard settings', settings)
-  console.log('Dashboard data', dashboards)
-
   const params: Record<string, string> = JSON.parse(
     settings?.find((s) => s.key === 'params')?.value || '{}'
   )
@@ -32,7 +29,12 @@ export default async function Page({
       </div>
       <div className="grid grid-cols-2 gap-4">
         {dashboards?.map((dashboard, i) => (
-          <RenderChart key={'dashboard' + i} {...dashboard} params={params} hostId={hostId} />
+          <RenderChart
+            key={'dashboard' + i}
+            {...dashboard}
+            params={params}
+            hostId={hostId}
+          />
         ))}
       </div>
     </div>

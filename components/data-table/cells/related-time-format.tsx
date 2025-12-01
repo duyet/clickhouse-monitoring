@@ -13,7 +13,7 @@ export function RelatedTimeFormat({ value }: RelatedTimeFormatProps) {
     let parsed = dayjs.tz(value as string, CLICKHOUSE_TZ)
     fromNow = parsed.fromNow()
   } catch (e) {
-    console.error('Error parsing time:', e)
+    // Failed to parse time with timezone, fallback to default parsing
     fromNow = dayjs(value as string).fromNow()
   }
 

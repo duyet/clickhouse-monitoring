@@ -126,7 +126,6 @@ export const getColumnDefs = <
 
     // Add the sorting function if specified
     const sortingFnName = config.sortingFns?.[name]
-    debug(`${name} => sortingFnName: ${sortingFnName}`)
     if (sortingFnName) {
       // Check if it's one of our custom sorting functions
       if (sortingFnName in customSortingFns) {

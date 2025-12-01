@@ -49,7 +49,9 @@ export default async function Page({ params }: PageProps) {
       queryConfig={queryConfig}
       data={data}
       context={{ cluster }}
-      topRightToolbarExtras={<TopRightToolbarExtras host={host} cluster={cluster} />}
+      topRightToolbarExtras={
+        <TopRightToolbarExtras host={host} cluster={cluster} />
+      }
     />
   )
 }

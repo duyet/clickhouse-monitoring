@@ -60,9 +60,8 @@ export function ErrorAlert({
   const environment = getEnvironment()
 
   // Extract just the first line for compact mode
-  const compactMessage = compact && typeof message === 'string'
-    ? message.split('\n')[0]
-    : message
+  const compactMessage =
+    compact && typeof message === 'string' ? message.split('\n')[0] : message
 
   useEffect(() => {
     if (!reset) return
@@ -165,12 +164,19 @@ export function ErrorAlert({
   )
 
   return (
-    <div className={`${className} ${getVariantStyles()} rounded-lg border ${compact ? 'p-2' : 'p-4'}`} data-testid="error-message">
+    <div
+      className={`${className} ${getVariantStyles()} rounded-lg border ${compact ? 'p-2' : 'p-4'}`}
+      data-testid="error-message"
+    >
       <div className="flex items-start gap-3">
         {!compact && getErrorIcon()}
         <div className="flex-1 space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <div className={`text-foreground ${compact ? 'text-sm' : 'font-medium'}`}>{title}</div>
+            <div
+              className={`text-foreground ${compact ? 'text-sm' : 'font-medium'}`}
+            >
+              {title}
+            </div>
             {!compact && showDetails && (
               <Badge variant="outline" className="text-xs">
                 {environment}
@@ -181,13 +187,17 @@ export function ErrorAlert({
           {message && compact && (
             <div className="text-muted-foreground text-xs">
               {typeof compactMessage === 'string'
-                ? compactMessage.substring(0, 50) + (compactMessage.length > 50 ? '...' : '')
+                ? compactMessage.substring(0, 50) +
+                  (compactMessage.length > 50 ? '...' : '')
                 : compactMessage}
             </div>
           )}
 
           {/* Development: Show stack trace */}
-          {!compact && showDetails && stack && renderAccordion('Stack Trace', stack)}
+          {!compact &&
+            showDetails &&
+            stack &&
+            renderAccordion('Stack Trace', stack)}
 
           {/* Always show query if available */}
           {Boolean(query) && renderAccordion('View Query Details', query)}

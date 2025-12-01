@@ -86,7 +86,7 @@ export const formatCell = <
       return (
         <CodeToggleFormat
           row={row}
-          value={value}
+          value={value as string}
           options={columnFormatOptions as CodeToggleOptions}
         />
       )
@@ -94,7 +94,7 @@ export const formatCell = <
     case ColumnFormat.CodeDialog:
       return (
         <CodeDialogFormat
-          value={value}
+          value={value as string}
           options={columnFormatOptions as CodeDialogOptions}
         />
       )
@@ -103,10 +103,10 @@ export const formatCell = <
       return <RelatedTimeFormat value={value} />
 
     case ColumnFormat.Duration:
-      return <DurationFormat value={value} />
+      return <DurationFormat value={value as string | number} />
 
     case ColumnFormat.Boolean:
-      return <BooleanFormat value={value} />
+      return <BooleanFormat value={value as string | number | boolean} />
 
     case ColumnFormat.Action:
       return (

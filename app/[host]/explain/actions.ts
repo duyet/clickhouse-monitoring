@@ -68,8 +68,6 @@ export async function explainAction(
       return { explain: error.message, sql }
     }
 
-    console.log(data)
-
     if (!data || data.length === 0) {
       return { explain: 'Ok.', sql }
     }
