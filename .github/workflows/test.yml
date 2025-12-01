@@ -59,7 +59,7 @@ jobs:
           --env CLICKHOUSE_SKIP_USER_SETUP=1
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
 
@@ -116,7 +116,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
 
@@ -168,7 +168,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
 
@@ -262,7 +262,7 @@ jobs:
           echo Testing queries configured from /app/[host]/[query]/**.ts on ClickHouse ${{ matrix.clickhouse }}
 
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
 
