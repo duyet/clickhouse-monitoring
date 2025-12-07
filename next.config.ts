@@ -4,13 +4,12 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   output: 'standalone',
 
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
-  },
+  // Enable Turbopack (default in Next.js 16)
+  turbopack: {},
 
-  experimental: {},
+  experimental: {
+    turbopackUseSystemTlsCerts: true,
+  },
 
   // Automatically bundle external packages in the Pages Router:
   bundlePagesRouterDependencies: true,
@@ -44,7 +43,11 @@ const nextConfig: NextConfig = {
 
 export default nextConfig
 
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
-initOpenNextCloudflareForDev({
-  experimental: { remoteBindings: true },
-})
+// Only initialize Cloudflare for dev when ENABLE_CLOUDFLARE is set
+if (process.env.ENABLE_CLOUDFLARE === 'true') {
+  import('@opennextjs/cloudflare').then(({ initOpenNextCloudflareForDev }) => {
+    initOpenNextCloudflareForDev({
+      experimental: { remoteBindings: true },
+    })
+  })
+}

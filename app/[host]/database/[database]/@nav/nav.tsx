@@ -16,7 +16,7 @@ import { listDatabases } from '../../queries'
 import { DatabaseBreadcrumb } from './breadcrumb'
 
 interface Props {
-  host: number
+  host: string
   database: string
   collapsible?: boolean
   isCollapsed?: boolean
@@ -27,7 +27,7 @@ interface DatabaseCount {
   count: number
 }
 
-export const getListDatabaseCached = cache(async (hostId: number) => {
+export const getListDatabaseCached = cache(async (hostId: string | number) => {
   return fetchData({
     query: listDatabases,
     hostId,
@@ -39,7 +39,7 @@ export const getListDatabaseCached = cache(async (hostId: number) => {
   })
 })
 
-export const preload = async (host: number) => {
+export const preload = async (host: string | number) => {
   void (await getListDatabaseCached(host))
 }
 
@@ -103,7 +103,7 @@ function Sidebar({
   databases,
 }: {
   current: string
-  host: number
+  host: string
   databases: DatabaseCount[]
   isCollapsed?: boolean
 }) {

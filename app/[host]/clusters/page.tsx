@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 export default async function ClustersPage({
   params,
 }: {
-  params: Promise<{ host: number }>
+  params: Promise<{ host: string }>
 }) {
   const { host } = await params
   const { data, error } = await fetchData<Row[]>({

@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
-export function PageView({ hostId }: { hostId: number }) {
+export function PageView({ hostId }: { hostId: string | number }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 

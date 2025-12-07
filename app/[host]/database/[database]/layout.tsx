@@ -4,21 +4,18 @@ import {
   ResizablePanelGroup,
 } from '@/components/resizable'
 
-type Params = Promise<{
-  host: number
-  database: string
-  table: string
-}>
-
-interface TableListProps {
-  params: Params
+interface LayoutProps {
+  params: Promise<{
+    host: string
+    database: string
+  }>
   nav: React.ReactNode
   children: React.ReactNode
 }
 
 export const revalidate = 600
 
-export default async function TableListPage({ nav, children }: TableListProps) {
+export default async function DatabaseLayout({ nav, children }: LayoutProps) {
   return (
     <ResizablePanelGroup
       direction="horizontal"

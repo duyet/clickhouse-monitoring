@@ -2,12 +2,9 @@
 
 import '@/app/globals.css'
 import { BugIcon, RefreshCwIcon } from 'lucide-react'
-import { Inter } from 'next/font/google'
 import { useEffect } from 'react'
 
 import { ErrorLogger, formatErrorForDisplay } from '@/lib/error-logger'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export default function GlobalError({
   error,
@@ -47,7 +44,7 @@ export default function GlobalError({
 
   return (
     <html>
-      <body className={inter.className}>
+      <body className="font-sans">
         <div className="bg-background flex min-h-dvh flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <div className="text-primary mx-auto h-12 w-12" />

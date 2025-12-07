@@ -16,7 +16,7 @@ import { Toolbar } from './toolbar'
 
 interface TableListProps {
   params: Promise<{
-    host: number
+    host: string
     database: string
   }>
 }

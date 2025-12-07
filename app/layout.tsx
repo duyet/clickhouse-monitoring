@@ -1,6 +1,5 @@
 import { Analytics } from '@vercel/analytics/react'
 import { type Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import Script from 'next/script'
 
 import '@/app/globals.css'
@@ -8,8 +7,6 @@ import '@/app/globals.css'
 import { AppProvider } from '@/app/context'
 import { Header } from '@/components/header'
 import { Toaster } from '@/components/ui/sonner'
-
-const inter = Inter({ subsets: ['latin'] })
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
@@ -28,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="font-sans">
         <AppProvider reloadIntervalSecond={120}>
           <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
             <Header />

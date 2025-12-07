@@ -6,7 +6,7 @@ export const revalidate = 30
 export default async function TablePage({
   params,
 }: {
-  params: Promise<{ host: number }>
+  params: Promise<{ host: string }>
 }) {
   const { host } = await params
 

@@ -11,7 +11,7 @@ export default async function Layout({
   params,
 }: {
   children: React.ReactNode
-  params: Promise<{ host: number }>
+  params: Promise<{ host: string }>
 }) {
   const { host } = await params
   const hostNumber = Number(host)
