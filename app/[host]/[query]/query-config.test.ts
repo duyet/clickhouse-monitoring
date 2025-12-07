@@ -6,7 +6,7 @@ jest.mock('@/lib/clickhouse', () => ({
 }))
 
 import { fetchData } from '@/lib/clickhouse'
-import { QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 import { queries } from './clickhouse-queries'
 
 describe('query config', () => {

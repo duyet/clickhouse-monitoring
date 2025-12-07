@@ -45,7 +45,7 @@ export async function DatabaseBreadcrumb({
   current: string
   databases: DatabaseCount[]
 }) {
-  let currentCount = databases.find((db) => db.name === current)?.count
+  const currentCount = databases.find((db) => db.name === current)?.count
 
   return (
     <Breadcrumb>
@@ -70,7 +70,7 @@ export async function DatabaseBreadcrumb({
               <DropdownMenuItem key={name}>
                 <Link
                   href={await getScopedLink(`/database/${name}`)}
-                  className={name == current ? 'font-bold' : ''}
+                  className={name === current ? 'font-bold' : ''}
                 >
                   {name}
                 </Link>
@@ -87,9 +87,9 @@ export async function DatabaseBreadcrumb({
 }
 
 const Count = React.memo(({ count }: { count?: number }) => {
-  if (count == undefined || count == -1) return 'loading ...'
-  if (count == 0) return '0 table'
-  if (count == 1) return '1 table'
+  if (count === undefined || count === -1) return 'loading ...'
+  if (count === 0) return '0 table'
+  if (count === 1) return '1 table'
   return `${count} tables`
 })
 Count.displayName = 'Count'

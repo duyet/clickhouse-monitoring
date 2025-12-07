@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic'
-import React from 'react'
+import type React from 'react'
 
 import { LoadingIcon } from '@/components/loading-icon'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
@@ -14,7 +14,7 @@ import {
 import { cn } from '@/lib/utils'
 import { menuItemsConfig } from '@/menu'
 import { HostPrefixedLink } from './link-with-context'
-import { type MenuItem } from './types'
+import type { MenuItem } from './types'
 
 const CountBadge = dynamic(() =>
   import('@/components/menu/count-badge').then((mod) => mod.CountBadge)

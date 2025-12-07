@@ -13,7 +13,7 @@ export const maxDuration = 30
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const hostId = searchParams.get('hostId')
-    ? parseInt(searchParams.get('hostId')!)
+    ? parseInt(searchParams.get('hostId')!, 10)
     : await getHostIdCookie()
 
   try {

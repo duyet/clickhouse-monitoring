@@ -1,6 +1,6 @@
 import { CodeIcon } from '@radix-ui/react-icons'
 
-import { DialogContent, DialogContentProps } from '@/components/dialog-content'
+import { DialogContent, type DialogContentProps } from '@/components/dialog-content'
 import { Button } from '@/components/ui/button'
 import { dedent } from '@/lib/utils'
 

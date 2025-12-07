@@ -16,7 +16,7 @@ export function PageView({ hostId }: { hostId: string | number }) {
 
   useEffect(() => {
     async function pageViewTrack() {
-      const url = `${pathname}${searchParams ? '?' + searchParams.toString() : ''}`
+      const url = `${pathname}${searchParams ? `?${searchParams.toString()}` : ''}`
       await fetch(
         '/api/pageview?' +
           new URLSearchParams({ url, hostId: hostId.toString() }).toString()

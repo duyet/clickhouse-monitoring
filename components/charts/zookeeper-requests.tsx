@@ -2,7 +2,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
-import { type ChartProps } from './chart-props'
+import type { ChartProps } from './chart-props'
 
 export async function ChartZookeeperRequests({
   title = 'ZooKeeper Requests Over Time',

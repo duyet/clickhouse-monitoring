@@ -92,7 +92,7 @@ export async function Table({
       queryConfig={queryConfig}
       queryParams={queryParams}
       data={data}
-      context={{ ...queryParams, hostId: '' + hostId }}
+      context={{ ...queryParams, hostId: `${hostId}` }}
       footnote={footerText}
       className={className}
     />

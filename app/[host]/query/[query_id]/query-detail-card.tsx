@@ -24,10 +24,10 @@ import {
 import { formatQuery } from '@/lib/format-readable'
 import { getScopedLink } from '@/lib/scoped-link'
 import { dedent } from '@/lib/utils'
-import { QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 
-import { type RowData } from './config'
-import { PageProps } from './types'
+import type { RowData } from './config'
+import type { PageProps } from './types'
 
 export async function QueryDetailCard({
   queryConfig,
@@ -111,7 +111,7 @@ export async function QueryDetailCard({
     used_row_policies,
     used_privileges,
     missing_privileges,
-  } = data.find((row) => row.type == 'QueryFinish') || data[0]
+  } = data.find((row) => row.type === 'QueryFinish') || data[0]
 
   return (
     <div>
@@ -380,7 +380,7 @@ function bindingReference(value: Array<string>): React.ReactNode[] | null {
     const searchParams = new URLSearchParams({
       q: `repo:ClickHouse/ClickHouse path:docs/en/sql-reference path:*.md "# ${item}"`,
     })
-    let url = new URL(`https://github.com/search`)
+    const url = new URL(`https://github.com/search`)
     url.search = searchParams.toString()
 
     return url.toString()

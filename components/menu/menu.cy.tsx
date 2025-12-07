@@ -1,5 +1,5 @@
 import { Menu } from './menu'
-import { type MenuItem } from './types'
+import type { MenuItem } from './types'
 
 const items: MenuItem[] = [
   {

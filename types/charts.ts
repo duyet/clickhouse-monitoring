@@ -1,4 +1,5 @@
-import React, { ReactNode } from 'react'
+import type React from 'react'
+import type { ReactNode } from 'react'
 import type { LabelPosition } from 'recharts/types/component/Label'
 
 import type { ChartConfig } from '@/components/ui/chart'
@@ -8,17 +9,11 @@ interface BaseAnimationTimingProps {
   showAnimation?: boolean
 }
 
-type ValueFormatter = {
-  (value: number): string
-}
+type ValueFormatter = (value: number) => string
 
-type TickFormatter = {
-  (value: string): string
-}
+type TickFormatter = (value: string) => string
 
-type LabelFormatter = {
-  (value: string): string
-}
+type LabelFormatter = (value: string) => string
 
 type FixedProps = {
   eventType: 'dot' | 'category' | 'bar' | 'slice' | 'bubble'

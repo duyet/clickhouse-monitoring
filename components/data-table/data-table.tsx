@@ -1,14 +1,14 @@
 'use client'
 
 import {
-  ColumnDef,
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
+  type SortingState,
   useReactTable,
-  VisibilityState,
+  type VisibilityState,
   type RowData,
 } from '@tanstack/react-table'
 import { useMemo, useState } from 'react'
@@ -27,7 +27,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { uniq } from '@/lib/utils'
-import { type QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 
 import { withQueryParams } from '@/lib/clickhouse-query'
 import { ColumnVisibilityButton } from './buttons/column-visibility'
@@ -73,8 +73,7 @@ export function DataTable<
     () =>
       uniq(
         (data.filter((row) => typeof row === 'object') as object[])
-          .map((row) => Object.keys(row))
-          .flat()
+          .flatMap((row) => Object.keys(row))
           .map(normalizeColumnName)
       ),
     [data]

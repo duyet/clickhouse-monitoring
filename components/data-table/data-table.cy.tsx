@@ -1,4 +1,4 @@
-import { type QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 
 import { DataTable } from './data-table'
 
@@ -38,7 +38,7 @@ describe('<DataTable />', () => {
   })
 
   it('render paging', () => {
-    let data = []
+    const data = []
 
     for (let i = 0; i < 100; i++) {
       data.push({ col1: `val${i}`, col2: `val${i}` })
@@ -76,7 +76,7 @@ describe('<DataTable />', () => {
   })
 
   it('render paging, click on next page', () => {
-    let data = []
+    const data = []
 
     for (let i = 0; i < 10; i++) {
       data.push({ col1: `val${i}`, col2: `val${i}` })

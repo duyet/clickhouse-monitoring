@@ -30,7 +30,7 @@ export async function TableSelector({ database, table }: TableSelectorProps) {
     })
 
     anotherTables = res.data || []
-  } catch (error) {
+  } catch (_error) {
     // Error logging - will be removed in a later fix
     return null
   }

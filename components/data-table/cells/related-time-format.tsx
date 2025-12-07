@@ -10,9 +10,9 @@ const CLICKHOUSE_TZ: string =
 export function RelatedTimeFormat({ value }: RelatedTimeFormatProps) {
   let fromNow
   try {
-    let parsed = dayjs.tz(value as string, CLICKHOUSE_TZ)
+    const parsed = dayjs.tz(value as string, CLICKHOUSE_TZ)
     fromNow = parsed.fromNow()
-  } catch (e) {
+  } catch (_e) {
     // Failed to parse time with timezone, fallback to default parsing
     fromNow = dayjs(value as string).fromNow()
   }

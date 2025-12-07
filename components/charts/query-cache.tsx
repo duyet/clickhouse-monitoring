@@ -1,4 +1,4 @@
-import { type ChartProps } from '@/components/charts/chart-props'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { CardMetric } from '@/components/generic-charts/card-metric'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
@@ -39,7 +39,7 @@ export async function ChartQueryCache({
         current={first.total_result_size}
         currentReadable={`${first.readable_total_result_size} cached`}
         target={first.total_staled_result_size}
-        targetReadable={first.readable_total_staled_result_size + ' staled'}
+        targetReadable={`${first.readable_total_staled_result_size} staled`}
         className="p-2"
       />
     </ChartCard>

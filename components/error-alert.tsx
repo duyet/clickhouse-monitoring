@@ -11,7 +11,8 @@ import {
   ShieldXIcon,
   XCircleIcon,
 } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import type React from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   Accordion,
@@ -127,7 +128,6 @@ export function ErrorAlert({
         <AccordionItem className="border-0" value="item-1">
           <AccordionTrigger
             className="px-0 py-2 text-sm hover:no-underline"
-            role="open-query"
           >
             <div className="flex items-center gap-2">
               <DatabaseIcon className="h-4 w-4" />

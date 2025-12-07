@@ -1,10 +1,10 @@
-import { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
-import { type ChartProps } from '@/components/charts/chart-props'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
 import { ChartSkeleton } from '@/components/skeleton'
 import { cn } from '@/lib/utils'
-import { type QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 
 interface RelatedChartsProps {
   relatedCharts: QueryConfig['relatedCharts']

@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
-import { Row, RowData } from '@tanstack/react-table'
-import Link, { LinkProps } from 'next/link'
+import type { Row, RowData } from '@tanstack/react-table'
+import Link, { type LinkProps } from 'next/link'
 
 export interface LinkFormatOptions extends LinkProps {
   className?: string

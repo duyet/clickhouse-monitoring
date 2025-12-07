@@ -1,5 +1,5 @@
 import { Analytics } from '@vercel/analytics/react'
-import { type Metadata } from 'next'
+import type { Metadata } from 'next'
 import Script from 'next/script'
 
 import '@/app/globals.css'

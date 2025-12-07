@@ -21,7 +21,7 @@ export function TruncatedParagraph({
   useEffect(() => {
     // Function that should be called on window resize
     function handleResize() {
-      if (contentRef && contentRef.current) {
+      if (contentRef?.current) {
         setClamped(
           contentRef.current.scrollHeight > contentRef.current.clientHeight
         )

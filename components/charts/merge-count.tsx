@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
-import { type ChartProps } from '@/components/charts/chart-props'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'

@@ -49,7 +49,7 @@ export default async function ClustersPage({
     <DataTable
       queryConfig={queryConfig}
       data={data}
-      context={{ hostId: '' + host }}
+      context={{ hostId: `${host}` }}
     />
   )
 }

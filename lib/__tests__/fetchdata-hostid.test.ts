@@ -5,8 +5,8 @@
  */
 
 import { describe, expect, it } from '@jest/globals'
-import fs, { readdirSync } from 'fs'
-import path from 'path'
+import fs, { readdirSync } from 'node:fs'
+import path from 'node:path'
 
 describe('fetchData hostId parameter validation', () => {
   jest.setTimeout(10000) // 10 second timeout for these tests
@@ -50,7 +50,7 @@ describe('fetchData hostId parameter validation', () => {
             }
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // Directory doesn't exist or permission denied
       }
     }
@@ -105,7 +105,7 @@ describe('fetchData hostId parameter validation', () => {
 
           // Look for fetchData calls (not fetchDataWithHost)
           const fetchDataMatch = trimmed.match(
-            /(?<!With)fetchData[<\w\[\]>]*\s*\(\s*{/
+            /(?<!With)fetchData[<\w[\]>]*\s*\(\s*{/
           )
           if (fetchDataMatch) {
             // Check if this is a multiline call - look ahead for the closing brace
@@ -116,7 +116,7 @@ describe('fetchData hostId parameter validation', () => {
 
             while (braceCount > 0 && lineIndex < lines.length - 1) {
               lineIndex++
-              fullCall += '\n' + lines[lineIndex]
+              fullCall += `\n${lines[lineIndex]}`
               braceCount +=
                 (lines[lineIndex].match(/{/g) || []).length -
                 (lines[lineIndex].match(/}/g) || []).length
@@ -323,8 +323,7 @@ describe('ESLint rule suggestion', () => {
           },
           schema: [],
         },
-        create: function (context: any) {
-          return {
+        create: (context: any) => ({
             CallExpression(node: any) {
               if (node.callee.name === 'fetchData') {
                 const args = node.arguments
@@ -346,8 +345,7 @@ describe('ESLint rule suggestion', () => {
                 }
               }
             },
-          }
-        },
+          }),
       },
     }
 

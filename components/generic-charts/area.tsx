@@ -1,7 +1,7 @@
 'use client'
 
 import {
-  ChartConfig,
+  type ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
@@ -9,7 +9,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import { cn } from '@/lib/utils'
-import { type AreaChartProps } from '@/types/charts'
+import type { AreaChartProps } from '@/types/charts'
 import {
   Area,
   CartesianGrid,
@@ -17,7 +17,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import {
+import type {
   NameType,
   Payload,
   ValueType,
@@ -126,7 +126,7 @@ export function AreaChart({
 
         {categories.map((category) => (
           <Area
-            key={'' + category}
+            key={`${category}`}
             dataKey={category}
             fill={`var(--color-${category})`}
             stroke={`var(--color-${category})`}
@@ -143,7 +143,7 @@ export function AreaChart({
   )
 }
 
-function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
+function renderChartTooltip<_TValue extends ValueType, _TName extends NameType>({
   breakdown,
   breakdownLabel,
   breakdownValue,
@@ -174,11 +174,11 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
               name,
               item,
               index,
-              payload: Array<Payload<ValueType, NameType>>
+              _payload: Array<Payload<ValueType, NameType>>
             ) => {
               return (
                 <div
-                  key={'' + name + index}
+                  key={`${name}${index}`}
                   className="flex flex-row items-baseline justify-between gap-3"
                 >
                   <div className="flex flex-row items-baseline gap-1">
@@ -195,7 +195,7 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
                   </div>
 
                   <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                    {item['payload'][`readable_${name}` as keyof typeof item] ||
+                    {item.payload[`readable_${name}` as keyof typeof item] ||
                       value.toLocaleString()}
                     <span className="text-muted-foreground font-normal"></span>
                   </div>
@@ -219,7 +219,7 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
         <ChartTooltipContent
           hideLabel
           className="w-fit"
-          formatter={(value, name, item, index, payload: any) => {
+          formatter={(value, name, item, _index, payload: any) => {
             const breakdownData = payload[
               breakdown as keyof typeof payload
             ] as Array<any>
@@ -264,10 +264,8 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
                 </div>
 
                 {breakdownData.length > 0 && (
-                  <>
-                    <div
+                  <div
                       className="text-foreground mt-1 flex basis-full flex-col border-t text-xs font-medium"
-                      role="breakdown"
                     >
                       <div className="mt-1.5">
                         {breakdownHeading || 'Breakdown'}
@@ -296,7 +294,6 @@ function renderChartTooltip<TValue extends ValueType, TName extends NameType>({
                         </div>
                       ))}
                     </div>
-                  </>
                 )}
               </>
             )

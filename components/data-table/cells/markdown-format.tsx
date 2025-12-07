@@ -16,7 +16,7 @@ export function MarkdownFormat({
 }: MarkdownFormatProps): React.ReactNode {
   return (
     <span className={cn('truncate text-wrap', options?.className)}>
-      <Markdown>{`${!!value ? value : ''}`}</Markdown>
+      <Markdown>{`${value ? value : ''}`}</Markdown>
     </span>
   )
 }

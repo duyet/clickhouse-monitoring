@@ -1,4 +1,4 @@
-import { type ChartProps } from '@/components/charts/chart-props'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { DonutChart } from '@/components/tremor/donut'
 import { fetchData } from '@/lib/clickhouse'
 

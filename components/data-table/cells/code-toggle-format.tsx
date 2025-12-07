@@ -5,7 +5,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { formatQuery } from '@/lib/format-readable'
-import { type Row } from '@tanstack/react-table'
+import type { Row } from '@tanstack/react-table'
 
 export interface CodeToggleOptions {
   max_truncate?: number
@@ -31,7 +31,7 @@ export function CodeToggleFormat({
     return <code>{value}</code>
   }
 
-  let code = formatQuery({
+  const code = formatQuery({
     query: value,
     comment_remove: options?.hide_query_comment,
     truncate: truncate_length,

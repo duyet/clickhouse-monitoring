@@ -21,7 +21,7 @@
  */
 
 import { tableExistenceCache } from '@/lib/table-existence-cache'
-import { type QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 
 export type TableValidationResult = {
   shouldProceed: boolean

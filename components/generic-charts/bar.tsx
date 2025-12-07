@@ -9,15 +9,15 @@ import {
   YAxis,
   type LabelListProps,
 } from 'recharts'
-import {
+import type {
   NameType,
   Payload,
   ValueType,
 } from 'recharts/types/component/DefaultTooltipContent'
-import { type ViewBox } from 'recharts/types/util/types'
+import type { ViewBox } from 'recharts/types/util/types'
 
 import {
-  ChartConfig,
+  type ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
@@ -25,7 +25,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import { binding, cn } from '@/lib/utils'
-import { type BarChartProps } from '@/types/charts'
+import type { BarChartProps } from '@/types/charts'
 
 export function BarChart({
   data,
@@ -270,7 +270,7 @@ function renderChartLabel<T extends Data>({
       return value
     }
 
-    for (let category of categories) {
+    for (const category of categories) {
       const formated = data.find((row) => row[category] === value)?.[
         readableColumn
       ]
@@ -327,11 +327,11 @@ function renderChartTooltip({
             className="w-fit"
             labelFormatter={
               xAxisDataKey
-                ? (label, payload) => {
+                ? (_label, payload) => {
                     return (
                       <div>
                         {
-                          payload[0]['payload'][
+                          payload[0].payload[
                             xAxisDataKey as keyof typeof payload
                           ]
                         }
@@ -344,8 +344,8 @@ function renderChartTooltip({
               value,
               name,
               item,
-              index,
-              payload: Array<Payload<ValueType, NameType>>
+              _index,
+              _payload: Array<Payload<ValueType, NameType>>
             ) => {
               return (
                 <>
@@ -361,7 +361,7 @@ function renderChartTooltip({
                   {chartConfig[name as keyof typeof chartConfig]?.label || name}
 
                   <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                    {item['payload'][`readable_${name}` as keyof typeof item] ||
+                    {item.payload[`readable_${name}` as keyof typeof item] ||
                       value.toLocaleString()}
                     <span className="text-muted-foreground font-normal"></span>
                   </div>
@@ -394,7 +394,7 @@ function renderChartTooltip({
               {chartConfig[name as keyof typeof chartConfig]?.label || name}
 
               <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                {item['payload'][`readable_${name}` as keyof typeof item] ||
+                {item.payload[`readable_${name}` as keyof typeof item] ||
                   value.toLocaleString()}
                 <span className="text-muted-foreground font-normal"></span>
               </div>
@@ -404,7 +404,7 @@ function renderChartTooltip({
                   Total
                   <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                     {categories
-                      .map((cat) => parseInt(item.payload[cat]) || 0)
+                      .map((cat) => parseInt(item.payload[cat], 10) || 0)
                       .reduce((a, b) => a + b, 0)}
                     <span className="text-muted-foreground font-normal"></span>
                   </div>

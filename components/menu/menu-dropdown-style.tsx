@@ -14,7 +14,7 @@ import {
 import { menuItemsConfig } from '@/menu'
 
 import { HostPrefixedLink } from './link-with-context'
-import { type MenuItem } from './types'
+import type { MenuItem } from './types'
 
 export interface MenuProps {
   items?: MenuItem[]

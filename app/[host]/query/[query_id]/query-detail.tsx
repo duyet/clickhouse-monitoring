@@ -1,10 +1,10 @@
 import { MultiLineSkeleton, SingleLineSkeleton } from '@/components/skeleton'
-import { QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 import { Suspense } from 'react'
 import { DropdownCluster } from './dropdown-cluster'
 import { QueryDetailBadge } from './query-detail-badge'
 import { QueryDetailCard } from './query-detail-card'
-import { PageProps } from './types'
+import type { PageProps } from './types'
 
 export async function QueryDetail({
   queryConfig,

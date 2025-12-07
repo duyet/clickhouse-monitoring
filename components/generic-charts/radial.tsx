@@ -1,7 +1,7 @@
 'use client'
 
 import {
-  ChartConfig,
+  type ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
@@ -9,7 +9,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import { cn } from '@/lib/utils'
-import { type RadialChartProps } from '@/types/charts'
+import type { RadialChartProps } from '@/types/charts'
 import { LabelList, RadialBar, RadialBarChart } from 'recharts'
 
 export function RadialChart({

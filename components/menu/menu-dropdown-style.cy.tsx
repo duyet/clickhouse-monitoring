@@ -1,5 +1,5 @@
 import { MenuDropdownStyle } from './menu-dropdown-style'
-import { type MenuItem } from './types'
+import type { MenuItem } from './types'
 
 const items: MenuItem[] = [
   {

@@ -104,7 +104,7 @@ function Internal({ cluster, clusters }: Props & { clusters: Row[] }) {
               <DropdownMenuItem key={name}>
                 <Link
                   href={use(getScopedLink(`/clusters/${name}/replicas-status`))}
-                  className={name == cluster ? 'font-bold' : ''}
+                  className={name === cluster ? 'font-bold' : ''}
                 >
                   {name} ({replica_count}{' '}
                   {replica_count > 1 ? 'replicas' : 'replica'})

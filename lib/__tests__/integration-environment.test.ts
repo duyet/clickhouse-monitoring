@@ -37,7 +37,7 @@ async function isClickHouseAvailable(): Promise<boolean> {
     const result = await Promise.race([fetchPromise, timeoutPromise])
 
     return result && !result.error
-  } catch (error) {
+  } catch (_error) {
     return false
   }
 }
@@ -47,11 +47,11 @@ describe('ClickHouse Integration Tests (Optional)', () => {
 
   beforeAll(async () => {
     // Reduce timeout to prevent hanging in CI
-    const timeout = process.env.CI === 'true' ? 2000 : 10000
+    const _timeout = process.env.CI === 'true' ? 2000 : 10000
 
     try {
       clickHouseAvailable = await isClickHouseAvailable()
-    } catch (error) {
+    } catch (_error) {
       clickHouseAvailable = false
     }
 

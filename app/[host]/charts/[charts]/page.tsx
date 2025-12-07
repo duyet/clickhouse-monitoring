@@ -13,8 +13,8 @@ export const revalidate = 30
 
 export default async function Page({ params }: PageProps) {
   const { charts } = await params
-  let chartComponents = []
-  let props = {}
+  const chartComponents = []
+  const props = {}
 
   for (const chart of decodeURIComponent(charts).split(',')) {
     try {

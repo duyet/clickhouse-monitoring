@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
-import { type ChartProps } from '@/components/charts/chart-props'
+import type { ChartProps } from '@/components/charts/chart-props'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
@@ -81,7 +81,7 @@ export async function ChartSummaryUsedByMerges({
       }[]
     >({ query: rowsReadWrittenSql, hostId })
 
-    if (!!data) {
+    if (data) {
       rowsReadWritten = data?.[0]
     }
   } catch (e) {
@@ -111,7 +111,7 @@ export async function ChartSummaryUsedByMerges({
       }[]
     >({ query: bytesReadWrittenSql, hostId })
 
-    if (!!data) {
+    if (data) {
       bytesReadWritten = data?.[0]
     }
   } catch (e) {
@@ -138,15 +138,15 @@ export async function ChartSummaryUsedByMerges({
     items.push({
       current: rowsReadWritten.rows_read,
       target: rowsReadWritten.rows_written,
-      currentReadable: rowsReadWritten.readable_rows_read + ' rows read',
-      targetReadable: rowsReadWritten.readable_rows_written + ' rows written',
+      currentReadable: `${rowsReadWritten.readable_rows_read} rows read`,
+      targetReadable: `${rowsReadWritten.readable_rows_written} rows written`,
     })
   } else {
     items.push({
       current: rowsReadWritten.rows_written,
       target: rowsReadWritten.rows_read,
-      currentReadable: rowsReadWritten.readable_rows_written + ' rows written',
-      targetReadable: rowsReadWritten.readable_rows_read + ' rows read',
+      currentReadable: `${rowsReadWritten.readable_rows_written} rows written`,
+      targetReadable: `${rowsReadWritten.readable_rows_read} rows read`,
     })
   }
 
@@ -155,26 +155,26 @@ export async function ChartSummaryUsedByMerges({
       current: bytesReadWritten.bytes_read,
       target: bytesReadWritten.bytes_written,
       currentReadable:
-        bytesReadWritten.readable_bytes_read + ' read (uncompressed)',
+        `${bytesReadWritten.readable_bytes_read} read (uncompressed)`,
       targetReadable:
-        bytesReadWritten.readable_bytes_written + ' written (uncompressed)',
+        `${bytesReadWritten.readable_bytes_written} written (uncompressed)`,
     })
   } else {
     items.push({
       current: bytesReadWritten.bytes_written,
       target: bytesReadWritten.bytes_read,
       currentReadable:
-        bytesReadWritten.readable_bytes_written + ' written (uncompressed)',
+        `${bytesReadWritten.readable_bytes_written} written (uncompressed)`,
       targetReadable:
-        bytesReadWritten.readable_bytes_read + ' read (uncompressed)',
+        `${bytesReadWritten.readable_bytes_read} read (uncompressed)`,
     })
   }
 
   items.push({
     current: used.memory_usage,
     target: totalMem.total,
-    currentReadable: used.readable_memory_usage + ' memory used',
-    targetReadable: totalMem.readable_total + ' total',
+    currentReadable: `${used.readable_memory_usage} memory used`,
+    targetReadable: `${totalMem.readable_total} total`,
   })
 
   return (

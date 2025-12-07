@@ -55,7 +55,7 @@ export function ClickHouseHostSelector({
         onValueChange={(val) => {
           // Validate that val is a valid number before setting cookie
           const hostId = parseInt(val, 10)
-          if (!isNaN(hostId) && hostId >= 0) {
+          if (!Number.isNaN(hostId) && hostId >= 0) {
             setSecureCookie('hostId', hostId, { path: '/' })
             router.push(`/${hostId}/${pathnameWithoutPrefix}`)
           }

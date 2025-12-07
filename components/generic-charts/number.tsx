@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { NumberChartProps } from '@/types/charts'
+import type { NumberChartProps } from '@/types/charts'
 
 export function NumberChart({
   data,
@@ -33,11 +33,10 @@ export function NumberChart({
         <header className="flex flex-col space-y-1.5 p-4 pb-0">
           <h3
             className="text-2xl leading-none font-semibold tracking-tight"
-            role="title"
           >
             {title}
           </h3>
-          <p className="text-muted-foreground text-sm" role="description">
+          <p className="text-muted-foreground text-sm" >
             {description}
           </p>
         </header>
