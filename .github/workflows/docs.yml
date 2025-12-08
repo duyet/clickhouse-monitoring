@@ -40,7 +40,7 @@ jobs:
 
       - if: steps.changes.outputs.docs_changes == 'true'
         name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: pnpm
