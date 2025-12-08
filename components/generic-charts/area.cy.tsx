@@ -135,7 +135,7 @@ describe('<AreaChart />', () => {
         data={data}
         categories={['A']}
         index="date"
-        tickFormatter={(value) => '--' + value.slice(0, 4)}
+        tickFormatter={(value) => `--${value.slice(0, 4)}`}
       />
     )
     cy.screenshot()

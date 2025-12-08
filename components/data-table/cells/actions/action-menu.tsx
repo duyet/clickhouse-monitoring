@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { type Action } from './types'
+import type { Action } from './types'
 
 export interface ActionMenuProps<TData extends RowData, TValue> {
   row: Row<TData>

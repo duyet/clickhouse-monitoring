@@ -9,7 +9,7 @@ import type { FetchDataError } from '@/lib/clickhouse'
  */
 export function formatErrorMessage(error: FetchDataError): string {
   switch (error.type) {
-    case 'table_not_found':
+    case 'table_not_found': {
       const docs =
         'Checkout https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-enable-system-tables'
       if (
@@ -20,6 +20,7 @@ export function formatErrorMessage(error: FetchDataError): string {
         return `Required tables not found: ${tables}. ${docs}`
       }
       return `Required tables not found. ${docs}`
+    }
 
     case 'permission_error':
       return 'Permission denied. Please check your ClickHouse user permissions.'
@@ -29,8 +30,6 @@ export function formatErrorMessage(error: FetchDataError): string {
 
     case 'validation_error':
       return `Validation error: ${error.message}`
-
-    case 'query_error':
     default:
       return error.message
   }
@@ -52,8 +51,6 @@ export function formatErrorTitle(error: FetchDataError): string {
 
     case 'validation_error':
       return 'Validation Error'
-
-    case 'query_error':
     default:
       return 'Query Error'
   }
@@ -124,7 +121,6 @@ export function getErrorVariant(
       return 'info'
     case 'validation_error':
       return 'warning'
-    case 'query_error':
     default:
       return 'destructive'
   }

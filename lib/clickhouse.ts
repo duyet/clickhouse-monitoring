@@ -29,7 +29,7 @@ type PooledClient = {
 }
 
 const clientPool = new Map<PoolKey, PooledClient>()
-const MAX_POOL_SIZE = 10
+const _MAX_POOL_SIZE = 10
 const CLIENT_TIMEOUT = 5 * 60 * 1000 // 5 minutes
 
 /**
@@ -250,7 +250,7 @@ export const getClient = async <B extends boolean>({
       clickhouse_settings: {
         max_execution_time: parseInt(
           process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
-            DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME
+            DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME, 10
         ),
         ...clickhouseSettings,
       },
@@ -317,7 +317,7 @@ export const fetchData = async <
   let currentHostId: number
   if (hostId !== undefined && hostId !== null && hostId !== '') {
     const parsed = Number(hostId)
-    if (isNaN(parsed)) {
+    if (Number.isNaN(parsed)) {
       throw new Error(`Invalid hostId: ${hostId}. Must be a valid number.`)
     }
     currentHostId = parsed
@@ -456,11 +456,11 @@ export const fetchData = async <
       rows = data.length
     } else if (
       typeof data === 'object' &&
-      data.hasOwnProperty('rows') &&
-      data.hasOwnProperty('statistics')
+      Object.hasOwn(data, 'rows') &&
+      Object.hasOwn(data, 'statistics')
     ) {
       rows = data.rows as number
-    } else if (typeof data === 'object' && data.hasOwnProperty('rows')) {
+    } else if (typeof data === 'object' && Object.hasOwn(data, 'rows')) {
       rows = data.rows as number
     }
 
@@ -507,7 +507,7 @@ export const fetchData = async <
       data: null,
       metadata: {
         queryId: '',
-        duration: (new Date().getTime() - start.getTime()) / 1000,
+        duration: (Date.now()- start.getTime()) / 1000,
         rows: 0,
         host: clientConfig.host,
       },

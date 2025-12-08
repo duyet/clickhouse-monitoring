@@ -5,7 +5,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval, fillStep } from '@/lib/clickhouse-query'
 import { ChartWarnMessage } from '../chart-warn-message'
-import { type ChartProps } from './chart-props'
+import type { ChartProps } from './chart-props'
 
 export async function ChartKeeperException({
   title = 'KEEPER_EXCEPTION last 7 days',
@@ -45,7 +45,7 @@ export async function ChartKeeperException({
       return (
         <ChartCard title={title} sql={query} className={className}>
           <ChartWarnMessage>
-            <>
+            
               system.error_log is not enabled.{' '}
               <Link
                 href="https://clickhouse.com/docs/en/operations/server-configuration-parameters/settings#error_log"
@@ -54,7 +54,7 @@ export async function ChartKeeperException({
               >
                 See more
               </Link>
-            </>
+            
           </ChartWarnMessage>
         </ChartCard>
       )

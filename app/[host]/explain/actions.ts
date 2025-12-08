@@ -1,7 +1,7 @@
 'use server'
 
 import { fetchData } from '@/lib/clickhouse'
-import { ClickHouseSettings } from '@clickhouse/client'
+import type { ClickHouseSettings } from '@clickhouse/client'
 
 export type ActionError = {
   error: string | null
@@ -37,7 +37,7 @@ export async function explainAction(
   prevState: Explains,
   formData: FormData
 ): Promise<Explains & Partial<ActionError>> {
-  let newState = { ...prevState, error: '' }
+  const newState = { ...prevState, error: '' }
 
   const inputQuery = formData.get('query') as string
   if (!inputQuery) return prevState
@@ -58,7 +58,7 @@ export async function explainAction(
 
     if (error) {
       if (
-        kind == 'QUERY TREE' &&
+        kind === 'QUERY TREE' &&
         error.message.includes('only supported with a new analyzer')
       ) {
         return explainKind(kind, query, { allow_experimental_analyzer: 1 })
@@ -74,7 +74,7 @@ export async function explainAction(
 
     let raw = ''
     for (const row of data) {
-      raw += row.explain + '\n'
+      raw += `${row.explain}\n`
     }
 
     return { explain: raw, sql }

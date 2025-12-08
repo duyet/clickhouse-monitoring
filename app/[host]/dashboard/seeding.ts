@@ -46,7 +46,7 @@ const migrateSettings = async () => {
       hostId,
     })
 
-    if (!exists || exists.length == 0) {
+    if (!exists || exists.length === 0) {
       const client = await getClient({ web: false })
       const resp = await client.insert({
         table: TABLE_SETTINGS,
@@ -109,7 +109,7 @@ const migrateDashboard = async () => {
       hostId,
     })
 
-    if (!exists || exists.length == 0) {
+    if (!exists || exists.length === 0) {
       const client = await getClient({ web: false })
       const resp = await client.insert({
         table: TABLE_CHARTS,

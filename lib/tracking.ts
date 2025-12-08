@@ -1,4 +1,4 @@
-import { ClickHouseClient } from '@clickhouse/client'
+import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 
 const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
@@ -55,7 +55,7 @@ export async function initTrackingTable(
 
     const current = (await resp.text()).trim()
 
-    if (current != expected) {
+    if (current !== expected) {
       log(
         `schema hash (${current}) DO NOT matched with expected (${expected}), TODO`
       )

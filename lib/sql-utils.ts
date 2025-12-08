@@ -75,7 +75,7 @@ export function escapeQualifiedIdentifier(...parts: string[]): string {
 export function validateLimit(limit: number | string): number {
   const numLimit = typeof limit === 'string' ? parseInt(limit, 10) : limit
 
-  if (isNaN(numLimit) || numLimit < 0 || !Number.isInteger(numLimit)) {
+  if (Number.isNaN(numLimit) || numLimit < 0 || !Number.isInteger(numLimit)) {
     throw new Error(`Invalid LIMIT value: ${limit}`)
   }
 

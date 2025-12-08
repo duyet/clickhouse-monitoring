@@ -3,7 +3,7 @@ import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse-helpers'
 import { getHostIdCookie } from '@/lib/scoped-link'
 import { ColumnFormat } from '@/types/column-format'
-import { type QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 
 interface PageProps {
   params: Promise<{
@@ -92,7 +92,7 @@ export default async function Page({ params }: PageProps) {
       title={`Total rows of active parts across replicas in the '${cluster}' cluster`}
       queryConfig={queryConfig}
       data={data}
-      context={{ hostId: '' + (await getHostIdCookie()) }}
+      context={{ hostId: `${await getHostIdCookie()}` }}
     />
   )
 }

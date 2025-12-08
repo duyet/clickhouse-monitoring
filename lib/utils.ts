@@ -64,13 +64,13 @@ export function formatBytes(bytes: number): string {
   // Handle edge cases
   if (bytes === 0) return '0 B'
   if (bytes < 0) return '-'
-  if (!isFinite(bytes) || isNaN(bytes)) return '-'
+  if (!Number.isFinite(bytes) || Number.isNaN(bytes)) return '-'
 
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
+  return `${(bytes / k ** i).toFixed(1)} ${sizes[i]}`
 }
 
 /**
@@ -89,7 +89,7 @@ export function formatPercentage(value: number): string {
  */
 export function formatCount(count: number): string {
   // Handle edge cases
-  if (!isFinite(count) || isNaN(count)) return '-'
+  if (!Number.isFinite(count) || Number.isNaN(count)) return '-'
   if (count < 0) return '-'
   if (count < 1000) return count.toString()
 
@@ -99,7 +99,7 @@ export function formatCount(count: number): string {
   // Prevent array overflow for extremely large numbers
   const safeUnitIndex = Math.min(unitIndex, units.length - 1)
 
-  return `${(count / Math.pow(1000, safeUnitIndex)).toFixed(1)}${units[safeUnitIndex]}`
+  return `${(count / 1000 ** safeUnitIndex).toFixed(1)}${units[safeUnitIndex]}`
 }
 
 /**
@@ -109,7 +109,7 @@ export function formatCount(count: number): string {
  */
 export function formatDuration(ms: number): string {
   // Handle edge cases
-  if (!isFinite(ms) || isNaN(ms)) return '-'
+  if (!Number.isFinite(ms) || Number.isNaN(ms)) return '-'
   if (ms < 0) return '-'
 
   if (ms < 1000) return `${ms}ms`

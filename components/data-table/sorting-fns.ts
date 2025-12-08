@@ -1,4 +1,4 @@
-import { ValueOf } from '@/types/generic'
+import type { ValueOf } from '@/types/generic'
 import type { Row, RowData, SortingFn } from '@tanstack/react-table'
 
 /**

@@ -9,7 +9,7 @@ import { queryConfig, type Row } from './config'
 
 interface PageProps {
   params: Promise<{
-    host: number
+    host: string
     cluster: string
   }>
 }

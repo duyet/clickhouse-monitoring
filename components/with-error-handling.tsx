@@ -1,5 +1,5 @@
 import { ErrorAlert } from '@/components/error-alert'
-import { type FetchDataError } from '@/lib/clickhouse'
+import type { FetchDataError } from '@/lib/clickhouse'
 import {
   formatErrorMessage,
   formatErrorTitle,

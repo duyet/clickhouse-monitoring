@@ -15,7 +15,7 @@ export function TextFormat({
 }: TextFormatProps): React.ReactNode {
   return (
     <span className={cn('truncate text-wrap', options?.className)}>
-      {`${!!value ? value : ''}`}
+      {`${value ? value : ''}`}
     </span>
   )
 }

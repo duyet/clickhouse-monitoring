@@ -17,7 +17,7 @@ export const Extras = ({
   database,
   table,
 }: {
-  host: number
+  host: string
   database: string
   table: string
 }) => (

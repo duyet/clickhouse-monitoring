@@ -116,7 +116,7 @@ export function validateHostId(hostId: unknown): number {
       return 0
     }
     const parsed = parseInt(hostId, 10)
-    if (isNaN(parsed) || parsed < 0) {
+    if (Number.isNaN(parsed) || parsed < 0) {
       console.warn(`Invalid hostId: ${hostId}`)
       return 0
     }

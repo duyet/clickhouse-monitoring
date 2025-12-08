@@ -9,7 +9,7 @@ import { TableComment } from './table-comment'
 
 interface Props {
   params: Promise<{
-    host: number
+    host: string
     database: string
     table: string
   }>

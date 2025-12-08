@@ -1,5 +1,5 @@
 import { formatReadableQuantity } from '@/lib/format-readable'
-import { type Row, type Table } from '@tanstack/react-table'
+import type { Row, Table } from '@tanstack/react-table'
 
 export interface BackgroundBarOptions {
   numberFormat?: boolean

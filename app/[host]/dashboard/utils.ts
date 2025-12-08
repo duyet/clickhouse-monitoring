@@ -3,7 +3,7 @@
 import { fetchData, getClient } from '@/lib/clickhouse'
 import { getHostIdCookie } from '@/lib/scoped-link'
 
-import { FormSchema } from './chart-params'
+import type { FormSchema } from './chart-params'
 import type { TableChartsRow, TableSettingsRow } from './config'
 import { TABLE_CHARTS, TABLE_SETTINGS } from './config'
 import { seeding } from './seeding'

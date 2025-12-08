@@ -1,4 +1,4 @@
-import { type QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 import { parseTableFromSQL, validateTableExistence } from './table-validator'
 
 // Mock the table existence cache

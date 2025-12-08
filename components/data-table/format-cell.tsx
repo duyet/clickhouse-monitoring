@@ -4,7 +4,7 @@ import { formatReadableQuantity } from '@/lib/format-readable'
 import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
 
 import { ActionFormat } from './cells/action-format'
-import { type Action } from './cells/actions/types'
+import type { Action } from './cells/actions/types'
 import {
   BackgroundBarFormat,
   type BackgroundBarOptions,
@@ -21,7 +21,7 @@ import {
 } from './cells/code-toggle-format'
 import {
   ColoredBadgeFormat,
-  ColoredBadgeOptions,
+  type ColoredBadgeOptions,
 } from './cells/colored-badge-format'
 import { DurationFormat } from './cells/duration-format'
 import {

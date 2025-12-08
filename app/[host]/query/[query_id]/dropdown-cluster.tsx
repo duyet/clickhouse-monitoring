@@ -18,7 +18,7 @@ import {
 } from '@/lib/error-utils'
 import { getHostIdCookie } from '@/lib/scoped-link'
 import { CircleCheckIcon, CombineIcon } from 'lucide-react'
-import { PageProps } from './types'
+import type { PageProps } from './types'
 
 interface RowData {
   cluster: string
@@ -76,7 +76,7 @@ export async function DropdownCluster({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline">
-            {!!cluster ? (
+            {cluster ? (
               <span className="flex items-center gap-1">
                 <CircleCheckIcon className="size-3" />
                 {cluster}

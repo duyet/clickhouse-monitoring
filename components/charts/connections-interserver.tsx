@@ -3,7 +3,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
-import { type ChartProps } from './chart-props'
+import type { ChartProps } from './chart-props'
 
 export async function ChartConnectionsInterserver({
   title = 'Interserver Connections Last 7 days (Total Requests / Hour)',

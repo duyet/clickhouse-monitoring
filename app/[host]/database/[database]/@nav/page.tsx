@@ -2,7 +2,7 @@ import { Nav } from './nav'
 
 interface Props {
   params: Promise<{
-    host: number
+    host: string
     database: string
   }>
 }

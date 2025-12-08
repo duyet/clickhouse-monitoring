@@ -1,4 +1,4 @@
-import { type RowData } from '@tanstack/react-table'
+import type { RowData } from '@tanstack/react-table'
 
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
@@ -9,14 +9,14 @@ import {
   getErrorDocumentation,
 } from '@/lib/error-utils'
 import { ColumnFormat } from '@/types/column-format'
-import { type QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 
 import { listTables } from '../queries'
 import { Toolbar } from './toolbar'
 
 interface TableListProps {
   params: Promise<{
-    host: number
+    host: string
     database: string
   }>
 }

@@ -3,7 +3,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { type Row } from '@tanstack/react-table'
+import type { Row } from '@tanstack/react-table'
 import React from 'react'
 
 export type HoverCardContent = string | React.ReactNode

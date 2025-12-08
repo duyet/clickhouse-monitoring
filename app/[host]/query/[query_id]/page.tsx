@@ -6,7 +6,7 @@ import { Table } from '@/components/table'
 import { validateIdentifier } from '@/lib/sql-utils'
 import { config } from './config'
 import { QueryDetail } from './query-detail'
-import { PageProps } from './types'
+import type { PageProps } from './types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600
@@ -33,7 +33,7 @@ export default async function Page({ params, searchParams }: PageProps) {
         'FROM system.query_log',
         `FROM clusterAllReplicas('${sanitizedCluster}', system.query_log)`
       )
-    } catch (error) {
+    } catch (_error) {
       // If cluster name is invalid, skip cluster modification
       // The query will run without cluster context
     }

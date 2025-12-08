@@ -18,7 +18,7 @@ export function formatReadableSize(bytes: number, decimals = 1) {
 
   const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+  return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`
 }
 
 /**
@@ -90,7 +90,7 @@ export function formatQuery({
   }
 
   if (truncate && formattedQuery.length > truncate) {
-    formattedQuery = formattedQuery.slice(0, truncate) + '...'
+    formattedQuery = `${formattedQuery.slice(0, truncate)}...`
   }
 
   return formattedQuery

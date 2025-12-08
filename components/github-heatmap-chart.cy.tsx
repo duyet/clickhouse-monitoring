@@ -57,7 +57,7 @@ describe('<GithubHeatmapChart />', () => {
     const year = today.getFullYear()
     const month = today.getMonth() + 1
     const day = today.getDay()
-    const todayLabel = `${year}/${month}/${day}`
+    const _todayLabel = `${year}/${month}/${day}`
   })
 
   it('renders with multiple data sets', () => {

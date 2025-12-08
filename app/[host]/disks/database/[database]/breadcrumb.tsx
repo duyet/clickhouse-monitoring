@@ -80,7 +80,7 @@ function Internal({
   databases,
 }: Props & { databases: DatabaseUsedSpace[] }) {
   const readable_used_space = databases.find(
-    ({ database: name }) => name == database
+    ({ database: name }) => name === database
   )?.readable_used_space
 
   return (
@@ -106,7 +106,7 @@ function Internal({
               <DropdownMenuItem key={name}>
                 <Link
                   href={use(getScopedLink(`/disks/database/${name}`))}
-                  className={name == database ? 'font-bold' : ''}
+                  className={name === database ? 'font-bold' : ''}
                 >
                   {name} ({readable_used_space})
                 </Link>

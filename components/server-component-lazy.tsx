@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, Suspense } from 'react'
+import { type ReactNode, Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 
 import { ErrorAlert } from '@/components/error-alert'

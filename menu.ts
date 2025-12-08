@@ -18,7 +18,7 @@ import {
   UpdateIcon,
 } from '@radix-ui/react-icons'
 
-import { type MenuItem } from '@/components/menu/types'
+import type { MenuItem } from '@/components/menu/types'
 import { QUERY_COMMENT } from '@/lib/clickhouse'
 import {
   CircleDollarSignIcon,

@@ -1,9 +1,9 @@
 import { Badge } from '@/components/ui/badge'
 import { fetchData } from '@/lib/clickhouse'
 import { getHostIdCookie } from '@/lib/scoped-link'
-import { QueryConfig } from '@/types/query-config'
-import { type RowData } from './config'
-import { PageProps } from './types'
+import type { QueryConfig } from '@/types/query-config'
+import type { RowData } from './config'
+import type { PageProps } from './types'
 
 export async function QueryDetailBadge({
   queryConfig,
@@ -35,7 +35,7 @@ export async function QueryDetailBadge({
   const { user } = data[0]
   const finalType = data[data.length - 1].type
   const query_duration_ms = data
-    .map((row) => parseInt(row.duration_ms))
+    .map((row) => parseInt(row.duration_ms, 10))
     .reduce((a, b) => a + b, 0)
 
   return (

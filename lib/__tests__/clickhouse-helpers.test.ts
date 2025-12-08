@@ -90,7 +90,7 @@ describe('fetchDataWithHost', () => {
     })
 
     it('should handle string hostId and convert to number', async () => {
-      const result = await fetchDataWithHost({
+      const _result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: '5',
       })
@@ -103,7 +103,7 @@ describe('fetchDataWithHost', () => {
     })
 
     it('should use default hostId 0 for invalid string', async () => {
-      const result = await fetchDataWithHost({
+      const _result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: 'invalid',
       })
@@ -116,7 +116,7 @@ describe('fetchDataWithHost', () => {
     })
 
     it('should use default hostId 0 for negative numbers', async () => {
-      const result = await fetchDataWithHost({
+      const _result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: -1,
       })
@@ -129,7 +129,7 @@ describe('fetchDataWithHost', () => {
     })
 
     it('should use default hostId 0 for non-integer numbers', async () => {
-      const result = await fetchDataWithHost({
+      const _result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: 1.5,
       })
@@ -144,7 +144,7 @@ describe('fetchDataWithHost', () => {
     it('should handle null hostId by getting from cookie', async () => {
       mockGetHostIdCookie.mockResolvedValue(4)
 
-      const result = await fetchDataWithHost({
+      const _result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: null as any,
       })
@@ -160,7 +160,7 @@ describe('fetchDataWithHost', () => {
     it('should handle undefined hostId by getting from cookie', async () => {
       mockGetHostIdCookie.mockResolvedValue(1)
 
-      const result = await fetchDataWithHost({
+      const _result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: undefined,
       })
@@ -174,7 +174,7 @@ describe('fetchDataWithHost', () => {
     })
 
     it('should handle empty string hostId', async () => {
-      const result = await fetchDataWithHost({
+      const _result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: '',
       })
@@ -209,7 +209,7 @@ describe('fetchDataWithHost', () => {
       mockGetHostIdCookie.mockRejectedValue(error)
 
       // Should still work with default hostId
-      const result = await fetchDataWithHost({
+      const _result = await fetchDataWithHost({
         query: 'SELECT 1',
       })
 

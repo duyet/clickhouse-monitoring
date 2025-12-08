@@ -1,8 +1,8 @@
 import { Badge } from '@/components/ui/badge'
 import { fetchData } from '@/lib/clickhouse'
 import { parseTableFromSQL } from '@/lib/table-validator'
-import { type BadgeVariant } from '@/types/badge-variant'
-import { type QueryConfig } from '@/types/query-config'
+import type { BadgeVariant } from '@/types/badge-variant'
+import type { QueryConfig } from '@/types/query-config'
 
 export interface CountBadgeProps {
   sql?: string
@@ -50,7 +50,7 @@ export async function CountBadge({
   if (!data || !data.length || !data?.[0]?.['count()']) return null
 
   const count = data[0]['count()'] || 0
-  if (count == 0) return null
+  if (count === 0) return null
 
   return (
     <Badge className={className} variant={variant}>

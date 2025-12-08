@@ -16,11 +16,11 @@ export function BarChart({
   readableColumn,
   ...props
 }: BarChartProps) {
-  let valueFormatter = undefined
+  let valueFormatter 
 
   if (readableColumn) {
     valueFormatter = (value: number) => {
-      for (let category of categories) {
+      for (const category of categories) {
         const formated = data.find((row) => row[category] === value)?.[
           readableColumn
         ]

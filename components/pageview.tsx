@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
-export function PageView({ hostId }: { hostId: number }) {
+export function PageView({ hostId }: { hostId: string | number }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
@@ -16,7 +16,7 @@ export function PageView({ hostId }: { hostId: number }) {
 
   useEffect(() => {
     async function pageViewTrack() {
-      const url = `${pathname}${searchParams ? '?' + searchParams.toString() : ''}`
+      const url = `${pathname}${searchParams ? `?${searchParams.toString()}` : ''}`
       await fetch(
         '/api/pageview?' +
           new URLSearchParams({ url, hostId: hostId.toString() }).toString()

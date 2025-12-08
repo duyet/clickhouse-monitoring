@@ -12,7 +12,7 @@ import {
   formatReadableSize,
 } from '@/lib/format-readable'
 
-import { type ReadableFormat } from './types'
+import type { ReadableFormat } from './types'
 
 export interface AreaChartProps extends TremorAreaChartProps {
   readable?: true | ReadableFormat
@@ -36,7 +36,7 @@ export function AreaChart({
   showYAxis = false,
   ...props
 }: AreaChartProps) {
-  let valueFormatter = undefined
+  let valueFormatter 
 
   if (readable && readableColumns) {
     valueFormatter = (value: number) => {
@@ -82,14 +82,14 @@ export function AreaChart({
     const data: DonutChartProps['data'] = breakdownData.map(
       ([name, value]: [string, string]) => ({
         name,
-        value: parseInt(value),
+        value: parseInt(value, 10),
       })
     )
 
     return (
       <div className="z-50 flex flex-col content-center rounded-lg bg-white shadow-lg">
         <div className="center flex flex-row justify-between border-b p-2 text-xs text-slate-700">
-          <Legend categories={[payload[0].name + ': ' + payload[0].value]} />
+          <Legend categories={[`${payload[0].name}: ${payload[0].value}`]} />
           <div className="text-sm text-slate-500">{label}</div>
         </div>
 

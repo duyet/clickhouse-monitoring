@@ -4,7 +4,7 @@ import { TableDDL } from '../extras/table-ddl'
 
 interface Props {
   params: Promise<{
-    host: number
+    host: string
     database: string
     table: string
   }>

@@ -19,7 +19,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   const hostId = Number(host)
   const _searchParams = await searchParams
 
-  let searchParamsCombine = {
+  const searchParamsCombine = {
     ..._searchParams,
     database,
   }
@@ -35,7 +35,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
       <Suspense fallback={<TableSkeleton />}>
         <Table
-          title={'Disks usage by database: ' + database}
+          title={`Disks usage by database: ${database}`}
           queryConfig={queryConfig}
           searchParams={searchParamsCombine}
         />

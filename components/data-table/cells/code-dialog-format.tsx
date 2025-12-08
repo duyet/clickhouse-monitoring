@@ -34,7 +34,7 @@ export function CodeDialogFormat({
 }: CodeDialogFormatProps): React.ReactNode {
   const truncate_length = options?.max_truncate || CODE_TRUNCATE_LENGTH
 
-  let formatted = formatQuery({
+  const formatted = formatQuery({
     query: value,
     comment_remove: options?.hide_query_comment,
     truncate: truncate_length,
@@ -73,11 +73,10 @@ export function CodeDialogFormat({
               'font-normal break-words',
               options?.trigger_classname
             )}
-            role="shorten-code"
           >
             {formatted}
           </code>
-          <SizeIcon className="size-4 flex-none" role="open-dialog" />
+          <SizeIcon className="size-4 flex-none" />
         </div>
       </DialogTrigger>
       <DialogContent

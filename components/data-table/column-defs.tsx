@@ -11,13 +11,12 @@ import type {
   Table,
 } from '@tanstack/react-table'
 
-import { debug } from '@/lib/logger'
 import { formatCell } from '@/components/data-table/format-cell'
 import { Button } from '@/components/ui/button'
 import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
-import { type Icon } from '@/types/icon'
-import { type QueryConfig } from '@/types/query-config'
-import { CustomSortingFnNames, getCustomSortingFns } from './sorting-fns'
+import type { Icon } from '@/types/icon'
+import type { QueryConfig } from '@/types/query-config'
+import { type CustomSortingFnNames, getCustomSortingFns } from './sorting-fns'
 
 export type ColumnType = { [key: string]: string }
 

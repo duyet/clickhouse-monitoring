@@ -3,13 +3,13 @@
 import { usePathname } from 'next/navigation'
 import {
   createContext,
-  Dispatch,
-  SetStateAction,
+  type Dispatch,
+  type SetStateAction,
   useContext,
   useState,
 } from 'react'
 
-import { type ClickHouseInterval } from '@/types/clickhouse-interval'
+import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
 export interface ContextValue {
   interval: ClickHouseInterval

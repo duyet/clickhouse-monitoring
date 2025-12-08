@@ -88,26 +88,26 @@ export function ActionItem<TData extends RowData, TValue>({
       }}
     >
       <DropdownMenuItem>
-        {status == 'loading' && (
+        {status === 'loading' && (
           <span className="flex flex-row items-center gap-2">
             <UpdateIcon className="size-4 animate-spin" /> {label}
           </span>
         )}
 
-        {status == 'failed' && (
+        {status === 'failed' && (
           <span className="flex flex-row items-center gap-2">
             <ExclamationTriangleIcon className="size-4 text-orange-500" />{' '}
             {label}
           </span>
         )}
 
-        {status == 'success' && (
+        {status === 'success' && (
           <span className="flex flex-row items-center gap-2">
             <CheckCircledIcon className="size-4 text-lime-600" /> {label}
           </span>
         )}
 
-        {status == 'none' && (
+        {status === 'none' && (
           <button type="submit" className="m-0 border-none p-0">
             {label}
           </button>

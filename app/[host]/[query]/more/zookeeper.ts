@@ -1,6 +1,6 @@
 import { ZOOKEEPER } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
-import { type QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 
 export const zookeeperConfig: QueryConfig = {
   name: 'zookeeper',

@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
-import { type ChartProps } from '@/components/charts/chart-props'
+import type { ChartProps } from '@/components/charts/chart-props'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
@@ -63,7 +63,7 @@ export async function ChartSummaryUsedByRunningQueries({
   }
 
   let todayQueryCount = first.query_count
-  let todayQueryCountSql = `
+  const todayQueryCountSql = `
     SELECT COUNT() as query_count
     FROM system.query_log
     WHERE type = 'QueryStart'
@@ -103,7 +103,7 @@ export async function ChartSummaryUsedByRunningQueries({
         readable_rows_written: string
       }[]
     >({ query: rowsReadWrittenSql, hostId })
-    if (!!data) {
+    if (data) {
       rowsReadWritten = data?.[0]
     }
   } catch (e) {
@@ -128,29 +128,29 @@ export async function ChartSummaryUsedByRunningQueries({
   items.push({
     current: first.memory_usage,
     target: totalMem.total,
-    currentReadable: first.readable_memory_usage + ' memory usage',
-    targetReadable: totalMem.readable_total + ' total',
+    currentReadable: `${first.readable_memory_usage} memory usage`,
+    targetReadable: `${totalMem.readable_total} total`,
   })
   items.push({
     current: first.query_count,
     target: todayQueryCount,
-    currentReadable: first.query_count + ' running queries',
-    targetReadable: formatReadableQuantity(todayQueryCount) + ' today',
+    currentReadable: `${first.query_count} running queries`,
+    targetReadable: `${formatReadableQuantity(todayQueryCount)} today`,
   })
 
   if (rowsReadWritten.rows_read < rowsReadWritten.rows_written) {
     items.push({
       current: rowsReadWritten.rows_read,
       target: rowsReadWritten.rows_written,
-      currentReadable: rowsReadWritten.readable_rows_read + ' rows read',
-      targetReadable: rowsReadWritten.readable_rows_written + ' rows written',
+      currentReadable: `${rowsReadWritten.readable_rows_read} rows read`,
+      targetReadable: `${rowsReadWritten.readable_rows_written} rows written`,
     })
   } else {
     items.push({
       current: rowsReadWritten.rows_written,
       target: rowsReadWritten.rows_read,
-      currentReadable: rowsReadWritten.readable_rows_written + ' rows written',
-      targetReadable: rowsReadWritten.readable_rows_read + ' rows read',
+      currentReadable: `${rowsReadWritten.readable_rows_written} rows written`,
+      targetReadable: `${rowsReadWritten.readable_rows_read} rows read`,
     })
   }
 

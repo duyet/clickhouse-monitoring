@@ -1,4 +1,4 @@
-import { type QueryConfig } from '@/types/query-config'
+import type { QueryConfig } from '@/types/query-config'
 import { cache } from 'react'
 
 import { mergePerformanceConfig } from './merges/merge-performance'

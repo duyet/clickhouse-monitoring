@@ -16,7 +16,7 @@ export function DonutChart({
   readableColumn,
   ...props
 }: DonutChartProps) {
-  let valueFormatter = undefined
+  let valueFormatter 
 
   if (readable && readableColumn) {
     valueFormatter = (value: number) => {
