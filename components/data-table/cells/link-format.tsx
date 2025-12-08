@@ -1,3 +1,4 @@
+import { replaceTemplateVariables } from '@/lib/template-utils'
 import { cn } from '@/lib/utils'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import type { Row, RowData } from '@tanstack/react-table'
@@ -51,16 +52,7 @@ export function LinkFormat<
 
   // Href contains placeholders, e.g. /database/[database]/[table]
   // Replace placeholders with values from the row
-  let hrefBinding = href
-  if (href.includes('[') && href.includes(']')) {
-    const matches = href.match(/\[(.*?)\]/g)
-    if (matches) {
-      matches.forEach((match) => {
-        const key = match.replace('[', '').replace(']', '').trim()
-        hrefBinding = hrefBinding.replace(match, mappingKeyValue[key] ?? '')
-      })
-    }
-  }
+  const hrefBinding = replaceTemplateVariables(href, mappingKeyValue)
 
   return (
     <Link

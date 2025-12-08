@@ -27,8 +27,10 @@ export const errorsConfig: QueryConfig = {
     remote: ColumnFormat.Boolean,
   },
   defaultParams: { error: '' },
+  // Common ClickHouse error types for quick filtering
+  // These are frequently occurring errors in production environments
+  // Future improvement: fetch distinct error types dynamically from system.error_log
   filterParamPresets: [
-    // TODO: dynamic based on query
     ...[
       'KEEPER_EXCEPTION',
       'PART_IS_TEMPORARILY_LOCKED',
@@ -41,13 +43,11 @@ export const errorsConfig: QueryConfig = {
       'TOO_MANY_PARTS',
       'CHECKSUM_DOESNT_MATCH',
       'NETWORK_ERROR',
-    ].map((error) => {
-      return {
-        name: error,
-        key: 'error',
-        value: error,
-      }
-    }),
+    ].map((error) => ({
+      name: error,
+      key: 'error',
+      value: error,
+    })),
   ],
   relatedCharts: [['zookeeper-exception', {}], 'break'],
 }

@@ -10,7 +10,7 @@ const debugEnabled = process.env.DEBUG === 'true'
 /**
  * Debug logging - only in development or DEBUG=true
  */
-export const debug = (...args: any[]): void => {
+export const debug = (...args: unknown[]): void => {
   if (isDevelopment || debugEnabled) {
     console.debug(...args)
   }
@@ -19,7 +19,7 @@ export const debug = (...args: any[]): void => {
 /**
  * Info logging - only in development or DEBUG=true
  */
-export const log = (...args: any[]): void => {
+export const log = (...args: unknown[]): void => {
   if (isDevelopment || debugEnabled) {
     console.log(...args)
   }
@@ -28,13 +28,13 @@ export const log = (...args: any[]): void => {
 /**
  * Error logging - always outputs
  */
-export const error = (...args: any[]): void => {
+export const error = (...args: unknown[]): void => {
   console.error(...args)
 }
 
 /**
  * Warn logging - always outputs
  */
-export const warn = (...args: any[]): void => {
+export const warn = (...args: unknown[]): void => {
   console.warn(...args)
 }

@@ -16,16 +16,16 @@ export default defineConfig({
   e2e: {
     baseUrl: 'http://localhost:3000',
     setupNodeEvents(on, config) {
-      // TODO: fix coverage
+      // Code coverage integration with @cypress/code-coverage
+      // Note: Coverage requires babel instrumentation which conflicts with
+      // Next.js 15's turbopack. To enable coverage:
+      // 1. Create .babelrc with istanbul plugin
+      // 2. Disable turbopack for e2e tests
+      // 3. Run with NEXT_TURBO=false for coverage builds
       require('@cypress/code-coverage/task')(on, config)
 
-      // tell Cypress to use .babelrc file
-      // and instrument the specs files
-      // only the extra application files will be instrumented
-      // not the spec files themselves
-
-      // It's IMPORTANT to return the config object
-      // with any changed environment variables
+      // The config object must be returned for Cypress to pick up
+      // any changed environment variables
       return config
     },
   },

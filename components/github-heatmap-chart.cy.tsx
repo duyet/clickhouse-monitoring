@@ -98,8 +98,6 @@ describe('<GithubHeatmapChart />', () => {
   })
 
   it('hover tooltip displays correct data', () => {
-    console.log('data', data)
-
     cy.mount(
       <GithubHeatmapChart
         data={data}
@@ -109,12 +107,16 @@ describe('<GithubHeatmapChart />', () => {
     )
     cy.get('svg').as('root').should('be.visible')
 
-    // Last 3 items of data
+    // Last 3 items of data - trigger hover and verify tooltip appears
+    // Radix UI tooltips render in portals, so we check for the tooltip content wrapper
     data.slice(-3).forEach((item) => {
-      cy.get(`[data-date="${item.date}"]`).trigger('mouseover')
-      // TODO: fix tooltip not showing
-      // cy.get('.cy-tooltip').should('contain', item.date)
-      // cy.get('.cy-tooltip').should('contain', item.count.toString())
+      cy.get(`[data-date="${item.date}"]`).trigger('pointerenter', {
+        pointerType: 'mouse',
+      })
+      // Radix tooltip content renders in a portal with data-radix-popper-content-wrapper
+      cy.get('[data-radix-popper-content-wrapper]')
+        .should('exist')
+        .and('contain', item.count.toString())
     })
   })
 })

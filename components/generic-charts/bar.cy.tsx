@@ -163,9 +163,11 @@ describe('<BarChart />', () => {
     // Render as svg
     cy.get('svg:first').as('chart').should('be.visible')
 
-    // Display tooltip of the 2nd data
-    // TODO: Fix this
-    // cy.get('svg').should('contain.text', '--2025')
+    // Verify X-axis tick labels are formatted with the custom formatter
+    // The tickFormatter prepends '--' to the first 4 chars of the date (year)
+    cy.get('.recharts-xAxis .recharts-cartesian-axis-tick-value')
+      .first()
+      .should('contain.text', '--2025')
   })
 
   it('renders with stack', () => {

@@ -39,8 +39,8 @@ export default async function Layout({
       />
 
       <Suspense fallback={null}>
-        <PageView hostId={host} />
-        <BackgroundJobs hostId={host} />
+        <PageView hostId={validHostId} />
+        <BackgroundJobs hostId={validHostId} />
       </Suspense>
     </>
   )
