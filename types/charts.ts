@@ -114,6 +114,15 @@ export interface BarChartProps extends BaseChartProps {
   onClickHref?: string
 }
 
+/**
+ * Format type for readable value display
+ * - 'bytes': Format as human-readable bytes (KB, MB, GB, etc.)
+ * - 'duration': Format as human-readable duration (ms, s, m, h)
+ * - 'number': Format as human-readable number with K, M, B suffixes
+ * - 'quantity': Format as human-readable quantity (same as number, for semantic clarity)
+ */
+export type ReadableFormat = 'bytes' | 'duration' | 'number' | 'quantity'
+
 export interface AreaChartProps extends BaseChartProps {
   categories: string[]
   index?: string
@@ -128,9 +137,21 @@ export interface AreaChartProps extends BaseChartProps {
   tooltipActive?: boolean
   showCartesianGrid?: boolean
 
-  // TODO: support these features
-  readable?: string
+  /**
+   * Format hint for readable value display
+   * When set, values in specified columns will be formatted accordingly
+   */
+  readable?: ReadableFormat
+
+  /**
+   * Single column name whose values should be formatted according to 'readable'
+   */
   readableColumn?: string
+
+  /**
+   * Multiple column names whose values should be formatted according to 'readable'
+   * Takes precedence over readableColumn if both are specified
+   */
   readableColumns?: string[]
 }
 

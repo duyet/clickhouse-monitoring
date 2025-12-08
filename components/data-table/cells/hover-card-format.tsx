@@ -3,8 +3,8 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
+import { replaceTemplateInReactNode } from '@/lib/template-utils'
 import type { Row } from '@tanstack/react-table'
-import React from 'react'
 
 export type HoverCardContent = string | React.ReactNode
 
@@ -23,53 +23,57 @@ export function HoverCardFormat({
   value,
   options,
 }: HoverCardProps): React.ReactNode {
-  let { content } = options || {}
+  const { content } = options || {}
+
+  // Extract row data for template replacement
+  // Uses row.getValue() for each column to get the value
+  const rowData = extractRowData(content, row)
 
   // Content replacement, e.g. "Hover content: [column_name]"
-  content = contentReplacement(content, row)
+  const processedContent = replaceTemplateInReactNode(content, rowData)
 
   return (
     <HoverCard openDelay={0}>
       <HoverCardTrigger>{value}</HoverCardTrigger>
-      <HoverCardContent>{content}</HoverCardContent>
+      <HoverCardContent>{processedContent}</HoverCardContent>
     </HoverCard>
   )
 }
 
-function contentReplacement(
-  content: string | React.ReactNode,
-  row: Row<any>
-): string | React.ReactNode {
-  if (typeof content === 'string') {
-    const matches = content.match(/\[(.*?)\]/g)
-    if (matches) {
-      matches.forEach((match) => {
-        const key = match.replace('[', '').replace(']', '').trim()
-        const replacementValue = row.getValue(key)
-        if (typeof content === 'string') {
-          content = content.replace(match, String(replacementValue))
-        }
-      })
-    }
-    return content
-  } else {
-    return React.Children.map(content, (child) => {
-      if (typeof child === 'string') {
-        return contentReplacement(child, row)
-      } else if (React.isValidElement(child)) {
-        // Type-safe access to props.children
-        const childElement = child as React.ReactElement<{
-          children?: React.ReactNode
-        }>
-        return React.cloneElement(
-          child,
-          {},
-          contentReplacement(childElement.props.children, row)
-        )
-      }
+/**
+ * Extract row data for columns referenced in the content template
+ * Uses row.getValue() to support TanStack Table's column accessors
+ */
+function extractRowData(
+  content: string | React.ReactNode | undefined,
+  row: Row<unknown>
+): Record<string, unknown> {
+  const data: Record<string, unknown> = {}
 
-      // If it's not a string or a valid element, just return it
-      return child
-    })
+  // Find all [key] placeholders in content
+  const extractKeys = (node: string | React.ReactNode | undefined): void => {
+    if (typeof node === 'string') {
+      const matches = node.match(/\[(.*?)\]/g)
+      if (matches) {
+        for (const match of matches) {
+          const key = match.slice(1, -1).trim()
+          data[key] = row.getValue(key)
+        }
+      }
+    } else if (node && typeof node === 'object') {
+      // Handle React children recursively
+      const children = (node as { props?: { children?: React.ReactNode } })
+        .props?.children
+      if (children) {
+        if (Array.isArray(children)) {
+          children.forEach(extractKeys)
+        } else {
+          extractKeys(children)
+        }
+      }
+    }
   }
+
+  extractKeys(content)
+  return data
 }

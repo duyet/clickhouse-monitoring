@@ -1,5 +1,5 @@
 import { getClient } from '@/lib/clickhouse'
-import { debug } from '@/lib/logger'
+import { debug, error } from '@/lib/logger'
 import { LRUCache } from 'lru-cache'
 
 /**
@@ -47,7 +47,7 @@ export async function checkTableExists(
     cache.set(key, exists)
     return exists
   } catch (err) {
-    console.error(`Error checking table ${database}.${table}:`, err)
+    error(`Error checking table ${database}.${table}:`, err)
     return false
   }
 }

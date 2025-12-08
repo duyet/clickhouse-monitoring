@@ -63,32 +63,49 @@ export async function RelatedCharts({
   }
   const gridCols = gridColsMap[col] || 'grid-cols-1 md:grid-cols-2'
 
+  // Column span mapping for last chart spanning remaining space
+  const colSpanMap: Record<number, string> = {
+    2: 'md:col-span-2',
+    3: 'md:col-span-3',
+    4: 'md:col-span-4',
+  }
+
   return (
     <div className={cn('grid gap-5', gridCols, className)}>
       {charts.map(([name, Chart, props], i) => {
-        let className = ''
+        let chartClassName = ''
 
-        // If next chart is a break, add a 'col-span-2' class to the current chart
-        // For example:
+        // If next chart is a break, span remaining columns
+        // Example with maxChartsPerRow=2:
         // relatedCharts: [['chart1', {}], 'break', ['chart2', {}], ['chart3', {}]]]
         // -----------------------
         // |        chart1       |
         // | chart2   |  chart3  |
         // -----------------------
         if (charts[i + 1] && charts[i + 1][0] === 'break') {
-          className = 'col-span-2'
+          chartClassName = colSpanMap[maxChartsPerRow] || 'md:col-span-2'
         }
 
-        // If this is the last chart, but still have space in the row, add a 'col-span-2' class
-        // TODO: implement for maxChartsPerRow > 2
-        // For example:
-        // relatedCharts: [['chart1', {}], ['chart2', {}], ['chart3', {}]]]
+        // If this is the last chart and doesn't fill the row, span remaining columns
+        // Works for any maxChartsPerRow value
+        // Example with maxChartsPerRow=2, 3 charts:
         // -----------------------
         // | chart1   |  chart2  |
         // |       chart3        |
         // -----------------------
-        if (charts.length > 2 && i === charts.length - 1 && col === 2) {
-          className = 'auto-cols-max'
+        // Example with maxChartsPerRow=3, 4 charts:
+        // -------------------------------
+        // | chart1  | chart2  | chart3  |
+        // |          chart4             |
+        // -------------------------------
+        const isLastChart = i === charts.length - 1
+        const totalCharts = charts.length
+        const positionInRow = totalCharts % maxChartsPerRow
+
+        if (isLastChart && positionInRow !== 0 && totalCharts > 1) {
+          // Calculate remaining columns to span
+          const remainingCols = maxChartsPerRow - positionInRow + 1
+          chartClassName = colSpanMap[remainingCols] || ''
         }
 
         return (
@@ -97,7 +114,7 @@ export async function RelatedCharts({
             fallback={<ChartSkeleton />}
           >
             <Chart
-              className={cn('w-full p-0 shadow-none', className)}
+              className={cn('w-full p-0 shadow-none', chartClassName)}
               chartClassName="h-44"
               {...props}
               hostId={hostId}
