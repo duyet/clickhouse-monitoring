@@ -17,8 +17,7 @@ The simple Next.js dashboard that relies on `system.*` tables to help monitor an
 
 _The ClickHouse server running on my homelab so can be slow sometimes_:
 
-- [clickhouse-monitoring.vercel.app](https://clickhouse-monitoring.vercel.app)
-- [clickhouse.duyet.net](https://clickhouse.duyet.net)
+- [clickhouse-monitoring.duyet.net](https://clickhouse-monitoring.duyet.net)
 
 ## Documentation
 
@@ -57,4 +56,3 @@ See [LICENSE](LICENSE).
 
 ![Alt](https://repobeats.axiom.co/api/embed/830f9ce7ba9e7a42f93630e2581506ca34c84067.svg 'Repobeats analytics image')
 
-# Testing integrated fixes
