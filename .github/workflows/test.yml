@@ -70,7 +70,7 @@ jobs:
           cache: pnpm
 
       - name: Next Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .next/cache
           # Generate a new cache whenever packages or source files change.
@@ -130,7 +130,7 @@ jobs:
           cache: pnpm
 
       - name: Next Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .next/cache
           # Generate a new cache whenever packages or source files change.
@@ -182,7 +182,7 @@ jobs:
           cache: pnpm
 
       - name: Next Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .next/cache
           # Generate a new cache whenever packages or source files change.
@@ -276,7 +276,7 @@ jobs:
           cache: pnpm
 
       - name: Next Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .next/cache
           # Generate a new cache whenever packages or source files change.
