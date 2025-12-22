@@ -12,11 +12,21 @@ interface PageProps {
 
 export default async function Page({ params }: PageProps) {
   const { cluster } = await params
-  const { data: replicas } = await fetchData<{ replica: string }[]>({
+  const { data: replicas, error: replicasError } = await fetchData<
+    { replica: string }[]
+  >({
     query: `SELECT hostName() as replica FROM clusterAllReplicas({cluster: String}) ORDER BY 1`,
     query_params: { cluster },
   })
-  console.log('Replicas', replicas)
+
+  if (replicasError) {
+    return (
+      <ErrorAlert
+        title="Failed to load replicas"
+        message={replicasError.message}
+      />
+    )
+  }
 
   if (!replicas || replicas.length === 0) {
     return <div>No replicas found in cluster: {cluster}</div>

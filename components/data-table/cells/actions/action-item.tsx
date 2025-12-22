@@ -72,7 +72,6 @@ export function ActionItem<TData extends RowData, TValue>({
 
         try {
           const resp: ActionResponse = await handler(formData)
-          console.log('Trigger Action', resp)
 
           if (resp.action === 'toast') {
             updateStatus('success')

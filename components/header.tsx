@@ -6,6 +6,7 @@ import { ClickHouseHost } from '@/components/clickhouse-host'
 import { Menu } from '@/components/menu/menu'
 import { ReloadButton } from '@/components/reload-button'
 import { SingleLineSkeleton } from '@/components/skeleton'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { getScopedLink } from '@/lib/scoped-link'
 
 const TITLE = process.env.NEXT_PUBLIC_TITLE || 'ClickHouse Monitoring'
@@ -38,6 +39,7 @@ export async function Header() {
           fallback={<SingleLineSkeleton className="w-[200px] space-x-0 pt-0" />}
         >
           <Menu />
+          <ThemeToggle />
           <ReloadButton />
         </Suspense>
       </div>

@@ -49,14 +49,6 @@ export function removeHostPrefix(pathname: string) {
   return pathname.split('/').filter(Boolean).slice(1).join('/')
 }
 
-/**
- * Replace [key] placeholders in template string with values from data object
- * @deprecated Use replaceTemplateVariables from '@/lib/template-utils' instead
- */
-export function binding(template: string, data: Record<string, unknown>): string {
-  return replaceTemplateVariables(template, data)
-}
-
 // Chart utility functions
 
 /**

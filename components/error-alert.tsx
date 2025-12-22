@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { getEnvironment, shouldShowDetailedErrors } from '@/lib/env-utils'
 
 interface ErrorAlertProps {
@@ -101,13 +102,29 @@ export function ErrorAlert({
   const getVariantStyles = () => {
     switch (variant) {
       case 'warning':
-        return 'border-yellow-200 bg-yellow-50 text-yellow-900 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-50'
+        return {
+          borderColor: 'hsl(var(--alert-warning-border))',
+          backgroundColor: 'hsl(var(--alert-warning-bg))',
+          color: 'hsl(var(--alert-warning-text))',
+        }
       case 'info':
-        return 'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-50'
+        return {
+          borderColor: 'hsl(var(--alert-info-border))',
+          backgroundColor: 'hsl(var(--alert-info-bg))',
+          color: 'hsl(var(--alert-info-text))',
+        }
       case 'destructive':
-        return 'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-50'
+        return {
+          borderColor: 'hsl(var(--alert-destructive-border))',
+          backgroundColor: 'hsl(var(--alert-destructive-bg))',
+          color: 'hsl(var(--alert-destructive-text))',
+        }
       default:
-        return 'border-border bg-card text-card-foreground'
+        return {
+          borderColor: 'hsl(var(--border))',
+          backgroundColor: 'hsl(var(--card))',
+          color: 'hsl(var(--card-foreground))',
+        }
     }
   }
 
@@ -165,7 +182,8 @@ export function ErrorAlert({
 
   return (
     <div
-      className={`${className} ${getVariantStyles()} rounded-lg border ${compact ? 'p-2' : 'p-4'}`}
+      className={cn('rounded-lg border', compact ? 'p-2' : 'p-4', className)}
+      style={getVariantStyles() as React.CSSProperties}
       data-testid="error-message"
     >
       <div className="flex items-start gap-3">

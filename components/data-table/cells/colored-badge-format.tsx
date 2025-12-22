@@ -9,6 +9,15 @@ interface ColoredBadgeFormatProps {
   options?: ColoredBadgeOptions
 }
 
+const BADGE_COLORS = [
+  { bg: '--badge-success-bg', text: '--badge-success-text' },
+  { bg: '--badge-warning-bg', text: '--badge-warning-text' },
+  { bg: '--badge-info-bg', text: '--badge-info-text' },
+  { bg: '--badge-primary-bg', text: '--badge-primary-text' },
+  { bg: '--badge-secondary-bg', text: '--badge-secondary-text' },
+  { bg: '--badge-tertiary-bg', text: '--badge-tertiary-text' },
+]
+
 export function ColoredBadgeFormat({
   value,
   options,
@@ -17,33 +26,27 @@ export function ColoredBadgeFormat({
     return null
   }
 
-  const colors = [
-    'bg-green-100 text-green-800',
-    'bg-yellow-100 text-yellow-800',
-    'bg-blue-100 text-blue-800',
-    'bg-indigo-100 text-indigo-800',
-    'bg-purple-100 text-purple-800',
-    'bg-pink-100 text-pink-800',
-  ]
-
   // Picked consistently based on the value
-  const pickedColor =
-    colors[
-      Math.abs(
-        value
-          .toString()
-          .split('')
-          .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
-      ) % colors.length
-    ]
+  const colorIndex =
+    Math.abs(
+      value
+        .toString()
+        .split('')
+        .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
+    ) % BADGE_COLORS.length
+
+  const pickedColor = BADGE_COLORS[colorIndex]
 
   return (
     <span
       className={cn(
         'inline-block rounded-full px-2.5 py-0.5 text-xs font-medium',
-        pickedColor,
         options?.className
       )}
+      style={{
+        backgroundColor: `hsl(var(${pickedColor.bg}))`,
+        color: `hsl(var(${pickedColor.text}))`,
+      }}
     >
       {value}
     </span>

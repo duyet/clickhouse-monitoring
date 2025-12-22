@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { ClickHouseInfo } from '@/components/overview-charts/clickhouse-info'
+import { ClickHouseInfo } from '@/components/charts/overview'
 import { MultiLineSkeleton } from '@/components/skeleton'
 import { UIInfo } from './ui-info'
 

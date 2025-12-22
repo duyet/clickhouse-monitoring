@@ -1,5 +1,6 @@
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata } from 'next'
+import { ThemeProvider } from 'next-themes'
 import Script from 'next/script'
 
 import '@/app/globals.css'
@@ -24,16 +25,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="font-sans">
-        <AppProvider reloadIntervalSecond={120}>
-          <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
-            <Header />
-            {children}
-          </div>
-        </AppProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AppProvider reloadIntervalSecond={120}>
+            <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
+              <Header />
+              {children}
+            </div>
+          </AppProvider>
 
-        <Toaster />
+          <Toaster />
+        </ThemeProvider>
 
         {VERCEL_ANALYTICS_ENABLED && <Analytics />}
         {SELINE_ENABLED && (

@@ -49,7 +49,6 @@ export function ReloadButton({ className }: ReloadButtonProps) {
       if (countDown <= 0) {
         revalidateCacheAndReload()
         setCountDown(initCountDown)
-        return
       } else {
         setCountDown(countDown - 1)
       }
@@ -62,17 +61,13 @@ export function ReloadButton({ className }: ReloadButtonProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className={cn(
-            'flex flex-row gap-2',
-            className,
-            isLoading ? 'animate-pulse' : ''
-          )}
+          className={cn('flex flex-row gap-2', className)}
         >
           <span className="font-mono">
-            {formatReadableSecondDuration(countDown)}
+            {isLoading ? '...' : formatReadableSecondDuration(countDown)}
           </span>
           <ReloadIcon
-            className={cn('size-4', isLoading ? 'animate-spin' : '')}
+            className={cn('size-4', isLoading && 'animate-spin')}
           />
         </Button>
       </DropdownMenuTrigger>

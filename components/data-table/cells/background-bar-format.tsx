@@ -34,14 +34,12 @@ export function BackgroundBarFormat({
     return value
   }
 
-  const bgColor = '#F8F4F0'
-
   return (
     <div
       className="w-full rounded p-1"
       style={{
         background: `linear-gradient(to right,
-                ${bgColor} 0%, ${bgColor} ${pct}%,
+                hsl(var(--bar-background)) 0%, hsl(var(--bar-background)) ${pct}%,
                 transparent ${pct}%, transparent 100%)`,
       }}
       title={`${orgValue} (${pct}%)`}

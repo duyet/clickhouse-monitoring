@@ -1,7 +1,7 @@
-import { ChartCard } from '@/components/generic-charts/chart-card'
+import { ChartCard } from '@/components/charts/base'
 import { GithubHeatmapChart } from '@/components/github-heatmap-chart'
-import { AreaChart } from '@/components/tremor/area'
-import { BarChart } from '@/components/tremor/bar'
+import { AreaChart } from '@/components/charts/visualizations'
+import { BarChart } from '@/components/charts/visualizations'
 import { fetchData } from '@/lib/clickhouse'
 
 export const dynamic = 'force-dynamic'

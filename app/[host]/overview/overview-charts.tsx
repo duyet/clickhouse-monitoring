@@ -1,7 +1,4 @@
-import { ClickHouseInfo } from '@/components/overview-charts/clickhouse-info'
-import { DatabaseTableCount } from '@/components/overview-charts/database-table-count'
-import { DiskSize } from '@/components/overview-charts/disk-size'
-import { RunningQueries } from '@/components/overview-charts/running-queries'
+import { ClickHouseInfo, DatabaseTableCount, DiskSize, RunningQueries } from '@/components/charts/overview'
 import { cn } from '@/lib/utils'
 
 export async function OverviewCharts({ className }: { className?: string }) {

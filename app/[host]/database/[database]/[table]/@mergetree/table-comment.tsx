@@ -8,7 +8,7 @@ export async function TableComment({
   table: string
 }) {
   try {
-    const { data } = await fetchData<{ comment: string }[]>({
+    const { data, error } = await fetchData<{ comment: string }[]>({
       query: `
           SELECT comment
             FROM system.tables
@@ -17,6 +17,11 @@ export async function TableComment({
         `,
       query_params: { database, table },
     })
+
+    if (error) {
+      console.error('Error fetching table description:', error)
+      return ''
+    }
 
     return data?.[0]?.comment || ''
   } catch (e) {

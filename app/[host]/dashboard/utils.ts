@@ -45,10 +45,6 @@ export async function updateSettingParams(
     query_params,
   })
 
-  console.log(`Update ${TABLE_SETTINGS} query:`, query)
-  console.log(`Update${TABLE_SETTINGS} params:`, query_params)
-  console.log(`Update ${TABLE_SETTINGS} resp:`, resp)
-
   return resp
 }
 
@@ -68,10 +64,6 @@ export async function updateChart(data: Record<string, string> | FormSchema) {
     query,
     query_params,
   })
-
-  console.log(`Update ${TABLE_SETTINGS} query:`, query)
-  console.log(`Update${TABLE_SETTINGS} params:`, query_params)
-  console.log(`Update ${TABLE_SETTINGS} resp:`, resp)
 
   return resp
 }

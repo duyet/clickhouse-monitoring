@@ -39,8 +39,7 @@ export const ChartParams = ({ params }: ChartParamsProps) => {
 
   async function onSubmit(values: FormSchema) {
     try {
-      const resp = await updateSettingParams(values)
-      console.log('Updated', resp)
+      await updateSettingParams(values)
       router.refresh()
     } catch (e) {
       console.error(e)

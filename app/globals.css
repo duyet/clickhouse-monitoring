@@ -68,6 +68,34 @@
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+  /* Badge Colors */
+  --badge-success-bg: hsl(120 84.3% 95.5%);
+  --badge-success-text: hsl(120 39.1% 26.1%);
+  --badge-warning-bg: hsl(45 92.9% 95.1%);
+  --badge-warning-text: hsl(45 92.1% 17.6%);
+  --badge-info-bg: hsl(210 93.9% 95.1%);
+  --badge-info-text: hsl(210 89% 10.1%);
+  --badge-primary-bg: hsl(262 96.8% 95.7%);
+  --badge-primary-text: hsl(262 80% 50%);
+  --badge-secondary-bg: hsl(280 85.5% 95.3%);
+  --badge-secondary-text: hsl(280 62% 30.2%);
+  --badge-tertiary-bg: hsl(319 84.8% 95.3%);
+  --badge-tertiary-text: hsl(319 84.6% 24.9%);
+
+  /* Bar Background */
+  --bar-background: hsl(16 50% 95.5%);
+
+  /* Alert Variants */
+  --alert-warning-border: hsl(45 87.1% 60.8%);
+  --alert-warning-bg: hsl(45 92.9% 95.1%);
+  --alert-warning-text: hsl(45 92.1% 17.6%);
+  --alert-info-border: hsl(210 77.2% 60.8%);
+  --alert-info-bg: hsl(210 93.9% 95.1%);
+  --alert-info-text: hsl(210 89% 10.1%);
+  --alert-destructive-border: hsl(0 77.2% 60.8%);
+  --alert-destructive-bg: hsl(0 93.1% 95.1%);
+  --alert-destructive-text: hsl(0 87.1% 10.2%);
 }
 
 .dark {
@@ -95,6 +123,20 @@
   --chart-3: hsl(30 80% 55%);
   --chart-4: hsl(280 65% 60%);
   --chart-5: hsl(340 75% 55%);
+  --chart-6: hsl(210 70% 50%);
+  --chart-7: hsl(350 70% 50%);
+  --chart-8: hsl(25 75% 47%);
+  --chart-9: hsl(0 0% 90%);
+  --chart-10: hsl(142 60% 50%);
+  --chart-11: hsl(21 65% 55%);
+  --chart-12: hsl(212 70% 55%);
+  --chart-13: hsl(327 70% 60%);
+  --chart-pink-300: hsl(327 70% 60%);
+  --chart-blue-300: hsl(212 70% 55%);
+  --chart-rose-200: hsl(350 70% 50%);
+  --chart-orange-600: hsl(25 75% 47%);
+  --chart-indigo-300: hsl(230 70% 60%);
+  --chart-yellow: hsl(45 90% 55%);
   --sidebar-background: hsl(240 5.9% 10%);
   --sidebar-foreground: hsl(240 4.8% 95.9%);
   --sidebar-primary: hsl(224.3 76.3% 48%);
@@ -103,6 +145,34 @@
   --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
   --sidebar-border: hsl(240 3.7% 15.9%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+  /* Dark Mode Badge Colors */
+  --badge-success-bg: hsl(120 41% 26%);
+  --badge-success-text: hsl(120 70% 80%);
+  --badge-warning-bg: hsl(45 85.7% 25.2%);
+  --badge-warning-text: hsl(45 92.9% 80%);
+  --badge-info-bg: hsl(210 77.2% 25.4%);
+  --badge-info-text: hsl(210 93.9% 80%);
+  --badge-primary-bg: hsl(262 80% 30%);
+  --badge-primary-text: hsl(262 96.8% 90%);
+  --badge-secondary-bg: hsl(280 62% 30%);
+  --badge-secondary-text: hsl(280 85.5% 85%);
+  --badge-tertiary-bg: hsl(319 84.6% 25%);
+  --badge-tertiary-text: hsl(319 84.8% 85%);
+
+  /* Dark Mode Bar Background */
+  --bar-background: hsl(16 33.3% 20.2%);
+
+  /* Dark Mode Alert Variants */
+  --alert-warning-border: hsl(45 87.1% 30%);
+  --alert-warning-bg: hsl(45 85.7% 15%);
+  --alert-warning-text: hsl(45 92.9% 85%);
+  --alert-info-border: hsl(210 77.2% 35%);
+  --alert-info-bg: hsl(210 77.2% 15%);
+  --alert-info-text: hsl(210 93.9% 85%);
+  --alert-destructive-border: hsl(0 77.2% 35%);
+  --alert-destructive-bg: hsl(0 62.8% 20%);
+  --alert-destructive-text: hsl(0 93.1% 85%);
 }
 
 @theme inline {

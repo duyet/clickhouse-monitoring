@@ -2,7 +2,8 @@ import { expect, jest } from '@jest/globals'
 
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { binding, cn, dedent, getHost, removeHostPrefix, uniq } from './utils'
+import { cn, dedent, getHost, removeHostPrefix, uniq } from './utils'
+import { replaceTemplateVariables } from './template-utils'
 
 jest.mock('clsx', () => ({
   clsx: jest.fn(),
@@ -156,53 +157,53 @@ describe('utils', () => {
   })
 })
 
-describe('binding', () => {
+describe('replaceTemplateVariables', () => {
   it('should replace placeholders with values from data object', () => {
     const template = '/users/[id]/profile'
     const data = { id: '123' }
-    const result = binding(template, data)
+    const result = replaceTemplateVariables(template, data)
     expect(result).toBe('/users/123/profile')
   })
 
   it('should handle multiple placeholders', () => {
     const template = '/[category]/[product]/[id]'
     const data = { category: 'electronics', product: 'laptop', id: '456' }
-    const result = binding(template, data)
+    const result = replaceTemplateVariables(template, data)
     expect(result).toBe('/electronics/laptop/456')
   })
 
   it('should remove placeholders when no matching data is found', () => {
     const template = '/users/[id]/[action]'
     const data = { id: '789' }
-    const result = binding(template, data)
+    const result = replaceTemplateVariables(template, data)
     expect(result).toBe('/users/789/')
   })
 
   it('should handle empty data object', () => {
     const template = '/[category]/[product]'
     const data = {}
-    const result = binding(template, data)
+    const result = replaceTemplateVariables(template, data)
     expect(result).toBe('//')
   })
 
   it('should handle template without placeholders', () => {
     const template = '/static/page'
     const data = { id: '123' }
-    const result = binding(template, data)
+    const result = replaceTemplateVariables(template, data)
     expect(result).toBe('/static/page')
   })
 
   it('should handle empty string template', () => {
     const template = ''
     const data = { id: '123' }
-    const result = binding(template, data)
+    const result = replaceTemplateVariables(template, data)
     expect(result).toBe('')
   })
 
   it('should handle placeholders with special characters in data', () => {
     const template = '/[path]/[query]'
     const data = { path: 'search', query: 'foo=bar&baz=qux' }
-    const result = binding(template, data)
+    const result = replaceTemplateVariables(template, data)
     expect(result).toBe('/search/foo=bar&baz=qux')
   })
 })

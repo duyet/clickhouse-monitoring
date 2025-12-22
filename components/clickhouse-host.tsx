@@ -10,7 +10,7 @@ import { getHost } from '@/lib/utils'
 
 async function fetchHostStatus(hostId: number) {
   try {
-    const { data: detail } = await fetchData<
+    const { data: detail, error } = await fetchData<
       { uptime: string; hostName: string; version: string }[]
     >({
       query: `
@@ -21,6 +21,11 @@ async function fetchHostStatus(hostId: number) {
       `,
       hostId,
     })
+
+    if (error) {
+      console.error('Error fetching host status', error)
+      return null
+    }
 
     return (detail || [])[0] ?? null
   } catch (_e) {

@@ -12,9 +12,13 @@ export function BadgeFormat({
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800',
+        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
         className
       )}
+      style={{
+        backgroundColor: 'hsl(var(--badge-success-bg))',
+        color: 'hsl(var(--badge-success-text))',
+      }}
     >
       {value}
     </span>
