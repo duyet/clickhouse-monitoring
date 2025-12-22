@@ -7,7 +7,7 @@ import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
 import { Header } from '@/components/header'
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from '@/components/ui'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'

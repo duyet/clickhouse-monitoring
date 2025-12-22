@@ -1,8 +1,5 @@
-import dynamic from 'next/dynamic'
 import type React from 'react'
 
-import { LoadingIcon } from '@/components/loading-icon'
-import { ServerComponentLazy } from '@/components/server-component-lazy'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -10,15 +7,16 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from '@/components/ui/navigation-menu'
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { menuItemsConfig } from '@/menu'
 import { HostPrefixedLink } from './link-with-context'
+import {
+  CountBadgeWrapper,
+  MenuItemHeader,
+  getFilteredMenuItems,
+} from './menu-shared'
 import type { MenuItem } from './types'
-
-const CountBadge = dynamic(() =>
-  import('@/components/menu/count-badge').then((mod) => mod.CountBadge)
-)
 
 export interface MenuProps {
   items?: MenuItem[]
@@ -68,15 +66,13 @@ function SingleItem({ item }: { item: MenuItem }) {
               : undefined
         }
       >
-        <div className="flex flex-row items-center gap-2">
-          {item.icon && <item.icon className="size-4" strokeWidth={1} />}
-          {item.title}
-          {item.countSql ? (
-            <ServerComponentLazy fallback={<LoadingIcon />} onError={''}>
-              <CountBadge sql={item.countSql} variant={item.countVariant} />
-            </ServerComponentLazy>
-          ) : null}
-        </div>
+        <MenuItemHeader
+          icon={item.icon}
+          title={item.title}
+          countSql={item.countSql}
+          countVariant={item.countVariant}
+          iconSize="size-4"
+        />
       </HostPrefixedLink>
     </NavigationMenuItem>
   )
@@ -86,46 +82,32 @@ function HasChildItems({ item }: { item: MenuItem }) {
   return (
     <NavigationMenuItem>
       <NavigationMenuTrigger>
-        <div className="flex flex-row items-center gap-2">
-          {item.icon && <item.icon className="size-4" strokeWidth={1} />}
-          {item.title}
-          {item.countSql ? (
-            <ServerComponentLazy fallback={<LoadingIcon />} onError={''}>
-              <CountBadge sql={item.countSql} variant={item.countVariant} />
-            </ServerComponentLazy>
-          ) : null}
-        </div>
+        <MenuItemHeader
+          icon={item.icon}
+          title={item.title}
+          countSql={item.countSql}
+          countVariant={item.countVariant}
+          iconSize="size-4"
+        />
       </NavigationMenuTrigger>
       <NavigationMenuContent>
         <ul className="grid w-fit min-w-[400px] grid-cols-1 content-center items-stretch gap-2 p-2 md:min-w-[700px] md:grid-cols-2">
-          {item.items
-            ?.filter((childItem) => childItem.title && childItem.href)
-            .map((childItem) => (
-              <ListItem
-                key={childItem.href}
-                title={
-                  <span className="flex flex-row items-center gap-2">
-                    {childItem.icon && (
-                      <childItem.icon className="size-4" strokeWidth={1} />
-                    )}
-                    {childItem.title}
-                    {childItem.countSql ? (
-                      <ServerComponentLazy
-                        fallback={<LoadingIcon />}
-                        onError={''}
-                      >
-                        <CountBadge
-                          sql={childItem.countSql}
-                          variant={childItem.countVariant}
-                        />
-                      </ServerComponentLazy>
-                    ) : null}
-                  </span>
-                }
-                href={childItem.href}
-                description={childItem.description}
-              />
-            ))}
+          {getFilteredMenuItems(item.items).map((childItem) => (
+            <ListItem
+              key={childItem.href}
+              title={
+                <MenuItemHeader
+                  icon={childItem.icon}
+                  title={childItem.title}
+                  countSql={childItem.countSql}
+                  countVariant={childItem.countVariant}
+                  iconSize="size-4"
+                />
+              }
+              href={childItem.href}
+              description={childItem.description}
+            />
+          ))}
         </ul>
       </NavigationMenuContent>
     </NavigationMenuItem>

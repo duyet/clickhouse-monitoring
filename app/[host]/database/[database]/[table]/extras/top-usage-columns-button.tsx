@@ -1,7 +1,7 @@
 import { TextAlignBottomIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import { getScopedLink } from '@/lib/scoped-link'
 
 export async function TopUsageColumnsButton({

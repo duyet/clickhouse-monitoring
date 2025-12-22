@@ -3,7 +3,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion'
+} from '@/components/ui'
 import { formatQuery } from '@/lib/format-readable'
 import type { Row } from '@tanstack/react-table'
 

@@ -1,5 +1,5 @@
 import { ErrorAlert } from '@/components/error-alert'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,7 +8,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui'
 import { fetchData } from '@/lib/clickhouse'
 
 import {

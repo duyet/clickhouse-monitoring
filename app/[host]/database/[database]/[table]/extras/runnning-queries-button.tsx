@@ -1,7 +1,7 @@
 import { BarChartIcon } from '@radix-ui/react-icons'
 
 import { ServerComponentLazy } from '@/components/server-component-lazy'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 import { RunningQueries } from './running-queries'

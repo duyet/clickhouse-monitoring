@@ -1,6 +1,6 @@
 import { CodeIcon } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   Dialog,
   DialogDescription,
@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogContent as UIDialogContent,
-} from '@/components/ui/dialog'
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 export interface DialogContentProps {

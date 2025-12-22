@@ -1,8 +1,8 @@
-import { DataTable } from '@/components/data-table/data-table'
+import { DataTable } from '@/components/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse-helpers'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import { getScopedLink } from '@/lib/scoped-link'
 import Link from 'next/link'
 import { queryConfig, type Row } from './config'

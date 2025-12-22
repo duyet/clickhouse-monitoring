@@ -6,7 +6,7 @@ import { useEffect, useState, useTransition } from 'react'
 import { useInterval } from 'usehooks-ts'
 
 import { useAppContext } from '@/app/context'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
 

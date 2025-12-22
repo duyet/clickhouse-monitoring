@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 
 import { ChartParams } from './chart-params'
 import { RenderChart } from './render-chart'

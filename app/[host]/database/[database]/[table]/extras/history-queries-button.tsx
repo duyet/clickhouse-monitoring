@@ -1,8 +1,8 @@
 import { BarChartIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogTrigger } from '@/components/ui/dialog'
+import { Button } from '@/components/ui'
+import { Dialog, DialogTrigger } from '@/components/ui'
 import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 

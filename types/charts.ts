@@ -2,7 +2,7 @@ import type React from 'react'
 import type { ReactNode } from 'react'
 import type { LabelPosition } from 'recharts/types/component/Label'
 
-import type { ChartConfig } from '@/components/ui/chart'
+import type { ChartConfig } from '@/components/ui'
 
 interface BaseAnimationTimingProps {
   animationDuration?: number

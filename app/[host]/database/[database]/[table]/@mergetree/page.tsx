@@ -1,4 +1,4 @@
-import { DataTable } from '@/components/data-table/data-table'
+import { DataTable } from '@/components/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { Extras } from '../extras/extras'
 

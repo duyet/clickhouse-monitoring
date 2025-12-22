@@ -4,19 +4,19 @@ import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
 
 import { useAppContext } from '@/app/context'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from '@/components/ui/command'
+} from '@/components/ui'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 

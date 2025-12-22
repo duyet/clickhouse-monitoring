@@ -7,15 +7,15 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+} from '@/components/ui'
+import { Input } from '@/components/ui'
 
 import { updateSettingParams } from './utils'
 

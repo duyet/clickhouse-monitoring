@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/ui'
 import { fetchData } from '@/lib/clickhouse-helpers'
 
 interface RunningQueriesProps {

@@ -1,12 +1,4 @@
-import type { Action } from '@/components/data-table/cells/actions/types'
-import type { BackgroundBarOptions } from '@/components/data-table/cells/background-bar-format'
-import type { CodeDialogOptions } from '@/components/data-table/cells/code-dialog-format'
-import type { CodeToggleOptions } from '@/components/data-table/cells/code-toggle-format'
-import type { ColoredBadgeOptions } from '@/components/data-table/cells/colored-badge-format'
-import type { HoverCardOptions } from '@/components/data-table/cells/hover-card-format'
-import type { LinkFormatOptions } from '@/components/data-table/cells/link-format'
-import type { MarkdownFormatOptions } from '@/components/data-table/cells/markdown-format'
-import type { TextFormatOptions } from '@/components/data-table/cells/text-format'
+import type { Action, BackgroundBarOptions, CodeDialogOptions, CodeToggleOptions, ColoredBadgeOptions, HoverCardOptions, LinkFormatOptions, MarkdownFormatOptions, TextFormatOptions } from '@/components/data-table/cells'
 
 export enum ColumnFormat {
   BackgroundBar = 'background-bar',

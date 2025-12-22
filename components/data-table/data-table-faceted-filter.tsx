@@ -5,14 +5,14 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useMemo } from 'react'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { ArrayElement } from '@/types/generic'
 import type { QueryConfig } from '@/types/query-config'

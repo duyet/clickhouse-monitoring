@@ -23,7 +23,7 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from '@/components/ui/chart'
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { replaceTemplateVariables } from '@/lib/template-utils'
 import type { BarChartProps } from '@/types/charts'

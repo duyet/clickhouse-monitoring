@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from '@/components/ui'
 import { formatQuery } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
 

@@ -14,7 +14,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion'
+} from '@/components/ui'
 import { fetchData } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,

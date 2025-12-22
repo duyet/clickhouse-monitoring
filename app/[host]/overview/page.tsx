@@ -1,6 +1,6 @@
 import { ChartBackupSize, ChartCPUUsage, ChartDiskSize, ChartDisksUsage, ChartMemoryUsage, ChartMergeCount, ChartNewPartsCreated, ChartQueryCount, ChartQueryCountByUser, ChartTopTableSize, ChartKeeperException } from '@/components/charts/metrics'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { OverviewCharts } from './overview-charts'
 
 export const dynamic = 'force-dynamic'

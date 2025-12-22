@@ -3,14 +3,14 @@ import Link from 'next/link'
 
 import { DialogSQL } from '@/components/dialog-sql'
 import { ErrorAlert } from '@/components/error-alert'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from '@/components/ui'
 import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'

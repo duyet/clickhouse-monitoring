@@ -1,7 +1,7 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/charts/base/chart-card'
 import { BarList } from '@/components/charts/visualizations/bar-list'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { fetchData } from '@/lib/clickhouse'
 
 export async function ChartTopTableSize({

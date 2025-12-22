@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/ui'
 import { fetchData } from '@/lib/clickhouse'
 import { parseTableFromSQL } from '@/lib/table-validator'
 import type { BadgeVariant } from '@/types/badge-variant'

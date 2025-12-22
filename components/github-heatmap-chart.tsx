@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '@/components/ui'
 
 // Full of props https://uiwjs.github.io/react-heat-map/#props
 export interface GithubHeatmapChartProps extends HeatMapProps {

@@ -1,7 +1,7 @@
 import type { ClickHouseSettings } from '@clickhouse/client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
-import type { CustomSortingFnNames } from '@/components/data-table/sorting-fns'
+import type { CustomSortingFnNames } from '@/components/data-table'
 import type { ColumnFormat, ColumnFormatWithArgs } from '@/types/column-format'
 import type { PartialBy } from '@/types/generic'
 import type { Icon } from '@/types/icon'

@@ -16,8 +16,8 @@ import { useMemo, useState } from 'react'
 import {
   getColumnDefs,
   normalizeColumnName,
-} from '@/components/data-table/column-defs'
-import { DataTablePagination } from '@/components/data-table/pagination'
+} from '@/components/data-table'
+import { DataTablePagination } from '@/components/data-table'
 import {
   Table,
   TableBody,
@@ -25,7 +25,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/ui'
 import { uniq } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
 

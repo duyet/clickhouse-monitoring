@@ -5,7 +5,7 @@ import { MonitorIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 interface ThemeToggleProps {

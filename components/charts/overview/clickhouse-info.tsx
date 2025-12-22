@@ -9,7 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from '@/components/ui'
 import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 

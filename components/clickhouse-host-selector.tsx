@@ -9,13 +9,13 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/components/ui'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '@/components/ui'
 import type { ClickHouseConfig } from '@/lib/clickhouse'
 import { setSecureCookie } from '@/lib/cookie-utils'
 import { cn, getHost, removeHostPrefix } from '@/lib/utils'

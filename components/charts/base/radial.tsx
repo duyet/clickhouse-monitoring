@@ -7,7 +7,7 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from '@/components/ui/chart'
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { RadialChartProps } from '@/types/charts'
 import { LabelList, RadialBar, RadialBarChart } from 'recharts'

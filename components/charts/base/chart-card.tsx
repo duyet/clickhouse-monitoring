@@ -2,13 +2,13 @@ import { CodeIcon } from '@radix-ui/react-icons'
 import { TableIcon } from 'lucide-react'
 
 import { DialogContent } from '@/components/dialog-content'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-} from '@/components/ui/card'
+} from '@/components/ui'
 import { cn, dedent } from '@/lib/utils'
 
 interface ChartCardProps {

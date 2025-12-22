@@ -7,7 +7,7 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from '@/components/ui/chart'
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { AreaChartProps } from '@/types/charts'
 import {

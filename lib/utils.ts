@@ -1,8 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
-import { replaceTemplateVariables } from './template-utils'
-
 /**
  * Create a class name from a list of class names
  *
