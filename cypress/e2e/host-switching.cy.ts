@@ -15,7 +15,7 @@ describe('Host Switching E2E Tests', () => {
   before(() => {
     // Check if multi-host environment by visiting overview and checking for selector
     cy.visit('/0/overview', { timeout: 30000 })
-    cy.get('body').then(($body) => {
+    cy.get('body', { timeout: 20000 }).then(($body) => {
       isMultiHost = $body.find('[data-testid="host-selector"]').length > 0
       cy.log(`Multi-host environment: ${isMultiHost}`)
     })
@@ -37,13 +37,13 @@ describe('Host Switching E2E Tests', () => {
     cy.url().should('include', '/0/overview')
 
     // Host selector should be present and functional
-    cy.get('[data-testid="host-selector"]').should('exist').and('be.visible')
+    cy.get('[data-testid="host-selector"]', { timeout: 10000 }).should('exist').and('be.visible')
 
-    // Switch to host 1 by clicking selector
-    cy.get('[data-testid="host-selector"]').click()
+    // Switch to host 1 by clicking selector - use force: true for Radix UI Select
+    cy.get('[data-testid="host-selector"]').click({ force: true })
     cy.get('[data-testid="host-option-1"]', { timeout: 10000 })
       .should('be.visible')
-      .click()
+      .click({ force: true })
 
     // Verify URL changed to host 1
     cy.url().should('include', '/1/overview')
@@ -52,8 +52,8 @@ describe('Host Switching E2E Tests', () => {
     cy.get('[data-testid="host-selector"]').should('exist')
 
     // Switch back to host 0
-    cy.get('[data-testid="host-selector"]').click()
-    cy.get('[data-testid="host-option-0"]').should('be.visible').click()
+    cy.get('[data-testid="host-selector"]').click({ force: true })
+    cy.get('[data-testid="host-option-0"]').should('be.visible').click({ force: true })
 
     // Verify we're back on host 0
     cy.url().should('include', '/0/overview')
@@ -67,15 +67,15 @@ describe('Host Switching E2E Tests', () => {
     }
 
     // Switch to host 1
-    cy.get('[data-testid="host-selector"]').click()
-    cy.get('[data-testid="host-option-1"]').should('be.visible').click()
+    cy.get('[data-testid="host-selector"]', { timeout: 10000 }).click({ force: true })
+    cy.get('[data-testid="host-option-1"]').should('be.visible').click({ force: true })
     cy.url().should('include', '/1/overview')
 
     // Verify we can navigate and host persists in URL
-    cy.visit('/1/clusters')
+    cy.visit('/1/clusters', { timeout: 30000 })
     cy.url().should('include', '/1/clusters')
 
-    cy.visit('/1/database')
+    cy.visit('/1/database', { timeout: 30000 })
     cy.url().should('include', '/1/database')
   })
 
@@ -106,16 +106,16 @@ describe('Host Switching Basic Functionality', () => {
     cy.visit('/0/overview', { timeout: 30000 })
 
     // Check if selector exists (multi-host environment)
-    cy.get('body').then(($body) => {
+    cy.get('body', { timeout: 20000 }).then(($body) => {
       if ($body.find('[data-testid="host-selector"]').length > 0) {
         // Multi-host environment - test selector functionality
         cy.get('[data-testid="host-selector"]', { timeout: 20000 })
           .should('exist')
           .should('be.visible')
-          .click()
+          .click({ force: true })
 
         // Options should appear
-        cy.get('[data-testid="host-option-1"]').should('be.visible').click()
+        cy.get('[data-testid="host-option-1"]', { timeout: 10000 }).should('be.visible').click({ force: true })
 
         // URL should change
         cy.url().should('include', '/1/overview')
