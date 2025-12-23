@@ -1,3 +1,5 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ErrorAlert } from '@/components/error-alert'
 import { AreaChart } from '@/components/charts/base/area'
@@ -5,8 +7,10 @@ import { ChartCard } from '@/components/charts/base/chart-card'
 import { fetchData } from '@/lib/clickhouse'
 import { applyInterval } from '@/lib/clickhouse-query'
 import { chartTickFormatters } from '@/lib/utils'
+import { formatErrorTitle, formatErrorMessage } from '@/lib/error-utils'
+import { useEffect, useState } from 'react'
 
-export async function ChartMemoryUsage({
+export function ChartMemoryUsage({
   title,
   interval = 'toStartOfTenMinutes',
   lastHours = 24,
@@ -14,6 +18,16 @@ export async function ChartMemoryUsage({
   chartClassName,
   hostId,
 }: ChartProps) {
+  const [data, setData] = useState<
+    {
+      event_time: string
+      avg_memory: number
+      readable_avg_memory: string
+    }[]
+  >([])
+  const [error, setError] = useState<{ title: string; message: string } | null>(null)
+  const [loading, setLoading] = useState(true)
+
   const query = `
     SELECT ${applyInterval(interval, 'event_time')},
            avg(CurrentMetric_MemoryTracking) AS avg_memory,
@@ -22,15 +36,32 @@ export async function ChartMemoryUsage({
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1 ASC`
-  const { data, error } = await fetchData<
-    {
-      event_time: string
-      avg_memory: number
-      readable_avg_memory: string
-    }[]
-  >({ query, hostId })
 
-  if (error) return <ErrorAlert {...error} />
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true)
+      const result = await fetchData<
+        {
+          event_time: string
+          avg_memory: number
+          readable_avg_memory: string
+        }[]
+      >({ query, hostId })
+      if (result.error) {
+        setError({
+          title: formatErrorTitle(result.error),
+          message: formatErrorMessage(result.error),
+        })
+      } else {
+        setData(result.data || [])
+      }
+      setLoading(false)
+    }
+    loadData()
+  }, [query, hostId])
+
+  if (loading) return null
+  if (error) return <ErrorAlert title={error.title} message={error.message} />
   if (!data) return null
 
   return (
