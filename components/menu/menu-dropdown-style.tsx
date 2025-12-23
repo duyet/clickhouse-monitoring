@@ -14,11 +14,7 @@ import {
 import { menuItemsConfig } from '@/menu'
 
 import { HostPrefixedLink } from './link-with-context'
-import {
-  MenuItemHeader,
-  MenuIcon,
-  getFilteredMenuItems,
-} from './menu-shared'
+import { MenuItemHeader, MenuIcon, getFilteredMenuItems } from './menu-shared'
 import type { MenuItem } from './types'
 
 export interface MenuProps {

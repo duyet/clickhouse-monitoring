@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -24,15 +20,9 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
-    "types": [
-      "cypress",
-      "node",
-      "cypress-real-events"
-    ]
+    "types": ["cypress", "node", "cypress-real-events"]
   },
   "include": [
     "next-env.d.ts",
@@ -51,7 +41,8 @@
     "**/*.cy.ts",
     "**/*.cy.tsx",
     "**/*.test.ts",
-    "**/*.test.tsx"
+    "**/*.test.tsx",
+    "**/*.validation.ts"
   ],
   "ts-node": {
     "compilerOptions": {

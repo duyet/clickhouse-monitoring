@@ -21,7 +21,9 @@ export function ErrorHeader({ title, errorType, compact }: ErrorHeaderProps) {
     <div className="flex items-center justify-between gap-2">
       <div className={cn('flex items-center gap-3')}>
         {!compact && getErrorIcon(errorType)}
-        <div className={`text-foreground ${compact ? 'text-sm' : 'font-medium'}`}>
+        <div
+          className={`text-foreground ${compact ? 'text-sm' : 'font-medium'}`}
+        >
           {title}
         </div>
       </div>

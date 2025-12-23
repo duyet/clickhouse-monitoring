@@ -79,15 +79,9 @@ const DigestSection = ({ digest }: { digest: string }) => (
   </div>
 )
 
-const CompactMessage = ({
-  message,
-}: {
-  message: string | React.ReactNode
-}) => (
+const CompactMessage = ({ message }: { message: string | React.ReactNode }) => (
   <div className="text-muted-foreground text-xs">
-    {typeof message === 'string'
-      ? truncateMessage(message)
-      : message}
+    {typeof message === 'string' ? truncateMessage(message) : message}
   </div>
 )
 

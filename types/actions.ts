@@ -168,6 +168,7 @@ export function isActionAvailable(
     return true
   }
   return action.requires.every(
-    (field) => field in rowData && rowData[field] !== null && rowData[field] !== ''
+    (field) =>
+      field in rowData && rowData[field] !== null && rowData[field] !== ''
   )
 }

@@ -23,7 +23,9 @@ export async function ChartCPUUsage({
     GROUP BY 1
     ORDER BY 1`
 
-  const { data, error } = await fetchData<{ event_time: string; avg_cpu: number }[]>({
+  const { data, error } = await fetchData<
+    { event_time: string; avg_cpu: number }[]
+  >({
     query,
     hostId,
   })

@@ -13,10 +13,7 @@ import {
   formatErrorTitle,
   getErrorDocumentation,
 } from '@/lib/error-utils'
-import {
-  escapeQualifiedIdentifier,
-  validateLimit,
-} from '@/lib/sql-utils'
+import { escapeQualifiedIdentifier, validateLimit } from '@/lib/sql-utils'
 
 interface SampleDataProps {
   database: string

@@ -13,10 +13,7 @@ import {
 } from '@tanstack/react-table'
 import { useMemo, useState } from 'react'
 
-import {
-  getColumnDefs,
-  normalizeColumnName,
-} from '@/components/data-table'
+import { getColumnDefs, normalizeColumnName } from '@/components/data-table'
 import { DataTablePagination } from '@/components/data-table'
 import {
   Table,
@@ -156,7 +153,7 @@ export function DataTable<
       <div className="flex flex-row items-start justify-between pb-4">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <h1 className="text-muted-foreground flex-none text-xl">{title}</h1>
+            <h1 className="text-muted-foreground flex-none text-lg">{title}</h1>
             <DataTableToolbar queryConfig={queryConfig}>
               {toolbarExtras}
             </DataTableToolbar>
@@ -177,7 +174,7 @@ export function DataTable<
         </div>
       </div>
 
-      <div className="mb-5 rounded-md border">
+      <div className="mb-4 rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

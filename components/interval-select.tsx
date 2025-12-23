@@ -12,11 +12,7 @@ import {
   CommandInput,
   CommandItem,
 } from '@/components/ui'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 

@@ -16,7 +16,7 @@ export function BarChart({
   readableColumn,
   ...props
 }: BarChartProps) {
-  let valueFormatter 
+  let valueFormatter
 
   if (readableColumn) {
     valueFormatter = (value: number) => {

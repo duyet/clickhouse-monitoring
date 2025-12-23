@@ -1,8 +1,4 @@
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 import type { Row } from '@tanstack/react-table'
 

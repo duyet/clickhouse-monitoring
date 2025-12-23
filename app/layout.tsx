@@ -29,7 +29,7 @@ export default function RootLayout({
       <body className="font-sans">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AppProvider reloadIntervalSecond={120}>
-            <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
+            <div className="h-full flex-1 flex-col space-y-6 p-6 md:p-8 md:flex">
               <Header />
               {children}
             </div>

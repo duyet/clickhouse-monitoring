@@ -1,4 +1,14 @@
-import type { Action, BackgroundBarOptions, CodeDialogOptions, CodeToggleOptions, ColoredBadgeOptions, HoverCardOptions, LinkFormatOptions, MarkdownFormatOptions, TextFormatOptions } from '@/components/data-table/cells'
+import type {
+  Action,
+  BackgroundBarOptions,
+  CodeDialogOptions,
+  CodeToggleOptions,
+  ColoredBadgeOptions,
+  HoverCardOptions,
+  LinkFormatOptions,
+  MarkdownFormatOptions,
+  TextFormatOptions,
+} from '@/components/data-table/cells'
 
 export enum ColumnFormat {
   BackgroundBar = 'background-bar',

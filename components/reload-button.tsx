@@ -66,9 +66,7 @@ export function ReloadButton({ className }: ReloadButtonProps) {
           <span className="font-mono">
             {isLoading ? '...' : formatReadableSecondDuration(countDown)}
           </span>
-          <ReloadIcon
-            className={cn('size-4', isLoading && 'animate-spin')}
-          />
+          <ReloadIcon className={cn('size-4', isLoading && 'animate-spin')} />
         </Button>
       </DropdownMenuTrigger>
 

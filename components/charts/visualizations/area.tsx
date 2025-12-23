@@ -6,7 +6,10 @@ import {
   type AreaChartProps as TremorAreaChartProps,
 } from '@tremor/react'
 
-import { DonutChart, type DonutChartProps } from '@/components/charts/visualizations/donut'
+import {
+  DonutChart,
+  type DonutChartProps,
+} from '@/components/charts/visualizations/donut'
 import {
   formatReadableQuantity,
   formatReadableSize,
@@ -36,7 +39,7 @@ export function AreaChart({
   showYAxis = false,
   ...props
 }: AreaChartProps) {
-  let valueFormatter 
+  let valueFormatter
 
   if (readable && readableColumns) {
     valueFormatter = (value: number) => {

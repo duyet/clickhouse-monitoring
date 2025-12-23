@@ -1,4 +1,16 @@
-import { ChartBackupSize, ChartCPUUsage, ChartDiskSize, ChartDisksUsage, ChartMemoryUsage, ChartMergeCount, ChartNewPartsCreated, ChartQueryCount, ChartQueryCountByUser, ChartTopTableSize, ChartKeeperException } from '@/components/charts/metrics'
+import {
+  ChartBackupSize,
+  ChartCPUUsage,
+  ChartDiskSize,
+  ChartDisksUsage,
+  ChartMemoryUsage,
+  ChartMergeCount,
+  ChartNewPartsCreated,
+  ChartQueryCount,
+  ChartQueryCountByUser,
+  ChartTopTableSize,
+  ChartKeeperException,
+} from '@/components/charts/metrics'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { OverviewCharts } from './overview-charts'
@@ -29,7 +41,7 @@ export default async function Overview({
         </div>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+          <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2">
             <ServerComponentLazy>
               <ChartQueryCount
                 title="Query Count last 24h"
@@ -114,7 +126,7 @@ export default async function Overview({
         </TabsContent>
 
         <TabsContent value="errors" className="space-y-4">
-          <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+          <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2">
             <ServerComponentLazy>
               <ChartKeeperException className="w-full p-5" hostId={hostId} />
             </ServerComponentLazy>
@@ -122,7 +134,7 @@ export default async function Overview({
         </TabsContent>
 
         <TabsContent value="disks" className="space-y-4">
-          <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+          <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2">
             <ServerComponentLazy>
               <ChartDiskSize
                 className="w-full p-5"
@@ -144,7 +156,7 @@ export default async function Overview({
         </TabsContent>
 
         <TabsContent value="backups" className="space-y-4">
-          <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+          <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2">
             <ServerComponentLazy>
               <ChartBackupSize
                 className="w-full p-5"

@@ -210,7 +210,10 @@ export function BarChart({
             minPointSize={3}
             onClick={(data) => {
               if (onClickHref) {
-                window.location.href = replaceTemplateVariables(onClickHref, data)
+                window.location.href = replaceTemplateVariables(
+                  onClickHref,
+                  data
+                )
               }
             }}
             cursor={onClickHref !== undefined ? 'pointer' : 'default'}

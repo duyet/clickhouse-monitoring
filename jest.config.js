@@ -13,9 +13,7 @@ module.exports = {
     '^next/navigation$': '<rootDir>/__mocks__/next-navigation.js',
   },
   // Ensure Jest can handle ESM and problematic modules
-  transformIgnorePatterns: [
-    'node_modules/(?!(react-is|@clickhouse)/)',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(react-is|@clickhouse)/)'],
   // Force single worker to prevent concurrency issues
   maxWorkers: 1,
   forceExit: true,
@@ -26,10 +24,7 @@ module.exports = {
   // Prevent worker hanging
   workerIdleMemoryLimit: '512MB',
   // Ignore query-config files as per original setup
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    'query-config'
-  ],
+  testPathIgnorePatterns: ['/node_modules/', 'query-config'],
   // Coverage configuration
   collectCoverage: true,
   coverageDirectory: 'jest-reports/coverage',

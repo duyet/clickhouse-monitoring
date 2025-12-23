@@ -13,9 +13,9 @@ export async function TopUsageColumnsButton({
 }) {
   return (
     <Link
-      href={await getScopedLink(
-        `/top-usage-columns?table=${database}.${table}`
-      )}
+      href={
+        await getScopedLink(`/top-usage-columns?table=${database}.${table}`)
+      }
     >
       <Button
         variant="outline"

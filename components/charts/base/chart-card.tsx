@@ -3,12 +3,7 @@ import { TableIcon } from 'lucide-react'
 
 import { DialogContent } from '@/components/dialog-content'
 import { Button } from '@/components/ui'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from '@/components/ui'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui'
 import { cn, dedent } from '@/lib/utils'
 
 interface ChartCardProps {
@@ -31,7 +26,7 @@ export function ChartCard({
   return (
     <Card className={cn('rounded-md', className)}>
       {title ? (
-        <CardHeader className="p-2">
+        <CardHeader className="p-3">
           <header className="group flex flex-row items-center justify-between">
             <CardDescription>{title}</CardDescription>
             <CardToolbar sql={sql} data={data} />
@@ -39,7 +34,7 @@ export function ChartCard({
         </CardHeader>
       ) : null}
 
-      <CardContent className={cn('p-2', contentClassName)}>
+      <CardContent className={cn('p-4', contentClassName)}>
         {children}
       </CardContent>
     </Card>

@@ -62,7 +62,9 @@ export function truncateMessage(
   maxLength: number = 50
 ): string {
   if (typeof message !== 'string') return ''
-  return message.substring(0, maxLength) + (message.length > maxLength ? '...' : '')
+  return (
+    message.substring(0, maxLength) + (message.length > maxLength ? '...' : '')
+  )
 }
 
 export function renderContent(

@@ -85,7 +85,9 @@ export function generateSafeCookieScript(
   // For numeric values, we can safely convert them to string without encoding
   // since they won't contain special characters
   if (!Number.isInteger(value) || value < 0) {
-    throw new Error(`Invalid cookie value: ${value}. Must be a non-negative integer.`)
+    throw new Error(
+      `Invalid cookie value: ${value}. Must be a non-negative integer.`
+    )
   }
 
   // Using JSON.stringify ensures proper escaping of any special characters

@@ -6,14 +6,11 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    'query-config'
-  ],
+  testPathIgnorePatterns: ['/node_modules/', 'query-config'],
   maxWorkers: 1,
   testTimeout: 30000,
   forceExit: true,
   collectCoverage: true,
   coverageDirectory: 'jest-reports/coverage',
-  reporters: ['default', 'summary']
+  reporters: ['default', 'summary'],
 }

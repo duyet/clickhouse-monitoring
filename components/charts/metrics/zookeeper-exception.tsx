@@ -45,16 +45,14 @@ export async function ChartKeeperException({
       return (
         <ChartCard title={title} sql={query} className={className}>
           <ChartWarnMessage>
-            
-              system.error_log is not enabled.{' '}
-              <Link
-                href="https://clickhouse.com/docs/en/operations/server-configuration-parameters/settings#error_log"
-                target="_blank"
-                className="hover:underline"
-              >
-                See more
-              </Link>
-            
+            system.error_log is not enabled.{' '}
+            <Link
+              href="https://clickhouse.com/docs/en/operations/server-configuration-parameters/settings#error_log"
+              target="_blank"
+              className="hover:underline"
+            >
+              See more
+            </Link>
           </ChartWarnMessage>
         </ChartCard>
       )

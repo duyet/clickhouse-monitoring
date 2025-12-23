@@ -64,11 +64,7 @@ export function ErrorAlert({
           compact={compact}
         />
       </div>
-      <ErrorActions
-        onReset={reset}
-        countdown={countdown}
-        compact={compact}
-      />
+      <ErrorActions onReset={reset} countdown={countdown} compact={compact} />
     </div>
   )
 }

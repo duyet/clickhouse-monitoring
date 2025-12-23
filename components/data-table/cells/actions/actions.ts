@@ -35,8 +35,7 @@ export async function explainQuery<TData extends RowData>(
 ): Promise<ActionResponse> {
   return {
     action: 'redirect',
-    message:
-      `/explain?query=${encodeURIComponent(row.getValue('query') || '')}`,
+    message: `/explain?query=${encodeURIComponent(row.getValue('query') || '')}`,
   }
 }
 
