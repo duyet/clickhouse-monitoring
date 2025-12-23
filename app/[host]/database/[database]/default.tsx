@@ -1,6 +1,6 @@
 import type { RowData } from '@tanstack/react-table'
 
-import { DataTable } from '@/components/data-table/data-table'
+import { DataTable } from '@/components/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse-helpers'
 import { ColumnFormat } from '@/types/column-format'

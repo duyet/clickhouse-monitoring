@@ -101,7 +101,8 @@ export const setupApiMocks = () => {
 }
 
 export const waitForInitialLoad = () => {
-  cy.get('[data-testid="host-selector"]', { timeout: 10000 }).should('exist')
+  // Wait for either host selector (multi-host) or body content (single-host)
+  cy.get('body', { timeout: 10000 }).should('exist')
   cy.get('body').should('not.have.class', 'loading')
 }
 

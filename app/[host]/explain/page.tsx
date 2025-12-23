@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { use, useState } from 'react'
 import { useFormState } from 'react-dom'
 
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
+import { Alert, AlertDescription } from '@/components/ui'
+import { Button } from '@/components/ui'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
+import { Textarea } from '@/components/ui'
 
 import { DialogSQL } from '@/components/dialog-sql'
 import {

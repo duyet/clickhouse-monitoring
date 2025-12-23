@@ -106,64 +106,67 @@ describe('query config', () => {
     }
   })
 
-  test.each(namedConfig)(
-    'check if valid sql for $name config',
-    async ({ name, config }: { name: string; config: QueryConfig }) => {
-      expect(config.sql).toBeDefined()
-      if (config.disableSqlValidation) {
-        console.log(`[${name}] SQL validation is disabled`)
+  test.each(namedConfig)('check if valid sql for $name config', async ({
+    name,
+    config,
+  }: {
+    name: string
+    config: QueryConfig
+  }) => {
+    expect(config.sql).toBeDefined()
+    if (config.disableSqlValidation) {
+      console.log(`[${name}] SQL validation is disabled`)
+      return
+    }
+
+    console.log(`Testing config ${name} query:`, config.sql)
+    console.log('with default params:', config.defaultParams || {})
+
+    try {
+      const result = await fetchData({
+        query: config.sql,
+        query_params: config.defaultParams || {},
+        format: 'JSONEachRow',
+        hostId: 0,
+      })
+
+      console.log('Response:', result.data)
+      console.log('Metadata:', result.metadata)
+
+      // For mocked responses, we expect either data or error to be defined
+      expect(result.metadata).toBeDefined()
+
+      if (result.error) {
+        // If there's an error and the config is optional, that's expected
+        if (config.optional) {
+          console.log(
+            'Query is marked optional, error is expected for missing tables'
+          )
+          expect([
+            'table_not_found',
+            'permission_error',
+            'query_error',
+          ]).toContain(result.error.type)
+          return
+        } else {
+          // Non-optional config with error should fail the test
+          throw new Error(`Query failed: ${result.error.message}`)
+        }
+      }
+
+      // Success case - data should be defined
+      expect(result.data).toBeDefined()
+    } catch (e) {
+      if (config.optional) {
+        console.log(
+          'Query is marked optional, that mean can be failed due to missing table for example'
+        )
+        // For optional configs, errors are acceptable
         return
       }
 
-      console.log(`Testing config ${name} query:`, config.sql)
-      console.log('with default params:', config.defaultParams || {})
-
-      try {
-        const result = await fetchData({
-          query: config.sql,
-          query_params: config.defaultParams || {},
-          format: 'JSONEachRow',
-          hostId: 0,
-        })
-
-        console.log('Response:', result.data)
-        console.log('Metadata:', result.metadata)
-
-        // For mocked responses, we expect either data or error to be defined
-        expect(result.metadata).toBeDefined()
-
-        if (result.error) {
-          // If there's an error and the config is optional, that's expected
-          if (config.optional) {
-            console.log(
-              'Query is marked optional, error is expected for missing tables'
-            )
-            expect([
-              'table_not_found',
-              'permission_error',
-              'query_error',
-            ]).toContain(result.error.type)
-            return
-          } else {
-            // Non-optional config with error should fail the test
-            throw new Error(`Query failed: ${result.error.message}`)
-          }
-        }
-
-        // Success case - data should be defined
-        expect(result.data).toBeDefined()
-      } catch (e) {
-        if (config.optional) {
-          console.log(
-            'Query is marked optional, that mean can be failed due to missing table for example'
-          )
-          // For optional configs, errors are acceptable
-          return
-        }
-
-        console.error(e)
-        throw e
-      }
+      console.error(e)
+      throw e
     }
-  )
+  })
 })

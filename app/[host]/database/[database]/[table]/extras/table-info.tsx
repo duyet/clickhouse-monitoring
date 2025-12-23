@@ -1,6 +1,6 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from '@/components/ui'
 import { fetchData } from '@/lib/clickhouse-helpers'
 import { cn } from '@/lib/utils'
 

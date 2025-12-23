@@ -11,8 +11,8 @@ export function BooleanFormat({ value }: BooleanFormatProps): React.ReactNode {
       : !!value
 
   return isTrue ? (
-    <CheckCircledIcon aria-label="yes" className="text-green-700" />
+    <CheckCircledIcon aria-label="yes" className="text-emerald-600 dark:text-emerald-400" />
   ) : (
-    <CrossCircledIcon aria-label="no" className="text-rose-700" />
+    <CrossCircledIcon aria-label="no" className="text-destructive" />
   )
 }

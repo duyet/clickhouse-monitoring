@@ -12,7 +12,7 @@ import type {
 } from '@tanstack/react-table'
 
 import { formatCell } from '@/components/data-table/format-cell'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
 import type { Icon } from '@/types/icon'
 import type { QueryConfig } from '@/types/query-config'

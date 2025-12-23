@@ -11,7 +11,7 @@ describe('Navigation', () => {
     // Open the webpage
     cy.visit('/0/overview')
 
-    // Hover on "Merge" tab and click on "merge" item below
-    cy.get('div').contains('Merge').trigger('mouseover')
+    // Hover on "Merges" tab and click on "merges" item below
+    cy.get('div').contains('Merges').trigger('mouseover')
   })
 })

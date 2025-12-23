@@ -1,6 +1,8 @@
+'use client'
+
 import { HamburgerMenuIcon } from '@radix-ui/react-icons'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,10 +12,11 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui'
 import { menuItemsConfig } from '@/menu'
 
 import { HostPrefixedLink } from './link-with-context'
+import { MenuItemHeader, MenuIcon, getFilteredMenuItems } from './menu-shared'
 import type { MenuItem } from './types'
 
 export interface MenuProps {
@@ -44,11 +47,11 @@ export function MenuDropdownStyle({
 function SingleItemDropdown({
   href,
   title,
-  children,
+  icon,
 }: {
   href: string
   title: string
-  children: React.ReactNode
+  icon?: MenuItem['icon']
 }) {
   return (
     <DropdownMenuItem>
@@ -56,7 +59,7 @@ function SingleItemDropdown({
         href={href}
         className="flex flex-row items-center gap-2"
       >
-        {children}
+        <MenuIcon icon={icon} />
         {title}
       </HostPrefixedLink>
     </DropdownMenuItem>
@@ -69,9 +72,7 @@ function MenuItem({ item }: { item: MenuItem }) {
   }
 
   return (
-    <SingleItemDropdown href={item.href} title={item.title}>
-      {item.icon && <item.icon className="size-3" strokeWidth={1} />}
-    </SingleItemDropdown>
+    <SingleItemDropdown href={item.href} title={item.title} icon={item.icon} />
   )
 }
 
@@ -79,16 +80,14 @@ function HasChildItems({ item }: { item: MenuItem }) {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="flex flex-row items-center gap-2">
-        {item.icon && <item.icon className="size-3" strokeWidth={1} />}
+        <MenuIcon icon={item.icon} />
         {item.title}
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
-          {item.items
-            ?.filter((childItem) => childItem.title && childItem.href)
-            .map((childItem) => (
-              <MenuItem key={childItem.href} item={childItem} />
-            ))}
+          {getFilteredMenuItems(item.items).map((childItem) => (
+            <MenuItem key={childItem.href} item={childItem} />
+          ))}
         </DropdownMenuSubContent>
       </DropdownMenuPortal>
     </DropdownMenuSub>

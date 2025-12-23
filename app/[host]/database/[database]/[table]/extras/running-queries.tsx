@@ -6,7 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/ui'
 import { fetchData } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,

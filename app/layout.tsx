@@ -1,12 +1,13 @@
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata } from 'next'
+import { ThemeProvider } from 'next-themes'
 import Script from 'next/script'
 
 import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
 import { Header } from '@/components/header'
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from '@/components/ui'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
@@ -24,16 +25,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="font-sans">
-        <AppProvider reloadIntervalSecond={120}>
-          <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
-            <Header />
-            {children}
-          </div>
-        </AppProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AppProvider reloadIntervalSecond={120}>
+            <div className="h-full flex-1 flex-col space-y-6 p-6 md:p-8 md:flex">
+              <Header />
+              {children}
+            </div>
+          </AppProvider>
 
-        <Toaster />
+          <Toaster />
+        </ThemeProvider>
 
         {VERCEL_ANALYTICS_ENABLED && <Analytics />}
         {SELINE_ENABLED && (

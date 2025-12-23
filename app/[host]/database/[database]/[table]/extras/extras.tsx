@@ -2,7 +2,7 @@ import { ArrowLeftIcon } from '@radix-ui/react-icons'
 import { DatabaseIcon } from 'lucide-react'
 import Link from 'next/link'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 
 import { HistoryQueriesButton } from './history-queries-button'
 import { RunningQueriesButton } from './runnning-queries-button'
