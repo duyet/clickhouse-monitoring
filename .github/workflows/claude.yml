@@ -13,89 +13,38 @@ on:
 jobs:
   claude:
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      (github.event_name == 'issue_comment' && (contains(github.event.comment.body, '@claude') || contains(github.event.comment.body, '@duyetbot'))) ||
+      (github.event_name == 'pull_request_review_comment' && (contains(github.event.comment.body, '@claude') || contains(github.event.comment.body, '@duyetbot'))) ||
+      (github.event_name == 'pull_request_review' && (contains(github.event.review.body, '@claude') || contains(github.event.review.body, '@duyetbot'))) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude') || contains(github.event.issue.body, '@duyetbot') || contains(github.event.issue.title, '@duyetbot')))
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
-      issues: read
+      contents: write
+      pull-requests: write
+      issues: write
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Prepare Environment
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-          mkdir -p $HOME/.claude-code-router
-          cat << 'EOF' > $HOME/.claude-code-router/config.json
-          {
-          	"LOG": true,
-          	"Providers": [
-          		{
-          			"name": "openrouter",
-          			"api_base_url": "https://openrouter.ai/api/v1/chat/completions",
-          			"api_key": "${{ secrets.OPENROUTER_API_KEY }}",
-          			"models": [
-          				"moonshotai/kimi-k2:free",
-          				"anthropic/claude-sonnet-4"
-          			],
-          			"transformer": {
-          				"use": [
-          					"openrouter"
-          				]
-          			}
-          		}
-          	],
-          	"Router": {
-          		"default": "openrouter,moonshotai/kimi-k2:free"
-          	}
-          }
-          EOF
-        shell: bash
-
-      - name: Start Claude Code Router
-        run: |
-          nohup ~/.bun/bin/bunx @musistudio/claude-code-router@1.0.19 start &
-        shell: bash
-
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         env:
-          ANTHROPIC_BASE_URL: http://localhost:3456
+          ANTHROPIC_BASE_URL: https://openrouter.ai/api
+          ANTHROPIC_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: '@preset/claude-code-github-action'
+          ANTHROPIC_DEFAULT_SONNET_MODEL: '@preset/claude-code-github-action'
+          ANTHROPIC_DEFAULT_OPUS_MODEL: '@preset/claude-code-github-action'
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
 
           # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
             actions: read
-          
-          # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
-          # model: "claude-opus-4-20250514"
-          
-          # Optional: Customize the trigger phrase (default: @claude)
-          # trigger_phrase: "/claude"
-          
-          # Optional: Trigger when specific user is assigned to an issue
-          assignee_trigger: "claude-bot"
-          
-          # Optional: Allow Claude to run specific commands
-          # allowed_tools: "Bash(npm install),Bash(npm run build),Bash(npm run test:*),Bash(npm run lint:*)"
-          
-          # Optional: Add custom instructions for Claude to customize its behavior for your project
-          # custom_instructions: |
-          #   Follow our coding standards
-          #   Ensure all new code has tests
-          #   Use TypeScript for new files
-          
-          # Optional: Custom environment variables for Claude
-          # claude_env: |
-          #   NODE_ENV: test
 
+          bot_id: 101855044
+          bot_name: duyetbot
