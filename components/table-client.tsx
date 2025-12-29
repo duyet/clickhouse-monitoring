@@ -14,6 +14,7 @@ interface TableClientProps {
   searchParams?: Record<string, string | number | boolean>
   className?: string
   defaultPageSize?: number
+  topRightToolbarExtras?: React.ReactNode
 }
 
 /**
@@ -40,6 +41,7 @@ export function TableClient({
   searchParams = {},
   className,
   defaultPageSize = 100,
+  topRightToolbarExtras,
 }: TableClientProps) {
   const hostId = useHostId()
 
@@ -89,6 +91,7 @@ export function TableClient({
           : undefined
       }
       className={className}
+      topRightToolbarExtras={topRightToolbarExtras}
     />
   )
 }

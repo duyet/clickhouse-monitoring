@@ -12,6 +12,7 @@ import {
   databaseDiskSpaceByDatabaseConfig,
 } from '@/app/[host]/disks/config'
 import { queryConfig as databaseTableColumnsConfig } from '@/app/[host]/database/[database]/[table]/config'
+import { tablesListConfig } from '@/app/[host]/database/[database]/config'
 import { queryConfig as replicaTablesConfig } from '@/app/[host]/replica/[replica]/tables/config'
 import type { QueryConfig } from '@/types/query-config'
 
@@ -51,6 +52,7 @@ const allQueryConfigs: QueryConfig[] = [
   databaseDiskSpaceConfig,
   databaseDiskSpaceByDatabaseConfig,
   databaseTableColumnsConfig,
+  tablesListConfig,
   replicaTablesConfig,
 ]
 
