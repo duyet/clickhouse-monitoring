@@ -12,7 +12,6 @@ import { TABLE_SETTINGS } from '@/lib/api/dashboard-api'
 import {
   createErrorResponse as createApiErrorResponse,
   createValidationError,
-  type RouteContext,
 } from '@/lib/api/error-handler'
 import { debug, error } from '@/lib/logger'
 

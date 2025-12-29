@@ -8,7 +8,7 @@
  * - Maps error types to HTTP status codes
  */
 
-import type { ApiError, ApiResponse } from '@/lib/api/types'
+import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 import { ErrorLogger } from '@/lib/error-logger'
 import { error } from '@/lib/logger'
@@ -197,7 +197,7 @@ export function createNotFoundError(
  */
 export function getHostIdFromParams(
   searchParams: URLSearchParams,
-  context?: RouteContext
+  _context?: RouteContext
 ): number | string {
   const hostId = searchParams.get('hostId')
 

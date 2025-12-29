@@ -5,7 +5,6 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart'
-import type { BarChartProps } from '@/types/charts'
 import type {
   NameType,
   Payload,

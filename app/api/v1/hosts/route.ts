@@ -11,7 +11,6 @@ import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 import {
   createErrorResponse as createApiErrorResponse,
-  type RouteContext,
 } from '@/lib/api/error-handler'
 import { debug, error } from '@/lib/logger'
 
