@@ -26,7 +26,7 @@ export const mergePerformanceConfig: QueryConfig = {
 
           bar(avg_duration_ms, 0, max(avg_duration_ms) OVER (), 30) AS bar_avg_duration,
           bar(sum_read_rows, 0, max(sum_read_rows) OVER (), 30) AS bar_sum_read_rows
-      FROM merge(system, '^part_log')
+      FROM merge('system', '^part_log')
       WHERE (event_type = 'MergeParts')
         AND (merge_reason = 'RegularMerge')
       GROUP BY 1, 2

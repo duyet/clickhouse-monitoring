@@ -42,7 +42,7 @@ export const expensiveQueriesConfig: QueryConfig = {
             formatReadableSize(sum(read_bytes)) AS read_bytes,
             formatReadableSize(sum(written_bytes)) AS written_bytes,
             formatReadableSize(sum(result_bytes)) AS result_bytes
-        FROM merge(system, '^query_log')
+        FROM merge('system', '^query_log')
         WHERE (event_time > (now() - interval 24 hours)) AND (type IN (2, 4))
         GROUP BY normalized_query_hash
     )

@@ -13,7 +13,7 @@ export const topUsageTablesConfig: QueryConfig = {
           tables as table,
           count() as count,
           round(100 * count() / max(count()) OVER ()) as pct_count
-      FROM merge(system, '^query_log')
+      FROM merge('system', '^query_log')
       ARRAY JOIN tables
       WHERE (query_kind = 'Select')
         AND (if({database: String} != '', startsWith(table, {database: String}), true))

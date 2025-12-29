@@ -38,7 +38,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     WITH event_count AS (
       SELECT ${applyInterval(interval, 'event_time')},
              COUNT() AS query_count
-      FROM merge(system, '^query_log')
+      FROM merge('system', '^query_log')
       WHERE type = 'QueryFinish'
             AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
       GROUP BY event_time
@@ -48,7 +48,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
       SELECT ${applyInterval(interval, 'event_time')},
                query_kind,
                COUNT() AS count
-        FROM merge(system, '^query_log')
+        FROM merge('system', '^query_log')
         WHERE type = 'QueryFinish'
               AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
         GROUP BY 1, 2
@@ -74,7 +74,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     SELECT ${applyInterval(interval, 'event_time')},
            avg(CurrentMetric_MemoryTracking) AS avg_memory,
            formatReadableSize(avg_memory) AS readable_avg_memory
-    FROM merge(system, '^metric_log')
+    FROM merge('system', '^metric_log')
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1 ASC`,
@@ -85,7 +85,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     SELECT
        ${applyInterval(interval, 'event_time')},
        avg(ProfileEvent_OSCPUVirtualTimeMicroseconds) / 1000000 as avg_cpu
-    FROM merge(system, '^metric_log')
+    FROM merge('system', '^metric_log')
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1`,
@@ -113,7 +113,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     SELECT ${applyInterval(interval, 'event_time')},
            avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
            avg(CurrentMetric_PartMutation) AS avg_CurrentMetric_PartMutation
-    FROM merge(system, '^metric_log')
+    FROM merge('system', '^metric_log')
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1
@@ -131,7 +131,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
         AVG(duration_ms) AS avg_duration_ms,
         formatReadableTimeDelta(avg_duration_ms / 1000, 'seconds', 'milliseconds') AS readable_avg_duration_ms,
         bar(avg_duration_ms, 0, MAX(avg_duration_ms) OVER ()) AS bar
-    FROM merge(system, '^part_log')
+    FROM merge('system', '^part_log')
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
       AND event_type = 'MergeParts'
       AND merge_reason = 'RegularMerge'
@@ -151,7 +151,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
         SUM(read_rows) AS sum_read_rows,
         log10(sum_read_rows) * 100 AS sum_read_rows_scale,
         formatReadableQuantity(sum_read_rows) AS readable_sum_read_rows
-    FROM merge(system, '^part_log')
+    FROM merge('system', '^part_log')
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
       AND event_type = 'MergeParts'
       AND merge_reason = 'RegularMerge'
@@ -252,7 +252,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
         map['DiskUsed_default'] as DiskUsed_default,
         formatReadableSize(DiskAvailable_default) as readable_DiskAvailable_default,
         formatReadableSize(DiskUsed_default) as readable_DiskUsed_default
-    FROM merge(system, '^asynchronous_metric_log')
+    FROM merge('system', '^asynchronous_metric_log')
     WHERE event_time >= (now() - toIntervalHour(${lastHours}))
     GROUP BY 1
     ORDER BY 1 ASC
@@ -267,7 +267,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     WITH event_count AS (
       SELECT ${applyInterval(interval, 'event_time')},
              COUNT() AS query_count
-      FROM merge(system, '^query_log')
+      FROM merge('system', '^query_log')
       WHERE
             type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
             AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
@@ -278,7 +278,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
         SELECT ${applyInterval(interval, 'event_time')},
                type AS query_type,
                COUNT() AS count
-        FROM merge(system, '^query_log')
+        FROM merge('system', '^query_log')
         WHERE
               type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
               AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
@@ -308,7 +308,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     SELECT ${applyInterval(interval, 'event_time')},
            user,
            countDistinct(query_id) AS count
-    FROM merge(system, '^query_log')
+    FROM merge('system', '^query_log')
     WHERE
           type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
@@ -327,7 +327,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     SELECT ${applyInterval(interval, 'event_time')},
            user,
            COUNT(*) AS count
-    FROM merge(system, '^query_log')
+    FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
           AND user != ''
@@ -343,7 +343,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     SELECT ${applyInterval(interval, 'event_time')},
            AVG(query_duration_ms) AS query_duration_ms,
            ROUND(query_duration_ms / 1000, 2) AS query_duration_s
-    FROM merge(system, '^query_log')
+    FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
           AND query_kind = 'Select'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
@@ -358,7 +358,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     SELECT ${applyInterval(interval, 'event_time')},
            AVG(memory_usage) AS memory_usage,
            formatReadableSize(memory_usage) AS readable_memory_usage
-    FROM merge(system, '^query_log')
+    FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
           AND query_kind = 'Select'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
@@ -371,7 +371,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     query: `
     SELECT type,
            COUNT() AS query_count
-    FROM merge(system, '^query_log')
+    FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
@@ -417,7 +417,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     query: `
     SELECT ${applyInterval(interval, 'event_time')},
            MAX(CurrentMetric_ReadonlyReplica) AS ReadonlyReplica
-    FROM merge(system, '^metric_log')
+    FROM merge('system', '^metric_log')
     WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
     GROUP BY event_time
     ORDER BY event_time
@@ -435,7 +435,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
       formatReadableQuantity(ZookeeperRequests) AS readable_ZookeeperRequests,
       SUM(CurrentMetric_ZooKeeperWatch) AS ZooKeeperWatch,
       formatReadableQuantity(ZooKeeperWatch) AS readable_ZooKeeperWatch
-    FROM merge(system, '^metric_log')
+    FROM merge('system', '^metric_log')
     WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
     GROUP BY event_time
     ORDER BY event_time
@@ -450,7 +450,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
     SELECT
       ${applyInterval(interval, 'event_time')},
       sum(value) AS KEEPER_EXCEPTION
-    FROM merge(system, '^error_log')
+    FROM merge('system', '^error_log')
     WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
       AND error = 'KEEPER_EXCEPTION'
     GROUP BY event_time
@@ -470,7 +470,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
       ${applyInterval(interval, 'event_time')},
       AVG(ProfileEvent_ZooKeeperWaitMicroseconds) / 1000000 AS AVG_ProfileEvent_ZooKeeperWaitSeconds,
       formatReadableTimeDelta(AVG_ProfileEvent_ZooKeeperWaitSeconds) AS readable_AVG_ProfileEvent_ZooKeeperWaitSeconds
-    FROM merge(system, '^metric_log')
+    FROM merge('system', '^metric_log')
     WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
     GROUP BY event_time
     ORDER BY event_time
