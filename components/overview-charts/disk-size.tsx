@@ -15,7 +15,13 @@ import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
-export async function DiskSize({ className }: { className?: string }) {
+export async function DiskSize({
+  hostId,
+  className,
+}: {
+  hostId: number
+  className?: string
+}) {
   const query = `
     SELECT name,
            (total_space - unreserved_space) AS used_space,
@@ -36,6 +42,7 @@ export async function DiskSize({ className }: { className?: string }) {
     }[]
   >({
     query,
+    hostId,
   })
 
   // Show error if query failed

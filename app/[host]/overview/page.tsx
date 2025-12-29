@@ -26,7 +26,7 @@ export default async function Overview({
 
   return (
     <div>
-      <OverviewCharts className="mb-10" />
+      <OverviewCharts hostId={hostId} className="mb-10" />
 
       <Tabs defaultValue="overview" className="space-y-4">
         <div className="flex items-center justify-between space-y-2">

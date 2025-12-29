@@ -15,7 +15,13 @@ import { fetchData } from '@/lib/clickhouse'
 import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
-export async function RunningQueries({ className }: { className?: string }) {
+export async function RunningQueries({
+  hostId,
+  className,
+}: {
+  hostId: number
+  className?: string
+}) {
   const query =
     'SELECT COUNT() as count FROM system.processes WHERE is_cancelled = 0'
   const { data, error } = await fetchData<
@@ -24,6 +30,7 @@ export async function RunningQueries({ className }: { className?: string }) {
     }[]
   >({
     query,
+    hostId,
   })
 
   // Show error if query failed

@@ -14,6 +14,7 @@ import { fetchData } from '@/lib/clickhouse'
 import { cn } from '@/lib/utils'
 
 export async function ClickHouseInfo({
+  hostId,
   title,
   description,
   version,
@@ -23,6 +24,7 @@ export async function ClickHouseInfo({
   className,
   contentClassName,
 }: {
+  hostId: number
   title?: string
   description?: string
   version?: boolean
@@ -42,6 +44,7 @@ export async function ClickHouseInfo({
         {hostName && (
           <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
             <InfoLine
+              hostId={hostId}
               query="SELECT hostName() as val"
               label="Host"
               icon={<TagIcon className="size-4" />}
@@ -51,6 +54,7 @@ export async function ClickHouseInfo({
         {version && (
           <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
             <InfoLine
+              hostId={hostId}
               query="SELECT version() as val"
               label="Version"
               icon={<TagIcon className="size-4" />}
@@ -60,6 +64,7 @@ export async function ClickHouseInfo({
         {uptime && (
           <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
             <InfoLine
+              hostId={hostId}
               query="SELECT splitByString(' and ', formatReadableTimeDelta(uptime()))[1] as val"
               label="Uptime"
               icon={<CalendarCheckIcon className="size-4" />}
@@ -72,17 +77,19 @@ export async function ClickHouseInfo({
 }
 
 async function InfoLine({
+  hostId,
   query,
   label,
   icon,
   className,
 }: {
+  hostId: number
   query: string
   label: string
   icon?: React.ReactNode
   className?: string
 }) {
-  const { data, error } = await fetchData<{ val: string }[]>({ query })
+  const { data, error } = await fetchData<{ val: string }[]>({ query, hostId })
 
   if (error) {
     return (
