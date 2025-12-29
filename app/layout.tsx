@@ -30,10 +30,10 @@ export default function RootLayout({
       <body className="font-sans">
         <SWRProvider>
           <AppProvider reloadIntervalSecond={120}>
-            <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
+            <div className="min-h-screen">
               <Suspense
                 fallback={
-                  <div className="flex h-[73px] items-center justify-between">
+                  <div className="flex h-[73px] items-center justify-between border-b p-4 md:px-8">
                     <div className="flex flex-row items-stretch gap-2">
                       <div className="h-[45px] w-[45px] animate-pulse rounded bg-muted" />
                       <div className="flex-auto truncate">
@@ -45,7 +45,9 @@ export default function RootLayout({
               >
                 <HeaderClient />
               </Suspense>
-              {children}
+              <main className="container mx-auto max-w-[1600px] px-4 md:px-6 lg:px-8 py-6 md:py-8">
+                {children}
+              </main>
             </div>
           </AppProvider>
 

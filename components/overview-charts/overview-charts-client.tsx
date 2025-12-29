@@ -72,7 +72,7 @@ function RunningQueries({ hostId }: { hostId: number }) {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex items-center justify-between">
-          <div className="text-3xl font-bold">{data[0].count}</div>
+          <div className="font-mono text-3xl font-semibold tabular-nums tracking-tight">{data[0].count}</div>
           <a
             className="text-muted-foreground hover:text-foreground text-sm"
             href={`/running-queries?host=${hostId}`}
@@ -137,12 +137,12 @@ function DatabaseTableCount({ hostId }: { hostId: number }) {
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
         <div className="flex items-center justify-between">
-          <span className="text-sm">
+          <span className="font-mono text-sm tabular-nums">
             {databaseData?.[0]?.count || 0} databases
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm">{tablesData?.[0]?.count || 0} tables</span>
+          <span className="font-mono text-sm tabular-nums">{tablesData?.[0]?.count || 0} tables</span>
         </div>
       </CardContent>
     </Card>
