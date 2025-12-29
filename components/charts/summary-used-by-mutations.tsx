@@ -12,7 +12,7 @@ export function ChartSummaryUsedByMutations({
   className,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     running_count: number
   }>({
     chartName: 'summary-used-by-mutations',
@@ -20,13 +20,20 @@ export function ChartSummaryUsedByMutations({
     refreshInterval: 30000,
   })
 
+  const dataArray = Array.isArray(data) ? data : undefined
+
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
-  const count = data?.[0] || { running_count: 0 }
+  const count = dataArray?.[0] || { running_count: 0 }
 
   return (
-    <ChartCard title={title} className={className} sql="" data={data || []}>
+    <ChartCard
+      title={title}
+      className={className}
+      sql={sql}
+      data={dataArray || []}
+    >
       <div className="flex flex-col content-stretch items-center p-0">
         <CardMultiMetrics
           primary={

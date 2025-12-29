@@ -21,6 +21,7 @@ export function ChartNewPartsCreated({
     isLoading,
     error,
     refresh,
+    sql,
   } = useChartData<{
     event_time: string
     table: string
@@ -43,9 +44,11 @@ export function ChartNewPartsCreated({
     )
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
+  const dataArray = Array.isArray(raw) ? raw : undefined
+
   // Single-pass algorithm: collect data and track tables simultaneously
   const tableSet = new Set<string>()
-  const data = (raw || []).reduce(
+  const data = (dataArray || []).reduce(
     (acc, cur) => {
       const { event_time, table, new_parts } = cur
       tableSet.add(table)
@@ -67,7 +70,7 @@ export function ChartNewPartsCreated({
   const tables = Array.from(tableSet)
 
   return (
-    <ChartCard title={title} className={className} sql="" data={barData}>
+    <ChartCard title={title} className={className} sql={sql} data={barData}>
       <BarChart
         className={chartClassName}
         data={barData}

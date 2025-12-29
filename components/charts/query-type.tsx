@@ -24,6 +24,8 @@ export function ChartQueryType({
     refreshInterval: 30000,
   })
 
+  const dataArray = Array.isArray(data) ? data : undefined
+
   if (isLoading)
     return (
       <ChartSkeleton
@@ -36,7 +38,7 @@ export function ChartQueryType({
 
   return (
     <DonutChart
-      data={data || []}
+      data={dataArray || []}
       index="type"
       categories={['query_count']}
       readable="quantity"

@@ -20,7 +20,7 @@ export function ChartReplicationSummaryTable({
   className,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     table: string
     type: string
     current_executing: number
@@ -31,16 +31,19 @@ export function ChartReplicationSummaryTable({
     refreshInterval: 30000,
   })
 
+  const dataArray = Array.isArray(data) ? data : undefined
+
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
-  const headers = Object.keys(data?.[0] || {})
+  const headers = Object.keys(dataArray?.[0] || {})
 
   return (
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
-      sql=""
+      sql={sql}
+      data={dataArray || []}
     >
       <div className="flex flex-col justify-between p-0">
         <Table className={className}>
@@ -52,7 +55,7 @@ export function ChartReplicationSummaryTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(data || []).map((row, idx) => (
+            {(dataArray || []).map((row, idx) => (
               <TableRow key={idx}>
                 {Object.values(row).map((value, i) => {
                   return <TableCell key={i}>{value || ''} </TableCell>

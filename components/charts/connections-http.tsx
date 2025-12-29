@@ -16,7 +16,7 @@ export function ChartConnectionsHttp({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     CurrentMetric_HTTPConnection: number
     readable_CurrentMetric_HTTPConnection: string
@@ -30,6 +30,8 @@ export function ChartConnectionsHttp({
     refreshInterval: 30000,
   })
 
+  const dataArray = Array.isArray(data) ? data : undefined
+
   if (isLoading)
     return (
       <ChartSkeleton
@@ -41,9 +43,14 @@ export function ChartConnectionsHttp({
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
-    <ChartCard title={title} sql="" className={className} data={data || []}>
+    <ChartCard
+      title={title}
+      sql={sql}
+      className={className}
+      data={dataArray || []}
+    >
       <BarChart
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={[
           'CurrentMetric_HTTPConnectionsTotal',

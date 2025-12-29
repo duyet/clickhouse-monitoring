@@ -22,7 +22,7 @@ export function ChartFailedQueryCount({
   hostId,
   ...props
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     query_count: number
     breakdown: Array<[string, number] | Record<string, string>>
@@ -33,6 +33,8 @@ export function ChartFailedQueryCount({
     lastHours,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading)
     return (
@@ -49,12 +51,12 @@ export function ChartFailedQueryCount({
       title={title}
       className={className}
       contentClassName={chartCardContentClassName}
-      sql=""
-      data={data || []}
+      sql={sql}
+      data={dataArray || []}
     >
       <AreaChart
         className={cn('h-52', chartClassName)}
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['query_count']}
         readable="quantity"

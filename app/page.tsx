@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 
-export default async function Home() {
-  redirect('/0/overview')
+export default function Home() {
+  // Redirect to overview page with default host
+  redirect('/overview?host=0')
 }

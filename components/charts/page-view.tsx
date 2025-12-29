@@ -22,7 +22,7 @@ export function PageViewBarChart({
   hostId,
   ...props
 }: ChartProps & { colors?: string[] }) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     page_views: number
   }>({
@@ -32,6 +32,8 @@ export function PageViewBarChart({
     lastHours,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading)
     return (
@@ -48,12 +50,12 @@ export function PageViewBarChart({
       title={title}
       className={className}
       contentClassName={chartCardContentClassName}
-      sql=""
-      data={data || []}
+      sql={sql}
+      data={dataArray || []}
     >
       <BarChart
         className={cn('h-52', chartClassName)}
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['page_views']}
         readable="quantity"

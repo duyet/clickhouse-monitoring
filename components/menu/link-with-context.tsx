@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 export const HostPrefixedLink = ({
   href,
@@ -11,10 +11,14 @@ export const HostPrefixedLink = ({
   href: string
   children: React.ReactNode
 } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
-  const params = useParams()
+  const searchParams = useSearchParams()
+  const hostId = searchParams.get('host') || '0'
+
+  // Build URL with host query parameter
+  const url = `${href}?host=${hostId}`
 
   return (
-    <Link prefetch={false} href={`/${params.host || 0}${href}`} {...props}>
+    <Link prefetch={false} href={url} {...props}>
       {children}
     </Link>
   )

@@ -8,26 +8,28 @@ This is a Next.js 15 (React 19) ClickHouse monitoring dashboard that provides re
 
 ## Commands
 
+**Note: This project uses `bun` as the package manager.** Use `bun` instead of `pnpm` or `npm` for all commands.
+
 ### Development
 
-- `pnpm dev` - Start development server with turbopack
-- `pnpm build` - Build for production with turbopack
-- `pnpm start` - Start production server
+- `bun run dev` - Start development server with turbopack
+- `bun run build` - Build for production with turbopack
+- `bun run start` - Start production server
 
 ### Testing
 
-- `pnpm test` - Run Jest unit tests with coverage
-- `pnpm jest` - Run Jest tests (excludes query-config tests)
-- `pnpm test-queries-config` - Run query config specific tests
-- `pnpm component` - Open Cypress component tests
-- `pnpm component:headless` - Run Cypress component tests headless
-- `pnpm e2e` - Open Cypress e2e tests
-- `pnpm e2e:headless` - Run Cypress e2e tests headless
+- `bun run test` - Run Jest unit tests with coverage
+- `bun run jest` - Run Jest tests (excludes query-config tests)
+- `bun run test-queries-config` - Run query config specific tests
+- `bun run component` - Open Cypress component tests
+- `bun run component:headless` - Run Cypress component tests headless
+- `bun run e2e` - Open Cypress e2e tests
+- `bun run e2e:headless` - Run Cypress e2e tests headless
 
 ### Code Quality
 
-- `pnpm lint` - Run Next.js ESLint
-- `pnpm fmt` - Format code with Prettier
+- `bun run lint` - Run Next.js ESLint
+- `bun run fmt` - Format code with Prettier
 
 ## Architecture
 

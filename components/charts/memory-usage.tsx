@@ -16,7 +16,7 @@ export function ChartMemoryUsage({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     avg_memory: number
     readable_avg_memory: string
@@ -27,6 +27,8 @@ export function ChartMemoryUsage({
     lastHours,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading)
     return (
@@ -42,12 +44,12 @@ export function ChartMemoryUsage({
     <ChartCard
       title={title}
       className={className}
-      sql=""
-      data={data || []}
+      sql={sql}
+      data={dataArray || []}
       data-testid="memory-usage-chart"
     >
       <AreaChart
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['avg_memory']}
         className={chartClassName}

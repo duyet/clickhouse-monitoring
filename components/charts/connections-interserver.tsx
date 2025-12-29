@@ -16,7 +16,7 @@ export function ChartConnectionsInterserver({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     CurrentMetric_InterserverConnection: number
     readable_CurrentMetric_InterserverConnection: string
@@ -27,6 +27,8 @@ export function ChartConnectionsInterserver({
     lastHours,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading)
     return (
@@ -39,9 +41,14 @@ export function ChartConnectionsInterserver({
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
-    <ChartCard title={title} sql="" data={data || []} className={className}>
+    <ChartCard
+      title={title}
+      sql={sql}
+      data={dataArray || []}
+      className={className}
+    >
       <BarChart
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['CurrentMetric_InterserverConnection']}
         readableColumn="readable_CurrentMetric_InterserverConnection"

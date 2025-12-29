@@ -13,7 +13,7 @@ export function ChartDiskSize({
   className,
   hostId,
 }: ChartProps & { name?: string }) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     name: string
     used_space: number
     readable_used_space: string
@@ -26,14 +26,16 @@ export function ChartDiskSize({
     refreshInterval: 30000,
   })
 
+  const dataArray = Array.isArray(data) ? data : undefined
+
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
-  const first = data?.[0]
-  if (!data || !first) return null
+  const first = dataArray?.[0]
+  if (!dataArray || !first) return null
 
   return (
-    <ChartCard title={title} className={className} sql="" data={data || []}>
+    <ChartCard title={title} className={className} sql={sql} data={dataArray}>
       <CardMetric
         current={first.used_space}
         currentReadable={`${first.readable_used_space} used (${first.name})`}

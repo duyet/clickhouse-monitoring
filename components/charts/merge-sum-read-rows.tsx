@@ -15,7 +15,7 @@ export function ChartMergeSumReadRows({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     sum_read_rows: number
     sum_read_rows_scale: number
@@ -28,6 +28,8 @@ export function ChartMergeSumReadRows({
     refreshInterval: 30000,
   })
 
+  const dataArray = Array.isArray(data) ? data : undefined
+
   if (isLoading)
     return (
       <ChartSkeleton
@@ -39,9 +41,14 @@ export function ChartMergeSumReadRows({
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
-    <ChartCard title={title} className={className} sql="" data={data || []}>
+    <ChartCard
+      title={title}
+      className={className}
+      sql={sql}
+      data={dataArray || []}
+    >
       <BarChart
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['sum_read_rows_scale']}
         readableColumn="readable_sum_read_rows"

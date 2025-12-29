@@ -1,37 +1,52 @@
 'use client'
 
+import { useSearchParams } from 'next/navigation'
 import { useParams } from 'next/navigation'
 
 /**
- * Hook to extract hostId from URL parameters
- * Expected route: /[host]/[view]/page.tsx
- * Returns the host parameter as a number
+ * Hook to extract hostId from URL query parameters or route parameters
+ * Expected routes:
+ * - Static routes: /overview?host=0, /dashboard?host=1
+ * - Dynamic routes (legacy): /[host]/[view]/page.tsx
  *
- * @returns {number} The host ID from the URL parameter
- * @throws {Error} If host parameter is missing or invalid
+ * Priority:
+ * 1. Query parameter `host` (for static routes)
+ * 2. Route parameter `host` (for dynamic routes, legacy support)
+ * 3. Default: 0
+ *
+ * @returns {number} The host ID from the URL
  *
  * @example
  * ```typescript
  * const hostId = useHostId()
+ * // Returns 0 for /overview?host=0
+ * // Returns 1 for /dashboard?host=1
+ * // Returns 2 for /2/overview (legacy dynamic route)
  * ```
  */
 export function useHostId(): number {
+  const searchParams = useSearchParams()
   const params = useParams()
 
-  if (!params.host) {
-    throw new Error('useHostId: host parameter is missing from URL')
+  // First try query param (for static routes)
+  const hostParam = searchParams.get('host')
+  if (hostParam !== null) {
+    const parsed = Number(hostParam)
+    if (!Number.isNaN(parsed)) {
+      return parsed
+    }
   }
 
-  const host = params.host
-
-  // Handle both string and string array (from dynamic routes)
-  const hostString = Array.isArray(host) ? host[0] : host
-
-  const hostId = Number(hostString)
-
-  if (Number.isNaN(hostId)) {
-    throw new Error(`useHostId: invalid host parameter "${hostString}"`)
+  // Fallback to route param (for dynamic routes, legacy support)
+  if (params.host) {
+    const host = params.host
+    const hostString = Array.isArray(host) ? host[0] : host
+    const hostId = Number(hostString)
+    if (!Number.isNaN(hostId)) {
+      return hostId
+    }
   }
 
-  return hostId
+  // Default to first host
+  return 0
 }

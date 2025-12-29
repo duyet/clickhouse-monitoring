@@ -1,5 +1,4 @@
 import { debug, error as logError, warn } from '@/lib/logger'
-import { getHostId } from '@/lib/server-context'
 import { validateTableExistence } from '@/lib/table-validator'
 import type { QueryConfig } from '@/types/query-config'
 import type {
@@ -227,7 +226,8 @@ export const getClient = async <B extends boolean>({
     config = clientConfig
   } else {
     const configs = getClickHouseConfigs()
-    const targetHostId = hostId ?? getHostId()
+    // hostId is now required for API usage; clientConfig should be provided for server-side
+    const targetHostId = hostId ?? 0
     config = configs[targetHostId]
 
     if (!config) {
@@ -306,24 +306,17 @@ export const fetchData = async <
   clickhouse_settings,
   hostId,
   queryConfig,
-}: QueryParams &
-  Partial<{
-    clickhouse_settings: QuerySettings
-    hostId?: number | string
-    queryConfig?: QueryConfig
-  }>): Promise<FetchDataResult<T>> => {
+}: QueryParams & {
+  hostId: number | string
+  clickhouse_settings?: QuerySettings
+  queryConfig?: QueryConfig
+}): Promise<FetchDataResult<T>> => {
   const start = new Date()
 
   // Parse and validate hostId to prevent NaN
-  let currentHostId: number
-  if (hostId !== undefined && hostId !== null && hostId !== '') {
-    const parsed = Number(hostId)
-    if (Number.isNaN(parsed)) {
-      throw new Error(`Invalid hostId: ${hostId}. Must be a valid number.`)
-    }
-    currentHostId = parsed
-  } else {
-    currentHostId = getHostId()
+  const currentHostId = Number(hostId)
+  if (Number.isNaN(currentHostId)) {
+    throw new Error(`Invalid hostId: ${hostId}. Must be a valid number.`)
   }
 
   const configs = getClickHouseConfigs()

@@ -19,7 +19,7 @@ export function ChartZookeeperSummaryTable({
   className,
   hostId,
 }: ChartProps) {
-  const { data, error, isLoading, refresh } = useChartData<{
+  const { data, error, isLoading, refresh, sql } = useChartData<{
     metric: string
     value: string
     desc: string
@@ -28,6 +28,8 @@ export function ChartZookeeperSummaryTable({
     hostId,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading) {
     return <ChartSkeleton title={title} className={className} />
@@ -44,13 +46,14 @@ export function ChartZookeeperSummaryTable({
     )
   }
 
-  const headers = Object.keys(data?.[0] || {})
+  const headers = Object.keys(dataArray?.[0] || {})
 
   return (
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
-      sql=""
+      sql={sql}
+      data={dataArray || []}
     >
       <div className="flex flex-col justify-between p-0">
         <Table className={className}>
@@ -62,7 +65,7 @@ export function ChartZookeeperSummaryTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(data || []).map((row, idx) => (
+            {(dataArray || []).map((row, idx) => (
               <TableRow key={idx}>
                 {Object.values(row).map((value, i) => {
                   return <TableCell key={i}>{value || ''} </TableCell>

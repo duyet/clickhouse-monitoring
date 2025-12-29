@@ -177,8 +177,8 @@ describe('fetchData hostId parameter validation', () => {
     const functionMatch = content.match(/export\s+const\s+fetchData\s*=/)
     expect(functionMatch).toBeTruthy()
 
-    // Should have hostId in the parameter interface or as optional parameter
-    expect(content).toMatch(/hostId\?\s*:\s*number\s*\|\s*string/)
+    // hostId is now required (not optional) after refactoring
+    expect(content).toMatch(/hostId\s*:\s*number\s*\|\s*string/)
   })
 
   it('should ensure getHostIdCookie is imported where needed', () => {
@@ -193,23 +193,20 @@ describe('fetchData hostId parameter validation', () => {
       // Skip files that don't use fetchData
       if (!content.includes('fetchData')) continue
 
-      // Check if it's a component (not a page under [host])
-      const isPageUnderHost =
-        filePath.includes('app/[host]') &&
-        (filePath.endsWith('/page.tsx') || filePath.endsWith('/layout.tsx'))
+      // Check if it's a static page (under app/ but not app/api/)
+      const isStaticPage =
+        filePath.includes('app/') &&
+        (filePath.endsWith('/page.tsx') || filePath.endsWith('/layout.tsx')) &&
+        !filePath.includes('app/api/')
 
-      // If it's not a page under [host] and uses fetchData, it should import getHostIdCookie
-      if (!isPageUnderHost && content.includes('fetchData')) {
-        if (
-          !content.includes('getHostIdCookie') &&
-          !content.includes('hostId:')
-        ) {
-          // This might be a component that needs to use getHostIdCookie
+      // If it's a static page and uses fetchData, it should use hostId parameter
+      if (isStaticPage && content.includes('fetchData')) {
+        if (!content.includes('hostId:') && !content.includes('hostId:')) {
           const relativePath = path.relative(projectRoot, filePath)
           violations.push({
             file: relativePath,
             reason:
-              'Component uses fetchData but may need getHostIdCookie import',
+              'Static page uses fetchData but should include hostId parameter',
           })
         }
       }
@@ -218,21 +215,24 @@ describe('fetchData hostId parameter validation', () => {
     // This is a warning test - we'll check but not fail the build
     if (violations.length > 0) {
       console.warn(
-        `⚠️  Found ${violations.length} files that might need getHostIdCookie:\n` +
+        `⚠️  Found ${violations.length} files that might need hostId parameter:\n` +
           violations.map((v) => `  - ${v.file}: ${v.reason}`).join('\n')
       )
     }
   })
 
-  it('should validate that pages under [host] extract host from params', () => {
-    const hostPages = getFilesToCheck()
+  it('should validate that static pages use hostId correctly', () => {
+    const staticPages = getFilesToCheck()
       .filter(
-        (file) => file.includes('app/[host]') && file.endsWith('/page.tsx')
+        (file) =>
+          file.includes('app/') &&
+          file.endsWith('/page.tsx') &&
+          !file.includes('app/api/')
       )
       .map((file) => path.relative(projectRoot, file))
     const violations: Array<{ file: string; issue: string }> = []
 
-    for (const pagePath of hostPages) {
+    for (const pagePath of staticPages) {
       const fullPath = path.join(projectRoot, pagePath)
       if (!fs.existsSync(fullPath)) continue
 
@@ -241,24 +241,11 @@ describe('fetchData hostId parameter validation', () => {
       // Skip pages that don't use fetchData
       if (!content.includes('fetchData')) continue
 
-      // Check if function signature includes params
-      if (!content.includes('{ params }') && !content.includes('params:')) {
+      // Check if fetchData includes hostId parameter
+      if (!content.includes('hostId:') && !content.includes('hostId:')) {
         violations.push({
           file: pagePath,
-          issue:
-            'Page uses fetchData but function signature missing params parameter',
-        })
-        continue
-      }
-
-      // Check if host is extracted from params
-      if (
-        !content.includes('await params') &&
-        !content.includes('params.host')
-      ) {
-        violations.push({
-          file: pagePath,
-          issue: 'Page has params but does not extract host from params',
+          issue: 'Page uses fetchData but does not include hostId parameter',
         })
       }
     }
@@ -269,8 +256,8 @@ describe('fetchData hostId parameter validation', () => {
         .join('\n')
 
       throw new Error(
-        `Found ${violations.length} pages under [host] with parameter issues:\n${violationMessages}\n\n` +
-          'Pages under app/[host]/ must extract host from params and pass it to fetchData calls.'
+        `Found ${violations.length} static pages with hostId issues:\n${violationMessages}\n\n` +
+          'Static pages must include hostId parameter in fetchData calls.'
       )
     }
   })
@@ -293,19 +280,15 @@ describe('Host switching regression tests', () => {
     }
   })
 
-  it('should have multi-host configuration in layout', () => {
-    const layoutPath = path.join(__dirname, '../../app/[host]/layout.tsx')
+  it('should have multi-host configuration support', () => {
+    // Static site architecture: hostId is managed through cookies and server context
+    const serverContextPath = path.join(__dirname, '../server-context.ts')
 
-    if (fs.existsSync(layoutPath)) {
-      const content = fs.readFileSync(layoutPath, 'utf-8')
+    if (fs.existsSync(serverContextPath)) {
+      const content = fs.readFileSync(serverContextPath, 'utf-8')
 
-      // Should extract host from params
-      expect(content).toMatch(/const.*host.*=.*await params/)
-
-      // Should set host context or cookie
-      expect(content).toMatch(
-        /(setHostId|hostId.*=.*host|document\.cookie.*hostId)/i
-      )
+      // Should have hostId management functions
+      expect(content).toMatch(/getHostIdCookie|setHostId|getHostId/)
     }
   })
 })

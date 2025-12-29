@@ -21,6 +21,7 @@ export function ChartFailedQueryCountByType({
     isLoading,
     error,
     refresh,
+    sql,
   } = useChartData<{
     event_time: string
     user: string
@@ -43,9 +44,11 @@ export function ChartFailedQueryCountByType({
     )
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
+  const dataArray = Array.isArray(raw) ? raw : undefined
+
   // Single-pass algorithm: collect data and track users simultaneously
   const userSet = new Set<string>()
-  const data = (raw || []).reduce(
+  const data = (dataArray || []).reduce(
     (acc, cur) => {
       const { event_time, user, count } = cur
       userSet.add(user)
@@ -66,7 +69,7 @@ export function ChartFailedQueryCountByType({
   const users = Array.from(userSet)
 
   return (
-    <ChartCard title={title} className={className} sql="" data={barData}>
+    <ChartCard title={title} className={className} sql={sql} data={barData}>
       <BarChart
         className={chartClassName}
         data={barData}

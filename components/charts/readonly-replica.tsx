@@ -14,7 +14,7 @@ export function ChartReadonlyReplica({
   className,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     ReadonlyReplica: number
   }>({
@@ -24,6 +24,8 @@ export function ChartReadonlyReplica({
     lastHours,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading)
     return (
@@ -36,9 +38,14 @@ export function ChartReadonlyReplica({
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
-    <ChartCard title={title} sql="" className={className}>
+    <ChartCard
+      title={title}
+      sql={sql}
+      className={className}
+      data={dataArray || []}
+    >
       <BarChart
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['ReadonlyReplica']}
         className="h-52"

@@ -13,13 +13,15 @@ export function ChartZookeeperUptime({
   className,
   hostId,
 }: ChartProps) {
-  const { data, error, isLoading, refresh } = useChartData<{
+  const { data, error, isLoading, refresh, sql } = useChartData<{
     uptime: string
   }>({
     chartName: 'zookeeper-uptime',
     hostId,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading) {
     return <ChartSkeleton title={title} className={className} />
@@ -36,13 +38,13 @@ export function ChartZookeeperUptime({
     )
   }
 
-  const uptime = (data || [])[0] || { uptime: 'N/A' }
+  const uptime = (dataArray || [])[0] || { uptime: 'N/A' }
 
   return (
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
-      sql=""
+      sql={sql}
     >
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics

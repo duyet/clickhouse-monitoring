@@ -13,7 +13,7 @@ export function ChartBackupSize({
   className,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     total_size: number
     uncompressed_size: number
     compressed_size: number
@@ -30,13 +30,15 @@ export function ChartBackupSize({
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
-  const first = data?.[0]
-  if (!data || !first) {
-    return null
-  }
+  if (!data) return null
+
+  // Single-query chart returns array
+  const dataArray = Array.isArray(data) ? data : undefined
+  const first = dataArray?.[0]
+  if (!first) return null
 
   return (
-    <ChartCard title={title} className={className} sql="" data={data || []}>
+    <ChartCard title={title} className={className} sql={sql} data={dataArray}>
       <CardMetric
         current={first.compressed_size}
         currentReadable={`${first.readable_compressed_size} compressed`}

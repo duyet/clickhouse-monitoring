@@ -20,7 +20,13 @@ export interface ChartQueryResult {
   tableCheck?: string | string[]
 }
 
-type ChartQueryBuilder = (params: ChartQueryParams) => ChartQueryResult
+export interface MultiChartQueryResult {
+  queries: Array<{ key: string; query: string; optional?: boolean }>
+}
+
+type ChartQueryBuilder = (
+  params: ChartQueryParams
+) => ChartQueryResult | MultiChartQueryResult
 
 /**
  * Chart registry mapping chart names to their SQL query builders.
@@ -497,21 +503,95 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
   },
 
   'summary-used-by-running-queries': () => ({
-    query: `
-    SELECT COUNT() as query_count,
-           SUM(memory_usage) as memory_usage,
-           formatReadableSize(memory_usage) as readable_memory_usage
-    FROM system.processes
-  `,
+    queries: [
+      {
+        key: 'main',
+        query: `
+          SELECT COUNT() as query_count,
+                 SUM(memory_usage) as memory_usage,
+                 formatReadableSize(memory_usage) as readable_memory_usage
+          FROM system.processes
+        `,
+      },
+      {
+        key: 'totalMem',
+        query: `
+          SELECT metric,
+                 value as total,
+                 formatReadableSize(total) AS readable_total
+          FROM system.asynchronous_metrics
+          WHERE metric = 'CGroupMemoryUsed'
+                OR metric = 'OSMemoryTotal'
+          ORDER BY metric ASC
+          LIMIT 1
+        `,
+      },
+      {
+        key: 'todayQueryCount',
+        query: `
+          SELECT COUNT() as query_count
+          FROM system.query_log
+          WHERE type = 'QueryStart'
+                AND query_start_time >= today()
+        `,
+      },
+      {
+        key: 'rowsReadWritten',
+        query: `
+          SELECT SUM(read_rows) as rows_read,
+                 SUM(written_rows) as rows_written,
+                 formatReadableQuantity(rows_read) as readable_rows_read,
+                 formatReadableQuantity(rows_written) as readable_rows_written
+          FROM system.processes
+        `,
+      },
+    ],
   }),
 
   'summary-used-by-merges': () => ({
-    query: `
-    SELECT
-      SUM(memory_usage) as memory_usage,
-      formatReadableSize(memory_usage) as readable_memory_usage
-    FROM system.merges
-  `,
+    queries: [
+      {
+        key: 'used',
+        query: `
+          SELECT
+            SUM(memory_usage) as memory_usage,
+            formatReadableSize(memory_usage) as readable_memory_usage
+          FROM system.merges
+        `,
+      },
+      {
+        key: 'totalMem',
+        query: `
+          SELECT metric, value as total, formatReadableSize(total) AS readable_total
+          FROM system.asynchronous_metrics
+          WHERE
+              metric = 'CGroupMemoryUsed'
+              OR metric = 'OSMemoryTotal'
+          ORDER BY metric ASC
+          LIMIT 1
+        `,
+      },
+      {
+        key: 'rowsReadWritten',
+        query: `
+          SELECT SUM(rows_read) as rows_read,
+                 SUM(rows_written) as rows_written,
+                 formatReadableQuantity(rows_read) as readable_rows_read,
+                 formatReadableQuantity(rows_written) as readable_rows_written
+          FROM system.merges
+        `,
+      },
+      {
+        key: 'bytesReadWritten',
+        query: `
+          SELECT SUM(bytes_read_uncompressed) as bytes_read,
+                 SUM(bytes_written_uncompressed) as bytes_written,
+                 formatReadableSize(bytes_read) as readable_bytes_read,
+                 formatReadableSize(bytes_written) as readable_bytes_written
+          FROM system.merges
+        `,
+      },
+    ],
   }),
 
   'summary-used-by-mutations': () => ({
@@ -551,7 +631,7 @@ export const chartRegistry: Record<string, ChartQueryBuilder> = {
 export function getChartQuery(
   chartName: string,
   params: ChartQueryParams = {}
-): ChartQueryResult | null {
+): ChartQueryResult | MultiChartQueryResult | null {
   const builder = chartRegistry[chartName]
   if (!builder) {
     return null

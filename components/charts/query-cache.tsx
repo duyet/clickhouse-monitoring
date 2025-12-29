@@ -12,7 +12,7 @@ export function ChartQueryCache({
   className,
   hostId,
 }: ChartProps & { name?: string }) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     total_result_size: number
     total_staled_result_size: number
     readable_total_result_size: string
@@ -23,14 +23,16 @@ export function ChartQueryCache({
     refreshInterval: 30000,
   })
 
+  const dataArray = Array.isArray(data) ? data : undefined
+
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
-  const first = data?.[0]
-  if (!data || !first) return null
+  const first = dataArray?.[0]
+  if (!dataArray || !first) return null
 
   return (
-    <ChartCard title={title} className={className} sql="" data={data || []}>
+    <ChartCard title={title} className={className} sql={sql} data={dataArray}>
       <CardMetric
         current={first.total_result_size}
         currentReadable={`${first.readable_total_result_size} cached`}

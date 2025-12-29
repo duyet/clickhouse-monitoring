@@ -17,7 +17,7 @@ export function ChartDisksUsage({
   hostId,
   ...props
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     DiskAvailable_default: number
     DiskUsed_default: number
@@ -30,6 +30,8 @@ export function ChartDisksUsage({
     lastHours,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading)
     return (
@@ -45,13 +47,13 @@ export function ChartDisksUsage({
     <ChartCard
       title={title}
       className={className}
-      sql=""
-      data={data || []}
+      sql={sql}
+      data={dataArray || []}
       data-testid="disk-usage-chart"
     >
       <AreaChart
         className={cn('h-52', chartClassName)}
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['DiskAvailable_default', 'DiskUsed_default']}
         readableColumns={[

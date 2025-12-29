@@ -11,6 +11,9 @@ import type { ApiRequest, ApiResponse, ApiError } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 import type { DataFormat } from '@clickhouse/client'
 
+// This route is dynamic and should not be statically exported
+export const dynamic = 'force-dynamic'
+
 /**
  * Handle POST requests for data fetching
  * Accepts query and parameters in the request body

@@ -55,3 +55,7 @@ cypress/screenshots
 .open-next
 .wrangler
 .dev.vars
+
+.claude/*.local.md
+.cursor
+.wrangler

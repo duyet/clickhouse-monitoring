@@ -4,15 +4,17 @@ import useSWR, { type SWRConfiguration } from 'swr'
 
 /**
  * Chart data response structure from the API
+ * Can be either an array (single query) or an object (multi-query)
  */
 interface ChartDataResponse<T = unknown> {
-  data: T[]
+  data: T[] | Record<string, unknown>
   metadata: {
     duration?: number
     rows?: number
     rows_before_limit_at_least?: number
     exception?: string
     message?: string
+    sql?: string
   }
 }
 
@@ -110,8 +112,9 @@ export function useChartData<T = unknown>({
   })
 
   return {
-    data: data?.data || [],
+    data: data?.data || (Array.isArray(data?.data) ? [] : {}),
     metadata: data?.metadata,
+    sql: data?.metadata?.sql,
     error,
     isLoading,
     refresh: mutate,

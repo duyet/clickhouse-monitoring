@@ -19,7 +19,7 @@ export function ChartMergeCount({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     avg_CurrentMetric_Merge: number
     avg_CurrentMetric_PartMutation: number
@@ -30,6 +30,8 @@ export function ChartMergeCount({
     lastHours,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading)
     return (
@@ -46,12 +48,12 @@ export function ChartMergeCount({
       title={title}
       className={cn('justify-between', className)}
       contentClassName="flex flex-col justify-between"
-      sql=""
-      data={data || []}
+      sql={sql}
+      data={dataArray || []}
     >
       <AreaChart
         className={cn('h-52', chartClassName)}
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={[
           'avg_CurrentMetric_Merge',

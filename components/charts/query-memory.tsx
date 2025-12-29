@@ -17,7 +17,7 @@ export function ChartQueryMemory({
   hostId,
   ...props
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     memory_usage: number
     readable_memory_usage: string
@@ -28,6 +28,8 @@ export function ChartQueryMemory({
     lastHours,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading)
     return (
@@ -40,10 +42,15 @@ export function ChartQueryMemory({
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
-    <ChartCard title={title} className={className} sql="" data={data || []}>
+    <ChartCard
+      title={title}
+      className={className}
+      sql={sql}
+      data={dataArray || []}
+    >
       <BarChart
         className={cn('h-52', chartClassName)}
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['memory_usage']}
         readableColumn="readable_memory_usage"

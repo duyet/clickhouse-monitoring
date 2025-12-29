@@ -13,7 +13,7 @@ export function ChartZookeeperRequests({
   className,
   hostId,
 }: ChartProps) {
-  const { data, error, isLoading, refresh } = useChartData<{
+  const { data, error, isLoading, refresh, sql } = useChartData<{
     event_time: string
     ZookeeperRequests: number
     ZooKeeperWatch: number
@@ -24,6 +24,8 @@ export function ChartZookeeperRequests({
     hostId,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading) {
     return <ChartSkeleton title={title} className={className} />
@@ -41,9 +43,14 @@ export function ChartZookeeperRequests({
   }
 
   return (
-    <ChartCard title={title} sql="" data={data || []} className={className}>
+    <ChartCard
+      title={title}
+      sql={sql}
+      data={dataArray || []}
+      className={className}
+    >
       <BarChart
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['ZookeeperRequests', 'ZooKeeperWatch']}
         className="h-52"

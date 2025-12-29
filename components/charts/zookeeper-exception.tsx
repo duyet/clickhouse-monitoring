@@ -13,7 +13,7 @@ export function ChartKeeperException({
   className,
   hostId,
 }: ChartProps) {
-  const { data, error, isLoading, refresh } = useChartData<{
+  const { data, error, isLoading, refresh, sql } = useChartData<{
     event_time: string
     KEEPER_EXCEPTION: number
   }>({
@@ -23,6 +23,8 @@ export function ChartKeeperException({
     hostId,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading) {
     return <ChartSkeleton title={title} className={className} />
@@ -40,9 +42,14 @@ export function ChartKeeperException({
   }
 
   return (
-    <ChartCard title={title} sql="" data={data || []} className={className}>
+    <ChartCard
+      title={title}
+      sql={sql}
+      data={dataArray || []}
+      className={className}
+    >
       <BarChart
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['KEEPER_EXCEPTION']}
         className="h-52"

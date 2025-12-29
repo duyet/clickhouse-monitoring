@@ -2,6 +2,7 @@ import { codecovWebpackPlugin } from '@codecov/webpack-plugin'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  // Use standalone output for hybrid static pages + dynamic API routes
   output: 'standalone',
 
   // Enable Turbopack (default in Next.js 16)

@@ -15,7 +15,7 @@ export function ChartMergeAvgDuration({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     avg_duration_ms: number
     readable_avg_duration_ms: string
@@ -28,6 +28,8 @@ export function ChartMergeAvgDuration({
     refreshInterval: 30000,
   })
 
+  const dataArray = Array.isArray(data) ? data : undefined
+
   if (isLoading)
     return (
       <ChartSkeleton
@@ -39,9 +41,14 @@ export function ChartMergeAvgDuration({
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
-    <ChartCard title={title} className={className} sql="" data={data || []}>
+    <ChartCard
+      title={title}
+      className={className}
+      sql={sql}
+      data={dataArray || []}
+    >
       <BarChart
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['avg_duration_ms']}
         readableColumn="readable_avg_duration_ms"

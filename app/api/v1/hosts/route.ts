@@ -10,6 +10,9 @@ import { getClickHouseConfigs } from '@/lib/clickhouse'
 import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 
+// This route is dynamic and should not be statically exported
+export const dynamic = 'force-dynamic'
+
 /**
  * Host information for public API responses
  */

@@ -11,10 +11,102 @@ import {
   getChartQuery,
   hasChart,
   getAvailableCharts,
+  type MultiChartQueryResult,
 } from '@/lib/api/chart-registry'
-import type { ApiResponse, ApiError } from '@/lib/api/types'
+import type { ApiResponse as ApiResponseType, ApiError } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+
+// This route is dynamic and should not be statically exported
+export const dynamic = 'force-dynamic'
+
+/**
+ * Handle multi-query charts (summary charts)
+ * Executes multiple queries in parallel and returns combined data
+ */
+async function handleMultiQueryChart(
+  queryDef: MultiChartQueryResult,
+  hostId: number | string,
+  _chartName: string
+): Promise<Response> {
+  try {
+    // Execute all queries in parallel
+    const results = await Promise.all(
+      queryDef.queries.map(async (q) => {
+        try {
+          const result = await fetchData({
+            query: q.query,
+            hostId,
+            format: 'JSONEachRow',
+          })
+          return {
+            key: q.key,
+            data: result.data || null,
+            error: result.error,
+          }
+        } catch (error) {
+          // For optional queries, return null instead of failing
+          return {
+            key: q.key,
+            data: null,
+            error: {
+              type: ApiErrorType.QueryError,
+              message: error instanceof Error ? error.message : 'Unknown error',
+            },
+          }
+        }
+      })
+    )
+
+    // Combine results into a single object with data keyed by query key
+    const combinedData: Record<string, unknown> = {}
+    let hasError = false
+    let firstError: ApiError | undefined
+
+    for (const result of results) {
+      combinedData[result.key] = result.data
+      if (result.error && !hasError) {
+        hasError = true
+        firstError = result.error as ApiError
+      }
+    }
+
+    // Combine SQL from all queries for display
+    const combinedSql = queryDef.queries
+      .map((q, i) => `-- Query ${i + 1}: ${q.key}\n${q.query.trim()}`)
+      .join('\n\n')
+
+    // Return combined response
+    const response: ApiResponseType<Record<string, unknown>> = {
+      success: !hasError,
+      data: combinedData,
+      metadata: {
+        queryId: '',
+        duration: 0,
+        rows: 0,
+        host: String(hostId),
+        sql: combinedSql,
+      },
+      error: hasError ? firstError : undefined,
+    }
+
+    return Response.json(response, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+      },
+    })
+  } catch (error) {
+    return createErrorResponse(
+      {
+        type: ApiErrorType.QueryError,
+        message: error instanceof Error ? error.message : 'Unknown error',
+      },
+      500
+    )
+  }
+}
 
 /**
  * Handle GET requests for chart data
@@ -79,6 +171,15 @@ export async function GET(
       )
     }
 
+    // Check if this is a multi-query chart (summary charts)
+    if ('queries' in queryDef) {
+      return await handleMultiQueryChart(
+        queryDef as MultiChartQueryResult,
+        parseHostId(hostId),
+        name
+      )
+    }
+
     // Execute the query
     const result = await fetchData({
       query: queryDef.query,
@@ -112,8 +213,12 @@ export async function GET(
       )
     }
 
-    // Create successful response
-    return createSuccessResponse(result.data, result.metadata)
+    // Create successful response with SQL from query definition
+    return createSuccessResponse(
+      result.data,
+      result.metadata,
+      queryDef.query.trim()
+    )
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error occurred'
@@ -159,9 +264,10 @@ function mapErrorTypeToStatusCode(errorType: ApiErrorType): number {
  */
 function createSuccessResponse<T>(
   data: T,
-  metadata: Record<string, string | number>
+  metadata: Record<string, string | number>,
+  sql?: string
 ): Response {
-  const response: ApiResponse<T> = {
+  const response: ApiResponseType<T> = {
     success: true,
     data,
     metadata: {
@@ -169,6 +275,7 @@ function createSuccessResponse<T>(
       duration: Number(metadata.duration || 0),
       rows: Number(metadata.rows || 0),
       host: String(metadata.host || ''),
+      sql,
     },
   }
 
@@ -185,7 +292,7 @@ function createSuccessResponse<T>(
  * Create an error response
  */
 function createErrorResponse(error: ApiError, status: number): Response {
-  const response: ApiResponse = {
+  const response: ApiResponseType = {
     success: false,
     metadata: {
       queryId: '',

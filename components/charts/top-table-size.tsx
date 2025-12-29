@@ -15,7 +15,7 @@ export function ChartTopTableSize({
   ...props
 }: ChartProps) {
   const limit = 7
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     table: string
     compressed_bytes: number
     uncompressed_bytes: number
@@ -32,26 +32,33 @@ export function ChartTopTableSize({
     refreshInterval: 30000,
   })
 
+  const dataArray = Array.isArray(data) ? data : undefined
+
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   // For this chart, we need to separate by-size and by-count logic
   // Since the API only returns one query result, we'll use the same data
   // In a real scenario, you might want to create two separate chart endpoints
-  const dataTopBySize = (data || []).map((row) => ({
+  const dataTopBySize = (dataArray || []).map((row) => ({
     name: row.table,
     value: row.compressed_bytes,
     compressed: row.compressed,
   }))
 
-  const dataTopByCount = (data || []).map((row) => ({
+  const dataTopByCount = (dataArray || []).map((row) => ({
     name: row.table,
     value: row.total_rows,
     readable_total_rows: row.readable_total_rows,
   }))
 
   return (
-    <ChartCard title={title} className={className}>
+    <ChartCard
+      title={title}
+      className={className}
+      sql={sql}
+      data={dataArray || []}
+    >
       <Tabs defaultValue="by-size">
         <TabsList className="mb-5">
           <TabsTrigger key="by-size" value="by-size">

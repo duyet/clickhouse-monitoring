@@ -3,17 +3,21 @@
  * Provides centralized access to all available table queries and their SQL definitions
  */
 
-import { queries } from '@/app/[host]/[query]/clickhouse-queries'
-import { queryConfig as clustersConfig } from '@/app/[host]/clusters/config'
-import { queryConfig as clustersReplicasStatusConfig } from '@/app/[host]/clusters/[cluster]/replicas-status/config'
+import { queries } from '@/lib/query-config'
+import { clustersConfig } from '@/lib/query-config/system/clusters'
+import {
+  clustersReplicasStatusConfig,
+  replicaTablesConfig,
+} from '@/lib/query-config/system/replicas-status'
 import {
   diskSpaceConfig,
   databaseDiskSpaceConfig,
   databaseDiskSpaceByDatabaseConfig,
-} from '@/app/[host]/disks/config'
-import { queryConfig as databaseTableColumnsConfig } from '@/app/[host]/database/[database]/[table]/config'
-import { tablesListConfig } from '@/app/[host]/database/[database]/config'
-import { queryConfig as replicaTablesConfig } from '@/app/[host]/replica/[replica]/tables/config'
+} from '@/lib/query-config/system/disks'
+import {
+  databaseTableColumnsConfig,
+  tablesListConfig,
+} from '@/lib/query-config/system/database-table'
 import type { QueryConfig } from '@/types/query-config'
 
 /**

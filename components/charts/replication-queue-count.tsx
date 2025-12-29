@@ -13,7 +13,7 @@ export function ChartReplicationQueueCount({
   className,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     count_all: number
     count_executing: number
   }>({
@@ -22,16 +22,18 @@ export function ChartReplicationQueueCount({
     refreshInterval: 30000,
   })
 
+  const dataArray = Array.isArray(data) ? data : undefined
+
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
-  const count = data?.[0] || { count_all: 0, count_executing: 0 }
+  const count = dataArray?.[0] || { count_all: 0, count_executing: 0 }
 
   return (
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
-      sql=""
+      sql={sql}
     >
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics

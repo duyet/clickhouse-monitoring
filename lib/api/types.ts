@@ -49,6 +49,8 @@ export interface ApiResponseMetadata {
   readonly host: string
   /** Timestamp when the response was cached (if applicable) */
   readonly cachedAt?: number
+  /** SQL query that generated this response (read-only display) */
+  readonly sql?: string
 }
 
 /**

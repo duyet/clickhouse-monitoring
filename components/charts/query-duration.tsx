@@ -17,7 +17,7 @@ export function ChartQueryDuration({
   hostId,
   ...props
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const { data, isLoading, error, refresh, sql } = useChartData<{
     event_time: string
     query_duration_ms: number
     query_duration_s: number
@@ -28,6 +28,8 @@ export function ChartQueryDuration({
     lastHours,
     refreshInterval: 30000,
   })
+
+  const dataArray = Array.isArray(data) ? data : undefined
 
   if (isLoading)
     return (
@@ -40,10 +42,15 @@ export function ChartQueryDuration({
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
-    <ChartCard title={title} className={className} sql="" data={data || []}>
+    <ChartCard
+      title={title}
+      className={className}
+      sql={sql}
+      data={dataArray || []}
+    >
       <BarChart
         className={cn('h-52', chartClassName)}
-        data={data || []}
+        data={dataArray || []}
         index="event_time"
         categories={['query_duration_s']}
         colors={['--chart-rose-200']}
