@@ -9,7 +9,7 @@ export default async function PartInfoLayout({
   children: React.ReactNode
   params: Promise<{ host: string; database?: string; table?: string }>
 }) {
-  const { host, database, table } = await params
+  const { host, database: _database, table: _table } = await params
 
   const databaseTables = await getDatabaseTables(host)
   const databases = await getDatabases(host)

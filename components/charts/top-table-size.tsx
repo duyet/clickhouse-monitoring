@@ -33,8 +33,7 @@ export function ChartTopTableSize({
   })
 
   if (isLoading) return <ChartSkeleton title={title} className={className} />
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   // For this chart, we need to separate by-size and by-count logic
   // Since the API only returns one query result, we'll use the same data

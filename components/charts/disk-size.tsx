@@ -27,8 +27,7 @@ export function ChartDiskSize({
   })
 
   if (isLoading) return <ChartSkeleton title={title} className={className} />
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   const first = data?.[0]
   if (!data || !first) return null

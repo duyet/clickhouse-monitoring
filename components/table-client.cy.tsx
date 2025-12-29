@@ -46,24 +46,14 @@ describe('<TableClient />', () => {
   })
 
   it('renders loading skeleton initially', () => {
-    cy.mount(
-      <TableClient
-        title="Test Tables"
-        queryConfig={mockQueryConfig}
-      />
-    )
+    cy.mount(<TableClient title="Test Tables" queryConfig={mockQueryConfig} />)
 
     // Should show skeleton while loading
     cy.get('[data-slot="skeleton"]').should('exist')
   })
 
   it('renders data table after data loads', () => {
-    cy.mount(
-      <TableClient
-        title="Test Tables"
-        queryConfig={mockQueryConfig}
-      />
-    )
+    cy.mount(<TableClient title="Test Tables" queryConfig={mockQueryConfig} />)
 
     // Wait for API call
     cy.wait('@fetchTableData')
@@ -94,12 +84,7 @@ describe('<TableClient />', () => {
       },
     }).as('fetchTableDataError')
 
-    cy.mount(
-      <TableClient
-        title="Test Tables"
-        queryConfig={mockQueryConfig}
-      />
-    )
+    cy.mount(<TableClient title="Test Tables" queryConfig={mockQueryConfig} />)
 
     cy.wait('@fetchTableDataError')
 
@@ -123,12 +108,7 @@ describe('<TableClient />', () => {
       },
     }).as('fetchEmptyData')
 
-    cy.mount(
-      <TableClient
-        title="Test Tables"
-        queryConfig={mockQueryConfig}
-      />
-    )
+    cy.mount(<TableClient title="Test Tables" queryConfig={mockQueryConfig} />)
 
     cy.wait('@fetchEmptyData')
 
@@ -155,12 +135,7 @@ describe('<TableClient />', () => {
       },
     }).as('fetchTableDataError')
 
-    cy.mount(
-      <TableClient
-        title="Test Tables"
-        queryConfig={mockQueryConfig}
-      />
-    )
+    cy.mount(<TableClient title="Test Tables" queryConfig={mockQueryConfig} />)
 
     cy.wait('@fetchTableDataError')
 
@@ -168,7 +143,9 @@ describe('<TableClient />', () => {
     cy.contains('Error loading data').should('be.visible')
 
     // Check that query button is available
-    cy.get('button[role="button"]').contains(/query|details/i).should('exist')
+    cy.get('button[role="button"]')
+      .contains(/query|details/i)
+      .should('exist')
   })
 
   it('supports custom description', () => {
@@ -186,12 +163,7 @@ describe('<TableClient />', () => {
   })
 
   it('displays metadata in footnote', () => {
-    cy.mount(
-      <TableClient
-        title="Test Tables"
-        queryConfig={mockQueryConfig}
-      />
-    )
+    cy.mount(<TableClient title="Test Tables" queryConfig={mockQueryConfig} />)
 
     cy.wait('@fetchTableData')
 

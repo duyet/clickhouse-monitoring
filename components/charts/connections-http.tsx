@@ -38,8 +38,7 @@ export function ChartConnectionsHttp({
         chartClassName={chartClassName}
       />
     )
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard title={title} sql="" className={className} data={data || []}>

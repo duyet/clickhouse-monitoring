@@ -36,8 +36,7 @@ export function ChartMergeSumReadRows({
         chartClassName={chartClassName}
       />
     )
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard title={title} className={className} sql="" data={data || []}>

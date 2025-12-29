@@ -16,7 +16,12 @@ export function ChartNewPartsCreated({
   hostId,
   ...props
 }: ChartProps) {
-  const { data: raw, isLoading, error, refresh } = useChartData<{
+  const {
+    data: raw,
+    isLoading,
+    error,
+    refresh,
+  } = useChartData<{
     event_time: string
     table: string
     new_parts: number
@@ -36,8 +41,7 @@ export function ChartNewPartsCreated({
         chartClassName={chartClassName}
       />
     )
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   // Single-pass algorithm: collect data and track tables simultaneously
   const tableSet = new Set<string>()

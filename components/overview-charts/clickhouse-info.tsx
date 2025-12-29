@@ -15,12 +15,12 @@ import { cn } from '@/lib/utils'
 
 export async function ClickHouseInfo({
   hostId,
-  title,
-  description,
+  // title, // unused - card has hardcoded title
+  // description, // unused - card has hardcoded description
   version,
   hostName,
   uptime,
-  currentUser,
+  // currentUser, // unused - not currently displayed
   className,
   contentClassName,
 }: {

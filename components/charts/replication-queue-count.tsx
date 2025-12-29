@@ -22,15 +22,8 @@ export function ChartReplicationQueueCount({
     refreshInterval: 30000,
   })
 
-  if (isLoading)
-    return (
-      <ChartSkeleton
-        title={title}
-        className={className}
-      />
-    )
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (isLoading) return <ChartSkeleton title={title} className={className} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   const count = data?.[0] || { count_all: 0, count_executing: 0 }
 

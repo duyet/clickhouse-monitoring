@@ -33,8 +33,7 @@ export function ChartReadonlyReplica({
         chartClassName="h-52"
       />
     )
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard title={title} sql="" className={className}>

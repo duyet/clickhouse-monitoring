@@ -27,8 +27,7 @@ export function ChartBackupSize({
     refreshInterval: 30000,
   })
 
-  if (isLoading)
-    return <ChartSkeleton title={title} className={className} />
+  if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   const first = data?.[0]

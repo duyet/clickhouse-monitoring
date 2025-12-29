@@ -71,7 +71,7 @@ const INLINE_FORMATTERS: Partial<
 /**
  * Component formatters that only need value (and optionally options)
  */
-function renderValueOnlyFormatter<TData extends RowData, TValue>(
+function renderValueOnlyFormatter<_TData extends RowData, TValue>(
   format: ColumnFormat,
   value: TValue,
   options?: ColumnFormatOptions

@@ -16,7 +16,12 @@ export function ChartFailedQueryCountByType({
   hostId,
   ...props
 }: ChartProps) {
-  const { data: raw, isLoading, error, refresh } = useChartData<{
+  const {
+    data: raw,
+    isLoading,
+    error,
+    refresh,
+  } = useChartData<{
     event_time: string
     user: string
     count: number
@@ -36,8 +41,7 @@ export function ChartFailedQueryCountByType({
         chartClassName={chartClassName}
       />
     )
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   // Single-pass algorithm: collect data and track users simultaneously
   const userSet = new Set<string>()

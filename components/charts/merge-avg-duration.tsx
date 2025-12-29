@@ -36,16 +36,10 @@ export function ChartMergeAvgDuration({
         chartClassName={chartClassName}
       />
     )
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
-    <ChartCard
-      title={title}
-      className={className}
-      sql=""
-      data={data || []}
-    >
+    <ChartCard title={title} className={className} sql="" data={data || []}>
       <BarChart
         data={data || []}
         index="event_time"

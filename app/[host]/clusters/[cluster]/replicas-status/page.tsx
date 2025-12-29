@@ -57,7 +57,7 @@ export default async function Page({ params }: PageProps) {
 }
 
 const TopRightToolbarExtras = async ({
-  host,
+  // host, // unused
   cluster,
 }: Awaited<PageProps['params']>) => (
   <div className="flex flex-row gap-2">

@@ -21,8 +21,7 @@ export function ChartSummaryUsedByMutations({
   })
 
   if (isLoading) return <ChartSkeleton title={title} className={className} />
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   const count = data?.[0] || { running_count: 0 }
 

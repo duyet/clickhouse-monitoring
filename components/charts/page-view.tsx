@@ -41,8 +41,7 @@ export function PageViewBarChart({
         chartClassName={cn('h-52', chartClassName)}
       />
     )
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard

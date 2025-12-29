@@ -36,8 +36,7 @@ export function ChartConnectionsInterserver({
         chartClassName={chartClassName}
       />
     )
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard title={title} sql="" data={data || []} className={className}>

@@ -73,10 +73,12 @@ export function useChartData<T = unknown>({
     const response = await fetch(url)
 
     if (!response.ok) {
-      const errorData = (await response
-        .json()
-        .catch(() => ({}))) as {
-        error?: { message?: string; type?: string; details?: Record<string, unknown> }
+      const errorData = (await response.json().catch(() => ({}))) as {
+        error?: {
+          message?: string
+          type?: string
+          details?: Record<string, unknown>
+        }
       }
       const error = new Error(
         errorData.error?.message ||

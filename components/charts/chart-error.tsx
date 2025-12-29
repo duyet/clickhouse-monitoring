@@ -24,7 +24,12 @@ export function ChartError({
   const isTableMissing = apiError.type === 'table_not_found'
 
   return (
-    <Card className={cn('rounded-md border-destructive/50 bg-destructive/5', className)}>
+    <Card
+      className={cn(
+        'rounded-md border-destructive/50 bg-destructive/5',
+        className
+      )}
+    >
       <CardHeader className="p-2">
         <div className="flex items-center gap-2">
           <AlertCircle className="h-4 w-4 text-destructive" />

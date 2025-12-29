@@ -32,8 +32,7 @@ export function ChartReplicationSummaryTable({
   })
 
   if (isLoading) return <ChartSkeleton title={title} className={className} />
-  if (error)
-    return <ChartError error={error} title={title} onRetry={refresh} />
+  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
   const headers = Object.keys(data?.[0] || {})
 
