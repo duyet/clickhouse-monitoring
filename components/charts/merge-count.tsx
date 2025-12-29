@@ -64,14 +64,14 @@ export function ChartMergeCount({
 
       <div className="text-muted-foreground flex flex-row justify-between gap-2 text-right text-sm">
         <Link
-          href={`/${hostId}/mutations`}
+          href={`/merges?host=${hostId}`}
           className="flex flex-row items-center gap-2"
         >
           Merges
           <ArrowRightIcon className="size-3" />
         </Link>
         <Link
-          href={`/${hostId}/mutations`}
+          href={`/mutations?host=${hostId}`}
           className="flex flex-row items-center gap-2"
         >
           Mutations
