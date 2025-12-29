@@ -18,6 +18,73 @@ The simple Next.js dashboard that relies on `system.*` tables to help monitor an
 _The ClickHouse server running on my homelab so can be slow sometimes_:
 
 - [clickhouse-monitoring.duyet.net](https://clickhouse-monitoring.duyet.net)
+- [clickhouse-monitor.duyet.workers.dev](https://clickhouse-monitor.duyet.workers.dev) (Cloudflare Workers)
+
+## Deployment
+
+### Cloudflare Workers
+
+This project supports deployment to Cloudflare Workers with static site generation and API routes.
+
+**Prerequisites:**
+- Node.js 18+ and Bun
+- Cloudflare Workers account
+- Wrangler CLI: `npm install -g wrangler`
+
+**Setup:**
+
+1. Clone and install dependencies:
+```bash
+git clone https://github.com/duyet/clickhouse-monitoring.git
+cd clickhouse-monitoring
+bun install
+```
+
+2. Configure environment variables in `.env.local`:
+```bash
+CLICKHOUSE_HOST=https://your-clickhouse-host.com
+CLICKHOUSE_USER=default
+CLICKHOUSE_PASSWORD=yourpassword
+CLICKHOUSE_TZ=UTC
+```
+
+3. Deploy to Cloudflare Workers:
+```bash
+# Login to Cloudflare
+npx wrangler login
+
+# Set secrets and deploy
+bun run cf:deploy
+```
+
+**Important Notes:**
+- Build uses **Webpack** (not Turbopack) due to Cloudflare Workers compatibility
+- Next.js version pinned to **16.0.7** for stability
+- Static pages are pre-rendered at edge for optimal performance
+- API routes run on Workers using Fetch API
+
+**Manual Deployment Steps:**
+```bash
+# Set secrets manually
+bun run cf:config
+
+# Build with webpack
+bun run cf:build
+
+# Deploy
+wrangler deploy
+```
+
+### Docker
+
+```bash
+docker run -d \
+  -p 3000:3000 \
+  -e CLICKHOUSE_HOST=https://your-clickhouse-host.com \
+  -e CLICKHOUSE_USER=default \
+  -e CLICKHOUSE_PASSWORD=yourpassword \
+  ghcr.io/duyet/clickhouse-monitoring:latest
+```
 
 ## Documentation
 
