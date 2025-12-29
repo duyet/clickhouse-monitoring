@@ -46,7 +46,7 @@ export interface Payload<TValue extends ValueType, TName extends NameType> {
   value?: TValue
   unit?: ReactNode
   dataKey?: string | number
-  payload?: any
+  payload?: Payload<TValue, TName>[]
   chartType?: string
   stroke?: string
   strokeDasharray?: string | number
@@ -66,7 +66,7 @@ type CustomTooltipProps = {
 export interface BaseChartProps
   extends BaseAnimationTimingProps,
     React.HTMLAttributes<HTMLDivElement> {
-  data: any[]
+  data: Record<string, unknown>[]
   labelPosition?: LabelPosition
   labelAngle?: number
   colors?: Color[]

@@ -105,7 +105,7 @@ export const getColumnDefs = <
       }: {
         table: Table<TData>
         row: Row<TData>
-        getValue: () => any
+        getValue: () => TValue
       }) => {
         const value = getValue()
         const formatted = formatCell<TData, TValue>(
