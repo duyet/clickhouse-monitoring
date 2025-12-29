@@ -1,33 +1,42 @@
-import { fetchData } from '@/lib/clickhouse-helpers'
+'use client'
+
+import { MultiLineSkeleton } from '@/components/skeleton'
+import { useFetchData } from '@/lib/swr'
 import { cn, dedent } from '@/lib/utils'
 
 interface ShowSQLButtonProps {
+  hostId?: number
   database: string
   table: string
   className?: string
 }
 
-export async function TableDDL({
+export function TableDDL({
+  hostId,
   database,
   table,
   className,
 }: ShowSQLButtonProps) {
-  const { data: showCreateTable, error } = await fetchData<
-    { statement: string }[]
-  >({
-    query: `SHOW CREATE TABLE ${database}.${table}`,
-  })
+  const { data, isLoading, error } = useFetchData<{ statement: string }[]>(
+    `SHOW CREATE TABLE ${database}.${table}`,
+    {},
+    hostId
+  )
 
   if (error) {
     console.error('Failed to fetch table DDL', error)
     return null
   }
 
-  if (!showCreateTable?.length || !showCreateTable[0]?.statement) {
+  if (isLoading) {
+    return <MultiLineSkeleton className="w-full" />
+  }
+
+  if (!data?.length || !data[0]?.statement) {
     return null
   }
 
-  const sql = showCreateTable[0].statement
+  const sql = data[0].statement
 
   return (
     <div className={cn('w-fit overflow-auto', className)}>

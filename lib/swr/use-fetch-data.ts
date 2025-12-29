@@ -63,7 +63,24 @@ export function useFetchData<T = unknown>(
     })
 
     if (!response.ok) {
-      const error = new Error(`Failed to fetch data: ${response.statusText}`)
+      const errorData = (await response.json().catch(() => ({}))) as {
+        error?: {
+          message?: string
+          type?: string
+          details?: Record<string, unknown>
+        }
+      }
+      const error = new Error(
+        errorData.error?.message ||
+          `Failed to fetch data: ${response.statusText}`
+      ) as Error & { type?: string; details?: Record<string, unknown> }
+
+      // Attach error metadata if available
+      if (errorData.error) {
+        error.type = errorData.error.type
+        error.details = errorData.error.details
+      }
+
       throw error
     }
 

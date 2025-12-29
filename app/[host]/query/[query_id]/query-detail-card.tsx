@@ -1,3 +1,5 @@
+'use client'
+
 import {
   ExternalLinkIcon,
   FilterIcon,
@@ -6,7 +8,8 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 
-import { ErrorAlert } from '@/components/error-alert'
+import { ChartError } from '@/components/charts/chart-error'
+import { MultiLineSkeleton } from '@/components/skeleton'
 import { TruncatedList } from '@/components/truncated-list'
 import { TruncatedParagraph } from '@/components/truncated-paragraph'
 import {
@@ -15,21 +18,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { fetchData } from '@/lib/clickhouse-helpers'
-import {
-  formatErrorMessage,
-  formatErrorTitle,
-  getErrorDocumentation,
-} from '@/lib/error-utils'
+import { useHostId } from '@/lib/swr'
+import { useFetchData } from '@/lib/swr'
 import { formatQuery } from '@/lib/format-readable'
-import { getScopedLink } from '@/lib/scoped-link'
 import { dedent } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
 
 import type { RowData } from './config'
 import type { PageProps } from './types'
 
-export async function QueryDetailCard({
+export function QueryDetailCard({
   queryConfig,
   params,
 }: {
@@ -37,29 +35,25 @@ export async function QueryDetailCard({
   params: Awaited<PageProps['params']>
   searchParams: Awaited<PageProps['searchParams']>
 }) {
+  const hostId = useHostId()
   const queryParams = {
     ...queryConfig.defaultParams,
     ...params,
   }
-  const { data, error } = await fetchData<RowData[]>({
-    query: queryConfig.sql,
-    format: 'JSONEachRow',
-    query_params: queryParams,
-    clickhouse_settings: {
-      use_query_cache: 0,
-      ...queryConfig.clickhouseSettings,
-    },
-  })
+
+  const { data, isLoading, error, refresh } = useFetchData<RowData[]>(
+    queryConfig.sql,
+    queryParams,
+    hostId,
+    10000 // refresh every 10 seconds for live query data
+  )
+
+  if (isLoading) {
+    return <MultiLineSkeleton className="mb-4 w-4/5" />
+  }
 
   if (error) {
-    return (
-      <ErrorAlert
-        title={formatErrorTitle(error)}
-        message={formatErrorMessage(error)}
-        docs={getErrorDocumentation(error) || queryConfig.docs}
-        query={queryConfig.sql}
-      />
-    )
+    return <ChartError title="Query Error" error={error} onRetry={refresh} />
   }
 
   if (!data?.length) {
@@ -153,9 +147,7 @@ export async function QueryDetailCard({
               initial_user ? (
                 <Link
                   className="flex flex-row items-center gap-1"
-                  href={
-                    await getScopedLink(`/history-queries?user=${initial_user}`)
-                  }
+                  href={`/${hostId}/history-queries?user=${initial_user}`}
                   target="_blank"
                   key="initial_user"
                 >
@@ -170,7 +162,7 @@ export async function QueryDetailCard({
               'Initial query id (for distributed query execution)',
               <Link
                 className="flex flex-row items-center gap-1"
-                href={await getScopedLink(`/query/${initial_query_id}`)}
+                href={`/${hostId}/query/${initial_query_id}`}
                 target="_blank"
                 key="initial_query_id"
               >
@@ -190,8 +182,8 @@ export async function QueryDetailCard({
               'Initial query starting time (for distributed query execution)',
               initial_query_start_time,
             ],
-            ['Databases', bindingDatabaseLink(databases)],
-            ['Tables', bindingTableLink(tables)],
+            ['Databases', bindingDatabaseLink(databases, hostId)],
+            ['Tables', bindingTableLink(tables, hostId)],
             ['Columns', JSON.stringify(columns, null, 2)],
             ['Partitions', JSON.stringify(partitions, null, 2)],
             ['Projections', JSON.stringify(projections, null, 2)],
@@ -313,13 +305,14 @@ export async function QueryDetailCard({
 }
 
 function bindingDatabaseLink(
-  databases: Array<string>
+  databases: Array<string>,
+  hostId: number
 ): React.ReactNode[] | null {
   if (!databases.length) {
     return null
   }
 
-  return databases.map(async (database) => {
+  return databases.map((database) => {
     if (database.startsWith('_table_function')) {
       return database
     }
@@ -328,7 +321,7 @@ function bindingDatabaseLink(
       <Link
         className="flex flex-row items-center gap-1"
         key={database}
-        href={await getScopedLink(`/database/${database}`)}
+        href={`/${hostId}/database/${database}`}
       >
         {database} <MoveRightIcon className="size-3" />
       </Link>
@@ -336,12 +329,15 @@ function bindingDatabaseLink(
   })
 }
 
-function bindingTableLink(tables: Array<string>): React.ReactNode[] | null {
+function bindingTableLink(
+  tables: Array<string>,
+  hostId: number
+): React.ReactNode[] | null {
   if (!tables.length) {
     return null
   }
 
-  return tables.map(async (databaseTable) => {
+  return tables.map((databaseTable) => {
     const [database, table] = databaseTable.split('.')
 
     // Link to ClickHouse docs
@@ -362,7 +358,7 @@ function bindingTableLink(tables: Array<string>): React.ReactNode[] | null {
       <Link
         className="flex flex-row items-center gap-1"
         key={databaseTable}
-        href={await getScopedLink(`/database/${database}/${table}`)}
+        href={`/${hostId}/database/${database}/${table}`}
         title="Open Database Table Detail"
       >
         {databaseTable} <MoveRightIcon className="size-3" />

@@ -1,36 +1,42 @@
+'use client'
+
 import { Badge } from '@/components/ui/badge'
-import { fetchData } from '@/lib/clickhouse-helpers'
+import { useFetchData } from '@/lib/swr'
 
 interface RunningQueriesProps {
+  hostId?: number
   database: string
   table: string
   className?: string
 }
 
-export async function RunningQueriesCount({
+export function RunningQueriesCount({
+  hostId,
   database,
   table,
 }: RunningQueriesProps) {
-  try {
-    const { data } = await fetchData<{ count: number }[]>({
-      query: `
-        SELECT COUNT() as count
-        FROM system.processes
-        WHERE (query LIKE '%{database: String}%')
-          AND (query LIKE '%{table: String}%')`,
-      query_params: {
-        database,
-        table,
-      },
-    })
+  const { data, error } = useFetchData<{ count: number }[]>(
+    `
+      SELECT COUNT() as count
+      FROM system.processes
+      WHERE (query LIKE '%{database: String}%')
+        AND (query LIKE '%{table: String}%')`,
+    {
+      database,
+      table,
+    },
+    hostId,
+    5000 // refresh every 5 seconds for running queries
+  )
 
-    if (!data?.length) {
-      return null
-    }
-
-    return <Badge variant="outline">{data[0].count || 0}</Badge>
-  } catch (error) {
+  if (error) {
     console.error(error)
     return null
   }
+
+  if (!data?.length) {
+    return null
+  }
+
+  return <Badge variant="outline">{data[0].count || 0}</Badge>
 }

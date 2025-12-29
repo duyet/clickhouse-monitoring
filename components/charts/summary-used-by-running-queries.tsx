@@ -1,158 +1,174 @@
+'use client'
+
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useMemo } from 'react'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
 } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
 import { formatReadableQuantity } from '@/lib/format-readable'
-import { getScopedLink } from '@/lib/scoped-link'
+import { useFetchData } from '@/lib/swr'
 
-export async function ChartSummaryUsedByRunningQueries({
+const SQL = `
+  SELECT COUNT() as query_count,
+         SUM(memory_usage) as memory_usage,
+         formatReadableSize(memory_usage) as readable_memory_usage
+  FROM system.processes
+`
+
+const TOTAL_MEM_SQL = `
+  SELECT metric,
+         value as total,
+         formatReadableSize(total) AS readable_total
+  FROM system.asynchronous_metrics
+  WHERE metric = 'CGroupMemoryUsed'
+        OR metric = 'OSMemoryTotal'
+  ORDER BY metric ASC
+  LIMIT 1
+`
+
+const TODAY_QUERY_COUNT_SQL = `
+  SELECT COUNT() as query_count
+  FROM system.query_log
+  WHERE type = 'QueryStart'
+        AND query_start_time >= today()
+`
+
+const ROWS_READ_WRITTEN_SQL = `
+  SELECT SUM(read_rows) as rows_read,
+         SUM(written_rows) as rows_written,
+         formatReadableQuantity(rows_read) as readable_rows_read,
+         formatReadableQuantity(rows_written) as readable_rows_written
+  FROM system.processes
+`
+
+export function ChartSummaryUsedByRunningQueries({
   title,
   className,
   hostId,
 }: ChartProps) {
-  const sql = `
-    SELECT COUNT() as query_count,
-           SUM(memory_usage) as memory_usage,
-           formatReadableSize(memory_usage) as readable_memory_usage
-    FROM system.processes
-  `
-  const { data } = await fetchData<
-    {
-      query_count: number
-      memory_usage: number
-      readable_memory_usage: string
-    }[]
-  >({ query: sql, hostId })
+  const pathname = usePathname()
+  const hostFromPath = pathname.split('/')[1] || '0'
 
-  const first = data?.[0]
-  if (!data || !first) return null
-
-  // Workaround for getting total memory usage
-  const totalMemSql = `
-    SELECT metric,
-           value as total,
-           formatReadableSize(total) AS readable_total
-    FROM system.asynchronous_metrics
-    WHERE metric = 'CGroupMemoryUsed'
-          OR metric = 'OSMemoryTotal'
-    ORDER BY metric ASC
-    LIMIT 1
-  `
-  let totalMem = {
-    total: first.memory_usage,
-    readable_total: first.readable_memory_usage,
-  }
-  try {
-    const { data: totalRows } = await fetchData<
-      {
-        metric: string
-        total: number
-        readable_total: string
-      }[]
-    >({ query: totalMemSql, hostId })
-    totalMem = totalRows?.[0] || totalMem
-    if (!totalRows || !totalMem) return null
-  } catch (e) {
-    console.error('Error fetching total memory usage', e)
-  }
-
-  let todayQueryCount = first.query_count
-  const todayQueryCountSql = `
-    SELECT COUNT() as query_count
-    FROM system.query_log
-    WHERE type = 'QueryStart'
-          AND query_start_time >= today()
-  `
-  try {
-    const { data: todayQueryCountRows } = await fetchData<
+  const { data: queryData, error: queryError, isLoading: queryLoading } =
+    useFetchData<
       {
         query_count: number
+        memory_usage: number
+        readable_memory_usage: string
       }[]
-    >({ query: todayQueryCountSql, hostId })
-    todayQueryCount = todayQueryCountRows?.[0]?.query_count || todayQueryCount
-    if (!todayQueryCountRows || !todayQueryCount) return null
-  } catch (e) {
-    console.error('Error fetching today query count', e)
+    >(SQL, undefined, hostId)
+
+  const { data: totalMemData } = useFetchData<
+    {
+      metric: string
+      total: number
+      readable_total: string
+    }[]
+  >(TOTAL_MEM_SQL, undefined, hostId)
+
+  const { data: todayQueryData } = useFetchData<
+    {
+      query_count: number
+    }[]
+  >(TODAY_QUERY_COUNT_SQL, undefined, hostId)
+
+  const { data: rowsData } = useFetchData<
+    {
+      rows_read: number
+      rows_written: number
+      readable_rows_read: string
+      readable_rows_written: string
+    }[]
+  >(ROWS_READ_WRITTEN_SQL, undefined, hostId)
+
+  const isLoading = queryLoading
+  const error = queryError
+
+  const items = useMemo(() => {
+    const first = queryData?.[0]
+    const totalMem = totalMemData?.[0]
+    const todayQueryCount = todayQueryData?.[0]?.query_count ?? first?.query_count ?? 0
+    const rowsReadWritten = rowsData?.[0] || {
+      rows_read: 0,
+      rows_written: 0,
+      readable_rows_read: '0',
+      readable_rows_written: '0',
+    }
+
+    if (!first || !totalMem) return []
+
+    const result: CardMultiMetricsProps['items'] = []
+
+    result.push({
+      current: first.memory_usage,
+      target: totalMem.total,
+      currentReadable: `${first.readable_memory_usage} memory usage`,
+      targetReadable: `${totalMem.readable_total} total`,
+    })
+
+    result.push({
+      current: first.query_count,
+      target: todayQueryCount,
+      currentReadable: `${first.query_count} running queries`,
+      targetReadable: `${formatReadableQuantity(todayQueryCount)} today`,
+    })
+
+    if (rowsReadWritten.rows_read < rowsReadWritten.rows_written) {
+      result.push({
+        current: rowsReadWritten.rows_read,
+        target: rowsReadWritten.rows_written,
+        currentReadable: `${rowsReadWritten.readable_rows_read} rows read`,
+        targetReadable: `${rowsReadWritten.readable_rows_written} rows written`,
+      })
+    } else {
+      result.push({
+        current: rowsReadWritten.rows_written,
+        target: rowsReadWritten.rows_read,
+        currentReadable: `${rowsReadWritten.readable_rows_written} rows written`,
+        targetReadable: `${rowsReadWritten.readable_rows_read} rows read`,
+      })
+    }
+
+    return result
+  }, [queryData, totalMemData, todayQueryData, rowsData])
+
+  if (isLoading) {
+    return <ChartSkeleton title={title} className={className} />
   }
 
-  let rowsReadWritten = {
-    rows_read: 0,
-    rows_written: 0,
-    readable_rows_read: '0',
-    readable_rows_written: '0',
+  if (error) {
+    return <ChartError error={error} title={title} />
   }
-  const rowsReadWrittenSql = `
-    SELECT SUM(read_rows) as rows_read,
-           SUM(written_rows) as rows_written,
-           formatReadableQuantity(rows_read) as readable_rows_read,
-           formatReadableQuantity(rows_written) as readable_rows_written
-    FROM system.processes
-  `
-  try {
-    const { data } = await fetchData<
-      {
-        rows_read: number
-        rows_written: number
-        readable_rows_read: string
-        readable_rows_written: string
-      }[]
-    >({ query: rowsReadWrittenSql, hostId })
-    if (data) {
-      rowsReadWritten = data?.[0]
-    }
-  } catch (e) {
-    console.error('Error fetching rows read', e)
+
+  const first = queryData?.[0]
+  const totalMem = totalMemData?.[0]
+  const todayQueryCount = todayQueryData?.[0]?.query_count ?? first?.query_count ?? 0
+
+  if (!first || !totalMem) {
+    return null
   }
 
   const allSql = `
     Total current memory usage by running queries:
-    ${sql}
+    ${SQL}
 
     Total memory usage by system:
-    ${totalMemSql}
+    ${TOTAL_MEM_SQL}
 
     Total query count today:
-    ${todayQueryCountSql}
+    ${TODAY_QUERY_COUNT_SQL}
 
     Total rows read and written:
-    ${rowsReadWrittenSql}
+    ${ROWS_READ_WRITTEN_SQL}
   `
-
-  const items: CardMultiMetricsProps['items'] = []
-  items.push({
-    current: first.memory_usage,
-    target: totalMem.total,
-    currentReadable: `${first.readable_memory_usage} memory usage`,
-    targetReadable: `${totalMem.readable_total} total`,
-  })
-  items.push({
-    current: first.query_count,
-    target: todayQueryCount,
-    currentReadable: `${first.query_count} running queries`,
-    targetReadable: `${formatReadableQuantity(todayQueryCount)} today`,
-  })
-
-  if (rowsReadWritten.rows_read < rowsReadWritten.rows_written) {
-    items.push({
-      current: rowsReadWritten.rows_read,
-      target: rowsReadWritten.rows_written,
-      currentReadable: `${rowsReadWritten.readable_rows_read} rows read`,
-      targetReadable: `${rowsReadWritten.readable_rows_written} rows written`,
-    })
-  } else {
-    items.push({
-      current: rowsReadWritten.rows_written,
-      target: rowsReadWritten.rows_read,
-      currentReadable: `${rowsReadWritten.readable_rows_written} rows written`,
-      targetReadable: `${rowsReadWritten.readable_rows_read} rows read`,
-    })
-  }
 
   return (
     <ChartCard title={title} className={className} sql={allSql}>
@@ -164,7 +180,7 @@ export async function ChartSummaryUsedByRunningQueries({
               <div className="flex flex-row items-center gap-2">
                 {first.readable_memory_usage} memory used for running queries
                 <Link
-                  href={await getScopedLink('/running-queries')}
+                  href={`/${hostFromPath}/running-queries`}
                   className="inline"
                 >
                   <ArrowRightIcon className="size-5" />

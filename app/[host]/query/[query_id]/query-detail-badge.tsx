@@ -1,11 +1,13 @@
+'use client'
+
 import { Badge } from '@/components/ui/badge'
-import { fetchData } from '@/lib/clickhouse'
-import { getHostIdCookie } from '@/lib/scoped-link'
+import { SingleLineSkeleton } from '@/components/skeleton'
+import { useFetchData } from '@/lib/swr'
 import type { QueryConfig } from '@/types/query-config'
 import type { RowData } from './config'
 import type { PageProps } from './types'
 
-export async function QueryDetailBadge({
+export function QueryDetailBadge({
   queryConfig,
   params,
 }: {
@@ -17,16 +19,17 @@ export async function QueryDetailBadge({
     ...queryConfig.defaultParams,
     ...params,
   }
-  const { data, error } = await fetchData<RowData[]>({
-    query: queryConfig.sql,
-    format: 'JSONEachRow',
-    query_params: queryParams,
-    clickhouse_settings: {
-      use_query_cache: 0,
-      ...queryConfig.clickhouseSettings,
-    },
-    hostId: await getHostIdCookie(),
-  })
+
+  const { data, isLoading, error } = useFetchData<RowData[]>(
+    queryConfig.sql,
+    queryParams,
+    undefined, // hostId will be read from SWR context
+    10000 // refresh every 10 seconds for live query data
+  )
+
+  if (isLoading) {
+    return <SingleLineSkeleton className="ml-2 w-40 gap-1 space-x-0 pt-0" />
+  }
 
   if (error || !data?.length) {
     return null

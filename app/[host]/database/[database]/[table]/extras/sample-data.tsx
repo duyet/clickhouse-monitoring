@@ -1,4 +1,5 @@
-import { ErrorAlert } from '@/components/error-alert'
+'use client'
+
 import {
   Table,
   TableBody,
@@ -7,61 +8,73 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { fetchData } from '@/lib/clickhouse-helpers'
-import {
-  formatErrorMessage,
-  formatErrorTitle,
-  getErrorDocumentation,
-} from '@/lib/error-utils'
+import { ChartError } from '@/components/charts/chart-error'
+import { TableSkeleton } from '@/components/skeleton'
+import { ApiErrorType } from '@/lib/api/types'
+import { useFetchData } from '@/lib/swr'
 import { escapeQualifiedIdentifier, validateLimit } from '@/lib/sql-utils'
+import { useMemo } from 'react'
 
 interface SampleDataProps {
+  hostId?: number
   database: string
   table: string
   limit?: number
   className?: string
 }
 
-export async function SampleData({
+export function SampleData({
+  hostId,
   database,
   table,
   limit = 10,
   className,
 }: SampleDataProps) {
   // Validate and sanitize inputs to prevent SQL injection
-  let sanitizedLimit: number
-  try {
-    sanitizedLimit = validateLimit(limit)
-  } catch (error) {
+  const sanitizedLimit = useMemo(() => {
+    try {
+      return validateLimit(limit)
+    } catch {
+      return null // Will show error below
+    }
+  }, [limit])
+
+  // Escape database and table names to prevent SQL injection
+  const qualifiedTable = useMemo(
+    () => escapeQualifiedIdentifier(database, table),
+    [database, table]
+  )
+
+  const { data, isLoading, error, refresh } = useFetchData<
+    { [key: string]: string }[]
+  >(
+    `SELECT *
+     FROM ${qualifiedTable}
+     LIMIT ${sanitizedLimit ?? 10}`,
+    {},
+    hostId,
+    30000 // refresh every 30 seconds
+  )
+
+  // Show validation error if limit is invalid
+  if (sanitizedLimit === null) {
     return (
-      <ErrorAlert
+      <ChartError
+        error={{
+          type: ApiErrorType.ValidationError,
+          message: 'Invalid limit parameter',
+        }}
         title="Invalid limit parameter"
-        message={error instanceof Error ? error.message : 'Invalid limit value'}
-        className="w-full"
       />
     )
   }
 
-  // Escape database and table names to prevent SQL injection
-  const qualifiedTable = escapeQualifiedIdentifier(database, table)
-
-  const { data, error } = await fetchData<{ [key: string]: string }[]>({
-    query: `SELECT *
-     FROM ${qualifiedTable}
-     LIMIT ${sanitizedLimit}`,
-    query_params: {},
-  })
+  if (isLoading) {
+    return <TableSkeleton rows={5} />
+  }
 
   if (error) {
-    // Error logging - will be removed in a later fix
-    return (
-      <ErrorAlert
-        title={formatErrorTitle(error)}
-        message={formatErrorMessage(error)}
-        docs={getErrorDocumentation(error)}
-        className="w-full"
-      />
-    )
+    return <ChartError error={error} onRetry={refresh} />
   }
 
   if (!data?.length) {

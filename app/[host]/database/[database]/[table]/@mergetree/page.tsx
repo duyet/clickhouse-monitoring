@@ -17,6 +17,7 @@ interface Props {
 
 export default async function MergeTree({ params }: Props) {
   const { host, database, table } = await params
+  const hostId = Number(host)
 
   const engine = await engineType(database, table)
   if (engine.includes('MergeTree') === false) return <></>
@@ -54,7 +55,9 @@ export default async function MergeTree({ params }: Props) {
     <DataTable
       title={`Table: ${database}.${table}`}
       description={<TableComment database={database} table={table} />}
-      toolbarExtras={<Extras host={host} database={database} table={table} />}
+      toolbarExtras={
+        <Extras hostId={hostId} database={database} table={table} />
+      }
       queryConfig={queryConfig}
       data={columns}
       context={{ host: `${host}`, database, table }}

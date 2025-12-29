@@ -1,8 +1,12 @@
+'use client'
+
 import { ChartCard } from '@/components/generic-charts/chart-card'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { GithubHeatmapChart } from '@/components/github-heatmap-chart'
 import { AreaChart } from '@/components/tremor/area'
 import { BarChart } from '@/components/tremor/bar'
-import { fetchData } from '@/lib/clickhouse'
+import { useFetchData } from '@/lib/swr'
 
 interface RenderChartProps {
   kind: string
@@ -15,7 +19,7 @@ interface RenderChartProps {
   hostId: number
 }
 
-export const RenderChart = async ({
+export const RenderChart = ({
   kind,
   title,
   query,
@@ -36,20 +40,24 @@ export const RenderChart = async ({
   chartClassName,
   hostId,
 }: RenderChartProps) => {
-  const { data, error } = await fetchData<{ [key: string]: string | number }[]>(
+  const { data, isLoading, error, refresh } = useFetchData<
     {
-      query,
-      query_params: params,
-      hostId,
-    }
-  )
+      [key: string]: string | number
+    }[]
+  >(query, params, hostId, 30000) // refresh every 30 seconds
+
+  if (isLoading) {
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  }
 
   if (error) {
-    return (
-      <div className="rounded border p-4">
-        <div className="text-sm text-red-600">Error: {error.message}</div>
-      </div>
-    )
+    return <ChartError error={error} title={title} onRetry={refresh} />
   }
 
   // event_time is a must

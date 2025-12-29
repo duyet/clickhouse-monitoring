@@ -1,3 +1,5 @@
+'use client'
+
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 
 import { Button } from '@/components/ui/button'
@@ -9,24 +11,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { fetchData } from '@/lib/clickhouse-helpers'
+import { useFetchData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 interface TableInfoProps {
+  hostId?: number
   database: string
   table: string
   className?: string
 }
 
-export async function TableInfo({
+export function TableInfo({
+  hostId,
   database,
   table,
   className,
 }: TableInfoProps) {
-  const { data: tableInfo, error } = await fetchData<
-    { [key: string]: string }[]
-  >({
-    query: `SELECT
+  const { data, isLoading, error } = useFetchData<{ [key: string]: string }[]>(
+    `SELECT
          engine,
          uuid,
          data_paths,
@@ -45,22 +47,40 @@ export async function TableInfo({
      FROM system.tables
      WHERE database = {database: String} AND name = {table: String}
     `,
-    query_params: {
+    {
       database,
       table,
     },
-  })
+    hostId
+  )
 
   if (error) {
     console.error('Failed to fetch table info', error)
     return null
   }
 
-  if (!tableInfo?.length) {
+  if (isLoading) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className={cn(
+          'text-muted-foreground flex flex-row items-center gap-2',
+          className
+        )}
+        disabled
+      >
+        <InfoCircledIcon className="size-3" />
+        Loading...
+      </Button>
+    )
+  }
+
+  if (!data?.length) {
     return null
   }
 
-  const info = tableInfo[0]
+  const info = data[0]
 
   return (
     <Dialog>

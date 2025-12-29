@@ -1,4 +1,5 @@
-import { ErrorAlert } from '@/components/error-alert'
+'use client'
+
 import {
   Table,
   TableBody,
@@ -7,27 +8,28 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { fetchData } from '@/lib/clickhouse-helpers'
-import {
-  formatErrorMessage,
-  formatErrorTitle,
-  getErrorDocumentation,
-} from '@/lib/error-utils'
+import { ChartError } from '@/components/charts/chart-error'
+import { TableSkeleton } from '@/components/skeleton'
+import { useFetchData } from '@/lib/swr'
 
 interface RunningQueriesProps {
+  hostId?: number
   database: string
   table: string
   limit?: number
   className?: string
 }
 
-export async function RunningQueries({
+export function RunningQueries({
+  hostId,
   database,
   table,
   className,
 }: RunningQueriesProps) {
-  const { data, error } = await fetchData<{ [key: string]: string }[]>({
-    query: `SELECT query, user, elapsed,
+  const { data, isLoading, error, refresh } = useFetchData<
+    { [key: string]: string }[]
+  >(
+    `SELECT query, user, elapsed,
        formatReadableQuantity(read_rows) as read_rows,
        formatReadableQuantity(total_rows_approx) as total_rows_approx,
        formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
@@ -36,22 +38,20 @@ export async function RunningQueries({
      WHERE (query LIKE '%{database: String}%')
        AND (query LIKE '%{table: String}%')
      `,
-    query_params: {
+    {
       database,
       table,
     },
-  })
+    hostId,
+    5000 // refresh every 5 seconds for running queries
+  )
+
+  if (isLoading) {
+    return <TableSkeleton rows={3} />
+  }
 
   if (error) {
-    console.error('Failed to fetch running queries', error)
-    return (
-      <ErrorAlert
-        title={formatErrorTitle(error)}
-        message={formatErrorMessage(error)}
-        docs={getErrorDocumentation(error)}
-        className="w-full"
-      />
-    )
+    return <ChartError error={error} onRetry={refresh} />
   }
 
   if (!data?.length) {

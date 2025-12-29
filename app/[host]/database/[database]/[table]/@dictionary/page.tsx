@@ -14,6 +14,7 @@ interface Props {
 
 export default async function Dictionary({ params }: Props) {
   const { host, database, table } = await params
+  const hostId = Number(host)
 
   const engine = await engineType(database, table)
   if (engine !== 'Dictionary') return <></>
@@ -22,7 +23,7 @@ export default async function Dictionary({ params }: Props) {
 
   return (
     <div className="flex flex-col">
-      <Extras host={host} database={database} table={table} />
+      <Extras hostId={hostId} database={database} table={table} />
 
       <div className="mt-6 w-fit overflow-auto">
         <h2 className="mb-3 text-lg font-semibold">Dictionary usage</h2>

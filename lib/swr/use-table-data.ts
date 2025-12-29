@@ -84,9 +84,24 @@ export function useTableData<T = unknown>(
     const response = await fetch(url)
 
     if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as {
+        error?: {
+          message?: string
+          type?: string
+          details?: Record<string, unknown>
+        }
+      }
       const error = new Error(
-        `Failed to fetch table data: ${response.statusText}`
-      )
+        errorData.error?.message ||
+          `Failed to fetch table data: ${response.statusText}`
+      ) as Error & { type?: string; details?: Record<string, unknown> }
+
+      // Attach error metadata if available
+      if (errorData.error) {
+        error.type = errorData.error.type
+        error.details = errorData.error.details
+      }
+
       throw error
     }
 
