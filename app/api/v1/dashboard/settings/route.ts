@@ -6,11 +6,21 @@
  */
 
 import { getClient } from '@/lib/clickhouse'
-import type { ApiResponse, ApiError } from '@/lib/api/types'
+import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 import { TABLE_SETTINGS } from '@/lib/api/dashboard-api'
+import {
+  createErrorResponse as createApiErrorResponse,
+  createValidationError,
+  type RouteContext,
+} from '@/lib/api/error-handler'
+import { debug, error } from '@/lib/logger'
+
+const ROUTE_CONTEXT = { route: '/api/v1/dashboard/settings', method: 'POST' }
 
 export async function POST(request: Request): Promise<Response> {
+  debug('[POST /api/v1/dashboard/settings] Updating settings')
+
   try {
     const body = (await request.json()) as {
       params?: Record<string, string>
@@ -19,14 +29,13 @@ export async function POST(request: Request): Promise<Response> {
     const { params, hostId = 0 } = body
 
     if (!params || typeof params !== 'object') {
-      return createErrorResponse(
-        {
-          type: ApiErrorType.ValidationError,
-          message: 'Missing or invalid field: params',
-        },
-        400
+      return createValidationError(
+        'Missing or invalid field: params',
+        ROUTE_CONTEXT
       )
     }
+
+    debug('[POST /api/v1/dashboard/settings]', { hostId, paramsKeys: Object.keys(params) })
 
     const query = `
       ALTER TABLE ${TABLE_SETTINGS}
@@ -46,12 +55,30 @@ export async function POST(request: Request): Promise<Response> {
       query_params,
     })
 
-    return createSuccessResponse({ success: true })
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred'
+    const response: ApiResponse<{ success: boolean }> = {
+      success: true,
+      data: { success: true },
+      metadata: {
+        queryId: 'dashboard-settings-update',
+        duration: 0,
+        rows: 0,
+        host: String(hostId),
+      },
+    }
 
-    return createErrorResponse(
+    return Response.json(response, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : 'Unknown error occurred'
+
+    error('[POST /api/v1/dashboard/settings] Error:', errorMessage)
+
+    return createApiErrorResponse(
       {
         type: ApiErrorType.QueryError,
         message: errorMessage,
@@ -59,47 +86,8 @@ export async function POST(request: Request): Promise<Response> {
           timestamp: new Date().toISOString(),
         },
       },
-      500
+      500,
+      ROUTE_CONTEXT
     )
   }
-}
-
-function createSuccessResponse<T>(data: T): Response {
-  const response: ApiResponse<T> = {
-    success: true,
-    data,
-    metadata: {
-      queryId: '',
-      duration: 0,
-      rows: 0,
-      host: '',
-    },
-  }
-
-  return Response.json(response, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-}
-
-function createErrorResponse(error: ApiError, status: number): Response {
-  const response: ApiResponse = {
-    success: false,
-    metadata: {
-      queryId: '',
-      duration: 0,
-      rows: 0,
-      host: 'unknown',
-    },
-    error,
-  }
-
-  return Response.json(response, {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
 }

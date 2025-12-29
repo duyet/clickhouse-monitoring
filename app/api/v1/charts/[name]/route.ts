@@ -13,12 +13,20 @@ import {
   getAvailableCharts,
   type MultiChartQueryResult,
 } from '@/lib/api/chart-registry'
-import type { ApiResponse as ApiResponseType, ApiError } from '@/lib/api/types'
+import type { ApiResponse as ApiResponseType } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+import {
+  createErrorResponse as createApiErrorResponse,
+  getHostIdFromParams,
+  type RouteContext,
+} from '@/lib/api/error-handler'
+import { debug, error } from '@/lib/logger'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
+
+const ROUTE_CONTEXT_BASE = { route: '/api/v1/charts/[name]' }
 
 /**
  * Handle multi-query charts (summary charts)
@@ -27,8 +35,15 @@ export const dynamic = 'force-dynamic'
 async function handleMultiQueryChart(
   queryDef: MultiChartQueryResult,
   hostId: number | string,
-  _chartName: string
+  chartName: string,
+  routeContext: RouteContext
 ): Promise<Response> {
+  debug(`[GET /api/v1/charts/${chartName}]`, {
+    hostId,
+    type: 'multi-query',
+    queryCount: queryDef.queries.length,
+  })
+
   try {
     // Execute all queries in parallel
     const results = await Promise.all(
@@ -44,14 +59,14 @@ async function handleMultiQueryChart(
             data: result.data || null,
             error: result.error,
           }
-        } catch (error) {
+        } catch (err) {
           // For optional queries, return null instead of failing
           return {
             key: q.key,
             data: null,
             error: {
               type: ApiErrorType.QueryError,
-              message: error instanceof Error ? error.message : 'Unknown error',
+              message: err instanceof Error ? err.message : 'Unknown error',
             },
           }
         }
@@ -61,13 +76,26 @@ async function handleMultiQueryChart(
     // Combine results into a single object with data keyed by query key
     const combinedData: Record<string, unknown> = {}
     let hasError = false
-    let firstError: ApiError | undefined
+    let firstError:
+      | {
+          type: ApiErrorType
+          message: string
+          details?: { readonly [key: string]: string | number | boolean | undefined }
+        }
+      | undefined
 
     for (const result of results) {
       combinedData[result.key] = result.data
       if (result.error && !hasError) {
         hasError = true
-        firstError = result.error as ApiError
+        // Convert FetchDataError to ApiError format
+        firstError = {
+          type: result.error.type as unknown as ApiErrorType,
+          message: result.error.message,
+          details: result.error.details as
+            | { readonly [key: string]: string | number | boolean | undefined }
+            | undefined,
+        }
       }
     }
 
@@ -75,6 +103,10 @@ async function handleMultiQueryChart(
     const combinedSql = queryDef.queries
       .map((q, i) => `-- Query ${i + 1}: ${q.key}\n${q.query.trim()}`)
       .join('\n\n')
+
+    if (hasError && firstError) {
+      error(`[GET /api/v1/charts/${chartName}] Multi-query error:`, firstError)
+    }
 
     // Return combined response
     const response: ApiResponseType<Record<string, unknown>> = {
@@ -97,13 +129,15 @@ async function handleMultiQueryChart(
         'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
       },
     })
-  } catch (error) {
-    return createErrorResponse(
+  } catch (err) {
+    error(`[GET /api/v1/charts/${chartName}] Multi-query exception:`, err)
+    return createApiErrorResponse(
       {
         type: ApiErrorType.QueryError,
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: err instanceof Error ? err.message : 'Unknown error',
       },
-      500
+      500,
+      { ...routeContext, method: 'GET', chartName } as RouteContext & { chartName: string }
     )
   }
 }
@@ -115,133 +149,113 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ name: string }> }
 ): Promise<Response> {
-  try {
-    const { name } = await params
-    const { searchParams } = new URL(request.url)
+  const { name } = await params
+  const { searchParams } = new URL(request.url)
+  const routeContext: RouteContext & { chartName: string } = {
+    ...ROUTE_CONTEXT_BASE,
+    method: 'GET',
+    chartName: name,
+  }
 
-    // Extract query parameters
-    const hostId = searchParams.get('hostId')
-    const intervalParam = searchParams.get('interval')
-    const interval = intervalParam as ClickHouseInterval | undefined
-    const lastHours = searchParams.get('lastHours')
-      ? parseInt(searchParams.get('lastHours') || '24', 10)
-      : undefined
-    const paramStr = searchParams.get('params')
-    const params_obj = paramStr ? JSON.parse(paramStr) : undefined
+  // Extract and validate hostId
+  const hostId = getHostIdFromParams(searchParams, routeContext)
 
-    // Validate required parameters
-    if (!hostId) {
-      return createErrorResponse(
-        {
-          type: ApiErrorType.ValidationError,
-          message: 'Missing required query parameter: hostId',
-        },
-        400
-      )
-    }
+  // Extract optional query parameters
+  const intervalParam = searchParams.get('interval')
+  const interval = intervalParam as ClickHouseInterval | undefined
+  const lastHours = searchParams.get('lastHours')
+    ? parseInt(searchParams.get('lastHours') || '24', 10)
+    : undefined
+  const paramStr = searchParams.get('params')
+  const params_obj = paramStr ? JSON.parse(paramStr) : undefined
 
-    // Check if chart exists
-    if (!hasChart(name)) {
-      return createErrorResponse(
-        {
-          type: ApiErrorType.TableNotFound,
-          message: `Chart not found: ${name}`,
-          details: {
-            availableCharts: getAvailableCharts().join(', '),
-          },
-        },
-        404
-      )
-    }
+  debug(`[GET /api/v1/charts/${name}]`, { hostId, interval, lastHours })
 
-    // Get chart query definition
-    const queryDef = getChartQuery(name, {
-      interval,
-      lastHours,
-      params: params_obj,
-    })
-
-    if (!queryDef) {
-      return createErrorResponse(
-        {
-          type: ApiErrorType.QueryError,
-          message: `Failed to build query for chart: ${name}`,
-        },
-        500
-      )
-    }
-
-    // Check if this is a multi-query chart (summary charts)
-    if ('queries' in queryDef) {
-      return await handleMultiQueryChart(
-        queryDef as MultiChartQueryResult,
-        parseHostId(hostId),
-        name
-      )
-    }
-
-    // Execute the query
-    const result = await fetchData({
-      query: queryDef.query,
-      query_params: queryDef.queryParams,
-      hostId: parseHostId(hostId),
-      format: 'JSONEachRow',
-      // Use the query definition to validate optional tables if needed
-      queryConfig: queryDef.optional
-        ? {
-            name,
-            sql: queryDef.query,
-            columns: [],
-            tableCheck: queryDef.tableCheck,
-            optional: true,
-          }
-        : undefined,
-    })
-
-    // Check if there was an error
-    if (result.error) {
-      return createErrorResponse(
-        {
-          type: result.error.type as ApiErrorType,
-          message: result.error.message,
-          details: result.error.details as Record<
-            string,
-            string | number | boolean | undefined
-          >,
-        },
-        mapErrorTypeToStatusCode(result.error.type as ApiErrorType)
-      )
-    }
-
-    // Create successful response with SQL from query definition
-    return createSuccessResponse(
-      result.data,
-      result.metadata,
-      queryDef.query.trim()
-    )
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred'
-
-    return createErrorResponse(
+  // Check if chart exists
+  if (!hasChart(name)) {
+    return createApiErrorResponse(
       {
-        type: ApiErrorType.QueryError,
-        message: errorMessage,
+        type: ApiErrorType.TableNotFound,
+        message: `Chart not found: ${name}`,
         details: {
-          timestamp: new Date().toISOString(),
+          availableCharts: getAvailableCharts().join(', '),
         },
       },
-      500
+      404,
+      routeContext
     )
   }
-}
 
-/**
- * Parse hostId from string to number
- */
-function parseHostId(hostId: string): number | string {
-  const parsed = parseInt(hostId, 10)
-  return Number.isNaN(parsed) ? hostId : parsed
+  // Get chart query definition
+  const queryDef = getChartQuery(name, {
+    interval,
+    lastHours,
+    params: params_obj,
+  })
+
+  if (!queryDef) {
+    error(`[GET /api/v1/charts/${name}] Failed to build query`)
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.QueryError,
+        message: `Failed to build query for chart: ${name}`,
+      },
+      500,
+      routeContext
+    )
+  }
+
+  // Check if this is a multi-query chart (summary charts)
+  if ('queries' in queryDef) {
+    return await handleMultiQueryChart(
+      queryDef as MultiChartQueryResult,
+      hostId,
+      name,
+      routeContext
+    )
+  }
+
+  // Execute the query
+  const result = await fetchData({
+    query: queryDef.query,
+    query_params: queryDef.queryParams,
+    hostId,
+    format: 'JSONEachRow',
+    // Use the query definition to validate optional tables if needed
+    queryConfig: queryDef.optional
+      ? {
+          name,
+          sql: queryDef.query,
+          columns: [],
+          tableCheck: queryDef.tableCheck,
+          optional: true,
+        }
+      : undefined,
+  })
+
+  // Check if there was an error
+  if (result.error) {
+    error(`[GET /api/v1/charts/${name}] Query error:`, result.error)
+    return createApiErrorResponse(
+      {
+        type: result.error.type as ApiErrorType,
+        message: result.error.message,
+        details: result.error.details as Record<
+          string,
+          string | number | boolean | undefined
+        >,
+      },
+      mapErrorTypeToStatusCode(result.error.type as ApiErrorType),
+      { ...routeContext, hostId }
+    )
+  }
+
+  // Create successful response with SQL from query definition
+  return createSuccessResponse(
+    result.data,
+    result.metadata,
+    queryDef.query.trim()
+  )
 }
 
 /**
@@ -284,29 +298,6 @@ function createSuccessResponse<T>(
     headers: {
       'Content-Type': 'application/json',
       'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
-    },
-  })
-}
-
-/**
- * Create an error response
- */
-function createErrorResponse(error: ApiError, status: number): Response {
-  const response: ApiResponseType = {
-    success: false,
-    metadata: {
-      queryId: '',
-      duration: 0,
-      rows: 0,
-      host: 'unknown',
-    },
-    error,
-  }
-
-  return Response.json(response, {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
     },
   })
 }

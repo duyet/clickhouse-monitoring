@@ -13,11 +13,19 @@ import {
   getAvailableTables,
   getTableConfig,
 } from '@/lib/api/table-registry'
-import type { ApiResponse, ApiError } from '@/lib/api/types'
+import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
+import {
+  createErrorResponse as createApiErrorResponse,
+  getHostIdFromParams,
+  type RouteContext,
+} from '@/lib/api/error-handler'
+import { debug, error } from '@/lib/logger'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
+
+const ROUTE_CONTEXT_BASE = { route: '/api/v1/tables/[name]' }
 
 /**
  * Handle GET requests for table data
@@ -26,123 +34,100 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ name: string }> }
 ): Promise<Response> {
-  try {
-    const { name } = await params
-    const { searchParams } = new URL(request.url)
+  const { name } = await params
+  const { searchParams } = new URL(request.url)
+  const routeContext: RouteContext & { tableName: string } = {
+    ...ROUTE_CONTEXT_BASE,
+    method: 'GET',
+    tableName: name,
+  }
 
-    // Extract query parameters
-    const hostId = searchParams.get('hostId')
+  // Extract and validate hostId
+  const hostId = getHostIdFromParams(searchParams, routeContext)
 
-    // Validate required parameters
-    if (!hostId) {
-      return createErrorResponse(
-        {
-          type: ApiErrorType.ValidationError,
-          message: 'Missing required query parameter: hostId',
-        },
-        400
-      )
-    }
+  debug(`[GET /api/v1/tables/${name}]`, { hostId })
 
-    // Check if table query exists
-    if (!hasTable(name)) {
-      return createErrorResponse(
-        {
-          type: ApiErrorType.TableNotFound,
-          message: `Table query configuration not found: ${name}`,
-          details: {
-            availableTables: getAvailableTables().join(', '),
-          },
-        },
-        404
-      )
-    }
-
-    // Convert searchParams to a plain object (excluding hostId which is handled separately)
-    const searchParamsObj: Record<string, string> = {}
-    searchParams.forEach((value, key) => {
-      if (key !== 'hostId') {
-        searchParamsObj[key] = value
-      }
-    })
-
-    // Get table query definition
-    const queryDef = getTableQuery(name, {
-      hostId: parseHostId(hostId),
-      searchParams: searchParamsObj,
-    })
-
-    if (!queryDef) {
-      return createErrorResponse(
-        {
-          type: ApiErrorType.QueryError,
-          message: `Failed to build query for table: ${name}`,
-        },
-        500
-      )
-    }
-
-    // Get the original config for optional table checks
-    const config = getTableConfig(name)
-
-    // Execute the query
-    const result = await fetchData({
-      query: queryDef.query,
-      query_params: queryDef.queryParams,
-      hostId: parseHostId(hostId),
-      format: 'JSONEachRow',
-      // Use the query config for optional table validation if needed
-      queryConfig: config?.optional
-        ? {
-            name,
-            sql: queryDef.query,
-            columns: config.columns,
-            tableCheck: config.tableCheck,
-            optional: true,
-          }
-        : undefined,
-    })
-
-    // Check if there was an error
-    if (result.error) {
-      return createErrorResponse(
-        {
-          type: result.error.type as ApiErrorType,
-          message: result.error.message,
-          details: result.error.details as Record<
-            string,
-            string | number | boolean | undefined
-          >,
-        },
-        mapErrorTypeToStatusCode(result.error.type as ApiErrorType)
-      )
-    }
-
-    // Create successful response
-    return createSuccessResponse(result.data, result.metadata)
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred'
-
-    return createErrorResponse(
+  // Check if table query exists
+  if (!hasTable(name)) {
+    return createApiErrorResponse(
       {
-        type: ApiErrorType.QueryError,
-        message: errorMessage,
+        type: ApiErrorType.TableNotFound,
+        message: `Table query configuration not found: ${name}`,
         details: {
-          timestamp: new Date().toISOString(),
+          availableTables: getAvailableTables().join(', '),
         },
       },
-      500
+      404,
+      routeContext
     )
   }
-}
 
-/**
- * Parse hostId from string to number
- */
-function parseHostId(hostId: string): number | string {
-  const parsed = parseInt(hostId, 10)
-  return Number.isNaN(parsed) ? hostId : parsed
+  // Convert searchParams to a plain object (excluding hostId which is handled separately)
+  const searchParamsObj: Record<string, string> = {}
+  searchParams.forEach((value, key) => {
+    if (key !== 'hostId') {
+      searchParamsObj[key] = value
+    }
+  })
+
+  // Get table query definition
+  const queryDef = getTableQuery(name, {
+    hostId,
+    searchParams: searchParamsObj,
+  })
+
+  if (!queryDef) {
+    error(`[GET /api/v1/tables/${name}] Failed to build query`)
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.QueryError,
+        message: `Failed to build query for table: ${name}`,
+      },
+      500,
+      routeContext
+    )
+  }
+
+  // Get the original config for optional table checks
+  const config = getTableConfig(name)
+
+  // Execute the query
+  const result = await fetchData({
+    query: queryDef.query,
+    query_params: queryDef.queryParams,
+    hostId,
+    format: 'JSONEachRow',
+    // Use the query config for optional table validation if needed
+    queryConfig: config?.optional
+      ? {
+          name,
+          sql: queryDef.query,
+          columns: config.columns,
+          tableCheck: config.tableCheck,
+          optional: true,
+        }
+      : undefined,
+  })
+
+  // Check if there was an error
+  if (result.error) {
+    error(`[GET /api/v1/tables/${name}] Query error:`, result.error)
+    return createApiErrorResponse(
+      {
+        type: result.error.type as ApiErrorType,
+        message: result.error.message,
+        details: result.error.details as Record<
+          string,
+          string | number | boolean | undefined
+        >,
+      },
+      mapErrorTypeToStatusCode(result.error.type as ApiErrorType),
+      { ...routeContext, hostId }
+    )
+  }
+
+  // Create successful response
+  return createSuccessResponse(result.data, result.metadata)
 }
 
 /**
@@ -183,29 +168,6 @@ function createSuccessResponse<T>(
     headers: {
       'Content-Type': 'application/json',
       'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
-    },
-  })
-}
-
-/**
- * Create an error response
- */
-function createErrorResponse(error: ApiError, status: number): Response {
-  const response: ApiResponse = {
-    success: false,
-    metadata: {
-      queryId: '',
-      duration: 0,
-      rows: 0,
-      host: 'unknown',
-    },
-    error,
-  }
-
-  return Response.json(response, {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
     },
   })
 }

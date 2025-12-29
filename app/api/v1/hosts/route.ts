@@ -9,9 +9,16 @@
 import { getClickHouseConfigs } from '@/lib/clickhouse'
 import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
+import {
+  createErrorResponse as createApiErrorResponse,
+  type RouteContext,
+} from '@/lib/api/error-handler'
+import { debug, error } from '@/lib/logger'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
+
+const ROUTE_CONTEXT = { route: '/api/v1/hosts', method: 'GET' }
 
 /**
  * Host information for public API responses
@@ -27,6 +34,8 @@ export interface HostInfo {
  * Handle GET requests for hosts list
  */
 export async function GET(): Promise<Response> {
+  debug('[GET /api/v1/hosts] Fetching host configurations')
+
   try {
     // Get all configured hosts
     const configs = getClickHouseConfigs()
@@ -58,32 +67,22 @@ export async function GET(): Promise<Response> {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       },
     })
-  } catch (error) {
+  } catch (err) {
     const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred'
+      err instanceof Error ? err.message : 'Unknown error occurred'
 
-    const response: ApiResponse<never> = {
-      success: false,
-      metadata: {
-        queryId: '',
-        duration: 0,
-        rows: 0,
-        host: 'unknown',
-      },
-      error: {
+    error('[GET /api/v1/hosts] Error:', errorMessage)
+
+    return createApiErrorResponse(
+      {
         type: ApiErrorType.QueryError,
         message: errorMessage,
         details: {
           timestamp: new Date().toISOString(),
         },
       },
-    }
-
-    return Response.json(response, {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+      500,
+      ROUTE_CONTEXT
+    )
   }
 }
