@@ -18,8 +18,10 @@ import { getScopedLink } from '@/lib/scoped-link'
 import { cn } from '@/lib/utils'
 
 export async function DatabaseTableCount({
+  hostId,
   className,
 }: {
+  hostId: number
   className?: string
 }) {
   return (
@@ -40,20 +42,20 @@ export async function DatabaseTableCount({
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
         <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
-          <DatabaseCount />
+          <DatabaseCount hostId={hostId} />
         </Suspense>
         <Suspense fallback={<SingleLineSkeleton className="w-full" />}>
-          <TablesCount />
+          <TablesCount hostId={hostId} />
         </Suspense>
       </CardContent>
     </Card>
   )
 }
 
-async function DatabaseCount() {
+async function DatabaseCount({ hostId }: { hostId: number }) {
   const query =
     "SELECT countDistinct(database) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')"
-  const { data, error } = await fetchData<{ count: number }[]>({ query })
+  const { data, error } = await fetchData<{ count: number }[]>({ query, hostId })
 
   if (error) {
     return (
@@ -94,15 +96,15 @@ async function DatabaseCount() {
   )
 }
 
-async function TablesCount() {
+async function TablesCount({ hostId }: { hostId: number }) {
   const totalQuery =
     "SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')"
   const readonlyQuery =
     "SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.replicas WHERE is_readonly = 1"
 
   const [totalData, readonlyData] = await Promise.all([
-    fetchData<{ count: number }[]>({ query: totalQuery }),
-    fetchData<{ count: number }[]>({ query: readonlyQuery }),
+    fetchData<{ count: number }[]>({ query: totalQuery, hostId }),
+    fetchData<{ count: number }[]>({ query: readonlyQuery, hostId }),
   ])
 
   if (totalData?.error) {

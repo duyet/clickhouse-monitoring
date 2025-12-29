@@ -4,7 +4,13 @@ import { DiskSize } from '@/components/overview-charts/disk-size'
 import { RunningQueries } from '@/components/overview-charts/running-queries'
 import { cn } from '@/lib/utils'
 
-export async function OverviewCharts({ className }: { className?: string }) {
+export async function OverviewCharts({
+  hostId,
+  className,
+}: {
+  hostId: number
+  className?: string
+}) {
   return (
     <div
       className={cn(
@@ -13,10 +19,10 @@ export async function OverviewCharts({ className }: { className?: string }) {
         className
       )}
     >
-      <RunningQueries />
-      <DatabaseTableCount />
-      <ClickHouseInfo hostName version uptime />
-      <DiskSize />
+      <RunningQueries hostId={hostId} />
+      <DatabaseTableCount hostId={hostId} />
+      <ClickHouseInfo hostId={hostId} hostName version uptime />
+      <DiskSize hostId={hostId} />
     </div>
   )
 }
