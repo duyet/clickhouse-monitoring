@@ -1,5 +1,6 @@
 'use client'
 
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
@@ -41,15 +42,20 @@ export function ChartKeeperException({
     )
   }
 
+  // Show empty state if no data
+  if (!dataArray || dataArray.length === 0) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
   return (
     <ChartCard
       title={title}
       sql={sql}
-      data={dataArray || []}
+      data={dataArray}
       className={className}
     >
       <BarChart
-        data={dataArray || []}
+        data={dataArray}
         index="event_time"
         categories={['KEEPER_EXCEPTION']}
         className="h-52"

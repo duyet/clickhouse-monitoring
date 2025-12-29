@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { BarChart } from '@/components/generic-charts/bar'
@@ -46,9 +47,14 @@ export function ChartNewPartsCreated({
 
   const dataArray = Array.isArray(raw) ? raw : undefined
 
+  // Show empty state if no data
+  if (!dataArray || dataArray.length === 0) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
   // Single-pass algorithm: collect data and track tables simultaneously
   const tableSet = new Set<string>()
-  const data = (dataArray || []).reduce(
+  const data = dataArray.reduce(
     (acc, cur) => {
       const { event_time, table, new_parts } = cur
       tableSet.add(table)

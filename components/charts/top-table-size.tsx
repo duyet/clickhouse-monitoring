@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { ChartCard } from '@/components/generic-charts/chart-card'
@@ -37,16 +38,21 @@ export function ChartTopTableSize({
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
+  // Show empty state if no data
+  if (!dataArray || dataArray.length === 0) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
   // For this chart, we need to separate by-size and by-count logic
   // Since the API only returns one query result, we'll use the same data
   // In a real scenario, you might want to create two separate chart endpoints
-  const dataTopBySize = (dataArray || []).map((row) => ({
+  const dataTopBySize = dataArray.map((row) => ({
     name: row.table,
     value: row.compressed_bytes,
     compressed: row.compressed,
   }))
 
-  const dataTopByCount = (dataArray || []).map((row) => ({
+  const dataTopByCount = dataArray.map((row) => ({
     name: row.table,
     value: row.total_rows,
     readable_total_rows: row.readable_total_rows,
@@ -57,7 +63,7 @@ export function ChartTopTableSize({
       title={title}
       className={className}
       sql={sql}
-      data={dataArray || []}
+      data={dataArray}
     >
       <Tabs defaultValue="by-size">
         <TabsList className="mb-5">
