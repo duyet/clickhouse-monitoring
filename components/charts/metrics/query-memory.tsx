@@ -54,7 +54,7 @@ export async function ChartQueryMemory({
         stack
         showLegend={false}
         showLabel={false}
-        colors={['--chart-indigo-300']}
+        colors={['--chart-3']}
         onClickHref={
           await getScopedLink('/history-queries?event_time=[event_time]')
         }

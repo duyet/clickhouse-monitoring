@@ -83,7 +83,7 @@ export async function ChartQueryCount({
         showLegend={showLegend}
         showXAxis={showXAxis}
         showCartesianGrid={showCartesianGrid}
-        colors={['--chart-yellow']}
+        colors={['--chart-1']}
         breakdown={breakdown}
         breakdownLabel="query_kind"
         breakdownValue="count"

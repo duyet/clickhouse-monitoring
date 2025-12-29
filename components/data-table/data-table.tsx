@@ -153,12 +153,12 @@ export function DataTable<
       <div className="flex flex-row items-start justify-between pb-4">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <h1 className="text-muted-foreground flex-none text-lg">{title}</h1>
+            <h1 className="text-muted-foreground flex-none text-base font-semibold">{title}</h1>
             <DataTableToolbar queryConfig={queryConfig}>
               {toolbarExtras}
             </DataTableToolbar>
           </div>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm leading-snug">
             {description || queryConfig.description}
           </p>
         </div>
@@ -174,7 +174,7 @@ export function DataTable<
         </div>
       </div>
 
-      <div className="mb-4 rounded-md border">
+      <div className="mb-6 overflow-hidden rounded-lg border border-border/40 shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

@@ -26,7 +26,7 @@ export function ChartCard({
   return (
     <Card className={cn('rounded-md', className)}>
       {title ? (
-        <CardHeader className="p-3">
+        <CardHeader className="px-4 py-3">
           <header className="group flex flex-row items-center justify-between">
             <CardDescription>{title}</CardDescription>
             <CardToolbar sql={sql} data={data} />
@@ -34,7 +34,7 @@ export function ChartCard({
         </CardHeader>
       ) : null}
 
-      <CardContent className={cn('p-4', contentClassName)}>
+      <CardContent className={cn('px-4 py-4', contentClassName)}>
         {children}
       </CardContent>
     </Card>

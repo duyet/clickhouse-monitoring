@@ -16,7 +16,7 @@ export async function PageViewBarChart({
   showXAxis = true,
   showYAxis = true,
   showLegend = false,
-  colors = ['--chart-indigo-300'],
+  colors = ['--chart-3'],
   hostId,
   ...props
 }: ChartProps & { colors?: string[] }) {

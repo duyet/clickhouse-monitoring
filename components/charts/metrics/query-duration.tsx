@@ -60,7 +60,7 @@ export async function ChartQueryDuration({
         data={data || []}
         index="event_time"
         categories={['query_duration_s']}
-        colors={['--chart-rose-200']}
+        colors={['--chart-4']}
         colorLabel="--foreground"
         stack
         showLegend={false}

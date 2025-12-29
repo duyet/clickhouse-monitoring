@@ -55,7 +55,7 @@ export async function ChartMergeSumReadRows({
         labelAngle={-90}
         colorLabel="--foreground"
         className={chartClassName}
-        colors={['--chart-indigo-300']}
+        colors={['--chart-2']}
         autoMinValue={true}
         relative={false}
         allowDecimals={true}

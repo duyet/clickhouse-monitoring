@@ -77,7 +77,7 @@ export function ChartMemoryUsage({
         index="event_time"
         categories={['avg_memory']}
         className={chartClassName}
-        colors={['--chart-12']}
+        colors={['--chart-3']}
         xAxisLabel="Time"
         yAxisLabel="Memory Usage"
         yAxisTickFormatter={chartTickFormatters.bytes}

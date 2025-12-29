@@ -47,7 +47,18 @@ export async function RelatedCharts({
       continue
     }
 
-    const chartsModule = await import(`@/components/charts/${component}`)
+    // Try importing from metrics subdirectory first, then from charts root
+    let chartsModule
+    try {
+      chartsModule = await import(`@/components/charts/metrics/${component}`)
+    } catch {
+      try {
+        chartsModule = await import(`@/components/charts/${component}`)
+      } catch {
+        // Chart module not found, skip this chart
+        continue
+      }
+    }
     charts.push([component, chartsModule.default, props])
   }
 
@@ -71,7 +82,7 @@ export async function RelatedCharts({
   }
 
   return (
-    <div className={cn('grid gap-5', gridCols, className)}>
+    <div className={cn('grid gap-4', gridCols, className)}>
       {charts.map(([name, Chart, props], i) => {
         let chartClassName = ''
 

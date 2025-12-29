@@ -21,41 +21,61 @@
 }
 
 :root {
+  /* Typography Scale */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+
   /* Professional blue/gray palette - Light Mode */
-  --background: hsl(210 20% 98%);
-  --foreground: hsl(215 25% 15%);
+  /* Backgrounds - Pure white for cleaner look */
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(240 10% 3.9%);
   --card: hsl(0 0% 100%);
-  --card-foreground: hsl(215 25% 15%);
+  --card-foreground: hsl(240 10% 3.9%);
   --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(215 25% 15%);
-  --primary: hsl(215 28% 42%);
+  --popover-foreground: hsl(240 10% 3.9%);
+  /* Primary - More vibrant blue for CTAs */
+  --primary: hsl(221 83% 53%);
   --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(210 14% 96%);
-  --secondary-foreground: hsl(215 20% 25%);
-  --muted: hsl(210 14% 96%);
-  --muted-foreground: hsl(215 15% 45%);
-  --accent: hsl(210 40% 96%);
-  --accent-foreground: hsl(215 25% 27%);
+  /* Secondary - Cleaner gray */
+  --secondary: hsl(240 4.8% 95.9%);
+  --secondary-foreground: hsl(240 5.9% 10%);
+  /* Muted */
+  --muted: hsl(240 4.8% 95.9%);
+  --muted-foreground: hsl(240 3.8% 46.1%);
+  /* Accent */
+  --accent: hsl(240 4.8% 95.9%);
+  --accent-foreground: hsl(240 5.9% 10%);
   --destructive: hsl(0 84.2% 60.2%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(214 20% 88%);
-  --input: hsl(214 20% 88%);
-  --ring: hsl(215 28% 42%);
+  /* Border - Subtler */
+  --border: hsl(240 5.9% 90%);
+  --input: hsl(240 5.9% 90%);
+  --ring: hsl(221 83% 53%);
   --radius: 0.5rem;
-  /* Chart colors - blue-anchored with variety */
-  --chart-1: hsl(215 70% 50%);
-  --chart-2: hsl(160 55% 42%);
-  --chart-3: hsl(270 50% 55%);
-  --chart-4: hsl(25 85% 55%);
-  --chart-5: hsl(340 70% 55%);
-  --chart-6: hsl(195 70% 50%);
-  --chart-7: hsl(45 90% 50%);
-  --chart-8: hsl(145 60% 45%);
-  --chart-9: hsl(220 60% 65%);
-  --chart-10: hsl(300 45% 55%);
-  --chart-11: hsl(185 50% 50%);
-  --chart-12: hsl(250 60% 60%);
-  --chart-13: hsl(15 75% 55%);
+  /* Chart colors - better differentiation */
+  --chart-1: hsl(221 83% 53%);
+  --chart-2: hsl(142 71% 45%);
+  --chart-3: hsl(262 83% 58%);
+  --chart-4: hsl(48 96% 53%);
+  --chart-5: hsl(320 70% 55%);
+  --chart-6: hsl(191 91% 37%);
+  --chart-7: hsl(48 96% 47%);
+  --chart-8: hsl(142 76% 36%);
+  --chart-9: hsl(221 83% 53% / 0.7);
+  --chart-10: hsl(262 83% 58% / 0.7);
+  --chart-11: hsl(191 91% 45%);
+  --chart-12: hsl(262 70% 50%);
+  --chart-13: hsl(25 95% 53%);
   --chart-pink-300: hsl(327 70% 70%);
   --chart-blue-300: hsl(212 80% 65%);
   --chart-rose-200: hsl(350 70% 75%);
@@ -63,28 +83,28 @@
   --chart-indigo-300: hsl(230 70% 70%);
   --chart-yellow: hsl(45 90% 55%);
   /* Sidebar colors */
-  --sidebar-background: hsl(210 20% 98%);
-  --sidebar-foreground: hsl(215 20% 30%);
-  --sidebar-primary: hsl(215 28% 42%);
+  --sidebar-background: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(240 10% 3.9%);
+  --sidebar-primary: hsl(221 83% 53%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(210 30% 94%);
-  --sidebar-accent-foreground: hsl(215 25% 25%);
-  --sidebar-border: hsl(214 20% 90%);
-  --sidebar-ring: hsl(215 70% 55%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(240 5.9% 90%);
+  --sidebar-ring: hsl(221 83% 55%);
 
-  /* Badge Colors */
-  --badge-success-bg: hsl(120 84.3% 95.5%);
-  --badge-success-text: hsl(120 39.1% 26.1%);
-  --badge-warning-bg: hsl(45 92.9% 95.1%);
-  --badge-warning-text: hsl(45 92.1% 17.6%);
-  --badge-info-bg: hsl(210 93.9% 95.1%);
-  --badge-info-text: hsl(210 89% 10.1%);
-  --badge-primary-bg: hsl(262 96.8% 95.7%);
-  --badge-primary-text: hsl(262 80% 50%);
-  --badge-secondary-bg: hsl(280 85.5% 95.3%);
-  --badge-secondary-text: hsl(280 62% 30.2%);
-  --badge-tertiary-bg: hsl(319 84.8% 95.3%);
-  --badge-tertiary-text: hsl(319 84.6% 24.9%);
+  /* Badge Colors - Improved Contrast */
+  --badge-success-bg: hsl(142 76% 96%);
+  --badge-success-text: hsl(142 72% 29%);
+  --badge-warning-bg: hsl(48 96% 96%);
+  --badge-warning-text: hsl(48 96% 21%);
+  --badge-info-bg: hsl(221 83% 97%);
+  --badge-info-text: hsl(221 83% 43%);
+  --badge-primary-bg: hsl(262 83% 96%);
+  --badge-primary-text: hsl(262 83% 40%);
+  --badge-secondary-bg: hsl(280 67% 96%);
+  --badge-secondary-text: hsl(280 67% 35%);
+  --badge-tertiary-bg: hsl(320 70% 96%);
+  --badge-tertiary-text: hsl(320 70% 37%);
 
   /* Bar Background */
   --bar-background: hsl(16 50% 95.5%);
@@ -103,39 +123,46 @@
 
 .dark {
   /* Professional blue/gray palette - Dark Mode */
-  --background: hsl(220 18% 10%);
-  --foreground: hsl(210 20% 95%);
-  --card: hsl(220 16% 13%);
-  --card-foreground: hsl(210 20% 95%);
-  --popover: hsl(220 16% 13%);
-  --popover-foreground: hsl(210 20% 95%);
-  --primary: hsl(215 50% 55%);
-  --primary-foreground: hsl(215 28% 10%);
-  --secondary: hsl(220 14% 18%);
-  --secondary-foreground: hsl(210 20% 90%);
-  --muted: hsl(220 14% 18%);
-  --muted-foreground: hsl(215 15% 60%);
-  --accent: hsl(215 30% 20%);
-  --accent-foreground: hsl(210 20% 90%);
-  --destructive: hsl(0 62.8% 45%);
+  /* Backgrounds - Deeper, richer dark */
+  --background: hsl(240 10% 3.9%);
+  --foreground: hsl(0 0% 98%);
+  --card: hsl(240 10% 7%);
+  --card-foreground: hsl(0 0% 98%);
+  --popover: hsl(240 10% 7%);
+  --popover-foreground: hsl(0 0% 98%);
+  /* Primary - Same vibrant blue */
+  --primary: hsl(221 83% 53%);
+  --primary-foreground: hsl(240 5.9% 10%);
+  /* Secondary */
+  --secondary: hsl(240 3.7% 15.9%);
+  --secondary-foreground: hsl(0 0% 98%);
+  /* Muted */
+  --muted: hsl(240 3.7% 15.9%);
+  --muted-foreground: hsl(240 5% 64.9%);
+  /* Accent */
+  --accent: hsl(240 3.7% 15.9%);
+  --accent-foreground: hsl(0 0% 98%);
+  /* Destructive */
+  --destructive: hsl(0 72% 51%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(220 14% 20%);
-  --input: hsl(220 14% 20%);
-  --ring: hsl(215 50% 55%);
-  /* Chart colors - brighter for dark mode visibility */
-  --chart-1: hsl(215 75% 60%);
-  --chart-2: hsl(160 60% 50%);
-  --chart-3: hsl(270 55% 62%);
-  --chart-4: hsl(25 80% 60%);
-  --chart-5: hsl(340 70% 60%);
-  --chart-6: hsl(195 70% 55%);
-  --chart-7: hsl(45 85% 55%);
-  --chart-8: hsl(145 55% 50%);
-  --chart-9: hsl(220 55% 70%);
-  --chart-10: hsl(300 50% 60%);
-  --chart-11: hsl(185 55% 55%);
-  --chart-12: hsl(250 55% 65%);
-  --chart-13: hsl(15 70% 60%);
+  /* Border */
+  --border: hsl(240 3.7% 20%);
+  --input: hsl(240 3.7% 20%);
+  --ring: hsl(221 83% 53%);
+  /* Chart colors - 10-15% brighter for dark mode visibility */
+  --chart-1: hsl(221 83% 65%);
+  --chart-2: hsl(142 76% 55%);
+  --chart-3: hsl(262 83% 68%);
+  --chart-4: hsl(48 96% 60%);
+  --chart-5: hsl(320 70% 65%);
+  --chart-6: hsl(191 91% 52%);
+  --chart-7: hsl(48 96% 55%);
+  --chart-8: hsl(142 76% 50%);
+  --chart-9: hsl(221 83% 68%);
+  --chart-10: hsl(262 83% 65%);
+  --chart-11: hsl(191 91% 58%);
+  --chart-12: hsl(262 70% 65%);
+  --chart-13: hsl(25 95% 60%);
   --chart-pink-300: hsl(327 65% 65%);
   --chart-blue-300: hsl(212 70% 60%);
   --chart-rose-200: hsl(350 65% 60%);
@@ -143,28 +170,28 @@
   --chart-indigo-300: hsl(230 65% 65%);
   --chart-yellow: hsl(45 85% 58%);
   /* Sidebar colors - dark mode */
-  --sidebar-background: hsl(220 18% 10%);
-  --sidebar-foreground: hsl(210 20% 90%);
-  --sidebar-primary: hsl(215 50% 55%);
+  --sidebar-background: hsl(240 10% 3.9%);
+  --sidebar-foreground: hsl(0 0% 98%);
+  --sidebar-primary: hsl(221 83% 53%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(215 25% 18%);
-  --sidebar-accent-foreground: hsl(210 20% 90%);
-  --sidebar-border: hsl(220 14% 20%);
-  --sidebar-ring: hsl(215 70% 60%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(0 0% 98%);
+  --sidebar-border: hsl(240 3.7% 20%);
+  --sidebar-ring: hsl(221 83% 60%);
 
-  /* Dark Mode Badge Colors */
-  --badge-success-bg: hsl(120 41% 26%);
-  --badge-success-text: hsl(120 70% 80%);
-  --badge-warning-bg: hsl(45 85.7% 25.2%);
-  --badge-warning-text: hsl(45 92.9% 80%);
-  --badge-info-bg: hsl(210 77.2% 25.4%);
-  --badge-info-text: hsl(210 93.9% 80%);
-  --badge-primary-bg: hsl(262 80% 30%);
-  --badge-primary-text: hsl(262 96.8% 90%);
-  --badge-secondary-bg: hsl(280 62% 30%);
-  --badge-secondary-text: hsl(280 85.5% 85%);
-  --badge-tertiary-bg: hsl(319 84.6% 25%);
-  --badge-tertiary-text: hsl(319 84.8% 85%);
+  /* Dark Mode Badge Colors - Improved Contrast */
+  --badge-success-bg: hsl(142 72% 25%);
+  --badge-success-text: hsl(142 76% 90%);
+  --badge-warning-bg: hsl(48 96% 21%);
+  --badge-warning-text: hsl(48 96% 85%);
+  --badge-info-bg: hsl(221 83% 23%);
+  --badge-info-text: hsl(221 83% 85%);
+  --badge-primary-bg: hsl(262 83% 25%);
+  --badge-primary-text: hsl(262 83% 90%);
+  --badge-secondary-bg: hsl(280 67% 25%);
+  --badge-secondary-text: hsl(280 67% 90%);
+  --badge-tertiary-bg: hsl(320 70% 25%);
+  --badge-tertiary-text: hsl(320 70% 90%);
 
   /* Dark Mode Bar Background */
   --bar-background: hsl(16 33.3% 20.2%);
@@ -228,4 +255,23 @@
   --color-chart-orange-600: var(--chart-orange-600);
   --color-chart-indigo-300: var(--chart-indigo-300);
   --color-chart-yellow: var(--chart-yellow);
+}
+
+/* Transition Utilities */
+:root {
+  --transition-fast: 150ms;
+  --transition-base: 200ms;
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus Visible Improvements */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Remove default outline for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
 }

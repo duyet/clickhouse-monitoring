@@ -54,9 +54,9 @@ function SingleItem({ item }: { item: MenuItem }) {
       <HostPrefixedLink
         href={item.href}
         className={cn(
-          'group bg-background inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors',
-          'hover:bg-accent hover:text-accent-foreground',
-          'focus:bg-accent focus:text-accent-foreground focus:outline-hidden',
+          'group bg-background inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors-fast',
+          'hover:bg-accent/80 hover:text-accent-foreground',
+          'focus:bg-accent focus:text-accent-foreground focus:ring-2 focus:ring-ring/50 focus:outline-hidden active:scale-[0.98]',
           'disabled:pointer-events-none disabled:opacity-50',
           'data-active:bg-accent/50 data-[state=open]:bg-accent/50'
         )}
@@ -143,9 +143,9 @@ function ListItem({
         >
           <div
             className={cn(
-              'block space-y-1 rounded-md p-2 leading-none no-underline outline-hidden transition-colors select-none',
-              'hover:bg-accent hover:text-accent-foreground',
-              'focus:bg-accent focus:text-accent-foreground',
+              'block space-y-1 rounded-md p-3 leading-none no-underline outline-hidden transition-colors-fast select-none',
+              'hover:bg-accent/80 hover:shadow-sm hover:text-accent-foreground',
+              'focus:bg-accent focus:text-accent-foreground focus:ring-2 focus:ring-ring/50 active:scale-[0.98]',
               className
             )}
             {...props}
