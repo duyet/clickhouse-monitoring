@@ -4,9 +4,6 @@ import { ChartParams } from './chart-params'
 import { RenderChart } from './render-chart'
 import { getCustomDashboards } from './utils'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 30
-
 export default async function Page({
   params: routeParams,
 }: {

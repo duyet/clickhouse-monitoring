@@ -13,9 +13,6 @@ import { ServerComponentLazy } from '@/components/server-component-lazy'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { OverviewCharts } from './overview-charts'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 5
-
 export default async function Overview({
   params,
 }: {

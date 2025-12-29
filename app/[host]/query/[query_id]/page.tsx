@@ -8,8 +8,6 @@ import { config } from './config'
 import { QueryDetail } from './query-detail'
 import type { PageProps } from './types'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 3600
 export const maxDuration = 30
 
 export default async function Page({ params, searchParams }: PageProps) {

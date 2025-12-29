@@ -14,9 +14,6 @@ interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 300
-
 export default async function Page({ params, searchParams }: PageProps) {
   const { host, query } = await params
   const hostId = Number(host)

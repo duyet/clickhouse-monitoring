@@ -9,8 +9,6 @@ import {
 } from '@/lib/error-utils'
 import { queryConfig, type Row } from './config'
 
-export const dynamic = 'force-dynamic'
-
 export default async function ClustersPage({
   params,
 }: {

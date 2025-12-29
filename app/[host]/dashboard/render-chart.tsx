@@ -4,9 +4,6 @@ import { AreaChart } from '@/components/tremor/area'
 import { BarChart } from '@/components/tremor/bar'
 import { fetchData } from '@/lib/clickhouse'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 30
-
 interface RenderChartProps {
   kind: string
   title: string

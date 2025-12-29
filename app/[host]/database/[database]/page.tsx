@@ -21,8 +21,6 @@ interface TableListProps {
   }>
 }
 
-export const dynamic = 'force-dynamic'
-
 export default async function TableListPage({ params }: TableListProps) {
   const { host, database } = await params
   const queryConfig: QueryConfig = {

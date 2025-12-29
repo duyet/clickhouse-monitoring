@@ -13,8 +13,6 @@ interface LayoutProps {
   children: React.ReactNode
 }
 
-export const revalidate = 600
-
 export default async function DatabaseLayout({ nav, children }: LayoutProps) {
   return (
     <ResizablePanelGroup
