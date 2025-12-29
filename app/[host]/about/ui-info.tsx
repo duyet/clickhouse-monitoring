@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from '@/components/ui'
 import packageInfo from '@/package.json'
 
 export const dynamic = 'force-static'

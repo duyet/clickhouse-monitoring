@@ -1,3 +1,5 @@
+'use client'
+
 import { menuItemsConfig } from '@/menu'
 import { MenuDropdownStyle } from './menu-dropdown-style'
 import { MenuNavigationStyle } from './menu-navigation-style'

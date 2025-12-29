@@ -6,17 +6,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/ui'
 import { fetchData } from '@/lib/clickhouse-helpers'
 import {
   formatErrorMessage,
   formatErrorTitle,
   getErrorDocumentation,
 } from '@/lib/error-utils'
-import {
-  escapeQualifiedIdentifier,
-  validateLimit,
-} from '@/lib/sql-utils'
+import { escapeQualifiedIdentifier, validateLimit } from '@/lib/sql-utils'
 
 interface SampleDataProps {
   database: string

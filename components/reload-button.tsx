@@ -6,7 +6,7 @@ import { useEffect, useState, useTransition } from 'react'
 import { useInterval } from 'usehooks-ts'
 
 import { useAppContext } from '@/app/context'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
 
@@ -49,7 +49,6 @@ export function ReloadButton({ className }: ReloadButtonProps) {
       if (countDown <= 0) {
         revalidateCacheAndReload()
         setCountDown(initCountDown)
-        return
       } else {
         setCountDown(countDown - 1)
       }
@@ -62,18 +61,12 @@ export function ReloadButton({ className }: ReloadButtonProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className={cn(
-            'flex flex-row gap-2',
-            className,
-            isLoading ? 'animate-pulse' : ''
-          )}
+          className={cn('flex flex-row gap-2', className)}
         >
           <span className="font-mono">
-            {formatReadableSecondDuration(countDown)}
+            {isLoading ? '...' : formatReadableSecondDuration(countDown)}
           </span>
-          <ReloadIcon
-            className={cn('size-4', isLoading ? 'animate-spin' : '')}
-          />
+          <ReloadIcon className={cn('size-4', isLoading && 'animate-spin')} />
         </Button>
       </DropdownMenuTrigger>
 

@@ -4,14 +4,14 @@ import type { Row, RowData } from '@tanstack/react-table'
 import { MoreHorizontal } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui'
 import type { Action } from './types'
 
 export interface ActionMenuProps<TData extends RowData, TValue> {

@@ -1,7 +1,10 @@
 import { CodeIcon } from '@radix-ui/react-icons'
 
-import { DialogContent, type DialogContentProps } from '@/components/dialog-content'
-import { Button } from '@/components/ui/button'
+import {
+  DialogContent,
+  type DialogContentProps,
+} from '@/components/dialog-content'
+import { Button } from '@/components/ui'
 import { dedent } from '@/lib/utils'
 
 interface ShowSQLButtonProps extends Omit<DialogContentProps, 'content'> {

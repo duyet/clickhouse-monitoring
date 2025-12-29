@@ -8,13 +8,13 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
+} from '@/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui'
 
 import { fetchData } from '@/lib/clickhouse-helpers'
 import { getScopedLink } from '@/lib/scoped-link'
@@ -31,9 +31,19 @@ interface Props {
 export async function DatabaseListBreadcrumb({ database }: Props) {
   try {
     // Lists cluster names.
-    const { data } = await fetchData<DatabaseUsedSpace[]>({
+    const { data, error } = await fetchData<DatabaseUsedSpace[]>({
       query: queryConfig.sql,
     })
+
+    if (error) {
+      return (
+        <ErrorAlert
+          title="Unable to retrieve the list of databases"
+          message={error.message}
+          errorType={error.type}
+        />
+      )
+    }
 
     if (!data || !data.length) {
       return (
@@ -48,7 +58,7 @@ export async function DatabaseListBreadcrumb({ database }: Props) {
   } catch (e: any) {
     return (
       <ErrorAlert
-        title="Unable to retrieve the list of clusters"
+        title="Unable to retrieve the list of databases"
         message={`${e}`}
       />
     )

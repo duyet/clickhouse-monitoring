@@ -6,6 +6,7 @@ import { ClickHouseHost } from '@/components/clickhouse-host'
 import { Menu } from '@/components/menu/menu'
 import { ReloadButton } from '@/components/reload-button'
 import { SingleLineSkeleton } from '@/components/skeleton'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { getScopedLink } from '@/lib/scoped-link'
 
 const TITLE = process.env.NEXT_PUBLIC_TITLE || 'ClickHouse Monitoring'
@@ -20,7 +21,7 @@ export async function Header() {
           <Image src={LOGO} width={45} height={45} alt="Logo" />
         </Link>
         <div className="flex-auto truncate">
-          <h2 className="min-w-32 text-2xl font-bold tracking-tight">
+          <h2 className="min-w-32 text-xl font-bold tracking-tight sm:text-2xl">
             <Link href={await getScopedLink('/overview')}>
               <span className="hidden truncate sm:flex">{TITLE}</span>
               <span className="flex truncate sm:hidden">{TITLE_SHORT}</span>
@@ -38,6 +39,7 @@ export async function Header() {
           fallback={<SingleLineSkeleton className="w-[200px] space-x-0 pt-0" />}
         >
           <Menu />
+          <ThemeToggle />
           <ReloadButton />
         </Suspense>
       </div>

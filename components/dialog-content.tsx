@@ -1,6 +1,6 @@
 import { CodeIcon } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import {
   Dialog,
   DialogDescription,
@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogContent as UIDialogContent,
-} from '@/components/ui/dialog'
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 export interface DialogContentProps {
@@ -43,9 +43,7 @@ export function DialogContent({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="w-fit overflow-auto" >
-          {content}
-        </div>
+        <div className="w-fit overflow-auto">{content}</div>
       </UIDialogContent>
     </Dialog>
   )

@@ -9,13 +9,13 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/components/ui'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '@/components/ui'
 import type { ClickHouseConfig } from '@/lib/clickhouse'
 import { setSecureCookie } from '@/lib/cookie-utils'
 import { cn, getHost, removeHostPrefix } from '@/lib/utils'
@@ -81,7 +81,7 @@ export function ClickHouseHostSelector({
                 <span>{config.customName || getHost(config.host)}</span>
                 <Suspense
                   fallback={
-                    <StatusIndicator title={['']} className="bg-gray-500" />
+                    <StatusIndicator title={['']} className="bg-muted-foreground/50" />
                   }
                 >
                   <HostStatus promise={config.promise} />
@@ -102,7 +102,7 @@ export function HostStatus({ promise }: { promise: UptimePromise }) {
   if (isOnline) {
     return (
       <StatusIndicator
-        className="bg-sky-500"
+        className="bg-primary"
         title={[
           `Host: ${res.hostName}`,
           `Online: ${res.uptime}`,
@@ -128,7 +128,7 @@ const StatusIndicator = ({
         <span className="relative flex size-2 cursor-pointer">
           <span
             className={cn(
-              'absolute inline-flex size-full rounded-full bg-red-400',
+              'absolute inline-flex size-full rounded-full bg-destructive',
               className
             )}
           ></span>

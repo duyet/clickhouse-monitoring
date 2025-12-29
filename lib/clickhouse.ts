@@ -250,7 +250,8 @@ export const getClient = async <B extends boolean>({
       clickhouse_settings: {
         max_execution_time: parseInt(
           process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
-            DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME, 10
+            DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME,
+          10
         ),
         ...clickhouseSettings,
       },
@@ -507,7 +508,7 @@ export const fetchData = async <
       data: null,
       metadata: {
         queryId: '',
-        duration: (Date.now()- start.getTime()) / 1000,
+        duration: (Date.now() - start.getTime()) / 1000,
         rows: 0,
         host: clientConfig.host,
       },
