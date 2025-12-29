@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useMemo } from 'react'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import {
@@ -125,8 +126,9 @@ export function ChartSummaryUsedByRunningQueries({
     return <ChartError error={error} title={title} />
   }
 
+  // Show empty state if no data
   if (!data || typeof data !== 'object') {
-    return null
+    return <ChartEmpty title={title} className={className} />
   }
 
   const first = (

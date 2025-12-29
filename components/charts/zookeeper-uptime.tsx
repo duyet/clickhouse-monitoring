@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { ChartSkeleton, ChartError } from '@/components/charts'
@@ -38,7 +39,12 @@ export function ChartZookeeperUptime({
     )
   }
 
-  const uptime = (dataArray || [])[0] || { uptime: 'N/A' }
+  // Show empty state if no data
+  if (!dataArray || dataArray.length === 0) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
+  const uptime = dataArray[0]
 
   return (
     <ChartCard

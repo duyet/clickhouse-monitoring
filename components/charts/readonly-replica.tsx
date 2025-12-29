@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { BarChart } from '@/components/generic-charts/bar'
@@ -37,15 +38,20 @@ export function ChartReadonlyReplica({
     )
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
+  // Show empty state if no data
+  if (!dataArray || dataArray.length === 0) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
   return (
     <ChartCard
       title={title}
       sql={sql}
       className={className}
-      data={dataArray || []}
+      data={dataArray}
     >
       <BarChart
-        data={dataArray || []}
+        data={dataArray}
         index="event_time"
         categories={['ReadonlyReplica']}
         className="h-52"

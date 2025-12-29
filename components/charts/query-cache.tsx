@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { CardMetric } from '@/components/generic-charts/card-metric'
@@ -28,8 +29,12 @@ export function ChartQueryCache({
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
-  const first = dataArray?.[0]
-  if (!dataArray || !first) return null
+  // Show empty state if no data
+  if (!dataArray || dataArray.length === 0) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
+  const first = dataArray[0]
 
   return (
     <ChartCard title={title} className={className} sql={sql} data={dataArray}>

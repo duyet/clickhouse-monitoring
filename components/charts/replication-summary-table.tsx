@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { ChartCard } from '@/components/generic-charts/chart-card'
@@ -36,14 +37,19 @@ export function ChartReplicationSummaryTable({
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
-  const headers = Object.keys(dataArray?.[0] || {})
+  // Show empty state if no data
+  if (!dataArray || dataArray.length === 0) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
+  const headers = Object.keys(dataArray[0])
 
   return (
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
       sql={sql}
-      data={dataArray || []}
+      data={dataArray}
     >
       <div className="flex flex-col justify-between p-0">
         <Table className={className}>
@@ -55,7 +61,7 @@ export function ChartReplicationSummaryTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(dataArray || []).map((row, idx) => (
+            {dataArray.map((row, idx) => (
               <TableRow key={idx}>
                 {Object.values(row).map((value, i) => {
                   return <TableCell key={i}>{value || ''} </TableCell>

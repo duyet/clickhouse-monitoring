@@ -4,6 +4,7 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { AreaChart } from '@/components/generic-charts/area'
@@ -43,17 +44,22 @@ export function ChartMergeCount({
     )
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
+  // Show empty state if no data
+  if (!dataArray || dataArray.length === 0) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
   return (
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
       contentClassName="flex flex-col justify-between"
       sql={sql}
-      data={dataArray || []}
+      data={dataArray}
     >
       <AreaChart
         className={cn('h-52', chartClassName)}
-        data={dataArray || []}
+        data={dataArray}
         index="event_time"
         categories={[
           'avg_CurrentMetric_Merge',

@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { DonutChart } from '@/components/tremor/donut'
@@ -36,9 +37,14 @@ export function ChartQueryType({
     )
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
+  // Show empty state if no data
+  if (!dataArray || dataArray.length === 0) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
   return (
     <DonutChart
-      data={dataArray || []}
+      data={dataArray}
       index="type"
       categories={['query_count']}
       readable="quantity"

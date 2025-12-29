@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { CardMultiMetrics } from '@/components/generic-charts/card-multi-metrics'
@@ -27,7 +28,12 @@ export function ChartReplicationQueueCount({
   if (isLoading) return <ChartSkeleton title={title} className={className} />
   if (error) return <ChartError error={error} title={title} onRetry={refresh} />
 
-  const count = dataArray?.[0] || { count_all: 0, count_executing: 0 }
+  // Show empty state if no data
+  if (!dataArray || dataArray.length === 0) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
+  const count = dataArray[0]
 
   return (
     <ChartCard
