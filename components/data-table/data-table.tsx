@@ -26,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { EmptyState } from '@/components/ui/empty-state'
 import { uniq } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
 
@@ -218,9 +219,13 @@ export function DataTable<
               <TableRow>
                 <TableCell
                   colSpan={columnDefs.length}
-                  className="h-24 text-center"
+                  className="h-64 p-4"
                 >
-                  No results.
+                  <EmptyState
+                    variant="no-data"
+                    title="No results"
+                    description={`No ${title?.toLowerCase() || 'data'} found. Try adjusting your query or check back later.`}
+                  />
                 </TableCell>
               </TableRow>
             )}
