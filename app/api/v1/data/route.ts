@@ -10,54 +10,55 @@ import { fetchData } from '@/lib/clickhouse'
 import type { ApiRequest, ApiResponse, ApiError } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 import type { DataFormat } from '@clickhouse/client'
+import {
+  withApiHandler,
+  createValidationError,
+  createErrorResponse as createApiErrorResponse,
+  getHostIdFromParams,
+  type RouteContext,
+} from '@/lib/api/error-handler'
+import { debug, error } from '@/lib/logger'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
+
+const ROUTE_CONTEXT = { route: '/api/v1/data' }
 
 /**
  * Handle GET requests for data fetching (for backward compatibility with client-side fetch)
  * Accepts query and parameters via URL query string
  */
-export async function GET(request: Request): Promise<Response> {
-  try {
+export const GET = withApiHandler(
+  async (request: Request) => {
     const url = new URL(request.url)
     const searchParams = url.searchParams
 
     // Parse query parameters from URL
     const query = searchParams.get('sql') || searchParams.get('query')
-    const hostId = searchParams.get('hostId')
     const format = searchParams.get('format') as DataFormat | null
 
     // Validate required fields
     if (!query) {
-      return createErrorResponse(
-        {
-          type: ApiErrorType.ValidationError,
-          message: 'Missing required parameter: sql or query',
-        },
-        400
+      return createValidationError(
+        'Missing required parameter: sql or query',
+        { ...ROUTE_CONTEXT, method: 'GET' }
       )
     }
 
-    if (!hostId) {
-      return createErrorResponse(
-        {
-          type: ApiErrorType.ValidationError,
-          message: 'Missing required parameter: hostId',
-        },
-        400
-      )
-    }
+    const hostId = getHostIdFromParams(searchParams, { ...ROUTE_CONTEXT, method: 'GET' })
+
+    debug('[GET /api/v1/data]', { hostId, format: format || 'JSONEachRow' })
 
     // Execute the query
     const result = await fetchData({
       query,
       format: format || 'JSONEachRow',
-      hostId: parseHostId(hostId),
+      hostId,
     })
 
     // Check if there was an error
     if (result.error) {
+      error('[GET /api/v1/data] Query error:', result.error)
       return createErrorResponse(
         {
           type: result.error.type as ApiErrorType,
@@ -67,42 +68,34 @@ export async function GET(request: Request): Promise<Response> {
             string | number | boolean
           >,
         },
-        mapErrorTypeToStatusCode(result.error.type as ApiErrorType)
+        mapErrorTypeToStatusCode(result.error.type as ApiErrorType),
+        { ...ROUTE_CONTEXT, method: 'GET', hostId }
       )
     }
 
     // Create successful response
     return createSuccessResponse(result.data, result.metadata)
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred'
-
-    return createErrorResponse(
-      {
-        type: ApiErrorType.QueryError,
-        message: errorMessage,
-        details: {
-          timestamp: new Date().toISOString(),
-        },
-      },
-      500
-    )
-  }
-}
+  },
+  ROUTE_CONTEXT
+)
 
 /**
  * Handle POST requests for data fetching
  * Accepts query and parameters in the request body
  */
-export async function POST(request: Request): Promise<Response> {
-  try {
+export const POST = withApiHandler(
+  async (request: Request) => {
     // Parse request body
     const body = (await request.json()) as Partial<ApiRequest>
 
     // Validate required fields
     const validationError = validateApiRequest(body)
     if (validationError) {
-      return createErrorResponse(validationError, 400)
+      return createErrorResponse(
+        validationError,
+        400,
+        { ...ROUTE_CONTEXT, method: 'POST' }
+      )
     }
 
     const typedBody = body as ApiRequest
@@ -114,6 +107,8 @@ export async function POST(request: Request): Promise<Response> {
       queryConfig,
     } = typedBody
 
+    debug('[POST /api/v1/data]', { hostId, format, queryConfig: queryConfig?.name })
+
     // Convert format string to DataFormat if needed
     const dataFormat = (format || 'JSONEachRow') as DataFormat
 
@@ -122,12 +117,13 @@ export async function POST(request: Request): Promise<Response> {
       query,
       query_params: queryParams,
       format: dataFormat,
-      hostId: parseHostId(hostId),
+      hostId,
       queryConfig,
     })
 
     // Check if there was an error
     if (result.error) {
+      error('[POST /api/v1/data] Query error:', result.error)
       return createErrorResponse(
         {
           type: result.error.type as ApiErrorType,
@@ -137,28 +133,16 @@ export async function POST(request: Request): Promise<Response> {
             string | number | boolean
           >,
         },
-        mapErrorTypeToStatusCode(result.error.type as ApiErrorType)
+        mapErrorTypeToStatusCode(result.error.type as ApiErrorType),
+        { ...ROUTE_CONTEXT, method: 'POST', hostId }
       )
     }
 
     // Create successful response
     return createSuccessResponse(result.data, result.metadata)
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred'
-
-    return createErrorResponse(
-      {
-        type: ApiErrorType.QueryError,
-        message: errorMessage,
-        details: {
-          timestamp: new Date().toISOString(),
-        },
-      },
-      500
-    )
-  }
-}
+  },
+  ROUTE_CONTEXT
+)
 
 /**
  * Validate API request body
@@ -189,14 +173,6 @@ function validateApiRequest(body: Partial<ApiRequest>): ApiError | undefined {
   }
 
   return undefined
-}
-
-/**
- * Parse hostId from string to number
- */
-function parseHostId(hostId: string): number | string {
-  const parsed = parseInt(hostId, 10)
-  return Number.isNaN(parsed) ? hostId : parsed
 }
 
 /**
@@ -242,24 +218,12 @@ function createSuccessResponse<T>(
 }
 
 /**
- * Create an error response
+ * Create an error response (local wrapper for backward compatibility)
  */
-function createErrorResponse(error: ApiError, status: number): Response {
-  const response: ApiResponse = {
-    success: false,
-    metadata: {
-      queryId: '',
-      duration: 0,
-      rows: 0,
-      host: 'unknown',
-    },
-    error,
-  }
-
-  return Response.json(response, {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+function createErrorResponse(
+  error: ApiError,
+  status: number,
+  context?: RouteContext
+): Response {
+  return createApiErrorResponse(error, status, context)
 }
