@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import {
   type ChartConfig,
   ChartContainer,
@@ -49,25 +50,28 @@ export function AreaChart({
 }: AreaChartProps & {
   yAxisTickFormatter?: (value: string | number) => string
 }) {
-  const config = categories.reduce(
-    (acc, category, index) => {
-      acc[category] = {
-        label: category,
-        color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
-      }
+  const chartConfig = useMemo(() => {
+    const config = categories.reduce(
+      (acc, category, index) => {
+        acc[category] = {
+          label: category,
+          color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
+        }
 
-      return acc
-    },
-    {
-      label: {
-        color: colorLabel ? `var(${colorLabel})` : 'var(--background)',
+        return acc
       },
-    } as ChartConfig
-  )
-  const chartConfig = {
-    ...config,
-    ...(customChartConfig || {}),
-  }
+      {
+        label: {
+          color: colorLabel ? `var(${colorLabel})` : 'var(--background)',
+        },
+      } as ChartConfig
+    )
+
+    return {
+      ...config,
+      ...(customChartConfig || {}),
+    }
+  }, [categories, colors, colorLabel, customChartConfig])
 
   return (
     <ChartContainer

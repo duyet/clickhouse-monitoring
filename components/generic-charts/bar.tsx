@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import {
   Bar,
   CartesianGrid,
@@ -52,59 +53,67 @@ export function BarChart({
 }: BarChartProps & {
   yAxisTickFormatter?: (value: string | number) => string
 }) {
-  const chartConfig = categories.reduce(
-    (acc, category, index) => {
-      acc[category] = {
-        label: category,
-        color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
-      }
+  const chartConfig = useMemo(
+    () =>
+      categories.reduce(
+        (acc, category, index) => {
+          acc[category] = {
+            label: category,
+            color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
+          }
 
-      return acc
-    },
-    {
-      label: {
-        color: colorLabel ? `var(${colorLabel})` : 'var(--background)',
-      },
-    } as ChartConfig
+          return acc
+        },
+        {
+          label: {
+            color: colorLabel ? `var(${colorLabel})` : 'var(--background)',
+          },
+        } as ChartConfig
+      ),
+    [categories, colors, colorLabel]
   )
 
-  const getRadius = ({
-    index,
-    categories,
-    stack,
-    horizontal,
-  }: Pick<BarChartProps, 'categories' | 'horizontal' | 'stack'> & {
-    index: number
-  }): number | [number, number, number, number] => {
-    const length = categories.length
-    const radius = 6
+  const getRadius = useMemo(
+    () =>
+    ({
+      index,
+      categories,
+      stack,
+      horizontal,
+    }: Pick<BarChartProps, 'categories' | 'horizontal' | 'stack'> & {
+      index: number
+    }): number | [number, number, number, number] => {
+      const length = categories.length
+      const radius = 6
 
-    if (!stack) {
-      return radius
-    }
-
-    if (length === 1) {
-      return radius
-    }
-
-    if (index === 0) {
-      if (horizontal) {
-        return [radius, 0, 0, radius]
-      } else {
-        return [0, 0, radius, radius]
+      if (!stack) {
+        return radius
       }
-    }
 
-    if (index === length - 1) {
-      if (horizontal) {
-        return [0, radius, radius, 0]
-      } else {
-        return [radius, radius, 0, 0]
+      if (length === 1) {
+        return radius
       }
-    }
 
-    return [0, 0, 0, 0]
-  }
+      if (index === 0) {
+        if (horizontal) {
+          return [radius, 0, 0, radius]
+        } else {
+          return [0, 0, radius, radius]
+        }
+      }
+
+      if (index === length - 1) {
+        if (horizontal) {
+          return [0, radius, radius, 0]
+        } else {
+          return [radius, radius, 0, 0]
+        }
+      }
+
+      return [0, 0, 0, 0]
+    },
+    []
+  )
 
   return (
     <ChartContainer
