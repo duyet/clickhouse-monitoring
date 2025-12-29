@@ -32,6 +32,29 @@ const _MAX_POOL_SIZE = 10
 const CLIENT_TIMEOUT = 5 * 60 * 1000 // 5 minutes
 
 /**
+ * Detect if running in Cloudflare Workers environment
+ * Cloudflare Workers don't support Node.js APIs like https.request
+ *
+ * Note: When using @opennextjs/cloudflare, the code is bundled for Node.js
+ * environment and process is polyfilled. We use an environment variable to
+ * detect Cloudflare Workers deployment.
+ */
+export function isCloudflareWorkers(): boolean {
+  // Check environment variable first (most reliable for Workers deployment)
+  if (process.env.CF_PAGES || process.env.CLOUDFLARE_WORKERS === '1') {
+    return true
+  }
+
+  // Runtime detection as fallback
+  return (
+    (typeof caches !== 'undefined' ||
+      typeof (globalThis as any).WebSocketPair !== 'undefined' ||
+      typeof (globalThis as any).DurableObject !== 'undefined') &&
+    typeof process === 'undefined'
+  )
+}
+
+/**
  * Generate a pool key from client configuration and web flag
  */
 function getPoolKey(config: ClickHouseConfig, web: boolean): PoolKey {
@@ -218,7 +241,9 @@ export const getClient = async <B extends boolean>({
   clientConfig?: ClickHouseConfig
   hostId?: number
 }): Promise<B extends true ? WebClickHouseClient : ClickHouseClient> => {
-  const isWeb = web === true
+  // Auto-detect environment: use web client for Cloudflare Workers
+  // Cloudflare Workers don't support Node.js APIs like https.request
+  const isWeb = web === true || (web === undefined && isCloudflareWorkers())
   const clientFactory = isWeb ? createClientWeb : createClient
 
   let config: ClickHouseConfig
@@ -420,8 +445,9 @@ export const fetchData = async <
       }
     }
 
+    // getClient will auto-detect and use web client for Cloudflare Workers
+    // Cloudflare Workers don't support Node.js APIs like https.request
     const client = await getClient({
-      web: false,
       clientConfig,
     })
 

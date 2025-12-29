@@ -17,7 +17,8 @@ export async function GET(request: NextRequest) {
     : await getHostIdCookie()
 
   try {
-    const client = await getClient({ web: false, hostId })
+    // getClient will auto-detect and use web client for Cloudflare Workers
+    const client = await getClient({ hostId })
     const resp = await cleanupHangQuery(client)
     return NextResponse.json({ status: true, ...resp }, { status: 200 })
   } catch (error) {

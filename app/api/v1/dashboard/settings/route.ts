@@ -39,7 +39,8 @@ export async function POST(request: Request): Promise<Response> {
       value: JSON.stringify(params),
     }
 
-    const client = await getClient({ web: false, hostId: Number(hostId) })
+    // getClient will auto-detect and use web client for Cloudflare Workers
+    const client = await getClient({ hostId: Number(hostId) })
     await client.command({
       query,
       query_params,

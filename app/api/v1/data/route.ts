@@ -15,6 +15,82 @@ import type { DataFormat } from '@clickhouse/client'
 export const dynamic = 'force-dynamic'
 
 /**
+ * Handle GET requests for data fetching (for backward compatibility with client-side fetch)
+ * Accepts query and parameters via URL query string
+ */
+export async function GET(request: Request): Promise<Response> {
+  try {
+    const url = new URL(request.url)
+    const searchParams = url.searchParams
+
+    // Parse query parameters from URL
+    const query = searchParams.get('sql') || searchParams.get('query')
+    const hostId = searchParams.get('hostId')
+    const format = searchParams.get('format') as DataFormat | null
+
+    // Validate required fields
+    if (!query) {
+      return createErrorResponse(
+        {
+          type: ApiErrorType.ValidationError,
+          message: 'Missing required parameter: sql or query',
+        },
+        400
+      )
+    }
+
+    if (!hostId) {
+      return createErrorResponse(
+        {
+          type: ApiErrorType.ValidationError,
+          message: 'Missing required parameter: hostId',
+        },
+        400
+      )
+    }
+
+    // Execute the query
+    const result = await fetchData({
+      query,
+      format: format || 'JSONEachRow',
+      hostId: parseHostId(hostId),
+    })
+
+    // Check if there was an error
+    if (result.error) {
+      return createErrorResponse(
+        {
+          type: result.error.type as ApiErrorType,
+          message: result.error.message,
+          details: result.error.details as Record<
+            string,
+            string | number | boolean
+          >,
+        },
+        mapErrorTypeToStatusCode(result.error.type as ApiErrorType)
+      )
+    }
+
+    // Create successful response
+    return createSuccessResponse(result.data, result.metadata)
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred'
+
+    return createErrorResponse(
+      {
+        type: ApiErrorType.QueryError,
+        message: errorMessage,
+        details: {
+          timestamp: new Date().toISOString(),
+        },
+      },
+      500
+    )
+  }
+}
+
+/**
  * Handle POST requests for data fetching
  * Accepts query and parameters in the request body
  */

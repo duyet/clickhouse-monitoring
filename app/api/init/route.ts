@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
     ? parseInt(searchParams.get('hostId')!, 10)
     : await getHostIdCookie()
 
-  const client = await getClient({ web: false, hostId })
+  // getClient will auto-detect and use web client for Cloudflare Workers
+  const client = await getClient({ hostId })
 
   try {
     await initTrackingTable(client)

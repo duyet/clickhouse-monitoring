@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
   }
 
   const url = normalizeUrl(rawUrl)
-  const client = await getClient({ web: true, hostId })
+  // getClient will auto-detect and use web client for Cloudflare Workers
+  const client = await getClient({ hostId })
 
   // https://nextjs.org/docs/app/api-reference/functions/userAgent
   const ua = userAgent(request)
