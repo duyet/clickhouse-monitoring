@@ -261,11 +261,8 @@ describe('formatBytes', () => {
     expect(formatBytes(1099511627776)).toBe('1.0 TB')
   })
 
-  it('should handle values larger than terabytes (known limitation)', () => {
-    // Note: The formatBytes function only supports up to TB (terabytes)
-    // Values larger than this will show "undefined" due to array index out of bounds
-    const result = formatBytes(1125899906842624) // 1 PB
-    expect(result).toBe('1.0 undefined') // Current behavior - shows undefined unit
+  it('should format petabytes correctly', () => {
+    expect(formatBytes(1125899906842624)).toBe('1.0 PB')
   })
 
   it('should handle decimal values correctly', () => {

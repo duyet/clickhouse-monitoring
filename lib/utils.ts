@@ -63,7 +63,7 @@ export function binding(
 // Chart utility functions
 
 /**
- * Format bytes to human readable format (GB, MB, KB, B)
+ * Format bytes to human readable format (PB, TB, GB, MB, KB, B)
  * @param bytes Number of bytes
  * @returns Formatted string
  */
@@ -74,10 +74,13 @@ export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || Number.isNaN(bytes)) return '-'
 
   const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  return `${(bytes / k ** i).toFixed(1)} ${sizes[i]}`
+  // Safety clamp to prevent array overflow for extremely large numbers
+  const safeIndex = Math.min(i, sizes.length - 1)
+
+  return `${(bytes / k ** safeIndex).toFixed(1)} ${sizes[safeIndex]}`
 }
 
 /**
