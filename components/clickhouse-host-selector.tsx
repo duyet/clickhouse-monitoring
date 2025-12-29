@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, use } from 'react'
 
 import {
@@ -16,9 +16,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import type { ClickHouseConfig } from '@/lib/clickhouse'
-import { setSecureCookie } from '@/lib/cookie-utils'
-import { cn, getHost, removeHostPrefix } from '@/lib/utils'
+import type { HostInfo } from '@/app/api/v1/hosts/route'
+import { cn, getHost } from '@/lib/utils'
 
 type UptimePromise = Promise<{
   uptime: string
@@ -29,56 +28,63 @@ type UptimePromise = Promise<{
 type ClickHouseHostSelectorProps = {
   currentHostId: number
   configs: Array<
-    Omit<ClickHouseConfig, 'user' | 'password'> & {
+    Omit<HostInfo, 'user'> & {
       promise: UptimePromise
     }
   >
 }
 
+/**
+ * Host selector component for static routing with query parameters.
+ * Handles host switching by updating the `host` query parameter.
+ */
 export function ClickHouseHostSelector({
   currentHostId = 0,
   configs,
 }: ClickHouseHostSelectorProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const pathnameWithoutPrefix = removeHostPrefix(pathname)
+  const searchParams = useSearchParams()
 
   const current = configs[currentHostId]
   if (!current) {
     return null
   }
 
+  const handleValueChange = (val: string) => {
+    const hostId = parseInt(val, 10)
+    if (!Number.isNaN(hostId) && hostId >= 0) {
+      // Update the host query parameter
+      const newParams = new URLSearchParams(searchParams.toString())
+      newParams.set('host', hostId.toString())
+      router.push(`${pathname}?${newParams.toString()}`)
+    }
+  }
+
   return (
     <div>
       <Select
-        defaultValue={current.id.toString()}
-        onValueChange={(val) => {
-          // Validate that val is a valid number before setting cookie
-          const hostId = parseInt(val, 10)
-          if (!Number.isNaN(hostId) && hostId >= 0) {
-            setSecureCookie('hostId', hostId, { path: '/' })
-            router.push(`/${hostId}/${pathnameWithoutPrefix}`)
-          }
-        }}
+        value={current.id.toString()}
+        onValueChange={handleValueChange}
       >
         <SelectTrigger
           className="w-auto border-0 p-1 shadow-none focus:ring-0"
           data-testid="host-selector"
         >
           <SelectValue
-            placeholder={current.customName || getHost(current.host)}
+            placeholder={current.name || getHost(current.host)}
             className="mr-2 w-fit truncate"
           />
         </SelectTrigger>
         <SelectContent data-testid="host-options">
-          {configs.map((config, id) => (
+          {configs.map((config) => (
             <SelectItem
-              key={config.host + id}
-              value={id.toString()}
-              data-testid={`host-option-${id}`}
+              key={config.host + config.id}
+              value={config.id.toString()}
+              data-testid={`host-option-${config.id}`}
             >
               <div className="flex items-center gap-2">
-                <span>{config.customName || getHost(config.host)}</span>
+                <span>{config.name || getHost(config.host)}</span>
                 <Suspense
                   fallback={
                     <StatusIndicator title={['']} className="bg-gray-500" />

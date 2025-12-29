@@ -1,62 +1,66 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+
 import { Badge } from '@/components/ui/badge'
-import { fetchData } from '@/lib/clickhouse'
-import { getHostIdCookie } from '@/lib/scoped-link'
-import { parseTableFromSQL } from '@/lib/table-validator'
+import { useHostId } from '@/lib/swr'
 import type { BadgeVariant } from '@/types/badge-variant'
-import type { QueryConfig } from '@/types/query-config'
 
 export interface CountBadgeProps {
   sql?: string
-  hostId?: number
   className?: string
   variant?: BadgeVariant
 }
 
-export async function CountBadge({
+/**
+ * Client-side count badge that fetches count via API.
+ * For static site architecture with query parameter routing.
+ */
+export function CountBadge({
   sql,
-  hostId,
   className,
   variant = 'outline',
-}: CountBadgeProps): Promise<JSX.Element | null> {
-  if (!sql) return null
+}: CountBadgeProps) {
+  const hostId = useHostId()
+  const [count, setCount] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const resolvedHostId = hostId ?? (await getHostIdCookie())
+  useEffect(() => {
+    if (!sql) {
+      setIsLoading(false)
+      return
+    }
 
-  // Create QueryConfig for table validation
-  const tables = parseTableFromSQL(sql)
-  const queryConfig: QueryConfig = {
-    name: 'count-badge',
-    sql: sql,
-    optional: true,
-    columns: ['count()'],
-    // Only add tableCheck if we found tables in the SQL
-    ...(tables.length > 0 && { tableCheck: tables }),
-  }
+    async function fetchCount() {
+      try {
+        // Use the data endpoint for count queries
+        const response = await fetch(
+          `/api/v1/data?hostId=${hostId}&sql=${encodeURIComponent(sql!)}`
+        )
+        if (!response.ok) {
+          setCount(null)
+          return
+        }
 
-  const { data, error } = await fetchData<{ 'count()': string }[]>({
-    query: sql,
-    hostId: resolvedHostId,
-    format: 'JSONEachRow',
-    queryConfig,
-    clickhouse_settings: {
-      use_query_cache: 1,
-      query_cache_system_table_handling: 'save',
-      query_cache_nondeterministic_function_handling: 'save',
-      query_cache_ttl: 120,
-    },
-  })
+        const result = await response.json() as { success: boolean; data?: Array<{ 'count()'?: string | number; count?: string | number }> }
+        if (result.success && result.data && result.data.length > 0) {
+          const value = result.data[0]['count()'] || result.data[0].count
+          const parsed = typeof value === 'string' ? parseInt(value, 10) : value
+          setCount(typeof parsed === 'number' && !Number.isNaN(parsed) ? parsed : null)
+        } else {
+          setCount(null)
+        }
+      } catch {
+        setCount(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
-  if (error) {
-    console.error(
-      `<CountBadge />: failed to get count, error: "${error.message}", query: ${sql}`
-    )
-    return null
-  }
+    fetchCount()
+  }, [sql, hostId])
 
-  if (!data || !data.length || !data?.[0]?.['count()']) return null
-
-  const count = data[0]['count()'] || 0
-  if (count === 0) return null
+  if (isLoading || !count || count === 0) return null
 
   return (
     <Badge className={className} variant={variant}>

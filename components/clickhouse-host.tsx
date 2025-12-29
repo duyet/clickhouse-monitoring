@@ -47,7 +47,9 @@ export async function ClickHouseHost() {
     <ClickHouseHostSelector
       currentHostId={getHostId()}
       configs={configs.map((config) => ({
-        ...config,
+        id: config.id,
+        name: config.customName || `Host ${config.id}`,
+        host: config.host,
         promise: fetchHostStatus(config.id),
       }))}
     />

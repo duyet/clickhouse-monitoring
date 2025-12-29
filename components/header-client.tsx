@@ -2,17 +2,39 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Suspense } from 'react'
+import { Suspense, use } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ClickHouseHostSelector } from '@/components/clickhouse-host-selector'
 import { Menu } from '@/components/menu/menu'
 import { ReloadButton } from '@/components/reload-button'
 import { SingleLineSkeleton } from '@/components/skeleton'
+import type { HostInfo } from '@/app/api/v1/hosts/route'
 
 const TITLE = process.env.NEXT_PUBLIC_TITLE || 'ClickHouse Monitoring'
 const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'Monitoring'
 const LOGO = process.env.NEXT_PUBLIC_LOGO || '/logo-bw.svg'
+
+/**
+ * Fetch host information from the API
+ */
+async function fetchHosts(): Promise<Array<Omit<HostInfo, 'user'>>> {
+  try {
+    const response = await fetch('/api/v1/hosts')
+    if (!response.ok) {
+      return []
+    }
+
+    const result = await response.json() as { success: boolean; data?: HostInfo[] }
+    if (!result.success || !result.data) {
+      return []
+    }
+
+    return result.data
+  } catch {
+    return []
+  }
+}
 
 /**
  * Client-side header component for static export.
@@ -20,13 +42,15 @@ const LOGO = process.env.NEXT_PUBLIC_LOGO || '/logo-bw.svg'
  */
 export function HeaderClient() {
   const searchParams = useSearchParams()
-
   const hostId = searchParams.get('host') || '0'
 
   // Build link with current hostId
   const buildLink = (path: string) => {
     return `${path}?host=${hostId}`
   }
+
+  // Fetch host configs
+  const hostsPromise = fetchHosts()
 
   return (
     <div className="flex items-center justify-between space-y-2">
@@ -47,10 +71,9 @@ export function HeaderClient() {
                 <SingleLineSkeleton className="w-[100px] space-x-0 pt-0" />
               }
             >
-              <ClickHouseHostSelector
-                // TODO: fetch host status via API
+              <HostSelectorWrapper
+                hostsPromise={hostsPromise}
                 currentHostId={Number(hostId)}
-                configs={[]} // Will be populated via API call
               />
             </Suspense>
           </div>
@@ -66,4 +89,25 @@ export function HeaderClient() {
       </div>
     </div>
   )
+}
+
+/**
+ * Wrapper component to handle the hosts promise
+ */
+function HostSelectorWrapper({
+  hostsPromise,
+  currentHostId,
+}: {
+  hostsPromise: Promise<Array<Omit<HostInfo, 'user'>>>
+  currentHostId: number
+}) {
+  const hosts = use(hostsPromise)
+
+  // Transform to expected format without uptime promises for now
+  const configs = hosts.map((host) => ({
+    ...host,
+    promise: Promise.resolve(null),
+  }))
+
+  return <ClickHouseHostSelector currentHostId={currentHostId} configs={configs} />
 }

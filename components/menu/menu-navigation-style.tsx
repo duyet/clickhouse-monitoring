@@ -2,7 +2,6 @@ import dynamic from 'next/dynamic'
 import type React from 'react'
 
 import { LoadingIcon } from '@/components/loading-icon'
-import { ServerComponentLazy } from '@/components/server-component-lazy'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -72,9 +71,7 @@ function SingleItem({ item }: { item: MenuItem }) {
           {item.icon && <item.icon className="size-4" strokeWidth={1} />}
           {item.title}
           {item.countSql ? (
-            <ServerComponentLazy fallback={<LoadingIcon />} onError={''}>
-              <CountBadge sql={item.countSql} variant={item.countVariant} />
-            </ServerComponentLazy>
+            <CountBadge sql={item.countSql} variant={item.countVariant} />
           ) : null}
         </div>
       </HostPrefixedLink>
@@ -90,9 +87,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
           {item.icon && <item.icon className="size-4" strokeWidth={1} />}
           {item.title}
           {item.countSql ? (
-            <ServerComponentLazy fallback={<LoadingIcon />} onError={''}>
-              <CountBadge sql={item.countSql} variant={item.countVariant} />
-            </ServerComponentLazy>
+            <CountBadge sql={item.countSql} variant={item.countVariant} />
           ) : null}
         </div>
       </NavigationMenuTrigger>
@@ -110,15 +105,10 @@ function HasChildItems({ item }: { item: MenuItem }) {
                     )}
                     {childItem.title}
                     {childItem.countSql ? (
-                      <ServerComponentLazy
-                        fallback={<LoadingIcon />}
-                        onError={''}
-                      >
-                        <CountBadge
-                          sql={childItem.countSql}
-                          variant={childItem.countVariant}
-                        />
-                      </ServerComponentLazy>
+                      <CountBadge
+                        sql={childItem.countSql}
+                        variant={childItem.countVariant}
+                      />
                     ) : null}
                   </span>
                 }
