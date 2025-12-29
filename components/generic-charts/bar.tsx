@@ -4,29 +4,20 @@ import { useMemo } from 'react'
 import {
   Bar,
   CartesianGrid,
-  LabelList,
   BarChart as RechartBarChart,
-  XAxis,
-  YAxis,
-  type LabelListProps,
 } from 'recharts'
-import type {
-  NameType,
-  Payload,
-  ValueType,
-} from 'recharts/types/component/DefaultTooltipContent'
-import type { ViewBox } from 'recharts/types/util/types'
 
 import {
   type ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
 } from '@/components/ui/chart'
 import { binding, cn } from '@/lib/utils'
 import type { BarChartProps } from '@/types/charts'
+import { BarAxes } from './bar-axes'
+import { BarLabel } from './bar-label'
+import { BarTooltip } from './bar-tooltip'
 
 export function BarChart({
   data,
@@ -130,81 +121,24 @@ export function BarChart({
       >
         <CartesianGrid vertical={horizontal} horizontal={!horizontal} />
 
-        {horizontal ? (
-          <>
-            {showXAxis && (
-              <XAxis
-                dataKey={categories[0]}
-                type="number"
-                hide
-                label={
-                  xAxisLabel
-                    ? {
-                        value: xAxisLabel,
-                        position: 'insideBottom',
-                        offset: -10,
-                      }
-                    : undefined
-                }
-              />
-            )}
-            {showYAxis && (
-              <YAxis
-                dataKey={index}
-                type="category"
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={tickFormatter || yAxisTickFormatter}
-                label={
-                  yAxisLabel
-                    ? { value: yAxisLabel, angle: -90, position: 'insideLeft' }
-                    : undefined
-                }
-              />
-            )}
-          </>
-        ) : (
-          <>
-            {showXAxis && (
-              <XAxis
-                dataKey={index}
-                tickLine={false}
-                tickMargin={10}
-                axisLine={true}
-                tickFormatter={tickFormatter}
-                label={
-                  xAxisLabel
-                    ? {
-                        value: xAxisLabel,
-                        position: 'insideBottom',
-                        offset: -10,
-                      }
-                    : undefined
-                }
-              />
-            )}
-            {showYAxis && (
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                tickFormatter={yAxisTickFormatter}
-                label={
-                  yAxisLabel
-                    ? { value: yAxisLabel, angle: -90, position: 'insideLeft' }
-                    : undefined
-                }
-              />
-            )}
-          </>
-        )}
+        <BarAxes
+          horizontal={horizontal}
+          index={index}
+          categories={categories}
+          showXAxis={showXAxis}
+          showYAxis={showYAxis}
+          tickFormatter={tickFormatter}
+          yAxisTickFormatter={yAxisTickFormatter}
+          xAxisLabel={xAxisLabel}
+          yAxisLabel={yAxisLabel}
+        />
 
-        {renderChartTooltip({
-          tooltipTotal,
-          chartConfig,
-          categories,
-          xAxisDataKey: index,
-        })}
+        <BarTooltip
+          tooltipTotal={tooltipTotal}
+          chartConfig={chartConfig}
+          categories={categories}
+          xAxisDataKey={index}
+        />
 
         {categories.map((category, index) => (
           <Bar
@@ -223,208 +157,22 @@ export function BarChart({
             }}
             cursor={onClickHref !== undefined ? 'pointer' : 'default'}
           >
-            {renderChartLabel({
-              dataKey: category,
-              showLabel,
-              labelPosition,
-              labelAngle,
-              stack,
-              data,
-              categories,
-              readableColumn,
-              horizontal,
-            })}
+            <BarLabel
+              dataKey={category}
+              showLabel={showLabel}
+              labelPosition={labelPosition}
+              labelAngle={labelAngle}
+              stack={stack}
+              data={data}
+              categories={categories}
+              readableColumn={readableColumn}
+              horizontal={horizontal}
+            />
           </Bar>
         ))}
 
         {showLegend && <ChartLegend content={<ChartLegendContent />} />}
       </RechartBarChart>
     </ChartContainer>
-  )
-}
-
-interface Data {
-  value?: number | string | Array<number | string>
-  payload?: any
-  parentViewBox?: ViewBox
-}
-
-function renderChartLabel<T extends Data>({
-  dataKey,
-  showLabel,
-  labelPosition,
-  labelAngle,
-  data,
-  stack,
-  categories,
-  readableColumn,
-  horizontal,
-}: Pick<
-  BarChartProps,
-  | 'showLabel'
-  | 'labelPosition'
-  | 'labelAngle'
-  | 'data'
-  | 'stack'
-  | 'categories'
-  | 'readableColumn'
-  | 'labelFormatter'
-  | 'horizontal'
-> &
-  Pick<LabelListProps<T>, 'dataKey'>) {
-  if (!showLabel) return null
-
-  const labelFormatter = (value: string) => {
-    if (!readableColumn) {
-      return value
-    }
-
-    for (const category of categories) {
-      const formated = data.find((row) => row[category] === value)?.[
-        readableColumn
-      ]
-
-      if (formated) {
-        return formated
-      }
-    }
-
-    return value
-  }
-
-  if (stack) {
-    return (
-      <LabelList
-        dataKey={dataKey}
-        position={labelPosition || (horizontal ? 'insideLeft' : 'inside')}
-        offset={8}
-        className="fill-(--color-label)"
-        fontSize={12}
-        formatter={readableColumn ? labelFormatter : undefined}
-        angle={labelAngle}
-      />
-    )
-  }
-
-  return (
-    <LabelList
-      dataKey={dataKey}
-      position={labelPosition || (horizontal ? 'right' : 'top')}
-      offset={8}
-      className="fill-foreground"
-      fontSize={12}
-      formatter={readableColumn ? labelFormatter : undefined}
-      angle={labelAngle}
-    />
-  )
-}
-
-function renderChartTooltip({
-  tooltipTotal,
-  chartConfig,
-  categories,
-  xAxisDataKey,
-}: Pick<BarChartProps, 'categories' | 'tooltipTotal'> & {
-  chartConfig: ChartConfig
-  xAxisDataKey?: string
-}) {
-  if (!tooltipTotal) {
-    return (
-      <ChartTooltip
-        content={
-          <ChartTooltipContent
-            className="w-fit"
-            labelFormatter={
-              xAxisDataKey
-                ? (_label, payload) => {
-                    return (
-                      <div>
-                        {
-                          payload[0].payload[
-                            xAxisDataKey as keyof typeof payload
-                          ]
-                        }
-                      </div>
-                    )
-                  }
-                : undefined
-            }
-            formatter={(
-              value,
-              name,
-              item,
-              _index,
-              _payload: Array<Payload<ValueType, NameType>>
-            ) => {
-              return (
-                <>
-                  <div
-                    className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                    style={
-                      {
-                        '--color-bg': `var(--color-${name})`,
-                      } as React.CSSProperties
-                    }
-                  />
-
-                  {chartConfig[name as keyof typeof chartConfig]?.label || name}
-
-                  <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                    {item.payload[`readable_${name}` as keyof typeof item] ||
-                      value.toLocaleString()}
-                    <span className="text-muted-foreground font-normal"></span>
-                  </div>
-                </>
-              )
-            }}
-          />
-        }
-      />
-    )
-  }
-
-  return (
-    <ChartTooltip
-      content={
-        <ChartTooltipContent
-          hideLabel
-          className="w-fit"
-          formatter={(value, name, item, index) => (
-            <>
-              <div
-                className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                style={
-                  {
-                    '--color-bg': `var(--color-${name})`,
-                  } as React.CSSProperties
-                }
-              />
-
-              {chartConfig[name as keyof typeof chartConfig]?.label || name}
-
-              <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                {item.payload[`readable_${name}` as keyof typeof item] ||
-                  value.toLocaleString()}
-                <span className="text-muted-foreground font-normal"></span>
-              </div>
-
-              {index === 1 && (
-                <div className="text-foreground mt-1.5 flex basis-full items-center border-t pt-1.5 text-xs font-medium">
-                  Total
-                  <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                    {categories
-                      .map((cat) => parseInt(item.payload[cat], 10) || 0)
-                      .reduce((a, b) => a + b, 0)}
-                    <span className="text-muted-foreground font-normal"></span>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        />
-      }
-      cursor={false}
-      defaultIndex={1}
-    />
   )
 }
