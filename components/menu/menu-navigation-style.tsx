@@ -1,7 +1,6 @@
 import dynamic from 'next/dynamic'
 import type React from 'react'
 
-import { LoadingIcon } from '@/components/loading-icon'
 import {
   NavigationMenu,
   NavigationMenuContent,
