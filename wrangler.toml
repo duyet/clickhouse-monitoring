@@ -1,0 +1,87 @@
+# wrangler.toml configuration for clickhouse-monitor
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "clickhouse-monitor"
+main = ".open-next/worker.js"
+compatibility_date = "2024-12-29"
+
+# Minification (set to false for debugging, true for production)
+minify = true
+
+# Compatibility flags
+# Enable Node.js API: https://developers.cloudflare.com/workers/configuration/compatibility-flags/#nodejs-compatibility-flag
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env", "global_fetch_strictly_public"]
+
+# Assets
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# Service binding for self-reference
+[[services]]
+binding = "WORKER_SELF_REFERENCE"
+service = "clickhouse-monitor"
+
+# R2 bucket for incremental cache
+[[r2_buckets]]
+binding = "NEXT_INC_CACHE_R2_BUCKET"
+bucket_name = "clickhouse-monitoring-inc-cache"
+
+# Observability
+[observability]
+enabled = true
+
+# Smart Placement
+# Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
+[placement]
+mode = "smart"
+
+# Durable Objects for cache queue
+[[durable_objects.bindings]]
+name = "NEXT_CACHE_DO_QUEUE"
+class_name = "DOQueueHandler"
+
+# SQLite migrations for Durable Objects
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DOQueueHandler"]
+
+# D1 database for tag cache
+[[d1_databases]]
+binding = "NEXT_TAG_CACHE_D1"
+database_name = "clickhouse-monitor"
+database_id = "f289f509-c33b-4218-8602-7a19d5d567bc"
+migrations_dir = "src/db/migrations"
+
+# KV namespace for incremental cache
+[[kv_namespaces]]
+binding = "NEXT_INC_CACHE_KV"
+id = "78782c1fcf4141d9b6f26f2046f50ceb"
+
+# Environment Variables
+#
+# For local development: Set these in .dev.vars file (not committed to git)
+# For production: Set these in Cloudflare Dashboard or wrangler secret
+#
+# Required variables:
+# - CLICKHOUSE_HOST: Comma-separated list of ClickHouse host URLs
+# - CLICKHOUSE_USER: Comma-separated list of usernames (or single value for all hosts)
+# - CLICKHOUSE_PASSWORD: Comma-separated list of passwords (or single value for all hosts)
+#
+# Optional variables:
+# - CLICKHOUSE_NAME: Comma-separated list of custom names for hosts
+# - CLICKHOUSE_MAX_EXECUTION_TIME: Query timeout in seconds (default: 60)
+# - CLICKHOUSE_DEFAULT_CLUSTER: Default cluster name
+# - CLICKHOUSE_TZ: Timezone for ClickHouse queries
+#
+# Example .dev.vars:
+# CLICKHOUSE_HOST=http://localhost:8123
+# CLICKHOUSE_USER=default
+# CLICKHOUSE_PASSWORD=your-password
+
+[vars]
+# Non-sensitive default values
+CLICKHOUSE_MAX_EXECUTION_TIME = "60"
+CLICKHOUSE_DEFAULT_CLUSTER = "{cluster}"
+CLICKHOUSE_TABLE_MAX_PARTS_WARN = "10000"
+CLICKHOUSE_QUERY_STUCK_DETECTION_MAX_SECONDS = "3600"

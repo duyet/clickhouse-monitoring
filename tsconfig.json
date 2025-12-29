@@ -38,6 +38,7 @@
     "cypress.config.ts",
     "cypress",
     "docs",
+    "scripts",
     "**/*.cy.ts",
     "**/*.cy.tsx",
     "**/*.test.ts",

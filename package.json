@@ -3,19 +3,19 @@
   "description": "Simple ClickHouse UI that relies on system tables to help monitor and provide overview of your cluster",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.18.2",
+  "packageManager": "bun@10.18.2",
   "repository": {
     "url": "https://github.com/duyet/clickhouse-monitoring"
   },
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
+    "dev": "bun --bun next dev --turbopack",
+    "build": "bun --bun next build --webpack",
+    "start": "bun --bun next start",
     "start:coverage": "nyc --silent node server",
-    "cf:build": "opennextjs-cloudflare build",
-    "cf:preview": "pnpm run cf:build && opennextjs-cloudflare preview",
-    "cf:deploy": "pnpm run cf:build && opennextjs-cloudflare deploy",
-    "cf:upload": "pnpm run cf:build && opennextjs-cloudflare upload",
+    "cf:build": "bun run build && opennextjs-cloudflare build --skipBuild",
+    "cf:preview": "bun run cf:build && opennextjs-cloudflare preview",
+    "cf:config": "bun scripts/set-secrets.ts",
+    "cf:deploy": "bun run cf:config && bun run cf:build && wrangler deploy",
     "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
@@ -27,10 +27,10 @@
     "fmt": "biome format --write .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "test": "pnpm jest",
+    "test": "bun jest",
     "jest": "jest --coverage",
     "test-queries-config": "jest --coverage --testPathPattern=query-config --testPathIgnorePatterns=/node_modules/",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow bun"
   },
   "dependencies": {
     "@clickhouse/client": "^0.3.0",
@@ -66,7 +66,7 @@
     "dedent": "^1.5.3",
     "lru-cache": "^11.1.0",
     "lucide-react": "^0.545.0",
-    "next": "^16.0.7",
+    "next": "16.0.7",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.0.1",
     "react": "^19.1.0",
@@ -106,7 +106,7 @@
     "typescript": "^5",
     "wrangler": "^4.40.3"
   },
-  "pnpm": {
+  "bun": {
     "onlyBuiltDependencies": [
       "cypress",
       "sharp"
