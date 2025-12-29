@@ -1,8 +1,12 @@
-import type { ChartProps } from '@/components/charts/chart-props'
-import { DonutChart } from '@/components/tremor/donut'
-import { fetchData } from '@/lib/clickhouse'
+'use client'
 
-export async function ChartQueryType({
+import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
+import { DonutChart } from '@/components/tremor/donut'
+import { useChartData } from '@/lib/swr'
+
+export function ChartQueryType({
   title,
   className,
   chartClassName,
@@ -10,21 +14,26 @@ export async function ChartQueryType({
   hostId,
   ...props
 }: ChartProps) {
-  const query = `
-    SELECT type,
-           COUNT() AS query_count
-    FROM merge(system, '^query_log')
-    WHERE type = 'QueryFinish'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
-    GROUP BY 1
-    ORDER BY 1
-  `
-  const { data } = await fetchData<
-    {
-      type: string
-      query_count: number
-    }[]
-  >({ query, hostId })
+  const { data, isLoading, error, refresh } = useChartData<{
+    type: string
+    query_count: number
+  }>({
+    chartName: 'query-type',
+    hostId,
+    lastHours,
+    refreshInterval: 30000,
+  })
+
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <DonutChart

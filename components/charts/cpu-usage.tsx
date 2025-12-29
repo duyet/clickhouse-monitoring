@@ -1,11 +1,14 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { useChartData } from '@/lib/swr'
 import { chartTickFormatters } from '@/lib/utils'
 
-export async function ChartCPUUsage({
+export function ChartCPUUsage({
   title,
   interval = 'toStartOfTenMinutes',
   lastHours = 24,
@@ -13,25 +16,33 @@ export async function ChartCPUUsage({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const query = `
-    SELECT
-       ${applyInterval(interval, 'event_time')},
-       avg(ProfileEvent_OSCPUVirtualTimeMicroseconds) / 1000000 as avg_cpu
-    FROM merge(system, '^metric_log')
-    WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
-    GROUP BY 1
-    ORDER BY 1`
-
-  const { data } = await fetchData<{ event_time: string; avg_cpu: number }[]>({
-    query,
+  const { data, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    avg_cpu: number
+  }>({
+    chartName: 'cpu-usage',
     hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
   })
+
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard
       title={title}
       className={className}
-      sql={query}
+      sql=""
       data={data || []}
       data-testid="cpu-usage-chart"
     >

@@ -324,28 +324,28 @@ describe('ESLint rule suggestion', () => {
           schema: [],
         },
         create: (context: any) => ({
-            CallExpression(node: any) {
-              if (node.callee.name === 'fetchData') {
-                const args = node.arguments
-                if (args.length === 0) return
+          CallExpression(node: any) {
+            if (node.callee.name === 'fetchData') {
+              const args = node.arguments
+              if (args.length === 0) return
 
-                const firstArg = args[0]
-                if (firstArg.type !== 'ObjectExpression') return
+              const firstArg = args[0]
+              if (firstArg.type !== 'ObjectExpression') return
 
-                const hasHostId = firstArg.properties.some(
-                  (prop: any) => prop.key && prop.key.name === 'hostId'
-                )
+              const hasHostId = firstArg.properties.some(
+                (prop: any) => prop.key && prop.key.name === 'hostId'
+              )
 
-                if (!hasHostId) {
-                  context.report({
-                    node,
-                    message:
-                      'fetchData calls must include hostId parameter for multi-host support',
-                  })
-                }
+              if (!hasHostId) {
+                context.report({
+                  node,
+                  message:
+                    'fetchData calls must include hostId parameter for multi-host support',
+                })
               }
-            },
-          }),
+            }
+          },
+        }),
       },
     }
 

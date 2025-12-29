@@ -43,9 +43,7 @@ export function DialogContent({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="w-fit overflow-auto" >
-          {content}
-        </div>
+        <div className="w-fit overflow-auto">{content}</div>
       </UIDialogContent>
     </Dialog>
   )

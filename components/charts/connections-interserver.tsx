@@ -1,11 +1,14 @@
+'use client'
+
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 import type { ChartProps } from './chart-props'
 
-export async function ChartConnectionsInterserver({
+export function ChartConnectionsInterserver({
   title = 'Interserver Connections Last 7 days (Total Requests / Hour)',
   interval = 'toStartOfHour',
   lastHours = 24 * 7,
@@ -13,36 +16,31 @@ export async function ChartConnectionsInterserver({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const query = `
-    SELECT
-      ${applyInterval(interval, 'event_time')},
-      SUM(CurrentMetric_InterserverConnection) AS CurrentMetric_InterserverConnection,
-      formatReadableQuantity(CurrentMetric_InterserverConnection) AS readable_CurrentMetric_InterserverConnection
-    FROM system.metric_log
-    WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
-    GROUP BY event_time
-    ORDER BY event_time
-  `
-
-  const { data } = await fetchData<
-    {
-      event_time: string
-      CurrentMetric_InterserverConnection: number
-      readable_CurrentMetric_InterserverConnection: string
-    }[]
-  >({
-    query,
-    format: 'JSONEachRow',
+  const { data, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    CurrentMetric_InterserverConnection: number
+    readable_CurrentMetric_InterserverConnection: string
+  }>({
+    chartName: 'connections-interserver',
     hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
   })
 
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
+
   return (
-    <ChartCard
-      title={title}
-      sql={query}
-      data={data || []}
-      className={className}
-    >
+    <ChartCard title={title} sql="" data={data || []} className={className}>
       <BarChart
         data={data || []}
         index="event_time"

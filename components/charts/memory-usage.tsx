@@ -1,11 +1,14 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { useChartData } from '@/lib/swr'
 import { chartTickFormatters } from '@/lib/utils'
 
-export async function ChartMemoryUsage({
+export function ChartMemoryUsage({
   title,
   interval = 'toStartOfTenMinutes',
   lastHours = 24,
@@ -13,27 +16,34 @@ export async function ChartMemoryUsage({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const query = `
-    SELECT ${applyInterval(interval, 'event_time')},
-           avg(CurrentMetric_MemoryTracking) AS avg_memory,
-           formatReadableSize(avg_memory) AS readable_avg_memory
-    FROM merge(system, '^metric_log')
-    WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
-    GROUP BY 1
-    ORDER BY 1 ASC`
-  const { data } = await fetchData<
-    {
-      event_time: string
-      avg_memory: number
-      readable_avg_memory: string
-    }[]
-  >({ query, hostId })
+  const { data, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    avg_memory: number
+    readable_avg_memory: string
+  }>({
+    chartName: 'memory-usage',
+    hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
+  })
+
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard
       title={title}
       className={className}
-      sql={query}
+      sql=""
       data={data || []}
       data-testid="memory-usage-chart"
     >

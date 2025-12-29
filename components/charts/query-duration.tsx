@@ -1,12 +1,14 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
-import { getScopedLink } from '@/lib/scoped-link'
+import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export async function ChartQueryDuration({
+export function ChartQueryDuration({
   title = 'Avg Queries Duration over last 14 days (AVG(duration in seconds) / day)',
   interval = 'toStartOfDay',
   className,
@@ -15,42 +17,31 @@ export async function ChartQueryDuration({
   hostId,
   ...props
 }: ChartProps) {
-  const query = `
-    SELECT ${applyInterval(interval, 'event_time')},
-           AVG(query_duration_ms) AS query_duration_ms,
-           ROUND(query_duration_ms / 1000, 2) AS query_duration_s
-    FROM merge(system, '^query_log')
-    WHERE type = 'QueryFinish'
-          AND query_kind = 'Select'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
-    GROUP BY event_time
-    ORDER BY event_time ASC
-    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
-  `
-  const { data } = await fetchData<
-    {
-      event_time: string
-      query_duration_ms: number
-      query_duration_s: number
-    }[]
-  >({
-    query,
-    clickhouse_settings: {
-      use_query_cache: 1,
-      query_cache_ttl: 300,
-      query_cache_system_table_handling: 'save',
-      query_cache_nondeterministic_function_handling: 'save',
-    },
+  const { data, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    query_duration_ms: number
+    query_duration_s: number
+  }>({
+    chartName: 'query-duration',
     hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
   })
 
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
+
   return (
-    <ChartCard
-      title={title}
-      className={className}
-      sql={query}
-      data={data || []}
-    >
+    <ChartCard title={title} className={className} sql="" data={data || []}>
       <BarChart
         className={cn('h-52', chartClassName)}
         data={data || []}
@@ -60,9 +51,6 @@ export async function ChartQueryDuration({
         colorLabel="--foreground"
         stack
         showLegend={false}
-        onClickHref={await getScopedLink(
-          '/history-queries?event_time=[event_time]'
-        )}
         {...props}
       />
     </ChartCard>

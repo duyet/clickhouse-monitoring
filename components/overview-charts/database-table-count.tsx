@@ -55,7 +55,10 @@ export async function DatabaseTableCount({
 async function DatabaseCount({ hostId }: { hostId: number }) {
   const query =
     "SELECT countDistinct(database) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')"
-  const { data, error } = await fetchData<{ count: number }[]>({ query, hostId })
+  const { data, error } = await fetchData<{ count: number }[]>({
+    query,
+    hostId,
+  })
 
   if (error) {
     return (

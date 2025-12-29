@@ -1,11 +1,14 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { useChartData } from '@/lib/swr'
 import { chartTickFormatters } from '@/lib/utils'
 
-export async function ChartQueryCountByUser({
+export function ChartQueryCountByUser({
   title = 'Total Queries over last 14 days by users',
   interval = 'toStartOfDay',
   lastHours = 24 * 14,
@@ -14,26 +17,28 @@ export async function ChartQueryCountByUser({
   hostId,
   ...props
 }: ChartProps) {
-  const query = `
-    SELECT ${applyInterval(interval, 'event_time')},
-           user,
-           COUNT(*) AS count
-    FROM merge(system, '^query_log')
-    WHERE type = 'QueryFinish'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
-          AND user != ''
-    GROUP BY 1, 2
-    ORDER BY
-      1 ASC,
-      3 DESC
-  `
-  const { data: raw } = await fetchData<
-    {
-      event_time: string
-      user: string
-      count: number
-    }[]
-  >({ query, hostId })
+  const { data: raw, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    user: string
+    count: number
+  }>({
+    chartName: 'query-count-by-user',
+    hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
+  })
+
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   // Single-pass algorithm: collect data and track users simultaneously
   const userSet = new Set<string>()
@@ -58,7 +63,7 @@ export async function ChartQueryCountByUser({
   const users = Array.from(userSet)
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={barData}>
+    <ChartCard title={title} className={className} sql="" data={barData}>
       <BarChart
         className={chartClassName}
         data={barData}

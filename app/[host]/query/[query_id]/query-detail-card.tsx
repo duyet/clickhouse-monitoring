@@ -153,9 +153,9 @@ export async function QueryDetailCard({
               initial_user ? (
                 <Link
                   className="flex flex-row items-center gap-1"
-                  href={await getScopedLink(
-                    `/history-queries?user=${initial_user}`
-                  )}
+                  href={
+                    await getScopedLink(`/history-queries?user=${initial_user}`)
+                  }
                   target="_blank"
                   key="initial_user"
                 >

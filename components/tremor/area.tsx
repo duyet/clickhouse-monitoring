@@ -36,7 +36,7 @@ export function AreaChart({
   showYAxis = false,
   ...props
 }: AreaChartProps) {
-  let valueFormatter 
+  let valueFormatter
 
   if (readable && readableColumns) {
     valueFormatter = (value: number) => {

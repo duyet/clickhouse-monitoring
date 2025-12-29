@@ -143,7 +143,10 @@ export function AreaChart({
   )
 }
 
-function renderChartTooltip<_TValue extends ValueType, _TName extends NameType>({
+function renderChartTooltip<
+  _TValue extends ValueType,
+  _TName extends NameType,
+>({
   breakdown,
   breakdownLabel,
   breakdownValue,
@@ -264,36 +267,34 @@ function renderChartTooltip<_TValue extends ValueType, _TName extends NameType>(
                 </div>
 
                 {breakdownData.length > 0 && (
-                  <div
-                      className="text-foreground mt-1 flex basis-full flex-col border-t text-xs font-medium"
-                    >
-                      <div className="mt-1.5">
-                        {breakdownHeading || 'Breakdown'}
-                      </div>
-                      {breakdownDataMap.map(([name, value], index) => (
-                        <div
-                          key={name + index}
-                          className="mt-1.5 flex items-center gap-1.5"
-                          role="row"
-                        >
-                          <div
-                            className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                            style={
-                              {
-                                '--color-bg': `var(--chart-${10 - index})`,
-                              } as React.CSSProperties
-                            }
-                          />
-
-                          {item[breakdownLabel as keyof typeof item] || name}
-
-                          <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                            {value.toLocaleString()}
-                            <span className="text-muted-foreground font-normal"></span>
-                          </div>
-                        </div>
-                      ))}
+                  <div className="text-foreground mt-1 flex basis-full flex-col border-t text-xs font-medium">
+                    <div className="mt-1.5">
+                      {breakdownHeading || 'Breakdown'}
                     </div>
+                    {breakdownDataMap.map(([name, value], index) => (
+                      <div
+                        key={name + index}
+                        className="mt-1.5 flex items-center gap-1.5"
+                        role="row"
+                      >
+                        <div
+                          className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
+                          style={
+                            {
+                              '--color-bg': `var(--chart-${10 - index})`,
+                            } as React.CSSProperties
+                          }
+                        />
+
+                        {item[breakdownLabel as keyof typeof item] || name}
+
+                        <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+                          {value.toLocaleString()}
+                          <span className="text-muted-foreground font-normal"></span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </>
             )

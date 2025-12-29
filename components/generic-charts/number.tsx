@@ -31,14 +31,10 @@ export function NumberChart({
     <div className={cn(className)}>
       {title || description ? (
         <header className="flex flex-col space-y-1.5 p-4 pb-0">
-          <h3
-            className="text-2xl leading-none font-semibold tracking-tight"
-          >
+          <h3 className="text-2xl leading-none font-semibold tracking-tight">
             {title}
           </h3>
-          <p className="text-muted-foreground text-sm" >
-            {description}
-          </p>
+          <p className="text-muted-foreground text-sm">{description}</p>
         </header>
       ) : null}
       <div

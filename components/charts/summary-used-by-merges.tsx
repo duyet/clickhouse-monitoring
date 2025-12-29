@@ -154,19 +154,15 @@ export async function ChartSummaryUsedByMerges({
     items.push({
       current: bytesReadWritten.bytes_read,
       target: bytesReadWritten.bytes_written,
-      currentReadable:
-        `${bytesReadWritten.readable_bytes_read} read (uncompressed)`,
-      targetReadable:
-        `${bytesReadWritten.readable_bytes_written} written (uncompressed)`,
+      currentReadable: `${bytesReadWritten.readable_bytes_read} read (uncompressed)`,
+      targetReadable: `${bytesReadWritten.readable_bytes_written} written (uncompressed)`,
     })
   } else {
     items.push({
       current: bytesReadWritten.bytes_written,
       target: bytesReadWritten.bytes_read,
-      currentReadable:
-        `${bytesReadWritten.readable_bytes_written} written (uncompressed)`,
-      targetReadable:
-        `${bytesReadWritten.readable_bytes_read} read (uncompressed)`,
+      currentReadable: `${bytesReadWritten.readable_bytes_written} written (uncompressed)`,
+      targetReadable: `${bytesReadWritten.readable_bytes_read} read (uncompressed)`,
     })
   }
 

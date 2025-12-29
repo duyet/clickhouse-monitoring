@@ -1,24 +1,40 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { useChartData } from '@/lib/swr'
+import { ChartSkeleton, ChartError } from '@/components/charts'
 import { cn } from '@/lib/utils'
-
 import { ArrowUpIcon } from '@radix-ui/react-icons'
 import { CardMultiMetrics } from '../generic-charts/card-multi-metrics'
 
-export async function ChartZookeeperUptime({
+export function ChartZookeeperUptime({
   title = 'Zookeeper Uptime',
   className,
   hostId,
 }: ChartProps) {
-  const query =
-    'SELECT formatReadableTimeDelta(zookeeperSessionUptime()) AS uptime'
+  const { data, error, isLoading, refresh } = useChartData<{
+    uptime: string
+  }>({
+    chartName: 'zookeeper-uptime',
+    hostId,
+    refreshInterval: 30000,
+  })
 
-  const { data } = await fetchData<
-    {
-      uptime: string
-    }[]
-  >({ query, hostId })
+  if (isLoading) {
+    return <ChartSkeleton title={title} className={className} />
+  }
+
+  if (error) {
+    return (
+      <ChartError
+        title={title}
+        error={error}
+        onRetry={refresh}
+        className={className}
+      />
+    )
+  }
 
   const uptime = (data || [])[0] || { uptime: 'N/A' }
 
@@ -26,7 +42,7 @@ export async function ChartZookeeperUptime({
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
-      sql={query}
+      sql=""
     >
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics

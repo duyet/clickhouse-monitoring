@@ -1,10 +1,13 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { useChartData } from '@/lib/swr'
 
-export async function ChartNewPartsCreated({
+export function ChartNewPartsCreated({
   title = 'New Parts Created over last 24 hours (part counts / 15 minutes)',
   interval = 'toStartOfFifteenMinutes',
   lastHours = 24,
@@ -13,33 +16,28 @@ export async function ChartNewPartsCreated({
   hostId,
   ...props
 }: ChartProps) {
-  const query = `
-    SELECT
-        ${applyInterval(interval, 'event_time')},
-        count() AS new_parts,
-        table,
-        sum(rows) AS total_rows,
-        formatReadableQuantity(total_rows) AS readable_total_rows,
-        sum(size_in_bytes) AS total_bytes_on_disk,
-        formatReadableSize(total_bytes_on_disk) AS readable_total_bytes_on_disk
-    FROM system.part_log
-    WHERE (event_type = 'NewPart')
-      AND (event_time > (now() - toIntervalHour(${lastHours})))
-    GROUP BY
-        event_time,
-        table
-    ORDER BY
-        event_time ASC,
-        table DESC
-  `
+  const { data: raw, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    table: string
+    new_parts: number
+  }>({
+    chartName: 'new-parts-created',
+    hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
+  })
 
-  const { data: raw } = await fetchData<
-    {
-      event_time: string
-      table: string
-      new_parts: number
-    }[]
-  >({ query, hostId })
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   // Single-pass algorithm: collect data and track tables simultaneously
   const tableSet = new Set<string>()
@@ -65,7 +63,7 @@ export async function ChartNewPartsCreated({
   const tables = Array.from(tableSet)
 
   return (
-    <ChartCard title={title} className={className} sql={query} data={barData}>
+    <ChartCard title={title} className={className} sql="" data={barData}>
       <BarChart
         className={chartClassName}
         data={barData}

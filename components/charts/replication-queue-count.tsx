@@ -1,25 +1,36 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { CardMultiMetrics } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export async function ChartReplicationQueueCount({
+export function ChartReplicationQueueCount({
   title,
   className,
   hostId,
 }: ChartProps) {
-  const query = `
-    SELECT COUNT() as count_all,
-           countIf(is_currently_executing) AS count_executing
-    FROM system.replication_queue
-  `
-  const { data } = await fetchData<
-    {
-      count_all: number
-      count_executing: number
-    }[]
-  >({ query, hostId })
+  const { data, isLoading, error, refresh } = useChartData<{
+    count_all: number
+    count_executing: number
+  }>({
+    chartName: 'replication-queue-count',
+    hostId,
+    refreshInterval: 30000,
+  })
+
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   const count = data?.[0] || { count_all: 0, count_executing: 0 }
 
@@ -27,7 +38,7 @@ export async function ChartReplicationQueueCount({
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
-      sql={query}
+      sql=""
     >
       <div className="flex flex-col justify-between p-0">
         <CardMultiMetrics

@@ -1,12 +1,14 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
-import { getScopedLink } from '@/lib/scoped-link'
+import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export async function ChartQueryMemory({
+export function ChartQueryMemory({
   title = 'Avg Memory Usage for queries over last 14 days',
   interval = 'toStartOfDay',
   className,
@@ -15,32 +17,31 @@ export async function ChartQueryMemory({
   hostId,
   ...props
 }: ChartProps) {
-  const query = `
-    SELECT ${applyInterval(interval, 'event_time')},
-           AVG(memory_usage) AS memory_usage,
-           formatReadableSize(memory_usage) AS readable_memory_usage
-    FROM merge(system, '^query_log')
-    WHERE type = 'QueryFinish'
-          AND query_kind = 'Select'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
-    GROUP BY event_time
-    ORDER BY event_time ASC
-  `
-  const { data } = await fetchData<
-    {
-      event_time: string
-      memory_usage: number
-      readable_memory_usage: string
-    }[]
-  >({ query, hostId })
+  const { data, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    memory_usage: number
+    readable_memory_usage: string
+  }>({
+    chartName: 'query-memory',
+    hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
+  })
+
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
-    <ChartCard
-      title={title}
-      className={className}
-      sql={query}
-      data={data || []}
-    >
+    <ChartCard title={title} className={className} sql="" data={data || []}>
       <BarChart
         className={cn('h-52', chartClassName)}
         data={data || []}
@@ -51,9 +52,6 @@ export async function ChartQueryMemory({
         showLegend={false}
         showLabel={false}
         colors={['--chart-indigo-300']}
-        onClickHref={await getScopedLink(
-          '/history-queries?event_time=[event_time]'
-        )}
         {...props}
       />
     </ChartCard>

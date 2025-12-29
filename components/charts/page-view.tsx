@@ -1,11 +1,14 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
+import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export async function PageViewBarChart({
+export function PageViewBarChart({
   title = 'Daily Page Views',
   interval = 'toStartOfDay',
   className,
@@ -19,29 +22,34 @@ export async function PageViewBarChart({
   hostId,
   ...props
 }: ChartProps & { colors?: string[] }) {
-  const eventTimeExpr = applyInterval(interval, 'event_time', 'event_time')
-  const query = `
-    SELECT ${eventTimeExpr},
-           count() AS page_views
-    FROM system.monitoring_events
-    WHERE kind = 'PageView'
-      AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
-    GROUP BY event_time
-    ORDER BY event_time WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
-  `
-  const { data } = await fetchData<
-    {
-      event_time: string
-      page_views: number
-    }[]
-  >({ query, hostId })
+  const { data, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    page_views: number
+  }>({
+    chartName: 'page-view',
+    hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
+  })
+
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={cn('h-52', chartClassName)}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard
       title={title}
       className={className}
       contentClassName={chartCardContentClassName}
-      sql={query}
+      sql=""
       data={data || []}
     >
       <BarChart

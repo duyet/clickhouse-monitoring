@@ -1,15 +1,17 @@
+'use client'
+
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
-import { getScopedLink } from '@/lib/scoped-link'
+import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export async function ChartMergeCount({
+export function ChartMergeCount({
   title,
   interval = 'toStartOfFiveMinutes',
   lastHours = 12,
@@ -17,31 +19,35 @@ export async function ChartMergeCount({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const query = `
-    SELECT ${applyInterval(interval, 'event_time')},
-           avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
-           avg(CurrentMetric_PartMutation) AS avg_CurrentMetric_PartMutation
-    FROM merge(system, '^metric_log')
-    WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
-    GROUP BY 1
-    ORDER BY 1
-    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
-  `
+  const { data, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    avg_CurrentMetric_Merge: number
+    avg_CurrentMetric_PartMutation: number
+  }>({
+    chartName: 'merge-count',
+    hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
+  })
 
-  const { data } = await fetchData<
-    {
-      event_time: string
-      avg_CurrentMetric_Merge: number
-      avg_CurrentMetric_PartMutation: number
-    }[]
-  >({ query, hostId })
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard
       title={title}
       className={cn('justify-between', className)}
       contentClassName="flex flex-col justify-between"
-      sql={query}
+      sql=""
       data={data || []}
     >
       <AreaChart
@@ -57,14 +63,14 @@ export async function ChartMergeCount({
 
       <div className="text-muted-foreground flex flex-row justify-between gap-2 text-right text-sm">
         <Link
-          href={await getScopedLink('/mutations')}
+          href={`/${hostId}/mutations`}
           className="flex flex-row items-center gap-2"
         >
           Merges
           <ArrowRightIcon className="size-3" />
         </Link>
         <Link
-          href={await getScopedLink('/mutations')}
+          href={`/${hostId}/mutations`}
           className="flex flex-row items-center gap-2"
         >
           Mutations

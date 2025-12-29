@@ -1,43 +1,49 @@
+'use client'
+
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { useChartData } from '@/lib/swr'
+import { ChartSkeleton, ChartError } from '@/components/charts'
 import type { ChartProps } from './chart-props'
 
-export async function ChartZookeeperWait({
+export function ChartZookeeperWait({
   title = 'ZooKeeper Wait Seconds',
   interval = 'toStartOfHour',
   lastHours = 24 * 7,
   className,
   hostId,
 }: ChartProps) {
-  const query = `
-    SELECT
-      ${applyInterval(interval, 'event_time')},
-      AVG(ProfileEvent_ZooKeeperWaitMicroseconds) / 1000000 AS AVG_ProfileEvent_ZooKeeperWaitSeconds,
-      formatReadableTimeDelta(AVG_ProfileEvent_ZooKeeperWaitSeconds) AS readable_AVG_ProfileEvent_ZooKeeperWaitSeconds
-    FROM merge(system, '^metric_log')
-    WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
-    GROUP BY event_time
-    ORDER BY event_time
-  `
-
-  const { data } = await fetchData<
-    {
-      event_time: string
-      AVG_ProfileEvent_ZooKeeperWaitSeconds: number
-      readable_AVG_ProfileEvent_ZooKeeperWaitSeconds: string
-    }[]
-  >({
-    query,
-    format: 'JSONEachRow',
+  const { data, error, isLoading, refresh } = useChartData<{
+    event_time: string
+    AVG_ProfileEvent_ZooKeeperWaitSeconds: number
+    readable_AVG_ProfileEvent_ZooKeeperWaitSeconds: string
+  }>({
+    chartName: 'zookeeper-wait',
+    interval,
+    lastHours,
     hostId,
+    refreshInterval: 30000,
   })
+
+  if (isLoading) {
+    return <ChartSkeleton title={title} className={className} />
+  }
+
+  if (error) {
+    return (
+      <ChartError
+        title={title}
+        error={error}
+        onRetry={refresh}
+        className={className}
+      />
+    )
+  }
 
   return (
     <ChartCard
       title={title}
-      sql={query}
+      sql=""
       data={data || []}
       className={className}
     >

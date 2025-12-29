@@ -1,10 +1,13 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
+import { useChartData } from '@/lib/swr'
 
-export async function ChartMergeAvgDuration({
+export function ChartMergeAvgDuration({
   title,
   interval = 'toStartOfDay',
   lastHours = 24 * 14,
@@ -12,34 +15,35 @@ export async function ChartMergeAvgDuration({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const query = `
-    SELECT
-        ${applyInterval(interval, 'event_time')},
-        AVG(duration_ms) AS avg_duration_ms,
-        formatReadableTimeDelta(avg_duration_ms / 1000, 'seconds', 'milliseconds') AS readable_avg_duration_ms,
-        bar(avg_duration_ms, 0, MAX(avg_duration_ms) OVER ()) AS bar
-    FROM merge(system, '^part_log')
-    WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
-      AND event_type = 'MergeParts'
-      AND merge_reason = 'RegularMerge'
-    GROUP BY 1
-    ORDER BY 1 ASC
-    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
-  `
-  const { data } = await fetchData<
-    {
-      event_time: string
-      avg_duration_ms: number
-      readable_avg_duration_ms: string
-      bar: number
-    }[]
-  >({ query, hostId })
+  const { data, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    avg_duration_ms: number
+    readable_avg_duration_ms: string
+    bar: number
+  }>({
+    chartName: 'merge-avg-duration',
+    hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
+  })
+
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard
       title={title}
       className={className}
-      sql={query}
+      sql=""
       data={data || []}
     >
       <BarChart

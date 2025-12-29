@@ -5,6 +5,7 @@ import Script from 'next/script'
 import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
+import { SWRProvider } from '@/lib/swr'
 import { Header } from '@/components/header'
 import { Toaster } from '@/components/ui/sonner'
 
@@ -26,14 +27,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans">
-        <AppProvider reloadIntervalSecond={120}>
-          <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
-            <Header />
-            {children}
-          </div>
-        </AppProvider>
+        <SWRProvider>
+          <AppProvider reloadIntervalSecond={120}>
+            <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
+              <Header />
+              {children}
+            </div>
+          </AppProvider>
 
-        <Toaster />
+          <Toaster />
+        </SWRProvider>
 
         {VERCEL_ANALYTICS_ENABLED && <Analytics />}
         {SELINE_ENABLED && (

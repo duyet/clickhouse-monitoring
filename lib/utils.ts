@@ -53,7 +53,10 @@ export function removeHostPrefix(pathname: string) {
  * Replace [key] placeholders in template string with values from data object
  * @deprecated Use replaceTemplateVariables from '@/lib/template-utils' instead
  */
-export function binding(template: string, data: Record<string, unknown>): string {
+export function binding(
+  template: string,
+  data: Record<string, unknown>
+): string {
   return replaceTemplateVariables(template, data)
 }
 

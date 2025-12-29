@@ -1,11 +1,14 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
+import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export async function ChartDisksUsage({
+export function ChartDisksUsage({
   title = 'Disks Usage over last 30 days',
   interval = 'toStartOfDay',
   className,
@@ -14,35 +17,36 @@ export async function ChartDisksUsage({
   hostId,
   ...props
 }: ChartProps) {
-  const query = `
-    WITH CAST(sumMap(map(metric, value)), 'Map(LowCardinality(String), UInt32)') AS map
-    SELECT
-        ${applyInterval(interval, 'event_time')},
-        map['DiskAvailable_default'] as DiskAvailable_default,
-        map['DiskUsed_default'] as DiskUsed_default,
-        formatReadableSize(DiskAvailable_default) as readable_DiskAvailable_default,
-        formatReadableSize(DiskUsed_default) as readable_DiskUsed_default
-    FROM merge(system, '^asynchronous_metric_log')
-    WHERE event_time >= (now() - toIntervalHour(${lastHours}))
-    GROUP BY 1
-    ORDER BY 1 ASC
-  `
+  const { data, isLoading, error, refresh } = useChartData<{
+    event_time: string
+    DiskAvailable_default: number
+    DiskUsed_default: number
+    readable_DiskAvailable_default: string
+    readable_DiskUsed_default: string
+  }>({
+    chartName: 'disks-usage',
+    hostId,
+    interval,
+    lastHours,
+    refreshInterval: 30000,
+  })
 
-  const { data } = await fetchData<
-    {
-      event_time: string
-      DiskAvailable_default: number
-      DiskUsed_default: number
-      readable_DiskAvailable_default: string
-      readable_DiskUsed_default: string
-    }[]
-  >({ query, hostId })
+  if (isLoading)
+    return (
+      <ChartSkeleton
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      />
+    )
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
   return (
     <ChartCard
       title={title}
       className={className}
-      sql={query}
+      sql=""
       data={data || []}
       data-testid="disk-usage-chart"
     >

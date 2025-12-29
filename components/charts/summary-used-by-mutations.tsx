@@ -1,32 +1,33 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { CardMultiMetrics } from '@/components/generic-charts/card-multi-metrics'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
+import { useChartData } from '@/lib/swr'
 
-export async function ChartSummaryUsedByMutations({
+export function ChartSummaryUsedByMutations({
   title,
   className,
   hostId,
 }: ChartProps) {
-  const query = `
-    SELECT COUNT() as running_count
-    FROM system.mutations
-    WHERE is_done = 0
-  `
-  const { data } = await fetchData<
-    {
-      running_count: number
-    }[]
-  >({ query, hostId })
+  const { data, isLoading, error, refresh } = useChartData<{
+    running_count: number
+  }>({
+    chartName: 'summary-used-by-mutations',
+    hostId,
+    refreshInterval: 30000,
+  })
+
+  if (isLoading) return <ChartSkeleton title={title} className={className} />
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
+
   const count = data?.[0] || { running_count: 0 }
 
   return (
-    <ChartCard
-      title={title}
-      className={className}
-      sql={query}
-      data={data || []}
-    >
+    <ChartCard title={title} className={className} sql="" data={data || []}>
       <div className="flex flex-col content-stretch items-center p-0">
         <CardMultiMetrics
           primary={

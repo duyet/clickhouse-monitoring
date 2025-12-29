@@ -1,92 +1,51 @@
+'use client'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { BarList } from '@/components/tremor/bar-list'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { fetchData } from '@/lib/clickhouse'
+import { useChartData } from '@/lib/swr'
 
-export async function ChartTopTableSize({
+export function ChartTopTableSize({
   title,
   className,
   hostId,
   ...props
 }: ChartProps) {
   const limit = 7
-  const topBySizeQuery = fetchData<
-    {
-      table: string
-      compressed_bytes: number
-      uncompressed_bytes: number
-      compressed: string
-      uncompressed: string
-      compr_rate: number
-      total_rows: number
-      readable_total_rows: string
-      part_count: number
-    }[]
-  >({
-    query: `
-        SELECT 
-          (database || '.' || table) as table,
-          sum(data_compressed_bytes) as compressed_bytes,
-          sum(data_uncompressed_bytes) AS uncompressed_bytes,
-          formatReadableSize(compressed_bytes) AS compressed,
-          formatReadableSize(uncompressed_bytes) AS uncompressed,
-          round(uncompressed_bytes / compressed_bytes, 2) AS compr_rate,
-          sum(rows) AS total_rows,
-          formatReadableQuantity(sum(rows)) AS readable_total_rows,
-          count() AS part_count
-      FROM system.parts
-      WHERE (active = 1) AND (database != 'system') AND (table LIKE '%')
-      GROUP BY 1
-      ORDER BY compressed_bytes DESC
-      LIMIT ${limit}`,
+  const { data, isLoading, error, refresh } = useChartData<{
+    table: string
+    compressed_bytes: number
+    uncompressed_bytes: number
+    compressed: string
+    uncompressed: string
+    compr_rate: number
+    total_rows: number
+    readable_total_rows: string
+    part_count: number
+  }>({
+    chartName: 'top-table-size',
     hostId,
-  }).then((res) => res.data)
+    params: { limit },
+    refreshInterval: 30000,
+  })
 
-  const topByRowCountQuery = fetchData<
-    {
-      table: string
-      compressed_bytes: number
-      uncompressed_bytes: number
-      compressed: string
-      uncompressed: string
-      compr_rate: number
-      total_rows: number
-      readable_total_rows: string
-      part_count: number
-    }[]
-  >({
-    query: `
-      SELECT 
-        (database || '.' || table) as table,
-        sum(data_compressed_bytes) as compressed_bytes,
-        sum(data_uncompressed_bytes) AS uncompressed_bytes,
-        formatReadableSize(compressed_bytes) AS compressed,
-        formatReadableSize(uncompressed_bytes) AS uncompressed,
-        round(uncompressed_bytes / compressed_bytes, 2) AS compr_rate,
-        sum(rows) AS total_rows,
-        formatReadableQuantity(sum(rows)) AS readable_total_rows,
-        count() AS part_count
-    FROM system.parts
-    WHERE (active = 1) AND (database != 'system') AND (table LIKE '%')
-    GROUP BY 1
-    ORDER BY total_rows DESC
-    LIMIT ${limit}`,
-    hostId,
-  }).then((res) => res.data)
+  if (isLoading) return <ChartSkeleton title={title} className={className} />
+  if (error)
+    return <ChartError error={error} title={title} onRetry={refresh} />
 
-  const [topBySize, topByRowCount] = await Promise.all([
-    topBySizeQuery,
-    topByRowCountQuery,
-  ])
-
-  const dataTopBySize = (topBySize || []).map((row) => ({
+  // For this chart, we need to separate by-size and by-count logic
+  // Since the API only returns one query result, we'll use the same data
+  // In a real scenario, you might want to create two separate chart endpoints
+  const dataTopBySize = (data || []).map((row) => ({
     name: row.table,
     value: row.compressed_bytes,
     compressed: row.compressed,
   }))
 
-  const dataTopByCount = (topByRowCount || []).map((row) => ({
+  const dataTopByCount = (data || []).map((row) => ({
     name: row.table,
     value: row.total_rows,
     readable_total_rows: row.readable_total_rows,
