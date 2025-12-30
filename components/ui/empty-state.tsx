@@ -123,14 +123,15 @@ export const EmptyState = memo(function EmptyState({
     <div
       className={cn(
         'flex flex-col items-center justify-center py-10 text-center',
+        'animate-in fade-in-0 slide-in-from-bottom-2 duration-300',
         className
       )}
     >
       {/* Decorative background circles */}
       <div className="relative mb-4">
-        <div className="absolute inset-0 scale-150 rounded-full bg-muted/30" />
-        <div className="absolute inset-0 scale-125 rounded-full bg-muted/50" />
-        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+        <div className="absolute inset-0 scale-150 rounded-full bg-muted/20 animate-pulse" />
+        <div className="absolute inset-0 scale-125 rounded-full bg-muted/40" />
+        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-muted/60 backdrop-blur-sm">
           {icon || config.icon}
         </div>
       </div>
@@ -145,7 +146,7 @@ export const EmptyState = memo(function EmptyState({
       {(action || secondaryAction) && (
         <div className="mt-4 flex items-center gap-2">
           {action && (
-            <Button variant="outline" size="sm" onClick={action.onClick}>
+            <Button variant="outline" size="sm" onClick={action.onClick} className="transition-all hover:shadow-sm">
               {action.icon}
               {action.label}
             </Button>
