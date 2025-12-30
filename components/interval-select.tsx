@@ -43,17 +43,22 @@ interface IntervalSelectProps {
   values?: { value: ClickHouseInterval; label: string }[]
 }
 
-export const IntervalSelect = memo(function IntervalSelect({ values = [] }: IntervalSelectProps) {
+export const IntervalSelect = memo(function IntervalSelect({
+  values = [],
+}: IntervalSelectProps) {
   const intervals = values.length ? values : defaultIntervals
 
   const [open, setOpen] = useState(false)
   const { interval, setInterval } = useAppContext()
 
   // Memoized handler to prevent recreation on every render
-  const handleIntervalSelect = useCallback((currentValue: string) => {
-    setInterval?.(currentValue as ClickHouseInterval)
-    setOpen(false)
-  }, [setInterval])
+  const handleIntervalSelect = useCallback(
+    (currentValue: string) => {
+      setInterval?.(currentValue as ClickHouseInterval)
+      setOpen(false)
+    },
+    [setInterval]
+  )
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

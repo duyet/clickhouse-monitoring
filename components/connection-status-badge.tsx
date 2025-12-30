@@ -4,7 +4,11 @@ import { CheckCircle2Icon, CircleXIcon, LoaderIcon } from 'lucide-react'
 import { memo, useCallback, useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { ErrorLogger } from '@/lib/error-logger'
 import { useHostId } from '@/lib/swr'
 
@@ -79,7 +83,8 @@ export const ConnectionStatusBadge = memo(function ConnectionStatusBadge() {
 
   const badgeClasses = {
     loading: 'gap-1.5',
-    connected: 'gap-1.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-900',
+    connected:
+      'gap-1.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-900',
     error: 'gap-1.5',
   }
 
@@ -97,9 +102,7 @@ export const ConnectionStatusBadge = memo(function ConnectionStatusBadge() {
           <span className="hidden sm:inline">{config.label}</span>
         </Badge>
       </TooltipTrigger>
-      <TooltipContent side="bottom">
-        {config.tooltip}
-      </TooltipContent>
+      <TooltipContent side="bottom">{config.tooltip}</TooltipContent>
     </Tooltip>
   )
 })

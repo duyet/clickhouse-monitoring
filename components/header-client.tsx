@@ -3,7 +3,10 @@
 import { memo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-import { HeaderBrand, HeaderBrandSkeleton } from '@/components/header/header-brand'
+import {
+  HeaderBrand,
+  HeaderBrandSkeleton,
+} from '@/components/header/header-brand'
 import { HeaderActions } from '@/components/header/header-actions'
 import { MenuNavigationStyle } from '@/components/menu/menu-navigation-style'
 import { ErrorLogger } from '@/lib/error-logger'
@@ -14,12 +17,18 @@ async function fetchHosts(): Promise<Array<Omit<HostInfo, 'user'>>> {
   try {
     const response = await fetch('/api/v1/hosts')
     if (!response.ok) {
-      ErrorLogger.logWarning(`Failed to fetch hosts: ${response.status} ${response.statusText}`, {
-        component: 'HeaderClient',
-      })
+      ErrorLogger.logWarning(
+        `Failed to fetch hosts: ${response.status} ${response.statusText}`,
+        {
+          component: 'HeaderClient',
+        }
+      )
       return []
     }
-    const result = (await response.json()) as { success: boolean; data?: HostInfo[] }
+    const result = (await response.json()) as {
+      success: boolean
+      data?: HostInfo[]
+    }
     return result.success && result.data ? result.data : []
   } catch (err) {
     ErrorLogger.logError(
@@ -47,7 +56,10 @@ export const HeaderClient = memo(function HeaderClient() {
 
       {/* Navigation Row - centered menu */}
       <nav className="flex h-10 items-center justify-center border-t">
-        <MenuNavigationStyle items={menuItemsConfig} className="flex items-center gap-1" />
+        <MenuNavigationStyle
+          items={menuItemsConfig}
+          className="flex items-center gap-1"
+        />
       </nav>
     </header>
   )

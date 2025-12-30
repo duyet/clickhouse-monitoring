@@ -64,7 +64,10 @@ export const NetworkStatusBanner = memo(function NetworkStatusBanner() {
       <div className="container mx-auto px-3 md:px-4 lg:px-6 py-2">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1.5 bg-amber-100 border-amber-300 dark:bg-amber-900 dark:border-amber-800">
+            <Badge
+              variant="outline"
+              className="gap-1.5 bg-amber-100 border-amber-300 dark:bg-amber-900 dark:border-amber-800"
+            >
               <span className="relative flex size-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-75" />
                 <span className="relative inline-flex size-2 rounded-full bg-amber-600" />

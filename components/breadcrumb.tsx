@@ -12,7 +12,9 @@ interface BreadcrumbProps {
   className?: string
 }
 
-export const Breadcrumb = memo(function Breadcrumb({ className }: BreadcrumbProps) {
+export const Breadcrumb = memo(function Breadcrumb({
+  className,
+}: BreadcrumbProps) {
   const pathname = usePathname()
 
   const breadcrumbs = useMemo(() => {
@@ -24,7 +26,10 @@ export const Breadcrumb = memo(function Breadcrumb({ className }: BreadcrumbProp
   }
 
   return (
-    <nav aria-label="Breadcrumb navigation" className={cn('flex items-center', className)}>
+    <nav
+      aria-label="Breadcrumb navigation"
+      className={cn('flex items-center', className)}
+    >
       <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
         {breadcrumbs.map((crumb, index) => {
           const isLast = index === breadcrumbs.length - 1
@@ -32,10 +37,19 @@ export const Breadcrumb = memo(function Breadcrumb({ className }: BreadcrumbProp
           return (
             <li key={crumb.href} className="flex items-center gap-1.5">
               {index > 0 && (
-                <ChevronRightIcon className="size-3.5 shrink-0" strokeWidth={2.5} aria-hidden="true" />
+                <ChevronRightIcon
+                  className="size-3.5 shrink-0"
+                  strokeWidth={2.5}
+                  aria-hidden="true"
+                />
               )}
               {isLast ? (
-                <span className="font-medium text-foreground" aria-current="page">{crumb.title}</span>
+                <span
+                  className="font-medium text-foreground"
+                  aria-current="page"
+                >
+                  {crumb.title}
+                </span>
               ) : (
                 <HostPrefixedLink
                   href={crumb.href}

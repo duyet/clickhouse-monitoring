@@ -27,7 +27,12 @@ export const PageSkeleton = memo(function PageSkeleton({
   className?: string
 }) {
   return (
-    <div className={cn('flex flex-col gap-4', className)} role="status" aria-busy="true" aria-label="Loading page content">
+    <div
+      className={cn('flex flex-col gap-4', className)}
+      role="status"
+      aria-busy="true"
+      aria-label="Loading page content"
+    >
       {/* Charts Grid Skeleton */}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {Array.from({ length: chartCount }).map((_, i) => (
@@ -54,7 +59,12 @@ export const ChartsOnlyPageSkeleton = memo(function ChartsOnlyPageSkeleton({
   className?: string
 }) {
   return (
-    <div className={cn('grid grid-cols-1 gap-5 md:grid-cols-2', className)} role="status" aria-busy="true" aria-label="Loading charts">
+    <div
+      className={cn('grid grid-cols-1 gap-5 md:grid-cols-2', className)}
+      role="status"
+      aria-busy="true"
+      aria-label="Loading charts"
+    >
       {Array.from({ length: chartCount }).map((_, i) => (
         <ChartCardSkeleton key={`chart-${i}`} />
       ))}
@@ -75,7 +85,12 @@ export const TableOnlyPageSkeleton = memo(function TableOnlyPageSkeleton({
   className?: string
 }) {
   return (
-    <div className={cn('flex flex-col gap-4', className)} role="status" aria-busy="true" aria-label="Loading table">
+    <div
+      className={cn('flex flex-col gap-4', className)}
+      role="status"
+      aria-busy="true"
+      aria-label="Loading table"
+    >
       <TableCardSkeleton rows={rows} />
     </div>
   )
@@ -86,9 +101,18 @@ export const TableOnlyPageSkeleton = memo(function TableOnlyPageSkeleton({
  *
  * Specialized skeleton for the overview page with tabs.
  */
-export const OverviewPageSkeleton = memo(function OverviewPageSkeleton({ className }: { className?: string }) {
+export const OverviewPageSkeleton = memo(function OverviewPageSkeleton({
+  className,
+}: {
+  className?: string
+}) {
   return (
-    <div className={cn('flex flex-col gap-4', className)} role="status" aria-busy="true" aria-label="Loading overview">
+    <div
+      className={cn('flex flex-col gap-4', className)}
+      role="status"
+      aria-busy="true"
+      aria-label="Loading overview"
+    >
       {/* Overview Charts Skeleton (4 cards) */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -121,7 +145,11 @@ export const OverviewPageSkeleton = memo(function OverviewPageSkeleton({ classNa
  *
  * For the database explorer page with tree/table structure.
  */
-export const DatabasePageSkeleton = memo(function DatabasePageSkeleton({ className }: { className?: string }) {
+export const DatabasePageSkeleton = memo(function DatabasePageSkeleton({
+  className,
+}: {
+  className?: string
+}) {
   return (
     <div className={cn('flex flex-col gap-4', className)}>
       {/* Search/Filter Bar */}
@@ -185,7 +213,11 @@ export const ChartCardSkeleton = memo(function ChartCardSkeleton({
  *
  * Small metric card used in overview page.
  */
-export const MetricCardSkeleton = memo(function MetricCardSkeleton({ className }: { className?: string }) {
+export const MetricCardSkeleton = memo(function MetricCardSkeleton({
+  className,
+}: {
+  className?: string
+}) {
   return (
     <div
       className={cn(
@@ -242,7 +274,10 @@ export const TableCardSkeleton = memo(function TableCardSkeleton({
       {/* Table Rows */}
       <div className="divide-y divide-border/30">
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={`row-${i}`} className="flex items-center px-4 py-2.5 sm:px-6 sm:py-3">
+          <div
+            key={`row-${i}`}
+            className="flex items-center px-4 py-2.5 sm:px-6 sm:py-3"
+          >
             <div className="flex flex-1 flex-wrap items-center gap-2 sm:gap-3">
               <Skeleton className="h-4 w-20 sm:w-24" />
               <Skeleton className="hidden h-4 w-28 sm:block" />

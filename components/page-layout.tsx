@@ -121,8 +121,7 @@ const RelatedCharts = memo(function RelatedCharts({
 
         // Calculate column span for responsive layout
         const isLastChart = index === relatedCharts.length - 1
-        const colSpan =
-          isLastChart && index % 2 === 1 ? 'md:col-span-2' : ''
+        const colSpan = isLastChart && index % 2 === 1 ? 'md:col-span-2' : ''
 
         return (
           <div key={`${chartName}-${index}`} className={colSpan}>
@@ -208,7 +207,10 @@ export const PageLayout = memo(function PageLayout({
  * export default createPage(mergesConfig)
  * ```
  */
-export function createPage(config: QueryConfig, options?: Partial<PageLayoutProps>) {
+export function createPage(
+  config: QueryConfig,
+  options?: Partial<PageLayoutProps>
+) {
   return function Page() {
     return <PageLayout queryConfig={config} {...options} />
   }

@@ -3,7 +3,11 @@
 import { memo, useCallback, useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 
-export const PageView = memo(function PageView({ hostId }: { hostId: string | number }) {
+export const PageView = memo(function PageView({
+  hostId,
+}: {
+  hostId: string | number
+}) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 

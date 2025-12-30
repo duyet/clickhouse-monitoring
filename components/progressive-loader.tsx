@@ -1,6 +1,14 @@
 'use client'
 
-import { type ReactNode, useEffect, useState, useId, memo, useCallback, useRef } from 'react'
+import {
+  type ReactNode,
+  useEffect,
+  useState,
+  useId,
+  memo,
+  useCallback,
+  useRef,
+} from 'react'
 import { ChartSkeleton } from '@/components/skeleton'
 import { FadeIn } from '@/components/ui/fade-in'
 
@@ -100,11 +108,7 @@ export const ProgressiveGrid = memo(function ProgressiveGrid({
         const delay = batchIndex * stagger
 
         return (
-          <ProgressiveLoader
-            key={index}
-            delay={delay}
-            fallback={fallback}
-          >
+          <ProgressiveLoader key={index} delay={delay} fallback={fallback}>
             {child}
           </ProgressiveLoader>
         )
@@ -117,10 +121,7 @@ export const ProgressiveGrid = memo(function ProgressiveGrid({
  * useStaggeredLoad - Hook for progressive data fetching
  * Returns true after the specified delay, useful for staggering SWR requests
  */
-export function useStaggeredLoad(
-  index: number,
-  stagger = 100
-): boolean {
+export function useStaggeredLoad(index: number, stagger = 100): boolean {
   const [shouldLoad, setShouldLoad] = useState(false)
 
   useEffect(() => {
@@ -168,7 +169,11 @@ export const StaggeredChart = memo(function StaggeredChart({
 
   if (!shouldShow) {
     return (
-      <div role="status" aria-label={ariaLabel || 'Loading chart'} aria-busy="true">
+      <div
+        role="status"
+        aria-label={ariaLabel || 'Loading chart'}
+        aria-busy="true"
+      >
         {skeleton ?? <ChartSkeleton />}
       </div>
     )

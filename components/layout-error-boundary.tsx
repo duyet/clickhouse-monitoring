@@ -20,7 +20,8 @@ function LayoutErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
         <div className="space-y-2">
           <h2 className="text-xl font-semibold">Something went wrong</h2>
           <p className="text-muted-foreground text-sm">
-            {error.message || 'An unexpected error occurred while loading this page.'}
+            {error.message ||
+              'An unexpected error occurred while loading this page.'}
           </p>
         </div>
         <Button onClick={resetErrorBoundary} className="gap-2">
@@ -36,12 +37,19 @@ function LayoutErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
  * Layout-level error boundary wrapper
  * Catches errors in page components and provides recovery UI
  */
-export function LayoutErrorBoundary({ children }: { children: React.ReactNode }) {
+export function LayoutErrorBoundary({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <ErrorBoundary
       fallbackRender={LayoutErrorFallback}
       onError={(error) => {
-        ErrorLogger.logError(error, { component: 'LayoutErrorBoundary', action: 'caught' })
+        ErrorLogger.logError(error, {
+          component: 'LayoutErrorBoundary',
+          action: 'caught',
+        })
       }}
     >
       {children}

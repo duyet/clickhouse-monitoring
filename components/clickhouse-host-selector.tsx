@@ -53,20 +53,20 @@ export function ClickHouseHostSelector({
     return null
   }
 
-  const handleValueChange = useCallback((val: string) => {
-    const hostId = parseInt(val, 10)
-    if (!Number.isNaN(hostId) && hostId >= 0) {
-      const newParams = new URLSearchParams(searchParams.toString())
-      newParams.set('host', hostId.toString())
-      router.push(`${pathname}?${newParams.toString()}`)
-    }
-  }, [searchParams, pathname, router])
+  const handleValueChange = useCallback(
+    (val: string) => {
+      const hostId = parseInt(val, 10)
+      if (!Number.isNaN(hostId) && hostId >= 0) {
+        const newParams = new URLSearchParams(searchParams.toString())
+        newParams.set('host', hostId.toString())
+        router.push(`${pathname}?${newParams.toString()}`)
+      }
+    },
+    [searchParams, pathname, router]
+  )
 
   return (
-    <Select
-      value={current.id.toString()}
-      onValueChange={handleValueChange}
-    >
+    <Select value={current.id.toString()} onValueChange={handleValueChange}>
       <SelectTrigger
         className="w-auto border-0 p-1 shadow-none focus:ring-0"
         data-testid="host-selector"
@@ -88,7 +88,10 @@ export function ClickHouseHostSelector({
               <span>{config.name || getHost(config.host)}</span>
               <Suspense
                 fallback={
-                  <StatusIndicator title={['Loading...']} className="bg-gray-400 animate-pulse" />
+                  <StatusIndicator
+                    title={['Loading...']}
+                    className="bg-gray-400 animate-pulse"
+                  />
                 }
               >
                 <HostStatus promise={config.promise} />

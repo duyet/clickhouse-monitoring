@@ -25,7 +25,9 @@ interface ReloadButtonProps {
 const SECOND = 1000
 const MINUTE = 60 * SECOND
 
-export const ReloadButton = memo(function ReloadButton({ className }: ReloadButtonProps) {
+export const ReloadButton = memo(function ReloadButton({
+  className,
+}: ReloadButtonProps) {
   const router = useRouter()
   const [isLoading, startTransition] = useTransition()
   const { reloadInterval, setReloadInterval } = useAppContext()
@@ -33,14 +35,20 @@ export const ReloadButton = memo(function ReloadButton({ className }: ReloadButt
   const initCountDown = reloadInterval ? reloadInterval / 1000 : 10
   const [countDown, setCountDown] = useState(initCountDown)
 
-  const revalidateCacheAndReload = useCallback(() =>
-    startTransition(async () => {
-      router.refresh()
-    }), [startTransition, router])
+  const revalidateCacheAndReload = useCallback(
+    () =>
+      startTransition(async () => {
+        router.refresh()
+      }),
+    [startTransition, router]
+  )
 
-  const handleSetReloadInterval = useCallback((interval: number | null) => {
-    setReloadInterval(interval)
-  }, [setReloadInterval])
+  const handleSetReloadInterval = useCallback(
+    (interval: number | null) => {
+      setReloadInterval(interval)
+    },
+    [setReloadInterval]
+  )
 
   useEffect(() => {
     if (reloadInterval) {

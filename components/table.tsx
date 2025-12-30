@@ -58,7 +58,10 @@ export async function Table({
   })
 
   if (error) {
-    ErrorLogger.logError(new Error(error.message), { component: 'Table', query: queryConfig.name })
+    ErrorLogger.logError(new Error(error.message), {
+      component: 'Table',
+      query: queryConfig.name,
+    })
     return (
       <ErrorAlert
         title={formatErrorTitle(error)}
@@ -73,7 +76,10 @@ export async function Table({
 
   // Safety check for null data
   if (!data) {
-    ErrorLogger.logWarning('Table received null data without error', { component: 'Table', query: queryConfig.name })
+    ErrorLogger.logWarning('Table received null data without error', {
+      component: 'Table',
+      query: queryConfig.name,
+    })
     return (
       <ErrorAlert
         title="No Data Available"

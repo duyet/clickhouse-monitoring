@@ -129,14 +129,20 @@ export const KeyboardShortcuts = memo(function KeyboardShortcuts() {
         <p id="shortcuts-description" className="sr-only">
           Available keyboard shortcuts for navigating the dashboard
         </p>
-        <div className="grid gap-2 py-2" role="list" aria-label="Shortcuts list">
+        <div
+          className="grid gap-2 py-2"
+          role="list"
+          aria-label="Shortcuts list"
+        >
           {SHORTCUTS.map(({ key, description }) => (
             <div
               key={key}
               className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-muted"
               role="listitem"
             >
-              <span className="text-sm text-muted-foreground">{description}</span>
+              <span className="text-sm text-muted-foreground">
+                {description}
+              </span>
               <kbd className="rounded border bg-muted px-2 py-0.5 font-mono text-xs">
                 {key}
               </kbd>

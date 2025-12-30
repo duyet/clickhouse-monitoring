@@ -31,14 +31,24 @@ export const CommandPalette = memo(function CommandPalette() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  const navigate = useCallback((href: string) => {
-    setOpen(false)
-    router.push(href)
-  }, [router])
+  const navigate = useCallback(
+    (href: string) => {
+      setOpen(false)
+      router.push(href)
+    },
+    [router]
+  )
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen} aria-label="Command palette">
-      <CommandInput placeholder="Type a command or search..." aria-label="Search commands" />
+    <CommandDialog
+      open={open}
+      onOpenChange={setOpen}
+      aria-label="Command palette"
+    >
+      <CommandInput
+        placeholder="Type a command or search..."
+        aria-label="Search commands"
+      />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
 
