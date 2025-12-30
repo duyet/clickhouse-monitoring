@@ -35,23 +35,24 @@ export const BackgroundBarFormat = memo(function BackgroundBarFormat({
     return value
   }
 
-  const bgColor = '#F8F4F0'
-
   return (
     <div
-      className="w-full rounded p-1"
-      style={{
-        background: `linear-gradient(to right,
-                ${bgColor} 0%, ${bgColor} ${pct}%,
-                transparent ${pct}%, transparent 100%)`,
-      }}
+      className="relative w-full overflow-hidden rounded p-1"
       title={`${orgValue} (${pct}%)`}
       aria-label={`${orgValue} (${pct}%)`}
       aria-roledescription="background-bar"
     >
-      {options?.numberFormat
-        ? formatReadableQuantity(value as number, 'long')
-        : value}
+      {/* Background bar using CSS variable for dark mode support */}
+      <div
+        className="absolute inset-0 bg-primary/10 transition-all"
+        style={{ width: `${pct}%` }}
+        aria-hidden="true"
+      />
+      <span className="relative">
+        {options?.numberFormat
+          ? formatReadableQuantity(value as number, 'long')
+          : value}
+      </span>
     </div>
   )
 })
