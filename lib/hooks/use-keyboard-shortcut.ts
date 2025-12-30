@@ -40,7 +40,12 @@ export function useKeyboardShortcut(
       const shiftMatches = !shiftKey || event.shiftKey
       const altMatches = !altKey || event.altKey
 
-      if (keyMatches && metaMatches && ctrlMatches && shiftMatches && altMatches) {
+      // For meta/ctrl: allow either (OR logic) for cross-platform shortcuts
+      // If both are specified, trigger on Cmd (Mac) OR Ctrl (Windows/Linux)
+      const modifierMatches = shiftMatches && altMatches &&
+        ((metaKey || ctrlKey) ? (metaMatches || ctrlMatches) : true)
+
+      if (keyMatches && modifierMatches) {
         if (preventDefault) {
           event.preventDefault()
         }
