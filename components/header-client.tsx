@@ -6,16 +6,26 @@ import { useSearchParams } from 'next/navigation'
 import { HeaderBrand } from '@/components/header/header-brand'
 import { HeaderActions } from '@/components/header/header-actions'
 import { MenuNavigationStyle } from '@/components/menu/menu-navigation-style'
+import { ErrorLogger } from '@/lib/error-logger'
 import type { HostInfo } from '@/app/api/v1/hosts/route'
 import { menuItemsConfig } from '@/menu'
 
 async function fetchHosts(): Promise<Array<Omit<HostInfo, 'user'>>> {
   try {
     const response = await fetch('/api/v1/hosts')
-    if (!response.ok) return []
-    const result = await response.json() as { success: boolean; data?: HostInfo[] }
+    if (!response.ok) {
+      ErrorLogger.logWarning(`Failed to fetch hosts: ${response.status} ${response.statusText}`, {
+        component: 'HeaderClient',
+      })
+      return []
+    }
+    const result = (await response.json()) as { success: boolean; data?: HostInfo[] }
     return result.success && result.data ? result.data : []
-  } catch {
+  } catch (err) {
+    ErrorLogger.logError(
+      err instanceof Error ? err : new Error('Failed to fetch hosts'),
+      { component: 'HeaderClient' }
+    )
     return []
   }
 }

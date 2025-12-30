@@ -10,6 +10,8 @@ import { SWRProvider } from '@/lib/swr'
 import { Breadcrumb } from '@/components/breadcrumb'
 import { HeaderClient } from '@/components/header-client'
 import { Toaster } from '@/components/ui/sonner'
+import { LayoutErrorBoundary } from '@/components/layout-error-boundary'
+import { NetworkStatusBanner } from '@/components/network-status-banner'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
@@ -31,6 +33,7 @@ export default function RootLayout({
       <body className="font-sans">
         <SWRProvider>
           <AppProvider reloadIntervalSecond={120}>
+            <NetworkStatusBanner />
             <div className="min-h-screen">
               <Suspense
                 fallback={
@@ -51,7 +54,9 @@ export default function RootLayout({
                 <Suspense fallback={<div className="h-6" />}>
                   <Breadcrumb className="mb-4" />
                 </Suspense>
-                {children}
+                <LayoutErrorBoundary>
+                  {children}
+                </LayoutErrorBoundary>
               </main>
             </div>
           </AppProvider>

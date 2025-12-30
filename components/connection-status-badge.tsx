@@ -4,6 +4,7 @@ import { CheckCircle2Icon, CircleXIcon, LoaderIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
+import { ErrorLogger } from '@/lib/error-logger'
 import { useHostId } from '@/lib/swr'
 
 type ConnectionStatus = 'loading' | 'connected' | 'error'
@@ -32,9 +33,18 @@ export function ConnectionStatusBadge() {
           setStatus('connected')
         } else {
           setStatus('error')
+          ErrorLogger.logWarning(
+            `Connection check failed for host ${hostId}: ${response.status} ${response.statusText}`,
+            { component: 'ConnectionStatusBadge', hostId }
+          )
         }
-      } catch {
+      } catch (err) {
         setStatus('error')
+        // Log network errors for debugging
+        ErrorLogger.logError(
+          err instanceof Error ? err : new Error('Unknown connection error'),
+          { component: 'ConnectionStatusBadge', hostId }
+        )
       }
     }
 
