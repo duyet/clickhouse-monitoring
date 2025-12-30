@@ -97,6 +97,9 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
                     <HostStatus promise={activeHost.promise} />
                   </Suspense>
                 </div>
+                <Suspense fallback={<span className="truncate text-xs text-muted-foreground">...</span>}>
+                  <HostVersion promise={activeHost.promise} />
+                </Suspense>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -154,6 +157,22 @@ export function HostStatus({ promise }: { promise: UptimePromise }) {
   }
 
   return <StatusIndicator title={['Offline']} />
+}
+
+function HostVersion({ promise }: { promise: UptimePromise }) {
+  const res = use(promise)
+
+  if (res) {
+    return (
+      <span className="truncate text-xs text-muted-foreground">
+        {res.version}
+      </span>
+    )
+  }
+
+  return (
+    <span className="truncate text-xs text-muted-foreground">Offline</span>
+  )
 }
 
 const StatusIndicator = memo(function StatusIndicator({
