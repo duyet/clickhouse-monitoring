@@ -150,19 +150,10 @@ export function HostStatus({ promise }: { promise: UptimePromise }) {
 
   const isOnline = res != null
   if (isOnline) {
-    return (
-      <StatusIndicator
-        className="bg-emerald-500"
-        title={[
-          `Host: ${res.hostName}`,
-          `Online: ${res.uptime}`,
-          `Version: ${res.version}`,
-        ]}
-      />
-    )
+    return <StatusIndicator className="bg-emerald-500" title={['Online']} />
   }
 
-  return <StatusIndicator title={['The host is offline']} />
+  return <StatusIndicator title={['Offline']} />
 }
 
 const StatusIndicator = memo(function StatusIndicator({
