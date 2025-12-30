@@ -1,7 +1,7 @@
 'use client'
 
-import useSWR, { type SWRConfiguration } from 'swr'
 import { useCallback } from 'react'
+import useSWR, { type SWRConfiguration } from 'swr'
 
 import { REFRESH_INTERVAL, type RefreshInterval } from './config'
 

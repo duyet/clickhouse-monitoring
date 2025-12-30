@@ -1,15 +1,13 @@
 'use client'
 
 import { Bell, Moon, RefreshCw, Search, Sun } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { memo, useCallback, useEffect, useState } from 'react'
 import { useInterval } from 'usehooks-ts'
-import { useTheme } from 'next-themes'
 
 import { useAppContext } from '@/app/context'
-import { Input } from '@/components/ui/input'
-import { IconButton } from '@/components/ui/icon-button'
-import { Button } from '@/components/ui/button'
 import { CommandPalette } from '@/components/command-palette'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { IconButton } from '@/components/ui/icon-button'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
 
@@ -30,7 +29,7 @@ const MINUTE = 60 * SECOND
 export const HeaderActions = memo(function HeaderActions({
   menuComponent,
 }: HeaderActionsProps) {
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const { theme: _theme, setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const { reloadInterval, setReloadInterval } = useAppContext()
   const [isRefreshing, setIsRefreshing] = useState(false)

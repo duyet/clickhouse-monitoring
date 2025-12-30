@@ -6,10 +6,10 @@
  * Excludes sensitive information like passwords
  */
 
-import { getClickHouseConfigs } from '@/lib/clickhouse'
+import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
 import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
-import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
+import { getClickHouseConfigs } from '@/lib/clickhouse'
 import { debug, error } from '@/lib/logger'
 import { getHost } from '@/lib/utils'
 

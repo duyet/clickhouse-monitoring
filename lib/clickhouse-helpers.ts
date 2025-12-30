@@ -3,14 +3,14 @@
  * Provides wrapper functions to reduce boilerplate and improve consistency
  */
 
-import { fetchData, type FetchDataResult } from '@/lib/clickhouse'
-import { ErrorLogger } from '@/lib/error-logger'
+import type { DataFormat, QueryParams } from '@clickhouse/client'
+import { type FetchDataResult, fetchData } from '@/lib/clickhouse'
+import { ErrorLogger } from '@/lib/logger'
 import { getHostIdCookie } from '@/lib/scoped-link'
 import type { QueryConfig } from '@/types/query-config'
-import type { DataFormat, QueryParams } from '@clickhouse/client'
 
 // Re-export fetchData for direct use
-export { fetchData, type FetchDataResult } from '@/lib/clickhouse'
+export { type FetchDataResult, fetchData } from '@/lib/clickhouse'
 
 type QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{

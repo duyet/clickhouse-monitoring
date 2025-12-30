@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useMemo } from 'react'
-import { Bar, BarChart as RechartBarChart, Cell, XAxis, YAxis } from 'recharts'
+import { Bar, Cell, BarChart as RechartBarChart, XAxis, YAxis } from 'recharts'
 
 import {
   type ChartConfig,
@@ -57,7 +57,7 @@ export const BarList = memo(function BarList({
 
   // Generate colors for bars with gradient effect
   const colors = useMemo(() => {
-    const baseColor = 'hsl(var(--chart-1))'
+    const _baseColor = 'hsl(var(--chart-1))'
     return sortedData.map((_, index) => {
       const opacity = 1 - (index / sortedData.length) * 0.4
       return `hsl(var(--chart-1) / ${opacity})`
@@ -107,7 +107,7 @@ export const BarList = memo(function BarList({
           }
         />
         <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={24}>
-          {sortedData.map((entry, index) => (
+          {sortedData.map((_entry, index) => (
             <Cell key={`cell-${index}`} fill={colors[index]} />
           ))}
         </Bar>

@@ -1,6 +1,8 @@
 import type { BadgeVariant } from '@/types/badge-variant'
 import type { Icon } from '@/types/icon'
 
+export type MenuSection = 'main' | 'more'
+
 export interface MenuItem {
   title: string
   href: string
@@ -10,4 +12,6 @@ export interface MenuItem {
   countVariant?: BadgeVariant
   items?: MenuItem[]
   icon?: Icon
+  /** Section grouping for sidebar display */
+  section?: MenuSection
 }

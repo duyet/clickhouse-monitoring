@@ -4,7 +4,7 @@
  */
 
 import type { ChartQueryBuilder } from './types'
-import { applyInterval, fillStep, nowOrToday } from './types'
+import { applyInterval } from './types'
 
 export const systemCharts: Record<string, ChartQueryBuilder> = {
   'memory-usage': ({ interval = 'toStartOfTenMinutes', lastHours = 24 }) => ({

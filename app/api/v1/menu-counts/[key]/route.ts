@@ -9,13 +9,13 @@
  * Only countKey identifiers are used to look up pre-defined queries.
  */
 
-import { fetchData } from '@/lib/clickhouse'
+import { createErrorResponse } from '@/lib/api/error-handler'
 import {
   getMenuCountQuery,
   hasMenuCountKey,
 } from '@/lib/api/menu-count-registry'
 import { ApiErrorType } from '@/lib/api/types'
-import { createErrorResponse } from '@/lib/api/error-handler'
+import { fetchData } from '@/lib/clickhouse'
 import { debug, error } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'

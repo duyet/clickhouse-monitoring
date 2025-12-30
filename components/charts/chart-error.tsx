@@ -1,11 +1,11 @@
 'use client'
 
 import { RefreshCw } from 'lucide-react'
+import { memo, useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
-import { ApiErrorType, type ApiError } from '@/lib/api/types'
+import { type ApiError, ApiErrorType } from '@/lib/api/types'
 import { cn } from '@/lib/utils'
-import { memo, useMemo } from 'react'
 
 interface ChartErrorProps {
   error: Error | ApiError
@@ -49,7 +49,7 @@ function getErrorDescription(
   error: Error | ApiError,
   variant: EmptyStateVariant
 ): string {
-  const apiError = error as ApiError
+  const _apiError = error as ApiError
 
   // Use specific messages for known error types
   if (variant === 'table-missing') {

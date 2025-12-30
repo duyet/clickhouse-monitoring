@@ -1,12 +1,11 @@
 'use client'
 
-import { memo } from 'react'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
-
-import type { ChartProps } from '@/components/charts/chart-props'
+import { memo } from 'react'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'

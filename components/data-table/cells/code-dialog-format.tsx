@@ -44,15 +44,6 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
     })
   }, [value, options?.hide_query_comment, truncate_length])
 
-  if (formatted.length < truncate_length) {
-    return <code>{formatted}</code>
-  }
-
-  // If the code is not truncated, show the full code
-  if (!formatted.endsWith('...')) {
-    return <code>{formatted}</code>
-  }
-
   // Memoize JSON processing for dialog content
   const content = useMemo(() => {
     let result = value
@@ -67,6 +58,15 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
     }
     return result
   }, [value, options?.json])
+
+  if (formatted.length < truncate_length) {
+    return <code>{formatted}</code>
+  }
+
+  // If the code is not truncated, show the full code
+  if (!formatted.endsWith('...')) {
+    return <code>{formatted}</code>
+  }
 
   return (
     <Dialog>

@@ -10,12 +10,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import {
-  cn,
-  formatBytes,
-  formatCount,
-  formatDuration,
-} from '@/lib/utils'
+import { cn, formatBytes, formatCount, formatDuration } from '@/lib/utils'
 
 export interface DonutChartProps {
   /**
@@ -221,7 +216,7 @@ export const DonutChart = memo(function DonutChart({
           strokeWidth={2}
           onClick={onClick ? (data) => onClick(data.originalData) : undefined}
         >
-          {chartData.map((entry, index) => (
+          {chartData.map((_entry, index) => (
             <Cell
               key={`cell-${index}`}
               fill={`hsl(var(--chart-${(index % 10) + 1}))`}

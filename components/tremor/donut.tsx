@@ -1,10 +1,10 @@
 'use client'
 
-import { memo, useCallback } from 'react'
 import {
   DonutChart as TremorDonutChart,
   type DonutChartProps as TremorDonutChartProps,
 } from '@tremor/react'
+import { memo, useCallback } from 'react'
 
 export interface DonutChartProps extends TremorDonutChartProps {
   readable?: string

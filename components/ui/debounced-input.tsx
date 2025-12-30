@@ -18,9 +18,9 @@
 'use client'
 
 import {
+  type InputHTMLAttributes,
   memo,
   useCallback,
-  type InputHTMLAttributes,
   useEffect,
   useState,
 } from 'react'

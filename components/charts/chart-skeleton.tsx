@@ -1,9 +1,9 @@
 'use client'
 
+import { memo } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { memo } from 'react'
 
 interface ChartSkeletonProps {
   className?: string
@@ -83,7 +83,7 @@ export const ChartSkeleton = memo(function ChartSkeleton({
  * Height matches page-layout.tsx chartClassName (h-32 sm:h-36)
  */
 const AreaChartSkeleton = memo(function AreaChartSkeleton({
-  dataPoints = 8,
+  dataPoints: _dataPoints = 8,
 }: {
   dataPoints: number
 }) {

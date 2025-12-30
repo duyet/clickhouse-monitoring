@@ -1,3 +1,4 @@
+import type { Row } from '@tanstack/react-table'
 import { memo, useCallback } from 'react'
 import {
   Accordion,
@@ -6,7 +7,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { formatQuery } from '@/lib/format-readable'
-import type { Row } from '@tanstack/react-table'
 
 export interface CodeToggleOptions {
   max_truncate?: number
@@ -28,6 +28,13 @@ export const CodeToggleFormat = memo(function CodeToggleFormat({
 }: CodeToggleFormatProps): React.ReactNode {
   const truncate_length = options?.max_truncate || CODE_TRUNCATE_LENGTH
 
+  const handleValueChange = useCallback(
+    (accordionValue: string) => {
+      row.toggleExpanded(accordionValue === 'code')
+    },
+    [row]
+  )
+
   if (value.length < truncate_length) {
     return <code>{value}</code>
   }
@@ -37,13 +44,6 @@ export const CodeToggleFormat = memo(function CodeToggleFormat({
     comment_remove: options?.hide_query_comment,
     truncate: truncate_length,
   })
-
-  const handleValueChange = useCallback(
-    (accordionValue: string) => {
-      row.toggleExpanded(accordionValue === 'code')
-    },
-    [row]
-  )
 
   return (
     <Accordion

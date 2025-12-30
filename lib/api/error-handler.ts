@@ -10,8 +10,7 @@
 
 import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
-import { ErrorLogger } from '@/lib/error-logger'
-import { error } from '@/lib/logger'
+import { ErrorLogger, error } from '@/lib/logger'
 
 /**
  * API route handler with automatic error handling
@@ -43,7 +42,7 @@ export function createErrorResponse(
   ErrorLogger.logError(new Error(errorDetails.message), {
     component: `API:${context?.route || 'unknown'}`,
     action: context?.method || 'unknown',
-    ...context,
+    hostId: typeof context?.hostId === 'string' ? parseInt(context.hostId, 10) : context?.hostId,
   })
 
   // Also log to console for immediate visibility

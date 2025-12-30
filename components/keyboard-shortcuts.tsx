@@ -1,16 +1,15 @@
 'use client'
 
+import { usePathname, useRouter } from 'next/navigation'
 import { memo, useCallback, useEffect, useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-
-import { useHostId } from '@/lib/swr'
-import { useKeyboardShortcut } from '@/lib/hooks/use-keyboard-shortcut'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useKeyboardShortcut } from '@/lib/hooks/use-keyboard-shortcut'
+import { useHostId } from '@/lib/swr'
 
 /**
  * Global keyboard shortcuts for the ClickHouse Monitor dashboard
@@ -52,7 +51,7 @@ const SHORTCUTS = [
 
 export const KeyboardShortcuts = memo(function KeyboardShortcuts() {
   const router = useRouter()
-  const pathname = usePathname()
+  const _pathname = usePathname()
   const hostId = useHostId()
   const [showHelp, setShowHelp] = useState(false)
 
@@ -171,12 +170,12 @@ export const KeyboardShortcuts = memo(function KeyboardShortcuts() {
  * }
  * ```
  */
-export function useSWRRevalidate(mutate: () => Promise<unknown> | void) {
-  const handleRevalidate = () => {
-    void mutate()
-  }
-
+export function useSWRRevalidate(mutate: () => Promise<unknown> | undefined) {
   useEffect(() => {
+    const handleRevalidate = () => {
+      void mutate()
+    }
+
     window.addEventListener('swr:revalidate', handleRevalidate)
     return () => {
       window.removeEventListener('swr:revalidate', handleRevalidate)

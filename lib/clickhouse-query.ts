@@ -1,5 +1,5 @@
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 import dedent from 'dedent'
+import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
 export function applyInterval(
   interval: ClickHouseInterval,

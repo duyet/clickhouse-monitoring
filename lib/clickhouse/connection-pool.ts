@@ -5,9 +5,9 @@
  * Max 10 concurrent connections per client config
  */
 
-import { debug } from '@/lib/logger'
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
+import { debug } from '@/lib/logger'
 import type { ClickHouseConfig } from './types'
 
 type PoolKey = string

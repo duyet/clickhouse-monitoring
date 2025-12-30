@@ -11,7 +11,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
-import { ErrorLogger } from '@/lib/error-logger'
+import { ErrorLogger } from '@/lib/logger'
 
 import {
   explainQuery,

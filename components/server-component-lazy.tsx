@@ -3,13 +3,12 @@
 import { type ReactNode, Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 
-import { ErrorAlert } from '@/components/error-alert'
+import { ChartError } from '@/components/charts/chart-error'
 import { TableSkeleton } from '@/components/skeleton'
 
 function defaultFallbackRender({ error, resetErrorBoundary }: FallbackProps) {
-  // Call resetErrorBoundary() to reset the error boundary and retry the render.
-
-  return <ErrorAlert message={error.message} reset={resetErrorBoundary} />
+  // Use ChartError for consistent error display across the app
+  return <ChartError error={error} onRetry={resetErrorBoundary} />
 }
 
 export type ServerComponentLazyProps = {

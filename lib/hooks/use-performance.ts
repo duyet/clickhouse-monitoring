@@ -5,9 +5,9 @@
  * Useful for identifying slow renders and optimizing critical paths.
  */
 
-import { useEffect, useRef, useCallback } from 'react'
-import { ErrorLogger } from '@/lib/error-logger'
+import { useCallback, useEffect, useRef } from 'react'
 import { isDevelopment } from '@/lib/env-utils'
+import { ErrorLogger } from '@/lib/logger'
 
 /**
  * Performance thresholds in milliseconds

@@ -3,7 +3,7 @@
  * Parses environment variables and creates ClickHouse configurations
  */
 
-import { debug, error as logError } from '@/lib/logger'
+import { debug, error } from '@/lib/logger'
 import type { ClickHouseConfig } from './types'
 
 export const getClickHouseHosts = () => {
@@ -30,10 +30,10 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
 
   // Debug logging for environment variables
   if (!hostEnv) {
-    logError(
+    error(
       '[ClickHouse Config] CRITICAL: CLICKHOUSE_HOST environment variable is not set!'
     )
-    logError(
+    error(
       '[ClickHouse Config] Available env keys:',
       Object.keys(process.env).filter((k) => k.includes('CLICK'))
     )
@@ -55,12 +55,10 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
   debug('[ClickHouse Config] Parsed hosts count:', hosts.length)
 
   if (hosts.length === 0) {
-    logError(
+    error(
       '[ClickHouse Config] No hosts configured! Please set CLICKHOUSE_HOST environment variable.'
     )
-    logError(
-      '[ClickHouse Config] Example: CLICKHOUSE_HOST=http://localhost:8123'
-    )
+    error('[ClickHouse Config] Example: CLICKHOUSE_HOST=http://localhost:8123')
     return []
   }
 

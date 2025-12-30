@@ -4,6 +4,7 @@ import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import {
   binding,
+  chartTickFormatters,
   cn,
   dedent,
   formatBytes,
@@ -13,7 +14,6 @@ import {
   getHost,
   removeHostPrefix,
   uniq,
-  chartTickFormatters,
 } from './utils'
 
 jest.mock('clsx', () => ({

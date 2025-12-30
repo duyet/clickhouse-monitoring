@@ -1,20 +1,20 @@
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import { Suspense } from 'react'
 import { ThemeProvider } from 'next-themes'
+import { Suspense } from 'react'
 
 import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
-import { SWRProvider } from '@/lib/swr'
 import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
-import { Toaster } from '@/components/ui/sonner'
 import { LayoutErrorBoundary } from '@/components/layout-error-boundary'
 import { NetworkStatusBanner } from '@/components/network-status-banner'
 import { PageSkeleton } from '@/components/page-skeleton'
 import { SidebarLayout } from '@/components/sidebar-layout'
 import { SidebarSkeleton } from '@/components/sidebar-skeleton'
+import { Toaster } from '@/components/ui/sonner'
+import { SWRProvider } from '@/lib/swr'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
@@ -45,9 +45,7 @@ function AnalyticsScripts() {
   return (
     <>
       {VERCEL_ANALYTICS_ENABLED && <Analytics />}
-      {SELINE_ENABLED && (
-        <Script src="https://cdn.seline.so/seline.js" async />
-      )}
+      {SELINE_ENABLED && <Script src="https://cdn.seline.so/seline.js" async />}
       {GA_ANALYTICS_ENABLED && (
         <>
           <Script

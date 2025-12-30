@@ -1,20 +1,19 @@
 'use client'
 
-import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-
+import { Suspense } from 'react'
+import type { HostInfo } from '@/app/api/v1/hosts/route'
 import { AppSidebar } from '@/components/app-sidebar'
+import { Breadcrumb } from '@/components/breadcrumb'
+import { HeaderActions } from '@/components/header/header-actions'
+import { Separator } from '@/components/ui/separator'
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
-import { Separator } from '@/components/ui/separator'
-import { Breadcrumb } from '@/components/breadcrumb'
-import { HeaderActions } from '@/components/header/header-actions'
-import { ErrorLogger } from '@/lib/error-logger'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { HostInfo } from '@/app/api/v1/hosts/route'
+import { ErrorLogger } from '@/lib/logger'
 
 async function fetchHosts(): Promise<Array<Omit<HostInfo, 'user'>>> {
   try {

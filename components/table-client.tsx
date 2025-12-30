@@ -5,8 +5,8 @@ import { memo } from 'react'
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { TableSkeleton } from '@/components/skeleton'
-import { useTableData } from '@/lib/swr/use-table-data'
 import { useHostId } from '@/lib/swr/use-host'
+import { useTableData } from '@/lib/swr/use-table-data'
 import type { QueryConfig } from '@/types/query-config'
 
 interface TableClientProps {

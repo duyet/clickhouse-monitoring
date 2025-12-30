@@ -3,10 +3,10 @@
  */
 
 import {
-  getTableQuery,
-  hasTable,
   getAvailableTables,
   getTableConfig,
+  getTableQuery,
+  hasTable,
 } from '../table-registry'
 
 describe('table-registry', () => {

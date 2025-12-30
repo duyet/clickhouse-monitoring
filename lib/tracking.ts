@@ -1,6 +1,6 @@
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
-import { ErrorLogger } from '@/lib/error-logger'
+import { ErrorLogger } from '@/lib/logger'
 
 const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 

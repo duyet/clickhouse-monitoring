@@ -3,7 +3,7 @@
  * Provides functions to prevent cookie injection and XSS attacks
  */
 
-import { ErrorLogger } from '@/lib/error-logger'
+import { ErrorLogger } from '@/lib/logger'
 
 /**
  * Sanitizes a cookie value by encoding special characters

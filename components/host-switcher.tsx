@@ -1,10 +1,10 @@
 'use client'
 
+import { Check, ChevronsUpDown } from 'lucide-react'
 import Image from 'next/image'
-import { ChevronsUpDown, Check } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, use, useCallback, memo } from 'react'
-
+import { memo, use, useCallback } from 'react'
+import type { HostInfo } from '@/app/api/v1/hosts/route'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +26,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { cn, getHost } from '@/lib/utils'
-import type { HostInfo } from '@/app/api/v1/hosts/route'
 
 type UptimePromise = Promise<{
   uptime: string
@@ -95,16 +94,7 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
                     <span className="truncate font-semibold">
                       {activeHost.name || getHost(activeHost.host)}
                     </span>
-                    <Suspense
-                      fallback={
-                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <span className="size-2 rounded-full bg-gray-400 animate-pulse" />
-                          ...
-                        </span>
-                      }
-                    >
-                      <HostVersionWithStatus promise={activeHost.promise} />
-                    </Suspense>
+                    <HostVersionWithStatus promise={activeHost.promise} />
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </>
@@ -132,16 +122,7 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
                   <span className="truncate">
                     {host.name || getHost(host.host)}
                   </span>
-                  <Suspense
-                    fallback={
-                      <StatusIndicator
-                        title={['Loading...']}
-                        className="bg-gray-400 animate-pulse"
-                      />
-                    }
-                  >
-                    <HostStatus promise={host.promise} />
-                  </Suspense>
+                  <HostStatus promise={host.promise} />
                 </div>
                 {index === currentHostId && (
                   <Check className="ml-auto size-4" />
@@ -172,8 +153,7 @@ function HostVersionWithStatus({ promise }: { promise: UptimePromise }) {
   if (res) {
     return (
       <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-        <span className="size-2 rounded-full bg-emerald-500" />
-        v{res.version}
+        <span className="size-2 rounded-full bg-emerald-500" />v{res.version}
       </span>
     )
   }

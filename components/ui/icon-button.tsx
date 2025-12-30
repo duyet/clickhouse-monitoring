@@ -1,10 +1,10 @@
 'use client'
 
-import type { ReactNode, ComponentProps } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { memo } from 'react'
+import { cn } from '@/lib/utils'
 import { Button } from './button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip'
-import { cn } from '@/lib/utils'
 
 interface IconButtonProps extends Omit<ComponentProps<typeof Button>, 'size'> {
   /** Tooltip text to display on hover */

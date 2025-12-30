@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 
 import { ErrorAlert } from '@/components/error-alert'
-import { ErrorLogger, formatErrorForDisplay } from '@/lib/error-logger'
+import { ErrorLogger, formatErrorForDisplay } from '@/lib/logger'
 
 export default function Error({
   error,

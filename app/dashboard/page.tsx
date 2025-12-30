@@ -1,10 +1,10 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { ChartParams } from '@/components/dashboard/chart-params'
 import { RenderChart } from '@/components/dashboard/render-chart'
-import { useChartData } from '@/lib/swr/use-chart-data'
+import { Button } from '@/components/ui/button'
 import { useHostId } from '@/lib/swr'
+import { useChartData } from '@/lib/swr/use-chart-data'
 
 type DashboardChart = {
   kind: 'area' | 'bar' | 'calendar'

@@ -1,12 +1,11 @@
+import type { Row } from '@tanstack/react-table'
 import { memo } from 'react'
-
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
-import type { Row } from '@tanstack/react-table'
 
 export type HoverCardContent = string | React.ReactNode
 

@@ -1,9 +1,9 @@
 'use server'
 
-import { fetchData } from '@/lib/clickhouse'
-import { ErrorLogger } from '@/lib/error-logger'
-import { getHostIdCookie } from '@/lib/scoped-link'
 import type { Row, RowData } from '@tanstack/react-table'
+import { fetchData } from '@/lib/clickhouse'
+import { ErrorLogger } from '@/lib/logger'
+import { getHostIdCookie } from '@/lib/scoped-link'
 import type { ActionResponse } from './types'
 
 export async function killQuery<TValue>(

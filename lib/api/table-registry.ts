@@ -6,18 +6,18 @@
 import { queries } from '@/lib/query-config'
 import { clustersConfig } from '@/lib/query-config/system/clusters'
 import {
-  clustersReplicasStatusConfig,
-  replicaTablesConfig,
-} from '@/lib/query-config/system/replicas-status'
-import {
-  diskSpaceConfig,
-  databaseDiskSpaceConfig,
-  databaseDiskSpaceByDatabaseConfig,
-} from '@/lib/query-config/system/disks'
-import {
   databaseTableColumnsConfig,
   tablesListConfig,
 } from '@/lib/query-config/system/database-table'
+import {
+  databaseDiskSpaceByDatabaseConfig,
+  databaseDiskSpaceConfig,
+  diskSpaceConfig,
+} from '@/lib/query-config/system/disks'
+import {
+  clustersReplicasStatusConfig,
+  replicaTablesConfig,
+} from '@/lib/query-config/system/replicas-status'
 import type { QueryConfig } from '@/types/query-config'
 
 /**

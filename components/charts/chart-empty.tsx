@@ -1,8 +1,8 @@
 import { RefreshCw } from 'lucide-react'
+import { memo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
-import { memo } from 'react'
 
 interface ChartEmptyProps {
   title?: string

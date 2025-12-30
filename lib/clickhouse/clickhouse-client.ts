@@ -4,21 +4,19 @@
  * Auto-detects Cloudflare Workers environment and uses appropriate client
  */
 
-import { debug } from '@/lib/logger'
-import type { ClickHouseSettings } from '@clickhouse/client'
+import type { ClickHouseClient, ClickHouseSettings } from '@clickhouse/client'
 import { createClient } from '@clickhouse/client'
 import { createClient as createClientWeb } from '@clickhouse/client-web'
-import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
-import { DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME } from './constants'
+import { getClickHouseConfigs } from './clickhouse-config'
 import {
   clientPool,
   getConnectionPoolStats,
-  getPoolKey,
   getPooledClient,
+  getPoolKey,
 } from './connection-pool'
+import { DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME } from './constants'
 import type { ClickHouseConfig } from './types'
-import { getClickHouseConfigs } from './clickhouse-config'
 
 /**
  * Detect if running in Cloudflare Workers environment

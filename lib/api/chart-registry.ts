@@ -28,9 +28,9 @@ import { zookeeperCharts } from './charts/zookeeper-charts'
 
 // Re-export types from the central types module
 export type {
+  ChartQueryBuilder,
   ChartQueryParams,
   ChartQueryResult,
-  ChartQueryBuilder,
   MultiChartQueryResult,
 } from './charts/types'
 

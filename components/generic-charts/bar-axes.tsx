@@ -1,7 +1,7 @@
 'use client'
 
-import { XAxis, YAxis } from 'recharts'
 import { memo } from 'react'
+import { XAxis, YAxis } from 'recharts'
 import type { BarChartProps } from '@/types/charts'
 
 interface BarAxesProps {

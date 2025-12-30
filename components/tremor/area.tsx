@@ -5,15 +5,13 @@ import {
   AreaChart as TremorAreaChart,
   type AreaChartProps as TremorAreaChartProps,
 } from '@tremor/react'
-
+import { memo, useMemo } from 'react'
 import { DonutChart, type DonutChartProps } from '@/components/tremor/donut'
 import {
   formatReadableQuantity,
   formatReadableSize,
 } from '@/lib/format-readable'
-
 import type { ReadableFormat } from './types'
-import { memo, useMemo } from 'react'
 
 export interface AreaChartProps extends TremorAreaChartProps {
   readable?: true | ReadableFormat

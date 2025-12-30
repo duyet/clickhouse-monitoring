@@ -1,11 +1,10 @@
 'use client'
 
+import type React from 'react'
 import { useEffect } from 'react'
 import { SWRConfig, type SWRConfiguration, useSWRConfig } from 'swr'
-import type React from 'react'
-
-import { ErrorLogger } from '@/lib/error-logger'
 import { isDevelopment } from '@/lib/env-utils'
+import { ErrorLogger } from '@/lib/logger'
 
 // Re-export config for convenience
 export { REFRESH_INTERVAL, swrConfig } from './config'
@@ -91,7 +90,7 @@ const globalFetcher = async (url: string) => {
  */
 const onErrorRetry: SWRConfiguration['onErrorRetry'] = (
   error,
-  key,
+  _key,
   config,
   revalidate,
   { retryCount }

@@ -5,7 +5,7 @@
  * to eliminate duplicate imports across 30+ page files.
  */
 
-import { lazy, type LazyExoticComponent } from 'react'
+import { type LazyExoticComponent, lazy } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 
 // Re-export ChartProps for convenience

@@ -1,9 +1,9 @@
 'use client'
 
 import { memo } from 'react'
-import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { DonutChart } from '@/components/generic-charts/donut'
 import { useChartData } from '@/lib/swr'
@@ -15,7 +15,7 @@ export const ChartQueryType = memo(function ChartQueryType({
   lastHours = 24,
   hostId,
   showLegend,
-  ...props
+  ..._props
 }: ChartProps) {
   const { data, isLoading, error, refresh } = useChartData<{
     type: string

@@ -1,12 +1,12 @@
 'use client'
 
 import { memo } from 'react'
-import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
-import { ChartCard } from '@/components/generic-charts/chart-card'
 import { BarList } from '@/components/generic-charts/bar-list'
+import { ChartCard } from '@/components/generic-charts/chart-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useChartData } from '@/lib/swr'
 
@@ -70,16 +70,10 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
           </TabsTrigger>
         </TabsList>
         <TabsContent value="by-size">
-          <BarList
-            data={dataTopBySize}
-            formatedColumn="compressed"
-          />
+          <BarList data={dataTopBySize} formatedColumn="compressed" />
         </TabsContent>
         <TabsContent value="by-count">
-          <BarList
-            data={dataTopByCount}
-            formatedColumn="readable_total_rows"
-          />
+          <BarList data={dataTopByCount} formatedColumn="readable_total_rows" />
         </TabsContent>
       </Tabs>
     </ChartCard>

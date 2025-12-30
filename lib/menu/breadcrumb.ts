@@ -1,5 +1,5 @@
-import { menuItemsConfig } from '@/menu'
 import type { MenuItem } from '@/components/menu/types'
+import { menuItemsConfig } from '@/menu'
 
 export interface BreadcrumbItem {
   title: string
@@ -53,8 +53,8 @@ export function isMenuItemActive(itemHref: string, pathname: string): boolean {
 
   // Parent path match (e.g., /tables matches /table)
   if (
-    normalizedPath.startsWith(normalizedHref + '/') ||
-    normalizedPath.startsWith(normalizedHref + '?')
+    normalizedPath.startsWith(`${normalizedHref}/`) ||
+    normalizedPath.startsWith(`${normalizedHref}?`)
   ) {
     return true
   }

@@ -1,5 +1,5 @@
-import { memo } from 'react'
 import type { Table } from '@tanstack/react-table'
+import { memo } from 'react'
 
 export interface FootnoteProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

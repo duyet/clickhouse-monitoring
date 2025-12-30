@@ -1,7 +1,6 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 
 /**
  * Hook to extract hostId from URL query parameters or route parameters

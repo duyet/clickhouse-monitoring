@@ -1,13 +1,12 @@
 'use client'
 
 import {
-  type ReactNode,
-  useEffect,
-  useState,
-  useId,
   memo,
+  type ReactNode,
   useCallback,
-  useRef,
+  useEffect,
+  useId,
+  useState,
 } from 'react'
 import { ChartSkeleton } from '@/components/skeleton'
 import { FadeIn } from '@/components/ui/fade-in'
@@ -47,7 +46,7 @@ export const ProgressiveLoader = memo(function ProgressiveLoader({
   priority = 'normal',
 }: ProgressiveLoaderProps) {
   const [shouldShow, setShouldShow] = useState(priority === 'high')
-  const id = useId()
+  const _id = useId()
 
   // Calculate actual delay based on priority
   const getDelay = useCallback(() => {
@@ -66,7 +65,7 @@ export const ProgressiveLoader = memo(function ProgressiveLoader({
     }, actualDelay)
 
     return () => clearTimeout(timer)
-  }, [getDelay, priority, id])
+  }, [getDelay, priority])
 
   if (!shouldShow) {
     return <div className={className}>{fallback}</div>

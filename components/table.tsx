@@ -1,15 +1,14 @@
+import type { RowData } from '@tanstack/react-table'
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse'
-import { ErrorLogger } from '@/lib/error-logger'
-import type { RowData } from '@tanstack/react-table'
-
 import {
   formatErrorMessage,
   formatErrorTitle,
   getErrorDocumentation,
   getErrorVariant,
 } from '@/lib/error-utils'
+import { ErrorLogger } from '@/lib/logger'
 import { getHostIdCookie } from '@/lib/scoped-link'
 import type { QueryConfig } from '@/types/query-config'
 

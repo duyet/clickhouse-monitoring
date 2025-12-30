@@ -1,8 +1,8 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useCallback, memo, use } from 'react'
-
+import { memo, Suspense, use, useCallback } from 'react'
+import type { HostInfo } from '@/app/api/v1/hosts/route'
 import {
   Select,
   SelectContent,
@@ -16,7 +16,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import type { HostInfo } from '@/app/api/v1/hosts/route'
 import { cn, getHost } from '@/lib/utils'
 
 type UptimePromise = Promise<{
@@ -47,12 +46,6 @@ export function ClickHouseHostSelector({
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const current = configs[currentHostId]
-
-  if (!current) {
-    return null
-  }
-
   const handleValueChange = useCallback(
     (val: string) => {
       const hostId = parseInt(val, 10)
@@ -64,6 +57,12 @@ export function ClickHouseHostSelector({
     },
     [searchParams, pathname, router]
   )
+
+  const current = configs[currentHostId]
+
+  if (!current) {
+    return null
+  }
 
   return (
     <Select value={current.id.toString()} onValueChange={handleValueChange}>

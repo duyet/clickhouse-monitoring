@@ -1,5 +1,5 @@
 import { CodeIcon } from 'lucide-react'
-import { memo, useMemo } from 'react'
+import { memo } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {

@@ -17,8 +17,6 @@ import {
   TextAlignBottomIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
-
-import type { MenuItem } from '@/components/menu/types'
 import {
   CircleDollarSignIcon,
   CombineIcon,
@@ -31,17 +29,20 @@ import {
   UngroupIcon,
   UnplugIcon,
 } from 'lucide-react'
+import type { MenuItem } from '@/components/menu/types'
 
 export const menuItemsConfig: MenuItem[] = [
   {
     title: 'Overview',
     href: '/overview',
     icon: HomeIcon,
+    section: 'main',
   },
   {
     title: 'Tables',
     href: '/tables',
     icon: TableIcon,
+    section: 'main',
     items: [
       {
         title: 'Tables Explorer',
@@ -124,6 +125,7 @@ export const menuItemsConfig: MenuItem[] = [
     href: '',
     countKey: 'running-queries',
     icon: MixIcon,
+    section: 'main',
     items: [
       {
         title: 'Running Queries',
@@ -189,6 +191,7 @@ export const menuItemsConfig: MenuItem[] = [
     href: '/merges',
     countKey: 'merges',
     icon: CombineIcon,
+    section: 'main',
     items: [
       {
         title: 'Merges',
@@ -217,6 +220,7 @@ export const menuItemsConfig: MenuItem[] = [
     title: 'More',
     href: '',
     icon: HamburgerMenuIcon,
+    section: 'more',
     items: [
       {
         title: 'Settings',

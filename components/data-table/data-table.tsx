@@ -6,10 +6,10 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type RowData,
   type SortingState,
   useReactTable,
   type VisibilityState,
-  type RowData,
 } from '@tanstack/react-table'
 import { useCallback, useMemo, useState } from 'react'
 
@@ -18,6 +18,7 @@ import {
   normalizeColumnName,
 } from '@/components/data-table/column-defs'
 import { DataTablePagination } from '@/components/data-table/pagination'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Table,
   TableBody,
@@ -26,11 +27,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { EmptyState } from '@/components/ui/empty-state'
+import { withQueryParams } from '@/lib/clickhouse-query'
 import { cn, uniq } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
-
-import { withQueryParams } from '@/lib/clickhouse-query'
 import { ColumnVisibilityButton } from './buttons/column-visibility'
 import { ShowSQLButton } from './buttons/show-sql'
 import { DataTableToolbar } from './data-table-toolbar'

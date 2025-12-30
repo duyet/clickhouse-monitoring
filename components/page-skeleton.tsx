@@ -5,9 +5,9 @@
  * These skeletons represent the structure of pages before content loads.
  */
 
+import { memo } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { memo } from 'react'
 
 /**
  * Page Skeleton - Default layout with charts and table

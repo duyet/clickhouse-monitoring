@@ -1,7 +1,7 @@
 'use client'
 
-import { cn } from '@/lib/utils'
 import { Children, memo, useState } from 'react'
+import { cn } from '@/lib/utils'
 
 interface TruncatedListProps {
   items?: number

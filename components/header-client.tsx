@@ -1,16 +1,15 @@
 'use client'
 
-import { memo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-
+import { memo, Suspense } from 'react'
+import type { HostInfo } from '@/app/api/v1/hosts/route'
+import { HeaderActions } from '@/components/header/header-actions'
 import {
   HeaderBrand,
   HeaderBrandSkeleton,
 } from '@/components/header/header-brand'
-import { HeaderActions } from '@/components/header/header-actions'
 import { MenuNavigationStyle } from '@/components/menu/menu-navigation-style'
-import { ErrorLogger } from '@/lib/error-logger'
-import type { HostInfo } from '@/app/api/v1/hosts/route'
+import { ErrorLogger } from '@/lib/logger'
 import { menuItemsConfig } from '@/menu'
 
 async function fetchHosts(): Promise<Array<Omit<HostInfo, 'user'>>> {

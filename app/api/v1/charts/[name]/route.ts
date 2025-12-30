@@ -6,22 +6,22 @@
  */
 
 import type { NextRequest } from 'next/server'
-import { fetchData } from '@/lib/clickhouse'
 import {
+  getAvailableCharts,
   getChartQuery,
   hasChart,
-  getAvailableCharts,
   type MultiChartQueryResult,
 } from '@/lib/api/chart-registry'
-import type { ApiResponse as ApiResponseType } from '@/lib/api/types'
-import { ApiErrorType } from '@/lib/api/types'
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 import {
   createErrorResponse as createApiErrorResponse,
   getHostIdFromParams,
   type RouteContext,
 } from '@/lib/api/error-handler'
+import type { ApiResponse as ApiResponseType } from '@/lib/api/types'
+import { ApiErrorType } from '@/lib/api/types'
+import { fetchData } from '@/lib/clickhouse'
 import { debug, error } from '@/lib/logger'
+import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'

@@ -1,11 +1,11 @@
 'use client'
 
 import { memo } from 'react'
+import { ChartError, ChartSkeleton } from '@/components/charts'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
-import { ChartSkeleton, ChartError } from '@/components/charts'
 import type { ChartProps } from './chart-props'
 
 export const ChartZookeeperWait = memo(function ChartZookeeperWait({

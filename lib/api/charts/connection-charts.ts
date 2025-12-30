@@ -4,7 +4,7 @@
  */
 
 import type { ChartQueryBuilder } from './types'
-import { applyInterval, fillStep } from './types'
+import { applyInterval } from './types'
 
 export const connectionCharts: Record<string, ChartQueryBuilder> = {
   'connections-http': ({ interval = 'toStartOfHour', lastHours = 24 * 7 }) => ({

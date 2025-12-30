@@ -1,8 +1,9 @@
 'use client'
 
 import { memo } from 'react'
-import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError, ChartSkeleton } from '@/components/charts'
 import { ChartEmpty } from '@/components/charts/chart-empty'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import {
   Table,
@@ -13,7 +14,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useChartData } from '@/lib/swr'
-import { ChartSkeleton, ChartError } from '@/components/charts'
 import { cn } from '@/lib/utils'
 
 export const ChartZookeeperSummaryTable = memo(

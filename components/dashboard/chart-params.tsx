@@ -8,7 +8,6 @@ import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
 import { Button } from '@/components/ui/button'
-import { ErrorLogger } from '@/lib/error-logger'
 import {
   Form,
   FormControl,
@@ -17,8 +16,8 @@ import {
   FormLabel,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-
 import { updateSettingParams } from '@/lib/api/dashboard-api-client'
+import { ErrorLogger } from '@/lib/logger'
 
 interface ChartParamsProps {
   params: Record<string, string>

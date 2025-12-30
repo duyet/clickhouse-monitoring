@@ -4,9 +4,9 @@
  * Usage: bun run cf:config
  */
 
-import { readFileSync, writeFileSync, unlinkSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 const ENV_FILE = join(process.cwd(), '.env.local')
 

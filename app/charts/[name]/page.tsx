@@ -1,11 +1,9 @@
 'use client'
 
-import { use } from 'react'
-import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-
-import { ChartSkeleton } from '@/components/charts/chart-skeleton'
+import { Suspense, use } from 'react'
 import { getChartComponent, hasChart } from '@/components/charts/chart-registry'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { FadeIn } from '@/components/ui/fade-in'
 import { useHostId } from '@/lib/swr'
 

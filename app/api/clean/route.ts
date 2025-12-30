@@ -1,9 +1,9 @@
-import { getClient } from '@/lib/clickhouse'
-import { ErrorLogger } from '@/lib/error-logger'
-import { getHostIdCookie } from '@/lib/scoped-link'
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
-import { NextResponse, type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { getClient } from '@/lib/clickhouse'
+import { ErrorLogger } from '@/lib/logger'
+import { getHostIdCookie } from '@/lib/scoped-link'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''

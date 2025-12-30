@@ -10,10 +10,9 @@ import type {
   RowData,
   Table,
 } from '@tanstack/react-table'
-
+import { ColumnFilter } from '@/components/data-table/column-filter'
 import { formatCell } from '@/components/data-table/format-cell'
 import { Button } from '@/components/ui/button'
-import { ColumnFilter } from '@/components/data-table/column-filter'
 import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
 import type { Icon } from '@/types/icon'
 import type { QueryConfig } from '@/types/query-config'
@@ -73,7 +72,7 @@ export const getColumnDefs = <
     filterableColumns = [],
     columnFilters = {},
     setColumnFilter,
-    clearColumnFilter,
+    clearColumnFilter: _clearColumnFilter,
   } = filterContext || {}
 
   return configColumns.map((column) => {

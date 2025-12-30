@@ -3,22 +3,14 @@
  * Main fetchData function for executing queries with error handling
  */
 
-import { debug, error as logError, warn } from '@/lib/logger'
+import type { DataFormat, QueryParams } from '@clickhouse/client'
+import { debug, error, warn } from '@/lib/logger'
 import { validateTableExistence } from '@/lib/table-validator'
 import type { QueryConfig } from '@/types/query-config'
-import type {
-  ClickHouseClient,
-  DataFormat,
-  QueryParams,
-} from '@clickhouse/client'
-import { QUERY_COMMENT } from './constants'
 import { getClient } from './clickhouse-client'
 import { getClickHouseConfigs } from './clickhouse-config'
-import type {
-  FetchDataError,
-  FetchDataErrorType,
-  FetchDataResult,
-} from './types'
+import { QUERY_COMMENT } from './constants'
+import type { FetchDataErrorType, FetchDataResult } from './types'
 
 /**
  * Fetch data from ClickHouse with comprehensive error handling
@@ -58,9 +50,9 @@ export const fetchData = async <
       'Example: CLICKHOUSE_HOST=http://localhost:8123\n' +
       'See console logs for more details.'
 
-    logError('[fetchData] No ClickHouse configurations available!')
-    logError('[fetchData] Make sure environment variables are loaded.')
-    logError(
+    error('[fetchData] No ClickHouse configurations available!')
+    error('[fetchData] Make sure environment variables are loaded.')
+    error(
       '[fetchData] Check .env, .env.local, or deployment environment settings.'
     )
 
@@ -90,7 +82,7 @@ export const fetchData = async <
     const availableHosts = configs.map((c) => c.id).join(', ')
     const errorMessage = `Invalid hostId: ${currentHostId}. Available hosts: ${availableHosts} (total: ${configs.length})`
 
-    logError('[fetchData]', errorMessage)
+    error('[fetchData]', errorMessage)
 
     return {
       data: null,
@@ -226,7 +218,7 @@ export const fetchData = async <
       errorType = 'network_error'
     }
 
-    logError(`Query failed (host: ${clientConfig.host}):`, errorMessage)
+    error(`Query failed (host: ${clientConfig.host}):`, errorMessage)
 
     return {
       data: null,

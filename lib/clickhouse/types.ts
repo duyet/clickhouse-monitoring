@@ -13,7 +13,8 @@ export type ClickHouseConfig = {
   customName?: string
 }
 
-type QuerySettings = QueryParams['clickhouse_settings'] &
+/** @deprecated Reserved for future use */
+type _QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{
     // @since 24.4
     query_cache_system_table_handling: 'throw' | 'save' | 'ignore'

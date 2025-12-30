@@ -1,5 +1,5 @@
-import { memo } from 'react'
 import { TriangleAlert } from 'lucide-react'
+import { memo } from 'react'
 
 export const ChartWarnMessage = memo(function ChartWarnMessage({
   children,

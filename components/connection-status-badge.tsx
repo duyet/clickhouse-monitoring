@@ -9,7 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { ErrorLogger } from '@/lib/error-logger'
+import { ErrorLogger } from '@/lib/logger'
 import { useHostId } from '@/lib/swr'
 
 type ConnectionStatus = 'loading' | 'connected' | 'error'
@@ -77,7 +77,7 @@ export const ConnectionStatusBadge = memo(function ConnectionStatusBadge() {
     const interval = setInterval(checkConnection, 30000)
 
     return () => clearInterval(interval)
-  }, [checkConnection, hostId])
+  }, [checkConnection])
 
   const config = statusConfig[status]
 

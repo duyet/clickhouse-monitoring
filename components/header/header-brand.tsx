@@ -1,11 +1,10 @@
 'use client'
 
-import { Suspense, memo, use } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
-
-import { ClickHouseHostSelector } from '@/components/clickhouse-host-selector'
+import Link from 'next/link'
+import { memo, Suspense, use } from 'react'
 import type { HostInfo } from '@/app/api/v1/hosts/route'
+import { ClickHouseHostSelector } from '@/components/clickhouse-host-selector'
 
 const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'ClickHouse'
 const LOGO_URL = process.env.NEXT_PUBLIC_LOGO_URL || ''

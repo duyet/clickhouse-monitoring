@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic'
-import { memo } from 'react'
-import type React from 'react'
 import { usePathname } from 'next/navigation'
+import type React from 'react'
+import { memo } from 'react'
 
 import {
   NavigationMenu,
@@ -11,11 +11,11 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu'
+import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 import { cn } from '@/lib/utils'
 import { menuItemsConfig } from '@/menu'
 import { HostPrefixedLink } from './link-with-context'
 import type { MenuItem } from './types'
-import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 
 const CountBadge = dynamic(() =>
   import('@/components/menu/count-badge').then((mod) => mod.CountBadge)

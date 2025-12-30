@@ -3,11 +3,10 @@
  * Provides client-side data fetching and caching hooks for the ClickHouse monitoring dashboard
  */
 
-export { SWRProvider } from './provider'
-export { useHostId } from './use-host'
-export { useFetchData } from './use-fetch-data'
-export { useChartData } from './use-chart-data'
-export { useTableData } from './use-table-data'
-
 // SWR configuration presets
-export { REFRESH_INTERVAL, swrConfig, createPollingConfig } from './config'
+export { createPollingConfig, REFRESH_INTERVAL, swrConfig } from './config'
+export { SWRProvider } from './provider'
+export { useChartData } from './use-chart-data'
+export { useFetchData } from './use-fetch-data'
+export { useHostId } from './use-host'
+export { useTableData } from './use-table-data'

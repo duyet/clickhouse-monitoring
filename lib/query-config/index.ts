@@ -1,5 +1,5 @@
-import type { QueryConfig } from '@/types/query-config'
 import { cache } from 'react'
+import type { QueryConfig } from '@/types/query-config'
 
 import { mergePerformanceConfig } from './merges/merge-performance'
 import { mergesConfig } from './merges/merges'
@@ -23,6 +23,20 @@ import { failedQueriesConfig } from './queries/failed-queries'
 import { historyQueriesConfig } from './queries/history-queries'
 import { queryCacheConfig } from './queries/query-cache'
 import { runningQueriesConfig } from './queries/running-queries'
+import { clustersConfig } from './system/clusters'
+import {
+  databaseTableColumnsConfig,
+  tablesListConfig,
+} from './system/database-table'
+import {
+  databaseDiskSpaceByDatabaseConfig,
+  databaseDiskSpaceConfig,
+  diskSpaceConfig,
+} from './system/disks'
+import {
+  clustersReplicasStatusConfig,
+  replicaTablesConfig,
+} from './system/replicas-status'
 import { detachedPartsConfig } from './tables/detached-parts'
 import { distributedDdlQueueConfig } from './tables/distributed-ddl-queue'
 import { projectionsConfig } from './tables/projections'
@@ -31,20 +45,6 @@ import { replicasConfig } from './tables/replicas'
 import { replicationQueueConfig } from './tables/replication-queue'
 import { tablesOverviewConfig } from './tables/tables-overview'
 import { viewRefreshesConfig } from './tables/view-refreshes'
-import { clustersConfig } from './system/clusters'
-import {
-  databaseDiskSpaceByDatabaseConfig,
-  databaseDiskSpaceConfig,
-  diskSpaceConfig,
-} from './system/disks'
-import {
-  databaseTableColumnsConfig,
-  tablesListConfig,
-} from './system/database-table'
-import {
-  clustersReplicasStatusConfig,
-  replicaTablesConfig,
-} from './system/replicas-status'
 
 export const queries: Array<QueryConfig> = [
   // Tables

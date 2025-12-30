@@ -1,11 +1,10 @@
 'use client'
 
-import { ChartSkeleton } from '@/components/skeleton'
-import { useHostId } from '@/lib/swr'
-import { ErrorLogger } from '@/lib/error-logger'
-import { notFound } from 'next/navigation'
-import { useSearchParams } from 'next/navigation'
+import { notFound, useSearchParams } from 'next/navigation'
 import { Suspense, useMemo } from 'react'
+import { ChartSkeleton } from '@/components/skeleton'
+import { ErrorLogger } from '@/lib/logger'
+import { useHostId } from '@/lib/swr'
 
 interface DynamicChartProps {
   chartName: string

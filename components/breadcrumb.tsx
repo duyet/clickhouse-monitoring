@@ -3,10 +3,9 @@
 import { ChevronRightIcon } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { memo, useMemo } from 'react'
-
-import { cn } from '@/lib/utils'
-import { getBreadcrumbPath } from '@/lib/menu/breadcrumb'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
+import { getBreadcrumbPath } from '@/lib/menu/breadcrumb'
+import { cn } from '@/lib/utils'
 
 interface BreadcrumbProps {
   className?: string

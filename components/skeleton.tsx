@@ -1,6 +1,6 @@
+import { memo } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { memo } from 'react'
 
 /**
  * Chart skeleton - re-exported from charts/chart-skeleton

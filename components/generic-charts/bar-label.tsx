@@ -1,7 +1,7 @@
 'use client'
 
-import { LabelList, type LabelListProps } from 'recharts'
 import { memo } from 'react'
+import { LabelList, type LabelListProps } from 'recharts'
 import type { BarChartProps } from '@/types/charts'
 
 interface Data {

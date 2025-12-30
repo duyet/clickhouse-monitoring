@@ -11,17 +11,17 @@
  * This prevents clients from sending arbitrary SQL queries.
  */
 
-import { fetchData } from '@/lib/clickhouse'
-import type { ApiRequest, ApiResponse, ApiError } from '@/lib/api/types'
-import { ApiErrorType } from '@/lib/api/types'
 import type { DataFormat } from '@clickhouse/client'
 import {
-  withApiHandler,
-  createValidationError,
   createErrorResponse as createApiErrorResponse,
+  createValidationError,
   getHostIdFromParams,
   type RouteContext,
+  withApiHandler,
 } from '@/lib/api/error-handler'
+import type { ApiError, ApiRequest, ApiResponse } from '@/lib/api/types'
+import { ApiErrorType } from '@/lib/api/types'
+import { fetchData } from '@/lib/clickhouse'
 import { debug, error } from '@/lib/logger'
 
 // Dashboard table names for query validation
@@ -50,7 +50,7 @@ async function validateDashboardQuery(
 
     const cacheKey = String(hostId)
     const cachedQueries = validDashboardQueriesCache.get(cacheKey)
-    if (cachedQueries && cachedQueries.has(query)) {
+    if (cachedQueries?.has(query)) {
       return true
     }
 

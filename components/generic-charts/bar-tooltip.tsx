@@ -1,16 +1,16 @@
 'use client'
 
 import { memo } from 'react'
-import {
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
 import type {
   NameType,
   Payload,
   ValueType,
 } from 'recharts/types/component/DefaultTooltipContent'
+import {
+  type ChartConfig,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
 
 interface BarTooltipProps {
   tooltipTotal: boolean

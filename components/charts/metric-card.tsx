@@ -1,7 +1,6 @@
 'use client'
 
 import { RefreshCwIcon } from 'lucide-react'
-import { useMemo } from 'react'
 
 import {
   Card,
@@ -10,9 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
-import { ApiErrorType, type ApiError } from '@/lib/api/types'
+import { Skeleton } from '@/components/ui/skeleton'
+import { type ApiError, ApiErrorType } from '@/lib/api/types'
 import { cn } from '@/lib/utils'
 
 /**

@@ -1,13 +1,13 @@
 'use client'
 
+import { ArrowUpIcon } from '@radix-ui/react-icons'
 import { memo } from 'react'
-import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartError, ChartSkeleton } from '@/components/charts'
 import { ChartEmpty } from '@/components/charts/chart-empty'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
-import { ChartSkeleton, ChartError } from '@/components/charts'
 import { cn } from '@/lib/utils'
-import { ArrowUpIcon } from '@radix-ui/react-icons'
 import { CardMultiMetrics } from '../generic-charts/card-multi-metrics'
 
 export const ChartZookeeperUptime = memo(function ChartZookeeperUptime({

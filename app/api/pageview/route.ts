@@ -1,10 +1,9 @@
+import { geolocation } from '@vercel/functions'
 import type { NextRequest } from 'next/server'
 import { NextResponse, userAgent } from 'next/server'
-
 import { getClient } from '@/lib/clickhouse'
-import { ErrorLogger } from '@/lib/error-logger'
+import { ErrorLogger } from '@/lib/logger'
 import { normalizeUrl } from '@/lib/utils'
-import { geolocation } from '@vercel/functions'
 
 export const dynamic = 'force-dynamic'
 

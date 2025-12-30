@@ -6,20 +6,20 @@
  */
 
 import type { NextRequest } from 'next/server'
-import { fetchData } from '@/lib/clickhouse'
-import {
-  getTableQuery,
-  hasTable,
-  getAvailableTables,
-  getTableConfig,
-} from '@/lib/api/table-registry'
-import type { ApiResponse } from '@/lib/api/types'
-import { ApiErrorType } from '@/lib/api/types'
 import {
   createErrorResponse as createApiErrorResponse,
   getHostIdFromParams,
   type RouteContext,
 } from '@/lib/api/error-handler'
+import {
+  getAvailableTables,
+  getTableConfig,
+  getTableQuery,
+  hasTable,
+} from '@/lib/api/table-registry'
+import type { ApiResponse } from '@/lib/api/types'
+import { ApiErrorType } from '@/lib/api/types'
+import { fetchData } from '@/lib/clickhouse'
 import { debug, error } from '@/lib/logger'
 
 // This route is dynamic and should not be statically exported

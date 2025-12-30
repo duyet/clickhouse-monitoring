@@ -4,9 +4,9 @@
  * to prevent host switching issues (GitHub issue #509)
  */
 
-import { describe, expect, it } from '@jest/globals'
 import fs, { readdirSync } from 'node:fs'
 import path from 'node:path'
+import { describe, expect, it } from '@jest/globals'
 
 describe('fetchData hostId parameter validation', () => {
   jest.setTimeout(10000) // 10 second timeout for these tests

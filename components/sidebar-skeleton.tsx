@@ -1,5 +1,5 @@
-import { Skeleton } from '@/components/ui/skeleton'
 import { PageSkeleton } from '@/components/page-skeleton'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function SidebarSkeleton() {
   return (

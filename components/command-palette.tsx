@@ -1,8 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { memo, useCallback } from 'react'
 import * as React from 'react'
+import { memo, useCallback } from 'react'
 
 import {
   CommandDialog,
@@ -47,7 +47,7 @@ export const CommandPalette = memo(function CommandPalette({
       setOpen(false)
       router.push(href)
     },
-    [router]
+    [router, setOpen]
   )
 
   return (

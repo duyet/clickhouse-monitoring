@@ -1,5 +1,5 @@
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 import { expect, test } from '@jest/globals'
+import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 import {
   applyInterval,
   fillStep,

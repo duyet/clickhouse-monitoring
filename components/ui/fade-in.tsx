@@ -11,9 +11,9 @@
  * ```
  */
 
-import { cn } from '@/lib/utils'
 import type { HTMLAttributes } from 'react'
 import { memo } from 'react'
+import { cn } from '@/lib/utils'
 
 interface FadeInProps extends HTMLAttributes<HTMLDivElement> {
   /** Duration in ms (default: 200) */

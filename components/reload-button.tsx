@@ -40,7 +40,7 @@ export const ReloadButton = memo(function ReloadButton({
       startTransition(async () => {
         router.refresh()
       }),
-    [startTransition, router]
+    [router]
   )
 
   const handleSetReloadInterval = useCallback(

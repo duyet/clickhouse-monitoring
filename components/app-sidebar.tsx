@@ -1,8 +1,11 @@
 'use client'
 
+import { Github, Info, Settings } from 'lucide-react'
 import { Suspense, use } from 'react'
-import { Settings, Info, Github } from 'lucide-react'
-
+import type { HostInfo } from '@/app/api/v1/hosts/route'
+import { type HostConfig, HostSwitcher } from '@/components/host-switcher'
+import { NavMain } from '@/components/nav-main'
+import { NavSecondary } from '@/components/nav-secondary'
 import {
   Sidebar,
   SidebarContent,
@@ -11,11 +14,7 @@ import {
   SidebarMenuSkeleton,
   SidebarRail,
 } from '@/components/ui/sidebar'
-import { NavMain } from '@/components/nav-main'
-import { NavSecondary } from '@/components/nav-secondary'
-import { HostSwitcher, type HostConfig } from '@/components/host-switcher'
 import { menuItemsConfig } from '@/menu'
-import type { HostInfo } from '@/app/api/v1/hosts/route'
 
 const GITHUB_REPO = 'https://github.com/duyet/clickhouse-monitoring'
 

@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils'
 import { memo, useMemo } from 'react'
+import { cn } from '@/lib/utils'
 
 export interface ColoredBadgeOptions {
   className?: string
@@ -14,12 +14,10 @@ export const ColoredBadgeFormat = memo(function ColoredBadgeFormat({
   value,
   options,
 }: ColoredBadgeFormatProps): React.ReactNode {
-  if (!value || value === '') {
-    return null
-  }
-
   // Memoize expensive color calculation - includes dark mode variants
   const pickedColor = useMemo(() => {
+    if (!value || value === '') return ''
+
     const colors = [
       'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
       'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
@@ -39,6 +37,10 @@ export const ColoredBadgeFormat = memo(function ColoredBadgeFormat({
       ) % colors.length
     ]
   }, [value])
+
+  if (!value || value === '') {
+    return null
+  }
 
   return (
     <span

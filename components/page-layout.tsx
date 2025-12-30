@@ -11,18 +11,17 @@
 
 'use client'
 
-import { Suspense, memo, type ReactNode } from 'react'
-import type { QueryConfig } from '@/types/query-config'
-import { ChartSkeleton } from '@/components/charts/chart-skeleton'
-import { TableSkeleton } from '@/components/skeleton'
-import { TableClient } from '@/components/table-client'
-import { useHostId } from '@/lib/swr'
-import { FadeIn } from '@/components/ui/fade-in'
+import { memo, type ReactNode, Suspense } from 'react'
 import {
   getChartComponent,
   getChartSkeletonType,
-  type ChartProps,
 } from '@/components/charts/chart-registry'
+import { ChartSkeleton } from '@/components/charts/chart-skeleton'
+import { TableSkeleton } from '@/components/skeleton'
+import { TableClient } from '@/components/table-client'
+import { FadeIn } from '@/components/ui/fade-in'
+import { useHostId } from '@/lib/swr'
+import type { QueryConfig } from '@/types/query-config'
 
 export interface PageLayoutProps {
   /** Query config for the page table */

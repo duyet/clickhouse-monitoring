@@ -2,16 +2,6 @@
 
 import { memo, useMemo } from 'react'
 import {
-  type ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart'
-import { cn } from '@/lib/utils'
-import type { AreaChartProps } from '@/types/charts'
-import {
   Area,
   CartesianGrid,
   AreaChart as RechartAreaChart,
@@ -23,6 +13,16 @@ import type {
   Payload,
   ValueType,
 } from 'recharts/types/component/DefaultTooltipContent'
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
+import { cn } from '@/lib/utils'
+import type { AreaChartProps } from '@/types/charts'
 
 export const AreaChart = memo(function AreaChart({
   data,

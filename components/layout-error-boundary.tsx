@@ -4,7 +4,7 @@ import { AlertTriangleIcon, RefreshCwIcon } from 'lucide-react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 
 import { Button } from '@/components/ui/button'
-import { ErrorLogger } from '@/lib/error-logger'
+import { ErrorLogger } from '@/lib/logger'
 
 /**
  * Error boundary fallback for layout-level errors

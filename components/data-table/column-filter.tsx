@@ -17,11 +17,10 @@
 
 'use client'
 
-import { memo, useCallback, useMemo, useState } from 'react'
 import { X } from 'lucide-react'
-
-import { DebouncedInput } from '@/components/ui/debounced-input'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { DebouncedInput } from '@/components/ui/debounced-input'
 import { cn } from '@/lib/utils'
 
 export interface ColumnFilterProps {
@@ -117,7 +116,7 @@ export function useColumnFilters<T extends Record<string, unknown>>(
   columns: string[] = []
 ): ColumnFiltersState {
   // Get all column keys from data if not provided
-  const filterColumns = useMemo(() => {
+  const _filterColumns = useMemo(() => {
     if (columns.length > 0) return columns
     if (data.length === 0) return []
     return Object.keys(data[0] || {})
