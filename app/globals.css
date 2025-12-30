@@ -31,6 +31,30 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+
+  /* Reduced motion support for vestibular disorders */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: more) {
+    :root {
+      --border: hsl(0 0% 0%);
+      --ring: hsl(0 0% 0%);
+    }
+    .dark {
+      --border: hsl(0 0% 100%);
+      --ring: hsl(0 0% 100%);
+    }
+  }
 }
 
 :root {
