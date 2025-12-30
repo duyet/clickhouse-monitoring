@@ -79,7 +79,7 @@ export const ChartSkeleton = memo(function ChartSkeleton({
 })
 
 /**
- * Area/Line chart skeleton with wave pattern
+ * Area/Line chart skeleton with simple placeholder
  * Height matches page-layout.tsx chartClassName (h-32 sm:h-36)
  */
 const AreaChartSkeleton = memo(function AreaChartSkeleton({
@@ -90,44 +90,15 @@ const AreaChartSkeleton = memo(function AreaChartSkeleton({
   return (
     <div className="relative h-32 w-full overflow-hidden sm:h-36">
       {/* Grid lines */}
-      <div className="absolute inset-0 flex flex-col justify-between py-2 opacity-30">
+      <div className="absolute inset-0 flex flex-col justify-between py-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={`grid-${i}`} className="h-px w-full" />
+          <Skeleton key={`grid-${i}`} className="h-px w-full opacity-50" />
         ))}
       </div>
 
-      {/* Simulated line/area */}
-      <svg
-        className="absolute inset-0 w-full h-full"
-        viewBox="0 0 300 150"
-        preserveAspectRatio="none"
-      >
-        <defs>
-          <linearGradient id="skeleton-gradient" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="currentColor" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="currentColor" stopOpacity="0.05" />
-          </linearGradient>
-        </defs>
-        {/* Area fill */}
-        <path
-          d="M0,150 L0,100 Q37,80 75,90 T150,70 T225,85 T300,60 L300,150 Z"
-          fill="url(#skeleton-gradient)"
-          className="text-primary/20"
-        />
-        {/* Line */}
-        <path
-          d="M0,100 Q37,80 75,90 T150,70 T225,85 T300,60"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="text-primary/30"
-          strokeDasharray="4 2"
-        />
-      </svg>
-
-      {/* Tooltip placeholder */}
-      <div className="absolute top-8 right-12">
-        <Skeleton className="h-14 w-24 rounded-lg bg-background/80 backdrop-blur" />
+      {/* Simple area placeholder */}
+      <div className="absolute inset-x-0 bottom-0 h-1/2">
+        <Skeleton className="h-full w-full rounded-t-lg" />
       </div>
     </div>
   )
