@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { useHostId } from '@/lib/swr'
@@ -18,7 +18,7 @@ export interface CountBadgeProps {
  * Uses countKey to fetch from /api/v1/menu-counts/[key] endpoint.
  * No raw SQL is sent from the client - security by design.
  */
-export function CountBadge({
+export const CountBadge = memo(function CountBadge({
   countKey,
   className,
   variant = 'outline',
@@ -70,4 +70,4 @@ export function CountBadge({
       {count}
     </Badge>
   )
-}
+})

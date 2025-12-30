@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface CardMetricProps {
@@ -10,7 +11,7 @@ export interface CardMetricProps {
   className?: string
 }
 
-export function CardMetric({
+export const CardMetric = memo(function CardMetric({
   current,
   target,
   currentReadable,
@@ -37,4 +38,4 @@ export function CardMetric({
       </div>
     </div>
   )
-}
+})

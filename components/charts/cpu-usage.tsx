@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { chartTickFormatters } from '@/lib/utils'
 
-export function ChartCPUUsage({
+export const ChartCPUUsage = memo(function ChartCPUUsage({
   title,
   interval = 'toStartOfTenMinutes',
   lastHours = 24,
@@ -64,6 +65,6 @@ export function ChartCPUUsage({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartCPUUsage

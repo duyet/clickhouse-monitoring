@@ -3,7 +3,7 @@
 import { ListFilterIcon, XIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -140,7 +140,7 @@ interface FilterMenuItemProps
   filterValue?: string
 }
 
-function FilterMenuItem({
+const FilterMenuItem = memo(function FilterMenuItem({
   name,
   isSelected,
   href,
@@ -161,7 +161,7 @@ function FilterMenuItem({
       </a>
     </DropdownMenuItem>
   )
-}
+})
 
 // Helper function to generate updated href when a filter is toggled
 function getUpdatedHref(

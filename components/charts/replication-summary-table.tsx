@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -16,7 +17,7 @@ import {
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export function ChartReplicationSummaryTable({
+export const ChartReplicationSummaryTable = memo(function ChartReplicationSummaryTable({
   title,
   className,
   hostId,
@@ -73,6 +74,6 @@ export function ChartReplicationSummaryTable({
       </div>
     </ChartCard>
   )
-}
+})
 
 export default ChartReplicationSummaryTable

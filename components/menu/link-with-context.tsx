@@ -30,6 +30,7 @@ export const HostPrefixedLink = ({
       href={url}
       className={className}
       data-active={isActive ? 'true' : undefined}
+      aria-current={isActive ? 'page' : undefined}
       {...props}
     >
       {children}

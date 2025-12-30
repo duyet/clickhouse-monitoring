@@ -3,6 +3,7 @@
 import { Activity, Database, RefreshCw, Search } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { memo } from 'react'
 import { cn } from '@/lib/utils'
 
 const navigation = [
@@ -12,7 +13,7 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: RefreshCw },
 ]
 
-export function HeaderNav({ buildLink }: { buildLink: (path: string) => string }) {
+export const HeaderNav = memo(function HeaderNav({ buildLink }: { buildLink: (path: string) => string }) {
   const pathname = usePathname()
 
   return (
@@ -38,4 +39,4 @@ export function HeaderNav({ buildLink }: { buildLink: (path: string) => string }
       })}
     </nav>
   )
-}
+})

@@ -5,6 +5,7 @@ import {
   DoubleArrowRightIcon,
 } from '@radix-ui/react-icons'
 import type { Table } from '@tanstack/react-table'
+import { memo, useCallback } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,15 +17,37 @@ import {
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
-interface DataTablePaginationProps<TData> {
-  table: Table<TData>
+interface DataTablePaginationProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  table: Table<any>
 }
 
 const pageSizeOptions = [10, 25, 50, 100, 200, 500, 1000]
 
-export function DataTablePagination<TData>({
+export const DataTablePagination = memo(function DataTablePagination({
   table,
-}: DataTablePaginationProps<TData>) {
+}: DataTablePaginationProps) {
+  // Memoized pagination handlers to prevent recreation on every render
+  const handleFirstPage = useCallback(() => {
+    table.setPageIndex(0)
+  }, [table])
+
+  const handlePreviousPage = useCallback(() => {
+    table.previousPage()
+  }, [table])
+
+  const handleNextPage = useCallback(() => {
+    table.nextPage()
+  }, [table])
+
+  const handleLastPage = useCallback(() => {
+    table.setPageIndex(table.getPageCount() - 1)
+  }, [table])
+
+  const handlePageSizeChange = useCallback((value: string) => {
+    table.setPageSize(Number(value))
+  }, [table])
+
   if (table.getRowModel().rows.length === 0) return null
 
   return (
@@ -39,9 +62,7 @@ export function DataTablePagination<TData>({
         <p className="text-sm font-medium">Rows per page</p>
         <Select
           value={`${table.getState().pagination.pageSize}`}
-          onValueChange={(value) => {
-            table.setPageSize(Number(value))
-          }}
+          onValueChange={handlePageSizeChange}
           aria-label="Rows per page"
         >
           <SelectTrigger className="h-8 w-[70px]">
@@ -64,7 +85,7 @@ export function DataTablePagination<TData>({
         <Button
           variant="outline"
           className="hidden size-8 p-0 lg:flex"
-          onClick={() => table.setPageIndex(0)}
+          onClick={handleFirstPage}
           disabled={!table.getCanPreviousPage()}
         >
           <span className="sr-only">Go to first page</span>
@@ -73,7 +94,7 @@ export function DataTablePagination<TData>({
         <Button
           variant="outline"
           className="size-8 p-0"
-          onClick={() => table.previousPage()}
+          onClick={handlePreviousPage}
           disabled={!table.getCanPreviousPage()}
         >
           <span className="sr-only">Go to previous page</span>
@@ -82,7 +103,7 @@ export function DataTablePagination<TData>({
         <Button
           variant="outline"
           className="size-8 p-0"
-          onClick={() => table.nextPage()}
+          onClick={handleNextPage}
           disabled={!table.getCanNextPage()}
         >
           <span className="sr-only">Go to next page</span>
@@ -91,7 +112,7 @@ export function DataTablePagination<TData>({
         <Button
           variant="outline"
           className="hidden size-8 p-0 lg:flex"
-          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+          onClick={handleLastPage}
           disabled={!table.getCanNextPage()}
         >
           <span className="sr-only">Go to last page</span>
@@ -100,4 +121,4 @@ export function DataTablePagination<TData>({
       </div>
     </div>
   )
-}
+})

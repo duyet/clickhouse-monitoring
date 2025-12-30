@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { chartTickFormatters } from '@/lib/utils'
 
-export function ChartQueryCountByUser({
+export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
   title = 'Total Queries over last 14 days by users',
   interval = 'toStartOfDay',
   lastHours = 24 * 14,
@@ -91,6 +92,6 @@ export function ChartQueryCountByUser({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartQueryCountByUser

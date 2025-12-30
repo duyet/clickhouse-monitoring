@@ -13,12 +13,21 @@ import type {
 
 import { formatCell } from '@/components/data-table/format-cell'
 import { Button } from '@/components/ui/button'
+import { ColumnFilter } from '@/components/data-table/column-filter'
 import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
 import type { Icon } from '@/types/icon'
 import type { QueryConfig } from '@/types/query-config'
 import { type CustomSortingFnNames, getCustomSortingFns } from './sorting-fns'
 
 export type ColumnType = { [key: string]: string }
+
+export interface ColumnFilterContext {
+  enableColumnFilters?: boolean
+  filterableColumns?: string[]
+  columnFilters: Record<string, string>
+  setColumnFilter: (column: string, value: string) => void
+  clearColumnFilter: (column: string) => void
+}
 
 const formatHeader = (name: string, format: ColumnFormat, icon?: Icon) => {
   const CustomIcon = icon
@@ -44,6 +53,7 @@ export const normalizeColumnName = (column: string) => {
  * Generates an array of column definitions based on the provided configuration.
  *
  * @param {QueryConfig} config - The configuration object for the query.
+ * @param {ColumnFilterContext} filterContext - Optional filter context for column filtering
  *
  * @returns {ColumnDef<ColumnType>[]} - An array of column definitions.
  */
@@ -53,10 +63,18 @@ export const getColumnDefs = <
 >(
   config: QueryConfig,
   data: TData[],
-  context: Record<string, string>
+  context: Record<string, string>,
+  filterContext?: ColumnFilterContext
 ): ColumnDef<TData, TValue>[] => {
   const configColumns = config.columns || []
   const customSortingFns = getCustomSortingFns<TData>()
+  const {
+    enableColumnFilters = false,
+    filterableColumns = [],
+    columnFilters = {},
+    setColumnFilter,
+    clearColumnFilter,
+  } = filterContext || {}
 
   return configColumns.map((column) => {
     const name = normalizeColumnName(column)
@@ -74,28 +92,44 @@ export const getColumnDefs = <
       columnFormat = format as ColumnFormat
     }
 
+    // Check if this column should have a filter
+    const isFilterable =
+      enableColumnFilters &&
+      (filterableColumns.length === 0 || filterableColumns.includes(name))
+
     // Create the column definition
     const columnDef: ColumnDef<TData, TValue> = {
       id: name,
       accessorKey: column,
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="truncate"
-        >
-          {formatHeader(name, columnFormat, config.columnIcons?.[name])}
+        <div className="flex flex-col gap-1.5 py-1">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="h-8 truncate justify-start font-medium"
+          >
+            {formatHeader(name, columnFormat, config.columnIcons?.[name])}
 
-          {column.getIsSorted() === false ? (
-            <CaretSortIcon className="ml-2 size-4" />
-          ) : null}
-          {column.getIsSorted() === 'asc' ? (
-            <CaretUpIcon className="ml-2 size-4" />
-          ) : null}
-          {column.getIsSorted() === 'desc' ? (
-            <CaretDownIcon className="ml-2 size-4" />
-          ) : null}
-        </Button>
+            {column.getIsSorted() === false ? (
+              <CaretSortIcon className="ml-2 size-4" />
+            ) : null}
+            {column.getIsSorted() === 'asc' ? (
+              <CaretUpIcon className="ml-2 size-4" />
+            ) : null}
+            {column.getIsSorted() === 'desc' ? (
+              <CaretDownIcon className="ml-2 size-4" />
+            ) : null}
+          </Button>
+          {isFilterable && setColumnFilter && (
+            <ColumnFilter
+              column={name}
+              value={columnFilters[name] || ''}
+              onChange={(value) => setColumnFilter(name, value)}
+              placeholder={`Filter ${name}...`}
+              showClear
+            />
+          )}
+        </div>
       ),
 
       cell: ({

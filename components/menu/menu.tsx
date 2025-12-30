@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { menuItemsConfig } from '@/menu'
 import { MenuDropdownStyle } from './menu-dropdown-style'
 import { MenuNavigationStyle } from './menu-navigation-style'
@@ -7,7 +8,7 @@ export interface MenuProps {
   items?: MenuItem[]
 }
 
-export function Menu({ items = menuItemsConfig }: MenuProps) {
+export const Menu = memo(function Menu({ items = menuItemsConfig }: MenuProps) {
   return (
     <>
       <MenuNavigationStyle
@@ -22,4 +23,4 @@ export function Menu({ items = menuItemsConfig }: MenuProps) {
       />
     </>
   )
-}
+})

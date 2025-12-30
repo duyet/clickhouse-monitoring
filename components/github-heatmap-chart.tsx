@@ -1,6 +1,7 @@
 'use client'
 
 import HeatMap, { type HeatMapProps } from '@uiw/react-heat-map'
+import { memo } from 'react'
 
 import {
   Tooltip,
@@ -21,7 +22,7 @@ export interface GithubHeatmapChartProps extends HeatMapProps {
   className?: string
 }
 
-export const GithubHeatmapChart = ({
+export const GithubHeatmapChart = memo(function GithubHeatmapChart({
   data,
   index = 'date',
   weekLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -29,7 +30,7 @@ export const GithubHeatmapChart = ({
   endDate,
   className,
   ...props
-}: GithubHeatmapChartProps) => {
+}: GithubHeatmapChartProps) {
   if (data === null) {
     return null
   }
@@ -65,6 +66,6 @@ export const GithubHeatmapChart = ({
       />
     </div>
   )
-}
+})
 
 export default GithubHeatmapChart

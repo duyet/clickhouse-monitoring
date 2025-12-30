@@ -9,9 +9,11 @@ import { AppProvider } from '@/app/context'
 import { SWRProvider } from '@/lib/swr'
 import { Breadcrumb } from '@/components/breadcrumb'
 import { HeaderClient } from '@/components/header-client'
+import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
 import { Toaster } from '@/components/ui/sonner'
 import { LayoutErrorBoundary } from '@/components/layout-error-boundary'
 import { NetworkStatusBanner } from '@/components/network-status-banner'
+import { PageSkeleton } from '@/components/page-skeleton'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
@@ -34,29 +36,40 @@ export default function RootLayout({
         <SWRProvider>
           <AppProvider reloadIntervalSecond={120}>
             <NetworkStatusBanner />
+            <Suspense fallback={null}>
+              <KeyboardShortcuts />
+            </Suspense>
             <div className="min-h-screen flex flex-col bg-background">
               <Suspense
                 fallback={
-                  <div className="flex flex-col border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                  <div className="sticky top-0 z-50 flex flex-col border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60">
                     <div className="flex h-12 items-center px-4 md:px-6 lg:px-8">
-                      <div className="flex h-6 w-6 animate-pulse rounded bg-muted" />
-                      <div className="ml-2 h-4 w-32 animate-pulse rounded bg-muted" />
+                      <div className="flex h-6 w-6 animate-shimmer rounded bg-accent/50" />
+                      <div className="ml-3 flex items-center gap-1.5">
+                        <div className="h-4 w-8 animate-shimmer rounded bg-accent/50" />
+                        <span className="text-muted-foreground/40">/</span>
+                        <div className="h-4 w-24 animate-shimmer rounded bg-accent/50" />
+                      </div>
                     </div>
-                    <div className="flex h-10 items-center border-t px-4 md:px-6 lg:px-8">
-                      <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+                    <div className="flex h-10 items-center gap-2 border-t px-4 md:px-6 lg:px-8">
+                      <div className="h-3 w-16 animate-shimmer rounded bg-accent/50" />
+                      <div className="h-3 w-14 animate-shimmer rounded bg-accent/50" />
+                      <div className="hidden h-3 w-12 animate-shimmer rounded bg-accent/50 sm:block" />
                     </div>
                   </div>
                 }
               >
                 <HeaderClient />
               </Suspense>
-              <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6">
-                <Suspense fallback={<div className="h-6" />}>
-                  <Breadcrumb className="mb-4" />
+              <main className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
+                <Suspense fallback={<div className="h-5" />}>
+                  <Breadcrumb className="mb-3 sm:mb-4" />
                 </Suspense>
-                <LayoutErrorBoundary>
-                  {children}
-                </LayoutErrorBoundary>
+                <Suspense fallback={<PageSkeleton />}>
+                  <LayoutErrorBoundary>
+                    {children}
+                  </LayoutErrorBoundary>
+                </Suspense>
               </main>
             </div>
           </AppProvider>

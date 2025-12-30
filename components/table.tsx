@@ -1,6 +1,7 @@
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { fetchData } from '@/lib/clickhouse'
+import { ErrorLogger } from '@/lib/error-logger'
 import type { RowData } from '@tanstack/react-table'
 
 import {
@@ -57,7 +58,7 @@ export async function Table({
   })
 
   if (error) {
-    console.error(`<Table /> failed render, error: "${error.message}"`)
+    ErrorLogger.logError(new Error(error.message), { component: 'Table', query: queryConfig.name })
     return (
       <ErrorAlert
         title={formatErrorTitle(error)}
@@ -72,7 +73,7 @@ export async function Table({
 
   // Safety check for null data
   if (!data) {
-    console.error(`<Table /> received null data without error`)
+    ErrorLogger.logWarning('Table received null data without error', { component: 'Table', query: queryConfig.name })
     return (
       <ErrorAlert
         title="No Data Available"

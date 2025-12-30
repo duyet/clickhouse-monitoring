@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartCard } from '@/components/generic-charts/chart-card'
@@ -15,7 +16,7 @@ import { useChartData } from '@/lib/swr'
 import { ChartSkeleton, ChartError } from '@/components/charts'
 import { cn } from '@/lib/utils'
 
-export function ChartZookeeperSummaryTable({
+export const ChartZookeeperSummaryTable = memo(function ChartZookeeperSummaryTable({
   title = 'ZooKeeper Current Metrics',
   className,
   hostId,
@@ -83,6 +84,6 @@ export function ChartZookeeperSummaryTable({
       </div>
     </ChartCard>
   )
-}
+})
 
 export default ChartZookeeperSummaryTable

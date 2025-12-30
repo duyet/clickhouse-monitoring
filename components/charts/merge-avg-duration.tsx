@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -8,7 +9,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 
-export function ChartMergeAvgDuration({
+export const ChartMergeAvgDuration = memo(function ChartMergeAvgDuration({
   title,
   interval = 'toStartOfDay',
   lastHours = 24 * 14,
@@ -63,6 +64,6 @@ export function ChartMergeAvgDuration({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartMergeAvgDuration

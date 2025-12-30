@@ -19,9 +19,9 @@ function NavigationMenu({
     <NavigationMenuPrimitive.Root
       data-slot="navigation-menu"
       data-viewport={viewport}
-      // Disable hover trigger - click only
-      delayDuration={0}
-      skipDelayDuration={0}
+      // Configure hover delay - requires 300ms hover to open, closes immediately on leave
+      delayDuration={300}
+      skipDelayDuration={200}
       className={cn(
         'group/navigation-menu relative flex max-w-max flex-1 items-center justify-center',
         className
@@ -68,8 +68,8 @@ const navigationMenuTriggerStyle = cva(
 )
 
 /**
- * NavigationMenuTrigger - Click-only trigger (no hover)
- * Radix handles the click toggle internally
+ * NavigationMenuTrigger - Click and hover trigger
+ * Uses Radix UI's default behavior with configured delays
  */
 function NavigationMenuTrigger({
   className,
@@ -80,9 +80,6 @@ function NavigationMenuTrigger({
     <NavigationMenuPrimitive.Trigger
       data-slot="navigation-menu-trigger"
       className={cn(navigationMenuTriggerStyle(), 'group', className)}
-      // Prevent hover from opening - Radix will still handle click
-      onPointerMove={(e) => e.preventDefault()}
-      onPointerLeave={(e) => e.preventDefault()}
       {...props}
     >
       {children}{' '}
@@ -96,7 +93,7 @@ function NavigationMenuTrigger({
 
 /**
  * NavigationMenuContent - Dropdown content panel
- * Simplified - no hover state management needed with click-only trigger
+ * Displays on hover (after delay) or click
  */
 function NavigationMenuContent({
   className,
@@ -119,14 +116,20 @@ const NavigationMenuViewport = ({
   className,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Viewport>) => (
-  <NavigationMenuPrimitive.Viewport
-    data-slot="navigation-menu-viewport"
-    className={cn(
-      'absolute left-0 top-full z-50 flex w-[calc(100%-+4px)] justify-center pt-0.5',
-      className
-    )}
-    {...props}
-  />
+  <div className="absolute left-0 top-full z-[100] w-full perspective-[2000px]">
+    <NavigationMenuPrimitive.Viewport
+      data-slot="navigation-menu-viewport"
+      className={cn(
+        'relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full origin-top-center overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg',
+        'data-[state=open]:animate-in data-[state=closed]:animate-out',
+        'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90',
+        'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+        'md:w-[var(--radix-navigation-menu-viewport-width)]',
+        className
+      )}
+      {...props}
+    />
+  </div>
 )
 
 function NavigationMenuLink({

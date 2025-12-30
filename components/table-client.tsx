@@ -1,5 +1,7 @@
 'use client'
 
+import { memo } from 'react'
+
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/error-alert'
 import { TableSkeleton } from '@/components/skeleton'
@@ -15,6 +17,10 @@ interface TableClientProps {
   className?: string
   defaultPageSize?: number
   topRightToolbarExtras?: React.ReactNode
+  /** Enable client-side column text filtering */
+  enableColumnFilters?: boolean
+  /** Columns to enable filtering for (default: all text columns) */
+  filterableColumns?: string[]
 }
 
 /**
@@ -34,7 +40,7 @@ interface TableClientProps {
  * }
  * ```
  */
-export function TableClient({
+export const TableClient = memo(function TableClient({
   title,
   description,
   queryConfig,
@@ -42,6 +48,8 @@ export function TableClient({
   className,
   defaultPageSize = 100,
   topRightToolbarExtras,
+  enableColumnFilters = false,
+  filterableColumns,
 }: TableClientProps) {
   const hostId = useHostId()
 
@@ -92,6 +100,8 @@ export function TableClient({
       }
       className={className}
       topRightToolbarExtras={topRightToolbarExtras}
+      enableColumnFilters={enableColumnFilters}
+      filterableColumns={filterableColumns}
     />
   )
-}
+})

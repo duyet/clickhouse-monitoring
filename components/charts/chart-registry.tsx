@@ -14,6 +14,76 @@ export type { ChartProps }
 // Chart component type
 export type ChartComponent = React.ComponentType<ChartProps>
 
+// Chart skeleton types for realistic loading states
+export type ChartSkeletonType = 'area' | 'bar' | 'line' | 'metric' | 'table'
+
+/**
+ * Chart type hints mapping
+ * Defines the skeleton type for each registered chart
+ * Used by ChartSkeleton to display appropriate loading state
+ */
+export const CHART_TYPE_HINTS: Record<string, ChartSkeletonType> = {
+  // Query Charts - mostly area/line charts
+  'query-count': 'area',
+  'query-count-by-user': 'bar',
+  'query-duration': 'area',
+  'query-memory': 'area',
+  'query-type': 'bar',
+  'failed-query-count': 'area',
+  'failed-query-count-by-user': 'bar',
+
+  // Merge Charts - area and metric
+  'merge-count': 'area',
+  'summary-used-by-merges': 'table',
+  'merge-avg-duration': 'area',
+  'merge-sum-read-rows': 'area',
+
+  // Mutation Charts
+  'summary-used-by-mutations': 'table',
+
+  // Running Queries Charts
+  'summary-used-by-running-queries': 'table',
+
+  // System Charts - mixed types
+  'disk-size': 'metric',
+  'disks-usage': 'area',
+  'backup-size': 'metric',
+  'memory-usage': 'area',
+  'cpu-usage': 'area',
+  'new-parts-created': 'area',
+  'query-cache': 'metric',
+
+  // Replication Charts
+  'replication-queue-count': 'area',
+  'replication-summary-table': 'table',
+  'readonly-replica': 'area',
+
+  // Connection Charts
+  'connections-interserver': 'metric',
+  'connections-http': 'metric',
+
+  // Table Charts
+  'top-table-size': 'bar',
+
+  // Page Views Charts
+  'page-view': 'bar',
+
+  // ZooKeeper Charts
+  'zookeeper-summary-table': 'table',
+  'zookeeper-uptime': 'metric',
+  'zookeeper-requests': 'area',
+  'zookeeper-wait': 'area',
+  'zookeeper-exception': 'area',
+}
+
+/**
+ * Get chart skeleton type for a given chart name
+ * Returns 'area' as default if chart type is not defined
+ */
+export function getChartSkeletonType(chartName: string): ChartSkeletonType {
+  return CHART_TYPE_HINTS[chartName] || 'area'
+}
+
 // Lazy-loaded chart components
 const chartRegistry: Record<string, LazyExoticComponent<ChartComponent>> = {
   // Query Charts
@@ -47,7 +117,7 @@ const chartRegistry: Record<string, LazyExoticComponent<ChartComponent>> = {
       default: m.ChartFailedQueryCount,
     }))
   ),
-  'failed-query-count-by-type': lazy(() =>
+  'failed-query-count-by-user': lazy(() =>
     import('@/components/charts/failed-query-count-by-user').then((m) => ({
       default: m.ChartFailedQueryCountByType,
     }))
@@ -78,7 +148,7 @@ const chartRegistry: Record<string, LazyExoticComponent<ChartComponent>> = {
   // Mutation Charts
   'summary-used-by-mutations': lazy(() =>
     import('@/components/charts/summary-used-by-mutations').then((m) => ({
-      default: m.default,
+      default: m.ChartSummaryUsedByMutations,
     }))
   ),
 
@@ -192,7 +262,7 @@ const chartRegistry: Record<string, LazyExoticComponent<ChartComponent>> = {
   ),
   'zookeeper-exception': lazy(() =>
     import('@/components/charts/zookeeper-exception').then((m) => ({
-      default: m.default,
+      default: m.ChartKeeperException,
     }))
   ),
 

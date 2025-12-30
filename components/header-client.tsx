@@ -3,7 +3,7 @@
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-import { HeaderBrand } from '@/components/header/header-brand'
+import { HeaderBrand, HeaderBrandSkeleton } from '@/components/header/header-brand'
 import { HeaderActions } from '@/components/header/header-actions'
 import { MenuNavigationStyle } from '@/components/menu/menu-navigation-style'
 import { ErrorLogger } from '@/lib/error-logger'
@@ -39,14 +39,14 @@ export function HeaderClient() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60">
       {/* Branding Row */}
       <div className="flex h-12 items-center justify-between px-4 md:px-6 lg:px-8">
-        <Suspense fallback={<span className="text-sm text-muted-foreground">Loading...</span>}>
+        <Suspense fallback={<HeaderBrandSkeleton />}>
           <HeaderBrand currentHostId={hostId} hostsPromise={hostsPromise} />
         </Suspense>
         <HeaderActions />
       </div>
 
-      {/* Navigation Row - with horizontal scroll and hidden scrollbar */}
-      <nav className="flex h-10 items-center border-t px-4 md:px-6 lg:px-8 overflow-x-auto scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* Navigation Row - no overflow clipping to allow dropdown menus */}
+      <nav className="flex h-10 items-center border-t px-4 md:px-6 lg:px-8">
         <MenuNavigationStyle items={menuItemsConfig} className="flex items-center gap-1" />
       </nav>
     </header>

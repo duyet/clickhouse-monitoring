@@ -12,7 +12,7 @@ import {
   XCircleIcon,
 } from 'lucide-react'
 import type React from 'react'
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 
 import {
   Accordion,
@@ -43,7 +43,7 @@ interface ErrorAlertProps {
   compact?: boolean
 }
 
-export function ErrorAlert({
+export const ErrorAlert = memo(function ErrorAlert({
   title = 'Something went wrong!',
   message = 'Checking console for more details.',
   docs,
@@ -165,6 +165,9 @@ export function ErrorAlert({
     <div
       className={`${className} ${getVariantStyles()} rounded-lg border ${compact ? 'p-2' : 'p-4'}`}
       data-testid="error-message"
+      role="alert"
+      aria-live="polite"
+      aria-label={`Error: ${title}`}
     >
       <div className="flex items-start gap-3">
         {!compact && getErrorIcon()}
@@ -235,4 +238,4 @@ export function ErrorAlert({
       </div>
     </div>
   )
-}
+})

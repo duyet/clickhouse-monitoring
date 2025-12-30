@@ -4,6 +4,7 @@
  */
 
 import { fetchData, type FetchDataResult } from '@/lib/clickhouse'
+import { ErrorLogger } from '@/lib/error-logger'
 import { getHostIdCookie } from '@/lib/scoped-link'
 import type { QueryConfig } from '@/types/query-config'
 import type { DataFormat, QueryParams } from '@clickhouse/client'
@@ -54,10 +55,10 @@ export async function fetchDataWithHost<
       try {
         finalHostId = await getHostIdCookie(0)
       } catch (error) {
-        console.warn(
-          'Failed to get hostId from cookie, using default 0:',
-          error
-        )
+        ErrorLogger.logWarning('Failed to get hostId from cookie, using default 0', {
+          component: 'fetchDataWithHost',
+          error: error instanceof Error ? error.message : String(error),
+        })
         finalHostId = 0
       }
     }
@@ -75,7 +76,7 @@ export async function fetchDataWithHost<
       hostId: finalHostId,
     })
   } catch (error) {
-    console.error('Error in fetchDataWithHost:', error)
+    ErrorLogger.logError(error as Error, { component: 'fetchDataWithHost' })
 
     // Return a properly typed error result
     return {
@@ -112,12 +113,12 @@ export function validateHostId(hostId: unknown): number {
   if (typeof hostId === 'string') {
     // Check if string contains only digits (no decimals, no other characters)
     if (!/^\d+$/.test(hostId.trim())) {
-      console.warn(`Invalid hostId: ${hostId}`)
+      ErrorLogger.logWarning(`Invalid hostId: ${hostId}`, { component: 'validateHostId' })
       return 0
     }
     const parsed = parseInt(hostId, 10)
     if (Number.isNaN(parsed) || parsed < 0) {
-      console.warn(`Invalid hostId: ${hostId}`)
+      ErrorLogger.logWarning(`Invalid hostId: ${hostId}`, { component: 'validateHostId' })
       return 0
     }
     return parsed
@@ -125,7 +126,7 @@ export function validateHostId(hostId: unknown): number {
 
   if (typeof hostId === 'number') {
     if (hostId < 0 || !Number.isInteger(hostId)) {
-      console.warn(`Invalid hostId: ${hostId}`)
+      ErrorLogger.logWarning(`Invalid hostId: ${hostId}`, { component: 'validateHostId' })
       return 0
     }
     return hostId

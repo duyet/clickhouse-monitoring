@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { memo } from 'react'
 
 export interface TextFormatOptions {
   className?: string
@@ -9,7 +10,7 @@ interface TextFormatProps {
   options?: TextFormatOptions
 }
 
-export function TextFormat({
+export const TextFormat = memo(function TextFormat({
   value,
   options,
 }: TextFormatProps): React.ReactNode {
@@ -18,4 +19,4 @@ export function TextFormat({
       {`${value ? value : ''}`}
     </span>
   )
-}
+})

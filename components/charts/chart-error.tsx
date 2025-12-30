@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
 import { ApiErrorType, type ApiError } from '@/lib/api/types'
 import { cn } from '@/lib/utils'
+import { memo, useMemo } from 'react'
 
 interface ChartErrorProps {
   error: Error | ApiError
@@ -62,15 +63,15 @@ function getErrorDescription(error: Error | ApiError, variant: EmptyStateVariant
   return 'An unexpected error occurred while loading data. Please try again.'
 }
 
-export function ChartError({
+export const ChartError = memo(function ChartError({
   error,
   title,
   className,
   onRetry,
   compact = false,
 }: ChartErrorProps) {
-  const variant = getErrorVariant(error)
-  const description = getErrorDescription(error, variant)
+  const variant = useMemo(() => getErrorVariant(error), [error])
+  const description = useMemo(() => getErrorDescription(error, variant), [error, variant])
 
   return (
     <Card
@@ -81,6 +82,8 @@ export function ChartError({
         variant === 'offline' && 'border-warning/30 bg-warning/5',
         className
       )}
+      role="alert"
+      aria-label={title ? `${title} error` : 'Error loading chart'}
     >
       <CardContent className={compact ? 'p-4' : 'p-6'}>
         <EmptyState
@@ -101,4 +104,4 @@ export function ChartError({
       </CardContent>
     </Card>
   )
-}
+})

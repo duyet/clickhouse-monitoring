@@ -1,11 +1,12 @@
 import { cn } from '@/lib/utils'
+import { memo } from 'react'
 
 interface BadgeFormatProps {
   value: React.ReactNode
   className?: string
 }
 
-export function BadgeFormat({
+export const BadgeFormat = memo(function BadgeFormat({
   value,
   className,
 }: BadgeFormatProps): React.ReactNode {
@@ -19,4 +20,4 @@ export function BadgeFormat({
       {value}
     </span>
   )
-}
+})

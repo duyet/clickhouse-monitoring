@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic'
+import { memo } from 'react'
 import type React from 'react'
 
 import {
@@ -23,32 +24,32 @@ export interface MenuProps {
   className?: string
 }
 
-export function MenuNavigationStyle({
+export const MenuNavigationStyle = memo(function MenuNavigationStyle({
   items = menuItemsConfig,
   className,
 }: MenuProps) {
   return (
-    <NavigationMenu className={className}>
-      <NavigationMenuList>
+    <NavigationMenu className={className} aria-label="Main navigation">
+      <NavigationMenuList role="menubar">
         {items.map((item) => (
-          <MenuItem key={item.title} item={item} />
+          <MenuItemComponent key={item.title} item={item} />
         ))}
       </NavigationMenuList>
     </NavigationMenu>
   )
-}
+})
 
-function MenuItem({ item }: { item: MenuItem }) {
+const MenuItemComponent = memo(function MenuItemComponent({ item }: { item: MenuItem }) {
   if (item.items) {
     return <HasChildItems item={item} />
   }
 
   return <SingleItem item={item} />
-}
+})
 
-function SingleItem({ item }: { item: MenuItem }) {
+const SingleItem = memo(function SingleItem({ item }: { item: MenuItem }) {
   return (
-    <NavigationMenuItem>
+    <NavigationMenuItem role="none">
       <HostPrefixedLink
         href={item.href}
         className={cn(
@@ -56,9 +57,10 @@ function SingleItem({ item }: { item: MenuItem }) {
           'text-muted-foreground hover:text-foreground',
           'focus:text-foreground focus:outline-hidden',
           'disabled:pointer-events-none disabled:opacity-50',
-          // Active state styling
-          'data-[active=true]:text-foreground'
+          // Active state styling - stronger visual feedback
+          'data-[active=true]:text-foreground data-[active=true]:font-semibold'
         )}
+        aria-label={`Navigate to ${item.title}`}
         data-testid={
           item.href === '/clusters'
             ? 'nav-clusters'
@@ -68,22 +70,28 @@ function SingleItem({ item }: { item: MenuItem }) {
         }
       >
         <div className="flex flex-row items-center gap-1.5">
-          {item.icon && <item.icon className="size-3.5 opacity-70 group-data-[active=true]:opacity-100" strokeWidth={1.5} />}
+          {item.icon && (
+            <item.icon
+              className="size-3.5 opacity-60 transition-opacity group-hover:opacity-100 group-data-[active=true]:opacity-100 group-data-[active=true]:text-primary"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+          )}
           <span>{item.title}</span>
           {item.countKey ? (
             <CountBadge countKey={item.countKey} variant={item.countVariant} />
           ) : null}
         </div>
-        {/* Active indicator underline */}
-        <span className="absolute bottom-0 left-0 h-[2px] w-full scale-x-0 bg-primary transition-transform duration-200 group-data-[active=true]:scale-x-100" />
+        {/* Active indicator underline - more visible */}
+        <span className="absolute bottom-0 left-1/2 h-[2px] w-[calc(100%-1.5rem)] -translate-x-1/2 scale-x-0 rounded-full bg-primary transition-transform duration-200 group-data-[active=true]:scale-x-100" />
       </HostPrefixedLink>
     </NavigationMenuItem>
   )
-}
+})
 
-function HasChildItems({ item }: { item: MenuItem }) {
+const HasChildItems = memo(function HasChildItems({ item }: { item: MenuItem }) {
   return (
-    <NavigationMenuItem>
+    <NavigationMenuItem role="none">
       <NavigationMenuTrigger className="relative">
         <div className="flex flex-row items-center gap-1.5">
           {item.icon && <item.icon className="size-3.5 opacity-70" strokeWidth={1.5} />}
@@ -122,9 +130,9 @@ function HasChildItems({ item }: { item: MenuItem }) {
       </NavigationMenuContent>
     </NavigationMenuItem>
   )
-}
+})
 
-function ListItem({
+const ListItem = memo(function ListItem({
   className,
   title,
   href,
@@ -174,4 +182,4 @@ function ListItem({
       </NavigationMenuLink>
     </li>
   )
-}
+})

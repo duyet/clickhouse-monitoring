@@ -11,7 +11,7 @@ import {
   type VisibilityState,
   type RowData,
 } from '@tanstack/react-table'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import {
   getColumnDefs,
@@ -48,8 +48,12 @@ interface DataTableProps<TData extends RowData> {
   context: Record<string, string>
   defaultPageSize?: number
   showSQL?: boolean
-  footnote?: FootnoteProps<TData>['footnote']
+  footnote?: FootnoteProps['footnote']
   className?: string
+  /** Enable client-side column text filtering */
+  enableColumnFilters?: boolean
+  /** Columns to enable filtering for (default: all text columns) */
+  filterableColumns?: string[]
 }
 
 export function DataTable<
@@ -68,6 +72,8 @@ export function DataTable<
   showSQL = true,
   footnote,
   className,
+  enableColumnFilters = false,
+  filterableColumns,
 }: DataTableProps<TData>) {
   // Columns available in the data, normalized (memoized to prevent recalculation)
   const allColumns: string[] = useMemo(
@@ -99,15 +105,94 @@ export function DataTable<
     [context]
   )
 
+  // Determine which columns should be filterable
+  const columnsToFilter = useMemo(() => {
+    if (filterableColumns) return filterableColumns
+    // By default, all configured columns are filterable when enabled
+    return enableColumnFilters ? configuredColumns : []
+  }, [filterableColumns, configuredColumns, enableColumnFilters])
+
+  // Client-side column filtering state
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
+
+  // Column filter handlers (memoized with useCallback to prevent recreation on every render)
+  const setColumnFilter = useCallback((column: string, value: string) => {
+    setColumnFilters((prev) => ({
+      ...prev,
+      [column]: value,
+    }))
+  }, [])
+
+  const clearColumnFilter = useCallback((column: string) => {
+    setColumnFilters((prev) => {
+      const { [column]: _, ...rest } = prev
+      return rest
+    })
+  }, [])
+
+  const clearAllColumnFilters = useCallback(() => {
+    setColumnFilters({})
+  }, [])
+
+  // Apply client-side filters when enabled
+  const filteredData = useMemo(() => {
+    if (!enableColumnFilters || Object.keys(columnFilters).length === 0) {
+      return data
+    }
+
+    const activeFilters = Object.entries(columnFilters).filter(
+      ([_, value]) => value.length > 0
+    )
+
+    if (activeFilters.length === 0) return data
+
+    return data.filter((row) => {
+      return activeFilters.every(([column, filterValue]) => {
+        // Check both original column name and normalized name
+        const rowObj = row as Record<string, unknown>
+        const originalValue = rowObj[column]
+        const normalizedName = normalizeColumnName(column)
+        const normalizedValue = rowObj[normalizedName]
+
+        const valueToCheck =
+          originalValue !== undefined
+            ? String(originalValue)
+            : normalizedValue !== undefined
+              ? String(normalizedValue)
+              : ''
+
+        return valueToCheck.toLowerCase().includes(filterValue.toLowerCase())
+      })
+    })
+  }, [data, columnFilters, enableColumnFilters])
+
   // Column definitions for the table (memoized to prevent recalculation)
   const columnDefs = useMemo(
     () =>
       getColumnDefs<TData, TValue>(
         queryConfig,
-        data,
-        contextWithPrefix
+        filteredData,
+        contextWithPrefix,
+        enableColumnFilters
+          ? {
+              enableColumnFilters,
+              filterableColumns: columnsToFilter,
+              columnFilters,
+              setColumnFilter,
+              clearColumnFilter,
+            }
+          : undefined
       ) as ColumnDef<TData, TValue>[],
-    [queryConfig, data, contextWithPrefix]
+    [
+      queryConfig,
+      filteredData,
+      contextWithPrefix,
+      enableColumnFilters,
+      columnsToFilter,
+      columnFilters,
+      setColumnFilter,
+      clearColumnFilter,
+    ]
   )
 
   // Only show the columns in QueryConfig['columns'] list by initial
@@ -129,8 +214,12 @@ export function DataTable<
   // Sorting
   const [sorting, setSorting] = useState<SortingState>([])
 
+  const activeFilterCount = Object.values(columnFilters).filter(
+    (v) => v.length > 0
+  ).length
+
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns: columnDefs,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
@@ -161,6 +250,15 @@ export function DataTable<
             <DataTableToolbar queryConfig={queryConfig}>
               {toolbarExtras}
             </DataTableToolbar>
+            {enableColumnFilters && activeFilterCount > 0 && (
+              <button
+                onClick={clearAllColumnFilters}
+                className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+                aria-label={`Clear ${activeFilterCount} active filter${activeFilterCount > 1 ? 's' : ''}`}
+              >
+                Clear {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
+              </button>
+            )}
           </div>
           <p className="text-muted-foreground text-sm">
             {description || queryConfig.description}
@@ -178,14 +276,17 @@ export function DataTable<
         </div>
       </div>
 
-      <div className="mb-5 rounded-md border">
-        <Table>
+      <div className="mb-5 rounded-md border" role="region" aria-label={`${title || 'Data'} table`}>
+        <Table aria-describedby="table-description">
+          <caption id="table-description" className="sr-only">
+            {description || queryConfig.description || `${title} data table`}
+          </caption>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} scope="col">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -224,7 +325,11 @@ export function DataTable<
                   <EmptyState
                     variant="no-data"
                     title="No results"
-                    description={`No ${title?.toLowerCase() || 'data'} found. Try adjusting your query or check back later.`}
+                    description={
+                      activeFilterCount > 0
+                        ? `No ${title?.toLowerCase() || 'data'} match your filters. Try clearing filters or adjusting your search.`
+                        : `No ${title?.toLowerCase() || 'data'} found. Try adjusting your query or check back later.`
+                    }
                   />
                 </TableCell>
               </TableRow>

@@ -2,7 +2,7 @@
 
 import { ReloadIcon } from '@radix-ui/react-icons'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState, useTransition } from 'react'
+import { memo, useCallback, useEffect, useState, useTransition } from 'react'
 import { useInterval } from 'usehooks-ts'
 
 import { useAppContext } from '@/app/context'
@@ -25,7 +25,7 @@ interface ReloadButtonProps {
 const SECOND = 1000
 const MINUTE = 60 * SECOND
 
-export function ReloadButton({ className }: ReloadButtonProps) {
+export const ReloadButton = memo(function ReloadButton({ className }: ReloadButtonProps) {
   const router = useRouter()
   const [isLoading, startTransition] = useTransition()
   const { reloadInterval, setReloadInterval } = useAppContext()
@@ -33,10 +33,14 @@ export function ReloadButton({ className }: ReloadButtonProps) {
   const initCountDown = reloadInterval ? reloadInterval / 1000 : 10
   const [countDown, setCountDown] = useState(initCountDown)
 
-  const revalidateCacheAndReload = () =>
+  const revalidateCacheAndReload = useCallback(() =>
     startTransition(async () => {
       router.refresh()
-    })
+    }), [startTransition, router])
+
+  const handleSetReloadInterval = useCallback((interval: number | null) => {
+    setReloadInterval(interval)
+  }, [setReloadInterval])
 
   useEffect(() => {
     if (reloadInterval) {
@@ -84,26 +88,26 @@ export function ReloadButton({ className }: ReloadButtonProps) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => setReloadInterval(30 * SECOND)}>
+        <DropdownMenuItem onClick={() => handleSetReloadInterval(30 * SECOND)}>
           30s
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setReloadInterval(1 * MINUTE)}>
+        <DropdownMenuItem onClick={() => handleSetReloadInterval(1 * MINUTE)}>
           1m
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setReloadInterval(2 * MINUTE)}>
+        <DropdownMenuItem onClick={() => handleSetReloadInterval(2 * MINUTE)}>
           2m
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setReloadInterval(10 * MINUTE)}>
+        <DropdownMenuItem onClick={() => handleSetReloadInterval(10 * MINUTE)}>
           10m
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setReloadInterval(30 * MINUTE)}>
+        <DropdownMenuItem onClick={() => handleSetReloadInterval(30 * MINUTE)}>
           30m
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => setReloadInterval(null)}>
+        <DropdownMenuItem onClick={() => handleSetReloadInterval(null)}>
           Disable Auto
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
-}
+})

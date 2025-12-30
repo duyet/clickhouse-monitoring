@@ -3,6 +3,7 @@ import type { ComponentType } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ServerComponentLazy } from '@/components/server-component-lazy'
 import { ChartSkeleton } from '@/components/skeleton'
+import { FadeIn } from '@/components/ui/fade-in'
 import { cn } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
 
@@ -113,12 +114,14 @@ export async function RelatedCharts({
             key={name + props.title}
             fallback={<ChartSkeleton />}
           >
-            <Chart
-              className={cn('w-full p-0 shadow-none', chartClassName)}
-              chartClassName="h-44"
-              {...props}
-              hostId={hostId}
-            />
+            <FadeIn duration={250}>
+              <Chart
+                className={cn('w-full p-0 shadow-none', chartClassName)}
+                chartClassName="h-44"
+                {...props}
+                hostId={hostId}
+              />
+            </FadeIn>
           </ServerComponentLazy>
         )
       })}

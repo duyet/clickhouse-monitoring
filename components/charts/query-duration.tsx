@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export function ChartQueryDuration({
+export const ChartQueryDuration = memo(function ChartQueryDuration({
   title = 'Avg Queries Duration over last 14 days (AVG(duration in seconds) / day)',
   interval = 'toStartOfDay',
   className,
@@ -67,6 +68,4 @@ export function ChartQueryDuration({
       />
     </ChartCard>
   )
-}
-
-export default ChartQueryDuration
+})

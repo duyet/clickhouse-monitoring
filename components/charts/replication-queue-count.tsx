@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export function ChartReplicationQueueCount({
+export const ChartReplicationQueueCount = memo(function ChartReplicationQueueCount({
   title,
   className,
   hostId,
@@ -57,6 +58,6 @@ export function ChartReplicationQueueCount({
       </div>
     </ChartCard>
   )
-}
+})
 
 export default ChartReplicationQueueCount

@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -7,7 +8,7 @@ import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { DonutChart } from '@/components/tremor/donut'
 import { useChartData } from '@/lib/swr'
 
-export function ChartQueryType({
+export const ChartQueryType = memo(function ChartQueryType({
   title,
   className,
   chartClassName,
@@ -51,6 +52,6 @@ export function ChartQueryType({
       {...props}
     />
   )
-}
+})
 
 export default ChartQueryType

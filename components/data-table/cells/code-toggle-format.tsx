@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react'
 import {
   Accordion,
   AccordionContent,
@@ -20,7 +21,7 @@ interface CodeToggleFormatProps {
 
 const CODE_TRUNCATE_LENGTH = 50
 
-export function CodeToggleFormat({
+export const CodeToggleFormat = memo(function CodeToggleFormat({
   row,
   value,
   options,
@@ -37,12 +38,16 @@ export function CodeToggleFormat({
     truncate: truncate_length,
   })
 
+  const handleValueChange = useCallback((accordionValue: string) => {
+    row.toggleExpanded(accordionValue === 'code')
+  }, [row])
+
   return (
     <Accordion
       type="single"
       defaultValue={row.getIsExpanded() ? 'code' : undefined}
       collapsible={row.getIsExpanded()}
-      onValueChange={(value) => row.toggleExpanded(value === 'code')}
+      onValueChange={handleValueChange}
     >
       <AccordionItem value="code" className="border-0">
         <AccordionTrigger className="py-0 hover:no-underline">
@@ -58,4 +63,4 @@ export function CodeToggleFormat({
       </AccordionItem>
     </Accordion>
   )
-}
+})

@@ -4,26 +4,29 @@ import {
   BarList as TremorBarList,
   type BarListProps as TremorBarListProps,
 } from '@tremor/react'
+import { memo, useMemo } from 'react'
 
 export interface BarListProps extends TremorBarListProps {
   data: (TremorBarListProps['data'][0] & { [key: string]: any })[]
   formatedColumn?: string
 }
 
-export function BarList({ data, formatedColumn, ...props }: BarListProps) {
-  let valueFormatter
+export const BarList = memo(function BarList({ data, formatedColumn, ...props }: BarListProps) {
+  const valueFormatter = useMemo(() => {
+    if (!formatedColumn) {
+      return undefined
+    }
 
-  if (formatedColumn) {
-    valueFormatter = (value: number) => {
+    return (value: number) => {
       const formated = data.find((d) => d.value === value)?.[
         formatedColumn
       ] as string
 
       return formated ? formated : value
     }
-  }
+  }, [formatedColumn, data])
 
   return (
     <TremorBarList data={data} valueFormatter={valueFormatter} {...props} />
   )
-}
+})

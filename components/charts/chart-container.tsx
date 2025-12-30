@@ -1,6 +1,6 @@
 'use client'
 
-import { type ReactNode, useMemo } from 'react'
+import { type ReactNode, memo, useMemo } from 'react'
 import type { SWRResponse } from 'swr'
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
@@ -44,7 +44,7 @@ export interface ChartContainerProps<TData = unknown> {
  * }
  * ```
  */
-export function ChartContainer<TData = unknown>({
+export const ChartContainer = memo(function ChartContainer<TData = unknown>({
   swr,
   title,
   className,
@@ -82,5 +82,9 @@ export function ChartContainer<TData = unknown>({
   }
 
   // Render chart with data
-  return <>{children(dataArray, sql)}</>
-}
+  return (
+    <div aria-label={title ? `${title} chart` : 'Chart'} role="region">
+      {children(dataArray, sql)}
+    </div>
+  )
+})

@@ -1,4 +1,5 @@
 import { CodeIcon } from 'lucide-react'
+import { memo, useMemo } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -19,17 +20,20 @@ export interface DialogContentProps {
   contentClassName?: string
 }
 
-export function DialogContent({
-  button = (
-    <Button
-      variant="outline"
-      className="ml-auto"
-      aria-label="Show SQL"
-      title="Show SQL for this table"
-    >
-      <CodeIcon className="size-4" />
-    </Button>
-  ),
+// Default button - defined outside component to avoid re-creation
+const defaultButton = (
+  <Button
+    variant="outline"
+    className="ml-auto"
+    aria-label="Show SQL"
+    title="Show SQL for this table"
+  >
+    <CodeIcon className="size-4" />
+  </Button>
+)
+
+export const DialogContent = memo(function DialogContent({
+  button = defaultButton,
   title = '',
   description = '',
   content = '',
@@ -47,4 +51,4 @@ export function DialogContent({
       </UIDialogContent>
     </Dialog>
   )
-}
+})

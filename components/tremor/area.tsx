@@ -13,6 +13,7 @@ import {
 } from '@/lib/format-readable'
 
 import type { ReadableFormat } from './types'
+import { memo, useMemo } from 'react'
 
 export interface AreaChartProps extends TremorAreaChartProps {
   readable?: true | ReadableFormat
@@ -20,7 +21,7 @@ export interface AreaChartProps extends TremorAreaChartProps {
   breakdown?: string
 }
 
-export function AreaChart({
+export const AreaChart = memo(function AreaChart({
   data,
   categories,
   index,
@@ -36,33 +37,32 @@ export function AreaChart({
   showYAxis = false,
   ...props
 }: AreaChartProps) {
-  let valueFormatter
+  const valueFormatter = useMemo(() => {
+    if (readable && readableColumns) {
+      return (value: number) => {
+        for (let i = 0; i < categories.length; i++) {
+          // Bruteforce
+          const formated = data.find((d) => d[categories[i]] === value)?.[
+            readableColumns[i]
+          ]
 
-  if (readable && readableColumns) {
-    valueFormatter = (value: number) => {
-      for (let i = 0; i < categories.length; i++) {
-        // Bruteforce
-        const formated = data.find((d) => d[categories[i]] === value)?.[
-          readableColumns[i]
-        ]
-
-        if (formated) {
-          return formated
+          if (formated) {
+            return formated
+          }
         }
-      }
 
-      return value
+        return value
+      }
+    } else if (readable) {
+      switch (readable) {
+        case 'size':
+          return (value: number) => formatReadableSize(value, 1)
+        case 'quantity':
+          return (value: number) => formatReadableQuantity(value)
+      }
     }
-  } else if (readable) {
-    switch (readable) {
-      case 'size':
-        valueFormatter = (value: number) => formatReadableSize(value, 1)
-        break
-      case 'quantity':
-        valueFormatter = (value: number) => formatReadableQuantity(value)
-        break
-    }
-  }
+    return undefined
+  }, [readable, readableColumns, data, categories])
 
   // Providing breakdown props as the column name of the breakdown data
   // The format of the breakdown data should be:
@@ -73,7 +73,7 @@ export function AreaChart({
   // - payload: use payload[0].value for the value, such as "$ 450".
   //            Both payload[0].dataKey and payload[0].name for category values, such as "Sales"
   // - label: For x-axis values, such as "Jan 21"
-  const customTooltip = ({ active, payload, label }: any) => {
+  const customTooltip = useMemo(() => ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null
 
     const col = breakdown as string
@@ -129,7 +129,7 @@ export function AreaChart({
         </div>
       </div>
     )
-  }
+  }, [breakdown])
 
   return (
     <TremorAreaChart
@@ -148,4 +148,4 @@ export function AreaChart({
       {...props}
     />
   )
-}
+})

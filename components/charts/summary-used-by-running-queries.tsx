@@ -3,7 +3,7 @@
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
@@ -17,7 +17,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { formatReadableQuantity } from '@/lib/format-readable'
 import { useChartData } from '@/lib/swr'
 
-export function ChartSummaryUsedByRunningQueries({
+export const ChartSummaryUsedByRunningQueries = memo(function ChartSummaryUsedByRunningQueries({
   title,
   className,
   hostId,
@@ -166,6 +166,6 @@ export function ChartSummaryUsedByRunningQueries({
       </div>
     </ChartCard>
   )
-}
+})
 
 export default ChartSummaryUsedByRunningQueries

@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react'
 import { MixerHorizontalIcon } from '@radix-ui/react-icons'
 import type { Table } from '@tanstack/react-table'
 
@@ -9,13 +10,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-interface ColumnVisibilityButtonProps<TData> {
-  table: Table<TData>
+interface ColumnVisibilityButtonProps {
+  // Using 'any' since the component only uses table methods that don't depend on TData
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  table: Table<any>
 }
 
-export function ColumnVisibilityButton<TData>({
+export const ColumnVisibilityButton = memo(function ColumnVisibilityButton({
   table,
-}: ColumnVisibilityButtonProps<TData>) {
+}: ColumnVisibilityButtonProps) {
+  const handleSelect = useCallback((event: Event) => {
+    event.preventDefault()
+    // Prevent default selection behavior to avoid
+    // unintended interactions with checkbox state
+  }, [])
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -42,11 +51,7 @@ export function ColumnVisibilityButton<TData>({
                 key={column.id}
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                onSelect={(event) => {
-                  event.preventDefault()
-                  // Prevent default selection behavior to avoid
-                  // unintended interactions with checkbox state
-                }}
+                onSelect={handleSelect}
                 role="checkbox"
                 aria-label={column.id}
               >
@@ -57,4 +62,4 @@ export function ColumnVisibilityButton<TData>({
       </DropdownMenuContent>
     </DropdownMenu>
   )
-}
+})

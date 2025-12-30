@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
 import { Button } from '@/components/ui/button'
+import { ErrorLogger } from '@/lib/error-logger'
 import {
   Form,
   FormControl,
@@ -40,10 +41,10 @@ export const ChartParams = ({ params }: ChartParamsProps) => {
   async function onSubmit(values: FormSchema) {
     try {
       const resp = await updateSettingParams(values)
-      console.log('Updated', resp)
+      ErrorLogger.logDebug('Chart params updated', { response: resp })
       router.refresh()
     } catch (e) {
-      console.error(e)
+      ErrorLogger.logError(e as Error, { component: 'ChartParams', action: 'submit' })
       setError('Error updating params')
     }
   }

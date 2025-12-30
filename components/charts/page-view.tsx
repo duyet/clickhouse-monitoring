@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export function PageViewBarChart({
+export const PageViewBarChart = memo(function PageViewBarChart({
   title = 'Daily Page Views',
   interval = 'toStartOfDay',
   className,
@@ -74,6 +75,6 @@ export function PageViewBarChart({
       />
     </ChartCard>
   )
-}
+})
 
 export default PageViewBarChart

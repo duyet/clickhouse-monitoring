@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -8,7 +9,7 @@ import { CardMetric } from '@/components/generic-charts/card-metric'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 
-export function ChartDiskSize({
+export const ChartDiskSize = memo(function ChartDiskSize({
   name,
   title,
   className,
@@ -50,6 +51,6 @@ export function ChartDiskSize({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartDiskSize

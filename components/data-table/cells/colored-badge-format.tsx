@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { memo, useMemo } from 'react'
 
 export interface ColoredBadgeOptions {
   className?: string
@@ -9,7 +10,7 @@ interface ColoredBadgeFormatProps {
   options?: ColoredBadgeOptions
 }
 
-export function ColoredBadgeFormat({
+export const ColoredBadgeFormat = memo(function ColoredBadgeFormat({
   value,
   options,
 }: ColoredBadgeFormatProps): React.ReactNode {
@@ -17,18 +18,19 @@ export function ColoredBadgeFormat({
     return null
   }
 
-  const colors = [
-    'bg-green-100 text-green-800',
-    'bg-yellow-100 text-yellow-800',
-    'bg-blue-100 text-blue-800',
-    'bg-indigo-100 text-indigo-800',
-    'bg-purple-100 text-purple-800',
-    'bg-pink-100 text-pink-800',
-  ]
+  // Memoize expensive color calculation
+  const pickedColor = useMemo(() => {
+    const colors = [
+      'bg-green-100 text-green-800',
+      'bg-yellow-100 text-yellow-800',
+      'bg-blue-100 text-blue-800',
+      'bg-indigo-100 text-indigo-800',
+      'bg-purple-100 text-purple-800',
+      'bg-pink-100 text-pink-800',
+    ]
 
-  // Picked consistently based on the value
-  const pickedColor =
-    colors[
+    // Picked consistently based on the value
+    return colors[
       Math.abs(
         value
           .toString()
@@ -36,6 +38,7 @@ export function ColoredBadgeFormat({
           .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
       ) % colors.length
     ]
+  }, [value])
 
   return (
     <span
@@ -48,4 +51,4 @@ export function ColoredBadgeFormat({
       {value}
     </span>
   )
-}
+})

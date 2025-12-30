@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
+import { ErrorLogger } from '@/lib/error-logger'
 
 import {
   explainQuery,
@@ -72,7 +73,7 @@ export function ActionItem<TData extends RowData, TValue>({
 
         try {
           const resp: ActionResponse = await handler(formData)
-          console.log('Trigger Action', resp)
+          ErrorLogger.logDebug('Action triggered', { action, response: resp })
 
           if (resp.action === 'toast') {
             updateStatus('success')
@@ -81,7 +82,7 @@ export function ActionItem<TData extends RowData, TValue>({
             redirect(resp.message)
           }
         } catch (e) {
-          console.error('Action Error', e)
+          ErrorLogger.logError(e as Error, { component: 'ActionItem', action })
           updateStatus('failed')
           toast.error(`${e}`)
         }

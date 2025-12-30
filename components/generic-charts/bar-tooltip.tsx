@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import {
   ChartTooltip,
   ChartTooltipContent,
@@ -24,7 +25,7 @@ interface BarTooltipProps {
  * Handles tooltip display with optional total calculation for stacked bars.
  * Shows formatted values with color indicators and readable labels.
  */
-export function BarTooltip({
+export const BarTooltip = memo(function BarTooltip({
   tooltipTotal,
   chartConfig,
   categories,
@@ -129,4 +130,4 @@ export function BarTooltip({
       defaultIndex={1}
     />
   )
-}
+})

@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
@@ -9,7 +10,7 @@ import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 import type { ChartProps } from './chart-props'
 
-export function ChartConnectionsInterserver({
+export const ChartConnectionsInterserver = memo(function ChartConnectionsInterserver({
   title = 'Interserver Connections Last 7 days (Total Requests / Hour)',
   interval = 'toStartOfHour',
   lastHours = 24 * 7,
@@ -63,6 +64,6 @@ export function ChartConnectionsInterserver({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartConnectionsInterserver

@@ -4,6 +4,7 @@ import { AlertTriangleIcon, RefreshCwIcon } from 'lucide-react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 
 import { Button } from '@/components/ui/button'
+import { ErrorLogger } from '@/lib/error-logger'
 
 /**
  * Error boundary fallback for layout-level errors
@@ -40,10 +41,7 @@ export function LayoutErrorBoundary({ children }: { children: React.ReactNode })
     <ErrorBoundary
       fallbackRender={LayoutErrorFallback}
       onError={(error) => {
-        // Log to console in development
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Layout Error Boundary caught:', error)
-        }
+        ErrorLogger.logError(error, { component: 'LayoutErrorBoundary', action: 'caught' })
       }}
     >
       {children}

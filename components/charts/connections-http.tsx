@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
@@ -9,7 +10,7 @@ import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 import type { ChartProps } from './chart-props'
 
-export function ChartConnectionsHttp({
+export const ChartConnectionsHttp = memo(function ChartConnectionsHttp({
   title = 'HTTP Connections Last 7 days (Total Requests / Hour)',
   interval = 'toStartOfHour',
   lastHours = 24 * 7,
@@ -68,6 +69,6 @@ export function ChartConnectionsHttp({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartConnectionsHttp

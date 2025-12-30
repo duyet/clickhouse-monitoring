@@ -1,6 +1,7 @@
 'use server'
 
 import { fetchData } from '@/lib/clickhouse'
+import { ErrorLogger } from '@/lib/error-logger'
 import { getHostIdCookie } from '@/lib/scoped-link'
 import type { Row, RowData } from '@tanstack/react-table'
 import type { ActionResponse } from './types'
@@ -17,7 +18,7 @@ export async function killQuery<TValue>(
   })
 
   if (error) {
-    console.error('Failed to kill query', queryId, error)
+    ErrorLogger.logError(error, { action: 'killQuery', queryId: String(queryId) })
     return {
       action: 'toast',
       message: `Failed to kill query ${queryId}: ${error.message}`,
@@ -52,7 +53,7 @@ export async function optimizeTable<TValue>(
   })
 
   if (error) {
-    console.error('Failed to optimize table', table, error)
+    ErrorLogger.logError(error, { action: 'optimizeTable', table: String(table) })
     return {
       action: 'toast',
       message: `Failed to optimize table ${table}: ${error.message}`,
@@ -77,7 +78,7 @@ export async function querySettings<TValue>(
   })
 
   if (error) {
-    console.error('Failed to get query settings', queryId, error)
+    ErrorLogger.logError(error, { action: 'querySettings', queryId: String(queryId) })
     return {
       action: 'toast',
       message: `Failed to get query settings ${queryId}: ${error.message}`,

@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -8,7 +9,7 @@ import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 
-export function ChartNewPartsCreated({
+export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
   title = 'New Parts Created over last 24 hours (part counts / 15 minutes)',
   interval = 'toStartOfFifteenMinutes',
   lastHours = 24,
@@ -87,6 +88,6 @@ export function ChartNewPartsCreated({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartNewPartsCreated

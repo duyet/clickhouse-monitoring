@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export function ChartQueryMemory({
+export const ChartQueryMemory = memo(function ChartQueryMemory({
   title = 'Avg Memory Usage for queries over last 14 days',
   interval = 'toStartOfDay',
   className,
@@ -68,6 +69,6 @@ export function ChartQueryMemory({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartQueryMemory

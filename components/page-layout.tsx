@@ -5,19 +5,22 @@
  * - Dynamic chart rendering from registry
  * - Responsive grid layout
  * - Automatic suspense boundaries
+ * - Smooth skeleton-to-content transitions
  * - Table integration
  */
 
 'use client'
 
-import { Suspense, type ReactNode } from 'react'
+import { Suspense, memo, type ReactNode } from 'react'
 import type { QueryConfig } from '@/types/query-config'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { TableSkeleton } from '@/components/skeleton'
 import { TableClient } from '@/components/table-client'
 import { useHostId } from '@/lib/swr'
+import { FadeIn } from '@/components/ui/fade-in'
 import {
   getChartComponent,
+  getChartSkeletonType,
   type ChartProps,
 } from '@/components/charts/chart-registry'
 
@@ -49,7 +52,7 @@ interface DynamicChartProps {
   chartProps?: Record<string, unknown>
 }
 
-function DynamicChart({
+const DynamicChart = memo(function DynamicChart({
   chartName,
   hostId,
   chartProps = {},
@@ -67,14 +70,16 @@ function DynamicChart({
   }
 
   return (
-    <ChartComponent
-      className="w-full p-0 shadow-none"
-      chartClassName="h-44"
-      hostId={hostId}
-      {...chartProps}
-    />
+    <FadeIn duration={250}>
+      <ChartComponent
+        className="w-full p-0 shadow-none"
+        chartClassName="h-44"
+        hostId={hostId}
+        {...chartProps}
+      />
+    </FadeIn>
   )
-}
+})
 
 /**
  * Related Charts Grid
@@ -87,7 +92,7 @@ interface RelatedChartsProps {
   gridClass?: string
 }
 
-function RelatedCharts({
+const RelatedCharts = memo(function RelatedCharts({
   relatedCharts,
   hostId,
   gridClass = 'grid grid-cols-1 gap-5 md:grid-cols-2',
@@ -121,7 +126,14 @@ function RelatedCharts({
 
         return (
           <div key={`${chartName}-${index}`} className={colSpan}>
-            <Suspense fallback={<ChartSkeleton />}>
+            <Suspense
+              fallback={
+                <ChartSkeleton
+                  type={getChartSkeletonType(chartName)}
+                  dataPoints={8}
+                />
+              }
+            >
               <DynamicChart
                 chartName={chartName}
                 hostId={hostId}
@@ -133,7 +145,7 @@ function RelatedCharts({
       })}
     </div>
   )
-}
+})
 
 /**
  * Generic Page Layout
@@ -144,7 +156,7 @@ function RelatedCharts({
  * - Data table
  * - Optional footer content
  */
-export function PageLayout({
+export const PageLayout = memo(function PageLayout({
   queryConfig,
   title,
   description,
@@ -171,11 +183,13 @@ export function PageLayout({
       {/* Data Table */}
       {!hideTable && (
         <Suspense fallback={<TableSkeleton />}>
-          <TableClient
-            title={title || queryConfig.name}
-            description={description || queryConfig.description}
-            queryConfig={queryConfig}
-          />
+          <FadeIn duration={300}>
+            <TableClient
+              title={title || queryConfig.name}
+              description={description || queryConfig.description}
+              queryConfig={queryConfig}
+            />
+          </FadeIn>
         </Suspense>
       )}
 
@@ -183,7 +197,7 @@ export function PageLayout({
       {footerContent}
     </div>
   )
-}
+})
 
 /**
  * HOC for creating a page from a QueryConfig

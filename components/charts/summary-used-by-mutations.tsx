@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -8,7 +9,7 @@ import { CardMultiMetrics } from '@/components/generic-charts/card-multi-metrics
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 
-export function ChartSummaryUsedByMutations({
+export const ChartSummaryUsedByMutations = memo(function ChartSummaryUsedByMutations({
   title,
   className,
   hostId,
@@ -52,6 +53,4 @@ export function ChartSummaryUsedByMutations({
       </div>
     </ChartCard>
   )
-}
-
-export default ChartSummaryUsedByMutations
+})

@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export function ChartQueryCount({
+export const ChartQueryCount = memo(function ChartQueryCount({
   title = 'Running Queries over last 14 days (query / day)',
   interval = 'toStartOfDay',
   className,
@@ -79,6 +80,6 @@ export function ChartQueryCount({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartQueryCount

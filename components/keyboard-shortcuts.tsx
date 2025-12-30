@@ -1,0 +1,169 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+
+import { useHostId } from '@/lib/swr'
+import { useKeyboardShortcut } from '@/lib/hooks/use-keyboard-shortcut'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+
+/**
+ * Global keyboard shortcuts for the ClickHouse Monitor dashboard
+ *
+ * Shortcuts:
+ * - Cmd/Ctrl + K: Open command palette (handled by CommandPalette component)
+ * - Cmd/Ctrl + G: Go to overview
+ * - Cmd/Ctrl + Q: Go to running queries
+ * - Cmd/Ctrl + D: Go to database tables
+ * - Cmd/Ctrl + H: Change host (cycle through available hosts)
+ * - Cmd/Ctrl + R: Refresh current page data
+ * - Cmd/Ctrl + /: Show keyboard shortcuts help
+ * - Escape: Close modals/dialogs
+ *
+ * @example
+ * ```tsx
+ * import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
+ *
+ * export function Layout({ children }) {
+ *   return (
+ *     <>
+ *       <KeyboardShortcuts />
+ *       {children}
+ *     </>
+ *   )
+ * }
+ * ```
+ */
+/** Keyboard shortcut definitions for help modal */
+const SHORTCUTS = [
+  { key: '⌘K', description: 'Open command palette' },
+  { key: '⌘G', description: 'Go to overview' },
+  { key: '⌘Q', description: 'Go to running queries' },
+  { key: '⌘D', description: 'Go to database tables' },
+  { key: '⌘R', description: 'Refresh data' },
+  { key: '⌘/', description: 'Show shortcuts' },
+  { key: 'Esc', description: 'Close modals' },
+] as const
+
+export function KeyboardShortcuts() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const hostId = useHostId()
+  const [showHelp, setShowHelp] = useState(false)
+
+  // Navigate to overview
+  useKeyboardShortcut({
+    key: 'g',
+    metaKey: true,
+    ctrlKey: true,
+    onKeyDown: () => {
+      router.push(`/overview?host=${hostId}`)
+    },
+  })
+
+  // Navigate to running queries
+  useKeyboardShortcut({
+    key: 'q',
+    metaKey: true,
+    ctrlKey: true,
+    onKeyDown: () => {
+      router.push(`/running-queries?host=${hostId}`)
+    },
+  })
+
+  // Navigate to database tables
+  useKeyboardShortcut({
+    key: 'd',
+    metaKey: true,
+    ctrlKey: true,
+    onKeyDown: () => {
+      router.push(`/tables?host=${hostId}`)
+    },
+  })
+
+  // Refresh current page (trigger SWR revalidation)
+  useKeyboardShortcut({
+    key: 'r',
+    metaKey: true,
+    ctrlKey: true,
+    onKeyDown: () => {
+      // Trigger SWR revalidation by dispatching a custom event
+      window.dispatchEvent(new CustomEvent('swr:revalidate'))
+    },
+  })
+
+  // Show keyboard shortcuts help
+  useKeyboardShortcut({
+    key: '/',
+    metaKey: true,
+    ctrlKey: true,
+    onKeyDown: () => {
+      setShowHelp(true)
+    },
+  })
+
+  return (
+    <Dialog open={showHelp} onOpenChange={setShowHelp}>
+      <DialogContent
+        className="max-w-sm"
+        aria-describedby="shortcuts-description"
+      >
+        <DialogHeader>
+          <DialogTitle>Keyboard Shortcuts</DialogTitle>
+        </DialogHeader>
+        <p id="shortcuts-description" className="sr-only">
+          Available keyboard shortcuts for navigating the dashboard
+        </p>
+        <div className="grid gap-2 py-2" role="list" aria-label="Shortcuts list">
+          {SHORTCUTS.map(({ key, description }) => (
+            <div
+              key={key}
+              className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-muted"
+              role="listitem"
+            >
+              <span className="text-sm text-muted-foreground">{description}</span>
+              <kbd className="rounded border bg-muted px-2 py-0.5 font-mono text-xs">
+                {key}
+              </kbd>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          On Windows/Linux, use Ctrl instead of ⌘
+        </p>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+/**
+ * Hook to use SWR revalidation from keyboard shortcuts
+ * Components can listen for the 'swr:revalidate' event to refresh their data
+ *
+ * @example
+ * ```tsx
+ * import { useSWRRevalidate } from '@/components/keyboard-shortcuts'
+ *
+ * export function MyComponent() {
+ *   useSWRRevalidate(mutate)
+ *   // ...
+ * }
+ * ```
+ */
+export function useSWRRevalidate(mutate: () => Promise<unknown> | void) {
+  const handleRevalidate = () => {
+    void mutate()
+  }
+
+  useEffect(() => {
+    window.addEventListener('swr:revalidate', handleRevalidate)
+    return () => {
+      window.removeEventListener('swr:revalidate', handleRevalidate)
+    }
+  }, [mutate])
+}

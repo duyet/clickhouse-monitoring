@@ -1,5 +1,6 @@
 'use client'
 
+import { memo, useMemo } from 'react'
 import {
   type ChartConfig,
   ChartContainer,
@@ -12,7 +13,7 @@ import { cn } from '@/lib/utils'
 import type { RadialChartProps } from '@/types/charts'
 import { LabelList, RadialBar, RadialBarChart } from 'recharts'
 
-export function RadialChart({
+export const RadialChart = memo(function RadialChart({
   data,
   nameKey,
   dataKey,
@@ -23,23 +24,26 @@ export function RadialChart({
   onClick,
   className,
 }: RadialChartProps) {
-  const chartConfig = data
-    .map((row) => row[nameKey])
-    .reduce(
-      (acc, category, index) => {
-        acc[category] = {
-          label: category,
-          color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
-        }
+  // Memoize chartConfig to prevent expensive recalculation on every render
+  const chartConfig = useMemo(() => {
+    return data
+      .map((row) => row[nameKey])
+      .reduce(
+        (acc, category, index) => {
+          acc[category] = {
+            label: category,
+            color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
+          }
 
-        return acc
-      },
-      {
-        label: {
-          color: colorLabel ? `var(${colorLabel})` : 'var(--background)',
+          return acc
         },
-      } as ChartConfig
-    )
+        {
+          label: {
+            color: colorLabel ? `var(${colorLabel})` : 'var(--background)',
+          },
+        } as ChartConfig
+      )
+  }, [data, nameKey, colors, colorLabel])
 
   return (
     <ChartContainer
@@ -73,4 +77,4 @@ export function RadialChart({
       </RadialBarChart>
     </ChartContainer>
   )
-}
+})

@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { BarChart } from '@/components/generic-charts/bar'
 import { ChartCard } from '@/components/generic-charts/chart-card'
@@ -7,7 +8,7 @@ import { useChartData } from '@/lib/swr'
 import { ChartSkeleton, ChartError } from '@/components/charts'
 import type { ChartProps } from './chart-props'
 
-export function ChartZookeeperWait({
+export const ChartZookeeperWait = memo(function ChartZookeeperWait({
   title = 'ZooKeeper Wait Seconds',
   interval = 'toStartOfHour',
   lastHours = 24 * 7,
@@ -66,6 +67,6 @@ export function ChartZookeeperWait({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartZookeeperWait

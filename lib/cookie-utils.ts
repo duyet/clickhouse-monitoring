@@ -3,6 +3,8 @@
  * Provides functions to prevent cookie injection and XSS attacks
  */
 
+import { ErrorLogger } from '@/lib/error-logger'
+
 /**
  * Sanitizes a cookie value by encoding special characters
  * This prevents cookie injection and XSS attacks
@@ -38,7 +40,10 @@ export function setSecureCookie(
   }
 ): void {
   if (typeof document === 'undefined') {
-    console.warn('setSecureCookie can only be called in browser context')
+    ErrorLogger.logWarning('setSecureCookie can only be called in browser context', {
+      component: 'cookie-utils',
+      action: 'setSecureCookie',
+    })
     return
   }
 

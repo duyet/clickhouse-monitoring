@@ -3,7 +3,7 @@
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
@@ -16,7 +16,7 @@ import {
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 
-export function ChartSummaryUsedByMerges({
+export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
   title,
   className,
   hostId,
@@ -194,6 +194,6 @@ export function ChartSummaryUsedByMerges({
       </div>
     </ChartCard>
   )
-}
+})
 
 export default ChartSummaryUsedByMerges

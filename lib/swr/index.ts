@@ -8,3 +8,6 @@ export { useHostId } from './use-host'
 export { useFetchData } from './use-fetch-data'
 export { useChartData } from './use-chart-data'
 export { useTableData } from './use-table-data'
+
+// SWR configuration presets
+export { REFRESH_INTERVAL, swrConfig, createPollingConfig } from './config'

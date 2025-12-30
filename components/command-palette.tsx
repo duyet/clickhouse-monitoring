@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { memo, useCallback } from 'react'
 import * as React from 'react'
 
 import {
@@ -13,7 +14,7 @@ import {
 } from '@/components/ui/command'
 import { menuItemsConfig } from '@/menu'
 
-export function CommandPalette() {
+export const CommandPalette = memo(function CommandPalette() {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
 
@@ -30,14 +31,14 @@ export function CommandPalette() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  const navigate = (href: string) => {
+  const navigate = useCallback((href: string) => {
     setOpen(false)
     router.push(href)
-  }
+  }, [router])
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Type a command or search..." />
+    <CommandDialog open={open} onOpenChange={setOpen} aria-label="Command palette">
+      <CommandInput placeholder="Type a command or search..." aria-label="Search commands" />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
 
@@ -72,4 +73,4 @@ export function CommandPalette() {
       </CommandList>
     </CommandDialog>
   )
-}
+})

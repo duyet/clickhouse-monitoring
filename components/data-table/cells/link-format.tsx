@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import type { Row, RowData } from '@tanstack/react-table'
 import Link, { type LinkProps } from 'next/link'
+import { memo } from 'react'
 
 export interface LinkFormatOptions extends LinkProps {
   className?: string
@@ -20,7 +21,7 @@ interface LinkFormatProps<
   options?: LinkFormatOptions
 }
 
-export function LinkFormat<
+function LinkFormatComponent<
   TData extends RowData,
   TValue extends React.ReactNode,
 >({ row, data, value, context, options }: LinkFormatProps<TData, TValue>) {
@@ -64,4 +65,9 @@ export function LinkFormat<
       <ArrowRightIcon className="size-3 flex-none text-transparent group-hover:text-current" />
     </Link>
   )
+}
+
+// Use a simpler memo approach without complex type casting
+export const LinkFormat = memo(LinkFormatComponent) as typeof LinkFormatComponent & {
+  displayName?: string
 }

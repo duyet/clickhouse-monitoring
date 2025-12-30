@@ -2,6 +2,7 @@ import { RefreshCw } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
+import { memo } from 'react'
 
 interface ChartEmptyProps {
   title?: string
@@ -13,7 +14,7 @@ interface ChartEmptyProps {
   compact?: boolean
 }
 
-export function ChartEmpty({
+export const ChartEmpty = memo(function ChartEmpty({
   title,
   className,
   description,
@@ -22,7 +23,7 @@ export function ChartEmpty({
   compact = false,
 }: ChartEmptyProps) {
   return (
-    <Card className={cn('rounded-md', className)}>
+    <Card className={cn('rounded-md', className)} aria-label={title ? `${title} empty` : 'No data available'}>
       <CardContent className={compact ? 'p-4' : 'p-6'}>
         <EmptyState
           variant={variant}
@@ -42,4 +43,4 @@ export function ChartEmpty({
       </CardContent>
     </Card>
   )
-}
+})

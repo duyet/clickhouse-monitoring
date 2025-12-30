@@ -1,11 +1,13 @@
+import { memo } from 'react'
 import type { Table } from '@tanstack/react-table'
 
-export interface FootnoteProps<TData> {
-  table: Table<TData>
+export interface FootnoteProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  table: Table<any>
   footnote?: string | React.ReactNode
 }
 
-export function Footnote<TData>({ table, footnote }: FootnoteProps<TData>) {
+export const Footnote = memo(function Footnote({ table, footnote }: FootnoteProps) {
   return (
     <div className="text-muted-foreground flex-1 text-sm">
       {footnote ? (
@@ -18,4 +20,4 @@ export function Footnote<TData>({ table, footnote }: FootnoteProps<TData>) {
       )}
     </div>
   )
-}
+})

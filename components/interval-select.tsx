@@ -1,7 +1,7 @@
 'use client'
 
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
-import { useState } from 'react'
+import { memo, useCallback, useState } from 'react'
 
 import { useAppContext } from '@/app/context'
 import { Button } from '@/components/ui/button'
@@ -43,11 +43,17 @@ interface IntervalSelectProps {
   values?: { value: ClickHouseInterval; label: string }[]
 }
 
-export function IntervalSelect({ values = [] }: IntervalSelectProps) {
+export const IntervalSelect = memo(function IntervalSelect({ values = [] }: IntervalSelectProps) {
   const intervals = values.length ? values : defaultIntervals
 
   const [open, setOpen] = useState(false)
   const { interval, setInterval } = useAppContext()
+
+  // Memoized handler to prevent recreation on every render
+  const handleIntervalSelect = useCallback((currentValue: string) => {
+    setInterval?.(currentValue as ClickHouseInterval)
+    setOpen(false)
+  }, [setInterval])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -56,6 +62,7 @@ export function IntervalSelect({ values = [] }: IntervalSelectProps) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-label="Select time interval"
           className="w-[100px] justify-between"
         >
           {interval
@@ -75,10 +82,7 @@ export function IntervalSelect({ values = [] }: IntervalSelectProps) {
               <CommandItem
                 key={i.value}
                 value={i.value}
-                onSelect={(currentValue: string) => {
-                  setInterval?.(currentValue as ClickHouseInterval)
-                  setOpen(false)
-                }}
+                onSelect={handleIntervalSelect}
               >
                 {i.label}
                 <CheckIcon
@@ -94,4 +98,4 @@ export function IntervalSelect({ values = [] }: IntervalSelectProps) {
       </PopoverContent>
     </Popover>
   )
-}
+})

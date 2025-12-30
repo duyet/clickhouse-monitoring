@@ -1,6 +1,9 @@
 'use client'
 
 import useSWR, { type SWRConfiguration } from 'swr'
+import { useCallback } from 'react'
+
+import { REFRESH_INTERVAL, type RefreshInterval } from './config'
 
 /**
  * Chart data response structure from the API
@@ -18,13 +21,17 @@ interface ChartDataResponse<T = unknown> {
   }
 }
 
+export type SwrConfigPreset = keyof typeof REFRESH_INTERVAL | SWRConfiguration
+
 export interface UseChartDataParams {
   chartName: string
   hostId?: number | string
   interval?: string
   lastHours?: number
   params?: Record<string, unknown>
-  refreshInterval?: number
+  /** Refresh interval in ms OR use REFRESH_INTERVAL constants */
+  refreshInterval?: RefreshInterval | number
+  /** Additional SWR config options */
   swrConfig?: SWRConfiguration
 }
 
@@ -38,12 +45,19 @@ export interface UseChartDataParams {
  *
  * @example
  * ```typescript
- * const { data, metadata, error, isLoading, mutate } = useChartData({
+ * // Using default refresh interval (30s)
+ * const { data, metadata, error, isLoading } = useChartData({
  *   chartName: 'query-performance',
  *   hostId: 1,
  *   interval: 'toStartOfHour',
  *   lastHours: 24,
- *   refreshInterval: 30000
+ * })
+ *
+ * // Using preset refresh interval
+ * import { REFRESH_INTERVAL } from '@/lib/swr/config'
+ * const { data } = useChartData({
+ *   chartName: 'query-performance',
+ *   refreshInterval: REFRESH_INTERVAL.FAST_10S,
  * })
  * ```
  */
@@ -53,7 +67,7 @@ export function useChartData<T = unknown>({
   interval,
   lastHours,
   params,
-  refreshInterval = 30000,
+  refreshInterval = REFRESH_INTERVAL.DEFAULT_30S,
   swrConfig,
 }: UseChartDataParams) {
   // Build query parameters
@@ -70,8 +84,8 @@ export function useChartData<T = unknown>({
   // Build cache key
   const key = ['/api/v1/charts', chartName, hostId, interval, lastHours, params]
 
-  // Fetcher function
-  const fetcher = async () => {
+  // Fetcher function (memoized with useCallback to prevent recreation on every render)
+  const fetcher = useCallback(async () => {
     const response = await fetch(url)
 
     if (!response.ok) {
@@ -97,7 +111,7 @@ export function useChartData<T = unknown>({
     }
 
     return response.json() as Promise<ChartDataResponse<T>>
-  }
+  }, [url])
 
   const { data, error, isLoading, mutate } = useSWR<
     ChartDataResponse<T>,

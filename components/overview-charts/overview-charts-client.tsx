@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import {
   Card,
   CardContent,
@@ -16,7 +17,7 @@ interface OverviewChartsProps {
   className?: string
 }
 
-export function OverviewCharts({ hostId, className }: OverviewChartsProps) {
+export const OverviewCharts = memo(function OverviewCharts({ hostId, className }: OverviewChartsProps) {
   return (
     <div
       className={cn(
@@ -24,6 +25,8 @@ export function OverviewCharts({ hostId, className }: OverviewChartsProps) {
         'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
         className
       )}
+      role="region"
+      aria-label="Overview metrics"
     >
       <RunningQueries hostId={hostId} />
       <DatabaseTableCount hostId={hostId} />
@@ -31,9 +34,9 @@ export function OverviewCharts({ hostId, className }: OverviewChartsProps) {
       <DiskSize hostId={hostId} />
     </div>
   )
-}
+})
 
-function RunningQueries({ hostId }: { hostId: number }) {
+const RunningQueries = memo(function RunningQueries({ hostId }: { hostId: number }) {
   const swr = useChartData<{ count: number }>({
     chartName: 'running-queries-count',
     hostId,
@@ -48,17 +51,15 @@ function RunningQueries({ hostId }: { hostId: number }) {
       viewAllHref={`/running-queries?host=${hostId}`}
     >
       {(data) => (
-        <div className="flex items-center justify-between">
-          <div className="font-mono text-3xl font-semibold tabular-nums tracking-tight">
-            {(data[0] as { count: number }).count}
-          </div>
+        <div className="font-mono text-2xl font-semibold tabular-nums tracking-tight">
+          {(data[0] as { count: number }).count}
         </div>
       )}
     </MetricCard>
   )
-}
+})
 
-function DatabaseTableCount({ hostId }: { hostId: number }) {
+const DatabaseTableCount = memo(function DatabaseTableCount({ hostId }: { hostId: number }) {
   const databaseSwr = useChartData<{ count: number }>({
     chartName: 'database-count',
     hostId,
@@ -118,9 +119,9 @@ function DatabaseTableCount({ hostId }: { hostId: number }) {
       )}
     </MetricCard>
   )
-}
+})
 
-function ClickHouseInfo({ hostId }: { hostId: number }) {
+const ClickHouseInfo = memo(function ClickHouseInfo({ hostId }: { hostId: number }) {
   const hostNameSwr = useChartData<{ val: string }>({
     chartName: 'hostname',
     hostId,
@@ -185,9 +186,9 @@ function ClickHouseInfo({ hostId }: { hostId: number }) {
       )}
     </MetricCard>
   )
-}
+})
 
-function DiskSize({ hostId }: { hostId: number }) {
+const DiskSize = memo(function DiskSize({ hostId }: { hostId: number }) {
   const swr = useChartData<{
     name: string
     used_space: number
@@ -227,33 +228,39 @@ function DiskSize({ hostId }: { hostId: number }) {
       }}
     </MetricCard>
   )
-}
+})
 
 // Helper components for skeleton and error states
-function MetricCardSkeleton({ title, description }: { title?: string; description?: string }) {
+const MetricCardSkeleton = memo(function MetricCardSkeleton({ title, description }: { title?: string; description?: string }) {
   return (
-    <div className="rounded-md border">
-      <div className="px-4 pb-1 pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
+    <div
+      className="rounded-lg border border-border/50 bg-card/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]"
+      role="status"
+      aria-label={`Loading ${title || 'metric'}`}
+      aria-busy="true"
+    >
+      <div className="px-3 pb-0 pt-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
             {title ? (
-              <div className="text-sm font-medium">{title}</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title}</div>
             ) : (
-              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-20 animate-shimmer rounded bg-accent/50" />
             )}
-            {description && <div className="mt-1 h-3 w-16 animate-pulse rounded bg-muted" />}
+            {description && <div className="mt-0.5 h-2.5 w-12 animate-shimmer rounded bg-accent/50" />}
           </div>
-          {title && <div className="h-4 w-16 animate-pulse rounded bg-muted" />}
+          {title && <div className="h-2.5 w-12 animate-shimmer rounded bg-accent/50" />}
         </div>
       </div>
-      <div className="px-4 pt-0 pb-4">
-        <div className="h-8 w-20 animate-pulse rounded bg-muted" />
+      <div className="px-3 pt-2 pb-3">
+        <div className="h-6 w-14 animate-shimmer rounded bg-accent/50" />
       </div>
+      <span className="sr-only">Loading {title || 'metric'} data...</span>
     </div>
   )
-}
+})
 
-function MetricCardError({
+const MetricCardError = memo(function MetricCardError({
   error,
   onRetry,
   title,
@@ -265,18 +272,23 @@ function MetricCardError({
   description?: string
 }) {
   return (
-    <div className="rounded-md border">
-      <div className="px-4 pb-2 pt-4">
-        <div className="text-sm font-medium">{title || 'Error'}</div>
-        {description && <div className="text-muted-foreground mt-1 text-xs">{description}</div>}
+    <div
+      className="rounded-lg border border-border/50 bg-card/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]"
+      role="alert"
+      aria-label={`Error loading ${title || 'metric'}`}
+    >
+      <div className="px-3 pb-0 pt-3">
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title || 'Error'}</div>
+        {description && <div className="text-muted-foreground mt-0.5 text-xs">{description}</div>}
       </div>
-      <div className="px-4 pt-0 pb-4">
-        <div className="rounded-md border border-destructive/20 bg-destructive/10 p-3">
-          <div className="text-destructive text-xs font-medium">Error loading data</div>
-          <div className="text-muted-foreground mt-1 text-xs">{error.message}</div>
+      <div className="px-3 pt-2 pb-3">
+        <div className="rounded-md border border-destructive/20 bg-destructive/5 p-2">
+          <div className="text-destructive text-xs font-medium">Error</div>
+          <div className="text-muted-foreground mt-0.5 text-xs truncate">{error.message}</div>
           <button
             onClick={onRetry}
-            className="text-muted-foreground hover:text-foreground mt-2 text-xs underline"
+            className="text-muted-foreground hover:text-foreground mt-1.5 text-xs underline transition-colors"
+            aria-label="Retry loading data"
           >
             Retry
           </button>
@@ -284,4 +296,4 @@ function MetricCardError({
       </div>
     </div>
   )
-}
+})

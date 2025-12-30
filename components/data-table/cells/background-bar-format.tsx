@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { formatReadableQuantity } from '@/lib/format-readable'
 import type { Row, Table } from '@tanstack/react-table'
 
@@ -13,7 +14,7 @@ interface BackgroundBarFormatProps {
   options?: BackgroundBarOptions
 }
 
-export function BackgroundBarFormat({
+export const BackgroundBarFormat = memo(function BackgroundBarFormat({
   table,
   row,
   columnName,
@@ -53,4 +54,4 @@ export function BackgroundBarFormat({
         : value}
     </div>
   )
-}
+})

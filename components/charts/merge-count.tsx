@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 
@@ -12,7 +13,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export function ChartMergeCount({
+export const ChartMergeCount = memo(function ChartMergeCount({
   title,
   interval = 'toStartOfFiveMinutes',
   lastHours = 12,
@@ -86,6 +87,6 @@ export function ChartMergeCount({
       </div>
     </ChartCard>
   )
-}
+})
 
 export default ChartMergeCount

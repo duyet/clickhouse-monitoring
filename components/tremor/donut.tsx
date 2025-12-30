@@ -1,5 +1,6 @@
 'use client'
 
+import { memo, useCallback } from 'react'
 import {
   DonutChart as TremorDonutChart,
   type DonutChartProps as TremorDonutChartProps,
@@ -10,23 +11,26 @@ export interface DonutChartProps extends TremorDonutChartProps {
   readableColumn?: string
 }
 
-export function DonutChart({
+export const DonutChart = memo(function DonutChart({
   data,
   readable,
   readableColumn,
   ...props
 }: DonutChartProps) {
-  let valueFormatter
-
-  if (readable && readableColumn) {
-    valueFormatter = (value: number) => {
-      const formated = data.find((d) => d.value === value)?.[readableColumn]
-
-      return formated ? formated : value
-    }
-  }
+  const valueFormatter = useCallback(
+    (value: number) => {
+      if (!readable || !readableColumn) return value
+      const formatted = data.find((d) => d.value === value)?.[readableColumn]
+      return formatted ?? value
+    },
+    [data, readable, readableColumn]
+  )
 
   return (
-    <TremorDonutChart data={data} valueFormatter={valueFormatter} {...props} />
+    <TremorDonutChart
+      data={data}
+      valueFormatter={readable && readableColumn ? valueFormatter : undefined}
+      {...props}
+    />
   )
-}
+})

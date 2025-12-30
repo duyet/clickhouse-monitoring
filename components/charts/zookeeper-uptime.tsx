@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartCard } from '@/components/generic-charts/chart-card'
@@ -9,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { ArrowUpIcon } from '@radix-ui/react-icons'
 import { CardMultiMetrics } from '../generic-charts/card-multi-metrics'
 
-export function ChartZookeeperUptime({
+export const ChartZookeeperUptime = memo(function ChartZookeeperUptime({
   title = 'Zookeeper Uptime',
   className,
   hostId,
@@ -67,6 +68,4 @@ export function ChartZookeeperUptime({
       </div>
     </ChartCard>
   )
-}
-
-export default ChartZookeeperUptime
+})

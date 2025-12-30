@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -8,7 +9,7 @@ import { CardMetric } from '@/components/generic-charts/card-metric'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 
-export function ChartQueryCache({
+export const ChartQueryCache = memo(function ChartQueryCache({
   title = 'Query Cache',
   className,
   hostId,
@@ -47,6 +48,4 @@ export function ChartQueryCache({
       />
     </ChartCard>
   )
-}
-
-export default ChartQueryCache
+})

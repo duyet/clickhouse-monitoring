@@ -12,6 +12,7 @@ import {
   CircleSlash,
   Filter,
 } from 'lucide-react'
+import { memo } from 'react'
 import { Button } from './button'
 
 export type EmptyStateVariant =
@@ -89,7 +90,7 @@ const variantConfig: Record<
   },
 }
 
-export function EmptyState({
+export const EmptyState = memo(function EmptyState({
   variant = 'no-data',
   title,
   description,
@@ -158,12 +159,11 @@ export function EmptyState({
       )}
     </div>
   )
-}
-
+})
 /**
  * Inline empty state for use within table cells or small areas
  */
-export function InlineEmptyState({
+export const InlineEmptyState = memo(function InlineEmptyState({
   message = 'No data',
   className,
 }: {
@@ -176,4 +176,4 @@ export function InlineEmptyState({
       <span className="text-sm">{message}</span>
     </div>
   )
-}
+})

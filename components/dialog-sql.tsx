@@ -1,4 +1,5 @@
 import { CodeIcon } from '@radix-ui/react-icons'
+import { memo } from 'react'
 
 import {
   DialogContent,
@@ -11,7 +12,7 @@ interface ShowSQLButtonProps extends Omit<DialogContentProps, 'content'> {
   sql?: string
 }
 
-export function DialogSQL({
+export const DialogSQL = memo(function DialogSQL({
   button,
   title = 'SQL Code',
   description = 'Raw SQL code of this table',
@@ -44,4 +45,4 @@ export function DialogSQL({
       {...props}
     />
   )
-}
+})

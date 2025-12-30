@@ -1,11 +1,13 @@
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
+import { ErrorLogger } from '@/lib/error-logger'
 
 const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 
-const log = (...args: string[]) => console.log(`[/api/init] ${args.join(' ')}`)
+const log = (...args: string[]) =>
+  ErrorLogger.logDebug(`[/api/init] ${args.join(' ')}`, { component: 'tracking' })
 const error = (...args: string[]) =>
-  console.error(`[/api/init] ${args.join(' ')}`)
+  ErrorLogger.logWarning(`[/api/init] ${args.join(' ')}`, { component: 'tracking' })
 
 const schema = [
   {

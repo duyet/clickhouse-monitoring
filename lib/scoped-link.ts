@@ -2,6 +2,7 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { ErrorLogger } from '@/lib/error-logger'
 
 export async function getHostIdCookie(
   defaultValue: number = 0
@@ -12,7 +13,10 @@ export async function getHostIdCookie(
     return parseInt(cookieStore.get('hostId')?.value || `${defaultValue}`, 10)
   } catch (e) {
     // e.g. `cookies` was called outside a request scope.
-    console.error('getHostIdCookie exception:', e)
+    ErrorLogger.logWarning('getHostIdCookie exception', {
+      component: 'scoped-link',
+      action: 'getHostIdCookie',
+    })
     return defaultValue
   }
 }

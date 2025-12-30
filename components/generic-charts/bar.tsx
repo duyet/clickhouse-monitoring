@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import {
   Bar,
   CartesianGrid,
@@ -19,7 +19,7 @@ import { BarAxes } from './bar-axes'
 import { BarLabel } from './bar-label'
 import { BarTooltip } from './bar-tooltip'
 
-export function BarChart({
+export const BarChart = memo(function BarChart({
   data,
   index,
   categories,
@@ -175,4 +175,4 @@ export function BarChart({
       </RechartBarChart>
     </ChartContainer>
   )
-}
+})

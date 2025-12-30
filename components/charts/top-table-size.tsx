@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { BarList } from '@/components/tremor/bar-list'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useChartData } from '@/lib/swr'
 
-export function ChartTopTableSize({
+export const ChartTopTableSize = memo(function ChartTopTableSize({
   title,
   className,
   hostId,
@@ -91,6 +92,6 @@ export function ChartTopTableSize({
       </Tabs>
     </ChartCard>
   )
-}
+})
 
 export default ChartTopTableSize

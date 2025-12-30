@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export function ChartDisksUsage({
+export const ChartDisksUsage = memo(function ChartDisksUsage({
   title = 'Disks Usage over last 30 days',
   interval = 'toStartOfDay',
   className,
@@ -71,6 +72,6 @@ export function ChartDisksUsage({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartDisksUsage

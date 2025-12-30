@@ -2,6 +2,7 @@
 
 import { ChartSkeleton } from '@/components/skeleton'
 import { useHostId } from '@/lib/swr'
+import { ErrorLogger } from '@/lib/error-logger'
 import { notFound } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useMemo } from 'react'
@@ -17,7 +18,11 @@ function DynamicChart({ chartName, hostId, index }: DynamicChartProps) {
     try {
       return require(`@/components/charts/${chartName}`).default
     } catch (e) {
-      console.error(`Error loading chart: ${chartName}`, e)
+      ErrorLogger.logError(e as Error, {
+        component: 'DynamicChart',
+        action: 'load-chart',
+        chartName,
+      })
       return null
     }
   }, [chartName])

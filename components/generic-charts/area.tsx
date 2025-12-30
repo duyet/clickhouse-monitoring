@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import {
   type ChartConfig,
   ChartContainer,
@@ -24,7 +24,7 @@ import type {
   ValueType,
 } from 'recharts/types/component/DefaultTooltipContent'
 
-export function AreaChart({
+export const AreaChart = memo(function AreaChart({
   data,
   index,
   categories,
@@ -73,6 +73,17 @@ export function AreaChart({
     }
   }, [categories, colors, colorLabel, customChartConfig])
 
+  // Memoize tooltip renderer to prevent recreation on every render
+  const tooltip = useMemo(() => renderChartTooltip({
+    breakdown,
+    breakdownLabel,
+    breakdownValue,
+    breakdownHeading,
+    tooltipActive,
+    chartConfig,
+    categories,
+  }), [breakdown, breakdownLabel, breakdownValue, breakdownHeading, tooltipActive, chartConfig, categories])
+
   return (
     <ChartContainer
       config={chartConfig}
@@ -118,15 +129,7 @@ export function AreaChart({
           />
         )}
 
-        {renderChartTooltip({
-          breakdown,
-          breakdownLabel,
-          breakdownValue,
-          breakdownHeading,
-          tooltipActive,
-          chartConfig,
-          categories,
-        })}
+        {tooltip}
 
         {categories.map((category) => (
           <Area
@@ -145,7 +148,7 @@ export function AreaChart({
       </RechartAreaChart>
     </ChartContainer>
   )
-}
+})
 
 function renderChartTooltip<
   _TValue extends ValueType,

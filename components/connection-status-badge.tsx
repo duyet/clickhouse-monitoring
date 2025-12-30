@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckCircle2Icon, CircleXIcon, LoaderIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -10,6 +10,7 @@ import { useHostId } from '@/lib/swr'
 
 type ConnectionStatus = 'loading' | 'connected' | 'error'
 
+// Status config moved to module level to prevent recreation on every render
 const statusConfig = {
   loading: {
     icon: <LoaderIcon className="size-3 animate-spin" />,
@@ -26,54 +27,53 @@ const statusConfig = {
     label: 'Disconnected',
     tooltip: 'Unable to connect to ClickHouse. Check your connection.',
   },
-}
+} as const
 
-export function ConnectionStatusBadge() {
+export const ConnectionStatusBadge = memo(function ConnectionStatusBadge() {
   const hostId = useHostId()
   const [status, setStatus] = useState<ConnectionStatus>('loading')
+
+  // Simple health check - fetch a small query (memoized with useCallback)
+  const checkConnection = useCallback(async () => {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+
+      const response = await fetch(`/api/v1/charts/hostname?hostId=${hostId}`, {
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
+      if (response.ok) {
+        setStatus('connected')
+      } else {
+        setStatus('error')
+        ErrorLogger.logWarning(
+          `Connection check failed for host ${hostId}: ${response.status} ${response.statusText}`,
+          { component: 'ConnectionStatusBadge', hostId }
+        )
+      }
+    } catch (err) {
+      setStatus('error')
+      // Log network errors for debugging
+      ErrorLogger.logError(
+        err instanceof Error ? err : new Error('Unknown connection error'),
+        { component: 'ConnectionStatusBadge', hostId }
+      )
+    }
+  }, [hostId])
 
   useEffect(() => {
     // Reset when host changes
     setStatus('loading')
-
-    // Simple health check - fetch a small query
-    const checkConnection = async () => {
-      try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
-
-        const response = await fetch(`/api/v1/charts/hostname?hostId=${hostId}`, {
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeoutId)
-
-        if (response.ok) {
-          setStatus('connected')
-        } else {
-          setStatus('error')
-          ErrorLogger.logWarning(
-            `Connection check failed for host ${hostId}: ${response.status} ${response.statusText}`,
-            { component: 'ConnectionStatusBadge', hostId }
-          )
-        }
-      } catch (err) {
-        setStatus('error')
-        // Log network errors for debugging
-        ErrorLogger.logError(
-          err instanceof Error ? err : new Error('Unknown connection error'),
-          { component: 'ConnectionStatusBadge', hostId }
-        )
-      }
-    }
-
     checkConnection()
 
     // Recheck every 30 seconds
     const interval = setInterval(checkConnection, 30000)
 
     return () => clearInterval(interval)
-  }, [hostId])
+  }, [checkConnection, hostId])
 
   const config = statusConfig[status]
 
@@ -90,8 +90,10 @@ export function ConnectionStatusBadge() {
           variant={status === 'error' ? 'destructive' : 'outline'}
           className={badgeClasses[status]}
           aria-label={config.tooltip}
+          role="status"
+          aria-live="polite"
         >
-          {config.icon}
+          <span aria-hidden="true">{config.icon}</span>
           <span className="hidden sm:inline">{config.label}</span>
         </Badge>
       </TooltipTrigger>
@@ -100,4 +102,4 @@ export function ConnectionStatusBadge() {
       </TooltipContent>
     </Tooltip>
   )
-}
+})

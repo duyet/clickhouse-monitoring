@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export function ChartFailedQueryCount({
+export const ChartFailedQueryCount = memo(function ChartFailedQueryCount({
   title,
   interval = 'toStartOfMinute',
   className,
@@ -78,6 +79,4 @@ export function ChartFailedQueryCount({
       />
     </ChartCard>
   )
-}
-
-export default ChartFailedQueryCount
+})

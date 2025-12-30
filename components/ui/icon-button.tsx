@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode, ComponentProps } from 'react'
+import { memo } from 'react'
 import { Button } from './button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip'
 import { cn } from '@/lib/utils'
@@ -34,7 +35,7 @@ const iconSizes = {
  * Icon button with built-in tooltip support.
  * Use this for any icon-only button to ensure accessibility.
  */
-export function IconButton({
+export const IconButton = memo(function IconButton({
   tooltip,
   icon,
   shortcut,
@@ -66,4 +67,4 @@ export function IconButton({
       </TooltipContent>
     </Tooltip>
   )
-}
+})

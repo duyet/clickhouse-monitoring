@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -9,7 +10,7 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
 import { chartTickFormatters } from '@/lib/utils'
 
-export function ChartMemoryUsage({
+export const ChartMemoryUsage = memo(function ChartMemoryUsage({
   title,
   interval = 'toStartOfTenMinutes',
   lastHours = 24,
@@ -66,6 +67,6 @@ export function ChartMemoryUsage({
       />
     </ChartCard>
   )
-}
+})
 
 export default ChartMemoryUsage

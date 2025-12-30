@@ -87,6 +87,13 @@ export function MetricCard<TData = unknown>({
   // Ensure data is always an array or undefined
   const dataArray = Array.isArray(data) ? data : data ? ([data] as TData[]) : undefined
 
+  const cardClassName = cn(
+    'rounded-lg border-border/50 bg-card/50 backdrop-blur-sm',
+    'shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]',
+    'transition-all duration-200 hover:border-border/80 hover:shadow-[0_2px_8px_0_rgb(0_0_0/0.04)]',
+    className
+  )
+
   // Loading state
   if (isLoading) {
     return <MetricCardSkeleton title={title} description={description} className={className} />
@@ -95,25 +102,25 @@ export function MetricCard<TData = unknown>({
   // Error state
   if (error) {
     return (
-      <Card className={cn('rounded-md', className)}>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">{title}</CardTitle>
+      <Card className={cardClassName}>
+        <CardHeader className="px-3 pb-0 pt-3">
+          <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title}</CardTitle>
           {description && <CardDescription className="text-xs">{description}</CardDescription>}
         </CardHeader>
-        <CardContent>
-          <div className="rounded-md border border-destructive/20 bg-destructive/10 p-3">
+        <CardContent className="px-3 pt-2 pb-3">
+          <div className="rounded-md border border-destructive/20 bg-destructive/5 p-2">
             <div className="flex items-start gap-2">
-              <AlertCircleIcon className="text-destructive mt-0.5 h-4 w-4 flex-none" />
-              <div className="flex-1">
-                <div className="text-destructive text-xs font-medium">Error loading data</div>
-                <div className="text-muted-foreground mt-1 text-xs">{error.message}</div>
+              <AlertCircleIcon className="text-destructive mt-0.5 h-3.5 w-3.5 flex-none" />
+              <div className="flex-1 min-w-0">
+                <div className="text-destructive text-xs font-medium">Error</div>
+                <div className="text-muted-foreground mt-0.5 text-xs truncate">{error.message}</div>
               </div>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => retry()}
-              className="mt-2 h-7 text-xs"
+              className="mt-1.5 h-6 text-xs"
             >
               <RefreshCwIcon className="h-3 w-3" /> Retry
             </Button>
@@ -126,13 +133,13 @@ export function MetricCard<TData = unknown>({
   // Empty state
   if (!dataArray || dataArray.length === 0) {
     return (
-      <Card className={cn('rounded-md', className)}>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">{title}</CardTitle>
+      <Card className={cardClassName}>
+        <CardHeader className="px-3 pb-0 pt-3">
+          <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title}</CardTitle>
           {description && <CardDescription className="text-xs">{description}</CardDescription>}
         </CardHeader>
-        <CardContent>
-          <div className="text-muted-foreground text-sm">No data available</div>
+        <CardContent className="px-3 pt-2 pb-3">
+          <div className="text-muted-foreground text-xs">No data</div>
         </CardContent>
       </Card>
     )
@@ -140,16 +147,16 @@ export function MetricCard<TData = unknown>({
 
   // Render metric with data
   return (
-    <Card className={cn('rounded-md', className)}>
-      <CardHeader className="px-4 pb-1 pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-sm">{title}</CardTitle>
+    <Card className={cardClassName}>
+      <CardHeader className="px-3 pb-0 pt-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title}</CardTitle>
             {description && <CardDescription className="text-xs">{description}</CardDescription>}
           </div>
           {viewAllHref && (
             <a
-              className="text-muted-foreground hover:text-foreground text-sm"
+              className="text-muted-foreground/60 hover:text-foreground text-xs whitespace-nowrap transition-colors"
               href={viewAllHref}
             >
               {viewAllLabel}
@@ -157,7 +164,7 @@ export function MetricCard<TData = unknown>({
           )}
         </div>
       </CardHeader>
-      <CardContent className="px-4 pt-0 pb-4">{children(dataArray)}</CardContent>
+      <CardContent className="px-3 pt-2 pb-3">{children(dataArray)}</CardContent>
     </Card>
   )
 }
@@ -175,22 +182,26 @@ function MetricCardSkeleton({
   className?: string
 }) {
   return (
-    <Card className={cn('rounded-md', className)}>
-      <CardHeader className="px-4 pb-1 pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
+    <Card className={cn(
+      'rounded-lg border-border/50 bg-card/50',
+      'shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]',
+      className
+    )}>
+      <CardHeader className="px-3 pb-0 pt-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
             {title ? (
-              <div className="text-sm font-medium">{title}</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title}</div>
             ) : (
-              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-20 animate-shimmer rounded bg-accent/50" />
             )}
-            {description && <div className="mt-1 h-3 w-16 animate-pulse rounded bg-muted" />}
+            {description && <div className="mt-0.5 h-2.5 w-12 animate-shimmer rounded bg-accent/50" />}
           </div>
-          {title && <div className="h-4 w-16 animate-pulse rounded bg-muted" />}
+          {title && <div className="h-2.5 w-12 animate-shimmer rounded bg-accent/50" />}
         </div>
       </CardHeader>
-      <CardContent className="px-4 pt-0 pb-4">
-        <div className="h-8 w-20 animate-pulse rounded bg-muted" />
+      <CardContent className="px-3 pt-2 pb-3">
+        <div className="h-6 w-14 animate-shimmer rounded bg-accent/50" />
       </CardContent>
     </Card>
   )

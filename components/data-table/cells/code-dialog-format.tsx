@@ -1,6 +1,7 @@
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { SizeIcon } from '@radix-ui/react-icons'
 import dedent from 'dedent'
+import { memo, useMemo } from 'react'
 
 import {
   Dialog,
@@ -28,17 +29,20 @@ interface CodeDialogFormatProps {
 
 const CODE_TRUNCATE_LENGTH = 50
 
-export function CodeDialogFormat({
+export const CodeDialogFormat = memo(function CodeDialogFormat({
   value,
   options,
 }: CodeDialogFormatProps): React.ReactNode {
   const truncate_length = options?.max_truncate || CODE_TRUNCATE_LENGTH
 
-  const formatted = formatQuery({
-    query: value,
-    comment_remove: options?.hide_query_comment,
-    truncate: truncate_length,
-  })
+  // Memoize query formatting
+  const formatted = useMemo(() => {
+    return formatQuery({
+      query: value,
+      comment_remove: options?.hide_query_comment,
+      truncate: truncate_length,
+    })
+  }, [value, options?.hide_query_comment, truncate_length])
 
   if (formatted.length < truncate_length) {
     return <code>{formatted}</code>
@@ -49,16 +53,20 @@ export function CodeDialogFormat({
     return <code>{formatted}</code>
   }
 
-  let content = value
-  if (options?.json) {
-    let json = content
-    try {
-      json = JSON.parse(value)
-    } catch {}
-    try {
-      content = JSON.stringify(json, null, 2)
-    } catch {}
-  }
+  // Memoize JSON processing for dialog content
+  const content = useMemo(() => {
+    let result = value
+    if (options?.json) {
+      let json = result
+      try {
+        json = JSON.parse(value)
+      } catch {}
+      try {
+        result = JSON.stringify(json, null, 2)
+      } catch {}
+    }
+    return result
+  }, [value, options?.json])
 
   return (
     <Dialog>
@@ -102,4 +110,4 @@ export function CodeDialogFormat({
       </DialogContent>
     </Dialog>
   )
-}
+})

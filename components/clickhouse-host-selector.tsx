@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, use } from 'react'
+import { Suspense, useCallback, memo, use } from 'react'
 
 import {
   Select,
@@ -51,7 +51,7 @@ export function ClickHouseHostSelector({
     return null
   }
 
-  const handleValueChange = (val: string) => {
+  const handleValueChange = useCallback((val: string) => {
     const hostId = parseInt(val, 10)
     if (!Number.isNaN(hostId) && hostId >= 0) {
       // Update the host query parameter
@@ -59,7 +59,7 @@ export function ClickHouseHostSelector({
       newParams.set('host', hostId.toString())
       router.push(`${pathname}?${newParams.toString()}`)
     }
-  }
+  }, [searchParams, pathname, router])
 
   return (
     <div>
@@ -70,13 +70,16 @@ export function ClickHouseHostSelector({
         <SelectTrigger
           className="w-auto border-0 p-1 shadow-none focus:ring-0"
           data-testid="host-selector"
+          aria-label={`Select ClickHouse host. Current host: ${current.name || getHost(current.host)}`}
         >
           <SelectValue
             placeholder={current.name || getHost(current.host)}
             className="mr-2 w-fit truncate"
           />
         </SelectTrigger>
-        <SelectContent data-testid="host-options">
+        <SelectContent
+          data-testid="host-options"
+        >
           {configs.map((config) => (
             <SelectItem
               key={config.host + config.id}
@@ -87,7 +90,7 @@ export function ClickHouseHostSelector({
                 <span>{config.name || getHost(config.host)}</span>
                 <Suspense
                   fallback={
-                    <StatusIndicator title={['']} className="bg-gray-500" />
+                    <StatusIndicator title={['Loading...']} className="bg-gray-400 animate-pulse" />
                   }
                 >
                   <HostStatus promise={config.promise} />
@@ -121,30 +124,41 @@ export function HostStatus({ promise }: { promise: UptimePromise }) {
   return <StatusIndicator title={[`The host is offline`]} />
 }
 
-const StatusIndicator = ({
+const StatusIndicator = memo(function StatusIndicator({
   title,
   className,
 }: {
   title: string[]
   className?: string
-}) => (
-  <TooltipProvider delayDuration={0}>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="relative flex size-2 cursor-pointer">
+}) {
+  const isOnline = className !== undefined
+  const statusText = isOnline ? 'Online' : 'Offline'
+
+  return (
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
           <span
-            className={cn(
-              'absolute inline-flex size-full rounded-full bg-red-400',
-              className
-            )}
-          ></span>
-        </span>
-      </TooltipTrigger>
-      <TooltipContent side="bottom">
-        {title.map((t, i) => (
-          <p key={i}>{t}</p>
-        ))}
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-)
+            className="relative flex size-2 cursor-pointer"
+            role="status"
+            aria-label={statusText}
+          >
+            <span
+              className={cn(
+                'absolute inline-flex size-full rounded-full',
+                !className && 'bg-red-400', // Only red if no className provided (offline)
+                className
+              )}
+              aria-hidden="true"
+            ></span>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          {title.map((t, i) => (
+            <p key={i}>{t}</p>
+          ))}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+})

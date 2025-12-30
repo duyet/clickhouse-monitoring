@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 
 interface TruncatedParagraphProps {
   lineClamp?: number
@@ -9,7 +9,7 @@ interface TruncatedParagraphProps {
   className?: string
 }
 
-export function TruncatedParagraph({
+export const TruncatedParagraph = memo(function TruncatedParagraph({
   lineClamp = 2,
   children,
   className,
@@ -62,4 +62,4 @@ export function TruncatedParagraph({
       )}
     </div>
   )
-}
+})
