@@ -116,7 +116,10 @@ export function useRenderPerformance(componentName: string): void {
  */
 export function useAsyncPerformance(componentName: string) {
   const measureAsync = useCallback(
-    async <T>(operationName: string, operation: () => Promise<T>): Promise<T> => {
+    async <T>(
+      operationName: string,
+      operation: () => Promise<T>
+    ): Promise<T> => {
       const startTime = performance.now()
 
       try {
@@ -200,7 +203,9 @@ export function getPerformanceMetrics(): PerformanceMetrics[] {
 /**
  * Get metrics for a specific component
  */
-export function getComponentMetrics(componentName: string): PerformanceMetrics | undefined {
+export function getComponentMetrics(
+  componentName: string
+): PerformanceMetrics | undefined {
   return metricsStore.get(componentName)
 }
 

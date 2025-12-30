@@ -14,7 +14,11 @@ import type {
 import { QUERY_COMMENT } from './constants'
 import { getClient } from './clickhouse-client'
 import { getClickHouseConfigs } from './clickhouse-config'
-import type { FetchDataError, FetchDataErrorType, FetchDataResult } from './types'
+import type {
+  FetchDataError,
+  FetchDataErrorType,
+  FetchDataResult,
+} from './types'
 
 /**
  * Fetch data from ClickHouse with comprehensive error handling

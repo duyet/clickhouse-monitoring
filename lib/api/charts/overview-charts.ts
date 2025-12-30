@@ -26,11 +26,11 @@ export const overviewCharts: Record<string, ChartQueryBuilder> = {
     `,
   }),
 
-  'hostname': () => ({
+  hostname: () => ({
     query: `SELECT hostName() as val`,
   }),
 
-  'version': () => ({
+  version: () => ({
     query: `SELECT version() as val`,
   }),
 

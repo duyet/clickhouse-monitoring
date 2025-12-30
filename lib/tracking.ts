@@ -5,9 +5,13 @@ import { ErrorLogger } from '@/lib/error-logger'
 const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 
 const log = (...args: string[]) =>
-  ErrorLogger.logDebug(`[/api/init] ${args.join(' ')}`, { component: 'tracking' })
+  ErrorLogger.logDebug(`[/api/init] ${args.join(' ')}`, {
+    component: 'tracking',
+  })
 const error = (...args: string[]) =>
-  ErrorLogger.logWarning(`[/api/init] ${args.join(' ')}`, { component: 'tracking' })
+  ErrorLogger.logWarning(`[/api/init] ${args.join(' ')}`, {
+    component: 'tracking',
+  })
 
 const schema = [
   {

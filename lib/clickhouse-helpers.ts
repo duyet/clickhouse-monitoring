@@ -55,10 +55,13 @@ export async function fetchDataWithHost<
       try {
         finalHostId = await getHostIdCookie(0)
       } catch (error) {
-        ErrorLogger.logWarning('Failed to get hostId from cookie, using default 0', {
-          component: 'fetchDataWithHost',
-          error: error instanceof Error ? error.message : String(error),
-        })
+        ErrorLogger.logWarning(
+          'Failed to get hostId from cookie, using default 0',
+          {
+            component: 'fetchDataWithHost',
+            error: error instanceof Error ? error.message : String(error),
+          }
+        )
         finalHostId = 0
       }
     }
@@ -113,12 +116,16 @@ export function validateHostId(hostId: unknown): number {
   if (typeof hostId === 'string') {
     // Check if string contains only digits (no decimals, no other characters)
     if (!/^\d+$/.test(hostId.trim())) {
-      ErrorLogger.logWarning(`Invalid hostId: ${hostId}`, { component: 'validateHostId' })
+      ErrorLogger.logWarning(`Invalid hostId: ${hostId}`, {
+        component: 'validateHostId',
+      })
       return 0
     }
     const parsed = parseInt(hostId, 10)
     if (Number.isNaN(parsed) || parsed < 0) {
-      ErrorLogger.logWarning(`Invalid hostId: ${hostId}`, { component: 'validateHostId' })
+      ErrorLogger.logWarning(`Invalid hostId: ${hostId}`, {
+        component: 'validateHostId',
+      })
       return 0
     }
     return parsed
@@ -126,7 +133,9 @@ export function validateHostId(hostId: unknown): number {
 
   if (typeof hostId === 'number') {
     if (hostId < 0 || !Number.isInteger(hostId)) {
-      ErrorLogger.logWarning(`Invalid hostId: ${hostId}`, { component: 'validateHostId' })
+      ErrorLogger.logWarning(`Invalid hostId: ${hostId}`, {
+        component: 'validateHostId',
+      })
       return 0
     }
     return hostId

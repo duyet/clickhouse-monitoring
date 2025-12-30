@@ -38,10 +38,13 @@ function trackFetchMetrics(metrics: FetchMetrics) {
 
   // Log slow requests (> 1s)
   if (metrics.duration > 1000) {
-    ErrorLogger.logWarning(`Slow fetch: ${metrics.url} took ${metrics.duration}ms`, {
-      component: 'SWR',
-      action: 'slow-fetch',
-    })
+    ErrorLogger.logWarning(
+      `Slow fetch: ${metrics.url} took ${metrics.duration}ms`,
+      {
+        component: 'SWR',
+        action: 'slow-fetch',
+      }
+    )
   }
 }
 
@@ -170,7 +173,7 @@ function GlobalRevalidationListener() {
       // Revalidate all SWR caches by passing a function that matches all keys
       mutate(
         () => true, // Match all keys
-        undefined,  // Don't update the data
+        undefined, // Don't update the data
         { revalidate: true }
       )
 

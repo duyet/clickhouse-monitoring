@@ -40,14 +40,11 @@ export function createErrorResponse(
   context?: RouteContext
 ): Response {
   // Log the error with context
-  ErrorLogger.logError(
-    new Error(errorDetails.message),
-    {
-      component: `API:${context?.route || 'unknown'}`,
-      action: context?.method || 'unknown',
-      ...context,
-    }
-  )
+  ErrorLogger.logError(new Error(errorDetails.message), {
+    component: `API:${context?.route || 'unknown'}`,
+    action: context?.method || 'unknown',
+    ...context,
+  })
 
   // Also log to console for immediate visibility
   error(
@@ -121,11 +118,16 @@ export function withApiHandler(
       if (err instanceof Error) {
         const message = err.message.toLowerCase()
 
-        if (message.includes('permission') || message.includes('access denied')) {
+        if (
+          message.includes('permission') ||
+          message.includes('access denied')
+        ) {
           errorType = ApiErrorType.PermissionError
         } else if (
           message.includes('table') &&
-          (message.includes('not found') || message.includes("doesn't exist") || message.includes('missing'))
+          (message.includes('not found') ||
+            message.includes("doesn't exist") ||
+            message.includes('missing'))
         ) {
           errorType = ApiErrorType.TableNotFound
         } else if (

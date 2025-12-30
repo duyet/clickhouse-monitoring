@@ -87,12 +87,15 @@ export const swrConfig = {
 /**
  * Type-safe refresh interval values
  */
-export type RefreshInterval = (typeof REFRESH_INTERVAL)[keyof typeof REFRESH_INTERVAL]
+export type RefreshInterval =
+  (typeof REFRESH_INTERVAL)[keyof typeof REFRESH_INTERVAL]
 
 /**
  * Create a custom SWR config with a specific refresh interval
  */
-export function createPollingConfig(interval: RefreshInterval): SWRConfiguration {
+export function createPollingConfig(
+  interval: RefreshInterval
+): SWRConfiguration {
   return {
     refreshInterval: interval,
   }

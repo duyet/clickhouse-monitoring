@@ -5,7 +5,12 @@
  */
 
 export { useKeyboardShortcut } from './use-keyboard-shortcut'
-export { useDebounce, useDebouncedCallback, useDebounceWithPending, DEBOUNCE_DELAY } from './use-debounce'
+export {
+  useDebounce,
+  useDebouncedCallback,
+  useDebounceWithPending,
+  DEBOUNCE_DELAY,
+} from './use-debounce'
 export {
   useRenderPerformance,
   useAsyncPerformance,

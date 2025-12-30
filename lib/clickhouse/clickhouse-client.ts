@@ -11,7 +11,12 @@ import { createClient as createClientWeb } from '@clickhouse/client-web'
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 import { DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME } from './constants'
-import { clientPool, getConnectionPoolStats, getPoolKey, getPooledClient } from './connection-pool'
+import {
+  clientPool,
+  getConnectionPoolStats,
+  getPoolKey,
+  getPooledClient,
+} from './connection-pool'
 import type { ClickHouseConfig } from './types'
 import { getClickHouseConfigs } from './clickhouse-config'
 

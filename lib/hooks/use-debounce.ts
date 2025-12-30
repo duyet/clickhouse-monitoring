@@ -38,7 +38,10 @@ export const DEBOUNCE_DELAY = {
  * }, [debouncedSearch])
  * ```
  */
-export function useDebounce<T>(value: T, delay: number = DEBOUNCE_DELAY.DEFAULT): T {
+export function useDebounce<T>(
+  value: T,
+  delay: number = DEBOUNCE_DELAY.DEFAULT
+): T {
   const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {
@@ -78,7 +81,9 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
   delay: number = DEBOUNCE_DELAY.DEFAULT,
   deps: React.DependencyList = []
 ): T {
-  const [debouncedCall, setDebouncedCall] = useState<ReturnType<typeof setTimeout> | null>(null)
+  const [debouncedCall, setDebouncedCall] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null)
 
   useEffect(() => {
     // Clean up any pending debounced call on unmount or dependency change

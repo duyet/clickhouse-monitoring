@@ -40,10 +40,13 @@ export function setSecureCookie(
   }
 ): void {
   if (typeof document === 'undefined') {
-    ErrorLogger.logWarning('setSecureCookie can only be called in browser context', {
-      component: 'cookie-utils',
-      action: 'setSecureCookie',
-    })
+    ErrorLogger.logWarning(
+      'setSecureCookie can only be called in browser context',
+      {
+        component: 'cookie-utils',
+        action: 'setSecureCookie',
+      }
+    )
     return
   }
 

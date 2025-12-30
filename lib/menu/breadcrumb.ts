@@ -52,7 +52,10 @@ export function isMenuItemActive(itemHref: string, pathname: string): boolean {
   }
 
   // Parent path match (e.g., /tables matches /database)
-  if (normalizedPath.startsWith(normalizedHref + '/') || normalizedPath.startsWith(normalizedHref + '?')) {
+  if (
+    normalizedPath.startsWith(normalizedHref + '/') ||
+    normalizedPath.startsWith(normalizedHref + '?')
+  ) {
     return true
   }
 

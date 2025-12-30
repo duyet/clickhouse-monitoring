@@ -27,7 +27,12 @@ import { systemCharts } from './charts/system-charts'
 import { zookeeperCharts } from './charts/zookeeper-charts'
 
 // Re-export types from the central types module
-export type { ChartQueryParams, ChartQueryResult, ChartQueryBuilder, MultiChartQueryResult } from './charts/types'
+export type {
+  ChartQueryParams,
+  ChartQueryResult,
+  ChartQueryBuilder,
+  MultiChartQueryResult,
+} from './charts/types'
 
 /**
  * Chart registry mapping chart names to their SQL query builders.
@@ -71,7 +76,10 @@ export const chartRegistry: Record<string, (params: any) => any> = {
 export function getChartQuery(
   chartName: string,
   params: import('./charts/types').ChartQueryParams = {}
-): import('./charts/types').ChartQueryResult | import('./charts/types').MultiChartQueryResult | null {
+):
+  | import('./charts/types').ChartQueryResult
+  | import('./charts/types').MultiChartQueryResult
+  | null {
   const builder = chartRegistry[chartName]
   if (!builder) {
     return null
