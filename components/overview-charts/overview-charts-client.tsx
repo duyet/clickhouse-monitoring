@@ -51,7 +51,7 @@ const RunningQueries = memo(function RunningQueries({ hostId }: { hostId: number
       viewAllHref={`/running-queries?host=${hostId}`}
     >
       {(data) => (
-        <div className="font-mono text-2xl font-semibold tabular-nums tracking-tight">
+        <div className="font-mono text-xl font-semibold tabular-nums tracking-tight">
           {(data[0] as { count: number }).count}
         </div>
       )}
@@ -104,16 +104,12 @@ const DatabaseTableCount = memo(function DatabaseTableCount({ hostId }: { hostId
       viewAllHref={`/tables-overview?host=${hostId}`}
     >
       {() => (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-sm tabular-nums">
-              {dbArray[0]?.count || 0} databases
-            </span>
+        <div className="space-y-1">
+          <div className="font-mono text-xs tabular-nums">
+            {dbArray[0]?.count || 0} databases
           </div>
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-sm tabular-nums">
-              {tablesArray[0]?.count || 0} tables
-            </span>
+          <div className="font-mono text-xs tabular-nums">
+            {tablesArray[0]?.count || 0} tables
           </div>
         </div>
       )}
@@ -154,29 +150,29 @@ const ClickHouseInfo = memo(function ClickHouseInfo({ hostId }: { hostId: number
       description="ClickHouse"
     >
       {() => (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground text-sm">Host</span>
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground text-[10px]">Host</span>
             <div
-              className="truncate text-sm font-medium"
+              className="truncate text-xs font-medium"
               title={hostArray[0]?.val || ''}
             >
               {hostArray[0]?.val || '-'}
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground text-sm">Version</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground text-[10px]">Version</span>
             <div
-              className="truncate text-sm font-medium"
+              className="truncate text-xs font-medium"
               title={versionArray[0]?.val || ''}
             >
               {versionArray[0]?.val || '-'}
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground text-sm">Uptime</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground text-[10px]">Uptime</span>
             <div
-              className="truncate text-sm font-medium"
+              className="truncate text-xs font-medium"
               title={uptimeArray[0]?.val || ''}
             >
               {uptimeArray[0]?.val || '-'}
@@ -215,13 +211,11 @@ const DiskSize = memo(function DiskSize({ hostId }: { hostId: number }) {
         }
         return (
           <>
-            <CardDescription className="text-xs">
+            <CardDescription className="text-[10px]">
               {first.readable_total_space} total ({first.name} disk)
             </CardDescription>
-            <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold">
-                {first.readable_used_space} used
-              </div>
+            <div className="text-lg font-bold">
+              {first.readable_used_space} used
             </div>
           </>
         )
@@ -234,26 +228,26 @@ const DiskSize = memo(function DiskSize({ hostId }: { hostId: number }) {
 const MetricCardSkeleton = memo(function MetricCardSkeleton({ title, description }: { title?: string; description?: string }) {
   return (
     <div
-      className="rounded-lg border border-border/50 bg-card/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]"
+      className="rounded-md border border-border/50 bg-card/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]"
       role="status"
       aria-label={`Loading ${title || 'metric'}`}
       aria-busy="true"
     >
-      <div className="px-3 pb-0 pt-3">
+      <div className="px-3 pb-0 pt-2">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1">
             {title ? (
-              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title}</div>
+              <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">{title}</div>
             ) : (
-              <div className="h-3 w-20 animate-shimmer rounded bg-accent/50" />
+              <div className="h-2.5 w-16 animate-shimmer rounded bg-accent/50" />
             )}
-            {description && <div className="mt-0.5 h-2.5 w-12 animate-shimmer rounded bg-accent/50" />}
+            {description && <div className="mt-0.5 h-2 w-10 animate-shimmer rounded bg-accent/50" />}
           </div>
-          {title && <div className="h-2.5 w-12 animate-shimmer rounded bg-accent/50" />}
+          {title && <div className="h-2 w-10 animate-shimmer rounded bg-accent/50" />}
         </div>
       </div>
-      <div className="px-3 pt-2 pb-3">
-        <div className="h-6 w-14 animate-shimmer rounded bg-accent/50" />
+      <div className="px-3 pt-1.5 pb-2.5">
+        <div className="h-5 w-12 animate-shimmer rounded bg-accent/50" />
       </div>
       <span className="sr-only">Loading {title || 'metric'} data...</span>
     </div>
@@ -273,21 +267,21 @@ const MetricCardError = memo(function MetricCardError({
 }) {
   return (
     <div
-      className="rounded-lg border border-border/50 bg-card/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]"
+      className="rounded-md border border-border/50 bg-card/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]"
       role="alert"
       aria-label={`Error loading ${title || 'metric'}`}
     >
-      <div className="px-3 pb-0 pt-3">
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title || 'Error'}</div>
-        {description && <div className="text-muted-foreground mt-0.5 text-xs">{description}</div>}
+      <div className="px-3 pb-0 pt-2">
+        <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">{title || 'Error'}</div>
+        {description && <div className="text-muted-foreground mt-0.5 text-[10px]">{description}</div>}
       </div>
-      <div className="px-3 pt-2 pb-3">
-        <div className="rounded-md border border-destructive/20 bg-destructive/5 p-2">
-          <div className="text-destructive text-xs font-medium">Error</div>
-          <div className="text-muted-foreground mt-0.5 text-xs truncate">{error.message}</div>
+      <div className="px-3 pt-1.5 pb-2.5">
+        <div className="rounded border border-destructive/20 bg-destructive/5 p-1.5">
+          <div className="text-destructive text-[10px] font-medium">Error</div>
+          <div className="text-muted-foreground text-[10px] truncate">{error.message}</div>
           <button
             onClick={onRetry}
-            className="text-muted-foreground hover:text-foreground mt-1.5 text-xs underline transition-colors"
+            className="text-muted-foreground hover:text-foreground mt-1 text-[10px] underline transition-colors"
             aria-label="Retry loading data"
           >
             Retry

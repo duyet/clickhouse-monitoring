@@ -88,7 +88,7 @@ export function MetricCard<TData = unknown>({
   const dataArray = Array.isArray(data) ? data : data ? ([data] as TData[]) : undefined
 
   const cardClassName = cn(
-    'rounded-lg border-border/50 bg-card/50 backdrop-blur-sm',
+    'rounded-md border-border/50 bg-card/50 backdrop-blur-sm',
     'shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]',
     'transition-all duration-200 hover:border-border/80 hover:shadow-[0_2px_8px_0_rgb(0_0_0/0.04)]',
     className
@@ -103,26 +103,26 @@ export function MetricCard<TData = unknown>({
   if (error) {
     return (
       <Card className={cardClassName}>
-        <CardHeader className="px-3 pb-0 pt-3">
-          <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title}</CardTitle>
-          {description && <CardDescription className="text-xs">{description}</CardDescription>}
+        <CardHeader className="px-3 pb-0 pt-2">
+          <CardTitle className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">{title}</CardTitle>
+          {description && <CardDescription className="text-[10px]">{description}</CardDescription>}
         </CardHeader>
-        <CardContent className="px-3 pt-2 pb-3">
-          <div className="rounded-md border border-destructive/20 bg-destructive/5 p-2">
-            <div className="flex items-start gap-2">
-              <AlertCircleIcon className="text-destructive mt-0.5 h-3.5 w-3.5 flex-none" />
+        <CardContent className="px-3 pt-1.5 pb-2.5">
+          <div className="rounded border border-destructive/20 bg-destructive/5 p-1.5">
+            <div className="flex items-start gap-1.5">
+              <AlertCircleIcon className="text-destructive mt-0.5 h-3 w-3 flex-none" />
               <div className="flex-1 min-w-0">
-                <div className="text-destructive text-xs font-medium">Error</div>
-                <div className="text-muted-foreground mt-0.5 text-xs truncate">{error.message}</div>
+                <div className="text-destructive text-[10px] font-medium">Error</div>
+                <div className="text-muted-foreground text-[10px] truncate">{error.message}</div>
               </div>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => retry()}
-              className="mt-1.5 h-6 text-xs"
+              className="mt-1 h-5 text-[10px] px-2"
             >
-              <RefreshCwIcon className="h-3 w-3" /> Retry
+              <RefreshCwIcon className="h-2.5 w-2.5" /> Retry
             </Button>
           </div>
         </CardContent>
@@ -134,12 +134,12 @@ export function MetricCard<TData = unknown>({
   if (!dataArray || dataArray.length === 0) {
     return (
       <Card className={cardClassName}>
-        <CardHeader className="px-3 pb-0 pt-3">
-          <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title}</CardTitle>
-          {description && <CardDescription className="text-xs">{description}</CardDescription>}
+        <CardHeader className="px-3 pb-0 pt-2">
+          <CardTitle className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">{title}</CardTitle>
+          {description && <CardDescription className="text-[10px]">{description}</CardDescription>}
         </CardHeader>
-        <CardContent className="px-3 pt-2 pb-3">
-          <div className="text-muted-foreground text-xs">No data</div>
+        <CardContent className="px-3 pt-1.5 pb-2.5">
+          <div className="text-muted-foreground text-[10px]">No data</div>
         </CardContent>
       </Card>
     )
@@ -148,15 +148,15 @@ export function MetricCard<TData = unknown>({
   // Render metric with data
   return (
     <Card className={cardClassName}>
-      <CardHeader className="px-3 pb-0 pt-3">
+      <CardHeader className="px-3 pb-0 pt-2">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title}</CardTitle>
-            {description && <CardDescription className="text-xs">{description}</CardDescription>}
+            <CardTitle className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">{title}</CardTitle>
+            {description && <CardDescription className="text-[10px]">{description}</CardDescription>}
           </div>
           {viewAllHref && (
             <a
-              className="text-muted-foreground/60 hover:text-foreground text-xs whitespace-nowrap transition-colors"
+              className="text-muted-foreground/60 hover:text-foreground text-[10px] whitespace-nowrap transition-colors"
               href={viewAllHref}
             >
               {viewAllLabel}
@@ -164,7 +164,7 @@ export function MetricCard<TData = unknown>({
           )}
         </div>
       </CardHeader>
-      <CardContent className="px-3 pt-2 pb-3">{children(dataArray)}</CardContent>
+      <CardContent className="px-3 pt-1.5 pb-2.5">{children(dataArray)}</CardContent>
     </Card>
   )
 }
@@ -183,25 +183,25 @@ function MetricCardSkeleton({
 }) {
   return (
     <Card className={cn(
-      'rounded-lg border-border/50 bg-card/50',
+      'rounded-md border-border/50 bg-card/50',
       'shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]',
       className
     )}>
-      <CardHeader className="px-3 pb-0 pt-3">
+      <CardHeader className="px-3 pb-0 pt-2">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1">
             {title ? (
-              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">{title}</div>
+              <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">{title}</div>
             ) : (
-              <div className="h-3 w-20 animate-shimmer rounded bg-accent/50" />
+              <div className="h-2.5 w-16 animate-shimmer rounded bg-accent/50" />
             )}
-            {description && <div className="mt-0.5 h-2.5 w-12 animate-shimmer rounded bg-accent/50" />}
+            {description && <div className="mt-0.5 h-2 w-10 animate-shimmer rounded bg-accent/50" />}
           </div>
-          {title && <div className="h-2.5 w-12 animate-shimmer rounded bg-accent/50" />}
+          {title && <div className="h-2 w-10 animate-shimmer rounded bg-accent/50" />}
         </div>
       </CardHeader>
-      <CardContent className="px-3 pt-2 pb-3">
-        <div className="h-6 w-14 animate-shimmer rounded bg-accent/50" />
+      <CardContent className="px-3 pt-1.5 pb-2.5">
+        <div className="h-5 w-12 animate-shimmer rounded bg-accent/50" />
       </CardContent>
     </Card>
   )

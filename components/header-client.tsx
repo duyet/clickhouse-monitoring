@@ -45,8 +45,8 @@ export const HeaderClient = memo(function HeaderClient() {
         <HeaderActions />
       </div>
 
-      {/* Navigation Row - no overflow clipping to allow dropdown menus */}
-      <nav className="flex h-10 items-center border-t px-4 md:px-6 lg:px-8">
+      {/* Navigation Row - centered menu */}
+      <nav className="flex h-10 items-center justify-center border-t">
         <MenuNavigationStyle items={menuItemsConfig} className="flex items-center gap-1" />
       </nav>
     </header>

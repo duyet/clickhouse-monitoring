@@ -8,7 +8,6 @@ import { useAppContext } from '@/app/context'
 import { Input } from '@/components/ui/input'
 import { IconButton } from '@/components/ui/icon-button'
 import { Button } from '@/components/ui/button'
-import { ConnectionStatusBadge } from '@/components/connection-status-badge'
 import { CommandPalette } from '@/components/command-palette'
 import {
   DropdownMenu,
@@ -125,7 +124,6 @@ export const HeaderActions = memo(function HeaderActions({ menuComponent }: Head
       </DropdownMenu>
 
       <CommandPalette />
-      <ConnectionStatusBadge />
 
       {/* Search - hidden on mobile */}
       <div className="relative hidden md:block">
