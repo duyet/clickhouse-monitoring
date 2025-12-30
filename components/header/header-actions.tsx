@@ -3,8 +3,8 @@
 import { Bell, Moon, Search, Sun } from 'lucide-react'
 import { useRef, useState } from 'react'
 
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { IconButton } from '@/components/ui/icon-button'
 import { ConnectionStatusBadge } from '@/components/connection-status-badge'
 import { useKeyboardShortcut } from '@/lib/hooks/use-keyboard-shortcut'
 
@@ -44,15 +44,18 @@ export function HeaderActions({ menuComponent }: HeaderActionsProps) {
           className="h-8 w-40 bg-muted/30 pl-8 text-xs border-transparent focus-visible:ring-1 focus-visible:ring-primary/30 transition-all md:w-64"
         />
         <kbd className="absolute right-2 top-1/2 -translate-y-1/2 rounded border bg-muted px-1.5 text-[10px] font-medium">
-          K
+          ⌘K
         </kbd>
       </div>
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={toggleTheme}>
-        {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-      </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-        <Bell className="h-4 w-4" />
-      </Button>
+      <IconButton
+        tooltip={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+        icon={theme === 'light' ? <Moon /> : <Sun />}
+        onClick={toggleTheme}
+      />
+      <IconButton
+        tooltip="Notifications"
+        icon={<Bell />}
+      />
       {menuComponent}
     </div>
   )

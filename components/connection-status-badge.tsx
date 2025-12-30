@@ -4,10 +4,29 @@ import { CheckCircle2Icon, CircleXIcon, LoaderIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ErrorLogger } from '@/lib/error-logger'
 import { useHostId } from '@/lib/swr'
 
 type ConnectionStatus = 'loading' | 'connected' | 'error'
+
+const statusConfig = {
+  loading: {
+    icon: <LoaderIcon className="size-3 animate-spin" />,
+    label: 'Connecting...',
+    tooltip: 'Checking connection to ClickHouse...',
+  },
+  connected: {
+    icon: <CheckCircle2Icon className="size-3" />,
+    label: 'Connected',
+    tooltip: 'ClickHouse connection is healthy',
+  },
+  error: {
+    icon: <CircleXIcon className="size-3" />,
+    label: 'Disconnected',
+    tooltip: 'Unable to connect to ClickHouse. Check your connection.',
+  },
+}
 
 export function ConnectionStatusBadge() {
   const hostId = useHostId()
@@ -56,28 +75,29 @@ export function ConnectionStatusBadge() {
     return () => clearInterval(interval)
   }, [hostId])
 
-  if (status === 'loading') {
-    return (
-      <Badge variant="outline" className="gap-1.5">
-        <LoaderIcon className="size-3 animate-spin" />
-        <span className="hidden sm:inline">Connecting...</span>
-      </Badge>
-    )
-  }
+  const config = statusConfig[status]
 
-  if (status === 'error') {
-    return (
-      <Badge variant="destructive" className="gap-1.5">
-        <CircleXIcon className="size-3" />
-        <span className="hidden sm:inline">Disconnected</span>
-      </Badge>
-    )
+  const badgeClasses = {
+    loading: 'gap-1.5',
+    connected: 'gap-1.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-900',
+    error: 'gap-1.5',
   }
 
   return (
-    <Badge variant="outline" className="gap-1.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-900">
-      <CheckCircle2Icon className="size-3" />
-      <span className="hidden sm:inline">Connected</span>
-    </Badge>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge
+          variant={status === 'error' ? 'destructive' : 'outline'}
+          className={badgeClasses[status]}
+          aria-label={config.tooltip}
+        >
+          {config.icon}
+          <span className="hidden sm:inline">{config.label}</span>
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        {config.tooltip}
+      </TooltipContent>
+    </Tooltip>
   )
 }
