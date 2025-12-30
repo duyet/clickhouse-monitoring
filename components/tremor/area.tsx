@@ -73,63 +73,69 @@ export const AreaChart = memo(function AreaChart({
   // - payload: use payload[0].value for the value, such as "$ 450".
   //            Both payload[0].dataKey and payload[0].name for category values, such as "Sales"
   // - label: For x-axis values, such as "Jan 21"
-  const customTooltip = useMemo(() => ({ active, payload, label }: any) => {
-    if (!active || !payload || !payload.length) return null
+  const customTooltip = useMemo(
+    () =>
+      ({ active, payload, label }: any) => {
+        if (!active || !payload || !payload.length) return null
 
-    const col = breakdown as string
-    const breakdownData = payload[0].payload[col]
+        const col = breakdown as string
+        const breakdownData = payload[0].payload[col]
 
-    const data: DonutChartProps['data'] = breakdownData.map(
-      ([name, value]: [string, string]) => ({
-        name,
-        value: parseInt(value, 10),
-      })
-    )
+        const data: DonutChartProps['data'] = breakdownData.map(
+          ([name, value]: [string, string]) => ({
+            name,
+            value: parseInt(value, 10),
+          })
+        )
 
-    return (
-      <div className="z-50 flex flex-col content-center rounded-lg bg-white shadow-lg">
-        <div className="center flex flex-row justify-between border-b p-2 text-xs text-slate-700">
-          <Legend categories={[`${payload[0].name}: ${payload[0].value}`]} />
-          <div className="text-sm text-slate-500">{label}</div>
-        </div>
+        return (
+          <div className="z-50 flex flex-col content-center rounded-lg bg-white shadow-lg">
+            <div className="center flex flex-row justify-between border-b p-2 text-xs text-slate-700">
+              <Legend
+                categories={[`${payload[0].name}: ${payload[0].value}`]}
+              />
+              <div className="text-sm text-slate-500">{label}</div>
+            </div>
 
-        <div className="flex flex-row gap-2">
-          <div className="flex flex-row items-center bg-slate-50 p-3 align-middle">
-            <DonutChart
-              className="h-28 w-28"
-              data={data}
-              category="value"
-              index="name"
-              variant="pie"
-              colors={[
-                'blue-300',
-                'purple-300',
-                'pink-300',
-                'yellow-300',
-                'red-300',
-                'gray-300',
-              ]}
-            />
-          </div>
-          <div>
-            <div className="flex w-48 flex-col p-2 pt-3 pr-3 text-xs text-slate-500">
-              {data.map(({ name, value }) => (
-                <div
-                  key={name}
-                  className="mb-1 flex w-full flex-row justify-between gap-1"
-                >
-                  <span className="truncate">{name}</span>
-                  <span className="font-semibold">
-                    {formatReadableQuantity(value)}
-                  </span>
+            <div className="flex flex-row gap-2">
+              <div className="flex flex-row items-center bg-slate-50 p-3 align-middle">
+                <DonutChart
+                  className="h-28 w-28"
+                  data={data}
+                  category="value"
+                  index="name"
+                  variant="pie"
+                  colors={[
+                    'blue-300',
+                    'purple-300',
+                    'pink-300',
+                    'yellow-300',
+                    'red-300',
+                    'gray-300',
+                  ]}
+                />
+              </div>
+              <div>
+                <div className="flex w-48 flex-col p-2 pt-3 pr-3 text-xs text-slate-500">
+                  {data.map(({ name, value }) => (
+                    <div
+                      key={name}
+                      className="mb-1 flex w-full flex-row justify-between gap-1"
+                    >
+                      <span className="truncate">{name}</span>
+                      <span className="font-semibold">
+                        {formatReadableQuantity(value)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    )
-  }, [breakdown])
+        )
+      },
+    [breakdown]
+  )
 
   return (
     <TremorAreaChart

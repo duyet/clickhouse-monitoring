@@ -32,12 +32,14 @@ export const ChartCard = memo(function ChartCard({
   children,
 }: ChartCardProps) {
   return (
-    <Card className={cn(
-      'rounded-lg border-border/50 bg-card/50 backdrop-blur-sm',
-      'shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]',
-      'transition-all duration-200 hover:border-border/80 hover:shadow-[0_2px_8px_0_rgb(0_0_0/0.04)]',
-      className
-    )}>
+    <Card
+      className={cn(
+        'rounded-lg border-border/50 bg-card/50 backdrop-blur-sm',
+        'shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]',
+        'transition-all duration-200 hover:border-border/80 hover:shadow-[0_2px_8px_0_rgb(0_0_0/0.04)]',
+        className
+      )}
+    >
       {title ? (
         <CardHeader className="p-3 pb-1">
           <header className="group flex flex-row items-center justify-between">

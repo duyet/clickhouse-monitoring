@@ -11,7 +11,11 @@ export interface BarListProps extends TremorBarListProps {
   formatedColumn?: string
 }
 
-export const BarList = memo(function BarList({ data, formatedColumn, ...props }: BarListProps) {
+export const BarList = memo(function BarList({
+  data,
+  formatedColumn,
+  ...props
+}: BarListProps) {
   const valueFormatter = useMemo(() => {
     if (!formatedColumn) {
       return undefined

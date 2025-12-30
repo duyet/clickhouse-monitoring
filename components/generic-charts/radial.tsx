@@ -32,7 +32,9 @@ export const RadialChart = memo(function RadialChart({
         (acc, category, index) => {
           acc[category] = {
             label: category,
-            color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
+            color: colors
+              ? `var(${colors[index]})`
+              : `var(--chart-${index + 1})`,
           }
 
           return acc

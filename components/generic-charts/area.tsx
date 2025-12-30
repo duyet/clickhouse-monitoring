@@ -74,15 +74,27 @@ export const AreaChart = memo(function AreaChart({
   }, [categories, colors, colorLabel, customChartConfig])
 
   // Memoize tooltip renderer to prevent recreation on every render
-  const tooltip = useMemo(() => renderChartTooltip({
-    breakdown,
-    breakdownLabel,
-    breakdownValue,
-    breakdownHeading,
-    tooltipActive,
-    chartConfig,
-    categories,
-  }), [breakdown, breakdownLabel, breakdownValue, breakdownHeading, tooltipActive, chartConfig, categories])
+  const tooltip = useMemo(
+    () =>
+      renderChartTooltip({
+        breakdown,
+        breakdownLabel,
+        breakdownValue,
+        breakdownHeading,
+        tooltipActive,
+        chartConfig,
+        categories,
+      }),
+    [
+      breakdown,
+      breakdownLabel,
+      breakdownValue,
+      breakdownHeading,
+      tooltipActive,
+      chartConfig,
+      categories,
+    ]
+  )
 
   return (
     <ChartContainer

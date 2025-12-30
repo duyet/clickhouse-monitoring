@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { MetricCard } from '@/components/charts/metric-card'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { cn } from '@/lib/utils'
@@ -17,7 +18,10 @@ interface OverviewChartsProps {
   className?: string
 }
 
-export const OverviewCharts = memo(function OverviewCharts({ hostId, className }: OverviewChartsProps) {
+export const OverviewCharts = memo(function OverviewCharts({
+  hostId,
+  className,
+}: OverviewChartsProps) {
   return (
     <div
       className={cn(
@@ -36,7 +40,11 @@ export const OverviewCharts = memo(function OverviewCharts({ hostId, className }
   )
 })
 
-const RunningQueries = memo(function RunningQueries({ hostId }: { hostId: number }) {
+const RunningQueries = memo(function RunningQueries({
+  hostId,
+}: {
+  hostId: number
+}) {
   const swr = useChartData<{ count: number }>({
     chartName: 'running-queries-count',
     hostId,
@@ -51,7 +59,7 @@ const RunningQueries = memo(function RunningQueries({ hostId }: { hostId: number
       viewAllHref={`/running-queries?host=${hostId}`}
     >
       {(data) => (
-        <div className="font-mono text-xl font-semibold tabular-nums tracking-tight">
+        <div className="font-mono text-3xl font-bold tabular-nums tracking-tight">
           {(data[0] as { count: number }).count}
         </div>
       )}
@@ -59,7 +67,11 @@ const RunningQueries = memo(function RunningQueries({ hostId }: { hostId: number
   )
 })
 
-const DatabaseTableCount = memo(function DatabaseTableCount({ hostId }: { hostId: number }) {
+const DatabaseTableCount = memo(function DatabaseTableCount({
+  hostId,
+}: {
+  hostId: number
+}) {
   const databaseSwr = useChartData<{ count: number }>({
     chartName: 'database-count',
     hostId,
@@ -73,16 +85,16 @@ const DatabaseTableCount = memo(function DatabaseTableCount({ hostId }: { hostId
 
   // Handle loading state for both queries
   if (databaseSwr.isLoading || tablesSwr.isLoading) {
-    return (
-      <MetricCardSkeleton title="Database" description="Overview" />
-    )
+    return <MetricCardSkeleton title="Database" description="Overview" />
   }
 
   // Handle error state
   if (databaseSwr.error || tablesSwr.error) {
     return (
       <MetricCardError
-        error={databaseSwr.error || tablesSwr.error || new Error('Unknown error')}
+        error={
+          databaseSwr.error || tablesSwr.error || new Error('Unknown error')
+        }
         onRetry={() => {
           databaseSwr.refresh()
           tablesSwr.refresh()
@@ -93,8 +105,12 @@ const DatabaseTableCount = memo(function DatabaseTableCount({ hostId }: { hostId
     )
   }
 
-  const dbArray = (Array.isArray(databaseSwr.data) ? databaseSwr.data : []) as { count: number }[]
-  const tablesArray = (Array.isArray(tablesSwr.data) ? tablesSwr.data : []) as { count: number }[]
+  const dbArray = (Array.isArray(databaseSwr.data) ? databaseSwr.data : []) as {
+    count: number
+  }[]
+  const tablesArray = (Array.isArray(tablesSwr.data) ? tablesSwr.data : []) as {
+    count: number
+  }[]
 
   return (
     <MetricCard
@@ -104,12 +120,20 @@ const DatabaseTableCount = memo(function DatabaseTableCount({ hostId }: { hostId
       viewAllHref={`/tables-overview?host=${hostId}`}
     >
       {() => (
-        <div className="space-y-1">
-          <div className="font-mono text-xs tabular-nums">
-            {dbArray[0]?.count || 0} databases
+        <div className="flex items-baseline gap-4">
+          <div>
+            <span className="font-mono text-3xl font-bold tabular-nums">
+              {dbArray[0]?.count || 0}
+            </span>
+            <span className="ml-1.5 text-sm text-muted-foreground">
+              databases
+            </span>
           </div>
-          <div className="font-mono text-xs tabular-nums">
-            {tablesArray[0]?.count || 0} tables
+          <div>
+            <span className="font-mono text-3xl font-bold tabular-nums">
+              {tablesArray[0]?.count || 0}
+            </span>
+            <span className="ml-1.5 text-sm text-muted-foreground">tables</span>
           </div>
         </div>
       )}
@@ -117,7 +141,11 @@ const DatabaseTableCount = memo(function DatabaseTableCount({ hostId }: { hostId
   )
 })
 
-const ClickHouseInfo = memo(function ClickHouseInfo({ hostId }: { hostId: number }) {
+const ClickHouseInfo = memo(function ClickHouseInfo({
+  hostId,
+}: {
+  hostId: number
+}) {
   const hostNameSwr = useChartData<{ val: string }>({
     chartName: 'hostname',
     hostId,
@@ -139,9 +167,15 @@ const ClickHouseInfo = memo(function ClickHouseInfo({ hostId }: { hostId: number
     return <MetricCardSkeleton title="System Info" description="ClickHouse" />
   }
 
-  const hostArray = (Array.isArray(hostNameSwr.data) ? hostNameSwr.data : []) as { val: string }[]
-  const versionArray = (Array.isArray(versionSwr.data) ? versionSwr.data : []) as { val: string }[]
-  const uptimeArray = (Array.isArray(uptimeSwr.data) ? uptimeSwr.data : []) as { val: string }[]
+  const hostArray = (
+    Array.isArray(hostNameSwr.data) ? hostNameSwr.data : []
+  ) as { val: string }[]
+  const versionArray = (
+    Array.isArray(versionSwr.data) ? versionSwr.data : []
+  ) as { val: string }[]
+  const uptimeArray = (Array.isArray(uptimeSwr.data) ? uptimeSwr.data : []) as {
+    val: string
+  }[]
 
   return (
     <MetricCard
@@ -150,29 +184,29 @@ const ClickHouseInfo = memo(function ClickHouseInfo({ hostId }: { hostId: number
       description="ClickHouse"
     >
       {() => (
-        <div className="space-y-0.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-muted-foreground text-[10px]">Host</span>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-muted-foreground">Host</span>
             <div
-              className="truncate text-xs font-medium"
+              className="truncate font-mono text-sm font-medium"
               title={hostArray[0]?.val || ''}
             >
               {hostArray[0]?.val || '-'}
             </div>
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-muted-foreground text-[10px]">Version</span>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-muted-foreground">Version</span>
             <div
-              className="truncate text-xs font-medium"
+              className="truncate font-mono text-sm font-medium"
               title={versionArray[0]?.val || ''}
             >
               {versionArray[0]?.val || '-'}
             </div>
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-muted-foreground text-[10px]">Uptime</span>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-muted-foreground">Uptime</span>
             <div
-              className="truncate text-xs font-medium"
+              className="truncate font-mono text-sm font-medium"
               title={uptimeArray[0]?.val || ''}
             >
               {uptimeArray[0]?.val || '-'}
@@ -201,6 +235,7 @@ const DiskSize = memo(function DiskSize({ hostId }: { hostId: number }) {
     <MetricCard
       swr={swr}
       title="Disk Size"
+      description={`Total storage`}
       viewAllHref={`/disks?host=${hostId}`}
     >
       {(data) => {
@@ -210,14 +245,14 @@ const DiskSize = memo(function DiskSize({ hostId }: { hostId: number }) {
           readable_total_space: string
         }
         return (
-          <>
-            <CardDescription className="text-[10px]">
-              {first.readable_total_space} total ({first.name} disk)
-            </CardDescription>
-            <div className="text-lg font-bold">
-              {first.readable_used_space} used
+          <div>
+            <div className="font-mono text-2xl font-bold tabular-nums tracking-tight">
+              {first.readable_used_space}
             </div>
-          </>
+            <div className="mt-1 text-xs text-muted-foreground">
+              of {first.readable_total_space} ({first.name})
+            </div>
+          </div>
         )
       }}
     </MetricCard>
@@ -225,39 +260,45 @@ const DiskSize = memo(function DiskSize({ hostId }: { hostId: number }) {
 })
 
 // Helper components for skeleton and error states
-// Matches MetricCard dimensions exactly to prevent CLS
-const MetricCardSkeleton = memo(function MetricCardSkeleton({ title, description }: { title?: string; description?: string }) {
+const MetricCardSkeleton = memo(function MetricCardSkeleton({
+  title,
+  description,
+}: {
+  title?: string
+  description?: string
+}) {
   return (
-    <div
-      className="rounded-md border border-border/50 bg-card/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.03)] transition-all duration-200"
+    <Card
+      className="relative overflow-hidden rounded-lg border border-border/40 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-sm"
       role="status"
       aria-label={`Loading ${title || 'metric'}`}
-      aria-busy="true"
     >
-      {/* Header - matches MetricCard CardHeader px-3 pb-0 pt-2 */}
-      <div className="px-3 pb-0 pt-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1">
+      <CardHeader className="px-4 pb-1 pt-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-1">
             {title ? (
-              <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">{title}</div>
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {title}
+              </CardTitle>
             ) : (
-              <div className="h-2.5 w-16 animate-shimmer rounded bg-accent/50" />
+              <Skeleton className="h-3 w-20" />
             )}
             {description ? (
-              <div className="text-muted-foreground mt-0.5 text-[10px]">{description}</div>
+              <CardDescription className="text-xs text-muted-foreground/70">
+                {description}
+              </CardDescription>
             ) : (
-              <div className="mt-0.5 h-2 w-10 animate-shimmer rounded bg-accent/50" />
+              <Skeleton className="h-2.5 w-14" />
             )}
           </div>
-          <div className="h-2 w-10 animate-shimmer rounded bg-accent/50" />
+          <Skeleton className="h-3 w-12" />
         </div>
-      </div>
-      {/* Content - matches MetricCard CardContent px-3 pt-1.5 pb-2.5 */}
-      <div className="px-3 pt-1.5 pb-2.5">
-        <div className="h-5 w-12 animate-shimmer rounded bg-accent/50" />
-      </div>
+      </CardHeader>
+      <CardContent className="px-4 pb-4 pt-2">
+        <Skeleton className="h-8 w-16" />
+      </CardContent>
       <span className="sr-only">Loading {title || 'metric'} data...</span>
-    </div>
+    </Card>
   )
 })
 
@@ -273,28 +314,38 @@ const MetricCardError = memo(function MetricCardError({
   description?: string
 }) {
   return (
-    <div
-      className="rounded-md border border-border/50 bg-card/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]"
+    <Card
+      className="relative overflow-hidden rounded-lg border border-border/40 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-sm"
       role="alert"
       aria-label={`Error loading ${title || 'metric'}`}
     >
-      <div className="px-3 pb-0 pt-2">
-        <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">{title || 'Error'}</div>
-        {description && <div className="text-muted-foreground mt-0.5 text-[10px]">{description}</div>}
-      </div>
-      <div className="px-3 pt-1.5 pb-2.5">
-        <div className="rounded border border-destructive/20 bg-destructive/5 p-1.5">
-          <div className="text-destructive text-[10px] font-medium">Error</div>
-          <div className="text-muted-foreground text-[10px] truncate">{error.message}</div>
+      <CardHeader className="px-4 pb-1 pt-3">
+        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {title || 'Error'}
+        </CardTitle>
+        {description && (
+          <CardDescription className="text-xs text-muted-foreground/70">
+            {description}
+          </CardDescription>
+        )}
+      </CardHeader>
+      <CardContent className="px-4 pb-4 pt-2">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3">
+          <div className="text-sm font-medium text-destructive">
+            Connection Error
+          </div>
+          <div className="mt-0.5 truncate text-xs text-muted-foreground">
+            {error.message}
+          </div>
           <button
             onClick={onRetry}
-            className="text-muted-foreground hover:text-foreground mt-1 text-[10px] underline transition-colors"
+            className="mt-2 text-xs text-muted-foreground underline transition-colors hover:text-foreground"
             aria-label="Retry loading data"
           >
             Retry
           </button>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 })

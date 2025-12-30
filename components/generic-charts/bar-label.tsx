@@ -10,18 +10,19 @@ interface Data {
   parentViewBox?: any
 }
 
-interface BarLabelProps extends Pick<BarChartProps,
-  | 'showLabel'
-  | 'labelPosition'
-  | 'labelAngle'
-  | 'data'
-  | 'stack'
-  | 'categories'
-  | 'readableColumn'
-  | 'horizontal'
->,
-  Pick<LabelListProps<Data>, 'dataKey'>
-{}
+interface BarLabelProps
+  extends Pick<
+      BarChartProps,
+      | 'showLabel'
+      | 'labelPosition'
+      | 'labelAngle'
+      | 'data'
+      | 'stack'
+      | 'categories'
+      | 'readableColumn'
+      | 'horizontal'
+    >,
+    Pick<LabelListProps<Data>, 'dataKey'> {}
 
 /**
  * BarLabel - Label rendering component for BarChart
@@ -60,10 +61,15 @@ export const BarLabel = memo(function BarLabel({
     return value
   }
 
-  const position = labelPosition || (stack
-    ? (horizontal ? 'insideLeft' : 'inside')
-    : (horizontal ? 'right' : 'top')
-  )
+  const position =
+    labelPosition ||
+    (stack
+      ? horizontal
+        ? 'insideLeft'
+        : 'inside'
+      : horizontal
+        ? 'right'
+        : 'top')
 
   const className = stack ? 'fill-(--color-label)' : 'fill-foreground'
 
