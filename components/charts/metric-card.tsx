@@ -91,6 +91,7 @@ export function MetricCard<TData = unknown>({
     'rounded-md border-border/50 bg-card/50 backdrop-blur-sm',
     'shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]',
     'transition-all duration-200 hover:border-border/80 hover:shadow-[0_2px_8px_0_rgb(0_0_0/0.04)]',
+    '!gap-1 !py-2', // Compact spacing override
     className
   )
 
@@ -185,6 +186,7 @@ function MetricCardSkeleton({
     <Card className={cn(
       'rounded-md border-border/50 bg-card/50',
       'shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]',
+      '!gap-1 !py-2', // Compact spacing override
       className
     )}>
       <CardHeader className="px-3 pb-0 pt-2">
