@@ -32,15 +32,18 @@ export const FadeIn = memo(function FadeIn({
   scale = false,
   ...props
 }: FadeInProps) {
-  const animation = scale ? 'scale-in' : 'fade-in'
+  const animationClass = scale
+    ? 'animate-[scale-in_0.2s_ease-out]'
+    : 'animate-[fade-in_0.2s_ease-out]'
   const style = {
     animationDuration: `${duration}ms`,
     animationDelay: `${delay}ms`,
+    animationFillMode: 'both' as const,
   }
 
   return (
     <div
-      className={cn('animate-[fade-in_0.2s_ease-out]', className)}
+      className={cn(animationClass, 'motion-reduce:animate-none', className)}
       style={style}
       {...props}
     >
@@ -87,9 +90,10 @@ export const StaggeredFadeIn = memo(function StaggeredFadeIn({
         const style = {
           animationDuration: `${duration}ms`,
           animationDelay: `${delay}ms`,
+          animationFillMode: 'both' as const,
         }
         return (
-          <div key={index} className="animate-fade-in" style={style}>
+          <div key={index} className="animate-fade-in motion-reduce:animate-none" style={style}>
             {child}
           </div>
         )
