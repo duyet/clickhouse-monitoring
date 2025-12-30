@@ -6,7 +6,7 @@ import { ChartError } from '@/components/charts/chart-error'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartSkeleton } from '@/components/skeletons'
 import { BarList } from '@/components/generic-charts/bar-list'
-import { ChartCard } from '@/components/generic-charts/chart-card'
+import { ChartCard } from '@/components/cards/chart-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useChartData } from '@/lib/swr'
 

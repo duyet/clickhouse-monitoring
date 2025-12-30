@@ -6,7 +6,7 @@ import { ChartError } from '@/components/charts/chart-error'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartSkeleton } from '@/components/skeletons'
 import { AreaChart } from '@/components/generic-charts/area'
-import { ChartCard } from '@/components/generic-charts/chart-card'
+import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
 import { chartTickFormatters } from '@/lib/utils'
 

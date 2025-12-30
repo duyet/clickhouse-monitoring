@@ -11,8 +11,8 @@ import { ChartSkeleton } from '@/components/skeletons'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
-} from '@/components/generic-charts/card-multi-metrics'
-import { ChartCard } from '@/components/generic-charts/chart-card'
+} from '@/components/cards/card-multi-metrics'
+import { ChartCard } from '@/components/cards/chart-card'
 import { formatReadableQuantity } from '@/lib/format-readable'
 import { useChartData } from '@/lib/swr'
 

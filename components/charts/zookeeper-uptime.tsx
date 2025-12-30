@@ -5,10 +5,10 @@ import { memo } from 'react'
 import { ChartError, ChartSkeleton } from '@/components/charts'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartCard } from '@/components/generic-charts/chart-card'
+import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
-import { CardMultiMetrics } from '../generic-charts/card-multi-metrics'
+import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 
 export const ChartZookeeperUptime = memo(function ChartZookeeperUptime({
   title = 'Zookeeper Uptime',

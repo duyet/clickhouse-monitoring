@@ -11,8 +11,8 @@ import { ChartSkeleton } from '@/components/skeletons'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
-} from '@/components/generic-charts/card-multi-metrics'
-import { ChartCard } from '@/components/generic-charts/chart-card'
+} from '@/components/cards/card-multi-metrics'
+import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
 
 export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({

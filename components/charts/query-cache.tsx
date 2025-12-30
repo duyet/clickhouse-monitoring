@@ -5,8 +5,8 @@ import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartSkeleton } from '@/components/skeletons'
-import { CardMetric } from '@/components/generic-charts/card-metric'
-import { ChartCard } from '@/components/generic-charts/chart-card'
+import { CardMetric } from '@/components/cards/card-metric'
+import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
 
 export const ChartQueryCache = memo(function ChartQueryCache({
