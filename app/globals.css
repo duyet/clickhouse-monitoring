@@ -1,63 +1,15 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-/*
-  ---break---
-*/
+
 @custom-variant dark (&:is(.dark *));
 @config '../tailwind.config.js';
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+  * {
+    @apply border-border;
   }
-
-  /* Improved focus states for WCAG compliance */
-  *:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-
-  button:focus-visible,
-  a:focus-visible,
-  [role="button"]:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-
-  /* Reduced motion support for vestibular disorders */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    ::before,
-    ::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
-
-  /* High contrast mode support */
-  @media (prefers-contrast: more) {
-    :root {
-      --border: hsl(0 0% 0%);
-      --ring: hsl(0 0% 0%);
-    }
-    .dark {
-      --border: hsl(0 0% 100%);
-      --ring: hsl(0 0% 100%);
-    }
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
@@ -109,7 +61,6 @@
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
-  --sidebar: hsl(0 0% 98%);
 }
 
 .dark {
@@ -145,7 +96,6 @@
   --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
   --sidebar-border: hsl(240 3.7% 15.9%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
-  --sidebar: hsl(240 5.9% 10%);
 }
 
 @theme inline {
@@ -195,18 +145,4 @@
   --color-chart-orange-600: var(--chart-orange-600);
   --color-chart-indigo-300: var(--chart-indigo-300);
   --color-chart-yellow: var(--chart-yellow);
-  --color-sidebar: var(--sidebar);
-}
-
-/*
-  ---break---
-*/
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }

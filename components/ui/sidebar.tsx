@@ -127,7 +127,7 @@ const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>(
         <div
           ref={ref}
           className={cn(
-            "flex h-full w-full flex-col overflow-hidden",
+            "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
             className
           )}
           style={
@@ -198,6 +198,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
     return (
       <div
         ref={ref}
+        data-variant={variant}
         className={cn(
           "group/sidebar flex h-full w-[var(--sidebar-width)] flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out data-[state=collapsed]:w-[calc(var(--sidebar-width)_-_3rem)]",
           variant === "inset" && "border-r",
