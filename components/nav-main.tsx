@@ -51,7 +51,7 @@ export function NavMain({ items }: NavMainProps) {
                   tooltip={item.title}
                 >
                   <HostPrefixedLink href={item.href}>
-                    {item.icon && <item.icon />}
+                    {item.icon && <item.icon className="h-4 w-4" />}
                     <span>{item.title}</span>
                   </HostPrefixedLink>
                 </SidebarMenuButton>
@@ -70,13 +70,13 @@ export function NavMain({ items }: NavMainProps) {
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton tooltip={item.title} isActive={hasActiveChild}>
-                    {item.icon && <item.icon />}
+                    {item.icon && <item.icon className="h-4 w-4" />}
                     <span>{item.title}</span>
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuAction className="data-[state=open]:rotate-90">
-                    <ChevronRight />
+                    <ChevronRight className="h-4 w-4" />
                     <span className="sr-only">Toggle</span>
                   </SidebarMenuAction>
                 </CollapsibleTrigger>

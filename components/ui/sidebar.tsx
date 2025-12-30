@@ -462,6 +462,7 @@ const SidebarMenuButton = React.forwardRef<
         className={cn(
           "peer/menu-button relative flex w-full items-center gap-2 overflow-hidden rounded-md px-2 py-1.5 text-left text-sm outline-none transition-[width,height,padding] focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 group-data-[collapsible=icon]/sidebar:h-10 group-data-[collapsible=icon]/sidebar:w-10 group-data-[collapsible=icon]/sidebar:p-0 aria-disabled:pointer-events-none aria-disabled:opacity-50",
           "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+          "[&>svg]:h-4 [&>svg]:w-4",
           isActive &&
             "bg-sidebar-accent text-sidebar-accent-foreground font-semibold",
           size === "sm" && "text-xs py-1",
@@ -595,6 +596,7 @@ const SidebarMenuSubButton = React.forwardRef<
       className={cn(
         "relative flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50",
         "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+        "[&>svg]:h-4 [&>svg]:w-4",
         isActive && "bg-sidebar-accent text-sidebar-accent-foreground font-semibold",
         size === "sm" && "text-xs py-1",
         size === "default" && "text-sm",

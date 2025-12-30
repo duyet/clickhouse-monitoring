@@ -14,22 +14,33 @@ import {
 } from '@/components/ui/command'
 import { menuItemsConfig } from '@/menu'
 
-export const CommandPalette = memo(function CommandPalette() {
+interface CommandPaletteProps {
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export const CommandPalette = memo(function CommandPalette({
+  open: controlledOpen,
+  onOpenChange,
+}: CommandPaletteProps = {}) {
   const router = useRouter()
-  const [open, setOpen] = React.useState(false)
+  const [internalOpen, setInternalOpen] = React.useState(false)
+
+  const open = controlledOpen ?? internalOpen
+  const setOpen = onOpenChange ?? setInternalOpen
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Cmd+K or Ctrl+K to open
       if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
         event.preventDefault()
-        setOpen((open) => !open)
+        setOpen(!open)
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [open, setOpen])
 
   const navigate = useCallback(
     (href: string) => {
@@ -61,6 +72,7 @@ export const CommandPalette = memo(function CommandPalette() {
                   onSelect={() => navigate(item.href)}
                   value={`${group.title} ${item.title}`}
                 >
+                  {item.icon && <item.icon className="mr-2 h-4 w-4" />}
                   {item.description && (
                     <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
                       {item.description}
@@ -75,6 +87,7 @@ export const CommandPalette = memo(function CommandPalette() {
                 onSelect={() => navigate(group.href)}
                 value={group.title}
               >
+                {group.icon && <group.icon className="mr-2 h-4 w-4" />}
                 <span>{group.title}</span>
               </CommandItem>
             )}

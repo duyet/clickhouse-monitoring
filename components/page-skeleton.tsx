@@ -42,6 +42,7 @@ export const PageSkeleton = memo(function PageSkeleton({
 
       {/* Table Skeleton */}
       <TableCardSkeleton rows={tableRows} />
+      <span className="sr-only">Loading page content...</span>
     </div>
   )
 })
@@ -68,6 +69,7 @@ export const ChartsOnlyPageSkeleton = memo(function ChartsOnlyPageSkeleton({
       {Array.from({ length: chartCount }).map((_, i) => (
         <ChartCardSkeleton key={`chart-${i}`} />
       ))}
+      <span className="sr-only">Loading charts...</span>
     </div>
   )
 })
@@ -92,6 +94,7 @@ export const TableOnlyPageSkeleton = memo(function TableOnlyPageSkeleton({
       aria-label="Loading table"
     >
       <TableCardSkeleton rows={rows} />
+      <span className="sr-only">Loading table data...</span>
     </div>
   )
 })
@@ -136,6 +139,7 @@ export const OverviewPageSkeleton = memo(function OverviewPageSkeleton({
           ))}
         </div>
       </div>
+      <span className="sr-only">Loading overview data...</span>
     </div>
   )
 })
@@ -151,7 +155,12 @@ export const DatabasePageSkeleton = memo(function DatabasePageSkeleton({
   className?: string
 }) {
   return (
-    <div className={cn('flex flex-col gap-4', className)}>
+    <div
+      className={cn('flex flex-col gap-4', className)}
+      role="status"
+      aria-busy="true"
+      aria-label="Loading database page"
+    >
       {/* Search/Filter Bar */}
       <div className="flex items-center gap-3">
         <Skeleton className="h-10 flex-1" />
@@ -160,6 +169,7 @@ export const DatabasePageSkeleton = memo(function DatabasePageSkeleton({
 
       {/* Database Table */}
       <TableCardSkeleton rows={10} />
+      <span className="sr-only">Loading database content...</span>
     </div>
   )
 })

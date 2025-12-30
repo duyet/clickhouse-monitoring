@@ -3,31 +3,12 @@ import { cn } from '@/lib/utils'
 import { memo } from 'react'
 
 /**
- * Chart skeleton with shimmer animation
- * Uses theme-aware colors for dark mode support
- * Matches chart card dimensions (h-32 sm:h-36) to prevent CLS
+ * Chart skeleton - re-exported from charts/chart-skeleton
+ * This provides backward compatibility for imports from @/components/skeleton
+ *
+ * For advanced usage with SVG variants, import directly from @/components/charts/chart-skeleton
  */
-export const ChartSkeleton = memo(function ChartSkeleton() {
-  return (
-    <div
-      className="flex flex-col rounded-md border border-border/50 bg-card/50"
-      role="status"
-      aria-label="Loading chart"
-      aria-busy="true"
-    >
-      {/* Chart header */}
-      <div className="flex items-center justify-between p-3 pb-2">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-4 w-16" />
-      </div>
-      {/* Chart area - matches h-32 sm:h-36 */}
-      <div className="h-32 px-3 pb-3 sm:h-36">
-        <Skeleton className="h-full w-full rounded" />
-      </div>
-      <span className="sr-only">Loading chart data...</span>
-    </div>
-  )
-})
+export { ChartSkeleton } from '@/components/charts/chart-skeleton'
 
 /**
  * Table skeleton with configurable rows and columns
@@ -117,10 +98,11 @@ export const SingleLineSkeleton = memo(function SingleLineSkeleton({
         className
       )}
       role="status"
+      aria-label="Loading content"
       aria-busy="true"
     >
-      <Skeleton className="h-6 w-3/5 animate-shimmer bg-muted" />
-      <Skeleton className="h-6 w-2/5 animate-shimmer bg-muted" />
+      <Skeleton className="h-6 w-3/5" />
+      <Skeleton className="h-6 w-2/5" />
       <span className="sr-only">Loading...</span>
     </div>
   )
@@ -138,16 +120,17 @@ export const MultiLineSkeleton = memo(function MultiLineSkeleton({
     <div
       className={cn('flex flex-col items-center gap-2', className)}
       role="status"
+      aria-label="Loading content"
       aria-busy="true"
     >
       <div className="flex w-full flex-row items-center gap-2">
-        <Skeleton className="h-6 w-3/5 animate-shimmer bg-muted" />
-        <Skeleton className="h-6 w-2/5 animate-shimmer bg-muted" />
+        <Skeleton className="h-6 w-3/5" />
+        <Skeleton className="h-6 w-2/5" />
       </div>
       <div className="flex w-full flex-row items-center gap-2">
-        <Skeleton className="h-6 w-2/5 animate-shimmer bg-muted" />
-        <Skeleton className="h-6 w-2/5 animate-shimmer bg-muted" />
-        <Skeleton className="h-6 w-1/5 animate-shimmer bg-muted" />
+        <Skeleton className="h-6 w-2/5" />
+        <Skeleton className="h-6 w-2/5" />
+        <Skeleton className="h-6 w-1/5" />
       </div>
       <span className="sr-only">Loading...</span>
     </div>
@@ -172,7 +155,7 @@ export const ListSkeleton = memo(function ListSkeleton({
       aria-busy="true"
     >
       {Array.from({ length: nrows }).map((_, i) => (
-        <Skeleton key={i} className="h-6 w-full animate-shimmer bg-muted" />
+        <Skeleton key={i} className="h-6 w-full" />
       ))}
       <span className="sr-only">Loading list items...</span>
     </div>

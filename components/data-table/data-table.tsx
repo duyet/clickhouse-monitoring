@@ -286,18 +286,18 @@ export function DataTable<
           <caption id="table-description" className="sr-only">
             {description || queryConfig.description || `${title} data table`}
           </caption>
-          <TableHeader className="bg-muted/30">
+          <TableHeader className="bg-muted/50">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className="border-border/50 hover:bg-transparent"
+                className="border-b border-border hover:bg-transparent"
               >
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
                       key={header.id}
                       scope="col"
-                      className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                      className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground"
                     >
                       {header.isPlaceholder
                         ? null
@@ -318,12 +318,12 @@ export function DataTable<
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   className={cn(
-                    'border-border/30 transition-colors',
-                    index % 2 === 0 ? 'bg-transparent' : 'bg-muted/20'
+                    'border-b border-border/50 transition-colors hover:bg-muted/50',
+                    index % 2 === 1 && 'odd:bg-muted/30'
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-2.5">
+                    <TableCell key={cell.id} className="px-4 py-3 text-sm">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

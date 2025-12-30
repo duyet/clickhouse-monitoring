@@ -14,6 +14,7 @@ import { NetworkStatusBanner } from '@/components/network-status-banner'
 import { PageSkeleton } from '@/components/page-skeleton'
 import { SidebarLayout } from '@/components/sidebar-layout'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ThemeProvider } from 'next-themes'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
@@ -57,25 +58,32 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <SWRProvider>
-          <AppProvider reloadIntervalSecond={120}>
-            <NetworkStatusBanner />
-            <Suspense fallback={null}>
-              <KeyboardShortcuts />
-            </Suspense>
-            <Suspense fallback={<SidebarSkeleton />}>
-              <SidebarLayout>
-                <Suspense fallback={<PageSkeleton />}>
-                  <LayoutErrorBoundary>{children}</LayoutErrorBoundary>
-                </Suspense>
-              </SidebarLayout>
-            </Suspense>
-          </AppProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SWRProvider>
+            <AppProvider reloadIntervalSecond={120}>
+              <NetworkStatusBanner />
+              <Suspense fallback={null}>
+                <KeyboardShortcuts />
+              </Suspense>
+              <Suspense fallback={<SidebarSkeleton />}>
+                <SidebarLayout>
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LayoutErrorBoundary>{children}</LayoutErrorBoundary>
+                  </Suspense>
+                </SidebarLayout>
+              </Suspense>
+            </AppProvider>
 
-          <Toaster />
-        </SWRProvider>
+            <Toaster />
+          </SWRProvider>
+        </ThemeProvider>
 
         {VERCEL_ANALYTICS_ENABLED && <Analytics />}
         {SELINE_ENABLED && (

@@ -15,19 +15,24 @@ interface ChartSkeletonProps {
   dataPoints?: number
 }
 
+/**
+ * Advanced chart skeleton with SVG variants
+ * Supports multiple chart types with realistic loading states
+ * Uses animate-pulse for consistent animation with other skeletons
+ */
 export const ChartSkeleton = memo(function ChartSkeleton({
   className,
   chartClassName,
   title,
   type = 'area',
   dataPoints = 8,
-}: ChartSkeletonProps) {
+}: ChartSkeletonProps = {}) {
   return (
     <Card
       className={cn('rounded-md', className)}
-      aria-busy="true"
       role="status"
-      aria-label={title ? `${title} loading` : 'Loading chart'}
+      aria-busy="true"
+      aria-label={title ? `Loading ${title}` : 'Loading chart'}
     >
       <CardHeader className="p-3 pb-2">
         <div className="flex flex-row items-center justify-between">

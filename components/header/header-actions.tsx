@@ -3,6 +3,7 @@
 import { Bell, Moon, RefreshCw, Search, Sun } from 'lucide-react'
 import { memo, useCallback, useEffect, useState } from 'react'
 import { useInterval } from 'usehooks-ts'
+import { useTheme } from 'next-themes'
 
 import { useAppContext } from '@/app/context'
 import { Input } from '@/components/ui/input'
@@ -29,19 +30,24 @@ const MINUTE = 60 * SECOND
 export const HeaderActions = memo(function HeaderActions({
   menuComponent,
 }: HeaderActionsProps) {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const { theme, setTheme, resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   const { reloadInterval, setReloadInterval } = useAppContext()
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
   // Countdown state
   const initCountDown = reloadInterval ? reloadInterval / 1000 : 30
   const [countDown, setCountDown] = useState(initCountDown)
 
+  // Handle hydration
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const toggleTheme = useCallback(() => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(newTheme)
-    document.documentElement.classList.toggle('dark', newTheme === 'dark')
-  }, [theme])
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+  }, [setTheme, resolvedTheme])
 
   // Trigger SWR revalidation by dispatching a custom event
   const handleRefresh = useCallback(() => {
@@ -130,39 +136,49 @@ export const HeaderActions = memo(function HeaderActions({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <CommandPalette />
+      <CommandPalette
+        open={commandPaletteOpen}
+        onOpenChange={setCommandPaletteOpen}
+      />
 
-      {/* Search - hidden on mobile */}
-      <div className="relative hidden md:block">
+      {/* Search trigger - hidden on mobile */}
+      <button
+        type="button"
+        onClick={() => setCommandPaletteOpen(true)}
+        className="relative hidden h-8 w-40 items-center gap-2 rounded-md border border-transparent bg-muted/30 px-2.5 text-xs transition-all hover:bg-muted/50 hover:ring-1 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30 md:inline-flex md:w-64"
+        aria-label="Search pages and commands"
+        aria-describedby="search-shortcut"
+      >
         <Search
           aria-hidden="true"
-          className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60"
+          className="h-3.5 w-3.5 text-muted-foreground/60"
         />
-        <Input
-          type="search"
-          id="global-search"
-          placeholder="Search..."
-          aria-label="Search pages and commands"
-          aria-describedby="search-shortcut"
-          className="h-8 w-40 bg-muted/30 pl-8 text-xs border-transparent focus-visible:ring-1 focus-visible:ring-primary/30 transition-all md:w-64"
-        />
+        <span className="text-muted-foreground/60">Search...</span>
         <kbd
           id="search-shortcut"
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded border bg-muted px-1.5 text-[10px] font-medium"
+          className="ml-auto rounded border bg-muted px-1.5 text-[10px] font-medium"
         >
           ⌘K
         </kbd>
-      </div>
+      </button>
 
       {/* Theme toggle - hidden on mobile */}
-      <IconButton
-        tooltip={
-          theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'
-        }
-        icon={theme === 'light' ? <Moon /> : <Sun />}
-        onClick={toggleTheme}
-        className="hidden sm:flex"
-      />
+      {mounted ? (
+        <IconButton
+          tooltip={
+            resolvedTheme === 'light'
+              ? 'Switch to dark mode'
+              : 'Switch to light mode'
+          }
+          icon={resolvedTheme === 'light' ? <Moon /> : <Sun />}
+          onClick={toggleTheme}
+          className="hidden sm:flex"
+        />
+      ) : (
+        <Button variant="ghost" size="icon" className="hidden sm:flex">
+          <Sun className="h-4 w-4" />
+        </Button>
+      )}
 
       {/* Notifications - hidden on mobile */}
       <IconButton
