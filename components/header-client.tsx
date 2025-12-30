@@ -46,7 +46,7 @@ export function HeaderClient() {
       </div>
 
       {/* Navigation Row - with horizontal scroll and hidden scrollbar */}
-      <nav className="flex h-10 items-center border-t px-4 md:px-6 lg:px-8 overflow-x-auto overflow-y-hidden scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <nav className="flex h-10 items-center border-t px-4 md:px-6 lg:px-8 overflow-x-auto scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <MenuNavigationStyle items={menuItemsConfig} className="flex items-center gap-1" />
       </nav>
     </header>

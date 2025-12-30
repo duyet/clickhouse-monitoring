@@ -122,7 +122,7 @@ const NavigationMenuViewport = ({
   <NavigationMenuPrimitive.Viewport
     data-slot="navigation-menu-viewport"
     className={cn(
-      'absolute left-0 top-full flex w-[calc(100%-+4px)] justify-center pt-0.5',
+      'absolute left-0 top-full z-50 flex w-[calc(100%-+4px)] justify-center pt-0.5',
       className
     )}
     {...props}

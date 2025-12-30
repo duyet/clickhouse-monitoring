@@ -13,6 +13,7 @@ import {
   createErrorResponse as createApiErrorResponse,
 } from '@/lib/api/error-handler'
 import { debug, error } from '@/lib/logger'
+import { getHost } from '@/lib/utils'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -42,7 +43,7 @@ export async function GET(): Promise<Response> {
     // Transform to public API format (exclude passwords)
     const hosts: HostInfo[] = configs.map((config) => ({
       id: config.id,
-      name: config.customName || `Host ${config.id}`,
+      name: config.customName || getHost(config.host) || `Host ${config.id}`,
       host: config.host,
       user: config.user,
     }))
