@@ -17,9 +17,9 @@
 
 'use client'
 
+import { memo, useCallback, type InputHTMLAttributes, useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { useDebounceWithPending } from '@/lib/hooks'
-import { type InputHTMLAttributes, useEffect, useState } from 'react'
 
 export interface DebouncedInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   /** Callback fired when debounced value changes */
@@ -34,7 +34,7 @@ export interface DebouncedInputProps extends Omit<InputHTMLAttributes<HTMLInputE
   value?: string
 }
 
-export function DebouncedInput({
+export const DebouncedInput = memo(function DebouncedInput({
   onValueChange,
   debounceMs = 300,
   showPendingIndicator = false,
@@ -56,7 +56,7 @@ export function DebouncedInput({
   }, [debouncedValue, onValueChange])
 
   // Handle input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
     if (isControlled) {
       // In controlled mode, parent manages state
@@ -65,7 +65,7 @@ export function DebouncedInput({
       // In uncontrolled mode, manage internal state
       setInternalValue(newValue)
     }
-  }
+  }, [isControlled, onValueChange])
 
   return (
     <div className="relative" role="search">
@@ -93,4 +93,4 @@ export function DebouncedInput({
       )}
     </div>
   )
-}
+})

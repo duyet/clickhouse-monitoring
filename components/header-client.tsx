@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import { memo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { HeaderBrand, HeaderBrandSkeleton } from '@/components/header/header-brand'
@@ -30,7 +30,7 @@ async function fetchHosts(): Promise<Array<Omit<HostInfo, 'user'>>> {
   }
 }
 
-export function HeaderClient() {
+export const HeaderClient = memo(function HeaderClient() {
   const searchParams = useSearchParams()
   const hostId = searchParams.get('host') || '0'
   const hostsPromise = fetchHosts()
@@ -51,4 +51,4 @@ export function HeaderClient() {
       </nav>
     </header>
   )
-}
+})

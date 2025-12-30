@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 
 import { useHostId } from '@/lib/swr'
@@ -50,61 +50,71 @@ const SHORTCUTS = [
   { key: 'Esc', description: 'Close modals' },
 ] as const
 
-export function KeyboardShortcuts() {
+export const KeyboardShortcuts = memo(function KeyboardShortcuts() {
   const router = useRouter()
   const pathname = usePathname()
   const hostId = useHostId()
   const [showHelp, setShowHelp] = useState(false)
 
   // Navigate to overview
+  const goToOverview = useCallback(() => {
+    router.push(`/overview?host=${hostId}`)
+  }, [router, hostId])
+
   useKeyboardShortcut({
     key: 'g',
     metaKey: true,
     ctrlKey: true,
-    onKeyDown: () => {
-      router.push(`/overview?host=${hostId}`)
-    },
+    onKeyDown: goToOverview,
   })
 
   // Navigate to running queries
+  const goToQueries = useCallback(() => {
+    router.push(`/running-queries?host=${hostId}`)
+  }, [router, hostId])
+
   useKeyboardShortcut({
     key: 'q',
     metaKey: true,
     ctrlKey: true,
-    onKeyDown: () => {
-      router.push(`/running-queries?host=${hostId}`)
-    },
+    onKeyDown: goToQueries,
   })
 
   // Navigate to database tables
+  const goToTables = useCallback(() => {
+    router.push(`/tables?host=${hostId}`)
+  }, [router, hostId])
+
   useKeyboardShortcut({
     key: 'd',
     metaKey: true,
     ctrlKey: true,
-    onKeyDown: () => {
-      router.push(`/tables?host=${hostId}`)
-    },
+    onKeyDown: goToTables,
   })
 
   // Refresh current page (trigger SWR revalidation)
+  const triggerRevalidate = useCallback(() => {
+    // Trigger SWR revalidation by dispatching a custom event
+    window.dispatchEvent(new CustomEvent('swr:revalidate'))
+  }, [])
+
   useKeyboardShortcut({
     key: 'r',
     metaKey: true,
     ctrlKey: true,
-    onKeyDown: () => {
-      // Trigger SWR revalidation by dispatching a custom event
-      window.dispatchEvent(new CustomEvent('swr:revalidate'))
-    },
+    onKeyDown: triggerRevalidate,
   })
 
   // Show keyboard shortcuts help
+  const showShortcuts = useCallback(() => {
+    setShowHelp(true)
+  }, [])
+
   useKeyboardShortcut({
     key: '/',
     metaKey: true,
     ctrlKey: true,
-    onKeyDown: () => {
-      setShowHelp(true)
-    },
+    onKeyDown: showShortcuts,
   })
 
   return (
@@ -139,7 +149,7 @@ export function KeyboardShortcuts() {
       </DialogContent>
     </Dialog>
   )
-}
+})
 
 /**
  * Hook to use SWR revalidation from keyboard shortcuts

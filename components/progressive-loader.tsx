@@ -29,7 +29,7 @@ interface ProgressiveLoaderProps {
  * 2. Wait for delay (manual or calculated from index)
  * 3. Render actual content after delay with fade-in
  */
-export function ProgressiveLoader({
+export const ProgressiveLoader = memo(function ProgressiveLoader({
   children,
   delay,
   index,
@@ -69,7 +69,7 @@ export function ProgressiveLoader({
       {children}
     </FadeIn>
   )
-}
+})
 
 /**
  * ProgressiveGrid - Wraps a grid of items with progressive loading
@@ -82,7 +82,7 @@ interface ProgressiveGridProps {
   batchSize?: number // Number of items to load at once (default 1)
 }
 
-export function ProgressiveGrid({
+export const ProgressiveGrid = memo(function ProgressiveGrid({
   children,
   stagger = 100,
   className,
@@ -111,7 +111,7 @@ export function ProgressiveGrid({
       })}
     </div>
   )
-}
+})
 
 /**
  * useStaggeredLoad - Hook for progressive data fetching
