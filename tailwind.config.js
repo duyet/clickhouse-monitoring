@@ -161,7 +161,7 @@ module.exports = {
             height: '0',
           },
         },
-        'shimmer': {
+        shimmer: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
         },
@@ -177,7 +177,7 @@ module.exports = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'shimmer': 'shimmer 1.5s infinite',
+        shimmer: 'shimmer 1.5s infinite',
         'fade-in': 'fade-in 0.2s ease-out',
         'scale-in': 'scale-in 0.2s ease-out',
       },
