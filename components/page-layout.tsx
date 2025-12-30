@@ -73,7 +73,7 @@ const DynamicChart = memo(function DynamicChart({
     <FadeIn duration={250}>
       <ChartComponent
         className="w-full p-0 shadow-none"
-        chartClassName="h-44"
+        chartClassName="h-32 sm:h-36"
         hostId={hostId}
         {...chartProps}
       />
@@ -169,7 +169,7 @@ export const PageLayout = memo(function PageLayout({
   const relatedCharts = queryConfig.relatedCharts || []
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* Optional Header Content */}
       {headerContent}
 
@@ -180,14 +180,15 @@ export const PageLayout = memo(function PageLayout({
         gridClass={chartsGridClass}
       />
 
-      {/* Data Table */}
+      {/* Data Table - flex-1 to fill remaining space */}
       {!hideTable && (
         <Suspense fallback={<TableSkeleton />}>
-          <FadeIn duration={300}>
+          <FadeIn duration={300} className="flex min-h-0 flex-1 flex-col">
             <TableClient
               title={title || queryConfig.name}
               description={description || queryConfig.description}
               queryConfig={queryConfig}
+              className="flex min-h-0 flex-1 flex-col"
             />
           </FadeIn>
         </Suspense>

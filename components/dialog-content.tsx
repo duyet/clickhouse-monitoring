@@ -42,12 +42,12 @@ export const DialogContent = memo(function DialogContent({
   return (
     <Dialog>
       <DialogTrigger asChild>{button}</DialogTrigger>
-      <UIDialogContent className={cn('max-w-fit min-w-96', contentClassName)}>
+      <UIDialogContent className={cn('max-w-[90vw] min-w-80 sm:min-w-96', contentClassName)}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="w-fit overflow-auto">{content}</div>
+        <div className="max-h-[70vh] overflow-auto">{content}</div>
       </UIDialogContent>
     </Dialog>
   )

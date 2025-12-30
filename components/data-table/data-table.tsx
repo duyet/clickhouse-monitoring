@@ -27,7 +27,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { EmptyState } from '@/components/ui/empty-state'
-import { uniq } from '@/lib/utils'
+import { cn, uniq } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
 
 import { withQueryParams } from '@/lib/clickhouse-query'
@@ -242,8 +242,8 @@ export function DataTable<
   })
 
   return (
-    <div className={className}>
-      <div className="flex flex-row items-start justify-between pb-4">
+    <div className={cn('flex flex-col', className)}>
+      <div className="flex shrink-0 flex-row items-start justify-between pb-4">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <h1 className="text-muted-foreground flex-none text-xl">{title}</h1>
@@ -276,7 +276,7 @@ export function DataTable<
         </div>
       </div>
 
-      <div className="mb-5 rounded-md border" role="region" aria-label={`${title || 'Data'} table`}>
+      <div className="mb-5 min-h-0 flex-1 overflow-auto rounded-md border" role="region" aria-label={`${title || 'Data'} table`}>
         <Table aria-describedby="table-description">
           <caption id="table-description" className="sr-only">
             {description || queryConfig.description || `${title} data table`}
@@ -338,7 +338,7 @@ export function DataTable<
         </Table>
       </div>
 
-      <div className="flex items-center justify-between px-2">
+      <div className="flex shrink-0 items-center justify-between px-2">
         <Footnote table={table} footnote={footnote} />
         <DataTablePagination table={table} />
       </div>

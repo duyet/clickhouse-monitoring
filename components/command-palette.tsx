@@ -52,11 +52,11 @@ export const CommandPalette = memo(function CommandPalette() {
                   value={`${group.title} ${item.title}`}
                 >
                   {item.description && (
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
                       {item.description}
                     </span>
                   )}
-                  <span className="ml-auto text-xs">{item.title}</span>
+                  <span className="ml-auto shrink-0 text-xs">{item.title}</span>
                 </CommandItem>
               ))
             ) : (
