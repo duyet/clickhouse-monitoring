@@ -82,22 +82,19 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
               aria-label={`Select ClickHouse host. Current: ${activeHost.name || getHost(activeHost.host)}`}
             >
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <div className="flex items-center gap-2">
-                  <span className="truncate font-semibold">
-                    {activeHost.name || getHost(activeHost.host)}
-                  </span>
-                  <Suspense
-                    fallback={
-                      <StatusIndicator
-                        title={['Connecting...']}
-                        className="bg-gray-400 animate-pulse"
-                      />
-                    }
-                  >
-                    <HostStatus promise={activeHost.promise} />
-                  </Suspense>
-                </div>
-                <HostVersion promise={activeHost.promise} />
+                <span className="truncate font-semibold">
+                  {activeHost.name || getHost(activeHost.host)}
+                </span>
+                <Suspense
+                  fallback={
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <span className="size-2 rounded-full bg-gray-400 animate-pulse" />
+                      ...
+                    </span>
+                  }
+                >
+                  <HostVersionWithStatus promise={activeHost.promise} />
+                </Suspense>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -157,19 +154,23 @@ export function HostStatus({ promise }: { promise: UptimePromise }) {
   return <StatusIndicator title={['Offline']} />
 }
 
-function HostVersion({ promise }: { promise: UptimePromise }) {
+function HostVersionWithStatus({ promise }: { promise: UptimePromise }) {
   const res = use(promise)
 
   if (res) {
     return (
-      <span className="truncate text-xs text-muted-foreground">
-        {res.version}
+      <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+        <span className="size-2 rounded-full bg-emerald-500" />
+        v{res.version}
       </span>
     )
   }
 
   return (
-    <span className="truncate text-xs text-muted-foreground">Offline</span>
+    <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+      <span className="size-2 rounded-full bg-red-400" />
+      Offline
+    </span>
   )
 }
 
