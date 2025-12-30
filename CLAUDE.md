@@ -205,6 +205,54 @@ Two chart systems are used:
 
 ### Development Conventions
 
+#### shadcn/ui Components
+
+**IMPORTANT: Never customize `components/ui/` files directly.**
+
+The `components/ui/` directory contains shadcn/ui components installed via the CLI. These should remain in their original state to:
+- Allow easy updates via `npx shadcn@latest add <component>`
+- Maintain consistency with shadcn/ui documentation
+- Avoid merge conflicts when updating components
+
+**Guidelines:**
+1. **Don't add custom variants** (e.g., `success`, `warning`, `info`) to base components like Badge or Alert
+2. **Don't add hover effects** or animations to Card, Table, or other base components
+3. **Don't modify base styling** - use className prop at usage site instead
+
+**If you need custom styling or variants:**
+- Pass custom classes via `className` prop where the component is used
+- Create a wrapper component in `components/` (not `components/ui/`)
+- Use Tailwind's `cn()` utility to merge classes
+
+**Example - Custom styling at usage site:**
+```typescript
+// Good: Custom classes passed where used
+<Card className="hover:shadow-lg transition-all">
+  <CardContent>...</CardContent>
+</Card>
+
+// Bad: Modifying components/ui/card.tsx directly
+```
+
+**Example - Creating a wrapper component:**
+```typescript
+// components/info-badge.tsx
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+
+export function InfoBadge({ className, ...props }) {
+  return (
+    <Badge
+      className={cn(
+        'border-transparent bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+        className
+      )}
+      {...props}
+    />
+  )
+}
+```
+
 #### File Organization
 
 - Server components use `.tsx` without "use client"
