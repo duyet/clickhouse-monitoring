@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse, userAgent } from 'next/server'
 
 import { getClient } from '@/lib/clickhouse'
+import { ErrorLogger } from '@/lib/error-logger'
 import { normalizeUrl } from '@/lib/utils'
 import { geolocation } from '@vercel/functions'
 
@@ -55,12 +56,10 @@ export async function GET(request: NextRequest) {
         },
       ],
     })
-    console.log(`[/api/pageview] 'PageView' event created: ${request.url}`)
+    ErrorLogger.logDebug('[/api/pageview] PageView event created', { route: '/api/pageview', url: request.url })
     return NextResponse.json({ message: 'PageView event created', url })
   } catch (error) {
-    console.error(
-      `[/api/pageview] 'PageView' failed create event, error: "${error}"`
-    )
+    ErrorLogger.logError(error instanceof Error ? error : new Error(String(error)), { route: '/api/pageview', event: 'PageView' })
     return NextResponse.json(
       { error: `Error creating PageView event: ${error}` },
       { status: 500 }

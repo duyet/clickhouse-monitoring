@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
 import { getClient } from '@/lib/clickhouse'
+import { ErrorLogger } from '@/lib/error-logger'
 import { getHostIdCookie } from '@/lib/scoped-link'
 import { initTrackingTable } from '@/lib/tracking'
 
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
       message: 'Ok.',
     })
   } catch (error) {
-    console.error(error)
+    ErrorLogger.logError(error instanceof Error ? error : new Error(String(error)), { route: '/api/init' })
 
     return NextResponse.json(
       {
