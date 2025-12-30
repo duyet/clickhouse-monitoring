@@ -52,12 +52,12 @@ function SingleItem({ item }: { item: MenuItem }) {
       <HostPrefixedLink
         href={item.href}
         className={cn(
-          'group inline-flex h-8 w-max items-center justify-center rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors',
-          'text-muted-foreground hover:text-foreground hover:bg-accent/50',
-          'focus:text-foreground focus:bg-accent/50 focus:outline-hidden',
+          'group relative inline-flex h-10 w-max items-center justify-center px-3 text-[13px] font-medium transition-colors',
+          'text-muted-foreground hover:text-foreground',
+          'focus:text-foreground focus:outline-hidden',
           'disabled:pointer-events-none disabled:opacity-50',
-          // Active state styling with subtle indicator
-          'data-[active=true]:text-foreground data-[active=true]:bg-accent/50'
+          // Active state styling
+          'data-[active=true]:text-foreground'
         )}
         data-testid={
           item.href === '/clusters'
@@ -68,12 +68,14 @@ function SingleItem({ item }: { item: MenuItem }) {
         }
       >
         <div className="flex flex-row items-center gap-1.5">
-          {item.icon && <item.icon className="size-3.5 opacity-70" strokeWidth={1.5} />}
+          {item.icon && <item.icon className="size-3.5 opacity-70 group-data-[active=true]:opacity-100" strokeWidth={1.5} />}
           <span>{item.title}</span>
           {item.countKey ? (
             <CountBadge countKey={item.countKey} variant={item.countVariant} />
           ) : null}
         </div>
+        {/* Active indicator underline */}
+        <span className="absolute bottom-0 left-0 h-[2px] w-full scale-x-0 bg-primary transition-transform duration-200 group-data-[active=true]:scale-x-100" />
       </HostPrefixedLink>
     </NavigationMenuItem>
   )
@@ -82,7 +84,7 @@ function SingleItem({ item }: { item: MenuItem }) {
 function HasChildItems({ item }: { item: MenuItem }) {
   return (
     <NavigationMenuItem>
-      <NavigationMenuTrigger>
+      <NavigationMenuTrigger className="relative">
         <div className="flex flex-row items-center gap-1.5">
           {item.icon && <item.icon className="size-3.5 opacity-70" strokeWidth={1.5} />}
           <span>{item.title}</span>
@@ -101,7 +103,7 @@ function HasChildItems({ item }: { item: MenuItem }) {
                 title={
                   <span className="flex flex-row items-center gap-1.5">
                     {childItem.icon && (
-                      <childItem.icon className="size-3.5 opacity-70" strokeWidth={1.5} />
+                      <childItem.icon className="size-3.5 opacity-70 group-data-[active=true]:opacity-100" strokeWidth={1.5} />
                     )}
                     <span>{childItem.title}</span>
                     {childItem.countKey ? (
@@ -139,6 +141,7 @@ function ListItem({
       <NavigationMenuLink asChild>
         <HostPrefixedLink
           href={href}
+          className="group"
           data-testid={
             href === '/clusters'
               ? 'nav-clusters'
@@ -149,15 +152,17 @@ function ListItem({
         >
           <div
             className={cn(
-              'block space-y-0.5 rounded-md px-2.5 py-2 leading-none no-underline outline-hidden transition-colors select-none',
+              'relative block space-y-0.5 rounded-md px-2.5 py-2 leading-none no-underline outline-hidden transition-colors select-none',
               'hover:bg-accent/60 hover:text-foreground',
               'focus:bg-accent/60 focus:text-foreground',
               // Active state for dropdown items
-              'data-[active=true]:bg-accent/50 data-[active=true]:text-foreground',
+              'group-data-[active=true]:bg-accent/50 group-data-[active=true]:text-foreground',
               className
             )}
             {...props}
           >
+            {/* Active indicator - left border */}
+            <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 scale-y-0 bg-primary transition-transform duration-200 group-data-[active=true]:scale-y-100 rounded-full" />
             <div className="overflow-hidden text-[13px] leading-tight font-medium text-ellipsis">
               {title}
             </div>
