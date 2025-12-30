@@ -28,7 +28,7 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "test": "pnpm jest",
-    "jest": "jest --coverage",
+    "jest": "jest --coverage --testPathIgnorePatterns=query-config",
     "test-queries-config": "jest --coverage --testPathPattern=query-config --testPathIgnorePatterns=/node_modules/",
     "preinstall": "npx only-allow pnpm"
   },

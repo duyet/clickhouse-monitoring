@@ -25,10 +25,9 @@ module.exports = {
   verbose: false,
   // Prevent worker hanging
   workerIdleMemoryLimit: '512MB',
-  // Ignore query-config files as per original setup
+  // Ignore only node_modules; query-config tests are run via separate script
   testPathIgnorePatterns: [
     '/node_modules/',
-    'query-config'
   ],
   // Coverage configuration
   collectCoverage: true,
