@@ -225,14 +225,16 @@ const DiskSize = memo(function DiskSize({ hostId }: { hostId: number }) {
 })
 
 // Helper components for skeleton and error states
+// Matches MetricCard dimensions exactly to prevent CLS
 const MetricCardSkeleton = memo(function MetricCardSkeleton({ title, description }: { title?: string; description?: string }) {
   return (
     <div
-      className="rounded-md border border-border/50 bg-card/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]"
+      className="rounded-md border border-border/50 bg-card/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.03)] transition-all duration-200"
       role="status"
       aria-label={`Loading ${title || 'metric'}`}
       aria-busy="true"
     >
+      {/* Header - matches MetricCard CardHeader px-3 pb-0 pt-2 */}
       <div className="px-3 pb-0 pt-2">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1">
@@ -241,11 +243,16 @@ const MetricCardSkeleton = memo(function MetricCardSkeleton({ title, description
             ) : (
               <div className="h-2.5 w-16 animate-shimmer rounded bg-accent/50" />
             )}
-            {description && <div className="mt-0.5 h-2 w-10 animate-shimmer rounded bg-accent/50" />}
+            {description ? (
+              <div className="text-muted-foreground mt-0.5 text-[10px]">{description}</div>
+            ) : (
+              <div className="mt-0.5 h-2 w-10 animate-shimmer rounded bg-accent/50" />
+            )}
           </div>
-          {title && <div className="h-2 w-10 animate-shimmer rounded bg-accent/50" />}
+          <div className="h-2 w-10 animate-shimmer rounded bg-accent/50" />
         </div>
       </div>
+      {/* Content - matches MetricCard CardContent px-3 pt-1.5 pb-2.5 */}
       <div className="px-3 pt-1.5 pb-2.5">
         <div className="h-5 w-12 animate-shimmer rounded bg-accent/50" />
       </div>

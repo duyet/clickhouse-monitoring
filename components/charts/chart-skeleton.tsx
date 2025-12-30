@@ -70,10 +70,11 @@ export const ChartSkeleton = memo(function ChartSkeleton({
 
 /**
  * Area/Line chart skeleton with wave pattern
+ * Height matches page-layout.tsx chartClassName (h-32 sm:h-36)
  */
 const AreaChartSkeleton = memo(function AreaChartSkeleton({ dataPoints = 8 }: { dataPoints: number }) {
   return (
-    <div className="relative h-44 w-full overflow-hidden">
+    <div className="relative h-32 w-full overflow-hidden sm:h-36">
       {/* Grid lines */}
       <div className="absolute inset-0 flex flex-col justify-between py-2 opacity-30">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -129,7 +130,7 @@ const BarChartSkeleton = memo(function BarChartSkeleton({ dataPoints = 8 }: { da
   }
 
   return (
-    <div className="relative h-44 w-full">
+    <div className="relative h-32 w-full sm:h-36">
       {/* Grid lines */}
       <div className="absolute inset-0 flex flex-col justify-between py-2 opacity-30">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -156,7 +157,7 @@ const BarChartSkeleton = memo(function BarChartSkeleton({ dataPoints = 8 }: { da
  */
 const MetricChartSkeleton = memo(function MetricChartSkeleton() {
   return (
-    <div className="flex h-44 w-full flex-col items-center justify-center gap-3">
+    <div className="flex h-32 w-full flex-col items-center justify-center gap-3 sm:h-36">
       {/* Big metric value */}
       <Skeleton className="h-16 w-32" />
       {/* Label */}
@@ -175,7 +176,7 @@ const MetricChartSkeleton = memo(function MetricChartSkeleton() {
  */
 const TableChartSkeleton = memo(function TableChartSkeleton({ dataPoints = 5 }: { dataPoints: number }) {
   return (
-    <div className="h-44 w-full overflow-hidden">
+    <div className="h-32 w-full overflow-hidden sm:h-36">
       {/* Table header */}
       <div className="flex items-center gap-2 border-b pb-2 mb-2">
         <Skeleton className="h-4 w-24" />

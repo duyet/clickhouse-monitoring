@@ -5,22 +5,24 @@ import { memo } from 'react'
 /**
  * Chart skeleton with shimmer animation
  * Uses theme-aware colors for dark mode support
+ * Matches chart card dimensions (h-32 sm:h-36) to prevent CLS
  */
 export const ChartSkeleton = memo(function ChartSkeleton() {
   return (
     <div
-      className="mb-5 flex flex-col gap-4"
+      className="flex flex-col rounded-md border border-border/50 bg-card/50"
       role="status"
       aria-label="Loading chart"
       aria-busy="true"
     >
-      <div className="grid grid-cols-2 gap-2">
-        <Skeleton className="h-12 animate-shimmer rounded-md bg-muted" />
-        <Skeleton className="h-12 animate-shimmer rounded-md bg-muted" />
+      {/* Chart header */}
+      <div className="flex items-center justify-between p-3 pb-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-4 w-16" />
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <Skeleton className="h-4 w-16 animate-shimmer bg-muted" />
-        <Skeleton className="h-4 w-16 animate-shimmer bg-muted" />
+      {/* Chart area - matches h-32 sm:h-36 */}
+      <div className="h-32 px-3 pb-3 sm:h-36">
+        <Skeleton className="h-full w-full rounded" />
       </div>
       <span className="sr-only">Loading chart data...</span>
     </div>
@@ -29,9 +31,10 @@ export const ChartSkeleton = memo(function ChartSkeleton() {
 
 /**
  * Table skeleton with configurable rows and columns
+ * Matches DataTable layout to prevent CLS
  */
 export const TableSkeleton = memo(function TableSkeleton({
-  rows = 3,
+  rows = 5,
   cols = 4,
   className,
 }: {
@@ -41,18 +44,56 @@ export const TableSkeleton = memo(function TableSkeleton({
 }) {
   return (
     <div
-      className={cn('mb-5 flex w-fit flex-col gap-3', className)}
+      className={cn('flex min-h-0 flex-1 flex-col', className)}
       role="status"
       aria-label="Loading table"
       aria-busy="true"
     >
-      {Array.from({ length: rows }).map((_, i) => (
-        <div key={`row-${i}`} className="flex flex-row items-center gap-3">
+      {/* Table header area - matches DataTable */}
+      <div className="flex shrink-0 flex-row items-start justify-between pb-4">
+        <div>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <Skeleton className="h-7 w-48" />
+          </div>
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-20" />
+          <Skeleton className="h-8 w-24" />
+        </div>
+      </div>
+
+      {/* Table body - matches DataTable border container */}
+      <div className="mb-5 min-h-0 flex-1 overflow-hidden rounded-md border">
+        {/* Table header row */}
+        <div className="flex items-center gap-4 border-b bg-muted/30 px-4 py-3">
           {Array.from({ length: cols }).map((_, j) => (
-            <Skeleton key={`col-${j}`} className="h-6 w-[200px] animate-shimmer bg-muted" />
+            <Skeleton key={`header-${j}`} className="h-4 flex-1" />
           ))}
         </div>
-      ))}
+        {/* Table rows */}
+        <div className="flex flex-col">
+          {Array.from({ length: rows }).map((_, i) => (
+            <div key={`row-${i}`} className="flex items-center gap-4 border-b px-4 py-3 last:border-b-0">
+              {Array.from({ length: cols }).map((_, j) => (
+                <Skeleton key={`col-${j}`} className="h-4 flex-1" />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Pagination footer */}
+      <div className="flex shrink-0 items-center justify-between px-2">
+        <Skeleton className="h-4 w-32" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+        </div>
+      </div>
       <span className="sr-only">Loading table data...</span>
     </div>
   )
