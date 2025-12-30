@@ -17,8 +17,10 @@
 
 'use client'
 
-import { DebouncedInput } from '@/components/ui/debounced-input'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { X } from 'lucide-react'
+
+import { DebouncedInput } from '@/components/ui/debounced-input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -37,7 +39,7 @@ export interface ColumnFilterProps {
   className?: string
 }
 
-export function ColumnFilter({
+export const ColumnFilter = memo(function ColumnFilter({
   column,
   value,
   onChange,
@@ -47,8 +49,16 @@ export function ColumnFilter({
 }: ColumnFilterProps) {
   const hasValue = value.length > 0
 
+  const handleClear = useCallback(() => {
+    onChange('')
+  }, [onChange])
+
   return (
-    <div className={cn('flex items-center gap-1.5 w-full max-w-[180px]', className)}>
+    <div
+      className={cn('flex items-center gap-1.5 w-full max-w-[180px]', className)}
+      role="search"
+      aria-label={`Filter ${column} column`}
+    >
       <DebouncedInput
         value={value}
         onValueChange={onChange}
@@ -61,21 +71,22 @@ export function ColumnFilter({
           'placeholder:text-muted-foreground/60',
           'transition-colors'
         )}
+        aria-label={`Filter ${column}`}
       />
       {showClear && hasValue && (
         <Button
           variant="ghost"
           size="sm"
           className="h-7 w-7 p-0 hover:bg-muted/60"
-          onClick={() => onChange('')}
+          onClick={handleClear}
           aria-label={`Clear ${column} filter`}
         >
-          <X className="h-3 w-3 text-muted-foreground" />
+          <X className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
         </Button>
       )}
     </div>
   )
-}
+})
 
 /**
  * Column Filter Provider Hook
@@ -89,7 +100,6 @@ export function ColumnFilter({
  * ```
  */
 
-import { useMemo, useState } from 'react'
 
 export interface ColumnFiltersState {
   filteredData: unknown[]

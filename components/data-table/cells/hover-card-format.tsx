@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 import {
   HoverCard,
   HoverCardContent,
@@ -18,7 +20,7 @@ interface HoverCardProps {
   options?: HoverCardOptions
 }
 
-export function HoverCardFormat({
+export const HoverCardFormat = memo(function HoverCardFormat({
   row,
   value,
   options,
@@ -34,11 +36,11 @@ export function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger>{value}</HoverCardTrigger>
-      <HoverCardContent>{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
+      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
     </HoverCard>
   )
-}
+})
 
 /**
  * Extract row data for columns referenced in the content template

@@ -1,25 +1,14 @@
 'use client'
 
-import { Activity } from 'lucide-react'
 import { Suspense, memo, use } from 'react'
-import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 import { ClickHouseHostSelector } from '@/components/clickhouse-host-selector'
 import type { HostInfo } from '@/app/api/v1/hosts/route'
 
-const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'CH'
-
-async function fetchHosts(): Promise<Array<Omit<HostInfo, 'user'>>> {
-  try {
-    const response = await fetch('/api/v1/hosts')
-    if (!response.ok) return []
-    const result = await response.json() as { success: boolean; data?: HostInfo[] }
-    return result.success && result.data ? result.data : []
-  } catch {
-    return []
-  }
-}
+const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'ClickHouse'
+const LOGO_URL = process.env.NEXT_PUBLIC_LOGO_URL || ''
 
 export const HeaderBrand = memo(function HeaderBrand({
   currentHostId,
@@ -28,25 +17,41 @@ export const HeaderBrand = memo(function HeaderBrand({
   currentHostId: string
   hostsPromise: Promise<Array<Omit<HostInfo, 'user'>>>
 }) {
-
   return (
-    <Link
-      href="/overview"
-      aria-label="Go to overview"
-      className="flex items-center gap-4 transition-opacity hover:opacity-80"
-    >
-      <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-primary-foreground">
-        <Activity className="h-4 w-4" />
-      </div>
+    <div className="flex items-center gap-4">
+      {/* Logo - only render if configured */}
+      {LOGO_URL && (
+        <Link
+          href="/overview"
+          aria-label="Go to overview"
+          className="flex items-center transition-opacity hover:opacity-80"
+        >
+          <Image
+            src={LOGO_URL}
+            alt="Logo"
+            width={24}
+            height={24}
+            className="h-6 w-6 object-contain"
+            unoptimized
+          />
+        </Link>
+      )}
+
+      {/* Title and Host Selector */}
       <div className="flex items-center gap-1.5 font-medium">
-        <span className="text-muted-foreground">{TITLE_SHORT}</span>
+        <Link
+          href="/overview"
+          aria-label="Go to overview"
+          className="text-muted-foreground transition-opacity hover:opacity-80"
+        >
+          {TITLE_SHORT}
+        </Link>
         <span className="text-muted-foreground/40">/</span>
         <Suspense fallback={<span className="inline-block h-4 w-24 animate-shimmer rounded bg-muted" />}>
           <HostSelectorWrapper hostsPromise={hostsPromise} currentHostId={Number(currentHostId)} />
         </Suspense>
-        <ChevronDown className="h-4 w-4 text-muted-foreground/60" />
       </div>
-    </Link>
+    </div>
   )
 })
 
@@ -68,9 +73,8 @@ function HostSelectorWrapper({
 export const HeaderBrandSkeleton = memo(function HeaderBrandSkeleton() {
   return (
     <div className="flex items-center gap-4">
-      <div className="flex h-6 w-6 animate-shimmer items-center justify-center rounded bg-muted" />
       <div className="flex items-center gap-1.5">
-        <span className="inline-block h-4 w-8 animate-shimmer rounded bg-muted" />
+        <span className="inline-block h-4 w-16 animate-shimmer rounded bg-muted" />
         <span className="text-muted-foreground/40">/</span>
         <span className="inline-block h-4 w-24 animate-shimmer rounded bg-muted" />
       </div>
