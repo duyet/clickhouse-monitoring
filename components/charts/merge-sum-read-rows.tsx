@@ -1,11 +1,9 @@
 'use client'
 
 import { memo } from 'react'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { ChartError } from '@/components/charts/chart-error'
+import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/skeletons'
-import { BarChart } from '@/components/generic-charts/bar'
+import { BarChart } from '@/components/charts/primitives/bar'
 import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
 
@@ -17,7 +15,7 @@ export const ChartMergeSumReadRows = memo(function ChartMergeSumReadRows({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh, sql } = useChartData<{
+  const swr = useChartData<{
     event_time: string
     sum_read_rows: number
     sum_read_rows_scale: number
@@ -30,40 +28,27 @@ export const ChartMergeSumReadRows = memo(function ChartMergeSumReadRows({
     refreshInterval: 30000,
   })
 
-  const dataArray = Array.isArray(data) ? data : undefined
-
-  if (isLoading)
-    return (
-      <ChartSkeleton
-        title={title}
-        className={className}
-        chartClassName={chartClassName}
-      />
-    )
-  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
-
-  // Show empty state if no data
-  if (!dataArray || dataArray.length === 0) {
-    return <ChartEmpty title={title} className={className} />
-  }
-
   return (
-    <ChartCard title={title} className={className} sql={sql} data={dataArray}>
-      <BarChart
-        data={dataArray}
-        index="event_time"
-        categories={['sum_read_rows_scale']}
-        readableColumn="readable_sum_read_rows"
-        labelPosition="inside"
-        labelAngle={-90}
-        colorLabel="--foreground"
-        className={chartClassName}
-        colors={['--chart-indigo-300']}
-        autoMinValue={true}
-        relative={false}
-        allowDecimals={true}
-      />
-    </ChartCard>
+    <ChartContainer swr={swr} title={title} className={className} chartClassName={chartClassName}>
+      {(dataArray, sql) => (
+        <ChartCard title={title} className={className} sql={sql} data={dataArray} data-testid="merge-sum-read-rows-chart">
+          <BarChart
+            data={dataArray}
+            index="event_time"
+            categories={['sum_read_rows_scale']}
+            readableColumn="readable_sum_read_rows"
+            labelPosition="inside"
+            labelAngle={-90}
+            colorLabel="--foreground"
+            className={chartClassName}
+            colors={['--chart-indigo-300']}
+            autoMinValue={true}
+            relative={false}
+            allowDecimals={true}
+          />
+        </ChartCard>
+      )}
+    </ChartContainer>
   )
 })
 

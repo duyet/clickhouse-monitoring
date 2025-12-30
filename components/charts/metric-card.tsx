@@ -58,8 +58,7 @@ export interface MetricCardProps<TData = unknown> {
     data?: TData[] | TData | Record<string, unknown> | unknown
     error?: Error | null
     isLoading?: boolean
-    mutate?: () => void
-    refresh?: () => void
+    mutate?: () => Promise<void | unknown>
     sql?: string
   }
   /** Card title */
@@ -443,8 +442,8 @@ export function MetricCard<TData = unknown>({
   // custom render
   children,
 }: MetricCardProps<TData>) {
-  const { data, isLoading, error, mutate, refresh } = swr
-  const retry = mutate || refresh || (() => {})
+  const { data, isLoading, error, mutate } = swr
+  const retry = mutate || (() => {})
 
   const dataArray = Array.isArray(data)
     ? data

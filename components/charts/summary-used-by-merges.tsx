@@ -45,15 +45,18 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
   })
 
   const items = useMemo(() => {
-    if (!data || typeof data !== 'object') return []
+    if (!data || data.length === 0) return []
 
-    const used = (data as Record<string, unknown>).used as
+    const firstItem = data[0] as Record<string, unknown> | undefined
+    if (!firstItem) return []
+
+    const used = firstItem.used as
       | { memory_usage: number; readable_memory_usage: string }[]
       | undefined
-    const totalMem = (data as Record<string, unknown>).totalMem as
+    const totalMem = firstItem.totalMem as
       | { total: number; readable_total: string }[]
       | undefined
-    const rowsReadWritten = (data as Record<string, unknown>).rowsReadWritten as
+    const rowsReadWritten = firstItem.rowsReadWritten as
       | {
           rows_read: number
           rows_written: number
@@ -61,8 +64,7 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
           readable_rows_written: string
         }[]
       | undefined
-    const bytesReadWritten = (data as Record<string, unknown>)
-      .bytesReadWritten as
+    const bytesReadWritten = firstItem.bytesReadWritten as
       | {
           bytes_read: number
           bytes_written: number
@@ -141,27 +143,29 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
   }
 
   // Show empty state if no data
-  if (!data || typeof data !== 'object') {
+  if (!data || data.length === 0) {
     return <ChartEmpty title={title} className={className} />
   }
 
-  const used = (
-    (data as Record<string, unknown>).used as
-      | { memory_usage: number; readable_memory_usage: string }[]
-      | undefined
+  const firstItem = data[0] as Record<string, unknown> | undefined
+  if (!firstItem) {
+    return <ChartEmpty title={title} className={className} />
+  }
+
+  const used = (firstItem.used as
+    | { memory_usage: number; readable_memory_usage: string }[]
+    | undefined
   )?.[0]
-  const totalMem = (
-    (data as Record<string, unknown>).totalMem as
-      | { total: number; readable_total: string }[]
-      | undefined
+  const totalMem = (firstItem.totalMem as
+    | { total: number; readable_total: string }[]
+    | undefined
   )?.[0]
-  const rowsReadWritten = (
-    (data as Record<string, unknown>).rowsReadWritten as
-      | {
-          rows_read: number
-          readable_rows_read: string
-        }[]
-      | undefined
+  const rowsReadWritten = (firstItem.rowsReadWritten as
+    | {
+        rows_read: number
+        readable_rows_read: string
+      }[]
+    | undefined
   )?.[0]
 
   if (!used || !totalMem || !rowsReadWritten) {

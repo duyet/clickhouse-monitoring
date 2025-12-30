@@ -1,12 +1,10 @@
 'use client'
 
 import { memo } from 'react'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { ChartError } from '@/components/charts/chart-error'
-import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/skeletons'
-import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/cards/chart-card'
+import { ChartContainer } from '@/components/charts/chart-container'
+import type { ChartProps } from '@/components/charts/chart-props'
+import { AreaChart } from '@/components/charts/primitives/area'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
@@ -24,7 +22,7 @@ export const ChartQueryCount = memo(function ChartQueryCount({
   hostId,
   ...props
 }: ChartProps) {
-  const { data, isLoading, error, refresh, sql } = useChartData<{
+  const swr = useChartData<{
     event_time: string
     query_count: number
     breakdown: Array<[string, number] | Record<string, string>>
@@ -36,49 +34,36 @@ export const ChartQueryCount = memo(function ChartQueryCount({
     refreshInterval: 30000,
   })
 
-  const dataArray = Array.isArray(data) ? data : undefined
-
-  if (isLoading)
-    return (
-      <ChartSkeleton
-        title={title}
-        className={className}
-        chartClassName={chartClassName}
-      />
-    )
-  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
-
-  // Show empty state if no data
-  if (!dataArray || dataArray.length === 0) {
-    return <ChartEmpty title={title} className={className} />
-  }
-
   return (
-    <ChartCard
-      title={title}
-      className={className}
-      contentClassName={chartCardContentClassName}
-      sql={sql}
-      data={dataArray}
-      data-testid="query-count-chart"
-    >
-      <AreaChart
-        className={cn('h-52', chartClassName)}
-        data={dataArray}
-        index="event_time"
-        categories={['query_count']}
-        readable="quantity"
-        stack
-        showLegend={showLegend}
-        showXAxis={showXAxis}
-        showCartesianGrid={showCartesianGrid}
-        colors={['--chart-yellow']}
-        breakdown={breakdown}
-        breakdownLabel="query_kind"
-        breakdownValue="count"
-        {...props}
-      />
-    </ChartCard>
+    <ChartContainer swr={swr} title={title} className={className} chartClassName={chartClassName}>
+      {(dataArray, sql) => (
+        <ChartCard
+          title={title}
+          className={className}
+          contentClassName={chartCardContentClassName}
+          sql={sql}
+          data={dataArray}
+          data-testid="query-count-chart"
+        >
+          <AreaChart
+            className={cn('h-52', chartClassName)}
+            data={dataArray}
+            index="event_time"
+            categories={['query_count']}
+            readable="quantity"
+            stack
+            showLegend={showLegend}
+            showXAxis={showXAxis}
+            showCartesianGrid={showCartesianGrid}
+            colors={['--chart-yellow']}
+            breakdown={breakdown}
+            breakdownLabel="query_kind"
+            breakdownValue="count"
+            {...props}
+          />
+        </ChartCard>
+      )}
+    </ChartContainer>
   )
 })
 

@@ -1,10 +1,8 @@
 'use client'
 
 import { memo } from 'react'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { ChartError } from '@/components/charts/chart-error'
+import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/skeletons'
 import { CardMetric } from '@/components/cards/card-metric'
 import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
@@ -15,7 +13,7 @@ export const ChartDiskSize = memo(function ChartDiskSize({
   className,
   hostId,
 }: ChartProps & { name?: string }) {
-  const { data, isLoading, error, refresh, sql } = useChartData<{
+  const swr = useChartData<{
     name: string
     used_space: number
     readable_used_space: string
@@ -28,28 +26,30 @@ export const ChartDiskSize = memo(function ChartDiskSize({
     refreshInterval: 30000,
   })
 
-  const dataArray = Array.isArray(data) ? data : undefined
-
-  if (isLoading) return <ChartSkeleton title={title} className={className} />
-  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
-
-  // Show empty state if no data
-  if (!dataArray || dataArray.length === 0) {
-    return <ChartEmpty title={title} className={className} />
-  }
-
-  const first = dataArray[0]
-
   return (
-    <ChartCard title={title} className={className} sql={sql} data={dataArray}>
-      <CardMetric
-        current={first.used_space}
-        currentReadable={`${first.readable_used_space} used (${first.name})`}
-        target={first.total_space}
-        targetReadable={`${first.readable_total_space} total`}
-        className="p-2"
-      />
-    </ChartCard>
+    <ChartContainer swr={swr} title={title} className={className}>
+      {(dataArray, sql) => {
+        const first = dataArray[0] as {
+          name: string
+          used_space: number
+          readable_used_space: string
+          total_space: number
+          readable_total_space: string
+        }
+
+        return (
+          <ChartCard title={title} className={className} sql={sql} data={dataArray} data-testid="disk-size-chart">
+            <CardMetric
+              current={first.used_space}
+              currentReadable={`${first.readable_used_space} used (${first.name})`}
+              target={first.total_space}
+              targetReadable={`${first.readable_total_space} total`}
+              className="p-2"
+            />
+          </ChartCard>
+        )
+      }}
+    </ChartContainer>
   )
 })
 

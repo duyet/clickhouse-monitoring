@@ -1,10 +1,8 @@
 'use client'
 
 import { memo } from 'react'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { ChartError } from '@/components/charts/chart-error'
+import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/skeletons'
 import { CardMetric } from '@/components/cards/card-metric'
 import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
@@ -15,7 +13,7 @@ export const ChartBackupSize = memo(function ChartBackupSize({
   className,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh, sql } = useChartData<{
+  const swr = useChartData<{
     total_size: number
     uncompressed_size: number
     compressed_size: number
@@ -29,28 +27,30 @@ export const ChartBackupSize = memo(function ChartBackupSize({
     refreshInterval: 30000,
   })
 
-  if (isLoading) return <ChartSkeleton title={title} className={className} />
-  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
-
-  // Single-query chart returns array
-  const dataArray = Array.isArray(data) ? data : undefined
-
-  // Show empty state if no data
-  if (!dataArray || dataArray.length === 0) {
-    return <ChartEmpty title={title} className={className} />
-  }
-
-  const first = dataArray[0]
-
   return (
-    <ChartCard title={title} className={className} sql={sql} data={dataArray}>
-      <CardMetric
-        current={first.compressed_size}
-        currentReadable={`${first.readable_compressed_size} compressed`}
-        target={first.uncompressed_size}
-        targetReadable={`${first.readable_uncompressed_size} uncompressed`}
-        className="p-2"
-      />
-    </ChartCard>
+    <ChartContainer swr={swr} title={title} className={className}>
+      {(dataArray, sql) => {
+        const first = dataArray[0] as {
+          total_size: number
+          uncompressed_size: number
+          compressed_size: number
+          readable_total_size: string
+          readable_uncompressed_size: string
+          readable_compressed_size: string
+        }
+
+        return (
+          <ChartCard title={title} className={className} sql={sql} data={dataArray} data-testid="backup-size-chart">
+            <CardMetric
+              current={first.compressed_size}
+              currentReadable={`${first.readable_compressed_size} compressed`}
+              target={first.uncompressed_size}
+              targetReadable={`${first.readable_uncompressed_size} uncompressed`}
+              className="p-2"
+            />
+          </ChartCard>
+        )
+      }}
+    </ChartContainer>
   )
 })

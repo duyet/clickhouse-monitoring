@@ -22,7 +22,7 @@ export const ChartZookeeperSummaryTable = memo(
     className,
     hostId,
   }: ChartProps) {
-    const { data, error, isLoading, refresh, sql } = useChartData<{
+    const { data, error, isLoading, mutate, sql } = useChartData<{
       metric: string
       value: string
       desc: string
@@ -43,7 +43,7 @@ export const ChartZookeeperSummaryTable = memo(
         <ChartError
           title={title}
           error={error}
-          onRetry={refresh}
+          onRetry={mutate}
           className={className}
         />
       )

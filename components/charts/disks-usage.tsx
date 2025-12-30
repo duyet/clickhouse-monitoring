@@ -1,11 +1,9 @@
 'use client'
 
 import { memo } from 'react'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { ChartError } from '@/components/charts/chart-error'
+import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/skeletons'
-import { AreaChart } from '@/components/generic-charts/area'
+import { AreaChart } from '@/components/charts/primitives/area'
 import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
@@ -19,7 +17,7 @@ export const ChartDisksUsage = memo(function ChartDisksUsage({
   hostId,
   ...props
 }: ChartProps) {
-  const { data, isLoading, error, refresh, sql } = useChartData<{
+  const swr = useChartData<{
     event_time: string
     DiskAvailable_default: number
     DiskUsed_default: number
@@ -33,44 +31,31 @@ export const ChartDisksUsage = memo(function ChartDisksUsage({
     refreshInterval: 30000,
   })
 
-  const dataArray = Array.isArray(data) ? data : undefined
-
-  if (isLoading)
-    return (
-      <ChartSkeleton
-        title={title}
-        className={className}
-        chartClassName={chartClassName}
-      />
-    )
-  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
-
-  // Show empty state if no data
-  if (!dataArray || dataArray.length === 0) {
-    return <ChartEmpty title={title} className={className} />
-  }
-
   return (
-    <ChartCard
-      title={title}
-      className={className}
-      sql={sql}
-      data={dataArray}
-      data-testid="disk-usage-chart"
-    >
-      <AreaChart
-        className={cn('h-52', chartClassName)}
-        data={dataArray}
-        index="event_time"
-        categories={['DiskAvailable_default', 'DiskUsed_default']}
-        readableColumns={[
-          'readable_DiskAvailable_default',
-          'readable_DiskUsed_default',
-        ]}
-        stack
-        {...props}
-      />
-    </ChartCard>
+    <ChartContainer swr={swr} title={title} className={className} chartClassName={chartClassName}>
+      {(dataArray, sql) => (
+        <ChartCard
+          title={title}
+          className={className}
+          sql={sql}
+          data={dataArray}
+          data-testid="disk-usage-chart"
+        >
+          <AreaChart
+            className={cn('h-52', chartClassName)}
+            data={dataArray}
+            index="event_time"
+            categories={['DiskAvailable_default', 'DiskUsed_default']}
+            readableColumns={[
+              'readable_DiskAvailable_default',
+              'readable_DiskUsed_default',
+            ]}
+            stack
+            {...props}
+          />
+        </ChartCard>
+      )}
+    </ChartContainer>
   )
 })
 

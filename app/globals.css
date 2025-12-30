@@ -8,6 +8,10 @@
   * {
     @apply border-border;
   }
+  html,
+  body {
+    @apply h-full overflow-hidden;
+  }
   body {
     @apply bg-background text-foreground;
   }

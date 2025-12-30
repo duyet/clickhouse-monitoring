@@ -3,11 +3,9 @@
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 import { memo } from 'react'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { ChartError } from '@/components/charts/chart-error'
+import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/skeletons'
-import { AreaChart } from '@/components/generic-charts/area'
+import { AreaChart } from '@/components/charts/primitives/area'
 import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
@@ -20,7 +18,7 @@ export const ChartMergeCount = memo(function ChartMergeCount({
   chartClassName,
   hostId,
 }: ChartProps) {
-  const { data, isLoading, error, refresh, sql } = useChartData<{
+  const swr = useChartData<{
     event_time: string
     avg_CurrentMetric_Merge: number
     avg_CurrentMetric_PartMutation: number
@@ -32,59 +30,47 @@ export const ChartMergeCount = memo(function ChartMergeCount({
     refreshInterval: 30000,
   })
 
-  const dataArray = Array.isArray(data) ? data : undefined
-
-  if (isLoading)
-    return (
-      <ChartSkeleton
-        title={title}
-        className={className}
-        chartClassName={chartClassName}
-      />
-    )
-  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
-
-  // Show empty state if no data
-  if (!dataArray || dataArray.length === 0) {
-    return <ChartEmpty title={title} className={className} />
-  }
-
   return (
-    <ChartCard
-      title={title}
-      className={cn('justify-between', className)}
-      contentClassName="flex flex-col justify-between"
-      sql={sql}
-      data={dataArray}
-    >
-      <AreaChart
-        className={cn('h-52', chartClassName)}
-        data={dataArray}
-        index="event_time"
-        categories={[
-          'avg_CurrentMetric_Merge',
-          'avg_CurrentMetric_PartMutation',
-        ]}
-        readable="quantity"
-      />
+    <ChartContainer swr={swr} title={title} className={className} chartClassName={chartClassName}>
+      {(dataArray, sql) => (
+        <ChartCard
+          title={title}
+          className={cn('justify-between', className)}
+          contentClassName="flex flex-col justify-between"
+          sql={sql}
+          data={dataArray}
+          data-testid="merge-count-chart"
+        >
+          <AreaChart
+            className={cn('h-52', chartClassName)}
+            data={dataArray}
+            index="event_time"
+            categories={[
+              'avg_CurrentMetric_Merge',
+              'avg_CurrentMetric_PartMutation',
+            ]}
+            readable="quantity"
+          />
 
-      <div className="text-muted-foreground flex flex-row justify-between gap-2 text-right text-sm">
-        <Link
-          href={`/merges?host=${hostId}`}
-          className="flex flex-row items-center gap-2"
-        >
-          Merges
-          <ArrowRightIcon className="size-3" />
-        </Link>
-        <Link
-          href={`/mutations?host=${hostId}`}
-          className="flex flex-row items-center gap-2"
-        >
-          Mutations
-          <ArrowRightIcon className="size-3" />
-        </Link>
-      </div>
-    </ChartCard>
+          <div className="text-muted-foreground flex flex-row justify-between gap-2 text-right text-sm">
+            <Link
+              href={`/merges?host=${hostId}`}
+              className="flex flex-row items-center gap-2"
+            >
+              Merges
+              <ArrowRightIcon className="size-3" />
+            </Link>
+            <Link
+              href={`/mutations?host=${hostId}`}
+              className="flex flex-row items-center gap-2"
+            >
+              Mutations
+              <ArrowRightIcon className="size-3" />
+            </Link>
+          </div>
+        </ChartCard>
+      )}
+    </ChartContainer>
   )
 })
 

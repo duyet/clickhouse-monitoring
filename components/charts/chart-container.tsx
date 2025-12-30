@@ -1,14 +1,14 @@
 'use client'
 
-import { memo, type ReactNode, useMemo } from 'react'
-import type { SWRResponse } from 'swr'
+import { memo, type ReactNode } from 'react'
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { ChartSkeleton } from '@/components/skeletons'
+import type { UseChartResult } from '@/lib/swr'
 
-export interface ChartContainerProps<TData = unknown> {
+export interface ChartContainerProps<TData extends Record<string, unknown> = Record<string, unknown>> {
   /** SWR response from useChartData hook */
-  swr: SWRResponse<TData, Error> & { sql?: string }
+  swr: UseChartResult<TData>
   /** Chart title for skeleton/error/empty states */
   title?: string
   /** Container className */
@@ -44,7 +44,7 @@ export interface ChartContainerProps<TData = unknown> {
  * }
  * ```
  */
-export const ChartContainer = memo(function ChartContainer<TData = unknown>({
+export const ChartContainer = memo(function ChartContainer<TData extends Record<string, unknown> = Record<string, unknown>>({
   swr,
   title,
   className,
@@ -52,13 +52,6 @@ export const ChartContainer = memo(function ChartContainer<TData = unknown>({
   children,
 }: ChartContainerProps<TData>) {
   const { data, isLoading, error, mutate, sql } = swr
-
-  // Ensure data is always an array or undefined
-  const dataArray = useMemo(() => {
-    if (Array.isArray(data)) return data
-    if (data && typeof data === 'object') return [data] as TData[]
-    return undefined
-  }, [data])
 
   // Loading state
   if (isLoading) {
@@ -77,14 +70,14 @@ export const ChartContainer = memo(function ChartContainer<TData = unknown>({
   }
 
   // Empty state
-  if (!dataArray || dataArray.length === 0) {
+  if (!data || data.length === 0) {
     return <ChartEmpty title={title} className={className} />
   }
 
   // Render chart with data
   return (
     <div aria-label={title ? `${title} chart` : 'Chart'} role="region">
-      {children(dataArray, sql)}
+      {children(data, sql)}
     </div>
   )
 })

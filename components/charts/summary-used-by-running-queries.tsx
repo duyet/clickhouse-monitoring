@@ -46,22 +46,23 @@ export const ChartSummaryUsedByRunningQueries = memo(
     })
 
     const items = useMemo(() => {
-      if (!data || typeof data !== 'object') return []
+      if (!data || data.length === 0) return []
 
-      const main = (data as Record<string, unknown>).main as
+      const firstItem = data[0] as Record<string, unknown> | undefined
+      if (!firstItem) return []
+
+      const main = firstItem.main as
         | {
             query_count: number
             memory_usage: number
             readable_memory_usage: string
           }[]
         | undefined
-      const totalMem = (data as Record<string, unknown>).totalMem as
+      const totalMem = firstItem.totalMem as
         | { total: number; readable_total: string }[]
         | undefined
-      const todayQueryCount = (data as Record<string, unknown>)
-        .todayQueryCount as { query_count: number }[] | undefined
-      const rowsReadWritten = (data as Record<string, unknown>)
-        .rowsReadWritten as
+      const todayQueryCount = firstItem.todayQueryCount as { query_count: number }[] | undefined
+      const rowsReadWritten = firstItem.rowsReadWritten as
         | {
             rows_read: number
             rows_written: number
@@ -127,12 +128,17 @@ export const ChartSummaryUsedByRunningQueries = memo(
     }
 
     // Show empty state if no data
-    if (!data || typeof data !== 'object') {
+    if (!data || data.length === 0) {
+      return <ChartEmpty title={title} className={className} />
+    }
+
+    const firstItem = data[0] as Record<string, unknown> | undefined
+    if (!firstItem) {
       return <ChartEmpty title={title} className={className} />
     }
 
     const first = (
-      (data as Record<string, unknown>).main as
+      firstItem.main as
         | { query_count: number; readable_memory_usage: string }[]
         | undefined
     )?.[0]

@@ -2,8 +2,8 @@
 
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/skeletons'
-import { AreaChart } from '@/components/generic-charts/area'
-import { BarChart } from '@/components/generic-charts/bar'
+import { AreaChart } from '@/components/charts/primitives/area'
+import { BarChart } from '@/components/charts/primitives/bar'
 import { ChartCard } from '@/components/cards/chart-card'
 import { GithubHeatmapChart } from '@/components/charts/github-heatmap-chart'
 import { useFetchData } from '@/lib/swr'

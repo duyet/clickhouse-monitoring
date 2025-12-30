@@ -21,6 +21,24 @@ interface ChartDataResponse<T = unknown> {
   }
 }
 
+/** Return type from useChartData hook */
+export interface UseChartResult<TData extends Record<string, unknown> = Record<string, unknown>> {
+  data: TData[]
+  metadata?: {
+    duration?: number
+    rows?: number
+    rows_before_limit_at_least?: number
+    exception?: string
+    message?: string
+    sql?: string
+  }
+  sql?: string
+  error?: Error
+  isLoading: boolean
+  isValidating: boolean
+  mutate: () => Promise<void | unknown>
+}
+
 export type SwrConfigPreset = keyof typeof REFRESH_INTERVAL | SWRConfiguration
 
 export interface UseChartDataParams {
@@ -41,7 +59,7 @@ export interface UseChartDataParams {
  *
  * @template T - The chart data point type
  * @param {UseChartDataParams} params - Configuration object
- * @returns {Object} SWR state object with data array, metadata, error, isLoading, and refresh function
+ * @returns {UseChartResult<T>} SWR state object with data array, metadata, error, isLoading, isValidating, and mutate function
  *
  * @example
  * ```typescript
@@ -61,7 +79,7 @@ export interface UseChartDataParams {
  * })
  * ```
  */
-export function useChartData<T = unknown>({
+export function useChartData<T extends Record<string, unknown> = Record<string, unknown>>({
   chartName,
   hostId,
   interval,
@@ -69,7 +87,7 @@ export function useChartData<T = unknown>({
   params,
   refreshInterval = REFRESH_INTERVAL.DEFAULT_30S,
   swrConfig,
-}: UseChartDataParams) {
+}: UseChartDataParams): UseChartResult<T> {
   // Build query parameters
   const searchParams = new URLSearchParams()
   if (hostId !== undefined) searchParams.append('hostId', String(hostId))
@@ -113,7 +131,7 @@ export function useChartData<T = unknown>({
     return response.json() as Promise<ChartDataResponse<T>>
   }, [url])
 
-  const { data, error, isLoading, mutate } = useSWR<
+  const { data, error, isLoading, isValidating, mutate } = useSWR<
     ChartDataResponse<T>,
     Error
   >(key, fetcher, {
@@ -125,12 +143,18 @@ export function useChartData<T = unknown>({
     ...swrConfig,
   })
 
+  // Ensure data is always an array
+  const dataArray: T[] =
+    (data?.data as T[]) ||
+    (Array.isArray(data?.data) ? (data?.data as T[]) : [])
+
   return {
-    data: data?.data || (Array.isArray(data?.data) ? [] : {}),
+    data: dataArray,
     metadata: data?.metadata,
     sql: data?.metadata?.sql,
     error,
     isLoading,
-    refresh: mutate,
+    isValidating,
+    mutate,
   }
 }

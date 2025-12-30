@@ -15,7 +15,7 @@ export const ChartSummaryUsedByMutations = memo(
     className,
     hostId,
   }: ChartProps) {
-    const { data, isLoading, error, refresh, sql } = useChartData<{
+    const { data, isLoading, error, mutate, sql } = useChartData<{
       running_count: number
     }>({
       chartName: 'summary-used-by-mutations',
@@ -27,7 +27,7 @@ export const ChartSummaryUsedByMutations = memo(
 
     if (isLoading) return <ChartSkeleton title={title} className={className} />
     if (error)
-      return <ChartError error={error} title={title} onRetry={refresh} />
+      return <ChartError error={error} title={title} onRetry={mutate} />
 
     // Show empty state if no data
     if (!dataArray || dataArray.length === 0) {

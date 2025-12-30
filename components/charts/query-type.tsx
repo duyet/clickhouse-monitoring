@@ -1,11 +1,9 @@
 'use client'
 
 import { memo } from 'react'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { ChartError } from '@/components/charts/chart-error'
+import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/skeletons'
-import { DonutChart } from '@/components/generic-charts/donut'
+import { DonutChart } from '@/components/charts/primitives/donut'
 import { useChartData } from '@/lib/swr'
 
 export const ChartQueryType = memo(function ChartQueryType({
@@ -17,7 +15,7 @@ export const ChartQueryType = memo(function ChartQueryType({
   showLegend,
   ..._props
 }: ChartProps) {
-  const { data, isLoading, error, refresh } = useChartData<{
+  const swr = useChartData<{
     type: string
     query_count: number
   }>({
@@ -27,32 +25,20 @@ export const ChartQueryType = memo(function ChartQueryType({
     refreshInterval: 30000,
   })
 
-  const dataArray = Array.isArray(data) ? data : undefined
-
-  if (isLoading)
-    return (
-      <ChartSkeleton
-        title={title}
-        className={className}
-        chartClassName={chartClassName}
-      />
-    )
-  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
-
-  // Show empty state if no data
-  if (!dataArray || dataArray.length === 0) {
-    return <ChartEmpty title={title} className={className} />
-  }
-
   return (
-    <DonutChart
-      data={dataArray}
-      index="type"
-      categories={['query_count']}
-      readable="quantity"
-      showLegend={showLegend}
-      className={chartClassName}
-    />
+    <ChartContainer swr={swr} title={title} className={className} chartClassName={chartClassName}>
+      {(dataArray) => (
+        <DonutChart
+          data={dataArray}
+          index="type"
+          categories={['query_count']}
+          readable="quantity"
+          showLegend={showLegend}
+          className={chartClassName}
+          data-testid="query-type-chart"
+        />
+      )}
+    </ChartContainer>
   )
 })
 

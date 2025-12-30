@@ -1,12 +1,11 @@
 'use client'
 
 import { memo } from 'react'
-import { ChartError, ChartSkeleton } from '@/components/charts'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { BarChart } from '@/components/generic-charts/bar'
+import { ChartContainer } from '@/components/charts/chart-container'
+import type { ChartProps } from '@/components/charts/chart-props'
+import { BarChart } from '@/components/charts/primitives/bar'
 import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
-import type { ChartProps } from './chart-props'
 
 export const ChartZookeeperWait = memo(function ChartZookeeperWait({
   title = 'ZooKeeper Wait Seconds',
@@ -15,7 +14,7 @@ export const ChartZookeeperWait = memo(function ChartZookeeperWait({
   className,
   hostId,
 }: ChartProps) {
-  const { data, error, isLoading, refresh, sql } = useChartData<{
+  const swr = useChartData<{
     event_time: string
     AVG_ProfileEvent_ZooKeeperWaitSeconds: number
     readable_AVG_ProfileEvent_ZooKeeperWaitSeconds: string
@@ -27,40 +26,22 @@ export const ChartZookeeperWait = memo(function ChartZookeeperWait({
     refreshInterval: 30000,
   })
 
-  const dataArray = Array.isArray(data) ? data : undefined
-
-  if (isLoading) {
-    return <ChartSkeleton title={title} className={className} />
-  }
-
-  if (error) {
-    return (
-      <ChartError
-        title={title}
-        error={error}
-        onRetry={refresh}
-        className={className}
-      />
-    )
-  }
-
-  // Show empty state if no data
-  if (!dataArray || dataArray.length === 0) {
-    return <ChartEmpty title={title} className={className} />
-  }
-
   return (
-    <ChartCard title={title} sql={sql} data={dataArray} className={className}>
-      <BarChart
-        data={dataArray}
-        index="event_time"
-        categories={['AVG_ProfileEvent_ZooKeeperWaitSeconds']}
-        readableColumn="readable_AVG_ProfileEvent_ZooKeeperWaitSeconds"
-        className="h-52"
-        showLegend
-        stack
-      />
-    </ChartCard>
+    <ChartContainer swr={swr} title={title} className={className}>
+      {(dataArray, sql) => (
+        <ChartCard title={title} sql={sql} data={dataArray} className={className} data-testid="zookeeper-wait-chart">
+          <BarChart
+            data={dataArray}
+            index="event_time"
+            categories={['AVG_ProfileEvent_ZooKeeperWaitSeconds']}
+            readableColumn="readable_AVG_ProfileEvent_ZooKeeperWaitSeconds"
+            className="h-52"
+            showLegend
+            stack
+          />
+        </ChartCard>
+      )}
+    </ChartContainer>
   )
 })
 

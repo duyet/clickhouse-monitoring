@@ -1,11 +1,9 @@
 'use client'
 
 import { memo } from 'react'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { ChartError } from '@/components/charts/chart-error'
+import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/skeletons'
-import { BarChart } from '@/components/generic-charts/bar'
+import { BarChart } from '@/components/charts/primitives/bar'
 import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
 
@@ -18,13 +16,7 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
   hostId,
   ...props
 }: ChartProps) {
-  const {
-    data: raw,
-    isLoading,
-    error,
-    refresh,
-    sql,
-  } = useChartData<{
+  const swr = useChartData<{
     event_time: string
     table: string
     new_parts: number
@@ -36,57 +28,50 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
     refreshInterval: 30000,
   })
 
-  if (isLoading)
-    return (
-      <ChartSkeleton
-        title={title}
-        className={className}
-        chartClassName={chartClassName}
-      />
-    )
-  if (error) return <ChartError error={error} title={title} onRetry={refresh} />
-
-  const dataArray = Array.isArray(raw) ? raw : undefined
-
-  // Show empty state if no data
-  if (!dataArray || dataArray.length === 0) {
-    return <ChartEmpty title={title} className={className} />
-  }
-
-  // Single-pass algorithm: collect data and track tables simultaneously
-  const tableSet = new Set<string>()
-  const data = dataArray.reduce(
-    (acc, cur) => {
-      const { event_time, table, new_parts } = cur
-      tableSet.add(table)
-      if (acc[event_time] === undefined) {
-        acc[event_time] = {}
-      }
-
-      acc[event_time][table] = new_parts
-      return acc
-    },
-    {} as Record<string, Record<string, number>>
-  )
-
-  const barData = Object.entries(data).map(([event_time, obj]) => {
-    return { event_time, ...obj }
-  })
-
-  // Convert set to array for categories
-  const tables = Array.from(tableSet)
-
   return (
-    <ChartCard title={title} className={className} sql={sql} data={barData}>
-      <BarChart
-        className={chartClassName}
-        data={barData}
-        index="event_time"
-        categories={tables}
-        stack
-        {...props}
-      />
-    </ChartCard>
+    <ChartContainer swr={swr} title={title} className={className} chartClassName={chartClassName}>
+      {(dataArray, sql) => {
+        // Type the data items properly
+        type DataItem = { event_time: string; table: string; new_parts: number }
+
+        // Single-pass algorithm: collect data and track tables simultaneously
+        const tableSet = new Set<string>()
+        const data = dataArray.reduce<
+          Record<string, Record<string, number>>
+        >((acc, cur) => {
+          const { event_time, table, new_parts } = cur as DataItem
+          tableSet.add(table)
+          if (acc[event_time] === undefined) {
+            acc[event_time] = {}
+          }
+
+          const inner = acc[event_time] || {}
+          inner[table] = new_parts
+          acc[event_time] = inner
+          return acc
+        }, {})
+
+        const barData = Object.entries(data).map(([event_time, obj]) => {
+          return { event_time, ...obj }
+        })
+
+        // Convert set to array for categories
+        const tables = Array.from(tableSet)
+
+        return (
+          <ChartCard title={title} className={className} sql={sql} data={barData} data-testid="new-parts-created-chart">
+            <BarChart
+              className={chartClassName}
+              data={barData}
+              index="event_time"
+              categories={tables}
+              stack
+              {...props}
+            />
+          </ChartCard>
+        )
+      }}
+    </ChartContainer>
   )
 })
 
