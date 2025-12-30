@@ -7,6 +7,7 @@ import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
 import { SWRProvider } from '@/lib/swr'
+import { Breadcrumb } from '@/components/breadcrumb'
 import { HeaderClient } from '@/components/header-client'
 import { Toaster } from '@/components/ui/sonner'
 
@@ -47,6 +48,9 @@ export default function RootLayout({
                 <HeaderClient />
               </Suspense>
               <main className="container mx-auto px-3 md:px-4 lg:px-6 py-4 md:py-5">
+                <Suspense fallback={<div className="h-6" />}>
+                  <Breadcrumb className="mb-4" />
+                </Suspense>
                 {children}
               </main>
             </div>

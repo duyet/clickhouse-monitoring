@@ -1,0 +1,53 @@
+'use client'
+
+import { ChevronRightIcon } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Fragment, useMemo } from 'react'
+
+import { cn } from '@/lib/utils'
+import { getBreadcrumbPath } from '@/lib/menu/breadcrumb'
+import { HostPrefixedLink } from '@/components/menu/link-with-context'
+
+interface BreadcrumbProps {
+  className?: string
+}
+
+export function Breadcrumb({ className }: BreadcrumbProps) {
+  const pathname = usePathname()
+
+  const breadcrumbs = useMemo(() => {
+    return getBreadcrumbPath(pathname)
+  }, [pathname])
+
+  if (breadcrumbs.length <= 1) {
+    return null
+  }
+
+  return (
+    <nav aria-label="Breadcrumb" className={cn('flex items-center', className)}>
+      <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+        {breadcrumbs.map((crumb, index) => {
+          const isLast = index === breadcrumbs.length - 1
+
+          return (
+            <li key={crumb.href} className="flex items-center gap-1.5">
+              {index > 0 && (
+                <ChevronRightIcon className="size-3.5 shrink-0" strokeWidth={2.5} />
+              )}
+              {isLast ? (
+                <span className="font-medium text-foreground">{crumb.title}</span>
+              ) : (
+                <HostPrefixedLink
+                  href={crumb.href}
+                  className="hover:text-foreground hover:underline transition-colors"
+                >
+                  {crumb.title}
+                </HostPrefixedLink>
+              )}
+            </li>
+          )
+        })}
+      </ol>
+    </nav>
+  )
+}

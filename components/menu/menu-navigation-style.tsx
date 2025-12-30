@@ -56,7 +56,8 @@ function SingleItem({ item }: { item: MenuItem }) {
           'hover:bg-accent hover:text-accent-foreground',
           'focus:bg-accent focus:text-accent-foreground focus:outline-hidden',
           'disabled:pointer-events-none disabled:opacity-50',
-          'data-active:bg-accent/50 data-[state=open]:bg-accent/50'
+          // Active state styling
+          'data-[active=true]:bg-accent/50 data-[active=true]:text-foreground'
         )}
         data-testid={
           item.href === '/clusters'
@@ -151,6 +152,8 @@ function ListItem({
               'block space-y-1 rounded-md p-2 leading-none no-underline outline-hidden transition-colors select-none',
               'hover:bg-accent hover:text-accent-foreground',
               'focus:bg-accent focus:text-accent-foreground',
+              // Active state for dropdown items
+              'data-[active=true]:bg-accent/50 data-[active=true]:text-foreground',
               className
             )}
             {...props}
