@@ -1,8 +1,7 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useCallback, memo, use, useState, useEffect } from 'react'
-import { CheckCircle2Icon, CircleXIcon, LoaderIcon } from 'lucide-react'
+import { Suspense, useCallback, memo, use } from 'react'
 
 import {
   Select,
@@ -26,8 +25,6 @@ type UptimePromise = Promise<{
   version: string
 } | null>
 
-type ConnectionStatus = 'loading' | 'connected' | 'error'
-
 type ClickHouseHostSelectorProps = {
   currentHostId: number
   configs: Array<
@@ -40,7 +37,7 @@ type ClickHouseHostSelectorProps = {
 /**
  * Host selector component for static routing with query parameters.
  * Handles host switching by updating the `host` query parameter.
- * Includes connection status indicator.
+ * Status indicators are shown in the dropdown for each host.
  */
 export function ClickHouseHostSelector({
   currentHostId = 0,
@@ -49,35 +46,8 @@ export function ClickHouseHostSelector({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('loading')
 
   const current = configs[currentHostId]
-
-  // Check connection status for current host
-  useEffect(() => {
-    if (!current) return
-
-    const checkConnection = async () => {
-      try {
-        setConnectionStatus('loading')
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000)
-
-        const response = await fetch(`/api/v1/charts/hostname?hostId=${currentHostId}`, {
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeoutId)
-        setConnectionStatus(response.ok ? 'connected' : 'error')
-      } catch {
-        setConnectionStatus('error')
-      }
-    }
-
-    checkConnection()
-    const interval = setInterval(checkConnection, 30000)
-    return () => clearInterval(interval)
-  }, [currentHostId, current])
 
   if (!current) {
     return null
@@ -93,91 +63,43 @@ export function ClickHouseHostSelector({
   }, [searchParams, pathname, router])
 
   return (
-    <div className="flex items-center gap-1.5">
-      {/* Connection status indicator */}
-      <ConnectionStatusIcon status={connectionStatus} />
-
-      <Select
-        value={current.id.toString()}
-        onValueChange={handleValueChange}
+    <Select
+      value={current.id.toString()}
+      onValueChange={handleValueChange}
+    >
+      <SelectTrigger
+        className="w-auto border-0 p-1 shadow-none focus:ring-0"
+        data-testid="host-selector"
+        aria-label={`Select ClickHouse host. Current host: ${current.name || getHost(current.host)}`}
       >
-        <SelectTrigger
-          className="w-auto border-0 p-1 shadow-none focus:ring-0"
-          data-testid="host-selector"
-          aria-label={`Select ClickHouse host. Current host: ${current.name || getHost(current.host)}. Status: ${connectionStatus}`}
-        >
-          <SelectValue
-            placeholder={current.name || getHost(current.host)}
-            className="mr-2 w-fit truncate"
-          />
-        </SelectTrigger>
-        <SelectContent data-testid="host-options">
-          {configs.map((config) => (
-            <SelectItem
-              key={config.host + config.id}
-              value={config.id.toString()}
-              data-testid={`host-option-${config.id}`}
-            >
-              <div className="flex items-center gap-2">
-                <span>{config.name || getHost(config.host)}</span>
-                <Suspense
-                  fallback={
-                    <StatusIndicator title={['Loading...']} className="bg-gray-400 animate-pulse" />
-                  }
-                >
-                  <HostStatus promise={config.promise} />
-                </Suspense>
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+        <SelectValue
+          placeholder={current.name || getHost(current.host)}
+          className="mr-2 w-fit truncate"
+        />
+      </SelectTrigger>
+      <SelectContent data-testid="host-options">
+        {configs.map((config) => (
+          <SelectItem
+            key={config.host + config.id}
+            value={config.id.toString()}
+            data-testid={`host-option-${config.id}`}
+          >
+            <div className="flex items-center gap-2">
+              <span>{config.name || getHost(config.host)}</span>
+              <Suspense
+                fallback={
+                  <StatusIndicator title={['Loading...']} className="bg-gray-400 animate-pulse" />
+                }
+              >
+                <HostStatus promise={config.promise} />
+              </Suspense>
+            </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
-
-/**
- * Connection status icon displayed next to host selector
- */
-const ConnectionStatusIcon = memo(function ConnectionStatusIcon({
-  status,
-}: {
-  status: ConnectionStatus
-}) {
-  const config = {
-    loading: {
-      icon: <LoaderIcon className="size-3.5 animate-spin text-muted-foreground" />,
-      tooltip: 'Checking connection...',
-    },
-    connected: {
-      icon: <CheckCircle2Icon className="size-3.5 text-green-500" />,
-      tooltip: 'Connected to ClickHouse',
-    },
-    error: {
-      icon: <CircleXIcon className="size-3.5 text-destructive" />,
-      tooltip: 'Connection failed',
-    },
-  }
-
-  const { icon, tooltip } = config[status]
-
-  return (
-    <TooltipProvider delayDuration={0}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            className="flex items-center"
-            role="status"
-            aria-label={tooltip}
-          >
-            {icon}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">{tooltip}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )
-})
 
 export function HostStatus({ promise }: { promise: UptimePromise }) {
   const res = use(promise)
