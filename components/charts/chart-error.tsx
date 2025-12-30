@@ -28,10 +28,16 @@ function getErrorVariant(error: Error | ApiError): EmptyStateVariant {
 
   // Check for network/connection errors
   if (apiError.type === ApiErrorType.NetworkError) return 'offline'
-  if (message.includes('offline') || message.includes('network') || message.includes('fetch')) return 'offline'
+  if (
+    message.includes('offline') ||
+    message.includes('network') ||
+    message.includes('fetch')
+  )
+    return 'offline'
 
   // Check for timeout in message
-  if (message.includes('timeout') || message.includes('timed out')) return 'timeout'
+  if (message.includes('timeout') || message.includes('timed out'))
+    return 'timeout'
 
   return 'error'
 }
@@ -39,12 +45,15 @@ function getErrorVariant(error: Error | ApiError): EmptyStateVariant {
 /**
  * Get user-friendly error description
  */
-function getErrorDescription(error: Error | ApiError, variant: EmptyStateVariant): string {
+function getErrorDescription(
+  error: Error | ApiError,
+  variant: EmptyStateVariant
+): string {
   const apiError = error as ApiError
 
   // Use specific messages for known error types
   if (variant === 'table-missing') {
-    return 'This feature requires additional ClickHouse configuration or the system table doesn\'t exist on this cluster.'
+    return "This feature requires additional ClickHouse configuration or the system table doesn't exist on this cluster."
   }
 
   if (variant === 'timeout') {
@@ -71,7 +80,10 @@ export const ChartError = memo(function ChartError({
   compact = false,
 }: ChartErrorProps) {
   const variant = useMemo(() => getErrorVariant(error), [error])
-  const description = useMemo(() => getErrorDescription(error, variant), [error, variant])
+  const description = useMemo(
+    () => getErrorDescription(error, variant),
+    [error, variant]
+  )
 
   return (
     <Card

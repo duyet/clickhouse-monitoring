@@ -49,12 +49,7 @@ export const ChartQueryMemory = memo(function ChartQueryMemory({
   }
 
   return (
-    <ChartCard
-      title={title}
-      className={className}
-      sql={sql}
-      data={dataArray}
-    >
+    <ChartCard title={title} className={className} sql={sql} data={dataArray}>
       <BarChart
         className={cn('h-52', chartClassName)}
         data={dataArray}

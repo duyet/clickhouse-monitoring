@@ -60,12 +60,7 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
   }))
 
   return (
-    <ChartCard
-      title={title}
-      className={className}
-      sql={sql}
-      data={dataArray}
-    >
+    <ChartCard title={title} className={className} sql={sql} data={dataArray}>
       <Tabs defaultValue="by-size">
         <TabsList className="mb-5">
           <TabsTrigger key="by-size" value="by-size">

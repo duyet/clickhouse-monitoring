@@ -23,7 +23,12 @@ export const ChartSkeleton = memo(function ChartSkeleton({
   dataPoints = 8,
 }: ChartSkeletonProps) {
   return (
-    <Card className={cn('rounded-md', className)} aria-busy="true" role="status" aria-label={title ? `${title} loading` : 'Loading chart'}>
+    <Card
+      className={cn('rounded-md', className)}
+      aria-busy="true"
+      role="status"
+      aria-label={title ? `${title} loading` : 'Loading chart'}
+    >
       <CardHeader className="p-3 pb-2">
         <div className="flex flex-row items-center justify-between">
           {title ? (
@@ -72,7 +77,11 @@ export const ChartSkeleton = memo(function ChartSkeleton({
  * Area/Line chart skeleton with wave pattern
  * Height matches page-layout.tsx chartClassName (h-32 sm:h-36)
  */
-const AreaChartSkeleton = memo(function AreaChartSkeleton({ dataPoints = 8 }: { dataPoints: number }) {
+const AreaChartSkeleton = memo(function AreaChartSkeleton({
+  dataPoints = 8,
+}: {
+  dataPoints: number
+}) {
   return (
     <div className="relative h-32 w-full overflow-hidden sm:h-36">
       {/* Grid lines */}
@@ -122,7 +131,11 @@ const AreaChartSkeleton = memo(function AreaChartSkeleton({ dataPoints = 8 }: { 
 /**
  * Bar chart skeleton with bars
  */
-const BarChartSkeleton = memo(function BarChartSkeleton({ dataPoints = 8 }: { dataPoints: number }) {
+const BarChartSkeleton = memo(function BarChartSkeleton({
+  dataPoints = 8,
+}: {
+  dataPoints: number
+}) {
   // Deterministic bar heights based on index (avoids React issues with Math.random())
   const getBarHeight = (index: number) => {
     const heights = [75, 45, 90, 60, 80, 50, 85, 65, 70, 55]
@@ -174,7 +187,11 @@ const MetricChartSkeleton = memo(function MetricChartSkeleton() {
 /**
  * Table chart skeleton (summary table rows)
  */
-const TableChartSkeleton = memo(function TableChartSkeleton({ dataPoints = 5 }: { dataPoints: number }) {
+const TableChartSkeleton = memo(function TableChartSkeleton({
+  dataPoints = 5,
+}: {
+  dataPoints: number
+}) {
   return (
     <div className="h-32 w-full overflow-hidden sm:h-36">
       {/* Table header */}

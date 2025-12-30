@@ -50,12 +50,7 @@ export const ChartConnectionsHttp = memo(function ChartConnectionsHttp({
   }
 
   return (
-    <ChartCard
-      title={title}
-      sql={sql}
-      className={className}
-      data={dataArray}
-    >
+    <ChartCard title={title} sql={sql} className={className} data={dataArray}>
       <BarChart
         data={dataArray}
         index="event_time"

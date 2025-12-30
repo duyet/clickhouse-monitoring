@@ -45,12 +45,7 @@ export const ChartReadonlyReplica = memo(function ChartReadonlyReplica({
   }
 
   return (
-    <ChartCard
-      title={title}
-      sql={sql}
-      className={className}
-      data={dataArray}
-    >
+    <ChartCard title={title} sql={sql} className={className} data={dataArray}>
       <BarChart
         data={dataArray}
         index="event_time"

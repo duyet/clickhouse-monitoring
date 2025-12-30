@@ -48,12 +48,7 @@ export const ChartMergeAvgDuration = memo(function ChartMergeAvgDuration({
   }
 
   return (
-    <ChartCard
-      title={title}
-      className={className}
-      sql={sql}
-      data={dataArray}
-    >
+    <ChartCard title={title} className={className} sql={sql} data={dataArray}>
       <BarChart
         data={dataArray}
         index="event_time"

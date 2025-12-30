@@ -48,12 +48,7 @@ export const ChartMergeSumReadRows = memo(function ChartMergeSumReadRows({
   }
 
   return (
-    <ChartCard
-      title={title}
-      className={className}
-      sql={sql}
-      data={dataArray}
-    >
+    <ChartCard title={title} className={className} sql={sql} data={dataArray}>
       <BarChart
         data={dataArray}
         index="event_time"

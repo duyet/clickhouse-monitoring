@@ -23,7 +23,10 @@ export const ChartEmpty = memo(function ChartEmpty({
   compact = false,
 }: ChartEmptyProps) {
   return (
-    <Card className={cn('rounded-md', className)} aria-label={title ? `${title} empty` : 'No data available'}>
+    <Card
+      className={cn('rounded-md', className)}
+      aria-label={title ? `${title} empty` : 'No data available'}
+    >
       <CardContent className={compact ? 'p-4' : 'p-6'}>
         <EmptyState
           variant={variant}

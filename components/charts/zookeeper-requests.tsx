@@ -50,12 +50,7 @@ export const ChartZookeeperRequests = memo(function ChartZookeeperRequests({
   }
 
   return (
-    <ChartCard
-      title={title}
-      sql={sql}
-      data={dataArray}
-      className={className}
-    >
+    <ChartCard title={title} sql={sql} data={dataArray} className={className}>
       <BarChart
         data={dataArray}
         index="event_time"
