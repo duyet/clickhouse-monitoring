@@ -1,27 +1,42 @@
+import { RefreshCw } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { EmptyState } from '@/components/ui/empty-state'
+import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
 
 interface ChartEmptyProps {
   title?: string
   className?: string
   description?: string
+  variant?: EmptyStateVariant
+  onRetry?: () => void
+  /** Use compact layout for smaller charts */
+  compact?: boolean
 }
 
 export function ChartEmpty({
-  title = 'No data available',
+  title,
   className,
   description,
+  variant = 'no-data',
+  onRetry,
+  compact = false,
 }: ChartEmptyProps) {
   return (
     <Card className={cn('rounded-md', className)}>
-      <CardContent className="p-8">
+      <CardContent className={compact ? 'p-4' : 'p-6'}>
         <EmptyState
-          variant="no-data"
+          variant={variant}
           title={title}
-          description={
-            description ||
-            'There is no data to display for this chart. This could be due to no activity in the selected time period or a configuration issue.'
+          description={description}
+          compact={compact}
+          action={
+            onRetry
+              ? {
+                  label: 'Retry',
+                  onClick: onRetry,
+                  icon: <RefreshCw className="mr-1.5 h-3.5 w-3.5" />,
+                }
+              : undefined
           }
         />
       </CardContent>

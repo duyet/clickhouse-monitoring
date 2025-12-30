@@ -1,10 +1,9 @@
 'use client'
 
-import { AlertCircle, RefreshCw } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import type { ApiError } from '@/lib/api/types'
+import { RefreshCw } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
+import { ApiErrorType, type ApiError } from '@/lib/api/types'
 import { cn } from '@/lib/utils'
 
 interface ChartErrorProps {
@@ -12,6 +11,55 @@ interface ChartErrorProps {
   title?: string
   className?: string
   onRetry?: () => void
+  /** Use compact layout for smaller charts */
+  compact?: boolean
+}
+
+/**
+ * Determine the appropriate variant based on error type
+ */
+function getErrorVariant(error: Error | ApiError): EmptyStateVariant {
+  const apiError = error as ApiError
+  const message = error.message?.toLowerCase() ?? ''
+
+  // Check for table not found
+  if (apiError.type === ApiErrorType.TableNotFound) return 'table-missing'
+
+  // Check for network/connection errors
+  if (apiError.type === ApiErrorType.NetworkError) return 'offline'
+  if (message.includes('offline') || message.includes('network') || message.includes('fetch')) return 'offline'
+
+  // Check for timeout in message
+  if (message.includes('timeout') || message.includes('timed out')) return 'timeout'
+
+  return 'error'
+}
+
+/**
+ * Get user-friendly error description
+ */
+function getErrorDescription(error: Error | ApiError, variant: EmptyStateVariant): string {
+  const apiError = error as ApiError
+
+  // Use specific messages for known error types
+  if (variant === 'table-missing') {
+    return 'This feature requires additional ClickHouse configuration or the system table doesn\'t exist on this cluster.'
+  }
+
+  if (variant === 'timeout') {
+    return 'The query took too long to execute. Try reducing the time range or simplifying your filters.'
+  }
+
+  if (variant === 'offline') {
+    return 'Unable to connect to the server. Check your network connection and try again.'
+  }
+
+  // Fall back to the actual error message if available
+  if (error.message && error.message.length < 200) {
+    return error.message
+  }
+
+  return 'An unexpected error occurred while loading data. Please try again.'
 }
 
 export function ChartError({
@@ -19,44 +67,37 @@ export function ChartError({
   title,
   className,
   onRetry,
+  compact = false,
 }: ChartErrorProps) {
-  const apiError = error as ApiError
-  const isTableMissing = apiError.type === 'table_not_found'
+  const variant = getErrorVariant(error)
+  const description = getErrorDescription(error, variant)
 
   return (
     <Card
       className={cn(
-        'rounded-md border-destructive/50 bg-destructive/5',
+        'rounded-md',
+        variant === 'error' && 'border-destructive/30 bg-destructive/5',
+        variant === 'timeout' && 'border-warning/30 bg-warning/5',
+        variant === 'offline' && 'border-warning/30 bg-warning/5',
         className
       )}
     >
-      <CardHeader className="p-2">
-        <div className="flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-destructive" />
-          <span className="text-sm font-medium text-destructive">
-            {title || 'Chart Error'}
-          </span>
-        </div>
-      </CardHeader>
-      <CardContent className="p-2">
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{error.message}</p>
-          {isTableMissing && (
-            <p className="text-xs text-muted-foreground">
-              This feature requires additional ClickHouse configuration.
-            </p>
-          )}
-          {onRetry && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRetry}
-              className="mt-2"
-            >
-              <RefreshCw className="h-3 w-3 mr-1" /> Retry
-            </Button>
-          )}
-        </div>
+      <CardContent className={compact ? 'p-4' : 'p-6'}>
+        <EmptyState
+          variant={variant}
+          title={title || (variant === 'error' ? 'Failed to load' : undefined)}
+          description={description}
+          compact={compact}
+          action={
+            onRetry
+              ? {
+                  label: 'Retry',
+                  onClick: onRetry,
+                  icon: <RefreshCw className="mr-1.5 h-3.5 w-3.5" />,
+                }
+              : undefined
+          }
+        />
       </CardContent>
     </Card>
   )
