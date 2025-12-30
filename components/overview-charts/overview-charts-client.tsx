@@ -1,14 +1,7 @@
 'use client'
 
 import { memo } from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
+
 import { MetricCard } from '@/components/charts/metric-card'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { cn } from '@/lib/utils'
@@ -83,28 +76,7 @@ const DatabaseTableCount = memo(function DatabaseTableCount({
     refreshInterval: 30000,
   })
 
-  // Handle loading state for both queries
-  if (databaseSwr.isLoading || tablesSwr.isLoading) {
-    return <MetricCardSkeleton title="Database" description="Overview" />
-  }
-
-  // Handle error state
-  if (databaseSwr.error || tablesSwr.error) {
-    return (
-      <MetricCardError
-        error={
-          databaseSwr.error || tablesSwr.error || new Error('Unknown error')
-        }
-        onRetry={() => {
-          databaseSwr.refresh()
-          tablesSwr.refresh()
-        }}
-        title="Database"
-        description="Overview"
-      />
-    )
-  }
-
+  // Use databaseSwr for base loading/error state, but show combined data
   const dbArray = (Array.isArray(databaseSwr.data) ? databaseSwr.data : []) as {
     count: number
   }[]
@@ -114,7 +86,7 @@ const DatabaseTableCount = memo(function DatabaseTableCount({
 
   return (
     <MetricCard
-      swr={databaseSwr} // Pass first SWR for loading/error state handling
+      swr={databaseSwr} // Use for loading/error state handling
       title="Database"
       description="Overview"
       viewAllHref={`/tables-overview?host=${hostId}`}
@@ -162,11 +134,6 @@ const ClickHouseInfo = memo(function ClickHouseInfo({
     refreshInterval: 30000,
   })
 
-  // Show skeleton while loading
-  if (hostNameSwr.isLoading || versionSwr.isLoading || uptimeSwr.isLoading) {
-    return <MetricCardSkeleton title="System Info" description="ClickHouse" />
-  }
-
   const hostArray = (
     Array.isArray(hostNameSwr.data) ? hostNameSwr.data : []
   ) as { val: string }[]
@@ -179,7 +146,7 @@ const ClickHouseInfo = memo(function ClickHouseInfo({
 
   return (
     <MetricCard
-      swr={hostNameSwr} // Use hostNameSwr for loading/error state
+      swr={hostNameSwr} // Use for loading/error state handling
       title="System Info"
       description="ClickHouse"
     >
@@ -256,96 +223,5 @@ const DiskSize = memo(function DiskSize({ hostId }: { hostId: number }) {
         )
       }}
     </MetricCard>
-  )
-})
-
-// Helper components for skeleton and error states
-const MetricCardSkeleton = memo(function MetricCardSkeleton({
-  title,
-  description,
-}: {
-  title?: string
-  description?: string
-}) {
-  return (
-    <Card
-      className="relative overflow-hidden rounded-lg border border-border/40 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-sm"
-      role="status"
-      aria-label={`Loading ${title || 'metric'}`}
-    >
-      <CardHeader className="px-4 pb-1 pt-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1 space-y-1">
-            {title ? (
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {title}
-              </CardTitle>
-            ) : (
-              <Skeleton className="h-3 w-20" />
-            )}
-            {description ? (
-              <CardDescription className="text-xs text-muted-foreground/70">
-                {description}
-              </CardDescription>
-            ) : (
-              <Skeleton className="h-2.5 w-14" />
-            )}
-          </div>
-          <Skeleton className="h-3 w-12" />
-        </div>
-      </CardHeader>
-      <CardContent className="px-4 pb-4 pt-2">
-        <Skeleton className="h-8 w-16" />
-      </CardContent>
-      <span className="sr-only">Loading {title || 'metric'} data...</span>
-    </Card>
-  )
-})
-
-const MetricCardError = memo(function MetricCardError({
-  error,
-  onRetry,
-  title,
-  description,
-}: {
-  error: Error
-  onRetry: () => void
-  title?: string
-  description?: string
-}) {
-  return (
-    <Card
-      className="relative overflow-hidden rounded-lg border border-border/40 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-sm"
-      role="alert"
-      aria-label={`Error loading ${title || 'metric'}`}
-    >
-      <CardHeader className="px-4 pb-1 pt-3">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {title || 'Error'}
-        </CardTitle>
-        {description && (
-          <CardDescription className="text-xs text-muted-foreground/70">
-            {description}
-          </CardDescription>
-        )}
-      </CardHeader>
-      <CardContent className="px-4 pb-4 pt-2">
-        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3">
-          <div className="text-sm font-medium text-destructive">
-            Connection Error
-          </div>
-          <div className="mt-0.5 truncate text-xs text-muted-foreground">
-            {error.message}
-          </div>
-          <button
-            onClick={onRetry}
-            className="mt-2 text-xs text-muted-foreground underline transition-colors hover:text-foreground"
-            aria-label="Retry loading data"
-          >
-            Retry
-          </button>
-        </div>
-      </CardContent>
-    </Card>
   )
 })

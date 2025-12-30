@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronsUpDown, Database, Check } from 'lucide-react'
+import { ChevronsUpDown, Check } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, use, useCallback, memo } from 'react'
 
@@ -81,18 +81,22 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
               data-testid="host-switcher"
               aria-label={`Select ClickHouse host. Current: ${activeHost.name || getHost(activeHost.host)}`}
             >
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <Database className="size-4" />
-              </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
-                  {activeHost.name || getHost(activeHost.host)}
-                </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  <Suspense fallback="Connecting...">
-                    <HostStatusText promise={activeHost.promise} />
+                <div className="flex items-center gap-2">
+                  <span className="truncate font-semibold">
+                    {activeHost.name || getHost(activeHost.host)}
+                  </span>
+                  <Suspense
+                    fallback={
+                      <StatusIndicator
+                        title={['Connecting...']}
+                        className="bg-gray-400 animate-pulse"
+                      />
+                    }
+                  >
+                    <HostStatus promise={activeHost.promise} />
                   </Suspense>
-                </span>
+                </div>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -114,9 +118,6 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
                 className="gap-2 p-2"
                 data-testid={`host-option-${index}`}
               >
-                <div className="flex size-6 items-center justify-center rounded-sm border">
-                  <Database className="size-4 shrink-0" />
-                </div>
                 <div className="flex flex-1 items-center gap-2">
                   <span className="truncate">
                     {host.name || getHost(host.host)}
@@ -142,15 +143,6 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
       </SidebarMenuItem>
     </SidebarMenu>
   )
-}
-
-function HostStatusText({ promise }: { promise: UptimePromise }) {
-  const res = use(promise)
-
-  if (res) {
-    return `Online - ${res.version}`
-  }
-  return 'Offline'
 }
 
 export function HostStatus({ promise }: { promise: UptimePromise }) {

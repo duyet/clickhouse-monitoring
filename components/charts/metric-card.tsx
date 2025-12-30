@@ -15,6 +15,55 @@ import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
 import { ApiErrorType, type ApiError } from '@/lib/api/types'
 import { cn } from '@/lib/utils'
 
+/**
+ * Determine the appropriate error variant based on error type and message
+ */
+function getErrorVariant(error: Error | ApiError): EmptyStateVariant {
+  const apiError = error as ApiError
+  const message = error.message?.toLowerCase() ?? ''
+
+  // Check for table not found
+  if (apiError.type === ApiErrorType.TableNotFound) return 'table-missing'
+
+  // Check for network/connection errors
+  if (apiError.type === ApiErrorType.NetworkError) return 'offline'
+  if (
+    message.includes('offline') ||
+    message.includes('network') ||
+    message.includes('fetch')
+  )
+    return 'offline'
+
+  // Check for timeout in message
+  if (message.includes('timeout') || message.includes('timed out'))
+    return 'timeout'
+
+  return 'error'
+}
+
+/**
+ * Get user-friendly error description based on variant
+ */
+function getErrorDescription(
+  error: Error | ApiError,
+  variant: EmptyStateVariant
+): string {
+  if (variant === 'offline') {
+    return 'Unable to connect to the server. Check your network connection and try again.'
+  }
+
+  if (variant === 'timeout') {
+    return 'The query took too long to execute. Try reducing the time range or simplifying your filters.'
+  }
+
+  // Fall back to the actual error message if it's short enough
+  if (error.message && error.message.length < 200) {
+    return error.message
+  }
+
+  return 'An unexpected error occurred while loading data. Please try again.'
+}
+
 export interface MetricCardProps<TData = unknown> {
   /** SWR-like response from useChartData hook */
   swr: {
@@ -82,8 +131,20 @@ export function MetricCard<TData = unknown>({
 
   // Error state
   if (error) {
+    const variant = getErrorVariant(error)
+    const description = getErrorDescription(error, variant)
+
     return (
-      <Card className={cardClassName}>
+      <Card
+        className={cn(
+          cardClassName,
+          variant === 'error' && 'border-destructive/30 bg-destructive/5',
+          variant === 'timeout' && 'border-warning/30 bg-warning/5',
+          variant === 'offline' && 'border-warning/30 bg-warning/5'
+        )}
+        role="alert"
+        aria-label={`Error loading ${title}`}
+      >
         <CardHeader className="px-4 pb-1 pt-3">
           <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {title}
@@ -95,27 +156,17 @@ export function MetricCard<TData = unknown>({
           )}
         </CardHeader>
         <CardContent className="px-4 pb-4 pt-2">
-          <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3">
-            <div className="flex items-start gap-2">
-              <AlertCircleIcon className="mt-0.5 size-4 flex-none text-destructive" />
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-destructive">
-                  Connection Error
-                </div>
-                <div className="mt-0.5 truncate text-xs text-muted-foreground">
-                  {error.message}
-                </div>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => retry()}
-              className="mt-2 h-7 text-xs"
-            >
-              <RefreshCwIcon className="size-3" /> Retry
-            </Button>
-          </div>
+          <EmptyState
+            variant={variant}
+            title={variant === 'error' ? 'Failed to load' : undefined}
+            description={description}
+            compact
+            action={{
+              label: 'Retry',
+              onClick: retry,
+              icon: <RefreshCwIcon className="mr-1.5 size-3.5" />,
+            }}
+          />
         </CardContent>
       </Card>
     )
