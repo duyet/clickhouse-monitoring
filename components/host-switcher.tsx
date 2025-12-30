@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { ChevronsUpDown, Check } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, use, useCallback, memo } from 'react'
@@ -51,7 +52,7 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { isMobile } = useSidebar()
+  const { isMobile, state } = useSidebar()
 
   const activeHost = hosts[currentHostId] || hosts[0]
 
@@ -81,22 +82,33 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
               data-testid="host-switcher"
               aria-label={`Select ClickHouse host. Current: ${activeHost.name || getHost(activeHost.host)}`}
             >
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
-                  {activeHost.name || getHost(activeHost.host)}
-                </span>
-                <Suspense
-                  fallback={
-                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <span className="size-2 rounded-full bg-gray-400 animate-pulse" />
-                      ...
+              <Image
+                src="/clickhouse.svg"
+                alt="ClickHouse"
+                width={32}
+                height={32}
+                className="flex-shrink-0"
+              />
+              {state === 'expanded' && (
+                <>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">
+                      {activeHost.name || getHost(activeHost.host)}
                     </span>
-                  }
-                >
-                  <HostVersionWithStatus promise={activeHost.promise} />
-                </Suspense>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+                    <Suspense
+                      fallback={
+                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span className="size-2 rounded-full bg-gray-400 animate-pulse" />
+                          ...
+                        </span>
+                      }
+                    >
+                      <HostVersionWithStatus promise={activeHost.promise} />
+                    </Suspense>
+                  </div>
+                  <ChevronsUpDown className="ml-auto size-4" />
+                </>
+              )}
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
