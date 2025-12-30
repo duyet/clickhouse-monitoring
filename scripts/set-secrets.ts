@@ -106,7 +106,11 @@ async function main() {
     if (value && value !== '') {
       // Redact sensitive values
       let preview: string
-      if (key.includes('PASSWORD') || key.includes('SECRET') || key.includes('TOKEN')) {
+      if (
+        key.includes('PASSWORD') ||
+        key.includes('SECRET') ||
+        key.includes('TOKEN')
+      ) {
         preview = '***REDACTED***'
       } else {
         preview = value.length > 30 ? `${value.substring(0, 30)}...` : value
