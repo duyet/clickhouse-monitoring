@@ -1,7 +1,7 @@
 import type { BadgeVariant } from '@/types/badge-variant'
 import type { Icon } from '@/types/icon'
 
-export type MenuSection = 'main' | 'more'
+export type MenuSection = 'main' | 'others'
 
 export interface MenuItem {
   title: string

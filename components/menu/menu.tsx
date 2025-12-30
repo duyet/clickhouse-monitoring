@@ -1,6 +1,5 @@
 import { memo } from 'react'
 import { menuItemsConfig } from '@/menu'
-import { MenuDropdownStyle } from './menu-dropdown-style'
 import { MenuNavigationStyle } from './menu-navigation-style'
 import type { MenuItem } from './types'
 
@@ -10,17 +9,10 @@ export interface MenuProps {
 
 export const Menu = memo(function Menu({ items = menuItemsConfig }: MenuProps) {
   return (
-    <>
-      <MenuNavigationStyle
-        key="navigation-menu"
-        className="hidden transition md:flex"
-        items={items}
-      />
-      <MenuDropdownStyle
-        key="dropdown-menu"
-        className="flex transition md:hidden"
-        items={items}
-      />
-    </>
+    <MenuNavigationStyle
+      key="navigation-menu"
+      className="hidden transition md:flex"
+      items={items}
+    />
   )
 })

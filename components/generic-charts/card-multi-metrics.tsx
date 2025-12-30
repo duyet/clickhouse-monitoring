@@ -28,7 +28,7 @@ export const CardMultiMetrics = memo(function CardMultiMetrics({
       className={cn('flex flex-col gap-4', className)}
       aria-description="card-metrics"
     >
-      <div className="text-xl md:text-3xl">{primary}</div>
+      <div className="text-2xl">{primary}</div>
 
       <div className="flex flex-col justify-between text-sm">
         {items.length ? (
@@ -43,7 +43,7 @@ export const CardMultiMetrics = memo(function CardMultiMetrics({
 
           return (
             <div key={i}>
-              <div className="mt-2 flex flex-row items-center justify-between gap-2">
+              <div className="mt-2 flex flex-row items-center justify-between gap-1 md:gap-2">
                 <span
                   className="text-muted-foreground truncate"
                   title={`${percent}%`}
@@ -51,7 +51,12 @@ export const CardMultiMetrics = memo(function CardMultiMetrics({
                   {item.currentReadable}
                 </span>
                 <hr className="shrink grow border-dotted" />
-                <span className="text-nowrap">{item.targetReadable}</span>
+                <span
+                  className="truncate text-right"
+                  title={item.targetReadable}
+                >
+                  {item.targetReadable}
+                </span>
               </div>
             </div>
           )

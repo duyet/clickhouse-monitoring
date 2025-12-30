@@ -1,2 +1,3 @@
 export { ChartError } from './chart-error'
-export { ChartSkeleton } from './chart-skeleton'
+// ChartSkeleton moved to @/components/skeletons
+export { ChartSkeleton } from '@/components/skeletons'

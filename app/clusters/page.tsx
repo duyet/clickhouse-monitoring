@@ -1,6 +1,6 @@
 'use client'
 
-import { TableClient } from '@/components/table-client'
+import { TableClient } from '@/components/tables/table-client'
 import { queryConfig } from '@/lib/api/clusters-api'
 
 export default function ClustersPage() {

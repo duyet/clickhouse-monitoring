@@ -3,7 +3,7 @@
 import { notFound } from 'next/navigation'
 import { Suspense, use } from 'react'
 import { getChartComponent, hasChart } from '@/components/charts/chart-registry'
-import { ChartSkeleton } from '@/components/charts/chart-skeleton'
+import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
 import { useHostId } from '@/lib/swr'
 

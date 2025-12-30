@@ -2,7 +2,7 @@
 
 import { memo } from 'react'
 
-import { MetricCard } from '@/components/charts/metric-card'
+import { MetricCard, MetricIcons, type MetricListItem } from '@/components/charts/metric-card'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { cn } from '@/lib/utils'
 
@@ -49,14 +49,15 @@ const RunningQueries = memo(function RunningQueries({
       swr={swr}
       title="Running Queries"
       description="Active"
+      theme="orange"
+      icon={MetricIcons.Activity}
+      variant="single"
+      value={(data) => (data[0] as { count: number }).count}
+      unit="queries"
       viewAllHref={`/running-queries?host=${hostId}`}
-    >
-      {(data) => (
-        <div className="font-mono text-3xl font-bold tabular-nums tracking-tight">
-          {(data[0] as { count: number }).count}
-        </div>
-      )}
-    </MetricCard>
+      viewAllLabel="View all"
+      compact
+    />
   )
 })
 
@@ -76,7 +77,6 @@ const DatabaseTableCount = memo(function DatabaseTableCount({
     refreshInterval: 30000,
   })
 
-  // Use databaseSwr for base loading/error state, but show combined data
   const dbArray = (Array.isArray(databaseSwr.data) ? databaseSwr.data : []) as {
     count: number
   }[]
@@ -86,30 +86,20 @@ const DatabaseTableCount = memo(function DatabaseTableCount({
 
   return (
     <MetricCard
-      swr={databaseSwr} // Use for loading/error state handling
+      swr={databaseSwr}
       title="Database"
       description="Overview"
+      theme="blue"
+      icon={MetricIcons.Database}
+      variant="dual"
+      value1={dbArray[0]?.count ?? 0}
+      unit1="databases"
+      value2={tablesArray[0]?.count ?? 0}
+      unit2="tables"
       viewAllHref={`/tables-overview?host=${hostId}`}
-    >
-      {() => (
-        <div className="flex items-baseline gap-4">
-          <div>
-            <span className="font-mono text-3xl font-bold tabular-nums">
-              {dbArray[0]?.count || 0}
-            </span>
-            <span className="ml-1.5 text-sm text-muted-foreground">
-              databases
-            </span>
-          </div>
-          <div>
-            <span className="font-mono text-3xl font-bold tabular-nums">
-              {tablesArray[0]?.count || 0}
-            </span>
-            <span className="ml-1.5 text-sm text-muted-foreground">tables</span>
-          </div>
-        </div>
-      )}
-    </MetricCard>
+      viewAllLabel="View all"
+      compact
+    />
   )
 })
 
@@ -144,44 +134,23 @@ const ClickHouseInfo = memo(function ClickHouseInfo({
     val: string
   }[]
 
+  const items: MetricListItem[] = [
+    { label: 'Host', value: hostArray[0]?.val || '-', format: 'mono' },
+    { label: 'Version', value: versionArray[0]?.val || '-', format: 'truncate' },
+    { label: 'Uptime', value: uptimeArray[0]?.val || '-', format: 'mono' },
+  ]
+
   return (
     <MetricCard
-      swr={hostNameSwr} // Use for loading/error state handling
+      swr={hostNameSwr}
       title="System Info"
       description="ClickHouse"
-    >
-      {() => (
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-muted-foreground">Host</span>
-            <div
-              className="truncate font-mono text-sm font-medium"
-              title={hostArray[0]?.val || ''}
-            >
-              {hostArray[0]?.val || '-'}
-            </div>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-muted-foreground">Version</span>
-            <div
-              className="truncate font-mono text-sm font-medium"
-              title={versionArray[0]?.val || ''}
-            >
-              {versionArray[0]?.val || '-'}
-            </div>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-muted-foreground">Uptime</span>
-            <div
-              className="truncate font-mono text-sm font-medium"
-              title={uptimeArray[0]?.val || ''}
-            >
-              {uptimeArray[0]?.val || '-'}
-            </div>
-          </div>
-        </div>
-      )}
-    </MetricCard>
+      theme="purple"
+      icon={MetricIcons.Info}
+      variant="list"
+      items={items}
+      compact
+    />
   )
 })
 
@@ -202,26 +171,21 @@ const DiskSize = memo(function DiskSize({ hostId }: { hostId: number }) {
     <MetricCard
       swr={swr}
       title="Disk Size"
-      description={`Total storage`}
-      viewAllHref={`/disks?host=${hostId}`}
-    >
-      {(data) => {
+      description="Total storage"
+      theme="green"
+      icon={MetricIcons.HardDrive}
+      variant="subtitle"
+      value={(data) => (data[0] as { readable_used_space: string }).readable_used_space}
+      subtitle={(data) => {
         const first = data[0] as {
           name: string
-          readable_used_space: string
           readable_total_space: string
         }
-        return (
-          <div>
-            <div className="font-mono text-2xl font-bold tabular-nums tracking-tight">
-              {first.readable_used_space}
-            </div>
-            <div className="mt-1 text-xs text-muted-foreground">
-              of {first.readable_total_space} ({first.name})
-            </div>
-          </div>
-        )
+        return `of ${first.readable_total_space} • ${first.name}`
       }}
-    </MetricCard>
+      viewAllHref={`/disks?host=${hostId}`}
+      viewAllLabel="View all"
+      compact
+    />
   )
 })

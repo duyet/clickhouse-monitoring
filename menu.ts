@@ -7,7 +7,6 @@ import {
   DashboardIcon,
   ExclamationTriangleIcon,
   GearIcon,
-  HamburgerMenuIcon,
   HomeIcon,
   InfoCircledIcon,
   LightningBoltIcon,
@@ -217,10 +216,45 @@ export const menuItemsConfig: MenuItem[] = [
     ],
   },
   {
-    title: 'More',
+    title: 'Monitoring',
     href: '',
-    icon: HamburgerMenuIcon,
-    section: 'more',
+    icon: BarChartIcon,
+    section: 'main',
+    items: [
+      {
+        title: 'Metrics',
+        href: '/metrics',
+        description:
+          'Contains metrics which can be calculated instantly, or have a current value',
+        icon: BarChartIcon,
+      },
+      {
+        title: 'Asynchronous Metrics',
+        href: '/asynchronous-metrics',
+        description:
+          'Contains metrics that are calculated periodically in the background',
+        icon: BarChartIcon,
+      },
+      {
+        title: 'Custom Dashboard',
+        href: '/dashboard',
+        description:
+          'Custom dashboard for monitoring ClickHouse. You can add your own charts and configure them',
+        icon: DashboardIcon,
+      },
+      {
+        title: 'Page Views',
+        href: '/page-views',
+        description: 'Self-analytics page views',
+        icon: BarChartIcon,
+      },
+    ],
+  },
+  {
+    title: 'System',
+    href: '',
+    icon: GearIcon,
+    section: 'others',
     items: [
       {
         title: 'Settings',
@@ -244,35 +278,14 @@ export const menuItemsConfig: MenuItem[] = [
         countKey: 'disks',
         icon: HardDriveIcon,
       },
-      {
-        title: 'Backups',
-        href: '/backups',
-        description:
-          'Backups and restores tables and databases. The information is taken from the system.backup_log table',
-        countKey: 'backups',
-        icon: ArchiveIcon,
-      },
-      {
-        title: 'Metrics',
-        href: '/metrics',
-        description:
-          'Contains metrics which can be calculated instantly, or have a current value',
-        icon: BarChartIcon,
-      },
-      {
-        title: 'Asynchronous Metrics',
-        href: '/asynchronous-metrics',
-        description:
-          'Contains metrics that are calculated periodically in the background',
-        icon: BarChartIcon,
-      },
-      {
-        title: 'Custom Dashboard',
-        href: '/dashboard',
-        description:
-          'Custom dashboard for monitoring ClickHouse. You can add your own charts and configure them',
-        icon: DashboardIcon,
-      },
+    ],
+  },
+  {
+    title: 'Cluster',
+    href: '',
+    icon: UngroupIcon,
+    section: 'others',
+    items: [
       {
         title: 'Clusters',
         href: '/clusters',
@@ -293,17 +306,27 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Number of connections over time',
         icon: UnplugIcon,
       },
+    ],
+  },
+  {
+    title: 'Operations',
+    href: '',
+    icon: ArchiveIcon,
+    section: 'others',
+    items: [
+      {
+        title: 'Backups',
+        href: '/backups',
+        description:
+          'Backups and restores tables and databases. The information is taken from the system.backup_log table',
+        countKey: 'backups',
+        icon: ArchiveIcon,
+      },
       {
         title: 'Errors',
         href: '/errors',
         description: 'System error logs and history',
         icon: ShieldAlertIcon,
-      },
-      {
-        title: 'Page Views',
-        href: '/page-views',
-        description: 'Self-analytics page views',
-        icon: BarChartIcon,
       },
       {
         title: 'About',

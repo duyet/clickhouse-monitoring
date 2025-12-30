@@ -7,7 +7,7 @@ import { memo, useMemo } from 'react'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/charts/chart-skeleton'
+import { ChartSkeleton } from '@/components/skeletons'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,

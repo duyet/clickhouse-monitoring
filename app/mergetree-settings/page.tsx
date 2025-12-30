@@ -1,8 +1,8 @@
 'use client'
 
 import { Suspense } from 'react'
-import { TableSkeleton } from '@/components/skeleton'
-import { TableClient } from '@/components/table-client'
+import { TableSkeleton } from '@/components/skeletons'
+import { TableClient } from '@/components/tables/table-client'
 import { mergeTreeSettingsConfig } from '@/lib/query-config/more/mergetree-settings'
 
 export default function MergeTreeSettingsPage() {

@@ -13,8 +13,8 @@ import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
 import { ChartKeeperException } from '@/components/charts/zookeeper-exception'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
-import { OverviewPageSkeleton } from '@/components/page-skeleton'
-import { StaggeredChart } from '@/components/progressive-loader'
+import { OverviewPageSkeleton } from '@/components/skeletons'
+import { StaggeredChart } from '@/components/loading/progressive-loader'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
 
@@ -24,11 +24,11 @@ export default function OverviewPage() {
   return (
     <Suspense fallback={<OverviewPageSkeleton />}>
       <div>
-        <OverviewCharts hostId={hostId} className="mb-3" />
+        <OverviewCharts hostId={hostId} className="mb-2" />
 
-        <Tabs defaultValue="overview" className="space-y-3">
-          <div className="flex items-center justify-between space-y-2">
-            <TabsList>
+        <Tabs defaultValue="overview" className="space-y-2">
+          <div className="overflow-x-auto pb-1 -mx-1 px-1 sm:mx-0 sm:px-0">
+            <TabsList className="w-full sm:w-fit inline-flex min-w-max">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="errors">Errors</TabsTrigger>
               <TabsTrigger value="disks">Disks</TabsTrigger>
@@ -36,9 +36,9 @@ export default function OverviewPage() {
             </TabsList>
           </div>
 
-          <TabsContent value="overview" className="space-y-3">
+          <TabsContent value="overview" className="space-y-2">
             <div
-              className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3"
+              className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-0"
               role="region"
               aria-label="Overview charts"
             >
@@ -53,7 +53,7 @@ export default function OverviewPage() {
                   lastHours={24}
                   interval="toStartOfHour"
                   className="w-full"
-                  chartClassName="h-52"
+                  chartClassName="h-36"
                   hostId={hostId}
                 />
               </StaggeredChart>
@@ -69,7 +69,7 @@ export default function OverviewPage() {
                   lastHours={24}
                   interval="toStartOfHour"
                   className="w-full"
-                  chartClassName="h-52"
+                  chartClassName="h-36"
                   hostId={hostId}
                 />
               </StaggeredChart>
@@ -84,7 +84,7 @@ export default function OverviewPage() {
                   lastHours={24 * 14}
                   interval="toStartOfDay"
                   className="w-full"
-                  chartClassName="h-52"
+                  chartClassName="h-36"
                   hostId={hostId}
                 />
               </StaggeredChart>
@@ -97,7 +97,7 @@ export default function OverviewPage() {
                 <ChartMemoryUsage
                   title="Memory Usage last 24h (avg / 10 minutes)"
                   className="w-full"
-                  chartClassName="h-52"
+                  chartClassName="h-36"
                   interval="toStartOfTenMinutes"
                   lastHours={24}
                   hostId={hostId}
@@ -112,7 +112,7 @@ export default function OverviewPage() {
                 <ChartCPUUsage
                   title="CPU Usage last 24h (avg / 10 minutes)"
                   className="w-full"
-                  chartClassName="h-52"
+                  chartClassName="h-36"
                   interval="toStartOfTenMinutes"
                   lastHours={24}
                   hostId={hostId}
@@ -129,7 +129,7 @@ export default function OverviewPage() {
                   lastHours={24}
                   interval="toStartOfHour"
                   className="w-full"
-                  chartClassName="h-52"
+                  chartClassName="h-36"
                   hostId={hostId}
                 />
               </StaggeredChart>
@@ -151,7 +151,7 @@ export default function OverviewPage() {
               >
                 <ChartNewPartsCreated
                   className="w-full"
-                  chartClassName="h-52"
+                  chartClassName="h-36"
                   title="New Parts Created over last 7 days"
                   interval="toStartOfHour"
                   lastHours={24 * 7}
@@ -161,16 +161,16 @@ export default function OverviewPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="errors" className="space-y-3">
-            <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <TabsContent value="errors" className="space-y-2">
+            <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-0">
               <StaggeredChart index={0} stagger={80}>
                 <ChartKeeperException className="w-full" hostId={hostId} />
               </StaggeredChart>
             </div>
           </TabsContent>
 
-          <TabsContent value="disks" className="space-y-3">
-            <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <TabsContent value="disks" className="space-y-2">
+            <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-0">
               <StaggeredChart index={0} stagger={80}>
                 <ChartDiskSize
                   className="w-full"
@@ -181,7 +181,7 @@ export default function OverviewPage() {
               <StaggeredChart index={1} stagger={80}>
                 <ChartDisksUsage
                   className="w-full"
-                  chartClassName="h-52"
+                  chartClassName="h-36"
                   title="Disks Usage over last 30 days"
                   interval="toStartOfDay"
                   lastHours={24 * 30}
@@ -191,13 +191,13 @@ export default function OverviewPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="backups" className="space-y-3">
-            <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <TabsContent value="backups" className="space-y-2">
+            <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-0">
               <StaggeredChart index={0} stagger={80}>
                 <ChartBackupSize
                   className="w-full"
                   title="Backup"
-                  chartClassName="h-52"
+                  chartClassName="h-36"
                   hostId={hostId}
                 />
               </StaggeredChart>

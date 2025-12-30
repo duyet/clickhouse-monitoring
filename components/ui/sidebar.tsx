@@ -1,7 +1,7 @@
 'use client'
 
 import { Slot } from '@radix-ui/react-slot'
-import { ChevronLeft, ChevronRight, PanelLeft } from 'lucide-react'
+import { ChevronLeft, PanelLeft } from 'lucide-react'
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useIsTablet } from '@/hooks/use-tablet'
 import { cn } from '@/lib/utils'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
@@ -62,6 +63,7 @@ const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>(
     ref
   ) => {
     const isMobile = useIsMobile()
+    const isTablet = useIsTablet()
     const [openMobile, setOpenMobile] = React.useState(false)
 
     // Get open state from cookie or use prop/default
@@ -84,6 +86,13 @@ const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>(
       },
       [onOpenChangeProp]
     )
+
+    // Auto-collapse on tablet screens (< 1024px)
+    React.useEffect(() => {
+      if (isTablet && open) {
+        handleSetOpen(false)
+      }
+    }, [isTablet, open, handleSetOpen])
 
     // Allow controlled open state
     const openState = openProp !== undefined ? openProp : open
@@ -162,7 +171,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
     },
     ref
   ) => {
-    const { isMobile, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, openMobile, setOpenMobile, state } = useSidebar()
 
     if (collapsible === 'none') {
       return (
@@ -201,8 +210,9 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       <div
         ref={ref}
         data-variant={variant}
+        data-state={state}
         className={cn(
-          'group/sidebar flex h-full w-[var(--sidebar-width)] flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out data-[state=collapsed]:w-[calc(var(--sidebar-width)_-_3rem)]',
+          'group/sidebar relative flex h-full w-[var(--sidebar-width)] flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out data-[state=collapsed]:w-[calc(var(--sidebar-width)_-_3rem)]',
           variant === 'inset' && 'border-r',
           className
         )}
@@ -254,13 +264,12 @@ const SidebarRail = React.forwardRef<
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        'absolute right-0 top-1/2 z-20 hidden -translate-y-1/2 translate-x-1/2 rounded-full p-1.5 text-sidebar-foreground/50 opacity-0 shadow-md transition-all hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 group-hover/sidebar:opacity-100 after:absolute after:inset-0 after:z-[-1] after:rounded-full',
+        'absolute -right-2 top-1/2 z-[100] hidden -translate-y-1/2 h-12 w-3 rounded-l-md bg-primary/10 hover:bg-primary/20 transition-colors cursor-col-resize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         'md:flex',
         className
       )}
       {...props}
     >
-      <ChevronRight className="h-4 w-4" />
       <span className="sr-only">Toggle Sidebar</span>
     </button>
   )

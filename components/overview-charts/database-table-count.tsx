@@ -2,9 +2,9 @@ import { CodeIcon, Database, TableIcon } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
 
-import { DialogSQL } from '@/components/dialog-sql'
-import { ErrorAlert } from '@/components/error-alert'
-import { SingleLineSkeleton } from '@/components/skeleton'
+import { DialogSQL } from '@/components/dialogs/dialog-sql'
+import { ErrorAlert } from '@/components/feedback/error-alert'
+import { SingleLineSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import {
   Card,

@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { DialogSQL } from '@/components/dialog-sql'
+import { DialogSQL } from '@/components/dialogs/dialog-sql'
 
 interface ShowSQLButtonProps {
   sql?: string

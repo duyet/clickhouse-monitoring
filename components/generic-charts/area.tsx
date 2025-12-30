@@ -99,7 +99,7 @@ export const AreaChart = memo(function AreaChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className={cn('min-h-[200px] w-full', className)}
+      className={cn('h-full w-full min-h-[180px]', className)}
     >
       <RechartAreaChart
         accessibilityLayer
@@ -190,7 +190,7 @@ function renderChartTooltip<
         cursor
         content={
           <ChartTooltipContent
-            className="w-fit"
+            className="max-w-[280px]"
             formatter={(
               value,
               name,
@@ -201,9 +201,9 @@ function renderChartTooltip<
               return (
                 <div
                   key={`${name}${index}`}
-                  className="flex flex-row items-baseline justify-between gap-3"
+                  className="flex flex-row items-center justify-between gap-2 min-w-0"
                 >
-                  <div className="flex flex-row items-baseline gap-1">
+                  <div className="flex flex-row items-center gap-1.5 min-w-0">
                     <div
                       className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
                       style={
@@ -212,11 +212,13 @@ function renderChartTooltip<
                         } as React.CSSProperties
                       }
                     />
-                    {chartConfig[name as keyof typeof chartConfig]?.label ||
-                      name}
+                    <span className="truncate text-muted-foreground">
+                      {chartConfig[name as keyof typeof chartConfig]?.label ||
+                        name}
+                    </span>
                   </div>
 
-                  <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+                  <div className="text-foreground shrink-0 flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                     {item.payload[`readable_${name}` as keyof typeof item] ||
                       value.toLocaleString()}
                     <span className="text-muted-foreground font-normal"></span>
@@ -240,7 +242,7 @@ function renderChartTooltip<
       content={
         <ChartTooltipContent
           hideLabel
-          className="w-fit"
+          className="max-w-[320px]"
           formatter={(value, name, item, _index, payload: any) => {
             const breakdownData = payload[
               breakdown as keyof typeof payload
@@ -266,56 +268,64 @@ function renderChartTooltip<
             })
 
             return (
-              <>
-                <div className="flex flex-row">
-                  <div
-                    className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                    style={
-                      {
-                        '--color-bg': `var(--color-${name})`,
-                      } as React.CSSProperties
-                    }
-                  />
+              <div className="flex flex-col gap-2 min-w-0">
+                <div className="flex flex-row items-center justify-between gap-2 min-w-0">
+                  <div className="flex flex-row items-center gap-1.5 min-w-0">
+                    <div
+                      className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
+                      style={
+                        {
+                          '--color-bg': `var(--color-${name})`,
+                        } as React.CSSProperties
+                      }
+                    />
+                    <span className="truncate text-muted-foreground">
+                      {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                    </span>
+                  </div>
 
-                  {chartConfig[name as keyof typeof chartConfig]?.label || name}
-
-                  <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+                  <div className="text-foreground shrink-0 flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                     {value}
                     <span className="text-muted-foreground font-normal"></span>
                   </div>
                 </div>
 
                 {breakdownData.length > 0 && (
-                  <div className="text-foreground mt-1 flex basis-full flex-col border-t text-xs font-medium">
-                    <div className="mt-1.5">
+                  <div className="text-foreground flex basis-full flex-col border-t pt-2 text-xs font-medium">
+                    <div className="mb-1.5">
                       {breakdownHeading || 'Breakdown'}
                     </div>
-                    {breakdownDataMap.map(([name, value], index) => (
-                      <div
-                        key={name + index}
-                        className="mt-1.5 flex items-center gap-1.5"
-                        role="row"
-                      >
+                    <div className="flex flex-col gap-1.5">
+                      {breakdownDataMap.map(([name, value], index) => (
                         <div
-                          className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                          style={
-                            {
-                              '--color-bg': `var(--chart-${10 - index})`,
-                            } as React.CSSProperties
-                          }
-                        />
+                          key={name + index}
+                          className="flex items-center justify-between gap-2"
+                          role="row"
+                        >
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <div
+                              className="size-2 shrink-0 rounded-[2px] bg-(--color-bg)"
+                              style={
+                                {
+                                  '--color-bg': `var(--chart-${10 - index})`,
+                                } as React.CSSProperties
+                              }
+                            />
+                            <span className="truncate">
+                              {item[breakdownLabel as keyof typeof item] || name}
+                            </span>
+                          </div>
 
-                        {item[breakdownLabel as keyof typeof item] || name}
-
-                        <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                          {value.toLocaleString()}
-                          <span className="text-muted-foreground font-normal"></span>
+                          <div className="text-foreground shrink-0 flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+                            {value.toLocaleString()}
+                            <span className="text-muted-foreground font-normal"></span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
-              </>
+              </div>
             )
           }}
         />

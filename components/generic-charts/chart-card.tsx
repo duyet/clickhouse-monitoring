@@ -4,7 +4,7 @@ import { CodeIcon } from '@radix-ui/react-icons'
 import { TableIcon } from 'lucide-react'
 import { memo, useMemo } from 'react'
 
-import { DialogContent } from '@/components/dialog-content'
+import { DialogContent } from '@/components/dialogs/dialog-content'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -34,16 +34,16 @@ export const ChartCard = memo(function ChartCard({
   return (
     <Card
       className={cn(
-        'rounded-lg border-border/50 bg-card/50 backdrop-blur-sm',
+        'rounded-lg border-border/50 bg-card/50 backdrop-blur-sm flex flex-col',
         'shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]',
         'transition-all duration-200 hover:border-border/80 hover:shadow-[0_2px_8px_0_rgb(0_0_0/0.04)]',
         className
       )}
     >
       {title ? (
-        <CardHeader className="p-3 pb-1">
+        <CardHeader className="px-3 py-2 shrink-0">
           <header className="group flex flex-row items-center justify-between">
-            <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase">
+            <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase truncate">
               {title}
             </CardDescription>
             <CardToolbar sql={sql} data={data} />
@@ -51,7 +51,7 @@ export const ChartCard = memo(function ChartCard({
         </CardHeader>
       ) : null}
 
-      <CardContent className={cn('p-3 pt-1', contentClassName)}>
+      <CardContent className={cn('p-3 pt-0 flex-1 min-h-0', contentClassName)}>
         {children}
       </CardContent>
     </Card>

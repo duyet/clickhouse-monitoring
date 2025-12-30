@@ -173,7 +173,7 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        'border-border/50 bg-background grid min-w-32 items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl',
+        'border-border/50 bg-background grid max-w-[280px] min-w-[120px] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl z-50',
         className
       )}
     >
@@ -188,12 +188,14 @@ function ChartTooltipContent({
             <div
               key={item.dataKey}
               className={cn(
-                '[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5',
+                '[&>svg]:text-muted-foreground flex w-full items-start gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:shrink-0',
                 indicator === 'dot' && 'items-center'
               )}
             >
               {formatter && item?.value !== undefined && item.name ? (
-                formatter(item.value, item.name, item, index, item.payload)
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  {formatter(item.value, item.name, item, index, item.payload)}
+                </div>
               ) : (
                 <>
                   {itemConfig?.icon ? (
@@ -220,20 +222,15 @@ function ChartTooltipContent({
                       />
                     )
                   )}
-                  <div
-                    className={cn(
-                      'flex flex-1 justify-between leading-none',
-                      nestLabel ? 'items-end' : 'items-center'
-                    )}
-                  >
+                  <div className="flex flex-col gap-1 min-w-0 flex-1">
                     <div className="grid gap-1.5">
                       {nestLabel ? tooltipLabel : null}
-                      <span className="text-muted-foreground">
+                      <span className="text-muted-foreground truncate">
                         {itemConfig?.label || item.name}
                       </span>
                     </div>
                     {item.value && (
-                      <span className="text-foreground font-mono font-medium tabular-nums">
+                      <span className="text-foreground font-mono font-medium tabular-nums truncate">
                         {item.value.toLocaleString()}
                       </span>
                     )}
@@ -270,7 +267,8 @@ function ChartLegendContent({
   return (
     <div
       className={cn(
-        'flex items-center justify-center gap-4',
+        'flex items-center justify-center gap-4 overflow-x-auto',
+        'scrollbar-hide',
         verticalAlign === 'top' ? 'pb-3' : 'pt-3',
         className
       )}
@@ -283,7 +281,7 @@ function ChartLegendContent({
           <div
             key={item.value}
             className={cn(
-              '[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3'
+              '[&>svg]:text-muted-foreground flex items-center gap-1.5 shrink-0 [&>svg]:h-3 [&>svg]:w-3'
             )}
           >
             {itemConfig?.icon && !hideIcon ? (
@@ -296,7 +294,9 @@ function ChartLegendContent({
                 }}
               />
             )}
-            {itemConfig?.label}
+            <span className="text-xs truncate max-w-[100px]">
+              {itemConfig?.label}
+            </span>
           </div>
         )
       })}

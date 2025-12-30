@@ -1,6 +1,6 @@
 'use client'
 
-import { PageLayout } from '@/components/page-layout'
+import { PageLayout } from '@/components/layout/page-layout'
 import { replicasConfig } from '@/lib/query-config/tables/replicas'
 
 export default function ReplicasPage() {

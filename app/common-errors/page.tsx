@@ -1,8 +1,8 @@
 'use client'
 
 import { Suspense } from 'react'
-import { TableSkeleton } from '@/components/skeleton'
-import { TableClient } from '@/components/table-client'
+import { TableSkeleton } from '@/components/skeletons'
+import { TableClient } from '@/components/tables/table-client'
 import { commonErrorsConfig } from '@/lib/query-config/queries/common-errors'
 
 export default function CommonErrorsPage() {

@@ -1,8 +1,8 @@
 import { CalendarCheckIcon, TagIcon } from 'lucide-react'
 import { Suspense } from 'react'
 
-import { ErrorAlert } from '@/components/error-alert'
-import { SingleLineSkeleton } from '@/components/skeleton'
+import { ErrorAlert } from '@/components/feedback/error-alert'
+import { SingleLineSkeleton } from '@/components/skeletons'
 import {
   Card,
   CardContent,

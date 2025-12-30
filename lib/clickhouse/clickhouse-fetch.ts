@@ -181,7 +181,7 @@ export const fetchData = async <
       rows = data.rows as number
     }
 
-    debug(`<-- Response (${query_id}):`, rows, `rows in`, duration, 's\n')
+    debug(`<-- Response (${query_id}):`, { rows, duration, unit: 's' })
 
     const metadata = {
       queryId: query_id,

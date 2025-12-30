@@ -2,7 +2,7 @@
 
 import { notFound, useSearchParams } from 'next/navigation'
 import { Suspense, useMemo } from 'react'
-import { ChartSkeleton } from '@/components/skeleton'
+import { ChartSkeleton } from '@/components/skeletons'
 import { ErrorLogger } from '@/lib/logger'
 import { useHostId } from '@/lib/swr'
 

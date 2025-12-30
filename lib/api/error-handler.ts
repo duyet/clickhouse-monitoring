@@ -47,9 +47,13 @@ export function createErrorResponse(
 
   // Also log to console for immediate visibility
   error(
-    `[API ${context?.method || ''} ${context?.route || ''}]`,
-    errorDetails.type,
-    errorDetails.message
+    `[API ${context?.method || ''} ${context?.route || ''}] ${errorDetails.message}`,
+    new Error(errorDetails.message),
+    {
+      component: `API:${context?.route || 'unknown'}`,
+      action: context?.method || 'unknown',
+      errorType: errorDetails.type,
+    }
   )
 
   const response: ApiResponse = {

@@ -91,7 +91,7 @@ export const runningQueriesConfig: QueryConfig = {
     [
       'query-count',
       {
-        title: 'Total Running Queries over last 12 hours (query / 5 minutes)',
+        title: 'Running Queries (12h)',
         interval: 'toStartOfFiveMinutes',
         lastHours: 12,
       },
@@ -99,7 +99,7 @@ export const runningQueriesConfig: QueryConfig = {
     [
       'query-count-by-user',
       {
-        title: 'Total Queries over last 14 days by users',
+        title: 'Queries by User (14d)',
         interval: 'toStartOfDay',
         lastHours: 24 * 14,
         showLegend: false,
@@ -108,13 +108,15 @@ export const runningQueriesConfig: QueryConfig = {
     [
       'summary-used-by-running-queries',
       {
-        title: 'Running queries Summary',
+        title: 'Running Queries Summary',
+        chartClassName: 'h-28',
       },
     ],
     [
       'summary-used-by-merges',
       {
         title: 'Merge Summary',
+        chartClassName: 'h-28',
       },
     ],
   ],

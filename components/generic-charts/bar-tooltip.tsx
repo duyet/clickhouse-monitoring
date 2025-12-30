@@ -37,7 +37,7 @@ export const BarTooltip = memo(function BarTooltip({
       <ChartTooltip
         content={
           <ChartTooltipContent
-            className="w-fit"
+            className="max-w-[280px]"
             labelFormatter={
               xAxisDataKey
                 ? (_label, payload) => {
@@ -60,24 +60,27 @@ export const BarTooltip = memo(function BarTooltip({
               _index,
               _payload: Array<Payload<ValueType, NameType>>
             ) => (
-              <>
-                <div
-                  className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                  style={
-                    {
-                      '--color-bg': `var(--color-${name})`,
-                    } as React.CSSProperties
-                  }
-                />
+              <div className="flex items-center justify-between gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div
+                    className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
+                    style={
+                      {
+                        '--color-bg': `var(--color-${name})`,
+                      } as React.CSSProperties
+                      }
+                  />
+                  <span className="truncate text-muted-foreground">
+                    {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                  </span>
+                </div>
 
-                {chartConfig[name as keyof typeof chartConfig]?.label || name}
-
-                <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+                <div className="text-foreground shrink-0 flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                   {item.payload[`readable_${name}` as keyof typeof item] ||
                     value.toLocaleString()}
                   <span className="text-muted-foreground font-normal"></span>
                 </div>
-              </>
+              </div>
             )}
           />
         }
@@ -91,38 +94,44 @@ export const BarTooltip = memo(function BarTooltip({
       content={
         <ChartTooltipContent
           hideLabel
-          className="w-fit"
+          className="max-w-[280px]"
           formatter={(value, name, item, index) => (
-            <>
-              <div
-                className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                style={
-                  {
-                    '--color-bg': `var(--color-${name})`,
-                  } as React.CSSProperties
-                }
-              />
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <div className="flex items-center justify-between gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div
+                    className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
+                    style={
+                      {
+                        '--color-bg': `var(--color-${name})`,
+                      } as React.CSSProperties
+                      }
+                  />
+                  <span className="truncate text-muted-foreground">
+                    {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                  </span>
+                </div>
 
-              {chartConfig[name as keyof typeof chartConfig]?.label || name}
-
-              <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                {item.payload[`readable_${name}` as keyof typeof item] ||
-                  value.toLocaleString()}
-                <span className="text-muted-foreground font-normal"></span>
+                <div className="text-foreground shrink-0 flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+                  {item.payload[`readable_${name}` as keyof typeof item] ||
+                    value.toLocaleString()}
+                  <span className="text-muted-foreground font-normal"></span>
+                </div>
               </div>
 
               {index === 1 && (
-                <div className="text-foreground mt-1.5 flex basis-full items-center border-t pt-1.5 text-xs font-medium">
-                  Total
-                  <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+                <div className="text-foreground flex basis-full items-center justify-between border-t pt-1.5 text-xs font-medium">
+                  <span>Total</span>
+                  <div className="text-foreground flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
                     {categories
                       .map((cat) => parseInt(item.payload[cat], 10) || 0)
-                      .reduce((a, b) => a + b, 0)}
+                      .reduce((a, b) => a + b, 0)
+                      .toLocaleString()}
                     <span className="text-muted-foreground font-normal"></span>
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         />
       }

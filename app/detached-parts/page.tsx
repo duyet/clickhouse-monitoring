@@ -1,8 +1,8 @@
 'use client'
 
 import { Suspense } from 'react'
-import { TableSkeleton } from '@/components/skeleton'
-import { TableClient } from '@/components/table-client'
+import { TableSkeleton } from '@/components/skeletons'
+import { TableClient } from '@/components/tables/table-client'
 import { detachedPartsConfig } from '@/lib/query-config/tables/detached-parts'
 
 export default function DetachedPartsPage() {

@@ -4,7 +4,7 @@ import { memo } from 'react'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/charts/chart-skeleton'
+import { ChartSkeleton } from '@/components/skeletons'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
@@ -59,8 +59,6 @@ export const ChartCPUUsage = memo(function ChartCPUUsage({
         index="event_time"
         categories={['avg_cpu']}
         className={chartClassName}
-        xAxisLabel="Time"
-        yAxisLabel="CPU Usage (seconds)"
         yAxisTickFormatter={chartTickFormatters.duration}
       />
     </ChartCard>

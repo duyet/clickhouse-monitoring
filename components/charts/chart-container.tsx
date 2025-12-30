@@ -4,7 +4,7 @@ import { memo, type ReactNode, useMemo } from 'react'
 import type { SWRResponse } from 'swr'
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
-import { ChartSkeleton } from './chart-skeleton'
+import { ChartSkeleton } from '@/components/skeletons'
 
 export interface ChartContainerProps<TData = unknown> {
   /** SWR response from useChartData hook */

@@ -1,8 +1,8 @@
 import { CodeIcon } from 'lucide-react'
 import Link from 'next/link'
 
-import { DialogSQL } from '@/components/dialog-sql'
-import { ErrorAlert } from '@/components/error-alert'
+import { DialogSQL } from '@/components/dialogs/dialog-sql'
+import { ErrorAlert } from '@/components/feedback/error-alert'
 import { Button } from '@/components/ui/button'
 import {
   Card,

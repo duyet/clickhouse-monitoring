@@ -4,7 +4,7 @@ import { memo } from 'react'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/charts/chart-skeleton'
+import { ChartSkeleton } from '@/components/skeletons'
 import { DonutChart } from '@/components/generic-charts/donut'
 import { useChartData } from '@/lib/swr'
 

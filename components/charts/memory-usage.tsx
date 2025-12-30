@@ -4,7 +4,7 @@ import { memo } from 'react'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/charts/chart-skeleton'
+import { ChartSkeleton } from '@/components/skeletons'
 import { AreaChart } from '@/components/generic-charts/area'
 import { ChartCard } from '@/components/generic-charts/chart-card'
 import { useChartData } from '@/lib/swr'
@@ -61,8 +61,6 @@ export const ChartMemoryUsage = memo(function ChartMemoryUsage({
         categories={['avg_memory']}
         className={chartClassName}
         colors={['--chart-12']}
-        xAxisLabel="Time"
-        yAxisLabel="Memory Usage"
         yAxisTickFormatter={chartTickFormatters.bytes}
       />
     </ChartCard>

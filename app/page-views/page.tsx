@@ -1,6 +1,6 @@
 'use client'
 
-import { PageLayout } from '@/components/page-layout'
+import { PageLayout } from '@/components/layout/page-layout'
 import { pageViewsConfig } from '@/lib/query-config/more/page-views'
 
 export default function PageViewsPage() {

@@ -144,7 +144,7 @@ export default function OverviewPage() {
 'use client'
 import { Suspense } from 'react'
 import { useHostId } from '@/lib/swr'
-import { ChartSkeleton } from '@/components/skeleton'
+import { ChartSkeleton } from '@/components/skeletons'
 import { YourChart } from '@/components/charts/your-chart'
 
 export default function YourPage() {
@@ -358,7 +358,7 @@ export const backupsConfig: QueryConfig = {
 
 import { Suspense } from 'react'
 import { RelatedCharts, Table } from '@/components'
-import { ChartSkeleton, TableSkeleton } from '@/components/skeleton'
+import { ChartSkeleton, TableSkeleton } from '@/components/skeletons'
 import { useHostId } from '@/lib/swr'
 import { yourConfig } from '@/lib/query-config'
 
@@ -392,7 +392,7 @@ export default function YourRoutePage() {
 'use client'
 
 import { useChartData } from '@/lib/swr/use-chart-data'
-import { ChartSkeleton } from '@/components/skeleton'
+import { ChartSkeleton } from '@/components/skeletons'
 import { ChartError } from '@/components/error-alert'
 
 interface YourChartProps {
