@@ -36,19 +36,19 @@ export function HeaderClient() {
   const hostsPromise = fetchHosts()
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      {/* Branding Row - 12px */}
-      <div className="flex h-12 items-center px-4 md:px-6">
-        <Suspense fallback={<span className="text-sm">Loading...</span>}>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60">
+      {/* Branding Row */}
+      <div className="flex h-12 items-center justify-between px-4 md:px-6 lg:px-8">
+        <Suspense fallback={<span className="text-sm text-muted-foreground">Loading...</span>}>
           <HeaderBrand currentHostId={hostId} hostsPromise={hostsPromise} />
         </Suspense>
         <HeaderActions />
       </div>
 
-      {/* Navigation Row - 10px */}
-      <div className="flex h-10 items-center border-t px-4 md:px-6 overflow-x-auto no-scrollbar">
-        <MenuNavigationStyle items={menuItemsConfig} className="flex items-center gap-6" />
-      </div>
+      {/* Navigation Row - with horizontal scroll and hidden scrollbar */}
+      <nav className="flex h-10 items-center border-t px-4 md:px-6 lg:px-8 overflow-x-auto overflow-y-hidden scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <MenuNavigationStyle items={menuItemsConfig} className="flex items-center gap-1" />
+      </nav>
     </header>
   )
 }

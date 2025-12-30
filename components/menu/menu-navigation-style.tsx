@@ -52,12 +52,12 @@ function SingleItem({ item }: { item: MenuItem }) {
       <HostPrefixedLink
         href={item.href}
         className={cn(
-          'group bg-background inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors',
-          'hover:bg-accent hover:text-accent-foreground',
-          'focus:bg-accent focus:text-accent-foreground focus:outline-hidden',
+          'group inline-flex h-8 w-max items-center justify-center rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors',
+          'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+          'focus:text-foreground focus:bg-accent/50 focus:outline-hidden',
           'disabled:pointer-events-none disabled:opacity-50',
-          // Active state styling
-          'data-[active=true]:bg-accent/50 data-[active=true]:text-foreground'
+          // Active state styling with subtle indicator
+          'data-[active=true]:text-foreground data-[active=true]:bg-accent/50'
         )}
         data-testid={
           item.href === '/clusters'
@@ -67,11 +67,11 @@ function SingleItem({ item }: { item: MenuItem }) {
               : undefined
         }
       >
-        <div className="flex flex-row items-center gap-2">
-          {item.icon && <item.icon className="size-4" strokeWidth={1} />}
-          {item.title}
-          {item.countSql ? (
-            <CountBadge sql={item.countSql} variant={item.countVariant} />
+        <div className="flex flex-row items-center gap-1.5">
+          {item.icon && <item.icon className="size-3.5 opacity-70" strokeWidth={1.5} />}
+          <span>{item.title}</span>
+          {item.countKey ? (
+            <CountBadge countKey={item.countKey} variant={item.countVariant} />
           ) : null}
         </div>
       </HostPrefixedLink>
@@ -83,30 +83,30 @@ function HasChildItems({ item }: { item: MenuItem }) {
   return (
     <NavigationMenuItem>
       <NavigationMenuTrigger>
-        <div className="flex flex-row items-center gap-2">
-          {item.icon && <item.icon className="size-4" strokeWidth={1} />}
-          {item.title}
-          {item.countSql ? (
-            <CountBadge sql={item.countSql} variant={item.countVariant} />
+        <div className="flex flex-row items-center gap-1.5">
+          {item.icon && <item.icon className="size-3.5 opacity-70" strokeWidth={1.5} />}
+          <span>{item.title}</span>
+          {item.countKey ? (
+            <CountBadge countKey={item.countKey} variant={item.countVariant} />
           ) : null}
         </div>
       </NavigationMenuTrigger>
       <NavigationMenuContent>
-        <ul className="grid w-fit min-w-[400px] grid-cols-1 content-center items-stretch gap-2 p-2 md:min-w-[700px] md:grid-cols-2">
+        <ul className="grid w-fit min-w-[380px] grid-cols-1 content-center items-stretch gap-1 p-1.5 md:min-w-[580px] md:grid-cols-2">
           {item.items
             ?.filter((childItem) => childItem.title && childItem.href)
             .map((childItem) => (
               <ListItem
                 key={childItem.href}
                 title={
-                  <span className="flex flex-row items-center gap-2">
+                  <span className="flex flex-row items-center gap-1.5">
                     {childItem.icon && (
-                      <childItem.icon className="size-4" strokeWidth={1} />
+                      <childItem.icon className="size-3.5 opacity-70" strokeWidth={1.5} />
                     )}
-                    {childItem.title}
-                    {childItem.countSql ? (
+                    <span>{childItem.title}</span>
+                    {childItem.countKey ? (
                       <CountBadge
-                        sql={childItem.countSql}
+                        countKey={childItem.countKey}
                         variant={childItem.countVariant}
                       />
                     ) : null}
@@ -149,19 +149,19 @@ function ListItem({
         >
           <div
             className={cn(
-              'block space-y-1 rounded-md p-2 leading-none no-underline outline-hidden transition-colors select-none',
-              'hover:bg-accent hover:text-accent-foreground',
-              'focus:bg-accent focus:text-accent-foreground',
+              'block space-y-0.5 rounded-md px-2.5 py-2 leading-none no-underline outline-hidden transition-colors select-none',
+              'hover:bg-accent/60 hover:text-foreground',
+              'focus:bg-accent/60 focus:text-foreground',
               // Active state for dropdown items
               'data-[active=true]:bg-accent/50 data-[active=true]:text-foreground',
               className
             )}
             {...props}
           >
-            <div className="overflow-hidden text-sm leading-none font-medium text-ellipsis">
+            <div className="overflow-hidden text-[13px] leading-tight font-medium text-ellipsis">
               {title}
             </div>
-            <p className="text-muted-foreground line-clamp-2 text-sm leading-snug break-words">
+            <p className="text-muted-foreground line-clamp-1 text-xs leading-relaxed mt-0.5">
               {description}
             </p>
           </div>

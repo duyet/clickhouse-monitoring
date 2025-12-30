@@ -19,7 +19,6 @@ import {
 } from '@radix-ui/react-icons'
 
 import type { MenuItem } from '@/components/menu/types'
-import { QUERY_COMMENT } from '@/lib/clickhouse'
 import {
   CircleDollarSignIcon,
   CombineIcon,
@@ -47,22 +46,21 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'Tables Explorer',
         href: '/database',
-        countSql: `SELECT COUNT() FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema') AND is_temporary = 0 AND engine LIKE '%MergeTree%'`,
+        countKey: 'tables-explorer',
         description: 'List of databases, tables and their details',
         icon: TableIcon,
       },
       {
         title: 'Tables Overview',
         href: '/tables-overview',
-        countSql:
-          'SELECT countDistinct(database || table) as `count()` FROM system.parts',
+        countKey: 'tables-overview',
         description: 'Overview of all tables and their parts',
         icon: Grid2x2CheckIcon,
       },
       {
         title: 'Distributed DDL Queue',
         href: '/distributed-ddl-queue',
-        countSql: `SELECT COUNT() FROM system.distributed_ddl_queue WHERE status != 'Finished'`,
+        countKey: 'distributed-ddl-queue',
         description:
           'Distributed ddl queries (ON CLUSTER clause) that were executed on a cluster',
         icon: ShuffleIcon,
@@ -72,7 +70,7 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/replicas',
         description:
           'Contains information and status for replicated tables residing on the local server',
-        countSql: `SELECT COUNT() FROM system.replicas`,
+        countKey: 'table-replicas',
         icon: CopyIcon,
       },
       {
@@ -80,14 +78,14 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/replication-queue',
         description:
           'Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family',
-        countSql: `SELECT COUNT() FROM system.replication_queue`,
+        countKey: 'replication-queue',
         icon: ShuffleIcon,
       },
       {
         title: 'Readonly Tables',
         href: '/readonly-tables',
         description: 'Readonly tables and their replicas',
-        countSql: `SELECT COUNT() FROM system.replicas WHERE is_readonly = 1`,
+        countKey: 'readonly-tables',
         countVariant: 'destructive',
         icon: ExclamationTriangleIcon,
       },
@@ -109,7 +107,7 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/view-refreshes',
         description:
           "Information about Refreshable Materialized Views. Contains all refreshable materialized views, regardless of whether there's a refresh in progress or not.",
-        countSql: `SELECT COUNT() FROM system.view_refreshes`,
+        countKey: 'view-refreshes',
         icon: UpdateIcon,
       },
       {
@@ -124,14 +122,14 @@ export const menuItemsConfig: MenuItem[] = [
   {
     title: 'Queries',
     href: '',
-    countSql: `SELECT COUNT() FROM system.processes WHERE is_cancelled = 0 AND query NOT LIKE '%${QUERY_COMMENT}%'`,
+    countKey: 'running-queries',
     icon: MixIcon,
     items: [
       {
         title: 'Running Queries',
         href: '/running-queries',
         description: 'Queries that are currently running',
-        countSql: `SELECT COUNT() FROM system.processes WHERE is_cancelled = 0 AND query NOT LIKE '%${QUERY_COMMENT}%'`,
+        countKey: 'running-queries',
         icon: MixIcon,
       },
       {
@@ -189,7 +187,7 @@ export const menuItemsConfig: MenuItem[] = [
   {
     title: 'Merges',
     href: '/merges',
-    countSql: `SELECT COUNT() FROM system.merges WHERE 1 = 1`,
+    countKey: 'merges',
     icon: CombineIcon,
     items: [
       {
@@ -197,7 +195,7 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/merges',
         description:
           'Merges and part mutations currently in process for tables in the MergeTree family',
-        countSql: `SELECT COUNT() FROM system.merges WHERE 1 = 1`,
+        countKey: 'merges',
         icon: CombineIcon,
       },
       {
@@ -239,7 +237,7 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/disks',
         description:
           'The values of disk settings which can be viewed in the table `system.disks`',
-        countSql: `SELECT COUNT() FROM system.disks`,
+        countKey: 'disks',
         icon: HardDriveIcon,
       },
       {
@@ -247,7 +245,7 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/backups',
         description:
           'Backups and restores tables and databases. The information is taken from the system.backup_log table',
-        countSql: `SELECT COUNT() FROM system.backup_log WHERE status = 'BACKUP_CREATED'`,
+        countKey: 'backups',
         icon: ArchiveIcon,
       },
       {

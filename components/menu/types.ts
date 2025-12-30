@@ -5,7 +5,8 @@ export interface MenuItem {
   title: string
   href: string
   description?: string
-  countSql?: string
+  /** Key for fetching count from /api/v1/menu-counts/[key] */
+  countKey?: string
   countVariant?: BadgeVariant
   items?: MenuItem[]
   icon?: Icon

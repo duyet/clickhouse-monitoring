@@ -4,7 +4,6 @@ import * as NavigationMenuPrimitive from '@radix-ui/react-navigation-menu'
 import { cva } from 'class-variance-authority'
 import { ChevronDownIcon } from 'lucide-react'
 import type * as React from 'react'
-import { useState } from 'react'
 
 import { cn } from '@/lib/utils'
 
@@ -20,6 +19,9 @@ function NavigationMenu({
     <NavigationMenuPrimitive.Root
       data-slot="navigation-menu"
       data-viewport={viewport}
+      // Disable hover trigger - click only
+      delayDuration={0}
+      skipDelayDuration={0}
       className={cn(
         'group/navigation-menu relative flex max-w-max flex-1 items-center justify-center',
         className
@@ -62,36 +64,25 @@ function NavigationMenuItem({
 }
 
 const navigationMenuTriggerStyle = cva(
-  'group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 data-[state=open]:hover:bg-accent data-[state=open]:text-accent-foreground data-[state=open]:focus:bg-accent data-[state=open]:bg-accent/50 focus-visible:ring-ring/50 outline-none transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1'
+  'group inline-flex h-8 w-max items-center justify-center rounded-md px-3 py-1.5 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 focus:text-foreground focus:bg-accent/50 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:text-foreground data-[state=open]:bg-accent/50 focus-visible:ring-ring/50 outline-none transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1'
 )
 
+/**
+ * NavigationMenuTrigger - Click-only trigger (no hover)
+ * Radix handles the click toggle internally
+ */
 function NavigationMenuTrigger({
   className,
   children,
-  onHoverChange,
   ...props
-}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger> & {
-  onHoverChange?: (isHovered: boolean) => void
-}) {
-  const [isOpen, setIsOpen] = useState(false)
-
-  const handleMouseEnter = () => {
-    setIsOpen(true)
-    onHoverChange?.(true)
-  }
-
-  const handleMouseLeave = () => {
-    setIsOpen(false)
-    onHoverChange?.(false)
-  }
-
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger>) {
   return (
     <NavigationMenuPrimitive.Trigger
       data-slot="navigation-menu-trigger"
-      data-state={isOpen ? 'open' : 'closed'}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       className={cn(navigationMenuTriggerStyle(), 'group', className)}
+      // Prevent hover from opening - Radix will still handle click
+      onPointerMove={(e) => e.preventDefault()}
+      onPointerLeave={(e) => e.preventDefault()}
       {...props}
     >
       {children}{' '}
@@ -103,30 +94,17 @@ function NavigationMenuTrigger({
   )
 }
 
+/**
+ * NavigationMenuContent - Dropdown content panel
+ * Simplified - no hover state management needed with click-only trigger
+ */
 function NavigationMenuContent({
   className,
-  onHoverChange,
   ...props
-}: React.ComponentProps<typeof NavigationMenuPrimitive.Content> & {
-  onHoverChange?: (isHovered: boolean) => void
-}) {
-  const [isHovered, setIsHovered] = useState(false)
-
-  const handleMouseEnter = () => {
-    setIsHovered(true)
-    onHoverChange?.(true)
-  }
-
-  const handleMouseLeave = () => {
-    setIsHovered(false)
-    onHoverChange?.(false)
-  }
-
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Content>) {
   return (
     <NavigationMenuPrimitive.Content
       data-slot="navigation-menu-content"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       className={cn(
         'data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out data-[motion^=from-]:fade-in data-[motion^=to-]:fade-out data-[motion=from-end]:slide-in-from-right-52 data-[motion=from-start]:slide-in-from-left-52 data-[motion=to-end]:slide-out-to-right-52 data-[motion=to-start]:slide-out-to-left-52 top-0 left-0 w-full p-2 pr-2.5 md:absolute md:w-auto',
         'group-data-[viewport=false]/navigation-menu:bg-popover group-data-[viewport=false]/navigation-menu:text-popover-foreground group-data-[viewport=false]/navigation-menu:data-[state=open]:animate-in group-data-[viewport=false]/navigation-menu:data-[state=closed]:animate-out group-data-[viewport=false]/navigation-menu:data-[state=closed]:zoom-out-95 group-data-[viewport=false]/navigation-menu:data-[state=open]:zoom-in-95 group-data-[viewport=false]/navigation-menu:data-[state=open]:fade-in-0 group-data-[viewport=false]/navigation-menu:data-[state=closed]:fade-out-0 group-data-[viewport=false]/navigation-menu:top-full group-data-[viewport=false]/navigation-menu:mt-1.5 group-data-[viewport=false]/navigation-menu:overflow-hidden group-data-[viewport=false]/navigation-menu:rounded-md group-data-[viewport=false]/navigation-menu:border group-data-[viewport=false]/navigation-menu:shadow group-data-[viewport=false]/navigation-menu:duration-200 **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none',

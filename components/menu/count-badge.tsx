@@ -7,17 +7,19 @@ import { useHostId } from '@/lib/swr'
 import type { BadgeVariant } from '@/types/badge-variant'
 
 export interface CountBadgeProps {
-  sql?: string
+  /** Key for fetching count from /api/v1/menu-counts/[key] */
+  countKey?: string
   className?: string
   variant?: BadgeVariant
 }
 
 /**
- * Client-side count badge that fetches count via API.
- * For static site architecture with query parameter routing.
+ * Client-side count badge that fetches count via secure API.
+ * Uses countKey to fetch from /api/v1/menu-counts/[key] endpoint.
+ * No raw SQL is sent from the client - security by design.
  */
 export function CountBadge({
-  sql,
+  countKey,
   className,
   variant = 'outline',
 }: CountBadgeProps) {
@@ -26,27 +28,28 @@ export function CountBadge({
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!sql) {
+    if (!countKey) {
       setIsLoading(false)
       return
     }
 
     async function fetchCount() {
       try {
-        // Use the data endpoint for count queries
+        // Use the secure menu-counts endpoint with countKey
         const response = await fetch(
-          `/api/v1/data?hostId=${hostId}&sql=${encodeURIComponent(sql!)}`
+          `/api/v1/menu-counts/${encodeURIComponent(countKey!)}?hostId=${hostId}`
         )
         if (!response.ok) {
           setCount(null)
           return
         }
 
-        const result = await response.json() as { success: boolean; data?: Array<{ 'count()'?: string | number; count?: string | number }> }
-        if (result.success && result.data && result.data.length > 0) {
-          const value = result.data[0]['count()'] || result.data[0].count
-          const parsed = typeof value === 'string' ? parseInt(value, 10) : value
-          setCount(typeof parsed === 'number' && !Number.isNaN(parsed) ? parsed : null)
+        const result = (await response.json()) as {
+          success: boolean
+          data?: { count: number | null }
+        }
+        if (result.success && result.data && result.data.count !== null) {
+          setCount(result.data.count)
         } else {
           setCount(null)
         }
@@ -58,7 +61,7 @@ export function CountBadge({
     }
 
     fetchCount()
-  }, [sql, hostId])
+  }, [countKey, hostId])
 
   if (isLoading || !count || count === 0) return null
 
