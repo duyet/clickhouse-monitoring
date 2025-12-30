@@ -44,7 +44,10 @@ export const ChartParams = ({ params }: ChartParamsProps) => {
       ErrorLogger.logDebug('Chart params updated', { response: resp })
       router.refresh()
     } catch (e) {
-      ErrorLogger.logError(e as Error, { component: 'ChartParams', action: 'submit' })
+      ErrorLogger.logError(e as Error, {
+        component: 'ChartParams',
+        action: 'submit',
+      })
       setError('Error updating params')
     }
   }
