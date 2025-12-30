@@ -33,19 +33,20 @@ export default function RootLayout({
             <div className="min-h-screen">
               <Suspense
                 fallback={
-                  <div className="flex h-[73px] items-center justify-between border-b p-4 md:px-8">
-                    <div className="flex flex-row items-stretch gap-2">
-                      <div className="h-[45px] w-[45px] animate-pulse rounded bg-muted" />
-                      <div className="flex-auto truncate">
-                        <div className="h-8 w-48 animate-pulse rounded bg-muted" />
-                      </div>
+                  <div className="flex flex-col border-b">
+                    <div className="flex h-12 items-center px-4 md:px-6">
+                      <div className="flex h-6 w-6 animate-pulse rounded bg-muted" />
+                      <div className="ml-2 h-4 w-32 animate-pulse rounded bg-muted" />
+                    </div>
+                    <div className="flex h-10 items-center border-t px-4 md:px-6">
+                      <div className="h-3 w-20 animate-pulse rounded bg-muted" />
                     </div>
                   </div>
                 }
               >
                 <HeaderClient />
               </Suspense>
-              <main className="container mx-auto max-w-[1600px] px-4 md:px-6 lg:px-8 py-6 md:py-8">
+              <main className="container mx-auto px-3 md:px-4 lg:px-6 py-4 md:py-5">
                 {children}
               </main>
             </div>

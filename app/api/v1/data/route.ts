@@ -4,6 +4,11 @@
  *
  * Accepts a query and parameters, returns data with metadata
  * Includes caching headers for performance optimization
+ *
+ * SECURITY: This endpoint validates that queries being executed are either:
+ * 1. Pre-defined in the chart/table registries (recommended)
+ * 2. Stored in the dashboard tables (for custom dashboards)
+ * This prevents clients from sending arbitrary SQL queries.
  */
 
 import { fetchData } from '@/lib/clickhouse'
@@ -18,6 +23,65 @@ import {
   type RouteContext,
 } from '@/lib/api/error-handler'
 import { debug, error } from '@/lib/logger'
+
+// Dashboard table names for query validation
+const DASHBOARD_QUERIES_TABLE = 'system.clickhouse_monitoring_custom_dashboard'
+
+// Cache of valid dashboard queries to avoid repeated lookups
+const validDashboardQueriesCache = new Map<string, Set<string>>()
+let cacheTimestamp = 0
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
+/**
+ * Validate that a query exists in the dashboard tables
+ * This prevents execution of arbitrary SQL from clients
+ */
+async function validateDashboardQuery(
+  query: string,
+  hostId: number
+): Promise<boolean> {
+  try {
+    // Check cache first
+    const now = Date.now()
+    if (now - cacheTimestamp > CACHE_TTL) {
+      validDashboardQueriesCache.clear()
+      cacheTimestamp = now
+    }
+
+    const cacheKey = String(hostId)
+    const cachedQueries = validDashboardQueriesCache.get(cacheKey)
+    if (cachedQueries && cachedQueries.has(query)) {
+      return true
+    }
+
+    // Query the dashboard table to verify this query exists
+    const result = await fetchData({
+      query: `SELECT query FROM ${DASHBOARD_QUERIES_TABLE}`,
+      format: 'JSONEachRow',
+      hostId,
+    })
+
+    if (result.error) {
+      // Table doesn't exist or other error - fail closed
+      error('[Dashboard Query Validation] Error:', result.error)
+      return false
+    }
+
+    const queries = new Set<string>()
+    for (const row of result.data as Array<{ query: string }>) {
+      queries.add(row.query)
+    }
+
+    // Cache the results
+    validDashboardQueriesCache.set(cacheKey, queries)
+
+    // Check if the query exists in the table
+    return queries.has(query)
+  } catch (err) {
+    error('[Dashboard Query Validation] Unexpected error:', err)
+    return false
+  }
+}
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -82,6 +146,9 @@ export const GET = withApiHandler(
 /**
  * Handle POST requests for data fetching
  * Accepts query and parameters in the request body
+ *
+ * SECURITY: When queryConfig is not provided, validates that the query
+ * exists in the dashboard tables to prevent arbitrary SQL execution.
  */
 export const POST = withApiHandler(
   async (request: Request) => {
@@ -108,6 +175,25 @@ export const POST = withApiHandler(
     } = typedBody
 
     debug('[POST /api/v1/data]', { hostId, format, queryConfig: queryConfig?.name })
+
+    // SECURITY: If no queryConfig provided, validate the query exists in dashboard tables
+    // This prevents arbitrary SQL execution from clients
+    if (!queryConfig) {
+      const isValidDashboardQuery = await validateDashboardQuery(query, Number(hostId))
+      if (!isValidDashboardQuery) {
+        error('[POST /api/v1/data] Security: Query not found in dashboard tables', {
+          queryPreview: query.substring(0, 100),
+        })
+        return createErrorResponse(
+          {
+            type: ApiErrorType.PermissionError,
+            message: 'Query not found in dashboard tables. Use /api/v1/charts/[name] or /api/v1/tables/[name] for registry-based queries.',
+          },
+          403,
+          { ...ROUTE_CONTEXT, method: 'POST', hostId }
+        )
+      }
+    }
 
     // Convert format string to DataFormat if needed
     const dataFormat = (format || 'JSONEachRow') as DataFormat

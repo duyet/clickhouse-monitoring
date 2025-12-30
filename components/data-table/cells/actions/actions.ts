@@ -11,7 +11,8 @@ export async function killQuery<TValue>(
 ): Promise<ActionResponse> {
   const hostId = await getHostIdCookie()
   const { error } = await fetchData({
-    query: `KILL QUERY WHERE query_id = '${queryId}'`,
+    query: `KILL QUERY WHERE query_id = {queryId: String}`,
+    query_params: { queryId },
     hostId,
   })
 
@@ -45,7 +46,8 @@ export async function optimizeTable<TValue>(
 ): Promise<ActionResponse> {
   const hostId = await getHostIdCookie()
   const { error } = await fetchData({
-    query: `OPTIMIZE TABLE ${table}`,
+    query: `OPTIMIZE TABLE {table: String}`,
+    query_params: { table },
     hostId,
   })
 

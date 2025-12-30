@@ -21,9 +21,9 @@ export default function OverviewPage() {
 
   return (
     <div>
-      <OverviewCharts hostId={hostId} className="mb-10" />
+      <OverviewCharts hostId={hostId} className="mb-3" />
 
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue="overview" className="space-y-3">
         <div className="flex items-center justify-between space-y-2">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -33,15 +33,15 @@ export default function OverviewPage() {
           </TabsList>
         </div>
 
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+        <TabsContent value="overview" className="space-y-3">
+          <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <ServerComponentLazy>
               <ChartQueryCount
                 title="Query Count last 24h"
                 lastHours={24}
                 interval="toStartOfHour"
-                className="w-full p-5"
-                chartClassName="h-64"
+                className="w-full"
+                chartClassName="h-52"
                 hostId={hostId}
               />
             </ServerComponentLazy>
@@ -51,8 +51,8 @@ export default function OverviewPage() {
                 title="Query Count by User last 24h"
                 lastHours={24}
                 interval="toStartOfHour"
-                className="w-full p-5"
-                chartClassName="h-64"
+                className="w-full"
+                chartClassName="h-52"
                 hostId={hostId}
               />
             </ServerComponentLazy>
@@ -62,8 +62,8 @@ export default function OverviewPage() {
                 title="Query Count last 14d"
                 lastHours={24 * 14}
                 interval="toStartOfDay"
-                className="w-full p-5"
-                chartClassName="h-64"
+                className="w-full"
+                chartClassName="h-52"
                 hostId={hostId}
               />
             </ServerComponentLazy>
@@ -72,7 +72,7 @@ export default function OverviewPage() {
               <ChartMemoryUsage
                 title="Memory Usage last 24h (avg / 10 minutes)"
                 className="w-full"
-                chartClassName="h-64"
+                chartClassName="h-52"
                 interval="toStartOfTenMinutes"
                 lastHours={24}
                 hostId={hostId}
@@ -83,7 +83,7 @@ export default function OverviewPage() {
               <ChartCPUUsage
                 title="CPU Usage last 24h (avg / 10 minutes)"
                 className="w-full"
-                chartClassName="h-64"
+                chartClassName="h-52"
                 interval="toStartOfTenMinutes"
                 lastHours={24}
                 hostId={hostId}
@@ -95,20 +95,20 @@ export default function OverviewPage() {
                 title="Merge and PartMutation last 24h (avg)"
                 lastHours={24}
                 interval="toStartOfHour"
-                className="w-full p-5"
-                chartClassName="h-64"
+                className="w-full"
+                chartClassName="h-52"
                 hostId={hostId}
               />
             </ServerComponentLazy>
 
             <ServerComponentLazy>
-              <ChartTopTableSize className="w-full p-5" hostId={hostId} />
+              <ChartTopTableSize className="w-full" hostId={hostId} />
             </ServerComponentLazy>
 
             <ServerComponentLazy>
               <ChartNewPartsCreated
-                className="w-full p-5"
-                chartClassName="h-64"
+                className="w-full"
+                chartClassName="h-52"
                 title="New Parts Created over last 7 days"
                 interval="toStartOfHour"
                 lastHours={24 * 7}
@@ -118,27 +118,27 @@ export default function OverviewPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="errors" className="space-y-4">
-          <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+        <TabsContent value="errors" className="space-y-3">
+          <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <ServerComponentLazy>
-              <ChartKeeperException className="w-full p-5" hostId={hostId} />
+              <ChartKeeperException className="w-full" hostId={hostId} />
             </ServerComponentLazy>
           </div>
         </TabsContent>
 
-        <TabsContent value="disks" className="space-y-4">
-          <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+        <TabsContent value="disks" className="space-y-3">
+          <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <ServerComponentLazy>
               <ChartDiskSize
-                className="w-full p-5"
+                className="w-full"
                 title="Disk Size"
                 hostId={hostId}
               />
             </ServerComponentLazy>
             <ServerComponentLazy>
               <ChartDisksUsage
-                className="w-full p-5"
-                chartClassName="h-64"
+                className="w-full"
+                chartClassName="h-52"
                 title="Disks Usage over last 30 days"
                 interval="toStartOfDay"
                 lastHours={24 * 30}
@@ -148,13 +148,13 @@ export default function OverviewPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="backups" className="space-y-4">
-          <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
+        <TabsContent value="backups" className="space-y-3">
+          <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <ServerComponentLazy>
               <ChartBackupSize
-                className="w-full p-5"
+                className="w-full"
                 title="Backup"
-                chartClassName="h-64"
+                chartClassName="h-52"
                 hostId={hostId}
               />
             </ServerComponentLazy>

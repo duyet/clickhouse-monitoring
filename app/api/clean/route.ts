@@ -104,10 +104,13 @@ async function killHangingQueries(
         KILL QUERY
         WHERE user = currentUser()
           AND read_rows = 0
-          AND elapsed > ${QUERY_CLEANUP_MAX_DURATION_SECONDS}
+          AND elapsed > {maxDuration: UInt32}
         ASYNC
       `,
       format: 'JSON',
+      query_params: {
+        maxDuration: QUERY_CLEANUP_MAX_DURATION_SECONDS,
+      },
     })
 
     const killQueryResp = await resp.json<KillQueryResponse>()

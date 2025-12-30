@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useFetchData } from '@/lib/swr'
+import { useChartData } from '@/lib/swr/use-chart-data'
 import { cn } from '@/lib/utils'
 
 interface OverviewChartsProps {
@@ -20,8 +20,8 @@ export function OverviewCharts({ hostId, className }: OverviewChartsProps) {
   return (
     <div
       className={cn(
-        'grid grid-cols-1 gap-4',
-        'md:grid-cols-3 lg:grid-cols-4',
+        'grid grid-cols-1 gap-3',
+        'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
         className
       )}
     >
@@ -34,14 +34,11 @@ export function OverviewCharts({ hostId, className }: OverviewChartsProps) {
 }
 
 function RunningQueries({ hostId }: { hostId: number }) {
-  const query =
-    'SELECT COUNT() as count FROM system.processes WHERE is_cancelled = 0'
-  const { data, error } = useFetchData<{ count: number }[]>(
-    query,
-    {},
+  const { data, error } = useChartData<{ count: number }[]>({
+    chartName: 'running-queries-count',
     hostId,
-    30000
-  )
+    refreshInterval: 30000,
+  })
 
   if (error) {
     return (
@@ -54,7 +51,6 @@ function RunningQueries({ hostId }: { hostId: number }) {
           <ErrorAlert
             title="Configuration error"
             message={error.message}
-            query={query}
             compact={true}
           />
         </CardContent>
@@ -62,17 +58,18 @@ function RunningQueries({ hostId }: { hostId: number }) {
     )
   }
 
-  if (!data || !data.length) return <div />
+  const dataArray = ((Array.isArray(data) ? data : []) as unknown) as { count: number }[]
+  if (!dataArray.length) return <div />
 
   return (
     <Card>
-      <CardHeader className="pb-0">
+      <CardHeader className="px-4 pb-1 pt-4">
         <CardTitle className="text-sm">Running Queries</CardTitle>
         <CardDescription className="text-xs">Active</CardDescription>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="px-4 pt-0 pb-4">
         <div className="flex items-center justify-between">
-          <div className="font-mono text-3xl font-semibold tabular-nums tracking-tight">{data[0].count}</div>
+          <div className="font-mono text-3xl font-semibold tabular-nums tracking-tight">{dataArray[0].count}</div>
           <a
             className="text-muted-foreground hover:text-foreground text-sm"
             href={`/running-queries?host=${hostId}`}
@@ -86,17 +83,12 @@ function RunningQueries({ hostId }: { hostId: number }) {
 }
 
 function DatabaseTableCount({ hostId }: { hostId: number }) {
-  const databaseQuery =
-    "SELECT countDistinct(database) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')"
-  const tablesQuery =
-    "SELECT countDistinct(format('{}.{}', database, table)) as count FROM system.tables WHERE lower(database) NOT IN ('system', 'information_schema')"
-
-  const { data: databaseData, error: databaseError } = useFetchData<
+  const { data: databaseData, error: databaseError } = useChartData<
     { count: number }[]
-  >(databaseQuery, {}, hostId, 30000)
-  const { data: tablesData, error: tablesError } = useFetchData<
+  >({ chartName: 'database-count', hostId, refreshInterval: 30000 })
+  const { data: tablesData, error: tablesError } = useChartData<
     { count: number }[]
-  >(tablesQuery, {}, hostId, 30000)
+  >({ chartName: 'table-count', hostId, refreshInterval: 30000 })
 
   if (databaseError || tablesError) {
     return (
@@ -111,7 +103,6 @@ function DatabaseTableCount({ hostId }: { hostId: number }) {
             message={
               databaseError?.message || tablesError?.message || 'Unknown error'
             }
-            query={databaseQuery}
             compact={true}
           />
         </CardContent>
@@ -119,9 +110,12 @@ function DatabaseTableCount({ hostId }: { hostId: number }) {
     )
   }
 
+  const dbArray = ((Array.isArray(databaseData) ? databaseData : []) as unknown) as { count: number }[]
+  const tablesArray = ((Array.isArray(tablesData) ? tablesData : []) as unknown) as { count: number }[]
+
   return (
     <Card>
-      <CardHeader className="pb-0">
+      <CardHeader className="px-4 pb-1 pt-4">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-sm">Database</CardTitle>
@@ -135,14 +129,14 @@ function DatabaseTableCount({ hostId }: { hostId: number }) {
           </a>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3 pt-0">
+      <CardContent className="space-y-2 px-4 pt-0 pb-4">
         <div className="flex items-center justify-between">
           <span className="font-mono text-sm tabular-nums">
-            {databaseData?.[0]?.count || 0} databases
+            {dbArray[0]?.count || 0} databases
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="font-mono text-sm tabular-nums">{tablesData?.[0]?.count || 0} tables</span>
+          <span className="font-mono text-sm tabular-nums">{tablesArray[0]?.count || 0} tables</span>
         </div>
       </CardContent>
     </Card>
@@ -150,62 +144,58 @@ function DatabaseTableCount({ hostId }: { hostId: number }) {
 }
 
 function ClickHouseInfo({ hostId }: { hostId: number }) {
-  const hostNameQuery = 'SELECT hostName() as val'
-  const versionQuery = 'SELECT version() as val'
-  const uptimeQuery =
-    "SELECT splitByString(' and ', formatReadableTimeDelta(uptime()))[1] as val"
+  const { data: hostNameData } = useChartData<{ val: string }[]>({
+    chartName: 'hostname',
+    hostId,
+    refreshInterval: 30000,
+  })
+  const { data: versionData } = useChartData<{ val: string }[]>({
+    chartName: 'version',
+    hostId,
+    refreshInterval: 30000,
+  })
+  const { data: uptimeData } = useChartData<{ val: string }[]>({
+    chartName: 'uptime-readable',
+    hostId,
+    refreshInterval: 30000,
+  })
 
-  const { data: hostNameData } = useFetchData<{ val: string }[]>(
-    hostNameQuery,
-    {},
-    hostId,
-    30000
-  )
-  const { data: versionData } = useFetchData<{ val: string }[]>(
-    versionQuery,
-    {},
-    hostId,
-    30000
-  )
-  const { data: uptimeData } = useFetchData<{ val: string }[]>(
-    uptimeQuery,
-    {},
-    hostId,
-    30000
-  )
+  const hostArray = ((Array.isArray(hostNameData) ? hostNameData : []) as unknown) as { val: string }[]
+  const versionArray = ((Array.isArray(versionData) ? versionData : []) as unknown) as { val: string }[]
+  const uptimeArray = ((Array.isArray(uptimeData) ? uptimeData : []) as unknown) as { val: string }[]
 
   return (
     <Card>
-      <CardHeader className="pb-0">
+      <CardHeader className="px-4 pb-1 pt-4">
         <CardTitle className="text-sm">System Info</CardTitle>
         <CardDescription className="text-xs">ClickHouse</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3 pt-0">
+      <CardContent className="space-y-2 px-4 pt-0 pb-4">
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground text-sm">Host</span>
           <div
             className="truncate text-sm font-medium"
-            title={hostNameData?.[0]?.val || ''}
+            title={hostArray[0]?.val || ''}
           >
-            {hostNameData?.[0]?.val || '-'}
+            {hostArray[0]?.val || '-'}
           </div>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground text-sm">Version</span>
           <div
             className="truncate text-sm font-medium"
-            title={versionData?.[0]?.val || ''}
+            title={versionArray[0]?.val || ''}
           >
-            {versionData?.[0]?.val || '-'}
+            {versionArray[0]?.val || '-'}
           </div>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground text-sm">Uptime</span>
           <div
             className="truncate text-sm font-medium"
-            title={uptimeData?.[0]?.val || ''}
+            title={uptimeArray[0]?.val || ''}
           >
-            {uptimeData?.[0]?.val || '-'}
+            {uptimeArray[0]?.val || '-'}
           </div>
         </div>
       </CardContent>
@@ -214,17 +204,7 @@ function ClickHouseInfo({ hostId }: { hostId: number }) {
 }
 
 function DiskSize({ hostId }: { hostId: number }) {
-  const query = `
-    SELECT name,
-           (total_space - unreserved_space) AS used_space,
-           formatReadableSize(used_space) AS readable_used_space,
-           total_space,
-           formatReadableSize(total_space) AS readable_total_space
-    FROM system.disks
-    ORDER BY name
-    LIMIT 1
-  `
-  const { data, error } = useFetchData<
+  const { data, error } = useChartData<
     {
       name: string
       used_space: number
@@ -232,7 +212,7 @@ function DiskSize({ hostId }: { hostId: number }) {
       total_space: number
       readable_total_space: string
     }[]
-  >(query, {}, hostId, 30000)
+  >({ chartName: 'disk-size-single', hostId, refreshInterval: 30000 })
 
   if (error) {
     return (
@@ -244,7 +224,6 @@ function DiskSize({ hostId }: { hostId: number }) {
           <ErrorAlert
             title="Configuration error"
             message={error.message}
-            query={query}
             compact={true}
           />
         </CardContent>
@@ -252,13 +231,20 @@ function DiskSize({ hostId }: { hostId: number }) {
     )
   }
 
-  if (!data || !data.length) return <div />
+  const dataArray = ((Array.isArray(data) ? data : []) as unknown) as {
+    name: string
+    used_space: number
+    readable_used_space: string
+    total_space: number
+    readable_total_space: string
+  }[]
+  if (!dataArray.length) return <div />
 
-  const first = data[0]
+  const first = dataArray[0]
 
   return (
     <Card>
-      <CardHeader className="pb-0">
+      <CardHeader className="px-4 pb-1 pt-4">
         <div>
           <CardTitle className="text-sm">Disk Size</CardTitle>
           <CardDescription className="text-xs">
@@ -266,7 +252,7 @@ function DiskSize({ hostId }: { hostId: number }) {
           </CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="px-4 pt-0 pb-4">
         <div className="flex items-center justify-between">
           <div className="text-2xl font-bold">
             {first.readable_used_space} used
