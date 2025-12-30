@@ -61,37 +61,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Next Cache
         uses: actions/cache@v5
         with:
           path: .next/cache
           # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-
 
       - name: Install dependencies
-        run: pnpm install
+        run: bun install
 
       - name: Clear Next.js config cache
         run: rm -f next.config.compiled.js .next/next.config.compiled.js
 
       - name: Build
-        run: pnpm build
+        run: bun run build
 
       - name: Test e2e
         uses: cypress-io/github-action@v6
         with:
-          command: pnpm e2e:headless
+          command: bun run e2e:headless
           browser: ${{ matrix.browser }}
           parallel: true
           record: true
@@ -112,35 +107,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TODO: Re-enable Node 21 when Cypress 15 + Tailwind CSS 4 compatibility is resolved
-        # Issue: Cypress 15's new ESM loader conflicts with Tailwind CSS 4's PostCSS configuration
-        node: [20]
         browser: [chrome, firefox]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node }}
-          cache: pnpm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Next Cache
         uses: actions/cache@v5
         with:
           path: .next/cache
           # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile && pnpm approve-builds
+        run: bun install
 
       - name: Clear Next.js config cache
         run: rm -f next.config.compiled.js .next/next.config.compiled.js
@@ -149,7 +136,7 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           component: true
-          command: pnpm run component:headless
+          command: bun run component:headless
           browser: ${{ matrix.browser }}
           parallel: true
           record: true
@@ -164,41 +151,31 @@ jobs:
   jest:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [20, 21]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node }}
-          cache: pnpm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Next Cache
         uses: actions/cache@v5
         with:
           path: .next/cache
           # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-
 
       - name: Install dependencies
-        run: pnpm install
+        run: bun install
 
       - name: Clear Next.js config cache
         run: rm -f next.config.compiled.js .next/next.config.compiled.js
 
       - name: Jest
-        run: pnpm jest
+        run: bun run jest
 
       - name: Codecov
         uses: codecov/codecov-action@v5
@@ -212,7 +189,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: jest-reports
-          flags: jest,node-${{ matrix.node }}
+          flags: jest
 
   test-queries-config:
     runs-on: ubuntu-latest
@@ -267,29 +244,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 21
-          cache: pnpm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Next Cache
         uses: actions/cache@v5
         with:
           path: .next/cache
           # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-
 
       - name: Install dependencies
-        run: pnpm install
+        run: bun install
 
       - name: Clear Next.js config cache
         run: rm -f next.config.compiled.js .next/next.config.compiled.js
 
       - name: Test queries config
-        run: pnpm test-queries-config
+        run: bun run test-queries-config
