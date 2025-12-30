@@ -42,7 +42,7 @@ export function ConnectionStatusBadge() {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
 
-        const response = await fetch(`/api/v1/charts/hostname?host=${hostId}`, {
+        const response = await fetch(`/api/v1/charts/hostname?hostId=${hostId}`, {
           signal: controller.signal,
         })
 
