@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic'
 import { memo } from 'react'
 import type React from 'react'
+import { usePathname } from 'next/navigation'
 
 import {
   NavigationMenu,
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { menuItemsConfig } from '@/menu'
 import { HostPrefixedLink } from './link-with-context'
 import type { MenuItem } from './types'
+import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 
 const CountBadge = dynamic(() =>
   import('@/components/menu/count-badge').then((mod) => mod.CountBadge)
@@ -90,16 +92,45 @@ const SingleItem = memo(function SingleItem({ item }: { item: MenuItem }) {
 })
 
 const HasChildItems = memo(function HasChildItems({ item }: { item: MenuItem }) {
+  const pathname = usePathname()
+
+  // Check if any child item is active
+  const hasActiveChild = item.items?.some(
+    (child) => child.href && isMenuItemActive(child.href, pathname)
+  )
+
   return (
     <NavigationMenuItem role="none">
-      <NavigationMenuTrigger className="relative">
+      <NavigationMenuTrigger
+        className={cn(
+          'relative',
+          hasActiveChild && 'text-foreground font-semibold'
+        )}
+        data-active={hasActiveChild ? 'true' : undefined}
+        aria-current={hasActiveChild ? 'true' : undefined}
+      >
         <div className="flex flex-row items-center gap-1.5">
-          {item.icon && <item.icon className="size-3.5 opacity-70" strokeWidth={1.5} />}
+          {item.icon && (
+            <item.icon
+              className={cn(
+                'size-3.5 opacity-70',
+                hasActiveChild && 'opacity-100 text-primary'
+              )}
+              strokeWidth={1.5}
+            />
+          )}
           <span>{item.title}</span>
           {item.countKey ? (
             <CountBadge countKey={item.countKey} variant={item.countVariant} />
           ) : null}
         </div>
+        {/* Active indicator underline for parent */}
+        <span
+          className={cn(
+            'absolute bottom-0 left-1/2 h-[2px] w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-full bg-primary transition-transform duration-200',
+            hasActiveChild ? 'scale-x-100' : 'scale-x-0'
+          )}
+        />
       </NavigationMenuTrigger>
       <NavigationMenuContent>
         <ul className="grid w-fit min-w-[380px] grid-cols-1 content-center items-stretch gap-1 p-1.5 md:min-w-[580px] md:grid-cols-2">
