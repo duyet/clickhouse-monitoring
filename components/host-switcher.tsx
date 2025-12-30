@@ -97,9 +97,7 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
                     <HostStatus promise={activeHost.promise} />
                   </Suspense>
                 </div>
-                <Suspense fallback={<span className="truncate text-xs text-muted-foreground">...</span>}>
-                  <HostVersion promise={activeHost.promise} />
-                </Suspense>
+                <HostVersion promise={activeHost.promise} />
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
