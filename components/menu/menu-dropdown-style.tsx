@@ -29,11 +29,20 @@ export const MenuDropdownStyle = memo(function MenuDropdownStyle({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className={className} aria-label="Open menu" aria-haspopup="true">
+        <Button
+          variant="outline"
+          className={className}
+          aria-label="Open menu"
+          aria-haspopup="true"
+        >
           <HamburgerMenuIcon className="size-3" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" role="menu" aria-label="Navigation menu">
+      <DropdownMenuContent
+        className="w-56"
+        role="menu"
+        aria-label="Navigation menu"
+      >
         {items.map((item) => (
           <MenuItemComponent key={item.href} item={item} />
         ))}
@@ -65,27 +74,45 @@ const SingleItemDropdown = memo(function SingleItemDropdown({
   )
 })
 
-const MenuItemComponent = memo(function MenuItemComponent({ item }: { item: MenuItem }) {
+const MenuItemComponent = memo(function MenuItemComponent({
+  item,
+}: {
+  item: MenuItem
+}) {
   if (item.items) {
     return <HasChildItems item={item} />
   }
 
   return (
     <SingleItemDropdown href={item.href} title={item.title}>
-      {item.icon && <item.icon className="size-3" strokeWidth={1} aria-hidden="true" />}
+      {item.icon && (
+        <item.icon className="size-3" strokeWidth={1} aria-hidden="true" />
+      )}
     </SingleItemDropdown>
   )
 })
 
-const HasChildItems = memo(function HasChildItems({ item }: { item: MenuItem }) {
+const HasChildItems = memo(function HasChildItems({
+  item,
+}: {
+  item: MenuItem
+}) {
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger className="flex flex-row items-center gap-2" aria-haspopup="true">
-        {item.icon && <item.icon className="size-3" strokeWidth={1} aria-hidden="true" />}
+      <DropdownMenuSubTrigger
+        className="flex flex-row items-center gap-2"
+        aria-haspopup="true"
+      >
+        {item.icon && (
+          <item.icon className="size-3" strokeWidth={1} aria-hidden="true" />
+        )}
         {item.title}
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
-        <DropdownMenuSubContent role="menu" aria-label={`${item.title} submenu`}>
+        <DropdownMenuSubContent
+          role="menu"
+          aria-label={`${item.title} submenu`}
+        >
           {item.items
             ?.filter((childItem) => childItem.title && childItem.href)
             .map((childItem) => (

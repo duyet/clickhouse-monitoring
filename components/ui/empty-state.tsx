@@ -49,44 +49,76 @@ const variantConfig: Record<
   { icon: React.ReactNode; title: string; description: string }
 > = {
   'no-data': {
-    icon: <Inbox className="h-10 w-10 text-muted-foreground/60" strokeWidth={1.5} />,
+    icon: (
+      <Inbox className="h-10 w-10 text-muted-foreground/60" strokeWidth={1.5} />
+    ),
     title: 'No data available',
-    description: 'There is no data to display. This could be due to no activity in the selected time period.',
+    description:
+      'There is no data to display. This could be due to no activity in the selected time period.',
   },
   'no-results': {
-    icon: <SearchX className="h-10 w-10 text-muted-foreground/60" strokeWidth={1.5} />,
+    icon: (
+      <SearchX
+        className="h-10 w-10 text-muted-foreground/60"
+        strokeWidth={1.5}
+      />
+    ),
     title: 'No results found',
-    description: 'Try adjusting your search or filter criteria to find what you\'re looking for.',
+    description:
+      "Try adjusting your search or filter criteria to find what you're looking for.",
   },
   error: {
-    icon: <ServerCrash className="h-10 w-10 text-destructive/60" strokeWidth={1.5} />,
+    icon: (
+      <ServerCrash
+        className="h-10 w-10 text-destructive/60"
+        strokeWidth={1.5}
+      />
+    ),
     title: 'Failed to load data',
     description: 'An error occurred while fetching data. Please try again.',
   },
   loading: {
-    icon: <RefreshCw className="h-10 w-10 text-muted-foreground/60 animate-spin" strokeWidth={1.5} />,
+    icon: (
+      <RefreshCw
+        className="h-10 w-10 text-muted-foreground/60 animate-spin"
+        strokeWidth={1.5}
+      />
+    ),
     title: 'Loading...',
     description: 'Please wait while we fetch your data.',
   },
   offline: {
     icon: <WifiOff className="h-10 w-10 text-warning/60" strokeWidth={1.5} />,
-    title: 'You\'re offline',
+    title: "You're offline",
     description: 'Check your internet connection and try again.',
   },
   'table-missing': {
-    icon: <DatabaseZap className="h-10 w-10 text-muted-foreground/60" strokeWidth={1.5} />,
+    icon: (
+      <DatabaseZap
+        className="h-10 w-10 text-muted-foreground/60"
+        strokeWidth={1.5}
+      />
+    ),
     title: 'Table not available',
-    description: 'This feature requires additional ClickHouse configuration or the system table doesn\'t exist.',
+    description:
+      "This feature requires additional ClickHouse configuration or the system table doesn't exist.",
   },
   timeout: {
     icon: <Timer className="h-10 w-10 text-warning/60" strokeWidth={1.5} />,
     title: 'Request timed out',
-    description: 'The query took too long to execute. Try narrowing your search or increasing the timeout.',
+    description:
+      'The query took too long to execute. Try narrowing your search or increasing the timeout.',
   },
   'filtered-empty': {
-    icon: <Filter className="h-10 w-10 text-muted-foreground/60" strokeWidth={1.5} />,
+    icon: (
+      <Filter
+        className="h-10 w-10 text-muted-foreground/60"
+        strokeWidth={1.5}
+      />
+    ),
     title: 'No matching results',
-    description: 'No data matches your current filters. Try removing some filters.',
+    description:
+      'No data matches your current filters. Try removing some filters.',
   },
 }
 
@@ -104,13 +136,25 @@ export const EmptyState = memo(function EmptyState({
 
   if (compact) {
     return (
-      <div className={cn('flex flex-col items-center justify-center py-6 text-center', className)}>
+      <div
+        className={cn(
+          'flex flex-col items-center justify-center py-6 text-center',
+          className
+        )}
+      >
         <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-muted/50">
           {icon || config.icon}
         </div>
-        <p className="text-sm font-medium text-muted-foreground">{title || config.title}</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          {title || config.title}
+        </p>
         {action && (
-          <Button variant="ghost" size="sm" onClick={action.onClick} className="mt-2 h-7 text-xs">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={action.onClick}
+            className="mt-2 h-7 text-xs"
+          >
             {action.icon}
             {action.label}
           </Button>
@@ -146,7 +190,12 @@ export const EmptyState = memo(function EmptyState({
       {(action || secondaryAction) && (
         <div className="mt-4 flex items-center gap-2">
           {action && (
-            <Button variant="outline" size="sm" onClick={action.onClick} className="transition-all hover:shadow-sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={action.onClick}
+              className="transition-all hover:shadow-sm"
+            >
               {action.icon}
               {action.label}
             </Button>
@@ -172,7 +221,12 @@ export const InlineEmptyState = memo(function InlineEmptyState({
   className?: string
 }) {
   return (
-    <div className={cn('flex items-center gap-1.5 text-muted-foreground', className)}>
+    <div
+      className={cn(
+        'flex items-center gap-1.5 text-muted-foreground',
+        className
+      )}
+    >
       <CircleSlash className="h-3.5 w-3.5" strokeWidth={1.5} />
       <span className="text-sm">{message}</span>
     </div>

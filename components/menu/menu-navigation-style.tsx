@@ -41,7 +41,11 @@ export const MenuNavigationStyle = memo(function MenuNavigationStyle({
   )
 })
 
-const MenuItemComponent = memo(function MenuItemComponent({ item }: { item: MenuItem }) {
+const MenuItemComponent = memo(function MenuItemComponent({
+  item,
+}: {
+  item: MenuItem
+}) {
   if (item.items) {
     return <HasChildItems item={item} />
   }
@@ -91,7 +95,11 @@ const SingleItem = memo(function SingleItem({ item }: { item: MenuItem }) {
   )
 })
 
-const HasChildItems = memo(function HasChildItems({ item }: { item: MenuItem }) {
+const HasChildItems = memo(function HasChildItems({
+  item,
+}: {
+  item: MenuItem
+}) {
   const pathname = usePathname()
 
   // Check if any child item is active
@@ -142,7 +150,10 @@ const HasChildItems = memo(function HasChildItems({ item }: { item: MenuItem }) 
                 title={
                   <span className="flex flex-row items-center gap-1.5">
                     {childItem.icon && (
-                      <childItem.icon className="size-3.5 opacity-70 group-data-[active=true]:opacity-100" strokeWidth={1.5} />
+                      <childItem.icon
+                        className="size-3.5 opacity-70 group-data-[active=true]:opacity-100"
+                        strokeWidth={1.5}
+                      />
                     )}
                     <span>{childItem.title}</span>
                     {childItem.countKey ? (

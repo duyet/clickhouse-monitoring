@@ -26,7 +26,9 @@ interface HeaderActionsProps {
 const SECOND = 1000
 const MINUTE = 60 * SECOND
 
-export const HeaderActions = memo(function HeaderActions({ menuComponent }: HeaderActionsProps) {
+export const HeaderActions = memo(function HeaderActions({
+  menuComponent,
+}: HeaderActionsProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const { reloadInterval, setReloadInterval } = useAppContext()
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -69,12 +71,15 @@ export const HeaderActions = memo(function HeaderActions({ menuComponent }: Head
     !isRefreshing && reloadInterval != null ? 1000 : null
   )
 
-  const handleSetReloadInterval = useCallback((interval: number | null) => {
-    setReloadInterval(interval)
-    if (interval) {
-      setCountDown(interval / 1000)
-    }
-  }, [setReloadInterval])
+  const handleSetReloadInterval = useCallback(
+    (interval: number | null) => {
+      setReloadInterval(interval)
+      if (interval) {
+        setCountDown(interval / 1000)
+      }
+    },
+    [setReloadInterval]
+  )
 
   return (
     <div className="ml-auto flex items-center gap-2 sm:gap-3">
@@ -104,7 +109,9 @@ export const HeaderActions = memo(function HeaderActions({ menuComponent }: Head
             Refresh now
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => handleSetReloadInterval(30 * SECOND)}>
+          <DropdownMenuItem
+            onClick={() => handleSetReloadInterval(30 * SECOND)}
+          >
             30 seconds
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleSetReloadInterval(1 * MINUTE)}>
@@ -127,7 +134,10 @@ export const HeaderActions = memo(function HeaderActions({ menuComponent }: Head
 
       {/* Search - hidden on mobile */}
       <div className="relative hidden md:block">
-        <Search aria-hidden="true" className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
+        <Search
+          aria-hidden="true"
+          className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60"
+        />
         <Input
           type="search"
           id="global-search"
@@ -136,14 +146,19 @@ export const HeaderActions = memo(function HeaderActions({ menuComponent }: Head
           aria-describedby="search-shortcut"
           className="h-8 w-40 bg-muted/30 pl-8 text-xs border-transparent focus-visible:ring-1 focus-visible:ring-primary/30 transition-all md:w-64"
         />
-        <kbd id="search-shortcut" className="absolute right-2 top-1/2 -translate-y-1/2 rounded border bg-muted px-1.5 text-[10px] font-medium">
+        <kbd
+          id="search-shortcut"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded border bg-muted px-1.5 text-[10px] font-medium"
+        >
           ⌘K
         </kbd>
       </div>
 
       {/* Theme toggle - hidden on mobile */}
       <IconButton
-        tooltip={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+        tooltip={
+          theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'
+        }
         icon={theme === 'light' ? <Moon /> : <Sun />}
         onClick={toggleTheme}
         className="hidden sm:flex"

@@ -13,7 +13,11 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: RefreshCw },
 ]
 
-export const HeaderNav = memo(function HeaderNav({ buildLink }: { buildLink: (path: string) => string }) {
+export const HeaderNav = memo(function HeaderNav({
+  buildLink,
+}: {
+  buildLink: (path: string) => string
+}) {
   const pathname = usePathname()
 
   return (

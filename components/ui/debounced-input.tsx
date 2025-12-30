@@ -17,11 +17,18 @@
 
 'use client'
 
-import { memo, useCallback, type InputHTMLAttributes, useEffect, useState } from 'react'
+import {
+  memo,
+  useCallback,
+  type InputHTMLAttributes,
+  useEffect,
+  useState,
+} from 'react'
 import { Input } from '@/components/ui/input'
 import { useDebounceWithPending } from '@/lib/hooks'
 
-export interface DebouncedInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
+export interface DebouncedInputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   /** Callback fired when debounced value changes */
   onValueChange?: (value: string) => void
   /** Debounce delay in milliseconds (default: 300) */
@@ -48,7 +55,10 @@ export const DebouncedInput = memo(function DebouncedInput({
   const [internalValue, setInternalValue] = useState(defaultValue)
   const inputValue = isControlled ? controlledValue : internalValue
 
-  const { debouncedValue, isPending } = useDebounceWithPending(inputValue, debounceMs)
+  const { debouncedValue, isPending } = useDebounceWithPending(
+    inputValue,
+    debounceMs
+  )
 
   // Call onValueChange when debounced value updates
   useEffect(() => {
@@ -56,16 +66,19 @@ export const DebouncedInput = memo(function DebouncedInput({
   }, [debouncedValue, onValueChange])
 
   // Handle input changes
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value
-    if (isControlled) {
-      // In controlled mode, parent manages state
-      onValueChange?.(newValue)
-    } else {
-      // In uncontrolled mode, manage internal state
-      setInternalValue(newValue)
-    }
-  }, [isControlled, onValueChange])
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value
+      if (isControlled) {
+        // In controlled mode, parent manages state
+        onValueChange?.(newValue)
+      } else {
+        // In uncontrolled mode, manage internal state
+        setInternalValue(newValue)
+      }
+    },
+    [isControlled, onValueChange]
+  )
 
   return (
     <div className="relative" role="search">
@@ -86,7 +99,10 @@ export const DebouncedInput = memo(function DebouncedInput({
           id="search-pending"
         >
           <div className="flex h-4 w-4 items-center justify-center">
-            <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" aria-hidden="true" />
+            <div
+              className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full"
+              aria-hidden="true"
+            />
           </div>
           <span className="sr-only">Searching...</span>
         </div>

@@ -30,9 +30,15 @@ async function fetchHostStatus(hostId: number): Promise<{
 
     // Fetch all three values in parallel
     const [hostnameRes, versionRes, uptimeRes] = await Promise.all([
-      fetch(`/api/v1/charts/hostname?hostId=${hostId}`, { signal: controller.signal }),
-      fetch(`/api/v1/charts/version?hostId=${hostId}`, { signal: controller.signal }),
-      fetch(`/api/v1/charts/uptime-readable?hostId=${hostId}`, { signal: controller.signal }),
+      fetch(`/api/v1/charts/hostname?hostId=${hostId}`, {
+        signal: controller.signal,
+      }),
+      fetch(`/api/v1/charts/version?hostId=${hostId}`, {
+        signal: controller.signal,
+      }),
+      fetch(`/api/v1/charts/uptime-readable?hostId=${hostId}`, {
+        signal: controller.signal,
+      }),
     ])
 
     clearTimeout(timeoutId)
@@ -99,8 +105,15 @@ export const HeaderBrand = memo(function HeaderBrand({
           {TITLE_SHORT}
         </Link>
         <span className="text-muted-foreground/40">/</span>
-        <Suspense fallback={<span className="inline-block h-4 w-24 animate-shimmer rounded bg-muted" />}>
-          <HostSelectorWrapper hostsPromise={hostsPromise} currentHostId={Number(currentHostId)} />
+        <Suspense
+          fallback={
+            <span className="inline-block h-4 w-24 animate-shimmer rounded bg-muted" />
+          }
+        >
+          <HostSelectorWrapper
+            hostsPromise={hostsPromise}
+            currentHostId={Number(currentHostId)}
+          />
         </Suspense>
       </div>
     </div>
@@ -120,7 +133,9 @@ function HostSelectorWrapper({
     ...host,
     promise: fetchHostStatus(host.id),
   }))
-  return <ClickHouseHostSelector currentHostId={currentHostId} configs={configs} />
+  return (
+    <ClickHouseHostSelector currentHostId={currentHostId} configs={configs} />
+  )
 }
 
 export const HeaderBrandSkeleton = memo(function HeaderBrandSkeleton() {

@@ -93,7 +93,11 @@ export const StaggeredFadeIn = memo(function StaggeredFadeIn({
           animationFillMode: 'both' as const,
         }
         return (
-          <div key={index} className="animate-fade-in motion-reduce:animate-none" style={style}>
+          <div
+            key={index}
+            className="animate-fade-in motion-reduce:animate-none"
+            style={style}
+          >
             {child}
           </div>
         )
