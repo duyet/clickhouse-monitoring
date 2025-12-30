@@ -34,7 +34,10 @@ export async function POST(request: Request): Promise<Response> {
       )
     }
 
-    debug('[POST /api/v1/dashboard/settings]', { hostId, paramsKeys: Object.keys(params) })
+    debug('[POST /api/v1/dashboard/settings]', {
+      hostId,
+      paramsKeys: Object.keys(params),
+    })
 
     const query = `
       ALTER TABLE ${TABLE_SETTINGS}

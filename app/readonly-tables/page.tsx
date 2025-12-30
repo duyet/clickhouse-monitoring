@@ -4,5 +4,7 @@ import { PageLayout } from '@/components/page-layout'
 import { readOnlyTablesConfig } from '@/lib/query-config/tables/readonly-tables'
 
 export default function ReadonlyTablesPage() {
-  return <PageLayout queryConfig={readOnlyTablesConfig} title="Readonly Tables" />
+  return (
+    <PageLayout queryConfig={readOnlyTablesConfig} title="Readonly Tables" />
+  )
 }

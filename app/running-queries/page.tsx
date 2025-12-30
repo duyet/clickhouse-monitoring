@@ -4,5 +4,7 @@ import { PageLayout } from '@/components/page-layout'
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
 
 export default function RunningQueriesPage() {
-  return <PageLayout queryConfig={runningQueriesConfig} title="Running Queries" />
+  return (
+    <PageLayout queryConfig={runningQueriesConfig} title="Running Queries" />
+  )
 }

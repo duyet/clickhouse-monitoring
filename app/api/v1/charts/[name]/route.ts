@@ -80,7 +80,9 @@ async function handleMultiQueryChart(
       | {
           type: ApiErrorType
           message: string
-          details?: { readonly [key: string]: string | number | boolean | undefined }
+          details?: {
+            readonly [key: string]: string | number | boolean | undefined
+          }
         }
       | undefined
 
@@ -137,7 +139,9 @@ async function handleMultiQueryChart(
         message: err instanceof Error ? err.message : 'Unknown error',
       },
       500,
-      { ...routeContext, method: 'GET', chartName } as RouteContext & { chartName: string }
+      { ...routeContext, method: 'GET', chartName } as RouteContext & {
+        chartName: string
+      }
     )
   }
 }

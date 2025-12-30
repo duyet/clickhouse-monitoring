@@ -39,13 +39,17 @@ export default function DashboardPage() {
   })
 
   // Cast to array and extract params
-  const settingsData = (Array.isArray(settings) ? settings : []) as DashboardSetting[]
+  const settingsData = (
+    Array.isArray(settings) ? settings : []
+  ) as DashboardSetting[]
   const params: Record<string, string> = JSON.parse(
     settingsData.find((s) => s.key === 'params')?.value || '{}'
   )
 
   // Cast dashboards to array
-  const dashboardsData = (Array.isArray(dashboards) ? dashboards : []) as DashboardChart[]
+  const dashboardsData = (
+    Array.isArray(dashboards) ? dashboards : []
+  ) as DashboardChart[]
 
   return (
     <div>

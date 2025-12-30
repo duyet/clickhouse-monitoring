@@ -22,7 +22,10 @@ export async function GET(request: NextRequest) {
       message: 'Ok.',
     })
   } catch (error) {
-    ErrorLogger.logError(error instanceof Error ? error : new Error(String(error)), { route: '/api/init' })
+    ErrorLogger.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      { route: '/api/init' }
+    )
 
     return NextResponse.json(
       {

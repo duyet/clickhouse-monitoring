@@ -56,10 +56,16 @@ export async function GET(request: NextRequest) {
         },
       ],
     })
-    ErrorLogger.logDebug('[/api/pageview] PageView event created', { route: '/api/pageview', url: request.url })
+    ErrorLogger.logDebug('[/api/pageview] PageView event created', {
+      route: '/api/pageview',
+      url: request.url,
+    })
     return NextResponse.json({ message: 'PageView event created', url })
   } catch (error) {
-    ErrorLogger.logError(error instanceof Error ? error : new Error(String(error)), { route: '/api/pageview', event: 'PageView' })
+    ErrorLogger.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      { route: '/api/pageview', event: 'PageView' }
+    )
     return NextResponse.json(
       { error: `Error creating PageView event: ${error}` },
       { status: 500 }

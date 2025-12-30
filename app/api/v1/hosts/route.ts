@@ -9,9 +9,7 @@
 import { getClickHouseConfigs } from '@/lib/clickhouse'
 import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
-import {
-  createErrorResponse as createApiErrorResponse,
-} from '@/lib/api/error-handler'
+import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
 import { debug, error } from '@/lib/logger'
 import { getHost } from '@/lib/utils'
 

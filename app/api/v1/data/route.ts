@@ -92,56 +92,56 @@ const ROUTE_CONTEXT = { route: '/api/v1/data' }
  * Handle GET requests for data fetching (for backward compatibility with client-side fetch)
  * Accepts query and parameters via URL query string
  */
-export const GET = withApiHandler(
-  async (request: Request) => {
-    const url = new URL(request.url)
-    const searchParams = url.searchParams
+export const GET = withApiHandler(async (request: Request) => {
+  const url = new URL(request.url)
+  const searchParams = url.searchParams
 
-    // Parse query parameters from URL
-    const query = searchParams.get('sql') || searchParams.get('query')
-    const format = searchParams.get('format') as DataFormat | null
+  // Parse query parameters from URL
+  const query = searchParams.get('sql') || searchParams.get('query')
+  const format = searchParams.get('format') as DataFormat | null
 
-    // Validate required fields
-    if (!query) {
-      return createValidationError(
-        'Missing required parameter: sql or query',
-        { ...ROUTE_CONTEXT, method: 'GET' }
-      )
-    }
-
-    const hostId = getHostIdFromParams(searchParams, { ...ROUTE_CONTEXT, method: 'GET' })
-
-    debug('[GET /api/v1/data]', { hostId, format: format || 'JSONEachRow' })
-
-    // Execute the query
-    const result = await fetchData({
-      query,
-      format: format || 'JSONEachRow',
-      hostId,
+  // Validate required fields
+  if (!query) {
+    return createValidationError('Missing required parameter: sql or query', {
+      ...ROUTE_CONTEXT,
+      method: 'GET',
     })
+  }
 
-    // Check if there was an error
-    if (result.error) {
-      error('[GET /api/v1/data] Query error:', result.error)
-      return createErrorResponse(
-        {
-          type: result.error.type as ApiErrorType,
-          message: result.error.message,
-          details: result.error.details as Record<
-            string,
-            string | number | boolean
-          >,
-        },
-        mapErrorTypeToStatusCode(result.error.type as ApiErrorType),
-        { ...ROUTE_CONTEXT, method: 'GET', hostId }
-      )
-    }
+  const hostId = getHostIdFromParams(searchParams, {
+    ...ROUTE_CONTEXT,
+    method: 'GET',
+  })
 
-    // Create successful response
-    return createSuccessResponse(result.data, result.metadata)
-  },
-  ROUTE_CONTEXT
-)
+  debug('[GET /api/v1/data]', { hostId, format: format || 'JSONEachRow' })
+
+  // Execute the query
+  const result = await fetchData({
+    query,
+    format: format || 'JSONEachRow',
+    hostId,
+  })
+
+  // Check if there was an error
+  if (result.error) {
+    error('[GET /api/v1/data] Query error:', result.error)
+    return createErrorResponse(
+      {
+        type: result.error.type as ApiErrorType,
+        message: result.error.message,
+        details: result.error.details as Record<
+          string,
+          string | number | boolean
+        >,
+      },
+      mapErrorTypeToStatusCode(result.error.type as ApiErrorType),
+      { ...ROUTE_CONTEXT, method: 'GET', hostId }
+    )
+  }
+
+  // Create successful response
+  return createSuccessResponse(result.data, result.metadata)
+}, ROUTE_CONTEXT)
 
 /**
  * Handle POST requests for data fetching
@@ -150,85 +150,92 @@ export const GET = withApiHandler(
  * SECURITY: When queryConfig is not provided, validates that the query
  * exists in the dashboard tables to prevent arbitrary SQL execution.
  */
-export const POST = withApiHandler(
-  async (request: Request) => {
-    // Parse request body
-    const body = (await request.json()) as Partial<ApiRequest>
+export const POST = withApiHandler(async (request: Request) => {
+  // Parse request body
+  const body = (await request.json()) as Partial<ApiRequest>
 
-    // Validate required fields
-    const validationError = validateApiRequest(body)
-    if (validationError) {
-      return createErrorResponse(
-        validationError,
-        400,
-        { ...ROUTE_CONTEXT, method: 'POST' }
-      )
-    }
-
-    const typedBody = body as ApiRequest
-    const {
-      query,
-      queryParams,
-      hostId,
-      format = 'JSONEachRow',
-      queryConfig,
-    } = typedBody
-
-    debug('[POST /api/v1/data]', { hostId, format, queryConfig: queryConfig?.name })
-
-    // SECURITY: If no queryConfig provided, validate the query exists in dashboard tables
-    // This prevents arbitrary SQL execution from clients
-    if (!queryConfig) {
-      const isValidDashboardQuery = await validateDashboardQuery(query, Number(hostId))
-      if (!isValidDashboardQuery) {
-        error('[POST /api/v1/data] Security: Query not found in dashboard tables', {
-          queryPreview: query.substring(0, 100),
-        })
-        return createErrorResponse(
-          {
-            type: ApiErrorType.PermissionError,
-            message: 'Query not found in dashboard tables. Use /api/v1/charts/[name] or /api/v1/tables/[name] for registry-based queries.',
-          },
-          403,
-          { ...ROUTE_CONTEXT, method: 'POST', hostId }
-        )
-      }
-    }
-
-    // Convert format string to DataFormat if needed
-    const dataFormat = (format || 'JSONEachRow') as DataFormat
-
-    // Execute the query
-    const result = await fetchData({
-      query,
-      query_params: queryParams,
-      format: dataFormat,
-      hostId,
-      queryConfig,
+  // Validate required fields
+  const validationError = validateApiRequest(body)
+  if (validationError) {
+    return createErrorResponse(validationError, 400, {
+      ...ROUTE_CONTEXT,
+      method: 'POST',
     })
+  }
 
-    // Check if there was an error
-    if (result.error) {
-      error('[POST /api/v1/data] Query error:', result.error)
+  const typedBody = body as ApiRequest
+  const {
+    query,
+    queryParams,
+    hostId,
+    format = 'JSONEachRow',
+    queryConfig,
+  } = typedBody
+
+  debug('[POST /api/v1/data]', {
+    hostId,
+    format,
+    queryConfig: queryConfig?.name,
+  })
+
+  // SECURITY: If no queryConfig provided, validate the query exists in dashboard tables
+  // This prevents arbitrary SQL execution from clients
+  if (!queryConfig) {
+    const isValidDashboardQuery = await validateDashboardQuery(
+      query,
+      Number(hostId)
+    )
+    if (!isValidDashboardQuery) {
+      error(
+        '[POST /api/v1/data] Security: Query not found in dashboard tables',
+        {
+          queryPreview: query.substring(0, 100),
+        }
+      )
       return createErrorResponse(
         {
-          type: result.error.type as ApiErrorType,
-          message: result.error.message,
-          details: result.error.details as Record<
-            string,
-            string | number | boolean
-          >,
+          type: ApiErrorType.PermissionError,
+          message:
+            'Query not found in dashboard tables. Use /api/v1/charts/[name] or /api/v1/tables/[name] for registry-based queries.',
         },
-        mapErrorTypeToStatusCode(result.error.type as ApiErrorType),
+        403,
         { ...ROUTE_CONTEXT, method: 'POST', hostId }
       )
     }
+  }
 
-    // Create successful response
-    return createSuccessResponse(result.data, result.metadata)
-  },
-  ROUTE_CONTEXT
-)
+  // Convert format string to DataFormat if needed
+  const dataFormat = (format || 'JSONEachRow') as DataFormat
+
+  // Execute the query
+  const result = await fetchData({
+    query,
+    query_params: queryParams,
+    format: dataFormat,
+    hostId,
+    queryConfig,
+  })
+
+  // Check if there was an error
+  if (result.error) {
+    error('[POST /api/v1/data] Query error:', result.error)
+    return createErrorResponse(
+      {
+        type: result.error.type as ApiErrorType,
+        message: result.error.message,
+        details: result.error.details as Record<
+          string,
+          string | number | boolean
+        >,
+      },
+      mapErrorTypeToStatusCode(result.error.type as ApiErrorType),
+      { ...ROUTE_CONTEXT, method: 'POST', hostId }
+    )
+  }
+
+  // Create successful response
+  return createSuccessResponse(result.data, result.metadata)
+}, ROUTE_CONTEXT)
 
 /**
  * Validate API request body
