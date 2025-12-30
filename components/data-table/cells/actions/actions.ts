@@ -18,7 +18,11 @@ export async function killQuery<TValue>(
   })
 
   if (error) {
-    ErrorLogger.logError(new Error(error.message), { action: 'killQuery', queryId: String(queryId), errorType: error.type })
+    ErrorLogger.logError(new Error(error.message), {
+      action: 'killQuery',
+      queryId: String(queryId),
+      errorType: error.type,
+    })
     return {
       action: 'toast',
       message: `Failed to kill query ${queryId}: ${error.message}`,
@@ -53,7 +57,11 @@ export async function optimizeTable<TValue>(
   })
 
   if (error) {
-    ErrorLogger.logError(new Error(error.message), { action: 'optimizeTable', table: String(table), errorType: error.type })
+    ErrorLogger.logError(new Error(error.message), {
+      action: 'optimizeTable',
+      table: String(table),
+      errorType: error.type,
+    })
     return {
       action: 'toast',
       message: `Failed to optimize table ${table}: ${error.message}`,
@@ -78,7 +86,11 @@ export async function querySettings<TValue>(
   })
 
   if (error) {
-    ErrorLogger.logError(new Error(error.message), { action: 'querySettings', queryId: String(queryId), errorType: error.type })
+    ErrorLogger.logError(new Error(error.message), {
+      action: 'querySettings',
+      queryId: String(queryId),
+      errorType: error.type,
+    })
     return {
       action: 'toast',
       message: `Failed to get query settings ${queryId}: ${error.message}`,

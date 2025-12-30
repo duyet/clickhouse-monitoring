@@ -55,7 +55,10 @@ export const ColumnFilter = memo(function ColumnFilter({
 
   return (
     <div
-      className={cn('flex items-center gap-1.5 w-full max-w-[180px]', className)}
+      className={cn(
+        'flex items-center gap-1.5 w-full max-w-[180px]',
+        className
+      )}
       role="search"
       aria-label={`Filter ${column} column`}
     >
@@ -100,7 +103,6 @@ export const ColumnFilter = memo(function ColumnFilter({
  * ```
  */
 
-
 export interface ColumnFiltersState {
   filteredData: unknown[]
   filters: Record<string, string>
@@ -143,7 +145,9 @@ export function useColumnFilters<T extends Record<string, unknown>>(
 
   // Filter data based on active filters
   const filteredData = useMemo(() => {
-    const activeFilters = Object.entries(filters).filter(([_, value]) => value.length > 0)
+    const activeFilters = Object.entries(filters).filter(
+      ([_, value]) => value.length > 0
+    )
 
     if (activeFilters.length === 0) {
       return data

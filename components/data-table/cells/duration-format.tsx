@@ -16,9 +16,7 @@ export const DurationFormat = memo(function DurationFormat({
       return value
     }
 
-    return dayjs
-      .duration({ seconds })
-      .humanize(seconds < 0) // 2 minutes "ago" for negative values
+    return dayjs.duration({ seconds }).humanize(seconds < 0) // 2 minutes "ago" for negative values
   }, [value])
 
   return <span title={value as string}>{humanized}</span>

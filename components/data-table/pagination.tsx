@@ -44,9 +44,12 @@ export const DataTablePagination = memo(function DataTablePagination({
     table.setPageIndex(table.getPageCount() - 1)
   }, [table])
 
-  const handlePageSizeChange = useCallback((value: string) => {
-    table.setPageSize(Number(value))
-  }, [table])
+  const handlePageSizeChange = useCallback(
+    (value: string) => {
+      table.setPageSize(Number(value))
+    },
+    [table]
+  )
 
   if (table.getRowModel().rows.length === 0) return null
 

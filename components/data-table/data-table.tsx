@@ -256,7 +256,8 @@ export function DataTable<
                 className="text-muted-foreground hover:text-foreground text-xs transition-colors"
                 aria-label={`Clear ${activeFilterCount} active filter${activeFilterCount > 1 ? 's' : ''}`}
               >
-                Clear {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
+                Clear {activeFilterCount} filter
+                {activeFilterCount > 1 ? 's' : ''}
               </button>
             )}
           </div>
@@ -276,17 +277,28 @@ export function DataTable<
         </div>
       </div>
 
-      <div className="mb-5 min-h-0 flex-1 overflow-auto rounded-md border" role="region" aria-label={`${title || 'Data'} table`}>
+      <div
+        className="mb-5 min-h-0 flex-1 overflow-auto rounded-lg border border-border/50 bg-card/30"
+        role="region"
+        aria-label={`${title || 'Data'} table`}
+      >
         <Table aria-describedby="table-description">
           <caption id="table-description" className="sr-only">
             {description || queryConfig.description || `${title} data table`}
           </caption>
-          <TableHeader>
+          <TableHeader className="bg-muted/30">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow
+                key={headerGroup.id}
+                className="border-border/50 hover:bg-transparent"
+              >
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} scope="col">
+                    <TableHead
+                      key={header.id}
+                      scope="col"
+                      className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -301,13 +313,17 @@ export function DataTable<
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row, index) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
+                  className={cn(
+                    'border-border/30 transition-colors',
+                    index % 2 === 0 ? 'bg-transparent' : 'bg-muted/20'
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="py-2.5">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -318,10 +334,7 @@ export function DataTable<
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columnDefs.length}
-                  className="h-64 p-4"
-                >
+                <TableCell colSpan={columnDefs.length} className="h-64 p-4">
                   <EmptyState
                     variant="no-data"
                     title="No results"

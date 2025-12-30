@@ -7,7 +7,10 @@ export interface FootnoteProps {
   footnote?: string | React.ReactNode
 }
 
-export const Footnote = memo(function Footnote({ table, footnote }: FootnoteProps) {
+export const Footnote = memo(function Footnote({
+  table,
+  footnote,
+}: FootnoteProps) {
   return (
     <div className="text-muted-foreground flex-1 text-sm">
       {footnote ? (

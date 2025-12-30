@@ -8,7 +8,9 @@ interface RelatedTimeFormatProps {
 const CLICKHOUSE_TZ: string =
   process.env.NEXT_PUBLIC_CLICKHOUSE_TZ || process.env.CLICKHOUSE_TZ || ''
 
-export const RelatedTimeFormat = memo(function RelatedTimeFormat({ value }: RelatedTimeFormatProps) {
+export const RelatedTimeFormat = memo(function RelatedTimeFormat({
+  value,
+}: RelatedTimeFormatProps) {
   // Memoize dayjs computation
   const fromNow = useMemo(() => {
     try {

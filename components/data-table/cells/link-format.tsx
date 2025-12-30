@@ -75,6 +75,8 @@ function LinkFormatComponent<
 }
 
 // Use a simpler memo approach without complex type casting
-export const LinkFormat = memo(LinkFormatComponent) as typeof LinkFormatComponent & {
+export const LinkFormat = memo(
+  LinkFormatComponent
+) as typeof LinkFormatComponent & {
   displayName?: string
 }

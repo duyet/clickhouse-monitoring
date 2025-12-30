@@ -38,9 +38,12 @@ export const CodeToggleFormat = memo(function CodeToggleFormat({
     truncate: truncate_length,
   })
 
-  const handleValueChange = useCallback((accordionValue: string) => {
-    row.toggleExpanded(accordionValue === 'code')
-  }, [row])
+  const handleValueChange = useCallback(
+    (accordionValue: string) => {
+      row.toggleExpanded(accordionValue === 'code')
+    },
+    [row]
+  )
 
   return (
     <Accordion

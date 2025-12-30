@@ -5,7 +5,9 @@ interface ShowSQLButtonProps {
   sql?: string
 }
 
-export const ShowSQLButton = memo(function ShowSQLButton({ sql }: ShowSQLButtonProps) {
+export const ShowSQLButton = memo(function ShowSQLButton({
+  sql,
+}: ShowSQLButtonProps) {
   if (!sql) {
     return null
   }
