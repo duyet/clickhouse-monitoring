@@ -85,7 +85,7 @@ export const tablesOverviewConfig: QueryConfig = {
   columnFormats: {
     table: [
       ColumnFormat.Link,
-      { href: '/[ctx.hostId]/database/[_database]/[_table]' },
+      { href: '/table?host=[ctx.hostId]&database=[_database]&table=[_table]' },
     ],
     engine: ColumnFormat.ColoredBadge,
     readable_total_rows: ColumnFormat.BackgroundBar,

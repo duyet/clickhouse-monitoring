@@ -6,7 +6,7 @@ import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { ChartCard } from '@/components/generic-charts/chart-card'
-import { BarList } from '@/components/tremor/bar-list'
+import { BarList } from '@/components/generic-charts/bar-list'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useChartData } from '@/lib/swr'
 
@@ -14,7 +14,6 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
   title,
   className,
   hostId,
-  ...props
 }: ChartProps) {
   const limit = 7
   const { data, isLoading, error, refresh, sql } = useChartData<{
@@ -74,14 +73,12 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
           <BarList
             data={dataTopBySize}
             formatedColumn="compressed"
-            {...props}
           />
         </TabsContent>
         <TabsContent value="by-count">
           <BarList
             data={dataTopByCount}
             formatedColumn="readable_total_rows"
-            {...props}
           />
         </TabsContent>
       </Tabs>

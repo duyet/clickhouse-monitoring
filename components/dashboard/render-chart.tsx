@@ -4,8 +4,8 @@ import { ChartCard } from '@/components/generic-charts/chart-card'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
 import { GithubHeatmapChart } from '@/components/github-heatmap-chart'
-import { AreaChart } from '@/components/tremor/area'
-import { BarChart } from '@/components/tremor/bar'
+import { AreaChart } from '@/components/generic-charts/area'
+import { BarChart } from '@/components/generic-charts/bar'
 import { useFetchData } from '@/lib/swr'
 
 interface RenderChartProps {
@@ -25,16 +25,16 @@ export const RenderChart = ({
   query,
   params,
   colors = [
-    'indigo-300',
-    'rose-200',
-    '#ffcc33',
-    'green-300',
-    'blue-300',
-    'purple-300',
-    'pink-300',
-    'yellow-300',
-    'red-300',
-    'gray-300',
+    '--chart-1',
+    '--chart-2',
+    '--chart-3',
+    '--chart-4',
+    '--chart-5',
+    '--chart-6',
+    '--chart-7',
+    '--chart-8',
+    '--chart-9',
+    '--chart-10',
   ],
   className,
   chartClassName,
@@ -82,8 +82,9 @@ export const RenderChart = ({
           categories={categories}
           stack
           colors={colors}
-          showGridLines={true}
+          showCartesianGrid={true}
           showYAxis={true}
+          showXAxis={true}
         />
       </ChartCard>
     )
@@ -98,9 +99,9 @@ export const RenderChart = ({
           index="event_time"
           categories={categories}
           stack
-          showGridLines={true}
-          showYAxis={true}
           colors={colors}
+          showYAxis={true}
+          showXAxis={true}
         />
       </ChartCard>
     )

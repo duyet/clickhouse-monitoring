@@ -129,7 +129,7 @@ describe('Host Switching Integration Tests', () => {
     })
 
     it('should handle nested route parameters', async () => {
-      // Mock nested route like /[host]/database/[database]
+      // Mock nested route like /table?host=[host]&database=[database]
       const mockParams = Promise.resolve({
         host: '1',
         database: 'default',

@@ -70,7 +70,7 @@ const SingleItem = memo(function SingleItem({ item }: { item: MenuItem }) {
         data-testid={
           item.href === '/clusters'
             ? 'nav-clusters'
-            : item.href === '/database'
+            : item.href === '/table'
               ? 'nav-databases'
               : undefined
         }
@@ -195,7 +195,7 @@ const ListItem = memo(function ListItem({
           data-testid={
             href === '/clusters'
               ? 'nav-clusters'
-              : href === '/database'
+              : href === '/table'
                 ? 'nav-databases'
                 : undefined
           }

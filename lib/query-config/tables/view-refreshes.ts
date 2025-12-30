@@ -31,7 +31,7 @@ export const viewRefreshesConfig: QueryConfig = {
     database: ColumnFormat.Text,
     view: [
       ColumnFormat.Link,
-      { href: '/[ctx.hostId]/database/[database]/[view]' },
+      { href: '/table?host=[ctx.hostId]&database=[database]&view=[view]' },
     ],
     status: ColumnFormat.ColoredBadge,
     total_rows: ColumnFormat.Number,

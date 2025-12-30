@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 const navigation = [
   { name: 'Overview', href: '/overview', icon: Activity },
   { name: 'Queries', href: '/running-queries', icon: Search },
-  { name: 'Database', href: '/database', icon: Database },
+  { name: 'Database', href: '/table', icon: Database },
   { name: 'Settings', href: '/settings', icon: RefreshCw },
 ]
 

@@ -5,7 +5,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/charts/chart-skeleton'
-import { DonutChart } from '@/components/tremor/donut'
+import { DonutChart } from '@/components/generic-charts/donut'
 import { useChartData } from '@/lib/swr'
 
 export const ChartQueryType = memo(function ChartQueryType({
@@ -14,6 +14,7 @@ export const ChartQueryType = memo(function ChartQueryType({
   chartClassName,
   lastHours = 24,
   hostId,
+  showLegend,
   ...props
 }: ChartProps) {
   const { data, isLoading, error, refresh } = useChartData<{
@@ -49,7 +50,8 @@ export const ChartQueryType = memo(function ChartQueryType({
       index="type"
       categories={['query_count']}
       readable="quantity"
-      {...props}
+      showLegend={showLegend}
+      className={chartClassName}
     />
   )
 })

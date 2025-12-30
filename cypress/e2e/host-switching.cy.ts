@@ -83,9 +83,9 @@ describe('Host Switching E2E Tests (Query Parameter Routing)', () => {
     cy.url().should('include', 'host=1')
     cy.url().should('include', '/dashboard')
 
-    cy.visit('/database?host=1')
+    cy.visit('/table?host=1')
     cy.url().should('include', 'host=1')
-    cy.url().should('include', '/database')
+    cy.url().should('include', '/table')
 
     cy.visit('/running-queries?host=1')
     cy.url().should('include', 'host=1')
@@ -122,7 +122,7 @@ describe('Critical User Flows', () => {
     const pages = [
       '/overview',
       '/dashboard',
-      '/database',
+      '/table',
       '/tables',
       '/clusters',
       '/running-queries',

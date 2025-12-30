@@ -45,7 +45,7 @@ export const menuItemsConfig: MenuItem[] = [
     items: [
       {
         title: 'Tables Explorer',
-        href: '/database',
+        href: '/table',
         countKey: 'tables-explorer',
         description: 'List of databases, tables and their details',
         icon: TableIcon,

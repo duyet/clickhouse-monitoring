@@ -1,8 +1,8 @@
 'use client'
 
-import { AlertCircleIcon, RefreshCwIcon } from 'lucide-react'
+import { RefreshCwIcon } from 'lucide-react'
+import { useMemo } from 'react'
 
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -11,6 +11,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
+import { ApiErrorType, type ApiError } from '@/lib/api/types'
 import { cn } from '@/lib/utils'
 
 export interface MetricCardProps<TData = unknown> {

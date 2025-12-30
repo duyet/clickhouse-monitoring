@@ -130,7 +130,7 @@ export const tablesListConfig: QueryConfig = {
     table: [
       ColumnFormat.Link,
       {
-        href: `/database/[ctx.database]/[table]`,
+        href: `/table?host=[ctx.hostId]&database=[ctx.database]&table=[table]`,
         className: 'truncate max-w-48',
       },
     ],

@@ -435,7 +435,7 @@ interface SidebarMenuButtonProps
   asChild?: boolean
   isActive?: boolean
   tooltip?: string | React.ComponentProps<typeof TooltipContent>
-  size?: "sm" | "default"
+  size?: "sm" | "default" | "lg"
 }
 
 const SidebarMenuButton = React.forwardRef<
@@ -467,6 +467,8 @@ const SidebarMenuButton = React.forwardRef<
             "bg-sidebar-accent text-sidebar-accent-foreground font-semibold",
           size === "sm" && "text-xs py-1",
           size === "default" && "text-sm",
+          size === "lg" &&
+            "h-12 text-sm group-data-[collapsible=icon]/sidebar:!p-0",
           className
         )}
         {...props}
