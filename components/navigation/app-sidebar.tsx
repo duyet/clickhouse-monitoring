@@ -1,6 +1,6 @@
 'use client'
 
-import { Github, Info, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import type { HostInfo } from '@/app/api/v1/hosts/route'
 import { HostSwitcher } from '@/components/host/host-switcher'
 import { NavMain } from '@/components/navigation/nav-main'
@@ -14,8 +14,6 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { menuItemsConfig } from '@/menu'
-
-const GITHUB_REPO = 'https://github.com/duyet/clickhouse-monitoring'
 
 interface AppSidebarProps {
   hosts: Array<Omit<HostInfo, 'user'>>
@@ -44,17 +42,6 @@ export function AppSidebar({ hosts, currentHostId }: AppSidebarProps) {
               title: 'Settings',
               url: '/settings',
               icon: Settings,
-            },
-            {
-              title: 'About',
-              url: '/about',
-              icon: Info,
-            },
-            {
-              title: 'GitHub',
-              url: GITHUB_REPO,
-              icon: Github,
-              external: true,
             },
           ]}
         />
