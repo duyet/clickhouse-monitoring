@@ -71,7 +71,7 @@ export const runningQueriesConfig: QueryConfig = {
     query_detail: [
       ColumnFormat.Link,
       {
-        href: '/[ctx.hostId]/query/[query_id]',
+        href: '/query?query_id=[query_id]&host=[ctx.hostId]',
         className: 'truncate max-w-48 text-wrap',
         title: 'Query Detail',
       },

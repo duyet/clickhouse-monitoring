@@ -82,14 +82,16 @@ const DynamicChart = memo(function DynamicChart({
   }
 
   return (
-    <FadeIn duration={250}>
-      <ChartComponent
-        className="w-full p-0 shadow-none"
-        chartClassName="h-32 sm:h-36"
-        hostId={hostId}
-        {...chartProps}
-      />
-    </FadeIn>
+    <div className="flex min-h-[180px] flex-col">
+      <FadeIn duration={250} className="flex flex-1 flex-col">
+        <ChartComponent
+          className="w-full p-0 shadow-none"
+          chartClassName="h-full min-h-[180px]"
+          hostId={hostId}
+          {...chartProps}
+        />
+      </FadeIn>
+    </div>
   )
 })
 
@@ -107,7 +109,7 @@ interface RelatedChartsProps {
 const RelatedCharts = memo(function RelatedCharts({
   relatedCharts,
   hostId,
-  gridClass = 'grid grid-cols-1 gap-5 md:grid-cols-2',
+  gridClass = 'grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
 }: RelatedChartsProps) {
   if (!relatedCharts || relatedCharts.length === 0) {
     return null
@@ -120,7 +122,7 @@ const RelatedCharts = memo(function RelatedCharts({
 
         // Handle break directive
         if (typeof chartConfig === 'string' && chartConfig === 'break') {
-          return <div key={`break-${index}`} className="md:col-span-2" />
+          return <div key={`break-${index}`} className="xl:col-span-4" />
         }
 
         // Extract chart name and props
@@ -131,12 +133,8 @@ const RelatedCharts = memo(function RelatedCharts({
           ? chartConfig[1] || {}
           : {}
 
-        // Calculate column span for responsive layout
-        const isLastChart = index === relatedCharts.length - 1
-        const colSpan = isLastChart && index % 2 === 1 ? 'md:col-span-2' : ''
-
         return (
-          <div key={`${chartName}-${index}`} className={colSpan}>
+          <div key={`${chartName}-${index}`}>
             <Suspense fallback={<ChartSkeleton />}>
               <DynamicChart
                 chartName={chartName}

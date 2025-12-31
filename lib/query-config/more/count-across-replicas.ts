@@ -38,7 +38,7 @@ export const countAcrossReplicasConfig: QueryConfig = {
   columnFormats: {
     table: [
       ColumnFormat.Link,
-      { href: `/[ctx.hostId]/top-usage-columns?table=[table]` },
+      { href: `/top-usage-columns?host=[ctx.hostId]&table=[table]` },
     ],
     count: ColumnFormat.BackgroundBar,
   },
