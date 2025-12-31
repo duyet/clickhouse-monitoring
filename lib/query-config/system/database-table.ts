@@ -122,6 +122,7 @@ export const tablesListConfig: QueryConfig = {
     ORDER BY compressed DESC
   `,
   columns: [
+    'database',
     'table',
     'engine',
     'readable_compressed',
