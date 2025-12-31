@@ -26,6 +26,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { cn, getHost } from '@/lib/utils'
+import { buildUrl } from '@/lib/url/url-builder'
 
 interface HostSwitcherProps {
   hosts: Array<Omit<HostInfo, 'user'>>
@@ -48,9 +49,8 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
   const handleHostChange = useCallback(
     (hostId: number) => {
       if (hostId >= 0 && hostId < hosts.length) {
-        const newParams = new URLSearchParams(searchParams.toString())
-        newParams.set('host', hostId.toString())
-        router.push(`${pathname}?${newParams.toString()}`)
+        const url = buildUrl(pathname, { host: hostId }, searchParams)
+        router.push(url)
       }
     },
     [searchParams, pathname, router, hosts.length]

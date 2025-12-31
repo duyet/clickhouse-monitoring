@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils'
 import type { ArrayElement } from '@/types/generic'
 import type { QueryConfig } from '@/types/query-config'
+import { buildUrl } from '@/lib/url/url-builder'
 
 interface DataTableFacetedFilterProps {
   title?: string
@@ -198,5 +199,5 @@ function getUpdatedHref(
      */
     newParams.set(key, value)
   }
-  return `${pathname}?${newParams.toString()}`
+  return buildUrl(pathname, {}, newParams)
 }

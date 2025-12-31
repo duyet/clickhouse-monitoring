@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { cn, getHost } from '@/lib/utils'
+import { buildUrl } from '@/lib/url/url-builder'
 
 type ClickHouseHostSelectorProps = {
   currentHostId: number
@@ -41,9 +42,8 @@ export function ClickHouseHostSelector({
     (val: string) => {
       const hostId = parseInt(val, 10)
       if (!Number.isNaN(hostId) && hostId >= 0) {
-        const newParams = new URLSearchParams(searchParams.toString())
-        newParams.set('host', hostId.toString())
-        router.push(`${pathname}?${newParams.toString()}`)
+        const url = buildUrl(pathname, { host: hostId }, searchParams)
+        router.push(url)
       }
     },
     [searchParams, pathname, router]
