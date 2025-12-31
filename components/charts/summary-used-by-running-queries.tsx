@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation'
 import { memo, useMemo } from 'react'
 import {
   CardMultiMetrics,
-  type CardMultiMetricsProps,
 } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
@@ -14,6 +13,10 @@ import { ChartError } from '@/components/charts/chart-error'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartSkeleton } from '@/components/skeletons'
 import { formatReadableQuantity } from '@/lib/format-readable'
+import {
+  extractNestedData,
+  transformRunningQueriesSummaryData,
+} from '@/lib/chart-data-transforms'
 import { useChartData } from '@/lib/swr'
 
 export const ChartSummaryUsedByRunningQueries = memo(
@@ -45,81 +48,52 @@ export const ChartSummaryUsedByRunningQueries = memo(
       hostId,
     })
 
-    const items = useMemo(() => {
-      if (!data || data.length === 0) return []
+  const transformedData = useMemo(() => {
+    if (!data || data.length === 0) return null
 
-      const firstItem = data[0] as Record<string, unknown> | undefined
-      if (!firstItem || typeof firstItem !== 'object') return []
+    const summaryData = {
+      main: extractNestedData<{
+        query_count: number
+        memory_usage: number
+        readable_memory_usage: string
+      }>(data, 'main'),
+      totalMem: extractNestedData<{
+        metric: string
+        total: number
+        readable_total: string
+      }>(data, 'totalMem'),
+      todayQueryCount: extractNestedData<{
+        query_count: number
+      }>(data, 'todayQueryCount'),
+      rowsReadWritten: extractNestedData<{
+        rows_read: number
+        rows_written: number
+        readable_rows_read: string
+        readable_rows_written: string
+      }>(data, 'rowsReadWritten'),
+    }
 
-      const main = firstItem.main as
-        | {
-            query_count: number
-            memory_usage: number
-            readable_memory_usage: string
-          }[]
-        | undefined
-      const totalMem = firstItem.totalMem as
-        | { total: number; readable_total: string }[]
-        | undefined
-      const todayQueryCount = firstItem.todayQueryCount as
-        | { query_count: number }[]
-        | undefined
-      const rowsReadWritten = firstItem.rowsReadWritten as
-        | {
-            rows_read: number
-            rows_written: number
-            readable_rows_read: string
-            readable_rows_written: string
-          }[]
-        | undefined
+    const baseResult = transformRunningQueriesSummaryData(summaryData)
+    if (!baseResult) return null
 
-      const first = main?.[0]
-      const totalMemData = totalMem?.[0]
-      const todayQueryCountData =
-        todayQueryCount?.[0]?.query_count ?? first?.query_count ?? 0
-      const rowsData = rowsReadWritten?.[0] || {
-        rows_read: 0,
-        rows_written: 0,
-        readable_rows_read: '0',
-        readable_rows_written: '0',
-      }
+    // Override the today query count with formatted version
+    const todayQueryCount = summaryData.todayQueryCount?.[0]?.query_count
+    const queryCount = summaryData.main?.[0]?.query_count ?? 0
 
-      if (!first || !totalMemData) return []
-
-      const result: CardMultiMetricsProps['items'] = []
-
-      result.push({
-        current: first.memory_usage,
-        target: totalMemData.total,
-        currentReadable: `${first.readable_memory_usage} memory usage`,
-        targetReadable: `${totalMemData.readable_total} total`,
-      })
-
-      result.push({
-        current: first.query_count,
-        target: todayQueryCountData,
-        currentReadable: `${first.query_count} running queries`,
-        targetReadable: `${formatReadableQuantity(todayQueryCountData)} today`,
-      })
-
-      if (rowsData.rows_read < rowsData.rows_written) {
-        result.push({
-          current: rowsData.rows_read,
-          target: rowsData.rows_written,
-          currentReadable: `${rowsData.readable_rows_read} rows read`,
-          targetReadable: `${rowsData.readable_rows_written} rows written`,
-        })
-      } else {
-        result.push({
-          current: rowsData.rows_written,
-          target: rowsData.rows_read,
-          currentReadable: `${rowsData.readable_rows_written} rows written`,
-          targetReadable: `${rowsData.readable_rows_read} rows read`,
-        })
-      }
-
-      return result
-    }, [data])
+    return {
+      ...baseResult,
+      items: baseResult.items.map((item, index) => {
+        // Update the second item (query count comparison) with formatted values
+        if (index === 1) {
+          return {
+            ...item,
+            targetReadable: `${formatReadableQuantity(todayQueryCount ?? queryCount)} today`,
+          }
+        }
+        return item
+      }),
+    }
+  }, [data])
 
     if (isLoading) {
       return <ChartSkeleton title={title} className={className} />
@@ -129,25 +103,12 @@ export const ChartSummaryUsedByRunningQueries = memo(
       return <ChartError error={error} title={title} />
     }
 
-    // Show empty state if no data
-    if (!data || data.length === 0) {
+    // Show empty state if no data or transformation failed
+    if (!data || data.length === 0 || !transformedData) {
       return <ChartEmpty title={title} className={className} />
     }
 
-    const firstItem = data[0] as Record<string, unknown> | undefined
-    if (!firstItem || typeof firstItem !== 'object') {
-      return <ChartEmpty title={title} className={className} />
-    }
-
-    const first = (
-      firstItem.main as
-        | { query_count: number; readable_memory_usage: string }[]
-        | undefined
-    )?.[0]
-
-    if (!first) {
-      return null
-    }
+    const queryCount = (transformedData.raw.used as { query_count?: number })?.query_count ?? 0
 
     return (
       <ChartCard title={title} sql={sql} className={className}>
@@ -155,9 +116,10 @@ export const ChartSummaryUsedByRunningQueries = memo(
           <CardMultiMetrics
             primary={
               <div className="flex flex-col">
-                <div>{first.query_count} queries</div>
+                <div>{queryCount} queries</div>
                 <div className="flex flex-row items-center gap-2">
-                  {first.readable_memory_usage} memory used for running queries
+                  {transformedData.primary.memoryUsage}{' '}
+                  {transformedData.primary.description}
                   <Link
                     href={`/${hostFromPath}/running-queries`}
                     className="inline"
@@ -167,7 +129,7 @@ export const ChartSummaryUsedByRunningQueries = memo(
                 </div>
               </div>
             }
-            items={items}
+            items={transformedData.items}
             className="p-2"
           />
           <div className="text-muted-foreground text-right text-sm"></div>

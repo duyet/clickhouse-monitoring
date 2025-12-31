@@ -5,6 +5,7 @@ import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/charts/primitives/bar'
+import { transformUserEventCounts } from '@/lib/chart-data-transforms'
 import { useChartData } from '@/lib/swr'
 import { chartTickFormatters } from '@/lib/utils'
 
@@ -37,42 +38,19 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
       chartClassName={chartClassName}
     >
       {(dataArray, sql) => {
-        // Single-pass algorithm: collect data and track users simultaneously
-        type DataItem = { event_time: string; user: string; count: number }
-        const userSet = new Set<string>()
-        const data = dataArray.reduce<Record<string, Record<string, number>>>(
-          (acc, cur) => {
-            const { event_time, user, count } = cur as DataItem
-            userSet.add(user)
-            if (acc[event_time] === undefined) {
-              acc[event_time] = {}
-            }
-            const inner = acc[event_time] || {}
-            inner[user] = count
-            acc[event_time] = inner
-            return acc
-          },
-          {}
-        )
-
-        const barData = Object.entries(data).map(([event_time, obj]) => {
-          return { event_time, ...obj }
-        })
-
-        // Convert set to array for categories
-        const users = Array.from(userSet)
+        const { chartData, users } = transformUserEventCounts(dataArray)
 
         return (
           <ChartCard
             title={title}
             className={className}
             sql={sql}
-            data={barData}
+            data={chartData}
             data-testid="query-count-by-user-chart"
           >
             <BarChart
               className={chartClassName}
-              data={barData}
+              data={chartData}
               index="event_time"
               categories={users}
               colors={[

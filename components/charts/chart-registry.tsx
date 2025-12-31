@@ -3,6 +3,15 @@
  *
  * Provides a centralized registry for lazy-loading chart components
  * to eliminate duplicate imports across 30+ page files.
+ *
+ * Charts are organized by category:
+ * - query/      - Query-related charts
+ * - merge/      - Merge operation charts
+ * - system/     - System metrics
+ * - replication/ - Replication charts
+ * - zookeeper/  - ZooKeeper charts
+ * - factory/    - Factory functions for creating charts
+ * - primitives/  - Base chart components
  */
 
 import { type LazyExoticComponent, lazy } from 'react'
@@ -31,12 +40,14 @@ export const CHART_TYPE_HINTS: Record<string, ChartSkeletonType> = {
   'query-type': 'bar',
   'failed-query-count': 'area',
   'failed-query-count-by-user': 'bar',
+  'query-cache': 'metric',
 
   // Merge Charts - area and metric
   'merge-count': 'area',
   'summary-used-by-merges': 'table',
   'merge-avg-duration': 'area',
   'merge-sum-read-rows': 'area',
+  'new-parts-created': 'area',
 
   // Mutation Charts
   'summary-used-by-mutations': 'table',
@@ -50,8 +61,6 @@ export const CHART_TYPE_HINTS: Record<string, ChartSkeletonType> = {
   'backup-size': 'metric',
   'memory-usage': 'area',
   'cpu-usage': 'area',
-  'new-parts-created': 'area',
-  'query-cache': 'metric',
 
   // Replication Charts
   'replication-queue-count': 'area',
@@ -86,134 +95,134 @@ export function getChartSkeletonType(chartName: string): ChartSkeletonType {
 
 // Lazy-loaded chart components
 const chartRegistry: Record<string, LazyExoticComponent<ChartComponent>> = {
-  // Query Charts
+  // Query Charts (components/charts/query/)
   'query-count': lazy(() =>
-    import('@/components/charts/query-count').then((m) => ({
+    import('@/components/charts/query/query-count').then((m) => ({
       default: m.ChartQueryCount,
     }))
   ),
   'query-count-by-user': lazy(() =>
-    import('@/components/charts/query-count-by-user').then((m) => ({
+    import('@/components/charts/query/query-count-by-user').then((m) => ({
       default: m.ChartQueryCountByUser,
     }))
   ),
   'query-duration': lazy(() =>
-    import('@/components/charts/query-duration').then((m) => ({
+    import('@/components/charts/query/query-duration').then((m) => ({
       default: m.ChartQueryDuration,
     }))
   ),
   'query-memory': lazy(() =>
-    import('@/components/charts/query-memory').then((m) => ({
+    import('@/components/charts/query/query-memory').then((m) => ({
       default: m.ChartQueryMemory,
     }))
   ),
   'query-type': lazy(() =>
-    import('@/components/charts/query-type').then((m) => ({
+    import('@/components/charts/query/query-type').then((m) => ({
       default: m.ChartQueryType,
     }))
   ),
   'failed-query-count': lazy(() =>
-    import('@/components/charts/failed-query-count').then((m) => ({
+    import('@/components/charts/query/failed-query-count').then((m) => ({
       default: m.ChartFailedQueryCount,
     }))
   ),
   'failed-query-count-by-user': lazy(() =>
-    import('@/components/charts/failed-query-count-by-user').then((m) => ({
+    import('@/components/charts/query/failed-query-count-by-user').then((m) => ({
       default: m.ChartFailedQueryCountByType,
     }))
   ),
+  'query-cache': lazy(() =>
+    import('@/components/charts/query/query-cache').then((m) => ({
+      default: m.ChartQueryCache,
+    }))
+  ),
 
-  // Merge Charts
+  // Merge Charts (components/charts/merge/)
   'merge-count': lazy(() =>
-    import('@/components/charts/merge-count').then((m) => ({
+    import('@/components/charts/merge/merge-count').then((m) => ({
       default: m.ChartMergeCount,
     }))
   ),
   'summary-used-by-merges': lazy(() =>
-    import('@/components/charts/summary-used-by-merges').then((m) => ({
+    import('@/components/charts/merge/summary-used-by-merges').then((m) => ({
       default: m.default,
     }))
   ),
   'merge-avg-duration': lazy(() =>
-    import('@/components/charts/merge-avg-duration').then((m) => ({
+    import('@/components/charts/merge/merge-avg-duration').then((m) => ({
       default: m.ChartMergeAvgDuration,
     }))
   ),
   'merge-sum-read-rows': lazy(() =>
-    import('@/components/charts/merge-sum-read-rows').then((m) => ({
+    import('@/components/charts/merge/merge-sum-read-rows').then((m) => ({
       default: m.ChartMergeSumReadRows,
     }))
   ),
+  'new-parts-created': lazy(() =>
+    import('@/components/charts/merge/new-parts-created').then((m) => ({
+      default: m.ChartNewPartsCreated,
+    }))
+  ),
 
-  // Mutation Charts
+  // Mutation Charts (root level - not categorized)
   'summary-used-by-mutations': lazy(() =>
     import('@/components/charts/summary-used-by-mutations').then((m) => ({
       default: m.ChartSummaryUsedByMutations,
     }))
   ),
 
-  // Running Queries Charts
+  // Running Queries Charts (root level - not categorized)
   'summary-used-by-running-queries': lazy(() =>
     import('@/components/charts/summary-used-by-running-queries').then((m) => ({
       default: m.default,
     }))
   ),
 
-  // System Charts
+  // System Charts (components/charts/system/)
   'disk-size': lazy(() =>
-    import('@/components/charts/disk-size').then((m) => ({
+    import('@/components/charts/system/disk-size').then((m) => ({
       default: m.ChartDiskSize,
     }))
   ),
   'disks-usage': lazy(() =>
-    import('@/components/charts/disks-usage').then((m) => ({
+    import('@/components/charts/system/disks-usage').then((m) => ({
       default: m.ChartDisksUsage,
     }))
   ),
   'backup-size': lazy(() =>
-    import('@/components/charts/backup-size').then((m) => ({
+    import('@/components/charts/system/backup-size').then((m) => ({
       default: m.ChartBackupSize,
     }))
   ),
   'memory-usage': lazy(() =>
-    import('@/components/charts/memory-usage').then((m) => ({
+    import('@/components/charts/system/memory-usage').then((m) => ({
       default: m.ChartMemoryUsage,
     }))
   ),
   'cpu-usage': lazy(() =>
-    import('@/components/charts/cpu-usage').then((m) => ({
+    import('@/components/charts/system/cpu-usage').then((m) => ({
       default: m.ChartCPUUsage,
     }))
   ),
-  'new-parts-created': lazy(() =>
-    import('@/components/charts/new-parts-created').then((m) => ({
-      default: m.ChartNewPartsCreated,
-    }))
-  ),
-  'query-cache': lazy(() =>
-    import('@/components/charts/query-cache').then((m) => ({
-      default: m.ChartQueryCache,
-    }))
-  ),
 
-  // Replication Charts
+  // Replication Charts (components/charts/replication/)
   'replication-queue-count': lazy(() =>
-    import('@/components/charts/replication-queue-count').then((m) => ({
+    import('@/components/charts/replication/replication-queue-count').then((m) => ({
       default: m.default,
     }))
   ),
   'replication-summary-table': lazy(() =>
-    import('@/components/charts/replication-summary-table').then((m) => ({
+    import('@/components/charts/replication/replication-summary-table').then((m) => ({
       default: m.default,
     }))
   ),
   'readonly-replica': lazy(() =>
-    import('@/components/charts/readonly-replica').then((m) => ({
+    import('@/components/charts/replication/readonly-replica').then((m) => ({
       default: m.ChartReadonlyReplica,
     }))
   ),
 
-  // Connection Charts
+  // Connection Charts (root level - not categorized)
   'connections-interserver': lazy(() =>
     import('@/components/charts/connections-interserver').then((m) => ({
       default: m.ChartConnectionsInterserver,
@@ -225,43 +234,43 @@ const chartRegistry: Record<string, LazyExoticComponent<ChartComponent>> = {
     }))
   ),
 
-  // Table Charts
+  // Table Charts (root level - not categorized)
   'top-table-size': lazy(() =>
     import('@/components/charts/top-table-size').then((m) => ({
       default: m.default,
     }))
   ),
 
-  // Page Views Charts
+  // Page Views Charts (root level - not categorized)
   'page-view': lazy(() =>
     import('@/components/charts/page-view').then((m) => ({
       default: m.PageViewBarChart,
     }))
   ),
 
-  // ZooKeeper Charts
+  // ZooKeeper Charts (components/charts/zookeeper/)
   'zookeeper-summary-table': lazy(() =>
-    import('@/components/charts/zookeeper-summary-table').then((m) => ({
+    import('@/components/charts/zookeeper/zookeeper-summary-table').then((m) => ({
       default: m.default,
     }))
   ),
   'zookeeper-uptime': lazy(() =>
-    import('@/components/charts/zookeeper-uptime').then((m) => ({
+    import('@/components/charts/zookeeper/zookeeper-uptime').then((m) => ({
       default: m.ChartZookeeperUptime,
     }))
   ),
   'zookeeper-requests': lazy(() =>
-    import('@/components/charts/zookeeper-requests').then((m) => ({
+    import('@/components/charts/zookeeper/zookeeper-requests').then((m) => ({
       default: m.default,
     }))
   ),
   'zookeeper-wait': lazy(() =>
-    import('@/components/charts/zookeeper-wait').then((m) => ({
+    import('@/components/charts/zookeeper/zookeeper-wait').then((m) => ({
       default: m.default,
     }))
   ),
   'zookeeper-exception': lazy(() =>
-    import('@/components/charts/zookeeper-exception').then((m) => ({
+    import('@/components/charts/zookeeper/zookeeper-exception').then((m) => ({
       default: m.ChartKeeperException,
     }))
   ),

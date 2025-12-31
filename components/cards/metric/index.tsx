@@ -1,8 +1,6 @@
 'use client'
 
-import {
-  RefreshCwIcon,
-} from 'lucide-react'
+import { memo } from 'react'
 
 import {
   Card,
@@ -11,20 +9,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { EmptyState } from '@/components/ui/empty-state'
 import {
   detectCardErrorVariant,
-  getCardErrorClassName,
-  getCardErrorDescription,
-  getCardErrorTitle,
-  shouldShowRetryButton,
 } from '@/lib/card-error-utils'
 import { cn } from '@/lib/utils'
 
-// Re-export types
+// Re-export types and hooks
 export * from './types'
+export * from './hooks'
 
 import type { MetricTheme } from './types'
+import { useMetricState } from './hooks/use-metric-state'
 
 // ============================================================================
 // Imports
@@ -41,8 +36,12 @@ import {
   renderSubtitleVariant,
   renderTrendVariant,
 } from './variants'
-import { MetricCardSkeleton } from './skeleton'
 import { MetricIcons } from './icons'
+import {
+  MetricCardSkeleton,
+  MetricCardError,
+  MetricCardEmpty,
+} from './states'
 import type { MetricCardProps } from './types'
 
 // Re-export icons for convenience
@@ -88,13 +87,9 @@ export function MetricCard<TData = unknown>({
   // custom render
   children,
 }: MetricCardProps<TData>) {
-  const { data, isLoading, error, mutate } = swr
-
-  const dataArray = Array.isArray(data)
-    ? data
-    : data
-      ? ([data] as TData[])
-      : undefined
+  // Use custom hook for state management
+  const { dataArray, isLoading, error, mutate, isEmpty, shouldShowRetry } =
+    useMetricState<TData>({ swr })
 
   const themeConfig = THEME_CONFIGS[theme]
 
@@ -124,13 +119,13 @@ export function MetricCard<TData = unknown>({
         theme={theme}
         compact={compact}
         className={className}
-        onRetry={mutate && shouldShowRetryButton(error) ? mutate : undefined}
+        onRetry={shouldShowRetry ? mutate : undefined}
       />
     )
   }
 
   // Empty state
-  if (!dataArray || dataArray.length === 0) {
+  if (isEmpty) {
     return (
       <MetricCardEmpty
         title={title}
@@ -143,27 +138,31 @@ export function MetricCard<TData = unknown>({
     )
   }
 
+  // At this point, dataArray is guaranteed to be TData[] (not undefined)
+  // because we've already checked isEmpty which covers the undefined case
+  const data = dataArray as TData[]
+
   // Render content based on variant
   const content = (() => {
     switch (variant) {
       case 'single':
-        return renderSingleVariant({ value, unit, data: dataArray, compact })
+        return renderSingleVariant({ value, unit, data, compact })
       case 'dual':
         return renderDualVariant({
           value1,
           unit1,
           value2,
           unit2,
-          data: dataArray,
+          data,
           compact,
         })
       case 'list':
-        return renderListVariant({ items, data: dataArray, compact })
+        return renderListVariant({ items, data, compact })
       case 'subtitle':
         return renderSubtitleVariant({
           value,
           subtitle,
-          data: dataArray,
+          data,
           compact,
         })
       case 'trend':
@@ -171,18 +170,18 @@ export function MetricCard<TData = unknown>({
           value,
           trend,
           trendLabel,
-          data: dataArray,
+          data,
           compact,
         })
       case 'oversized':
-        return renderOversizedVariant({ value, unit, data: dataArray, compact })
+        return renderOversizedVariant({ value, unit, data, compact })
       case 'split':
         return renderSplitVariant({
           value1,
           label1,
           value2,
           label2,
-          data: dataArray,
+          data,
           compact,
         })
       case 'pulse':
@@ -191,14 +190,14 @@ export function MetricCard<TData = unknown>({
           unit,
           trend,
           trendLabel,
-          data: dataArray,
+          data,
           compact,
           history,
           historyLabel,
           showSparkline,
         })
       default:
-        return children?.(dataArray)
+        return children?.(data)
     }
   })()
 
@@ -241,200 +240,6 @@ export function MetricCard<TData = unknown>({
 }
 
 // ============================================================================
-// Error State Component
-// ============================================================================
-
-interface MetricCardErrorProps {
-  title: string
-  description?: string
-  error: Error
-  icon?: React.ReactNode
-  theme: MetricTheme
-  compact: boolean
-  className?: string
-  onRetry?: () => void
-}
-
-function MetricCardError({
-  title,
-  description,
-  error,
-  icon,
-  theme,
-  compact,
-  className,
-  onRetry,
-}: MetricCardErrorProps) {
-  const themeConfig = THEME_CONFIGS[theme]
-  const errorVariant = detectCardErrorVariant(error)
-  const errorDescription = getCardErrorDescription(error, errorVariant, compact)
-  const errorTitle = getCardErrorTitle(errorVariant)
-  const errorClassName = getCardErrorClassName(errorVariant)
-
-  return (
-    <Card
-      className={cn(
-        'relative overflow-hidden rounded-xl border',
-        'bg-card',
-        errorClassName,
-        className
-      )}
-      role="alert"
-      aria-label={`Error loading ${title}`}
-    >
-      <CardHeader
-        className={cn(
-          'px-2.5 sm:px-3',
-          compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
-        )}
-      >
-        <div className="flex items-start justify-between gap-1.5">
-          <div className="flex items-center gap-1.5">
-            {icon && (
-              <div className={cn('shrink-0', themeConfig.iconColor)}>
-                {icon}
-              </div>
-            )}
-            <div>
-              <CardTitle
-                className={cn(
-                  'font-semibold tracking-tight',
-                  compact ? 'text-xs' : 'text-sm'
-                )}
-              >
-                {title}
-              </CardTitle>
-              {description && (
-                <CardDescription
-                  className={cn(
-                    'text-muted-foreground',
-                    compact ? 'text-[10px]' : 'text-xs'
-                  )}
-                >
-                  {description}
-                </CardDescription>
-              )}
-            </div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent
-        className={cn(
-          'px-2.5 pt-0 sm:px-3',
-          compact ? 'pb-1' : 'pb-3 sm:px-4'
-        )}
-      >
-        <EmptyState
-          variant={errorVariant}
-          title={errorTitle}
-          description={errorDescription}
-          compact
-          action={
-            onRetry
-              ? {
-                  label: 'Retry',
-                  onClick: onRetry,
-                  icon: (
-                    <RefreshCwIcon
-                      className={cn('mr-1', compact ? 'size-2.5' : 'size-3.5')}
-                    />
-                  ),
-                }
-              : undefined
-          }
-        />
-      </CardContent>
-    </Card>
-  )
-}
-
-// ============================================================================
-// Empty State Component
-// ============================================================================
-
-interface MetricCardEmptyProps {
-  title: string
-  description?: string
-  icon?: React.ReactNode
-  theme: MetricTheme
-  compact: boolean
-  className?: string
-}
-
-function MetricCardEmpty({
-  title,
-  description,
-  icon,
-  theme,
-  compact,
-  className,
-}: MetricCardEmptyProps) {
-  const themeConfig = THEME_CONFIGS[theme]
-
-  return (
-    <Card
-      className={cn(
-        'relative overflow-hidden rounded-xl border border-border/40',
-        'bg-card',
-        className
-      )}
-    >
-      {/* Theme gradient background */}
-      <div
-        className={cn(
-          'absolute inset-0 -z-10 bg-gradient-to-br',
-          themeConfig.gradient
-        )}
-      />
-
-      <CardHeader
-        className={cn('px-2.5 sm:px-3', compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5')}
-      >
-        <div className="flex items-center gap-1.5">
-          {icon && (
-            <div className={cn('shrink-0 opacity-50', themeConfig.iconColor)}>
-              {icon}
-            </div>
-          )}
-          <div>
-            <CardTitle
-              className={cn(
-                'font-semibold tracking-tight',
-                compact ? 'text-xs' : 'text-sm'
-              )}
-            >
-              {title}
-            </CardTitle>
-            {description && (
-              <CardDescription
-                className={cn(
-                  'text-muted-foreground',
-                  compact ? 'text-[10px]' : 'text-xs'
-                )}
-              >
-                {description}
-              </CardDescription>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent
-        className={cn('px-2.5 pt-0 sm:px-3', compact ? 'pb-1' : 'pb-1.5')}
-      >
-        <div
-          className={cn(
-            'font-bold tabular-nums text-muted-foreground/30',
-            compact ? 'text-lg' : 'text-2xl'
-          )}
-        >
-          -
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-// ============================================================================
 // Card Header Component
 // ============================================================================
 
@@ -448,7 +253,7 @@ interface MetricCardHeaderProps {
   viewAllLabel?: string
 }
 
-function MetricCardHeader({
+const MetricCardHeader = memo(function MetricCardHeader({
   title,
   description,
   icon,
@@ -513,4 +318,4 @@ function MetricCardHeader({
       </div>
     </CardHeader>
   )
-}
+})

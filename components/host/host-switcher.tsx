@@ -18,15 +18,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { useHostStatus } from '@/lib/swr/use-host-status'
 import { buildUrl } from '@/lib/url/url-builder'
-import { cn, getHost } from '@/lib/utils'
+import { getHost } from '@/lib/utils'
+import { StatusIndicator } from './shared'
 
 interface HostSwitcherProps {
   hosts: Array<Omit<HostInfo, 'user'>>
@@ -174,41 +169,3 @@ function HostVersionWithStatus({ hostId }: { hostId: number }) {
   )
 }
 
-const StatusIndicator = memo(function StatusIndicator({
-  title,
-  className,
-}: {
-  title: string[]
-  className?: string
-}) {
-  const isOnline = className !== undefined
-  const statusText = isOnline ? 'Online' : 'Offline'
-
-  return (
-    <TooltipProvider delayDuration={0}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            className="relative flex size-2 cursor-pointer"
-            role="status"
-            aria-label={statusText}
-          >
-            <span
-              className={cn(
-                'absolute inline-flex size-full rounded-full',
-                !className && 'bg-red-400',
-                className
-              )}
-              aria-hidden="true"
-            />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">
-          {title.map((t, i) => (
-            <p key={i}>{t}</p>
-          ))}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )
-})

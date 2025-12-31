@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -10,17 +9,13 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { Loader2Icon } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 
 import { DataTablePagination } from '@/components/data-table/pagination'
-import { EmptyState } from '@/components/ui/empty-state'
 import {
   Table,
   TableBody,
-  TableCell,
-  TableHead,
   TableHeader,
-  TableRow,
 } from '@/components/ui/table'
 import { withQueryParams } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
@@ -38,6 +33,10 @@ import {
   useVirtualRows,
 } from './hooks'
 import { getCustomSortingFns } from './sorting-fns'
+import {
+  TableBody as TableBodyRenderer,
+  TableHeader as TableHeaderRenderer,
+} from './renderers'
 
 /**
  * Props for the DataTable component
@@ -127,6 +126,7 @@ export function DataTable<
 }: DataTableProps<TData>) {
   // Support both old and new prop names for backward compatibility
   const queryParams = apiParams ?? deprecatedQueryParams
+
   // Determine which columns should be filterable (memoized)
   const configuredColumns = useMemo(
     () =>
@@ -215,168 +215,197 @@ export function DataTable<
 
   return (
     <div className={cn('flex flex-col', className)}>
-      <div className="flex shrink-0 flex-row items-start justify-between pb-2">
-        <div>
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-2">
-              <h1 className="text-muted-foreground flex-none text-xl">
-                {title}
-              </h1>
-              {isRefreshing && (
-                <Loader2Icon
-                  className="text-muted-foreground size-4 animate-spin"
-                  aria-label="Loading data"
-                />
-              )}
-            </div>
-            <DataTableToolbar queryConfig={queryConfig}>
-              {toolbarExtras}
-            </DataTableToolbar>
-            {enableColumnFilters && activeFilterCount > 0 && (
-              <button
-                onClick={clearAllColumnFilters}
-                className="text-muted-foreground hover:text-foreground text-xs transition-colors"
-                aria-label={`Clear ${activeFilterCount} active filter${activeFilterCount > 1 ? 's' : ''}`}
-              >
-                Clear {activeFilterCount} filter
-                {activeFilterCount > 1 ? 's' : ''}
-              </button>
-            )}
-          </div>
-          <p className="text-muted-foreground text-sm">
-            {description || queryConfig.description}
-          </p>
-        </div>
+      <DataTableHeader
+        title={title}
+        description={description}
+        queryConfig={queryConfig}
+        toolbarExtras={toolbarExtras}
+        topRightToolbarExtras={topRightToolbarExtras}
+        showSQL={showSQL}
+        table={table}
+        queryParams={queryParams}
+        isRefreshing={isRefreshing}
+        enableColumnFilters={enableColumnFilters}
+        activeFilterCount={activeFilterCount}
+        clearAllColumnFilters={clearAllColumnFilters}
+      />
 
-        <div className="flex items-center gap-3">
-          {topRightToolbarExtras}
-          {showSQL && (
-            <ShowSQLButton
-              sql={withQueryParams(queryConfig.sql, queryParams?.params)}
-            />
-          )}
-          <ColumnVisibilityButton table={table} />
-        </div>
-      </div>
+      <DataTableContent
+        title={title}
+        description={description}
+        queryConfig={queryConfig}
+        table={table}
+        columnDefs={columnDefs}
+        tableContainerRef={tableContainerRef}
+        isVirtualized={isVirtualized}
+        virtualizer={virtualizer}
+        activeFilterCount={activeFilterCount}
+      />
 
-      <div
-        ref={tableContainerRef}
-        className="mb-5 min-h-0 flex-1 overflow-auto rounded-lg border border-border/50 bg-card/30"
-        role="region"
-        aria-label={`${title || 'Data'} table`}
-        style={isVirtualized ? { height: '600px' } : undefined}
-      >
-        <Table aria-describedby="table-description">
-          <caption id="table-description" className="sr-only">
-            {description || queryConfig.description || `${title} data table`}
-          </caption>
-          <TableHeader className="bg-muted/50">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow
-                key={headerGroup.id}
-                className="border-b border-border hover:bg-transparent"
-              >
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      scope="col"
-                      className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              (() => {
-                if (isVirtualized && virtualizer) {
-                  // Virtualized rendering for large datasets
-                  const virtualRows = virtualizer.getVirtualItems()
-                  return virtualRows.map((virtualRow) => {
-                    const row = table.getRowModel().rows[virtualRow.index]
-                    return (
-                      <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && 'selected'}
-                        data-index={virtualRow.index}
-                        className={cn(
-                          'border-b border-border/50 transition-colors hover:bg-muted/50',
-                          virtualRow.index % 2 === 1 && 'odd:bg-muted/30'
-                        )}
-                        style={{
-                          height: `${virtualRow.size}px`,
-                          transform: `translateY(${virtualRow.start}px)`,
-                        }}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell
-                            key={cell.id}
-                            className="px-4 py-3 text-sm"
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    )
-                  })
-                }
-
-                // Standard rendering for smaller datasets
-                return table.getRowModel().rows.map((row, index) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                    className={cn(
-                      'border-b border-border/50 transition-colors hover:bg-muted/50',
-                      index % 2 === 1 && 'odd:bg-muted/30'
-                    )}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="px-4 py-3 text-sm">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              })()
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columnDefs.length} className="h-64 p-4">
-                  <EmptyState
-                    variant="no-data"
-                    title="No results"
-                    description={
-                      activeFilterCount > 0
-                        ? `No ${title?.toLowerCase() || 'data'} match your filters. Try clearing filters or adjusting your search.`
-                        : `No ${title?.toLowerCase() || 'data'} found. Try adjusting your query or check back later.`
-                    }
-                  />
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="flex shrink-0 items-center justify-between px-2">
-        <Footnote table={table} footnote={footnote} />
-        <DataTablePagination table={table} />
-      </div>
+      <DataTableFooter
+        table={table}
+        footnote={footnote}
+      />
     </div>
   )
 }
+
+// ============================================================================
+// Table Header Component
+// ============================================================================
+
+interface DataTableHeaderProps<TData extends RowData> {
+  title: string
+  description: string | React.ReactNode
+  queryConfig: QueryConfig
+  toolbarExtras?: React.ReactNode
+  topRightToolbarExtras?: React.ReactNode
+  showSQL: boolean
+  table: import('@tanstack/react-table').Table<TData>
+  queryParams?: ChartQueryParams
+  isRefreshing: boolean
+  enableColumnFilters: boolean
+  activeFilterCount: number
+  clearAllColumnFilters: () => void
+}
+
+const DataTableHeader = memo(function DataTableHeader<TData extends RowData>({
+  title,
+  description,
+  queryConfig,
+  toolbarExtras,
+  topRightToolbarExtras,
+  showSQL,
+  table,
+  queryParams,
+  isRefreshing,
+  enableColumnFilters,
+  activeFilterCount,
+  clearAllColumnFilters,
+}: DataTableHeaderProps<TData>) {
+  return (
+    <div className="flex shrink-0 flex-row items-start justify-between pb-2">
+      <div>
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
+            <h1 className="text-muted-foreground flex-none text-xl">
+              {title}
+            </h1>
+            {isRefreshing && (
+              <Loader2Icon
+                className="text-muted-foreground size-4 animate-spin"
+                aria-label="Loading data"
+              />
+            )}
+          </div>
+          <DataTableToolbar queryConfig={queryConfig}>
+            {toolbarExtras}
+          </DataTableToolbar>
+          {enableColumnFilters && activeFilterCount > 0 && (
+            <button
+              onClick={clearAllColumnFilters}
+              className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+              aria-label={`Clear ${activeFilterCount} active filter${activeFilterCount > 1 ? 's' : ''}`}
+            >
+              Clear {activeFilterCount} filter
+              {activeFilterCount > 1 ? 's' : ''}
+            </button>
+          )}
+        </div>
+        <p className="text-muted-foreground text-sm">
+          {description || queryConfig.description}
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3">
+        {topRightToolbarExtras}
+        {showSQL && (
+          <ShowSQLButton
+            sql={withQueryParams(queryConfig.sql, queryParams?.params)}
+          />
+        )}
+        <ColumnVisibilityButton table={table} />
+      </div>
+    </div>
+  )
+}) as <TData extends RowData>(props: DataTableHeaderProps<TData>) => JSX.Element
+
+// ============================================================================
+// Table Content Component
+// ============================================================================
+
+interface DataTableContentProps<TData extends RowData, TValue extends React.ReactNode> {
+  title: string
+  description: string | React.ReactNode
+  queryConfig: QueryConfig
+  table: any
+  columnDefs: any[]
+  tableContainerRef: React.RefObject<HTMLDivElement>
+  isVirtualized: boolean
+  virtualizer: ReturnType<typeof useVirtualRows>['virtualizer']
+  activeFilterCount: number
+}
+
+const DataTableContent = memo(function DataTableContent<
+  TData extends RowData,
+  TValue extends React.ReactNode
+>({
+  title,
+  description,
+  queryConfig,
+  table,
+  columnDefs,
+  tableContainerRef,
+  isVirtualized,
+  virtualizer,
+  activeFilterCount,
+}: DataTableContentProps<TData, TValue>) {
+  return (
+    <div
+      ref={tableContainerRef}
+      className="mb-5 min-h-0 flex-1 overflow-auto rounded-lg border border-border/50 bg-card/30"
+      role="region"
+      aria-label={`${title || 'Data'} table`}
+      style={isVirtualized ? { height: '600px' } : undefined}
+    >
+      <Table aria-describedby="table-description">
+        <caption id="table-description" className="sr-only">
+          {description || queryConfig.description || `${title} data table`}
+        </caption>
+        <TableHeader className="bg-muted/50">
+          <TableHeaderRenderer headerGroups={table.getHeaderGroups()} />
+        </TableHeader>
+        <TableBody>
+          <TableBodyRenderer
+            table={table}
+            columnDefs={columnDefs}
+            isVirtualized={isVirtualized}
+            virtualizer={virtualizer}
+            title={title}
+            activeFilterCount={activeFilterCount}
+          />
+        </TableBody>
+      </Table>
+    </div>
+  )
+}) as <TData extends RowData, TValue extends React.ReactNode>(
+  props: DataTableContentProps<TData, TValue>
+) => JSX.Element
+
+// ============================================================================
+// Table Footer Component
+// ============================================================================
+
+interface DataTableFooterProps<TData extends RowData> {
+  table: import('@tanstack/react-table').Table<TData>
+  footnote?: FootnoteProps['footnote']
+}
+
+const DataTableFooter = memo(function DataTableFooter<TData extends RowData>({ table, footnote }: DataTableFooterProps<TData>) {
+  return (
+    <div className="flex shrink-0 items-center justify-between px-2">
+      <Footnote table={table} footnote={footnote} />
+      <DataTablePagination table={table} />
+    </div>
+  )
+}) as <TData extends RowData>(props: DataTableFooterProps<TData>) => JSX.Element
