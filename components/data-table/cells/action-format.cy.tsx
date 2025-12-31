@@ -119,7 +119,12 @@ describe('<ActionFormat />', () => {
   })
 
   it('passes through all ActionMenuProps', () => {
-    const actions = ['kill-query', 'explain-query', 'optimize', 'query-settings']
+    const actions = [
+      'kill-query',
+      'explain-query',
+      'optimize',
+      'query-settings',
+    ]
 
     cy.mount(
       <ActionFormat

@@ -1,9 +1,7 @@
 'use client'
 
 import { memo } from 'react'
-import {
-  RefreshCwIcon,
-} from 'lucide-react'
+import { RefreshCwIcon } from 'lucide-react'
 
 import {
   Card,
@@ -121,10 +119,7 @@ export const MetricCardError = memo(function MetricCardError({
         </div>
       </CardHeader>
       <CardContent
-        className={cn(
-          'px-2.5 pt-0 sm:px-3',
-          compact ? 'pb-1' : 'pb-3 sm:px-4'
-        )}
+        className={cn('px-2.5 pt-0 sm:px-3', compact ? 'pb-1' : 'pb-3 sm:px-4')}
       >
         <EmptyState
           variant={errorVariant}

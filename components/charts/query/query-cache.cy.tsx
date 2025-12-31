@@ -21,7 +21,9 @@ describe('<ChartQueryCache />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartQueryCache {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartQueryCache {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

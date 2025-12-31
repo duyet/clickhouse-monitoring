@@ -5,11 +5,21 @@
  * Handles formatting, sorting, filtering, and cell rendering.
  */
 
-import type { Column, ColumnDef, Row, RowData, Table } from '@tanstack/react-table'
+import type {
+  Column,
+  ColumnDef,
+  Row,
+  RowData,
+  Table,
+} from '@tanstack/react-table'
 import { ColumnHeader } from './components/column-header'
 import { ColumnCell } from './components/column-cell'
 import { assignSortingFn } from './sorting'
-import { isColumnFilterable, normalizeColumnName, parseColumnFormat } from './utils'
+import {
+  isColumnFilterable,
+  normalizeColumnName,
+  parseColumnFormat,
+} from './utils'
 import { getCustomSortingFns } from '../sorting-fns'
 import type { ColumnFilterContext, GetColumnDefsOptions } from './types'
 import type { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
@@ -59,14 +69,16 @@ export function getColumnDefs<
 
   return configColumns.map((column) => {
     const name = normalizeColumnName(column)
-    const { format: columnFormat, options: columnFormatOptions } = parseColumnFormat(
-      column,
-      config.columnFormats || {}
-    )
+    const { format: columnFormat, options: columnFormatOptions } =
+      parseColumnFormat(column, config.columnFormats || {})
     const sortingFnName = config.sortingFns?.[name]
 
     // Check if this column should have a filter
-    const isFilterable = isColumnFilterable(name, enableColumnFilters, filterableColumns)
+    const isFilterable = isColumnFilterable(
+      name,
+      enableColumnFilters,
+      filterableColumns
+    )
 
     // Create the column definition
     const columnDef: ColumnDef<TData, TValue> = {

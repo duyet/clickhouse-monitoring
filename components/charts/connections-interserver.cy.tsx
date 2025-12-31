@@ -21,13 +21,20 @@ describe('<ChartConnectionsInterserver />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartConnectionsInterserver {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartConnectionsInterserver
+        {...defaultProps}
+        className="custom-test-class"
+      />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })
 
   it('works with different hostId values', () => {
-    cy.mount(<ChartConnectionsInterserver hostId={1} title="Host 1 Interserver" />)
+    cy.mount(
+      <ChartConnectionsInterserver hostId={1} title="Host 1 Interserver" />
+    )
 
     cy.contains('Host 1 Interserver').should('exist')
   })

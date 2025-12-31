@@ -18,19 +18,13 @@ import { ApiErrorType } from '@/lib/api/types'
 
 describe('card-error-utils', () => {
   // Helper to create ApiError
-  const createApiError = (
-    type: ApiErrorType,
-    message: string
-  ): CardError => ({
+  const createApiError = (type: ApiErrorType, message: string): CardError => ({
     type,
     message,
   })
 
   // Helper to create FetchDataError
-  const createFetchError = (
-    type: string,
-    message: string
-  ): CardError => ({
+  const createFetchError = (type: string, message: string): CardError => ({
     type,
     message,
   })
@@ -49,10 +43,7 @@ describe('card-error-utils', () => {
       })
 
       it('should detect network_error from ApiErrorType', () => {
-        const error = createApiError(
-          ApiErrorType.NetworkError,
-          'Network error'
-        )
+        const error = createApiError(ApiErrorType.NetworkError, 'Network error')
         expect(detectCardErrorVariant(error)).toBe('offline')
       })
 
@@ -73,10 +64,7 @@ describe('card-error-utils', () => {
       })
 
       it('should detect query_error', () => {
-        const error = createApiError(
-          ApiErrorType.QueryError,
-          'Query failed'
-        )
+        const error = createApiError(ApiErrorType.QueryError, 'Query failed')
         expect(detectCardErrorVariant(error)).toBe('error')
       })
     })
@@ -184,9 +172,9 @@ describe('card-error-utils', () => {
         })
 
         it('should detect "table_not_found"', () => {
-          expect(
-            detectCardErrorVariant(createError('table_not_found'))
-          ).toBe('table-missing')
+          expect(detectCardErrorVariant(createError('table_not_found'))).toBe(
+            'table-missing'
+          )
         })
       })
     })
@@ -370,7 +358,9 @@ describe('card-error-utils', () => {
     it('should return true for offline errors', () => {
       expect(isCardErrorRetryable(createError('Network error'))).toBe(true)
       expect(
-        isCardErrorRetryable(createApiError(ApiErrorType.NetworkError, 'offline'))
+        isCardErrorRetryable(
+          createApiError(ApiErrorType.NetworkError, 'offline')
+        )
       ).toBe(true)
     })
 
@@ -379,9 +369,7 @@ describe('card-error-utils', () => {
     })
 
     it('should return false for table-missing errors', () => {
-      expect(
-        isCardErrorRetryable(createError('Table not found'))
-      ).toBe(false)
+      expect(isCardErrorRetryable(createError('Table not found'))).toBe(false)
       expect(
         isCardErrorRetryable(
           createApiError(ApiErrorType.TableNotFound, 'Missing table')
@@ -390,9 +378,7 @@ describe('card-error-utils', () => {
     })
 
     it('should return false for permission errors', () => {
-      expect(
-        isCardErrorRetryable(createError('Permission denied'))
-      ).toBe(false)
+      expect(isCardErrorRetryable(createError('Permission denied'))).toBe(false)
     })
 
     it('should return false for generic errors', () => {

@@ -19,7 +19,18 @@ export interface HSLColor {
  * Valid shade numbers in Tailwind color scale.
  * Each color has 11 shades: 200, 250, 300, ..., 700.
  */
-export type ShadeNumber = 200 | 250 | 300 | 350 | 400 | 450 | 500 | 550 | 600 | 650 | 700
+export type ShadeNumber =
+  | 200
+  | 250
+  | 300
+  | 350
+  | 400
+  | 450
+  | 500
+  | 550
+  | 600
+  | 650
+  | 700
 
 /**
  * Color map structure mapping color names to their shades.

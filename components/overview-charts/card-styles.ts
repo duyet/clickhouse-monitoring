@@ -11,9 +11,12 @@ export type CardVariant = 'default' | 'success' | 'warning' | 'danger'
 export const cardStyles = {
   base: 'relative flex h-full flex-col justify-center overflow-hidden rounded-lg border border-border/60 bg-card/50 backdrop-blur-sm transition-all',
   hover: 'cursor-pointer hover:border-border/80 hover:bg-card/70',
-  number: 'font-mono font-bold tabular-nums tracking-tight text-foreground/70 dark:text-foreground/60 text-lg sm:text-xl md:text-2xl lg:text-3xl line-clamp-1',
-  label: 'text-[10px] uppercase tracking-wider text-foreground/40 group-hover:hidden',
-  labelHover: 'text-[10px] uppercase tracking-wider text-foreground/90 hidden group-hover:inline',
+  number:
+    'font-mono font-bold tabular-nums tracking-tight text-foreground/70 dark:text-foreground/60 text-lg sm:text-xl md:text-2xl lg:text-3xl line-clamp-1',
+  label:
+    'text-[10px] uppercase tracking-wider text-foreground/40 group-hover:hidden',
+  labelHover:
+    'text-[10px] uppercase tracking-wider text-foreground/90 hidden group-hover:inline',
   divider: 'h-full w-px bg-border/60 shrink-0',
 } as const
 

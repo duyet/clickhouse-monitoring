@@ -61,15 +61,11 @@ export const ReloadButton = memo(function ReloadButton({
   })
 
   // Interval management hook
-  const {
-    intervals,
-    setInterval,
-    disableAutoReload,
-    isIntervalActive,
-  } = useReloadIntervals({
-    reloadInterval,
-    setReloadInterval,
-  })
+  const { intervals, setInterval, disableAutoReload, isIntervalActive } =
+    useReloadIntervals({
+      reloadInterval,
+      setReloadInterval,
+    })
 
   return (
     <DropdownMenu>

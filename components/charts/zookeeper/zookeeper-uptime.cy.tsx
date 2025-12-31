@@ -57,7 +57,9 @@ describe('<ChartZookeeperUptime />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartZookeeperUptime {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartZookeeperUptime {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })
@@ -71,7 +73,9 @@ describe('<ChartZookeeperUptime />', () => {
       },
     }).as('chartDataHost1')
 
-    cy.mount(<ChartZookeeperUptime hostId={1} title="Host 1 ZooKeeper Uptime" />)
+    cy.mount(
+      <ChartZookeeperUptime hostId={1} title="Host 1 ZooKeeper Uptime" />
+    )
 
     cy.wait('@chartDataHost1')
     cy.contains('Host 1 ZooKeeper Uptime').should('exist')

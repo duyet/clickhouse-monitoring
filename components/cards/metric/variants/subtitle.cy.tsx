@@ -3,7 +3,10 @@ import { DatabaseIcon } from 'lucide-react'
 import { MetricCard } from '../index'
 
 describe('renderSubtitleVariant', () => {
-  const mockData = [{ value: 100, info: 'active' }, { value: 120, info: 'pending' }]
+  const mockData = [
+    { value: 100, info: 'active' },
+    { value: 120, info: 'pending' },
+  ]
 
   it('renders value with string subtitle', () => {
     cy.mount(
@@ -56,7 +59,8 @@ describe('renderSubtitleVariant', () => {
     cy.mount(
       <div className="p-4">
         {renderSubtitleVariant({
-          value: (data) => data.reduce((sum, item) => sum + (item.value as number), 0),
+          value: (data) =>
+            data.reduce((sum, item) => sum + (item.value as number), 0),
           subtitle: 'Total count',
           data: mockData,
           compact: false,
@@ -254,7 +258,9 @@ describe('<MetricCard variant="subtitle" />', () => {
         }}
         title="Total Operations"
         variant="subtitle"
-        value={(data) => data.reduce((sum, item) => sum + (item.count as number), 0)}
+        value={(data) =>
+          data.reduce((sum, item) => sum + (item.count as number), 0)
+        }
         subtitle={(data) => `${data.length} operation types`}
       />
     )

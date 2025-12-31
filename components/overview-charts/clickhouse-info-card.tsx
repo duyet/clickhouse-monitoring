@@ -21,5 +21,11 @@ export const ClickHouseInfoCard = memo(function ClickHouseInfoCard() {
   const version = statusSwr.data?.version ? `v${statusSwr.data?.version}` : '-'
   const uptime = statusSwr.data?.uptime ?? ''
 
-  return <InfoCard value={version} subtitle={uptime ? `up ${uptime}` : undefined} isLoading={statusSwr.isLoading} />
+  return (
+    <InfoCard
+      value={version}
+      subtitle={uptime ? `up ${uptime}` : undefined}
+      isLoading={statusSwr.isLoading}
+    />
+  )
 })

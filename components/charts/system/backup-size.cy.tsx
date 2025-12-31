@@ -21,7 +21,9 @@ describe('<ChartBackupSize />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartBackupSize {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartBackupSize {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

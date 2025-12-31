@@ -29,7 +29,7 @@ export function getStringHash(str: string): number {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
+    hash = (hash << 5) - hash + char
     hash = hash & hash // Convert to 32bit integer
   }
   return Math.abs(hash)
@@ -77,7 +77,7 @@ export function getShade(percentage: number): ShadeNumber {
   const maxShade = 700
   const shade = minShade + (percentage / 100) * (maxShade - minShade)
   // Round to nearest 50 (Tailwind shades are 50, 100, 200, ..., 900)
-  return Math.round(shade / 50) * 50 as ShadeNumber
+  return (Math.round(shade / 50) * 50) as ShadeNumber
 }
 
 /**

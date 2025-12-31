@@ -8,7 +8,10 @@ import type { Column, Row, RowData, Table } from '@tanstack/react-table'
 import { formatCell } from '@/components/data-table/format-cell'
 import type { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
 
-interface ColumnCellProps<TData extends RowData, TValue extends React.ReactNode> {
+interface ColumnCellProps<
+  TData extends RowData,
+  TValue extends React.ReactNode,
+> {
   table: Table<TData>
   data: TData[]
   row: Row<TData>
@@ -22,7 +25,10 @@ interface ColumnCellProps<TData extends RowData, TValue extends React.ReactNode>
 /**
  * Wrapper component for formatted cell content
  */
-export function ColumnCell<TData extends RowData, TValue extends React.ReactNode>({
+export function ColumnCell<
+  TData extends RowData,
+  TValue extends React.ReactNode,
+>({
   table,
   data,
   row,

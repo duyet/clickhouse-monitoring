@@ -28,8 +28,6 @@ export function parseBreakdownData(
       return [item[breakdownLabel], item[breakdownValue]]
     }
 
-    throw new Error(
-      'Invalid breakdown data, expected array(2) or object'
-    )
+    throw new Error('Invalid breakdown data, expected array(2) or object')
   })
 }

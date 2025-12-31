@@ -3,7 +3,10 @@ import { DatabaseIcon } from 'lucide-react'
 import { MetricCard } from '../index'
 
 describe('renderPulseVariant', () => {
-  const mockData = [{ value: 100, trend: 15.5 }, { value: 120, trend: -5.2 }]
+  const mockData = [
+    { value: 100, trend: 15.5 },
+    { value: 120, trend: -5.2 },
+  ]
 
   it('renders value with positive trend and sparkline', () => {
     cy.mount(

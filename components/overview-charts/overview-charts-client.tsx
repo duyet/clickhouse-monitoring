@@ -20,10 +20,15 @@ interface OverviewChartsProps {
   className?: string
 }
 
-export const OverviewCharts = memo(function OverviewCharts({ className }: OverviewChartsProps) {
+export const OverviewCharts = memo(function OverviewCharts({
+  className,
+}: OverviewChartsProps) {
   return (
     <div
-      className={cn('grid auto-rows-fr grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4', className)}
+      className={cn(
+        'grid auto-rows-fr grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4',
+        className
+      )}
       role="region"
       aria-label="Overview metrics"
     >

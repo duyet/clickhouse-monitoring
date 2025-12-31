@@ -22,24 +22,36 @@ describe('SQL_PATTERNS', () => {
 
   describe('DANGEROUS_KEYWORDS pattern', () => {
     test('should match DROP keyword', () => {
-      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('DROP TABLE users')).toBe(true)
-      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('drop table users')).toBe(true)
+      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('DROP TABLE users')).toBe(
+        true
+      )
+      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('drop table users')).toBe(
+        true
+      )
     })
 
     test('should match DELETE keyword', () => {
-      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('DELETE FROM users')).toBe(true)
+      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('DELETE FROM users')).toBe(
+        true
+      )
     })
 
     test('should match INSERT keyword', () => {
-      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('INSERT INTO users')).toBe(true)
+      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('INSERT INTO users')).toBe(
+        true
+      )
     })
 
     test('should match UPDATE keyword', () => {
-      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('UPDATE users SET')).toBe(true)
+      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('UPDATE users SET')).toBe(
+        true
+      )
     })
 
     test('should not match SELECT', () => {
-      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('SELECT * FROM users')).toBe(false)
+      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('SELECT * FROM users')).toBe(
+        false
+      )
     })
   })
 })
@@ -48,7 +60,9 @@ describe('validateSqlQuery', () => {
   describe('valid queries', () => {
     test('should accept simple SELECT queries', () => {
       expect(() => validateSqlQuery('SELECT * FROM system.users')).not.toThrow()
-      expect(() => validateSqlQuery('SELECT count() FROM system.tables')).not.toThrow()
+      expect(() =>
+        validateSqlQuery('SELECT count() FROM system.tables')
+      ).not.toThrow()
     })
 
     test('should accept SELECT with WHERE clause', () => {
@@ -59,7 +73,9 @@ describe('validateSqlQuery', () => {
 
     test('should accept SELECT with parameterized queries', () => {
       expect(() =>
-        validateSqlQuery('SELECT * FROM system.tables WHERE name = {name:String}')
+        validateSqlQuery(
+          'SELECT * FROM system.tables WHERE name = {name:String}'
+        )
       ).not.toThrow()
     })
 
@@ -92,7 +108,9 @@ describe('validateSqlQuery', () => {
 
     test('should reject whitespace-only string', () => {
       expect(() => validateSqlQuery('   ')).toThrow('SQL query cannot be empty')
-      expect(() => validateSqlQuery('\t\n')).toThrow('SQL query cannot be empty')
+      expect(() => validateSqlQuery('\t\n')).toThrow(
+        'SQL query cannot be empty'
+      )
     })
   })
 
@@ -110,9 +128,9 @@ describe('validateSqlQuery', () => {
     })
 
     test('should reject INSERT statements', () => {
-      expect(() => validateSqlQuery('INSERT INTO users VALUES (1, "test")')).toThrow(
-        'Potentially dangerous SQL detected'
-      )
+      expect(() =>
+        validateSqlQuery('INSERT INTO users VALUES (1, "test")')
+      ).toThrow('Potentially dangerous SQL detected')
     })
 
     test('should reject UPDATE statements', () => {
@@ -122,9 +140,9 @@ describe('validateSqlQuery', () => {
     })
 
     test('should reject ALTER statements', () => {
-      expect(() => validateSqlQuery('ALTER TABLE users ADD COLUMN age Int32')).toThrow(
-        'Potentially dangerous SQL detected'
-      )
+      expect(() =>
+        validateSqlQuery('ALTER TABLE users ADD COLUMN age Int32')
+      ).toThrow('Potentially dangerous SQL detected')
     })
 
     test('should reject CREATE statements', () => {
@@ -154,15 +172,15 @@ describe('validateSqlQuery', () => {
     })
 
     test('should reject block comments', () => {
-      expect(() => validateSqlQuery('SELECT /* comment */ * FROM users')).toThrow(
-        'Potentially dangerous SQL detected'
-      )
+      expect(() =>
+        validateSqlQuery('SELECT /* comment */ * FROM users')
+      ).toThrow('Potentially dangerous SQL detected')
     })
 
     test('should reject chained dangerous statements', () => {
-      expect(() => validateSqlQuery('SELECT * FROM users; DROP TABLE users')).toThrow(
-        'Potentially dangerous SQL detected'
-      )
+      expect(() =>
+        validateSqlQuery('SELECT * FROM users; DROP TABLE users')
+      ).toThrow('Potentially dangerous SQL detected')
     })
 
     test('should reject tautology attacks (1=1)', () => {
@@ -173,7 +191,9 @@ describe('validateSqlQuery', () => {
 
     test('should reject UNION injection', () => {
       expect(() =>
-        validateSqlQuery("SELECT * FROM users WHERE name = '' UNION SELECT * FROM passwords")
+        validateSqlQuery(
+          "SELECT * FROM users WHERE name = '' UNION SELECT * FROM passwords"
+        )
       ).toThrow('Potentially dangerous SQL detected')
     })
 
@@ -194,7 +214,9 @@ describe('validateSqlQuery', () => {
     })
 
     test('should reject SHOW queries', () => {
-      expect(() => validateSqlQuery('SHOW TABLES')).toThrow('Only SELECT queries are allowed')
+      expect(() => validateSqlQuery('SHOW TABLES')).toThrow(
+        'Only SELECT queries are allowed'
+      )
     })
 
     test('should reject DESCRIBE queries', () => {

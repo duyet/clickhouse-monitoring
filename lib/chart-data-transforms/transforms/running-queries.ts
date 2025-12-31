@@ -93,7 +93,10 @@ export function transformRunningQueriesSummaryData(
     },
     items,
     raw: {
-      used: { memory_usage: main.memory_usage, readable_memory_usage: main.readable_memory_usage },
+      used: {
+        memory_usage: main.memory_usage,
+        readable_memory_usage: main.readable_memory_usage,
+      },
       totalMem,
       rowsReadWritten,
       todayQueryCount,

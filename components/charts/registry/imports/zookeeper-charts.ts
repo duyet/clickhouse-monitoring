@@ -9,9 +9,11 @@ import type { ChartRegistryMap } from '@/components/charts/registry/types'
 
 export const zookeeperChartImports: ChartRegistryMap = {
   'zookeeper-summary-table': lazy(() =>
-    import('@/components/charts/zookeeper/zookeeper-summary-table').then((m) => ({
-      default: m.default,
-    }))
+    import('@/components/charts/zookeeper/zookeeper-summary-table').then(
+      (m) => ({
+        default: m.default,
+      })
+    )
   ),
   'zookeeper-uptime': lazy(() =>
     import('@/components/charts/zookeeper/zookeeper-uptime').then((m) => ({

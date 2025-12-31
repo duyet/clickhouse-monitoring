@@ -2,12 +2,7 @@ import { MetricCardSkeleton } from './skeleton'
 
 describe('<MetricCardSkeleton />', () => {
   it('renders skeleton with title', () => {
-    cy.mount(
-      <MetricCardSkeleton
-        title="Loading Metric"
-        theme="default"
-      />
-    )
+    cy.mount(<MetricCardSkeleton title="Loading Metric" theme="default" />)
 
     cy.contains('Loading Metric').should('exist')
     cy.get('[aria-label="Loading Loading Metric"]').should('exist')
@@ -44,51 +39,40 @@ describe('<MetricCardSkeleton />', () => {
   })
 
   it('renders skeleton with dual variant', () => {
-    cy.mount(
-      <MetricCardSkeleton
-        title="Loading Metric"
-        variant="dual"
-      />
-    )
+    cy.mount(<MetricCardSkeleton title="Loading Metric" variant="dual" />)
 
     cy.contains('Loading Metric').should('exist')
     // Dual variant should show two skeleton bars
   })
 
   it('renders skeleton with trend variant', () => {
-    cy.mount(
-      <MetricCardSkeleton
-        title="Loading Metric"
-        variant="trend"
-      />
-    )
+    cy.mount(<MetricCardSkeleton title="Loading Metric" variant="trend" />)
 
     cy.contains('Loading Metric').should('exist')
   })
 
   it('renders skeleton in compact mode', () => {
-    cy.mount(
-      <MetricCardSkeleton
-        title="Loading Metric"
-        compact
-      />
-    )
+    cy.mount(<MetricCardSkeleton title="Loading Metric" compact />)
 
     cy.contains('Loading Metric').should('exist')
     cy.get('[aria-label="Loading Loading Metric"]').should('exist')
   })
 
   describe('themes', () => {
-    const themes = ['default', 'purple', 'blue', 'green', 'orange', 'pink', 'cyan', 'indigo'] as const
+    const themes = [
+      'default',
+      'purple',
+      'blue',
+      'green',
+      'orange',
+      'pink',
+      'cyan',
+      'indigo',
+    ] as const
 
     themes.forEach((theme) => {
       it(`renders skeleton with ${theme} theme`, () => {
-        cy.mount(
-          <MetricCardSkeleton
-            title="Loading Metric"
-            theme={theme}
-          />
-        )
+        cy.mount(<MetricCardSkeleton title="Loading Metric" theme={theme} />)
 
         cy.contains('Loading Metric').should('exist')
       })
@@ -107,12 +91,10 @@ describe('<MetricCardSkeleton />', () => {
   })
 
   it('includes screen reader text', () => {
-    cy.mount(
-      <MetricCardSkeleton
-        title="Loading Metric"
-      />
-    )
+    cy.mount(<MetricCardSkeleton title="Loading Metric" />)
 
-    cy.get('.sr-only').contains('Loading Loading Metric data...').should('exist')
+    cy.get('.sr-only')
+      .contains('Loading Loading Metric data...')
+      .should('exist')
   })
 })

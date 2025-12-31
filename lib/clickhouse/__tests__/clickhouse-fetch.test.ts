@@ -2,7 +2,14 @@
  * Tests for lib/clickhouse/clickhouse-fetch.ts
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals'
 import { fetchData, query } from '../clickhouse-fetch'
 import { ApiErrorType } from '@/lib/api/types'
 import type { FetchDataErrorType } from '../types'
@@ -207,7 +214,9 @@ describe('clickhouse-fetch', () => {
         expect(result.data).toBeNull()
         expect(result.error).toBeDefined()
         expect(result.error?.type).toBe('validation_error')
-        expect(result.error?.message).toContain('No ClickHouse hosts configured')
+        expect(result.error?.message).toContain(
+          'No ClickHouse hosts configured'
+        )
       })
 
       it('should return error when hostId out of range', async () => {

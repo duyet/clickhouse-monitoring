@@ -23,7 +23,8 @@ export const CHART_CATEGORIES = {
 /**
  * Chart category type
  */
-export type ChartCategory = (typeof CHART_CATEGORIES)[keyof typeof CHART_CATEGORIES]
+export type ChartCategory =
+  (typeof CHART_CATEGORIES)[keyof typeof CHART_CATEGORIES]
 
 /**
  * Charts organized by category
@@ -71,12 +72,8 @@ export const CHARTS_BY_CATEGORY: Record<ChartCategory, string[]> = {
     'connections-interserver',
     'connections-http',
   ],
-  [CHART_CATEGORIES.TABLE]: [
-    'top-table-size',
-  ],
-  [CHART_CATEGORIES.PAGE_VIEW]: [
-    'page-view',
-  ],
+  [CHART_CATEGORIES.TABLE]: ['top-table-size'],
+  [CHART_CATEGORIES.PAGE_VIEW]: ['page-view'],
   [CHART_CATEGORIES.FACTORY]: [],
   [CHART_CATEGORIES.PRIMITIVES]: [],
 }

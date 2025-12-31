@@ -58,6 +58,6 @@ export {
 
 // Re-export all formatters for direct access if needed
 export * from './advanced-formatters'
-export* from './context-formatters'
-export* from './inline-formatters'
-export* from './value-formatters'
+export * from './context-formatters'
+export * from './inline-formatters'
+export * from './value-formatters'

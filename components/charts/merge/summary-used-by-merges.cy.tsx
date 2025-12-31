@@ -44,7 +44,9 @@ describe('<ChartSummaryUsedByMerges />', () => {
         data: [
           {
             used: [{ memory_usage: 1024000, readable_memory_usage: '1 MB' }],
-            totalMem: [{ metric: 'memory', total: 17179869184, readable_total: '16 GB' }],
+            totalMem: [
+              { metric: 'memory', total: 17179869184, readable_total: '16 GB' },
+            ],
             rowsReadWritten: [
               {
                 rows_read: 5000000,
@@ -80,7 +82,10 @@ describe('<ChartSummaryUsedByMerges />', () => {
 
   it('applies custom className', () => {
     cy.mount(
-      <ChartSummaryUsedByMerges {...defaultProps} className="custom-test-class" />
+      <ChartSummaryUsedByMerges
+        {...defaultProps}
+        className="custom-test-class"
+      />
     )
 
     cy.get('.custom-test-class').should('exist')
@@ -93,7 +98,9 @@ describe('<ChartSummaryUsedByMerges />', () => {
         data: [
           {
             used: [{ memory_usage: 512000, readable_memory_usage: '512 KB' }],
-            totalMem: [{ metric: 'memory', total: 8589934592, readable_total: '8 GB' }],
+            totalMem: [
+              { metric: 'memory', total: 8589934592, readable_total: '8 GB' },
+            ],
             rowsReadWritten: [
               {
                 rows_read: 3000000,

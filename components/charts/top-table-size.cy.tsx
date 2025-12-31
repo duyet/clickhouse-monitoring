@@ -75,7 +75,9 @@ describe('<ChartTopTableSize />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartTopTableSize {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartTopTableSize {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

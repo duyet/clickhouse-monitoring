@@ -23,8 +23,22 @@ describe('<ChartFailedQueryCount />', () => {
       statusCode: 200,
       body: {
         data: [
-          { event_time: '2025-01-01', query_count: 15, breakdown: [['Select', '10'], ['Insert', '5']] },
-          { event_time: '2025-01-02', query_count: 8, breakdown: [['Select', '6'], ['Insert', '2']] },
+          {
+            event_time: '2025-01-01',
+            query_count: 15,
+            breakdown: [
+              ['Select', '10'],
+              ['Insert', '5'],
+            ],
+          },
+          {
+            event_time: '2025-01-02',
+            query_count: 8,
+            breakdown: [
+              ['Select', '6'],
+              ['Insert', '2'],
+            ],
+          },
         ],
         metadata: { duration: 42, rows: 2 },
       },
@@ -37,7 +51,16 @@ describe('<ChartFailedQueryCount />', () => {
   it('works with different hostId values', () => {
     cy.intercept('GET', '/api/v1/charts/failed-query-count?hostId=3*', {
       statusCode: 200,
-      body: { data: [{ event_time: '2025-01-01', query_count: 5, breakdown: [['Select', '5']] }], metadata: { duration: 22, rows: 1 } },
+      body: {
+        data: [
+          {
+            event_time: '2025-01-01',
+            query_count: 5,
+            breakdown: [['Select', '5']],
+          },
+        ],
+        metadata: { duration: 22, rows: 1 },
+      },
     }).as('chartData')
     cy.mount(<ChartFailedQueryCount hostId={3} />)
     cy.wait('@chartData')

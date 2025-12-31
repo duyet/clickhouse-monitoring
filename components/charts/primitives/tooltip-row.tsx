@@ -40,11 +40,7 @@ interface SummaryRowProps {
 /**
  * Summary row for breakdown tooltips
  */
-export function SummaryRow({
-  name,
-  value,
-  chartConfig,
-}: SummaryRowProps) {
+export function SummaryRow({ name, value, chartConfig }: SummaryRowProps) {
   return (
     <div className="flex flex-row items-center justify-between gap-2 min-w-0">
       <TooltipRowLabel name={name} chartConfig={chartConfig} />

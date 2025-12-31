@@ -23,8 +23,16 @@ describe('<ChartMergeCount />', () => {
       statusCode: 200,
       body: {
         data: [
-          { event_time: '2025-01-01 00:00:00', avg_CurrentMetric_Merge: 150, avg_CurrentMetric_PartMutation: 25 },
-          { event_time: '2025-01-01 00:05:00', avg_CurrentMetric_Merge: 160, avg_CurrentMetric_PartMutation: 30 },
+          {
+            event_time: '2025-01-01 00:00:00',
+            avg_CurrentMetric_Merge: 150,
+            avg_CurrentMetric_PartMutation: 25,
+          },
+          {
+            event_time: '2025-01-01 00:05:00',
+            avg_CurrentMetric_Merge: 160,
+            avg_CurrentMetric_PartMutation: 30,
+          },
         ],
         metadata: { duration: 55, rows: 2 },
       },
@@ -37,7 +45,16 @@ describe('<ChartMergeCount />', () => {
   it('displays links to merges and mutations pages', () => {
     cy.intercept('GET', '/api/v1/charts/merge-count*', {
       statusCode: 200,
-      body: { data: [{ event_time: '2025-01-01', avg_CurrentMetric_Merge: 120, avg_CurrentMetric_PartMutation: 22 }], metadata: { duration: 32, rows: 1 } },
+      body: {
+        data: [
+          {
+            event_time: '2025-01-01',
+            avg_CurrentMetric_Merge: 120,
+            avg_CurrentMetric_PartMutation: 22,
+          },
+        ],
+        metadata: { duration: 32, rows: 1 },
+      },
     }).as('chartData')
     cy.mount(<ChartMergeCount {...defaultProps} />)
     cy.wait('@chartData')
@@ -48,7 +65,16 @@ describe('<ChartMergeCount />', () => {
   it('works with different hostId values', () => {
     cy.intercept('GET', '/api/v1/charts/merge-count?hostId=1*', {
       statusCode: 200,
-      body: { data: [{ event_time: '2025-01-01', avg_CurrentMetric_Merge: 100, avg_CurrentMetric_PartMutation: 15 }], metadata: { duration: 30, rows: 1 } },
+      body: {
+        data: [
+          {
+            event_time: '2025-01-01',
+            avg_CurrentMetric_Merge: 100,
+            avg_CurrentMetric_PartMutation: 15,
+          },
+        ],
+        metadata: { duration: 30, rows: 1 },
+      },
     }).as('chartData')
     cy.mount(<ChartMergeCount hostId={1} />)
     cy.wait('@chartData')

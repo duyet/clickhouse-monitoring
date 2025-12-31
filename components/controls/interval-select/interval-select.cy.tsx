@@ -25,9 +25,7 @@ describe('<IntervalSelect />', () => {
     it('shows caret icon', () => {
       cy.mount(<IntervalSelect />)
 
-      cy.get('button[role="combobox"]')
-        .find('svg')
-        .should('exist')
+      cy.get('button[role="combobox"]').find('svg').should('exist')
     })
 
     it('has correct ARIA attributes', () => {
@@ -239,20 +237,29 @@ describe('<IntervalSelect />', () => {
     it('has aria-label for screen readers', () => {
       cy.mount(<IntervalSelect />)
 
-      cy.get('button[role="combobox"]')
-        .should('have.attr', 'aria-label', 'Select time interval')
+      cy.get('button[role="combobox"]').should(
+        'have.attr',
+        'aria-label',
+        'Select time interval'
+      )
     })
 
     it('updates aria-expanded when popover opens', () => {
       cy.mount(<IntervalSelect />)
 
-      cy.get('button[role="combobox"]')
-        .should('have.attr', 'aria-expanded', 'false')
+      cy.get('button[role="combobox"]').should(
+        'have.attr',
+        'aria-expanded',
+        'false'
+      )
 
       cy.get('button[role="combobox"]').click()
 
-      cy.get('button[role="combobox"]')
-        .should('have.attr', 'aria-expanded', 'true')
+      cy.get('button[role="combobox"]').should(
+        'have.attr',
+        'aria-expanded',
+        'true'
+      )
     })
   })
 
@@ -269,8 +276,7 @@ describe('<IntervalSelect />', () => {
     it('has fixed width button', () => {
       cy.mount(<IntervalSelect />)
 
-      cy.get('button[role="combobox"]')
-        .should('have.class', 'w-[100px]')
+      cy.get('button[role="combobox"]').should('have.class', 'w-[100px]')
     })
 
     it('popover has matching width', () => {
@@ -278,9 +284,7 @@ describe('<IntervalSelect />', () => {
 
       cy.get('button[role="combobox"]').click()
 
-      cy.get('[role="listbox"]')
-        .parent()
-        .should('have.class', 'w-[100px]')
+      cy.get('[role="listbox"]').parent().should('have.class', 'w-[100px]')
     })
   })
 

@@ -21,7 +21,9 @@ describe('<ChartZookeeperWait />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartZookeeperWait {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartZookeeperWait {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

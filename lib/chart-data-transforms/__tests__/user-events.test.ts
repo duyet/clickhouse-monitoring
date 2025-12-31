@@ -58,9 +58,7 @@ describe('transformUserEventCounts', () => {
 
     const result = transformUserEventCounts(input, 'timestamp')
 
-    expect(result.chartData).toEqual([
-      { timestamp: '2024-01-01', alice: 5 },
-    ])
+    expect(result.chartData).toEqual([{ timestamp: '2024-01-01', alice: 5 }])
   })
 
   it('should aggregate counts for same user and time', () => {

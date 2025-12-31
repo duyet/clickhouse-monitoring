@@ -6,7 +6,10 @@ import {
   BackgroundBarFormat,
   type BackgroundBarOptions,
 } from '../cells/background-bar-format'
-import { HoverCardFormat, type HoverCardOptions } from '../cells/hover-card-format'
+import {
+  HoverCardFormat,
+  type HoverCardOptions,
+} from '../cells/hover-card-format'
 import { LinkFormat, type LinkFormatOptions } from '../cells/link-format'
 
 import type { FormatterProps, RowContextFormatter } from './types'

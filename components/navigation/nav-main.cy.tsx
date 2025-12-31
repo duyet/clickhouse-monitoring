@@ -192,9 +192,7 @@ describe('<NavMain />', () => {
       cy.mount(<NavMain items={itemsWithActiveChild} />)
 
       // Parent button should be marked as active
-      cy.contains('Queries')
-        .closest('button')
-        .should('have.class', 'bg-accent')
+      cy.contains('Queries').closest('button').should('have.class', 'bg-accent')
     })
 
     it('marks active child with aria-current', () => {
@@ -267,8 +265,10 @@ describe('<NavMain />', () => {
       cy.mount(<NavMain items={singleItems} />)
 
       // When sidebar is in icon mode, text should be hidden
-      cy.get('[data-sidebar="menu"]')
-        .should('have.class', 'group-data-[collapsible=icon]/sidebar')
+      cy.get('[data-sidebar="menu"]').should(
+        'have.class',
+        'group-data-[collapsible=icon]/sidebar'
+      )
     })
   })
 
@@ -284,11 +284,23 @@ describe('<NavMain />', () => {
       cy.mount(<NavMain items={mixedItems} />)
 
       // Main section should contain Overview and Queries
-      cy.contains('Main').parent().parent().contains('Overview').should('be.visible')
-      cy.contains('Main').parent().parent().contains('Queries').should('be.visible')
+      cy.contains('Main')
+        .parent()
+        .parent()
+        .contains('Overview')
+        .should('be.visible')
+      cy.contains('Main')
+        .parent()
+        .parent()
+        .contains('Queries')
+        .should('be.visible')
 
       // Others section should contain Settings
-      cy.contains('Others').parent().parent().contains('Settings').should('be.visible')
+      cy.contains('Others')
+        .parent()
+        .parent()
+        .contains('Settings')
+        .should('be.visible')
     })
   })
 

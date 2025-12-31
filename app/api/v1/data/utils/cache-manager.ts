@@ -83,7 +83,9 @@ function clearExpiredCache(): void {
  * }
  * ```
  */
-export function getCachedDashboardQueries(hostId: number): Set<string> | undefined {
+export function getCachedDashboardQueries(
+  hostId: number
+): Set<string> | undefined {
   clearExpiredCache()
 
   const cacheKey = String(hostId)
@@ -160,7 +162,10 @@ export function getCacheStats(): {
   readonly entryCount: number
   readonly ttl: number
   readonly lastClear: number
-  readonly entries: ReadonlyArray<{ readonly hostId: string; readonly queryCount: number }>
+  readonly entries: ReadonlyArray<{
+    readonly hostId: string
+    readonly queryCount: number
+  }>
 } {
   return {
     entryCount: cache.size,

@@ -3,11 +3,7 @@
 import type { ColumnDef, RowData } from '@tanstack/react-table'
 import { memo } from 'react'
 
-import {
-  Table,
-  TableBody,
-  TableHeader,
-} from '@/components/ui/table'
+import { Table, TableBody, TableHeader } from '@/components/ui/table'
 import type { QueryConfig } from '@/types/query-config'
 import { cn } from '@/lib/utils'
 import {
@@ -33,7 +29,7 @@ import {
  */
 export interface DataTableContentProps<
   TData extends RowData,
-  TValue extends React.ReactNode
+  TValue extends React.ReactNode,
 > {
   /** Table title for accessibility and empty state */
   title: string
@@ -74,7 +70,7 @@ export interface DataTableContentProps<
  */
 export const DataTableContent = memo(function DataTableContent<
   TData extends RowData,
-  TValue extends React.ReactNode
+  TValue extends React.ReactNode,
 >({
   title,
   description,

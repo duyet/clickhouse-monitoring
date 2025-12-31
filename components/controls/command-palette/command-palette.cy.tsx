@@ -44,8 +44,11 @@ describe('<CommandPalette />', () => {
     it('has proper ARIA label', () => {
       cy.mount(<CommandPalette open />)
 
-      cy.get('[role="dialog"]')
-        .should('have.attr', 'aria-label', 'Command palette')
+      cy.get('[role="dialog"]').should(
+        'have.attr',
+        'aria-label',
+        'Command palette'
+      )
     })
 
     it('renders search input', () => {
@@ -99,12 +102,7 @@ describe('<CommandPalette />', () => {
     it('respects controlled open prop', () => {
       const onOpenChange = cy.stub().as('onOpenChange')
 
-      cy.mount(
-        <CommandPalette
-          open={true}
-          onOpenChange={onOpenChange}
-        />
-      )
+      cy.mount(<CommandPalette open={true} onOpenChange={onOpenChange} />)
 
       cy.get('[role="dialog"]').should('be.visible')
     })
@@ -112,12 +110,7 @@ describe('<CommandPalette />', () => {
     it('calls onOpenChange when user tries to close', () => {
       const onOpenChange = cy.stub().as('onOpenChange')
 
-      cy.mount(
-        <CommandPalette
-          open={true}
-          onOpenChange={onOpenChange}
-        />
-      )
+      cy.mount(<CommandPalette open={true} onOpenChange={onOpenChange} />)
 
       // Press escape to close
       cy.get('[role="dialog"]').type('{esc}')
@@ -171,8 +164,9 @@ describe('<CommandPalette />', () => {
       cy.mount(<CommandPalette open />)
 
       // Type in search
-      cy.get('input[placeholder="Type a command or search..."]')
-        .type('Overview')
+      cy.get('input[placeholder="Type a command or search..."]').type(
+        'Overview'
+      )
 
       // Should show matching results
       cy.contains('Overview').should('exist')
@@ -182,8 +176,9 @@ describe('<CommandPalette />', () => {
       cy.mount(<CommandPalette open />)
 
       // Type non-matching search
-      cy.get('input[placeholder="Type a command or search..."]')
-        .type('xyznonexistent')
+      cy.get('input[placeholder="Type a command or search..."]').type(
+        'xyznonexistent'
+      )
 
       // Should show empty state
       cy.contains('No results found').should('exist')
@@ -193,8 +188,9 @@ describe('<CommandPalette />', () => {
       cy.mount(<CommandPalette open />)
 
       // Type search
-      cy.get('input[placeholder="Type a command or search..."]')
-        .type('Overview')
+      cy.get('input[placeholder="Type a command or search..."]').type(
+        'Overview'
+      )
 
       // Close dialog
       cy.get('[role="dialog"]').type('{esc}')
@@ -203,8 +199,10 @@ describe('<CommandPalette />', () => {
       cy.get('body').type('{meta}{k}')
 
       // Search should be cleared
-      cy.get('input[placeholder="Type a command or search..."]')
-        .should('have.value', '')
+      cy.get('input[placeholder="Type a command or search..."]').should(
+        'have.value',
+        ''
+      )
     })
   })
 
@@ -272,15 +270,21 @@ describe('<CommandPalette />', () => {
     it('has ARIA label', () => {
       cy.mount(<CommandPalette open />)
 
-      cy.get('[role="dialog"]')
-        .should('have.attr', 'aria-label', 'Command palette')
+      cy.get('[role="dialog"]').should(
+        'have.attr',
+        'aria-label',
+        'Command palette'
+      )
     })
 
     it('has accessible search input', () => {
       cy.mount(<CommandPalette open />)
 
-      cy.get('input[placeholder="Type a command or search..."]')
-        .should('have.attr', 'aria-label', 'Search commands')
+      cy.get('input[placeholder="Type a command or search..."]').should(
+        'have.attr',
+        'aria-label',
+        'Search commands'
+      )
     })
 
     it('menu items have proper roles', () => {
@@ -295,8 +299,9 @@ describe('<CommandPalette />', () => {
       cy.mount(<CommandPalette open />)
 
       // Press down arrow
-      cy.get('input[placeholder="Type a command or search..."]')
-        .type('{downarrow}')
+      cy.get('input[placeholder="Type a command or search..."]').type(
+        '{downarrow}'
+      )
 
       // Should focus first option
       cy.get('[role="option"]').first().should('be.focused')
@@ -305,8 +310,9 @@ describe('<CommandPalette />', () => {
     it('can select item with enter key', () => {
       cy.mount(<CommandPalette open />)
 
-      cy.get('input[placeholder="Type a command or search..."]')
-        .type('{downarrow}{enter}')
+      cy.get('input[placeholder="Type a command or search..."]').type(
+        '{downarrow}{enter}'
+      )
 
       // Dialog should close after selection
       cy.get('[role="dialog"]').should('not.be.visible')
@@ -366,12 +372,7 @@ describe('<CommandPalette />', () => {
     it('removes event listener on unmount', () => {
       const onOpenChange = cy.stub().as('onOpenChange')
 
-      cy.mount(
-        <CommandPalette
-          open={false}
-          onOpenChange={onOpenChange}
-        />
-      )
+      cy.mount(<CommandPalette open={false} onOpenChange={onOpenChange} />)
 
       // Unmount
       cy.get('[role="dialog"]').then(() => {

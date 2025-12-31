@@ -52,11 +52,12 @@ describe('TableBody Components', () => {
         {
           ...mockRow,
           id: 'test-row-2',
-          getVisibleCells: () => mockRow.getVisibleCells().map((cell, i) => ({
-            ...cell,
-            id: `row2-cell-${i}`,
-            getContext: () => ({ getValue: () => `Row 2 Cell ${i + 1}` }),
-          })),
+          getVisibleCells: () =>
+            mockRow.getVisibleCells().map((cell, i) => ({
+              ...cell,
+              id: `row2-cell-${i}`,
+              getContext: () => ({ getValue: () => `Row 2 Cell ${i + 1}` }),
+            })),
         },
       ],
     }),
@@ -122,7 +123,10 @@ describe('TableBody Components', () => {
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
-              <VirtualizedTableRow row={mockRow as any} virtualRow={virtualRow} />
+              <VirtualizedTableRow
+                row={mockRow as any}
+                virtualRow={virtualRow}
+              />
             </tbody>
           </table>
         </QueryClientProvider>
@@ -130,7 +134,9 @@ describe('TableBody Components', () => {
 
       cy.get('tr').should('have.attr', 'data-index', '0')
       cy.get('tr').should('have.attr', 'style').and('include', 'height: 50px')
-      cy.get('tr').should('have.attr', 'style').and('include', 'translateY(0px)')
+      cy.get('tr')
+        .should('have.attr', 'style')
+        .and('include', 'translateY(0px)')
     })
 
     it('applies odd row styling for odd virtual row indices', () => {
@@ -140,7 +146,10 @@ describe('TableBody Components', () => {
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
-              <VirtualizedTableRow row={mockRow as any} virtualRow={virtualRow} />
+              <VirtualizedTableRow
+                row={mockRow as any}
+                virtualRow={virtualRow}
+              />
             </tbody>
           </table>
         </QueryClientProvider>
@@ -197,10 +206,7 @@ describe('TableBody Components', () => {
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
-              <TableBodyRows
-                table={mockTable as any}
-                isVirtualized={false}
-              />
+              <TableBodyRows table={mockTable as any} isVirtualized={false} />
             </tbody>
           </table>
         </QueryClientProvider>

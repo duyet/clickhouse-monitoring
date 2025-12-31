@@ -1,7 +1,10 @@
 'use client'
 
 import { memo } from 'react'
-import type { MenuItem as MenuItemType, MenuSection } from '@/components/menu/types'
+import type {
+  MenuItem as MenuItemType,
+  MenuSection,
+} from '@/components/menu/types'
 import {
   SidebarGroup,
   SidebarGroupLabel,

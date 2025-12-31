@@ -56,7 +56,7 @@ export interface DataTableHeaderProps<TData extends RowData> {
 }
 
 export const DataTableHeader = memo(function DataTableHeader<
-  TData extends RowData
+  TData extends RowData,
 >({
   title,
   description,
@@ -76,9 +76,7 @@ export const DataTableHeader = memo(function DataTableHeader<
       <div>
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2">
-            <h1 className="text-muted-foreground flex-none text-xl">
-              {title}
-            </h1>
+            <h1 className="text-muted-foreground flex-none text-xl">{title}</h1>
             {isRefreshing && (
               <Loader2Icon
                 className="text-muted-foreground size-4 animate-spin"
@@ -112,6 +110,4 @@ export const DataTableHeader = memo(function DataTableHeader<
       </div>
     </div>
   )
-}) as <TData extends RowData>(
-  props: DataTableHeaderProps<TData>
-) => JSX.Element
+}) as <TData extends RowData>(props: DataTableHeaderProps<TData>) => JSX.Element

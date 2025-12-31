@@ -39,7 +39,6 @@ export function HostSwitcher() {
   const { hosts } = useHosts()
   const currentHostId = useHostId()
 
-
   const activeHost = hosts[currentHostId] || hosts[0]
 
   const handleHostChange = useCallback(

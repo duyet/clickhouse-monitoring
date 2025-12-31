@@ -49,12 +49,9 @@ export function useChartData({
     Object.entries(params || {}).filter(([_, v]) => v !== undefined)
   ) as Record<string, string | number | boolean>
 
-  const { data, isLoading, error, refresh } = useFetchData<TimeSeriesDataPoint[]>(
-    query,
-    queryParams,
-    hostId,
-    refreshInterval
-  )
+  const { data, isLoading, error, refresh } = useFetchData<
+    TimeSeriesDataPoint[]
+  >(query, queryParams, hostId, refreshInterval)
 
   const isValid = validateChartData(data)
   const categories = isValid && data ? extractCategories(data) : []

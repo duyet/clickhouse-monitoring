@@ -18,7 +18,11 @@ export interface InfoCardProps {
   isLoading?: boolean
 }
 
-export const InfoCard = memo(function InfoCard({ value, subtitle, isLoading }: InfoCardProps) {
+export const InfoCard = memo(function InfoCard({
+  value,
+  subtitle,
+  isLoading,
+}: InfoCardProps) {
   if (isLoading) {
     return (
       <div className={cardStyles.base}>

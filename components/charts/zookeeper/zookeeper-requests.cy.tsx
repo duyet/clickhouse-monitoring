@@ -21,13 +21,17 @@ describe('<ChartZookeeperRequests />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartZookeeperRequests {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartZookeeperRequests {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })
 
   it('works with different hostId values', () => {
-    cy.mount(<ChartZookeeperRequests hostId={1} title="Host 1 Zookeeper Requests" />)
+    cy.mount(
+      <ChartZookeeperRequests hostId={1} title="Host 1 Zookeeper Requests" />
+    )
 
     cy.contains('Host 1 Zookeeper Requests').should('exist')
   })

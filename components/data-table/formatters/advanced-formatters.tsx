@@ -17,7 +17,11 @@ import {
   type MarkdownFormatOptions,
 } from '../cells/markdown-format'
 
-import type { FormatterProps, RowContextFormatter, ValueOnlyFormatter } from './types'
+import type {
+  FormatterProps,
+  RowContextFormatter,
+  ValueOnlyFormatter,
+} from './types'
 import { ColumnFormat } from '@/types/column-format'
 
 /**
@@ -32,7 +36,10 @@ import { ColumnFormat } from '@/types/column-format'
  * ```
  */
 export const codeDialogFormatter: ValueOnlyFormatter = (value, options) => (
-  <CodeDialogFormat value={value as string} options={options as CodeDialogOptions} />
+  <CodeDialogFormat
+    value={value as string}
+    options={options as CodeDialogOptions}
+  />
 )
 
 /**
@@ -75,7 +82,10 @@ export const codeToggleFormatter: RowContextFormatter = <
  * ```
  */
 export const markdownFormatter: ValueOnlyFormatter = (value, options) => (
-  <MarkdownFormat value={value as React.ReactNode} options={options as MarkdownFormatOptions} />
+  <MarkdownFormat
+    value={value as React.ReactNode}
+    options={options as MarkdownFormatOptions}
+  />
 )
 
 /**
@@ -90,7 +100,10 @@ export const markdownFormatter: ValueOnlyFormatter = (value, options) => (
  * ```
  */
 export const coloredBadgeFormatter: ValueOnlyFormatter = (value, options) => (
-  <ColoredBadgeFormat value={value as React.ReactNode} options={options as ColoredBadgeOptions} />
+  <ColoredBadgeFormat
+    value={value as React.ReactNode}
+    options={options as ColoredBadgeOptions}
+  />
 )
 
 /**

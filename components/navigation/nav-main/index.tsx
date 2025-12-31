@@ -1,7 +1,10 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import type { MenuItem as MenuItemType, MenuSection } from '@/components/menu/types'
+import type {
+  MenuItem as MenuItemType,
+  MenuSection,
+} from '@/components/menu/types'
 import { MenuGroup } from './menu-group'
 import type { NavMainProps } from './types'
 

@@ -1,4 +1,7 @@
-import type { MenuItem as MenuItemType, MenuSection } from '@/components/menu/types'
+import type {
+  MenuItem as MenuItemType,
+  MenuSection,
+} from '@/components/menu/types'
 import type { LucideIcon } from 'lucide-react'
 
 /**

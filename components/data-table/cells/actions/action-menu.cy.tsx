@@ -37,11 +37,14 @@ describe('<ActionMenu />', () => {
   })
 
   it('renders all provided actions', () => {
-    const actions = ['kill-query', 'explain-query', 'optimize', 'query-settings']
+    const actions = [
+      'kill-query',
+      'explain-query',
+      'optimize',
+      'query-settings',
+    ]
 
-    cy.mount(
-      <ActionMenu row={mockRow} value="test-value" actions={actions} />
-    )
+    cy.mount(<ActionMenu row={mockRow} value="test-value" actions={actions} />)
 
     cy.get('button[aria-label="Open menu"]').click()
 

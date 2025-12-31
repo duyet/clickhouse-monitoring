@@ -117,7 +117,10 @@ describe('sanitizeQueryParams', () => {
 
   test('should handle nested arrays', () => {
     const result = sanitizeQueryParams({
-      nested: [[1, 2], [3, 4]],
+      nested: [
+        [1, 2],
+        [3, 4],
+      ],
     })
 
     expect(result).toEqual({
@@ -144,7 +147,9 @@ describe('truncateString', () => {
 
   test('should truncate string longer than max', () => {
     expect(truncateString('hello world', 5)).toBe('hello...')
-    expect(truncateString('SELECT * FROM system.users', 15)).toBe('SELECT * FROM s...')
+    expect(truncateString('SELECT * FROM system.users', 15)).toBe(
+      'SELECT * FROM s...'
+    )
   })
 
   test('should handle empty string', () => {

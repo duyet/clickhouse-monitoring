@@ -119,7 +119,9 @@ describe('charts-config', () => {
     })
 
     it('should have proper disk usage time range', () => {
-      const disksUsageChart = DISKS_TAB_CHARTS.find((c) => c.id === 'disks-usage')
+      const disksUsageChart = DISKS_TAB_CHARTS.find(
+        (c) => c.id === 'disks-usage'
+      )
       expect(disksUsageChart?.lastHours).toBe(24 * 30)
       expect(disksUsageChart?.interval).toBe('toStartOfDay')
     })

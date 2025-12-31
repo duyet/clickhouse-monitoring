@@ -68,7 +68,9 @@ describe('<ChartQueryCountByUser />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartQueryCountByUser {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartQueryCountByUser {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

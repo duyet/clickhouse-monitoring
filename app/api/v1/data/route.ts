@@ -145,10 +145,7 @@ export const POST = withApiHandler(async (request: Request) => {
   // SECURITY: If no queryConfig provided, validate the query exists in dashboard tables
   // This prevents arbitrary SQL execution from clients
   if (!queryConfig) {
-    const validationResult = await validateDashboardQuery(
-      query,
-      Number(hostId)
-    )
+    const validationResult = await validateDashboardQuery(query, Number(hostId))
     if (!validationResult.valid) {
       error(
         '[POST /api/v1/data] Security: Query not found in dashboard tables',

@@ -2,7 +2,7 @@
 
 import { Bell, Moon, Search, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { memo, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 
 import { CommandPalette } from '@/components/controls/command-palette'
 import { RefreshCountdown } from '@/components/header/refresh-countdown'
@@ -20,10 +20,10 @@ export const HeaderActions = memo(function HeaderActions({
   const [mounted, setMounted] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
-  // Handle hydration
-  useState(() => {
+  // Handle hydration - set mounted state after client-side render
+  useEffect(() => {
     setMounted(true)
-  })
+  }, [])
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')

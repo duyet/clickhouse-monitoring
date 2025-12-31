@@ -10,7 +10,11 @@ describe('transformRunningQueriesSummaryData', () => {
     memory_usage: 1024,
     readable_memory_usage: '1 GiB',
   }
-  const mockTotalMem = { metric: 'memory', total: 8192, readable_total: '8 GiB' }
+  const mockTotalMem = {
+    metric: 'memory',
+    total: 8192,
+    readable_total: '8 GiB',
+  }
   const mockRows = {
     rows_read: 1000,
     rows_written: 500,
@@ -21,7 +25,12 @@ describe('transformRunningQueriesSummaryData', () => {
   it('should return null if required fields are missing', () => {
     expect(transformRunningQueriesSummaryData({})).toBeNull()
     expect(transformRunningQueriesSummaryData({ main: [mockMain] })).toBeNull()
-    expect(transformRunningQueriesSummaryData({ main: [mockMain], totalMem: [mockTotalMem] })).toBeNull()
+    expect(
+      transformRunningQueriesSummaryData({
+        main: [mockMain],
+        totalMem: [mockTotalMem],
+      })
+    ).toBeNull()
   })
 
   it('should transform complete query data', () => {
@@ -101,10 +110,23 @@ describe('transformRunningQueriesSummaryData', () => {
 
   it('should handle realistic running queries data', () => {
     const input = {
-      main: [{ query_count: 12, memory_usage: 5368709120, readable_memory_usage: '5 GiB' }],
-      totalMem: [{ metric: 'memory', total: 68719476736, readable_total: '64 GiB' }],
+      main: [
+        {
+          query_count: 12,
+          memory_usage: 5368709120,
+          readable_memory_usage: '5 GiB',
+        },
+      ],
+      totalMem: [
+        { metric: 'memory', total: 68719476736, readable_total: '64 GiB' },
+      ],
       rowsReadWritten: [
-        { rows_read: 80000000, rows_written: 20000000, readable_rows_read: '80M', readable_rows_written: '20M' },
+        {
+          rows_read: 80000000,
+          rows_written: 20000000,
+          readable_rows_read: '80M',
+          readable_rows_written: '20M',
+        },
       ],
       todayQueryCount: [{ query_count: 5432 }],
     }

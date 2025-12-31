@@ -24,10 +24,7 @@ describe('<DataTableFooter />', () => {
     }),
   ]
 
-  const createTable = (
-    data: Row[],
-    pageSize: number = 10
-  ) => {
+  const createTable = (data: Row[], pageSize: number = 10) => {
     return useReactTable({
       data,
       columns,
@@ -58,9 +55,7 @@ describe('<DataTableFooter />', () => {
   it('renders footer with custom text footnote', () => {
     const table = createTable(data)
 
-    cy.mount(
-      <DataTableFooter table={table} footnote="Custom footnote text" />
-    )
+    cy.mount(<DataTableFooter table={table} footnote="Custom footnote text" />)
 
     cy.contains('Custom footnote text').should('be.visible')
     cy.contains('selected').should('not.exist')
@@ -76,8 +71,10 @@ describe('<DataTableFooter />', () => {
       />
     )
 
-    cy.get('[data-testid="custom-footnote"]')
-      .should('contain', 'Custom Element')
+    cy.get('[data-testid="custom-footnote"]').should(
+      'contain',
+      'Custom Element'
+    )
   })
 
   it('hides pagination when all rows fit on one page', () => {
@@ -129,9 +126,7 @@ describe('<DataTableFooter />', () => {
 
     cy.mount(<DataTableFooter table={table} />)
 
-    cy.get('.flex.shrink-0.items-center.justify-between').should(
-      'be.visible'
-    )
+    cy.get('.flex.shrink-0.items-center.justify-between').should('be.visible')
   })
 
   it('displays correct page information', () => {
@@ -156,8 +151,7 @@ describe('<DataTableFooter />', () => {
 
     cy.mount(<DataTableFooter table={table} />)
 
-    cy.get('button[aria-label="Go to next page"]')
-      .should('be.enabled')
+    cy.get('button[aria-label="Go to next page"]').should('be.enabled')
   })
 
   it('shows previous page button disabled on first page', () => {
@@ -169,7 +163,6 @@ describe('<DataTableFooter />', () => {
 
     cy.mount(<DataTableFooter table={table} />)
 
-    cy.get('button[aria-label="Go to previous page"]')
-      .should('be.disabled')
+    cy.get('button[aria-label="Go to previous page"]').should('be.disabled')
   })
 })

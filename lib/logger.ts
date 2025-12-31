@@ -82,7 +82,10 @@ export const debug = (
   data?: Record<string, unknown> | unknown
 ): void => {
   if (isDevelopment || debugEnabled) {
-    const extra = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : { data }
+    const extra =
+      typeof data === 'object' && data !== null
+        ? (data as Record<string, unknown>)
+        : { data }
     console.log(createLogEntry(LogLevel.debug, msg, extra))
   }
 }
@@ -100,7 +103,10 @@ export const log = (
   data?: Record<string, unknown> | unknown
 ): void => {
   if (isDevelopment || debugEnabled) {
-    const extra = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : { data }
+    const extra =
+      typeof data === 'object' && data !== null
+        ? (data as Record<string, unknown>)
+        : { data }
     console.log(createLogEntry(LogLevel.info, msg, extra))
   }
 }
@@ -117,7 +123,10 @@ export const warn = (
   msg: string,
   data?: Record<string, unknown> | unknown
 ): void => {
-  const extra = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : { data }
+  const extra =
+    typeof data === 'object' && data !== null
+      ? (data as Record<string, unknown>)
+      : { data }
   console.warn(createLogEntry(LogLevel.warn, msg, extra))
 }
 

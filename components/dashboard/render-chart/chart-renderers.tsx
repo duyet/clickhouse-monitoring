@@ -103,10 +103,7 @@ export function CalendarChartRenderer({
 /**
  * Chart kind to renderer mapping
  */
-export const CHART_RENDERERS: Record<
-  ChartKind,
-  typeof AreaChartRenderer
-> = {
+export const CHART_RENDERERS: Record<ChartKind, typeof AreaChartRenderer> = {
   area: AreaChartRenderer,
   bar: BarChartRenderer,
   calendar: CalendarChartRenderer,

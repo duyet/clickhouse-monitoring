@@ -21,7 +21,9 @@ describe('<ChartReadonlyReplica />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartReadonlyReplica {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartReadonlyReplica {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

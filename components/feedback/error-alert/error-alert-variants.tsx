@@ -18,6 +18,8 @@ const VARIANT_STYLES: Record<ErrorAlertVariant, string> = {
 /**
  * Get the CSS classes for a given variant
  */
-export function getVariantStyles(variant: ErrorAlertVariant = 'default'): string {
+export function getVariantStyles(
+  variant: ErrorAlertVariant = 'default'
+): string {
   return VARIANT_STYLES[variant]
 }

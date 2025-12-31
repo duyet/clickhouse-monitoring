@@ -86,7 +86,9 @@ describe('<ChartDisksUsage />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartDisksUsage {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartDisksUsage {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

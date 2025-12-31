@@ -251,10 +251,7 @@ export function DataTable<
         activeFilterCount={activeFilterCount}
       />
 
-      <DataTableFooter
-        table={table}
-        footnote={footnote}
-      />
+      <DataTableFooter table={table} footnote={footnote} />
     </div>
   )
 }

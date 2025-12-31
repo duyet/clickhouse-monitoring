@@ -21,7 +21,9 @@ describe('<ChartConnectionsHttp />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartConnectionsHttp {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartConnectionsHttp {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

@@ -35,7 +35,9 @@ const statusConfig = {
 
 export const ConnectionStatusBadge = memo(function ConnectionStatusBadge() {
   const hostId = useHostId()
-  const { data, error, isLoading } = useHostStatus(hostId, { refreshInterval: 30000 })
+  const { data, error, isLoading } = useHostStatus(hostId, {
+    refreshInterval: 30000,
+  })
 
   // Determine connection status
   let status: ConnectionStatus = 'loading'

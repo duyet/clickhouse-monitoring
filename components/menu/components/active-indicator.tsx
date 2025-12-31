@@ -18,8 +18,12 @@ interface ActiveIndicatorProps {
  *
  * Displays as an underline (bottom) or left border (left).
  */
-export function ActiveIndicator({ position, active = false }: ActiveIndicatorProps) {
-  const baseClasses = 'absolute bg-primary transition-transform duration-200 rounded-full'
+export function ActiveIndicator({
+  position,
+  active = false,
+}: ActiveIndicatorProps) {
+  const baseClasses =
+    'absolute bg-primary transition-transform duration-200 rounded-full'
 
   if (position === 'bottom') {
     return (

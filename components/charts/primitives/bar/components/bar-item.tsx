@@ -9,14 +9,28 @@ import { binding } from '@/lib/utils'
 import { BarLabel } from '../../bar-label'
 import type { BarChartProps } from '@/types/charts'
 
-interface BarItemProps extends Pick<BarChartProps, 'labelPosition' | 'labelAngle' | 'showLabel' | 'stack' | 'readableColumn' | 'horizontal'> {
+interface BarItemProps
+  extends Pick<
+    BarChartProps,
+    | 'labelPosition'
+    | 'labelAngle'
+    | 'showLabel'
+    | 'stack'
+    | 'readableColumn'
+    | 'horizontal'
+  > {
   dataKey: string
   data: Record<string, unknown>[]
   categories: string[]
   fill: string
   radius: number | [number, number, number, number]
   onClickHref?: string
-  getRadius: (options: { index: number; categories: string[]; stack: boolean; horizontal: boolean }) => number | [number, number, number, number]
+  getRadius: (options: {
+    index: number
+    categories: string[]
+    stack: boolean
+    horizontal: boolean
+  }) => number | [number, number, number, number]
   index: number
 }
 

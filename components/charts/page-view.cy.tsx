@@ -21,7 +21,9 @@ describe('<PageViewBarChart />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<PageViewBarChart {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <PageViewBarChart {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

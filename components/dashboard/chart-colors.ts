@@ -40,7 +40,7 @@ export const CHART_COLOR_PALETTE = [
 /**
  * Chart color type - either CSS variable name or direct color value
  */
-export type ChartColor = typeof DEFAULT_CHART_COLORS[number] | string
+export type ChartColor = (typeof DEFAULT_CHART_COLORS)[number] | string
 
 /**
  * Gets the CSS variable value for a chart color index
@@ -48,7 +48,10 @@ export type ChartColor = typeof DEFAULT_CHART_COLORS[number] | string
  * @returns CSS variable name for the color
  */
 export function getChartColorVariable(index: number): string {
-  const safeIndex = Math.max(0, Math.min(index, DEFAULT_CHART_COLORS.length - 1))
+  const safeIndex = Math.max(
+    0,
+    Math.min(index, DEFAULT_CHART_COLORS.length - 1)
+  )
   return DEFAULT_CHART_COLORS[safeIndex]
 }
 

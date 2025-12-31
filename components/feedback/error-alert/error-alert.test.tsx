@@ -9,16 +9,16 @@ import { describe, expect, it } from '@jest/globals'
 import { ErrorAlert } from './index'
 import { CompactErrorAlert } from './variants/compact'
 import { FullErrorAlert } from './variants/full'
-import {
-  getErrorIcon,
-  type ErrorIconType,
-} from './error-alert-icons'
+import { getErrorIcon, type ErrorIconType } from './error-alert-icons'
 import {
   ErrorAlertAccordion,
   ErrorAlertDocs,
   ErrorAlertDigest,
 } from './error-alert-accordion'
-import { getVariantStyles, type ErrorAlertVariant } from './error-alert-variants'
+import {
+  getVariantStyles,
+  type ErrorAlertVariant,
+} from './error-alert-variants'
 import { useErrorCountdown } from './use-error-countdown'
 import type { ErrorAlertProps } from './types'
 
@@ -156,7 +156,14 @@ describe('ErrorAlert', () => {
       ]
 
       expectedTypes.forEach((type) => {
-        expect(['table_not_found', 'permission_error', 'network_error', 'validation_error', 'query_error', 'default']).toContain(type)
+        expect([
+          'table_not_found',
+          'permission_error',
+          'network_error',
+          'validation_error',
+          'query_error',
+          'default',
+        ]).toContain(type)
       })
     })
   })

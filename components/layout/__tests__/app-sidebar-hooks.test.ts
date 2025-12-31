@@ -29,7 +29,9 @@ describe('components/layout/hooks', () => {
 
   describe('useAppSidebarState', () => {
     it('should initialize with defaultOpen state', () => {
-      const { result } = renderHook(() => useAppSidebarState({ defaultOpen: true }))
+      const { result } = renderHook(() =>
+        useAppSidebarState({ defaultOpen: true })
+      )
 
       expect(result.current.open).toBe(true)
       expect(result.current.openMobile).toBe(false)
@@ -37,13 +39,17 @@ describe('components/layout/hooks', () => {
     })
 
     it('should initialize with closed state when defaultOpen is false', () => {
-      const { result } = renderHook(() => useAppSidebarState({ defaultOpen: false }))
+      const { result } = renderHook(() =>
+        useAppSidebarState({ defaultOpen: false })
+      )
 
       expect(result.current.open).toBe(false)
     })
 
     it('should toggle sidebar state', () => {
-      const { result } = renderHook(() => useAppSidebarState({ defaultOpen: true }))
+      const { result } = renderHook(() =>
+        useAppSidebarState({ defaultOpen: true })
+      )
 
       act(() => {
         result.current.toggleSidebar()
@@ -55,7 +61,9 @@ describe('components/layout/hooks', () => {
     it('should toggle mobile state when isMobile is true', () => {
       ;(useIsMobile as jest.Mock).mockReturnValue(true)
 
-      const { result } = renderHook(() => useAppSidebarState({ defaultOpen: true }))
+      const { result } = renderHook(() =>
+        useAppSidebarState({ defaultOpen: true })
+      )
 
       act(() => {
         result.current.toggleSidebar()
@@ -66,14 +74,18 @@ describe('components/layout/hooks', () => {
     })
 
     it('should persist state to localStorage', () => {
-      const { result } = renderHook(() => useAppSidebarState({ defaultOpen: true }))
+      const { result } = renderHook(() =>
+        useAppSidebarState({ defaultOpen: true })
+      )
 
       act(() => {
         result.current.setOpen(false)
       })
 
       if (typeof window !== 'undefined') {
-        expect(localStorage.getItem('clickhouse-monitor:sidebar:state')).toBe('false')
+        expect(localStorage.getItem('clickhouse-monitor:sidebar:state')).toBe(
+          'false'
+        )
       }
     })
 
@@ -82,7 +94,9 @@ describe('components/layout/hooks', () => {
         localStorage.setItem('clickhouse-monitor:sidebar:state', 'false')
       }
 
-      const { result } = renderHook(() => useAppSidebarState({ defaultOpen: true }))
+      const { result } = renderHook(() =>
+        useAppSidebarState({ defaultOpen: true })
+      )
 
       // Wait for useEffect to run
       await waitFor(() => {
@@ -93,7 +107,9 @@ describe('components/layout/hooks', () => {
     it('should auto-collapse on tablet screens', async () => {
       ;(useIsTablet as jest.Mock).mockReturnValue(true)
 
-      const { result } = renderHook(() => useAppSidebarState({ defaultOpen: true }))
+      const { result } = renderHook(() =>
+        useAppSidebarState({ defaultOpen: true })
+      )
 
       await waitFor(() => {
         expect(result.current.open).toBe(false)
@@ -130,18 +146,26 @@ describe('components/layout/hooks', () => {
 
       renderHook(() => useAppSidebarKeyboard(toggleSidebar, 'b'))
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function))
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        'keydown',
+        expect.any(Function)
+      )
     })
 
     it('should remove keyboard event listener on unmount', () => {
       const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener')
       const toggleSidebar = jest.fn()
 
-      const { unmount } = renderHook(() => useAppSidebarKeyboard(toggleSidebar, 'b'))
+      const { unmount } = renderHook(() =>
+        useAppSidebarKeyboard(toggleSidebar, 'b')
+      )
 
       unmount()
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function))
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        'keydown',
+        expect.any(Function)
+      )
     })
 
     it('should call toggleSidebar on Cmd/Ctrl+B key press', () => {

@@ -35,7 +35,9 @@ export const SUPPORTED_FORMATS = ['JSONEachRow', 'JSON', 'CSV', 'TSV'] as const
  * ```
  */
 export function isSupportedFormat(format: string): format is DataFormat {
-  return SUPPORTED_FORMATS.includes(format as typeof SUPPORTED_FORMATS[number])
+  return SUPPORTED_FORMATS.includes(
+    format as (typeof SUPPORTED_FORMATS)[number]
+  )
 }
 
 /**

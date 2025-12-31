@@ -69,7 +69,10 @@ describe('<ChartFailedQueryCountByType />', () => {
 
   it('applies custom className', () => {
     cy.mount(
-      <ChartFailedQueryCountByType {...defaultProps} className="custom-test-class" />
+      <ChartFailedQueryCountByType
+        {...defaultProps}
+        className="custom-test-class"
+      />
     )
 
     cy.get('.custom-test-class').should('exist')
@@ -90,7 +93,9 @@ describe('<ChartFailedQueryCountByType />', () => {
       },
     }).as('chartDataHost1')
 
-    cy.mount(<ChartFailedQueryCountByType hostId={1} title="Host 1 Failed Queries" />)
+    cy.mount(
+      <ChartFailedQueryCountByType hostId={1} title="Host 1 Failed Queries" />
+    )
 
     cy.wait('@chartDataHost1')
     cy.contains('Host 1 Failed Queries').should('exist')

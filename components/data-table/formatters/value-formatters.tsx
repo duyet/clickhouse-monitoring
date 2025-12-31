@@ -68,7 +68,10 @@ export const relatedTimeFormatter: ValueOnlyFormatter = (value) => (
  * ```
  */
 export const textFormatter: ValueOnlyFormatter = (value, options) => (
-  <TextFormat value={value as React.ReactNode} options={options as TextFormatOptions} />
+  <TextFormat
+    value={value as React.ReactNode}
+    options={options as TextFormatOptions}
+  />
 )
 
 /**

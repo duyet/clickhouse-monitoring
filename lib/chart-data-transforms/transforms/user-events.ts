@@ -34,9 +34,7 @@ import type { UserEventCountsTransformed } from '../types'
  * // result.chartData = [{ event_time: '2024-01-01', alice: 5, bob: 3 }, ...]
  * ```
  */
-export function transformUserEventCounts<
-  T extends string = 'event_time',
->(
+export function transformUserEventCounts<T extends string = 'event_time'>(
   data: readonly Record<string, unknown>[],
   timeField: T = 'event_time' as T
 ): UserEventCountsTransformed<T> {

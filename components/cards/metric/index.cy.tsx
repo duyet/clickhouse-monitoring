@@ -36,11 +36,7 @@ describe('<MetricCard />', () => {
       }
 
       cy.mount(
-        <MetricCard
-          swr={loadingSwr}
-          title="Test Metric"
-          variant="dual"
-        />
+        <MetricCard swr={loadingSwr} title="Test Metric" variant="dual" />
       )
 
       cy.get('[aria-label="Loading Test Metric"]').should('exist')
@@ -56,12 +52,7 @@ describe('<MetricCard />', () => {
         mutate: cy.stub().as('retry'),
       }
 
-      cy.mount(
-        <MetricCard
-          swr={errorSwr}
-          title="Test Metric"
-        />
-      )
+      cy.mount(<MetricCard swr={errorSwr} title="Test Metric" />)
 
       cy.get('[role="alert"]').should('exist')
       cy.contains('Test Metric').should('exist')
@@ -76,12 +67,7 @@ describe('<MetricCard />', () => {
         mutate: cy.stub().as('retry'),
       }
 
-      cy.mount(
-        <MetricCard
-          swr={errorSwr}
-          title="Test Metric"
-        />
-      )
+      cy.mount(<MetricCard swr={errorSwr} title="Test Metric" />)
 
       cy.contains('Retry').click()
       cy.get('@retry').should('have.been.called')
@@ -96,12 +82,7 @@ describe('<MetricCard />', () => {
         error: null,
       }
 
-      cy.mount(
-        <MetricCard
-          swr={emptySwr}
-          title="Test Metric"
-        />
-      )
+      cy.mount(<MetricCard swr={emptySwr} title="Test Metric" />)
 
       cy.contains('-').should('exist')
       cy.contains('Test Metric').should('exist')
@@ -114,12 +95,7 @@ describe('<MetricCard />', () => {
         error: null,
       }
 
-      cy.mount(
-        <MetricCard
-          swr={emptyArraySwr}
-          title="Test Metric"
-        />
-      )
+      cy.mount(<MetricCard swr={emptyArraySwr} title="Test Metric" />)
 
       cy.contains('-').should('exist')
     })
@@ -264,7 +240,16 @@ describe('<MetricCard />', () => {
   })
 
   describe('themes', () => {
-    const themes = ['default', 'purple', 'blue', 'green', 'orange', 'pink', 'cyan', 'indigo'] as const
+    const themes = [
+      'default',
+      'purple',
+      'blue',
+      'green',
+      'orange',
+      'pink',
+      'cyan',
+      'indigo',
+    ] as const
 
     themes.forEach((theme) => {
       it(`renders with ${theme} theme`, () => {
@@ -375,11 +360,7 @@ describe('<MetricCard />', () => {
       }
 
       cy.mount(
-        <MetricCard
-          swr={dataSwr}
-          title="Test Metric"
-          variant="default"
-        >
+        <MetricCard swr={dataSwr} title="Test Metric" variant="default">
           {(data) => (
             <div>
               <span data-testid="custom-name">{data[0].name}</span>

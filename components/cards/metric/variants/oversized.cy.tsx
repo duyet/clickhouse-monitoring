@@ -25,7 +25,8 @@ describe('renderOversizedVariant', () => {
     cy.mount(
       <div className="p-4">
         {renderOversizedVariant({
-          value: (data) => data.reduce((sum, item) => sum + (item.value as number), 0),
+          value: (data) =>
+            data.reduce((sum, item) => sum + (item.value as number), 0),
           unit: 'total',
           data: mockData,
           compact: false,
@@ -97,9 +98,7 @@ describe('renderOversizedVariant', () => {
     )
 
     // Should have justify-center class
-    cy.contains('567')
-      .parent()
-      .should('have.class', 'justify-center')
+    cy.contains('567').parent().should('have.class', 'justify-center')
   })
 
   it('applies muted foreground color', () => {
@@ -278,15 +277,14 @@ describe('<MetricCard variant="oversized" />', () => {
     cy.mount(
       <MetricCard
         swr={{
-          data: [
-            { count: 1000 },
-            { count: 500 },
-          ],
+          data: [{ count: 1000 }, { count: 500 }],
           isLoading: false,
         }}
         title="Total Operations"
         variant="oversized"
-        value={(data) => data.reduce((sum, item) => sum + (item.count as number), 0)}
+        value={(data) =>
+          data.reduce((sum, item) => sum + (item.count as number), 0)
+        }
         unit="operations"
       />
     )

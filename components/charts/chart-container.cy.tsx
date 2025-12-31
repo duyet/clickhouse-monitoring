@@ -69,7 +69,9 @@ describe('<ChartContainer />', () => {
       sql: 'SELECT 42',
     }
 
-    const children = cy.stub().returns(<div data-testid="chart-content">Chart Content</div>)
+    const children = cy
+      .stub()
+      .returns(<div data-testid="chart-content">Chart Content</div>)
 
     cy.mount(
       <ChartContainer swr={swr} title="Test Chart">

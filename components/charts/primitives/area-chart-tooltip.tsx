@@ -6,7 +6,11 @@
 
 'use client'
 
-import type { NameType, Payload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
+import type {
+  NameType,
+  Payload,
+  ValueType,
+} from 'recharts/types/component/DefaultTooltipContent'
 import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import type { ChartConfig } from '@/components/ui/chart'
 import { StandardTooltipRow, SummaryRow } from './tooltip-row'

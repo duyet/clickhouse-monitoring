@@ -76,9 +76,7 @@ export const KeyboardShortcuts = () => {
     onKeyDown: showShortcuts,
   })
 
-  return (
-    <KeyboardShortcutsDialog open={showHelp} onOpenChange={setShowHelp} />
-  )
+  return <KeyboardShortcutsDialog open={showHelp} onOpenChange={setShowHelp} />
 }
 
 // Re-export useSWRRevalidate from the new location

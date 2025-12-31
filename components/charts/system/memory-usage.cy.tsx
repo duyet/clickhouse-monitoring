@@ -80,7 +80,9 @@ describe('<ChartMemoryUsage />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartMemoryUsage {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartMemoryUsage {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

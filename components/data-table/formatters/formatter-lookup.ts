@@ -25,48 +25,47 @@ export function getInlineFormatter(
  */
 export function getValueFormatter(
   format: ColumnFormat
-): ((value: unknown, options?: ColumnFormatOptions) => React.ReactNode) | undefined {
+):
+  | ((value: unknown, options?: ColumnFormatOptions) => React.ReactNode)
+  | undefined {
   return VALUE_FORMATTERS[format as keyof typeof VALUE_FORMATTERS]
 }
 
 /**
  * Get a context formatter by format type
  */
-export function getContextFormatter<
-  TData extends RowData,
-  TValue,
->(
+export function getContextFormatter<TData extends RowData, TValue>(
   format: ColumnFormat
-): ((
-  props: {
-    table: Table<TData>
-    data: TData[]
-    row: Row<TData>
-    value: TValue
-    columnName: string
-    context: Record<string, string>
-    options?: ColumnFormatOptions
-  }
-) => React.ReactNode) | undefined {
+):
+  | ((props: {
+      table: Table<TData>
+      data: TData[]
+      row: Row<TData>
+      value: TValue
+      columnName: string
+      context: Record<string, string>
+      options?: ColumnFormatOptions
+    }) => React.ReactNode)
+  | undefined {
   return CONTEXT_FORMATTERS[format as keyof typeof CONTEXT_FORMATTERS] as any
 }
 
 /**
  * Get an advanced formatter by format type
  */
-export function getAdvancedFormatter<
-  TData extends RowData,
-  TValue,
->(
+export function getAdvancedFormatter<TData extends RowData, TValue>(
   format: ColumnFormat
-): ((value: unknown, options?: ColumnFormatOptions) => React.ReactNode) | ((props: {
-  table: Table<TData>
-  data: TData[]
-  row: Row<TData>
-  value: TValue
-  columnName: string
-  context: Record<string, string>
-  options?: ColumnFormatOptions
-}) => React.ReactNode) | undefined {
+):
+  | ((value: unknown, options?: ColumnFormatOptions) => React.ReactNode)
+  | ((props: {
+      table: Table<TData>
+      data: TData[]
+      row: Row<TData>
+      value: TValue
+      columnName: string
+      context: Record<string, string>
+      options?: ColumnFormatOptions
+    }) => React.ReactNode)
+  | undefined {
   return ADVANCED_FORMATTERS[format as keyof typeof ADVANCED_FORMATTERS] as any
 }

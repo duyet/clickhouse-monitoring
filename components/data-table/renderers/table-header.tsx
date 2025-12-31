@@ -3,10 +3,7 @@
 import { flexRender } from '@tanstack/react-table'
 import { memo } from 'react'
 
-import {
-  TableHead,
-  TableRow,
-} from '@/components/ui/table'
+import { TableHead, TableRow } from '@/components/ui/table'
 
 /**
  * Props for TableHeaderRow component
@@ -25,7 +22,9 @@ export interface TableHeaderRowProps {
  *
  * Performance: Memoized to prevent unnecessary re-renders
  */
-export const TableHeaderRow = memo(function TableHeaderRow({ headers }: TableHeaderRowProps) {
+export const TableHeaderRow = memo(function TableHeaderRow({
+  headers,
+}: TableHeaderRowProps) {
   return (
     <TableRow className="border-b border-border hover:bg-transparent">
       {headers.map((header: any) => {
@@ -60,14 +59,13 @@ export interface TableHeaderProps {
  * Renders all header groups (typically one) with TableHeaderRow components.
  * Performance: Memoized to prevent unnecessary re-renders
  */
-export const TableHeader = memo(function TableHeader({ headerGroups }: TableHeaderProps) {
+export const TableHeader = memo(function TableHeader({
+  headerGroups,
+}: TableHeaderProps) {
   return (
     <>
       {headerGroups.map((headerGroup: any) => (
-        <TableHeaderRow
-          key={headerGroup.id}
-          headers={headerGroup.headers}
-        />
+        <TableHeaderRow key={headerGroup.id} headers={headerGroup.headers} />
       ))}
     </>
   )

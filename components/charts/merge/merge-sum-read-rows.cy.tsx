@@ -21,13 +21,17 @@ describe('<ChartMergeSumReadRows />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartMergeSumReadRows {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartMergeSumReadRows {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })
 
   it('works with different hostId values', () => {
-    cy.mount(<ChartMergeSumReadRows hostId={1} title="Host 1 Merge Read Rows" />)
+    cy.mount(
+      <ChartMergeSumReadRows hostId={1} title="Host 1 Merge Read Rows" />
+    )
 
     cy.contains('Host 1 Merge Read Rows').should('exist')
   })

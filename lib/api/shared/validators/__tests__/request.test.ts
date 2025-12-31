@@ -148,7 +148,9 @@ describe('validateDataRequest', () => {
 })
 
 describe('validateSearchParams', () => {
-  const createSearchParams = (params: Record<string, string>): URLSearchParams => {
+  const createSearchParams = (
+    params: Record<string, string>
+  ): URLSearchParams => {
     return new URLSearchParams(params)
   }
 
@@ -158,7 +160,11 @@ describe('validateSearchParams', () => {
   })
 
   test('should return undefined when extra params are present', () => {
-    const params = createSearchParams({ hostId: '0', sql: 'SELECT 1', format: 'JSON' })
+    const params = createSearchParams({
+      hostId: '0',
+      sql: 'SELECT 1',
+      format: 'JSON',
+    })
     expect(validateSearchParams(params, ['hostId', 'sql'])).toBeUndefined()
   })
 
@@ -251,7 +257,11 @@ describe('validateEnumValue', () => {
 
   test('should handle numeric values in enum', () => {
     const numericValues = [1, 2, 3] as const
-    const result = validateEnumValue('1', numericValues as unknown as readonly string[], 'field')
+    const result = validateEnumValue(
+      '1',
+      numericValues as unknown as readonly string[],
+      'field'
+    )
     expect(result).toEqual({
       type: 'validation_error',
       message: 'Invalid field: must be one of 1, 2, 3',

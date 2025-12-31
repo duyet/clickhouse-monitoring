@@ -6,7 +6,8 @@
 
 import type { HTMLAttributes } from 'react'
 
-interface StatusIndicatorProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'title'> {
+interface StatusIndicatorProps
+  extends Omit<HTMLAttributes<HTMLSpanElement>, 'title'> {
   title?: string[]
 }
 
@@ -15,7 +16,11 @@ interface StatusIndicatorProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'ti
  *
  * Used across host components for consistent status display.
  */
-export function StatusIndicator({ className = '', title, ...props }: StatusIndicatorProps) {
+export function StatusIndicator({
+  className = '',
+  title,
+  ...props
+}: StatusIndicatorProps) {
   return (
     <span
       className={`flex-none size-2 rounded-full bg-red-400 ${className}`}

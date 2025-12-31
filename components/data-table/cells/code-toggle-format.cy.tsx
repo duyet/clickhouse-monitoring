@@ -39,7 +39,9 @@ describe('<CodeToggleFormat />', () => {
     const longCode =
       'SELECT * FROM table WHERE column1 = "value" AND column2 > 100 ORDER BY column3 DESC LIMIT 10'
     const options = { max_truncate: 20 }
-    cy.mount(<CodeToggleFormat row={mockRow} value={longCode} options={options} />)
+    cy.mount(
+      <CodeToggleFormat row={mockRow} value={longCode} options={options} />
+    )
 
     cy.get('code')
       .invoke('text')
@@ -49,7 +51,13 @@ describe('<CodeToggleFormat />', () => {
   it('hides query comment when hide_query_comment is true', () => {
     const codeWithComment = '/* This is a comment */ SELECT * FROM table'
     const options = { hide_query_comment: true, max_truncate: 100 }
-    cy.mount(<CodeToggleFormat row={mockRow} value={codeWithComment} options={options} />)
+    cy.mount(
+      <CodeToggleFormat
+        row={mockRow}
+        value={codeWithComment}
+        options={options}
+      />
+    )
 
     cy.get('code').should('not.contain', '/* This is a comment */')
   })
@@ -65,7 +73,10 @@ describe('<CodeToggleFormat />', () => {
     // Click to expand
     cy.get('[data-radix-accordion-trigger]').click()
     cy.get('[data-radix-accordion-content]').should('be.visible')
-    cy.get('[data-radix-accordion-content] code').should('contain.text', longCode)
+    cy.get('[data-radix-accordion-content] code').should(
+      'contain.text',
+      longCode
+    )
   })
 
   it('shows full code in accordion content', () => {
@@ -74,7 +85,10 @@ describe('<CodeToggleFormat />', () => {
     cy.mount(<CodeToggleFormat row={mockRow} value={longCode} />)
 
     cy.get('[data-radix-accordion-trigger]').click()
-    cy.get('[data-radix-accordion-content] code').should('contain.text', longCode)
+    cy.get('[data-radix-accordion-content] code').should(
+      'contain.text',
+      longCode
+    )
   })
 
   it('has accessible accordion trigger', () => {
@@ -82,7 +96,11 @@ describe('<CodeToggleFormat />', () => {
       'SELECT * FROM table WHERE column1 = "value" AND column2 > 100 ORDER BY column3 DESC LIMIT 10'
     cy.mount(<CodeToggleFormat row={mockRow} value={longCode} />)
 
-    cy.get('[data-radix-accordion-trigger]').should('have.attr', 'type', 'button')
+    cy.get('[data-radix-accordion-trigger]').should(
+      'have.attr',
+      'type',
+      'button'
+    )
   })
 
   it('calls row.toggleExpanded when accordion value changes', () => {
@@ -115,7 +133,10 @@ describe('<CodeToggleFormat />', () => {
       'SELECT * FROM table WHERE column1 = "value" AND column2 > 100 ORDER BY column3 DESC LIMIT 10'
     cy.mount(<CodeToggleFormat row={mockRow} value={longCode} />)
 
-    cy.get('[data-radix-accordion-trigger]').should('have.class', 'hover:no-underline')
+    cy.get('[data-radix-accordion-trigger]').should(
+      'have.class',
+      'hover:no-underline'
+    )
   })
 
   it('uses line-clamp-2 and truncate on code', () => {
@@ -146,7 +167,9 @@ describe('<CodeToggleFormat />', () => {
   })
 
   it('handles null value gracefully', () => {
-    cy.mount(<CodeToggleFormat row={mockRow} value={null as unknown as string} />)
+    cy.mount(
+      <CodeToggleFormat row={mockRow} value={null as unknown as string} />
+    )
 
     // Should render something without crashing
     cy.get('code').should('exist')

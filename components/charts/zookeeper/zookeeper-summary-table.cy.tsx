@@ -69,7 +69,12 @@ describe('<ChartZookeeperSummaryTable />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartZookeeperSummaryTable {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartZookeeperSummaryTable
+        {...defaultProps}
+        className="custom-test-class"
+      />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

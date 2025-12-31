@@ -69,7 +69,10 @@ export const MetricCardEmpty = memo(function MetricCardEmpty({
       />
 
       <CardHeader
-        className={cn('px-2.5 sm:px-3', compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5')}
+        className={cn(
+          'px-2.5 sm:px-3',
+          compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
+        )}
       >
         <div className="flex items-center gap-1.5">
           {icon && (

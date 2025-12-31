@@ -19,7 +19,9 @@ export async function GET(request: NextRequest) {
 
   try {
     // Single query to fetch all values
-    const result = await fetchData<Array<{ version: string; uptime: string; hostname: string }>>({
+    const result = await fetchData<
+      Array<{ version: string; uptime: string; hostname: string }>
+    >({
       query: `
         SELECT
           version() as version,
@@ -49,7 +51,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch host status',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch host status',
       },
       { status: 500 }
     )

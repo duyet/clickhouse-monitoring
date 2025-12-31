@@ -3,7 +3,10 @@ import { DatabaseIcon } from 'lucide-react'
 import { MetricCard } from '../index'
 
 describe('renderDualVariant', () => {
-  const mockData = [{ value1: 100, value2: 200 }, { value1: 150, value2: 250 }]
+  const mockData = [
+    { value1: 100, value2: 200 },
+    { value1: 150, value2: 250 },
+  ]
 
   it('renders two values with units', () => {
     cy.mount(
@@ -240,9 +243,13 @@ describe('<MetricCard variant="dual" />', () => {
         }}
         title="I/O Operations"
         variant="dual"
-        value1={(data) => data.reduce((sum, item) => sum + (item.reads as number), 0)}
+        value1={(data) =>
+          data.reduce((sum, item) => sum + (item.reads as number), 0)
+        }
         unit1="reads"
-        value2={(data) => data.reduce((sum, item) => sum + (item.writes as number), 0)}
+        value2={(data) =>
+          data.reduce((sum, item) => sum + (item.writes as number), 0)
+        }
         unit2="writes"
       />
     )

@@ -31,7 +31,8 @@ export function assignSortingFn<TData>(
 
   // Check if it's one of our custom sorting functions
   if (sortingFnName in customSortingFns) {
-    columnDef.sortingFn = customSortingFns[sortingFnName as CustomSortingFnNames]
+    columnDef.sortingFn =
+      customSortingFns[sortingFnName as CustomSortingFnNames]
     return
   }
 

@@ -9,9 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  detectCardErrorVariant,
-} from '@/lib/card-error-utils'
+import { detectCardErrorVariant } from '@/lib/card-error-utils'
 import { cn } from '@/lib/utils'
 
 // Re-export types and hooks
@@ -37,11 +35,7 @@ import {
   renderTrendVariant,
 } from './variants'
 import { MetricIcons } from './icons'
-import {
-  MetricCardSkeleton,
-  MetricCardError,
-  MetricCardEmpty,
-} from './states'
+import { MetricCardSkeleton, MetricCardError, MetricCardEmpty } from './states'
 import type { MetricCardProps } from './types'
 
 // Re-export icons for convenience

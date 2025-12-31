@@ -36,9 +36,7 @@ const ERROR_ICONS: Record<ErrorIconType, LucideIcon> = {
 /**
  * Get the icon component for a given error type
  */
-export function getErrorIcon(
-  errorType?: ErrorIconType
-): ReactElement {
+export function getErrorIcon(errorType?: ErrorIconType): ReactElement {
   const Icon = ERROR_ICONS[errorType || 'default']
   return <Icon className={ICON_CLASS_NAME} />
 }

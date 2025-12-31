@@ -69,7 +69,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   const hasCharts = relatedCharts.length > 0
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
+    <div className="flex min-w-0 flex-1 flex-col gap-4 w-full">
       {/* Optional Header Content */}
       {headerContent}
 
@@ -92,13 +92,13 @@ export const QueryPageLayout = memo(function QueryPageLayout({
       {/* Data Table - flex-1 to fill remaining space */}
       {!hideTable && (
         <Suspense fallback={<TableSkeleton />}>
-          <FadeIn duration={300} className="flex flex-1 flex-col">
+          <FadeIn duration={300} className="flex min-w-0 flex-1 flex-col">
             <TableClient
               title={title || queryConfig.name}
               description={description || queryConfig.description}
               queryConfig={queryConfig}
               searchParams={searchParams}
-              className="flex flex-1 flex-col"
+              className="flex min-w-0 flex-1 flex-col"
             />
           </FadeIn>
         </Suspense>

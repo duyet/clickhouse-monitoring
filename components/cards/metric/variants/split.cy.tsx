@@ -3,7 +3,10 @@ import { DatabaseIcon } from 'lucide-react'
 import { MetricCard } from '../index'
 
 describe('renderSplitVariant', () => {
-  const mockData = [{ value1: 100, value2: 200 }, { value1: 150, value2: 250 }]
+  const mockData = [
+    { value1: 100, value2: 200 },
+    { value1: 150, value2: 250 },
+  ]
 
   it('renders two values with labels', () => {
     cy.mount(

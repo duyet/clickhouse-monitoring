@@ -59,8 +59,11 @@ describe('<DataTableContent />', () => {
   it('renders table container with proper accessibility', () => {
     cy.mount(<DataTableContent {...defaultProps} />)
 
-    cy.get('[role="region"]')
-      .should('have.attr', 'aria-label', 'Test Table table')
+    cy.get('[role="region"]').should(
+      'have.attr',
+      'aria-label',
+      'Test Table table'
+    )
   })
 
   it('renders table with caption for accessibility', () => {
@@ -90,12 +93,7 @@ describe('<DataTableContent />', () => {
       getCoreRowModel: getCoreRowModel(),
     })
 
-    cy.mount(
-      <DataTableContent
-        {...defaultProps}
-        table={emptyTable}
-      />
-    )
+    cy.mount(<DataTableContent {...defaultProps} table={emptyTable} />)
 
     cy.contains('No results').should('be.visible')
   })
@@ -137,12 +135,7 @@ describe('<DataTableContent />', () => {
   })
 
   it('applies virtualization style when isVirtualized is true', () => {
-    cy.mount(
-      <DataTableContent
-        {...defaultProps}
-        isVirtualized={true}
-      />
-    )
+    cy.mount(<DataTableContent {...defaultProps} isVirtualized={true} />)
 
     cy.get('[role="region"]')
       .should('have.css', 'height')
@@ -150,16 +143,10 @@ describe('<DataTableContent />', () => {
   })
 
   it('does not apply fixed height when not virtualized', () => {
-    cy.mount(
-      <DataTableContent
-        {...defaultProps}
-        isVirtualized={false}
-      />
-    )
+    cy.mount(<DataTableContent {...defaultProps} isVirtualized={false} />)
 
     // Height should be auto or not explicitly set to 600px
-    cy.get('[role="region"]')
-      .should('not.have.css', 'height', '600px')
+    cy.get('[role="region"]').should('not.have.css', 'height', '600px')
   })
 
   it('renders table with border and background styles', () => {

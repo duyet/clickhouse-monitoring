@@ -203,7 +203,9 @@ describe('<MetricCard variant="single" />', () => {
         swr={{ data: [{ count: 50 }, { count: 75 }], isLoading: false }}
         title="Total Items"
         variant="single"
-        value={(data) => data.reduce((sum, item) => sum + (item.count as number), 0)}
+        value={(data) =>
+          data.reduce((sum, item) => sum + (item.count as number), 0)
+        }
         unit="items"
       />
     )

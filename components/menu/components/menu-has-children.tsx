@@ -57,10 +57,7 @@ export const MenuHasChildren = memo(function MenuHasChildren({
           {item.items
             ?.filter((childItem) => childItem.title && childItem.href)
             .map((childItem) => (
-              <MenuListItem
-                key={childItem.href}
-                item={childItem}
-              />
+              <MenuListItem key={childItem.href} item={childItem} />
             ))}
         </ul>
       </NavigationMenuContent>

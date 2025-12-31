@@ -60,22 +60,22 @@ export const runningQueriesConfig: QueryConfig = {
     query: [
       ColumnFormat.CodeDialog,
       {
-        max_truncate: 100,
+        max_truncate: 50,
         hide_query_comment: true,
         dialog_title: 'Running Query',
         trigger_classname: 'min-w-96',
       },
     ],
-    user: ColumnFormat.ColoredBadge,
-    estimated_remaining_time: ColumnFormat.Duration,
     query_detail: [
       ColumnFormat.Link,
       {
         href: '/query?query_id=[query_id]&host=[ctx.hostId]',
-        className: 'truncate max-w-48 text-wrap',
+        className: 'truncate max-w-40 text-wrap',
         title: 'Query Detail',
       },
     ],
+    user: ColumnFormat.ColoredBadge,
+    estimated_remaining_time: ColumnFormat.Duration,
     query_id: [
       ColumnFormat.Action,
       ['kill-query', 'explain-query', 'query-settings'],

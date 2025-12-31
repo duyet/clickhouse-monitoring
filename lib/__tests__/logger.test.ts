@@ -123,7 +123,10 @@ describe('logger', () => {
 
     it('should log error with context', () => {
       const err = new Error('Test error')
-      const context: ErrorContext = { component: 'TestComponent', action: 'testAction' }
+      const context: ErrorContext = {
+        component: 'TestComponent',
+        action: 'testAction',
+      }
       // Should not throw
       ErrorLogger.logError(err, context)
     })

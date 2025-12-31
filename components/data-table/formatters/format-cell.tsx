@@ -6,8 +6,18 @@
 
 import type { Row, RowData, Table } from '@tanstack/react-table'
 import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
-import { getAdvancedFormatter, getContextFormatter, getInlineFormatter, getValueFormatter } from './formatter-lookup'
-import { hasAdvancedFormatter, hasContextFormatter, hasInlineFormatter, hasValueFormatter } from './formatter-selector'
+import {
+  getAdvancedFormatter,
+  getContextFormatter,
+  getInlineFormatter,
+  getValueFormatter,
+} from './formatter-lookup'
+import {
+  hasAdvancedFormatter,
+  hasContextFormatter,
+  hasInlineFormatter,
+  hasValueFormatter,
+} from './formatter-selector'
 
 /**
  * Format a cell value using the appropriate formatter
@@ -92,9 +102,5 @@ export function formatCell<
   }
 
   // 5. Default fallback - simple text display
-  return (
-    <span className="truncate text-wrap">
-      {value as string}
-    </span>
-  )
+  return <span className="truncate text-wrap">{value as string}</span>
 }

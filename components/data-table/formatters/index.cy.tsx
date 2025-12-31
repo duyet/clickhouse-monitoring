@@ -125,7 +125,10 @@ describe('Formatters Module', () => {
           original: { database: 'system', table: 'users' },
           index: 0,
           getValue: (key: string) => {
-            const data: Record<string, string> = { database: 'system', table: 'users' }
+            const data: Record<string, string> = {
+              database: 'system',
+              table: 'users',
+            }
             return data[key]
           },
         } as unknown as Row<any>,
@@ -180,7 +183,9 @@ describe('Formatters Module', () => {
     })
 
     it('markdownFormatter should render markdown content', () => {
-      mount(<TestWrapper>{markdownFormatter('**Bold** and *italic*')}</TestWrapper>)
+      mount(
+        <TestWrapper>{markdownFormatter('**Bold** and *italic*')}</TestWrapper>
+      )
 
       cy.get('strong').should('contain.text', 'Bold')
       cy.get('em').should('contain.text', 'italic')
@@ -201,13 +206,21 @@ describe('Formatters Module', () => {
       const badge2 = coloredBadgeFormatter(value)
 
       // Extract className from both badges (they should match)
-      cy.wrap(badge1).invoke('props', 'className').then((className1) => {
-        cy.wrap(badge2).invoke('props', 'className').then((className2) => {
-          const colorClass1 = (className1 as string).match(/bg-\w+-100/)?.[0]
-          const colorClass2 = (className2 as string).match(/bg-\w+-100/)?.[0]
-          expect(colorClass1).to.equal(colorClass2)
+      cy.wrap(badge1)
+        .invoke('props', 'className')
+        .then((className1) => {
+          cy.wrap(badge2)
+            .invoke('props', 'className')
+            .then((className2) => {
+              const colorClass1 = (className1 as string).match(
+                /bg-\w+-100/
+              )?.[0]
+              const colorClass2 = (className2 as string).match(
+                /bg-\w+-100/
+              )?.[0]
+              expect(colorClass1).to.equal(colorClass2)
+            })
         })
-      })
     })
   })
 

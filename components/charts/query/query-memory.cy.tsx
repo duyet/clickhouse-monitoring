@@ -21,7 +21,9 @@ describe('<ChartQueryMemory />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartQueryMemory {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartQueryMemory {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })

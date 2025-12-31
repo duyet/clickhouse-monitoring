@@ -38,7 +38,15 @@ function SortIcon({ sortState }: { sortState: false | 'asc' | 'desc' }) {
 /**
  * Header content with optional icon
  */
-function HeaderContent({ name, format, icon }: { name: string; format: ColumnFormat; icon?: Icon }) {
+function HeaderContent({
+  name,
+  format,
+  icon,
+}: {
+  name: string
+  format: ColumnFormat
+  icon?: Icon
+}) {
   if (format === 'action') {
     return <div className="text-muted-foreground">action</div>
   }

@@ -67,6 +67,56 @@
       "trailingCommas": "es5"
     }
   },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [
+              [
+                "@radix-ui/*",
+                "@uiw/*",
+                "lucide-react",
+                "recharts",
+                "swr",
+                "dayjs",
+                "clsx",
+                "tailwind-merge",
+                "class-variance-authority",
+                "cmdk",
+                "sonner",
+                "usehooks-ts",
+                "react-resizable-panels",
+                "react-error-boundary",
+                "zod"
+              ],
+              "@tanstack/*",
+              ["@/*", "@clickhouse/*"],
+              ":BLANK_LINE:",
+              { "type": true },
+              ":BLANK_LINE:",
+              ":PATH:"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["*.json", "*.jsonc"],
+      "formatter": {
+        "indentStyle": "space",
+        "indentWidth": 2
+      }
+    }
+  ],
   "files": {
     "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json"]
   }

@@ -3,7 +3,11 @@
  */
 
 import { describe, expect, test } from '@jest/globals'
-import { validateHostId, validateHostIdWithError, getAndValidateHostId } from '../host-id'
+import {
+  validateHostId,
+  validateHostIdWithError,
+  getAndValidateHostId,
+} from '../host-id'
 
 describe('validateHostId', () => {
   test('should return parsed number for valid hostId string', () => {
@@ -14,24 +18,36 @@ describe('validateHostId', () => {
   })
 
   test('should throw error for null hostId', () => {
-    expect(() => validateHostId(null)).toThrow('Missing required parameter: hostId')
+    expect(() => validateHostId(null)).toThrow(
+      'Missing required parameter: hostId'
+    )
   })
 
   test('should throw error for empty string hostId', () => {
-    expect(() => validateHostId('')).toThrow('Missing required parameter: hostId')
+    expect(() => validateHostId('')).toThrow(
+      'Missing required parameter: hostId'
+    )
   })
 
   test('should throw error for invalid number string', () => {
-    expect(() => validateHostId('abc')).toThrow('Invalid hostId: must be a non-negative number')
+    expect(() => validateHostId('abc')).toThrow(
+      'Invalid hostId: must be a non-negative number'
+    )
   })
 
   test('should throw error for negative numbers', () => {
-    expect(() => validateHostId('-1')).toThrow('Invalid hostId: must be a non-negative number')
-    expect(() => validateHostId('-100')).toThrow('Invalid hostId: must be a non-negative number')
+    expect(() => validateHostId('-1')).toThrow(
+      'Invalid hostId: must be a non-negative number'
+    )
+    expect(() => validateHostId('-100')).toThrow(
+      'Invalid hostId: must be a non-negative number'
+    )
   })
 
   test('should throw error for NaN', () => {
-    expect(() => validateHostId('NaN')).toThrow('Invalid hostId: must be a non-negative number')
+    expect(() => validateHostId('NaN')).toThrow(
+      'Invalid hostId: must be a non-negative number'
+    )
   })
 })
 

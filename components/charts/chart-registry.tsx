@@ -35,22 +35,18 @@ export {
   type LazyChartComponent,
   type ChartRegistryMap,
   type ChartProps,
-
   // Type hints and skeleton utilities
   CHART_TYPE_HINTS,
   getChartSkeletonType,
-
   // Registry functions
   getChartComponent,
   hasChart,
   getRegisteredChartNames,
   getChartsByCategory,
-
   // Chart categories
   CHART_CATEGORIES,
   CHARTS_BY_CATEGORY,
   type ChartCategory,
-
   // Direct access to imports (for advanced use cases)
   chartImports,
 } from './registry'

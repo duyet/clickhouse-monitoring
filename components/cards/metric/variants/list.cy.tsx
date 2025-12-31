@@ -76,7 +76,11 @@ describe('renderListVariant', () => {
 
   it('renders truncate format values', () => {
     const items: MetricListItem[] = [
-      { label: 'ID', value: 'very-long-id-string-that-should-be-truncated', format: 'truncate' },
+      {
+        label: 'ID',
+        value: 'very-long-id-string-that-should-be-truncated',
+        format: 'truncate',
+      },
     ]
 
     cy.mount(

@@ -20,7 +20,8 @@ export function parseColumnFormat(
   column: string,
   config: Record<string, unknown>
 ): { format: ColumnFormat; options?: Record<string, unknown> } {
-  const format = config[column] || config[normalizeColumnName(column)] || ColumnFormat.None
+  const format =
+    config[column] || config[normalizeColumnName(column)] || ColumnFormat.None
 
   if (Array.isArray(format) && format.length === 2) {
     return {

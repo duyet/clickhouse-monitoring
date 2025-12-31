@@ -65,7 +65,20 @@ export const COLOR_MAP: Readonly<ColorMap> = {
  * Color bank - base color names available for assignment.
  * Colors are automatically assigned to columns based on name hash.
  */
-export const COLOR_BANK: ReadonlyArray<'mint' | 'blue' | 'seafoam' | 'periwinkle' | 'coral' | 'lavender' | 'peach' | 'lemon' | 'lilac' | 'rose' | 'turquoise' | 'sky'> = [
+export const COLOR_BANK: ReadonlyArray<
+  | 'mint'
+  | 'blue'
+  | 'seafoam'
+  | 'periwinkle'
+  | 'coral'
+  | 'lavender'
+  | 'peach'
+  | 'lemon'
+  | 'lilac'
+  | 'rose'
+  | 'turquoise'
+  | 'sky'
+> = [
   'mint',
   'blue',
   'seafoam',

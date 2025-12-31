@@ -127,13 +127,21 @@ describe('<ActionItem />', () => {
   })
 
   it('renders action labels correctly', () => {
-    const actionLabels = ['Kill Query', 'Explain Query', 'Optimize Table', 'Query Settings']
-    const actions = ['kill-query', 'explain-query', 'optimize', 'query-settings']
+    const actionLabels = [
+      'Kill Query',
+      'Explain Query',
+      'Optimize Table',
+      'Query Settings',
+    ]
+    const actions = [
+      'kill-query',
+      'explain-query',
+      'optimize',
+      'query-settings',
+    ]
 
     actions.forEach((action, index) => {
-      cy.mount(
-        <ActionItem row={mockRow} action={action} value="test-value" />
-      )
+      cy.mount(<ActionItem row={mockRow} action={action} value="test-value" />)
       cy.contains(actionLabels[index]).should('be.visible')
     })
   })

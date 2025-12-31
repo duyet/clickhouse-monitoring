@@ -38,7 +38,7 @@ export interface DataTableFooterProps<TData extends RowData> {
  * Performance: Memoized to prevent unnecessary re-renders
  */
 export const DataTableFooter = memo(function DataTableFooter<
-  TData extends RowData
+  TData extends RowData,
 >({ table, footnote }: DataTableFooterProps<TData>) {
   return (
     <div className="flex shrink-0 items-center justify-between px-2">

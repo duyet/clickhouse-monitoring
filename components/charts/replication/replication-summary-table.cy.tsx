@@ -66,7 +66,10 @@ describe('<ChartReplicationSummaryTable />', () => {
 
   it('applies custom className', () => {
     cy.mount(
-      <ChartReplicationSummaryTable {...defaultProps} className="custom-test-class" />
+      <ChartReplicationSummaryTable
+        {...defaultProps}
+        className="custom-test-class"
+      />
     )
 
     cy.get('.custom-test-class').should('exist')
@@ -88,7 +91,9 @@ describe('<ChartReplicationSummaryTable />', () => {
       },
     }).as('chartDataHost1')
 
-    cy.mount(<ChartReplicationSummaryTable hostId={1} title="Host 1 Replication" />)
+    cy.mount(
+      <ChartReplicationSummaryTable hostId={1} title="Host 1 Replication" />
+    )
 
     cy.wait('@chartDataHost1')
     cy.contains('Host 1 Replication').should('exist')

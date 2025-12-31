@@ -36,7 +36,8 @@ export const DiskSizeCard = memo(function DiskSizeCard() {
   const readableUsed = swr.data?.[0]?.readable_used_space ?? '-'
   const percent = total > 0 ? (used / total) * 100 : 0
 
-  const variant: CardVariant = percent > 90 ? 'danger' : percent > 75 ? 'warning' : 'default'
+  const variant: CardVariant =
+    percent > 90 ? 'danger' : percent > 75 ? 'warning' : 'default'
 
   return (
     <ProgressCard

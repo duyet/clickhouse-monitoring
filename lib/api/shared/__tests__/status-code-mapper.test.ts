@@ -61,8 +61,12 @@ describe('status-code-mapper', () => {
     })
 
     it('should handle ApiErrorType values', () => {
-      expect(mapExtendedErrorTypeToStatusCode(ApiErrorType.ValidationError)).toBe(400)
-      expect(mapExtendedErrorTypeToStatusCode(ApiErrorType.TableNotFound)).toBe(404)
+      expect(
+        mapExtendedErrorTypeToStatusCode(ApiErrorType.ValidationError)
+      ).toBe(400)
+      expect(mapExtendedErrorTypeToStatusCode(ApiErrorType.TableNotFound)).toBe(
+        404
+      )
     })
 
     it('should default to 500 for unrecognized types', () => {
@@ -104,8 +108,12 @@ describe('status-code-mapper', () => {
       })
 
       it('should be case insensitive for table errors', () => {
-        expect(classifyError('TABLE NOT FOUND')).toBe(ApiErrorType.TableNotFound)
-        expect(classifyError('Table Not Found')).toBe(ApiErrorType.TableNotFound)
+        expect(classifyError('TABLE NOT FOUND')).toBe(
+          ApiErrorType.TableNotFound
+        )
+        expect(classifyError('Table Not Found')).toBe(
+          ApiErrorType.TableNotFound
+        )
       })
     })
 

@@ -11,7 +11,11 @@
 export type { ValidationError, ValidationResult } from './types'
 
 // Host ID validators
-export { validateHostId, getAndValidateHostId, validateHostIdWithError } from './host-id'
+export {
+  validateHostId,
+  getAndValidateHostId,
+  validateHostIdWithError,
+} from './host-id'
 
 // SQL validators
 export { validateSqlQuery } from './sql'

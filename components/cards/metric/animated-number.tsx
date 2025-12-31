@@ -12,7 +12,10 @@ interface AnimatedNumberProps {
  * Handles formats like "150.5 GiB", "1.2K", etc.
  * Returns the integer portion for animation
  */
-function parseNumericValue(value: string | number): { num: number; suffix: string } {
+function parseNumericValue(value: string | number): {
+  num: number
+  suffix: string
+} {
   if (typeof value === 'number') return { num: Math.round(value), suffix: '' }
 
   // Match: optional leading number, optional decimal, optional suffix
@@ -65,7 +68,9 @@ export function AnimatedNumber({ value, className }: AnimatedNumberProps) {
       const easedProgress = easeOutQuad(progress)
 
       // Animate to integer value
-      const currentNum = Math.round(startNum + (targetNum - startNum) * easedProgress)
+      const currentNum = Math.round(
+        startNum + (targetNum - startNum) * easedProgress
+      )
       setDisplayNum(currentNum)
 
       if (progress < 1) {

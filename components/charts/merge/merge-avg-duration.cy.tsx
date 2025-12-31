@@ -23,8 +23,18 @@ describe('<ChartMergeAvgDuration />', () => {
       statusCode: 200,
       body: {
         data: [
-          { event_time: '2025-01-01', avg_duration_ms: 5500, readable_avg_duration_ms: '5.50s', bar: 1 },
-          { event_time: '2025-01-02', avg_duration_ms: 7200, readable_avg_duration_ms: '7.20s', bar: 1 },
+          {
+            event_time: '2025-01-01',
+            avg_duration_ms: 5500,
+            readable_avg_duration_ms: '5.50s',
+            bar: 1,
+          },
+          {
+            event_time: '2025-01-02',
+            avg_duration_ms: 7200,
+            readable_avg_duration_ms: '7.20s',
+            bar: 1,
+          },
         ],
         metadata: { duration: 48, rows: 2 },
       },
@@ -37,7 +47,17 @@ describe('<ChartMergeAvgDuration />', () => {
   it('works with different hostId values', () => {
     cy.intercept('GET', '/api/v1/charts/merge-avg-duration?hostId=2*', {
       statusCode: 200,
-      body: { data: [{ event_time: '2025-01-01', avg_duration_ms: 3200, readable_avg_duration_ms: '3.20s', bar: 1 }], metadata: { duration: 26, rows: 1 } },
+      body: {
+        data: [
+          {
+            event_time: '2025-01-01',
+            avg_duration_ms: 3200,
+            readable_avg_duration_ms: '3.20s',
+            bar: 1,
+          },
+        ],
+        metadata: { duration: 26, rows: 1 },
+      },
     }).as('chartData')
     cy.mount(<ChartMergeAvgDuration hostId={2} />)
     cy.wait('@chartData')

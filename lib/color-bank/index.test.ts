@@ -143,7 +143,9 @@ describe('COLOR_MAP', () => {
     const color = COLOR_MAP['mint']
     expect(color).toBeDefined()
 
-    for (const shade of [200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700]) {
+    for (const shade of [
+      200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700,
+    ]) {
       const shadeKey = shade as keyof typeof color
       const hsl = color[shadeKey]
       expect(hsl).toBeDefined()

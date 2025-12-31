@@ -8,9 +8,7 @@
 
 import { memo } from 'react'
 import dynamic from 'next/dynamic'
-import {
-  NavigationMenuItem,
-} from '@/components/ui/navigation-menu'
+import { NavigationMenuItem } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
 import type { MenuItem } from '../types'
 import { HostPrefixedLink } from '../link-with-context'

@@ -29,7 +29,10 @@ describe('extractNestedData', () => {
 
   it('should extract nested array', () => {
     const nestedData = [{ id: 1 }, { id: 2 }]
-    const result = extractNestedData<{ id: number }>([{ used: nestedData }], 'used')
+    const result = extractNestedData<{ id: number }>(
+      [{ used: nestedData }],
+      'used'
+    )
 
     expect(result).toEqual(nestedData)
   })

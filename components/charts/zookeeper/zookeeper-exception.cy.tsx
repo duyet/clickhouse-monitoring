@@ -21,13 +21,17 @@ describe('<ChartKeeperException />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartKeeperException {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartKeeperException {...defaultProps} className="custom-test-class" />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })
 
   it('works with different hostId values', () => {
-    cy.mount(<ChartKeeperException hostId={1} title="Host 1 Zookeeper Exceptions" />)
+    cy.mount(
+      <ChartKeeperException hostId={1} title="Host 1 Zookeeper Exceptions" />
+    )
 
     cy.contains('Host 1 Zookeeper Exceptions').should('exist')
   })

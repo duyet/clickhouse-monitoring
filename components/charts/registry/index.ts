@@ -28,7 +28,12 @@ export type { ChartProps } from './types'
 export { CHART_TYPE_HINTS, getChartSkeletonType } from './type-hints'
 
 // Registry functions
-export { getChartComponent, hasChart, getRegisteredChartNames, getChartsByCategory } from './registry-fns'
+export {
+  getChartComponent,
+  hasChart,
+  getRegisteredChartNames,
+  getChartsByCategory,
+} from './registry-fns'
 
 // Chart categories
 export { CHART_CATEGORIES, CHARTS_BY_CATEGORY } from './chart-categories'

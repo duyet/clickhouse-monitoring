@@ -21,7 +21,9 @@ export type ChartType = 'area' | 'bar' | 'metric' | 'custom'
 /**
  * Configuration for a single chart instance in the overview page
  */
-export interface OverviewChartConfig<T extends Record<string, unknown> = Record<string, unknown>> {
+export interface OverviewChartConfig<
+  T extends Record<string, unknown> = Record<string, unknown>,
+> {
   /** Unique identifier for this chart configuration */
   id: string
   /** Chart component to render */
@@ -210,25 +212,29 @@ export const OVERVIEW_TABS: OverviewTabConfig[] = [
   {
     value: 'overview',
     label: 'Overview',
-    gridClassName: 'grid auto-rows-fr items-stretch gap-3 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 min-w-0',
+    gridClassName:
+      'grid auto-rows-fr items-stretch gap-3 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 min-w-0',
     charts: OVERVIEW_TAB_CHARTS,
   },
   {
     value: 'errors',
     label: 'Errors',
-    gridClassName: 'grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0',
+    gridClassName:
+      'grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0',
     charts: ERRORS_TAB_CHARTS,
   },
   {
     value: 'disks',
     label: 'Disks',
-    gridClassName: 'grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0',
+    gridClassName:
+      'grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0',
     charts: DISKS_TAB_CHARTS,
   },
   {
     value: 'backups',
     label: 'Backups',
-    gridClassName: 'grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0',
+    gridClassName:
+      'grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0',
     charts: BACKUPS_TAB_CHARTS,
   },
 ]

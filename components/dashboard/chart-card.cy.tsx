@@ -285,7 +285,10 @@ describe('<ChartCard />', () => {
         {
           event_time: '2025-01-01',
           metrics: { cpu: 50, memory: 75 },
-          breakdown: [['type1', 10], ['type2', 20]],
+          breakdown: [
+            ['type1', 10],
+            ['type2', 20],
+          ],
         },
       ]
 

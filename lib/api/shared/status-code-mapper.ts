@@ -12,7 +12,11 @@ import { ApiErrorType } from '@/lib/api/types'
 /**
  * Extended error type classification for more granular error handling
  */
-export type ExtendedApiErrorType = ApiErrorType | 'unknown' | 'timeout' | 'rate_limit'
+export type ExtendedApiErrorType =
+  | ApiErrorType
+  | 'unknown'
+  | 'timeout'
+  | 'rate_limit'
 
 /**
  * Mapping of error types to their corresponding HTTP status codes
@@ -28,7 +32,9 @@ const ERROR_TYPE_STATUS_MAP: Readonly<Record<ApiErrorType, number>> = {
 /**
  * Additional status codes for extended error types
  */
-const EXTENDED_STATUS_MAP: Readonly<Record<'timeout' | 'rate_limit' | 'unknown', number>> = {
+const EXTENDED_STATUS_MAP: Readonly<
+  Record<'timeout' | 'rate_limit' | 'unknown', number>
+> = {
   timeout: 408,
   rate_limit: 429,
   unknown: 500,
@@ -222,16 +228,13 @@ export function isServerErrorCode(errorType: ApiErrorType): boolean {
  */
 export function getErrorDescription(errorType: ApiErrorType): string {
   const descriptions: Readonly<Record<ApiErrorType, string>> = {
-    [ApiErrorType.ValidationError]:
-      'Invalid request parameters or data format',
+    [ApiErrorType.ValidationError]: 'Invalid request parameters or data format',
     [ApiErrorType.PermissionError]:
       'Insufficient permissions to access the requested resource',
-    [ApiErrorType.TableNotFound]:
-      'Requested table or resource does not exist',
+    [ApiErrorType.TableNotFound]: 'Requested table or resource does not exist',
     [ApiErrorType.NetworkError]:
       'Network connection error or service unavailable',
-    [ApiErrorType.QueryError]:
-      'Error executing the database query',
+    [ApiErrorType.QueryError]: 'Error executing the database query',
   } as const
 
   return descriptions[errorType] ?? 'Unknown error'

@@ -47,7 +47,14 @@ export function getSupportedFormats(): ColumnFormat[] {
   const contextFormats = Object.keys(CONTEXT_FORMATTERS) as ColumnFormat[]
   const advancedFormats = Object.keys(ADVANCED_FORMATTERS) as ColumnFormat[]
 
-  return [...new Set([...inlineFormats, ...valueFormats, ...contextFormats, ...advancedFormats])]
+  return [
+    ...new Set([
+      ...inlineFormats,
+      ...valueFormats,
+      ...contextFormats,
+      ...advancedFormats,
+    ]),
+  ]
 }
 
 /**

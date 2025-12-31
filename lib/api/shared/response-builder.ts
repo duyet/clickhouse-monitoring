@@ -220,7 +220,10 @@ export function createCachedResponse<T>(
  * return createPlainResponse({ hosts: ['0', '1', '2'] })
  * ```
  */
-export function createPlainResponse<T>(data: T, status: HttpStatus = 200): Response {
+export function createPlainResponse<T>(
+  data: T,
+  status: HttpStatus = 200
+): Response {
   return Response.json(data, {
     status,
     headers: {

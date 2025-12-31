@@ -59,7 +59,10 @@ describe('<ChartSummaryUsedByMutations />', () => {
 
   it('applies custom className', () => {
     cy.mount(
-      <ChartSummaryUsedByMutations {...defaultProps} className="custom-test-class" />
+      <ChartSummaryUsedByMutations
+        {...defaultProps}
+        className="custom-test-class"
+      />
     )
 
     cy.get('.custom-test-class').should('exist')
@@ -74,7 +77,9 @@ describe('<ChartSummaryUsedByMutations />', () => {
       },
     }).as('chartDataHost1')
 
-    cy.mount(<ChartSummaryUsedByMutations hostId={1} title="Host 1 Mutations" />)
+    cy.mount(
+      <ChartSummaryUsedByMutations hostId={1} title="Host 1 Mutations" />
+    )
 
     cy.wait('@chartDataHost1')
     cy.contains('Host 1 Mutations').should('exist')

@@ -21,13 +21,20 @@ describe('<ChartReplicationQueueCount />', () => {
   })
 
   it('applies custom className', () => {
-    cy.mount(<ChartReplicationQueueCount {...defaultProps} className="custom-test-class" />)
+    cy.mount(
+      <ChartReplicationQueueCount
+        {...defaultProps}
+        className="custom-test-class"
+      />
+    )
 
     cy.get('.custom-test-class').should('exist')
   })
 
   it('works with different hostId values', () => {
-    cy.mount(<ChartReplicationQueueCount hostId={1} title="Host 1 Replication Queue" />)
+    cy.mount(
+      <ChartReplicationQueueCount hostId={1} title="Host 1 Replication Queue" />
+    )
 
     cy.contains('Host 1 Replication Queue').should('exist')
   })
