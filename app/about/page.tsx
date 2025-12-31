@@ -1,81 +1,232 @@
 'use client'
 
-import { GithubIcon, InfoIcon } from 'lucide-react'
-import Link from 'next/link'
+import { BookOpen, Github, Heart, Server, Shield, Zap } from 'lucide-react'
+import useSWR from 'swr'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+import packageInfo from '@/package.json'
 
-const GITHUB_REPO = 'https://github.com/duyet/clickhouse-monitoring'
-const VERSION = '0.1.0'
-const DESCRIPTION = 'Simple ClickHouse UI that relies on system tables to help monitor and provide overview of your cluster'
+const GITHUB_REPO = packageInfo.repository?.url || 'https://github.com/duyet/clickhouse-monitoring'
+const LICENSE = 'MIT'
+
+interface VersionResponse {
+  ui: string
+  clickhouse?: string | { version: string }[]
+}
+
+function VersionInfo() {
+  const { data, error, isLoading } = useSWR<VersionResponse>('/api/version', {
+    refreshInterval: 60000,
+    revalidateOnFocus: false,
+  })
+
+  const chVersion =
+    data?.clickhouse && typeof data.clickhouse === 'object' && 'version' in data.clickhouse
+      ? (data.clickhouse as { version: string }).version
+      : typeof data?.clickhouse === 'string'
+        ? data.clickhouse
+        : null
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div>
+          <p className="text-muted-foreground text-xs font-medium uppercase">Dashboard UI</p>
+          <p className="text-2xl font-semibold">{packageInfo.version}</p>
+        </div>
+        <Zap className="text-primary size-8" />
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div>
+          <p className="text-muted-foreground text-xs font-medium uppercase">ClickHouse</p>
+          <p className="text-2xl font-semibold">
+            {chVersion || <span className="text-muted-foreground text-sm">Not connected</span>}
+          </p>
+        </div>
+        <Server className="text-blue-500 size-8" />
+      </div>
+    </div>
+  )
+}
+
+function FeatureCard({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: React.ElementType
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex gap-3">
+      <div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-lg">
+        <Icon className="text-primary size-5" />
+      </div>
+      <div className="space-y-1">
+        <h3 className="font-medium">{title}</h3>
+        <p className="text-muted-foreground text-sm">{description}</p>
+      </div>
+    </div>
+  )
+}
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-3xl space-y-8 py-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
-          <InfoIcon className="size-8" aria-hidden="true" />
-          About
-        </h1>
-        <p className="text-muted-foreground">
-          Learn more about the ClickHouse Monitoring Dashboard
-        </p>
+    <div className="mx-auto max-w-4xl space-y-8 py-8">
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="bg-primary/10 flex size-12 items-center justify-center rounded-xl">
+            <Server className="text-primary size-6" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">ClickHouse Monitor</h1>
+            <p className="text-muted-foreground text-sm">Monitoring Dashboard</p>
+          </div>
+        </div>
+        <p className="text-muted-foreground">{packageInfo.description}</p>
       </div>
 
-      {/* Main Content */}
-      <div className="grid gap-6">
-        {/* Dashboard Info Card */}
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 text-xl font-semibold">Dashboard Information</h2>
-          <dl className="grid gap-4 sm:grid-cols-[140px_1fr]">
-            <dt className="text-muted-foreground text-sm font-medium">Version</dt>
-            <dd className="text-sm">
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                {VERSION}
-              </code>
-            </dd>
+      <Separator />
 
-            <dt className="text-muted-foreground text-sm font-medium">Description</dt>
-            <dd className="text-sm">{DESCRIPTION}</dd>
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Version Information</h2>
+        <VersionInfo />
+      </section>
 
-            <dt className="text-muted-foreground text-sm font-medium">Technology</dt>
-            <dd className="text-sm">
-              Next.js {process.env.NEXT_VERSION || '16'} + React 19 + ClickHouse
-            </dd>
-          </dl>
+      <Separator />
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Key Features</h2>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <FeatureCard
+            icon={Zap}
+            title="Real-time Monitoring"
+            description="Monitor queries, merges, mutations, and system metrics in real-time using ClickHouse system tables."
+          />
+          <FeatureCard
+            icon={Shield}
+            title="Multi-host Support"
+            description="Connect to and monitor multiple ClickHouse clusters from a single dashboard interface."
+          />
+          <FeatureCard
+            icon={BookOpen}
+            title="Query Insights"
+            description="Analyze running and historical queries, identify bottlenecks, and optimize performance."
+          />
+          <FeatureCard
+            icon={Server}
+            title="System Overview"
+            description="View tables, replicas, disks, clusters, and ZooKeeper status at a glance."
+          />
         </div>
+      </section>
 
-        {/* GitHub Card */}
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-            <GithubIcon className="size-5" aria-hidden="true" />
-            Source Code
-          </h2>
-          <p className="text-muted-foreground mb-4 text-sm">
-            The source code is available on GitHub. Feel free to report issues, suggest features, or contribute.
-          </p>
-          <Link
-            href={GITHUB_REPO}
+      <Separator />
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Technology Stack</h2>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary">Next.js 16</Badge>
+              <Badge variant="secondary">React 19</Badge>
+              <Badge variant="secondary">TypeScript</Badge>
+              <Badge variant="secondary">Tailwind CSS</Badge>
+              <Badge variant="secondary">shadcn/ui</Badge>
+              <Badge variant="secondary">ClickHouse</Badge>
+              <Badge variant="secondary">SWR</Badge>
+              <Badge variant="secondary">Turbopack</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <Separator />
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Open Source</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Card className="group hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Github className="size-5" />
+                Source Code
+              </CardTitle>
+              <CardDescription>
+                Contribute, report issues, or star the project on GitHub
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full" asChild>
+                <a
+                  href={GITHUB_REPO.replace('git+', '').replace('.git', '')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Github className="mr-2 size-4" />
+                  View Repository
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="group hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="size-5" />
+                Documentation
+              </CardTitle>
+              <CardDescription>
+                Learn how to configure and use the monitoring dashboard
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full" asChild>
+                <a
+                  href={`${GITHUB_REPO.replace('git+', '').replace('.git', '')}#readme`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <BookOpen className="mr-2 size-4" />
+                  Read Docs
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <Separator />
+
+      <div className="flex flex-col items-center gap-2 text-center text-sm text-muted-foreground">
+        <p>
+          Released under the <Badge variant="outline">{LICENSE}</Badge> License
+        </p>
+        <p className="flex items-center gap-1">
+          Made with <Heart className="size-3.5 fill-red-500 text-red-500" /> by{' '}
+          <a
+            href="https://github.com/duyet"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="underline hover:text-foreground"
           >
-            <GithubIcon className="size-4" aria-hidden="true" />
-            View on GitHub
-          </Link>
-        </div>
-
-        {/* ClickHouse Server Info Card */}
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 text-xl font-semibold">ClickHouse Server</h2>
-          <p className="text-muted-foreground text-sm">
-            This dashboard connects to your ClickHouse server to provide monitoring insights.
-            The server version and configuration can be found in the{' '}
-            <Link href="/settings" className="underline hover:text-foreground">
-              Settings
-            </Link>{' '}
-            page.
-          </p>
-        </div>
+            @duyet
+          </a>
+        </p>
       </div>
     </div>
   )
