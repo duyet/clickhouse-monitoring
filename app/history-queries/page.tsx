@@ -1,10 +1,20 @@
 'use client'
 
+import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { historyQueriesConfig } from '@/lib/query-config/queries/history-queries'
+import { ChartSkeleton } from '@/components/skeletons'
+
+function HistoryQueriesPageContent() {
+  return (
+    <PageLayout queryConfig={historyQueriesConfig} title="History Queries" />
+  )
+}
 
 export default function HistoryQueriesPage() {
   return (
-    <PageLayout queryConfig={historyQueriesConfig} title="History Queries" />
+    <Suspense fallback={<ChartSkeleton />}>
+      <HistoryQueriesPageContent />
+    </Suspense>
   )
 }

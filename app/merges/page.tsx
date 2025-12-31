@@ -1,8 +1,18 @@
 'use client'
 
+import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { mergesConfig } from '@/lib/query-config/merges/merges'
+import { ChartSkeleton } from '@/components/skeletons'
+
+function MergesPageContent() {
+  return <PageLayout queryConfig={mergesConfig} />
+}
 
 export default function MergesPage() {
-  return <PageLayout queryConfig={mergesConfig} />
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <MergesPageContent />
+    </Suspense>
+  )
 }

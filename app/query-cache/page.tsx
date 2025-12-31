@@ -1,6 +1,18 @@
+'use client'
+
+import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { queryCacheConfig } from '@/lib/query-config/queries/query-cache'
+import { ChartSkeleton } from '@/components/skeletons'
+
+function QueryCachePageContent() {
+  return <PageLayout queryConfig={queryCacheConfig} title="Query Cache" />
+}
 
 export default function QueryCachePage() {
-  return <PageLayout queryConfig={queryCacheConfig} title="Query Cache" />
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <QueryCachePageContent />
+    </Suspense>
+  )
 }

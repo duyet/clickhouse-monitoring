@@ -1,7 +1,9 @@
 'use client'
 
+import { Suspense } from 'react'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ChartSkeleton } from '@/components/skeletons'
 import { useHostId } from '@/lib/swr'
 import { OVERVIEW_TABS } from './charts-config'
 
@@ -11,7 +13,7 @@ import { OVERVIEW_TABS } from './charts-config'
  * Displays system metrics, query statistics, disk usage, and backup information
  * organized across multiple tabs for better navigation and clarity.
  */
-export default function OverviewPage() {
+function OverviewPageContent() {
   const hostId = useHostId()
 
   return (
@@ -60,5 +62,13 @@ export default function OverviewPage() {
         ))}
       </Tabs>
     </div>
+  )
+}
+
+export default function OverviewPage() {
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <OverviewPageContent />
+    </Suspense>
   )
 }

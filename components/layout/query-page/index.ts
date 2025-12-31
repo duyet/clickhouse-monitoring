@@ -22,3 +22,4 @@ export {
 } from './layout'
 export { RelatedCharts, type RelatedChartsProps } from './related-charts'
 export { useChartsCollapsed } from './use-charts-collapsed'
+export { withSuspense } from './with-suspense'

@@ -42,7 +42,7 @@ function DynamicChart({ chartName, hostId, index }: DynamicChartProps) {
   )
 }
 
-export default function ChartsPage() {
+function ChartsPageContent() {
   const hostId = useHostId()
   const searchParams = useSearchParams()
 
@@ -85,5 +85,13 @@ export default function ChartsPage() {
         />
       ))}
     </div>
+  )
+}
+
+export default function ChartsPage() {
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <ChartsPageContent />
+    </Suspense>
   )
 }
