@@ -13,10 +13,10 @@ export function parseBreakdownData(
   breakdownLabel?: string,
   breakdownValue?: string
 ): Array<[string, any]> {
-  return breakdownData.map((item) => {
+  return breakdownData.map((item): [string, any] => {
     // breakdown: [('A', 1000)]
     if (Array.isArray(item) && item.length === 2) {
-      return item
+      return item as [string, any]
     }
 
     // breakdown: [{ name: 'A', value: 1000 }]

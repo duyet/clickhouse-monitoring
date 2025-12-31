@@ -6,10 +6,13 @@
 
 'use client'
 
-import type { ViewBox } from 'recharts'
-
+// Recharts viewBox type (simplified - accepts actual Recharts Props too)
 export interface DonutChartLabelProps {
-  viewBox?: ViewBox
+  viewBox?: {
+    cx?: string | number | undefined
+    cy?: string | number | undefined
+    [key: string]: string | number | undefined
+  }
   total: number
   centerLabel?: string
   formatValue: (value: number) => string
@@ -30,14 +33,18 @@ export function DonutChartLabel({
     return null
   }
 
+  // Convert string to number if needed
+  const cx = typeof viewBox.cx === 'string' ? parseFloat(viewBox.cx) : (viewBox.cx ?? 0)
+  const cy = typeof viewBox.cy === 'string' ? parseFloat(viewBox.cy) : (viewBox.cy ?? 0)
+
   return (
-    <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-      <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-3xl font-bold">
+    <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+      <tspan x={cx} y={cy} className="fill-foreground text-3xl font-bold">
         {centerLabel || formatValue(total)}
       </tspan>
       <tspan
-        x={viewBox.cx}
-        y={(viewBox.cy || 0) + 24}
+        x={cx}
+        y={cy + 24}
         className="fill-muted-foreground"
       >
         {centerLabel ? formatValue(total) : 'Total'}
