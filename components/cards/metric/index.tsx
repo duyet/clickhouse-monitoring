@@ -356,7 +356,7 @@ interface MetricCardEmptyProps {
   title: string
   description?: string
   icon?: React.ReactNode
-  theme: string
+  theme: MetricTheme
   compact: boolean
   className?: string
 }
