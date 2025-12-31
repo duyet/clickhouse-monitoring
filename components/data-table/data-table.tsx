@@ -9,6 +9,7 @@ import {
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
+import { Loader2Icon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { DataTablePagination } from '@/components/data-table/pagination'
@@ -35,25 +36,70 @@ import {
   useFilteredData,
   useTableColumns,
   useTableFilters,
+  useVirtualRows,
 } from './hooks'
 
+/**
+ * Props for the DataTable component
+ *
+ * @template TData - The row data type (extends RowData from TanStack Table)
+ *
+ * @param title - Table title displayed in header
+ * @param description - Table description or subtitle
+ * @param toolbarExtras - Additional toolbar elements (left side)
+ * @param topRightToolbarExtras - Additional toolbar elements (right side)
+ * @param queryConfig - Query configuration defining columns, formats, sorting
+ * @param apiParams - Parameters passed to API for query execution (deprecated: use queryParams)
+ * @param queryParams - Parameters for query execution (search, sort, pagination)
+ * @param data - Array of row data to display
+ * @param templateContext - Template replacement context for links (e.g., { database: 'system' })
+ * @param defaultPageSize - Initial page size (default: 100)
+ * @param showSQL - Show SQL button visibility (default: true)
+ * @param footnote - Custom footnote content
+ * @param className - Additional CSS classes for container
+ * @param enableColumnFilters - Enable client-side column text filtering (default: false)
+ * @param enableFilterUrlSync - Sync filters to URL parameters for shareable links (default: false)
+ * @param filterUrlPrefix - URL parameter prefix for filters (default: 'filter')
+ * @param filterableColumns - Columns to enable filtering for (default: all text columns)
+ * @param isRefreshing - Show loading indicator in header when refreshing data
+ */
 interface DataTableProps<TData extends RowData> {
+  /** Table title displayed in header */
   title?: string
+  /** Table description or subtitle */
   description?: string | React.ReactNode
+  /** Additional toolbar elements (left side) */
   toolbarExtras?: React.ReactNode
+  /** Additional toolbar elements (right side) */
   topRightToolbarExtras?: React.ReactNode
+  /** Query configuration defining columns, formats, sorting */
   queryConfig: QueryConfig
+  /** @deprecated Use queryParams instead */
   queryParams?: ChartQueryParams
+  /** Parameters for query execution (search, sort, pagination) */
+  apiParams?: ChartQueryParams
+  /** Array of row data to display */
   data: TData[]
+  /** Template replacement context for links (e.g., { database: 'system', table: 'users' }) */
   context: Record<string, string>
+  /** Initial page size (default: 100) */
   defaultPageSize?: number
+  /** Show SQL button visibility (default: true) */
   showSQL?: boolean
+  /** Custom footnote content */
   footnote?: FootnoteProps['footnote']
+  /** Additional CSS classes for container */
   className?: string
-  /** Enable client-side column text filtering */
+  /** Enable client-side column text filtering (default: false) */
   enableColumnFilters?: boolean
+  /** Sync filters to URL parameters for shareable links (default: false) */
+  enableFilterUrlSync?: boolean
+  /** URL parameter prefix for filters (default: 'filter') */
+  filterUrlPrefix?: string
   /** Columns to enable filtering for (default: all text columns) */
   filterableColumns?: string[]
+  /** Show loading indicator in header when refreshing data */
+  isRefreshing?: boolean
 }
 
 export function DataTable<
@@ -65,7 +111,8 @@ export function DataTable<
   toolbarExtras,
   topRightToolbarExtras,
   queryConfig,
-  queryParams,
+  queryParams: deprecatedQueryParams,
+  apiParams,
   data,
   context,
   defaultPageSize = 100,
@@ -73,8 +120,13 @@ export function DataTable<
   footnote,
   className,
   enableColumnFilters = false,
+  enableFilterUrlSync = false,
+  filterUrlPrefix = 'filter',
   filterableColumns,
+  isRefreshing = false,
 }: DataTableProps<TData>) {
+  // Support both old and new prop names for backward compatibility
+  const queryParams = apiParams ?? deprecatedQueryParams
   // Determine which columns should be filterable (memoized)
   const configuredColumns = useMemo(
     () =>
@@ -84,14 +136,17 @@ export function DataTable<
     [queryConfig.columns]
   )
 
-  // Client-side column filtering state
+  // Client-side column filtering state with optional URL sync
   const {
     columnFilters,
     setColumnFilter,
     clearColumnFilter,
     clearAllColumnFilters,
     activeFilterCount,
-  } = useTableFilters()
+  } = useTableFilters({
+    enableUrlSync: enableFilterUrlSync,
+    urlPrefix: filterUrlPrefix,
+  })
 
   // Apply client-side filters when enabled
   const filteredData = useFilteredData({
@@ -152,12 +207,26 @@ export function DataTable<
     },
   })
 
+  // Virtual rows for large datasets (auto-enables at 1000+ rows)
+  const rows = table.getRowModel().rows
+  const { virtualizer, tableContainerRef, isVirtualized } = useVirtualRows(
+    rows.length
+  )
+
   return (
     <div className={cn('flex flex-col', className)}>
-      <div className="flex shrink-0 flex-row items-start justify-between pb-4">
+      <div className="flex shrink-0 flex-row items-start justify-between pb-2">
         <div>
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <h1 className="text-muted-foreground flex-none text-xl">{title}</h1>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <h1 className="text-muted-foreground flex-none text-xl">{title}</h1>
+              {isRefreshing && (
+                <Loader2Icon
+                  className="text-muted-foreground size-4 animate-spin"
+                  aria-label="Loading data"
+                />
+              )}
+            </div>
             <DataTableToolbar queryConfig={queryConfig}>
               {toolbarExtras}
             </DataTableToolbar>
@@ -189,9 +258,11 @@ export function DataTable<
       </div>
 
       <div
+        ref={tableContainerRef}
         className="mb-5 min-h-0 flex-1 overflow-auto rounded-lg border border-border/50 bg-card/30"
         role="region"
         aria-label={`${title || 'Data'} table`}
+        style={isVirtualized ? { height: '600px' } : undefined}
       >
         <Table aria-describedby="table-description">
           <caption id="table-description" className="sr-only">
@@ -224,25 +295,60 @@ export function DataTable<
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, index) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className={cn(
-                    'border-b border-border/50 transition-colors hover:bg-muted/50',
-                    index % 2 === 1 && 'odd:bg-muted/30'
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-4 py-3 text-sm">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              (() => {
+                if (isVirtualized && virtualizer) {
+                  // Virtualized rendering for large datasets
+                  const virtualRows = virtualizer.getVirtualItems()
+                  return virtualRows.map((virtualRow) => {
+                    const row = table.getRowModel().rows[virtualRow.index]
+                    return (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && 'selected'}
+                        data-index={virtualRow.index}
+                        className={cn(
+                          'border-b border-border/50 transition-colors hover:bg-muted/50',
+                          virtualRow.index % 2 === 1 && 'odd:bg-muted/30'
+                        )}
+                        style={{
+                          height: `${virtualRow.size}px`,
+                          transform: `translateY(${virtualRow.start}px)`,
+                        }}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className="px-4 py-3 text-sm">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    )
+                  })
+                }
+
+                // Standard rendering for smaller datasets
+                return table.getRowModel().rows.map((row, index) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className={cn(
+                      'border-b border-border/50 transition-colors hover:bg-muted/50',
+                      index % 2 === 1 && 'odd:bg-muted/30'
+                    )}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="px-4 py-3 text-sm">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              })()
             ) : (
               <TableRow>
                 <TableCell colSpan={columnDefs.length} className="h-64 p-4">

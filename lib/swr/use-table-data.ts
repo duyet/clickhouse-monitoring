@@ -2,17 +2,20 @@
 
 import useSWR, { type SWRConfiguration } from 'swr'
 
+import type { ApiResponse, ApiResponseMetadata } from '@/lib/api/types'
+
 /**
  * Table data response structure from the API
+ * Extends the standard ApiResponse with table-specific metadata
  */
 interface TableDataResponse<T = unknown> {
+  /** Array of table row data */
   data: T[]
-  metadata: {
-    duration?: number
-    rows?: number
+  /** Response metadata including query execution info */
+  metadata: ApiResponseMetadata & {
+    /** Additional ClickHouse-specific metadata */
     rows_before_limit_at_least?: number
     exception?: string
-    message?: string
   }
 }
 
@@ -38,11 +41,11 @@ interface TableQueryParams {
  * @param {TableQueryParams} [searchParams] - Query parameters (search, sort, pagination, etc.)
  * @param {number} [refreshInterval] - Auto-refresh interval in milliseconds (disabled if 0 or undefined)
  * @param {SWRConfiguration} [swrConfig] - Additional SWR configuration options
- * @returns {Object} SWR state object with data array, metadata, error, isLoading, and refresh function
+ * @returns {Object} SWR state object with data array, metadata, error, isLoading, isValidating, and refresh function
  *
  * @example
  * ```typescript
- * const { data, metadata, error, isLoading, mutate } = useTableData(
+ * const { data, metadata, error, isLoading, isValidating, mutate } = useTableData(
  *   'tables',
  *   1,
  *   { search: 'log', page: 1, limit: 10 }
@@ -108,7 +111,7 @@ export function useTableData<T = unknown>(
     return response.json() as Promise<TableDataResponse<T>>
   }
 
-  const { data, error, isLoading, mutate } = useSWR<
+  const { data, error, isLoading, isValidating, mutate } = useSWR<
     TableDataResponse<T>,
     Error
   >(key, fetcher, {
@@ -126,6 +129,7 @@ export function useTableData<T = unknown>(
     metadata: data?.metadata,
     error,
     isLoading,
+    isValidating,
     refresh: mutate,
   }
 }

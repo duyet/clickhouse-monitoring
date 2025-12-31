@@ -113,11 +113,11 @@ export const TableClient = memo(function TableClient({
 }: TableClientProps) {
   const hostId = useHostId()
 
-  const { data, metadata, error, isLoading, refresh } = useTableData<
+  const { data, metadata, error, isLoading, isValidating, refresh } = useTableData<
     Record<string, unknown>
   >(queryConfig.name, hostId, searchParams, 30000)
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return <TableSkeleton />
   }
 
@@ -193,6 +193,7 @@ export const TableClient = memo(function TableClient({
       topRightToolbarExtras={topRightToolbarExtras}
       enableColumnFilters={enableColumnFilters}
       filterableColumns={filterableColumns}
+      isRefreshing={isValidating}
     />
   )
 })

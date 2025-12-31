@@ -1,5 +1,3 @@
-'use client'
-
 import { PageLayout } from '@/components/layout/page-layout'
 import { queryCacheConfig } from '@/lib/query-config/queries/query-cache'
 

@@ -6,7 +6,31 @@ import type { ColumnFormat, ColumnFormatWithArgs } from '@/types/column-format'
 import type { PartialBy } from '@/types/generic'
 import type { Icon } from '@/types/icon'
 
-export interface QueryConfig {
+/**
+ * Infer row data type from column names array
+ *
+ * @example
+ * ```ts
+ * type RowData = QueryConfigRowData<['database', 'table', 'engine']>
+ * // Result: { database: unknown; table: unknown; engine: unknown }
+ * ```
+ */
+export type QueryConfigRowData<T extends readonly string[]> = {
+  [K in T[number]]: unknown
+}
+
+/**
+ * Convert readonly array to mutable tuple for stricter column typing
+ *
+ * @example
+ * ```ts
+ * type Columns = ColumnNames<'database' | 'table' | 'engine'>
+ * // Result: ['database', 'table', 'engine']
+ * ```
+ */
+export type ColumnNames<T extends string> = [T, ...T[]]
+
+export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   name: string
   description?: string
   sql: string
@@ -16,7 +40,7 @@ export interface QueryConfig {
    * Default: false
    */
   disableSqlValidation?: boolean
-  columns: string[]
+  columns: TColumns
   /**
    * Column format can be specified as a enum ColumnFormat
    * or an array of two elements [ColumnFormat.Action, arg]
@@ -31,10 +55,20 @@ export interface QueryConfig {
    *   table: [ColumnFormat.Link, { href: '/tables/[table]' }],
    * }
    * ```
+   *
+   * When using typed columns, columnFormats are restricted to valid column names:
+   * ```ts
+   * const config: QueryConfig<['database', 'table']> = {
+   *   columns: ['database', 'table'],
+   *   columnFormats: {
+   *     database: ColumnFormat.Text,  // OK
+   *     table: ColumnFormat.Text,     // OK
+   *     invalid: ColumnFormat.Text,   // Type error!
+   *   }
+   * }
+   * ```
    */
-  columnFormats?: {
-    [key: string]: ColumnFormat | ColumnFormatWithArgs
-  }
+  columnFormats?: Partial<Record<TColumns[number], ColumnFormat | ColumnFormatWithArgs>>
   /**
    * Column icons can be specified as React Component name.
    *
@@ -129,4 +163,21 @@ export interface QueryConfig {
   sortingFns?: Record<string, CustomSortingFnNames>
 }
 
-export type QueryConfigNoName = PartialBy<QueryConfig, 'name'>
+export type QueryConfigNoName<TColumns extends readonly string[] = string[]> = PartialBy<
+  QueryConfig<TColumns>,
+  'name'
+>
+
+/**
+ * Helper type to extract row data from a QueryConfig
+ *
+ * @example
+ * ```ts
+ * const tablesConfig: QueryConfig<['database', 'table']> = { ... }
+ * type TablesRow = QueryConfigToRowData<typeof tablesConfig>
+ * // Result: { database: unknown; table: unknown }
+ * ```
+ */
+export type QueryConfigToRowData<T extends QueryConfig> = QueryConfigRowData<
+  T['columns']
+>

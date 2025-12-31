@@ -7,18 +7,51 @@
  * - Automatic suspense boundaries
  * - Smooth skeleton-to-content transitions
  * - Table integration
+ * - Collapsible chart section with localStorage persistence
  */
 
 'use client'
 
-import { memo, type ReactNode, Suspense } from 'react'
+import { memo, type ReactNode, Suspense, useState } from 'react'
+import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 import { getChartComponent } from '@/components/charts/chart-registry'
 import { ChartSkeleton } from '@/components/skeletons'
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
 import { FadeIn } from '@/components/ui/fade-in'
+import { Button } from '@/components/ui/button'
 import { useHostId } from '@/lib/swr'
 import type { QueryConfig } from '@/types/query-config'
+
+// ============================================================================
+// Local Storage Hook for Charts Collapsed State
+// ============================================================================
+
+const CHARTS_COLLAPSED_KEY = 'clickhouse-monitor-charts-collapsed'
+
+function useChartsCollapsed() {
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    // Initialize from localStorage
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(CHARTS_COLLAPSED_KEY)
+      return stored === 'true'
+    }
+    return false
+  })
+
+  const toggleCollapsed = () => {
+    setIsCollapsed((prev) => {
+      const newValue = !prev
+      // Persist to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(CHARTS_COLLAPSED_KEY, String(newValue))
+      }
+      return newValue
+    })
+  }
+
+  return { isCollapsed, toggleCollapsed }
+}
 
 export interface PageLayoutProps {
   /** Query config for the page table */
@@ -99,6 +132,8 @@ const DynamicChart = memo(function DynamicChart({
  * Related Charts Grid
  *
  * Renders a grid of charts based on queryConfig.relatedCharts
+ * - More relaxed responsive: 1 → 2 → 3 (until 1280px) → 4 (at 1536px+)
+ * - Equal card heights with h-full
  */
 interface RelatedChartsProps {
   relatedCharts: QueryConfig['relatedCharts']
@@ -109,7 +144,7 @@ interface RelatedChartsProps {
 const RelatedCharts = memo(function RelatedCharts({
   relatedCharts,
   hostId,
-  gridClass = 'grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+  gridClass = 'grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4',
 }: RelatedChartsProps) {
   if (!relatedCharts || relatedCharts.length === 0) {
     return null
@@ -122,7 +157,7 @@ const RelatedCharts = memo(function RelatedCharts({
 
         // Handle break directive
         if (typeof chartConfig === 'string' && chartConfig === 'break') {
-          return <div key={`break-${index}`} className="xl:col-span-4" />
+          return <div key={`break-${index}`} className="2xl:col-span-4" />
         }
 
         // Extract chart name and props
@@ -134,7 +169,7 @@ const RelatedCharts = memo(function RelatedCharts({
           : {}
 
         return (
-          <div key={`${chartName}-${index}`}>
+          <div key={`${chartName}-${index}`} className="h-full">
             <Suspense fallback={<ChartSkeleton />}>
               <DynamicChart
                 chartName={chartName}
@@ -154,7 +189,7 @@ const RelatedCharts = memo(function RelatedCharts({
  *
  * Provides a consistent layout for all pages with:
  * - Optional header content
- * - Related charts grid
+ * - Collapsible related charts grid (with localStorage persistence)
  * - Data table
  * - Optional footer content
  */
@@ -170,18 +205,49 @@ export const PageLayout = memo(function PageLayout({
 }: PageLayoutProps) {
   const hostId = useHostId()
   const relatedCharts = queryConfig.relatedCharts || []
+  const { isCollapsed, toggleCollapsed } = useChartsCollapsed()
+  const hasCharts = relatedCharts.length > 0
 
   return (
     <div className="flex flex-1 flex-col gap-4">
       {/* Optional Header Content */}
       {headerContent}
 
-      {/* Related Charts */}
-      <RelatedCharts
-        relatedCharts={relatedCharts}
-        hostId={hostId}
-        gridClass={chartsGridClass}
-      />
+      {/* Charts Section with Collapse Toggle */}
+      {hasCharts && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleCollapsed}
+              className="h-7 gap-1 px-2 text-xs"
+              aria-label={isCollapsed ? 'Show charts' : 'Hide charts'}
+            >
+              {isCollapsed ? (
+                <>
+                  <span>Show Charts</span>
+                  <ChevronDownIcon className="size-3.5" />
+                </>
+              ) : (
+                <>
+                  <span>Hide Charts</span>
+                  <ChevronUpIcon className="size-3.5" />
+                </>
+              )}
+            </Button>
+          </div>
+          {!isCollapsed && (
+            <FadeIn duration={200} className="overflow-hidden">
+              <RelatedCharts
+                relatedCharts={relatedCharts}
+                hostId={hostId}
+                gridClass={chartsGridClass}
+              />
+            </FadeIn>
+          )}
+        </div>
+      )}
 
       {/* Data Table - flex-1 to fill remaining space */}
       {!hideTable && (

@@ -43,13 +43,16 @@ export const DialogContent = memo(function DialogContent({
     <Dialog>
       <DialogTrigger asChild>{button}</DialogTrigger>
       <UIDialogContent
-        className={cn('max-w-[90vw] min-w-80 sm:min-w-96', contentClassName)}
+        className={cn(
+          'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
+          contentClassName
+        )}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="max-h-[70vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">{content}</div>
       </UIDialogContent>
     </Dialog>
   )

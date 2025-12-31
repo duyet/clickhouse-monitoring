@@ -88,7 +88,10 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
         </div>
       </DialogTrigger>
       <DialogContent
-        className={cn('max-w-fit', options?.dialog_classname)}
+        className={cn(
+          'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
+          options?.dialog_classname
+        )}
         aria-describedby={options?.dialog_description}
       >
         <DialogHeader>
@@ -96,7 +99,7 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
           <DialogDescription>{options?.dialog_description}</DialogDescription>
         </DialogHeader>
 
-        <div>
+        <div className="max-h-[80vh] overflow-auto">
           <code className="text-sm text-wrap whitespace-pre-wrap text-stone-500">
             {typeof content === 'string' ? (
               <pre className="text-wrap whitespace-pre-wrap">

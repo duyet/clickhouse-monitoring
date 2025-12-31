@@ -22,6 +22,7 @@ import { expensiveQueriesByMemoryConfig } from './queries/expensive-queries-by-m
 import { failedQueriesConfig } from './queries/failed-queries'
 import { historyQueriesConfig } from './queries/history-queries'
 import { queryCacheConfig } from './queries/query-cache'
+import { queryDetailConfig } from './queries/query-detail'
 import { runningQueriesConfig } from './queries/running-queries'
 import { clustersConfig } from './system/clusters'
 import {
@@ -59,6 +60,7 @@ export const queries: Array<QueryConfig> = [
 
   // Queries
   queryCacheConfig,
+  queryDetailConfig,
   runningQueriesConfig,
   historyQueriesConfig,
   failedQueriesConfig,
