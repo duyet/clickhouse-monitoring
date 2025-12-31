@@ -43,11 +43,11 @@ export function NavSecondary({
                   className="flex items-center gap-2"
                 >
                   <item.icon className="h-4 w-4" />
-                  <span className="group-data-[collapsible=icon]/sidebar:opacity-0 transition-opacity duration-200">
+                  <span className="group-data-[state=collapsed]/sidebar:hidden">
                     {item.title}
                   </span>
                   {item.external && (
-                    <ExternalLinkIcon className="ml-auto h-3 w-3 group-data-[collapsible=icon]/sidebar:hidden" />
+                    <ExternalLinkIcon className="ml-auto h-3 w-3 group-data-[state=collapsed]/sidebar:hidden" />
                   )}
                 </Link>
               </SidebarMenuButton>

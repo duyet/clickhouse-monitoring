@@ -5,7 +5,7 @@ import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/charts/primitives/area'
-import { useChartData } from '@/lib/swr'
+import { useChartData, useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 import type { ChartDataPoint } from '@/types/chart-data'
 import type { AreaChartFactoryConfig } from './types'
@@ -36,9 +36,9 @@ export function createAreaChart<T extends ChartDataPoint = ChartDataPoint>(
     lastHours = config.defaultLastHours,
     className,
     chartClassName,
-    hostId,
     ...props
   }: ChartProps) {
+    const hostId = useHostId()
     const swr = useChartData<T>({
       chartName: config.chartName,
       hostId,

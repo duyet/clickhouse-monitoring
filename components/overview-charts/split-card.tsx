@@ -1,7 +1,10 @@
 'use client'
 
 import { memo } from 'react'
+import Link from 'next/link'
+
 import { AnimatedNumber } from '@/components/cards/metric/animated-number'
+import { cn } from '@/lib/utils'
 import { cardStyles } from './card-styles'
 
 // ============================================================================
@@ -19,19 +22,29 @@ export interface SplitValueProps {
   href?: string
 }
 
-export const SplitValue = memo(function SplitValue({ value, label, href }: SplitValueProps) {
-  const content = (
-    <div className="group flex flex-1 flex-col items-center justify-center gap-1 transition-opacity hover:opacity-80 min-w-0 text-center">
+export const SplitValue = memo(function SplitValue({
+  value,
+  label,
+  href,
+}: SplitValueProps) {
+  return (
+    <div
+      className={cn(
+        'group flex flex-1 flex-col items-center justify-center gap-1 transition-opacity hover:opacity-80 w-full min-w-0 text-center',
+        cardStyles.hover
+      )}
+    >
       <AnimatedNumber value={value} className={cardStyles.number} />
+
       <span className={cardStyles.label}>{label}</span>
-      {href && <span className={cardStyles.labelHover}>{label.toLowerCase()} →</span>}
+
+      {href && (
+        <Link href={href} className={cardStyles.labelHover}>
+          {label.toLowerCase()} →
+        </Link>
+      )}
     </div>
   )
-
-  if (href) {
-    return <a href={href}>{content}</a>
-  }
-  return content
 })
 
 // ============================================================================

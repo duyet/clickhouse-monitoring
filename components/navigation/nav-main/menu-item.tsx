@@ -49,7 +49,7 @@ const SingleMenuItem = memo(function SingleMenuItem({
       <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
         <HostPrefixedLink href={item.href}>
           {item.icon && <item.icon className="h-4 w-4" />}
-          <span className="group-data-[collapsible=icon]/sidebar:opacity-0 transition-opacity duration-200">
+          <span className="group-data-[state=collapsed]/sidebar:hidden">
             {item.title}
           </span>
         </HostPrefixedLink>
@@ -80,10 +80,10 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
         <CollapsibleTrigger asChild>
           <SidebarMenuButton tooltip={item.title} isActive={hasActiveChild}>
             {item.icon && <item.icon className="h-4 w-4" />}
-            <span className="group-data-[collapsible=icon]/sidebar:opacity-0 transition-opacity duration-200">
+            <span className="group-data-[state=collapsed]/sidebar:hidden">
               {item.title}
             </span>
-            <ChevronRight className="ml-auto transition-all duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]/sidebar:opacity-0 group-data-[collapsible=icon]/sidebar:hidden" />
+            <ChevronRight className="ml-auto transition-all duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[state=collapsed]/sidebar:hidden" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
@@ -95,7 +95,7 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
                   isActive={isMenuItemActive(subItem.href, pathname)}
                 >
                   <HostPrefixedLink href={subItem.href}>
-                    <span className="group-data-[collapsible=icon]/sidebar:opacity-0 transition-opacity duration-200">
+                    <span className="group-data-[state=collapsed]/sidebar:hidden">
                       {subItem.title}
                     </span>
                   </HostPrefixedLink>

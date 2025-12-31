@@ -7,13 +7,18 @@ import { Suspense } from 'react'
 import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
+import { AppSidebar } from '@/components/app-sidebar'
 import { KeyboardShortcuts } from '@/components/controls/keyboard-shortcuts'
 import { LayoutErrorBoundary } from '@/components/feedback/layout-error-boundary'
-import { SidebarLayout } from '@/components/layout/sidebar-layout'
+import { HeaderActions } from '@/components/header/header-actions'
+import { Breadcrumb } from '@/components/navigation/breadcrumb'
 import { PageSkeleton, SidebarSkeleton } from '@/components/skeletons'
 import { NetworkStatusBanner } from '@/components/status/network-status-banner'
+import { Separator } from '@/components/ui/separator'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { SWRProvider } from '@/lib/swr'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
@@ -71,19 +76,32 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased bg-background">
         <Providers>
           <NetworkStatusBanner />
           <Suspense fallback={null}>
             <KeyboardShortcuts />
           </Suspense>
-          <Suspense fallback={<SidebarSkeleton />}>
-            <SidebarLayout>
-              <Suspense fallback={<PageSkeleton />}>
-                <LayoutErrorBoundary>{children}</LayoutErrorBoundary>
-              </Suspense>
-            </SidebarLayout>
-          </Suspense>
+          <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+              <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+                <div className="flex items-center gap-2 px-4">
+                  <SidebarTrigger className="-ml-1" />
+                  <Separator orientation="vertical" className="mr-2 h-4" />
+                  <Suspense fallback={<Skeleton className="h-4 w-32" />}>
+                    <Breadcrumb />
+                  </Suspense>
+                </div>
+                <div className="ml-auto px-4">
+                  <HeaderActions />
+                </div>
+              </header>
+              <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                {children}
+              </div>
+            </SidebarInset>
+          </SidebarProvider>
           <Toaster />
         </Providers>
         <AnalyticsScripts />

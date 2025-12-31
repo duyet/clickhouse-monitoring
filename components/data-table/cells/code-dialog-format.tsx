@@ -100,7 +100,7 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
         </DialogHeader>
 
         <div className="max-h-[80vh] overflow-auto">
-          <code className="text-sm text-wrap whitespace-pre-wrap text-stone-500">
+          <code className="text-sm text-wrap whitespace-pre-wrap">
             {typeof content === 'string' ? (
               <pre className="text-wrap whitespace-pre-wrap">
                 {dedent(content)}

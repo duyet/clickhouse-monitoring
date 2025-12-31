@@ -5,9 +5,5 @@
  * with custom functionality.
  */
 
-export { AppSidebarProvider } from './app-sidebar-provider'
-export { AppSidebar } from '../navigation/app-sidebar'
-export { SidebarLayout } from './sidebar-layout'
-
-// Hooks
-export { useAppSidebarState, useAppSidebarKeyboard } from './hooks'
+// Re-export AppSidebar from the main components directory
+export { AppSidebar } from '@/components/app-sidebar'

@@ -4,7 +4,7 @@ import { type FC, memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { useChartData } from '@/lib/swr'
+import { useChartData, useHostId } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 import type { CustomChartFactoryConfig } from './types'
 
@@ -20,7 +20,7 @@ import type { CustomChartFactoryConfig } from './types'
  *   readable_total_size: string
  * }>({
  *   chartName: 'backup-size',
- *   render: (data, sql, hostId) => <CardMetric {...data[0]} />,
+ *   render: (data, sql) => <CardMetric {...data[0]} />,
  * })
  * ```
  */
@@ -32,8 +32,8 @@ export function createCustomChart<T extends ChartDataPoint = ChartDataPoint>(
     interval = config.defaultInterval,
     lastHours = config.defaultLastHours,
     className,
-    hostId,
   }: ChartProps) {
+    const hostId = useHostId()
     const swr = useChartData<T>({
       chartName: config.chartName,
       hostId,

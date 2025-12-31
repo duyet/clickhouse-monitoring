@@ -1,8 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
-import { PageSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
 import { OVERVIEW_TABS } from './charts-config'
@@ -17,50 +15,50 @@ export default function OverviewPage() {
   const hostId = useHostId()
 
   return (
-    <Suspense fallback={<PageSkeleton chartCount={8} />}>
-      <div>
-        <OverviewCharts className="mb-6" />
+    <div>
+      <OverviewCharts className="mb-6" />
 
-        <Tabs defaultValue="overview" className="space-y-2">
-          <div className="overflow-x-auto pb-1 -mx-1 px-1 sm:mx-0 sm:px-0">
-            <TabsList className="w-full sm:w-fit inline-flex min-w-max">
-              {OVERVIEW_TABS.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value}>
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
+      <Tabs defaultValue="overview" className="space-y-2">
+        <div className="overflow-x-auto pb-1 -mx-1 px-1 sm:mx-0 sm:px-0">
+          <TabsList className="w-full sm:w-fit inline-flex min-w-max">
+            {OVERVIEW_TABS.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
-          {OVERVIEW_TABS.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value} className="space-y-2">
-              <div
-                className={tab.gridClassName}
-                role="region"
-                aria-label={`${tab.label} charts`}
-              >
-                {tab.charts.map((chartConfig) => {
-                  const ChartComponent = chartConfig.component
+        {OVERVIEW_TABS.map((tab) => (
+          <TabsContent key={tab.value} value={tab.value} className="space-y-2">
+            <div
+              className={tab.gridClassName}
+              role="region"
+              aria-label={`${tab.label} charts`}
+            >
+              {tab.charts.map((chartConfig) => {
+                const ChartComponent = chartConfig.component
 
-                  return (
-                    <ChartComponent
-                      key={chartConfig.id}
-                      hostId={hostId}
-                      title={chartConfig.title}
-                      interval={chartConfig.interval}
-                      lastHours={chartConfig.lastHours}
-                      className={chartConfig.className}
-                      chartClassName={chartConfig.chartClassName}
-                      chartCardContentClassName={chartConfig.chartCardContentClassName}
-                      {...(chartConfig.props ?? {})}
-                    />
-                  )
-                })}
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
-      </div>
-    </Suspense>
+                return (
+                  <ChartComponent
+                    key={chartConfig.id}
+                    title={chartConfig.title}
+                    interval={chartConfig.interval}
+                    lastHours={chartConfig.lastHours}
+                    className={chartConfig.className}
+                    chartClassName={chartConfig.chartClassName}
+                    chartCardContentClassName={
+                      chartConfig.chartCardContentClassName
+                    }
+                    hostId={hostId}
+                    {...(chartConfig.props ?? {})}
+                  />
+                )
+              })}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
   )
 }

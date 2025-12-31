@@ -22,11 +22,8 @@ import { buildUrl } from '@/lib/url/url-builder'
 import { getHost } from '@/lib/utils'
 import { HostStatusDropdown } from './host-status-dropdown'
 import { HostVersionWithStatus } from './host-version-status'
-
-interface HostSwitcherProps {
-  hosts: Array<Omit<HostInfo, 'user'>>
-  currentHostId: number
-}
+import { useHosts } from '@/lib/swr/use-hosts'
+import { useHostId } from '@/lib/swr'
 
 /**
  * Host switcher component for sidebar header.
@@ -34,11 +31,14 @@ interface HostSwitcherProps {
  * Provides dropdown menu for switching between ClickHouse hosts.
  * Shows host icon, name, and status in collapsed/expanded states.
  */
-export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
+export function HostSwitcher() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { isMobile, state } = useSidebar()
+  const { hosts } = useHosts()
+  const currentHostId = useHostId()
+
 
   const activeHost = hosts[currentHostId] || hosts[0]
 
