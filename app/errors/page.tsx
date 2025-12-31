@@ -1,6 +1,6 @@
 'use client'
 
-import { PageLayout } from '@/components/layout/page-layout'
+import { PageLayout } from '@/components/layout/query-page'
 import { errorsConfig } from '@/lib/query-config/more/errors'
 
 export default function ErrorsPage() {

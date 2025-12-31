@@ -1,6 +1,6 @@
 'use client'
 
-import { PageLayout } from '@/components/layout/page-layout'
+import { PageLayout } from '@/components/layout/query-page'
 import { mutationsConfig } from '@/lib/query-config/merges/mutations'
 
 export default function MutationsPage() {

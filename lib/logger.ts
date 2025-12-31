@@ -1,10 +1,20 @@
 /**
  * Unified logging system for ClickHouse Monitor
  *
- * Environment-based behavior:
- * - Development: Full detailed logging with stack traces
- * - Production: Sanitized logging without sensitive data
- * - DEBUG=true: Forces debug/info output in any environment
+ * Uses Pino-compatible NDJSON (Newline Delimited JSON) format:
+ * {"level":30,"time":1735633240000,"msg":"message","key":"value"}
+ *
+ * Log levels (Pino standard):
+ * - 10: trace
+ * - 20: debug
+ * - 30: info
+ * - 40: warn
+ * - 50: error
+ *
+ * Sources:
+ * - https://betterstack.com/community/comparisons/pino-vs-winston/
+ * - https://signoz.io/guides/pino-logger/
+ * - https://uptrace.dev/glossary/structured-logging
  */
 
 import { getEnvironment } from './env-utils'
@@ -20,9 +30,6 @@ const debugEnabled = process.env.DEBUG === 'true'
 // Types
 // ============================================================================
 
-/**
- * Error logging context for additional metadata
- */
 export interface ErrorContext {
   digest?: string
   component?: string
@@ -32,127 +39,107 @@ export interface ErrorContext {
   [key: string]: unknown
 }
 
-/**
- * Log entry metadata
- */
-interface LogMetadata {
-  timestamp: string
-  environment: string
-  level: LogLevel
-}
+// Pino log levels
+type LogLevel = number // 10=trace, 20=debug, 30=info, 40=warn, 50=error
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+const LogLevel = {
+  trace: 10,
+  debug: 20,
+  info: 30,
+  warn: 40,
+  error: 50,
+} as const
 
 // ============================================================================
 // Core Logging Functions
 // ============================================================================
 
 /**
- * Debug logging - only in development or DEBUG=true
+ * Create a Pino-compatible log entry
+ */
+function createLogEntry(level: LogLevel, msg: string, extra?: Record<string, unknown>): string {
+  const entry = {
+    level,
+    time: Date.now(),
+    msg,
+    ...extra,
+  }
+  return JSON.stringify(entry)
+}
+
+/**
+ * Debug logging (level: 20) - only in development or DEBUG=true
  *
  * @example
  * debug('[API] Query execution', { hostId: 0, query: 'SELECT 1' })
+ *
+ * Output: {"level":20,"time":1735633240000,"msg":"[API] Query execution","hostId":0,"query":"SELECT 1"}
  */
-export const debug = (message: string, data?: unknown): void => {
+export const debug = (msg: string, data?: Record<string, unknown> | unknown): void => {
   if (isDevelopment || debugEnabled) {
-    const metadata = createMetadata('debug')
-    console.debug(`[DEBUG] ${metadata.timestamp}`, message, data || '')
+    const extra = typeof data === 'object' && data !== null ? data : { data }
+    console.log(createLogEntry(LogLevel.debug, msg, extra))
   }
 }
 
 /**
- * Info logging - only in development or DEBUG=true
+ * Info logging (level: 30) - only in development or DEBUG=true
  *
  * @example
  * info('[API] Data fetched successfully', { rows: 100 })
+ *
+ * Output: {"level":30,"time":1735633240000,"msg":"[API] Data fetched successfully","rows":100}
  */
-export const log = (message: string, data?: unknown): void => {
+export const log = (msg: string, data?: Record<string, unknown> | unknown): void => {
   if (isDevelopment || debugEnabled) {
-    const metadata = createMetadata('info')
-    console.log(`[INFO] ${metadata.timestamp}`, message, data || '')
+    const extra = typeof data === 'object' && data !== null ? data : { data }
+    console.log(createLogEntry(LogLevel.info, msg, extra))
   }
 }
 
 /**
- * Warning logging - always outputs
+ * Warning logging (level: 40) - always outputs
  *
  * @example
  * warn('[API] Deprecated endpoint accessed', { path: '/old-api' })
+ *
+ * Output: {"level":40,"time":1735633240000,"msg":"[API] Deprecated endpoint accessed","path":"/old-api"}
  */
-export const warn = (message: string, data?: unknown): void => {
-  const metadata = createMetadata('warn')
-  if (isDevelopment) {
-    console.warn(`[WARN] ${metadata.timestamp}:`, message, data || '')
-  } else {
-    console.warn(
-      '[WARN]',
-      JSON.stringify({ timestamp: metadata.timestamp, message, data })
-    )
-  }
+export const warn = (msg: string, data?: Record<string, unknown> | unknown): void => {
+  const extra = typeof data === 'object' && data !== null ? data : { data }
+  console.warn(createLogEntry(LogLevel.warn, msg, extra))
 }
 
 /**
- * Error logging - always outputs
+ * Error logging (level: 50) - always outputs
  *
  * @example
- * error('[API] Query failed:', err)
- * error('[API] Query failed with context:', err, { hostId: 0, query: 'SELECT 1' })
+ * error('[API] Query failed', err, { hostId: 0 })
+ *
+ * Output: {"level":50,"time":1735633240000,"msg":"[API] Query failed","err":{"name":"Error","message":"..."},"hostId":0}
  */
 export const error = (
-  message: string,
+  msg: string,
   err?: Error | unknown,
   context?: ErrorContext
 ): void => {
-  const metadata = createMetadata('error')
+  const extra: Record<string, unknown> = {}
 
-  if (isDevelopment) {
-    // Development: Full detailed logging
-    console.error('='.repeat(80))
-    console.error(`[ERROR] ${metadata.timestamp} [${metadata.environment}]`)
-    console.error('='.repeat(80))
-    console.error('Message:', message)
-
-    if (err instanceof Error) {
-      console.error('Error Name:', err.name)
-      console.error('Error Message:', err.message)
-      if (err.stack) {
-        console.error('Stack Trace:')
-        console.error(err.stack)
-      }
-    } else if (err) {
-      console.error('Error:', err)
+  if (err instanceof Error) {
+    extra.err = {
+      name: err.name,
+      message: err.message,
+      stack: isDevelopment ? err.stack : undefined,
     }
-
-    if (context) {
-      console.error('Context:', JSON.stringify(context, null, 2))
-    }
-
-    console.error('='.repeat(80))
-  } else {
-    // Production: Sanitized logging without stack traces
-    const sanitizedLog = {
-      timestamp: metadata.timestamp,
-      environment: metadata.environment,
-      message,
-      error:
-        err instanceof Error
-          ? {
-              name: err.name,
-              message: err.message,
-            }
-          : err,
-      context: context
-        ? {
-            digest: context.digest,
-            component: context.component,
-            action: context.action,
-            hostId: context.hostId,
-          }
-        : undefined,
-    }
-
-    console.error('[ERROR]', JSON.stringify(sanitizedLog))
+  } else if (err !== undefined) {
+    extra.err = err
   }
+
+  if (context) {
+    Object.assign(extra, context)
+  }
+
+  console.error(createLogEntry(LogLevel.error, msg, extra))
 }
 
 // ============================================================================
@@ -168,28 +155,17 @@ export const error = (
  * ErrorLogger.logDebug('Rendering component', { props: { ... } })
  */
 export class ErrorLogger {
-  /**
-   * Log an error with structured context
-   * In development: logs full details including stack trace
-   * In production: logs sanitized error without sensitive data
-   */
   static logError(err: Error, context?: ErrorContext): void {
-    const message = `Error in ${context?.component || 'unknown'}${context?.action ? ` (${context.action})` : ''}`
-    error(message, err, context)
+    const msg = `Error in ${context?.component || 'unknown'}${context?.action ? ` (${context.action})` : ''}`
+    error(msg, err, context)
   }
 
-  /**
-   * Log a warning with context
-   */
-  static logWarning(message: string, context?: ErrorContext): void {
-    warn(message, context)
+  static logWarning(msg: string, context?: ErrorContext): void {
+    warn(msg, context)
   }
 
-  /**
-   * Log debug information (only in development)
-   */
-  static logDebug(message: string, data?: unknown): void {
-    debug(message, data)
+  static logDebug(msg: string, data?: Record<string, unknown>): void {
+    debug(msg, data)
   }
 }
 
@@ -198,19 +174,7 @@ export class ErrorLogger {
 // ============================================================================
 
 /**
- * Create log metadata with timestamp and environment
- */
-function createMetadata(level: LogLevel): LogMetadata {
-  return {
-    timestamp: new Date().toISOString(),
-    environment: getEnvironment(),
-    level,
-  }
-}
-
-/**
  * Format error for display based on environment
- * Returns user-friendly error messages for production display
  */
 export function formatErrorForDisplay(error: Error & { digest?: string }): {
   title: string
@@ -222,10 +186,8 @@ export function formatErrorForDisplay(error: Error & { digest?: string }): {
   }
 } {
   if (isDevelopment) {
-    // In development, show full error details
     let detailedMessage = error.message
 
-    // Extract backend error information if available
     if (
       error.message.includes('No ClickHouse hosts configured') ||
       error.message.includes('CLICKHOUSE_HOST')
@@ -257,12 +219,10 @@ export function formatErrorForDisplay(error: Error & { digest?: string }): {
     }
   }
 
-  // Production: More helpful message with error type hints
   let userMessage =
     'An unexpected error occurred. Please try again or contact support if the issue persists.'
   let adminNote = ''
 
-  // Provide slightly more context in production without exposing sensitive details
   if (
     error.message.includes('No ClickHouse hosts configured') ||
     error.message.includes('CLICKHOUSE_HOST')

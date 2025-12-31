@@ -117,7 +117,11 @@ export const TableClient = memo(function TableClient({
     Record<string, unknown>
   >(queryConfig.name, hostId, searchParams, 30000)
 
-  if (isLoading && !data) {
+  // Show skeleton during initial load OR if validating with no existing data
+  // This prevents showing "no data" while waiting for the first response
+  const isInitialLoading = isLoading || (isValidating && (!data || data.length === 0))
+
+  if (isInitialLoading) {
     return <TableSkeleton />
   }
 

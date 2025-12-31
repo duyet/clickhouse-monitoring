@@ -1,4 +1,4 @@
-import { PageLayout } from '@/components/layout/page-layout'
+import { PageLayout } from '@/components/layout/query-page'
 import { queryCacheConfig } from '@/lib/query-config/queries/query-cache'
 
 export default function QueryCachePage() {

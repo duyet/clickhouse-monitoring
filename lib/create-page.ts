@@ -7,4 +7,4 @@
 
 'use client'
 
-export { createPage, type CreatePageOptions } from '@/components/layout/page-layout'
+export { createPage, type CreatePageOptions } from '@/components/layout/query-page'
