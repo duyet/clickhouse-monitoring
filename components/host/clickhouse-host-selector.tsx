@@ -96,7 +96,7 @@ const HostStatusIndicator = memo(function HostStatusIndicator({
   hostId: number
   hostName: string
 }) {
-  const { status, isOnline, isLoading } = useHostStatus(hostId, {
+  const { data, isOnline, isLoading } = useHostStatus(hostId, {
     refreshInterval: 60000,
     revalidateOnFocus: false,
   })
@@ -113,16 +113,16 @@ const HostStatusIndicator = memo(function HostStatusIndicator({
     )
   }
 
-  if (isOnline && status) {
+  if (isOnline && data) {
     return (
       <div className="flex items-center gap-2">
         <span>{hostName}</span>
         <StatusIndicator
           className="bg-sky-500"
           title={[
-            `Host: ${status.hostName}`,
-            `Online: ${status.uptime}`,
-            `Version: ${status.version}`,
+            `Host: ${data.hostname}`,
+            `Online: ${data.uptime}`,
+            `Version: ${data.version}`,
           ]}
         />
       </div>
