@@ -49,7 +49,7 @@ export const ChartSummaryUsedByRunningQueries = memo(
       if (!data || data.length === 0) return []
 
       const firstItem = data[0] as Record<string, unknown> | undefined
-      if (!firstItem) return []
+      if (!firstItem || typeof firstItem !== 'object') return []
 
       const main = firstItem.main as
         | {
@@ -133,7 +133,7 @@ export const ChartSummaryUsedByRunningQueries = memo(
     }
 
     const firstItem = data[0] as Record<string, unknown> | undefined
-    if (!firstItem) {
+    if (!firstItem || typeof firstItem !== 'object') {
       return <ChartEmpty title={title} className={className} />
     }
 

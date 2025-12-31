@@ -14,6 +14,7 @@
 
 import { memo, type ReactNode, Suspense, useState } from 'react'
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
+
 import { getChartComponent } from '@/components/charts/chart-registry'
 import { ChartSkeleton } from '@/components/skeletons'
 import { TableSkeleton } from '@/components/skeletons'
@@ -21,6 +22,7 @@ import { TableClient } from '@/components/tables/table-client'
 import { FadeIn } from '@/components/ui/fade-in'
 import { Button } from '@/components/ui/button'
 import { useHostId } from '@/lib/swr'
+import { cn } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
 
 // ============================================================================
@@ -144,14 +146,14 @@ interface RelatedChartsProps {
 const RelatedCharts = memo(function RelatedCharts({
   relatedCharts,
   hostId,
-  gridClass = 'grid grid-cols-1 gap-3 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4',
+  gridClass,
 }: RelatedChartsProps) {
   if (!relatedCharts || relatedCharts.length === 0) {
     return null
   }
 
   return (
-    <div className={gridClass}>
+    <div className={cn('grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4', gridClass)}>
       {relatedCharts.map((chartConfig, index) => {
         if (!chartConfig) return null
 

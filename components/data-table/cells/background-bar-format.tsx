@@ -1,6 +1,7 @@
 import type { Row, Table } from '@tanstack/react-table'
 import { memo } from 'react'
 import { formatReadableQuantity } from '@/lib/format-readable'
+import { cn } from '@/lib/utils'
 
 export interface BackgroundBarOptions {
   numberFormat?: boolean
@@ -35,20 +36,31 @@ export const BackgroundBarFormat = memo(function BackgroundBarFormat({
     return value
   }
 
+  // Determine color based on percentage
+  const getBarColor = (percentage: number) => {
+    if (percentage >= 80) return 'bg-green-500/20 dark:bg-green-400/20'
+    if (percentage >= 50) return 'bg-blue-500/20 dark:bg-blue-400/20'
+    if (percentage >= 25) return 'bg-yellow-500/20 dark:bg-yellow-400/20'
+    return 'bg-gray-400/20 dark:bg-gray-500/20'
+  }
+
   return (
     <div
-      className="relative w-full overflow-hidden rounded p-1"
+      className="relative w-full overflow-hidden rounded"
       title={`${orgValue} (${pct}%)`}
       aria-label={`${orgValue} (${pct}%)`}
       aria-roledescription="background-bar"
     >
-      {/* Background bar using CSS variable for dark mode support */}
+      {/* Background bar - reduced height, color based on percentage */}
       <div
-        className="absolute inset-0 bg-primary/10 transition-all"
+        className={cn(
+          'absolute left-0 top-1/2 -translate-y-1/2 h-2 rounded transition-all',
+          getBarColor(pct as number)
+        )}
         style={{ width: `${pct}%` }}
         aria-hidden="true"
       />
-      <span className="relative">
+      <span className="relative inline-block min-w-0 truncate px-1">
         {options?.numberFormat
           ? formatReadableQuantity(value as number, 'long')
           : value}

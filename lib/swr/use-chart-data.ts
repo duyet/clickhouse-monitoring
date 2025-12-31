@@ -144,10 +144,13 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     ...swrConfig,
   })
 
-  // Ensure data is always an array
-  const dataArray: T[] =
-    (data?.data as T[]) ||
-    (Array.isArray(data?.data) ? (data?.data as T[]) : [])
+  // Handle both array (single query) and object (multi-query) data structures
+  // Multi-query charts return: { main: [...], totalMem: [...], ... }
+  // Single-query charts return: [{ ... }, { ... }, ... ]
+  const dataArray =
+    Array.isArray(data?.data) || !data?.data
+      ? (data?.data as T[])
+      : ([data.data] as T[])
 
   return {
     data: dataArray,

@@ -38,6 +38,72 @@ export const menuItemsConfig: MenuItem[] = [
     section: 'main',
   },
   {
+    title: 'Queries',
+    href: '',
+    countKey: 'running-queries',
+    icon: MixIcon,
+    section: 'main',
+    items: [
+      {
+        title: 'Running Queries',
+        href: '/running-queries',
+        description: 'Queries that are currently running',
+        countKey: 'running-queries',
+        icon: MixIcon,
+      },
+      {
+        title: 'History Queries',
+        href: '/history-queries',
+        description:
+          'Queries that have been run including successed, failed queries with resourses usage details',
+        icon: CounterClockwiseClockIcon,
+      },
+      {
+        title: 'Failed Queries',
+        href: '/failed-queries',
+        description: 'Which queries have failed?',
+        icon: CrossCircledIcon,
+      },
+      {
+        title: 'Latest Common Errors',
+        href: '/common-errors',
+        description:
+          'Exploring the system.errors table to see when the error last occurred',
+        icon: CrossCircledIcon,
+      },
+      {
+        title: 'Most Expensive Queries',
+        href: '/expensive-queries',
+        description: 'Most expensive queries by many factors',
+        icon: CircleDollarSignIcon,
+      },
+      {
+        title: 'Most Expensive Queries by Memory',
+        href: '/expensive-queries-by-memory',
+        description: 'Most expensive queries by memory',
+        icon: CircleDollarSignIcon,
+      },
+      {
+        title: 'New Parts Created',
+        href: '/charts?name=new-parts-created',
+        description: 'How many (and how often) new parts are created',
+        icon: FilePlus2Icon,
+      },
+      {
+        title: 'Explain',
+        href: '/explain',
+        description: 'Shows the execution plan of a statement',
+        icon: InfoCircledIcon,
+      },
+      {
+        title: 'Query Cache',
+        href: '/query-cache',
+        description: 'Query cache usage',
+        icon: DatabaseZapIcon,
+      },
+    ],
+  },
+  {
     title: 'Tables',
     href: '/tables',
     icon: TableIcon,
@@ -115,72 +181,6 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/part-info',
         description:
           'Information about currently table active parts and levels',
-        icon: DatabaseZapIcon,
-      },
-    ],
-  },
-  {
-    title: 'Queries',
-    href: '',
-    countKey: 'running-queries',
-    icon: MixIcon,
-    section: 'main',
-    items: [
-      {
-        title: 'Running Queries',
-        href: '/running-queries',
-        description: 'Queries that are currently running',
-        countKey: 'running-queries',
-        icon: MixIcon,
-      },
-      {
-        title: 'History Queries',
-        href: '/history-queries',
-        description:
-          'Queries that have been run including successed, failed queries with resourses usage details',
-        icon: CounterClockwiseClockIcon,
-      },
-      {
-        title: 'Failed Queries',
-        href: '/failed-queries',
-        description: 'Which queries have failed?',
-        icon: CrossCircledIcon,
-      },
-      {
-        title: 'Latest Common Errors',
-        href: '/common-errors',
-        description:
-          'Exploring the system.errors table to see when the error last occurred',
-        icon: CrossCircledIcon,
-      },
-      {
-        title: 'Most Expensive Queries',
-        href: '/expensive-queries',
-        description: 'Most expensive queries by many factors',
-        icon: CircleDollarSignIcon,
-      },
-      {
-        title: 'Most Expensive Queries by Memory',
-        href: '/expensive-queries-by-memory',
-        description: 'Most expensive queries by memory',
-        icon: CircleDollarSignIcon,
-      },
-      {
-        title: 'New Parts Created',
-        href: '/charts?name=new-parts-created',
-        description: 'How many (and how often) new parts are created',
-        icon: FilePlus2Icon,
-      },
-      {
-        title: 'Explain',
-        href: '/explain',
-        description: 'Shows the execution plan of a statement',
-        icon: InfoCircledIcon,
-      },
-      {
-        title: 'Query Cache',
-        href: '/query-cache',
-        description: 'Query cache usage',
         icon: DatabaseZapIcon,
       },
     ],

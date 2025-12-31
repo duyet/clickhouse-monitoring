@@ -48,7 +48,7 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
     if (!data || data.length === 0) return []
 
     const firstItem = data[0] as Record<string, unknown> | undefined
-    if (!firstItem) return []
+    if (!firstItem || typeof firstItem !== 'object') return []
 
     const used = firstItem.used as
       | { memory_usage: number; readable_memory_usage: string }[]
@@ -148,7 +148,7 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
   }
 
   const firstItem = data[0] as Record<string, unknown> | undefined
-  if (!firstItem) {
+  if (!firstItem || typeof firstItem !== 'object') {
     return <ChartEmpty title={title} className={className} />
   }
 
