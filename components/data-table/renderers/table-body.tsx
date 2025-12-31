@@ -1,7 +1,15 @@
 'use client'
 
-import { flexRender, type RowData } from '@tanstack/react-table'
-import { memo } from 'react'
+import {
+  flexRender,
+  type Cell,
+  type ColumnDef,
+  type ColumnMeta,
+  type Row,
+  type RowData,
+  type Table,
+} from '@tanstack/react-table'
+import { memo, type ReactNode } from 'react'
 
 import { EmptyState } from '@/components/ui/empty-state'
 import {
@@ -11,11 +19,20 @@ import {
 import { cn } from '@/lib/utils'
 
 /**
+ * Virtual row item from @tanstack/react-virtual
+ */
+export interface VirtualItem {
+  index: number
+  size: number
+  start: number
+}
+
+/**
  * Props for VirtualizedTableRow component
  */
 export interface VirtualizedTableRowProps<TData extends RowData> {
-  row: any
-  virtualRow: { index: number; size: number; start: number }
+  row: Row<TData>
+  virtualRow: VirtualItem
 }
 
 /**
@@ -29,38 +46,40 @@ export interface VirtualizedTableRowProps<TData extends RowData> {
  *
  * Performance: Optimized for large datasets (1000+ rows), memoized to prevent re-renders
  */
-export const VirtualizedTableRow = memo(function VirtualizedTableRow<TData extends RowData>({
-  row,
-  virtualRow,
-}: VirtualizedTableRowProps<TData>) {
-  return (
-    <TableRow
-      key={row.id}
-      data-state={row.getIsSelected() && 'selected'}
-      data-index={virtualRow.index}
-      className={cn(
-        'border-b border-border/50 transition-colors hover:bg-muted/50',
-        virtualRow.index % 2 === 1 && 'odd:bg-muted/30'
-      )}
-      style={{
-        height: `${virtualRow.size}px`,
-        transform: `translateY(${virtualRow.start}px)`,
-      }}
-    >
-      {row.getVisibleCells().map((cell: any) => (
-        <TableCell key={cell.id} className="px-4 py-3 text-sm">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
-    </TableRow>
-  )
-}) as any
+export const VirtualizedTableRow = memo(
+  function VirtualizedTableRow<TData extends RowData>({
+    row,
+    virtualRow,
+  }: VirtualizedTableRowProps<TData>) {
+    return (
+      <TableRow
+        key={row.id}
+        data-state={row.getIsSelected() && 'selected'}
+        data-index={virtualRow.index}
+        className={cn(
+          'border-b border-border/50 transition-colors hover:bg-muted/50',
+          virtualRow.index % 2 === 1 && 'odd:bg-muted/30'
+        )}
+        style={{
+          height: `${virtualRow.size}px`,
+          transform: `translateY(${virtualRow.start}px)`,
+        }}
+      >
+        {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
+          <TableCell key={cell.id} className="px-4 py-3 text-sm">
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        ))}
+      </TableRow>
+    )
+  }
+) as <TData extends RowData>(props: VirtualizedTableRowProps<TData>) => JSX.Element
 
 /**
  * Props for StandardTableRow component
  */
 export interface StandardTableRowProps<TData extends RowData> {
-  row: any
+  row: Row<TData>
   index: number
 }
 
@@ -75,35 +94,44 @@ export interface StandardTableRowProps<TData extends RowData> {
  *
  * Performance: Suitable for small to medium datasets (< 1000 rows), memoized to prevent re-renders
  */
-export const StandardTableRow = memo(function StandardTableRow<TData extends RowData>({
-  row,
-  index,
-}: StandardTableRowProps<TData>) {
-  return (
-    <TableRow
-      key={row.id}
-      data-state={row.getIsSelected() && 'selected'}
-      className={cn(
-        'border-b border-border/50 transition-colors hover:bg-muted/50',
-        index % 2 === 1 && 'odd:bg-muted/30'
-      )}
-    >
-      {row.getVisibleCells().map((cell: any) => (
-        <TableCell key={cell.id} className="px-4 py-3 text-sm">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
-    </TableRow>
-  )
-}) as any
+export const StandardTableRow = memo(
+  function StandardTableRow<TData extends RowData>({
+    row,
+    index,
+  }: StandardTableRowProps<TData>) {
+    return (
+      <TableRow
+        key={row.id}
+        data-state={row.getIsSelected() && 'selected'}
+        className={cn(
+          'border-b border-border/50 transition-colors hover:bg-muted/50',
+          index % 2 === 1 && 'odd:bg-muted/30'
+        )}
+      >
+        {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
+          <TableCell key={cell.id} className="px-4 py-3 text-sm">
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        ))}
+      </TableRow>
+    )
+  }
+) as <TData extends RowData>(props: StandardTableRowProps<TData>) => JSX.Element
+
+/**
+ * Virtualizer interface from @tanstack/react-virtual
+ */
+export interface Virtualizer {
+  getVirtualItems(): VirtualItem[]
+}
 
 /**
  * Props for TableBodyRows component
  */
 export interface TableBodyRowsProps<TData extends RowData> {
-  table: any
+  table: Table<TData>
   isVirtualized: boolean
-  virtualizer?: any
+  virtualizer: Virtualizer | null
 }
 
 /**
@@ -119,47 +147,54 @@ export interface TableBodyRowsProps<TData extends RowData> {
  *
  * Performance: Virtualization reduces DOM nodes from thousands to ~100, memoized to prevent re-renders
  */
-export const TableBodyRows = memo(function TableBodyRows<TData extends RowData>({
-  table,
-  isVirtualized,
-  virtualizer,
-}: TableBodyRowsProps<TData>) {
-  const rows = table.getRowModel().rows
+export const TableBodyRows = memo(
+  function TableBodyRows<TData extends RowData>({
+    table,
+    isVirtualized,
+    virtualizer,
+  }: TableBodyRowsProps<TData>) {
+    const rows = table.getRowModel().rows
 
-  if (isVirtualized && virtualizer) {
-    // Virtualized rendering for large datasets
-    const virtualRows = virtualizer.getVirtualItems()
+    if (isVirtualized && virtualizer) {
+      // Virtualized rendering for large datasets
+      const virtualRows = virtualizer.getVirtualItems()
+      return (
+        <>
+          {virtualRows.map((virtualRow: VirtualItem) => {
+            const row = rows[virtualRow.index]
+            return (
+              <VirtualizedTableRow<TData>
+                key={row.id}
+                row={row}
+                virtualRow={virtualRow}
+              />
+            )
+          })}
+        </>
+      )
+    }
+
+    // Standard rendering for smaller datasets
     return (
       <>
-        {virtualRows.map((virtualRow: any) => {
-          const row = rows[virtualRow.index]
-          return (
-            <VirtualizedTableRow<TData>
-              key={row.id}
-              row={row}
-              virtualRow={virtualRow}
-            />
-          )
-        })}
+        {rows.map((row: Row<TData>, index: number) => (
+          <StandardTableRow<TData> key={row.id} row={row} index={index} />
+        ))}
       </>
     )
   }
+) as <TData extends RowData>(props: TableBodyRowsProps<TData>) => JSX.Element
 
-  // Standard rendering for smaller datasets
-  return (
-    <>
-      {rows.map((row: any, index: number) => (
-        <StandardTableRow<TData> key={row.id} row={row} index={index} />
-      ))}
-    </>
-  )
-}) as any
+/**
+ * Column metadata type for column definitions
+ */
+export type ColumnMetaType = ColumnMeta<unknown, unknown>
 
 /**
  * Props for TableBodyEmptyState component
  */
-export interface TableBodyEmptyStateProps {
-  columnDefs: any[]
+export interface TableBodyEmptyStateProps<TData extends RowData, TValue extends ReactNode> {
+  columnDefs: ColumnDef<TData, TValue>[]
   title: string
   activeFilterCount: number
 }
@@ -177,36 +212,38 @@ export interface TableBodyEmptyStateProps {
  *
  * Performance: Memoized to prevent re-renders
  */
-export const TableBodyEmptyState = memo(function TableBodyEmptyState({
-  columnDefs,
-  title,
-  activeFilterCount,
-}: TableBodyEmptyStateProps) {
-  return (
-    <TableRow>
-      <TableCell colSpan={columnDefs.length} className="h-64 p-4">
-        <EmptyState
-          variant="no-data"
-          title="No results"
-          description={
-            activeFilterCount > 0
-              ? `No ${title?.toLowerCase() || 'data'} match your filters. Try clearing filters or adjusting your search.`
-              : `No ${title?.toLowerCase() || 'data'} found. Try adjusting your query or check back later.`
-          }
-        />
-      </TableCell>
-    </TableRow>
-  )
-})
+export const TableBodyEmptyState = memo(
+  function TableBodyEmptyState<TData extends RowData, TValue extends ReactNode>({
+    columnDefs,
+    title,
+    activeFilterCount,
+  }: TableBodyEmptyStateProps<TData, TValue>) {
+    return (
+      <TableRow>
+        <TableCell colSpan={columnDefs.length} className="h-64 p-4">
+          <EmptyState
+            variant="no-data"
+            title="No results"
+            description={
+              activeFilterCount > 0
+                ? `No ${title?.toLowerCase() || 'data'} match your filters. Try clearing filters or adjusting your search.`
+                : `No ${title?.toLowerCase() || 'data'} found. Try adjusting your query or check back later.`
+            }
+          />
+        </TableCell>
+      </TableRow>
+    )
+  }
+) as <TData extends RowData, TValue extends ReactNode>(props: TableBodyEmptyStateProps<TData, TValue>) => JSX.Element
 
 /**
  * Props for TableBody component
  */
-export interface TableBodyProps<TData extends RowData> {
-  table: any
-  columnDefs: any[]
+export interface TableBodyProps<TData extends RowData, TValue extends ReactNode> {
+  table: Table<TData>
+  columnDefs: ColumnDef<TData, TValue>[]
   isVirtualized: boolean
-  virtualizer?: any
+  virtualizer: Virtualizer | null
   title: string
   activeFilterCount: number
 }
@@ -228,31 +265,35 @@ export interface TableBodyProps<TData extends RowData> {
  *
  * Performance: Memoized to prevent unnecessary re-renders
  */
-export const TableBody = memo(function TableBody<TData extends RowData>({
-  table,
-  columnDefs,
-  isVirtualized,
-  virtualizer,
-  title,
-  activeFilterCount,
-}: TableBodyProps<TData>) {
-  const rows = table.getRowModel().rows
+export const TableBody = memo(
+  function TableBody<TData extends RowData, TValue extends ReactNode>({
+    table,
+    columnDefs,
+    isVirtualized,
+    virtualizer,
+    title,
+    activeFilterCount,
+  }: TableBodyProps<TData, TValue>) {
+    const rows = table.getRowModel().rows
 
-  return (
-    <>
-      {rows?.length ? (
-        <TableBodyRows
-          table={table}
-          isVirtualized={isVirtualized}
-          virtualizer={virtualizer}
-        />
-      ) : (
-        <TableBodyEmptyState
-          columnDefs={columnDefs}
-          title={title}
-          activeFilterCount={activeFilterCount}
-        />
-      )}
-    </>
-  )
-}) as any
+    return (
+      <>
+        {rows?.length ? (
+          <TableBodyRows
+            table={table}
+            isVirtualized={isVirtualized}
+            virtualizer={virtualizer}
+          />
+        ) : (
+          <TableBodyEmptyState
+            columnDefs={columnDefs}
+            title={title}
+            activeFilterCount={activeFilterCount}
+          />
+        )}
+      </>
+    )
+  }
+) as <TData extends RowData, TValue extends ReactNode>(
+  props: TableBodyProps<TData, TValue>
+) => JSX.Element

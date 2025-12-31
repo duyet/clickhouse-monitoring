@@ -8,23 +8,31 @@ import { Breadcrumb } from '@/components/navigation/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import {
   SidebarInset,
-  SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHosts } from '@/lib/swr/use-hosts'
+import { AppSidebarProvider } from './app-sidebar-provider'
 
 interface SidebarLayoutProps {
   children: React.ReactNode
 }
 
+/**
+ * Main layout component with app-specific sidebar provider
+ *
+ * Uses AppSidebarProvider instead of shadcn/ui SidebarProvider to enable:
+ * - App-specific localStorage key for persistence
+ * - Custom responsive behavior
+ * - Configurable keyboard shortcuts
+ */
 export function SidebarLayout({ children }: SidebarLayoutProps) {
   const searchParams = useSearchParams()
   const hostId = Number(searchParams.get('host') || '0')
   const { hosts } = useHosts()
 
   return (
-    <SidebarProvider>
+    <AppSidebarProvider>
       <AppSidebar hosts={hosts} currentHostId={hostId} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 overflow-hidden transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -46,6 +54,6 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           {children}
         </div>
       </SidebarInset>
-    </SidebarProvider>
+    </AppSidebarProvider>
   )
 }

@@ -65,7 +65,6 @@ export const RenderChart = ({
 
   return (
     <Renderer
-      kind={kind}
       title={title}
       data={data!}
       categories={categories}
