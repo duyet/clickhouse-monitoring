@@ -1,0 +1,66 @@
+/**
+ * Single menu item component (no children)
+ *
+ * Displays a single navigation link with active state styling.
+ */
+
+'use client'
+
+import { memo } from 'react'
+import dynamic from 'next/dynamic'
+import {
+  NavigationMenuItem,
+} from '@/components/ui/navigation-menu'
+import { cn } from '@/lib/utils'
+import type { MenuItem } from '../types'
+import { HostPrefixedLink } from '../link-with-context'
+import { ActiveIndicator } from './active-indicator'
+import { MenuIcon } from './menu-icon'
+import { useMenuActiveState } from '../hooks/use-menu-active-state'
+
+const CountBadge = dynamic(() =>
+  import('@/components/menu/count-badge').then((mod) => mod.CountBadge)
+)
+
+interface MenuSingleItemProps {
+  item: MenuItem
+}
+
+export const MenuSingleItem = memo(function MenuSingleItem({
+  item,
+}: MenuSingleItemProps) {
+  const isActive = useMenuActiveState(item)
+
+  return (
+    <NavigationMenuItem role="none">
+      <HostPrefixedLink
+        href={item.href}
+        className={cn(
+          'group relative inline-flex h-10 w-max items-center justify-center px-3 text-[13px] font-medium transition-colors',
+          'text-muted-foreground hover:text-foreground',
+          'focus:text-foreground focus:outline-hidden',
+          'disabled:pointer-events-none disabled:opacity-50',
+          'data-[active=true]:text-foreground data-[active=true]:font-semibold'
+        )}
+        data-active={isActive ? 'true' : undefined}
+        aria-label={`Navigate to ${item.title}`}
+        data-testid={
+          item.href === '/clusters'
+            ? 'nav-clusters'
+            : item.href === '/table'
+              ? 'nav-databases'
+              : undefined
+        }
+      >
+        <div className="flex flex-row items-center gap-1.5">
+          <MenuIcon icon={item.icon} isActive={isActive} />
+          <span>{item.title}</span>
+          {item.countKey ? (
+            <CountBadge countKey={item.countKey} variant={item.countVariant} />
+          ) : null}
+        </div>
+        <ActiveIndicator position="bottom" />
+      </HostPrefixedLink>
+    </NavigationMenuItem>
+  )
+})

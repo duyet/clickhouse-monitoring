@@ -6,7 +6,7 @@
 
 import type { HTMLAttributes } from 'react'
 
-interface StatusIndicatorProps extends HTMLAttributes<HTMLSpanElement> {
+interface StatusIndicatorProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'title'> {
   title?: string[]
 }
 

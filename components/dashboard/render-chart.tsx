@@ -1,90 +1,3 @@
-'use client'
-
-import { ChartCard } from '@/components/cards/chart-card'
-import { ChartError } from '@/components/charts/chart-error'
-import { GithubHeatmapChart } from '@/components/charts/github-heatmap-chart'
-import { AreaChart } from '@/components/charts/primitives/area'
-import { BarChart } from '@/components/charts/primitives/bar'
-import { ChartSkeleton } from '@/components/skeletons'
-import {
-  DEFAULT_CHART_COLORS,
-  type ChartColor,
-} from '@/components/dashboard/chart-colors'
-import { useFetchData } from '@/lib/swr'
-
-/**
- * Chart parameter types for query execution
- * Matches the types expected by useFetchData hook
- */
-export interface ChartParams {
-  lastHours?: number
-  startDate?: string
-  endDate?: string
-  interval?: number
-  database?: string
-  table?: string
-  [key: string]: string | number | boolean | undefined
-}
-
-/**
- * Supported chart kinds for RenderChart component
- */
-export type ChartKind = 'area' | 'bar' | 'calendar'
-
-/**
- * Props for RenderChart component
- */
-export interface RenderChartProps {
-  /**
-   * Type of chart to render
-   */
-  kind: ChartKind
-
-  /**
-   * Chart title displayed in the card header
-   */
-  title: string
-
-  /**
-   * SQL query to fetch chart data
-   */
-  query: string
-
-  /**
-   * Query parameters for the SQL query
-   */
-  params: ChartParams
-
-  /**
-   * Custom color palette (CSS variable names)
-   * Defaults to standard chart colors if not provided
-   */
-  colors?: ChartColor[]
-
-  /**
-   * Additional CSS class name for the chart card wrapper
-   */
-  className?: string
-
-  /**
-   * Additional CSS class name for the inner chart component
-   */
-  chartClassName?: string
-
-  /**
-   * ClickHouse host ID for data fetching
-   */
-  hostId: number
-}
-
-/**
- * Time series data point with required event_time field
- */
-interface TimeSeriesDataPoint {
-  event_time: string
-  [key: string]: string | number | undefined
-}
-
 /**
  * RenderChart - Universal chart rendering component
  *
@@ -102,6 +15,22 @@ interface TimeSeriesDataPoint {
  * />
  * ```
  */
+
+'use client'
+
+import { DEFAULT_CHART_COLORS, type ChartColor } from './chart-colors'
+import type { RenderChartProps } from './render-chart/types'
+import { useChartData } from './render-chart/use-chart-data'
+import { CHART_RENDERERS } from './render-chart/chart-renderers'
+import {
+  ChartLoadingState,
+  ChartErrorState,
+  ChartMissingEventTime,
+  UnknownChartKind,
+} from './render-chart/loading-states'
+
+export * from './render-chart/types'
+
 export const RenderChart = ({
   kind,
   title,
@@ -112,89 +41,38 @@ export const RenderChart = ({
   chartClassName,
   hostId,
 }: RenderChartProps) => {
-  // Filter out undefined values from params to match useFetchData type
-  const queryParams = Object.fromEntries(
-    Object.entries(params || {}).filter(([_, v]) => v !== undefined)
-  ) as Record<string, string | number | boolean>
-
-  const { data, isLoading, error, refresh } = useFetchData<TimeSeriesDataPoint[]>(
-    query,
-    queryParams,
-    hostId,
-    30000 // refresh every 30 seconds
+  const { data, isLoading, error, categories, isValid, refresh } = useChartData(
+    { query, params, hostId }
   )
 
   if (isLoading) {
-    return <ChartSkeleton title={title} className={className} />
+    return <ChartLoadingState title={title} className={className} />
   }
 
   if (error) {
-    return <ChartError error={error} title={title} onRetry={refresh} />
+    return <ChartErrorState error={error} title={title} onRetry={refresh} />
   }
 
-  // event_time is a must for time series charts
-  if (!data || !data[0]?.event_time) {
-    return (
-      <div className="flex items-center justify-center p-4 text-muted-foreground">
-        <code>event_time</code> column is required from query result
-      </div>
-    )
+  if (!isValid) {
+    return <ChartMissingEventTime title={title} />
   }
 
-  // Categories: all columns except event_time
-  const categories = Object.keys(data[0]).filter((c) => c !== 'event_time')
+  const Renderer = CHART_RENDERERS[kind]
 
-  if (kind === 'area') {
-    return (
-      <ChartCard title={title} className={className} sql={query} data={data}>
-        <AreaChart
-          className={chartClassName}
-          data={data}
-          index="event_time"
-          categories={categories}
-          stack
-          colors={colors}
-          showCartesianGrid={true}
-          showYAxis={true}
-          showXAxis={true}
-        />
-      </ChartCard>
-    )
-  }
-
-  if (kind === 'bar') {
-    return (
-      <ChartCard title={title} className={className} sql={query} data={data}>
-        <BarChart
-          className={chartClassName}
-          data={data}
-          index="event_time"
-          categories={categories}
-          stack
-          colors={colors}
-          showYAxis={true}
-          showXAxis={true}
-        />
-      </ChartCard>
-    )
-  }
-
-  if (kind === 'calendar') {
-    return (
-      <ChartCard title={title} className={className} sql={query} data={data}>
-        <GithubHeatmapChart
-          className={chartClassName}
-          data={data}
-          index="event_time"
-          colors={colors}
-        />
-      </ChartCard>
-    )
+  if (!Renderer) {
+    return <UnknownChartKind kind={kind} />
   }
 
   return (
-    <div className="flex items-center justify-center p-4 text-destructive">
-      Unknown chart kind: {kind}
-    </div>
+    <Renderer
+      kind={kind}
+      title={title}
+      data={data!}
+      categories={categories}
+      colors={colors}
+      className={className}
+      chartClassName={chartClassName}
+      query={query}
+    />
   )
 }

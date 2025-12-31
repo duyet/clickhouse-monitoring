@@ -2,8 +2,7 @@
 
 import { ReloadIcon } from '@radix-ui/react-icons'
 import { useRouter } from 'next/navigation'
-import { memo, useCallback, useEffect, useState, useTransition } from 'react'
-import { useInterval } from 'usehooks-ts'
+import { memo, useCallback, useTransition } from 'react'
 
 import { useAppContext } from '@/app/context'
 import { Button } from '@/components/ui/button'
@@ -17,14 +16,27 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
+import { useReloadCountdown } from './use-reload-countdown'
+import { useReloadIntervals } from './use-reload-intervals'
 
-interface ReloadButtonProps {
+export interface ReloadButtonProps {
   className?: string
 }
 
-const SECOND = 1000
-const MINUTE = 60 * SECOND
-
+/**
+ * Reload button with auto-reload countdown timer
+ *
+ * Features:
+ * - Manual reload with keyboard shortcut (Cmd+R)
+ * - Auto-reload with configurable intervals (30s, 1m, 2m, 10m, 30m)
+ * - Countdown timer display showing time until next reload
+ * - Disable auto-reload option
+ *
+ * @example
+ * ```tsx
+ * <ReloadButton className="ml-auto" />
+ * ```
+ */
 export const ReloadButton = memo(function ReloadButton({
   className,
 }: ReloadButtonProps) {
@@ -32,9 +44,7 @@ export const ReloadButton = memo(function ReloadButton({
   const [isLoading, startTransition] = useTransition()
   const { reloadInterval, setReloadInterval } = useAppContext()
 
-  const initCountDown = reloadInterval ? reloadInterval / 1000 : 10
-  const [countDown, setCountDown] = useState(initCountDown)
-
+  // Handle manual refresh
   const revalidateCacheAndReload = useCallback(
     () =>
       startTransition(async () => {
@@ -43,31 +53,23 @@ export const ReloadButton = memo(function ReloadButton({
     [router]
   )
 
-  const handleSetReloadInterval = useCallback(
-    (interval: number | null) => {
-      setReloadInterval(interval)
-    },
-    [setReloadInterval]
-  )
+  // Countdown timer hook
+  const { countDown } = useReloadCountdown({
+    reloadInterval,
+    onCountdownComplete: revalidateCacheAndReload,
+    isLoading,
+  })
 
-  useEffect(() => {
-    if (reloadInterval) {
-      setCountDown(reloadInterval / 1000)
-    }
-  }, [reloadInterval])
-
-  useInterval(
-    () => {
-      if (countDown <= 0) {
-        revalidateCacheAndReload()
-        setCountDown(initCountDown)
-        return
-      } else {
-        setCountDown(countDown - 1)
-      }
-    },
-    !isLoading && reloadInterval != null ? 1000 : null
-  )
+  // Interval management hook
+  const {
+    intervals,
+    setInterval,
+    disableAutoReload,
+    isIntervalActive,
+  } = useReloadIntervals({
+    reloadInterval,
+    setReloadInterval,
+  })
 
   return (
     <DropdownMenu>
@@ -96,23 +98,16 @@ export const ReloadButton = memo(function ReloadButton({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => handleSetReloadInterval(30 * SECOND)}>
-          30s
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleSetReloadInterval(1 * MINUTE)}>
-          1m
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleSetReloadInterval(2 * MINUTE)}>
-          2m
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleSetReloadInterval(10 * MINUTE)}>
-          10m
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleSetReloadInterval(30 * MINUTE)}>
-          30m
-        </DropdownMenuItem>
+        {intervals.map((interval) => (
+          <DropdownMenuItem
+            key={interval.value}
+            onClick={() => setInterval(interval.value)}
+          >
+            {interval.label}
+          </DropdownMenuItem>
+        ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => handleSetReloadInterval(null)}>
+        <DropdownMenuItem onClick={disableAutoReload}>
           Disable Auto
         </DropdownMenuItem>
       </DropdownMenuContent>

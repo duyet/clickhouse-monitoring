@@ -1,7 +1,7 @@
 /**
  * Tests for color-bank utilities
  *
- * @see lib/color-bank.ts
+ * @see lib/color-bank/index.ts
  */
 
 import { describe, expect, it } from 'bun:test'
@@ -12,7 +12,7 @@ import {
   getBarStyle,
   getShade,
   getStringHash,
-} from './color-bank'
+} from '.'
 
 describe('getStringHash', () => {
   it('should return consistent hash for the same string', () => {
