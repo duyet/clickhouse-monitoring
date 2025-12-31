@@ -78,7 +78,6 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
            ROUND(query_duration_ms / 1000, 2) AS query_duration_s
     FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
-          AND query_kind = 'Select'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY event_time
     ORDER BY event_time ASC
@@ -93,7 +92,6 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
            formatReadableSize(memory_usage) AS readable_memory_usage
     FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
-          AND query_kind = 'Select'
           AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY event_time
     ORDER BY event_time ASC
