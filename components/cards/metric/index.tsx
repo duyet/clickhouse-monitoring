@@ -1,14 +1,7 @@
 'use client'
 
 import {
-  ActivityIcon,
-  DatabaseIcon,
-  HardDriveIcon,
-  InfoIcon,
-  Loader2Icon,
   RefreshCwIcon,
-  TrendingDownIcon,
-  TrendingUpIcon,
 } from 'lucide-react'
 
 import {
@@ -19,7 +12,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   detectCardErrorVariant,
   getCardErrorClassName,
@@ -32,16 +24,13 @@ import { cn } from '@/lib/utils'
 // Re-export types
 export * from './types'
 
+import type { MetricTheme } from './types'
+
 // ============================================================================
-// Constants
+// Imports
 // ============================================================================
 
 import { THEME_CONFIGS } from './themes'
-
-// ============================================================================
-// Variant Renderers
-// ============================================================================
-
 import {
   renderDualVariant,
   renderListVariant,
@@ -52,12 +41,16 @@ import {
   renderSubtitleVariant,
   renderTrendVariant,
 } from './variants'
+import { MetricCardSkeleton } from './skeleton'
+import { MetricIcons } from './icons'
+import type { MetricCardProps } from './types'
+
+// Re-export icons for convenience
+export { MetricIcons }
 
 // ============================================================================
 // Main Component
 // ============================================================================
-
-import type { MetricCardProps } from './types'
 
 export function MetricCard<TData = unknown>({
   swr,
@@ -122,161 +115,31 @@ export function MetricCard<TData = unknown>({
 
   // Error state
   if (error) {
-    const errorVariant = detectCardErrorVariant(error)
-    const errorDescription = getCardErrorDescription(
-      error,
-      errorVariant,
-      compact
-    )
-    const errorTitle = getCardErrorTitle(errorVariant)
-    const errorClassName = getCardErrorClassName(errorVariant)
-    const showRetry = mutate && shouldShowRetryButton(error)
-
     return (
-      <Card
-        className={cn(
-          'relative overflow-hidden rounded-xl border',
-          'bg-card',
-          errorClassName,
-          className
-        )}
-        role="alert"
-        aria-label={`Error loading ${title}`}
-      >
-        <CardHeader
-          className={cn(
-            'px-2.5 sm:px-3',
-            compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
-          )}
-        >
-          <div className="flex items-start justify-between gap-1.5">
-            <div className="flex items-center gap-1.5">
-              {icon && (
-                <div className={cn('shrink-0', themeConfig.iconColor)}>
-                  {icon}
-                </div>
-              )}
-              <div>
-                <CardTitle
-                  className={cn(
-                    'font-semibold tracking-tight',
-                    compact ? 'text-xs' : 'text-sm'
-                  )}
-                >
-                  {title}
-                </CardTitle>
-                {description && (
-                  <CardDescription
-                    className={cn(
-                      'text-muted-foreground',
-                      compact ? 'text-[10px]' : 'text-xs'
-                    )}
-                  >
-                    {description}
-                  </CardDescription>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent
-          className={cn(
-            'px-2.5 pt-0 sm:px-3',
-            compact ? 'pb-1' : 'pb-3 sm:px-4'
-          )}
-        >
-          <EmptyState
-            variant={errorVariant}
-            title={errorTitle}
-            description={errorDescription}
-            compact
-            action={
-              showRetry
-                ? {
-                    label: 'Retry',
-                    onClick: mutate,
-                    icon: (
-                      <RefreshCwIcon
-                        className={cn(
-                          'mr-1',
-                          compact ? 'size-2.5' : 'size-3.5'
-                        )}
-                      />
-                    ),
-                  }
-                : undefined
-            }
-          />
-        </CardContent>
-      </Card>
+      <MetricCardError
+        title={title}
+        description={description}
+        error={error}
+        icon={icon}
+        theme={theme}
+        compact={compact}
+        className={className}
+        onRetry={mutate && shouldShowRetryButton(error) ? mutate : undefined}
+      />
     )
   }
 
   // Empty state
   if (!dataArray || dataArray.length === 0) {
     return (
-      <Card
-        className={cn(
-          'relative overflow-hidden rounded-xl border border-border/40',
-          'bg-card',
-          className
-        )}
-      >
-        {/* Theme gradient background */}
-        <div
-          className={cn(
-            'absolute inset-0 -z-10 bg-gradient-to-br',
-            themeConfig.gradient
-          )}
-        />
-
-        <CardHeader
-          className={cn(
-            'px-2.5 sm:px-3',
-            compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
-          )}
-        >
-          <div className="flex items-center gap-1.5">
-            {icon && (
-              <div className={cn('shrink-0 opacity-50', themeConfig.iconColor)}>
-                {icon}
-              </div>
-            )}
-            <div>
-              <CardTitle
-                className={cn(
-                  'font-semibold tracking-tight',
-                  compact ? 'text-xs' : 'text-sm'
-                )}
-              >
-                {title}
-              </CardTitle>
-              {description && (
-                <CardDescription
-                  className={cn(
-                    'text-muted-foreground',
-                    compact ? 'text-[10px]' : 'text-xs'
-                  )}
-                >
-                  {description}
-                </CardDescription>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent
-          className={cn('px-2.5 pt-0 sm:px-3', compact ? 'pb-1' : 'pb-1.5')}
-        >
-          <div
-            className={cn(
-              'font-bold tabular-nums text-muted-foreground/30',
-              compact ? 'text-lg' : 'text-2xl'
-            )}
-          >
-            -
-          </div>
-        </CardContent>
-      </Card>
+      <MetricCardEmpty
+        title={title}
+        description={description}
+        icon={icon}
+        theme={theme}
+        compact={compact}
+        className={className}
+      />
     )
   }
 
@@ -358,60 +221,15 @@ export function MetricCard<TData = unknown>({
 
       {/* Content */}
       <div className="relative">
-        <CardHeader
-          className={cn('px-2.5 sm:px-3', compact ? 'pb-1 pt-1' : 'pb-2 pt-2')}
-        >
-          <div className="flex items-start justify-between gap-1.5">
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              {icon && (
-                <div
-                  className={cn(
-                    'flex shrink-0 items-center justify-center rounded-md',
-                    compact ? 'p-0.5' : 'p-1.5',
-                    themeConfig.bgColor,
-                    themeConfig.iconColor
-                  )}
-                >
-                  {icon}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <CardTitle
-                  className={cn(
-                    'font-semibold tracking-tight truncate',
-                    compact ? 'text-xs' : 'text-sm',
-                    themeConfig.textColor
-                  )}
-                >
-                  {title}
-                </CardTitle>
-                {description && (
-                  <CardDescription
-                    className={cn(
-                      'text-muted-foreground truncate',
-                      compact ? 'text-[10px]' : 'text-xs'
-                    )}
-                  >
-                    {description}
-                  </CardDescription>
-                )}
-              </div>
-            </div>
-            {viewAllHref && (
-              <a
-                className={cn(
-                  'shrink-0 font-medium text-muted-foreground/60 whitespace-nowrap',
-                  'transition-colors hover:text-foreground',
-                  'underline-offset-4 hover:underline',
-                  compact ? 'text-[10px]' : 'text-xs'
-                )}
-                href={viewAllHref}
-              >
-                {viewAllLabel}
-              </a>
-            )}
-          </div>
-        </CardHeader>
+        <MetricCardHeader
+          title={title}
+          description={description}
+          icon={icon}
+          themeConfig={themeConfig}
+          compact={compact}
+          viewAllHref={viewAllHref}
+          viewAllLabel={viewAllLabel}
+        />
         <CardContent
           className={cn('px-2.5 pt-0 sm:px-3', compact ? 'pb-1' : 'pb-2.5')}
         >
@@ -423,20 +241,134 @@ export function MetricCard<TData = unknown>({
 }
 
 // ============================================================================
-// Skeleton Component
+// Error State Component
 // ============================================================================
 
-import type { MetricCardSkeletonProps } from './types'
+interface MetricCardErrorProps {
+  title: string
+  description?: string
+  error: Error
+  icon?: React.ReactNode
+  theme: MetricTheme
+  compact: boolean
+  className?: string
+  onRetry?: () => void
+}
 
-function MetricCardSkeleton({
+function MetricCardError({
   title,
   description,
-  theme = 'default',
+  error,
   icon,
-  variant = 'default',
-  compact = false,
+  theme,
+  compact,
   className,
-}: MetricCardSkeletonProps) {
+  onRetry,
+}: MetricCardErrorProps) {
+  const themeConfig = THEME_CONFIGS[theme]
+  const errorVariant = detectCardErrorVariant(error)
+  const errorDescription = getCardErrorDescription(error, errorVariant, compact)
+  const errorTitle = getCardErrorTitle(errorVariant)
+  const errorClassName = getCardErrorClassName(errorVariant)
+
+  return (
+    <Card
+      className={cn(
+        'relative overflow-hidden rounded-xl border',
+        'bg-card',
+        errorClassName,
+        className
+      )}
+      role="alert"
+      aria-label={`Error loading ${title}`}
+    >
+      <CardHeader
+        className={cn(
+          'px-2.5 sm:px-3',
+          compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
+        )}
+      >
+        <div className="flex items-start justify-between gap-1.5">
+          <div className="flex items-center gap-1.5">
+            {icon && (
+              <div className={cn('shrink-0', themeConfig.iconColor)}>
+                {icon}
+              </div>
+            )}
+            <div>
+              <CardTitle
+                className={cn(
+                  'font-semibold tracking-tight',
+                  compact ? 'text-xs' : 'text-sm'
+                )}
+              >
+                {title}
+              </CardTitle>
+              {description && (
+                <CardDescription
+                  className={cn(
+                    'text-muted-foreground',
+                    compact ? 'text-[10px]' : 'text-xs'
+                  )}
+                >
+                  {description}
+                </CardDescription>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent
+        className={cn(
+          'px-2.5 pt-0 sm:px-3',
+          compact ? 'pb-1' : 'pb-3 sm:px-4'
+        )}
+      >
+        <EmptyState
+          variant={errorVariant}
+          title={errorTitle}
+          description={errorDescription}
+          compact
+          action={
+            onRetry
+              ? {
+                  label: 'Retry',
+                  onClick: onRetry,
+                  icon: (
+                    <RefreshCwIcon
+                      className={cn('mr-1', compact ? 'size-2.5' : 'size-3.5')}
+                    />
+                  ),
+                }
+              : undefined
+          }
+        />
+      </CardContent>
+    </Card>
+  )
+}
+
+// ============================================================================
+// Empty State Component
+// ============================================================================
+
+interface MetricCardEmptyProps {
+  title: string
+  description?: string
+  icon?: React.ReactNode
+  theme: string
+  compact: boolean
+  className?: string
+}
+
+function MetricCardEmpty({
+  title,
+  description,
+  icon,
+  theme,
+  compact,
+  className,
+}: MetricCardEmptyProps) {
   const themeConfig = THEME_CONFIGS[theme]
 
   return (
@@ -446,8 +378,6 @@ function MetricCardSkeleton({
         'bg-card',
         className
       )}
-      role="status"
-      aria-label={`Loading ${title || 'metric'}`}
     >
       {/* Theme gradient background */}
       <div
@@ -457,93 +387,130 @@ function MetricCardSkeleton({
         )}
       />
 
-      <div className="relative">
-        <CardHeader
-          className={cn(
-            'px-2.5 sm:px-3',
-            compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
+      <CardHeader
+        className={cn('px-2.5 sm:px-3', compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5')}
+      >
+        <div className="flex items-center gap-1.5">
+          {icon && (
+            <div className={cn('shrink-0 opacity-50', themeConfig.iconColor)}>
+              {icon}
+            </div>
           )}
-        >
-          <div className="flex items-center gap-1.5">
-            {icon ? (
-              <div
+          <div>
+            <CardTitle
+              className={cn(
+                'font-semibold tracking-tight',
+                compact ? 'text-xs' : 'text-sm'
+              )}
+            >
+              {title}
+            </CardTitle>
+            {description && (
+              <CardDescription
                 className={cn(
-                  'flex shrink-0 items-center justify-center rounded-md',
-                  compact ? 'p-0.5' : 'p-1',
-                  themeConfig.bgColor,
-                  themeConfig.iconColor,
-                  'animate-pulse'
+                  'text-muted-foreground',
+                  compact ? 'text-[10px]' : 'text-xs'
                 )}
               >
-                {icon}
-              </div>
-            ) : (
-              <Skeleton
-                className={cn('rounded-md', compact ? 'size-5' : 'size-8')}
-              />
+                {description}
+              </CardDescription>
             )}
-            <div className="flex-1 space-y-0.5">
-              {title ? (
-                <CardTitle
-                  className={cn(
-                    'font-semibold tracking-tight',
-                    compact ? 'text-xs' : 'text-sm'
-                  )}
-                >
-                  {title}
-                </CardTitle>
-              ) : (
-                <Skeleton className={cn(compact ? 'h-3' : 'h-4', 'w-24')} />
-              )}
-              {description ? (
-                <CardDescription
-                  className={cn(
-                    'text-muted-foreground',
-                    compact ? 'text-[10px]' : 'text-xs'
-                  )}
-                >
-                  {description}
-                </CardDescription>
-              ) : (
-                <Skeleton className={cn(compact ? 'h-2.5' : 'h-3', 'w-16')} />
-              )}
-            </div>
           </div>
-        </CardHeader>
-        <CardContent
-          className={cn('px-2.5 pt-0 sm:px-3', compact ? 'pb-1' : 'pb-1.5')}
-        >
-          {variant === 'dual' || variant === 'list' ? (
-            <div className={cn('space-y-1', compact && 'space-y-0.5')}>
-              <Skeleton className={cn('w-20', compact ? 'h-4' : 'h-7')} />
-              <Skeleton className={cn('w-20', compact ? 'h-4' : 'h-7')} />
-            </div>
-          ) : variant === 'trend' ? (
-            <div className="flex items-center gap-1.5">
-              <Skeleton className={cn('w-20', compact ? 'h-4' : 'h-7')} />
-              <Skeleton className={cn(compact ? 'h-2.5' : 'h-4', 'w-12')} />
-            </div>
-          ) : (
-            <Skeleton className={cn('w-20', compact ? 'h-4' : 'h-7')} />
+        </div>
+      </CardHeader>
+      <CardContent
+        className={cn('px-2.5 pt-0 sm:px-3', compact ? 'pb-1' : 'pb-1.5')}
+      >
+        <div
+          className={cn(
+            'font-bold tabular-nums text-muted-foreground/30',
+            compact ? 'text-lg' : 'text-2xl'
           )}
-        </CardContent>
-      </div>
-      <span className="sr-only">Loading {title || 'metric'} data...</span>
+        >
+          -
+        </div>
+      </CardContent>
     </Card>
   )
 }
 
 // ============================================================================
-// Icon Presets
+// Card Header Component
 // ============================================================================
 
-export const MetricIcons = {
-  Activity: <ActivityIcon className="size-4" strokeWidth={2.5} />,
-  Database: <DatabaseIcon className="size-4" strokeWidth={2.5} />,
-  HardDrive: <HardDriveIcon className="size-4" strokeWidth={2.5} />,
-  Info: <InfoIcon className="size-4" strokeWidth={2.5} />,
-  Loader: <Loader2Icon className="size-4 animate-spin" strokeWidth={2.5} />,
-  Refresh: <RefreshCwIcon className="size-4" strokeWidth={2.5} />,
-  TrendingDown: <TrendingDownIcon className="size-4" strokeWidth={2.5} />,
-  TrendingUp: <TrendingUpIcon className="size-4" strokeWidth={2.5} />,
-} as const
+interface MetricCardHeaderProps {
+  title: string
+  description?: string
+  icon?: React.ReactNode
+  themeConfig: { bgColor: string; iconColor: string; textColor: string }
+  compact: boolean
+  viewAllHref?: string
+  viewAllLabel?: string
+}
+
+function MetricCardHeader({
+  title,
+  description,
+  icon,
+  themeConfig,
+  compact,
+  viewAllHref,
+  viewAllLabel,
+}: MetricCardHeaderProps) {
+  return (
+    <CardHeader
+      className={cn('px-2.5 sm:px-3', compact ? 'pb-1 pt-1' : 'pb-2 pt-2')}
+    >
+      <div className="flex items-start justify-between gap-1.5">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          {icon && (
+            <div
+              className={cn(
+                'flex shrink-0 items-center justify-center rounded-md',
+                compact ? 'p-0.5' : 'p-1.5',
+                themeConfig.bgColor,
+                themeConfig.iconColor
+              )}
+            >
+              {icon}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <CardTitle
+              className={cn(
+                'font-semibold tracking-tight truncate',
+                compact ? 'text-xs' : 'text-sm',
+                themeConfig.textColor
+              )}
+            >
+              {title}
+            </CardTitle>
+            {description && (
+              <CardDescription
+                className={cn(
+                  'text-muted-foreground truncate',
+                  compact ? 'text-[10px]' : 'text-xs'
+                )}
+              >
+                {description}
+              </CardDescription>
+            )}
+          </div>
+        </div>
+        {viewAllHref && (
+          <a
+            className={cn(
+              'shrink-0 font-medium text-muted-foreground/60 whitespace-nowrap',
+              'transition-colors hover:text-foreground',
+              'underline-offset-4 hover:underline',
+              compact ? 'text-[10px]' : 'text-xs'
+            )}
+            href={viewAllHref}
+          >
+            {viewAllLabel}
+          </a>
+        )}
+      </div>
+    </CardHeader>
+  )
+}
