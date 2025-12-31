@@ -26,12 +26,16 @@ import { replicationCharts } from './charts/replication-charts'
 import { systemCharts } from './charts/system-charts'
 import { zookeeperCharts } from './charts/zookeeper-charts'
 
-// Re-export types from the central types module
+// Import types for use within this file
+import type { ChartQueryBuilder, ChartDataPoint } from './charts/types'
+
+// Re-export types from the central types module (via charts/types)
 export type {
   ChartQueryBuilder,
   ChartQueryParams,
   ChartQueryResult,
   MultiChartQueryResult,
+  ChartDataPoint,
 } from './charts/types'
 
 /**
@@ -41,7 +45,7 @@ export type {
  * The registry is composed by combining all domain-specific chart modules,
  * allowing for better code organization and maintainability.
  */
-export const chartRegistry: Record<string, (params: any) => any> = {
+export const chartRegistry: Record<string, ChartQueryBuilder<ChartDataPoint>> = {
   // Query monitoring charts
   ...queryCharts,
 

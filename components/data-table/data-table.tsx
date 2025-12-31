@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
@@ -9,14 +8,9 @@ import {
   type RowData,
   type SortingState,
   useReactTable,
-  type VisibilityState,
 } from '@tanstack/react-table'
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import {
-  getColumnDefs,
-  normalizeColumnName,
-} from '@/components/data-table/column-defs'
 import { DataTablePagination } from '@/components/data-table/pagination'
 import { EmptyState } from '@/components/ui/empty-state'
 import {
@@ -28,13 +22,20 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { withQueryParams } from '@/lib/clickhouse-query'
-import { cn, uniq } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
+import type { ChartQueryParams } from '@/types/chart-data'
 import { ColumnVisibilityButton } from './buttons/column-visibility'
 import { ShowSQLButton } from './buttons/show-sql'
 import { DataTableToolbar } from './data-table-toolbar'
 import { Footnote, type FootnoteProps } from './footnote'
 import { getCustomSortingFns } from './sorting-fns'
+import {
+  useColumnVisibility,
+  useFilteredData,
+  useTableColumns,
+  useTableFilters,
+} from './hooks'
 
 interface DataTableProps<TData extends RowData> {
   title?: string
@@ -42,7 +43,7 @@ interface DataTableProps<TData extends RowData> {
   toolbarExtras?: React.ReactNode
   topRightToolbarExtras?: React.ReactNode
   queryConfig: QueryConfig
-  queryParams?: Record<string, any>
+  queryParams?: ChartQueryParams
   data: TData[]
   context: Record<string, string>
   defaultPageSize?: number
@@ -74,148 +75,59 @@ export function DataTable<
   enableColumnFilters = false,
   filterableColumns,
 }: DataTableProps<TData>) {
-  // Columns available in the data, normalized (memoized to prevent recalculation)
-  const allColumns: string[] = useMemo(
-    () =>
-      uniq(
-        (data.filter((row) => typeof row === 'object') as object[])
-          .flatMap((row) => Object.keys(row))
-          .map(normalizeColumnName)
-      ),
-    [data]
-  )
-
-  // Configured columns available, normalized
+  // Determine which columns should be filterable (memoized)
   const configuredColumns = useMemo(
-    () => queryConfig.columns.map(normalizeColumnName),
+    () =>
+      queryConfig.columns.map((col) =>
+        col.toLowerCase().replace('readable_', '').trim()
+      ),
     [queryConfig.columns]
   )
 
-  // Add `ctx.` prefix to all keys (memoized to prevent recalculation)
-  const contextWithPrefix = useMemo(
-    () =>
-      Object.entries(context).reduce(
-        (acc, [key, value]) => ({
-          ...acc,
-          [`ctx.${key}`]: value,
-        }),
-        {} as Record<string, string>
-      ),
-    [context]
-  )
-
-  // Determine which columns should be filterable
-  const columnsToFilter = useMemo(() => {
-    if (filterableColumns) return filterableColumns
-    // By default, all configured columns are filterable when enabled
-    return enableColumnFilters ? configuredColumns : []
-  }, [filterableColumns, configuredColumns, enableColumnFilters])
-
   // Client-side column filtering state
-  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
-
-  // Column filter handlers (memoized with useCallback to prevent recreation on every render)
-  const setColumnFilter = useCallback((column: string, value: string) => {
-    setColumnFilters((prev) => ({
-      ...prev,
-      [column]: value,
-    }))
-  }, [])
-
-  const clearColumnFilter = useCallback((column: string) => {
-    setColumnFilters((prev) => {
-      const { [column]: _, ...rest } = prev
-      return rest
-    })
-  }, [])
-
-  const clearAllColumnFilters = useCallback(() => {
-    setColumnFilters({})
-  }, [])
+  const {
+    columnFilters,
+    setColumnFilter,
+    clearColumnFilter,
+    clearAllColumnFilters,
+    activeFilterCount,
+  } = useTableFilters()
 
   // Apply client-side filters when enabled
-  const filteredData = useMemo(() => {
-    if (!enableColumnFilters || Object.keys(columnFilters).length === 0) {
-      return data
-    }
+  const filteredData = useFilteredData({
+    data,
+    enableColumnFilters,
+    columnFilters,
+  })
 
-    const activeFilters = Object.entries(columnFilters).filter(
-      ([_, value]) => value.length > 0
-    )
+  // Column calculations and definitions
+  const { allColumns, columnDefs, initialColumnVisibility } = useTableColumns<
+    TData,
+    TValue
+  >({
+    queryConfig,
+    data,
+    context,
+    filteredData,
+    filterContext: enableColumnFilters
+      ? {
+          enableColumnFilters,
+          filterableColumns: filterableColumns || configuredColumns,
+          columnFilters,
+          setColumnFilter,
+          clearColumnFilter,
+        }
+      : undefined,
+  })
 
-    if (activeFilters.length === 0) return data
-
-    return data.filter((row) => {
-      return activeFilters.every(([column, filterValue]) => {
-        // Check both original column name and normalized name
-        const rowObj = row as Record<string, unknown>
-        const originalValue = rowObj[column]
-        const normalizedName = normalizeColumnName(column)
-        const normalizedValue = rowObj[normalizedName]
-
-        const valueToCheck =
-          originalValue !== undefined
-            ? String(originalValue)
-            : normalizedValue !== undefined
-              ? String(normalizedValue)
-              : ''
-
-        return valueToCheck.toLowerCase().includes(filterValue.toLowerCase())
-      })
-    })
-  }, [data, columnFilters, enableColumnFilters])
-
-  // Column definitions for the table (memoized to prevent recalculation)
-  const columnDefs = useMemo(
-    () =>
-      getColumnDefs<TData, TValue>(
-        queryConfig,
-        filteredData,
-        contextWithPrefix,
-        enableColumnFilters
-          ? {
-              enableColumnFilters,
-              filterableColumns: columnsToFilter,
-              columnFilters,
-              setColumnFilter,
-              clearColumnFilter,
-            }
-          : undefined
-      ) as ColumnDef<TData, TValue>[],
-    [
-      queryConfig,
-      filteredData,
-      contextWithPrefix,
-      enableColumnFilters,
-      columnsToFilter,
-      columnFilters,
-      setColumnFilter,
-      clearColumnFilter,
-    ]
-  )
-
-  // Only show the columns in QueryConfig['columns'] list by initial
-  const initialColumnVisibility = useMemo(
-    () =>
-      allColumns.reduce(
-        (state, col) => ({
-          ...state,
-          [col]: configuredColumns.includes(col),
-        }),
-        {} as VisibilityState
-      ),
-    [allColumns, configuredColumns]
-  )
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    initialColumnVisibility
-  )
+  // Column visibility
+  const { columnVisibility, setColumnVisibility } = useColumnVisibility({
+    allColumns,
+    configuredColumns,
+  })
 
   // Sorting
   const [sorting, setSorting] = useState<SortingState>([])
-
-  const activeFilterCount = Object.values(columnFilters).filter(
-    (v) => v.length > 0
-  ).length
 
   const table = useReactTable({
     data: filteredData,
@@ -269,7 +181,7 @@ export function DataTable<
           {topRightToolbarExtras}
           {showSQL && (
             <ShowSQLButton
-              sql={withQueryParams(queryConfig.sql, queryParams)}
+              sql={withQueryParams(queryConfig.sql, queryParams?.params)}
             />
           )}
           <ColumnVisibilityButton table={table} />

@@ -17,7 +17,7 @@ export const TableSkeleton = memo(function TableSkeleton({
 }) {
   return (
     <div
-      className={cn('flex min-h-0 flex-1 flex-col', className)}
+      className={cn('flex flex-1 flex-col', className)}
       role="status"
       aria-label="Loading table"
       aria-busy="true"
@@ -37,7 +37,7 @@ export const TableSkeleton = memo(function TableSkeleton({
       </div>
 
       {/* Table body - matches DataTable border container */}
-      <div className="mb-5 min-h-0 flex-1 overflow-hidden rounded-md border">
+      <div className="mb-5 flex-1 overflow-hidden rounded-md border">
         {/* Table header row */}
         <div className="flex items-center gap-4 border-b bg-muted/30 px-4 py-3">
           {Array.from({ length: cols }).map((_, j) => (

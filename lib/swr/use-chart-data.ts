@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 import useSWR, { type SWRConfiguration } from 'swr'
 
 import { REFRESH_INTERVAL, type RefreshInterval } from './config'
+import type { ChartDataPoint, ChartQueryParams as TypedChartQueryParams } from '@/types/chart-data'
 
 /**
  * Chart data response structure from the API
@@ -22,7 +23,7 @@ interface ChartDataResponse<T = unknown> {
 }
 
 /** Return type from useChartData hook */
-export interface UseChartResult<TData extends Record<string, unknown> = Record<string, unknown>> {
+export interface UseChartResult<TData extends ChartDataPoint = ChartDataPoint> {
   data: TData[]
   metadata?: {
     duration?: number
@@ -46,7 +47,7 @@ export interface UseChartDataParams {
   hostId?: number | string
   interval?: string
   lastHours?: number
-  params?: Record<string, unknown>
+  params?: TypedChartQueryParams['params']
   /** Refresh interval in ms OR use REFRESH_INTERVAL constants */
   refreshInterval?: RefreshInterval | number
   /** Additional SWR config options */
@@ -79,7 +80,7 @@ export interface UseChartDataParams {
  * })
  * ```
  */
-export function useChartData<T extends Record<string, unknown> = Record<string, unknown>>({
+export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   chartName,
   hostId,
   interval,

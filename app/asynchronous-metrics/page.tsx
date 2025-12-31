@@ -1,21 +1,9 @@
 'use client'
 
-import { Suspense } from 'react'
-import { TableSkeleton } from '@/components/skeletons'
-import { TableClient } from '@/components/tables/table-client'
+import { createPage } from '@/lib/create-page'
 import { asynchronousMetricsConfig } from '@/lib/query-config/more/asynchronous-metrics'
 
-export default function AsynchronousMetricsPage() {
-  return (
-    <div className="flex flex-col gap-4">
-      {/* Table */}
-      <Suspense fallback={<TableSkeleton />}>
-        <TableClient
-          title="Asynchronous Metrics"
-          description={asynchronousMetricsConfig.description}
-          queryConfig={asynchronousMetricsConfig}
-        />
-      </Suspense>
-    </div>
-  )
-}
+export default createPage({
+  queryConfig: asynchronousMetricsConfig,
+  title: 'Asynchronous Metrics',
+})

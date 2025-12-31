@@ -1,21 +1,9 @@
 'use client'
 
-import { Suspense } from 'react'
-import { TableSkeleton } from '@/components/skeletons'
-import { TableClient } from '@/components/tables/table-client'
+import { createPage } from '@/lib/create-page'
 import { tablesOverviewConfig } from '@/lib/query-config/tables/tables-overview'
 
-export default function TablesOverviewPage() {
-  return (
-    <div className="flex flex-col gap-4">
-      {/* Table */}
-      <Suspense fallback={<TableSkeleton />}>
-        <TableClient
-          title="Tables Overview"
-          description={tablesOverviewConfig.description}
-          queryConfig={tablesOverviewConfig}
-        />
-      </Suspense>
-    </div>
-  )
-}
+export default createPage({
+  queryConfig: tablesOverviewConfig,
+  title: 'Tables Overview',
+})

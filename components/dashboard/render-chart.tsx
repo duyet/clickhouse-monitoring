@@ -47,13 +47,7 @@ export const RenderChart = ({
   >(query, params, hostId, 30000) // refresh every 30 seconds
 
   if (isLoading) {
-    return (
-      <ChartSkeleton
-        title={title}
-        className={className}
-        chartClassName={chartClassName}
-      />
-    )
+    return <ChartSkeleton title={title} className={className} />
   }
 
   if (error) {

@@ -1,21 +1,9 @@
 'use client'
 
-import { Suspense } from 'react'
-import { TableSkeleton } from '@/components/skeletons'
-import { TableClient } from '@/components/tables/table-client'
+import { createPage } from '@/lib/create-page'
 import { commonErrorsConfig } from '@/lib/query-config/queries/common-errors'
 
-export default function CommonErrorsPage() {
-  return (
-    <div className="flex flex-col gap-4">
-      {/* Table */}
-      <Suspense fallback={<TableSkeleton />}>
-        <TableClient
-          title="Latest Common Errors"
-          description={commonErrorsConfig.description}
-          queryConfig={commonErrorsConfig}
-        />
-      </Suspense>
-    </div>
-  )
-}
+export default createPage({
+  queryConfig: commonErrorsConfig,
+  title: 'Latest Common Errors',
+})

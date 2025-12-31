@@ -1,13 +1,17 @@
 'use client'
 
-import { memo } from 'react'
+import { RefreshCw } from 'lucide-react'
+import { memo, useMemo } from 'react'
 
+import { Card, CardContent } from '@/components/ui/card'
 import { DataTable } from '@/components/data-table/data-table'
-import { ErrorAlert } from '@/components/feedback/error-alert'
+import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
 import { TableSkeleton } from '@/components/skeletons'
+import { type ApiError, ApiErrorType } from '@/lib/api/types'
 import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/swr/use-table-data'
 import type { QueryConfig } from '@/types/query-config'
+import { cn } from '@/lib/utils'
 
 interface TableClientProps {
   title: string
@@ -21,6 +25,62 @@ interface TableClientProps {
   enableColumnFilters?: boolean
   /** Columns to enable filtering for (default: all text columns) */
   filterableColumns?: string[]
+}
+
+/**
+ * Determine the appropriate variant based on error type
+ */
+function getErrorVariant(error: Error | ApiError): EmptyStateVariant {
+  const apiError = error as ApiError
+  const message = error.message?.toLowerCase() ?? ''
+
+  // Check for table not found
+  if (apiError.type === ApiErrorType.TableNotFound) return 'table-missing'
+
+  // Check for network/connection errors
+  if (apiError.type === ApiErrorType.NetworkError) return 'offline'
+  if (
+    message.includes('offline') ||
+    message.includes('network') ||
+    message.includes('fetch')
+  )
+    return 'offline'
+
+  // Check for timeout in message
+  if (message.includes('timeout') || message.includes('timed out'))
+    return 'timeout'
+
+  return 'error'
+}
+
+/**
+ * Get user-friendly error description
+ */
+function getErrorDescription(
+  error: Error | ApiError,
+  variant: EmptyStateVariant
+): string {
+  const _apiError = error as ApiError
+
+  // Use specific messages for known error types
+  if (variant === 'table-missing') {
+    return "This feature requires additional ClickHouse configuration or the system table doesn't exist on this cluster."
+  }
+
+  if (variant === 'timeout') {
+    return 'The query took too long to execute. Try reducing the time range or simplifying your filters.'
+  }
+
+  if (variant === 'offline') {
+    return 'Unable to connect to the server. Check your network connection and try again.'
+  }
+
+  // Fall back to the actual error message if available
+  if (error.message && error.message.length < 200) {
+    return error.message
+  }
+
+  return 'An unexpected error occurred while loading data. Please try again.'
 }
 
 /**
@@ -62,25 +122,56 @@ export const TableClient = memo(function TableClient({
   }
 
   if (error) {
+    const variant = useMemo(() => getErrorVariant(error), [error])
+    const description = useMemo(
+      () => getErrorDescription(error, variant),
+      [error, variant]
+    )
+
     return (
-      <ErrorAlert
-        title="Error loading data"
-        message={error.message}
-        errorType="query_error"
-        reset={refresh}
-        query={queryConfig.sql}
-      />
+      <Card
+        className={cn(
+          'rounded-md',
+          variant === 'error' && 'border-destructive/30 bg-destructive/5',
+          variant === 'timeout' && 'border-warning/30 bg-warning/5',
+          variant === 'offline' && 'border-warning/30 bg-warning/5',
+          variant === 'table-missing' && 'border-warning/30 bg-warning/5',
+          className
+        )}
+        role="alert"
+        aria-label={title ? `${title} error` : 'Error loading table'}
+      >
+        <CardContent className="p-6">
+          <EmptyState
+            variant={variant}
+            title={title || (variant === 'error' ? 'Failed to load' : undefined)}
+            description={description}
+            action={
+              refresh
+                ? {
+                    label: 'Retry',
+                    onClick: refresh,
+                    icon: <RefreshCw className="mr-1.5 h-3.5 w-3.5" />,
+                  }
+                : undefined
+            }
+          />
+        </CardContent>
+      </Card>
     )
   }
 
   if (!data || (Array.isArray(data) && data.length === 0)) {
     return (
-      <ErrorAlert
-        title="No Data"
-        message="No data available for this query"
-        variant="info"
-        query={queryConfig.sql}
-      />
+      <Card className={cn('rounded-md border-warning/30 bg-warning/5', className)}>
+        <CardContent className="p-6">
+          <EmptyState
+            variant="no-data"
+            title={title || 'No Data'}
+            description="No data available for this query. Try adjusting your filters or check back later."
+          />
+        </CardContent>
+      </Card>
     )
   }
 

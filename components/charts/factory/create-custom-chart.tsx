@@ -1,0 +1,62 @@
+'use client'
+
+import { memo, type FC } from 'react'
+import { ChartContainer } from '@/components/charts/chart-container'
+import { ChartCard } from '@/components/cards/chart-card'
+import { useChartData } from '@/lib/swr'
+import type { CustomChartFactoryConfig } from './types'
+import type { ChartProps } from '@/components/charts/chart-props'
+import type { ChartDataPoint } from '@/types/chart-data'
+
+/**
+ * Factory function to create a custom chart component with consistent patterns
+ *
+ * For charts that need custom rendering beyond AreaChart or BarChart.
+ *
+ * @example
+ * ```typescript
+ * export const ChartBackupSize = createCustomChart<{
+ *   total_size: number
+ *   readable_total_size: string
+ * }>({
+ *   chartName: 'backup-size',
+ *   render: (data, sql, hostId) => <CardMetric {...data[0]} />,
+ * })
+ * ```
+ */
+export function createCustomChart<T extends ChartDataPoint = ChartDataPoint>(
+  config: CustomChartFactoryConfig
+): FC<ChartProps> {
+  return memo(function Chart({
+    title = config.defaultTitle,
+    interval = config.defaultInterval,
+    lastHours = config.defaultLastHours,
+    className,
+    hostId,
+  }: ChartProps) {
+    const swr = useChartData<T>({
+      chartName: config.chartName,
+      hostId,
+      interval,
+      lastHours,
+      refreshInterval: config.refreshInterval ?? 30000,
+    })
+
+    return (
+      <ChartContainer swr={swr} title={title} className={className}>
+        {(dataArray, sql) => (
+          <ChartCard
+            title={title}
+            className={className}
+            contentClassName={config.contentClassName}
+            sql={sql}
+            data={dataArray}
+            data-testid={config.dataTestId}
+          >
+            {config.render(dataArray, sql, hostId)}
+          </ChartCard>
+        )}
+      </ChartContainer>
+    )
+  })
+}

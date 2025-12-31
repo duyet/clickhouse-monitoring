@@ -3,9 +3,9 @@
  *
  * All skeleton loading states organized by purpose:
  * - base: Base Skeleton component from shadcn/ui
- * - chart: Chart-specific skeletons (area, bar, metric, table)
+ * - chart: Chart skeleton
  * - table: DataTable skeleton
- * - page: Page-level skeletons (PageSkeleton, OverviewPageSkeleton, etc.)
+ * - page: Page-level skeletons (PageSkeleton, ChartsOnlyPageSkeleton, TableOnlyPageSkeleton)
  * - ui: Inline UI skeletons (SingleLine, MultiLine, List)
  */
 
@@ -23,11 +23,6 @@ export {
   PageSkeleton,
   ChartsOnlyPageSkeleton,
   TableOnlyPageSkeleton,
-  OverviewPageSkeleton,
-  DatabasePageSkeleton,
-  ChartCardSkeleton,
-  MetricCardSkeleton,
-  TableCardSkeleton,
 } from './page'
 
 // UI skeletons
@@ -35,7 +30,3 @@ export { SingleLineSkeleton, MultiLineSkeleton, ListSkeleton } from './ui'
 
 // Sidebar skeleton
 export { SidebarSkeleton } from './sidebar'
-
-// Re-export ChartSkeleton for backward compatibility
-// Many files import from @/components/skeleton
-export { ChartSkeleton as ChartSkeletonCompat } from './chart'

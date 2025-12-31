@@ -29,7 +29,7 @@ export function AppSidebar({ hosts, currentHostId }: AppSidebarProps) {
         {hosts.length > 0 ? (
           <HostSwitcher hosts={hosts} currentHostId={currentHostId} />
         ) : (
-          <SidebarMenuSkeleton showIcon />
+          <SidebarMenuSkeleton />
         )}
       </SidebarHeader>
 
@@ -59,7 +59,6 @@ export function AppSidebar({ hosts, currentHostId }: AppSidebarProps) {
           ]}
         />
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   )
 }

@@ -42,7 +42,9 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
             <HeaderActions />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 overflow-y-auto">
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import type { LabelPosition } from 'recharts/types/component/Label'
 
 import type { ChartConfig } from '@/components/ui/chart'
+import type { ChartDataPoint } from './chart-data'
 
 interface BaseAnimationTimingProps {
   animationDuration?: number
@@ -66,7 +67,7 @@ type CustomTooltipProps = {
 export interface BaseChartProps
   extends BaseAnimationTimingProps,
     React.HTMLAttributes<HTMLDivElement> {
-  data: Record<string, unknown>[]
+  data: ChartDataPoint[]
   labelPosition?: LabelPosition
   labelAngle?: number
   colors?: Color[]

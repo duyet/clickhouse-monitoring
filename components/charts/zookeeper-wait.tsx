@@ -1,48 +1,27 @@
 'use client'
 
-import { memo } from 'react'
-import { ChartContainer } from '@/components/charts/chart-container'
+import { createBarChart } from '@/components/charts/factory'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { BarChart } from '@/components/charts/primitives/bar'
-import { ChartCard } from '@/components/cards/chart-card'
-import { useChartData } from '@/lib/swr'
 
-export const ChartZookeeperWait = memo(function ChartZookeeperWait({
-  title = 'ZooKeeper Wait Seconds',
-  interval = 'toStartOfHour',
-  lastHours = 24 * 7,
-  className,
-  hostId,
-}: ChartProps) {
-  const swr = useChartData<{
-    event_time: string
-    AVG_ProfileEvent_ZooKeeperWaitSeconds: number
-    readable_AVG_ProfileEvent_ZooKeeperWaitSeconds: string
-  }>({
-    chartName: 'zookeeper-wait',
-    interval,
-    lastHours,
-    hostId,
-    refreshInterval: 30000,
-  })
-
-  return (
-    <ChartContainer swr={swr} title={title} className={className}>
-      {(dataArray, sql) => (
-        <ChartCard title={title} sql={sql} data={dataArray} className={className} data-testid="zookeeper-wait-chart">
-          <BarChart
-            data={dataArray}
-            index="event_time"
-            categories={['AVG_ProfileEvent_ZooKeeperWaitSeconds']}
-            readableColumn="readable_AVG_ProfileEvent_ZooKeeperWaitSeconds"
-            className="h-52"
-            showLegend
-            stack
-          />
-        </ChartCard>
-      )}
-    </ChartContainer>
-  )
+export const ChartZookeeperWait = createBarChart<{
+  event_time: string
+  AVG_ProfileEvent_ZooKeeperWaitSeconds: number
+  readable_AVG_ProfileEvent_ZooKeeperWaitSeconds: string
+}>({
+  chartName: 'zookeeper-wait',
+  index: 'event_time',
+  categories: ['AVG_ProfileEvent_ZooKeeperWaitSeconds'],
+  defaultTitle: 'ZooKeeper Wait Seconds',
+  defaultInterval: 'toStartOfHour',
+  defaultLastHours: 24 * 7,
+  dataTestId: 'zookeeper-wait-chart',
+  barChartProps: {
+    readableColumn: 'readable_AVG_ProfileEvent_ZooKeeperWaitSeconds',
+    showLegend: true,
+    stack: true,
+  },
 })
+
+export type ChartZookeeperWaitProps = ChartProps
 
 export default ChartZookeeperWait

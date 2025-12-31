@@ -51,7 +51,7 @@ export function nowOrToday(interval: ClickHouseInterval): string {
 
 export function withQueryParams(
   query: string,
-  params?: Record<string, string | number>
+  params?: Record<string, unknown>
 ) {
   if (!params || Object.keys(params).length === 0) {
     return query
@@ -63,6 +63,9 @@ export function withQueryParams(
         // Escape single quotes by doubling them
         const escapedValue = value.replace(/'/g, "''")
         return `SET param_${key}='${escapedValue}'`
+      }
+      if (typeof value === 'boolean') {
+        return `SET param_${key}=${value ? 1 : 0}`
       }
       return `SET param_${key}=${value}`
     })

@@ -13,13 +13,14 @@ import {
   CardHeader,
 } from '@/components/ui/card'
 import { cn, dedent } from '@/lib/utils'
+import type { ChartDataPoint } from '@/types/chart-data'
 
 interface ChartCardProps {
   title?: string | React.ReactNode
   className?: string
   contentClassName?: string
   sql?: string
-  data?: any[]
+  data?: ChartDataPoint[]
   children: string | React.ReactNode
 }
 
@@ -77,7 +78,6 @@ const CardToolbar = memo(function CardToolbar({
         <DialogContent
           button={
             <Button
-              className="border-0 group-hover:border"
               size="sm"
               variant="ghost"
             >
@@ -93,7 +93,6 @@ const CardToolbar = memo(function CardToolbar({
         <DialogContent
           button={
             <Button
-              className="border-0 group-hover:border"
               size="sm"
               variant="ghost"
             >

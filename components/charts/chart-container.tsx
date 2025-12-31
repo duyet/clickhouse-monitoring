@@ -4,9 +4,10 @@ import { memo, type ReactNode } from 'react'
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { ChartSkeleton } from '@/components/skeletons'
+import type { ChartDataPoint } from '@/types/chart-data'
 import type { UseChartResult } from '@/lib/swr'
 
-export interface ChartContainerProps<TData extends Record<string, unknown> = Record<string, unknown>> {
+export interface ChartContainerProps<TData extends ChartDataPoint = ChartDataPoint> {
   /** SWR response from useChartData hook */
   swr: UseChartResult<TData>
   /** Chart title for skeleton/error/empty states */
@@ -44,7 +45,7 @@ export interface ChartContainerProps<TData extends Record<string, unknown> = Rec
  * }
  * ```
  */
-export const ChartContainer = memo(function ChartContainer<TData extends Record<string, unknown> = Record<string, unknown>>({
+export const ChartContainer = memo(function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
   swr,
   title,
   className,
@@ -55,13 +56,7 @@ export const ChartContainer = memo(function ChartContainer<TData extends Record<
 
   // Loading state
   if (isLoading) {
-    return (
-      <ChartSkeleton
-        title={title}
-        className={className}
-        chartClassName={chartClassName}
-      />
-    )
+    return <ChartSkeleton title={title} className={className} />
   }
 
   // Error state

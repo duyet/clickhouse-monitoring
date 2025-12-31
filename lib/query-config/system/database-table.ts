@@ -86,6 +86,17 @@ export const tablesListConfig: QueryConfig = {
   name: 'tables-list',
   description: 'List of tables in a database',
   sql: `
+    WITH detached_parts AS (
+        SELECT
+            database,
+            table,
+            count() AS detached_parts_count,
+            sum(bytes_on_disk) AS detached_bytes_on_disk,
+            formatReadableSize(sum(bytes_on_disk)) AS readable_detached_bytes_on_disk
+        FROM system.detached_parts
+        WHERE database = {database:String}
+        GROUP BY database, table
+    )
     SELECT
         database,
         table,
@@ -100,14 +111,14 @@ export const tablesListConfig: QueryConfig = {
         sum(bytes_on_disk) / sum(rows) as avg_part_size,
         formatReadableSize(avg_part_size) as readable_avg_part_size,
         count() as parts_count,
-        countIf(detached = 1) as detached_parts_count,
-        sum(detached_bytes_on_disk) as detached_bytes_on_disk,
-        formatReadableSize(detached_bytes_on_disk) as readable_detached_bytes_on_disk,
+        coalesce(dp.detached_parts_count, 0) as detached_parts_count,
+        coalesce(dp.readable_detached_bytes_on_disk, '0 B') as readable_detached_bytes_on_disk,
         max(comment) as comment
     FROM system.parts
+    LEFT JOIN detached_parts dp USING (database, table)
     WHERE active
         AND database = {database:String}
-    GROUP BY database, table, engine
+    GROUP BY database, table, engine, dp.detached_parts_count, dp.readable_detached_bytes_on_disk
     ORDER BY compressed DESC
   `,
   columns: [

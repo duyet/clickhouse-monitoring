@@ -12,10 +12,7 @@
 'use client'
 
 import { memo, type ReactNode, Suspense } from 'react'
-import {
-  getChartComponent,
-  getChartSkeletonType,
-} from '@/components/charts/chart-registry'
+import { getChartComponent } from '@/components/charts/chart-registry'
 import { ChartSkeleton } from '@/components/skeletons'
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
@@ -38,6 +35,22 @@ export interface PageLayoutProps {
   chartsGridClass?: string
   /** Whether to hide the table */
   hideTable?: boolean
+  /** Additional search params to pass to table */
+  searchParams?: Record<string, string | number | boolean>
+}
+
+/**
+ * Options for creating a standardized page from a QueryConfig
+ */
+export interface CreatePageOptions {
+  queryConfig: QueryConfig
+  title?: string
+  description?: string
+  headerContent?: ReactNode
+  footerContent?: ReactNode
+  chartsGridClass?: string
+  hideTable?: boolean
+  searchParams?: Record<string, string | number | boolean>
 }
 
 /**
@@ -124,14 +137,7 @@ const RelatedCharts = memo(function RelatedCharts({
 
         return (
           <div key={`${chartName}-${index}`} className={colSpan}>
-            <Suspense
-              fallback={
-                <ChartSkeleton
-                  type={getChartSkeletonType(chartName)}
-                  dataPoints={8}
-                />
-              }
-            >
+            <Suspense fallback={<ChartSkeleton />}>
               <DynamicChart
                 chartName={chartName}
                 hostId={hostId}
@@ -162,12 +168,13 @@ export const PageLayout = memo(function PageLayout({
   footerContent,
   chartsGridClass,
   hideTable = false,
+  searchParams,
 }: PageLayoutProps) {
   const hostId = useHostId()
   const relatedCharts = queryConfig.relatedCharts || []
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4">
       {/* Optional Header Content */}
       {headerContent}
 
@@ -181,12 +188,13 @@ export const PageLayout = memo(function PageLayout({
       {/* Data Table - flex-1 to fill remaining space */}
       {!hideTable && (
         <Suspense fallback={<TableSkeleton />}>
-          <FadeIn duration={300} className="flex min-h-0 flex-1 flex-col">
+          <FadeIn duration={300} className="flex flex-1 flex-col">
             <TableClient
               title={title || queryConfig.name}
               description={description || queryConfig.description}
               queryConfig={queryConfig}
-              className="flex min-h-0 flex-1 flex-col"
+              searchParams={searchParams}
+              className="flex flex-1 flex-col"
             />
           </FadeIn>
         </Suspense>
@@ -203,14 +211,14 @@ export const PageLayout = memo(function PageLayout({
  *
  * Usage:
  * ```tsx
- * export default createPage(mergesConfig)
+ * export default createPage({
+ *   queryConfig: mergesConfig,
+ *   title: 'Merges',
+ * })
  * ```
  */
-export function createPage(
-  config: QueryConfig,
-  options?: Partial<PageLayoutProps>
-) {
-  return function Page() {
-    return <PageLayout queryConfig={config} {...options} />
-  }
+export function createPage(options: CreatePageOptions) {
+  return memo(function Page() {
+    return <PageLayout {...options} />
+  })
 }

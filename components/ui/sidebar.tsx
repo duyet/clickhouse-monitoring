@@ -566,8 +566,8 @@ const SidebarMenuSkeleton = React.forwardRef<
     )}
     {...props}
   >
-    {showIcon && <Skeleton className="h-4 w-4 rounded-md" />}
-    <Skeleton className="h-4 w-full" />
+    {showIcon && <Skeleton className="h-8 w-4 rounded-md" />}
+    <Skeleton className="h-8 w-full" />
   </div>
 ))
 SidebarMenuSkeleton.displayName = 'SidebarMenuSkeleton'

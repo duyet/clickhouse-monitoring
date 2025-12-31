@@ -30,7 +30,7 @@ export default function ChartPage({ params }: ChartPageProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <Suspense fallback={<ChartSkeleton type="area" dataPoints={12} />}>
+      <Suspense fallback={<ChartSkeleton />}>
         <FadeIn duration={250}>
           <ChartComponent
             className="w-full"

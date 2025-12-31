@@ -13,7 +13,7 @@ import { ChartQueryCountByUser } from '@/components/charts/query-count-by-user'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
 import { ChartKeeperException } from '@/components/charts/zookeeper-exception'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
-import { OverviewPageSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { StaggeredChart } from '@/components/loading/progressive-loader'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
@@ -22,7 +22,7 @@ export default function OverviewPage() {
   const hostId = useHostId()
 
   return (
-    <Suspense fallback={<OverviewPageSkeleton />}>
+    <Suspense fallback={<PageSkeleton chartCount={8} />}>
       <div>
         <OverviewCharts hostId={hostId} className="mb-2" />
 

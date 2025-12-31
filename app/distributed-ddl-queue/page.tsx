@@ -1,21 +1,9 @@
 'use client'
 
-import { Suspense } from 'react'
-import { TableSkeleton } from '@/components/skeletons'
-import { TableClient } from '@/components/tables/table-client'
+import { createPage } from '@/lib/create-page'
 import { distributedDdlQueueConfig } from '@/lib/query-config/tables/distributed-ddl-queue'
 
-export default function DistributedDdlQueuePage() {
-  return (
-    <div className="flex flex-col gap-4">
-      {/* Table */}
-      <Suspense fallback={<TableSkeleton />}>
-        <TableClient
-          title="Distributed DDL Queue"
-          description={distributedDdlQueueConfig.description}
-          queryConfig={distributedDdlQueueConfig}
-        />
-      </Suspense>
-    </div>
-  )
-}
+export default createPage({
+  queryConfig: distributedDdlQueueConfig,
+  title: 'Distributed DDL Queue',
+})
