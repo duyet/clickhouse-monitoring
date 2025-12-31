@@ -143,7 +143,7 @@ const HostStatusDropdown = memo(function HostStatusDropdown({
  * Host version with status indicator for expanded sidebar state.
  */
 function HostVersionWithStatus({ hostId }: { hostId: number }) {
-  const { status, isOnline, isLoading } = useHostStatus(hostId, {
+  const { data, isOnline, isLoading } = useHostStatus(hostId, {
     refreshInterval: 60000,
     revalidateOnFocus: false,
   })
@@ -157,11 +157,11 @@ function HostVersionWithStatus({ hostId }: { hostId: number }) {
     )
   }
 
-  if (isOnline && status) {
+  if (isOnline && data) {
     return (
       <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
         <span className="flex-none size-2 rounded-full bg-emerald-500" />v
-        {status.version}
+        {data.version}
       </span>
     )
   }
