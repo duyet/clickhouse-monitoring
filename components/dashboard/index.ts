@@ -11,7 +11,6 @@ export {
 } from './chart-colors'
 
 export {
-  type ChartParams,
   type ChartKind,
   type RenderChartProps,
   RenderChart,

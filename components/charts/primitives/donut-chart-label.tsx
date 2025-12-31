@@ -6,13 +6,8 @@
 
 'use client'
 
-// Recharts viewBox type (simplified - accepts actual Recharts Props too)
 export interface DonutChartLabelProps {
-  viewBox?: {
-    cx?: string | number | undefined
-    cy?: string | number | undefined
-    [key: string]: string | number | undefined
-  }
+  viewBox?: any
   total: number
   centerLabel?: string
   formatValue: (value: number) => string

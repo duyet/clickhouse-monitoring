@@ -112,9 +112,14 @@ export const RenderChart = ({
   chartClassName,
   hostId,
 }: RenderChartProps) => {
+  // Filter out undefined values from params to match useFetchData type
+  const queryParams = Object.fromEntries(
+    Object.entries(params || {}).filter(([_, v]) => v !== undefined)
+  ) as Record<string, string | number | boolean>
+
   const { data, isLoading, error, refresh } = useFetchData<TimeSeriesDataPoint[]>(
     query,
-    params,
+    queryParams,
     hostId,
     30000 // refresh every 30 seconds
   )
