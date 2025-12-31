@@ -26,7 +26,12 @@ export const ChartQueryType = memo(function ChartQueryType({
   })
 
   return (
-    <ChartContainer swr={swr} title={title} className={className} chartClassName={chartClassName}>
+    <ChartContainer
+      swr={swr}
+      title={title}
+      className={className}
+      chartClassName={chartClassName}
+    >
       {(dataArray) => (
         <DonutChart
           data={dataArray}

@@ -4,15 +4,15 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { memo, useMemo } from 'react'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { ChartError } from '@/components/charts/chart-error'
-import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/skeletons'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
 } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
+import { ChartEmpty } from '@/components/charts/chart-empty'
+import { ChartError } from '@/components/charts/chart-error'
+import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartSkeleton } from '@/components/skeletons'
 import { useChartData } from '@/lib/swr'
 
 export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
@@ -152,20 +152,23 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
     return <ChartEmpty title={title} className={className} />
   }
 
-  const used = (firstItem.used as
-    | { memory_usage: number; readable_memory_usage: string }[]
-    | undefined
+  const used = (
+    firstItem.used as
+      | { memory_usage: number; readable_memory_usage: string }[]
+      | undefined
   )?.[0]
-  const totalMem = (firstItem.totalMem as
-    | { total: number; readable_total: string }[]
-    | undefined
+  const totalMem = (
+    firstItem.totalMem as
+      | { total: number; readable_total: string }[]
+      | undefined
   )?.[0]
-  const rowsReadWritten = (firstItem.rowsReadWritten as
-    | {
-        rows_read: number
-        readable_rows_read: string
-      }[]
-    | undefined
+  const rowsReadWritten = (
+    firstItem.rowsReadWritten as
+      | {
+          rows_read: number
+          readable_rows_read: string
+        }[]
+      | undefined
   )?.[0]
 
   if (!used || !totalMem || !rowsReadWritten) {

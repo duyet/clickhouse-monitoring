@@ -68,9 +68,9 @@ export default function ChartsPage() {
   const displayTitle =
     chartNames.length === 1
       ? chartNames[0]
-            .split('-')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ')
+          .split('-')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
       : `${chartNames.length} Charts`
 
   return (

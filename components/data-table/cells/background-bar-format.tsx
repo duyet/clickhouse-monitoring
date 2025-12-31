@@ -1,7 +1,7 @@
 import type { Row, Table } from '@tanstack/react-table'
 import { memo } from 'react'
+import { getColorFromBank, getBarStyle, getShade } from '@/lib/color-bank'
 import { formatReadableQuantity } from '@/lib/format-readable'
-import { cn } from '@/lib/utils'
 
 export interface BackgroundBarOptions {
   numberFormat?: boolean
@@ -36,31 +36,29 @@ export const BackgroundBarFormat = memo(function BackgroundBarFormat({
     return value
   }
 
-  // Determine color based on percentage
-  const getBarColor = (percentage: number) => {
-    if (percentage >= 80) return 'bg-green-500/20 dark:bg-green-400/20'
-    if (percentage >= 50) return 'bg-blue-500/20 dark:bg-blue-400/20'
-    if (percentage >= 25) return 'bg-yellow-500/20 dark:bg-yellow-400/20'
-    return 'bg-gray-400/20 dark:bg-gray-500/20'
-  }
+  // Get color from bank based on column name (deterministic)
+  const baseColor = getColorFromBank(columnName)
+
+  // Calculate shade based on percentage (larger = darker)
+  const shade = getShade(pct as number)
+
+  // Build inline style with dynamic color
+  const barStyle = getBarStyle(baseColor, shade)
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded"
+      className="relative flex items-center w-full min-h-[1.75rem] h-full overflow-hidden rounded"
       title={`${orgValue} (${pct}%)`}
       aria-label={`${orgValue} (${pct}%)`}
       aria-roledescription="background-bar"
     >
-      {/* Background bar - reduced height, color based on percentage */}
+      {/* Background bar - uses inline styles for dynamic color */}
       <div
-        className={cn(
-          'absolute left-0 top-1/2 -translate-y-1/2 h-2 rounded transition-all',
-          getBarColor(pct as number)
-        )}
-        style={{ width: `${pct}%` }}
+        className="absolute inset-y-0 left-0 rounded transition-all"
+        style={{ width: `${pct}%`, ...barStyle }}
         aria-hidden="true"
       />
-      <span className="relative inline-block min-w-0 truncate px-1">
+      <span className="relative inline-block min-w-0 truncate px-2">
         {options?.numberFormat
           ? formatReadableQuantity(value as number, 'long')
           : value}

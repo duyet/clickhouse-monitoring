@@ -33,7 +33,7 @@ export interface ChartQueryParams {
  * Result of a chart query builder function
  * Contains SQL query and metadata for execution
  */
-export interface ChartQueryResult<T extends ChartDataPoint = ChartDataPoint> {
+export interface ChartQueryResult<_T extends ChartDataPoint = ChartDataPoint> {
   query: string
   queryParams?: Record<string, unknown>
   optional?: boolean

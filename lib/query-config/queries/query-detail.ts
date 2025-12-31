@@ -94,7 +94,10 @@ export const queryDetailConfig: QueryConfig = {
     query_duration: ColumnFormat.Duration,
     is_initial_query: ColumnFormat.Boolean,
     readable_query: ColumnFormat.Code,
-    query: [ColumnFormat.CodeDialog, { max_truncate: 200, hide_query_comment: true }],
+    query: [
+      ColumnFormat.CodeDialog,
+      { max_truncate: 200, hide_query_comment: true },
+    ],
     event_time: ColumnFormat.RelatedTime,
     readable_read_rows: ColumnFormat.BackgroundBar,
     readable_written_rows: ColumnFormat.BackgroundBar,

@@ -14,19 +14,15 @@ export { Skeleton } from './base'
 
 // Chart skeletons
 export { ChartSkeleton } from './chart'
-
-// Table skeleton
-export { TableSkeleton } from './table'
-
 // Page skeletons
 export {
-  PageSkeleton,
   ChartsOnlyPageSkeleton,
+  PageSkeleton,
   TableOnlyPageSkeleton,
 } from './page'
-
-// UI skeletons
-export { SingleLineSkeleton, MultiLineSkeleton, ListSkeleton } from './ui'
-
 // Sidebar skeleton
 export { SidebarSkeleton } from './sidebar'
+// Table skeleton
+export { TableSkeleton } from './table'
+// UI skeletons
+export { ListSkeleton, MultiLineSkeleton, SingleLineSkeleton } from './ui'

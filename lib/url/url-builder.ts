@@ -47,4 +47,3 @@ export function buildUrl(
   const queryString = searchParams.toString()
   return queryString ? `${baseUrl}${separator}${queryString}` : baseUrl
 }
-

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { extractValue } from '../utils'
+import { AnimatedNumber } from '../animated-number'
 
 interface RenderProps<T> {
   value1: string | number | ((data: T[]) => string | number) | undefined
@@ -25,22 +26,42 @@ export function renderDualVariant<T>({
   return (
     <div className={cn('space-y-1', compact && 'space-y-0.5')}>
       <div className="flex items-baseline gap-1">
-        <span className={cn(
-          'font-mono font-bold tabular-nums tracking-tight',
-          compact ? 'text-xs sm:text-sm' : 'text-xl sm:text-2xl'
-        )}>
-          {v1}
-        </span>
-        {unit1 && <span className={cn('text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}>{unit1}</span>}
+        <AnimatedNumber
+          value={v1}
+          className={cn(
+            'font-mono font-bold tabular-nums tracking-tight',
+            compact ? 'text-xs sm:text-sm' : 'text-xl sm:text-2xl'
+          )}
+        />
+        {unit1 && (
+          <span
+            className={cn(
+              'text-muted-foreground',
+              compact ? 'text-[10px]' : 'text-xs'
+            )}
+          >
+            {unit1}
+          </span>
+        )}
       </div>
       <div className="flex items-baseline gap-1">
-        <span className={cn(
-          'font-mono font-bold tabular-nums tracking-tight',
-          compact ? 'text-xs sm:text-sm' : 'text-xl sm:text-2xl'
-        )}>
-          {v2}
-        </span>
-        {unit2 && <span className={cn('text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}>{unit2}</span>}
+        <AnimatedNumber
+          value={v2}
+          className={cn(
+            'font-mono font-bold tabular-nums tracking-tight',
+            compact ? 'text-xs sm:text-sm' : 'text-xl sm:text-2xl'
+          )}
+        />
+        {unit2 && (
+          <span
+            className={cn(
+              'text-muted-foreground',
+              compact ? 'text-[10px]' : 'text-xs'
+            )}
+          >
+            {unit2}
+          </span>
+        )}
       </div>
     </div>
   )

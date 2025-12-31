@@ -11,7 +11,6 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenuSkeleton,
-  SidebarRail,
 } from '@/components/ui/sidebar'
 import { menuItemsConfig } from '@/menu'
 

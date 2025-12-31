@@ -9,11 +9,7 @@ interface SparklineProps {
   compact?: boolean
 }
 
-export function Sparkline({
-  data,
-  color,
-  compact = false,
-}: SparklineProps) {
+export function Sparkline({ data, color, compact = false }: SparklineProps) {
   const path = useMemo(() => {
     if (data.length < 2) return ''
 
@@ -71,7 +67,12 @@ export function Sparkline({
       {/* End dot */}
       <circle
         cx="100"
-        cy={100 - ((data[data.length - 1] - Math.min(...data)) / (Math.max(...data) - Math.min(...data) || 1)) * 100}
+        cy={
+          100 -
+          ((data[data.length - 1] - Math.min(...data)) /
+            (Math.max(...data) - Math.min(...data) || 1)) *
+            100
+        }
         r="3"
         fill={color}
         opacity="0.9"

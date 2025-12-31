@@ -86,9 +86,7 @@ export const RefreshCountdown = memo(function RefreshCountdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuItem onClick={handleRefresh}>
-          Refresh now
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleRefresh}>Refresh now</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => handleSetReloadInterval(30 * SECOND)}>
           30 seconds

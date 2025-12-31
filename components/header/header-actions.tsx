@@ -5,9 +5,9 @@ import { useTheme } from 'next-themes'
 import { memo, useState } from 'react'
 
 import { CommandPalette } from '@/components/controls/command-palette'
+import { RefreshCountdown } from '@/components/header/refresh-countdown'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'
-import { RefreshCountdown } from '@/components/header/refresh-countdown'
 
 interface HeaderActionsProps {
   menuComponent?: React.ReactNode
@@ -70,6 +70,7 @@ export const HeaderActions = memo(function HeaderActions({
           icon={resolvedTheme === 'light' ? <Moon /> : <Sun />}
           onClick={toggleTheme}
           className="hidden sm:flex"
+          suppressHydrationWarning
         />
       ) : (
         <Button variant="ghost" size="icon" className="hidden sm:flex">

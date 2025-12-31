@@ -1,7 +1,7 @@
 'use client'
 
-import { createAreaChart } from '@/components/charts/factory'
 import type { ChartProps } from '@/components/charts/chart-props'
+import { createAreaChart } from '@/components/charts/factory'
 import { chartTickFormatters } from '@/lib/utils'
 
 export const ChartMemoryUsage = createAreaChart<{

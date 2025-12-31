@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckCircle2Icon, CircleXIcon, LoaderIcon } from 'lucide-react'
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import {
@@ -9,8 +9,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { ErrorLogger } from '@/lib/logger'
 import { useHostId } from '@/lib/swr'
+import { useHostStatus } from '@/lib/swr/use-host-status'
 
 type ConnectionStatus = 'loading' | 'connected' | 'error'
 
@@ -35,49 +35,17 @@ const statusConfig = {
 
 export const ConnectionStatusBadge = memo(function ConnectionStatusBadge() {
   const hostId = useHostId()
-  const [status, setStatus] = useState<ConnectionStatus>('loading')
+  const { data, error, isLoading } = useHostStatus(hostId, { refreshInterval: 30000 })
 
-  // Simple health check - fetch a small query (memoized with useCallback)
-  const checkConnection = useCallback(async () => {
-    try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
-
-      const response = await fetch(`/api/v1/charts/hostname?hostId=${hostId}`, {
-        signal: controller.signal,
-      })
-
-      clearTimeout(timeoutId)
-
-      if (response.ok) {
-        setStatus('connected')
-      } else {
-        setStatus('error')
-        ErrorLogger.logWarning(
-          `Connection check failed for host ${hostId}: ${response.status} ${response.statusText}`,
-          { component: 'ConnectionStatusBadge', hostId }
-        )
-      }
-    } catch (err) {
-      setStatus('error')
-      // Log network errors for debugging
-      ErrorLogger.logError(
-        err instanceof Error ? err : new Error('Unknown connection error'),
-        { component: 'ConnectionStatusBadge', hostId }
-      )
-    }
-  }, [hostId])
-
-  useEffect(() => {
-    // Reset when host changes
-    setStatus('loading')
-    checkConnection()
-
-    // Recheck every 30 seconds
-    const interval = setInterval(checkConnection, 30000)
-
-    return () => clearInterval(interval)
-  }, [checkConnection])
+  // Determine connection status
+  let status: ConnectionStatus = 'loading'
+  if (isLoading) {
+    status = 'loading'
+  } else if (error || !data?.version) {
+    status = 'error'
+  } else {
+    status = 'connected'
+  }
 
   const config = statusConfig[status]
 

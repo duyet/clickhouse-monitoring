@@ -23,7 +23,7 @@ export default function OverviewPage() {
   return (
     <Suspense fallback={<PageSkeleton chartCount={8} />}>
       <div>
-        <OverviewCharts hostId={hostId} className="mb-6" />
+        <OverviewCharts className="mb-6" />
 
         <Tabs defaultValue="overview" className="space-y-2">
           <div className="overflow-x-auto pb-1 -mx-1 px-1 sm:mx-0 sm:px-0">

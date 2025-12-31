@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
-import { extractItems } from '../utils'
 import type { MetricListItem } from '../types'
+import { extractItems } from '../utils'
+import { AnimatedNumber } from '../animated-number'
 
 interface RenderProps<T> {
   items: MetricListItem[] | ((data: T[]) => MetricListItem[]) | undefined
@@ -19,10 +20,7 @@ export function renderListVariant<T>({
   return (
     <div className={cn('space-y-1.5', compact ? 'space-y-1' : '')}>
       {resolvedItems.map((item, index) => (
-        <div
-          key={index}
-          className="flex items-center justify-between gap-1.5"
-        >
+        <div key={index} className="flex items-center justify-between gap-1.5">
           <span className="text-xs font-medium text-muted-foreground shrink-0">
             {item.label}
           </span>
@@ -31,14 +29,19 @@ export function renderListVariant<T>({
               'truncate font-semibold text-right',
               compact ? 'text-xs' : 'text-sm',
               item.format === 'mono' && 'font-mono tabular-nums',
-              item.format === 'truncate' && cn(
-                'max-w-[120px] sm:max-w-[140px]',
-                compact && 'max-w-[100px] sm:max-w-[120px]'
-              )
+              item.format === 'truncate' &&
+                cn(
+                  'max-w-[120px] sm:max-w-[140px]',
+                  compact && 'max-w-[100px] sm:max-w-[120px]'
+                )
             )}
             title={String(item.value)}
           >
-            {item.value}
+            {item.format === 'mono' ? (
+              <AnimatedNumber value={item.value} className="inherit" />
+            ) : (
+              item.value
+            )}
           </div>
         </div>
       ))}

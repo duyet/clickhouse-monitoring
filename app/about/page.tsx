@@ -1,13 +1,21 @@
 'use client'
 
 import { BookOpen, Github, Server, Shield, Zap } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import packageInfo from '@/package.json'
 
-const GITHUB_REPO = packageInfo.repository?.url || 'https://github.com/duyet/clickhouse-monitoring'
+const GITHUB_REPO =
+  packageInfo.repository?.url ||
+  'https://github.com/duyet/clickhouse-monitoring'
 const LICENSE = 'MIT'
 
 function FeatureCard({
@@ -41,7 +49,9 @@ export default function AboutPage() {
             <Server className="text-primary size-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">ClickHouse Monitor</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              ClickHouse Monitor
+            </h1>
             <p className="text-muted-foreground text-sm">
               Monitoring Dashboard • v{packageInfo.version}
             </p>

@@ -1,10 +1,10 @@
 'use client'
 
 import { memo } from 'react'
+import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { BarList } from '@/components/charts/primitives/bar-list'
-import { ChartCard } from '@/components/cards/chart-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useChartData } from '@/lib/swr'
 
@@ -52,7 +52,13 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
         }))
 
         return (
-          <ChartCard title={title} className={className} sql={sql} data={dataArray} data-testid="top-table-size-chart">
+          <ChartCard
+            title={title}
+            className={className}
+            sql={sql}
+            data={dataArray}
+            data-testid="top-table-size-chart"
+          >
             <Tabs defaultValue="by-size">
               <TabsList className="mb-5">
                 <TabsTrigger key="by-size" value="by-size">

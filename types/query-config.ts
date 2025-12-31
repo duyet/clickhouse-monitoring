@@ -68,7 +68,9 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    * }
    * ```
    */
-  columnFormats?: Partial<Record<TColumns[number], ColumnFormat | ColumnFormatWithArgs>>
+  columnFormats?: Partial<
+    Record<TColumns[number], ColumnFormat | ColumnFormatWithArgs>
+  >
   /**
    * Column icons can be specified as React Component name.
    *
@@ -163,10 +165,8 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   sortingFns?: Record<string, CustomSortingFnNames>
 }
 
-export type QueryConfigNoName<TColumns extends readonly string[] = string[]> = PartialBy<
-  QueryConfig<TColumns>,
-  'name'
->
+export type QueryConfigNoName<TColumns extends readonly string[] = string[]> =
+  PartialBy<QueryConfig<TColumns>, 'name'>
 
 /**
  * Helper type to extract row data from a QueryConfig

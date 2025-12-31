@@ -4,20 +4,21 @@
  * Barrel export for all query page layout components.
  */
 
-export {
-  QueryPageLayout,
-  createQueryPage,
-  type QueryPageLayoutProps,
-  type CreateQueryPageOptions,
-} from './layout'
+export { ChartsToggle, type ChartsToggleProps } from './charts-toggle'
 
 export { DynamicChart, type DynamicChartProps } from './dynamic-chart'
-export { RelatedCharts, type RelatedChartsProps } from './related-charts'
-export { ChartsToggle, type ChartsToggleProps } from './charts-toggle'
-export { useChartsCollapsed } from './use-charts-collapsed'
-
+export type {
+  CreateQueryPageOptions as CreatePageOptions,
+  QueryPageLayoutProps as PageLayoutProps,
+} from './layout'
 // Re-export PageLayout as alias for backward compatibility
-export { QueryPageLayout as PageLayout } from './layout'
-export { createQueryPage as createPage } from './layout'
-export type { CreateQueryPageOptions as CreatePageOptions } from './layout'
-export type { QueryPageLayoutProps as PageLayoutProps } from './layout'
+export {
+  type CreateQueryPageOptions,
+  createQueryPage,
+  createQueryPage as createPage,
+  QueryPageLayout,
+  QueryPageLayout as PageLayout,
+  type QueryPageLayoutProps,
+} from './layout'
+export { RelatedCharts, type RelatedChartsProps } from './related-charts'
+export { useChartsCollapsed } from './use-charts-collapsed'

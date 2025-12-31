@@ -13,13 +13,15 @@ export type MetricTheme =
   | 'indigo'
 
 export type MetricVariant =
-  | 'default'   // Custom render via children
-  | 'single'    // Single large value with optional unit
-  | 'dual'      // Two stacked values with units
-  | 'list'      // Key-value rows
-  | 'subtitle'  // Value with subtitle text
-  | 'trend'     // Value with trend indicator
-  | 'pulse'     // Animated card with glow effects and sparkline
+  | 'default' // Custom render via children
+  | 'single' // Single large value with optional unit
+  | 'dual' // Two stacked values with units
+  | 'list' // Key-value rows
+  | 'subtitle' // Value with subtitle text
+  | 'trend' // Value with trend indicator
+  | 'oversized' // Extra large muted number display
+  | 'split' // Two side-by-side numbers with vertical divider
+  | 'pulse' // Animated card with glow effects and sparkline
 
 export interface MetricListItem {
   label: string
@@ -70,6 +72,11 @@ export interface MetricCardProps<TData = unknown> {
   value2?: string | number | ((data: TData[]) => string | number)
   /** For 'dual' variant: second unit label */
   unit2?: string
+
+  /** For 'split' variant: first label (e.g., "Databases") */
+  label1?: string
+  /** For 'split' variant: second label (e.g., "Tables") */
+  label2?: string
 
   /** For 'list' variant: array of label-value pairs */
   items?: MetricListItem[] | ((data: TData[]) => MetricListItem[])

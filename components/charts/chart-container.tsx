@@ -1,14 +1,16 @@
 'use client'
 
 import { memo, type ReactNode } from 'react'
+import { ChartSkeleton } from '@/components/skeletons'
+import type { UseChartResult } from '@/lib/swr'
 import { cn } from '@/lib/utils'
+import type { ChartDataPoint } from '@/types/chart-data'
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
-import { ChartSkeleton } from '@/components/skeletons'
-import type { ChartDataPoint } from '@/types/chart-data'
-import type { UseChartResult } from '@/lib/swr'
 
-export interface ChartContainerProps<TData extends ChartDataPoint = ChartDataPoint> {
+export interface ChartContainerProps<
+  TData extends ChartDataPoint = ChartDataPoint,
+> {
   /** SWR response from useChartData hook */
   swr: UseChartResult<TData>
   /** Chart title for skeleton/error/empty states */
@@ -46,7 +48,9 @@ export interface ChartContainerProps<TData extends ChartDataPoint = ChartDataPoi
  * }
  * ```
  */
-export const ChartContainer = memo(function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
+export const ChartContainer = memo(function ChartContainer<
+  TData extends ChartDataPoint = ChartDataPoint,
+>({
   swr,
   title,
   className,
@@ -72,7 +76,11 @@ export const ChartContainer = memo(function ChartContainer<TData extends ChartDa
 
   // Render chart with data
   return (
-    <div className={cn('h-full', className)} aria-label={title ? `${title} chart` : 'Chart'} role="region">
+    <div
+      className={cn('h-full', className)}
+      aria-label={title ? `${title} chart` : 'Chart'}
+      role="region"
+    >
       {children(data, sql)}
     </div>
   )

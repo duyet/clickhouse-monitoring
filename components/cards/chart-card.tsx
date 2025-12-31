@@ -52,7 +52,12 @@ export const ChartCard = memo(function ChartCard({
         </CardHeader>
       ) : null}
 
-      <CardContent className={cn('p-3 pt-0 flex-1 min-h-0 overflow-hidden', contentClassName)}>
+      <CardContent
+        className={cn(
+          'p-3 pt-0 flex-1 min-h-0 overflow-hidden',
+          contentClassName
+        )}
+      >
         {children}
       </CardContent>
     </Card>
@@ -77,11 +82,7 @@ const CardToolbar = memo(function CardToolbar({
       {data && (
         <DialogContent
           button={
-            <Button
-              size="default"
-              variant="ghost"
-              className="sm:size-sm"
-            >
+            <Button size="default" variant="ghost" className="sm:size-sm">
               <TableIcon className="size-4 sm:size-3" />
             </Button>
           }
@@ -93,11 +94,7 @@ const CardToolbar = memo(function CardToolbar({
       {sql && (
         <DialogContent
           button={
-            <Button
-              size="default"
-              variant="ghost"
-              className="sm:size-sm"
-            >
+            <Button size="default" variant="ghost" className="sm:size-sm">
               <CodeIcon className="size-4 sm:size-3" />
             </Button>
           }

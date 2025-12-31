@@ -1,8 +1,8 @@
 'use client'
 
-import { createCustomChart } from '@/components/charts/factory'
 import { CardMetric } from '@/components/cards/card-metric'
 import type { ChartProps } from '@/components/charts/chart-props'
+import { createCustomChart } from '@/components/charts/factory'
 
 export const ChartQueryCache = createCustomChart<{
   total_result_size: number

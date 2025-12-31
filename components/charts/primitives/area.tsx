@@ -280,7 +280,8 @@ function renderChartTooltip<
                       }
                     />
                     <span className="truncate text-muted-foreground">
-                      {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                      {chartConfig[name as keyof typeof chartConfig]?.label ||
+                        name}
                     </span>
                   </div>
 
@@ -312,7 +313,8 @@ function renderChartTooltip<
                               }
                             />
                             <span className="truncate">
-                              {item[breakdownLabel as keyof typeof item] || name}
+                              {item[breakdownLabel as keyof typeof item] ||
+                                name}
                             </span>
                           </div>
 

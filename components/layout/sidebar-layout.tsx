@@ -2,9 +2,9 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import { HeaderActions } from '@/components/header/header-actions'
 import { AppSidebar } from '@/components/navigation/app-sidebar'
 import { Breadcrumb } from '@/components/navigation/breadcrumb'
-import { HeaderActions } from '@/components/header/header-actions'
 import { Separator } from '@/components/ui/separator'
 import {
   SidebarInset,

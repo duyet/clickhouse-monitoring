@@ -2,9 +2,11 @@
 
 import { useCallback } from 'react'
 import useSWR, { type SWRConfiguration } from 'swr'
-
+import type {
+  ChartDataPoint,
+  ChartQueryParams as TypedChartQueryParams,
+} from '@/types/chart-data'
 import { REFRESH_INTERVAL, type RefreshInterval } from './config'
-import type { ChartDataPoint, ChartQueryParams as TypedChartQueryParams } from '@/types/chart-data'
 
 /**
  * Chart data response structure from the API
@@ -37,7 +39,7 @@ export interface UseChartResult<TData extends ChartDataPoint = ChartDataPoint> {
   error?: Error
   isLoading: boolean
   isValidating: boolean
-  mutate: () => Promise<void | unknown>
+  mutate: () => Promise<undefined | unknown>
 }
 
 export type SwrConfigPreset = keyof typeof REFRESH_INTERVAL | SWRConfiguration

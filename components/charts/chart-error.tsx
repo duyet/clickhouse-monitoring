@@ -5,12 +5,12 @@ import { memo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import {
+  type CardError,
   detectCardErrorVariant,
   getCardErrorClassName,
   getCardErrorDescription,
   getCardErrorTitle,
   shouldShowRetryButton,
-  type CardError,
 } from '@/lib/card-error-utils'
 import { cn } from '@/lib/utils'
 

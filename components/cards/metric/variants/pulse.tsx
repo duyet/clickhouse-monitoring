@@ -1,7 +1,8 @@
+import { MinusIcon, TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { TrendingDownIcon, TrendingUpIcon, MinusIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { extractValue } from '../utils'
+import { AnimatedNumber } from '../animated-number'
 import { Sparkline } from './pulse-sparkline'
 
 interface RenderProps<T> {
@@ -30,9 +31,8 @@ export function renderPulseVariant<T>({
 }: RenderProps<T>): ReactNode {
   const resolvedValue = extractValue(value, data)
   const resolvedTrend = typeof trend === 'function' ? trend(data) : trend
-  const resolvedTrendLabel = typeof trendLabel === 'function'
-    ? trendLabel(data)
-    : trendLabel
+  const resolvedTrendLabel =
+    typeof trendLabel === 'function' ? trendLabel(data) : trendLabel
 
   const trendValue = resolvedTrend ?? 0
   const isPositive = trendValue > 0
@@ -51,17 +51,20 @@ export function renderPulseVariant<T>({
     <div className="space-y-3">
       {/* Main value */}
       <div className="flex items-baseline gap-1.5">
-        <span className={cn(
-          'font-mono font-bold tabular-nums tracking-tight',
-          compact ? 'text-xl' : 'text-2xl'
-        )}>
-          {resolvedValue}
-        </span>
+        <AnimatedNumber
+          value={resolvedValue}
+          className={cn(
+            'font-mono font-bold tabular-nums tracking-tight',
+            compact ? 'text-xl' : 'text-2xl'
+          )}
+        />
         {unit && (
-          <span className={cn(
-            'text-muted-foreground font-medium',
-            compact ? 'text-xs' : 'text-sm'
-          )}>
+          <span
+            className={cn(
+              'text-muted-foreground font-medium',
+              compact ? 'text-xs' : 'text-sm'
+            )}
+          >
             {unit}
           </span>
         )}

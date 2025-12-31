@@ -1,14 +1,14 @@
-import { useMemo } from 'react'
 import type { ColumnDef, RowData, VisibilityState } from '@tanstack/react-table'
+import { useMemo } from 'react'
+import { uniq } from '@/lib/utils'
+import type { QueryConfig } from '@/types/query-config'
 import {
+  type ColumnFilterContext,
   getColumnDefs,
   normalizeColumnName,
-  type ColumnFilterContext,
 } from '../column-defs'
-import { cn, uniq } from '@/lib/utils'
-import type { QueryConfig } from '@/types/query-config'
 
-interface UseTableColumnsOptions<TData extends RowData, TValue> {
+interface UseTableColumnsOptions<TData extends RowData, _TValue> {
   queryConfig: QueryConfig
   data: TData[]
   context: Record<string, string>
@@ -33,7 +33,10 @@ export function useTableColumns<
   context,
   filteredData,
   filterContext,
-}: UseTableColumnsOptions<TData, TValue>): UseTableColumnsReturn<TData, TValue> {
+}: UseTableColumnsOptions<TData, TValue>): UseTableColumnsReturn<
+  TData,
+  TValue
+> {
   // Columns available in the data, normalized (memoized to prevent recalculation)
   const allColumns: string[] = useMemo(
     () =>

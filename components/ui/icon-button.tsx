@@ -42,8 +42,9 @@ export const IconButton = memo(function IconButton({
   size = 'default',
   tooltipSide = 'bottom',
   className,
+  suppressHydrationWarning,
   ...props
-}: IconButtonProps) {
+}: IconButtonProps & { suppressHydrationWarning?: boolean }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -52,6 +53,7 @@ export const IconButton = memo(function IconButton({
           size="icon"
           className={cn(sizeClasses[size], 'text-muted-foreground', className)}
           aria-label={tooltip}
+          suppressHydrationWarning={suppressHydrationWarning}
           {...props}
         >
           <span className={iconSizes[size]}>{icon}</span>

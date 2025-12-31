@@ -119,12 +119,11 @@ lib/
 ```typescript
 // URL: /overview?host=1
 'use client'
-import { useHostId } from '@/lib/swr'
+import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 
 export default function OverviewPage() {
-  const hostId = useHostId() // Returns 1 from query param
-
-  return <OverviewCharts hostId={hostId} />
+  // OverviewCharts and its child components use useHostId() internally
+  return <OverviewCharts />
 }
 ```
 

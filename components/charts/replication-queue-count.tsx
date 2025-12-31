@@ -1,8 +1,8 @@
 'use client'
 
-import { createCustomChart } from '@/components/charts/factory'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import type { ChartProps } from '@/components/charts/chart-props'
+import { createCustomChart } from '@/components/charts/factory'
 
 export const ChartReplicationQueueCount = createCustomChart<{
   count_all: number

@@ -1,7 +1,7 @@
 'use client'
 
-import { createBarChart } from '@/components/charts/factory'
 import type { ChartProps } from '@/components/charts/chart-props'
+import { createBarChart } from '@/components/charts/factory'
 
 export const ChartReadonlyReplica = createBarChart<{
   event_time: string

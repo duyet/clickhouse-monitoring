@@ -110,7 +110,11 @@ const ChartSkeleton = memo(function ChartSkeleton() {
 /**
  * Table Skeleton
  */
-const TableSkeleton = memo(function TableSkeleton({ rows = 5 }: { rows?: number } = {}) {
+const TableSkeleton = memo(function TableSkeleton({
+  rows = 5,
+}: {
+  rows?: number
+} = {}) {
   return (
     <div
       className="rounded-lg border border-border/50 bg-card/50 overflow-hidden"

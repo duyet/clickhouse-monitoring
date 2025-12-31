@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { extractValue } from '../utils'
-import type { MetricListItem } from '../types'
+import { AnimatedNumber } from '../animated-number'
 
 interface RenderProps<T> {
   value: string | number | ((data: T[]) => string | number) | undefined
@@ -20,13 +20,23 @@ export function renderSingleVariant<T>({
 
   return (
     <div className="flex items-baseline gap-1">
-      <span className={cn(
-        'font-mono font-bold tabular-nums tracking-tight',
-        compact ? 'text-sm sm:text-base' : 'text-2xl sm:text-3xl'
-      )}>
-        {resolvedValue}
-      </span>
-      {unit && <span className={cn('text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}>{unit}</span>}
+      <AnimatedNumber
+        value={resolvedValue}
+        className={cn(
+          'font-mono font-bold tabular-nums tracking-tight',
+          compact ? 'text-sm sm:text-base' : 'text-2xl sm:text-3xl'
+        )}
+      />
+      {unit && (
+        <span
+          className={cn(
+            'text-muted-foreground',
+            compact ? 'text-[10px]' : 'text-xs'
+          )}
+        >
+          {unit}
+        </span>
+      )}
     </div>
   )
 }

@@ -7,6 +7,15 @@ import type { ChartQueryBuilder } from './types'
 import { applyInterval, fillStep, nowOrToday } from './types'
 
 export const queryCharts: Record<string, ChartQueryBuilder> = {
+  'query-count-today': () => ({
+    query: `
+      SELECT COUNT() AS count
+      FROM merge('system', '^query_log')
+      WHERE type = 'QueryFinish'
+        AND toDate(event_time) = today()
+    `,
+  }),
+
   'query-count': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => ({
     query: `
     WITH event_count AS (

@@ -26,18 +26,6 @@ export const overviewCharts: Record<string, ChartQueryBuilder> = {
     `,
   }),
 
-  hostname: () => ({
-    query: `SELECT hostName() as val`,
-  }),
-
-  version: () => ({
-    query: `SELECT version() as val`,
-  }),
-
-  'uptime-readable': () => ({
-    query: `SELECT splitByString(' and ', formatReadableTimeDelta(uptime()))[1] as val`,
-  }),
-
   'disk-size-single': () => ({
     query: `
       SELECT name,

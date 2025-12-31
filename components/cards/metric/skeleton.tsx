@@ -1,6 +1,5 @@
 'use client'
 
-import type { ReactNode } from 'react'
 import {
   Card,
   CardContent,
@@ -10,8 +9,8 @@ import {
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import type { MetricCardSkeletonProps, MetricTheme } from './types'
 import { THEME_CONFIGS } from './themes'
+import type { MetricCardSkeletonProps } from './types'
 
 export function MetricCardSkeleton({
   title,
@@ -37,7 +36,7 @@ export function MetricCardSkeleton({
         <CardHeader
           className={cn(
             'px-2.5 sm:px-3',
-            compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5',
+            compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
           )}
         >
           <div className="flex items-center gap-1.5">
@@ -48,18 +47,23 @@ export function MetricCardSkeleton({
                   compact ? 'p-0.5' : 'p-1',
                   themeConfig.bgColor,
                   themeConfig.iconColor,
-                  'animate-pulse',
+                  'animate-pulse'
                 )}
               >
                 {icon}
               </div>
             ) : (
-              <Skeleton className={cn('rounded-md', compact ? 'size-5' : 'size-8')} />
+              <Skeleton
+                className={cn('rounded-md', compact ? 'size-5' : 'size-8')}
+              />
             )}
             <div className="flex-1 space-y-0.5">
               {title ? (
                 <CardTitle
-                  className={cn('font-semibold tracking-tight', compact ? 'text-xs' : 'text-sm')}
+                  className={cn(
+                    'font-semibold tracking-tight',
+                    compact ? 'text-xs' : 'text-sm'
+                  )}
                 >
                   {title}
                 </CardTitle>
@@ -68,7 +72,10 @@ export function MetricCardSkeleton({
               )}
               {description ? (
                 <CardDescription
-                  className={cn('text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}
+                  className={cn(
+                    'text-muted-foreground',
+                    compact ? 'text-[10px]' : 'text-xs'
+                  )}
                 >
                   {description}
                 </CardDescription>
@@ -79,10 +86,7 @@ export function MetricCardSkeleton({
           </div>
         </CardHeader>
         <CardContent
-          className={cn(
-            'px-2.5 pt-0 sm:px-3',
-            compact ? 'pb-1' : 'pb-1.5',
-          )}
+          className={cn('px-2.5 pt-0 sm:px-3', compact ? 'pb-1' : 'pb-1.5')}
         >
           {variant === 'dual' || variant === 'list' ? (
             <div className={cn('space-y-1', compact && 'space-y-0.5')}>

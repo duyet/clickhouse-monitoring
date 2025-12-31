@@ -24,13 +24,12 @@ import {
 } from '@/components/ui/table'
 import { withQueryParams } from '@/lib/clickhouse-query'
 import { cn } from '@/lib/utils'
-import type { QueryConfig } from '@/types/query-config'
 import type { ChartQueryParams } from '@/types/chart-data'
+import type { QueryConfig } from '@/types/query-config'
 import { ColumnVisibilityButton } from './buttons/column-visibility'
 import { ShowSQLButton } from './buttons/show-sql'
 import { DataTableToolbar } from './data-table-toolbar'
 import { Footnote, type FootnoteProps } from './footnote'
-import { getCustomSortingFns } from './sorting-fns'
 import {
   useColumnVisibility,
   useFilteredData,
@@ -38,6 +37,7 @@ import {
   useTableFilters,
   useVirtualRows,
 } from './hooks'
+import { getCustomSortingFns } from './sorting-fns'
 
 /**
  * Props for the DataTable component
@@ -219,7 +219,9 @@ export function DataTable<
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2">
-              <h1 className="text-muted-foreground flex-none text-xl">{title}</h1>
+              <h1 className="text-muted-foreground flex-none text-xl">
+                {title}
+              </h1>
               {isRefreshing && (
                 <Loader2Icon
                   className="text-muted-foreground size-4 animate-spin"
@@ -316,7 +318,10 @@ export function DataTable<
                         }}
                       >
                         {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id} className="px-4 py-3 text-sm">
+                          <TableCell
+                            key={cell.id}
+                            className="px-4 py-3 text-sm"
+                          >
                             {flexRender(
                               cell.column.columnDef.cell,
                               cell.getContext()

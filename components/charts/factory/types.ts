@@ -1,4 +1,3 @@
-import type { ChartProps } from '@/components/charts/chart-props'
 import type { AreaChartProps, BarChartProps } from '@/types/charts'
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
@@ -36,7 +35,11 @@ export interface BarChartFactoryConfig extends BaseChartFactoryConfig {
 }
 
 export interface CustomChartFactoryConfig extends BaseChartFactoryConfig {
-  render: (data: unknown[], sql: string | undefined, hostId: number) => React.ReactNode
+  render: (
+    data: unknown[],
+    sql: string | undefined,
+    hostId: number
+  ) => React.ReactNode
   chartCardClassName?: string
   contentClassName?: string
 }

@@ -42,7 +42,10 @@ export function createErrorResponse(
   ErrorLogger.logError(new Error(errorDetails.message), {
     component: `API:${context?.route || 'unknown'}`,
     action: context?.method || 'unknown',
-    hostId: typeof context?.hostId === 'string' ? parseInt(context.hostId, 10) : context?.hostId,
+    hostId:
+      typeof context?.hostId === 'string'
+        ? parseInt(context.hostId, 10)
+        : context?.hostId,
   })
 
   // Also log to console for immediate visibility

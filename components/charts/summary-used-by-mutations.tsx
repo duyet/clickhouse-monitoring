@@ -1,12 +1,12 @@
 'use client'
 
 import { memo } from 'react'
+import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
+import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartSkeleton } from '@/components/skeletons'
-import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
-import { ChartCard } from '@/components/cards/chart-card'
 import { useChartData } from '@/lib/swr'
 
 export const ChartSummaryUsedByMutations = memo(

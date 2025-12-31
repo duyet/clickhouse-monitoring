@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
 import type { VisibilityState } from '@tanstack/react-table'
+import { useMemo, useState } from 'react'
 
 interface UseColumnVisibilityOptions {
   allColumns: string[]

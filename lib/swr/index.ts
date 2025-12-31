@@ -6,7 +6,7 @@
 // SWR configuration presets
 export { createPollingConfig, REFRESH_INTERVAL, swrConfig } from './config'
 export { SWRProvider } from './provider'
-export { useChartData, type UseChartResult } from './use-chart-data'
+export { type UseChartResult, useChartData } from './use-chart-data'
 export { useFetchData } from './use-fetch-data'
 export { useHostId } from './use-host'
 export { useTableData } from './use-table-data'

@@ -4,15 +4,15 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { memo, useMemo } from 'react'
-import { ChartEmpty } from '@/components/charts/chart-empty'
-import { ChartError } from '@/components/charts/chart-error'
-import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartSkeleton } from '@/components/skeletons'
 import {
   CardMultiMetrics,
   type CardMultiMetricsProps,
 } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
+import { ChartEmpty } from '@/components/charts/chart-empty'
+import { ChartError } from '@/components/charts/chart-error'
+import type { ChartProps } from '@/components/charts/chart-props'
+import { ChartSkeleton } from '@/components/skeletons'
 import { formatReadableQuantity } from '@/lib/format-readable'
 import { useChartData } from '@/lib/swr'
 
@@ -61,7 +61,9 @@ export const ChartSummaryUsedByRunningQueries = memo(
       const totalMem = firstItem.totalMem as
         | { total: number; readable_total: string }[]
         | undefined
-      const todayQueryCount = firstItem.todayQueryCount as { query_count: number }[] | undefined
+      const todayQueryCount = firstItem.todayQueryCount as
+        | { query_count: number }[]
+        | undefined
       const rowsReadWritten = firstItem.rowsReadWritten as
         | {
             rows_read: number

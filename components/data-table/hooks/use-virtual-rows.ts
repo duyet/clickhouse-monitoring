@@ -1,7 +1,7 @@
 'use client'
 
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useRef, type RefObject } from 'react'
+import { type RefObject, useRef } from 'react'
 
 /**
  * Hook for virtualizing table rows to improve performance with large datasets.

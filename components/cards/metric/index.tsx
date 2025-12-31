@@ -1,6 +1,5 @@
 'use client'
 
-import type { ReactNode } from 'react'
 import {
   ActivityIcon,
   DatabaseIcon,
@@ -19,8 +18,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  detectCardErrorVariant,
+  getCardErrorClassName,
+  getCardErrorDescription,
+  getCardErrorTitle,
+  shouldShowRetryButton,
+} from '@/lib/card-error-utils'
 import { cn } from '@/lib/utils'
 
 // Re-export types
@@ -33,22 +39,18 @@ export * from './types'
 import { THEME_CONFIGS } from './themes'
 
 // ============================================================================
-// Utils
-// ============================================================================
-
-import { getErrorVariant, getErrorDescription } from './utils'
-
-// ============================================================================
 // Variant Renderers
 // ============================================================================
 
 import {
   renderDualVariant,
   renderListVariant,
+  renderOversizedVariant,
+  renderPulseVariant,
   renderSingleVariant,
+  renderSplitVariant,
   renderSubtitleVariant,
   renderTrendVariant,
-  renderPulseVariant,
 } from './variants'
 
 // ============================================================================
@@ -76,6 +78,9 @@ export function MetricCard<TData = unknown>({
   unit1,
   value2,
   unit2,
+  // split props
+  label1,
+  label2,
   // list props
   items,
   // subtitle props
@@ -91,7 +96,6 @@ export function MetricCard<TData = unknown>({
   children,
 }: MetricCardProps<TData>) {
   const { data, isLoading, error, mutate } = swr
-  const retry = mutate || (() => {})
 
   const dataArray = Array.isArray(data)
     ? data
@@ -118,37 +122,56 @@ export function MetricCard<TData = unknown>({
 
   // Error state
   if (error) {
-    const errorVariant = getErrorVariant(error)
-    const errorDescription = getErrorDescription(error, errorVariant)
+    const errorVariant = detectCardErrorVariant(error)
+    const errorDescription = getCardErrorDescription(
+      error,
+      errorVariant,
+      compact
+    )
+    const errorTitle = getCardErrorTitle(errorVariant)
+    const errorClassName = getCardErrorClassName(errorVariant)
+    const showRetry = mutate && shouldShowRetryButton(error)
 
     return (
       <Card
         className={cn(
           'relative overflow-hidden rounded-xl border',
           'bg-card',
-          errorVariant === 'error' && 'border-destructive/30 bg-destructive/5',
-          errorVariant === 'timeout' && 'border-warning/30 bg-warning/5',
-          errorVariant === 'offline' && 'border-warning/30 bg-warning/5',
+          errorClassName,
           className
         )}
         role="alert"
         aria-label={`Error loading ${title}`}
       >
-        <CardHeader className={cn(
-          'px-2.5 sm:px-3',
-          compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
-        )}>
+        <CardHeader
+          className={cn(
+            'px-2.5 sm:px-3',
+            compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
+          )}
+        >
           <div className="flex items-start justify-between gap-1.5">
             <div className="flex items-center gap-1.5">
               {icon && (
-                <div className={cn('shrink-0', themeConfig.iconColor)}>{icon}</div>
+                <div className={cn('shrink-0', themeConfig.iconColor)}>
+                  {icon}
+                </div>
               )}
               <div>
-                <CardTitle className={cn('font-semibold tracking-tight', compact ? 'text-xs' : 'text-sm')}>
+                <CardTitle
+                  className={cn(
+                    'font-semibold tracking-tight',
+                    compact ? 'text-xs' : 'text-sm'
+                  )}
+                >
                   {title}
                 </CardTitle>
                 {description && (
-                  <CardDescription className={cn('text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}>
+                  <CardDescription
+                    className={cn(
+                      'text-muted-foreground',
+                      compact ? 'text-[10px]' : 'text-xs'
+                    )}
+                  >
                     {description}
                   </CardDescription>
                 )}
@@ -156,20 +179,33 @@ export function MetricCard<TData = unknown>({
             </div>
           </div>
         </CardHeader>
-        <CardContent className={cn(
-          'px-2.5 pt-0 sm:px-3',
-          compact ? 'pb-1' : 'pb-3 sm:px-4'
-        )}>
+        <CardContent
+          className={cn(
+            'px-2.5 pt-0 sm:px-3',
+            compact ? 'pb-1' : 'pb-3 sm:px-4'
+          )}
+        >
           <EmptyState
             variant={errorVariant}
-            title={errorVariant === 'error' ? 'Failed to load' : undefined}
+            title={errorTitle}
             description={errorDescription}
             compact
-            action={{
-              label: 'Retry',
-              onClick: retry,
-              icon: <RefreshCwIcon className={cn('mr-1', compact ? 'size-2.5' : 'size-3.5')} />,
-            }}
+            action={
+              showRetry
+                ? {
+                    label: 'Retry',
+                    onClick: mutate,
+                    icon: (
+                      <RefreshCwIcon
+                        className={cn(
+                          'mr-1',
+                          compact ? 'size-2.5' : 'size-3.5'
+                        )}
+                      />
+                    ),
+                  }
+                : undefined
+            }
           />
         </CardContent>
       </Card>
@@ -187,15 +223,19 @@ export function MetricCard<TData = unknown>({
         )}
       >
         {/* Theme gradient background */}
-        <div className={cn(
-          'absolute inset-0 -z-10 bg-gradient-to-br',
-          themeConfig.gradient
-        )} />
+        <div
+          className={cn(
+            'absolute inset-0 -z-10 bg-gradient-to-br',
+            themeConfig.gradient
+          )}
+        />
 
-        <CardHeader className={cn(
-          'px-2.5 sm:px-3',
-          compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
-        )}>
+        <CardHeader
+          className={cn(
+            'px-2.5 sm:px-3',
+            compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
+          )}
+        >
           <div className="flex items-center gap-1.5">
             {icon && (
               <div className={cn('shrink-0 opacity-50', themeConfig.iconColor)}>
@@ -203,22 +243,36 @@ export function MetricCard<TData = unknown>({
               </div>
             )}
             <div>
-              <CardTitle className={cn('font-semibold tracking-tight', compact ? 'text-xs' : 'text-sm')}>
+              <CardTitle
+                className={cn(
+                  'font-semibold tracking-tight',
+                  compact ? 'text-xs' : 'text-sm'
+                )}
+              >
                 {title}
               </CardTitle>
               {description && (
-                <CardDescription className={cn('text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}>
+                <CardDescription
+                  className={cn(
+                    'text-muted-foreground',
+                    compact ? 'text-[10px]' : 'text-xs'
+                  )}
+                >
                   {description}
                 </CardDescription>
               )}
             </div>
           </div>
         </CardHeader>
-        <CardContent className={cn(
-          'px-2.5 pt-0 sm:px-3',
-          compact ? 'pb-1' : 'pb-1.5'
-        )}>
-          <div className={cn('font-bold tabular-nums text-muted-foreground/30', compact ? 'text-lg' : 'text-2xl')}>
+        <CardContent
+          className={cn('px-2.5 pt-0 sm:px-3', compact ? 'pb-1' : 'pb-1.5')}
+        >
+          <div
+            className={cn(
+              'font-bold tabular-nums text-muted-foreground/30',
+              compact ? 'text-lg' : 'text-2xl'
+            )}
+          >
             -
           </div>
         </CardContent>
@@ -232,13 +286,42 @@ export function MetricCard<TData = unknown>({
       case 'single':
         return renderSingleVariant({ value, unit, data: dataArray, compact })
       case 'dual':
-        return renderDualVariant({ value1, unit1, value2, unit2, data: dataArray, compact })
+        return renderDualVariant({
+          value1,
+          unit1,
+          value2,
+          unit2,
+          data: dataArray,
+          compact,
+        })
       case 'list':
         return renderListVariant({ items, data: dataArray, compact })
       case 'subtitle':
-        return renderSubtitleVariant({ value, subtitle, data: dataArray, compact })
+        return renderSubtitleVariant({
+          value,
+          subtitle,
+          data: dataArray,
+          compact,
+        })
       case 'trend':
-        return renderTrendVariant({ value, trend, trendLabel, data: dataArray, compact })
+        return renderTrendVariant({
+          value,
+          trend,
+          trendLabel,
+          data: dataArray,
+          compact,
+        })
+      case 'oversized':
+        return renderOversizedVariant({ value, unit, data: dataArray, compact })
+      case 'split':
+        return renderSplitVariant({
+          value1,
+          label1,
+          value2,
+          label2,
+          data: dataArray,
+          compact,
+        })
       case 'pulse':
         return renderPulseVariant({
           value,
@@ -266,17 +349,18 @@ export function MetricCard<TData = unknown>({
       )}
     >
       {/* Theme gradient background */}
-      <div className={cn(
-        'absolute inset-0 -z-10 bg-gradient-to-br',
-        themeConfig.gradient
-      )} />
+      <div
+        className={cn(
+          'absolute inset-0 -z-10 bg-gradient-to-br',
+          themeConfig.gradient
+        )}
+      />
 
       {/* Content */}
       <div className="relative">
-        <CardHeader className={cn(
-          'px-2.5 sm:px-3',
-          compact ? 'pb-1 pt-1' : 'pb-2 pt-2'
-        )}>
+        <CardHeader
+          className={cn('px-2.5 sm:px-3', compact ? 'pb-1 pt-1' : 'pb-2 pt-2')}
+        >
           <div className="flex items-start justify-between gap-1.5">
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
               {icon && (
@@ -302,10 +386,12 @@ export function MetricCard<TData = unknown>({
                   {title}
                 </CardTitle>
                 {description && (
-                  <CardDescription className={cn(
-                    'text-muted-foreground truncate',
-                    compact ? 'text-[10px]' : 'text-xs'
-                  )}>
+                  <CardDescription
+                    className={cn(
+                      'text-muted-foreground truncate',
+                      compact ? 'text-[10px]' : 'text-xs'
+                    )}
+                  >
                     {description}
                   </CardDescription>
                 )}
@@ -326,10 +412,11 @@ export function MetricCard<TData = unknown>({
             )}
           </div>
         </CardHeader>
-        <CardContent className={cn(
-          'px-2.5 pt-0 sm:px-3',
-          compact ? 'pb-1' : 'pb-2.5'
-        )}>{content}</CardContent>
+        <CardContent
+          className={cn('px-2.5 pt-0 sm:px-3', compact ? 'pb-1' : 'pb-2.5')}
+        >
+          {content}
+        </CardContent>
       </div>
     </Card>
   )
@@ -363,16 +450,20 @@ function MetricCardSkeleton({
       aria-label={`Loading ${title || 'metric'}`}
     >
       {/* Theme gradient background */}
-      <div className={cn(
-        'absolute inset-0 -z-10 bg-gradient-to-br',
-        themeConfig.gradient
-      )} />
+      <div
+        className={cn(
+          'absolute inset-0 -z-10 bg-gradient-to-br',
+          themeConfig.gradient
+        )}
+      />
 
       <div className="relative">
-        <CardHeader className={cn(
-          'px-2.5 sm:px-3',
-          compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
-        )}>
+        <CardHeader
+          className={cn(
+            'px-2.5 sm:px-3',
+            compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
+          )}
+        >
           <div className="flex items-center gap-1.5">
             {icon ? (
               <div
@@ -387,18 +478,30 @@ function MetricCardSkeleton({
                 {icon}
               </div>
             ) : (
-              <Skeleton className={cn('rounded-md', compact ? 'size-5' : 'size-8')} />
+              <Skeleton
+                className={cn('rounded-md', compact ? 'size-5' : 'size-8')}
+              />
             )}
             <div className="flex-1 space-y-0.5">
               {title ? (
-                <CardTitle className={cn('font-semibold tracking-tight', compact ? 'text-xs' : 'text-sm')}>
+                <CardTitle
+                  className={cn(
+                    'font-semibold tracking-tight',
+                    compact ? 'text-xs' : 'text-sm'
+                  )}
+                >
                   {title}
                 </CardTitle>
               ) : (
                 <Skeleton className={cn(compact ? 'h-3' : 'h-4', 'w-24')} />
               )}
               {description ? (
-                <CardDescription className={cn('text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}>
+                <CardDescription
+                  className={cn(
+                    'text-muted-foreground',
+                    compact ? 'text-[10px]' : 'text-xs'
+                  )}
+                >
                   {description}
                 </CardDescription>
               ) : (
@@ -407,10 +510,9 @@ function MetricCardSkeleton({
             </div>
           </div>
         </CardHeader>
-        <CardContent className={cn(
-          'px-2.5 pt-0 sm:px-3',
-          compact ? 'pb-1' : 'pb-1.5'
-        )}>
+        <CardContent
+          className={cn('px-2.5 pt-0 sm:px-3', compact ? 'pb-1' : 'pb-1.5')}
+        >
           {variant === 'dual' || variant === 'list' ? (
             <div className={cn('space-y-1', compact && 'space-y-0.5')}>
               <Skeleton className={cn('w-20', compact ? 'h-4' : 'h-7')} />
@@ -440,9 +542,7 @@ export const MetricIcons = {
   Database: <DatabaseIcon className="size-4" strokeWidth={2.5} />,
   HardDrive: <HardDriveIcon className="size-4" strokeWidth={2.5} />,
   Info: <InfoIcon className="size-4" strokeWidth={2.5} />,
-  Loader: (
-    <Loader2Icon className="size-4 animate-spin" strokeWidth={2.5} />
-  ),
+  Loader: <Loader2Icon className="size-4 animate-spin" strokeWidth={2.5} />,
   Refresh: <RefreshCwIcon className="size-4" strokeWidth={2.5} />,
   TrendingDown: <TrendingDownIcon className="size-4" strokeWidth={2.5} />,
   TrendingUp: <TrendingUpIcon className="size-4" strokeWidth={2.5} />,

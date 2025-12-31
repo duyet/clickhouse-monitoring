@@ -1,9 +1,9 @@
 'use client'
 
 import type { Row, RowData } from '@tanstack/react-table'
-import { memo } from 'react'
 import { MoreHorizontal } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { memo } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,8 +16,8 @@ import {
 import type { Action } from './types'
 
 // Dynamic import moved outside component to prevent re-import on every render
-const ActionItem = dynamic(() =>
-  import('./action-item').then((res) => res.ActionItem),
+const ActionItem = dynamic(
+  () => import('./action-item').then((res) => res.ActionItem),
   {
     ssr: false,
     loading: () => null,
@@ -35,7 +35,6 @@ function ActionMenuComponent<TData extends RowData, TValue>({
   value,
   actions,
 }: ActionMenuProps<TData, TValue>) {
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -61,4 +60,6 @@ function ActionMenuComponent<TData extends RowData, TValue>({
 }
 
 // Memoized export to prevent unnecessary re-renders
-export const ActionMenu = memo(ActionMenuComponent) as typeof ActionMenuComponent
+export const ActionMenu = memo(
+  ActionMenuComponent
+) as typeof ActionMenuComponent

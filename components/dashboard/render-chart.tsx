@@ -1,11 +1,11 @@
 'use client'
 
+import { ChartCard } from '@/components/cards/chart-card'
 import { ChartError } from '@/components/charts/chart-error'
-import { ChartSkeleton } from '@/components/skeletons'
+import { GithubHeatmapChart } from '@/components/charts/github-heatmap-chart'
 import { AreaChart } from '@/components/charts/primitives/area'
 import { BarChart } from '@/components/charts/primitives/bar'
-import { ChartCard } from '@/components/cards/chart-card'
-import { GithubHeatmapChart } from '@/components/charts/github-heatmap-chart'
+import { ChartSkeleton } from '@/components/skeletons'
 import { useFetchData } from '@/lib/swr'
 
 interface RenderChartProps {

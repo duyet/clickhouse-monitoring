@@ -1,7 +1,7 @@
 'use client'
 
-import { createAreaChart } from '@/components/charts/factory'
 import type { ChartProps } from '@/components/charts/chart-props'
+import { createAreaChart } from '@/components/charts/factory'
 
 export const ChartDisksUsage = createAreaChart<{
   event_time: string

@@ -2,7 +2,7 @@
 
 import useSWR, { type SWRConfiguration } from 'swr'
 
-import type { ApiResponse, ApiResponseMetadata } from '@/lib/api/types'
+import type { ApiResponseMetadata } from '@/lib/api/types'
 
 /**
  * Table data response structure from the API

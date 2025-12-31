@@ -18,9 +18,9 @@
 import { memo, Suspense } from 'react'
 
 import { ChartSkeleton } from '@/components/skeletons'
-import { DynamicChart } from './dynamic-chart'
-import type { QueryConfig } from '@/types/query-config'
 import { cn } from '@/lib/utils'
+import type { QueryConfig } from '@/types/query-config'
+import { DynamicChart } from './dynamic-chart'
 
 export interface RelatedChartsProps {
   relatedCharts: QueryConfig['relatedCharts']
@@ -38,9 +38,7 @@ export const RelatedCharts = memo(function RelatedCharts({
   }
 
   // Filter out 'break' directives for counting
-  const chartCount = relatedCharts.filter(
-    (c) => c && c !== 'break'
-  ).length
+  const chartCount = relatedCharts.filter((c) => c && c !== 'break').length
 
   // For 5+ charts, use flex-col for stacked layout
   if (chartCount >= 5) {

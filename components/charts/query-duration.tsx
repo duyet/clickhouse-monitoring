@@ -1,7 +1,7 @@
 'use client'
 
-import { createBarChart } from '@/components/charts/factory'
 import type { ChartProps } from '@/components/charts/chart-props'
+import { createBarChart } from '@/components/charts/factory'
 
 export const ChartQueryDuration = createBarChart<{
   event_time: string
@@ -11,7 +11,8 @@ export const ChartQueryDuration = createBarChart<{
   chartName: 'query-duration',
   index: 'event_time',
   categories: ['query_duration_s'],
-  defaultTitle: 'Avg Queries Duration over last 14 days (AVG(duration in seconds) / day)',
+  defaultTitle:
+    'Avg Queries Duration over last 14 days (AVG(duration in seconds) / day)',
   defaultInterval: 'toStartOfDay',
   defaultLastHours: 24 * 14,
   dataTestId: 'query-duration-chart',

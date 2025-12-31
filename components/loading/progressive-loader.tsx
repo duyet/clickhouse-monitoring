@@ -115,5 +115,3 @@ export const ProgressiveGrid = memo(function ProgressiveGrid({
     </div>
   )
 })
-
-

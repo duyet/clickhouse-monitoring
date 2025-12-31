@@ -1,5 +1,5 @@
-import { PageSkeleton } from './page'
 import { Skeleton } from './base'
+import { PageSkeleton } from './page'
 
 export function SidebarSkeleton() {
   return (

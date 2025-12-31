@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useCallback, useMemo, useState } from 'react'
 
 export interface UseTableFiltersOptions {
   /** Enable URL synchronization for filters (default: false) */
@@ -42,9 +42,8 @@ export function useTableFilters(options: UseTableFiltersOptions = {}) {
     return filters
   }
 
-  const [columnFilters, setColumnFilters] = useState<Record<string, string>>(
-    getInitialFilters
-  )
+  const [columnFilters, setColumnFilters] =
+    useState<Record<string, string>>(getInitialFilters)
 
   const setColumnFilter = useCallback(
     (column: string, value: string) => {

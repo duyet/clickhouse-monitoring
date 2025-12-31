@@ -1,32 +1,12 @@
-import type { ApiError } from '@/lib/api/types'
-import { ApiErrorType } from '@/lib/api/types'
-import type { EmptyStateVariant } from '@/components/ui/empty-state'
 import type { MetricListItem } from './types'
 
-export function getErrorVariant(error: Error | ApiError): EmptyStateVariant {
-  const apiError = error as ApiError
-  const message = error.message?.toLowerCase() ?? ''
-
-  if (apiError.type === ApiErrorType.TableNotFound) return 'table-missing'
-  if (apiError.type === ApiErrorType.NetworkError) return 'offline'
-  if (message.includes('offline') || message.includes('network')) return 'offline'
-  if (message.includes('timeout')) return 'timeout'
-  return 'error'
-}
-
-export function getErrorDescription(error: Error | ApiError, variant: EmptyStateVariant): string {
-  if (variant === 'offline') {
-    return 'Unable to connect to the server. Check your network connection.'
-  }
-  if (variant === 'timeout') {
-    return 'The query took too long to execute. Please try again.'
-  }
-  if (error.message && error.message.length < 200) {
-    return error.message
-  }
-  return 'An unexpected error occurred. Please try again.'
-}
-
+/**
+ * Extracts a value from data or uses a provided value
+ *
+ * @param value - A static value or a function that extracts value from data
+ * @param data - The data array to extract from
+ * @returns The extracted value or '-' as fallback
+ */
 export function extractValue<T>(
   value: string | number | ((data: T[]) => string | number) | undefined,
   data: T[]
@@ -35,6 +15,13 @@ export function extractValue<T>(
   return value ?? '-'
 }
 
+/**
+ * Extracts items list from data or uses a provided list
+ *
+ * @param items - A static list or a function that extracts list from data
+ * @param data - The data array to extract from
+ * @returns The extracted list or empty array as fallback
+ */
 export function extractItems<T>(
   items: MetricListItem[] | ((data: T[]) => MetricListItem[]) | undefined,
   data: T[]

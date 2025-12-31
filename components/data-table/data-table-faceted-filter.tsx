@@ -13,10 +13,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { buildUrl } from '@/lib/url/url-builder'
 import { cn } from '@/lib/utils'
 import type { ArrayElement } from '@/types/generic'
 import type { QueryConfig } from '@/types/query-config'
-import { buildUrl } from '@/lib/url/url-builder'
 
 interface DataTableFacetedFilterProps {
   title?: string

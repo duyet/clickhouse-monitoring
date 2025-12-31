@@ -1,14 +1,14 @@
 'use client'
 
-import { memo, type FC } from 'react'
-import { ChartContainer } from '@/components/charts/chart-container'
+import { type FC, memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
+import { ChartContainer } from '@/components/charts/chart-container'
+import type { ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/charts/primitives/bar'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
-import type { BarChartFactoryConfig } from './types'
-import type { ChartProps } from '@/components/charts/chart-props'
 import type { ChartDataPoint } from '@/types/chart-data'
+import type { BarChartFactoryConfig } from './types'
 
 /**
  * Factory function to create a BarChart component with consistent patterns
@@ -48,11 +48,25 @@ export function createBarChart<T extends ChartDataPoint = ChartDataPoint>(
     })
 
     return (
-      <ChartContainer swr={swr} title={title} className={className} chartClassName={chartClassName}>
+      <ChartContainer
+        swr={swr}
+        title={title}
+        className={className}
+        chartClassName={chartClassName}
+      >
         {(dataArray, sql) => (
-          <ChartCard title={title} sql={sql} data={dataArray} data-testid={config.dataTestId}>
+          <ChartCard
+            title={title}
+            sql={sql}
+            data={dataArray}
+            data-testid={config.dataTestId}
+          >
             <BarChart
-              className={cn('h-full w-full', chartClassName, config.defaultChartClassName)}
+              className={cn(
+                'h-full w-full',
+                chartClassName,
+                config.defaultChartClassName
+              )}
               data={dataArray}
               index={config.index}
               categories={

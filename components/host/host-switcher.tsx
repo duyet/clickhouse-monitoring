@@ -4,7 +4,6 @@ import { Check, ChevronsUpDown } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { memo, useCallback } from 'react'
 import type { HostInfo } from '@/app/api/v1/hosts/route'
-import { useHostStatus } from '@/lib/swr/use-host-status'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,8 +24,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { cn, getHost } from '@/lib/utils'
+import { useHostStatus } from '@/lib/swr/use-host-status'
 import { buildUrl } from '@/lib/url/url-builder'
+import { cn, getHost } from '@/lib/utils'
 
 interface HostSwitcherProps {
   hosts: Array<Omit<HostInfo, 'user'>>
@@ -160,8 +160,8 @@ function HostVersionWithStatus({ hostId }: { hostId: number }) {
   if (isOnline && status) {
     return (
       <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-        <span className="flex-none size-2 rounded-full bg-emerald-500" />
-        v{status.version}
+        <span className="flex-none size-2 rounded-full bg-emerald-500" />v
+        {status.version}
       </span>
     )
   }

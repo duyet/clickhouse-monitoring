@@ -1,10 +1,10 @@
 'use client'
 
 import { memo } from 'react'
+import { ChartCard } from '@/components/cards/chart-card'
 import { ChartError, ChartSkeleton } from '@/components/charts'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartCard } from '@/components/cards/chart-card'
 import {
   Table,
   TableBody,

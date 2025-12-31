@@ -3,7 +3,6 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { memo, useCallback } from 'react'
 import type { HostInfo } from '@/app/api/v1/hosts/route'
-import { useHostStatus } from '@/lib/swr/use-host-status'
 import {
   Select,
   SelectContent,
@@ -17,8 +16,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { cn, getHost } from '@/lib/utils'
+import { useHostStatus } from '@/lib/swr/use-host-status'
 import { buildUrl } from '@/lib/url/url-builder'
+import { cn, getHost } from '@/lib/utils'
 
 type ClickHouseHostSelectorProps = {
   currentHostId: number
@@ -74,7 +74,10 @@ export function ClickHouseHostSelector({
             value={host.id.toString()}
             data-testid={`host-option-${host.id}`}
           >
-            <HostStatusIndicator hostId={host.id} hostName={host.name || getHost(host.host)} />
+            <HostStatusIndicator
+              hostId={host.id}
+              hostName={host.name || getHost(host.host)}
+            />
           </SelectItem>
         ))}
       </SelectContent>

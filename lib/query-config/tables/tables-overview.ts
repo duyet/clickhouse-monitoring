@@ -97,7 +97,9 @@ export const tablesOverviewConfig: QueryConfig = {
     compr_rate: ColumnFormat.BackgroundBar,
     parts_count: [
       ColumnFormat.Link,
-      { href: '/part-info?host=[ctx.hostId]&database=[_database]&table=[_table]' },
+      {
+        href: '/part-info?host=[ctx.hostId]&database=[_database]&table=[_table]',
+      },
     ],
     readable_max_part_size_compressed: ColumnFormat.BackgroundBar,
     readable_max_part_size_uncompressed: ColumnFormat.BackgroundBar,

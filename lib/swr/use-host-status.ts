@@ -1,67 +1,23 @@
 'use client'
 
-import { useCallback } from 'react'
 import useSWR from 'swr'
 
-/** API response format for chart data */
-type ChartApiResponse = {
+/** API response format for host status */
+type HostStatusApiResponse = {
   success: boolean
-  data?: Array<{ val: string }>
+  data?: {
+    version: string
+    uptime: string
+    hostname: string
+  }
+  error?: string
 }
 
 /** Host status information */
 export type HostStatus = {
-  uptime: string
-  hostName: string
   version: string
-}
-
-/**
- * Fetch host status (uptime, hostname, version) from API
- */
-async function fetchHostStatus(hostId: number): Promise<HostStatus | null> {
-  try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000)
-
-    // Fetch all three values in parallel
-    const [hostnameRes, versionRes, uptimeRes] = await Promise.all([
-      fetch(`/api/v1/charts/hostname?hostId=${hostId}`, {
-        signal: controller.signal,
-      }),
-      fetch(`/api/v1/charts/version?hostId=${hostId}`, {
-        signal: controller.signal,
-      }),
-      fetch(`/api/v1/charts/uptime-readable?hostId=${hostId}`, {
-        signal: controller.signal,
-      }),
-    ])
-
-    clearTimeout(timeoutId)
-
-    if (!hostnameRes.ok || !versionRes.ok || !uptimeRes.ok) {
-      return null
-    }
-
-    const [hostnameData, versionData, uptimeData] = await Promise.all([
-      hostnameRes.json() as Promise<ChartApiResponse>,
-      versionRes.json() as Promise<ChartApiResponse>,
-      uptimeRes.json() as Promise<ChartApiResponse>,
-    ])
-
-    // Extract values from API response format
-    const hostName = hostnameData?.data?.[0]?.val ?? ''
-    const version = versionData?.data?.[0]?.val ?? ''
-    const uptime = uptimeData?.data?.[0]?.val ?? ''
-
-    if (!hostName && !version && !uptime) {
-      return null
-    }
-
-    return { hostName, version, uptime }
-  } catch {
-    return null
-  }
+  uptime: string
+  hostname: string
 }
 
 interface UseHostStatusOptions {
@@ -79,15 +35,16 @@ interface UseHostStatusOptions {
 
 /**
  * SWR hook to fetch host status (version, uptime, hostname).
- * Provides automatic caching and deduplication.
+ * Uses a unified API endpoint for better caching efficiency.
  *
  * @param hostId - The host ID to fetch status for
  * @param options - SWR configuration options
- * @returns {Object} SWR state with status data, error, isLoading, and online state
+ * @returns {Object} SWR state with data, error, isLoading, and online state
  *
  * @example
  * ```typescript
- * const { status, error, isLoading, isOnline } = useHostStatus(0)
+ * const { data, error, isLoading } = useHostStatus(0)
+ * // data: { version: '24.3.1.1', uptime: '1 day 2 hours', hostname: 'clickhouse-01' }
  * ```
  */
 export function useHostStatus(
@@ -96,18 +53,23 @@ export function useHostStatus(
 ) {
   const { refreshInterval = 60000, revalidateOnFocus = false } = options
 
-  const fetcher = useCallback(
+  const { data, error, isLoading } = useSWR<HostStatus>(
+    hostId !== null ? `/api/v1/host-status?hostId=${hostId}` : null,
     async (url: string) => {
-      // Extract hostId from the cache key
-      const id = parseInt(url.split('/').pop() ?? '0', 10)
-      return fetchHostStatus(id)
+      const res = await fetch(url)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch host status: ${res.statusText}`)
+      }
+      const json: HostStatusApiResponse = await res.json()
+      if (!json.success || !json.data) {
+        throw new Error(json.error || 'No data returned')
+      }
+      return {
+        version: json.data.version,
+        uptime: json.data.uptime,
+        hostname: json.data.hostname,
+      }
     },
-    []
-  )
-
-  const { data, error, isLoading } = useSWR<HostStatus | null>(
-    hostId !== null ? `/api/v1/host-status/${hostId}` : null,
-    fetcher,
     {
       dedupingInterval: 10000,
       refreshInterval,
@@ -117,9 +79,9 @@ export function useHostStatus(
   )
 
   return {
-    status: data ?? null,
+    data: data ?? null,
     error,
     isLoading,
-    isOnline: data !== null,
+    isOnline: data?.version !== '' && data?.version !== undefined,
   }
 }

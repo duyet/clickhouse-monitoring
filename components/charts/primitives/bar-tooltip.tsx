@@ -68,10 +68,11 @@ export const BarTooltip = memo(function BarTooltip({
                       {
                         '--color-bg': `var(--color-${name})`,
                       } as React.CSSProperties
-                      }
+                    }
                   />
                   <span className="truncate text-muted-foreground">
-                    {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                    {chartConfig[name as keyof typeof chartConfig]?.label ||
+                      name}
                   </span>
                 </div>
 
@@ -105,10 +106,11 @@ export const BarTooltip = memo(function BarTooltip({
                       {
                         '--color-bg': `var(--color-${name})`,
                       } as React.CSSProperties
-                      }
+                    }
                   />
                   <span className="truncate text-muted-foreground">
-                    {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                    {chartConfig[name as keyof typeof chartConfig]?.label ||
+                      name}
                   </span>
                 </div>
 
