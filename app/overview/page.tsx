@@ -14,7 +14,6 @@ import { ChartTopTableSize } from '@/components/charts/top-table-size'
 import { ChartKeeperException } from '@/components/charts/zookeeper-exception'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 import { PageSkeleton } from '@/components/skeletons'
-import { StaggeredChart } from '@/components/loading/progressive-loader'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
 
@@ -24,7 +23,7 @@ export default function OverviewPage() {
   return (
     <Suspense fallback={<PageSkeleton chartCount={8} />}>
       <div>
-        <OverviewCharts hostId={hostId} className="mb-2" />
+        <OverviewCharts hostId={hostId} className="mb-6" />
 
         <Tabs defaultValue="overview" className="space-y-2">
           <div className="overflow-x-auto pb-1 -mx-1 px-1 sm:mx-0 sm:px-0">
@@ -38,169 +37,101 @@ export default function OverviewPage() {
 
           <TabsContent value="overview" className="space-y-2">
             <div
-              className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-0"
+              className="grid auto-rows-fr items-stretch gap-3 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 min-w-0"
               role="region"
               aria-label="Overview charts"
             >
-              <StaggeredChart
-                index={0}
-                stagger={80}
-                priority="high"
-                aria-label="Query count chart"
-              >
-                <ChartQueryCount
-                  title="Query Count last 24h"
-                  lastHours={24}
-                  interval="toStartOfHour"
-                  className="w-full"
-                  chartClassName="h-36"
-                  hostId={hostId}
-                />
-              </StaggeredChart>
+              <ChartQueryCount
+                title="Query Count last 24h"
+                lastHours={24}
+                interval="toStartOfHour"
+                className="w-full h-80"
+                hostId={hostId}
+              />
 
-              <StaggeredChart
-                index={1}
-                stagger={80}
-                priority="high"
-                aria-label="Query count by user chart"
-              >
-                <ChartQueryCountByUser
-                  title="Query Count by User last 24h"
-                  lastHours={24}
-                  interval="toStartOfHour"
-                  className="w-full"
-                  chartClassName="h-36"
-                  hostId={hostId}
-                />
-              </StaggeredChart>
+              <ChartQueryCountByUser
+                title="Query Count by User last 24h"
+                lastHours={24}
+                interval="toStartOfHour"
+                className="w-full h-80"
+                hostId={hostId}
+              />
 
-              <StaggeredChart
-                index={2}
-                stagger={80}
-                aria-label="Query count 14 days chart"
-              >
-                <ChartQueryCountByUser
-                  title="Query Count last 14d"
-                  lastHours={24 * 14}
-                  interval="toStartOfDay"
-                  className="w-full"
-                  chartClassName="h-36"
-                  hostId={hostId}
-                />
-              </StaggeredChart>
+              <ChartQueryCountByUser
+                title="Query Count last 14d"
+                lastHours={24 * 14}
+                interval="toStartOfDay"
+                className="w-full h-80"
+                hostId={hostId}
+              />
 
-              <StaggeredChart
-                index={3}
-                stagger={80}
-                aria-label="Memory usage chart"
-              >
-                <ChartMemoryUsage
-                  title="Memory Usage last 24h (avg / 10 minutes)"
-                  className="w-full"
-                  chartClassName="h-36"
-                  interval="toStartOfTenMinutes"
-                  lastHours={24}
-                  hostId={hostId}
-                />
-              </StaggeredChart>
+              <ChartMemoryUsage
+                title="Memory Usage last 24h (avg / 10 minutes)"
+                className="w-full h-80"
+                interval="toStartOfTenMinutes"
+                lastHours={24}
+                hostId={hostId}
+              />
 
-              <StaggeredChart
-                index={4}
-                stagger={80}
-                aria-label="CPU usage chart"
-              >
-                <ChartCPUUsage
-                  title="CPU Usage last 24h (avg / 10 minutes)"
-                  className="w-full"
-                  chartClassName="h-36"
-                  interval="toStartOfTenMinutes"
-                  lastHours={24}
-                  hostId={hostId}
-                />
-              </StaggeredChart>
+              <ChartCPUUsage
+                title="CPU Usage last 24h (avg / 10 minutes)"
+                className="w-full h-80"
+                interval="toStartOfTenMinutes"
+                lastHours={24}
+                hostId={hostId}
+              />
 
-              <StaggeredChart
-                index={5}
-                stagger={80}
-                aria-label="Merge count chart"
-              >
-                <ChartMergeCount
-                  title="Merge and PartMutation last 24h (avg)"
-                  lastHours={24}
-                  interval="toStartOfHour"
-                  className="w-full"
-                  chartClassName="h-36"
-                  hostId={hostId}
-                />
-              </StaggeredChart>
+              <ChartMergeCount
+                title="Merge and PartMutation last 24h (avg)"
+                lastHours={24}
+                interval="toStartOfHour"
+                className="w-full h-80"
+                hostId={hostId}
+              />
 
-              <StaggeredChart
-                index={6}
-                stagger={80}
-                priority="low"
-                aria-label="Top table sizes chart"
-              >
-                <ChartTopTableSize className="w-full" hostId={hostId} />
-              </StaggeredChart>
+              <ChartTopTableSize className="w-full h-[220px]" hostId={hostId} />
 
-              <StaggeredChart
-                index={7}
-                stagger={80}
-                priority="low"
-                aria-label="New parts created chart"
-              >
-                <ChartNewPartsCreated
-                  className="w-full"
-                  chartClassName="h-36"
-                  title="New Parts Created over last 7 days"
-                  interval="toStartOfHour"
-                  lastHours={24 * 7}
-                  hostId={hostId}
-                />
-              </StaggeredChart>
+              <ChartNewPartsCreated
+                className="w-full h-80"
+                title="New Parts Created over last 7 days"
+                interval="toStartOfHour"
+                lastHours={24 * 7}
+                hostId={hostId}
+              />
             </div>
           </TabsContent>
 
           <TabsContent value="errors" className="space-y-2">
-            <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-0">
-              <StaggeredChart index={0} stagger={80}>
-                <ChartKeeperException className="w-full" hostId={hostId} />
-              </StaggeredChart>
+            <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0">
+              <ChartKeeperException className="w-full" hostId={hostId} />
             </div>
           </TabsContent>
 
           <TabsContent value="disks" className="space-y-2">
-            <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-0">
-              <StaggeredChart index={0} stagger={80}>
-                <ChartDiskSize
-                  className="w-full"
-                  title="Disk Size"
-                  hostId={hostId}
-                />
-              </StaggeredChart>
-              <StaggeredChart index={1} stagger={80}>
-                <ChartDisksUsage
-                  className="w-full"
-                  chartClassName="h-36"
-                  title="Disks Usage over last 30 days"
-                  interval="toStartOfDay"
-                  lastHours={24 * 30}
-                  hostId={hostId}
-                />
-              </StaggeredChart>
+            <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0">
+              <ChartDiskSize
+                className="w-full"
+                title="Disk Size"
+                hostId={hostId}
+              />
+              <ChartDisksUsage
+                className="w-full h-80"
+                title="Disks Usage over last 30 days"
+                interval="toStartOfDay"
+                lastHours={24 * 30}
+                hostId={hostId}
+              />
             </div>
           </TabsContent>
 
           <TabsContent value="backups" className="space-y-2">
-            <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-0">
-              <StaggeredChart index={0} stagger={80}>
-                <ChartBackupSize
-                  className="w-full"
-                  title="Backup"
-                  chartClassName="h-36"
-                  hostId={hostId}
-                />
-              </StaggeredChart>
+            <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0">
+              <ChartBackupSize
+                className="w-full"
+                title="Backup"
+                chartClassName="h-full h-[140px] sm:h-[160px]"
+                hostId={hostId}
+              />
             </div>
           </TabsContent>
         </Tabs>

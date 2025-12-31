@@ -72,7 +72,7 @@ export async function RelatedCharts({
   }
 
   return (
-    <div className={cn('grid gap-5', gridCols, className)}>
+    <div className={cn('grid gap-3', gridCols, className)}>
       {charts.map(([name, Chart, props], i) => {
         let chartClassName = ''
 
@@ -117,7 +117,7 @@ export async function RelatedCharts({
             <FadeIn duration={250}>
               <Chart
                 className={cn('w-full p-0 shadow-none', chartClassName)}
-                chartClassName="h-44"
+                chartClassName="h-full min-h-[140px] sm:min-h-[160px]"
                 {...props}
                 hostId={hostId}
               />

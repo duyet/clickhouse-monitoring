@@ -15,6 +15,7 @@ export const ChartCPUUsage = createAreaChart<{
   defaultLastHours: 24,
   dataTestId: 'cpu-usage-chart',
   areaChartProps: {
+    colors: ['--chart-1'],
     yAxisTickFormatter: chartTickFormatters.duration,
   },
 })

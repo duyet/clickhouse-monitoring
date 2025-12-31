@@ -52,7 +52,7 @@ export function createAreaChart<T extends ChartDataPoint = ChartDataPoint>(
         {(dataArray, sql) => (
           <ChartCard title={title} sql={sql} data={dataArray} data-testid={config.dataTestId}>
             <AreaChart
-              className={cn('h-52', chartClassName, config.defaultChartClassName)}
+              className={cn('h-full w-full', chartClassName, config.defaultChartClassName)}
               data={dataArray}
               index={config.index}
               categories={config.categories}

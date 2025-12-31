@@ -57,7 +57,7 @@ export default function DashboardPage() {
         <ChartParams params={params} />
         <Button>Add Chart</Button>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {dashboardsData.map((dashboard, i) => (
           <RenderChart
             key={`dashboard${i}`}

@@ -19,6 +19,7 @@ export type MetricVariant =
   | 'list'      // Key-value rows
   | 'subtitle'  // Value with subtitle text
   | 'trend'     // Value with trend indicator
+  | 'pulse'     // Animated card with glow effects and sparkline
 
 export interface MetricListItem {
   label: string
@@ -80,6 +81,13 @@ export interface MetricCardProps<TData = unknown> {
   trend?: number | ((data: TData[]) => number)
   /** For 'trend' variant: trend label */
   trendLabel?: string | ((data: TData[]) => string)
+
+  /** For 'pulse' variant: historical data for sparkline */
+  history?: number[]
+  /** For 'pulse' variant: label for sparkline */
+  historyLabel?: string
+  /** For 'pulse' variant: show sparkline chart */
+  showSparkline?: boolean
 
   /** Custom render function (only used with variant='default') */
   children?: (data: TData[]) => React.ReactNode

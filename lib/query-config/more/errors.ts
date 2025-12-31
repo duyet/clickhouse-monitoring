@@ -49,5 +49,5 @@ export const errorsConfig: QueryConfig = {
       value: error,
     })),
   ],
-  relatedCharts: [['zookeeper-exception', {}], 'break'],
+  relatedCharts: [['zookeeper-exception', {}]],
 }

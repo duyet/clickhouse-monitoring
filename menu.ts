@@ -167,7 +167,7 @@ export const menuItemsConfig: MenuItem[] = [
       },
       {
         title: 'New Parts Created',
-        href: '/charts/new-parts-created',
+        href: '/charts?name=new-parts-created',
         description: 'How many (and how often) new parts are created',
         icon: FilePlus2Icon,
       },
@@ -302,7 +302,7 @@ export const menuItemsConfig: MenuItem[] = [
       },
       {
         title: 'Connections',
-        href: '/charts/connections-http,connections-interserver',
+        href: '/charts?name=connections-http,connections-interserver',
         description: 'Number of connections over time',
         icon: UnplugIcon,
       },

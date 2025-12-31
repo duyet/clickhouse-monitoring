@@ -107,7 +107,7 @@ export const BarChart = memo(function BarChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className={cn('h-full w-full min-h-[180px]', className)}
+      className={cn('h-full w-full', className)}
     >
       <RechartBarChart
         accessibilityLayer

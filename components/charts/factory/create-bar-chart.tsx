@@ -52,7 +52,7 @@ export function createBarChart<T extends ChartDataPoint = ChartDataPoint>(
         {(dataArray, sql) => (
           <ChartCard title={title} sql={sql} data={dataArray} data-testid={config.dataTestId}>
             <BarChart
-              className={cn('h-52', chartClassName, config.defaultChartClassName)}
+              className={cn('h-full w-full', chartClassName, config.defaultChartClassName)}
               data={dataArray}
               index={config.index}
               categories={

@@ -35,16 +35,16 @@ export const ChartCard = memo(function ChartCard({
   return (
     <Card
       className={cn(
-        'rounded-lg border-border/50 bg-card/50 backdrop-blur-sm flex flex-col',
-        'shadow-[0_1px_2px_0_rgb(0_0_0/0.03)]',
-        'transition-all duration-200 hover:border-border/80 hover:shadow-[0_2px_8px_0_rgb(0_0_0/0.04)]',
+        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full group overflow-hidden',
+        'transition-all duration-200 hover:border-border/80',
+        'shadow-none py-2',
         className
       )}
     >
       {title ? (
-        <CardHeader className="px-3 py-2 shrink-0">
-          <header className="group flex flex-row items-center justify-between">
-            <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase truncate">
+        <CardHeader className="px-3 shrink-0">
+          <header className="flex flex-row items-center justify-between gap-2">
+            <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase truncate min-w-0 flex-1">
               {title}
             </CardDescription>
             <CardToolbar sql={sql} data={data} />
@@ -52,7 +52,7 @@ export const ChartCard = memo(function ChartCard({
         </CardHeader>
       ) : null}
 
-      <CardContent className={cn('p-3 pt-0 flex-1 min-h-0', contentClassName)}>
+      <CardContent className={cn('p-3 pt-0 flex-1 min-h-0 overflow-hidden', contentClassName)}>
         {children}
       </CardContent>
     </Card>
@@ -73,15 +73,16 @@ const CardToolbar = memo(function CardToolbar({
   }, [sql])
 
   return (
-    <div className="flex flex-row gap-1">
+    <div className="flex flex-row gap-1 shrink-0 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200">
       {data && (
         <DialogContent
           button={
             <Button
-              size="sm"
+              size="default"
               variant="ghost"
+              className="sm:size-sm"
             >
-              <TableIcon className="size-3" />
+              <TableIcon className="size-4 sm:size-3" />
             </Button>
           }
           content={<pre className="text-sm">{dataJson}</pre>}
@@ -93,10 +94,11 @@ const CardToolbar = memo(function CardToolbar({
         <DialogContent
           button={
             <Button
-              size="sm"
+              size="default"
               variant="ghost"
+              className="sm:size-sm"
             >
-              <CodeIcon className="size-3" />
+              <CodeIcon className="size-4 sm:size-3" />
             </Button>
           }
           content={<pre className="text-sm">{formattedSql}</pre>}

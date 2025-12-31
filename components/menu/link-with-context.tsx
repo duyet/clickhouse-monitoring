@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
+import { buildUrl } from '@/lib/url/url-builder'
 
 export const HostPrefixedLink = ({
   href,
@@ -18,8 +19,8 @@ export const HostPrefixedLink = ({
   const pathname = usePathname()
   const hostId = searchParams.get('host') || '0'
 
-  // Build URL with host query parameter
-  const url = `${href}?host=${hostId}`
+  // Build URL with host query parameter using utility
+  const url = buildUrl(href, { host: hostId })
 
   // Check if this link is active
   const isActive = isMenuItemActive(href, pathname)

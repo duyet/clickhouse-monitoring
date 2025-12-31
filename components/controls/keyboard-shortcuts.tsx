@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { useKeyboardShortcut } from '@/lib/hooks/use-keyboard-shortcut'
 import { useHostId } from '@/lib/swr'
+import { buildUrl } from '@/lib/url/url-builder'
 
 /**
  * Global keyboard shortcuts for the ClickHouse Monitor dashboard
@@ -57,7 +58,7 @@ export const KeyboardShortcuts = memo(function KeyboardShortcuts() {
 
   // Navigate to overview
   const goToOverview = useCallback(() => {
-    router.push(`/overview?host=${hostId}`)
+    router.push(buildUrl('/overview', { host: hostId }))
   }, [router, hostId])
 
   useKeyboardShortcut({
@@ -69,7 +70,7 @@ export const KeyboardShortcuts = memo(function KeyboardShortcuts() {
 
   // Navigate to running queries
   const goToQueries = useCallback(() => {
-    router.push(`/running-queries?host=${hostId}`)
+    router.push(buildUrl('/running-queries', { host: hostId }))
   }, [router, hostId])
 
   useKeyboardShortcut({
@@ -81,7 +82,7 @@ export const KeyboardShortcuts = memo(function KeyboardShortcuts() {
 
   // Navigate to database tables
   const goToTables = useCallback(() => {
-    router.push(`/tables?host=${hostId}`)
+    router.push(buildUrl('/tables', { host: hostId }))
   }, [router, hostId])
 
   useKeyboardShortcut({

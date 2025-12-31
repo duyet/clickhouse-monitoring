@@ -1,66 +1,14 @@
 'use client'
 
-import { BookOpen, Github, Heart, Server, Shield, Zap } from 'lucide-react'
-import useSWR from 'swr'
+import { BookOpen, Github, Server, Shield, Zap } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
 import packageInfo from '@/package.json'
 
 const GITHUB_REPO = packageInfo.repository?.url || 'https://github.com/duyet/clickhouse-monitoring'
 const LICENSE = 'MIT'
-
-interface VersionResponse {
-  ui: string
-  clickhouse?: string | { version: string }[]
-}
-
-function VersionInfo() {
-  const { data, error, isLoading } = useSWR<VersionResponse>('/api/version', {
-    refreshInterval: 60000,
-    revalidateOnFocus: false,
-  })
-
-  const chVersion =
-    data?.clickhouse && typeof data.clickhouse === 'object' && 'version' in data.clickhouse
-      ? (data.clickhouse as { version: string }).version
-      : typeof data?.clickhouse === 'string'
-        ? data.clickhouse
-        : null
-
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-20 w-full" />
-      </div>
-    )
-  }
-
-  return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <div className="flex items-center justify-between rounded-lg border p-4">
-        <div>
-          <p className="text-muted-foreground text-xs font-medium uppercase">Dashboard UI</p>
-          <p className="text-2xl font-semibold">{packageInfo.version}</p>
-        </div>
-        <Zap className="text-primary size-8" />
-      </div>
-
-      <div className="flex items-center justify-between rounded-lg border p-4">
-        <div>
-          <p className="text-muted-foreground text-xs font-medium uppercase">ClickHouse</p>
-          <p className="text-2xl font-semibold">
-            {chVersion || <span className="text-muted-foreground text-sm">Not connected</span>}
-          </p>
-        </div>
-        <Server className="text-blue-500 size-8" />
-      </div>
-    </div>
-  )
-}
 
 function FeatureCard({
   icon: Icon,
@@ -94,18 +42,13 @@ export default function AboutPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">ClickHouse Monitor</h1>
-            <p className="text-muted-foreground text-sm">Monitoring Dashboard</p>
+            <p className="text-muted-foreground text-sm">
+              Monitoring Dashboard • v{packageInfo.version}
+            </p>
           </div>
         </div>
         <p className="text-muted-foreground">{packageInfo.description}</p>
       </div>
-
-      <Separator />
-
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Version Information</h2>
-        <VersionInfo />
-      </section>
 
       <Separator />
 
@@ -139,27 +82,23 @@ export default function AboutPage() {
 
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Technology Stack</h2>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">Next.js 16</Badge>
-              <Badge variant="secondary">React 19</Badge>
-              <Badge variant="secondary">TypeScript</Badge>
-              <Badge variant="secondary">Tailwind CSS</Badge>
-              <Badge variant="secondary">shadcn/ui</Badge>
-              <Badge variant="secondary">ClickHouse</Badge>
-              <Badge variant="secondary">SWR</Badge>
-              <Badge variant="secondary">Turbopack</Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary">Next.js 16</Badge>
+          <Badge variant="secondary">React 19</Badge>
+          <Badge variant="secondary">TypeScript</Badge>
+          <Badge variant="secondary">Tailwind CSS</Badge>
+          <Badge variant="secondary">shadcn/ui</Badge>
+          <Badge variant="secondary">ClickHouse</Badge>
+          <Badge variant="secondary">SWR</Badge>
+          <Badge variant="secondary">Turbopack</Badge>
+        </div>
       </section>
 
       <Separator />
 
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Open Source</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Card className="group hover:shadow-md transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -215,17 +154,6 @@ export default function AboutPage() {
       <div className="flex flex-col items-center gap-2 text-center text-sm text-muted-foreground">
         <p>
           Released under the <Badge variant="outline">{LICENSE}</Badge> License
-        </p>
-        <p className="flex items-center gap-1">
-          Made with <Heart className="size-3.5 fill-red-500 text-red-500" /> by{' '}
-          <a
-            href="https://github.com/duyet"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-foreground"
-          >
-            @duyet
-          </a>
         </p>
       </div>
     </div>

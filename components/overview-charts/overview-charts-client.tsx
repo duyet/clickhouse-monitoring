@@ -1,10 +1,10 @@
 'use client'
 
 import { memo } from 'react'
-
-import { MetricCard, MetricIcons, type MetricListItem } from '@/components/charts/metric-card'
-import { useChartData } from '@/lib/swr/use-chart-data'
+import { ActivityIcon, DatabaseIcon, HardDriveIcon, InfoIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { buildUrl } from '@/lib/url/url-builder'
+import { useChartData } from '@/lib/swr/use-chart-data'
 
 interface OverviewChartsProps {
   hostId: number
@@ -18,8 +18,8 @@ export const OverviewCharts = memo(function OverviewCharts({
   return (
     <div
       className={cn(
-        'grid grid-cols-1 gap-2',
-        'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+        'grid grid-cols-2 gap-2',
+        'sm:grid-cols-4',
         className
       )}
       role="region"
@@ -33,6 +33,52 @@ export const OverviewCharts = memo(function OverviewCharts({
   )
 })
 
+// ============================================================================
+// Stat Block Component
+// ============================================================================
+
+interface StatBlockProps {
+  icon: React.ReactNode
+  label: string
+  value: React.ReactNode
+  href?: string
+}
+
+const StatBlock = memo(function StatBlock({
+  icon,
+  label,
+  value,
+  href,
+}: StatBlockProps) {
+  const content = (
+    <div className="flex items-center gap-2 p-2 rounded-lg border bg-card min-h-[64px]">
+      {/* Icon */}
+      <div className="shrink-0 text-muted-foreground">
+        {icon}
+      </div>
+
+      {/* Value + Label */}
+      <div className="min-w-0 flex-1">
+        <div className="font-mono text-lg font-semibold tabular-nums truncate">
+          {value}
+        </div>
+        <div className="text-xs text-muted-foreground truncate">
+          {label}
+        </div>
+      </div>
+    </div>
+  )
+
+  if (href) {
+    return <a href={href} className="hover:bg-accent/50 rounded-lg transition-colors">{content}</a>
+  }
+  return content
+})
+
+// ============================================================================
+// Individual Stats
+// ============================================================================
+
 const RunningQueries = memo(function RunningQueries({
   hostId,
 }: {
@@ -44,19 +90,14 @@ const RunningQueries = memo(function RunningQueries({
     refreshInterval: 30000,
   })
 
+  const count = swr.data?.[0]?.count ?? 0
+
   return (
-    <MetricCard
-      swr={swr}
-      title="Running Queries"
-      description="Active"
-      theme="orange"
-      icon={MetricIcons.Activity}
-      variant="single"
-      value={(data) => (data[0] as { count: number }).count}
-      unit="queries"
-      viewAllHref={`/running-queries?host=${hostId}`}
-      viewAllLabel="View all"
-      compact
+    <StatBlock
+      icon={<ActivityIcon className="size-4" strokeWidth={2.5} />}
+      label="Running Queries"
+      value={count}
+      href={buildUrl('/running-queries', { host: hostId })}
     />
   )
 })
@@ -77,28 +118,15 @@ const DatabaseTableCount = memo(function DatabaseTableCount({
     refreshInterval: 30000,
   })
 
-  const dbArray = (Array.isArray(databaseSwr.data) ? databaseSwr.data : []) as {
-    count: number
-  }[]
-  const tablesArray = (Array.isArray(tablesSwr.data) ? tablesSwr.data : []) as {
-    count: number
-  }[]
+  const dbCount = databaseSwr.data?.[0]?.count ?? 0
+  const tableCount = tablesSwr.data?.[0]?.count ?? 0
 
   return (
-    <MetricCard
-      swr={databaseSwr}
-      title="Database"
-      description="Overview"
-      theme="blue"
-      icon={MetricIcons.Database}
-      variant="dual"
-      value1={dbArray[0]?.count ?? 0}
-      unit1="databases"
-      value2={tablesArray[0]?.count ?? 0}
-      unit2="tables"
-      viewAllHref={`/tables-overview?host=${hostId}`}
-      viewAllLabel="View all"
-      compact
+    <StatBlock
+      icon={<DatabaseIcon className="size-4" strokeWidth={2.5} />}
+      label="Databases / Tables"
+      value={`${dbCount} / ${tableCount}`}
+      href={buildUrl('/tables-overview', { host: hostId })}
     />
   )
 })
@@ -108,48 +136,19 @@ const ClickHouseInfo = memo(function ClickHouseInfo({
 }: {
   hostId: number
 }) {
-  const hostNameSwr = useChartData<{ val: string }>({
-    chartName: 'hostname',
-    hostId,
-    refreshInterval: 30000,
-  })
   const versionSwr = useChartData<{ val: string }>({
     chartName: 'version',
     hostId,
     refreshInterval: 30000,
   })
-  const uptimeSwr = useChartData<{ val: string }>({
-    chartName: 'uptime-readable',
-    hostId,
-    refreshInterval: 30000,
-  })
 
-  const hostArray = (
-    Array.isArray(hostNameSwr.data) ? hostNameSwr.data : []
-  ) as { val: string }[]
-  const versionArray = (
-    Array.isArray(versionSwr.data) ? versionSwr.data : []
-  ) as { val: string }[]
-  const uptimeArray = (Array.isArray(uptimeSwr.data) ? uptimeSwr.data : []) as {
-    val: string
-  }[]
-
-  const items: MetricListItem[] = [
-    { label: 'Host', value: hostArray[0]?.val || '-', format: 'mono' },
-    { label: 'Version', value: versionArray[0]?.val || '-', format: 'truncate' },
-    { label: 'Uptime', value: uptimeArray[0]?.val || '-', format: 'mono' },
-  ]
+  const version = versionSwr.data?.[0]?.val ?? '-'
 
   return (
-    <MetricCard
-      swr={hostNameSwr}
-      title="System Info"
-      description="ClickHouse"
-      theme="purple"
-      icon={MetricIcons.Info}
-      variant="list"
-      items={items}
-      compact
+    <StatBlock
+      icon={<InfoIcon className="size-4" strokeWidth={2.5} />}
+      label="ClickHouse Version"
+      value={version}
     />
   )
 })
@@ -167,25 +166,14 @@ const DiskSize = memo(function DiskSize({ hostId }: { hostId: number }) {
     refreshInterval: 30000,
   })
 
+  const used = swr.data?.[0]?.readable_used_space ?? '-'
+
   return (
-    <MetricCard
-      swr={swr}
-      title="Disk Size"
-      description="Total storage"
-      theme="green"
-      icon={MetricIcons.HardDrive}
-      variant="subtitle"
-      value={(data) => (data[0] as { readable_used_space: string }).readable_used_space}
-      subtitle={(data) => {
-        const first = data[0] as {
-          name: string
-          readable_total_space: string
-        }
-        return `of ${first.readable_total_space} • ${first.name}`
-      }}
-      viewAllHref={`/disks?host=${hostId}`}
-      viewAllLabel="View all"
-      compact
+    <StatBlock
+      icon={<HardDriveIcon className="size-4" strokeWidth={2.5} />}
+      label="Disk Used"
+      value={used}
+      href={buildUrl('/disks', { host: hostId })}
     />
   )
 })

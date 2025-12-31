@@ -65,6 +65,15 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
               data={barData}
               index="event_time"
               categories={tables}
+              colors={[
+                '--chart-5',
+                '--chart-6',
+                '--chart-7',
+                '--chart-8',
+                '--chart-9',
+                '--chart-10',
+                '--chart-11',
+              ]}
               stack
               {...props}
             />

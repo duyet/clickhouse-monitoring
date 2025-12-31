@@ -88,7 +88,7 @@ export const ChartError = memo(function ChartError({
   return (
     <Card
       className={cn(
-        'rounded-md',
+        'rounded-md h-full',
         variant === 'error' && 'border-destructive/30 bg-destructive/5',
         variant === 'timeout' && 'border-warning/30 bg-warning/5',
         variant === 'offline' && 'border-warning/30 bg-warning/5',

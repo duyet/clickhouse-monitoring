@@ -54,7 +54,7 @@ export const ChartParams = ({ params }: ChartParamsProps) => {
   return (
     <Form {...form}>
       <form
-        className="mb-4 flex flex-row items-end gap-4"
+        className="mb-4 flex flex-col sm:flex-row items-end gap-4"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         {Object.keys(params).map((key: string) => (

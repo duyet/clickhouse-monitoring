@@ -119,7 +119,7 @@ const DynamicChart = memo(function DynamicChart({
       <FadeIn duration={250} className="flex flex-1 flex-col">
         <ChartComponent
           className="w-full p-0 shadow-none"
-          chartClassName="h-full min-h-[180px]"
+          chartClassName="h-full min-h-[150px] sm:min-h-[180px]"
           hostId={hostId}
           {...chartProps}
         />
@@ -144,7 +144,7 @@ interface RelatedChartsProps {
 const RelatedCharts = memo(function RelatedCharts({
   relatedCharts,
   hostId,
-  gridClass = 'grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4',
+  gridClass = 'grid grid-cols-1 gap-3 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4',
 }: RelatedChartsProps) {
   if (!relatedCharts || relatedCharts.length === 0) {
     return null

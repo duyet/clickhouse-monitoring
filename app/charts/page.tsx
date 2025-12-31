@@ -35,7 +35,7 @@ function DynamicChart({ chartName, hostId, index }: DynamicChartProps) {
       <ChartComponent
         key={index}
         className="mb-4 w-full p-0 shadow-none"
-        chartClassName="h-64"
+        chartClassName="h-full min-h-[300px]"
         hostId={hostId}
       />
     </Suspense>
@@ -48,7 +48,7 @@ export default function ChartsPage() {
 
   // Get chart names from URL search params
   const chartNames: string[] = useMemo(() => {
-    const chartsParam = searchParams.get('charts')
+    const chartsParam = searchParams.get('name')
     if (!chartsParam) return []
     return decodeURIComponent(chartsParam).split(',')
   }, [searchParams])
@@ -56,15 +56,26 @@ export default function ChartsPage() {
   if (chartNames.length === 0) {
     return (
       <div className="p-4">
+        <h1 className="text-xl font-semibold mb-2">Charts</h1>
         <p className="text-muted-foreground">
-          No charts specified. Use ?charts=chart-name to view charts.
+          No charts specified. Use ?name=chart-name to view charts.
         </p>
       </div>
     )
   }
 
+  // Format chart names for display
+  const displayTitle =
+    chartNames.length === 1
+      ? chartNames[0]
+            .split('-')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+      : `${chartNames.length} Charts`
+
   return (
-    <div>
+    <div className="max-w-full">
+      <h1 className="text-xl font-semibold mb-4">{displayTitle}</h1>
       {chartNames.map((chartName, index) => (
         <DynamicChart
           key={`${chartName}-${index}`}

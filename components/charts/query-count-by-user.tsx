@@ -61,6 +61,16 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
               data={barData}
               index="event_time"
               categories={users}
+              colors={[
+                '--chart-1',
+                '--chart-2',
+                '--chart-3',
+                '--chart-4',
+                '--chart-5',
+                '--chart-6',
+                '--chart-7',
+                '--chart-8',
+              ]}
               showLegend
               stack
               yAxisTickFormatter={chartTickFormatters.count}

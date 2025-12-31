@@ -57,7 +57,7 @@ export const DataTablePagination = memo(function DataTablePagination({
     <div
       aria-label="Pagination"
       className={cn(
-        'flex items-center space-x-6 lg:space-x-8',
+        'flex flex-col sm:flex-row items-center gap-4 sm:gap-6 lg:gap-8',
         table.getCanPreviousPage() || table.getCanNextPage() ? 'flex' : 'hidden'
       )}
     >
@@ -68,7 +68,7 @@ export const DataTablePagination = memo(function DataTablePagination({
           onValueChange={handlePageSizeChange}
           aria-label="Rows per page"
         >
-          <SelectTrigger className="h-8 w-[70px]">
+          <SelectTrigger className="h-8 w-16 sm:w-[70px]">
             <SelectValue placeholder={table.getState().pagination.pageSize} />
           </SelectTrigger>
           <SelectContent side="top">
@@ -80,7 +80,7 @@ export const DataTablePagination = memo(function DataTablePagination({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+      <div className="flex w-20 sm:w-[100px] items-center justify-center text-sm font-medium">
         Page {table.getState().pagination.pageIndex + 1} of{' '}
         {table.getPageCount()}
       </div>

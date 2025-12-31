@@ -48,6 +48,7 @@ import {
   renderSingleVariant,
   renderSubtitleVariant,
   renderTrendVariant,
+  renderPulseVariant,
 } from './variants'
 
 // ============================================================================
@@ -82,6 +83,10 @@ export function MetricCard<TData = unknown>({
   // trend props
   trend,
   trendLabel,
+  // pulse props
+  history,
+  historyLabel,
+  showSparkline,
   // custom render
   children,
 }: MetricCardProps<TData>) {
@@ -181,6 +186,12 @@ export function MetricCard<TData = unknown>({
           className
         )}
       >
+        {/* Theme gradient background */}
+        <div className={cn(
+          'absolute inset-0 -z-10 bg-gradient-to-br',
+          themeConfig.gradient
+        )} />
+
         <CardHeader className={cn(
           'px-2.5 sm:px-3',
           compact ? 'pb-0.5 pt-1' : 'pb-0.5 pt-1.5'
@@ -228,6 +239,18 @@ export function MetricCard<TData = unknown>({
         return renderSubtitleVariant({ value, subtitle, data: dataArray, compact })
       case 'trend':
         return renderTrendVariant({ value, trend, trendLabel, data: dataArray, compact })
+      case 'pulse':
+        return renderPulseVariant({
+          value,
+          unit,
+          trend,
+          trendLabel,
+          data: dataArray,
+          compact,
+          history,
+          historyLabel,
+          showSparkline,
+        })
       default:
         return children?.(dataArray)
     }
@@ -242,6 +265,12 @@ export function MetricCard<TData = unknown>({
         className
       )}
     >
+      {/* Theme gradient background */}
+      <div className={cn(
+        'absolute inset-0 -z-10 bg-gradient-to-br',
+        themeConfig.gradient
+      )} />
+
       {/* Content */}
       <div className="relative">
         <CardHeader className={cn(
@@ -333,6 +362,12 @@ function MetricCardSkeleton({
       role="status"
       aria-label={`Loading ${title || 'metric'}`}
     >
+      {/* Theme gradient background */}
+      <div className={cn(
+        'absolute inset-0 -z-10 bg-gradient-to-br',
+        themeConfig.gradient
+      )} />
+
       <div className="relative">
         <CardHeader className={cn(
           'px-2.5 sm:px-3',

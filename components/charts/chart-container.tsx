@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, type ReactNode } from 'react'
+import { cn } from '@/lib/utils'
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { ChartSkeleton } from '@/components/skeletons'
@@ -71,7 +72,7 @@ export const ChartContainer = memo(function ChartContainer<TData extends ChartDa
 
   // Render chart with data
   return (
-    <div aria-label={title ? `${title} chart` : 'Chart'} role="region">
+    <div className={cn('h-full', className)} aria-label={title ? `${title} chart` : 'Chart'} role="region">
       {children(data, sql)}
     </div>
   )

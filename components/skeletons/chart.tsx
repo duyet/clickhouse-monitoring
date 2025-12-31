@@ -19,7 +19,7 @@ export const ChartSkeleton = memo(function ChartSkeleton({
 }: ChartSkeletonProps = {}) {
   return (
     <Card
-      className={cn('rounded-md', className)}
+      className={cn('rounded-md h-full', className)}
       role="status"
       aria-busy="true"
       aria-label={title ? `Loading ${title}` : 'Loading chart'}

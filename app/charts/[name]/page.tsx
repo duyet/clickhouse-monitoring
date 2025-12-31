@@ -34,7 +34,7 @@ export default function ChartPage({ params }: ChartPageProps) {
         <FadeIn duration={250}>
           <ChartComponent
             className="w-full"
-            chartClassName="h-80"
+            chartClassName="h-full min-h-[300px]"
             hostId={hostId}
           />
         </FadeIn>

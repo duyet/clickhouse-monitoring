@@ -28,7 +28,7 @@ export const PageSkeleton = memo(function PageSkeleton({
       aria-label="Loading page content"
     >
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {Array.from({ length: chartCount }).map((_, i) => (
           <ChartSkeleton key={`chart-${i}`} />
         ))}
@@ -52,7 +52,7 @@ export const ChartsOnlyPageSkeleton = memo(function ChartsOnlyPageSkeleton({
 } = {}) {
   return (
     <div
-      className={cn('grid grid-cols-1 gap-5 md:grid-cols-2', className)}
+      className={cn('grid grid-cols-1 gap-3 md:grid-cols-2', className)}
       role="status"
       aria-busy="true"
       aria-label="Loading charts"

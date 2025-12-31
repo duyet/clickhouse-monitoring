@@ -48,7 +48,9 @@ function renderMenuItems(items: MenuItem[], pathname: string) {
           <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
             <HostPrefixedLink href={item.href}>
               {item.icon && <item.icon className="h-4 w-4" />}
-              <span>{item.title}</span>
+              <span className="group-data-[collapsible=icon]/sidebar:opacity-0 transition-opacity duration-200">
+                {item.title}
+              </span>
             </HostPrefixedLink>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -67,8 +69,10 @@ function renderMenuItems(items: MenuItem[], pathname: string) {
           <CollapsibleTrigger asChild>
             <SidebarMenuButton tooltip={item.title} isActive={hasActiveChild}>
               {item.icon && <item.icon className="h-4 w-4" />}
-              <span>{item.title}</span>
-              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              <span className="group-data-[collapsible=icon]/sidebar:opacity-0 transition-opacity duration-200">
+                {item.title}
+              </span>
+              <ChevronRight className="ml-auto transition-all duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]/sidebar:opacity-0 group-data-[collapsible=icon]/sidebar:hidden" />
             </SidebarMenuButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
@@ -80,7 +84,9 @@ function renderMenuItems(items: MenuItem[], pathname: string) {
                     isActive={isMenuItemActive(subItem.href, pathname)}
                   >
                     <HostPrefixedLink href={subItem.href}>
-                      <span>{subItem.title}</span>
+                      <span className="group-data-[collapsible=icon]/sidebar:opacity-0 transition-opacity duration-200">
+                        {subItem.title}
+                      </span>
                     </HostPrefixedLink>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>

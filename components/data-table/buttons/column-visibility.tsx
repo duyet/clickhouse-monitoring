@@ -39,7 +39,7 @@ export const ColumnVisibilityButton = memo(function ColumnVisibilityButton({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="overflow-x-auto"
+        className="max-h-[60vh] overflow-y-auto"
         sticky="always"
       >
         {table

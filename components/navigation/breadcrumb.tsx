@@ -20,10 +20,6 @@ export const Breadcrumb = memo(function Breadcrumb({
     return getBreadcrumbPath(pathname)
   }, [pathname])
 
-  if (breadcrumbs.length <= 1) {
-    return null
-  }
-
   return (
     <nav
       aria-label="Breadcrumb navigation"

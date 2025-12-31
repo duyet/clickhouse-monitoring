@@ -24,7 +24,7 @@ export const ChartEmpty = memo(function ChartEmpty({
 }: ChartEmptyProps) {
   return (
     <Card
-      className={cn('rounded-md', className)}
+      className={cn('rounded-md h-full', className)}
       aria-label={title ? `${title} empty` : 'No data available'}
     >
       <CardContent className={compact ? 'p-4' : 'p-6'}>
