@@ -2,7 +2,7 @@
 
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { memo, useCallback } from 'react'
+import { useCallback } from 'react'
 import type { HostInfo } from '@/app/api/v1/hosts/route'
 import {
   DropdownMenu,
@@ -18,10 +18,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { useHostStatus } from '@/lib/swr/use-host-status'
 import { buildUrl } from '@/lib/url/url-builder'
 import { getHost } from '@/lib/utils'
-import { StatusIndicator } from './shared'
+import { HostStatusDropdown } from './host-status-dropdown'
+import { HostVersionWithStatus } from './host-version-status'
 
 interface HostSwitcherProps {
   hosts: Array<Omit<HostInfo, 'user'>>
@@ -30,7 +30,8 @@ interface HostSwitcherProps {
 
 /**
  * Host switcher component for sidebar header.
- * Uses DropdownMenu pattern (similar to TeamSwitcher from shadcn).
+ *
+ * Provides dropdown menu for switching between ClickHouse hosts.
  * Shows host icon, name, and status in collapsed/expanded states.
  */
 export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
@@ -113,59 +114,3 @@ export function HostSwitcher({ hosts, currentHostId }: HostSwitcherProps) {
     </SidebarMenu>
   )
 }
-
-/**
- * Host status for dropdown menu items using SWR.
- */
-const HostStatusDropdown = memo(function HostStatusDropdown({
-  hostId,
-}: {
-  hostId: number
-}) {
-  const { isOnline } = useHostStatus(hostId, {
-    refreshInterval: 60000,
-    revalidateOnFocus: false,
-  })
-
-  if (isOnline) {
-    return <StatusIndicator className="bg-emerald-500" title={['Online']} />
-  }
-
-  return <StatusIndicator title={['Offline']} />
-})
-
-/**
- * Host version with status indicator for expanded sidebar state.
- */
-function HostVersionWithStatus({ hostId }: { hostId: number }) {
-  const { data, isOnline, isLoading } = useHostStatus(hostId, {
-    refreshInterval: 60000,
-    revalidateOnFocus: false,
-  })
-
-  if (isLoading) {
-    return (
-      <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-        <span className="size-2 rounded-full bg-gray-400 animate-pulse" />
-        Loading...
-      </span>
-    )
-  }
-
-  if (isOnline && data) {
-    return (
-      <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-        <span className="flex-none size-2 rounded-full bg-emerald-500" />v
-        {data.version}
-      </span>
-    )
-  }
-
-  return (
-    <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-      <span className="flex-none size-2 rounded-full bg-red-400" />
-      Offline
-    </span>
-  )
-}
-

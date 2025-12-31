@@ -23,6 +23,9 @@ export enum ApiErrorType {
 
 /**
  * Detailed error information returned by the API
+ *
+ * Details can include primitive values (string, number, boolean) and arrays
+ * of primitives for compatibility with FetchDataError structure.
  */
 export interface ApiError {
   /** Type of error that occurred */
@@ -31,7 +34,13 @@ export interface ApiError {
   readonly message: string
   /** Additional error details for debugging */
   readonly details?: {
-    readonly [key: string]: string | number | boolean | undefined
+    readonly [key: string]:
+      | string
+      | number
+      | boolean
+      | undefined
+      | readonly string[]
+      | readonly (string | number | boolean)[]
   }
 }
 

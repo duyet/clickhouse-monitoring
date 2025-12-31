@@ -10,7 +10,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import { cn, formatBytes, formatCount, formatDuration } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { DonutChartLabel } from './donut-chart-label'
+import { useDonutValueFormatter } from './use-donut-value-formatter'
 
 export interface DonutChartProps {
   /**
@@ -144,46 +146,13 @@ export const DonutChart = memo(function DonutChart({
   }, [data, index, colors])
 
   // Custom value formatter with readable support
-  const formatValue = useMemo(() => {
-    if (valueFormatter) return valueFormatter
-
-    if (readable && readableColumn) {
-      return (value: number) => {
-        const row = data.find((d) => Number(d[valueKey]) === value)
-        if (row && readableColumn in row) {
-          const readableValue = row[readableColumn]
-          if (typeof readableValue === 'number') {
-            switch (readable) {
-              case 'bytes':
-                return formatBytes(readableValue)
-              case 'duration':
-                return formatDuration(readableValue)
-              case 'number':
-              case 'quantity':
-                return formatCount(readableValue)
-              default:
-                return readableValue.toLocaleString()
-            }
-          }
-          return String(readableValue)
-        }
-        // Format the value itself if no readable column found
-        switch (readable) {
-          case 'bytes':
-            return formatBytes(value)
-          case 'duration':
-            return formatDuration(value)
-          case 'number':
-          case 'quantity':
-            return formatCount(value)
-          default:
-            return value.toLocaleString()
-        }
-      }
-    }
-
-    return (value: number) => value.toLocaleString()
-  }, [valueFormatter, readable, readableColumn, data, valueKey])
+  const formatValue = useDonutValueFormatter({
+    valueFormatter,
+    readable,
+    readableColumn,
+    data,
+    valueKey,
+  })
 
   // Calculate total for center label
   const total = useMemo(() => {
@@ -226,33 +195,14 @@ export const DonutChart = memo(function DonutChart({
 
           {showLabel && (
             <Label
-              content={({ viewBox }) => {
-                if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                  return (
-                    <text
-                      x={viewBox.cx}
-                      y={viewBox.cy}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                    >
-                      <tspan
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        className="fill-foreground text-3xl font-bold"
-                      >
-                        {centerLabel || formatValue(total)}
-                      </tspan>
-                      <tspan
-                        x={viewBox.cx}
-                        y={(viewBox.cy || 0) + 24}
-                        className="fill-muted-foreground"
-                      >
-                        {centerLabel ? formatValue(total) : 'Total'}
-                      </tspan>
-                    </text>
-                  )
-                }
-              }}
+              content={(viewBox) => (
+                <DonutChartLabel
+                  viewBox={viewBox}
+                  total={total}
+                  centerLabel={centerLabel}
+                  formatValue={formatValue}
+                />
+              )}
             />
           )}
         </Pie>

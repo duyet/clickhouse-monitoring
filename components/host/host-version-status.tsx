@@ -6,7 +6,7 @@
 
 'use client'
 
-import type { HostStatusData } from '@/lib/swr/use-host-status'
+import type { HostStatus } from '@/lib/swr/use-host-status'
 
 import { useHostStatus } from '@/lib/swr/use-host-status'
 
