@@ -1,6 +1,6 @@
-import { CodeIcon, Maximize2Icon, Minimize2Icon, SparklesIcon } from 'lucide-react'
+import { CodeIcon, SparklesIcon } from 'lucide-react'
 import { memo, useCallback, useState } from 'react'
-
+import { format } from 'sql-formatter'
 import {
   DialogContent,
   type DialogContentProps,
@@ -8,7 +8,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { dedent } from '@/lib/utils'
-import { format } from 'sql-formatter'
 
 interface ShowSQLButtonProps extends Omit<DialogContentProps, 'content'> {
   sql?: string
@@ -42,7 +41,7 @@ function saveBeautifyState(value: boolean) {
 function formatSQL(sql: string): string {
   try {
     return format(sql, {
-      language: 'clickhouse',
+      language: 'sql',
       keywordCase: 'upper',
       identifierCase: 'preserve',
       tabWidth: 2,
@@ -62,7 +61,7 @@ export const DialogSQL = memo(function DialogSQL({
   fullScreen = true,
   ...props
 }: ShowSQLButtonProps) {
-  const [isFullScreen, setIsFullScreen] = useState(fullScreen)
+  const [isFullScreen, _setIsFullScreen] = useState(fullScreen)
   const [isBeautified, setIsBeautified] = useState(getInitialBeautifyState)
 
   const handleBeautifyToggle = useCallback((checked: boolean) => {
@@ -120,7 +119,9 @@ export const DialogSQL = memo(function DialogSQL({
                 : 'max-h-[60vh] text-xs'
             )}
           >
-            <code className="whitespace-pre-wrap break-words">{displaySQL}</code>
+            <code className="whitespace-pre-wrap break-words">
+              {displaySQL}
+            </code>
           </pre>
 
           {/* Info footer */}

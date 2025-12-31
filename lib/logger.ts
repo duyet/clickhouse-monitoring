@@ -17,8 +17,6 @@
  * - https://uptrace.dev/glossary/structured-logging
  */
 
-import { getEnvironment } from './env-utils'
-
 // ============================================================================
 // Environment Detection
 // ============================================================================
@@ -57,7 +55,11 @@ const LogLevel = {
 /**
  * Create a Pino-compatible log entry
  */
-function createLogEntry(level: LogLevel, msg: string, extra?: Record<string, unknown>): string {
+function createLogEntry(
+  level: LogLevel,
+  msg: string,
+  extra?: Record<string, unknown>
+): string {
   const entry = {
     level,
     time: Date.now(),
@@ -75,9 +77,12 @@ function createLogEntry(level: LogLevel, msg: string, extra?: Record<string, unk
  *
  * Output: {"level":20,"time":1735633240000,"msg":"[API] Query execution","hostId":0,"query":"SELECT 1"}
  */
-export const debug = (msg: string, data?: Record<string, unknown> | unknown): void => {
+export const debug = (
+  msg: string,
+  data?: Record<string, unknown> | unknown
+): void => {
   if (isDevelopment || debugEnabled) {
-    const extra = typeof data === 'object' && data !== null ? data : { data }
+    const extra = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : { data }
     console.log(createLogEntry(LogLevel.debug, msg, extra))
   }
 }
@@ -90,9 +95,12 @@ export const debug = (msg: string, data?: Record<string, unknown> | unknown): vo
  *
  * Output: {"level":30,"time":1735633240000,"msg":"[API] Data fetched successfully","rows":100}
  */
-export const log = (msg: string, data?: Record<string, unknown> | unknown): void => {
+export const log = (
+  msg: string,
+  data?: Record<string, unknown> | unknown
+): void => {
   if (isDevelopment || debugEnabled) {
-    const extra = typeof data === 'object' && data !== null ? data : { data }
+    const extra = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : { data }
     console.log(createLogEntry(LogLevel.info, msg, extra))
   }
 }
@@ -105,8 +113,11 @@ export const log = (msg: string, data?: Record<string, unknown> | unknown): void
  *
  * Output: {"level":40,"time":1735633240000,"msg":"[API] Deprecated endpoint accessed","path":"/old-api"}
  */
-export const warn = (msg: string, data?: Record<string, unknown> | unknown): void => {
-  const extra = typeof data === 'object' && data !== null ? data : { data }
+export const warn = (
+  msg: string,
+  data?: Record<string, unknown> | unknown
+): void => {
+  const extra = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : { data }
   console.warn(createLogEntry(LogLevel.warn, msg, extra))
 }
 

@@ -10,9 +10,10 @@
  * - Error: Standard JavaScript errors
  */
 
-import type { ApiError, ApiErrorType } from './api/types'
-import type { FetchDataError, FetchDataErrorType } from './clickhouse/types'
 import type { EmptyStateVariant } from '@/components/ui/empty-state'
+import type { ApiError } from './api/types'
+import { ApiErrorType } from './api/types'
+import type { FetchDataError } from './clickhouse/types'
 
 // ============================================================================
 // Types
@@ -82,7 +83,10 @@ export function detectCardErrorVariant(error: CardError): CardErrorVariant {
   const type = (apiError.type ?? fetchError.type)?.toLowerCase() ?? ''
 
   // 1. Check explicit type fields first (most reliable)
-  if (type === 'table_not_found' || apiError.type === ApiErrorType.TableNotFound) {
+  if (
+    type === 'table_not_found' ||
+    apiError.type === ApiErrorType.TableNotFound
+  ) {
     return 'table-missing'
   }
 
@@ -101,7 +105,9 @@ export function detectCardErrorVariant(error: CardError): CardErrorVariant {
   }
 
   // 4. Check for table missing keywords
-  if (ERROR_KEYWORDS.tableMissing.some((keyword) => message.includes(keyword))) {
+  if (
+    ERROR_KEYWORDS.tableMissing.some((keyword) => message.includes(keyword))
+  ) {
     return 'table-missing'
   }
 
@@ -128,7 +134,8 @@ const ERROR_MESSAGES: Record<
   },
   offline: {
     title: "You're offline",
-    description: 'Unable to connect to the server. Check your network connection and try again.',
+    description:
+      'Unable to connect to the server. Check your network connection and try again.',
     short: 'Cannot connect to server.',
   },
   timeout: {
@@ -139,7 +146,8 @@ const ERROR_MESSAGES: Record<
   },
   error: {
     title: 'Failed to load',
-    description: 'An unexpected error occurred while loading data. Please try again.',
+    description:
+      'An unexpected error occurred while loading data. Please try again.',
     short: 'An error occurred.',
   },
 }
@@ -162,9 +170,18 @@ export function getCardErrorDescription(
 
   // Use original message if it's short and helpful
   const originalMessage = error.message?.trim()
-  if (originalMessage && originalMessage.length < 100 && originalMessage.length > 10) {
+  if (
+    originalMessage &&
+    originalMessage.length < 100 &&
+    originalMessage.length > 10
+  ) {
     // Check if original message is generic/unhelpful
-    const genericMessages = ['error', 'failed', 'unknown error', 'an error occurred']
+    const genericMessages = [
+      'error',
+      'failed',
+      'unknown error',
+      'an error occurred',
+    ]
     const isGeneric = genericMessages.some((generic) =>
       originalMessage.toLowerCase().includes(generic)
     )
