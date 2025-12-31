@@ -1,8 +1,7 @@
 'use client'
 
 import { RefreshCw } from 'lucide-react'
-import { memo, useCallback, useEffect, useState } from 'react'
-import { useInterval } from 'usehooks-ts'
+import { memo, useCallback, useState } from 'react'
 
 import { useAppContext } from '@/app/context'
 import { Button } from '@/components/ui/button'
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
+import { useRefreshTimer } from './hooks'
 
 const SECOND = 1000
 const MINUTE = 60 * SECOND
@@ -23,43 +23,28 @@ export const RefreshCountdown = memo(function RefreshCountdown() {
   const { reloadInterval, setReloadInterval } = useAppContext()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  // Countdown state
-  const initCountDown = reloadInterval ? reloadInterval / 1000 : 30
-  const [countDown, setCountDown] = useState(initCountDown)
+  const { remaining, reset } = useRefreshTimer({
+    interval: reloadInterval ?? undefined,
+    enabled: reloadInterval != null,
+    onRefresh: () => {
+      setIsRefreshing(true)
+      window.dispatchEvent(new CustomEvent('swr:revalidate'))
+      setTimeout(() => setIsRefreshing(false), 1000)
+    },
+  })
 
-  // Trigger SWR revalidation by dispatching a custom event
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
     window.dispatchEvent(new CustomEvent('swr:revalidate'))
-    setTimeout(() => setIsRefreshing(false), 1000)
-    setCountDown(initCountDown)
-  }, [initCountDown])
-
-  // Update countdown when reload interval changes
-  useEffect(() => {
-    if (reloadInterval) {
-      setCountDown(reloadInterval / 1000)
-    }
-  }, [reloadInterval])
-
-  // Countdown interval
-  useInterval(
-    () => {
-      if (countDown <= 0) {
-        handleRefresh()
-      } else {
-        setCountDown(countDown - 1)
-      }
-    },
-    !isRefreshing && reloadInterval != null ? 1000 : null
-  )
+    setTimeout(() => {
+      setIsRefreshing(false)
+      reset()
+    }, 1000)
+  }, [reset])
 
   const handleSetReloadInterval = useCallback(
     (interval: number | null) => {
       setReloadInterval(interval)
-      if (interval) {
-        setCountDown(interval / 1000)
-      }
     },
     [setReloadInterval]
   )
@@ -74,14 +59,14 @@ export const RefreshCountdown = memo(function RefreshCountdown() {
             'h-8 gap-1.5 px-2 text-xs font-normal',
             isRefreshing && 'animate-pulse'
           )}
-          aria-label={`Auto refresh ${reloadInterval ? `in ${formatReadableSecondDuration(countDown)}` : 'disabled'}. Click to change.`}
+          aria-label={`Auto refresh ${reloadInterval ? `in ${formatReadableSecondDuration(remaining)}` : 'disabled'}. Click to change.`}
         >
           <RefreshCw
             className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin')}
             aria-hidden="true"
           />
           <span className="font-mono text-muted-foreground tabular-nums">
-            {reloadInterval ? formatReadableSecondDuration(countDown) : 'Off'}
+            {reloadInterval ? formatReadableSecondDuration(remaining) : 'Off'}
           </span>
         </Button>
       </DropdownMenuTrigger>

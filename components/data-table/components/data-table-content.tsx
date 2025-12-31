@@ -1,0 +1,119 @@
+'use client'
+
+import type { ColumnDef, RowData } from '@tanstack/react-table'
+import { memo } from 'react'
+
+import {
+  Table,
+  TableBody,
+  TableHeader,
+} from '@/components/ui/table'
+import type { QueryConfig } from '@/types/query-config'
+import { cn } from '@/lib/utils'
+import {
+  TableBody as TableBodyRenderer,
+  TableHeader as TableHeaderRenderer,
+} from '@/components/data-table/renderers'
+
+/**
+ * Props for the DataTableContent component
+ *
+ * @template TData - The row data type (extends RowData from TanStack Table)
+ * @template TValue - The cell value type
+ *
+ * @param title - Table title for accessibility and empty state
+ * @param description - Table description for accessibility
+ * @param queryConfig - Query configuration defining columns, formats, sorting
+ * @param table - TanStack Table instance
+ * @param columnDefs - Column definitions for rendering
+ * @param tableContainerRef - Ref for the table container (used for virtualization)
+ * @param isVirtualized - Whether virtualization is enabled (1000+ rows)
+ * @param virtualizer - Virtual row instance from useVirtualRows hook
+ * @param activeFilterCount - Number of active column filters
+ */
+export interface DataTableContentProps<
+  TData extends RowData,
+  TValue extends React.ReactNode
+> {
+  /** Table title for accessibility and empty state */
+  title: string
+  /** Table description for accessibility */
+  description: string | React.ReactNode
+  /** Query configuration defining columns, formats, sorting */
+  queryConfig: QueryConfig
+  /** TanStack Table instance */
+  table: import('@tanstack/react-table').Table<TData>
+  /** Column definitions for rendering */
+  columnDefs: ColumnDef<TData, TValue>[]
+  /** Ref for the table container (used for virtualization) */
+  tableContainerRef: React.RefObject<HTMLDivElement>
+  /** Whether virtualization is enabled (1000+ rows) */
+  isVirtualized: boolean
+  /** Virtual row instance from useVirtualRows hook */
+  virtualizer: ReturnType<
+    typeof import('@/components/data-table/hooks').useVirtualRows
+  >['virtualizer']
+  /** Number of active column filters */
+  activeFilterCount: number
+}
+
+/**
+ * DataTableContent - Content wrapper with virtualization logic
+ *
+ * Handles:
+ * - Virtual scrolling for large datasets (1000+ rows)
+ * - Standard scrolling for smaller datasets
+ * - Table header and body rendering
+ * - Empty state handling with contextual messaging
+ * - Accessibility with proper ARIA labels
+ *
+ * Performance considerations:
+ * - Virtualization reduces DOM nodes from thousands to ~100
+ * - Memoized to prevent unnecessary re-renders
+ * - Auto-enables virtualization at 1000+ rows
+ */
+export const DataTableContent = memo(function DataTableContent<
+  TData extends RowData,
+  TValue extends React.ReactNode
+>({
+  title,
+  description,
+  queryConfig,
+  table,
+  columnDefs,
+  tableContainerRef,
+  isVirtualized,
+  virtualizer,
+  activeFilterCount,
+}: DataTableContentProps<TData, TValue>) {
+  return (
+    <div
+      ref={tableContainerRef}
+      className="mb-5 min-h-0 flex-1 overflow-auto rounded-lg border border-border/50 bg-card/30"
+      role="region"
+      aria-label={`${title || 'Data'} table`}
+      style={isVirtualized ? { height: '600px' } : undefined}
+    >
+      <Table aria-describedby="table-description">
+        <caption id="table-description" className="sr-only">
+          {description || queryConfig.description || `${title} data table`}
+        </caption>
+        <TableHeader className="bg-muted/50">
+          <TableHeaderRenderer headerGroups={table.getHeaderGroups()} />
+        </TableHeader>
+        <TableBody>
+          <TableBodyRenderer
+            table={table}
+            columnDefs={columnDefs}
+            isVirtualized={isVirtualized}
+            virtualizer={virtualizer}
+            title={title}
+            activeFilterCount={activeFilterCount}
+          />
+        </TableBody>
+      </Table>
+    </div>
+  )
+}) as <TData extends RowData, TValue extends React.ReactNode>(
+  props: DataTableContentProps<TData, TValue>
+) => JSX.Element
