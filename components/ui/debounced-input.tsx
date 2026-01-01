@@ -22,6 +22,7 @@ import {
   memo,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from 'react'
 import { Input } from '@/components/ui/input'
@@ -60,10 +61,26 @@ export const DebouncedInput = memo(function DebouncedInput({
     debounceMs
   )
 
-  // Call onValueChange when debounced value updates
+  // Store callback in ref to avoid triggering effect when callback reference changes
+  // This prevents infinite loops when parent doesn't memoize onValueChange
+  const onValueChangeRef = useRef(onValueChange)
   useEffect(() => {
-    onValueChange?.(debouncedValue)
-  }, [debouncedValue, onValueChange])
+    onValueChangeRef.current = onValueChange
+  })
+
+  // Track if this is the initial mount to avoid calling callback with initial value
+  const isInitialMount = useRef(true)
+
+  // Call onValueChange when debounced value updates (not when callback changes)
+  useEffect(() => {
+    // Skip calling onValueChange on initial mount to prevent infinite loops
+    // The parent already knows the initial value
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    onValueChangeRef.current?.(debouncedValue)
+  }, [debouncedValue])
 
   // Handle input changes
   const handleChange = useCallback(
