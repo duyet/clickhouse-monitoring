@@ -10,54 +10,67 @@ export interface CardMultiMetricsProps {
     target: number
     currentReadable?: string
     targetReadable?: string
+    label?: string
   }[]
   currentLabel?: string
   targetLabel?: string
   className?: string
 }
 
+const DottedLineProgress = memo(function DottedLineProgress({
+  percent,
+  className,
+}: {
+  percent: number
+  className?: string
+}) {
+  const clampedPercent = Math.min(100, Math.max(0, percent))
+
+  return (
+    <div className={cn('relative w-16 h-3', className)}>
+      {/* Background dotted line */}
+      <div className="absolute inset-0 flex items-center">
+        <div className="w-full border-t-2 border-dashed border-muted-foreground/20" />
+      </div>
+      {/* Foreground filled dotted line */}
+      <div
+        className="absolute inset-0 flex items-center overflow-hidden"
+        style={{ width: `${clampedPercent}%` }}
+      >
+        <div className="w-full border-t-2 border-dashed border-primary" />
+      </div>
+    </div>
+  )
+})
+
 export const CardMultiMetrics = memo(function CardMultiMetrics({
   primary,
   items = [],
-  currentLabel = 'Current',
-  targetLabel = 'Total',
   className,
 }: CardMultiMetricsProps) {
   return (
     <div
-      className={cn('flex flex-col gap-4', className)}
+      className={cn('flex flex-col gap-3', className)}
       aria-description="card-metrics"
     >
-      <div className="text-2xl">{primary}</div>
+      {primary && (
+        <div className="text-xl font-semibold leading-tight">{primary}</div>
+      )}
 
-      <div className="flex flex-col justify-between text-sm">
-        {items.length ? (
-          <div className="mt-2 flex flex-row justify-between font-bold">
-            <span className="truncate">{currentLabel}</span>
-            <span className="truncate">{targetLabel}</span>
-          </div>
-        ) : null}
-
+      <div className="flex flex-col gap-2.5 overflow-hidden">
         {items.map((item, i) => {
-          const percent = (item.current / item.target) * 100
+          const percent = item.target > 0 ? (item.current / item.target) * 100 : 0
+          const clampedPercent = Math.min(100, Math.max(0, percent))
 
           return (
-            <div key={i}>
-              <div className="mt-2 flex flex-row items-center justify-between gap-1 md:gap-2">
-                <span
-                  className="text-muted-foreground truncate"
-                  title={`${percent}%`}
-                >
-                  {item.currentReadable}
-                </span>
-                <hr className="shrink grow border-dotted" />
-                <span
-                  className="truncate text-right"
-                  title={item.targetReadable}
-                >
-                  {item.targetReadable}
-                </span>
-              </div>
+            <div key={i} className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground truncate flex-1 min-w-0">
+                {item.currentReadable}
+              </span>
+              <DottedLineProgress percent={clampedPercent} className="shrink-0" />
+              <span className="font-medium truncate flex-1 min-w-0 text-right">
+                {item.targetReadable}
+              </span>
             </div>
           )
         })}

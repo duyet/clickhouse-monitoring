@@ -12,7 +12,13 @@
 'use client'
 
 import { memo, useMemo } from 'react'
-import { CartesianGrid, BarChart as RechartBarChart } from 'recharts'
+import {
+  Bar,
+  CartesianGrid,
+  BarChart as RechartBarChart,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import {
   type ChartConfig,
   ChartContainer,
@@ -21,9 +27,7 @@ import {
 } from '@/components/ui/chart'
 import { cn } from '@/lib/utils'
 import type { BarChartProps } from '@/types/charts'
-import { BarAxes } from '../bar-axes'
 import { BarTooltip } from '../bar-tooltip'
-import { BarItem } from './components/bar-item'
 import { generateChartConfig, getBarRadius } from './utils'
 
 export const BarChart = memo(function BarChart({
@@ -59,7 +63,7 @@ export const BarChart = memo(function BarChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className={cn('h-full w-full', className)}
+      className={cn('h-full w-full aspect-auto', className)}
     >
       <RechartBarChart
         accessibilityLayer
@@ -71,17 +75,25 @@ export const BarChart = memo(function BarChart({
       >
         <CartesianGrid vertical={horizontal} horizontal={!horizontal} />
 
-        <BarAxes
-          horizontal={horizontal}
-          index={index}
-          categories={categories}
-          showXAxis={showXAxis}
-          showYAxis={showYAxis}
-          tickFormatter={tickFormatter}
-          yAxisTickFormatter={yAxisTickFormatter}
-          xAxisLabel={xAxisLabel}
-          yAxisLabel={yAxisLabel}
-        />
+        {showXAxis && (
+          <XAxis
+            dataKey={index}
+            tickLine={false}
+            tickMargin={10}
+            axisLine={true}
+            tickFormatter={tickFormatter}
+          />
+        )}
+
+        {showYAxis && (
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={yAxisTickFormatter}
+            domain={[0, 'auto']}
+          />
+        )}
 
         <BarTooltip
           tooltipTotal={tooltipTotal}
@@ -90,23 +102,19 @@ export const BarChart = memo(function BarChart({
           xAxisDataKey={index}
         />
 
-        {categories.map((category, index) => (
-          <BarItem
+        {categories.map((category, idx) => (
+          <Bar
             key={category}
             dataKey={category}
-            data={data}
-            categories={categories}
-            fill={`var(--color-${category})}`}
-            radius={getBarRadius({ index, categories, stack, horizontal })}
-            getRadius={getBarRadius}
-            index={index}
-            onClickHref={onClickHref}
-            labelPosition={labelPosition}
-            labelAngle={labelAngle}
-            showLabel={showLabel}
-            stack={stack}
-            readableColumn={readableColumn}
-            horizontal={horizontal}
+            fill={`var(--color-${category})`}
+            stackId={stack ? 'a' : undefined}
+            radius={getBarRadius({
+              index: idx,
+              categories,
+              stack,
+              horizontal,
+            })}
+            isAnimationActive={false}
           />
         ))}
 

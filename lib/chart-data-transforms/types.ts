@@ -108,7 +108,7 @@ export type SummaryDataTransformed = {
   items: SummaryMetricsItem[]
   /** Raw data for additional logic if needed */
   raw: {
-    used: MemoryUsageData
+    used: MemoryUsageData & Partial<QueryCountData>
     totalMem: TotalMemData
     rowsReadWritten: RowsReadWrittenData
     bytesReadWritten?: BytesReadWrittenData

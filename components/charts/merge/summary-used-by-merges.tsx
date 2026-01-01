@@ -2,7 +2,6 @@
 
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { memo, useMemo } from 'react'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
@@ -21,8 +20,6 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
   className,
   hostId,
 }: ChartProps) {
-  const pathname = usePathname()
-  const hostFromPath = pathname.split('/')[1] || '0'
 
   // Single API call that returns all data combined
   const { data, error, isLoading, sql } = useChartData<{
@@ -89,32 +86,27 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
   }
 
   return (
-    <ChartCard title={title} sql={sql} className={className}>
-      <div className="flex flex-col justify-between p-0">
-        <CardMultiMetrics
-          primary={
-            <div className="flex flex-col">
-              <div>
-                {transformedData.raw.rowsReadWritten.readable_rows_read} rows
-                read
-              </div>
-              <div className="flex flex-row items-center gap-2">
-                {transformedData.primary.memoryUsage}{' '}
-                {transformedData.primary.description}
-                <Link href={`/${hostFromPath}/merges`} className="inline">
-                  <ArrowRightIcon className="size-5" />
-                </Link>
-              </div>
-            </div>
-          }
-          items={transformedData.items}
-          className="p-2"
-        />
-        <div className="text-muted-foreground text-right text-sm">
-          Total memory used by merges estimated from CGroupMemoryUsed or
-          OSMemoryTotal
-        </div>
-      </div>
+    <ChartCard title={title} sql={sql}>
+      <CardMultiMetrics
+        primary={
+          <Link
+            href={`/merges?host=${hostId}`}
+            className="flex items-baseline gap-2 hover:opacity-70 transition-opacity"
+          >
+            <span className="text-3xl font-bold tabular-nums">
+              {transformedData.raw.rowsReadWritten.readable_rows_read}
+            </span>
+            <span className="text-base text-muted-foreground">
+              rows
+            </span>
+            <span className="text-base font-medium">
+              {transformedData.primary.memoryUsage}
+            </span>
+            <ArrowRightIcon className="size-4 ml-1 text-muted-foreground" />
+          </Link>
+        }
+        items={transformedData.items}
+      />
     </ChartCard>
   )
 })

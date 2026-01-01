@@ -43,7 +43,6 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
         return (
           <ChartCard
             title={title}
-            className={className}
             sql={sql}
             data={chartData}
             data-testid="query-count-by-user-chart"

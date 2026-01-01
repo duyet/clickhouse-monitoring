@@ -35,10 +35,10 @@ export const DynamicChart = memo(function DynamicChart({
   }
 
   return (
-    <div className="flex h-full min-h-[180px] flex-col">
+    <div className="flex h-full min-h-[140px] max-h-[240px] flex-col">
       <ChartComponent
         className="w-full p-0 shadow-none"
-        chartClassName="h-full min-h-[150px] sm:min-h-[180px]"
+        chartClassName="h-full min-h-[120px] max-h-[200px]"
         hostId={hostId}
         {...chartProps}
       />

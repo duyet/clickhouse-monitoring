@@ -1,13 +1,35 @@
 /**
  * Merge Operation Charts
  * Charts for tracking merge performance and resource usage
+ *
+ * Version Compatibility:
+ * - merge-count: Requires system.metric_log (ClickHouse 20.5+, needs config)
+ * - merge-avg-duration: Requires system.part_log (available in most versions)
+ * - summary-used-by-merges: Uses system.merges (always available)
+ *
+ * For ClickHouse servers without metric_log configured, these charts will
+ * show empty state with a helpful configuration message.
  */
 
 import type { ChartQueryBuilder } from './types'
 import { applyInterval, fillStep, nowOrToday } from './types'
 
 export const mergeCharts: Record<string, ChartQueryBuilder> = {
+  /**
+   * Merge and PartMutation count over time
+   *
+   * Primary: Uses system.metric_log for historical data
+   * Fallback: Returns current point-in-time values from system.metrics
+   *
+   * Requires: system.metric_log (ClickHouse 20.5+, configured with <metric_log>)
+   *
+   * Version variants:
+   * - 24.10+: Can use query_metric_log for enhanced metrics
+   * - 20.5-24.9: Uses metric_log with standard columns
+   * - <20.5: Falls back to system.metrics (point-in-time only)
+   */
   'merge-count': ({ interval = 'toStartOfFiveMinutes', lastHours = 12 }) => ({
+    // Default query for ClickHouse 20.5+ with metric_log configured
     query: `
     SELECT ${applyInterval(interval, 'event_time')},
            avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
@@ -18,6 +40,33 @@ export const mergeCharts: Record<string, ChartQueryBuilder> = {
     ORDER BY 1
     WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
   `,
+    optional: true,
+    tableCheck: 'system.metric_log',
+    // Query variants for different ClickHouse versions
+    variants: [
+      {
+        // For very old versions without metric_log, provide current values only
+        versions: { maxVersion: '20.5' },
+        query: `
+    SELECT
+      now() AS event_time,
+      toFloat64(value) AS avg_CurrentMetric_Merge,
+      0 AS avg_CurrentMetric_PartMutation
+    FROM system.metrics
+    WHERE metric = 'Merge'
+    UNION ALL
+    SELECT
+      now() AS event_time,
+      0 AS avg_CurrentMetric_Merge,
+      toFloat64(value) AS avg_CurrentMetric_PartMutation
+    FROM system.metrics
+    WHERE metric = 'PartMutation'
+    ORDER BY event_time
+        `,
+        description:
+          'Fallback for pre-20.5: returns current merge count only (no history)',
+      },
+    ],
   }),
 
   'merge-avg-duration': ({
@@ -38,6 +87,8 @@ export const mergeCharts: Record<string, ChartQueryBuilder> = {
     ORDER BY 1 ASC
     WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
   `,
+    optional: true,
+    tableCheck: 'system.part_log',
   }),
 
   'merge-sum-read-rows': ({
@@ -58,6 +109,8 @@ export const mergeCharts: Record<string, ChartQueryBuilder> = {
     ORDER BY 1 ASC
     WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
   `,
+    optional: true,
+    tableCheck: 'system.part_log',
   }),
 
   'summary-used-by-merges': () => ({

@@ -1,6 +1,12 @@
 import type { ClickHouseInterval } from './clickhouse-interval'
 
 /**
+ * Semver range string for version matching
+ * Examples: ">=24.1", "<24.5", ">=24.1 <24.5", "^24.1"
+ */
+export type SemverRange = string
+
+/**
  * Base chart data point interface
  * Represents a single row of chart data with dynamic properties
  *
@@ -30,6 +36,30 @@ export interface ChartQueryParams {
 }
 
 /**
+ * Version range specification for query variants
+ * Specifies which ClickHouse versions a query variant supports
+ */
+export interface VersionRange {
+  /** Minimum version (inclusive), format: "major.minor" or "major.minor.patch" */
+  minVersion?: string
+  /** Maximum version (exclusive), format: "major.minor" or "major.minor.patch" */
+  maxVersion?: string
+}
+
+/**
+ * Query variant for a specific ClickHouse version range
+ * Allows defining different SQL for different ClickHouse versions
+ */
+export interface QueryVariant {
+  /** Version range this variant applies to */
+  versions: VersionRange
+  /** SQL query for this version range */
+  query: string
+  /** Description of what's different in this variant */
+  description?: string
+}
+
+/**
  * Result of a chart query builder function
  * Contains SQL query and metadata for execution
  */
@@ -38,6 +68,12 @@ export interface ChartQueryResult<_T extends ChartDataPoint = ChartDataPoint> {
   queryParams?: Record<string, unknown>
   optional?: boolean
   tableCheck?: string | string[]
+  /**
+   * Alternative query variants for different ClickHouse versions
+   * The first matching variant (by version) will be used
+   * If no variant matches, the main `query` is used as fallback
+   */
+  variants?: QueryVariant[]
 }
 
 /**

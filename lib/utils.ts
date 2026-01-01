@@ -145,3 +145,54 @@ export const chartTickFormatters = {
   default: (value: string | number | null | undefined) =>
     value === null || value === undefined ? '-' : value.toString(),
 }
+
+/**
+ * Create a smart date/time tick formatter based on time range
+ *
+ * - ≤24 hours: Shows only time (e.g., "12:00", "13:00")
+ * - 1-7 days: Shows date and time (e.g., "Dec 25 12:00")
+ * - >7 days: Shows only date (e.g., "Dec 25", "Dec 26")
+ *
+ * @param lastHours Number of hours the chart covers
+ * @returns Tick formatter function
+ */
+export function createDateTickFormatter(
+  lastHours: number
+): (value: string) => string {
+  return (value: string) => {
+    if (!value) return ''
+
+    try {
+      const date = new Date(value)
+      if (Number.isNaN(date.getTime())) return value
+
+      // ≤24 hours: Show time only (HH:MM)
+      if (lastHours <= 24) {
+        return date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+      }
+
+      // 1-7 days: Show short date + time
+      if (lastHours <= 24 * 7) {
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+      }
+
+      // >7 days: Show date only
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      })
+    } catch {
+      return value
+    }
+  }
+}

@@ -98,6 +98,8 @@ export const BarAxes = memo(function BarAxes({
           axisLine={false}
           tickMargin={8}
           tickFormatter={yAxisTickFormatter}
+          domain={[0, 'auto']}
+          allowDataOverflow={false}
           label={
             yAxisLabel
               ? { value: yAxisLabel, angle: -90, position: 'insideLeft' }

@@ -38,7 +38,7 @@ export const MetricCardSkeleton = memo(function MetricCardSkeleton({
   return (
     <Card
       className={cn(
-        'relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-br',
+        'relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-br shadow-none py-2',
         themeConfig.gradient,
         className
       )}

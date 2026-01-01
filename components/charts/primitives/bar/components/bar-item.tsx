@@ -55,9 +55,7 @@ export function BarItem({
 }: BarItemProps) {
   return (
     <Bar
-      key={dataKey}
       dataKey={dataKey}
-      layout={horizontal ? 'vertical' : 'horizontal'}
       fill={fill}
       stackId={stack ? 'a' : undefined}
       radius={radius}

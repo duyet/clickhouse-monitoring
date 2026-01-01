@@ -4,8 +4,8 @@
  * Barrel export for all query page layout components.
  */
 
+export { ChartRow, type ChartRowProps } from './chart-row'
 export { ChartsToggle, type ChartsToggleProps } from './charts-toggle'
-
 export { DynamicChart, type DynamicChartProps } from './dynamic-chart'
 export type {
   CreateQueryPageOptions as CreatePageOptions,
@@ -21,5 +21,9 @@ export {
   type QueryPageLayoutProps,
 } from './layout'
 export { RelatedCharts, type RelatedChartsProps } from './related-charts'
-export { useChartsCollapsed } from './use-charts-collapsed'
+export {
+  useChartsCollapsed,
+  type UseChartsCollapsedReturn,
+} from './use-charts-collapsed'
+export { groupChartsIntoRows, CHARTS_PER_ROW } from './utils'
 export { withSuspense } from './with-suspense'

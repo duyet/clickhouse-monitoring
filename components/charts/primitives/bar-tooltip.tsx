@@ -35,6 +35,9 @@ export const BarTooltip = memo(function BarTooltip({
   if (!tooltipTotal) {
     return (
       <ChartTooltip
+        cursor={{ fill: 'hsl(var(--muted))' }}
+        wrapperStyle={{ zIndex: 1000 }}
+        allowEscapeViewBox={{ x: true, y: true }}
         content={
           <ChartTooltipContent
             className="max-w-[280px]"
@@ -92,6 +95,7 @@ export const BarTooltip = memo(function BarTooltip({
   // Tooltip with total for stacked bars
   return (
     <ChartTooltip
+      wrapperStyle={{ zIndex: 1000 }}
       content={
         <ChartTooltipContent
           hideLabel

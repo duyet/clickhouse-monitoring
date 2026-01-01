@@ -66,6 +66,7 @@ function renderStandardTooltip(chartConfig: ChartConfig) {
   return (
     <ChartTooltip
       cursor
+      wrapperStyle={{ zIndex: 1000 }}
       content={
         <ChartTooltipContent
           className="max-w-[280px]"

@@ -1,12 +1,12 @@
 'use client'
 
-import { type FC, memo } from 'react'
+import { type FC, memo, useMemo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/charts/primitives/area'
 import { useChartData, useHostId } from '@/lib/swr'
-import { cn } from '@/lib/utils'
+import { cn, createDateTickFormatter } from '@/lib/utils'
 import type { ChartDataPoint } from '@/types/chart-data'
 import type { AreaChartFactoryConfig } from './types'
 
@@ -47,6 +47,15 @@ export function createAreaChart<T extends ChartDataPoint = ChartDataPoint>(
       refreshInterval: config.refreshInterval ?? 30000,
     })
 
+    // Create smart date formatter based on time range
+    // Only apply if no custom tickFormatter is provided
+    const tickFormatter = useMemo(() => {
+      if (config.areaChartProps?.tickFormatter) {
+        return config.areaChartProps.tickFormatter
+      }
+      return lastHours ? createDateTickFormatter(lastHours) : undefined
+    }, [lastHours])
+
     return (
       <ChartContainer
         swr={swr}
@@ -71,6 +80,7 @@ export function createAreaChart<T extends ChartDataPoint = ChartDataPoint>(
               index={config.index}
               categories={config.categories}
               {...config.areaChartProps}
+              tickFormatter={tickFormatter}
               {...props}
             />
           </ChartCard>

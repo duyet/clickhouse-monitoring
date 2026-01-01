@@ -45,6 +45,17 @@ export interface ApiError {
 }
 
 /**
+ * Data availability status for ClickHouse queries
+ * Provides context about why data may be empty or unavailable
+ */
+export type DataStatus =
+  | 'ok' // Data returned successfully
+  | 'empty' // Query succeeded but returned no data
+  | 'table_not_configured' // Required log table (metric_log, etc.) is not configured
+  | 'table_not_found' // Required table does not exist
+  | 'table_empty' // Table exists but contains no data
+
+/**
  * Response metadata containing query execution information
  */
 export interface ApiResponseMetadata {
@@ -60,6 +71,14 @@ export interface ApiResponseMetadata {
   readonly cachedAt?: number
   /** SQL query that generated this response (read-only display) */
   readonly sql?: string
+  /** Data availability status with context about empty results */
+  readonly status?: DataStatus
+  /** Human-readable message explaining data status */
+  readonly statusMessage?: string
+  /** Tables that were checked for existence */
+  readonly checkedTables?: readonly string[]
+  /** Tables that were found to be missing */
+  readonly missingTables?: readonly string[]
 }
 
 /**

@@ -37,7 +37,7 @@ export const ChartSummaryUsedByMutations = memo(
     const count = dataArray[0]
 
     return (
-      <ChartCard title={title} className={className} sql={sql} data={dataArray}>
+      <ChartCard title={title} sql={sql} data={dataArray}>
         <div className="flex flex-col content-stretch items-center p-0">
           <CardMultiMetrics
             primary={

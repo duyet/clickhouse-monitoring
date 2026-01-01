@@ -3,115 +3,66 @@
  *
  * Renders a responsive grid of charts based on queryConfig.relatedCharts.
  *
- * Responsive layout based on chart count:
- * - 1 chart → full width
- * - 2 charts → 1 col (mobile) → 2 col (md)
- * - 3 charts → 1 col → 2 col (md) → 3 col (xl)
- * - 4 charts → 1 col → 2 col (md) → 4 col (xl)
- * - 5+ charts → flex-col stacked
+ * Layout behavior:
+ * - 1-4 charts (single row): Standard responsive grid, no row controls
+ * - 5+ charts (multiple rows): Grouped into rows of 4 with inline chevron toggles
+ *
+ * Responsive layout per row:
+ * - Mobile: 1 column (stacked)
+ * - MacBook (md): 2 columns
+ * - Large screen (xl): 4 columns
  *
  * Equal card heights achieved with h-full on grid items.
  */
 
 'use client'
 
-import { memo, Suspense } from 'react'
+import { memo } from 'react'
 
-import { ChartSkeleton } from '@/components/skeletons'
 import { cn } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
-import { DynamicChart } from './dynamic-chart'
+import { ChartRow } from './chart-row'
+import { groupChartsIntoRows } from './utils'
 
 export interface RelatedChartsProps {
   relatedCharts: QueryConfig['relatedCharts']
   hostId: number
   gridClass?: string
+  /** Row indices that are collapsed (only used for multi-row layout) */
+  collapsedRows?: Set<number>
+  /** Callback to toggle a specific row (only used for multi-row layout) */
+  onToggleRow?: (rowIndex: number) => void
 }
 
 export const RelatedCharts = memo(function RelatedCharts({
   relatedCharts,
   hostId,
   gridClass,
+  collapsedRows,
+  onToggleRow,
 }: RelatedChartsProps) {
   if (!relatedCharts || relatedCharts.length === 0) {
     return null
   }
 
-  // Filter out 'break' directives for counting
-  const chartCount = relatedCharts.filter((c) => c && c !== 'break').length
+  // Filter out 'break' directives and null values
+  const validCharts = relatedCharts.filter((c) => c && c !== 'break')
 
-  // For 5+ charts, use flex-col for stacked layout
-  if (chartCount >= 5) {
-    return (
-      <div className={cn('flex flex-col gap-3', gridClass)}>
-        {relatedCharts.map((chartConfig, index) => {
-          if (!chartConfig) return null
-          if (typeof chartConfig === 'string' && chartConfig === 'break') {
-            return null
-          }
-
-          const chartName = Array.isArray(chartConfig)
-            ? chartConfig[0]
-            : chartConfig
-          const chartProps = Array.isArray(chartConfig)
-            ? chartConfig[1] || {}
-            : {}
-
-          return (
-            <div key={`${chartName}-${index}`} className="h-full">
-              <Suspense fallback={<ChartSkeleton />}>
-                <DynamicChart
-                  chartName={chartName}
-                  hostId={hostId}
-                  chartProps={chartProps}
-                />
-              </Suspense>
-            </div>
-          )
-        })}
-      </div>
-    )
-  }
-
-  // Responsive grid layout based on chart count
-  const gridColsMap: Record<number, string> = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
-    4: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4',
-  }
-  const gridCols = gridColsMap[chartCount] || 'grid-cols-1 md:grid-cols-2'
+  // Always group into rows with toggle controls
+  const rows = groupChartsIntoRows(validCharts)
 
   return (
-    <div className={cn('grid auto-rows-fr gap-3', gridCols, gridClass)}>
-      {relatedCharts.map((chartConfig, index) => {
-        if (!chartConfig) return null
-
-        // Handle break directive
-        if (typeof chartConfig === 'string' && chartConfig === 'break') {
-          return <div key={`break-${index}`} className="hidden" />
-        }
-
-        // Extract chart name and props
-        const chartName = Array.isArray(chartConfig)
-          ? chartConfig[0]
-          : chartConfig
-        const chartProps = Array.isArray(chartConfig)
-          ? chartConfig[1] || {}
-          : {}
-
-        return (
-          <div key={`${chartName}-${index}`} className="h-full">
-            <Suspense fallback={<ChartSkeleton />}>
-              <DynamicChart
-                chartName={chartName}
-                hostId={hostId}
-                chartProps={chartProps}
-              />
-            </Suspense>
-          </div>
-        )
-      })}
+    <div className={cn('flex flex-col gap-4 pb-4', gridClass)}>
+      {rows.map((rowCharts, rowIndex) => (
+        <ChartRow
+          key={`row-${rowIndex}`}
+          rowIndex={rowIndex}
+          charts={rowCharts}
+          hostId={hostId}
+          isCollapsed={collapsedRows?.has(rowIndex) ?? false}
+          onToggle={() => onToggleRow?.(rowIndex)}
+        />
+      ))}
     </div>
   )
 })

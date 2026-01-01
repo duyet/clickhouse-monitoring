@@ -89,7 +89,7 @@ export const TableClient = memo(function TableClient({
 
     return (
       <Card
-        className={cn('rounded-md', errorClassName, className)}
+        className={cn('rounded-md shadow-none py-2', errorClassName, className)}
         role="alert"
         aria-label={title ? `${title} error` : 'Error loading table'}
       >
@@ -116,7 +116,7 @@ export const TableClient = memo(function TableClient({
   if (!data || (Array.isArray(data) && data.length === 0)) {
     return (
       <Card
-        className={cn('rounded-md border-warning/30 bg-warning/5', className)}
+        className={cn('rounded-md border-warning/30 bg-warning/5 shadow-none py-2', className)}
       >
         <CardContent className="p-6">
           <EmptyState

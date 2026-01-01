@@ -56,7 +56,7 @@ export const MetricCardEmpty = memo(function MetricCardEmpty({
     <Card
       className={cn(
         'relative overflow-hidden rounded-xl border border-border/40',
-        'bg-card',
+        'bg-card shadow-none py-2',
         className
       )}
     >

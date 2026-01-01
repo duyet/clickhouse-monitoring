@@ -40,6 +40,7 @@ import {
 } from './system/replicas-status'
 import { detachedPartsConfig } from './tables/detached-parts'
 import { distributedDdlQueueConfig } from './tables/distributed-ddl-queue'
+import { partInfoConfig } from './tables/part-info'
 import { projectionsConfig } from './tables/projections'
 import { readOnlyTablesConfig } from './tables/readonly-tables'
 import { replicasConfig } from './tables/replicas'
@@ -55,6 +56,7 @@ export const queries: Array<QueryConfig> = [
   replicationQueueConfig,
   readOnlyTablesConfig,
   detachedPartsConfig,
+  partInfoConfig,
   projectionsConfig,
   viewRefreshesConfig,
 

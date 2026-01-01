@@ -2,7 +2,6 @@
 
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { memo, useMemo } from 'react'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
@@ -23,8 +22,6 @@ export const ChartSummaryUsedByRunningQueries = memo(
     className,
     hostId,
   }: ChartProps) {
-    const pathname = usePathname()
-    const hostFromPath = pathname.split('/')[1] || '0'
 
     // Single API call that returns all data combined
     const { data, error, isLoading, sql } = useChartData<{
@@ -106,33 +103,33 @@ export const ChartSummaryUsedByRunningQueries = memo(
       return <ChartEmpty title={title} className={className} />
     }
 
-    const queryCount =
-      (transformedData.raw.used as { query_count?: number })?.query_count ?? 0
+    const queryCount = transformedData.raw.used.query_count ?? 0
+    const currentMemory = transformedData.raw.used.readable_memory_usage
+    const totalMemory = transformedData.raw.totalMem.readable_total
 
     return (
-      <ChartCard title={title} sql={sql} className={className}>
-        <div className="flex flex-col justify-between p-0">
-          <CardMultiMetrics
-            primary={
-              <div className="flex flex-col">
-                <div>{queryCount} queries</div>
-                <div className="flex flex-row items-center gap-2">
-                  {transformedData.primary.memoryUsage}{' '}
-                  {transformedData.primary.description}
-                  <Link
-                    href={`/${hostFromPath}/running-queries`}
-                    className="inline"
-                  >
-                    <ArrowRightIcon className="size-5" />
-                  </Link>
-                </div>
-              </div>
-            }
-            items={transformedData.items}
-            className="p-2"
-          />
-          <div className="text-muted-foreground text-right text-sm"></div>
-        </div>
+      <ChartCard title={title} sql={sql}>
+        <CardMultiMetrics
+          primary={
+            <Link
+              href={`/running-queries?host=${hostId}`}
+              className="flex items-baseline gap-2 hover:opacity-70 transition-opacity"
+            >
+              <span className="text-3xl font-bold tabular-nums">
+                {queryCount}
+              </span>
+              <span className="text-base text-muted-foreground">running</span>
+              <span className="text-base font-medium">
+                {currentMemory}
+              </span>
+              <span className="text-base text-muted-foreground">
+                {totalMemory}
+              </span>
+              <ArrowRightIcon className="size-4 ml-1 text-muted-foreground" />
+            </Link>
+          }
+          items={transformedData.items}
+        />
       </ChartCard>
     )
   }

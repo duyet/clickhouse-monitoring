@@ -200,7 +200,7 @@ export function MetricCard<TData = unknown>({
     <Card
       className={cn(
         'group relative overflow-hidden rounded-xl border border-border/40',
-        'bg-card',
+        'bg-card shadow-none py-2',
         className
       )}
     >

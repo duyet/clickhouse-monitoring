@@ -65,7 +65,8 @@ export const QueryPageLayout = memo(function QueryPageLayout({
 }: QueryPageLayoutProps) {
   const hostId = useHostId()
   const relatedCharts = queryConfig.relatedCharts || []
-  const { isCollapsed, toggleCollapsed } = useChartsCollapsed()
+  const { isCollapsed, toggleCollapsed, collapsedRows, toggleRow } =
+    useChartsCollapsed()
   const hasCharts = relatedCharts.length > 0
 
   return (
@@ -83,6 +84,8 @@ export const QueryPageLayout = memo(function QueryPageLayout({
                 relatedCharts={relatedCharts}
                 hostId={hostId}
                 gridClass={chartsGridClass}
+                collapsedRows={collapsedRows}
+                onToggleRow={toggleRow}
               />
             </FadeIn>
           )}

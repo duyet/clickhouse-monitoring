@@ -1,7 +1,7 @@
 'use client'
 
 import { memo } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +11,9 @@ interface ChartSkeletonProps {
 }
 
 /**
- * Simple chart skeleton loading state
+ * Chart skeleton that matches actual chart dimensions
+ * - Matches DynamicChart: min-h-[140px] max-h-[240px]
+ * - Matches ChartCard styling: gap-2, py-2, border-border/50
  */
 export const ChartSkeleton = memo(function ChartSkeleton({
   className,
@@ -19,26 +21,23 @@ export const ChartSkeleton = memo(function ChartSkeleton({
 }: ChartSkeletonProps = {}) {
   return (
     <Card
-      className={cn('rounded-md h-full', className)}
+      className={cn(
+        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full gap-2 shadow-none py-2',
+        'min-h-[140px] max-h-[240px]',
+        className
+      )}
       role="status"
       aria-busy="true"
       aria-label={title ? `Loading ${title}` : 'Loading chart'}
     >
-      <CardContent className="p-4">
-        <div className="flex h-32 flex-col gap-3 sm:h-36">
-          {/* Header */}
-          <div className="flex justify-between">
-            {title ? (
-              <span className="text-sm text-muted-foreground">{title}</span>
-            ) : (
-              <Skeleton className="h-4 w-40" />
-            )}
-            <Skeleton className="h-4 w-20" />
-          </div>
+      <CardHeader className="px-3 shrink-0">
+        <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase">
+          {title || <Skeleton className="h-3 w-32" />}
+        </CardDescription>
+      </CardHeader>
 
-          {/* Chart placeholder */}
-          <Skeleton className="flex-1 w-full rounded-md" />
-        </div>
+      <CardContent className="p-3 pt-0 flex-1 min-h-0">
+        <Skeleton className="h-full w-full rounded-md" />
       </CardContent>
     </Card>
   )

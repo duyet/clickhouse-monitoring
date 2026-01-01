@@ -2,8 +2,11 @@
 
 import { notFound, useSearchParams } from 'next/navigation'
 import { Suspense, useMemo } from 'react'
+import {
+  getChartComponent,
+  hasChart,
+} from '@/components/charts/chart-registry'
 import { ChartSkeleton } from '@/components/skeletons'
-import { ErrorLogger } from '@/lib/logger'
 import { useHostId } from '@/lib/swr'
 
 interface DynamicChartProps {
@@ -13,18 +16,12 @@ interface DynamicChartProps {
 }
 
 function DynamicChart({ chartName, hostId, index }: DynamicChartProps) {
-  const ChartComponent = useMemo(() => {
-    try {
-      return require(`@/components/charts/${chartName}`).default
-    } catch (e) {
-      ErrorLogger.logError(e as Error, {
-        component: 'DynamicChart',
-        action: 'load-chart',
-        chartName,
-      })
-      return null
-    }
-  }, [chartName])
+  // Check if chart exists in registry
+  if (!hasChart(chartName)) {
+    return notFound()
+  }
+
+  const ChartComponent = getChartComponent(chartName)
 
   if (!ChartComponent) {
     return notFound()

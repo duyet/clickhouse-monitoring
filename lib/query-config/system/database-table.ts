@@ -112,8 +112,7 @@ export const tablesListConfig: QueryConfig = {
         formatReadableSize(avg_part_size) as readable_avg_part_size,
         count() as parts_count,
         coalesce(dp.detached_parts_count, 0) as detached_parts_count,
-        coalesce(dp.readable_detached_bytes_on_disk, '0 B') as readable_detached_bytes_on_disk,
-        max(comment) as comment
+        coalesce(dp.readable_detached_bytes_on_disk, '0 B') as readable_detached_bytes_on_disk
     FROM system.parts
     LEFT JOIN detached_parts dp USING (database, table)
     WHERE active
@@ -133,7 +132,6 @@ export const tablesListConfig: QueryConfig = {
     'parts_count',
     'detached_parts_count',
     'readable_detached_bytes_on_disk',
-    'comment',
     'action',
   ],
   columnFormats: {

@@ -12,14 +12,24 @@ import {
   hasChart,
   type MultiChartQueryResult,
 } from '@/lib/api/chart-registry'
+import { transformClickHouseData } from '@/lib/api/transform-data'
 import {
   createErrorResponse as createApiErrorResponse,
   getHostIdFromParams,
   type RouteContext,
 } from '@/lib/api/error-handler'
-import type { ApiResponse as ApiResponseType } from '@/lib/api/types'
+import type {
+  ApiResponse as ApiResponseType,
+  DataStatus,
+} from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import {
+  checkTableAvailability,
+  getClickHouseVersion,
+  getTableInfoMessage,
+  selectQueryVariant,
+} from '@/lib/clickhouse-version'
 import { debug, error } from '@/lib/logger'
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
@@ -87,7 +97,10 @@ async function handleMultiQueryChart(
       | undefined
 
     for (const result of results) {
-      combinedData[result.key] = result.data
+      // Transform data to convert numeric strings to numbers
+      combinedData[result.key] = Array.isArray(result.data)
+        ? transformClickHouseData(result.data as Record<string, unknown>[])
+        : result.data
       if (result.error && !hasError) {
         hasError = true
         // Convert FetchDataError to ApiError format
@@ -166,7 +179,8 @@ export async function GET(
 
   // Extract optional query parameters
   const intervalParam = searchParams.get('interval')
-  const interval = intervalParam as ClickHouseInterval | undefined
+  // Ensure empty string is treated as undefined (use chart's default interval)
+  const interval = (intervalParam || undefined) as ClickHouseInterval | undefined
   const lastHours = searchParams.get('lastHours')
     ? parseInt(searchParams.get('lastHours') || '24', 10)
     : undefined
@@ -219,9 +233,80 @@ export async function GET(
     )
   }
 
-  // Execute the query
+  // Convert hostId to number for version check
+  const numericHostId = typeof hostId === 'string' ? parseInt(hostId, 10) : hostId
+
+  // Get ClickHouse version for query variant selection
+  const clickhouseVersion = await getClickHouseVersion(numericHostId)
+
+  // Select appropriate query for this ClickHouse version
+  const selectedQuery = selectQueryVariant(queryDef, clickhouseVersion)
+
+  debug(`[GET /api/v1/charts/${name}]`, {
+    clickhouseVersion: clickhouseVersion?.raw,
+    hasVariants: (queryDef.variants?.length ?? 0) > 0,
+    queryChanged: selectedQuery !== queryDef.query,
+  })
+
+  // Check table availability for optional tables
+  let statusInfo:
+    | {
+        status: DataStatus
+        statusMessage?: string
+        checkedTables?: string[]
+        missingTables?: string[]
+        clickhouseVersion?: string
+      }
+    | undefined
+
+  if (queryDef.tableCheck) {
+    // Handle tableCheck being string or string[]
+    const tableToCheck = Array.isArray(queryDef.tableCheck)
+      ? queryDef.tableCheck[0]
+      : queryDef.tableCheck
+    const [database, table] = tableToCheck?.split('.') ?? []
+
+    if (database && table && tableToCheck) {
+      const availability = await checkTableAvailability(
+        numericHostId,
+        database,
+        table
+      )
+
+      if (!availability.exists) {
+        // Table doesn't exist - return empty data with informative status
+        statusInfo = {
+          status: 'table_not_found',
+          statusMessage: getTableInfoMessage(tableToCheck),
+          checkedTables: [tableToCheck],
+          missingTables: [tableToCheck],
+        }
+
+        debug(
+          `[GET /api/v1/charts/${name}] Table ${tableToCheck} not found, returning empty data`
+        )
+
+        return createSuccessResponse(
+          [],
+          { queryId: '', duration: 0, rows: 0, host: String(hostId) },
+          queryDef.query.trim(),
+          statusInfo
+        )
+      }
+
+      if (!availability.hasData) {
+        statusInfo = {
+          status: 'table_empty',
+          statusMessage: `Table ${tableToCheck} exists but contains no data. The table may need time to collect metrics.`,
+          checkedTables: [tableToCheck],
+        }
+      }
+    }
+  }
+
+  // Execute the query (using version-selected query if variants exist)
   const result = await fetchData({
-    query: queryDef.query,
+    query: selectedQuery,
     query_params: queryDef.queryParams,
     hostId,
     format: 'JSONEachRow',
@@ -229,7 +314,7 @@ export async function GET(
     queryConfig: queryDef.optional
       ? {
           name,
-          sql: queryDef.query,
+          sql: selectedQuery,
           columns: [],
           tableCheck: queryDef.tableCheck,
           optional: true,
@@ -254,11 +339,35 @@ export async function GET(
     )
   }
 
+  // Update status if data is empty but we didn't already set a status
+  if (
+    !statusInfo &&
+    (!result.data || (Array.isArray(result.data) && result.data.length === 0))
+  ) {
+    // Normalize tableCheck to string[] for status info
+    const checkedTables = queryDef.tableCheck
+      ? Array.isArray(queryDef.tableCheck)
+        ? queryDef.tableCheck
+        : [queryDef.tableCheck]
+      : undefined
+
+    statusInfo = {
+      status: 'empty',
+      statusMessage: 'Query executed successfully but returned no data.',
+      checkedTables,
+    }
+  }
+
   // Create successful response with SQL from query definition
   return createSuccessResponse(
     result.data,
     result.metadata,
-    queryDef.query.trim()
+    selectedQuery.trim(),
+    statusInfo
+      ? { ...statusInfo, clickhouseVersion: clickhouseVersion?.raw }
+      : clickhouseVersion
+        ? { status: 'ok' as DataStatus, clickhouseVersion: clickhouseVersion.raw }
+        : undefined
   )
 }
 
@@ -278,23 +387,64 @@ function mapErrorTypeToStatusCode(errorType: ApiErrorType): number {
 }
 
 /**
- * Create a success response
+ * Extended metadata for chart responses
+ */
+interface ChartResponseMetadata {
+  queryId: string
+  duration: number
+  rows: number
+  host: string
+  sql?: string
+  status?: DataStatus
+  statusMessage?: string
+  checkedTables?: string[]
+  missingTables?: string[]
+  clickhouseVersion?: string
+}
+
+/**
+ * Create a success response with detailed status information
+ * Transforms numeric strings to numbers for chart rendering
  */
 function createSuccessResponse<T>(
   data: T,
   metadata: Record<string, string | number>,
-  sql?: string
+  sql?: string,
+  statusInfo?: {
+    status: DataStatus
+    statusMessage?: string
+    checkedTables?: string[]
+    missingTables?: string[]
+    clickhouseVersion?: string
+  }
 ): Response {
+  // Transform data to convert numeric strings to numbers
+  // This is necessary because ClickHouse returns numbers as strings in JSON
+  const transformedData = Array.isArray(data)
+    ? transformClickHouseData(data as Record<string, unknown>[])
+    : data
+
+  // Determine status based on data
+  const dataArray = Array.isArray(transformedData) ? transformedData : []
+  const defaultStatus: DataStatus = dataArray.length > 0 ? 'ok' : 'empty'
+
+  const responseMetadata: ChartResponseMetadata = {
+    queryId: String(metadata.queryId || ''),
+    duration: Number(metadata.duration || 0),
+    rows: Number(metadata.rows || 0),
+    host: String(metadata.host || ''),
+    sql,
+    status: statusInfo?.status ?? defaultStatus,
+    statusMessage: statusInfo?.statusMessage,
+    checkedTables: statusInfo?.checkedTables,
+    missingTables: statusInfo?.missingTables,
+    clickhouseVersion: statusInfo?.clickhouseVersion,
+  }
+
   const response: ApiResponseType<T> = {
     success: true,
-    data,
-    metadata: {
-      queryId: String(metadata.queryId || ''),
-      duration: Number(metadata.duration || 0),
-      rows: Number(metadata.rows || 0),
-      host: String(metadata.host || ''),
-      sql,
-    },
+    data: transformedData as T,
+    metadata: responseMetadata,
   }
 
   return Response.json(response, {

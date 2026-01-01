@@ -9,4 +9,6 @@ export interface ChartProps extends Partial<AreaChartProps> {
   chartCardContentClassName?: string
   lastHours?: number
   hostId?: number
+  /** Grid column span (out of 10 columns) for custom layouts */
+  colSpan?: number
 }

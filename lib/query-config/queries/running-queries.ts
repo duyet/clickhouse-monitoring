@@ -94,6 +94,14 @@ export const runningQueriesConfig: QueryConfig = {
         title: 'Running Queries (12h)',
         interval: 'toStartOfFiveMinutes',
         lastHours: 12,
+        colSpan: 7,
+      },
+    ],
+    [
+      'summary-used-by-running-queries',
+      {
+        title: 'Running Queries Summary',
+        colSpan: 3,
       },
     ],
     [
@@ -103,20 +111,14 @@ export const runningQueriesConfig: QueryConfig = {
         interval: 'toStartOfDay',
         lastHours: 24 * 14,
         showLegend: false,
-      },
-    ],
-    [
-      'summary-used-by-running-queries',
-      {
-        title: 'Running Queries Summary',
-        chartClassName: 'h-28',
+        colSpan: 7,
       },
     ],
     [
       'summary-used-by-merges',
       {
         title: 'Merge Summary',
-        chartClassName: 'h-28',
+        colSpan: 3,
       },
     ],
   ],

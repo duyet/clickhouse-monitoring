@@ -74,8 +74,7 @@ export const MetricCardError = memo(function MetricCardError({
   return (
     <Card
       className={cn(
-        'relative overflow-hidden rounded-xl border',
-        'bg-card',
+        'relative overflow-hidden rounded-xl border shadow-none py-2',
         errorClassName,
         className
       )}

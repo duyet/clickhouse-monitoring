@@ -12,3 +12,4 @@ export type {
 } from './types'
 
 export { ApiErrorType } from './types'
+export { transformClickHouseData } from './transform-data'

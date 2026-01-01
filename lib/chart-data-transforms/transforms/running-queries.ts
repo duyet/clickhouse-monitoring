@@ -94,6 +94,7 @@ export function transformRunningQueriesSummaryData(
     items,
     raw: {
       used: {
+        query_count: main.query_count,
         memory_usage: main.memory_usage,
         readable_memory_usage: main.readable_memory_usage,
       },

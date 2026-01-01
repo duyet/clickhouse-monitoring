@@ -6,6 +6,7 @@ import {
   binding,
   chartTickFormatters,
   cn,
+  createDateTickFormatter,
   dedent,
   formatBytes,
   formatCount,
@@ -432,6 +433,76 @@ describe('chartTickFormatters', () => {
       expect(formatter('test')).toBe('test')
       expect(formatter(0)).toBe('0')
       expect(formatter(true)).toBe('true')
+    })
+  })
+})
+
+describe('createDateTickFormatter', () => {
+  // Use fixed dates to avoid timezone issues in tests
+  const testDate = '2026-01-01T14:30:00Z'
+
+  describe('short range (≤24 hours)', () => {
+    it('should show time only for 12 hour range', () => {
+      const formatter = createDateTickFormatter(12)
+      const result = formatter(testDate)
+      // Should contain time but not date
+      expect(result).toMatch(/\d{2}:\d{2}/)
+      expect(result).not.toMatch(/Jan|Dec|2026/)
+    })
+
+    it('should show time only for 24 hour range', () => {
+      const formatter = createDateTickFormatter(24)
+      const result = formatter(testDate)
+      expect(result).toMatch(/\d{2}:\d{2}/)
+    })
+  })
+
+  describe('medium range (1-7 days)', () => {
+    it('should show date and time for 48 hour range', () => {
+      const formatter = createDateTickFormatter(48)
+      const result = formatter(testDate)
+      // Should contain both date and time components
+      expect(result).toMatch(/\d{2}:\d{2}/)
+    })
+
+    it('should show date and time for 7 day range', () => {
+      const formatter = createDateTickFormatter(24 * 7)
+      const result = formatter(testDate)
+      expect(result).toMatch(/\d{2}:\d{2}/)
+    })
+  })
+
+  describe('long range (>7 days)', () => {
+    it('should show date only for 14 day range', () => {
+      const formatter = createDateTickFormatter(24 * 14)
+      const result = formatter(testDate)
+      // Should contain date but not time
+      expect(result).not.toMatch(/\d{2}:\d{2}/)
+      expect(result).toMatch(/Jan|1/)
+    })
+
+    it('should show date only for 30 day range', () => {
+      const formatter = createDateTickFormatter(24 * 30)
+      const result = formatter(testDate)
+      expect(result).not.toMatch(/\d{2}:\d{2}/)
+    })
+  })
+
+  describe('edge cases', () => {
+    it('should return empty string for empty value', () => {
+      const formatter = createDateTickFormatter(24)
+      expect(formatter('')).toBe('')
+    })
+
+    it('should return original value for invalid date', () => {
+      const formatter = createDateTickFormatter(24)
+      expect(formatter('not-a-date')).toBe('not-a-date')
+    })
+
+    it('should handle null/undefined gracefully', () => {
+      const formatter = createDateTickFormatter(24)
+      expect(formatter(null as unknown as string)).toBe('')
+      expect(formatter(undefined as unknown as string)).toBe('')
     })
   })
 })

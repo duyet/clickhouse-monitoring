@@ -38,7 +38,7 @@ export const ChartError = memo(function ChartError({
 
   return (
     <Card
-      className={cn('rounded-md h-full', errorClassName, className)}
+      className={cn('rounded-md h-full shadow-none py-2', errorClassName, className)}
       role="alert"
       aria-label={title ? `${title} error` : 'Error loading chart'}
     >

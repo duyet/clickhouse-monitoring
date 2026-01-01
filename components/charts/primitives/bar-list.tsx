@@ -91,7 +91,8 @@ export const BarList = memo(function BarList({
           tick={{ fill: 'hsl(var(--muted-foreground))' }}
         />
         <ChartTooltip
-          cursor={false}
+          cursor={{ fill: 'hsl(var(--muted))' }}
+          wrapperStyle={{ zIndex: 1000 }}
           content={
             <ChartTooltipContent
               hideLabel
@@ -106,7 +107,7 @@ export const BarList = memo(function BarList({
             />
           }
         />
-        <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={24}>
+        <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={24} isAnimationActive={false}>
           {sortedData.map((_entry, index) => (
             <Cell key={`cell-${index}`} fill={colors[index]} />
           ))}
@@ -115,6 +116,7 @@ export const BarList = memo(function BarList({
           dataKey="value"
           radius={0}
           fill="transparent"
+          isAnimationActive={false}
           label={{
             position: 'right',
             fill: 'hsl(var(--foreground))',

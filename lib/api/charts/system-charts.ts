@@ -16,6 +16,8 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1 ASC`,
+    optional: true,
+    tableCheck: 'system.metric_log',
   }),
 
   'cpu-usage': ({ interval = 'toStartOfTenMinutes', lastHours = 24 }) => ({
@@ -27,6 +29,8 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
     GROUP BY 1
     ORDER BY 1`,
+    optional: true,
+    tableCheck: 'system.metric_log',
   }),
 
   'disk-size': ({ params }) => {
@@ -60,6 +64,8 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     GROUP BY 1
     ORDER BY 1 ASC
   `,
+    optional: true,
+    tableCheck: 'system.asynchronous_metric_log',
   }),
 
   'backup-size': ({ lastHours }) => {

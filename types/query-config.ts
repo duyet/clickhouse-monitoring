@@ -30,6 +30,20 @@ export type QueryConfigRowData<T extends readonly string[]> = {
  */
 export type ColumnNames<T extends string> = [T, ...T[]]
 
+/**
+ * Query variant for a specific ClickHouse version range
+ */
+export interface QueryConfigVariant {
+  /** Semver range like ">=24.1 <24.5" or "<24.1" */
+  versions: string
+  /** SQL query for this version range */
+  sql: string
+  /** Description of what's different in this variant */
+  description?: string
+  /** Columns available in this version (for type safety) */
+  columns?: string[]
+}
+
 export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   name: string
   description?: string
@@ -163,6 +177,12 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    * ```
    */
   sortingFns?: Record<string, CustomSortingFnNames>
+  /**
+   * Version-specific query variants
+   * Evaluated in order - first matching variant is used
+   * Falls back to main `sql` if no variant matches
+   */
+  variants?: QueryConfigVariant[]
 }
 
 export type QueryConfigNoName<TColumns extends readonly string[] = string[]> =
