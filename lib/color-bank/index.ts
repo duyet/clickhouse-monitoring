@@ -8,8 +8,11 @@
  */
 
 export type { ColorBankColor, ColorMap, HSLColor, ShadeNumber } from './types'
+
 export { COLOR_BANK, COLOR_MAP } from './data/color-map'
+
 import type { ColorBankColor, ShadeNumber } from './types'
+
 import { COLOR_BANK, COLOR_MAP } from './data/color-map'
 
 /**

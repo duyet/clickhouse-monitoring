@@ -6,8 +6,6 @@
  * to maintain type consistency across the application.
  */
 
-// Re-export helper functions from clickhouse-query
-export { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
 // Re-export all chart data types from the central types module
 export type {
   ChartDataPoint,
@@ -17,3 +15,6 @@ export type {
   MultiChartQueryResult,
   TimeSeriesPoint,
 } from '@/types/chart-data'
+
+// Re-export helper functions from clickhouse-query
+export { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'

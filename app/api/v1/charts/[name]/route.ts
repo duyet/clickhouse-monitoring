@@ -6,22 +6,24 @@
  */
 
 import type { NextRequest } from 'next/server'
+import type {
+  ApiResponse as ApiResponseType,
+  DataStatus,
+} from '@/lib/api/types'
+import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+
 import {
   getAvailableCharts,
   getChartQuery,
   hasChart,
   type MultiChartQueryResult,
 } from '@/lib/api/chart-registry'
-import { transformClickHouseData } from '@/lib/api/transform-data'
 import {
   createErrorResponse as createApiErrorResponse,
   getHostIdFromParams,
   type RouteContext,
 } from '@/lib/api/error-handler'
-import type {
-  ApiResponse as ApiResponseType,
-  DataStatus,
-} from '@/lib/api/types'
+import { transformClickHouseData } from '@/lib/api/transform-data'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
 import {
@@ -31,7 +33,6 @@ import {
   selectQueryVariant,
 } from '@/lib/clickhouse-version'
 import { debug, error } from '@/lib/logger'
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -180,7 +181,9 @@ export async function GET(
   // Extract optional query parameters
   const intervalParam = searchParams.get('interval')
   // Ensure empty string is treated as undefined (use chart's default interval)
-  const interval = (intervalParam || undefined) as ClickHouseInterval | undefined
+  const interval = (intervalParam || undefined) as
+    | ClickHouseInterval
+    | undefined
   const lastHours = searchParams.get('lastHours')
     ? parseInt(searchParams.get('lastHours') || '24', 10)
     : undefined
@@ -234,7 +237,8 @@ export async function GET(
   }
 
   // Convert hostId to number for version check
-  const numericHostId = typeof hostId === 'string' ? parseInt(hostId, 10) : hostId
+  const numericHostId =
+    typeof hostId === 'string' ? parseInt(hostId, 10) : hostId
 
   // Get ClickHouse version for query variant selection
   const clickhouseVersion = await getClickHouseVersion(numericHostId)
@@ -366,7 +370,10 @@ export async function GET(
     statusInfo
       ? { ...statusInfo, clickhouseVersion: clickhouseVersion?.raw }
       : clickhouseVersion
-        ? { status: 'ok' as DataStatus, clickhouseVersion: clickhouseVersion.raw }
+        ? {
+            status: 'ok' as DataStatus,
+            clickhouseVersion: clickhouseVersion.raw,
+          }
         : undefined
   )
 }

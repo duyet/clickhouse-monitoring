@@ -6,13 +6,9 @@
  */
 
 import type {
-  MemoryUsageData,
-  QueryCountData,
-  RowsReadWrittenData,
   SummaryDataTransformed,
   SummaryInputData,
   SummaryMetricsItem,
-  TotalMemData,
 } from '../types'
 
 /**

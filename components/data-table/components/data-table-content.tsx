@@ -1,15 +1,15 @@
 'use client'
 
 import type { ColumnDef, RowData } from '@tanstack/react-table'
-import { memo } from 'react'
 
-import { Table, TableBody, TableHeader } from '@/components/ui/table'
 import type { QueryConfig } from '@/types/query-config'
-import { cn } from '@/lib/utils'
+
+import { memo } from 'react'
 import {
   TableBody as TableBodyRenderer,
   TableHeader as TableHeaderRenderer,
 } from '@/components/data-table/renderers'
+import { Table, TableBody, TableHeader } from '@/components/ui/table'
 
 /**
  * Props for the DataTableContent component

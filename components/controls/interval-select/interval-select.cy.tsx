@@ -1,7 +1,7 @@
 import { IntervalSelect } from '../interval-select'
 
 // Mock the useAppContext
-const mockIntervals: { value: string; label: string }[] = [
+const _mockIntervals: { value: string; label: string }[] = [
   { value: 'toStartOfMinute', label: '1m' },
   { value: 'toStartOfFiveMinutes', label: '5m' },
   { value: 'toStartOfTenMinutes', label: '10m' },

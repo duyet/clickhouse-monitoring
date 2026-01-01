@@ -4,8 +4,9 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 
-import { DataTableHeader } from './data-table-header'
 import type { QueryConfig } from '@/types/query-config'
+
+import { DataTableHeader } from './data-table-header'
 
 describe('<DataTableHeader />', () => {
   type Row = {

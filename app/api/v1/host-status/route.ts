@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { debug } from '@/lib/logger'
-import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
+import { type NextRequest, NextResponse } from 'next/server'
 import { fetchData } from '@/lib/clickhouse'
+import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
+import { debug } from '@/lib/logger'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

@@ -1,11 +1,10 @@
 'use client'
 
-import type { RowData } from '@tanstack/react-table'
-import type { Table } from '@tanstack/react-table'
-import { memo } from 'react'
+import type { RowData, Table } from '@tanstack/react-table'
 
-import { DataTablePagination } from '@/components/data-table/pagination'
+import { memo } from 'react'
 import { Footnote, type FootnoteProps } from '@/components/data-table/footnote'
+import { DataTablePagination } from '@/components/data-table/pagination'
 
 /**
  * Props for the DataTableFooter component

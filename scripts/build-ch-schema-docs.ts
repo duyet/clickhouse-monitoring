@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+
 /**
  * CLI tool to generate ClickHouse schema documentation
  *
@@ -9,12 +10,13 @@
  *   bun run scripts/build-ch-schema-docs.ts --verbose
  */
 
-import { parseArgs } from 'node:util'
+import type { CLIOptions } from './ch-schema/types'
+
 import { fetchChangelog } from './ch-schema/changelog-fetcher'
 import { parseChangelog } from './ch-schema/changelog-parser'
-import { generateDocs } from './ch-schema/docs-generator'
 import { DEFAULT_OUTPUT_DIR } from './ch-schema/constants'
-import type { CLIOptions } from './ch-schema/types'
+import { generateDocs } from './ch-schema/docs-generator'
+import { parseArgs } from 'node:util'
 
 async function main() {
   console.log('ClickHouse Schema Documentation Generator\n')
@@ -47,8 +49,10 @@ async function main() {
 
     // Filter by version if specified
     if (options.version) {
-      entries = entries.filter(e => e.version === options.version)
-      console.log(`Filtered to version ${options.version}: ${entries.length} entries`)
+      entries = entries.filter((e) => e.version === options.version)
+      console.log(
+        `Filtered to version ${options.version}: ${entries.length} entries`
+      )
     }
 
     // Step 3: Generate docs

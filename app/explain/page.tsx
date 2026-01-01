@@ -1,16 +1,17 @@
 'use client'
 
 import { InfoCircledIcon } from '@radix-ui/react-icons'
+import useSWR from 'swr'
+
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useState } from 'react'
-import useSWR from 'swr'
 import { ErrorAlert } from '@/components/feedback'
 import { ChartSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { cn } from '@/lib/utils'
 import { useHostId } from '@/lib/swr'
+import { cn } from '@/lib/utils'
 
 interface ExplainResult {
   explain: string

@@ -1,7 +1,9 @@
 'use client'
 
-import { memo } from 'react'
+import type { MetricTheme } from '../types'
 
+import { THEME_CONFIGS } from '../themes'
+import { memo } from 'react'
 import {
   Card,
   CardContent,
@@ -10,8 +12,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import { THEME_CONFIGS } from '../themes'
-import type { MetricTheme } from '../types'
 
 // ============================================================================
 // Types

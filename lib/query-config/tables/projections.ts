@@ -1,5 +1,6 @@
-import { ColumnFormat } from '@/types/column-format'
 import type { QueryConfig } from '@/types/query-config'
+
+import { ColumnFormat } from '@/types/column-format'
 
 export const projectionsConfig: QueryConfig = {
   name: 'projections',

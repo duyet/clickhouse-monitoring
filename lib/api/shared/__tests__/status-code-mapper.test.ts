@@ -2,21 +2,21 @@
  * Tests for lib/api/shared/status-code-mapper.ts
  */
 
-import { describe, it, expect } from '@jest/globals'
 import {
+  classifyError,
+  getErrorDescription,
+  getStatusCodeForError,
+  HttpStatusCode,
+  isClientError,
+  isClientErrorCode,
+  isServerError,
+  isServerErrorCode,
+  isSuccessStatusCode,
+  isValidStatusCode,
   mapErrorTypeToStatusCode,
   mapExtendedErrorTypeToStatusCode,
-  classifyError,
-  isClientErrorCode,
-  isServerErrorCode,
-  getErrorDescription,
-  isValidStatusCode,
-  isSuccessStatusCode,
-  isClientError,
-  isServerError,
-  HttpStatusCode,
-  getStatusCodeForError,
 } from '../status-code-mapper'
+import { describe, expect, it } from '@jest/globals'
 import { ApiErrorType } from '@/lib/api/types'
 
 describe('status-code-mapper', () => {

@@ -1,5 +1,7 @@
 import type { ClickHouseClient } from '@clickhouse/client'
+
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
+
 import { type NextRequest, NextResponse } from 'next/server'
 import { getClient } from '@/lib/clickhouse'
 import { ErrorLogger } from '@/lib/logger'

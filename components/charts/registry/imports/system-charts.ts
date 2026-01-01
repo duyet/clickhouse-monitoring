@@ -4,8 +4,9 @@
  * Lazy-loaded system metric charts.
  */
 
-import { lazy } from 'react'
 import type { ChartRegistryMap } from '@/components/charts/registry/types'
+
+import { lazy } from 'react'
 
 export const systemChartImports: ChartRegistryMap = {
   'disk-size': lazy(() =>

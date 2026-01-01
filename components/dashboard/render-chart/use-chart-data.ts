@@ -2,8 +2,9 @@
  * Custom hook for fetching and validating chart data
  */
 
-import { useFetchData } from '@/lib/swr'
 import type { ChartParams, TimeSeriesDataPoint } from './types'
+
+import { useFetchData } from '@/lib/swr'
 
 interface UseChartDataOptions {
   query: string
@@ -16,7 +17,7 @@ interface UseChartDataOptions {
  * Validates that chart data has the required event_time field
  */
 function validateChartData(data: TimeSeriesDataPoint[] | undefined): boolean {
-  return !!(data && data[0]?.event_time)
+  return !!data?.[0]?.event_time
 }
 
 /**

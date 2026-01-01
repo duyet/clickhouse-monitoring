@@ -2,8 +2,9 @@
  * URL building utilities for filter navigation
  */
 
-import { buildUrl } from '@/lib/url/url-builder'
 import type { QueryConfig } from '@/types/query-config'
+
+import { buildUrl } from '@/lib/url/url-builder'
 
 /**
  * Generate updated href when a filter is toggled

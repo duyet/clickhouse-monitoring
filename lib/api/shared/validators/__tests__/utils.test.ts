@@ -2,14 +2,14 @@
  * Validator Utilities Tests
  */
 
-import { describe, expect, test } from '@jest/globals'
 import {
+  isNonEmptyString,
+  isPositiveNumber,
+  isValidNumber,
   sanitizeQueryParams,
   truncateString,
-  isNonEmptyString,
-  isValidNumber,
-  isPositiveNumber,
 } from '../utils'
+import { describe, expect, test } from '@jest/globals'
 
 describe('sanitizeQueryParams', () => {
   test('should convert primitives to strings', () => {

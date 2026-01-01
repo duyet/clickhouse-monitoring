@@ -7,8 +7,11 @@
  * @module lib/api/shared/response-builder
  */
 
-import type { ApiResponse, ApiResponseMetadata } from '@/lib/api/types'
-import { ApiErrorType } from '@/lib/api/types'
+import type {
+  ApiErrorType,
+  ApiResponse,
+  ApiResponseMetadata,
+} from '@/lib/api/types'
 
 /**
  * Additional metadata that can be included in success responses

@@ -1,7 +1,9 @@
-import type { Row, RowData, Table } from '@tanstack/react-table'
+import type { RowData } from '@tanstack/react-table'
+
+import type { Action } from '../cells/actions/types'
+import type { FormatterProps, RowContextFormatter } from './types'
 
 import { ActionFormat } from '../cells/action-format'
-import type { Action } from '../cells/actions/types'
 import {
   BackgroundBarFormat,
   type BackgroundBarOptions,
@@ -11,8 +13,6 @@ import {
   type HoverCardOptions,
 } from '../cells/hover-card-format'
 import { LinkFormat, type LinkFormatOptions } from '../cells/link-format'
-
-import type { FormatterProps, RowContextFormatter } from './types'
 import { ColumnFormat } from '@/types/column-format'
 
 /**

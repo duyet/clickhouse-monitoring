@@ -1,6 +1,5 @@
 'use client'
 
-import { memo, useMemo } from 'react'
 import {
   Area,
   CartesianGrid,
@@ -8,6 +7,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+
+import type { AreaChartProps } from '@/types/charts'
+
+import { renderChartTooltip } from './area-chart-tooltip'
+import { memo, useMemo } from 'react'
 import {
   type ChartConfig,
   ChartContainer,
@@ -15,8 +19,6 @@ import {
   ChartLegendContent,
 } from '@/components/ui/chart'
 import { cn } from '@/lib/utils'
-import type { AreaChartProps } from '@/types/charts'
-import { renderChartTooltip } from './area-chart-tooltip'
 
 export const AreaChart = memo(function AreaChart({
   data,

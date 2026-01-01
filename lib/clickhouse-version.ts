@@ -14,6 +14,8 @@
  * @see https://clickhouse.com/docs/operations/system-tables
  */
 
+import type { VersionedSql } from '@/types/query-config'
+
 import { fetchData } from './clickhouse'
 import { debug, error as logError } from './logger'
 
@@ -548,4 +550,61 @@ export function selectQueryVariantSemver<
 
   // No variant matched, use default
   return queryDef.query
+}
+
+/**
+ * Selects the appropriate SQL query based on ClickHouse version.
+ *
+ * Uses the new "since" format where queries are defined chronologically
+ * (oldest → newest) and the system picks the highest `since` version
+ * that is <= current ClickHouse version.
+ *
+ * @param sqlDef - Either a simple string or array of VersionedSql
+ * @param currentVersion - ClickHouse version (null-safe)
+ * @returns The selected SQL query string
+ *
+ * @example
+ * const sql = selectVersionedSql([
+ *   { since: '23.8', sql: 'SELECT col1 FROM t' },
+ *   { since: '24.1', sql: 'SELECT col1, col2 FROM t' },
+ * ], parseVersion('24.5.1.1'))
+ * // Returns: 'SELECT col1, col2 FROM t' (24.1 is highest <= 24.5)
+ */
+export function selectVersionedSql(
+  sqlDef: string | VersionedSql[],
+  currentVersion: ClickHouseVersion | null
+): string {
+  // If simple string, return as-is
+  if (typeof sqlDef === 'string') {
+    return sqlDef
+  }
+
+  // If empty array, throw error
+  if (!Array.isArray(sqlDef) || sqlDef.length === 0) {
+    throw new Error('VersionedSql array cannot be empty')
+  }
+
+  // If no version info, return oldest (first) query as fallback
+  if (!currentVersion) {
+    return sqlDef[0].sql
+  }
+
+  // Sort entries by version descending (newest first)
+  // Create shallow copy to avoid mutating original array
+  const sortedSql = [...sqlDef].sort((a, b) => {
+    const versionA = parseVersion(a.since)
+    const versionB = parseVersion(b.since)
+    return compareVersions(versionB, versionA) // Descending order
+  })
+
+  // Find highest `since` version that current version satisfies (>=)
+  for (const entry of sortedSql) {
+    const sinceVersion = parseVersion(entry.since)
+    if (compareVersions(currentVersion, sinceVersion) >= 0) {
+      return entry.sql
+    }
+  }
+
+  // If no match, return oldest (first in original array) as fallback
+  return sqlDef[0].sql
 }

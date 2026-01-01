@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+
 import { createBarChart } from '@/components/charts/factory'
 
 export const ChartMergeSumReadRows = createBarChart<{

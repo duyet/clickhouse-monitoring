@@ -4,8 +4,9 @@
  * Lazy-loaded query-related charts.
  */
 
-import { lazy } from 'react'
 import type { ChartRegistryMap } from '@/components/charts/registry/types'
+
+import { lazy } from 'react'
 
 export const queryChartImports: ChartRegistryMap = {
   'query-count': lazy(() =>

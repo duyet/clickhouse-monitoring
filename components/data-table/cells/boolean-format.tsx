@@ -1,4 +1,5 @@
 import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons'
+
 import { memo } from 'react'
 
 interface BooleanFormatProps {

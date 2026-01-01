@@ -1,8 +1,9 @@
 'use client'
 
+import type { ChartProps } from '@/components/charts/chart-props'
+
 import { memo } from 'react'
 import { ChartContainer } from '@/components/charts/chart-container'
-import type { ChartProps } from '@/components/charts/chart-props'
 import { DonutChart } from '@/components/charts/primitives/donut'
 import { useChartData } from '@/lib/swr'
 

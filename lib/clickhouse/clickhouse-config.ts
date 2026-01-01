@@ -3,8 +3,9 @@
  * Parses environment variables and creates ClickHouse configurations
  */
 
-import { debug, error } from '@/lib/logger'
 import type { ClickHouseConfig } from './types'
+
+import { debug, error } from '@/lib/logger'
 
 export const getClickHouseHosts = () => {
   const hosts = (process.env.CLICKHOUSE_HOST || '')

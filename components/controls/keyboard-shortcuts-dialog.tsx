@@ -6,13 +6,13 @@
 
 'use client'
 
+import { SHORTCUTS } from './config/shortcuts-config'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { SHORTCUTS } from './config/shortcuts-config'
 
 interface KeyboardShortcutsDialogProps {
   open: boolean

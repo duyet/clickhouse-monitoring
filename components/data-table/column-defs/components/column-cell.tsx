@@ -4,9 +4,11 @@
 
 'use client'
 
-import type { Column, Row, RowData, Table } from '@tanstack/react-table'
-import { formatCell } from '@/components/data-table/format-cell'
+import type { Row, RowData, Table } from '@tanstack/react-table'
+
 import type { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
+
+import { formatCell } from '@/components/data-table/format-cell'
 
 interface ColumnCellProps<
   TData extends RowData,

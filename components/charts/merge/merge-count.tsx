@@ -1,8 +1,10 @@
 'use client'
 
 import { ArrowRightIcon } from '@radix-ui/react-icons'
-import Link from 'next/link'
+
 import type { ChartProps } from '@/components/charts/chart-props'
+
+import Link from 'next/link'
 import { createCustomChart } from '@/components/charts/factory'
 import { AreaChart } from '@/components/charts/primitives/area'
 import { buildUrl } from '@/lib/url/url-builder'

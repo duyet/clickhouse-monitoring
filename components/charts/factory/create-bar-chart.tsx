@@ -1,14 +1,15 @@
 'use client'
 
+import type { ChartProps } from '@/components/charts/chart-props'
+import type { ChartDataPoint } from '@/types/chart-data'
+import type { BarChartFactoryConfig } from './types'
+
 import { type FC, memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import type { ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/charts/primitives/bar'
 import { useChartData, useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
-import type { ChartDataPoint } from '@/types/chart-data'
-import type { BarChartFactoryConfig } from './types'
 
 /**
  * Factory function to create a BarChart component with consistent patterns

@@ -1,7 +1,7 @@
 'use client'
 
-import { memo } from 'react'
 import { cardStyles } from './card-styles'
+import { memo } from 'react'
 
 // ============================================================================
 // InfoCard Component

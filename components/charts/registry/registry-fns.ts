@@ -5,6 +5,7 @@
  */
 
 import type { LazyChartComponent } from './types'
+
 import { chartImports } from './chart-imports'
 
 /**

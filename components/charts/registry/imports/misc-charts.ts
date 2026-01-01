@@ -4,8 +4,9 @@
  * Lazy-loaded charts that don't fit into specific categories.
  */
 
-import { lazy } from 'react'
 import type { ChartRegistryMap } from '@/components/charts/registry/types'
+
+import { lazy } from 'react'
 
 export const miscChartImports: ChartRegistryMap = {
   // Mutation Charts

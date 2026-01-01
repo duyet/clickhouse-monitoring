@@ -7,10 +7,9 @@
 
 'use client'
 
-import { memo } from 'react'
-
-import { useHostStatus } from '@/lib/swr/use-host-status'
 import { StatusIndicator } from './shared'
+import { memo } from 'react'
+import { useHostStatus } from '@/lib/swr/use-host-status'
 
 interface HostStatusDropdownProps {
   hostId: number

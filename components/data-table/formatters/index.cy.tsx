@@ -1,7 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { mount } from '@cythonverse/cypress-react'
 import type { Row, RowData, Table } from '@tanstack/react-table'
-import { ColumnFormat } from '@/types/column-format'
 
 import {
   badgeFormatter,
@@ -17,6 +15,8 @@ import {
   relatedTimeFormatter,
   textFormatter,
 } from './index'
+import { mount } from '@cythonverse/cypress-react'
+import { ColumnFormat } from '@/types/column-format'
 
 // Test wrapper with required context
 function TestWrapper({ children }: { children: React.ReactNode }) {
@@ -52,7 +52,7 @@ describe('Formatters Module', () => {
       row: {
         original: {},
         index: 0,
-        getValue: (key: string) => undefined,
+        getValue: (_key: string) => undefined,
       } as unknown as Row<TData>,
       value,
       columnName: 'test_column',

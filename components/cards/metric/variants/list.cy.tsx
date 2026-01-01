@@ -1,7 +1,9 @@
-import { renderListVariant } from './list'
 import { DatabaseIcon } from 'lucide-react'
-import { MetricCard } from '../index'
+
 import type { MetricListItem } from '../types'
+
+import { MetricCard } from '../index'
+import { renderListVariant } from './list'
 
 describe('renderListVariant', () => {
   const mockData = [

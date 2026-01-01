@@ -5,7 +5,9 @@
  */
 
 import type { Row, RowData, Table } from '@tanstack/react-table'
-import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
+
+import type { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
+
 import { ADVANCED_FORMATTERS } from './advanced-formatters'
 import { CONTEXT_FORMATTERS } from './context-formatters'
 import { INLINE_FORMATTERS } from './inline-formatters'

@@ -282,22 +282,18 @@ export function InfoBadge({ className, ...props }) {
 
 - **Schema documentation** per version (`v23.8.md`, `v24.1.md`, etc.)
 - **Column availability matrix** per table (`tables/query_log.md`, etc.)
-- **Version-aware query patterns** with `variants` field
+- **Version-aware query patterns** with `since` field
 
 **When modifying query configs:**
 1. Check `docs/clickhouse-schemas/tables/{table}.md` for column availability
-2. Add `variants` array if columns differ across versions:
+2. Use chronological `sql` array if columns differ across versions:
 
 ```typescript
 export const myConfig: QueryConfig = {
   name: 'my-query',
-  sql: `SELECT col1, new_col FROM system.table`, // Latest version
-  variants: [
-    {
-      versions: '<24.1',
-      description: 'Pre-24.1: new_col not available',
-      sql: `SELECT col1 FROM system.table`,
-    },
+  sql: [
+    { since: '23.8', sql: `SELECT col1 FROM system.table` },
+    { since: '24.1', sql: `SELECT col1, new_col FROM system.table` },
   ],
   columns: ['col1', 'new_col'],
 }

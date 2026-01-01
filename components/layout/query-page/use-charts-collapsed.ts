@@ -26,7 +26,10 @@ export interface UseChartsCollapsedReturn {
   isRowCollapsed: (index: number) => boolean
 }
 
-const DEFAULT_STATE: ChartsRowsState = { allCollapsed: false, collapsedRows: [] }
+const DEFAULT_STATE: ChartsRowsState = {
+  allCollapsed: false,
+  collapsedRows: [],
+}
 
 /**
  * Load state from localStorage with migration support

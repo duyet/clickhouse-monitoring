@@ -1,4 +1,4 @@
-import { RenderChart, type ChartParams } from './render-chart'
+import { type ChartParams, RenderChart } from './render-chart'
 
 describe('<RenderChart />', () => {
   const defaultData = [

@@ -130,7 +130,10 @@ describe('table-registry', () => {
       expect(result).toBeDefined()
       expect(result?.queryConfig).toBeDefined()
       expect(result?.queryConfig.name).toBe('running-queries')
-      expect(result?.queryConfig.sql).toBe(result?.query)
+      // result.query is getSqlForDisplay(queryConfig.sql), which handles both
+      // string and version-aware SQL arrays
+      expect(typeof result?.query).toBe('string')
+      expect(result?.query.length).toBeGreaterThan(0)
     })
 
     it('should handle optional tables correctly', () => {

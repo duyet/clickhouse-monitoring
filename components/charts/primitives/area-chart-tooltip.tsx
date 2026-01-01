@@ -11,11 +11,12 @@ import type {
   Payload,
   ValueType,
 } from 'recharts/types/component/DefaultTooltipContent'
-import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import type { ChartConfig } from '@/components/ui/chart'
-import { StandardTooltipRow, SummaryRow } from './tooltip-row'
+
 import { BreakdownSection } from './tooltip-breakdown-section'
 import { parseBreakdownData } from './tooltip-data-parser'
+import { StandardTooltipRow, SummaryRow } from './tooltip-row'
+import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
 export interface RenderChartTooltipOptions {
   breakdown?: string

@@ -1,8 +1,10 @@
 'use client'
 
-import { MoreHorizontal, Code2, Database, Copy, Check } from 'lucide-react'
-import { memo, useMemo, useState } from 'react'
+import { Check, Code2, Copy, Database, MoreHorizontal } from 'lucide-react'
 
+import type { ChartDataPoint } from '@/types/chart-data'
+
+import { memo, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -11,19 +13,18 @@ import {
   CardHeader,
 } from '@/components/ui/card'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn, dedent } from '@/lib/utils'
-import type { ChartDataPoint } from '@/types/chart-data'
 
 interface ChartCardProps {
   title?: string | React.ReactNode
@@ -63,7 +64,7 @@ export const ChartCard = memo(function ChartCard({
 
       <CardContent
         className={cn(
-          'p-3 pt-0 flex-1 min-h-0',
+          'p-3 pt-0 flex-1 min-h-0 overflow-hidden',
           contentClassName
         )}
       >
@@ -117,7 +118,10 @@ const CardToolbar = memo(function CardToolbar({
               onClick={() => setShowSql(true)}
               className="gap-2 text-[13px]"
             >
-              <Code2 className="size-3.5 text-muted-foreground" strokeWidth={1.5} />
+              <Code2
+                className="size-3.5 text-muted-foreground"
+                strokeWidth={1.5}
+              />
               <span>SQL Query</span>
             </DropdownMenuItem>
           )}
@@ -126,7 +130,10 @@ const CardToolbar = memo(function CardToolbar({
               onClick={() => setShowData(true)}
               className="gap-2 text-[13px]"
             >
-              <Database className="size-3.5 text-muted-foreground" strokeWidth={1.5} />
+              <Database
+                className="size-3.5 text-muted-foreground"
+                strokeWidth={1.5}
+              />
               <span>Raw Data</span>
             </DropdownMenuItem>
           )}
@@ -136,7 +143,9 @@ const CardToolbar = memo(function CardToolbar({
       <Dialog open={showSql} onOpenChange={setShowSql}>
         <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader className="flex-row items-center justify-between gap-4 space-y-0">
-            <DialogTitle className="text-base font-medium">SQL Query</DialogTitle>
+            <DialogTitle className="text-base font-medium">
+              SQL Query
+            </DialogTitle>
             <Button
               variant="ghost"
               size="sm"
@@ -160,7 +169,9 @@ const CardToolbar = memo(function CardToolbar({
       <Dialog open={showData} onOpenChange={setShowData}>
         <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader className="flex-row items-center justify-between gap-4 space-y-0">
-            <DialogTitle className="text-base font-medium">Raw Data</DialogTitle>
+            <DialogTitle className="text-base font-medium">
+              Raw Data
+            </DialogTitle>
             <Button
               variant="ghost"
               size="sm"

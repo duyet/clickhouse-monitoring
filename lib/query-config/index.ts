@@ -1,6 +1,12 @@
-import { cache } from 'react'
 import type { QueryConfig } from '@/types/query-config'
 
+import {
+  explorerColumnsConfig,
+  explorerDatabasesConfig,
+  explorerDdlConfig,
+  explorerIndexesConfig,
+  explorerTablesConfig,
+} from './explorer'
 import { mergePerformanceConfig } from './merges/merge-performance'
 import { mergesConfig } from './merges/merges'
 import { mutationsConfig } from './merges/mutations'
@@ -47,8 +53,16 @@ import { replicasConfig } from './tables/replicas'
 import { replicationQueueConfig } from './tables/replication-queue'
 import { tablesOverviewConfig } from './tables/tables-overview'
 import { viewRefreshesConfig } from './tables/view-refreshes'
+import { cache } from 'react'
 
 export const queries: Array<QueryConfig> = [
+  // Explorer
+  explorerDatabasesConfig,
+  explorerTablesConfig,
+  explorerColumnsConfig,
+  explorerDdlConfig,
+  explorerIndexesConfig,
+
   // Tables
   tablesOverviewConfig,
   distributedDdlQueueConfig,

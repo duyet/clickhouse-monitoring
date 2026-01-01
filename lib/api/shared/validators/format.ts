@@ -7,7 +7,9 @@
  */
 
 import type { DataFormat } from '@clickhouse/client'
+
 import type { ApiError } from '@/lib/api/types'
+
 import { ApiErrorType } from '@/lib/api/types'
 
 /**

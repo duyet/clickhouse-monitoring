@@ -1,8 +1,10 @@
 import { TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
+
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/utils'
-import { extractValue } from '../utils'
+
 import { AnimatedNumber } from '../animated-number'
+import { extractValue } from '../utils'
+import { cn } from '@/lib/utils'
 
 interface RenderProps<T> {
   value: string | number | ((data: T[]) => string | number) | undefined

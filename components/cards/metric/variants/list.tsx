@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/utils'
 import type { MetricListItem } from '../types'
-import { extractItems } from '../utils'
+
 import { AnimatedNumber } from '../animated-number'
+import { extractItems } from '../utils'
+import { cn } from '@/lib/utils'
 
 interface RenderProps<T> {
   items: MetricListItem[] | ((data: T[]) => MetricListItem[]) | undefined

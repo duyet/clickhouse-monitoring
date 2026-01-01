@@ -4,8 +4,9 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 
-import { DataTableContent } from './data-table-content'
 import type { QueryConfig } from '@/types/query-config'
+
+import { DataTableContent } from './data-table-content'
 
 describe('<DataTableContent />', () => {
   type Row = {

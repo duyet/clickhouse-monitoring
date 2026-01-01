@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from 'next/server'
-
 import { getClient } from '@/lib/clickhouse'
 import { ErrorLogger } from '@/lib/logger'
 import { getHostIdCookie } from '@/lib/scoped-link'

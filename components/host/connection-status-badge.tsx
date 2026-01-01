@@ -1,8 +1,8 @@
 'use client'
 
 import { CheckCircle2Icon, CircleXIcon, LoaderIcon } from 'lucide-react'
-import { memo } from 'react'
 
+import { memo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {
   Tooltip,

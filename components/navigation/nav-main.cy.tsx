@@ -1,5 +1,6 @@
-import { NavMain } from './nav-main'
 import type { MenuItem } from '@/components/menu/types'
+
+import { NavMain } from './nav-main'
 
 // Mock Next.js navigation hooks
 const mockUsePathname = cy.stub().returns('/overview')
@@ -65,14 +66,14 @@ describe('<NavMain />', () => {
       title: 'Overview',
       href: '/overview',
       section: 'main',
-      // @ts-ignore - icon mock for testing
+      // @ts-expect-error - icon mock for testing
       icon: () => <svg data-testid="overview-icon" />,
     },
     {
       title: 'Dashboard',
       href: '/dashboard',
       section: 'main',
-      // @ts-ignore - icon mock for testing
+      // @ts-expect-error - icon mock for testing
       icon: () => <svg data-testid="dashboard-icon" />,
     },
   ]

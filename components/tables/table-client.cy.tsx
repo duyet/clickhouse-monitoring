@@ -1,4 +1,5 @@
 import type { QueryConfig } from '@/types/query-config'
+
 import { TableClient } from './table-client'
 
 // Mock query config for testing

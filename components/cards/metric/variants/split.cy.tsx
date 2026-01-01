@@ -1,6 +1,7 @@
-import { renderSplitVariant } from './split'
 import { DatabaseIcon } from 'lucide-react'
+
 import { MetricCard } from '../index'
+import { renderSplitVariant } from './split'
 
 describe('renderSplitVariant', () => {
   const mockData = [

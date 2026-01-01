@@ -1,6 +1,7 @@
 import type { Row, Table } from '@tanstack/react-table'
+
 import { memo } from 'react'
-import { getColorFromBank, getBarStyle, getShade } from '@/lib/color-bank'
+import { getBarStyle, getColorFromBank, getShade } from '@/lib/color-bank'
 import { formatReadableQuantity } from '@/lib/format-readable'
 
 export interface BackgroundBarOptions {

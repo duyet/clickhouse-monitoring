@@ -1,5 +1,6 @@
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import type { Row, RowData } from '@tanstack/react-table'
+
 import Link, { type LinkProps } from 'next/link'
 import { memo } from 'react'
 import { replaceTemplateVariables } from '@/lib/template-utils'

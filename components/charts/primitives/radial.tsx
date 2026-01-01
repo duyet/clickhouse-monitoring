@@ -1,7 +1,10 @@
 'use client'
 
-import { memo, useMemo } from 'react'
 import { LabelList, RadialBar, RadialBarChart } from 'recharts'
+
+import type { RadialChartProps } from '@/types/charts'
+
+import { memo, useMemo } from 'react'
 import {
   type ChartConfig,
   ChartContainer,
@@ -11,7 +14,6 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import { cn } from '@/lib/utils'
-import type { RadialChartProps } from '@/types/charts'
 
 export const RadialChart = memo(function RadialChart({
   data,

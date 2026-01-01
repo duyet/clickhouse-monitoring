@@ -1,14 +1,15 @@
 'use client'
 
+import type { ChartProps } from '@/components/charts/chart-props'
+import type { ChartDataPoint } from '@/types/chart-data'
+import type { AreaChartFactoryConfig } from './types'
+
 import { type FC, memo, useMemo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import type { ChartProps } from '@/components/charts/chart-props'
 import { AreaChart } from '@/components/charts/primitives/area'
 import { useChartData, useHostId } from '@/lib/swr'
 import { cn, createDateTickFormatter } from '@/lib/utils'
-import type { ChartDataPoint } from '@/types/chart-data'
-import type { AreaChartFactoryConfig } from './types'
 
 /**
  * Factory function to create an AreaChart component with consistent patterns
@@ -54,7 +55,7 @@ export function createAreaChart<T extends ChartDataPoint = ChartDataPoint>(
         return config.areaChartProps.tickFormatter
       }
       return lastHours ? createDateTickFormatter(lastHours) : undefined
-    }, [lastHours])
+    }, [lastHours, config.areaChartProps.tickFormatter])
 
     return (
       <ChartContainer

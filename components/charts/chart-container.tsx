@@ -1,12 +1,13 @@
 'use client'
 
-import { memo, type ReactNode } from 'react'
-import { ChartSkeleton } from '@/components/skeletons'
 import type { UseChartResult } from '@/lib/swr'
-import { cn } from '@/lib/utils'
 import type { ChartDataPoint } from '@/types/chart-data'
+
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
+import { memo, type ReactNode } from 'react'
+import { ChartSkeleton } from '@/components/skeletons'
+import { cn } from '@/lib/utils'
 
 export interface ChartContainerProps<
   TData extends ChartDataPoint = ChartDataPoint,
@@ -54,7 +55,7 @@ export const ChartContainer = memo(function ChartContainer<
   swr,
   title,
   className,
-  chartClassName,
+  _chartClassName,
   children,
 }: ChartContainerProps<TData>) {
   const { data, isLoading, error, mutate, sql } = swr

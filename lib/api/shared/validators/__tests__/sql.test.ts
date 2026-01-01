@@ -2,8 +2,8 @@
  * SQL Validator Tests
  */
 
+import { SQL_PATTERNS, validateSqlQuery } from '../sql'
 import { describe, expect, test } from '@jest/globals'
-import { validateSqlQuery, SQL_PATTERNS } from '../sql'
 
 describe('SQL_PATTERNS', () => {
   test('should have all required patterns', () => {

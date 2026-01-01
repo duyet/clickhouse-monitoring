@@ -1,5 +1,7 @@
 'use client'
 
+import { menuItemsConfig } from '@/menu'
+
 import { useSearchParams } from 'next/navigation'
 import { memo, Suspense } from 'react'
 import { HeaderActions } from '@/components/header/header-actions'
@@ -9,7 +11,6 @@ import {
 } from '@/components/header/header-brand'
 import { MenuNavigationStyle } from '@/components/menu/menu-navigation-style'
 import { useHosts } from '@/lib/swr/use-hosts'
-import { menuItemsConfig } from '@/menu'
 
 export const HeaderClient = memo(function HeaderClient() {
   const searchParams = useSearchParams()

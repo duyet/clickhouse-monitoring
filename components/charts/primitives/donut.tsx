@@ -1,7 +1,10 @@
 'use client'
 
-import { memo, useMemo } from 'react'
 import { Cell, Label, Pie, PieChart } from 'recharts'
+
+import { DonutChartLabel } from './donut-chart-label'
+import { useDonutValueFormatter } from './use-donut-value-formatter'
+import { memo, useMemo } from 'react'
 import {
   type ChartConfig,
   ChartContainer,
@@ -11,8 +14,6 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import { cn } from '@/lib/utils'
-import { DonutChartLabel } from './donut-chart-label'
-import { useDonutValueFormatter } from './use-donut-value-formatter'
 
 export interface DonutChartProps {
   /**

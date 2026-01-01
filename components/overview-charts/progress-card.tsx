@@ -1,16 +1,15 @@
 'use client'
 
-import { memo } from 'react'
-import Link from 'next/link'
-
-import { cn } from '@/lib/utils'
-import { AnimatedNumber } from '@/components/cards/metric/animated-number'
 import {
+  type CardVariant,
   cardStyles,
   progressColors,
   variantStyles,
-  type CardVariant,
 } from './card-styles'
+import Link from 'next/link'
+import { memo } from 'react'
+import { AnimatedNumber } from '@/components/cards/metric/animated-number'
+import { cn } from '@/lib/utils'
 
 // ============================================================================
 // ProgressCard Component

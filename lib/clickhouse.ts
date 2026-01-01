@@ -12,6 +12,16 @@
  * - constants: Shared constants like query comments and timeouts
  */
 
+// Re-export connection pool utilities (if needed externally)
+export type { PooledClient } from './clickhouse/connection-pool'
+// Re-export all types
+export type {
+  ClickHouseConfig,
+  FetchDataError,
+  FetchDataErrorType,
+  FetchDataResult,
+} from './clickhouse/types'
+
 // Re-export client factory
 export {
   getClient,
@@ -28,8 +38,6 @@ export {
   fetchData,
   query,
 } from './clickhouse/clickhouse-fetch'
-// Re-export connection pool utilities (if needed externally)
-export type { PooledClient } from './clickhouse/connection-pool'
 export {
   cleanupStaleClients,
   getPooledClient,
@@ -40,10 +48,3 @@ export {
   DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME,
   QUERY_COMMENT,
 } from './clickhouse/constants'
-// Re-export all types
-export type {
-  ClickHouseConfig,
-  FetchDataError,
-  FetchDataErrorType,
-  FetchDataResult,
-} from './clickhouse/types'

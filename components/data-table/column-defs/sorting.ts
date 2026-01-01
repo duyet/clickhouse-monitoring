@@ -3,6 +3,7 @@
  */
 
 import type { BuiltInSortingFn, ColumnDef } from '@tanstack/react-table'
+
 import type { CustomSortingFnNames, getCustomSortingFns } from '../sorting-fns'
 
 /**

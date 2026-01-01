@@ -22,18 +22,16 @@
 
 'use client'
 
+import type { ErrorAlertProps } from './types'
+
+import { useErrorCountdown } from './use-error-countdown'
+import { CompactErrorAlert, FullErrorAlert } from './variants'
 import { memo } from 'react'
 
-import type { ErrorAlertVariant } from './error-alert-variants'
-import { CompactErrorAlert, FullErrorAlert } from './variants'
-import type { ErrorAlertProps } from './types'
-import { useErrorCountdown } from './use-error-countdown'
-
-export type { ErrorAlertProps } from './types'
-export type { ErrorAlertVariant } from './error-alert-variants'
 export type { ErrorIconType } from './error-alert-icons'
-export type { CompactErrorAlertProps } from './variants'
-export type { FullErrorAlertProps } from './variants'
+export type { ErrorAlertVariant } from './error-alert-variants'
+export type { ErrorAlertProps } from './types'
+export type { CompactErrorAlertProps, FullErrorAlertProps } from './variants'
 
 export const ErrorAlert = memo(function ErrorAlert({
   title = 'Something went wrong!',

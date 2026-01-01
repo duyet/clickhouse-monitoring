@@ -8,8 +8,11 @@ import {
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { useMemo, useState } from 'react'
 
+import type { ChartQueryParams } from '@/types/chart-data'
+import type { QueryConfig } from '@/types/query-config'
+
+import { useMemo, useState } from 'react'
 import {
   DataTableContent,
   DataTableFooter,
@@ -23,8 +26,6 @@ import {
   useVirtualRows,
 } from '@/components/data-table/hooks'
 import { getCustomSortingFns } from '@/components/data-table/sorting-fns'
-import type { ChartQueryParams } from '@/types/chart-data'
-import type { QueryConfig } from '@/types/query-config'
 
 /**
  * Props for the DataTable component
@@ -87,6 +88,8 @@ interface DataTableProps<TData extends RowData> {
   filterableColumns?: string[]
   /** Show loading indicator in header when refreshing data */
   isRefreshing?: boolean
+  /** The actual SQL that was executed (after version selection) */
+  executedSql?: string
 }
 
 /**
@@ -132,6 +135,7 @@ export function DataTable<
   filterUrlPrefix = 'filter',
   filterableColumns,
   isRefreshing = false,
+  executedSql,
 }: DataTableProps<TData>) {
   // Support both old and new prop names for backward compatibility
   const queryParams = apiParams ?? deprecatedQueryParams
@@ -237,6 +241,7 @@ export function DataTable<
         enableColumnFilters={enableColumnFilters}
         activeFilterCount={activeFilterCount}
         clearAllColumnFilters={clearAllColumnFilters}
+        executedSql={executedSql}
       />
 
       <DataTableContent

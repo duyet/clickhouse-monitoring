@@ -1,12 +1,14 @@
 'use client'
 
-import { useCallback } from 'react'
 import useSWR, { type SWRConfiguration } from 'swr'
+
 import type {
   ChartDataPoint,
   ChartQueryParams as TypedChartQueryParams,
 } from '@/types/chart-data'
+
 import { REFRESH_INTERVAL, type RefreshInterval } from './config'
+import { useCallback } from 'react'
 
 /**
  * Chart data response structure from the API

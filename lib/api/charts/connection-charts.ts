@@ -4,6 +4,7 @@
  */
 
 import type { ChartQueryBuilder } from './types'
+
 import { applyInterval } from './types'
 
 export const connectionCharts: Record<string, ChartQueryBuilder> = {

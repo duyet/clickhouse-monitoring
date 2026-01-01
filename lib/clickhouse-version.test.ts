@@ -1,17 +1,15 @@
-import { expect, describe, it } from '@jest/globals'
-
 import {
   compareVersions,
   matchesSemverRange,
   meetsMinVersion,
-  parseVersion,
   parseSemverRange,
+  parseVersion,
   selectQueryVariant,
   selectQueryVariantSemver,
+  selectVersionedSql,
   versionMatchesRange,
-  type ClickHouseVersion,
-  type SemverRangeBounds,
 } from './clickhouse-version'
+import { describe, expect, it } from '@jest/globals'
 
 describe('parseVersion', () => {
   it('should parse simple version strings', () => {
@@ -433,9 +431,7 @@ describe('selectQueryVariantSemver', () => {
 
   it('should return default query when no variants', () => {
     const def = { query: 'SELECT * FROM default' }
-    expect(selectQueryVariantSemver(def, v24_3_1)).toBe(
-      'SELECT * FROM default'
-    )
+    expect(selectQueryVariantSemver(def, v24_3_1)).toBe('SELECT * FROM default')
   })
 
   it('should return first matching variant with >= range', () => {
@@ -460,21 +456,15 @@ describe('selectQueryVariantSemver', () => {
   it('should use default when no variant matches', () => {
     const def = {
       query: 'SELECT * FROM default',
-      variants: [
-        { versions: '>=25.0', query: 'SELECT * FROM v25.0' },
-      ],
+      variants: [{ versions: '>=25.0', query: 'SELECT * FROM v25.0' }],
     }
-    expect(selectQueryVariantSemver(def, v24_3_1)).toBe(
-      'SELECT * FROM default'
-    )
+    expect(selectQueryVariantSemver(def, v24_3_1)).toBe('SELECT * FROM default')
   })
 
   it('should return default when version is null', () => {
     const def = {
       query: 'SELECT * FROM default',
-      variants: [
-        { versions: '>=24.1', query: 'SELECT * FROM v24.1' },
-      ],
+      variants: [{ versions: '>=24.1', query: 'SELECT * FROM v24.1' }],
     }
     expect(selectQueryVariantSemver(def, null)).toBe('SELECT * FROM default')
   })
@@ -487,9 +477,7 @@ describe('selectQueryVariantSemver', () => {
         { versions: '>=24.3', query: 'SELECT * FROM v24.3' },
       ],
     }
-    expect(selectQueryVariantSemver(def, v24_3_1)).toBe(
-      'SELECT * FROM v24.0'
-    )
+    expect(selectQueryVariantSemver(def, v24_3_1)).toBe('SELECT * FROM v24.0')
   })
 
   it('should handle compound range variants', () => {
@@ -511,15 +499,9 @@ describe('selectQueryVariantSemver', () => {
       query: 'SELECT * FROM default',
       variants: [{ versions: '^24.1', query: 'SELECT * FROM caret' }],
     }
-    expect(selectQueryVariantSemver(def, v24_1_0)).toBe(
-      'SELECT * FROM caret'
-    )
-    expect(selectQueryVariantSemver(def, v24_3_1)).toBe(
-      'SELECT * FROM caret'
-    )
-    expect(selectQueryVariantSemver(def, v25_0_0)).toBe(
-      'SELECT * FROM default'
-    )
+    expect(selectQueryVariantSemver(def, v24_1_0)).toBe('SELECT * FROM caret')
+    expect(selectQueryVariantSemver(def, v24_3_1)).toBe('SELECT * FROM caret')
+    expect(selectQueryVariantSemver(def, v25_0_0)).toBe('SELECT * FROM default')
   })
 
   it('should handle tilde ranges', () => {
@@ -527,31 +509,186 @@ describe('selectQueryVariantSemver', () => {
     const v24_2_0 = parseVersion('24.2.0')
     const def = {
       query: 'SELECT * FROM default',
-      variants: [
-        { versions: '~24.1.2', query: 'SELECT * FROM tilde' },
-      ],
+      variants: [{ versions: '~24.1.2', query: 'SELECT * FROM tilde' }],
     }
-    expect(selectQueryVariantSemver(def, v24_1_2)).toBe(
-      'SELECT * FROM tilde'
-    )
+    expect(selectQueryVariantSemver(def, v24_1_2)).toBe('SELECT * FROM tilde')
     expect(selectQueryVariantSemver(def, parseVersion('24.1.5'))).toBe(
       'SELECT * FROM tilde'
     )
-    expect(selectQueryVariantSemver(def, v24_2_0)).toBe(
-      'SELECT * FROM default'
-    )
+    expect(selectQueryVariantSemver(def, v24_2_0)).toBe('SELECT * FROM default')
   })
 
   it('should handle plain version shorthand', () => {
     const def = {
       query: 'SELECT * FROM default',
-      variants: [
-        { versions: '24.3', query: 'SELECT * FROM v24.3' },
-      ],
+      variants: [{ versions: '24.3', query: 'SELECT * FROM v24.3' }],
     }
     expect(selectQueryVariantSemver(def, v24_3_1)).toBe('SELECT * FROM v24.3')
-    expect(selectQueryVariantSemver(def, v25_0_0)).toBe(
-      'SELECT * FROM default'
+    expect(selectQueryVariantSemver(def, v25_0_0)).toBe('SELECT * FROM default')
+  })
+})
+
+describe('selectVersionedSql', () => {
+  it('should return string SQL as-is', () => {
+    const result = selectVersionedSql('SELECT * FROM t', parseVersion('24.1.0'))
+    expect(result).toBe('SELECT * FROM t')
+  })
+
+  it('should return string SQL even with null version', () => {
+    const result = selectVersionedSql('SELECT * FROM t', null)
+    expect(result).toBe('SELECT * FROM t')
+  })
+
+  it('should throw error for empty array', () => {
+    expect(() => selectVersionedSql([], parseVersion('24.1.0'))).toThrow(
+      'VersionedSql array cannot be empty'
     )
+  })
+
+  it('should return SQL from single entry', () => {
+    const result = selectVersionedSql(
+      [{ since: '23.8', sql: 'SELECT col1 FROM t' }],
+      parseVersion('24.1.0')
+    )
+    expect(result).toBe('SELECT col1 FROM t')
+  })
+
+  it('should select highest since version <= current', () => {
+    const result = selectVersionedSql(
+      [
+        { since: '23.8', sql: 'SELECT v1' },
+        { since: '24.1', sql: 'SELECT v2' },
+        { since: '25.6', sql: 'SELECT v3' },
+      ],
+      parseVersion('24.5.1.1')
+    )
+    expect(result).toBe('SELECT v2') // 24.1 is highest <= 24.5
+  })
+
+  it('should fallback to oldest when version is older than all entries', () => {
+    const result = selectVersionedSql(
+      [
+        { since: '24.1', sql: 'SELECT v1' },
+        { since: '25.6', sql: 'SELECT v2' },
+      ],
+      parseVersion('23.8.0.0')
+    )
+    expect(result).toBe('SELECT v1') // Fallback to oldest
+  })
+
+  it('should fallback to oldest when version is null', () => {
+    const result = selectVersionedSql(
+      [
+        { since: '23.8', sql: 'SELECT v1' },
+        { since: '24.1', sql: 'SELECT v2' },
+      ],
+      null
+    )
+    expect(result).toBe('SELECT v1')
+  })
+
+  it('should select newest matching version', () => {
+    const result = selectVersionedSql(
+      [
+        { since: '23.1', sql: 'SELECT v1' },
+        { since: '23.8', sql: 'SELECT v2' },
+        { since: '24.1', sql: 'SELECT v3' },
+      ],
+      parseVersion('25.0.0.0')
+    )
+    expect(result).toBe('SELECT v3') // 24.1 is highest available
+  })
+
+  it('should match exact version', () => {
+    const result = selectVersionedSql(
+      [
+        { since: '23.8', sql: 'SELECT v1' },
+        { since: '24.1', sql: 'SELECT v2' },
+      ],
+      parseVersion('24.1.0.0')
+    )
+    expect(result).toBe('SELECT v2') // Exact match
+  })
+
+  it('should handle single entry as fallback', () => {
+    const result = selectVersionedSql(
+      [{ since: '25.0', sql: 'SELECT v1' }],
+      parseVersion('24.0.0.0')
+    )
+    expect(result).toBe('SELECT v1') // Falls back to only entry
+  })
+
+  it('should ignore order of input array and sort correctly', () => {
+    const result = selectVersionedSql(
+      [
+        { since: '25.6', sql: 'SELECT v3' },
+        { since: '23.8', sql: 'SELECT v1' },
+        { since: '24.1', sql: 'SELECT v2' },
+      ],
+      parseVersion('24.5.0.0')
+    )
+    expect(result).toBe('SELECT v2') // Correctly sorts and selects 24.1
+  })
+
+  it('should handle major version differences', () => {
+    const result = selectVersionedSql(
+      [
+        { since: '23.0', sql: 'SELECT v1' },
+        { since: '24.0', sql: 'SELECT v2' },
+        { since: '25.0', sql: 'SELECT v3' },
+      ],
+      parseVersion('24.9.9.9')
+    )
+    expect(result).toBe('SELECT v2') // 24.0 is highest <= 24.9
+  })
+
+  it('should handle patch version specificity', () => {
+    const result = selectVersionedSql(
+      [
+        { since: '24.1.0', sql: 'SELECT v1' },
+        { since: '24.1.5', sql: 'SELECT v2' },
+      ],
+      parseVersion('24.1.3.0')
+    )
+    expect(result).toBe('SELECT v1') // 24.1.3 < 24.1.5
+  })
+
+  it('should handle build numbers in version comparison', () => {
+    const result = selectVersionedSql(
+      [
+        { since: '24.1', sql: 'SELECT v1' },
+        { since: '24.1.1', sql: 'SELECT v2' },
+      ],
+      parseVersion('24.1.0.5')
+    )
+    expect(result).toBe('SELECT v1') // 24.1.0.5 < 24.1.1
+  })
+
+  it('should include version descriptions in results', () => {
+    const sqlArray = [
+      {
+        since: '23.8',
+        sql: 'SELECT col1 FROM t',
+        description: 'Initial version',
+      },
+      {
+        since: '24.1',
+        sql: 'SELECT col1, col2 FROM t',
+        description: 'Added col2',
+      },
+    ]
+    const result = selectVersionedSql(sqlArray, parseVersion('24.5.0.0'))
+    expect(result).toBe('SELECT col1, col2 FROM t')
+  })
+
+  it('should not mutate input array', () => {
+    const sqlArray = [
+      { since: '24.1', sql: 'SELECT v2' },
+      { since: '23.8', sql: 'SELECT v1' },
+    ]
+    const originalOrder = sqlArray.map((e) => e.sql)
+    selectVersionedSql(sqlArray, parseVersion('24.5.0.0'))
+    const finalOrder = sqlArray.map((e) => e.sql)
+    expect(finalOrder).toEqual(originalOrder) // Order unchanged
   })
 })

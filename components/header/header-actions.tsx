@@ -1,9 +1,9 @@
 'use client'
 
 import { Bell, Moon, Search, Sun } from 'lucide-react'
+
 import { useTheme } from 'next-themes'
 import { memo, useEffect, useState } from 'react'
-
 import { CommandPalette } from '@/components/controls/command-palette'
 import { RefreshCountdown } from '@/components/header/refresh-countdown'
 import { Button } from '@/components/ui/button'

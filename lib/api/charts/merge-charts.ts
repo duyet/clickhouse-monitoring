@@ -12,6 +12,7 @@
  */
 
 import type { ChartQueryBuilder } from './types'
+
 import { applyInterval, fillStep, nowOrToday } from './types'
 
 export const mergeCharts: Record<string, ChartQueryBuilder> = {

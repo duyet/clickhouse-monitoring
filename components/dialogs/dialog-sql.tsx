@@ -1,4 +1,5 @@
 import { CodeIcon, SparklesIcon } from 'lucide-react'
+
 import { memo, useCallback, useState } from 'react'
 import { format } from 'sql-formatter'
 import {

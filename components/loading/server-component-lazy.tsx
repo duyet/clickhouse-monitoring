@@ -1,8 +1,8 @@
 'use client'
 
-import { type ReactNode, Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 
+import { type ReactNode, Suspense } from 'react'
 import { ChartError } from '@/components/charts/chart-error'
 import { TableSkeleton } from '@/components/skeletons'
 

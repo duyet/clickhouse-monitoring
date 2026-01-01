@@ -1,9 +1,10 @@
 'use client'
 
+import { menuItemsConfig } from '@/menu'
+
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 import { memo, useCallback } from 'react'
-
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +13,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { menuItemsConfig } from '@/menu'
 
 interface CommandPaletteProps {
   open?: boolean

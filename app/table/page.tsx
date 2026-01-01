@@ -1,33 +1,32 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
-import { TableSkeleton } from '@/components/skeletons'
-import { TableClient } from '@/components/tables/table-client'
-import {
-  databaseTableColumnsConfig,
-  tablesListConfig,
-} from '@/lib/query-config/system/database-table'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function TablePage() {
+  const router = useRouter()
   const searchParams = useSearchParams()
-  const database = searchParams.get('database') || 'default'
-  const table = searchParams.get('table')
 
-  // If only database specified, show tables list
-  // If both database and table specified, show table columns
-  const queryConfig = table ? databaseTableColumnsConfig : tablesListConfig
+  useEffect(() => {
+    const params = new URLSearchParams()
+    const host = searchParams.get('host')
+    const database = searchParams.get('database')
+    const table = searchParams.get('table')
+
+    if (host) params.set('host', host)
+    if (database) params.set('database', database)
+    if (table) params.set('table', table)
+
+    router.replace(`/explorer?${params.toString()}`)
+  }, [searchParams, router])
 
   return (
-    <div className="flex flex-col gap-4">
-      <Suspense fallback={<TableSkeleton />}>
-        <TableClient
-          title={table ? `${database}.${table}` : database}
-          description={queryConfig.description}
-          queryConfig={queryConfig}
-          searchParams={{ database, ...(table ? { table } : {}) }}
-        />
-      </Suspense>
+    <div className="flex h-screen items-center justify-center">
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-96 w-full" />
+      </div>
     </div>
   )
 }

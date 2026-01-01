@@ -5,8 +5,9 @@
  * for consistent error handling across the API layer.
  */
 
-import { ApiErrorType } from '@/lib/api/types'
 import type { ErrorClassification } from './types'
+
+import { ApiErrorType } from '@/lib/api/types'
 
 /**
  * Classification patterns for error detection

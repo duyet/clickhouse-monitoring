@@ -1,5 +1,6 @@
-import { CodeToggleFormat } from './code-toggle-format'
 import type { Row } from '@tanstack/react-table'
+
+import { CodeToggleFormat } from './code-toggle-format'
 
 describe('<CodeToggleFormat />', () => {
   const mockRow = {

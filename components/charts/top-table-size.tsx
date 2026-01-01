@@ -1,9 +1,10 @@
 'use client'
 
+import type { ChartProps } from '@/components/charts/chart-props'
+
 import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import type { ChartProps } from '@/components/charts/chart-props'
 import { BarList } from '@/components/charts/primitives/bar-list'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useChartData } from '@/lib/swr'
@@ -59,8 +60,8 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
             data={dataArray}
             data-testid="top-table-size-chart"
           >
-            <Tabs defaultValue="by-size">
-              <TabsList className="mb-5">
+            <Tabs defaultValue="by-size" className="overflow-hidden">
+              <TabsList className="mb-3">
                 <TabsTrigger key="by-size" value="by-size">
                   Top tables by Size
                 </TabsTrigger>
@@ -68,10 +69,10 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
                   Top tables by Row Count
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="by-size">
+              <TabsContent value="by-size" className="overflow-hidden">
                 <BarList data={dataTopBySize} formatedColumn="formatted" />
               </TabsContent>
-              <TabsContent value="by-count">
+              <TabsContent value="by-count" className="overflow-hidden">
                 <BarList data={dataTopByCount} formatedColumn="formatted" />
               </TabsContent>
             </Tabs>

@@ -301,9 +301,9 @@ describe('fetchDataWithHost', () => {
         hostId: 0,
       })
 
+      // Structured logging outputs JSON containing error details
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error in fetchDataWithHost:',
-        error
+        expect.stringContaining('Error in fetchDataWithHost')
       )
     })
   })

@@ -14,12 +14,13 @@
  * Performance: All components are memoized to prevent unnecessary re-renders
  */
 
-// Table Header exports
-export {
-  TableHeader,
-  TableHeaderRow,
-} from './table-header'
-
+export type {
+  StandardTableRowProps,
+  TableBodyEmptyStateProps,
+  TableBodyProps,
+  TableBodyRowsProps,
+  VirtualizedTableRowProps,
+} from './table-body'
 export type {
   TableHeaderProps,
   TableHeaderRowProps,
@@ -27,17 +28,14 @@ export type {
 
 // Table Body exports
 export {
+  StandardTableRow,
   TableBody,
   TableBodyEmptyState,
   TableBodyRows,
-  StandardTableRow,
   VirtualizedTableRow,
 } from './table-body'
-
-export type {
-  TableBodyProps,
-  TableBodyEmptyStateProps,
-  TableBodyRowsProps,
-  StandardTableRowProps,
-  VirtualizedTableRowProps,
-} from './table-body'
+// Table Header exports
+export {
+  TableHeader,
+  TableHeaderRow,
+} from './table-header'

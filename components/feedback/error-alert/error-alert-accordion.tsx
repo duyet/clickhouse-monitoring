@@ -6,10 +6,11 @@
 
 'use client'
 
-import dedent from 'dedent'
-import { DatabaseIcon, BugIcon, NotebookPenIcon } from 'lucide-react'
+import { BugIcon, DatabaseIcon, NotebookPenIcon } from 'lucide-react'
+
 import type React from 'react'
 
+import dedent from 'dedent'
 import {
   Accordion,
   AccordionContent,

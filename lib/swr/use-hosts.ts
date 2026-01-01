@@ -1,9 +1,10 @@
 'use client'
 
-import { useCallback } from 'react'
 import useSWR from 'swr'
 
 import type { HostInfo } from '@/app/api/v1/hosts/route'
+
+import { useCallback } from 'react'
 import { ErrorLogger } from '@/lib/logger'
 
 interface HostsResponse {

@@ -1,10 +1,12 @@
 'use client'
 
-import type { Row, RowData } from '@tanstack/react-table'
 import { MoreHorizontal } from 'lucide-react'
+import type { Row, RowData } from '@tanstack/react-table'
+
+import type { Action } from './types'
+
 import dynamic from 'next/dynamic'
 import { memo } from 'react'
-
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,7 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { Action } from './types'
 
 // Dynamic import moved outside component to prevent re-import on every render
 const ActionItem = dynamic(

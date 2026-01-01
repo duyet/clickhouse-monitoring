@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
 import type { MetricCardProps } from '../types'
+
+import { useMemo } from 'react'
 import { shouldShowRetryButton } from '@/lib/card-error-utils'
 
 // ============================================================================

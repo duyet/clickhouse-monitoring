@@ -1,11 +1,12 @@
 'use client'
 
-import { memo } from 'react'
 import type {
   NameType,
   Payload,
   ValueType,
 } from 'recharts/types/component/DefaultTooltipContent'
+
+import { memo } from 'react'
 import {
   type ChartConfig,
   ChartTooltip,

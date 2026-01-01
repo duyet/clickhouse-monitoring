@@ -1,6 +1,10 @@
 import { HamburgerMenuIcon } from '@radix-ui/react-icons'
-import { memo } from 'react'
+import { menuItemsConfig } from '@/menu'
 
+import type { MenuItem } from './types'
+
+import { HostPrefixedLink } from './link-with-context'
+import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,10 +16,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { menuItemsConfig } from '@/menu'
-
-import { HostPrefixedLink } from './link-with-context'
-import type { MenuItem } from './types'
 
 export interface MenuProps {
   items?: MenuItem[]

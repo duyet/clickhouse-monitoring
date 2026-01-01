@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useKeyboardShortcut } from '@/lib/hooks/use-keyboard-shortcut'
-import { KeyboardShortcutsDialog } from './keyboard-shortcuts-dialog'
 import { useShortcutHandlers } from './hooks/use-shortcut-handlers'
+import { KeyboardShortcutsDialog } from './keyboard-shortcuts-dialog'
+import { useCallback, useState } from 'react'
+import { useKeyboardShortcut } from '@/lib/hooks/use-keyboard-shortcut'
 
 /**
  * Global keyboard shortcuts for the ClickHouse Monitor dashboard

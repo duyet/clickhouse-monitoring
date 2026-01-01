@@ -1,6 +1,7 @@
-import { renderSingleVariant } from './single'
 import { DatabaseIcon } from 'lucide-react'
+
 import { MetricCard } from '../index'
+import { renderSingleVariant } from './single'
 
 describe('renderSingleVariant', () => {
   const mockData = [{ value: 1234 }, { value: 5678 }]

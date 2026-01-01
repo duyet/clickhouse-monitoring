@@ -1,17 +1,15 @@
 'use client'
 
+import type { MenuSection } from '@/components/menu/types'
+import type { MenuGroupProps } from './types'
+
+import { MenuItem } from './menu-item'
 import { memo } from 'react'
-import type {
-  MenuItem as MenuItemType,
-  MenuSection,
-} from '@/components/menu/types'
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
 } from '@/components/ui/sidebar'
-import { MenuItem } from './menu-item'
-import type { MenuGroupProps } from './types'
 
 /**
  * Section label mapping

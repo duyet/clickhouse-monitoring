@@ -2,14 +2,15 @@
  * Request Validator Tests
  */
 
-import { describe, expect, test } from '@jest/globals'
-import {
-  validateRequiredString,
-  validateDataRequest,
-  validateSearchParams,
-  validateEnumValue,
-} from '../request'
 import type { ApiRequest } from '@/lib/api/types'
+
+import {
+  validateDataRequest,
+  validateEnumValue,
+  validateRequiredString,
+  validateSearchParams,
+} from '../request'
+import { describe, expect, test } from '@jest/globals'
 
 describe('validateRequiredString', () => {
   test('should return undefined for valid non-empty strings', () => {
@@ -87,12 +88,12 @@ describe('validateDataRequest', () => {
   })
 
   test('should return undefined for valid request without format', () => {
-    const { format, ...requestWithoutFormat } = validRequest
+    const { format: _format, ...requestWithoutFormat } = validRequest
     expect(validateDataRequest(requestWithoutFormat)).toBeUndefined()
   })
 
   test('should return error for missing query', () => {
-    const { query, ...requestWithoutQuery } = validRequest
+    const { query: _query, ...requestWithoutQuery } = validRequest
     const result = validateDataRequest(requestWithoutQuery)
     expect(result).toEqual({
       type: 'validation_error',
@@ -109,7 +110,7 @@ describe('validateDataRequest', () => {
   })
 
   test('should return error for missing hostId', () => {
-    const { hostId, ...requestWithoutHostId } = validRequest
+    const { hostId: _hostId, ...requestWithoutHostId } = validRequest
     const result = validateDataRequest(requestWithoutHostId)
     expect(result).toEqual({
       type: 'validation_error',

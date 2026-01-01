@@ -28,6 +28,7 @@ import {
   UngroupIcon,
   UnplugIcon,
 } from 'lucide-react'
+
 import type { MenuItem } from '@/components/menu/types'
 
 export const menuItemsConfig: MenuItem[] = [

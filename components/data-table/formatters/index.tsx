@@ -36,28 +36,25 @@ export const FORMATTER_REGISTRY = {
   advanced: ADVANCED_FORMATTERS,
 } as const
 
-// Export core formatting function
-export { formatCell } from './format-cell'
-
-// Export formatter utilities
-export {
-  getInlineFormatter,
-  getValueFormatter,
-  getContextFormatter,
-  getAdvancedFormatter,
-} from './formatter-lookup'
-
-export {
-  hasInlineFormatter,
-  hasValueFormatter,
-  hasContextFormatter,
-  hasAdvancedFormatter,
-  hasFormatter,
-  getSupportedFormats,
-} from './formatter-selector'
-
 // Re-export all formatters for direct access if needed
 export * from './advanced-formatters'
 export * from './context-formatters'
+// Export core formatting function
+export { formatCell } from './format-cell'
+// Export formatter utilities
+export {
+  getAdvancedFormatter,
+  getContextFormatter,
+  getInlineFormatter,
+  getValueFormatter,
+} from './formatter-lookup'
+export {
+  getSupportedFormats,
+  hasAdvancedFormatter,
+  hasContextFormatter,
+  hasFormatter,
+  hasInlineFormatter,
+  hasValueFormatter,
+} from './formatter-selector'
 export * from './inline-formatters'
 export * from './value-formatters'

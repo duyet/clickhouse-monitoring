@@ -1,4 +1,5 @@
 import type { Row } from '@tanstack/react-table'
+
 import { LinkFormat } from './link-format'
 
 describe('<LinkFormat />', () => {

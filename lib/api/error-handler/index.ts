@@ -32,7 +32,6 @@ export type {
 
 // Export error classifier functions
 export { classifyError } from './error-classifier'
-
 // Export error response builder functions
 export {
   createErrorResponse,
@@ -42,7 +41,7 @@ export {
 } from './error-response-builder'
 
 import type { ApiHandler, RouteContext } from './types'
-import { ApiErrorType } from '@/lib/api/types'
+
 import { classifyError } from './error-classifier'
 import {
   createErrorResponse,
@@ -115,7 +114,7 @@ export function withApiHandler(
  */
 export function getHostIdFromParams(
   searchParams: URLSearchParams,
-  context?: RouteContext
+  _context?: RouteContext
 ): number | string {
   const hostId = searchParams.get('hostId')
 

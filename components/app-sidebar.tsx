@@ -1,15 +1,16 @@
 'use client'
 
+import { menuItemsConfig } from '@/menu'
+
 import { HostSwitcher } from '@/components/host/host-switcher'
-import { NavMain } from '@/components/navigation/nav-main'
 import { NavUser } from '@/components/nav-user'
+import { NavMain } from '@/components/navigation/nav-main'
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
 } from '@/components/ui/sidebar'
-import { menuItemsConfig } from '@/menu'
 
 const guestUser = {
   name: 'Guest',

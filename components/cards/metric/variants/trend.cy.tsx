@@ -1,6 +1,7 @@
-import { renderTrendVariant } from './trend'
-import { DatabaseIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react'
+import { DatabaseIcon } from 'lucide-react'
+
 import { MetricCard } from '../index'
+import { renderTrendVariant } from './trend'
 
 describe('renderTrendVariant', () => {
   const mockData = [

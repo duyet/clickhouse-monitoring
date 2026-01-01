@@ -2,19 +2,19 @@
  * Tests for the overview page charts configuration
  */
 
-import { describe, expect, it } from '@jest/globals'
 import {
-  OVERVIEW_TABS,
-  OVERVIEW_TAB_CHARTS,
-  ERRORS_TAB_CHARTS,
-  DISKS_TAB_CHARTS,
   BACKUPS_TAB_CHARTS,
-  getTabConfig,
+  DISKS_TAB_CHARTS,
+  ERRORS_TAB_CHARTS,
   getAllChartIds,
   getChartsForTab,
+  getTabConfig,
+  OVERVIEW_TAB_CHARTS,
+  OVERVIEW_TABS,
   type OverviewChartConfig,
   type OverviewTabConfig,
 } from '../charts-config'
+import { describe, expect, it } from '@jest/globals'
 
 describe('charts-config', () => {
   describe('Configuration Structure', () => {
@@ -252,8 +252,8 @@ describe('charts-config', () => {
     it('should have proper grid classes for each tab', () => {
       const overviewTab = getTabConfig('overview')
       const errorsTab = getTabConfig('errors')
-      const disksTab = getTabConfig('disks')
-      const backupsTab = getTabConfig('backups')
+      const _disksTab = getTabConfig('disks')
+      const _backupsTab = getTabConfig('backups')
 
       expect(overviewTab?.gridClassName).toContain('grid-cols-1')
       expect(overviewTab?.gridClassName).toContain('md:grid-cols-2')

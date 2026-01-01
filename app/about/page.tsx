@@ -1,6 +1,8 @@
 'use client'
 
 import { BookOpen, Github, Server, Shield, Zap } from 'lucide-react'
+import packageInfo from '@/package.json'
+
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,7 +13,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import packageInfo from '@/package.json'
 
 const GITHUB_REPO =
   packageInfo.repository?.url ||

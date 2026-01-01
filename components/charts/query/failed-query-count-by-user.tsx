@@ -1,9 +1,10 @@
 'use client'
 
+import type { ChartProps } from '@/components/charts/chart-props'
+
 import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import type { ChartProps } from '@/components/charts/chart-props'
 import { BarChart } from '@/components/charts/primitives/bar'
 import { transformUserEventCounts } from '@/lib/chart-data-transforms'
 import { useChartData } from '@/lib/swr'

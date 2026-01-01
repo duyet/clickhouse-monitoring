@@ -1,6 +1,7 @@
-import { renderOversizedVariant } from './oversized'
 import { DatabaseIcon } from 'lucide-react'
+
 import { MetricCard } from '../index'
+import { renderOversizedVariant } from './oversized'
 
 describe('renderOversizedVariant', () => {
   const mockData = [{ value: 100 }, { value: 200 }]

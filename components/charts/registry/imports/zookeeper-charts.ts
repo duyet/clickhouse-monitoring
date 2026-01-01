@@ -4,8 +4,9 @@
  * Lazy-loaded ZooKeeper-related charts.
  */
 
-import { lazy } from 'react'
 import type { ChartRegistryMap } from '@/components/charts/registry/types'
+
+import { lazy } from 'react'
 
 export const zookeeperChartImports: ChartRegistryMap = {
   'zookeeper-summary-table': lazy(() =>

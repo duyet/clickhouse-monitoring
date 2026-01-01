@@ -1,19 +1,21 @@
 'use client'
 
 import { ArrowRightIcon } from '@radix-ui/react-icons'
+
+import type { ChartProps } from '@/components/charts/chart-props'
+
 import Link from 'next/link'
 import { memo, useMemo } from 'react'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
-import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartSkeleton } from '@/components/skeletons'
-import { formatReadableQuantity } from '@/lib/format-readable'
 import {
   extractNestedData,
   transformRunningQueriesSummaryData,
 } from '@/lib/chart-data-transforms'
+import { formatReadableQuantity } from '@/lib/format-readable'
 import { useChartData } from '@/lib/swr'
 
 export const ChartSummaryUsedByRunningQueries = memo(
@@ -22,7 +24,6 @@ export const ChartSummaryUsedByRunningQueries = memo(
     className,
     hostId,
   }: ChartProps) {
-
     // Single API call that returns all data combined
     const { data, error, isLoading, sql } = useChartData<{
       main: {
@@ -119,9 +120,7 @@ export const ChartSummaryUsedByRunningQueries = memo(
                 {queryCount}
               </span>
               <span className="text-base text-muted-foreground">running</span>
-              <span className="text-base font-medium">
-                {currentMemory}
-              </span>
+              <span className="text-base font-medium">{currentMemory}</span>
               <span className="text-base text-muted-foreground">
                 {totalMemory}
               </span>

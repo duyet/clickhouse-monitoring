@@ -59,7 +59,8 @@ export const CardMultiMetrics = memo(function CardMultiMetrics({
 
       <div className="flex flex-col gap-2.5 overflow-hidden">
         {items.map((item, i) => {
-          const percent = item.target > 0 ? (item.current / item.target) * 100 : 0
+          const percent =
+            item.target > 0 ? (item.current / item.target) * 100 : 0
           const clampedPercent = Math.min(100, Math.max(0, percent))
 
           return (
@@ -67,7 +68,10 @@ export const CardMultiMetrics = memo(function CardMultiMetrics({
               <span className="text-muted-foreground truncate flex-1 min-w-0">
                 {item.currentReadable}
               </span>
-              <DottedLineProgress percent={clampedPercent} className="shrink-0" />
+              <DottedLineProgress
+                percent={clampedPercent}
+                className="shrink-0"
+              />
               <span className="font-medium truncate flex-1 min-w-0 text-right">
                 {item.targetReadable}
               </span>

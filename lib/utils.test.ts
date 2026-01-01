@@ -1,7 +1,6 @@
-import { expect, jest } from '@jest/globals'
-
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+
 import {
   binding,
   chartTickFormatters,
@@ -16,6 +15,7 @@ import {
   removeHostPrefix,
   uniq,
 } from './utils'
+import { expect, jest } from '@jest/globals'
 
 jest.mock('clsx', () => ({
   clsx: jest.fn(),

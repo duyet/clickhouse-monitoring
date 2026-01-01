@@ -1,12 +1,10 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
-import type {
-  MenuItem as MenuItemType,
-  MenuSection,
-} from '@/components/menu/types'
-import { MenuGroup } from './menu-group'
+import type { MenuSection } from '@/components/menu/types'
 import type { NavMainProps } from './types'
+
+import { MenuGroup } from './menu-group'
+import { usePathname } from 'next/navigation'
 
 /**
  * NavMain component - main navigation sidebar with grouped menu items

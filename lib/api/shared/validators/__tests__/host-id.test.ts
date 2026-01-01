@@ -2,12 +2,12 @@
  * Host ID Validator Tests
  */
 
-import { describe, expect, test } from '@jest/globals'
 import {
+  getAndValidateHostId,
   validateHostId,
   validateHostIdWithError,
-  getAndValidateHostId,
 } from '../host-id'
+import { describe, expect, test } from '@jest/globals'
 
 describe('validateHostId', () => {
   test('should return parsed number for valid hostId string', () => {

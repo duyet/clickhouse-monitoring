@@ -1,5 +1,6 @@
-import { ActionItem } from './action-item'
 import type { Row, RowData } from '@tanstack/react-table'
+
+import { ActionItem } from './action-item'
 
 describe('<ActionItem />', () => {
   const mockRow = {

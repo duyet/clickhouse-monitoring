@@ -4,12 +4,11 @@
  * @see lib/color-bank/index.ts
  */
 
-import { describe, expect, it } from 'bun:test'
 import {
   COLOR_BANK,
   COLOR_MAP,
-  getColorFromBank,
   getBarStyle,
+  getColorFromBank,
   getShade,
   getStringHash,
 } from '.'
@@ -140,7 +139,7 @@ describe('COLOR_MAP', () => {
   })
 
   it('should have valid HSL values for each shade', () => {
-    const color = COLOR_MAP['mint']
+    const color = COLOR_MAP.mint
     expect(color).toBeDefined()
 
     for (const shade of [
@@ -159,7 +158,7 @@ describe('COLOR_MAP', () => {
   })
 
   it('should use pastel colors (high lightness, moderate saturation)', () => {
-    const mintColor = COLOR_MAP['mint'][500]
+    const mintColor = COLOR_MAP.mint[500]
     expect(mintColor.l).toBeGreaterThanOrEqual(70) // At least 70% lightness (ultra-pastel)
     expect(mintColor.l).toBeLessThanOrEqual(98) // At most 98% lightness
     expect(mintColor.s).toBeGreaterThanOrEqual(30) // At least 30% saturation (soft)

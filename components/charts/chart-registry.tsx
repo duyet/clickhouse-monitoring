@@ -29,24 +29,24 @@
 
 // Re-export everything from the registry folder
 export {
-  // Types
-  type ChartComponent,
-  type ChartSkeletonType,
-  type LazyChartComponent,
-  type ChartRegistryMap,
-  type ChartProps,
-  // Type hints and skeleton utilities
-  CHART_TYPE_HINTS,
-  getChartSkeletonType,
-  // Registry functions
-  getChartComponent,
-  hasChart,
-  getRegisteredChartNames,
-  getChartsByCategory,
   // Chart categories
   CHART_CATEGORIES,
+  // Type hints and skeleton utilities
+  CHART_TYPE_HINTS,
   CHARTS_BY_CATEGORY,
   type ChartCategory,
+  // Types
+  type ChartComponent,
+  type ChartProps,
+  type ChartRegistryMap,
+  type ChartSkeletonType,
   // Direct access to imports (for advanced use cases)
   chartImports,
+  // Registry functions
+  getChartComponent,
+  getChartSkeletonType,
+  getChartsByCategory,
+  getRegisteredChartNames,
+  hasChart,
+  type LazyChartComponent,
 } from './registry'

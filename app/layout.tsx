@@ -1,5 +1,6 @@
-import { Analytics } from '@vercel/analytics/react'
 import type { Metadata } from 'next'
+
+import { Analytics } from '@vercel/analytics/react'
 import Script from 'next/script'
 import { ThemeProvider } from 'next-themes'
 import { Suspense } from 'react'
@@ -9,7 +10,6 @@ import '@/app/globals.css'
 import { AppProvider } from '@/app/context'
 import { AppSidebar } from '@/components/app-sidebar'
 import { KeyboardShortcuts } from '@/components/controls/keyboard-shortcuts'
-import { LayoutErrorBoundary } from '@/components/feedback/layout-error-boundary'
 import { HeaderActions } from '@/components/header/header-actions'
 import { Breadcrumb } from '@/components/navigation/breadcrumb'
 import { PageSkeleton, SidebarSkeleton } from '@/components/skeletons'
@@ -20,9 +20,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Toaster } from '@/components/ui/sonner'
 import { SWRProvider } from '@/lib/swr'
-import { Skeleton } from '@/components/ui/skeleton'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
@@ -86,7 +86,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <KeyboardShortcuts />
           </Suspense>
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={false}>
             <Suspense fallback={<SidebarSkeleton />}>
               <AppSidebar />
             </Suspense>

@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-
 import { ErrorAlert } from '@/components/feedback/error-alert'
 import { ErrorLogger, formatErrorForDisplay } from '@/lib/logger'
 

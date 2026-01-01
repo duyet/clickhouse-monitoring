@@ -5,12 +5,13 @@
  * Updates dashboard settings in ClickHouse
  */
 
+import type { ApiResponse } from '@/lib/api/types'
+
 import { TABLE_SETTINGS } from '@/lib/api/dashboard-api'
 import {
   createErrorResponse as createApiErrorResponse,
   createValidationError,
 } from '@/lib/api/error-handler'
-import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 import { getClient } from '@/lib/clickhouse'
 import { debug, error } from '@/lib/logger'

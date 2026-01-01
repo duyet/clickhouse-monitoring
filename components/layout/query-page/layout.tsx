@@ -22,17 +22,16 @@
 
 'use client'
 
-import { memo, type ReactNode, Suspense } from 'react'
-
-import { TableSkeleton } from '@/components/skeletons'
-import { TableClient } from '@/components/tables/table-client'
-import { FadeIn } from '@/components/ui/fade-in'
-import { useHostId } from '@/lib/swr'
 import type { QueryConfig } from '@/types/query-config'
 
 import { ChartsToggle } from './charts-toggle'
 import { RelatedCharts } from './related-charts'
 import { useChartsCollapsed } from './use-charts-collapsed'
+import { memo, type ReactNode, Suspense } from 'react'
+import { TableSkeleton } from '@/components/skeletons'
+import { TableClient } from '@/components/tables/table-client'
+import { FadeIn } from '@/components/ui/fade-in'
+import { useHostId } from '@/lib/swr'
 
 export interface QueryPageLayoutProps {
   /** Query config for the page table */

@@ -1,8 +1,9 @@
 'use client'
 
 import { RefreshCw } from 'lucide-react'
-import { memo, useCallback, useState } from 'react'
 
+import { useRefreshTimer } from './hooks'
+import { memo, useCallback, useState } from 'react'
 import { useAppContext } from '@/app/context'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,7 +15,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
-import { useRefreshTimer } from './hooks'
 
 const SECOND = 1000
 const MINUTE = 60 * SECOND

@@ -15,6 +15,9 @@
  * - dashboard-charts: Custom dashboard configuration
  */
 
+// Import types for use within this file
+import type { ChartDataPoint, ChartQueryBuilder } from './charts/types'
+
 // Import all domain chart modules
 import { connectionCharts } from './charts/connection-charts'
 import { dashboardCharts } from './charts/dashboard-charts'
@@ -24,8 +27,6 @@ import { pageViewCharts } from './charts/page-view-charts'
 import { queryCharts } from './charts/query-charts'
 import { replicationCharts } from './charts/replication-charts'
 import { systemCharts } from './charts/system-charts'
-// Import types for use within this file
-import type { ChartDataPoint, ChartQueryBuilder } from './charts/types'
 import { zookeeperCharts } from './charts/zookeeper-charts'
 
 // Re-export types from the central types module (via charts/types)

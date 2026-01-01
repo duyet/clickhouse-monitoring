@@ -15,29 +15,26 @@
  * ```
  */
 
+export type { ChartCategory } from './chart-categories'
 // Types
 export type {
   ChartComponent,
+  ChartProps,
+  ChartRegistryMap,
   ChartSkeletonType,
   LazyChartComponent,
-  ChartRegistryMap,
 } from './types'
-export type { ChartProps } from './types'
-
-// Type hints and skeleton utilities
-export { CHART_TYPE_HINTS, getChartSkeletonType } from './type-hints'
-
-// Registry functions
-export {
-  getChartComponent,
-  hasChart,
-  getRegisteredChartNames,
-  getChartsByCategory,
-} from './registry-fns'
 
 // Chart categories
 export { CHART_CATEGORIES, CHARTS_BY_CATEGORY } from './chart-categories'
-export type { ChartCategory } from './chart-categories'
-
 // Direct access to imports (for advanced use cases)
 export { chartImports } from './chart-imports'
+// Registry functions
+export {
+  getChartComponent,
+  getChartsByCategory,
+  getRegisteredChartNames,
+  hasChart,
+} from './registry-fns'
+// Type hints and skeleton utilities
+export { CHART_TYPE_HINTS, getChartSkeletonType } from './type-hints'

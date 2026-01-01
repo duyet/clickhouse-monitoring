@@ -2,8 +2,8 @@
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { readOnlyTablesConfig } from '@/lib/query-config/tables/readonly-tables'
 import { ChartSkeleton } from '@/components/skeletons'
+import { readOnlyTablesConfig } from '@/lib/query-config/tables/readonly-tables'
 
 function ReadonlyTablesPageContent() {
   return (

@@ -1,9 +1,11 @@
 'use client'
 
 import { ReloadIcon } from '@radix-ui/react-icons'
+
+import { useReloadCountdown } from './use-reload-countdown'
+import { useReloadIntervals } from './use-reload-intervals'
 import { useRouter } from 'next/navigation'
 import { memo, useCallback, useTransition } from 'react'
-
 import { useAppContext } from '@/app/context'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,8 +18,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
-import { useReloadCountdown } from './use-reload-countdown'
-import { useReloadIntervals } from './use-reload-intervals'
 
 export interface ReloadButtonProps {
   className?: string
@@ -61,11 +61,10 @@ export const ReloadButton = memo(function ReloadButton({
   })
 
   // Interval management hook
-  const { intervals, setInterval, disableAutoReload, isIntervalActive } =
-    useReloadIntervals({
-      reloadInterval,
-      setReloadInterval,
-    })
+  const { intervals, setInterval, disableAutoReload } = useReloadIntervals({
+    reloadInterval,
+    setReloadInterval,
+  })
 
   return (
     <DropdownMenu>

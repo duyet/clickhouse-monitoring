@@ -1,6 +1,9 @@
 'use client'
 
 import { RefreshCw } from 'lucide-react'
+
+import type { QueryConfig } from '@/types/query-config'
+
 import { memo } from 'react'
 import { DataTable } from '@/components/data-table/data-table'
 import { TableSkeleton } from '@/components/skeletons'
@@ -17,7 +20,6 @@ import {
 import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/swr/use-table-data'
 import { cn } from '@/lib/utils'
-import type { QueryConfig } from '@/types/query-config'
 
 interface TableClientProps {
   title: string
@@ -116,7 +118,10 @@ export const TableClient = memo(function TableClient({
   if (!data || (Array.isArray(data) && data.length === 0)) {
     return (
       <Card
-        className={cn('rounded-md border-warning/30 bg-warning/5 shadow-none py-2', className)}
+        className={cn(
+          'rounded-md border-warning/30 bg-warning/5 shadow-none py-2',
+          className
+        )}
       >
         <CardContent className="p-6">
           <EmptyState

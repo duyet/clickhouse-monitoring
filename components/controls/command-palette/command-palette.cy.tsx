@@ -1,8 +1,9 @@
-import { CommandPalette } from '../command-palette'
 import type { MenuItem } from '@/components/menu/types'
 
+import { CommandPalette } from '../command-palette'
+
 // Mock menu items for testing
-const mockMenuItems: MenuItem[] = [
+const _mockMenuItems: MenuItem[] = [
   {
     title: 'Overview',
     href: '/overview',
@@ -21,7 +22,7 @@ const mockMenuItems: MenuItem[] = [
 ]
 
 // Mock useRouter
-const mockPush = cy.stub().as('routerPush')
+const _mockPush = cy.stub().as('routerPush')
 
 // Mock menu items
 cy.stub().as('menuItemsConfig')

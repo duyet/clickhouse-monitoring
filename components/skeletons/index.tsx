@@ -11,7 +11,6 @@
 
 // Base skeleton
 export { Skeleton } from './base'
-
 // Chart skeletons
 export { ChartSkeleton } from './chart'
 // Page skeletons

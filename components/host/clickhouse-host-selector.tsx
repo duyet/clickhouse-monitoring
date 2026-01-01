@@ -1,8 +1,10 @@
 'use client'
 
+import type { HostInfo } from '@/app/api/v1/hosts/route'
+
+import { StatusIndicator } from './shared'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { memo, useCallback } from 'react'
-import type { HostInfo } from '@/app/api/v1/hosts/route'
 import {
   Select,
   SelectContent,
@@ -13,7 +15,6 @@ import {
 import { useHostStatus } from '@/lib/swr/use-host-status'
 import { buildUrl } from '@/lib/url/url-builder'
 import { getHost } from '@/lib/utils'
-import { StatusIndicator } from './shared'
 
 type ClickHouseHostSelectorProps = {
   currentHostId: number

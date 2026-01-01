@@ -6,7 +6,7 @@ describe('<HostStatusDropdown />', () => {
   beforeEach(() => {
     // Stub SWR's internal cache and fetcher
     cy.window().then((win) => {
-      // @ts-ignore - Adding mock data to window for testing
+      // @ts-expect-error - Adding mock data to window for testing
       win.__SWR_CACHE__ = {}
     })
   })

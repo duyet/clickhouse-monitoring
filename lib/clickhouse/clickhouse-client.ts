@@ -7,7 +7,10 @@
 import type { ClickHouseClient, ClickHouseSettings } from '@clickhouse/client'
 import { createClient } from '@clickhouse/client'
 import { createClient as createClientWeb } from '@clickhouse/client-web'
+
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
+import type { ClickHouseConfig } from './types'
+
 import { getClickHouseConfigs } from './clickhouse-config'
 import {
   clientPool,
@@ -16,7 +19,6 @@ import {
   getPoolKey,
 } from './connection-pool'
 import { DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME } from './constants'
-import type { ClickHouseConfig } from './types'
 
 /**
  * Detect if running in Cloudflare Workers environment

@@ -4,9 +4,10 @@
 
 'use client'
 
-import { useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
 import type { QueryConfig } from '@/types/query-config'
+
+import { useSearchParams } from 'next/navigation'
+import { useMemo } from 'react'
 
 interface UseFilterStateOptions {
   filterParamPresets?: QueryConfig['filterParamPresets']

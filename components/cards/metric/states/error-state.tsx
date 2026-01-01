@@ -1,8 +1,11 @@
 'use client'
 
-import { memo } from 'react'
 import { RefreshCwIcon } from 'lucide-react'
 
+import type { MetricTheme } from '../types'
+
+import { THEME_CONFIGS } from '../themes'
+import { memo } from 'react'
 import {
   Card,
   CardContent,
@@ -16,11 +19,8 @@ import {
   getCardErrorClassName,
   getCardErrorDescription,
   getCardErrorTitle,
-  shouldShowRetryButton,
 } from '@/lib/card-error-utils'
 import { cn } from '@/lib/utils'
-import { THEME_CONFIGS } from '../themes'
-import type { MetricTheme } from '../types'
 
 // ============================================================================
 // Types

@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronRightIcon } from 'lucide-react'
+
 import { usePathname } from 'next/navigation'
 import { memo, useMemo } from 'react'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'

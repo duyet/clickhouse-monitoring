@@ -6,6 +6,8 @@
  */
 
 import type { NextRequest } from 'next/server'
+import type { ApiResponse } from '@/lib/api/types'
+
 import {
   createErrorResponse as createApiErrorResponse,
   getHostIdFromParams,
@@ -17,7 +19,6 @@ import {
   getTableQuery,
   hasTable,
 } from '@/lib/api/table-registry'
-import type { ApiResponse } from '@/lib/api/types'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
 import { debug, error } from '@/lib/logger'

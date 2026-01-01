@@ -7,11 +7,12 @@
 import {
   AlertTriangleIcon,
   DatabaseIcon,
+  type LucideIcon,
   NetworkIcon,
   ShieldXIcon,
   XCircleIcon,
-  type LucideIcon,
 } from 'lucide-react'
+
 import type { ReactElement } from 'react'
 
 export type ErrorIconType =

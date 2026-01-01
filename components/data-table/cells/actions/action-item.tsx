@@ -5,13 +5,10 @@ import {
   ExclamationTriangleIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
-import type { Row, RowData } from '@tanstack/react-table'
-import { redirect } from 'next/navigation'
-import { useState } from 'react'
 import { toast } from 'sonner'
+import type { Row, RowData } from '@tanstack/react-table'
 
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
-import { ErrorLogger } from '@/lib/logger'
+import type { Action, ActionResponse } from './types'
 
 import {
   explainQuery,
@@ -19,7 +16,10 @@ import {
   optimizeTable,
   querySettings,
 } from './actions'
-import type { Action, ActionResponse } from './types'
+import { redirect } from 'next/navigation'
+import { useState } from 'react'
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
+import { ErrorLogger } from '@/lib/logger'
 
 interface ActionButtonProps<TData extends RowData, TValue> {
   row: Row<TData>

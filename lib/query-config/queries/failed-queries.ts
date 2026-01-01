@@ -1,51 +1,102 @@
+import type { QueryConfig } from '@/types/query-config'
+
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
-import type { QueryConfig } from '@/types/query-config'
 
 export const failedQueriesConfig: QueryConfig = {
   name: 'failed-queries',
   description: "type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']",
   docs: QUERY_LOG,
   tableCheck: 'system.query_log',
-  sql: `
-    SELECT
-        type,
-        query_start_time,
-        query_duration_ms,
-        query_id,
-        query_kind,
-        is_initial_query,
-        normalizeQuery(query) AS normalized_query,
-        concat(toString(read_rows), ' rows / ', formatReadableSize(read_bytes)) AS read,
-        concat(toString(written_rows), ' rows / ', formatReadableSize(written_bytes)) AS written,
-        concat(toString(result_rows), ' rows / ', formatReadableSize(result_bytes)) AS result,
-        formatReadableSize(memory_usage) AS memory_usage,
-        exception,
-        concat('\n', stack_trace) AS stack_trace,
-        user,
-        initial_user,
-        multiIf(empty(client_name), http_user_agent, concat(client_name, ' ', toString(client_version_major), '.', toString(client_version_minor), '.', toString(client_version_patch))) AS client,
-        client_hostname,
-        toString(databases) AS databases,
-        toString(tables) AS tables,
-        toString(columns) AS columns,
-        toString(used_aggregate_functions) AS used_aggregate_functions,
-        toString(used_aggregate_function_combinators) AS used_aggregate_function_combinators,
-        toString(used_database_engines) AS used_database_engines,
-        toString(used_data_type_families) AS used_data_type_families,
-        toString(used_dictionaries) AS used_dictionaries,
-        toString(used_formats) AS used_formats,
-        toString(used_functions) AS used_functions,
-        toString(used_storages) AS used_storages,
-        toString(used_table_functions) AS used_table_functions,
-        toString(thread_ids) AS thread_ids,
-        ProfileEvents,
-        Settings
-    FROM system.query_log
-    WHERE type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
-    ORDER BY query_start_time DESC
-    LIMIT 1000
-  `,
+  sql: [
+    {
+      since: '23.8',
+      description: 'Base query without query_cache_usage',
+      sql: `
+        SELECT
+            type,
+            query_start_time,
+            query_duration_ms,
+            query_id,
+            query_kind,
+            is_initial_query,
+            normalizeQuery(query) AS normalized_query,
+            concat(toString(read_rows), ' rows / ', formatReadableSize(read_bytes)) AS read,
+            concat(toString(written_rows), ' rows / ', formatReadableSize(written_bytes)) AS written,
+            concat(toString(result_rows), ' rows / ', formatReadableSize(result_bytes)) AS result,
+            formatReadableSize(memory_usage) AS memory_usage,
+            exception,
+            concat('\n', stack_trace) AS stack_trace,
+            user,
+            initial_user,
+            multiIf(empty(client_name), http_user_agent, concat(client_name, ' ', toString(client_version_major), '.', toString(client_version_minor), '.', toString(client_version_patch))) AS client,
+            client_hostname,
+            toString(databases) AS databases,
+            toString(tables) AS tables,
+            toString(columns) AS columns,
+            toString(used_aggregate_functions) AS used_aggregate_functions,
+            toString(used_aggregate_function_combinators) AS used_aggregate_function_combinators,
+            toString(used_database_engines) AS used_database_engines,
+            toString(used_data_type_families) AS used_data_type_families,
+            toString(used_dictionaries) AS used_dictionaries,
+            toString(used_formats) AS used_formats,
+            toString(used_functions) AS used_functions,
+            toString(used_storages) AS used_storages,
+            toString(used_table_functions) AS used_table_functions,
+            toString(thread_ids) AS thread_ids,
+            ProfileEvents,
+            Settings
+        FROM system.query_log
+        WHERE type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
+        ORDER BY query_start_time DESC
+        LIMIT 1000
+      `,
+    },
+    {
+      since: '24.1',
+      description: 'Added query_cache_usage column',
+      sql: `
+        SELECT
+            type,
+            query_start_time,
+            query_duration_ms,
+            query_id,
+            query_kind,
+            is_initial_query,
+            query_cache_usage,
+            normalizeQuery(query) AS normalized_query,
+            concat(toString(read_rows), ' rows / ', formatReadableSize(read_bytes)) AS read,
+            concat(toString(written_rows), ' rows / ', formatReadableSize(written_bytes)) AS written,
+            concat(toString(result_rows), ' rows / ', formatReadableSize(result_bytes)) AS result,
+            formatReadableSize(memory_usage) AS memory_usage,
+            exception,
+            concat('\n', stack_trace) AS stack_trace,
+            user,
+            initial_user,
+            multiIf(empty(client_name), http_user_agent, concat(client_name, ' ', toString(client_version_major), '.', toString(client_version_minor), '.', toString(client_version_patch))) AS client,
+            client_hostname,
+            toString(databases) AS databases,
+            toString(tables) AS tables,
+            toString(columns) AS columns,
+            toString(used_aggregate_functions) AS used_aggregate_functions,
+            toString(used_aggregate_function_combinators) AS used_aggregate_function_combinators,
+            toString(used_database_engines) AS used_database_engines,
+            toString(used_data_type_families) AS used_data_type_families,
+            toString(used_dictionaries) AS used_dictionaries,
+            toString(used_formats) AS used_formats,
+            toString(used_functions) AS used_functions,
+            toString(used_storages) AS used_storages,
+            toString(used_table_functions) AS used_table_functions,
+            toString(thread_ids) AS thread_ids,
+            ProfileEvents,
+            Settings
+        FROM system.query_log
+        WHERE type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
+        ORDER BY query_start_time DESC
+        LIMIT 1000
+      `,
+    },
+  ],
   columns: [
     'normalized_query',
     'exception',
@@ -55,6 +106,7 @@ export const failedQueriesConfig: QueryConfig = {
     'query_id',
     'query_kind',
     'is_initial_query',
+    'query_cache_usage',
     'read',
     'written',
     'result',
@@ -100,6 +152,7 @@ export const failedQueriesConfig: QueryConfig = {
     initial_user: ColumnFormat.ColoredBadge,
     is_initial_query: ColumnFormat.Boolean,
     query_kind: ColumnFormat.Badge,
+    query_cache_usage: ColumnFormat.ColoredBadge,
     databases: ColumnFormat.CodeDialog,
     tables: ColumnFormat.CodeDialog,
     columns: ColumnFormat.CodeDialog,

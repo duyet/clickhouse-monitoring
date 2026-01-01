@@ -4,17 +4,20 @@
  */
 
 import type { DataFormat, QueryParams } from '@clickhouse/client'
-import { debug, error, warn } from '@/lib/logger'
-import { validateTableExistence } from '@/lib/table-validator'
-import {
-  getClickHouseVersion,
-  selectQueryVariantSemver,
-} from '@/lib/clickhouse-version'
+
 import type { QueryConfig } from '@/types/query-config'
+import type { FetchDataErrorType, FetchDataResult } from './types'
+
 import { getClient } from './clickhouse-client'
 import { getClickHouseConfigs } from './clickhouse-config'
 import { QUERY_COMMENT } from './constants'
-import type { FetchDataErrorType, FetchDataResult } from './types'
+import {
+  getClickHouseVersion,
+  selectQueryVariantSemver,
+  selectVersionedSql,
+} from '@/lib/clickhouse-version'
+import { debug, error, warn } from '@/lib/logger'
+import { validateTableExistence } from '@/lib/table-validator'
 
 /**
  * Fetch data from ClickHouse with comprehensive error handling
@@ -152,29 +155,45 @@ export const fetchData = async <
       clientConfig,
     })
 
-    // Select version-appropriate query if variants are defined
-    let effectiveQuery = queryConfig?.sql || query
+    // Select version-appropriate query
+    let effectiveQuery = query
 
-    if (queryConfig?.variants && queryConfig.variants.length > 0) {
-      // Get ClickHouse version for this host (cached)
-      const version = await getClickHouseVersion(currentHostId)
+    if (queryConfig) {
+      // New format: sql is an array of VersionedSql
+      if (Array.isArray(queryConfig.sql)) {
+        const version = await getClickHouseVersion(currentHostId)
+        effectiveQuery = selectVersionedSql(queryConfig.sql, version)
 
-      // Select the appropriate query variant based on version
-      effectiveQuery = selectQueryVariantSemver(
-        {
-          query: queryConfig.sql,
-          variants: queryConfig.variants.map((v) => ({
-            versions: v.versions,
-            query: v.sql,
-          })),
-        },
-        version
-      )
+        if (version) {
+          debug(
+            `[fetchData] Using query for ClickHouse ${version.raw} (config: ${queryConfig.name})`
+          )
+        }
+      }
+      // Simple string sql
+      else if (typeof queryConfig.sql === 'string') {
+        effectiveQuery = queryConfig.sql
+      }
 
-      if (version) {
-        debug(
-          `[fetchData] Using query for ClickHouse ${version.raw} (config: ${queryConfig.name})`
+      // Deprecated: old variants format (backward compatibility)
+      if (queryConfig.variants && queryConfig.variants.length > 0) {
+        const version = await getClickHouseVersion(currentHostId)
+        effectiveQuery = selectQueryVariantSemver(
+          {
+            query: typeof queryConfig.sql === 'string' ? queryConfig.sql : '',
+            variants: queryConfig.variants.map((v) => ({
+              versions: v.versions,
+              query: v.sql,
+            })),
+          },
+          version
         )
+
+        if (version) {
+          debug(
+            `[fetchData] Using query for ClickHouse ${version.raw} via variants (config: ${queryConfig.name})`
+          )
+        }
       }
     }
 
@@ -212,11 +231,13 @@ export const fetchData = async <
 
     debug(`<-- Response (${query_id}):`, { rows, duration, unit: 's' })
 
-    const metadata = {
+    const metadata: Record<string, string | number> = {
       queryId: query_id,
       duration,
       rows,
       host: clientConfig.host,
+      // Include the actual SQL that was executed (after version selection)
+      sql: effectiveQuery,
     }
 
     return { data, metadata }

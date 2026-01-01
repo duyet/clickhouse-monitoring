@@ -1,8 +1,10 @@
 'use client'
 
-import { memo } from 'react'
 import { LabelList, type LabelListProps } from 'recharts'
+
 import type { BarChartProps } from '@/types/charts'
+
+import { memo } from 'react'
 
 interface Data {
   value?: number | string | Array<number | string>

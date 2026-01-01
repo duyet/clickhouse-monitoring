@@ -1,7 +1,8 @@
 'use client'
 
-import { CardMetric } from '@/components/cards/card-metric'
 import type { ChartProps } from '@/components/charts/chart-props'
+
+import { CardMetric } from '@/components/cards/card-metric'
 import { createCustomChart } from '@/components/charts/factory'
 
 export const ChartDiskSize = createCustomChart<{

@@ -4,6 +4,7 @@
  */
 
 import type { ChartQueryBuilder } from './types'
+
 import { applyInterval, fillStep, nowOrToday } from './types'
 
 export const queryCharts: Record<string, ChartQueryBuilder> = {
@@ -119,6 +120,29 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
       formatReadableSize(total_staled_result_size) AS readable_total_staled_result_size
     FROM system.query_cache
   `,
+  }),
+
+  // v24.1+: Query cache usage stats from query_log
+  'query-cache-usage': ({ lastHours = 24 * 7 }) => ({
+    query: `
+    SELECT
+      query_cache_usage,
+      COUNT() AS query_count,
+      round(100 * query_count / sum(query_count) OVER (), 2) AS percentage
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+    GROUP BY query_cache_usage
+    ORDER BY query_count DESC
+  `,
+    // Fallback for pre-24.1 versions
+    variants: [
+      {
+        versions: { maxVersion: '24.1' },
+        query: `SELECT 'Not available' AS query_cache_usage, 0 AS query_count, 0 AS percentage`,
+        description: 'query_cache_usage column not available before v24.1',
+      },
+    ],
   }),
 
   'failed-query-count': ({

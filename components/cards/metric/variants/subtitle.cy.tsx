@@ -1,6 +1,7 @@
-import { renderSubtitleVariant } from './subtitle'
 import { DatabaseIcon } from 'lucide-react'
+
 import { MetricCard } from '../index'
+import { renderSubtitleVariant } from './subtitle'
 
 describe('renderSubtitleVariant', () => {
   const mockData = [

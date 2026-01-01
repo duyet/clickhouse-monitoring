@@ -1,5 +1,6 @@
-import { codecovWebpackPlugin } from '@codecov/webpack-plugin'
 import type { NextConfig } from 'next'
+
+import { codecovWebpackPlugin } from '@codecov/webpack-plugin'
 
 const nextConfig: NextConfig = {
   // Use standalone output for hybrid static pages + dynamic API routes
@@ -29,7 +30,7 @@ const nextConfig: NextConfig = {
   },
 
   // https://nextjs.org/docs/app/api-reference/next-config-js/webpack
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer: _isServer }) => {
     config.plugins.push(
       codecovWebpackPlugin({
         enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
@@ -41,10 +42,10 @@ const nextConfig: NextConfig = {
     // Exclude Cypress test files (.cy.tsx, .cy.ts) from webpack bundling
     if (config.module) {
       const excludeCyFiles = (rule: any) => {
-        if (rule.test && rule.test.toString().includes('tsx')) {
+        if (rule.test?.toString().includes('tsx')) {
           rule.exclude = /\.cy\.(tsx|ts)$/
         }
-        if (rule.test && rule.test.toString().includes('ts')) {
+        if (rule.test?.toString().includes('ts')) {
           if (!rule.exclude) {
             rule.exclude = /\.cy\.(tsx|ts)$/
           }

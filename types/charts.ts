@@ -1,7 +1,6 @@
 import type React from 'react'
 import type { ReactNode } from 'react'
 import type { LabelPosition } from 'recharts/types/component/Label'
-
 import type { ChartConfig } from '@/components/ui/chart'
 import type { ChartDataPoint } from './chart-data'
 

@@ -6,19 +6,20 @@
 
 'use client'
 
-import { memo } from 'react'
+import type { MenuItem } from '../types'
+
+import { useMenuActiveState } from '../hooks/use-menu-active-state'
+import { ActiveIndicator } from './active-indicator'
+import { MenuIcon } from './menu-icon'
+import { MenuListItem } from './menu-list-item'
 import dynamic from 'next/dynamic'
+import { memo } from 'react'
 import {
-  NavigationMenuItem,
   NavigationMenuContent,
+  NavigationMenuItem,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
-import type { MenuItem } from '../types'
-import { ActiveIndicator } from './active-indicator'
-import { MenuIcon } from './menu-icon'
-import { useMenuActiveState } from '../hooks/use-menu-active-state'
-import { MenuListItem } from './menu-list-item'
 
 const CountBadge = dynamic(() =>
   import('@/components/menu/count-badge').then((mod) => mod.CountBadge)

@@ -1,5 +1,8 @@
 'use client'
 
+import type { MetricCardSkeletonProps } from './types'
+
+import { THEME_CONFIGS } from './themes'
 import {
   Card,
   CardContent,
@@ -9,8 +12,6 @@ import {
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { THEME_CONFIGS } from './themes'
-import type { MetricCardSkeletonProps } from './types'
 
 export function MetricCardSkeleton({
   title,

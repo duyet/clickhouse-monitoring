@@ -1,6 +1,7 @@
-import { renderPulseVariant } from './pulse'
 import { DatabaseIcon } from 'lucide-react'
+
 import { MetricCard } from '../index'
+import { renderPulseVariant } from './pulse'
 
 describe('renderPulseVariant', () => {
   const mockData = [

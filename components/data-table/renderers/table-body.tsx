@@ -1,16 +1,16 @@
 'use client'
 
 import {
-  flexRender,
   type Cell,
   type ColumnDef,
   type ColumnMeta,
+  flexRender,
   type Row,
   type RowData,
   type Table,
 } from '@tanstack/react-table'
-import { memo, type ReactNode } from 'react'
 
+import { memo, type ReactNode } from 'react'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'

@@ -2,8 +2,8 @@
 
 import type { LucideIcon } from 'lucide-react'
 import { ExternalLinkIcon } from 'lucide-react'
-import Link from 'next/link'
 
+import Link from 'next/link'
 import {
   SidebarGroup,
   SidebarGroupContent,

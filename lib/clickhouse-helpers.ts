@@ -4,10 +4,12 @@
  */
 
 import type { DataFormat, QueryParams } from '@clickhouse/client'
+
+import type { QueryConfig } from '@/types/query-config'
+
 import { type FetchDataResult, fetchData } from '@/lib/clickhouse'
 import { ErrorLogger } from '@/lib/logger'
 import { getHostIdCookie } from '@/lib/scoped-link'
-import type { QueryConfig } from '@/types/query-config'
 
 // Re-export fetchData for direct use
 export { type FetchDataResult, fetchData } from '@/lib/clickhouse'

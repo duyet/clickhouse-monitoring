@@ -3,17 +3,15 @@
  */
 
 export {
-  DEFAULT_CHART_COLORS,
   CHART_COLOR_PALETTE,
   type ChartColor,
-  getChartColorVariable,
+  DEFAULT_CHART_COLORS,
   getChartColorHex,
+  getChartColorVariable,
 } from './chart-colors'
-
+export { ChartParams } from './chart-params'
 export {
   type ChartKind,
-  type RenderChartProps,
   RenderChart,
+  type RenderChartProps,
 } from './render-chart'
-
-export { ChartParams } from './chart-params'

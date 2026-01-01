@@ -1,13 +1,14 @@
 'use client'
 
+import type { HostInfo } from '@/app/api/v1/hosts/route'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { memo } from 'react'
-import type { HostInfo } from '@/app/api/v1/hosts/route'
 import { ClickHouseHostSelector } from '@/components/host/clickhouse-host-selector'
 
 const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'ClickHouse'
-const LOGO_URL = process.env.NEXT_PUBLIC_LOGO_URL || ''
+const LOGO_URL = process.env.NEXT_PUBLIC_LOGO_URL || '/clickhouse.svg'
 
 export const HeaderBrand = memo(function HeaderBrand({
   currentHostId,

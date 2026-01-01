@@ -1,8 +1,10 @@
 'use client'
 
-import type React from 'react'
-import { useEffect } from 'react'
 import { SWRConfig, type SWRConfiguration, useSWRConfig } from 'swr'
+
+import type React from 'react'
+
+import { useEffect } from 'react'
 import { isDevelopment } from '@/lib/env-utils'
 import { ErrorLogger } from '@/lib/logger'
 

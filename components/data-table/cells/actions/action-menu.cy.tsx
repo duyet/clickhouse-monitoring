@@ -1,5 +1,6 @@
-import { ActionMenu } from './action-menu'
 import type { Row, RowData } from '@tanstack/react-table'
+
+import { ActionMenu } from './action-menu'
 
 describe('<ActionMenu />', () => {
   const mockRow = {

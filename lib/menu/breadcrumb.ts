@@ -1,5 +1,6 @@
-import type { MenuItem } from '@/components/menu/types'
 import { menuItemsConfig } from '@/menu'
+
+import type { MenuItem } from '@/components/menu/types'
 
 export interface BreadcrumbItem {
   title: string

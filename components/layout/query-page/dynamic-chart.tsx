@@ -8,7 +8,6 @@
 'use client'
 
 import { memo } from 'react'
-
 import { getChartComponent } from '@/components/charts/chart-registry'
 
 export interface DynamicChartProps {
@@ -35,11 +34,11 @@ export const DynamicChart = memo(function DynamicChart({
   }
 
   return (
-      <ChartComponent
-        className="w-full p-0 shadow-none"
-        chartClassName="h-full min-h-[120px] max-h-[200px]"
-        hostId={hostId}
-        {...chartProps}
-      />
+    <ChartComponent
+      className="w-full p-0 shadow-none"
+      chartClassName="h-full min-h-[120px] max-h-[200px]"
+      hostId={hostId}
+      {...chartProps}
+    />
   )
 })

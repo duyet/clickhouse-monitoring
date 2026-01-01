@@ -4,12 +4,12 @@
 
 import {
   debug,
+  type ErrorContext,
+  ErrorLogger,
+  error,
+  formatErrorForDisplay,
   log,
   warn,
-  error,
-  ErrorLogger,
-  formatErrorForDisplay,
-  type ErrorContext,
 } from '../logger'
 
 describe('logger', () => {

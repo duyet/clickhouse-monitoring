@@ -7,9 +7,10 @@
  */
 
 import type { ApiError, ApiRequest } from '@/lib/api/types'
-import { ApiErrorType } from '@/lib/api/types'
-import { validateHostIdWithError } from './host-id'
+
 import { validateFormat } from './format'
+import { validateHostIdWithError } from './host-id'
+import { ApiErrorType } from '@/lib/api/types'
 
 /**
  * Validate that a required string field is present and non-empty

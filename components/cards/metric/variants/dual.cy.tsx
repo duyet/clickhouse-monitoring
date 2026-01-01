@@ -1,6 +1,7 @@
-import { renderDualVariant } from './dual'
 import { DatabaseIcon } from 'lucide-react'
+
 import { MetricCard } from '../index'
+import { renderDualVariant } from './dual'
 
 describe('renderDualVariant', () => {
   const mockData = [

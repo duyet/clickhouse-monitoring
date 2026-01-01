@@ -1,9 +1,11 @@
-import { ColumnFormat } from '@/types/column-format'
 import type { QueryConfig } from '@/types/query-config'
+
+import { ColumnFormat } from '@/types/column-format'
 
 export const partInfoConfig: QueryConfig = {
   name: 'part-info',
-  description: 'Information about currently active parts and levels for a table',
+  description:
+    'Information about currently active parts and levels for a table',
   sql: `
     SELECT
       name,

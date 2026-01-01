@@ -1,6 +1,6 @@
-import { formatReadableQuantity } from '@/lib/format-readable'
-
 import type { InlineFormatter } from './types'
+
+import { formatReadableQuantity } from '@/lib/format-readable'
 import { ColumnFormat } from '@/types/column-format'
 
 /**

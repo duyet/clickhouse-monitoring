@@ -1,10 +1,15 @@
 'use client'
 
 import { ListFilterIcon, XIcon } from 'lucide-react'
+
+import type { ArrayElement } from '@/types/generic'
+import type { QueryConfig } from '@/types/query-config'
+
+import { useFilterState } from './hooks/use-filter-state'
+import { getFilterToggleHref } from './utils/filter-url-builder'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { memo } from 'react'
-
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -14,10 +19,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import type { ArrayElement } from '@/types/generic'
-import type { QueryConfig } from '@/types/query-config'
-import { useFilterState } from './hooks/use-filter-state'
-import { getFilterToggleHref } from './utils/filter-url-builder'
 
 interface DataTableFacetedFilterProps {
   title?: string

@@ -1,4 +1,7 @@
 import type { RowData } from '@tanstack/react-table'
+
+import type { QueryConfig } from '@/types/query-config'
+
 import { DataTable } from '@/components/data-table/data-table'
 import { ErrorAlert } from '@/components/feedback/error-alert'
 import { fetchData } from '@/lib/clickhouse'
@@ -10,7 +13,6 @@ import {
 } from '@/lib/error-utils'
 import { ErrorLogger } from '@/lib/logger'
 import { getHostIdCookie } from '@/lib/scoped-link'
-import type { QueryConfig } from '@/types/query-config'
 
 interface TableProps {
   title: string
@@ -44,7 +46,7 @@ export async function Table({
   }
 
   const { data, metadata, error } = await fetchData<RowData[]>({
-    query: queryConfig.sql,
+    query: '', // Query is determined by queryConfig.sql with version selection
     format: 'JSONEachRow',
     query_params: queryParams,
     clickhouse_settings: {
@@ -56,6 +58,9 @@ export async function Table({
     queryConfig,
   })
 
+  // Get the executed SQL from metadata (version-aware selection happened in fetchData)
+  const executedSql = (metadata.sql as string) || ''
+
   if (error) {
     ErrorLogger.logError(new Error(error.message), {
       component: 'Table',
@@ -65,7 +70,7 @@ export async function Table({
       <ErrorAlert
         title={formatErrorTitle(error)}
         message={formatErrorMessage(error)}
-        query={queryConfig.sql}
+        query={executedSql}
         docs={getErrorDocumentation(error) || queryConfig.docs}
         variant={getErrorVariant(error)}
         errorType={error.type}
@@ -83,7 +88,7 @@ export async function Table({
       <ErrorAlert
         title="No Data Available"
         message="No data was returned from the query."
-        query={queryConfig.sql}
+        query={executedSql}
         docs={queryConfig.docs}
       />
     )
@@ -101,6 +106,7 @@ export async function Table({
       context={{ ...queryParams, hostId: `${hostId}` }}
       footnote={footerText}
       className={className}
+      executedSql={executedSql}
     />
   )
 }

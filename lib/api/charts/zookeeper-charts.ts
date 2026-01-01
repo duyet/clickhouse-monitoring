@@ -4,6 +4,7 @@
  */
 
 import type { ChartQueryBuilder } from './types'
+
 import { applyInterval, fillStep } from './types'
 
 export const zookeeperCharts: Record<string, ChartQueryBuilder> = {

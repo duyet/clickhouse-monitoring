@@ -6,9 +6,10 @@
  */
 
 import type { ApiResponse } from '@/lib/api/types'
+import type { ErrorDetails, RouteContext, StatusCodeMap } from './types'
+
 import { ApiErrorType } from '@/lib/api/types'
 import { ErrorLogger, error } from '@/lib/logger'
-import type { ErrorDetails, RouteContext, StatusCodeMap } from './types'
 
 /**
  * Maps API error types to HTTP status codes

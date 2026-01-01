@@ -1,6 +1,7 @@
+import type { FetchDataError } from '@/lib/clickhouse'
+
 import { memo } from 'react'
 import { ErrorAlert } from '@/components/feedback/error-alert'
-import type { FetchDataError } from '@/lib/clickhouse'
 import {
   formatErrorMessage,
   formatErrorTitle,

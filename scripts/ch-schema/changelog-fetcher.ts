@@ -13,7 +13,9 @@ export async function fetchChangelog(): Promise<string> {
   const response = await fetch(GITHUB_URLS.changelog)
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch changelog: ${response.status} ${response.statusText}`)
+    throw new Error(
+      `Failed to fetch changelog: ${response.status} ${response.statusText}`
+    )
   }
 
   const content = await response.text()
@@ -25,7 +27,9 @@ export async function fetchChangelog(): Promise<string> {
 /**
  * Fetch system table documentation from ClickHouse docs
  */
-export async function fetchTableDocs(tableName: string): Promise<string | null> {
+export async function fetchTableDocs(
+  tableName: string
+): Promise<string | null> {
   // Remove 'system.' prefix
   const shortName = tableName.replace('system.', '')
   const url = `${GITHUB_URLS.docsBase}/${shortName}.md`

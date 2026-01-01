@@ -1,12 +1,13 @@
 'use client'
 
+import type { ChartProps } from '@/components/charts/chart-props'
+import type { ChartDataPoint } from '@/types/chart-data'
+import type { CustomChartFactoryConfig } from './types'
+
 import { type FC, memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import type { ChartProps } from '@/components/charts/chart-props'
 import { useChartData, useHostId } from '@/lib/swr'
-import type { ChartDataPoint } from '@/types/chart-data'
-import type { CustomChartFactoryConfig } from './types'
 
 /**
  * Factory function to create a custom chart component with consistent patterns

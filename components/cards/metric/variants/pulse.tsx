@@ -1,9 +1,11 @@
 import { MinusIcon, TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
+
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/utils'
-import { extractValue } from '../utils'
+
 import { AnimatedNumber } from '../animated-number'
+import { extractValue } from '../utils'
 import { Sparkline } from './pulse-sparkline'
+import { cn } from '@/lib/utils'
 
 interface RenderProps<T> {
   value: string | number | ((data: T[]) => string | number) | undefined
@@ -26,7 +28,7 @@ export function renderPulseVariant<T>({
   data,
   compact,
   history = [],
-  historyLabel = '24h',
+  _historyLabel = '24h',
   showSparkline = true,
 }: RenderProps<T>): ReactNode {
   const resolvedValue = extractValue(value, data)

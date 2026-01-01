@@ -165,20 +165,24 @@ describe('fetchData hostId parameter validation', () => {
   })
 
   it('should verify fetchData function signature accepts hostId', () => {
-    const clickhousePath = path.join(projectRoot, 'lib/clickhouse.ts')
+    // fetchData was refactored to lib/clickhouse/clickhouse-fetch.ts
+    const clickhouseFetchPath = path.join(
+      projectRoot,
+      'lib/clickhouse/clickhouse-fetch.ts'
+    )
 
-    if (!fs.existsSync(clickhousePath)) {
-      throw new Error('lib/clickhouse.ts not found')
+    if (!fs.existsSync(clickhouseFetchPath)) {
+      throw new Error('lib/clickhouse/clickhouse-fetch.ts not found')
     }
 
-    const content = fs.readFileSync(clickhousePath, 'utf-8')
+    const content = fs.readFileSync(clickhouseFetchPath, 'utf-8')
 
     // Check if fetchData function accepts hostId parameter
     const functionMatch = content.match(/export\s+const\s+fetchData\s*=/)
     expect(functionMatch).toBeTruthy()
 
     // hostId is now required (not optional) after refactoring
-    expect(content).toMatch(/hostId\s*:\s*number\s*\|\s*string/)
+    expect(content).toMatch(/hostId\s*:\s*number/)
   })
 
   it('should ensure getHostIdCookie is imported where needed', () => {

@@ -1,11 +1,12 @@
-import { expect, test } from '@jest/globals'
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+
 import {
   applyInterval,
   fillStep,
   nowOrToday,
   withQueryParams,
 } from './clickhouse-query'
+import { expect, test } from '@jest/globals'
 
 describe('applyInterval', () => {
   const testCases: [ClickHouseInterval, string, string | undefined, string][] =

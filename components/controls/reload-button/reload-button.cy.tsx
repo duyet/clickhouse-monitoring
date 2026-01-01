@@ -1,7 +1,7 @@
 import { ReloadButton } from './index'
 
 // Mock useAppContext
-const mockReloadInterval = 30000
+const _mockReloadInterval = 30000
 const mockSetReloadInterval = cy.stub().as('setReloadInterval')
 
 // Mock useRouter
@@ -205,7 +205,7 @@ describe('useReloadCountdown hook behavior', () => {
       cy.get('button')
         .find('.font-mono')
         .invoke('text')
-        .then((initialText) => {
+        .then((_initialText) => {
           // Change interval
           cy.get('button').click()
           cy.contains('1m').click()
@@ -232,7 +232,7 @@ describe('useReloadCountdown hook behavior', () => {
       { label: '30m', value: 1800000 },
     ]
 
-    intervals.forEach(({ label, value }) => {
+    intervals.forEach(({ label, _value }) => {
       it(`displays ${label} interval option`, () => {
         cy.mount(<ReloadButton />)
 

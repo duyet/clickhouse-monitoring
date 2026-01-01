@@ -13,19 +13,20 @@
 
 'use client'
 
-import { memo, Suspense } from 'react'
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 
+import type { QueryConfig } from '@/types/query-config'
+
+import { DynamicChart } from './dynamic-chart'
+import { memo, Suspense } from 'react'
+import { ChartSkeleton } from '@/components/skeletons'
+import { Button } from '@/components/ui/button'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { Button } from '@/components/ui/button'
-import { ChartSkeleton } from '@/components/skeletons'
 import { cn } from '@/lib/utils'
-import type { QueryConfig } from '@/types/query-config'
-import { DynamicChart } from './dynamic-chart'
 
 type ChartConfig = NonNullable<QueryConfig['relatedCharts']>[number]
 
@@ -47,7 +48,7 @@ export interface ChartRowProps {
 }
 
 export const ChartRow = memo(function ChartRow({
-  rowIndex,
+  _rowIndex,
   charts,
   hostId,
   isCollapsed,
@@ -66,8 +67,11 @@ export const ChartRow = memo(function ChartRow({
         {/* Collapsed state - clickable titles to expand */}
         {isCollapsed && (
           <CollapsibleTrigger asChild>
-            <div className="flex h-10 items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer px-4">
-              <ChevronDownIcon className="h-3.5 w-3.5 text-muted-foreground" />
+            <div className="group/row relative flex h-10 items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer px-4">
+              <span className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground opacity-0 group-hover/row:opacity-100 transition-opacity duration-200">
+                Show
+                <ChevronDownIcon className="h-3 w-3" />
+              </span>
               <span className="text-muted-foreground text-sm truncate">
                 {charts
                   .filter((c) => c && c !== 'break')
@@ -82,79 +86,84 @@ export const ChartRow = memo(function ChartRow({
           </CollapsibleTrigger>
         )}
 
-        {/* Expanded state - hover-reveal hide button */}
-        {!isCollapsed && (
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                'absolute z-50 h-6 px-3 gap-1',
-                'left-1/2 -translate-x-1/2 -bottom-3',
-                'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
-                'bg-muted hover:bg-muted/80 text-muted-foreground',
-                'rounded-full text-xs'
-              )}
-              aria-label="Collapse row"
-            >
-              <ChevronUpIcon className="h-3 w-3" />
-              <span>Hide row</span>
-            </Button>
-          </CollapsibleTrigger>
-        )}
-
         {/* Expanded state - charts grid */}
         <CollapsibleContent>
-          <div
-            className={cn(
-              'grid gap-3 items-stretch',
-              // Use 10-column grid when colSpan is used, otherwise 2-column
-              hasColSpan(charts)
-                ? 'grid-cols-1 md:grid-cols-10 auto-rows-[1fr]'
-                : 'grid-cols-1 md:grid-cols-2 auto-rows-fr'
-            )}
-          >
-            {charts.map((chartConfig, index) => {
-              if (!chartConfig) return null
+          <div className="relative group">
+            {/* Hide pill - top-right, shows on hover */}
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  'absolute z-50 h-6 px-3 gap-1',
+                  '-top-3 -right-3',
+                  'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
+                  'bg-muted hover:bg-muted/80 text-muted-foreground',
+                  'rounded-full text-xs shadow-sm'
+                )}
+                aria-label="Collapse row"
+              >
+                <ChevronUpIcon className="h-3 w-3" />
+                <span>Hide</span>
+              </Button>
+            </CollapsibleTrigger>
+            <div
+              className={cn(
+                'grid gap-3 items-stretch',
+                // Use 10-column grid when colSpan is used, otherwise 2-column
+                hasColSpan(charts)
+                  ? 'grid-cols-1 md:grid-cols-10 auto-rows-[1fr]'
+                  : 'grid-cols-1 md:grid-cols-2 auto-rows-fr'
+              )}
+            >
+              {charts.map((chartConfig, index) => {
+                if (!chartConfig) return null
 
-              // Handle break directive
-              if (typeof chartConfig === 'string' && chartConfig === 'break') {
-                return <div key={`break-${index}`} className="hidden" />
-              }
+                // Handle break directive
+                if (
+                  typeof chartConfig === 'string' &&
+                  chartConfig === 'break'
+                ) {
+                  return <div key={`break-${index}`} className="hidden" />
+                }
 
-              // Extract chart name and props
-              const chartName = Array.isArray(chartConfig)
-                ? chartConfig[0]
-                : chartConfig
-              const chartProps = Array.isArray(chartConfig)
-                ? chartConfig[1] || {}
-                : {}
+                // Extract chart name and props
+                const chartName = Array.isArray(chartConfig)
+                  ? chartConfig[0]
+                  : chartConfig
+                const chartProps = Array.isArray(chartConfig)
+                  ? chartConfig[1] || {}
+                  : {}
 
-              // Get colSpan from props (default to full width on mobile, half on desktop)
-              const colSpan = (chartProps as { colSpan?: number }).colSpan
+                // Get colSpan from props (default to full width on mobile, half on desktop)
+                const colSpan = (chartProps as { colSpan?: number }).colSpan
 
-              return (
-                <div
-                  key={`${chartName}-${index}`}
-                  className={cn('h-full', colSpan && `md:col-span-${colSpan}`)}
-                  style={
-                    colSpan
-                      ? { gridColumn: `span ${colSpan} / span ${colSpan}` }
-                      : undefined
-                  }
-                >
-                  <div className="flex h-full min-h-[140px] max-h-[240px] flex-col">
-                    <Suspense fallback={<ChartSkeleton />}>
-                      <DynamicChart
-                        chartName={chartName}
-                        hostId={hostId}
-                        chartProps={chartProps}
-                      />
-                    </Suspense>
+                return (
+                  <div
+                    key={`${chartName}-${index}`}
+                    className={cn(
+                      'h-full',
+                      colSpan && `md:col-span-${colSpan}`
+                    )}
+                    style={
+                      colSpan
+                        ? { gridColumn: `span ${colSpan} / span ${colSpan}` }
+                        : undefined
+                    }
+                  >
+                    <div className="flex h-full min-h-[140px] max-h-[240px] flex-col">
+                      <Suspense fallback={<ChartSkeleton />}>
+                        <DynamicChart
+                          chartName={chartName}
+                          hostId={hostId}
+                          chartProps={chartProps}
+                        />
+                      </Suspense>
+                    </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         </CollapsibleContent>
       </div>

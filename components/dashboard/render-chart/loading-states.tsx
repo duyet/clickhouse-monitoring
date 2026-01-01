@@ -2,8 +2,8 @@
  * Loading and error state components for RenderChart
  */
 
-import { ChartSkeleton } from '@/components/skeletons'
 import { ChartError } from '@/components/charts/chart-error'
+import { ChartSkeleton } from '@/components/skeletons'
 
 interface LoadingStateProps {
   title: string
@@ -36,7 +36,7 @@ export function ChartErrorState({ error, title, onRetry }: ErrorStateProps) {
 /**
  * Empty state when event_time column is missing
  */
-export function ChartMissingEventTime({ title }: EmptyStateProps) {
+export function ChartMissingEventTime({ _title }: EmptyStateProps) {
   return (
     <div className="flex items-center justify-center p-4 text-muted-foreground">
       <code>event_time</code> column is required from query result

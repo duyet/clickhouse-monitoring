@@ -1,12 +1,14 @@
 import type { ColumnDef, RowData, VisibilityState } from '@tanstack/react-table'
-import { useMemo } from 'react'
-import { uniq } from '@/lib/utils'
+
 import type { QueryConfig } from '@/types/query-config'
+
 import {
   type ColumnFilterContext,
   getColumnDefs,
   normalizeColumnName,
 } from '../column-defs'
+import { useMemo } from 'react'
+import { uniq } from '@/lib/utils'
 
 interface UseTableColumnsOptions<TData extends RowData, _TValue> {
   queryConfig: QueryConfig

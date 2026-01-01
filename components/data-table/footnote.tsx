@@ -1,4 +1,5 @@
 import type { Table } from '@tanstack/react-table'
+
 import { memo } from 'react'
 
 export interface FootnoteProps {

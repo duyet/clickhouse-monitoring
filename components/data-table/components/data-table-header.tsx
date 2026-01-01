@@ -2,13 +2,15 @@
 
 import { Loader2Icon } from 'lucide-react'
 import type { RowData } from '@tanstack/react-table'
-import { memo } from 'react'
 
+import type { ChartQueryParams } from '@/types/chart-data'
+import type { QueryConfig } from '@/types/query-config'
+
+import { memo } from 'react'
 import { ColumnVisibilityButton } from '@/components/data-table/buttons/column-visibility'
 import { ShowSQLButton } from '@/components/data-table/buttons/show-sql'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
-import type { QueryConfig } from '@/types/query-config'
-import type { ChartQueryParams } from '@/types/chart-data'
+import { getSqlForDisplay } from '@/types/query-config'
 
 /**
  * Props for the DataTableHeader component
@@ -53,6 +55,8 @@ export interface DataTableHeaderProps<TData extends RowData> {
   activeFilterCount: number
   /** Callback to clear all column filters */
   clearAllColumnFilters: () => void
+  /** The actual SQL that was executed (after version selection) */
+  executedSql?: string
 }
 
 export const DataTableHeader = memo(function DataTableHeader<
@@ -65,12 +69,15 @@ export const DataTableHeader = memo(function DataTableHeader<
   topRightToolbarExtras,
   showSQL,
   table,
-  queryParams,
+  _queryParams,
   isRefreshing,
   enableColumnFilters,
   activeFilterCount,
   clearAllColumnFilters,
+  executedSql,
 }: DataTableHeaderProps<TData>) {
+  // Use executed SQL if provided, otherwise fallback to config SQL
+  const displaySql = executedSql || getSqlForDisplay(queryConfig.sql)
   return (
     <div className="flex shrink-0 flex-row items-start justify-between pb-2">
       <div>
@@ -105,7 +112,7 @@ export const DataTableHeader = memo(function DataTableHeader<
 
       <div className="flex items-center gap-3">
         {topRightToolbarExtras}
-        {showSQL && <ShowSQLButton sql={queryConfig.sql} />}
+        {showSQL && <ShowSQLButton sql={displaySql} />}
         <ColumnVisibilityButton table={table} />
       </div>
     </div>

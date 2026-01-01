@@ -1,8 +1,8 @@
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { SizeIcon } from '@radix-ui/react-icons'
+
 import dedent from 'dedent'
 import { memo, useMemo } from 'react'
-
 import {
   Dialog,
   DialogContent,

@@ -1,11 +1,11 @@
 'use client'
 
+import { OVERVIEW_TABS } from './charts-config'
 import { Suspense } from 'react'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartSkeleton } from '@/components/skeletons'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
-import { OVERVIEW_TABS } from './charts-config'
 
 /**
  * OverviewPage - Main overview dashboard with tabbed chart views

@@ -18,11 +18,12 @@
  * ```
  */
 
-export { createAreaChart } from './create-area-chart'
-export { createBarChart } from './create-bar-chart'
-export { createCustomChart } from './create-custom-chart'
 export type {
   AreaChartFactoryConfig,
   BarChartFactoryConfig,
   CustomChartFactoryConfig,
 } from './types'
+
+export { createAreaChart } from './create-area-chart'
+export { createBarChart } from './create-bar-chart'
+export { createCustomChart } from './create-custom-chart'

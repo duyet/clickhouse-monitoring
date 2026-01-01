@@ -1,6 +1,6 @@
 import type { Row, RowData, Table } from '@tanstack/react-table'
 
-import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
+import type { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
 
 /**
  * Props passed to all formatter components

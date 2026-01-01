@@ -2,18 +2,17 @@
  * Tests for lib/clickhouse/clickhouse-fetch.ts
  */
 
+import type { QueryConfig } from '@/types/query-config'
+
+import { fetchData, query } from '../clickhouse-fetch'
 import {
-  describe,
-  it,
-  expect,
-  beforeEach,
   afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
   jest,
 } from '@jest/globals'
-import { fetchData, query } from '../clickhouse-fetch'
-import { ApiErrorType } from '@/lib/api/types'
-import type { FetchDataErrorType } from '../types'
-import type { QueryConfig } from '@/types/query-config'
 
 // Mock dependencies
 jest.mock('@/lib/logger', () => ({
@@ -84,6 +83,7 @@ describe('clickhouse-fetch', () => {
             duration: expect.any(Number),
             rows: 1,
             host: 'http://localhost:8123',
+            sql: 'SELECT 1',
           },
         })
         expect(result.error).toBeUndefined()

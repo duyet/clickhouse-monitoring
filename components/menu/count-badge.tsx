@@ -1,10 +1,10 @@
 'use client'
 
-import { memo, useEffect, useState } from 'react'
+import type { BadgeVariant } from '@/types/badge-variant'
 
+import { memo, useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { useHostId } from '@/lib/swr'
-import type { BadgeVariant } from '@/types/badge-variant'
 
 export interface CountBadgeProps {
   /** Key for fetching count from /api/v1/menu-counts/[key] */

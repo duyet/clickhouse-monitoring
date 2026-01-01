@@ -21,7 +21,7 @@
 
 'use client'
 
-import { Suspense, type ComponentType } from 'react'
+import { type ComponentType, Suspense } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 
 export function withSuspense<P extends object>(

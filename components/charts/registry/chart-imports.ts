@@ -18,6 +18,7 @@
  */
 
 import type { ChartRegistryMap } from './types'
+
 import { mergeChartImports } from './imports/merge-charts'
 import { miscChartImports } from './imports/misc-charts'
 import { queryChartImports } from './imports/query-charts'

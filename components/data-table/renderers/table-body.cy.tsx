@@ -1,14 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { mount } from 'cypress/react18'
-import { useState } from 'react'
 
 import {
   StandardTableRow,
-  VirtualizedTableRow,
-  TableBodyRows,
-  TableBodyEmptyState,
   TableBody,
+  TableBodyEmptyState,
+  TableBodyRows,
+  VirtualizedTableRow,
 } from './table-body'
+import { mount } from 'cypress/react18'
 
 describe('TableBody Components', () => {
   const queryClient = new QueryClient({

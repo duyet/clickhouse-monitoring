@@ -5,9 +5,11 @@
 'use client'
 
 import { Bar } from 'recharts'
-import { binding } from '@/lib/utils'
-import { BarLabel } from '../../bar-label'
+
 import type { BarChartProps } from '@/types/charts'
+
+import { BarLabel } from '../../bar-label'
+import { binding } from '@/lib/utils'
 
 interface BarItemProps
   extends Pick<
@@ -44,8 +46,8 @@ export function BarItem({
   fill,
   radius,
   onClickHref,
-  getRadius,
-  index,
+  _getRadius,
+  _index,
   labelPosition,
   labelAngle,
   showLabel,

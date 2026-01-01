@@ -1,13 +1,15 @@
 'use client'
 
 import { ArrowRightIcon } from '@radix-ui/react-icons'
+
+import type { ChartProps } from '@/components/charts/chart-props'
+
 import Link from 'next/link'
 import { memo, useMemo } from 'react'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
-import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartSkeleton } from '@/components/skeletons'
 import {
   extractNestedData,
@@ -20,7 +22,6 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
   className,
   hostId,
 }: ChartProps) {
-
   // Single API call that returns all data combined
   const { data, error, isLoading, sql } = useChartData<{
     used: { memory_usage: number; readable_memory_usage: string }[]
@@ -96,9 +97,7 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
             <span className="text-3xl font-bold tabular-nums">
               {transformedData.raw.rowsReadWritten.readable_rows_read}
             </span>
-            <span className="text-base text-muted-foreground">
-              rows
-            </span>
+            <span className="text-base text-muted-foreground">rows</span>
             <span className="text-base font-medium">
               {transformedData.primary.memoryUsage}
             </span>

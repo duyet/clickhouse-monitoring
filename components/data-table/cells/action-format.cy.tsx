@@ -1,5 +1,6 @@
-import { ActionFormat } from './action-format'
 import type { Row, RowData } from '@tanstack/react-table'
+
+import { ActionFormat } from './action-format'
 
 describe('<ActionFormat />', () => {
   const mockRow = {

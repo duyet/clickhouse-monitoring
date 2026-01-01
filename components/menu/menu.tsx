@@ -1,7 +1,9 @@
-import { memo } from 'react'
 import { menuItemsConfig } from '@/menu'
-import { MenuNavigationStyle } from './menu-navigation-style'
+
 import type { MenuItem } from './types'
+
+import { MenuNavigationStyle } from './menu-navigation-style'
+import { memo } from 'react'
 
 export interface MenuProps {
   items?: MenuItem[]

@@ -6,15 +6,16 @@
 
 'use client'
 
-import { memo, type ReactNode } from 'react'
-import dynamic from 'next/dynamic'
-import { NavigationMenuLink } from '@/components/ui/navigation-menu'
-import { cn } from '@/lib/utils'
 import type { MenuItem } from '../types'
+
+import { useMenuActiveState } from '../hooks/use-menu-active-state'
 import { HostPrefixedLink } from '../link-with-context'
 import { ActiveIndicator } from './active-indicator'
 import { MenuIcon } from './menu-icon'
-import { useMenuActiveState } from '../hooks/use-menu-active-state'
+import dynamic from 'next/dynamic'
+import { memo } from 'react'
+import { NavigationMenuLink } from '@/components/ui/navigation-menu'
+import { cn } from '@/lib/utils'
 
 const CountBadge = dynamic(() =>
   import('@/components/menu/count-badge').then((mod) => mod.CountBadge)

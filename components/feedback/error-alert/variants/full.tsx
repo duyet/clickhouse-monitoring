@@ -7,21 +7,21 @@
 'use client'
 
 import { RefreshCwIcon } from 'lucide-react'
-import type React from 'react'
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { getEnvironment, shouldShowDetailedErrors } from '@/lib/env-utils'
+import type React from 'react'
 import type { ErrorIconType } from '../error-alert-icons'
-import { getErrorIcon } from '../error-alert-icons'
+import type { ErrorAlertVariant } from '../error-alert-variants'
+
 import {
   ErrorAlertAccordion,
   ErrorAlertDigest,
   ErrorAlertDocs,
 } from '../error-alert-accordion'
-import type { ErrorAlertVariant } from '../error-alert-variants'
+import { getErrorIcon } from '../error-alert-icons'
 import { getVariantStyles } from '../error-alert-variants'
-import type { ErrorAlertProps } from '../types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { getEnvironment, shouldShowDetailedErrors } from '@/lib/env-utils'
 
 export interface FullErrorAlertProps {
   title: string

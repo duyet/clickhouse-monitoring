@@ -1,11 +1,10 @@
 'use client'
 
-import { memo } from 'react'
+import { cardStyles } from './card-styles'
 import Link from 'next/link'
-
+import { memo } from 'react'
 import { AnimatedNumber } from '@/components/cards/metric/animated-number'
 import { cn } from '@/lib/utils'
-import { cardStyles } from './card-styles'
 
 // ============================================================================
 // SplitValue Component

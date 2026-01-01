@@ -2,11 +2,12 @@
  * Generate markdown documentation from parsed changelog
  */
 
+import type { ChangelogEntry, VersionChange } from './types'
+
+import { groupChangesByTable, groupChangesByVersion } from './changelog-parser'
+import { DEFAULT_OUTPUT_DIR, LTS_VERSIONS, TARGET_TABLES } from './constants'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import type { ChangelogEntry, VersionChange } from './types'
-import { DEFAULT_OUTPUT_DIR, TARGET_TABLES, LTS_VERSIONS } from './constants'
-import { groupChangesByTable, groupChangesByVersion } from './changelog-parser'
 
 /**
  * Generate all documentation files
@@ -37,7 +38,9 @@ export async function generateDocs(
     console.log(`Generated tables/${fileName}`)
   }
 
-  console.log(`\nGenerated ${byVersion.size} version docs and ${TARGET_TABLES.length} table docs`)
+  console.log(
+    `\nGenerated ${byVersion.size} version docs and ${TARGET_TABLES.length} table docs`
+  )
 }
 
 /**
@@ -61,10 +64,10 @@ type: ${isLTS ? 'LTS' : 'Regular'}
   }
 
   // Group changes by type
-  const added = changes.filter(c => c.changeType === 'column_added')
-  const removed = changes.filter(c => c.changeType === 'column_removed')
-  const renamed = changes.filter(c => c.changeType === 'column_renamed')
-  const behavior = changes.filter(c => c.changeType === 'behavior_changed')
+  const added = changes.filter((c) => c.changeType === 'column_added')
+  const removed = changes.filter((c) => c.changeType === 'column_removed')
+  const renamed = changes.filter((c) => c.changeType === 'column_renamed')
+  const behavior = changes.filter((c) => c.changeType === 'behavior_changed')
 
   if (added.length > 0) {
     md += `## New Columns\n\n`
@@ -148,8 +151,9 @@ table: ${table}
       md += `| \`${column}\` |`
       for (const v of versions) {
         // Determine if column exists in this version
-        const addedIn = changes.find(c => c.column === column && c.changeType === 'column_added')
-          ?.version
+        const addedIn = changes.find(
+          (c) => c.column === column && c.changeType === 'column_added'
+        )?.version
 
         const exists = addedIn ? v >= addedIn : true
         md += exists ? ` Yes |` : ` - |`
@@ -164,7 +168,9 @@ table: ${table}
   if (changes.length === 0) {
     md += `No documented changes to this table.\n`
   } else {
-    for (const change of changes.sort((a, b) => b.version.localeCompare(a.version))) {
+    for (const change of changes.sort((a, b) =>
+      b.version.localeCompare(a.version)
+    )) {
       md += `### v${change.version}\n\n`
       md += `- ${change.changeType.replace(/_/g, ' ')}`
       if (change.column) md += `: \`${change.column}\``

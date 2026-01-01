@@ -2,8 +2,8 @@
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { replicationQueueConfig } from '@/lib/query-config/tables/replication-queue'
 import { ChartSkeleton } from '@/components/skeletons'
+import { replicationQueueConfig } from '@/lib/query-config/tables/replication-queue'
 
 function ReplicationQueuePageContent() {
   return (

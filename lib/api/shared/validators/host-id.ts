@@ -7,6 +7,7 @@
  */
 
 import type { ApiError } from '@/lib/api/types'
+
 import { ApiErrorType } from '@/lib/api/types'
 
 /**

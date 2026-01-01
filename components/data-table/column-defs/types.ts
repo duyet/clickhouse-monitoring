@@ -3,6 +3,7 @@
  */
 
 import type { RowData } from '@tanstack/react-table'
+
 import type { QueryConfig } from '@/types/query-config'
 
 export type ColumnType = { [key: string]: string }

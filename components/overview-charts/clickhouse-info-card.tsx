@@ -1,9 +1,9 @@
 'use client'
 
+import { InfoCard } from './info-card'
 import { memo } from 'react'
 import { useHostId } from '@/lib/swr'
 import { useHostStatus } from '@/lib/swr/use-host-status'
-import { InfoCard } from './info-card'
 
 // ============================================================================
 // ClickHouseInfoCard Component

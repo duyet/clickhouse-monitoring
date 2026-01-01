@@ -12,8 +12,9 @@
 
 import type { EmptyStateVariant } from '@/components/ui/empty-state'
 import type { ApiError } from './api/types'
-import { ApiErrorType } from './api/types'
 import type { FetchDataError } from './clickhouse/types'
+
+import { ApiErrorType } from './api/types'
 
 // ============================================================================
 // Types

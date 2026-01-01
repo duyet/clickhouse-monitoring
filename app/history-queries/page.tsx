@@ -2,8 +2,8 @@
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { historyQueriesConfig } from '@/lib/query-config/queries/history-queries'
 import { ChartSkeleton } from '@/components/skeletons'
+import { historyQueriesConfig } from '@/lib/query-config/queries/history-queries'
 
 function HistoryQueriesPageContent() {
   return (

@@ -4,6 +4,7 @@
  */
 
 import type { ChartQueryBuilder } from './types'
+
 import { applyInterval, fillStep, nowOrToday } from './types'
 
 export const pageViewCharts: Record<string, ChartQueryBuilder> = {

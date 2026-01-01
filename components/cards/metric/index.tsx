@@ -1,7 +1,6 @@
 'use client'
 
 import { memo } from 'react'
-
 import {
   Card,
   CardContent,
@@ -9,20 +8,22 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { detectCardErrorVariant } from '@/lib/card-error-utils'
 import { cn } from '@/lib/utils'
 
+export * from './hooks'
 // Re-export types and hooks
 export * from './types'
-export * from './hooks'
 
-import type { MetricTheme } from './types'
 import { useMetricState } from './hooks/use-metric-state'
 
 // ============================================================================
 // Imports
 // ============================================================================
 
+import type { MetricCardProps } from './types'
+
+import { MetricIcons } from './icons'
+import { MetricCardEmpty, MetricCardError, MetricCardSkeleton } from './states'
 import { THEME_CONFIGS } from './themes'
 import {
   renderDualVariant,
@@ -34,9 +35,6 @@ import {
   renderSubtitleVariant,
   renderTrendVariant,
 } from './variants'
-import { MetricIcons } from './icons'
-import { MetricCardSkeleton, MetricCardError, MetricCardEmpty } from './states'
-import type { MetricCardProps } from './types'
 
 // Re-export icons for convenience
 export { MetricIcons }

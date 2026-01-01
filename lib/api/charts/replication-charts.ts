@@ -4,6 +4,7 @@
  */
 
 import type { ChartQueryBuilder } from './types'
+
 import { applyInterval } from './types'
 
 export const replicationCharts: Record<string, ChartQueryBuilder> = {

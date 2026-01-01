@@ -11,7 +11,6 @@
 
 'use client'
 
-import { memo, useMemo } from 'react'
 import {
   Bar,
   CartesianGrid,
@@ -19,38 +18,40 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+
+import type { BarChartProps } from '@/types/charts'
+
+import { BarTooltip } from '../bar-tooltip'
+import { generateChartConfig, getBarRadius } from './utils'
+import { memo, useMemo } from 'react'
 import {
-  type ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart'
 import { cn } from '@/lib/utils'
-import type { BarChartProps } from '@/types/charts'
-import { BarTooltip } from '../bar-tooltip'
-import { generateChartConfig, getBarRadius } from './utils'
 
 export const BarChart = memo(function BarChart({
   data,
   index,
   categories,
-  readableColumn,
-  labelPosition,
-  labelAngle,
+  _readableColumn,
+  _labelPosition,
+  _labelAngle,
   showLegend = false,
-  showLabel = false,
+  _showLabel = false,
   stack = false,
   horizontal = false,
   tooltipTotal = false,
-  onClickHref,
+  _onClickHref,
   colors,
   colorLabel,
   tickFormatter,
   yAxisTickFormatter,
   showXAxis = true,
   showYAxis = true,
-  xAxisLabel,
-  yAxisLabel,
+  _xAxisLabel,
+  _yAxisLabel,
   className,
 }: BarChartProps & {
   yAxisTickFormatter?: (value: string | number) => string

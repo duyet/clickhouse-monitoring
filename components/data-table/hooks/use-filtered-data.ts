@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
 import { normalizeColumnName } from '../column-defs'
+import { useMemo } from 'react'
 
 interface UseFilteredDataOptions<TData> {
   data: TData[]

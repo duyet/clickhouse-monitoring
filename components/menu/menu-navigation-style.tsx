@@ -6,18 +6,20 @@
 
 'use client'
 
+import { menuItemsConfig } from '@/menu'
+
+import type { MenuItem } from './types'
+
+import { MenuHasChildren } from './components/menu-has-children'
+import { MenuSingleItem } from './components/menu-single-item'
 import dynamic from 'next/dynamic'
 import { memo } from 'react'
 import {
   NavigationMenu,
   NavigationMenuList,
 } from '@/components/ui/navigation-menu'
-import { menuItemsConfig } from '@/menu'
-import type { MenuItem } from './types'
-import { MenuHasChildren } from './components/menu-has-children'
-import { MenuSingleItem } from './components/menu-single-item'
 
-const CountBadge = dynamic(() =>
+const _CountBadge = dynamic(() =>
   import('@/components/menu/count-badge').then((mod) => mod.CountBadge)
 )
 

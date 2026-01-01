@@ -38,7 +38,12 @@ export interface TableSchema {
 export interface VersionChange {
   version: string
   table: string
-  changeType: 'column_added' | 'column_removed' | 'column_renamed' | 'type_changed' | 'behavior_changed'
+  changeType:
+    | 'column_added'
+    | 'column_removed'
+    | 'column_renamed'
+    | 'type_changed'
+    | 'behavior_changed'
   column?: string
   oldName?: string
   newName?: string

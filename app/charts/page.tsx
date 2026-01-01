@@ -2,10 +2,7 @@
 
 import { notFound, useSearchParams } from 'next/navigation'
 import { Suspense, useMemo } from 'react'
-import {
-  getChartComponent,
-  hasChart,
-} from '@/components/charts/chart-registry'
+import { getChartComponent, hasChart } from '@/components/charts/chart-registry'
 import { ChartSkeleton } from '@/components/skeletons'
 import { useHostId } from '@/lib/swr'
 

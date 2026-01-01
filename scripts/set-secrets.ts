@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+
 /**
  * Automatically set Wrangler secrets from .env.local in batch
  * Usage: bun run cf:config

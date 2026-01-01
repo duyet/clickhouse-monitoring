@@ -12,15 +12,16 @@
  */
 
 import type { DataFormat } from '@clickhouse/client'
+
+import type { ApiRequest } from '@/lib/api/types'
+import type { FetchDataError } from '@/lib/clickhouse'
+
+import { validateDashboardQuery } from './validators/dashboard-query-validator'
 import {
   createErrorResponse as createApiErrorResponse,
   createValidationError,
-  getHostIdFromParams,
   withApiHandler,
-  type RouteContext,
 } from '@/lib/api/error-handler'
-import type { ApiError, ApiRequest } from '@/lib/api/types'
-import { ApiErrorType } from '@/lib/api/types'
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { mapErrorTypeToStatusCode } from '@/lib/api/shared/status-code-mapper'
 import {
@@ -28,10 +29,9 @@ import {
   validateDataRequest,
   validateSearchParams,
 } from '@/lib/api/shared/validators'
-import type { FetchDataError } from '@/lib/clickhouse'
+import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
 import { debug, error } from '@/lib/logger'
-import { validateDashboardQuery } from './validators/dashboard-query-validator'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'

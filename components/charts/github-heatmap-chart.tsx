@@ -1,8 +1,8 @@
 'use client'
 
 import HeatMap, { type HeatMapProps } from '@uiw/react-heat-map'
-import { memo } from 'react'
 
+import { memo } from 'react'
 import {
   Tooltip,
   TooltipContent,

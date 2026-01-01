@@ -3,7 +3,8 @@
  */
 
 import type { ChangelogEntry, VersionChange } from './types'
-import { TARGET_TABLES, KNOWN_COLUMN_CHANGES } from './constants'
+
+import { KNOWN_COLUMN_CHANGES, TARGET_TABLES } from './constants'
 
 /**
  * Parse CHANGELOG.md content and extract system table changes
@@ -13,7 +14,8 @@ export function parseChangelog(content: string): ChangelogEntry[] {
 
   // Split by version headers
   // Format: ## ClickHouse release v24.1.1.xxx, 2024-01-xx
-  const versionPattern = /^## ClickHouse release v(\d+\.\d+)(?:\.\d+)?(?:\.\d+)?,?\s*(\d{4}-\d{2}-\d{2})?/gm
+  const versionPattern =
+    /^## ClickHouse release v(\d+\.\d+)(?:\.\d+)?(?:\.\d+)?,?\s*(\d{4}-\d{2}-\d{2})?/gm
 
   const sections = content.split(versionPattern)
 
@@ -29,12 +31,15 @@ export function parseChangelog(content: string): ChangelogEntry[] {
     const knownChanges = KNOWN_COLUMN_CHANGES[version] || []
     for (const known of knownChanges) {
       // Add if not already found
-      const exists = changes.some(c => c.table === known.table && c.column === known.column)
+      const exists = changes.some(
+        (c) => c.table === known.table && c.column === known.column
+      )
       if (!exists) {
         changes.push({
           version,
           table: known.table,
-          changeType: known.changeType === 'added' ? 'column_added' : 'column_removed',
+          changeType:
+            known.changeType === 'added' ? 'column_added' : 'column_removed',
           column: known.column,
           description: `${known.column} (${known.type})`,
         })
@@ -57,7 +62,10 @@ export function parseChangelog(content: string): ChangelogEntry[] {
 /**
  * Extract system table changes from a version section
  */
-function extractSystemTableChanges(version: string, content: string): VersionChange[] {
+function extractSystemTableChanges(
+  version: string,
+  content: string
+): VersionChange[] {
   const changes: VersionChange[] = []
 
   // Look for mentions of system tables
@@ -86,7 +94,11 @@ function extractSystemTableChanges(version: string, content: string): VersionCha
 /**
  * Parse a single line mentioning a system table change
  */
-function parseChangeLine(version: string, table: string, line: string): VersionChange | null {
+function parseChangeLine(
+  version: string,
+  table: string,
+  line: string
+): VersionChange | null {
   const lowerLine = line.toLowerCase()
 
   // Detect column additions
@@ -140,7 +152,9 @@ function parseChangeLine(version: string, table: string, line: string): VersionC
 /**
  * Group changes by table for easier processing
  */
-export function groupChangesByTable(entries: ChangelogEntry[]): Map<string, VersionChange[]> {
+export function groupChangesByTable(
+  entries: ChangelogEntry[]
+): Map<string, VersionChange[]> {
   const byTable = new Map<string, VersionChange[]>()
 
   for (const entry of entries) {
@@ -157,7 +171,9 @@ export function groupChangesByTable(entries: ChangelogEntry[]): Map<string, Vers
 /**
  * Group changes by version for easier processing
  */
-export function groupChangesByVersion(entries: ChangelogEntry[]): Map<string, VersionChange[]> {
+export function groupChangesByVersion(
+  entries: ChangelogEntry[]
+): Map<string, VersionChange[]> {
   const byVersion = new Map<string, VersionChange[]>()
 
   for (const entry of entries) {

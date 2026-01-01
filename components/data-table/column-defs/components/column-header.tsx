@@ -9,12 +9,13 @@ import {
   CaretSortIcon,
   CaretUpIcon,
 } from '@radix-ui/react-icons'
-import type { Column } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
-import { ColumnFilter } from '@/components/data-table/column-filter'
+import type { Column, RowData } from '@tanstack/react-table'
+
 import type { ColumnFormat } from '@/types/column-format'
 import type { Icon } from '@/types/icon'
-import type { RowData } from '@tanstack/react-table'
+
+import { ColumnFilter } from '@/components/data-table/column-filter'
+import { Button } from '@/components/ui/button'
 
 export interface ColumnHeaderProps<TData extends RowData> {
   column: Column<TData, unknown>

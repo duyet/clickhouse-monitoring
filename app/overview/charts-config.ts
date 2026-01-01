@@ -64,18 +64,18 @@ export interface OverviewTabConfig {
 // Chart Configurations
 // ============================================================================
 
+import { ChartMergeCount } from '@/components/charts/merge/merge-count'
+import { ChartNewPartsCreated } from '@/components/charts/merge/new-parts-created'
 // Import chart components
 import { ChartQueryCount } from '@/components/charts/query/query-count'
 import { ChartQueryCountByUser } from '@/components/charts/query/query-count-by-user'
-import { ChartMemoryUsage } from '@/components/charts/system/memory-usage'
+import { ChartBackupSize } from '@/components/charts/system/backup-size'
 import { ChartCPUUsage } from '@/components/charts/system/cpu-usage'
-import { ChartMergeCount } from '@/components/charts/merge/merge-count'
-import { ChartTopTableSize } from '@/components/charts/top-table-size'
-import { ChartNewPartsCreated } from '@/components/charts/merge/new-parts-created'
-import { ChartKeeperException } from '@/components/charts/zookeeper/zookeeper-exception'
 import { ChartDiskSize } from '@/components/charts/system/disk-size'
 import { ChartDisksUsage } from '@/components/charts/system/disks-usage'
-import { ChartBackupSize } from '@/components/charts/system/backup-size'
+import { ChartMemoryUsage } from '@/components/charts/system/memory-usage'
+import { ChartTopTableSize } from '@/components/charts/top-table-size'
+import { ChartKeeperException } from '@/components/charts/zookeeper/zookeeper-exception'
 
 /**
  * Overview tab charts - main metrics dashboard
@@ -139,7 +139,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'top-table-size',
     component: ChartTopTableSize,
     title: 'Top Tables by Size',
-    className: 'w-full h-[220px]',
+    className: 'w-full',
     type: 'custom',
   },
   {

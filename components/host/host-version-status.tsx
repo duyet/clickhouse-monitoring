@@ -6,8 +6,6 @@
 
 'use client'
 
-import type { HostStatus } from '@/lib/swr/use-host-status'
-
 import { useHostStatus } from '@/lib/swr/use-host-status'
 
 interface HostVersionWithStatusProps {

@@ -10,9 +10,9 @@
  * @module app/api/v1/data/validators/dashboard-query-validator
  */
 
+import { getCachedDashboardQueries } from '../utils/cache-manager'
 import { fetchData } from '@/lib/clickhouse'
 import { error } from '@/lib/logger'
-import { getCachedDashboardQueries } from '../utils/cache-manager'
 
 /** Dashboard table name for query validation */
 export const DASHBOARD_QUERIES_TABLE =

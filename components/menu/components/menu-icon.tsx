@@ -7,6 +7,7 @@
 'use client'
 
 import type { Icon } from '@/types/icon'
+
 import { cn } from '@/lib/utils'
 
 interface MenuIconProps {

@@ -6,10 +6,11 @@
 
 'use client'
 
+import type { MenuItem } from '../types'
+
 import { usePathname } from 'next/navigation'
 import { useMemo } from 'react'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
-import type { MenuItem } from '../types'
 
 /**
  * Check if a menu item or any of its children are active

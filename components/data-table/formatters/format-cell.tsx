@@ -5,7 +5,7 @@
  */
 
 import type { Row, RowData, Table } from '@tanstack/react-table'
-import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
+
 import {
   getAdvancedFormatter,
   getContextFormatter,
@@ -18,6 +18,7 @@ import {
   hasInlineFormatter,
   hasValueFormatter,
 } from './formatter-selector'
+import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
 
 /**
  * Format a cell value using the appropriate formatter

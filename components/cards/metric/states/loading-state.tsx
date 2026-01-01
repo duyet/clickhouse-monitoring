@@ -1,7 +1,9 @@
 'use client'
 
-import { memo } from 'react'
+import type { MetricCardSkeletonProps } from '../types'
 
+import { THEME_CONFIGS } from '../themes'
+import { memo } from 'react'
 import {
   Card,
   CardContent,
@@ -11,8 +13,6 @@ import {
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { THEME_CONFIGS } from '../themes'
-import type { MetricTheme, MetricCardSkeletonProps } from '../types'
 
 // ============================================================================
 // Component

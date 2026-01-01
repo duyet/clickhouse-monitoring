@@ -31,23 +31,70 @@ export type QueryConfigRowData<T extends readonly string[]> = {
 export type ColumnNames<T extends string> = [T, ...T[]]
 
 /**
- * Query variant for a specific ClickHouse version range
+ * A version-specific SQL query for ClickHouse version compatibility.
+ *
+ * Queries are defined chronologically (oldest → newest) and the system
+ * picks the highest `since` version that is <= current ClickHouse version.
+ *
+ * @example
+ * ```ts
+ * sql: [
+ *   { since: '23.8', sql: 'SELECT col1 FROM system.table' },
+ *   { since: '24.1', sql: 'SELECT col1, col2 FROM system.table' },
+ *   { since: '25.6', sql: 'SELECT col1, col2, col3 FROM system.table' },
+ * ]
+ * // For CH v24.5 → selects '24.1' query (highest <= 24.5)
+ * // For CH v25.8 → selects '25.6' query (highest <= 25.8)
+ * // For CH v23.5 → selects '23.8' query (fallback to oldest)
+ * ```
  */
-export interface QueryConfigVariant {
-  /** Semver range like ">=24.1 <24.5" or "<24.1" */
-  versions: string
-  /** SQL query for this version range */
+export interface VersionedSql {
+  /**
+   * Minimum ClickHouse version for this query.
+   * Supports major.minor (e.g., "24.1") or full version (e.g., "24.1.2.3").
+   */
+  since: string
+  /** SQL query to use for this version and above */
   sql: string
-  /** Description of what's different in this variant */
+  /** Description of what changed in this version */
   description?: string
   /** Columns available in this version (for type safety) */
+  columns?: string[]
+}
+
+/**
+ * @deprecated Use `VersionedSql` instead. Will be removed in v0.3.0.
+ */
+export interface QueryConfigVariant {
+  /** @deprecated Use VersionedSql.since instead */
+  versions: string
+  sql: string
+  description?: string
   columns?: string[]
 }
 
 export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   name: string
   description?: string
-  sql: string
+  /**
+   * SQL query definition - either:
+   * - A string (version-independent query)
+   * - An array of VersionedSql (version-aware queries, ordered oldest→newest)
+   *
+   * @example Version-independent (simple string)
+   * ```ts
+   * sql: 'SELECT * FROM system.tables'
+   * ```
+   *
+   * @example Version-aware (array of VersionedSql)
+   * ```ts
+   * sql: [
+   *   { since: '23.8', sql: 'SELECT col1 FROM system.table' },
+   *   { since: '24.1', sql: 'SELECT col1, col2 FROM system.table' },
+   * ]
+   * ```
+   */
+  sql: string | VersionedSql[]
   /**
    * Whether to disable the SQL validation by [query-config.test.ts](query-config.test.ts).
    *
@@ -178,9 +225,11 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    */
   sortingFns?: Record<string, CustomSortingFnNames>
   /**
-   * Version-specific query variants
-   * Evaluated in order - first matching variant is used
-   * Falls back to main `sql` if no variant matches
+   * @deprecated Use `sql: VersionedSql[]` instead. Will be removed in v0.3.0.
+   *
+   * Version-specific query variants (legacy format).
+   * Evaluated in order - first matching variant is used.
+   * Falls back to main `sql` if no variant matches.
    */
   variants?: QueryConfigVariant[]
 }
@@ -201,3 +250,48 @@ export type QueryConfigNoName<TColumns extends readonly string[] = string[]> =
 export type QueryConfigToRowData<T extends QueryConfig> = QueryConfigRowData<
   T['columns']
 >
+
+// ============================================================================
+// SQL Helper Functions
+// ============================================================================
+
+/**
+ * Get a single SQL string for display purposes.
+ * Returns the first SQL from VersionedSql[] or the string directly.
+ *
+ * @example
+ * ```ts
+ * getSqlForDisplay('SELECT 1') // Returns 'SELECT 1'
+ * getSqlForDisplay([{ since: '24.1', sql: 'SELECT 1' }]) // Returns 'SELECT 1'
+ * ```
+ */
+export function getSqlForDisplay(sql: string | VersionedSql[]): string {
+  if (typeof sql === 'string') {
+    return sql
+  }
+  if (sql.length === 0) {
+    return ''
+  }
+  // Return the last (newest) SQL for display
+  return sql[sql.length - 1].sql
+}
+
+/**
+ * Get all SQL strings from a sql definition.
+ * Useful for parsing tables from all version variants.
+ *
+ * @example
+ * ```ts
+ * getAllSqlStrings('SELECT 1') // ['SELECT 1']
+ * getAllSqlStrings([
+ *   { since: '24.1', sql: 'SELECT 1' },
+ *   { since: '24.5', sql: 'SELECT 2' },
+ * ]) // ['SELECT 1', 'SELECT 2']
+ * ```
+ */
+export function getAllSqlStrings(sql: string | VersionedSql[]): string[] {
+  if (typeof sql === 'string') {
+    return [sql]
+  }
+  return sql.map((v) => v.sql)
+}

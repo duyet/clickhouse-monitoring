@@ -5,6 +5,7 @@
 'use client'
 
 import type { ChartConfig } from '@/components/ui/chart'
+
 import { TooltipColorIndicator } from './tooltip-color-indicator'
 
 interface StandardTooltipRowProps {

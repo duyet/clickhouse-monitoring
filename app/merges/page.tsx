@@ -2,8 +2,8 @@
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { mergesConfig } from '@/lib/query-config/merges/merges'
 import { ChartSkeleton } from '@/components/skeletons'
+import { mergesConfig } from '@/lib/query-config/merges/merges'
 
 function MergesPageContent() {
   return <PageLayout queryConfig={mergesConfig} />

@@ -1,4 +1,10 @@
-import type { Row, RowData } from '@tanstack/react-table'
+import type { RowData } from '@tanstack/react-table'
+
+import type {
+  FormatterProps,
+  RowContextFormatter,
+  ValueOnlyFormatter,
+} from './types'
 
 import {
   CodeDialogFormat,
@@ -16,12 +22,6 @@ import {
   MarkdownFormat,
   type MarkdownFormatOptions,
 } from '../cells/markdown-format'
-
-import type {
-  FormatterProps,
-  RowContextFormatter,
-  ValueOnlyFormatter,
-} from './types'
 import { ColumnFormat } from '@/types/column-format'
 
 /**

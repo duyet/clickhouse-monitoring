@@ -1,8 +1,10 @@
 'use client'
 
-import { memo } from 'react'
 import { XAxis, YAxis } from 'recharts'
+
 import type { BarChartProps } from '@/types/charts'
+
+import { memo } from 'react'
 
 interface BarAxesProps {
   horizontal: boolean

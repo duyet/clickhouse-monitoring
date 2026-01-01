@@ -2,7 +2,6 @@ import type {
   MenuItem as MenuItemType,
   MenuSection,
 } from '@/components/menu/types'
-import type { LucideIcon } from 'lucide-react'
 
 /**
  * Props for rendering a single menu item

@@ -1,6 +1,7 @@
 'use client'
 
 import { RefreshCw } from 'lucide-react'
+
 import { memo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -38,7 +39,11 @@ export const ChartError = memo(function ChartError({
 
   return (
     <Card
-      className={cn('rounded-md h-full shadow-none py-2', errorClassName, className)}
+      className={cn(
+        'rounded-md h-full shadow-none py-2',
+        errorClassName,
+        className
+      )}
       role="alert"
       aria-label={title ? `${title} error` : 'Error loading chart'}
     >

@@ -7,10 +7,9 @@
 'use client'
 
 import type React from 'react'
-
 import type { ErrorAlertVariant } from '../error-alert-variants'
+
 import { getVariantStyles } from '../error-alert-variants'
-import type { ErrorAlertProps } from '../types'
 
 export interface CompactErrorAlertProps {
   title: string

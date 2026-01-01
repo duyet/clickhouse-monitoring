@@ -3,7 +3,16 @@
  * Provides centralized access to all available table queries and their SQL definitions
  */
 
+import type { QueryConfig } from '@/types/query-config'
+
 import { queries } from '@/lib/query-config'
+import {
+  explorerColumnsConfig,
+  explorerDatabasesConfig,
+  explorerDdlConfig,
+  explorerIndexesConfig,
+  explorerTablesConfig,
+} from '@/lib/query-config/explorer'
 import { clustersConfig } from '@/lib/query-config/system/clusters'
 import {
   databaseTableColumnsConfig,
@@ -18,7 +27,7 @@ import {
   clustersReplicasStatusConfig,
   replicaTablesConfig,
 } from '@/lib/query-config/system/replicas-status'
-import type { QueryConfig } from '@/types/query-config'
+import { getSqlForDisplay } from '@/types/query-config'
 
 /**
  * Parameters for building table queries
@@ -48,6 +57,13 @@ export interface TableQueryResult {
 const allQueryConfigs: QueryConfig[] = [
   // Main queries from clickhouse-queries.ts
   ...queries,
+
+  // Explorer configs
+  explorerDatabasesConfig,
+  explorerTablesConfig,
+  explorerColumnsConfig,
+  explorerDdlConfig,
+  explorerIndexesConfig,
 
   // Specific page configs
   clustersConfig,
@@ -106,7 +122,9 @@ export function getTableQuery(
   }
 
   return {
-    query: queryConfig.sql,
+    // Use getSqlForDisplay to get a string representation for display
+    // Actual execution uses selectVersionedSql in fetchData
+    query: getSqlForDisplay(queryConfig.sql),
     queryParams: Object.keys(queryParams).length > 0 ? queryParams : undefined,
     queryConfig,
   }

@@ -2,12 +2,13 @@
  * Chart renderer components for each chart kind
  */
 
-import { AreaChart } from '@/components/charts/primitives/area'
-import { BarChart } from '@/components/charts/primitives/bar'
-import { GithubHeatmapChart } from '@/components/charts/github-heatmap-chart'
-import { ChartCard } from '@/components/cards/chart-card'
 import type { ChartColor } from '../chart-colors'
 import type { ChartKind, TimeSeriesDataPoint } from './types'
+
+import { ChartCard } from '@/components/cards/chart-card'
+import { GithubHeatmapChart } from '@/components/charts/github-heatmap-chart'
+import { AreaChart } from '@/components/charts/primitives/area'
+import { BarChart } from '@/components/charts/primitives/bar'
 
 interface ChartRendererProps {
   kind: ChartKind

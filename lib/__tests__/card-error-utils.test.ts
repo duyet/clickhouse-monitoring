@@ -2,18 +2,18 @@
  * Tests for lib/card-error-utils.ts
  */
 
-import { describe, it, expect } from '@jest/globals'
 import {
+  type CardError,
   detectCardErrorVariant,
-  getCardErrorDescription,
-  getCardErrorTitle,
-  getCardErrorStyle,
+  formatCardErrorForLogging,
   getCardErrorClassName,
+  getCardErrorDescription,
+  getCardErrorStyle,
+  getCardErrorTitle,
   isCardErrorRetryable,
   shouldShowRetryButton,
-  formatCardErrorForLogging,
-  type CardError,
 } from '../card-error-utils'
+import { describe, expect, it } from '@jest/globals'
 import { ApiErrorType } from '@/lib/api/types'
 
 describe('card-error-utils', () => {

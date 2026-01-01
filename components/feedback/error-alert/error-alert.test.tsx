@@ -4,23 +4,21 @@
  * Unit tests for ErrorAlert component structure and exports.
  */
 
-import { describe, expect, it } from '@jest/globals'
-
-import { ErrorAlert } from './index'
-import { CompactErrorAlert } from './variants/compact'
-import { FullErrorAlert } from './variants/full'
-import { getErrorIcon, type ErrorIconType } from './error-alert-icons'
 import {
   ErrorAlertAccordion,
-  ErrorAlertDocs,
   ErrorAlertDigest,
+  ErrorAlertDocs,
 } from './error-alert-accordion'
+import { type ErrorIconType, getErrorIcon } from './error-alert-icons'
 import {
-  getVariantStyles,
   type ErrorAlertVariant,
+  getVariantStyles,
 } from './error-alert-variants'
+import { ErrorAlert } from './index'
 import { useErrorCountdown } from './use-error-countdown'
-import type { ErrorAlertProps } from './types'
+import { CompactErrorAlert } from './variants/compact'
+import { FullErrorAlert } from './variants/full'
+import { describe, expect, it } from '@jest/globals'
 
 describe('ErrorAlert', () => {
   describe('Component Structure', () => {
