@@ -3,7 +3,7 @@
 import useSWR from 'swr'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
-import { useMemo, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { TableSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,6 +14,61 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useHostId } from '@/lib/swr/use-host'
+import { cn } from '@/lib/utils'
+
+const MAX_CELL_LENGTH = 100
+
+/**
+ * Expandable cell component for long text content
+ * Shows truncated text inline with click-to-expand functionality
+ */
+const ExpandableCell = memo(function ExpandableCell({
+  value,
+}: {
+  value: unknown
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const stringValue = String(value ?? '')
+  const isLong = stringValue.length > MAX_CELL_LENGTH
+
+  const toggleExpand = useCallback(() => {
+    setExpanded((prev) => !prev)
+  }, [])
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        toggleExpand()
+      }
+    },
+    [toggleExpand]
+  )
+
+  if (!isLong) {
+    return <span className="whitespace-nowrap">{stringValue}</span>
+  }
+
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      onClick={toggleExpand}
+      onKeyDown={handleKeyDown}
+      className={cn(
+        'cursor-pointer transition-colors',
+        expanded
+          ? 'whitespace-pre-wrap break-words'
+          : 'whitespace-nowrap',
+        !expanded && 'hover:text-primary'
+      )}
+      title={expanded ? 'Click to collapse' : 'Click to expand'}
+      aria-expanded={expanded}
+    >
+      {expanded ? stringValue : `${stringValue.slice(0, MAX_CELL_LENGTH)}…`}
+    </span>
+  )
+})
 
 interface ApiResponse<T> {
   data: T
@@ -141,8 +196,8 @@ export function DataTab() {
             {rows.map((row, i) => (
               <tr key={i} className="border-b last:border-0 hover:bg-muted/50">
                 {columns.map((col) => (
-                  <td key={col} className="px-4 py-3">
-                    {String(row[col] ?? '')}
+                  <td key={col} className="px-4 py-3 max-w-md">
+                    <ExpandableCell value={row[col]} />
                   </td>
                 ))}
               </tr>

@@ -164,11 +164,11 @@ export const fetchData = async <
         const version = await getClickHouseVersion(currentHostId)
         effectiveQuery = selectVersionedSql(queryConfig.sql, version)
 
-        if (version) {
-          debug(
-            `[fetchData] Using query for ClickHouse ${version.raw} (config: ${queryConfig.name})`
-          )
-        }
+        debug(
+          `[fetchData] Version selection for ${queryConfig.name}: ` +
+            `detected=${version?.raw ?? 'null'}, ` +
+            `selected=${effectiveQuery.substring(0, 60).replace(/\s+/g, ' ')}...`
+        )
       }
       // Simple string sql
       else if (typeof queryConfig.sql === 'string') {

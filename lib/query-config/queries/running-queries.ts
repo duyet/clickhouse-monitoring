@@ -7,7 +7,7 @@ export const runningQueriesConfig: QueryConfig = {
   sql: [
     {
       since: '23.8',
-      description: 'Base query without peak_threads_usage',
+      description: 'Base query',
       sql: `
       SELECT *,
         query_id as query_detail,
@@ -44,7 +44,7 @@ export const runningQueriesConfig: QueryConfig = {
     `,
     },
     {
-      since: '24.1',
+      since: '24.8',
       description: 'Added peak_threads_usage column',
       sql: `
       SELECT *,
