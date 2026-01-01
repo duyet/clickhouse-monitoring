@@ -102,42 +102,31 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
           </TabsTrigger>
         </TabsList>
 
-        {/* Render all visited tabs to keep their state, hide non-active ones */}
-        <div className={cn('flex-1', tab !== 'data' && 'hidden')}>
-          <TabsContent value="data" className="mt-4" forceMount>
+        {/* Data tab: always force-mounted to preserve pagination state */}
+        <TabsContent value="data" className="mt-4" forceMount>
+          <div className={cn(tab !== 'data' && 'hidden')}>
             <DataTab />
-          </TabsContent>
-        </div>
+          </div>
+        </TabsContent>
 
-        <div className={cn('flex-1', tab !== 'structure' && 'hidden')}>
-          {visitedTabs.has('structure') ? (
-            <TabsContent value="structure" className="mt-4" forceMount>
-              <StructureTab />
-            </TabsContent>
-          ) : (
-            <TabsContent value="structure" className="mt-4" />
-          )}
-        </div>
+        {/* Structure tab: don't force-mount due to complex filter state */}
+        <TabsContent value="structure" className="mt-4">
+          <StructureTab />
+        </TabsContent>
 
-        <div className={cn('flex-1', tab !== 'ddl' && 'hidden')}>
-          {visitedTabs.has('ddl') ? (
-            <TabsContent value="ddl" className="mt-4" forceMount>
-              <DdlTab />
-            </TabsContent>
-          ) : (
-            <TabsContent value="ddl" className="mt-4" />
-          )}
-        </div>
+        {/* DDL tab: force-mount to keep content cached */}
+        <TabsContent value="ddl" className="mt-4" forceMount>
+          <div className={cn(tab !== 'ddl' && 'hidden')}>
+            {visitedTabs.has('ddl') && <DdlTab />}
+          </div>
+        </TabsContent>
 
-        <div className={cn('flex-1', tab !== 'indexes' && 'hidden')}>
-          {visitedTabs.has('indexes') ? (
-            <TabsContent value="indexes" className="mt-4" forceMount>
-              <IndexesTab />
-            </TabsContent>
-          ) : (
-            <TabsContent value="indexes" className="mt-4" />
-          )}
-        </div>
+        {/* Indexes tab: force-mount to keep content cached */}
+        <TabsContent value="indexes" className="mt-4" forceMount>
+          <div className={cn(tab !== 'indexes' && 'hidden')}>
+            {visitedTabs.has('indexes') && <IndexesTab />}
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   )
