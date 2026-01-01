@@ -28,7 +28,7 @@ export function renderPulseVariant<T>({
   data,
   compact,
   history = [],
-  _historyLabel = '24h',
+  historyLabel: _historyLabel = '24h',
   showSparkline = true,
 }: RenderProps<T>): ReactNode {
   const resolvedValue = extractValue(value, data)

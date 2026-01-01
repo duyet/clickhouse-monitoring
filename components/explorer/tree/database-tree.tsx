@@ -23,7 +23,8 @@ interface DatabaseTreeProps {
   hostId: number
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+const fetcher = (url: string): Promise<ApiResponse<Database[]>> =>
+  fetch(url).then((res) => res.json())
 
 export function DatabaseTree({ hostId }: DatabaseTreeProps) {
   const [searchFilter, setSearchFilter] = useState('')

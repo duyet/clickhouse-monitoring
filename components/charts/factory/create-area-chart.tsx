@@ -55,7 +55,7 @@ export function createAreaChart<T extends ChartDataPoint = ChartDataPoint>(
         return config.areaChartProps.tickFormatter
       }
       return lastHours ? createDateTickFormatter(lastHours) : undefined
-    }, [lastHours, config.areaChartProps.tickFormatter])
+    }, [lastHours, config.areaChartProps?.tickFormatter])
 
     return (
       <ChartContainer

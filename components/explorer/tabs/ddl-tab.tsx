@@ -19,7 +19,8 @@ interface ApiResponse<T> {
   metadata?: Record<string, unknown>
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+const fetcher = (url: string): Promise<ApiResponse<DdlRow[]>> =>
+  fetch(url).then((res) => res.json())
 
 export function DdlTab() {
   const hostId = useHostId()

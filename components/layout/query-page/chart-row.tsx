@@ -48,7 +48,7 @@ export interface ChartRowProps {
 }
 
 export const ChartRow = memo(function ChartRow({
-  _rowIndex,
+  rowIndex: _rowIndex,
   charts,
   hostId,
   isCollapsed,

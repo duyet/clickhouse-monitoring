@@ -36,7 +36,7 @@ export function ChartErrorState({ error, title, onRetry }: ErrorStateProps) {
 /**
  * Empty state when event_time column is missing
  */
-export function ChartMissingEventTime({ _title }: EmptyStateProps) {
+export function ChartMissingEventTime({ title: _title }: EmptyStateProps) {
   return (
     <div className="flex items-center justify-center p-4 text-muted-foreground">
       <code>event_time</code> column is required from query result

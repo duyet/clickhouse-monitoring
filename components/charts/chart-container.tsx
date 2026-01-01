@@ -55,7 +55,7 @@ export const ChartContainer = memo(function ChartContainer<
   swr,
   title,
   className,
-  _chartClassName,
+  chartClassName: _chartClassName,
   children,
 }: ChartContainerProps<TData>) {
   const { data, isLoading, error, mutate, sql } = swr

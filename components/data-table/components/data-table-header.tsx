@@ -69,7 +69,7 @@ export const DataTableHeader = memo(function DataTableHeader<
   topRightToolbarExtras,
   showSQL,
   table,
-  _queryParams,
+  queryParams: _queryParams,
   isRefreshing,
   enableColumnFilters,
   activeFilterCount,
