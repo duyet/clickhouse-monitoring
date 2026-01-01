@@ -29,7 +29,7 @@
     "check:fix": "biome check --write .",
     "test": "bun jest",
     "jest": "jest --coverage",
-    "test-queries-config": "jest --coverage --testPathPattern=query-config --testPathIgnorePatterns=/node_modules/",
+    "test-queries-config": "jest --coverage --passWithNoTests --testPathPattern=query-config --testPathIgnorePatterns=/node_modules/",
     "preinstall": "npx only-allow bun"
   },
   "dependencies": {
