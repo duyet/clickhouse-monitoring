@@ -276,6 +276,40 @@ export function InfoBadge({ className, ...props }) {
 - Client components use SWR hooks for data fetching
 - Server components can use API routes for data fetching
 
+#### ClickHouse Version Compatibility
+
+**IMPORTANT**: ClickHouse system tables change between versions. See `docs/clickhouse-schemas/` for:
+
+- **Schema documentation** per version (`v23.8.md`, `v24.1.md`, etc.)
+- **Column availability matrix** per table (`tables/query_log.md`, etc.)
+- **Version-aware query patterns** with `variants` field
+
+**When modifying query configs:**
+1. Check `docs/clickhouse-schemas/tables/{table}.md` for column availability
+2. Add `variants` array if columns differ across versions:
+
+```typescript
+export const myConfig: QueryConfig = {
+  name: 'my-query',
+  sql: `SELECT col1, new_col FROM system.table`, // Latest version
+  variants: [
+    {
+      versions: '<24.1',
+      description: 'Pre-24.1: new_col not available',
+      sql: `SELECT col1 FROM system.table`,
+    },
+  ],
+  columns: ['col1', 'new_col'],
+}
+```
+
+**Regenerate schema docs:**
+```bash
+bun run scripts/build-ch-schema-docs.ts
+```
+
+See also: `.claude/skills/clickhouse-query-config.md` for Claude skill guidance.
+
 #### Table Validation System
 
 The application includes a robust table validation system to handle optional ClickHouse system tables that may not exist depending on configuration:

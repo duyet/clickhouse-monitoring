@@ -1,7 +1,12 @@
 'use client'
 
 import { memo } from 'react'
-import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardDescription,
+} from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
@@ -30,7 +35,7 @@ export const ChartSkeleton = memo(function ChartSkeleton({
       aria-busy="true"
       aria-label={title ? `Loading ${title}` : 'Loading chart'}
     >
-      <CardHeader className="px-3 shrink-0">
+      <CardHeader className="px-3 shrink-0 py-2">
         <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase">
           {title || <Skeleton className="h-3 w-32" />}
         </CardDescription>

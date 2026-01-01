@@ -6,6 +6,10 @@
 import type { DataFormat, QueryParams } from '@clickhouse/client'
 import { debug, error, warn } from '@/lib/logger'
 import { validateTableExistence } from '@/lib/table-validator'
+import {
+  getClickHouseVersion,
+  selectQueryVariantSemver,
+} from '@/lib/clickhouse-version'
 import type { QueryConfig } from '@/types/query-config'
 import { getClient } from './clickhouse-client'
 import { getClickHouseConfigs } from './clickhouse-config'
@@ -148,7 +152,32 @@ export const fetchData = async <
       clientConfig,
     })
 
-    const effectiveQuery = queryConfig?.sql || query
+    // Select version-appropriate query if variants are defined
+    let effectiveQuery = queryConfig?.sql || query
+
+    if (queryConfig?.variants && queryConfig.variants.length > 0) {
+      // Get ClickHouse version for this host (cached)
+      const version = await getClickHouseVersion(currentHostId)
+
+      // Select the appropriate query variant based on version
+      effectiveQuery = selectQueryVariantSemver(
+        {
+          query: queryConfig.sql,
+          variants: queryConfig.variants.map((v) => ({
+            versions: v.versions,
+            query: v.sql,
+          })),
+        },
+        version
+      )
+
+      if (version) {
+        debug(
+          `[fetchData] Using query for ClickHouse ${version.raw} (config: ${queryConfig.name})`
+        )
+      }
+    }
+
     const resultSet = await client.query({
       query: QUERY_COMMENT + effectiveQuery,
       format,

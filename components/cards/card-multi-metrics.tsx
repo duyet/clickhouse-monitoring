@@ -27,17 +27,17 @@ const DottedLineProgress = memo(function DottedLineProgress({
   const clampedPercent = Math.min(100, Math.max(0, percent))
 
   return (
-    <div className={cn('relative w-16 h-3', className)}>
+    <div className={cn('relative flex-1 h-3 min-w-8', className)}>
       {/* Background dotted line */}
       <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t-2 border-dashed border-muted-foreground/20" />
+        <div className="w-full border-t border-dotted border-muted-foreground/20" />
       </div>
       {/* Foreground filled dotted line */}
       <div
         className="absolute inset-0 flex items-center overflow-hidden"
         style={{ width: `${clampedPercent}%` }}
       >
-        <div className="w-full border-t-2 border-dashed border-primary" />
+        <div className="w-full border-t border-dotted border-primary" />
       </div>
     </div>
   )

@@ -26,7 +26,7 @@ export const DynamicChart = memo(function DynamicChart({
 
   if (!ChartComponent) {
     return (
-      <div className="flex h-44 items-center justify-center rounded-lg border border-dashed">
+      <div className="flex h-44 items-center justify-center rounded-lg border border-dashed shadow-none py-2">
         <p className="text-muted-foreground text-sm">
           Unknown chart: {chartName}
         </p>
@@ -35,13 +35,11 @@ export const DynamicChart = memo(function DynamicChart({
   }
 
   return (
-    <div className="flex h-full min-h-[140px] max-h-[240px] flex-col">
       <ChartComponent
         className="w-full p-0 shadow-none"
         chartClassName="h-full min-h-[120px] max-h-[200px]"
         hostId={hostId}
         {...chartProps}
       />
-    </div>
   )
 })

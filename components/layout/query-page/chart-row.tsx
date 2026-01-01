@@ -118,10 +118,7 @@ export const ChartRow = memo(function ChartRow({
               if (!chartConfig) return null
 
               // Handle break directive
-              if (
-                typeof chartConfig === 'string' &&
-                chartConfig === 'break'
-              ) {
+              if (typeof chartConfig === 'string' && chartConfig === 'break') {
                 return <div key={`break-${index}`} className="hidden" />
               }
 
@@ -139,19 +136,22 @@ export const ChartRow = memo(function ChartRow({
               return (
                 <div
                   key={`${chartName}-${index}`}
-                  className={cn(
-                    'h-full',
-                    colSpan && `md:col-span-${colSpan}`
-                  )}
-                  style={colSpan ? { gridColumn: `span ${colSpan} / span ${colSpan}` } : undefined}
+                  className={cn('h-full', colSpan && `md:col-span-${colSpan}`)}
+                  style={
+                    colSpan
+                      ? { gridColumn: `span ${colSpan} / span ${colSpan}` }
+                      : undefined
+                  }
                 >
-                  <Suspense fallback={<ChartSkeleton />}>
-                    <DynamicChart
-                      chartName={chartName}
-                      hostId={hostId}
-                      chartProps={chartProps}
-                    />
-                  </Suspense>
+                  <div className="flex h-full min-h-[140px] max-h-[240px] flex-col">
+                    <Suspense fallback={<ChartSkeleton />}>
+                      <DynamicChart
+                        chartName={chartName}
+                        hostId={hostId}
+                        chartProps={chartProps}
+                      />
+                    </Suspense>
+                  </div>
                 </div>
               )
             })}
