@@ -5,7 +5,7 @@ import useSWR from 'swr'
 
 import { TableNode } from './table-node'
 import { TreeNode } from './tree-node'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface Table {
@@ -52,6 +52,13 @@ export function DatabaseNode({
 }: DatabaseNodeProps) {
   const [shouldFetch, setShouldFetch] = useState(false)
 
+  // Auto-trigger fetch when expanded (including from URL state)
+  useEffect(() => {
+    if (isExpanded && !shouldFetch) {
+      setShouldFetch(true)
+    }
+  }, [isExpanded, shouldFetch])
+
   const { data: response, isLoading } = useSWR<ApiResponse<Table[]>>(
     shouldFetch
       ? `/api/v1/explorer/tables?hostId=${hostId}&database=${encodeURIComponent(database)}`
@@ -80,12 +87,16 @@ export function DatabaseNode({
 
   const showLoadingSkeleton = isLoading && isExpanded && !tables
 
+  // Highlight if this is the selected database (whether table is selected or not)
+  const isHighlighted = selectedDatabase === database
+
   return (
     <TreeNode
       label={database}
       icon={DatabaseIcon}
       isExpanded={isExpanded}
       isSelected={selectedDatabase === database && !selectedTable}
+      isHighlighted={isHighlighted}
       isLoading={isLoading && isExpanded}
       hasChildren
       level={level}

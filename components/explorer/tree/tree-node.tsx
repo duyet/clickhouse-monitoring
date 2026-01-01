@@ -21,6 +21,7 @@ interface TreeNodeProps {
   icon?: ComponentType<{ className?: string }>
   isExpanded?: boolean
   isSelected?: boolean
+  isHighlighted?: boolean // Parent highlight (e.g., database when table is selected)
   isLoading?: boolean
   hasChildren?: boolean
   expandOnSelect?: boolean // If true, clicking label expands node (default: true for backwards compat)
@@ -36,6 +37,7 @@ export function TreeNode({
   icon: Icon,
   isExpanded = false,
   isSelected = false,
+  isHighlighted = false,
   isLoading = false,
   hasChildren = false,
   expandOnSelect = true,
@@ -49,7 +51,12 @@ export function TreeNode({
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
-      <SidebarMenuItem>
+      <SidebarMenuItem
+        className={cn(
+          'transition-colors',
+          isHighlighted && !isSelected && 'bg-sidebar-accent/50'
+        )}
+      >
         <div
           className="flex items-center gap-1"
           style={{ paddingLeft: `${paddingLeft}px` }}
@@ -88,9 +95,19 @@ export function TreeNode({
               onSelect?.()
             }}
             isActive={isSelected}
-            className="flex-1 justify-start"
+            className={cn(
+              'flex-1 justify-start',
+              isHighlighted && !isSelected && 'font-medium'
+            )}
           >
-            {Icon && <Icon className="size-4 shrink-0" />}
+            {Icon && (
+              <Icon
+                className={cn(
+                  'size-4 shrink-0',
+                  isHighlighted && 'text-primary'
+                )}
+              />
+            )}
             <span className="truncate">{label}</span>
             {badge && <div className="ml-auto">{badge}</div>}
           </SidebarMenuButton>

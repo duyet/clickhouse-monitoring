@@ -1,5 +1,6 @@
 'use client'
 
+import { Loader2 } from 'lucide-react'
 import useSWR from 'swr'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
@@ -57,9 +58,7 @@ const ExpandableCell = memo(function ExpandableCell({
       onKeyDown={handleKeyDown}
       className={cn(
         'cursor-pointer transition-colors',
-        expanded
-          ? 'whitespace-pre-wrap break-words'
-          : 'whitespace-nowrap',
+        expanded ? 'whitespace-pre-wrap break-words' : 'whitespace-nowrap',
         !expanded && 'hover:text-primary'
       )}
       title={expanded ? 'Click to collapse' : 'Click to expand'}
@@ -80,7 +79,9 @@ interface ApiResponse<T> {
 
 const PAGE_SIZE_OPTIONS = [100, 500, 1000] as const
 
-const fetcher = (url: string): Promise<ApiResponse<Record<string, unknown>[]>> =>
+const fetcher = (
+  url: string
+): Promise<ApiResponse<Record<string, unknown>[]>> =>
   fetch(url).then((res) => res.json())
 
 export function DataTab() {
@@ -93,11 +94,15 @@ export function DataTab() {
     data: response,
     error,
     isLoading,
+    isValidating,
   } = useSWR<ApiResponse<Record<string, unknown>[]>>(
     database && table
       ? `/api/v1/explorer/preview?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}&limit=${limit}&offset=${offset}`
       : null,
-    fetcher
+    fetcher,
+    {
+      keepPreviousData: true, // Keep showing old data while loading new page
+    }
   )
 
   const rows = response?.data || []
@@ -110,7 +115,8 @@ export function DataTab() {
     return null
   }
 
-  if (isLoading) {
+  // Show skeleton only on initial load, not during pagination
+  if (isLoading && !response) {
     return <TableSkeleton />
   }
 
@@ -122,7 +128,7 @@ export function DataTab() {
     )
   }
 
-  if (rows.length === 0) {
+  if (rows.length === 0 && !isValidating) {
     return (
       <div className="p-4 text-sm text-muted-foreground">
         No data available for {database}.{table}
@@ -132,6 +138,7 @@ export function DataTab() {
 
   const currentPage = Math.floor(offset / limit) + 1
   const hasNextPage = rows.length === limit
+  const isPaginating = isValidating && !!response
 
   return (
     <div className="flex flex-col gap-4">
@@ -144,6 +151,7 @@ export function DataTab() {
               setLimit(Number(v))
               setOffset(0)
             }}
+            disabled={isPaginating}
           >
             <SelectTrigger className="w-24">
               <SelectValue />
@@ -159,13 +167,16 @@ export function DataTab() {
         </div>
 
         <div className="flex items-center gap-2">
+          {isPaginating && (
+            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+          )}
           <span className="text-sm text-muted-foreground">
             Page {currentPage}
           </span>
           <Button
             variant="outline"
             size="sm"
-            disabled={offset === 0}
+            disabled={offset === 0 || isPaginating}
             onClick={() => setOffset(Math.max(0, offset - limit))}
           >
             Previous
@@ -173,7 +184,7 @@ export function DataTab() {
           <Button
             variant="outline"
             size="sm"
-            disabled={!hasNextPage}
+            disabled={!hasNextPage || isPaginating}
             onClick={() => setOffset(offset + limit)}
           >
             Next
@@ -181,7 +192,12 @@ export function DataTab() {
         </div>
       </div>
 
-      <div className="overflow-auto rounded-md border">
+      <div
+        className={cn(
+          'overflow-x-auto rounded-md border transition-opacity',
+          isPaginating && 'opacity-60'
+        )}
+      >
         <table className="w-full text-sm">
           <thead className="border-b bg-muted/50">
             <tr>
