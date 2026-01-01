@@ -61,8 +61,17 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
       }}
     >
       {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
-        <TableCell key={cell.id} className="px-4 py-3 text-sm">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        <TableCell
+          key={cell.id}
+          className="px-4 py-3 text-sm break-words"
+          style={{
+            width: cell.column.getSize(),
+            maxWidth: cell.column.columnDef.maxSize ?? undefined,
+          }}
+        >
+          <div className="whitespace-pre-wrap break-words">
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </div>
         </TableCell>
       ))}
     </TableRow>
@@ -103,8 +112,17 @@ export const StandardTableRow = memo(function StandardTableRow<
       )}
     >
       {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
-        <TableCell key={cell.id} className="px-4 py-3 text-sm">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        <TableCell
+          key={cell.id}
+          className="px-4 py-3 text-sm break-words"
+          style={{
+            width: cell.column.getSize(),
+            maxWidth: cell.column.columnDef.maxSize ?? undefined,
+          }}
+        >
+          <div className="whitespace-pre-wrap break-words">
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </div>
         </TableCell>
       ))}
     </TableRow>

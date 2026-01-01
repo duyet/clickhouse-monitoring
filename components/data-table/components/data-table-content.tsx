@@ -82,15 +82,27 @@ export const DataTableContent = memo(function DataTableContent<
   virtualizer,
   activeFilterCount,
 }: DataTableContentProps<TData, TValue>) {
+  // Calculate total table width from column sizes
+  const tableWidth = table.getTotalSize()
+
   return (
     <div
       ref={tableContainerRef}
-      className="mb-5 min-h-0 flex-1 overflow-auto rounded-lg border border-border/50 bg-card/30"
+      className={`mb-5 min-h-0 flex-1 rounded-lg border border-border/50 bg-card/30 ${
+        isVirtualized ? 'overflow-auto' : 'overflow-x-auto'
+      }`}
       role="region"
       aria-label={`${title || 'Data'} table`}
       style={isVirtualized ? { height: '600px' } : undefined}
     >
-      <Table aria-describedby="table-description">
+      <Table
+        aria-describedby="table-description"
+        style={{
+          width: tableWidth,
+          minWidth: '100%',
+          tableLayout: 'fixed',
+        }}
+      >
         <caption id="table-description" className="sr-only">
           {description || queryConfig.description || `${title} data table`}
         </caption>

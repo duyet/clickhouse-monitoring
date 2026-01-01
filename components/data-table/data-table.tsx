@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  type ColumnSizingState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -197,6 +198,9 @@ export function DataTable<
   // Sorting
   const [sorting, setSorting] = useState<SortingState>([])
 
+  // Column sizing for resize support
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({})
+
   const table = useReactTable({
     data: filteredData,
     columns: columnDefs,
@@ -208,9 +212,14 @@ export function DataTable<
     sortingFns: getCustomSortingFns<TData>(),
     getPaginationRowModel: getPaginationRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
+    // Column resizing
+    enableColumnResizing: true,
+    columnResizeMode: 'onChange',
+    onColumnSizingChange: setColumnSizing,
     state: {
       sorting,
       columnVisibility,
+      columnSizing,
     },
     initialState: {
       pagination: {
