@@ -1,22 +1,38 @@
 'use client'
 
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { DatabaseTableSelector } from '@/components/controls/database-table-selector'
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
+import { useHostId } from '@/lib/swr'
 import { partInfoConfig } from '@/lib/query-config/tables/part-info'
 
 function PartInfoContent() {
   const searchParams = useSearchParams()
+  const hostId = useHostId()
   const database = searchParams.get('database')
   const table = searchParams.get('table')
+
+  const explorerUrl =
+    database && table
+      ? `/explorer?host=${hostId}&database=${database}&table=${table}`
+      : null
 
   return (
     <div className="flex flex-col gap-4">
       {/* Database and Table Selector */}
-      <div className="bg-card rounded-lg border p-4">
+      <div className="bg-card rounded-lg border p-4 flex items-center justify-between gap-4">
         <DatabaseTableSelector />
+        {explorerUrl && (
+          <Link
+            href={explorerUrl}
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+          >
+            View in Explorer →
+          </Link>
+        )}
       </div>
 
       {/* Table Content */}
