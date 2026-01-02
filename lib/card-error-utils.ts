@@ -341,8 +341,15 @@ export function getTableMissingInfo(
     return undefined
   }
 
-  const apiError = error as ApiError & { missingTables?: readonly string[] }
-  const missingTables = apiError.missingTables
+  const apiError = error as ApiError & {
+    missingTables?: readonly string[]
+    details?: { missingTables?: readonly string[] }
+  }
+
+  // Check both error.missingTables and error.details.missingTables
+  // SWR hooks store it in details, API responses may have it directly
+  const missingTables =
+    apiError.missingTables || apiError.details?.missingTables
 
   if (!missingTables || missingTables.length === 0) {
     return undefined
