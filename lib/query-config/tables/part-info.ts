@@ -9,37 +9,46 @@ export const partInfoConfig: QueryConfig = {
 
   // Version-aware SQL queries (oldest → newest)
   // Note: 'marks' is the correct column (NOT 'marks_count')
+  // BackgroundBar requires pct_{column} for percentage-based rendering
   sql: [
     {
       since: '19.1',
       description: 'Base query - primary_key_bytes_in_memory not available',
       sql: `
+        WITH parts_data AS (
+          SELECT
+            *,
+            round(data_uncompressed_bytes / nullIf(data_compressed_bytes, 0), 2) AS compression_ratio
+          FROM system.parts
+          WHERE database = {database: String}
+            AND table = {table: String}
+            AND active = 1
+        )
         SELECT
           name,
           partition,
           level,
           rows,
           formatReadableQuantity(rows) as readable_rows,
+          round(rows * 100.0 / nullIf(max(rows) OVER (), 0), 2) AS pct_rows,
           data_compressed_bytes,
           formatReadableSize(data_compressed_bytes) AS readable_compressed,
+          round(data_compressed_bytes * 100.0 / nullIf(max(data_compressed_bytes) OVER (), 0), 2) AS pct_compressed,
           data_uncompressed_bytes,
           formatReadableSize(data_uncompressed_bytes) AS readable_uncompressed,
-          round(data_uncompressed_bytes / data_compressed_bytes, 2) AS compression_ratio,
+          round(data_uncompressed_bytes * 100.0 / nullIf(max(data_uncompressed_bytes) OVER (), 0), 2) AS pct_uncompressed,
+          compression_ratio,
+          round(compression_ratio * 100.0 / nullIf(max(compression_ratio) OVER (), 0), 2) AS pct_compression_ratio,
           marks,
           0 AS primary_key_bytes_in_memory,
           '-' AS readable_primary_key_size,
+          0 AS pct_primary_key_size,
           modification_time,
-          active,
           min_date,
           max_date,
-          min_block_number,
-          max_block_number,
           disk_name,
           path
-        FROM system.parts
-        WHERE database = {database: String}
-          AND table = {table: String}
-          AND active = 1
+        FROM parts_data
         ORDER BY name ASC
       `,
     },
@@ -47,32 +56,40 @@ export const partInfoConfig: QueryConfig = {
       since: '21.8',
       description: 'Includes primary_key_bytes_in_memory columns',
       sql: `
+        WITH parts_data AS (
+          SELECT
+            *,
+            round(data_uncompressed_bytes / nullIf(data_compressed_bytes, 0), 2) AS compression_ratio
+          FROM system.parts
+          WHERE database = {database: String}
+            AND table = {table: String}
+            AND active = 1
+        )
         SELECT
           name,
           partition,
           level,
           rows,
           formatReadableQuantity(rows) as readable_rows,
+          round(rows * 100.0 / nullIf(max(rows) OVER (), 0), 2) AS pct_rows,
           data_compressed_bytes,
           formatReadableSize(data_compressed_bytes) AS readable_compressed,
+          round(data_compressed_bytes * 100.0 / nullIf(max(data_compressed_bytes) OVER (), 0), 2) AS pct_compressed,
           data_uncompressed_bytes,
           formatReadableSize(data_uncompressed_bytes) AS readable_uncompressed,
-          round(data_uncompressed_bytes / data_compressed_bytes, 2) AS compression_ratio,
+          round(data_uncompressed_bytes * 100.0 / nullIf(max(data_uncompressed_bytes) OVER (), 0), 2) AS pct_uncompressed,
+          compression_ratio,
+          round(compression_ratio * 100.0 / nullIf(max(compression_ratio) OVER (), 0), 2) AS pct_compression_ratio,
           marks,
           primary_key_bytes_in_memory,
           formatReadableSize(primary_key_bytes_in_memory) AS readable_primary_key_size,
+          round(primary_key_bytes_in_memory * 100.0 / nullIf(max(primary_key_bytes_in_memory) OVER (), 0), 2) AS pct_primary_key_size,
           modification_time,
-          active,
           min_date,
           max_date,
-          min_block_number,
-          max_block_number,
           disk_name,
           path
-        FROM system.parts
-        WHERE database = {database: String}
-          AND table = {table: String}
-          AND active = 1
+        FROM parts_data
         ORDER BY name ASC
       `,
     },

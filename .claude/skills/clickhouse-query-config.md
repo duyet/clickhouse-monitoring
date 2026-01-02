@@ -160,40 +160,101 @@ sql: [
 // For CH v23.5 → selects '23.8' query (fallback to oldest)
 ```
 
-## Common Patterns
+## BackgroundBar Column Format Requirements
 
-### Optional Column with Fallback
+The `ColumnFormat.BackgroundBar` displays a colored bar proportional to the value. It requires **3 columns** in your SQL query:
 
-When a column may or may not exist:
+| Required Column | Naming Convention | Purpose |
+|-----------------|-------------------|---------|
+| Base value | `{column}` | Original numeric value (e.g., `rows`, `data_compressed_bytes`) |
+| Display value | `readable_{column}` | Formatted display value (e.g., `formatReadableSize(data_compressed_bytes)`) |
+| Percentage | `pct_{column}` | Value as % of max (0-100), used for bar width |
+
+### How BackgroundBar Resolves Columns
+
+```typescript
+// In background-bar-format.tsx:
+const colName = columnName.replace('readable_', '')  // 'readable_rows' → 'rows'
+const pctColName = `pct_${colName}`                  // → 'pct_rows'
+const pct = row.original[pctColName]                 // bar width
+const orgValue = row.original[colName]              // tooltip value
+```
+
+### SQL Pattern for BackgroundBar
 
 ```sql
 SELECT
-  col1,
-  -- Use 0 as default if column doesn't exist in this version
-  if(has(columns, 'new_col'), new_col, 0) as new_col
+  -- Base value (for sorting and tooltip)
+  rows,
+  -- Display value (what user sees in cell)
+  formatReadableQuantity(rows) AS readable_rows,
+  -- Percentage (for bar width, 0-100)
+  round(rows * 100.0 / nullIf(max(rows) OVER (), 0), 2) AS pct_rows
 FROM system.table
 ```
 
-### Version-Specific Aggregations
+### Complete BackgroundBar Example
 
 ```typescript
-variants: [
-  {
-    versions: '<24.1',
-    sql: `
-      SELECT
-        count() as query_count
-      FROM system.query_log
-    `,
+export const myConfig: QueryConfig = {
+  name: 'my-query',
+  sql: `
+    WITH base_data AS (
+      SELECT *, round(col_a / nullIf(col_b, 0), 2) AS ratio
+      FROM system.table
+    )
+    SELECT
+      name,
+      -- BackgroundBar for rows
+      rows,
+      formatReadableQuantity(rows) AS readable_rows,
+      round(rows * 100.0 / nullIf(max(rows) OVER (), 0), 2) AS pct_rows,
+      -- BackgroundBar for bytes
+      bytes,
+      formatReadableSize(bytes) AS readable_bytes,
+      round(bytes * 100.0 / nullIf(max(bytes) OVER (), 0), 2) AS pct_bytes,
+      -- BackgroundBar for computed ratio
+      ratio,
+      round(ratio * 100.0 / nullIf(max(ratio) OVER (), 0), 2) AS pct_ratio
+    FROM base_data
+  `,
+  columns: ['name', 'readable_rows', 'readable_bytes', 'ratio'],
+  columnFormats: {
+    readable_rows: ColumnFormat.BackgroundBar,
+    readable_bytes: ColumnFormat.BackgroundBar,
+    ratio: ColumnFormat.BackgroundBar,
   },
-],
-sql: `
-  SELECT
-    count() as query_count,
-    query_cache_usage  -- Only available in 24.1+
-  FROM system.query_log
-  GROUP BY query_cache_usage
-`,
+}
+```
+
+**Notes:**
+- Use `nullIf(..., 0)` to avoid division by zero
+- Use `max(...) OVER ()` window function to get max across all rows
+- For computed columns (like ratio), use a CTE to calculate first, then add pct_ in outer SELECT
+
+### Quick Reference: "Format BackgroundBar for X, Y, Z"
+
+When user requests: **"format background bar for: rows, compressed, uncompressed, compression ratio, primary key size"**
+
+**Action Required:** For EACH column, add these 3 SQL columns:
+
+| User Says | Base Column | Display Column | Percentage Column |
+|-----------|-------------|----------------|-------------------|
+| rows | `rows` | `formatReadableQuantity(rows) AS readable_rows` | `round(rows * 100.0 / nullIf(max(rows) OVER (), 0), 2) AS pct_rows` |
+| compressed | `data_compressed_bytes` | `formatReadableSize(data_compressed_bytes) AS readable_compressed` | `round(data_compressed_bytes * 100.0 / nullIf(max(data_compressed_bytes) OVER (), 0), 2) AS pct_compressed` |
+| uncompressed | `data_uncompressed_bytes` | `formatReadableSize(data_uncompressed_bytes) AS readable_uncompressed` | `round(data_uncompressed_bytes * 100.0 / nullIf(max(data_uncompressed_bytes) OVER (), 0), 2) AS pct_uncompressed` |
+| compression ratio | `compression_ratio` (computed in CTE) | Already numeric, no readable_ needed | `round(compression_ratio * 100.0 / nullIf(max(compression_ratio) OVER (), 0), 2) AS pct_compression_ratio` |
+| primary key size | `primary_key_bytes_in_memory` | `formatReadableSize(primary_key_bytes_in_memory) AS readable_primary_key_size` | `round(primary_key_bytes_in_memory * 100.0 / nullIf(max(primary_key_bytes_in_memory) OVER (), 0), 2) AS pct_primary_key_size` |
+
+**Then in columnFormats:**
+```typescript
+columnFormats: {
+  readable_rows: ColumnFormat.BackgroundBar,
+  readable_compressed: ColumnFormat.BackgroundBar,
+  readable_uncompressed: ColumnFormat.BackgroundBar,
+  compression_ratio: ColumnFormat.BackgroundBar,
+  readable_primary_key_size: ColumnFormat.BackgroundBar,
+}
 ```
 
 ## File Locations Reference

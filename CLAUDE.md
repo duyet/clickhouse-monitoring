@@ -8,7 +8,22 @@ This is a Next.js 15 (React 19) ClickHouse monitoring dashboard that provides re
 
 ## Claude Skills
 
-Research the ClickHouse version compatibility and add version-aware queries using the skill `clickhouse-query-config`.
+Use skill `clickhouse-query-config` for:
+- Version-aware queries with `sql: VersionedSql[]` and `since` field
+- BackgroundBar column format (requires: base column, readable_column, pct_column)
+- ClickHouse system table schema compatibility
+
+### Quick Reference: BackgroundBar Columns
+
+When asked to "format background bar for: X, Y, Z", each column needs 3 SQL columns:
+```sql
+-- For "rows"
+rows,                                                                    -- base
+formatReadableQuantity(rows) AS readable_rows,                           -- display
+round(rows * 100.0 / nullIf(max(rows) OVER (), 0), 2) AS pct_rows       -- percentage
+```
+
+See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 ## Commands
 
