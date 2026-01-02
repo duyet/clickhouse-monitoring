@@ -120,12 +120,30 @@ const onErrorRetry: SWRConfiguration['onErrorRetry'] = (
  * Global error logging for SWR
  */
 const onError: SWRConfiguration['onError'] = (error, key) => {
-  // Log SWR errors using ErrorLogger
-  ErrorLogger.logError(error as Error, {
-    component: 'SWR',
-    action: 'fetch',
-    digest: key,
-  })
+  const errorStr = (error as Error).message?.toLowerCase() ?? ''
+
+  // Table-missing errors are expected and have UI guidance
+  // Log as warning instead of error to reduce console noise
+  const isTableMissing =
+    errorStr.includes('missing required tables') ||
+    errorStr.includes('table_not_found') ||
+    errorStr.includes("doesn't exist")
+
+  if (isTableMissing) {
+    ErrorLogger.logWarning('Table not available', {
+      component: 'SWR',
+      action: 'fetch',
+      digest: key,
+      err: error as Error,
+    })
+  } else {
+    // Log other errors normally
+    ErrorLogger.logError(error as Error, {
+      component: 'SWR',
+      action: 'fetch',
+      digest: key,
+    })
+  }
 }
 
 /**
