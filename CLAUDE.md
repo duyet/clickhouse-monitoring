@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Next.js 15 (React 19) ClickHouse monitoring dashboard that provides real-time insights into ClickHouse clusters through system tables. The application connects to ClickHouse instances and displays metrics, query performance, table information, and cluster health.
 
+## Claude Skills
+
+Research the ClickHouse version compatibility and add version-aware queries using the skill `clickhouse-query-config`.
+
 ## Commands
 
 **Note: This project uses `bun` as the package manager.** Use `bun` instead of `pnpm` or `npm` for all commands.
