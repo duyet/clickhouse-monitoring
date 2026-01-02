@@ -100,7 +100,7 @@ export const partInfoConfig: QueryConfig = {
     readable_rows: ColumnFormat.BackgroundBar,
     readable_compressed: ColumnFormat.BackgroundBar,
     readable_uncompressed: ColumnFormat.BackgroundBar,
-    compression_ratio: ColumnFormat.Number,
+    compression_ratio: ColumnFormat.BackgroundBar,
     marks: ColumnFormat.Number,
     readable_primary_key_size: ColumnFormat.BackgroundBar,
     modification_time: ColumnFormat.RelatedTime,
