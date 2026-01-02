@@ -1,6 +1,6 @@
 'use client'
 
-import { RefreshCw } from 'lucide-react'
+import { ExternalLink, RefreshCw } from 'lucide-react'
 
 import type { QueryConfig } from '@/types/query-config'
 
@@ -15,6 +15,7 @@ import {
   getCardErrorClassName,
   getCardErrorDescription,
   getCardErrorTitle,
+  getTableMissingInfo,
   shouldShowRetryButton,
 } from '@/lib/card-error-utils'
 import { useHostId } from '@/lib/swr/use-host'
@@ -88,9 +89,37 @@ export const TableClient = memo(function TableClient({
   if (error) {
     const variant = detectCardErrorVariant(error as CardError)
     const errorTitle = getCardErrorTitle(variant, title)
-    const description = getCardErrorDescription(error as CardError, variant)
     const errorClassName = getCardErrorClassName(variant)
     const showRetry = shouldShowRetryButton(error as CardError)
+
+    // Get table-specific guidance for table-missing errors
+    const tableMissingInfo = getTableMissingInfo(error as CardError)
+    const guidance = tableMissingInfo?.guidance
+
+    // Build description with guidance and docs link
+    let errorDescription: React.ReactNode = getCardErrorDescription(
+      error as CardError,
+      variant
+    )
+
+    if (guidance) {
+      errorDescription = (
+        <div className="space-y-2">
+          <p>{guidance.enableInstructions}</p>
+          {guidance.docsUrl && (
+            <a
+              href={guidance.docsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-primary hover:underline"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              View ClickHouse documentation
+            </a>
+          )}
+        </div>
+      )
+    }
 
     return (
       <Card
@@ -102,7 +131,7 @@ export const TableClient = memo(function TableClient({
           <EmptyState
             variant={variant}
             title={errorTitle}
-            description={description}
+            description={errorDescription}
             action={
               showRetry
                 ? {

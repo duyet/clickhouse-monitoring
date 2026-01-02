@@ -21,6 +21,10 @@ const CountBadge = dynamic(() =>
   import('@/components/menu/count-badge').then((mod) => mod.CountBadge)
 )
 
+const NewBadge = dynamic(() =>
+  import('./new-badge').then((mod) => mod.NewBadge)
+)
+
 interface MenuListItemProps {
   item: MenuItem
 }
@@ -37,6 +41,7 @@ export const MenuListItem = memo(function MenuListItem({
       {item.countKey ? (
         <CountBadge countKey={item.countKey} variant={item.countVariant} />
       ) : null}
+      <NewBadge href={item.href} isNew={item.isNew} />
     </span>
   )
 

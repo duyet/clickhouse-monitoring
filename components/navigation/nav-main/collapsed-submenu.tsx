@@ -2,9 +2,14 @@
 
 import type { MenuItem as MenuItemType } from '@/components/menu/types'
 
+import dynamic from 'next/dynamic'
 import { memo, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
+
+const NewBadge = dynamic(() =>
+  import('@/components/menu/components/new-badge').then((mod) => mod.NewBadge)
+)
 import {
   Popover,
   PopoverContent,
@@ -76,12 +81,14 @@ export const CollapsedSubmenu = memo(function CollapsedSubmenu({
                 >
                   <div
                     className={cn(
+                      'flex items-center justify-between',
                       'text-muted-hover:bg-accent hover:text-accent-foreground rounded-sm px-2 py-1.5 text-sm outline-hidden transition-colors',
                       'focus-visible:bg-accent focus-visible:text-accent-foreground',
                       isActive && 'bg-accent text-accent-foreground'
                     )}
                   >
-                    {subItem.title}
+                    <span>{subItem.title}</span>
+                    <NewBadge href={subItem.href} isNew={subItem.isNew} />
                   </div>
                 </HostPrefixedLink>
               )

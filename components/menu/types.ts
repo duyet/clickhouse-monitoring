@@ -14,4 +14,6 @@ export interface MenuItem {
   icon?: Icon
   /** Section grouping for sidebar display */
   section?: MenuSection
+  /** Show "New" badge - hidden after user visits the page */
+  isNew?: boolean
 }

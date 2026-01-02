@@ -12,14 +12,11 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { KeyboardShortcuts } from '@/components/controls/keyboard-shortcuts'
 import { HeaderActions } from '@/components/header/header-actions'
 import { Breadcrumb } from '@/components/navigation/breadcrumb'
+import { ResizableSidebarProvider } from '@/components/resizable-sidebar-provider'
 import { PageSkeleton, SidebarSkeleton } from '@/components/skeletons'
 import { NetworkStatusBanner } from '@/components/status/network-status-banner'
 import { Separator } from '@/components/ui/separator'
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar'
+import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Toaster } from '@/components/ui/sonner'
 import { SWRProvider } from '@/lib/swr'
@@ -86,7 +83,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <KeyboardShortcuts />
           </Suspense>
-          <SidebarProvider defaultOpen={false}>
+          <ResizableSidebarProvider defaultOpen={false}>
             <Suspense fallback={<SidebarSkeleton />}>
               <AppSidebar />
             </Suspense>
@@ -107,7 +104,7 @@ export default function RootLayout({
                 <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
               </div>
             </SidebarInset>
-          </SidebarProvider>
+          </ResizableSidebarProvider>
           <Toaster />
         </Providers>
         <AnalyticsScripts />

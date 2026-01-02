@@ -15,6 +15,10 @@ import type { ApiError } from './api/types'
 import type { FetchDataError } from './clickhouse/types'
 
 import { ApiErrorType } from './api/types'
+import {
+  getGuidanceForMissingTables,
+  type TableGuidance,
+} from './table-guidance'
 
 // ============================================================================
 // Types
@@ -306,5 +310,44 @@ export function formatCardErrorForLogging(error: CardError): {
     message: error.message ?? 'No message',
     hasApiType: Boolean(apiError.type),
     hasFetchType: Boolean(fetchError.type),
+  }
+}
+
+// ============================================================================
+// Table-Specific Guidance
+// ============================================================================
+
+/**
+ * Extended error info with table-specific guidance
+ */
+export interface TableMissingInfo {
+  /** Names of missing tables */
+  missingTables: readonly string[]
+  /** Guidance for enabling the tables */
+  guidance?: TableGuidance
+}
+
+/**
+ * Extracts missing table information and guidance from an error
+ *
+ * Returns undefined if the error is not a table-missing error
+ * or if no missing tables can be identified.
+ */
+export function getTableMissingInfo(error: CardError): TableMissingInfo | undefined {
+  const variant = detectCardErrorVariant(error)
+  if (variant !== 'table-missing') {
+    return undefined
+  }
+
+  const apiError = error as ApiError & { missingTables?: readonly string[] }
+  const missingTables = apiError.missingTables
+
+  if (!missingTables || missingTables.length === 0) {
+    return undefined
+  }
+
+  return {
+    missingTables,
+    guidance: getGuidanceForMissingTables(missingTables),
   }
 }

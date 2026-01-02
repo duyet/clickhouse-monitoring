@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronRight } from 'lucide-react'
+import dynamic from 'next/dynamic'
 
 import type { MenuItem as MenuItemType } from '@/components/menu/types'
 import type { MenuItemActiveState, MenuItemProps } from './types'
@@ -8,6 +9,10 @@ import type { MenuItemActiveState, MenuItemProps } from './types'
 import { CollapsedSubmenu } from './collapsed-submenu'
 import { memo } from 'react'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
+
+const NewBadge = dynamic(() =>
+  import('@/components/menu/components/new-badge').then((mod) => mod.NewBadge)
+)
 import {
   Collapsible,
   CollapsibleContent,
@@ -56,11 +61,12 @@ const SingleMenuItem = memo(function SingleMenuItem({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-        <HostPrefixedLink href={item.href}>
-          {item.icon && <item.icon className="h-4 w-4" />}
-          <span className="group-data-[state=collapsed]/sidebar:hidden">
+        <HostPrefixedLink href={item.href} className="flex w-full items-center">
+          {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
+          <span className="group-data-[state=collapsed]/sidebar:hidden truncate">
             {item.title}
           </span>
+          <NewBadge href={item.href} isNew={item.isNew} />
         </HostPrefixedLink>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -123,10 +129,14 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
                   asChild
                   isActive={isMenuItemActive(subItem.href, pathname)}
                 >
-                  <HostPrefixedLink href={subItem.href}>
-                    <span className="group-data-[state=collapsed]/sidebar:hidden">
+                  <HostPrefixedLink
+                    href={subItem.href}
+                    className="flex w-full items-center gap-2"
+                  >
+                    <span className="group-data-[state=collapsed]/sidebar:hidden min-w-0 truncate">
                       {subItem.title}
                     </span>
+                    <NewBadge href={subItem.href} isNew={subItem.isNew} />
                   </HostPrefixedLink>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>

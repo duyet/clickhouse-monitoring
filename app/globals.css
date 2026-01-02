@@ -27,6 +27,12 @@
   }
 }
 
+/* Disable sidebar transitions during resize for instant feedback */
+[data-slot="sidebar-wrapper"][data-resizing="true"] [data-slot="sidebar-gap"],
+[data-slot="sidebar-wrapper"][data-resizing="true"] [data-slot="sidebar-container"] {
+  transition: none !important;
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

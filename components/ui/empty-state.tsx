@@ -27,7 +27,7 @@ export type EmptyStateVariant =
 interface EmptyStateProps {
   variant?: EmptyStateVariant
   title?: string
-  description?: string
+  description?: string | React.ReactNode
   icon?: React.ReactNode
   action?: {
     label: string
