@@ -68,7 +68,6 @@ export function TreeNode({
                 className="flex size-4 items-center justify-center rounded-sm hover:bg-sidebar-accent"
                 onClick={(e) => {
                   e.stopPropagation()
-                  onToggle?.()
                 }}
               >
                 {isLoading ? (

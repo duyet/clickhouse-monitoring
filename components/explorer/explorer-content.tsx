@@ -1,6 +1,6 @@
 'use client'
 
-import { Loader2 } from 'lucide-react'
+import { ExternalLink, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
 import { ExplorerBreadcrumb } from './explorer-breadcrumb'
@@ -69,15 +69,7 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
-      <div className="flex items-center justify-between gap-4">
-        <ExplorerBreadcrumb hostName={hostName} />
-        <Link
-          href={partInfoUrl}
-          className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-        >
-          View Parts →
-        </Link>
-      </div>
+      <ExplorerBreadcrumb hostName={hostName} />
 
       <Tabs id="explorer-tabs" value={tab} onValueChange={handleTabChange}>
         <TabsList>
@@ -111,6 +103,13 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
               <Loader2 className="size-3 animate-spin" />
             )}
           </TabsTrigger>
+          <Link
+            href={partInfoUrl}
+            className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
+            Parts
+            <ExternalLink className="size-3" />
+          </Link>
         </TabsList>
 
         {/* Data tab: always force-mounted to preserve pagination state */}
