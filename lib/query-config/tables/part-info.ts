@@ -6,6 +6,8 @@ export const partInfoConfig: QueryConfig = {
   name: 'part-info',
   description:
     'Information about currently active parts and levels for a table',
+  // Note: marks_count and primary_key_bytes_in_memory removed for compatibility
+  // with older ClickHouse versions (pre-21.8)
   sql: `
     SELECT
       name,
@@ -18,9 +20,6 @@ export const partInfoConfig: QueryConfig = {
       data_uncompressed_bytes,
       formatReadableSize(data_uncompressed_bytes) AS readable_uncompressed,
       round(data_uncompressed_bytes / data_compressed_bytes, 2) AS compression_ratio,
-      marks_count,
-      primary_key_bytes_in_memory,
-      formatReadableSize(primary_key_bytes_in_memory) AS readable_primary_key_size,
       modification_time,
       active,
       min_date,
@@ -43,8 +42,6 @@ export const partInfoConfig: QueryConfig = {
     'readable_compressed',
     'readable_uncompressed',
     'compression_ratio',
-    'marks_count',
-    'readable_primary_key_size',
     'modification_time',
     'min_date',
     'max_date',
@@ -58,8 +55,6 @@ export const partInfoConfig: QueryConfig = {
     readable_compressed: ColumnFormat.BackgroundBar,
     readable_uncompressed: ColumnFormat.BackgroundBar,
     compression_ratio: ColumnFormat.Number,
-    marks_count: ColumnFormat.Number,
-    readable_primary_key_size: ColumnFormat.BackgroundBar,
     modification_time: ColumnFormat.RelatedTime,
     disk_name: ColumnFormat.ColoredBadge,
   },
