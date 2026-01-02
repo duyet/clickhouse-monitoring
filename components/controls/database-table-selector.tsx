@@ -171,7 +171,7 @@ export function DatabaseTableSelector({
                 <SelectItem key={tbl.name} value={tbl.name}>
                   <span className="flex items-center justify-between gap-2">
                     <span>{tbl.name}</span>
-                    {tbl.total_rows !== undefined && (
+                    {tbl.total_rows != null && (
                       <span className="text-muted-foreground text-xs">
                         {tbl.total_rows.toLocaleString()} rows
                       </span>
