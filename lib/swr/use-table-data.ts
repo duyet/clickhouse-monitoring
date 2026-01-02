@@ -91,13 +91,19 @@ export function useTableData<T = unknown>(
         error?: {
           message?: string
           type?: string
-          details?: Record<string, unknown>
+          details?: {
+            missingTables?: readonly string[]
+            [key: string]: unknown
+          }
         }
       }
       const error = new Error(
         errorData.error?.message ||
           `Failed to fetch table data: ${response.statusText}`
-      ) as Error & { type?: string; details?: Record<string, unknown> }
+      ) as Error & {
+        type?: string
+        details?: { missingTables?: readonly string[]; [key: string]: unknown }
+      }
 
       // Attach error metadata if available
       if (errorData.error) {
