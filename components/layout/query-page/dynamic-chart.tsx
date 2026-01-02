@@ -35,8 +35,8 @@ export const DynamicChart = memo(function DynamicChart({
 
   return (
     <ChartComponent
-      className="w-full min-w-0 p-0 shadow-none"
-      chartClassName="h-full min-h-[120px] max-h-[200px]"
+      className="w-full min-w-0 p-0 shadow-none h-full min-h-[200px]"
+      chartClassName="h-full"
       hostId={hostId}
       {...chartProps}
     />

@@ -91,11 +91,11 @@ export const ChartRow = memo(function ChartRow({
           <div className="relative group pb-6 overflow-hidden">
             <div
               className={cn(
-                'grid gap-3 items-stretch w-full min-w-0 overflow-hidden',
+                'grid gap-3 w-full min-w-0 overflow-hidden',
                 // Use 10-column grid when colSpan is used, otherwise 2-column
                 hasColSpan(charts)
                   ? 'grid-cols-1 md:grid-cols-10 auto-rows-[1fr]'
-                  : 'grid-cols-1 md:grid-cols-2 auto-rows-fr'
+                  : 'grid-cols-1 md:grid-cols-2 auto-rows-[1fr]'
               )}
             >
               {charts.map((chartConfig, index) => {
@@ -133,7 +133,7 @@ export const ChartRow = memo(function ChartRow({
                         : undefined
                     }
                   >
-                    <div className="flex h-full min-h-[140px] max-h-[240px] w-full min-w-0 flex-col">
+                    <div className="flex h-full w-full min-w-0 flex-col">
                       <Suspense fallback={<ChartSkeleton />}>
                         <DynamicChart
                           chartName={chartName}
