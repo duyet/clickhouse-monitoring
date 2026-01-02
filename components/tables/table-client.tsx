@@ -137,17 +137,35 @@ export const TableClient = memo(function TableClient({
                 </h3>
                 <div className="text-sm text-muted-foreground space-y-2">
                   <p className="leading-relaxed">{errorDescription}</p>
-                  <p className="text-xs pt-2 border-t border-blue-200 dark:border-blue-800">
-                    This feature requires additional ClickHouse configuration.{' '}
-                    <a
-                      href="https://clickhouse.com/docs/en/operations/system-tables"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                    >
-                      View ClickHouse documentation ↗
-                    </a>
-                  </p>
+                  {guidance ? (
+                    <div className="text-xs pt-2 border-t border-blue-200 dark:border-blue-800 space-y-1">
+                      <p className="text-foreground/80">
+                        {guidance.enableInstructions}
+                      </p>
+                      {guidance.docsUrl && (
+                        <a
+                          href={guidance.docsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-block"
+                        >
+                          View ClickHouse documentation ↗
+                        </a>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs pt-2 border-t border-blue-200 dark:border-blue-800">
+                      This feature requires additional ClickHouse configuration.{' '}
+                      <a
+                        href="https://clickhouse.com/docs/en/operations/system-tables"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                      >
+                        View ClickHouse documentation ↗
+                      </a>
+                    </p>
+                  )}
                 </div>
                 {showRetry && (
                   <div className="mt-4">

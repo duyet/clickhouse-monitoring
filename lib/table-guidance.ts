@@ -79,6 +79,46 @@ export const TABLE_GUIDANCE: Record<string, TableGuidance> = {
     enableInstructions:
       'This is a custom table created by the monitoring application. It will be available after the first page view is tracked.',
   },
+  'system.opentelemetry_span_log': {
+    description: 'OpenTelemetry tracing data',
+    enableInstructions:
+      'Enable by setting `opentelemetry_span_log_enabled = 1` and configuring OpenTelemetry in your ClickHouse server config.',
+    docsUrl: 'https://clickhouse.com/docs/en/operations/opentelemetry',
+  },
+  'system.query_views_log': {
+    description: 'Query views execution log',
+    enableInstructions:
+      'Enable by setting `log_query_views = 1` in your ClickHouse config.',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/query_views_log',
+  },
+  'system.metric_log': {
+    description: 'System metrics history',
+    enableInstructions:
+      'Enable by adding the `<metric_log>` section to your ClickHouse server config with `<collect_interval_milliseconds>1000</collect_interval_milliseconds>`.',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/metric_log',
+  },
+  'system.asynchronous_metric_log': {
+    description: 'Asynchronous metrics history',
+    enableInstructions:
+      'Enable by adding the `<asynchronous_metric_log>` section to your ClickHouse server config.',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/asynchronous_metric_log',
+  },
+  'system.trace_log': {
+    description: 'Stack traces for sampling query profiler',
+    enableInstructions:
+      'Enable by setting `trace_log_enabled = 1` and configuring the query profiler settings like `query_profiler_real_time_period_ns`.',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/trace_log',
+  },
+  'system.part_log': {
+    description: 'Data part operations log (merges, mutations, downloads)',
+    enableInstructions:
+      'Enable by adding the `<part_log>` section to your ClickHouse server config.',
+    docsUrl: 'https://clickhouse.com/docs/en/operations/system-tables/part_log',
+  },
 }
 
 /**
