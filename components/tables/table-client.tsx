@@ -95,32 +95,93 @@ export const TableClient = memo(function TableClient({
     const tableMissingInfo = getTableMissingInfo(error as CardError)
     const guidance = tableMissingInfo?.guidance
 
-    // If we have guidance, show the specialized OptionalTableInfo component
-    if (
-      guidance &&
-      tableMissingInfo?.missingTables &&
-      tableMissingInfo.missingTables.length > 0
-    ) {
-      const tableName = tableMissingInfo.missingTables[0]
+    // For table-missing errors without specific guidance, show a helpful card
+    if (variant === 'table-missing') {
+      const errorTitle = getCardErrorTitle(variant, title)
+      const errorDescription = getCardErrorDescription(
+        error as CardError,
+        variant
+      )
+
       return (
-        <div className="flex flex-col gap-3">
-          <OptionalTableInfo
-            tableName={tableName}
-            guidance={guidance}
-            className={className}
-          />
-          {showRetry && (
-            <div className="flex justify-center">
-              <button
-                onClick={() => refresh()}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-muted-foreground/20 rounded-md hover:bg-muted/50 transition-colors"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Try Again
-              </button>
-            </div>
+        <Card
+          className={cn(
+            'rounded-md border-blue-200/50 bg-blue-50/30 dark:border-blue-900/30 dark:bg-blue-950/20 shadow-none',
+            className
           )}
-        </div>
+          role="alert"
+          aria-label={title ? `${title} unavailable` : 'Table not available'}
+        >
+          <CardContent className="p-6">
+            <div className="flex gap-4">
+              {/* Icon */}
+              <div className="flex-shrink-0">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50">
+                  <svg
+                    className="h-5 w-5 text-blue-600 dark:text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0-3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-foreground mb-2">
+                  {errorTitle}
+                </h3>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p className="leading-relaxed">{errorDescription}</p>
+                  <div className="pt-2 border-t border-blue-200/50 dark:border-blue-900/50">
+                    <p className="text-xs">
+                      This feature requires additional ClickHouse configuration.{' '}
+                      <a
+                        href="https://clickhouse.com/docs/en/operations/system-tables"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline font-medium inline-flex items-center gap-1"
+                      >
+                        View ClickHouse documentation
+                        <svg
+                          className="h-3 w-3 inline"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                          />
+                        </svg>
+                      </a>
+                    </p>
+                  </div>
+                </div>
+                {showRetry && (
+                  <div className="mt-3">
+                    <button
+                      onClick={() => refresh()}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-blue-300/50 rounded-md hover:bg-blue-100/50 dark:border-blue-700/50 dark:hover:bg-blue-900/30 transition-colors text-blue-700 dark:text-blue-300"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Try Again
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )
     }
 
@@ -138,11 +199,12 @@ export const TableClient = memo(function TableClient({
         role="alert"
         aria-label={title ? `${title} error` : 'Error loading table'}
       >
-        <CardContent className="p-6">
+        <CardContent className="p-4">
           <EmptyState
             variant={variant}
             title={errorTitle}
             description={errorDescription}
+            compact={true}
             action={
               showRetry
                 ? {
