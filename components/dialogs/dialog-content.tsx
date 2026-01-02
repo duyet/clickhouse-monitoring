@@ -18,6 +18,8 @@ export interface DialogContentProps {
   description?: string
   content: string | React.ReactNode
   contentClassName?: string
+  /** Actions to display in the header (right side) */
+  headerActions?: React.ReactNode
 }
 
 // Default button - defined outside component to avoid re-creation
@@ -38,6 +40,7 @@ export const DialogContent = memo(function DialogContent({
   description = '',
   content = '',
   contentClassName,
+  headerActions,
 }: DialogContentProps) {
   return (
     <Dialog>
@@ -48,9 +51,20 @@ export const DialogContent = memo(function DialogContent({
           contentClassName
         )}
       >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+        <DialogHeader className="-mx-6 -mt-6 gap-0.5 rounded-t-lg px-4 py-2">
+          <div className="flex items-start justify-between gap-2 pr-6">
+            <div className="flex flex-col gap-0.5">
+              <DialogTitle className="text-sm">{title}</DialogTitle>
+              <DialogDescription className="text-sx text-muted-foreground">
+                {description}
+              </DialogDescription>
+            </div>
+            {headerActions && (
+              <div className="flex items-center gap-2 shrink-0">
+                {headerActions}
+              </div>
+            )}
+          </div>
         </DialogHeader>
         <div className="max-h-[80vh] overflow-auto">{content}</div>
       </UIDialogContent>

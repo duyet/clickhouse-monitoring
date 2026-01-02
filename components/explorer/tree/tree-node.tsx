@@ -47,7 +47,7 @@ export function TreeNode({
   onSelect,
   children,
 }: TreeNodeProps) {
-  const paddingLeft = level * 16
+  const paddingLeft = level * 12
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>

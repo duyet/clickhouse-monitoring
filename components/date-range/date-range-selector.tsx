@@ -3,7 +3,7 @@
 import type { DateRangeConfig, DateRangeValue } from './date-range-types'
 
 import { ChevronDown } from 'lucide-react'
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -23,6 +23,8 @@ interface DateRangeSelectorProps {
   className?: string
   /** Disable the selector */
   disabled?: boolean
+  /** When true, button is always visible (40% opacity). When false (default), hidden until parent group or button hover */
+  alwaysVisible?: boolean
 }
 
 /**
@@ -48,7 +50,10 @@ export const DateRangeSelector = memo(function DateRangeSelector({
   onChange,
   className,
   disabled = false,
+  alwaysVisible = false,
 }: DateRangeSelectorProps) {
+  const [isOpen, setIsOpen] = useState(false)
+
   // Find current option for label display
   const currentOption = useMemo(
     () => config.options.find((o) => o.value === value) ?? config.options[0],
@@ -65,27 +70,31 @@ export const DateRangeSelector = memo(function DateRangeSelector({
           lastHours: option.lastHours,
           interval: option.interval,
         })
+        setIsOpen(false)
       }
     },
     [config.options, onChange]
   )
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild disabled={disabled}>
         <Button
           variant="ghost"
           size="sm"
           className={cn(
-            'h-6 gap-1 px-2 text-xs font-medium text-muted-foreground',
-            'hover:bg-muted hover:text-foreground',
+            'h-6 gap-1 px-1.5 text-xs font-medium text-muted-foreground transition-opacity',
+            'hover:bg-muted hover:text-foreground rounded-md',
             'focus-visible:ring-1 focus-visible:ring-ring',
             disabled && 'opacity-50 cursor-not-allowed',
+            alwaysVisible || isOpen
+              ? 'opacity-40 hover:opacity-100'
+              : 'opacity-0 group-hover:opacity-40 hover:!opacity-100',
             className
           )}
         >
           <span>{currentOption.label}</span>
-          <ChevronDown className="size-3 opacity-50" />
+          <ChevronDown className="size-3" />
         </Button>
       </DropdownMenuTrigger>
 

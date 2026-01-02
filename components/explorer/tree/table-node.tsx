@@ -6,14 +6,8 @@ import useSWR from 'swr'
 import { ColumnNode } from './column-node'
 import { TreeNode } from './tree-node'
 import { useState } from 'react'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
 interface Column {
   name: string
@@ -73,6 +67,32 @@ function formatRowCount(rows: number): string {
   return rows.toString()
 }
 
+function RowCountBadge({ totalRows }: { totalRows: number }) {
+  const [isHovered, setIsHovered] = useState(false)
+  const formatted = formatRowCount(totalRows)
+  const suffix = totalRows === 1 ? '\u00A0row' : '\u00A0rows'
+
+  return (
+    <span
+      className="ml-auto text-[10px] text-muted-foreground tabular-nums cursor-default overflow-hidden"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <span className="inline-flex">
+        {formatted}
+        <span
+          className={cn(
+            'inline-block transition-all duration-200 ease-out',
+            isHovered ? 'max-w-[40px] opacity-100' : 'max-w-0 opacity-0'
+          )}
+        >
+          {suffix}
+        </span>
+      </span>
+    </span>
+  )
+}
+
 export function TableNode({
   hostId,
   database,
@@ -116,16 +136,7 @@ export function TableNode({
       level={level}
       badge={
         totalRows !== undefined && totalRows !== null ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="ml-auto">
-                <Badge variant="outline" className="text-xs">
-                  {formatRowCount(totalRows)}
-                </Badge>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>{totalRows.toLocaleString()} rows</TooltipContent>
-          </Tooltip>
+          <RowCountBadge totalRows={totalRows} />
         ) : undefined
       }
       onToggle={handleToggle}
@@ -134,7 +145,7 @@ export function TableNode({
       {showLoadingSkeleton ? (
         <div
           className="space-y-1 py-1"
-          style={{ paddingLeft: `${(level + 1) * 16}px` }}
+          style={{ paddingLeft: `${(level + 1) * 12}px` }}
         >
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-5 w-[70%]" />

@@ -3,13 +3,15 @@
 import { Loader2Icon } from 'lucide-react'
 import type { RowData } from '@tanstack/react-table'
 
+import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartQueryParams } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
 import { memo } from 'react'
+import { CardToolbar } from '@/components/cards/card-toolbar'
 import { BulkActions } from '@/components/data-table/components/bulk-actions'
 import { ColumnVisibilityButton } from '@/components/data-table/buttons/column-visibility'
-import { ShowSQLButton } from '@/components/data-table/buttons/show-sql'
+import { ResetColumnOrderButton } from '@/components/data-table/buttons/reset-column-order'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { getSqlForDisplay } from '@/types/query-config'
 
@@ -58,6 +60,12 @@ export interface DataTableHeaderProps<TData extends RowData> {
   clearAllColumnFilters: () => void
   /** The actual SQL that was executed (after version selection) */
   executedSql?: string
+  /** Query execution metadata */
+  metadata?: Partial<ApiResponseMetadata>
+  /** Enable column reordering with drag-and-drop */
+  enableColumnReordering?: boolean
+  /** Callback to reset column order to default */
+  onResetColumnOrder?: () => void
 }
 
 export const DataTableHeader = memo(function DataTableHeader<
@@ -76,6 +84,9 @@ export const DataTableHeader = memo(function DataTableHeader<
   activeFilterCount,
   clearAllColumnFilters,
   executedSql,
+  metadata,
+  enableColumnReordering = false,
+  onResetColumnOrder,
 }: DataTableHeaderProps<TData>) {
   // Use executed SQL if provided, otherwise fallback to config SQL
   const displaySql = executedSql || getSqlForDisplay(queryConfig.sql)
@@ -120,8 +131,13 @@ export const DataTableHeader = memo(function DataTableHeader<
 
       <div className="flex shrink-0 items-center gap-3">
         {topRightToolbarExtras}
-        {showSQL && <ShowSQLButton sql={displaySql} />}
+        {enableColumnReordering && onResetColumnOrder && (
+          <ResetColumnOrderButton onReset={onResetColumnOrder} />
+        )}
         <ColumnVisibilityButton table={table} />
+        {showSQL && (
+          <CardToolbar sql={displaySql} metadata={metadata} alwaysVisible />
+        )}
       </div>
     </div>
   )

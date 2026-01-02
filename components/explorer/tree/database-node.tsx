@@ -106,7 +106,7 @@ export function DatabaseNode({
       {showLoadingSkeleton ? (
         <div
           className="space-y-1 py-1"
-          style={{ paddingLeft: `${(level + 1) * 16}px` }}
+          style={{ paddingLeft: `${(level + 1) * 12}px` }}
         >
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-6 w-[80%]" />

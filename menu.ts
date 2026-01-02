@@ -155,14 +155,6 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/databases',
       },
       {
-        title: 'Tables Explorer',
-        href: '/table',
-        countKey: 'tables-explorer',
-        description: 'Table metadata with columns, engines, and storage info',
-        icon: TableIcon,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/tables',
-      },
-      {
         title: 'Tables Overview',
         href: '/tables-overview',
         countKey: 'tables-overview',

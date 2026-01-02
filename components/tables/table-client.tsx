@@ -5,11 +5,11 @@ import { RefreshCw } from 'lucide-react'
 import type { QueryConfig } from '@/types/query-config'
 
 import { memo } from 'react'
+import { CardToolbar } from '@/components/cards/card-toolbar'
 import { DataTable } from '@/components/data-table/data-table'
 import { TableSkeleton } from '@/components/skeletons'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
-import { OptionalTableInfo } from '@/components/feedback/optional-table-info'
 import {
   type CardError,
   detectCardErrorVariant,
@@ -19,6 +19,7 @@ import {
   getTableMissingInfo,
   shouldShowRetryButton,
 } from '@/lib/card-error-utils'
+import { getSqlForDisplay } from '@/types/query-config'
 import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/swr/use-table-data'
 import { cn } from '@/lib/utils'
@@ -87,6 +88,9 @@ export const TableClient = memo(function TableClient({
     return <TableSkeleton />
   }
 
+  // Get SQL for display in toolbars
+  const sql = queryConfig.sql ? getSqlForDisplay(queryConfig.sql) : undefined
+
   if (error) {
     const variant = detectCardErrorVariant(error as CardError)
     const showRetry = shouldShowRetryButton(error as CardError)
@@ -106,12 +110,15 @@ export const TableClient = memo(function TableClient({
       return (
         <Card
           className={cn(
-            'rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/40 shadow-none',
+            'rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/40 shadow-none group relative',
             className
           )}
           role="alert"
           aria-label={title ? `${title} unavailable` : 'Table not available'}
         >
+          <div className="absolute top-3 right-3">
+            <CardToolbar sql={sql} metadata={metadata} alwaysVisible />
+          </div>
           <CardContent className="p-5">
             <div className="flex gap-4">
               {/* Icon - Info circle */}
@@ -195,10 +202,17 @@ export const TableClient = memo(function TableClient({
 
     return (
       <Card
-        className={cn('rounded-md shadow-none py-2', errorClassName, className)}
+        className={cn(
+          'rounded-md shadow-none py-2 group relative',
+          errorClassName,
+          className
+        )}
         role="alert"
         aria-label={title ? `${title} error` : 'Error loading table'}
       >
+        <div className="absolute top-3 right-3">
+          <CardToolbar sql={sql} metadata={metadata} alwaysVisible />
+        </div>
         <CardContent className="p-4">
           <EmptyState
             variant={variant}
@@ -224,10 +238,13 @@ export const TableClient = memo(function TableClient({
     return (
       <Card
         className={cn(
-          'rounded-md border-warning/30 bg-warning/5 shadow-none py-2',
+          'rounded-md border-warning/30 bg-warning/5 shadow-none py-2 group relative',
           className
         )}
       >
+        <div className="absolute top-3 right-3">
+          <CardToolbar sql={sql} metadata={metadata} alwaysVisible />
+        </div>
         <CardContent className="p-6">
           <EmptyState
             variant="no-data"
@@ -244,7 +261,6 @@ export const TableClient = memo(function TableClient({
       title={title}
       description={description}
       queryConfig={queryConfig}
-      queryParams={searchParams}
       data={data}
       context={{ ...searchParams, hostId: String(hostId) }}
       defaultPageSize={defaultPageSize}
@@ -259,6 +275,7 @@ export const TableClient = memo(function TableClient({
       filterableColumns={filterableColumns}
       isRefreshing={isValidating}
       enableRowSelection={enableRowSelection}
+      metadata={metadata}
     />
   )
 })

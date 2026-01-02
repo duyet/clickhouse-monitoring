@@ -16,4 +16,6 @@ export interface MenuItem {
   section?: MenuSection
   /** Show "New" badge - hidden after user visits the page */
   isNew?: boolean
+  /** Link to ClickHouse documentation for this feature */
+  docs?: string
 }

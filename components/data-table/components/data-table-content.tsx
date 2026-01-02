@@ -1,10 +1,23 @@
 'use client'
 
 import type { ColumnDef, RowData } from '@tanstack/react-table'
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  type DragEndEvent,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import { restrictToHorizontalAxis } from '@dnd-kit/modifiers'
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable'
 
 import type { QueryConfig } from '@/types/query-config'
 
-import { memo } from 'react'
+import { memo, useCallback } from 'react'
 import {
   TableBody as TableBodyRenderer,
   TableHeader as TableHeaderRenderer,
@@ -54,6 +67,12 @@ export interface DataTableContentProps<
   activeFilterCount: number
   /** Callback when double-clicking column resizer to auto-fit */
   onAutoFit?: (columnId: string) => void
+  /** Enable column reordering with drag-and-drop */
+  enableColumnReordering?: boolean
+  /** Callback when column order changes */
+  onColumnOrderChange?: (activeId: string, overId: string) => void
+  /** Callback to reset column order to default */
+  onResetColumnOrder?: () => void
 }
 
 /**
@@ -86,7 +105,63 @@ export const DataTableContent = memo(function DataTableContent<
   virtualizer,
   activeFilterCount,
   onAutoFit,
+  enableColumnReordering = true,
+  onColumnOrderChange,
+  onResetColumnOrder,
 }: DataTableContentProps<TData, TValue>) {
+  // Configure drag-and-drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required to start drag (prevents accidental drags)
+      },
+    })
+  )
+
+  // Handle drag end event for column reordering
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event
+      if (over && active.id !== over.id) {
+        onColumnOrderChange?.(String(active.id), String(over.id))
+      }
+    },
+    [onColumnOrderChange]
+  )
+
+  // Extract column IDs for SortableContext
+  // IMPORTANT: Must match all columns, not just sortable ones, for proper reordering
+  const columnIds = table.getAllLeafColumns().map((col) => col.id)
+
+  const tableContent = (
+    <Table
+      aria-describedby="table-description"
+      // Force re-render when column order changes
+      key={table.getState().columnOrder.join(',')}
+    >
+      <caption id="table-description" className="sr-only">
+        {description || queryConfig.description || `${title} data table`}
+      </caption>
+      <TableHeader className="bg-muted/50">
+        <TableHeaderRenderer
+          headerGroups={table.getHeaderGroups()}
+          onAutoFit={onAutoFit}
+          enableColumnReordering={enableColumnReordering}
+        />
+      </TableHeader>
+      <TableBody>
+        <TableBodyRenderer
+          table={table}
+          columnDefs={columnDefs}
+          isVirtualized={isVirtualized}
+          virtualizer={virtualizer}
+          title={title}
+          activeFilterCount={activeFilterCount}
+        />
+      </TableBody>
+    </Table>
+  )
+
   return (
     <div
       ref={tableContainerRef}
@@ -97,27 +172,23 @@ export const DataTableContent = memo(function DataTableContent<
       aria-label={`${title || 'Data'} table`}
       style={isVirtualized ? { height: '600px' } : undefined}
     >
-      <Table aria-describedby="table-description">
-        <caption id="table-description" className="sr-only">
-          {description || queryConfig.description || `${title} data table`}
-        </caption>
-        <TableHeader className="bg-muted/50">
-          <TableHeaderRenderer
-            headerGroups={table.getHeaderGroups()}
-            onAutoFit={onAutoFit}
-          />
-        </TableHeader>
-        <TableBody>
-          <TableBodyRenderer
-            table={table}
-            columnDefs={columnDefs}
-            isVirtualized={isVirtualized}
-            virtualizer={virtualizer}
-            title={title}
-            activeFilterCount={activeFilterCount}
-          />
-        </TableBody>
-      </Table>
+      {enableColumnReordering ? (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToHorizontalAxis]}
+        >
+          <SortableContext
+            items={columnIds}
+            strategy={horizontalListSortingStrategy}
+          >
+            {tableContent}
+          </SortableContext>
+        </DndContext>
+      ) : (
+        tableContent
+      )}
     </div>
   )
 }) as <TData extends RowData, TValue extends React.ReactNode>(

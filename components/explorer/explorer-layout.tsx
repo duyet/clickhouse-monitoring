@@ -1,15 +1,10 @@
 'use client'
 
-import { FolderTree, MenuIcon } from 'lucide-react'
+import { MenuIcon } from 'lucide-react'
 
 import { ExplorerContent } from './explorer-content'
 import { ExplorerSidebar } from './explorer-sidebar'
 import { useState } from 'react'
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@/components/layout/resizable'
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useHostId } from '@/lib/swr'
@@ -49,15 +44,15 @@ export function ExplorerLayout() {
     )
   }
 
+  // Temporarily disabled ResizablePanelGroup - using simple flex layout
   return (
-    <ResizablePanelGroup direction="horizontal" className="h-full">
-      <ResizablePanel defaultSize={18} minSize={12} maxSize={30}>
+    <div className="flex h-full">
+      <div className="w-80 shrink-0 border-r overflow-auto">
         <ExplorerSidebar hostId={hostId} />
-      </ResizablePanel>
-      <ResizableHandle withHandle />
-      <ResizablePanel defaultSize={82}>
+      </div>
+      <div className="flex-1 overflow-auto">
         <ExplorerContent />
-      </ResizablePanel>
-    </ResizablePanelGroup>
+      </div>
+    </div>
   )
 }

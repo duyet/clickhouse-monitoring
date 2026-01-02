@@ -74,7 +74,7 @@ export const ChartError = memo(function ChartError({
             <p className="text-muted-foreground">
               Enable this system log in your ClickHouse config
             </p>
-            {tableMissingInfo.guidance.docsUrl && (
+            {tableMissingInfo.guidance?.docsUrl && (
               <a
                 href={tableMissingInfo.guidance.docsUrl}
                 target="_blank"

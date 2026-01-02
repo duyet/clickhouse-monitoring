@@ -51,13 +51,13 @@ export function useFilterState({
       // Key in URL Params
       .filter((key) => selected.has(key))
       // And custom that value is not in presets
-      .filter(
-        (key) =>
-          !selected.has(
-            key,
-            filterParamPresets.find((preset) => preset.key === key)?.value
-          )
-      )
+      .filter((key) => {
+        const presetValue = filterParamPresets.find(
+          (preset) => preset.key === key
+        )?.value
+        // Check if current value differs from preset value
+        return selected.get(key) !== presetValue
+      })
       .map((key) => ({
         key,
         name: selected.get(key)

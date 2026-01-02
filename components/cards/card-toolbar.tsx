@@ -33,7 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Switch } from '@/components/ui/switch'
-import { dedent } from '@/lib/utils'
+import { cn, dedent } from '@/lib/utils'
 
 const SQL_BEAUTIFY_KEY = 'card-toolbar-sql-beautify'
 
@@ -205,13 +205,14 @@ export const CardToolbar = memo(function CardToolbar({
           <Button
             variant="ghost"
             size="icon"
-            className={`size-5 ${
+            className={cn(
+              'size-6 transition-opacity rounded-full',
               alwaysVisible
                 ? 'opacity-40 hover:opacity-100'
                 : 'opacity-0 group-hover:opacity-40 hover:!opacity-100'
-            } transition-opacity rounded-full`}
+            )}
           >
-            <MoreHorizontal className="size-3" strokeWidth={2} />
+            <MoreHorizontal className="size-3.5" strokeWidth={2} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[140px]">
