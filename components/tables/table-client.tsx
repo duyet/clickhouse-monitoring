@@ -1,6 +1,6 @@
 'use client'
 
-import { ExternalLink, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 
 import type { QueryConfig } from '@/types/query-config'
 
@@ -9,6 +9,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { TableSkeleton } from '@/components/skeletons'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { OptionalTableInfo } from '@/components/feedback/optional-table-info'
 import {
   type CardError,
   detectCardErrorVariant,
@@ -88,38 +89,41 @@ export const TableClient = memo(function TableClient({
 
   if (error) {
     const variant = detectCardErrorVariant(error as CardError)
-    const errorTitle = getCardErrorTitle(variant, title)
-    const errorClassName = getCardErrorClassName(variant)
     const showRetry = shouldShowRetryButton(error as CardError)
 
     // Get table-specific guidance for table-missing errors
     const tableMissingInfo = getTableMissingInfo(error as CardError)
     const guidance = tableMissingInfo?.guidance
 
-    // Build description with guidance and docs link
-    let errorDescription: React.ReactNode = getCardErrorDescription(
-      error as CardError,
-      variant
-    )
-
-    if (guidance) {
-      errorDescription = (
-        <div className="space-y-2">
-          <p>{guidance.enableInstructions}</p>
-          {guidance.docsUrl && (
-            <a
-              href={guidance.docsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-primary hover:underline"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              View ClickHouse documentation
-            </a>
+    // If we have guidance, show the specialized OptionalTableInfo component
+    if (guidance && tableMissingInfo?.missingTables && tableMissingInfo.missingTables.length > 0) {
+      const tableName = tableMissingInfo.missingTables[0]
+      return (
+        <div className="flex flex-col gap-3">
+          <OptionalTableInfo
+            tableName={tableName}
+            guidance={guidance}
+            className={className}
+          />
+          {showRetry && (
+            <div className="flex justify-center">
+              <button
+                onClick={refresh}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-muted-foreground/20 rounded-md hover:bg-muted/50 transition-colors"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Try Again
+              </button>
+            </div>
           )}
         </div>
       )
     }
+
+    // Fall back to generic error handling for other error types
+    const errorTitle = getCardErrorTitle(variant, title)
+    const errorClassName = getCardErrorClassName(variant)
+    const errorDescription = getCardErrorDescription(error as CardError, variant)
 
     return (
       <Card

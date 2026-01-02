@@ -42,7 +42,7 @@ export const queryChartImports: ChartRegistryMap = {
   'failed-query-count-by-user': lazy(() =>
     import('@/components/charts/query/failed-query-count-by-user').then(
       (m) => ({
-        default: m.ChartFailedQueryCountByType,
+        default: m.ChartFailedQueryCountByUser,
       })
     )
   ),

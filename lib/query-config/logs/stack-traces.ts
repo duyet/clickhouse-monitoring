@@ -12,12 +12,15 @@ export const stackTracesConfig: QueryConfig = {
       thread_name,
       thread_id,
       query_id,
-      arrayStringConcat(trace, '\\n') as stack_trace,
-      size
+      arrayStringConcat(
+        arrayMap(x -> demangle(addressToSymbol(x)), trace),
+        '\\n'
+      ) as stack_trace
     FROM system.stack_trace
     ORDER BY thread_name
+    SETTINGS allow_introspection_functions = 1
   `,
-  columns: ['thread_name', 'thread_id', 'query_id', 'stack_trace', 'size'],
+  columns: ['thread_name', 'thread_id', 'query_id', 'stack_trace'],
   columnFormats: {
     thread_name: ColumnFormat.ColoredBadge,
     thread_id: ColumnFormat.Number,
@@ -32,6 +35,5 @@ export const stackTracesConfig: QueryConfig = {
       ColumnFormat.CodeDialog,
       { max_truncate: 50, dialog_title: 'Stack Trace' },
     ],
-    size: ColumnFormat.Number,
   },
 }

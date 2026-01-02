@@ -178,7 +178,7 @@ export const failedQueriesConfig: QueryConfig = {
     [
       'failed-query-count-by-user',
       {
-        title: 'Failed Queries (Users)',
+        title: 'Failed Queries by Users',
         interval: 'toStartOfDay',
         lastHours: 24 * 14,
         showLegend: false,

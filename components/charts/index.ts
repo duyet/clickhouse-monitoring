@@ -7,6 +7,8 @@
  * - system/     - System metrics
  * - replication/ - Replication charts
  * - zookeeper/  - ZooKeeper charts
+ * - logs/       - Logging and error tracking charts
+ * - threads/    - Thread performance charts
  * - factory/    - Factory functions for creating charts
  * - primitives/  - Base chart components
  */
@@ -41,6 +43,10 @@ export { createBarChart } from './factory/create-bar-chart'
 export { createCustomChart } from './factory/create-custom-chart'
 // Other
 export { GithubHeatmapChart } from './github-heatmap-chart'
+// Logs charts
+export { ChartCrashFrequency } from './logs/crash-frequency'
+export { ChartErrorRateOverTime } from './logs/error-rate-over-time'
+export { ChartLogLevelDistribution } from './logs/log-level-distribution'
 export { ChartMergeAvgDuration } from './merge/merge-avg-duration'
 // Merge charts
 export { ChartMergeCount } from './merge/merge-count'
@@ -55,7 +61,7 @@ export { BarChart } from './primitives/bar'
 export { BarList } from './primitives/bar-list'
 export { DonutChart } from './primitives/donut'
 export { ChartFailedQueryCount } from './query/failed-query-count'
-export { ChartFailedQueryCountByType } from './query/failed-query-count-by-user'
+export { ChartFailedQueryCountByUser } from './query/failed-query-count-by-user'
 export { ChartQueryCache } from './query/query-cache'
 // Query charts
 export { ChartQueryCount } from './query/query-count'
@@ -77,6 +83,8 @@ export { ChartDisksUsage } from './system/disks-usage'
 export { ChartMemoryUsage } from './system/memory-usage'
 // Table charts
 export { ChartTopTableSize } from './top-table-size'
+// Thread charts
+export { ChartThreadUtilization } from './threads/thread-utilization'
 export { ChartKeeperException } from './zookeeper/zookeeper-exception'
 export { ChartZookeeperRequests } from './zookeeper/zookeeper-requests'
 export { ChartZookeeperSummaryTable } from './zookeeper/zookeeper-summary-table'

@@ -6,7 +6,8 @@ export const crashLogConfig: QueryConfig = {
   name: 'crash-log',
   description: 'Server crash history and details',
   docs: 'https://clickhouse.com/docs/en/operations/system-tables/crash_log',
-  // system.crash_log is always available, not optional
+  optional: true,
+  tableCheck: 'system.crash_log',
   sql: `
     SELECT
       event_time,

@@ -10,6 +10,8 @@
  * - system/     - System metrics
  * - replication/ - Replication charts
  * - zookeeper/  - ZooKeeper charts
+ * - logs/       - Logging and error tracking charts
+ * - threads/    - Thread performance charts
  * - misc/       - Miscellaneous charts
  *
  * Note: Overview charts (database-table-count, running-queries) are server components
@@ -19,11 +21,13 @@
 
 import type { ChartRegistryMap } from './types'
 
+import { logsChartImports } from './imports/logs-charts'
 import { mergeChartImports } from './imports/merge-charts'
 import { miscChartImports } from './imports/misc-charts'
 import { queryChartImports } from './imports/query-charts'
 import { replicationChartImports } from './imports/replication-charts'
 import { systemChartImports } from './imports/system-charts'
+import { threadChartImports } from './imports/thread-charts'
 import { zookeeperChartImports } from './imports/zookeeper-charts'
 
 /**
@@ -35,5 +39,7 @@ export const chartImports: ChartRegistryMap = {
   ...systemChartImports,
   ...replicationChartImports,
   ...zookeeperChartImports,
+  ...logsChartImports,
+  ...threadChartImports,
   ...miscChartImports,
 }

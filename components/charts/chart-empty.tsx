@@ -53,17 +53,9 @@ export const ChartEmpty = memo(function ChartEmpty({
   // Use sql from props or metadata
   const effectiveSql = sql || metadata?.sql
 
-  // Build metadata for toolbar - use shared ApiResponseMetadata fields
+  // Build metadata for toolbar - spread to preserve all fields (api, duration, etc.)
   const toolbarMetadata: CardToolbarMetadata | undefined = metadata
-    ? {
-        duration: metadata.duration,
-        rows: metadata.rows,
-        clickhouseVersion: metadata.clickhouseVersion,
-        host: metadata.host,
-        queryId: metadata.queryId,
-        status: metadata.status,
-        statusMessage: metadata.statusMessage,
-      }
+    ? { ...metadata }
     : undefined
 
   // Check if we have toolbar content (sql, data, or metadata)
@@ -71,7 +63,8 @@ export const ChartEmpty = memo(function ChartEmpty({
     effectiveSql ||
     (data && data.length > 0) ||
     (toolbarMetadata &&
-      (toolbarMetadata.duration !== undefined ||
+      (toolbarMetadata.api ||
+        toolbarMetadata.duration !== undefined ||
         toolbarMetadata.rows !== undefined ||
         toolbarMetadata.clickhouseVersion ||
         toolbarMetadata.host ||

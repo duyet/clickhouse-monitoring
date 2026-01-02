@@ -61,8 +61,16 @@ export const TABLE_GUIDANCE: Record<string, TableGuidance> = {
   'system.text_log': {
     description: 'Server log messages',
     enableInstructions:
-      'Enable by adding the `<text_log>` section to your ClickHouse server config.',
+      'The system.text_log table is not enabled in your ClickHouse configuration. To enable it, add the following to your config.xml or create a new file in config.d/:' +
+      '\n\n```xml\n<text_log>\n  <database>system</database>\n  <table>text_log</table>\n  <flush_interval_milliseconds>7500</flush_interval_milliseconds>\n</text_log>\n```\n\n' +
+      'After adding the configuration, restart your ClickHouse server.',
     docsUrl: 'https://clickhouse.com/docs/en/operations/system-tables/text_log',
+  },
+  'system.crash_log': {
+    description: 'Server crash history',
+    enableInstructions:
+      'The system.crash_log table is not present on this ClickHouse cluster. This table is automatically created by ClickHouse when server crashes occur. If no crashes have been logged yet, this table may not exist. This is normal for healthy clusters with no crash history. The table will be created automatically when the first crash is detected.',
+    docsUrl: 'https://clickhouse.com/docs/en/operations/system-tables/crash_log',
   },
   'system.monitoring_events': {
     description: 'Custom monitoring events table',

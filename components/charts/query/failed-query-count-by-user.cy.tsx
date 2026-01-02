@@ -1,13 +1,13 @@
-import { ChartFailedQueryCountByType } from './failed-query-count-by-user'
+import { ChartFailedQueryCountByUser } from './failed-query-count-by-user'
 
-describe('<ChartFailedQueryCountByType />', () => {
+describe('<ChartFailedQueryCountByUser />', () => {
   const defaultProps = {
     hostId: 0,
     title: 'Failed Queries by User',
   }
 
   it('renders chart skeleton when loading', () => {
-    cy.mount(<ChartFailedQueryCountByType {...defaultProps} />)
+    cy.mount(<ChartFailedQueryCountByUser {...defaultProps} />)
 
     cy.get('[role="status"][aria-label*="Loading"]').should('exist')
     cy.contains('Failed Queries by User').should('exist')
@@ -19,7 +19,7 @@ describe('<ChartFailedQueryCountByType />', () => {
       body: { error: { message: 'Database connection failed' } },
     }).as('chartError')
 
-    cy.mount(<ChartFailedQueryCountByType {...defaultProps} />)
+    cy.mount(<ChartFailedQueryCountByUser {...defaultProps} />)
 
     cy.wait('@chartError')
     cy.contains('Error').should('exist')
@@ -31,7 +31,7 @@ describe('<ChartFailedQueryCountByType />', () => {
       body: { data: [], metadata: {} },
     }).as('chartEmpty')
 
-    cy.mount(<ChartFailedQueryCountByType {...defaultProps} />)
+    cy.mount(<ChartFailedQueryCountByUser {...defaultProps} />)
 
     cy.wait('@chartEmpty')
     cy.contains('No results').should('exist')
@@ -61,7 +61,7 @@ describe('<ChartFailedQueryCountByType />', () => {
       },
     }).as('chartData')
 
-    cy.mount(<ChartFailedQueryCountByType {...defaultProps} />)
+    cy.mount(<ChartFailedQueryCountByUser {...defaultProps} />)
 
     cy.wait('@chartData')
     cy.contains('Failed Queries by User').should('exist')
@@ -69,7 +69,7 @@ describe('<ChartFailedQueryCountByType />', () => {
 
   it('applies custom className', () => {
     cy.mount(
-      <ChartFailedQueryCountByType
+      <ChartFailedQueryCountByUser
         {...defaultProps}
         className="custom-test-class"
       />
@@ -94,7 +94,7 @@ describe('<ChartFailedQueryCountByType />', () => {
     }).as('chartDataHost1')
 
     cy.mount(
-      <ChartFailedQueryCountByType hostId={1} title="Host 1 Failed Queries" />
+      <ChartFailedQueryCountByUser hostId={1} title="Host 1 Failed Queries" />
     )
 
     cy.wait('@chartDataHost1')
