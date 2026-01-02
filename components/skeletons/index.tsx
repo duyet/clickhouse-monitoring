@@ -23,5 +23,7 @@ export {
 export { SidebarSkeleton } from './sidebar'
 // Table skeleton
 export { TableSkeleton } from './table'
+// Tabs skeleton
+export { TabsSkeleton } from './tabs'
 // UI skeletons
 export { ListSkeleton, MultiLineSkeleton, SingleLineSkeleton } from './ui'

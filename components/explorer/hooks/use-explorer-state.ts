@@ -3,7 +3,12 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useMemo } from 'react'
 
-export type ExplorerTab = 'data' | 'structure' | 'ddl' | 'indexes'
+export type ExplorerTab =
+  | 'data'
+  | 'structure'
+  | 'ddl'
+  | 'indexes'
+  | 'dependencies'
 
 export interface ExplorerState {
   hostId: number

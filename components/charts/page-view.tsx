@@ -4,17 +4,15 @@ import type { ChartProps } from '@/components/charts/chart-props'
 
 import { createBarChart } from '@/components/charts/factory'
 
-export const PageViewBarChart = createBarChart<{
-  event_time: string
-  page_views: number
-}>({
+export const PageViewBarChart = createBarChart({
   chartName: 'page-view',
   index: 'event_time',
   categories: ['page_views'],
-  defaultTitle: 'Daily Page Views',
+  defaultTitle: 'Page Views',
   defaultInterval: 'toStartOfDay',
   defaultLastHours: 24 * 14,
   dataTestId: 'page-view-chart',
+  dateRangeConfig: 'standard',
   barChartProps: {
     showLegend: false,
     showXAxis: true,

@@ -8,12 +8,11 @@
   * {
     @apply border-border;
   }
-  html,
-  body {
+  html {
     @apply h-full;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply min-h-full bg-background text-foreground;
   }
 }
 

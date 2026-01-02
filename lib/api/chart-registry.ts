@@ -28,6 +28,10 @@ import { queryCharts } from './charts/query-charts'
 import { replicationCharts } from './charts/replication-charts'
 import { systemCharts } from './charts/system-charts'
 import { zookeeperCharts } from './charts/zookeeper-charts'
+import { securityCharts } from './charts/security-charts'
+import { threadCharts } from './charts/thread-charts'
+import { logsCharts } from './charts/logs-charts'
+import { dictionaryCharts } from './charts/dictionary-charts'
 
 // Re-export types from the central types module (via charts/types)
 export type {
@@ -75,6 +79,18 @@ export const chartRegistry: Record<
 
   // Dashboard configuration charts
   ...dashboardCharts,
+
+  // Security charts
+  ...securityCharts,
+
+  // Thread analysis charts
+  ...threadCharts,
+
+  // Logs charts
+  ...logsCharts,
+
+  // Dictionary charts
+  ...dictionaryCharts,
 }
 
 /**

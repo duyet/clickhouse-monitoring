@@ -1,7 +1,6 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
-import type { ChartDataPoint } from '@/types/chart-data'
 import type { CustomChartFactoryConfig } from './types'
 
 import { type FC, memo } from 'react'
@@ -25,7 +24,7 @@ import { useChartData, useHostId } from '@/lib/swr'
  * })
  * ```
  */
-export function createCustomChart<T extends ChartDataPoint = ChartDataPoint>(
+export function createCustomChart(
   config: CustomChartFactoryConfig
 ): FC<ChartProps> {
   return memo(function Chart({
@@ -35,7 +34,7 @@ export function createCustomChart<T extends ChartDataPoint = ChartDataPoint>(
     className,
   }: ChartProps) {
     const hostId = useHostId()
-    const swr = useChartData<T>({
+    const swr = useChartData({
       chartName: config.chartName,
       hostId,
       interval,
@@ -45,13 +44,14 @@ export function createCustomChart<T extends ChartDataPoint = ChartDataPoint>(
 
     return (
       <ChartContainer swr={swr} title={title} className={className}>
-        {(dataArray, sql) => (
+        {(dataArray, sql, metadata) => (
           <ChartCard
             title={title}
             className={className}
             contentClassName={config.contentClassName}
             sql={sql}
             data={dataArray}
+            metadata={metadata}
             data-testid={config.dataTestId}
           >
             {config.render(dataArray, sql, hostId)}

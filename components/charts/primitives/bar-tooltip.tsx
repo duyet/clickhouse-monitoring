@@ -1,11 +1,5 @@
 'use client'
 
-import type {
-  NameType,
-  Payload,
-  ValueType,
-} from 'recharts/types/component/DefaultTooltipContent'
-
 import { memo } from 'react'
 import {
   type ChartConfig,
@@ -21,71 +15,44 @@ interface BarTooltipProps {
 }
 
 /**
- * BarTooltip - Tooltip rendering component for BarChart
- *
- * Handles tooltip display with optional total calculation for stacked bars.
- * Shows formatted values with color indicators and readable labels.
+ * BarTooltip - Tooltip component for BarChart using shadcn/ui pattern
  */
 export const BarTooltip = memo(function BarTooltip({
   tooltipTotal,
-  chartConfig,
+  chartConfig: _chartConfig,
   categories,
-  xAxisDataKey,
+  xAxisDataKey: _xAxisDataKey,
 }: BarTooltipProps) {
-  // Standard tooltip without total
-  if (!tooltipTotal) {
+  if (tooltipTotal) {
+    // Tooltip with total for stacked bars
     return (
       <ChartTooltip
         cursor={{ fill: 'hsl(var(--muted))' }}
-        wrapperStyle={{ zIndex: 1000 }}
-        allowEscapeViewBox={{ x: true, y: true }}
         content={
           <ChartTooltipContent
-            className="max-w-[280px]"
-            labelFormatter={
-              xAxisDataKey
-                ? (_label, payload) => {
-                    return (
-                      <div>
-                        {
-                          payload[0].payload[
-                            xAxisDataKey as keyof typeof payload
-                          ]
-                        }
-                      </div>
-                    )
-                  }
-                : undefined
-            }
-            formatter={(
-              value,
-              name,
-              item,
-              _index,
-              _payload: Array<Payload<ValueType, NameType>>
-            ) => (
-              <div className="flex items-center justify-between gap-2 min-w-0">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <div
-                    className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                    style={
-                      {
-                        '--color-bg': `var(--color-${name})`,
-                      } as React.CSSProperties
-                    }
-                  />
-                  <span className="truncate text-muted-foreground">
-                    {chartConfig[name as keyof typeof chartConfig]?.label ||
-                      name}
-                  </span>
-                </div>
-
-                <div className="text-foreground shrink-0 flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                  {item.payload[`readable_${name}` as keyof typeof item] ||
-                    value.toLocaleString()}
-                  <span className="text-muted-foreground font-normal"></span>
-                </div>
-              </div>
+            formatter={(value, name, item, index) => (
+              <>
+                <div
+                  className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="text-muted-foreground">{name}</span>
+                <span className="ml-auto font-mono font-medium tabular-nums text-foreground">
+                  {typeof value === 'number' ? value.toLocaleString() : value}
+                </span>
+                {/* Show total after last item */}
+                {index === categories.length - 1 && (
+                  <div className="mt-1.5 flex basis-full items-center border-t pt-1.5 text-xs font-medium text-foreground">
+                    Total
+                    <span className="ml-auto font-mono font-medium tabular-nums">
+                      {categories
+                        .map((cat) => Number(item.payload[cat]) || 0)
+                        .reduce((a, b) => a + b, 0)
+                        .toLocaleString()}
+                    </span>
+                  </div>
+                )}
+              </>
             )}
           />
         }
@@ -93,57 +60,11 @@ export const BarTooltip = memo(function BarTooltip({
     )
   }
 
-  // Tooltip with total for stacked bars
+  // Standard tooltip without total
   return (
     <ChartTooltip
-      wrapperStyle={{ zIndex: 1000 }}
-      content={
-        <ChartTooltipContent
-          hideLabel
-          className="max-w-[280px]"
-          formatter={(value, name, item, index) => (
-            <div className="flex flex-col gap-1.5 min-w-0">
-              <div className="flex items-center justify-between gap-2 min-w-0">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <div
-                    className="size-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                    style={
-                      {
-                        '--color-bg': `var(--color-${name})`,
-                      } as React.CSSProperties
-                    }
-                  />
-                  <span className="truncate text-muted-foreground">
-                    {chartConfig[name as keyof typeof chartConfig]?.label ||
-                      name}
-                  </span>
-                </div>
-
-                <div className="text-foreground shrink-0 flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                  {item.payload[`readable_${name}` as keyof typeof item] ||
-                    value.toLocaleString()}
-                  <span className="text-muted-foreground font-normal"></span>
-                </div>
-              </div>
-
-              {index === 1 && (
-                <div className="text-foreground flex basis-full items-center justify-between border-t pt-1.5 text-xs font-medium">
-                  <span>Total</span>
-                  <div className="text-foreground flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                    {categories
-                      .map((cat) => parseInt(item.payload[cat], 10) || 0)
-                      .reduce((a, b) => a + b, 0)
-                      .toLocaleString()}
-                    <span className="text-muted-foreground font-normal"></span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        />
-      }
-      cursor={false}
-      defaultIndex={1}
+      cursor={{ fill: 'hsl(var(--muted))' }}
+      content={<ChartTooltipContent />}
     />
   )
 })

@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 interface Table {
   name: string
-  readable_rows: string
+  total_rows: number
 }
 
 interface ApiResponse<T> {
@@ -87,8 +87,8 @@ export function DatabaseNode({
 
   const showLoadingSkeleton = isLoading && isExpanded && !tables
 
-  // Highlight if this is the selected database (whether table is selected or not)
-  const isHighlighted = selectedDatabase === database
+  // Only highlight if this database is selected and no table is selected
+  const isHighlighted = selectedDatabase === database && !selectedTable
 
   return (
     <TreeNode
@@ -121,7 +121,7 @@ export function DatabaseNode({
               hostId={hostId}
               database={database}
               table={table.name}
-              readableRows={table.readable_rows}
+              totalRows={table.total_rows}
               isExpanded={isTableExpanded(tableKey)}
               isSelected={
                 selectedDatabase === database && selectedTable === table.name

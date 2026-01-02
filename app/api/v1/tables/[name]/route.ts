@@ -92,22 +92,14 @@ export async function GET(
   // Get the original config for optional table checks
   const config = getTableConfig(name)
 
-  // Execute the query
+  // Execute the query - always pass the full config for version selection
   const result = await fetchData({
     query: queryDef.query,
     query_params: queryDef.queryParams,
     hostId,
     format: 'JSONEachRow',
-    // Use the query config for optional table validation if needed
-    queryConfig: config?.optional
-      ? {
-          name,
-          sql: queryDef.query,
-          columns: config.columns,
-          tableCheck: config.tableCheck,
-          optional: true,
-        }
-      : undefined,
+    // Always pass queryConfig for version-aware SQL selection
+    queryConfig: config,
   })
 
   // Check if there was an error
@@ -127,8 +119,15 @@ export async function GET(
     )
   }
 
-  // Create successful response
-  return createSuccessResponse(result.data, result.metadata)
+  // Create successful response with SQL and debug info
+  return createSuccessResponse(
+    result.data,
+    result.metadata,
+    queryDef.query,
+    queryDef.queryParams,
+    name,
+    searchParams
+  )
 }
 
 /**
@@ -147,12 +146,20 @@ function mapErrorTypeToStatusCode(errorType: ApiErrorType): number {
 }
 
 /**
- * Create a success response
+ * Create a success response with SQL and debug info merged into metadata
  */
 function createSuccessResponse<T>(
   data: T,
-  metadata: Record<string, string | number>
+  metadata: Record<string, string | number>,
+  sql: string,
+  queryParams: Record<string, unknown> | undefined,
+  tableName: string,
+  searchParams: URLSearchParams
 ): Response {
+  // Build full API URL with query params
+  const queryString = searchParams.toString()
+  const apiUrl = `/api/v1/tables/${tableName}${queryString ? `?${queryString}` : ''}`
+
   const response: ApiResponse<T> = {
     success: true,
     data,
@@ -161,6 +168,16 @@ function createSuccessResponse<T>(
       duration: Number(metadata.duration || 0),
       rows: Number(metadata.rows || 0),
       host: String(metadata.host || ''),
+      clickhouseVersion: String(metadata.clickhouseVersion || 'unknown'),
+      // Full API endpoint URL with query params
+      api: apiUrl,
+      // Security warning
+      securityNote:
+        'This response contains sensitive database information (SQL queries, parameters, structure). Do not expose to public internet without proper authentication and authorization.',
+      // Debug info merged into metadata
+      table: tableName,
+      sql,
+      params: queryParams || null,
     },
   }
 

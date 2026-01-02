@@ -22,7 +22,11 @@ import {
 import type { BarChartProps } from '@/types/charts'
 
 import { BarTooltip } from '../bar-tooltip'
-import { generateChartConfig, getBarRadius } from './utils'
+import {
+  generateChartConfig,
+  getBarRadius,
+  sortCategoriesByTotal,
+} from './utils'
 import { memo, useMemo } from 'react'
 import {
   ChartContainer,
@@ -56,6 +60,12 @@ export const BarChart = memo(function BarChart({
 }: BarChartProps & {
   yAxisTickFormatter?: (value: string | number) => string
 }) {
+  // Sort categories by total value for stacked bars (larger on top)
+  const sortedCategories = useMemo(
+    () => (stack ? sortCategoriesByTotal(data, categories) : categories),
+    [data, categories, stack]
+  )
+
   const chartConfig = useMemo(
     () => generateChartConfig(categories, colors, colorLabel),
     [categories, colors, colorLabel]
@@ -64,7 +74,7 @@ export const BarChart = memo(function BarChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className={cn('h-full w-full aspect-auto', className)}
+      className={cn('!aspect-auto h-full w-full min-w-0', className)}
     >
       <RechartBarChart
         accessibilityLayer
@@ -96,14 +106,7 @@ export const BarChart = memo(function BarChart({
           />
         )}
 
-        <BarTooltip
-          tooltipTotal={tooltipTotal}
-          chartConfig={chartConfig}
-          categories={categories}
-          xAxisDataKey={index}
-        />
-
-        {categories.map((category, idx) => (
+        {sortedCategories.map((category, idx) => (
           <Bar
             key={category}
             dataKey={category}
@@ -111,13 +114,20 @@ export const BarChart = memo(function BarChart({
             stackId={stack ? 'a' : undefined}
             radius={getBarRadius({
               index: idx,
-              categories,
+              categories: sortedCategories,
               stack,
               horizontal,
             })}
             isAnimationActive={false}
           />
         ))}
+
+        <BarTooltip
+          tooltipTotal={tooltipTotal}
+          chartConfig={chartConfig}
+          categories={sortedCategories}
+          xAxisDataKey={index}
+        />
 
         {showLegend && <ChartLegend content={<ChartLegendContent />} />}
       </RechartBarChart>

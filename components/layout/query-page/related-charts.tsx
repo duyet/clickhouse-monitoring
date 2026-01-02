@@ -52,7 +52,7 @@ export const RelatedCharts = memo(function RelatedCharts({
   const rows = groupChartsIntoRows(validCharts)
 
   return (
-    <div className={cn('flex flex-col gap-4 pb-4', gridClass)}>
+    <div className={cn('flex flex-col gap-2 pb-2 w-full min-w-0', gridClass)}>
       {rows.map((rowCharts, rowIndex) => (
         <ChartRow
           key={`row-${rowIndex}`}

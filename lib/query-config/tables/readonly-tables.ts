@@ -56,17 +56,9 @@ export const readOnlyTablesConfig: QueryConfig = {
     [
       'readonly-replica',
       {
-        title: 'Readonly Replica Last 7 days (Max / hour)',
-        interval: 'toStartOfHour',
-        lastHours: 24 * 7,
-      },
-    ],
-    [
-      'readonly-replica',
-      {
-        title: 'Readonly Replica Last 24 hours (Max / 15 minutes)',
-        interval: 'toStartOfFifteenMinutes',
-        lastHours: 24,
+        title: 'Readonly Replica',
+        interval: 'toStartOfDay',
+        lastHours: 24 * 14,
       },
     ],
   ],

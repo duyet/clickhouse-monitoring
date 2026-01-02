@@ -48,14 +48,8 @@ export const backupsConfig: QueryConfig = {
     [
       'backup-size',
       {
-        title: 'Backup over last day',
-        lastHours: 24,
-      },
-    ],
-    [
-      'backup-size',
-      {
-        title: 'All backup',
+        title: 'Backup',
+        lastHours: 24 * 14,
       },
     ],
   ],

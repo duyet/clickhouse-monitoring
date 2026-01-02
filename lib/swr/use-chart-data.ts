@@ -2,6 +2,7 @@
 
 import useSWR, { type SWRConfiguration } from 'swr'
 
+import type { ApiResponseMetadata } from '@/lib/api/types'
 import type {
   ChartDataPoint,
   ChartQueryParams as TypedChartQueryParams,
@@ -11,32 +12,24 @@ import { REFRESH_INTERVAL, type RefreshInterval } from './config'
 import { useCallback } from 'react'
 
 /**
+ * Chart metadata - re-export ApiResponseMetadata for convenience
+ * This ensures the same type is used on both API and frontend
+ */
+export type ChartMetadata = ApiResponseMetadata
+
+/**
  * Chart data response structure from the API
  * Can be either an array (single query) or an object (multi-query)
  */
 interface ChartDataResponse<T = unknown> {
   data: T[] | Record<string, unknown>
-  metadata: {
-    duration?: number
-    rows?: number
-    rows_before_limit_at_least?: number
-    exception?: string
-    message?: string
-    sql?: string
-  }
+  metadata: ChartMetadata
 }
 
 /** Return type from useChartData hook */
 export interface UseChartResult<TData extends ChartDataPoint = ChartDataPoint> {
   data: TData[]
-  metadata?: {
-    duration?: number
-    rows?: number
-    rows_before_limit_at_least?: number
-    exception?: string
-    message?: string
-    sql?: string
-  }
+  metadata?: ChartMetadata
   sql?: string
   error?: Error
   isLoading: boolean
@@ -97,6 +90,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   const searchParams = new URLSearchParams()
   if (hostId !== undefined) searchParams.append('hostId', String(hostId))
   if (interval) searchParams.append('interval', interval)
+  // Only include lastHours if it's defined (undefined = "all" range, no time filter)
   if (lastHours !== undefined)
     searchParams.append('lastHours', String(lastHours))
   if (params) searchParams.append('params', JSON.stringify(params))

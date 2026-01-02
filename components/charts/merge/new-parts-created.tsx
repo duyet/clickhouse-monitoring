@@ -36,7 +36,7 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
       className={className}
       chartClassName={chartClassName}
     >
-      {(dataArray, sql) => {
+      {(dataArray, sql, metadata) => {
         // Type the data items properly
         type DataItem = { event_time: string; table: string; new_parts: number }
 
@@ -71,6 +71,7 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
             className={className}
             sql={sql}
             data={barData}
+            metadata={metadata}
             data-testid="new-parts-created-chart"
           >
             <BarChart
@@ -79,13 +80,11 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
               index="event_time"
               categories={tables}
               colors={[
+                '--chart-3',
+                '--chart-4',
+                '--chart-1',
+                '--chart-2',
                 '--chart-5',
-                '--chart-6',
-                '--chart-7',
-                '--chart-8',
-                '--chart-9',
-                '--chart-10',
-                '--chart-11',
               ]}
               stack
               {...props}

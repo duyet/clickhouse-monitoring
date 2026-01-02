@@ -4,6 +4,7 @@ import { Check, ChevronsUpDown } from 'lucide-react'
 
 import { HostStatusDropdown } from './host-status-dropdown'
 import { HostVersionWithStatus } from './host-version-status'
+import { LogoStatusIndicator } from './logo-status-indicator'
 import Image from 'next/image'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
@@ -65,14 +66,19 @@ export function HostSwitcher() {
               className={`flex gap-2 ${state === 'expanded' ? 'items-center' : 'items-center justify-center'}`}
             >
               {LOGO_URL && (
-                <Image
-                  src={LOGO_URL}
-                  alt="Logo"
-                  width={20}
-                  height={20}
-                  className="size-5 object-contain"
-                  unoptimized
-                />
+                <div className="relative">
+                  <Image
+                    src={LOGO_URL}
+                    alt="Logo"
+                    width={20}
+                    height={20}
+                    className="size-5 object-contain"
+                    unoptimized
+                  />
+                  {state === 'collapsed' && (
+                    <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-gray-400 animate-pulse ring-2 ring-sidebar" />
+                  )}
+                </div>
               )}
               {state === 'expanded' && (
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -105,14 +111,19 @@ export function HostSwitcher() {
               className={`flex gap-2 ${state === 'expanded' ? 'items-center' : 'items-center justify-center'}`}
             >
               {LOGO_URL && (
-                <Image
-                  src={LOGO_URL}
-                  alt="Logo"
-                  width={20}
-                  height={20}
-                  className="size-5 object-contain"
-                  unoptimized
-                />
+                <div className="relative">
+                  <Image
+                    src={LOGO_URL}
+                    alt="Logo"
+                    width={20}
+                    height={20}
+                    className="size-5 object-contain"
+                    unoptimized
+                  />
+                  {state === 'collapsed' && (
+                    <LogoStatusIndicator hostId={activeHost.id} />
+                  )}
+                </div>
               )}
               {state === 'expanded' && (
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -139,14 +150,19 @@ export function HostSwitcher() {
                   className={`flex gap-2 ${state === 'expanded' ? 'items-center' : 'items-center justify-center'}`}
                 >
                   {LOGO_URL && (
-                    <Image
-                      src={LOGO_URL}
-                      alt="Logo"
-                      width={20}
-                      height={20}
-                      className="size-5 object-contain"
-                      unoptimized
-                    />
+                    <div className="relative">
+                      <Image
+                        src={LOGO_URL}
+                        alt="Logo"
+                        width={20}
+                        height={20}
+                        className="size-5 object-contain"
+                        unoptimized
+                      />
+                      {state === 'collapsed' && (
+                        <LogoStatusIndicator hostId={activeHost.id} />
+                      )}
+                    </div>
                   )}
                   {state === 'expanded' && (
                     <>

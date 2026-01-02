@@ -4,6 +4,9 @@
  * Provides utilities for detecting ClickHouse versions and selecting
  * appropriate query variants based on version capabilities.
  *
+ * IMPORTANT: This module uses getClient directly instead of fetchData
+ * to avoid circular dependency (fetchData calls getClickHouseVersion).
+ *
  * Version history of relevant system tables:
  * - system.metrics: Always available
  * - system.metric_log: Introduced ~20.x, requires configuration
@@ -16,7 +19,10 @@
 
 import type { VersionedSql } from '@/types/query-config'
 
-import { fetchData } from './clickhouse'
+// Use getClient directly to avoid circular dependency with fetchData
+import { getClient } from './clickhouse/clickhouse-client'
+import { getClickHouseConfigs } from './clickhouse/clickhouse-config'
+import { QUERY_COMMENT } from './clickhouse/constants'
 import { debug, error as logError } from './logger'
 
 /**
@@ -39,8 +45,8 @@ const versionCache = new Map<
   { version: ClickHouseVersion; timestamp: number }
 >()
 
-// Cache TTL: 5 minutes
-const CACHE_TTL_MS = 5 * 60 * 1000
+// Cache TTL: 24 hours (version only changes on server upgrade)
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
 /**
  * Parse a version string like "24.3.1.1" into components
@@ -84,26 +90,44 @@ export function meetsMinVersion(
 
 /**
  * Get cached version or fetch from ClickHouse
+ *
+ * Uses raw client directly to avoid circular dependency with fetchData.
+ * fetchData calls getClickHouseVersion for version-aware query selection,
+ * so we can't use fetchData here.
  */
 export async function getClickHouseVersion(
   hostId: number
 ): Promise<ClickHouseVersion | null> {
-  // Check cache
+  // Check cache first
   const cached = versionCache.get(hostId)
   if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
     return cached.version
   }
 
   try {
-    const result = await fetchData<Array<{ version: string }>>({
-      query: 'SELECT version() as version',
-      hostId,
+    // Get client config for this host
+    const configs = getClickHouseConfigs()
+    const clientConfig = configs[hostId]
+
+    if (!clientConfig) {
+      logError(
+        `[clickhouse-version] Invalid hostId: ${hostId}, available: 0-${configs.length - 1}`
+      )
+      return null
+    }
+
+    // Use raw client to avoid circular dependency with fetchData
+    const client = await getClient({ clientConfig })
+    const resultSet = await client.query({
+      query: QUERY_COMMENT + 'SELECT version() as version',
       format: 'JSONEachRow',
     })
 
-    const versionStr = result.data?.[0]?.version
+    const data = await resultSet.json<Array<{ version: string }>>()
+    const versionStr = data?.[0]?.version
+
     if (!versionStr) {
-      logError('[clickhouse-version] Failed to get version')
+      logError('[clickhouse-version] Failed to get version from response')
       return null
     }
 
@@ -120,6 +144,7 @@ export async function getClickHouseVersion(
 
 /**
  * Check if a specific table exists on the host
+ * Uses raw client to avoid circular dependency with fetchData
  */
 export async function checkTableExists(
   hostId: number,
@@ -127,12 +152,20 @@ export async function checkTableExists(
   table: string
 ): Promise<boolean> {
   try {
-    const result = await fetchData<Array<{ exists: number }>>({
-      query: `SELECT count() > 0 as exists FROM system.tables WHERE database = '${database}' AND name = '${table}'`,
-      hostId,
+    const configs = getClickHouseConfigs()
+    const clientConfig = configs[hostId]
+    if (!clientConfig) return false
+
+    const client = await getClient({ clientConfig })
+    const resultSet = await client.query({
+      query:
+        QUERY_COMMENT +
+        `SELECT count() > 0 as exists FROM system.tables WHERE database = '${database}' AND name = '${table}'`,
       format: 'JSONEachRow',
     })
-    return result.data?.[0]?.exists === 1
+
+    const data = await resultSet.json<Array<{ exists: number }>>()
+    return data?.[0]?.exists === 1
   } catch {
     return false
   }
@@ -140,18 +173,27 @@ export async function checkTableExists(
 
 /**
  * Check if a table has data (is not empty)
+ * Uses raw client to avoid circular dependency with fetchData
  */
 export async function checkTableHasData(
   hostId: number,
   fullTableName: string
 ): Promise<boolean> {
   try {
-    const result = await fetchData<Array<{ has_data: number }>>({
-      query: `SELECT count() > 0 as has_data FROM ${fullTableName} LIMIT 1`,
-      hostId,
+    const configs = getClickHouseConfigs()
+    const clientConfig = configs[hostId]
+    if (!clientConfig) return false
+
+    const client = await getClient({ clientConfig })
+    const resultSet = await client.query({
+      query:
+        QUERY_COMMENT +
+        `SELECT count() > 0 as has_data FROM ${fullTableName} LIMIT 1`,
       format: 'JSONEachRow',
     })
-    return result.data?.[0]?.has_data === 1
+
+    const data = await resultSet.json<Array<{ has_data: number }>>()
+    return data?.[0]?.has_data === 1
   } catch {
     return false
   }

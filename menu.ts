@@ -17,16 +17,23 @@ import {
   UpdateIcon,
 } from '@radix-ui/react-icons'
 import {
+  BookOpenIcon,
   CircleDollarSignIcon,
   CombineIcon,
+  CpuIcon,
   DatabaseZapIcon,
   FilePlus2Icon,
   Grid2x2CheckIcon,
   HardDriveIcon,
+  KeyIcon,
   RollerCoasterIcon,
+  ScrollTextIcon,
   ShieldAlertIcon,
+  ShieldIcon,
   UngroupIcon,
   UnplugIcon,
+  UsersIcon,
+  ZapIcon,
 } from 'lucide-react'
 
 import type { MenuItem } from '@/components/menu/types'
@@ -102,6 +109,18 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Query cache usage',
         icon: DatabaseZapIcon,
       },
+      {
+        title: 'Thread Analysis',
+        href: '/queries/thread-analysis',
+        description: 'Per-thread query execution statistics',
+        icon: CpuIcon,
+      },
+      {
+        title: 'Parallelization',
+        href: '/queries/parallelization',
+        description: 'Query parallelization efficiency analysis',
+        icon: ZapIcon,
+      },
     ],
   },
   {
@@ -110,6 +129,12 @@ export const menuItemsConfig: MenuItem[] = [
     icon: TableIcon,
     section: 'main',
     items: [
+      {
+        title: 'Database Explorer',
+        href: '/explorer',
+        description: 'Explore databases, tables, and their structure',
+        icon: TableIcon,
+      },
       {
         title: 'Tables Explorer',
         href: '/table',
@@ -248,6 +273,70 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/page-views',
         description: 'Self-analytics page views',
         icon: BarChartIcon,
+      },
+      {
+        title: 'Profiler',
+        href: '/profiler',
+        description: 'Query processor profiling data',
+        icon: CpuIcon,
+      },
+      {
+        title: 'Dictionaries',
+        href: '/dictionaries',
+        description: 'External dictionaries loaded in ClickHouse',
+        icon: BookOpenIcon,
+      },
+    ],
+  },
+  {
+    title: 'Security',
+    href: '',
+    icon: ShieldIcon,
+    section: 'others',
+    items: [
+      {
+        title: 'Sessions',
+        href: '/security/sessions',
+        description: 'Active and historical user sessions',
+        icon: UsersIcon,
+      },
+      {
+        title: 'Login Attempts',
+        href: '/security/login-attempts',
+        description: 'Login success and failure tracking',
+        icon: KeyIcon,
+      },
+      {
+        title: 'Audit Log',
+        href: '/security/audit-log',
+        description: 'Security event timeline',
+        icon: ShieldIcon,
+      },
+    ],
+  },
+  {
+    title: 'Logs',
+    href: '',
+    icon: ScrollTextIcon,
+    section: 'others',
+    items: [
+      {
+        title: 'Text Log',
+        href: '/logs/text-log',
+        description: 'Server log messages for debugging',
+        icon: ScrollTextIcon,
+      },
+      {
+        title: 'Stack Traces',
+        href: '/logs/stack-traces',
+        description: 'Current stack traces for all server threads',
+        icon: ScrollTextIcon,
+      },
+      {
+        title: 'Crashes',
+        href: '/logs/crashes',
+        description: 'Server crash history and details',
+        icon: ShieldAlertIcon,
       },
     ],
   },

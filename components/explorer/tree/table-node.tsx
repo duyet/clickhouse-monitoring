@@ -6,6 +6,12 @@ import useSWR from 'swr'
 import { ColumnNode } from './column-node'
 import { TreeNode } from './tree-node'
 import { useState } from 'react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -25,7 +31,7 @@ interface TableNodeProps {
   hostId: number
   database: string
   table: string
-  readableRows?: string
+  totalRows?: number
   isExpanded: boolean
   isSelected: boolean
   level: number
@@ -36,11 +42,39 @@ interface TableNodeProps {
 const fetcher = (url: string): Promise<ApiResponse<Column[]>> =>
   fetch(url).then((res) => res.json())
 
+/**
+ * Format row count for display from raw number.
+ * - 0 → "0"
+ * - 1500 → "1.5K"
+ * - 103194 → "103K" (rounded)
+ * - 1250000 → "1.3M"
+ * - 1000000 → "1M"
+ */
+function formatRowCount(rows: number): string {
+  if (rows === 0) return '0'
+
+  const thresholds = [
+    { value: 1_000_000, suffix: 'M' },
+    { value: 1_000, suffix: 'K' },
+  ]
+
+  for (const { value, suffix } of thresholds) {
+    if (rows >= value) {
+      const formatted = rows / value
+      // Round to 1 decimal place if needed, otherwise whole number
+      const rounded = formatted % 1 === 0 ? Math.round(formatted) : formatted.toFixed(1).replace(/\.0$/, '')
+      return `${rounded}${suffix}`
+    }
+  }
+
+  return rows.toString()
+}
+
 export function TableNode({
   hostId,
   database,
   table,
-  readableRows,
+  totalRows,
   isExpanded,
   isSelected,
   level,
@@ -78,10 +112,19 @@ export function TableNode({
       expandOnSelect={false}
       level={level}
       badge={
-        readableRows ? (
-          <Badge variant="outline" className="text-xs">
-            {readableRows}
-          </Badge>
+        totalRows !== undefined && totalRows !== null ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="ml-auto">
+                <Badge variant="outline" className="text-xs">
+                  {formatRowCount(totalRows)}
+                </Badge>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              {totalRows.toLocaleString()} rows
+            </TooltipContent>
+          </Tooltip>
         ) : undefined
       }
       onToggle={handleToggle}

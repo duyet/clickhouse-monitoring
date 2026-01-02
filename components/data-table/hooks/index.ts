@@ -1,3 +1,4 @@
+export { useAutoFitColumns } from './use-auto-fit-columns'
 export { useColumnVisibility } from './use-column-visibility'
 export { useFilteredData } from './use-filtered-data'
 export { useTableColumns } from './use-table-columns'

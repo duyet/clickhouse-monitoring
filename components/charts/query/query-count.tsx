@@ -3,19 +3,17 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 
 import { createAreaChart } from '@/components/charts/factory'
+import { chartTickFormatters } from '@/lib/utils'
 
-export const ChartQueryCount = createAreaChart<{
-  event_time: string
-  query_count: number
-  breakdown: Array<[string, number] | Record<string, string>>
-}>({
+export const ChartQueryCount = createAreaChart({
   chartName: 'query-count',
   index: 'event_time',
   categories: ['query_count'],
-  defaultTitle: 'Running Queries over last 14 days (query / day)',
+  defaultTitle: 'Query Count',
   defaultInterval: 'toStartOfDay',
   defaultLastHours: 24 * 14,
   dataTestId: 'query-count-chart',
+  dateRangeConfig: 'query-activity',
   areaChartProps: {
     readable: 'quantity',
     stack: true,
@@ -26,6 +24,7 @@ export const ChartQueryCount = createAreaChart<{
     breakdown: 'breakdown',
     breakdownLabel: 'query_kind',
     breakdownValue: 'count',
+    yAxisTickFormatter: chartTickFormatters.count,
   },
 })
 

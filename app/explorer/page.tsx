@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 function ExplorerSkeleton() {
   return (
-    <div className="flex h-full">
+    <div className="flex h-[calc(100vh-4rem)]">
       <div className="w-80 border-r p-4">
         <Skeleton className="h-full w-full" />
       </div>
@@ -20,7 +20,9 @@ function ExplorerSkeleton() {
 export default function ExplorerPage() {
   return (
     <Suspense fallback={<ExplorerSkeleton />}>
-      <ExplorerLayout />
+      <div className="h-[calc(100vh-4rem)]">
+        <ExplorerLayout />
+      </div>
     </Suspense>
   )
 }

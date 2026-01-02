@@ -1,6 +1,6 @@
 'use client'
 
-import { MenuIcon } from 'lucide-react'
+import { FolderTree, MenuIcon } from 'lucide-react'
 
 import { ExplorerContent } from './explorer-content'
 import { ExplorerSidebar } from './explorer-sidebar'
@@ -22,14 +22,20 @@ export function ExplorerLayout() {
   if (isMobile) {
     return (
       <div className="flex h-full flex-col">
-        <div className="border-b p-2">
+        {/* Mobile Header with title and sidebar trigger */}
+        <div
+          data-role="explorer-header"
+          className="flex items-center gap-3 border-b p-3"
+        >
           <Button
+            data-role="sidebar-trigger"
             variant="ghost"
             size="icon"
             onClick={() => setIsSidebarOpen(true)}
           >
             <MenuIcon className="size-4" />
           </Button>
+          <h2 className="text-lg font-semibold">Database Explorer</h2>
         </div>
         <div className="flex-1 overflow-auto">
           <ExplorerContent />

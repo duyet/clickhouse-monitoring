@@ -168,9 +168,9 @@ export const failedQueriesConfig: QueryConfig = {
     [
       'failed-query-count',
       {
-        title: 'Failed Queries over last 7 days (Exception Types)',
-        interval: 'toStartOfHour',
-        lastHours: 24 * 7,
+        title: 'Failed Queries (Exception Types)',
+        interval: 'toStartOfDay',
+        lastHours: 24 * 14,
         showLegend: false,
       },
     ],
@@ -178,18 +178,9 @@ export const failedQueriesConfig: QueryConfig = {
     [
       'failed-query-count-by-user',
       {
-        title: 'Failed Queries over last 7 days (Users)',
-        interval: 'toStartOfHour',
-        lastHours: 24 * 7,
-        showLegend: false,
-      },
-    ],
-    [
-      'failed-query-count-by-user',
-      {
-        title: 'Failed Queries over last 24 hours (Users)',
-        interval: 'toStartOfHour',
-        lastHours: 24,
+        title: 'Failed Queries (Users)',
+        interval: 'toStartOfDay',
+        lastHours: 24 * 14,
         showLegend: false,
       },
     ],

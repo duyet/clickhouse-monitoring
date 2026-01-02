@@ -73,10 +73,11 @@ app/
 │   ├── data/            # Generic query endpoint
 │   ├── charts/[name]/   # Chart-specific data
 │   ├── tables/[name]/   # Table data with pagination
+│   ├── explorer/        # Data explorer API (dependencies, projections)
 │   └── hosts/           # List available hosts
-├── overview/            # Static overview page
+├── overview/            # Static overview page (5 tabs: Connections, Queries, Merges, Replication, System)
 ├── dashboard/           # Static dashboard page
-├── database/            # Static database explorer
+├── explorer/            # Static database explorer page with tree browser
 ├── tables/              # Static tables list
 ├── clusters/            # Static clusters overview
 ├── running-queries/     # Static query monitoring pages
@@ -181,6 +182,8 @@ export function YourChart({ hostId }: { hostId: number }) {
 The `components/data-table/` directory contains a sophisticated table system:
 
 - **Column definitions** with custom formatting (badges, links, duration, etc.)
+- **Column resizing** with draggable borders
+- **Text wrapping** toggle for long content
 - **Sorting** with custom sorting functions
 - **Pagination** and **filtering**
 - **Actions** for row-level operations
@@ -197,10 +200,15 @@ Each data view uses a `QueryConfig` type that defines:
 
 #### Chart Components
 
-Two chart systems are used:
+The project uses custom chart components with consistent patterns:
 
-- **Generic charts** in `components/generic-charts/` (area, bar, card-metric, radial)
-- **Tremor charts** in `components/tremor/` for specific visualizations
+- **Area charts** - Time-series data with gradients (merge operations, query counts)
+- **Bar charts** - Categorical data with tooltips (top tables by size, query counts)
+- **Progress bars** - Replaced donut charts for percentage-based metrics (query cache, query types)
+- **Donut/Radial charts** - Circular metrics for system resources (CPU, memory, disk)
+- **Custom charts** - Specialized visualizations (connections, ZooKeeper metrics)
+
+**Chart Refactoring**: Donut charts have been replaced with progress bars for better readability in percentage-based displays (query cache usage, query type distribution).
 
 ### Development Conventions
 

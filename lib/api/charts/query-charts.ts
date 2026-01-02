@@ -5,7 +5,7 @@
 
 import type { ChartQueryBuilder } from './types'
 
-import { applyInterval, fillStep, nowOrToday } from './types'
+import { applyInterval, buildTimeFilter, fillStep, nowOrToday } from './types'
 
 export const queryCharts: Record<string, ChartQueryBuilder> = {
   'query-count-today': () => ({
@@ -17,14 +17,16 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     `,
   }),
 
-  'query-count': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => ({
-    query: `
+  'query-count': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     WITH event_count AS (
       SELECT ${applyInterval(interval, 'event_time')},
              COUNT() AS query_count
       FROM merge('system', '^query_log')
       WHERE type = 'QueryFinish'
-            AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+            ${timeFilter ? `AND ${timeFilter}` : ''}
       GROUP BY event_time
       ORDER BY event_time WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
     ),
@@ -34,7 +36,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
                COUNT() AS count
         FROM merge('system', '^query_log')
         WHERE type = 'QueryFinish'
-              AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+              ${timeFilter ? `AND ${timeFilter}` : ''}
         GROUP BY 1, 2
         ORDER BY 3 DESC
     ),
@@ -51,65 +53,78 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     LEFT JOIN breakdown USING event_time
     ORDER BY 1
   `,
-  }),
+    }
+  },
 
   'query-count-by-user': ({
     interval = 'toStartOfDay',
     lastHours = 24 * 14,
-  }) => ({
-    query: `
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     SELECT ${applyInterval(interval, 'event_time')},
            user,
            COUNT(*) AS count
     FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+          ${timeFilter ? `AND ${timeFilter}` : ''}
           AND user != ''
     GROUP BY 1, 2
     ORDER BY
       1 ASC,
       3 DESC
   `,
-  }),
+    }
+  },
 
-  'query-duration': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => ({
-    query: `
+  'query-duration': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     SELECT ${applyInterval(interval, 'event_time')},
            AVG(query_duration_ms) AS query_duration_ms,
            ROUND(query_duration_ms / 1000, 2) AS query_duration_s
     FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+          ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY event_time
     ORDER BY event_time ASC
     WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
   `,
-  }),
+    }
+  },
 
-  'query-memory': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => ({
-    query: `
+  'query-memory': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     SELECT ${applyInterval(interval, 'event_time')},
            AVG(memory_usage) AS memory_usage,
            formatReadableSize(memory_usage) AS readable_memory_usage
     FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+          ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY event_time
     ORDER BY event_time ASC
   `,
-  }),
+    }
+  },
 
-  'query-type': ({ lastHours = 24 }) => ({
-    query: `
+  'query-type': ({ lastHours = 24 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     SELECT type,
            COUNT() AS query_count
     FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+          ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY 1
     ORDER BY 1
   `,
-  }),
+    }
+  },
 
   'query-cache': () => ({
     query: `
@@ -123,40 +138,45 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
   }),
 
   // v24.1+: Query cache usage stats from query_log
-  'query-cache-usage': ({ lastHours = 24 * 7 }) => ({
-    query: `
+  'query-cache-usage': ({ lastHours = 24 * 7 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     SELECT
       query_cache_usage,
       COUNT() AS query_count,
       round(100 * query_count / sum(query_count) OVER (), 2) AS percentage
     FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+          ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY query_cache_usage
     ORDER BY query_count DESC
   `,
-    // Fallback for pre-24.1 versions
-    variants: [
-      {
-        versions: { maxVersion: '24.1' },
-        query: `SELECT 'Not available' AS query_cache_usage, 0 AS query_count, 0 AS percentage`,
-        description: 'query_cache_usage column not available before v24.1',
-      },
-    ],
-  }),
+      // Fallback for pre-24.1 versions
+      variants: [
+        {
+          versions: { maxVersion: '24.1' },
+          query: `SELECT 'Not available' AS query_cache_usage, 0 AS query_count, 0 AS percentage`,
+          description: 'query_cache_usage column not available before v24.1',
+        },
+      ],
+    }
+  },
 
   'failed-query-count': ({
     interval = 'toStartOfMinute',
     lastHours = 24 * 7,
-  }) => ({
-    query: `
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     WITH event_count AS (
       SELECT ${applyInterval(interval, 'event_time')},
              COUNT() AS query_count
       FROM merge('system', '^query_log')
       WHERE
             type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
-            AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+            ${timeFilter ? `AND ${timeFilter}` : ''}
       GROUP BY 1
       ORDER BY 1
     ),
@@ -167,7 +187,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
         FROM merge('system', '^query_log')
         WHERE
               type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
-              AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+              ${timeFilter ? `AND ${timeFilter}` : ''}
         GROUP BY 1, 2
         ORDER BY 3 DESC
     ),
@@ -184,24 +204,28 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     LEFT JOIN breakdown USING event_time
     ORDER BY 1
   `,
-  }),
+    }
+  },
 
   'failed-query-count-by-user': ({
     interval = 'toStartOfDay',
     lastHours = 24 * 14,
-  }) => ({
-    query: `
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     SELECT ${applyInterval(interval, 'event_time')},
            user,
            countDistinct(query_id) AS count
     FROM merge('system', '^query_log')
     WHERE
           type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
-          AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+          ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY 1, 2
     ORDER BY
       1 ASC,
       3 DESC
   `,
-  }),
+    }
+  },
 }

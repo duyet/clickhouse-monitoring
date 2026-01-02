@@ -5,34 +5,40 @@
 
 import type { ChartQueryBuilder } from './types'
 
-import { applyInterval } from './types'
+import { applyInterval, buildTimeFilter, buildTimeFilterInterval } from './types'
 
 export const systemCharts: Record<string, ChartQueryBuilder> = {
-  'memory-usage': ({ interval = 'toStartOfTenMinutes', lastHours = 24 }) => ({
-    query: `
+  'memory-usage': ({ interval = 'toStartOfTenMinutes', lastHours = 24 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     SELECT ${applyInterval(interval, 'event_time')},
            avg(CurrentMetric_MemoryTracking) AS avg_memory,
            formatReadableSize(avg_memory) AS readable_avg_memory
     FROM merge('system', '^metric_log')
-    WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
+    ${timeFilter ? `WHERE ${timeFilter}` : ''}
     GROUP BY 1
     ORDER BY 1 ASC`,
-    optional: true,
-    tableCheck: 'system.metric_log',
-  }),
+      optional: true,
+      tableCheck: 'system.metric_log',
+    }
+  },
 
-  'cpu-usage': ({ interval = 'toStartOfTenMinutes', lastHours = 24 }) => ({
-    query: `
+  'cpu-usage': ({ interval = 'toStartOfTenMinutes', lastHours = 24 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     SELECT
        ${applyInterval(interval, 'event_time')},
        avg(ProfileEvent_OSCPUVirtualTimeMicroseconds) / 1000000 as avg_cpu
     FROM merge('system', '^metric_log')
-    WHERE event_time >= (now() - INTERVAL ${lastHours} HOUR)
+    ${timeFilter ? `WHERE ${timeFilter}` : ''}
     GROUP BY 1
     ORDER BY 1`,
-    optional: true,
-    tableCheck: 'system.metric_log',
-  }),
+      optional: true,
+      tableCheck: 'system.metric_log',
+    }
+  },
 
   'disk-size': ({ params }) => {
     const name = params?.name as string | undefined
@@ -51,8 +57,10 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
-  'disks-usage': ({ interval = 'toStartOfDay', lastHours = 24 * 30 }) => ({
-    query: `
+  'disks-usage': ({ interval = 'toStartOfDay', lastHours = 24 * 30 }) => {
+    const timeFilter = buildTimeFilterInterval(lastHours)
+    return {
+      query: `
     WITH CAST(sumMap(map(metric, value)), 'Map(LowCardinality(String), UInt32)') AS map
     SELECT
         ${applyInterval(interval, 'event_time')},
@@ -61,13 +69,14 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
         formatReadableSize(DiskAvailable_default) as readable_DiskAvailable_default,
         formatReadableSize(DiskUsed_default) as readable_DiskUsed_default
     FROM merge('system', '^asynchronous_metric_log')
-    WHERE event_time >= (now() - toIntervalHour(${lastHours}))
+    ${timeFilter ? `WHERE ${timeFilter}` : ''}
     GROUP BY 1
     ORDER BY 1 ASC
   `,
-    optional: true,
-    tableCheck: 'system.asynchronous_metric_log',
-  }),
+      optional: true,
+      tableCheck: 'system.asynchronous_metric_log',
+    }
+  },
 
   'backup-size': ({ lastHours }) => {
     const startTimeCondition = lastHours
@@ -95,8 +104,10 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   'new-parts-created': ({
     interval = 'toStartOfFifteenMinutes',
     lastHours = 24,
-  }) => ({
-    query: `
+  }) => {
+    const timeFilter = buildTimeFilterInterval(lastHours)
+    return {
+      query: `
     SELECT
         ${applyInterval(interval, 'event_time')},
         count() AS new_parts,
@@ -106,8 +117,8 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
         sum(size_in_bytes) AS total_bytes_on_disk,
         formatReadableSize(total_bytes_on_disk) AS readable_total_bytes_on_disk
     FROM system.part_log
-    WHERE (event_type = 'NewPart')
-      AND (event_time > (now() - toIntervalHour(${lastHours})))
+    WHERE toInt8(event_type) = 1
+      ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY
         event_time,
         table
@@ -115,7 +126,8 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
         event_time ASC,
         table DESC
   `,
-  }),
+    }
+  },
 
   'summary-used-by-running-queries': () => ({
     queries: [

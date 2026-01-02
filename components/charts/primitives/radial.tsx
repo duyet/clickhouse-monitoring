@@ -52,7 +52,7 @@ export const RadialChart = memo(function RadialChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className={cn('mx-auto aspect-square max-h-[250px]', className)}
+      className={cn('mx-auto aspect-square max-h-[250px] min-w-0', className)}
     >
       <RadialBarChart
         accessibilityLayer

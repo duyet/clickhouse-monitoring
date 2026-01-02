@@ -157,16 +157,22 @@ export const fetchData = async <
 
     // Select version-appropriate query
     let effectiveQuery = query
+    // Only fetch version when needed (prevents infinite recursion since
+    // getClickHouseVersion itself calls fetchData without queryConfig)
+    let clickhouseVersion: Awaited<ReturnType<typeof getClickHouseVersion>> =
+      null
 
     if (queryConfig) {
+      // Get ClickHouse version for query selection
+      clickhouseVersion = await getClickHouseVersion(currentHostId)
+
       // New format: sql is an array of VersionedSql
       if (Array.isArray(queryConfig.sql)) {
-        const version = await getClickHouseVersion(currentHostId)
-        effectiveQuery = selectVersionedSql(queryConfig.sql, version)
+        effectiveQuery = selectVersionedSql(queryConfig.sql, clickhouseVersion)
 
         debug(
           `[fetchData] Version selection for ${queryConfig.name}: ` +
-            `detected=${version?.raw ?? 'null'}, ` +
+            `detected=${clickhouseVersion?.raw ?? 'null'}, ` +
             `selected=${effectiveQuery.substring(0, 60).replace(/\s+/g, ' ')}...`
         )
       }
@@ -177,7 +183,6 @@ export const fetchData = async <
 
       // Deprecated: old variants format (backward compatibility)
       if (queryConfig.variants && queryConfig.variants.length > 0) {
-        const version = await getClickHouseVersion(currentHostId)
         effectiveQuery = selectQueryVariantSemver(
           {
             query: typeof queryConfig.sql === 'string' ? queryConfig.sql : '',
@@ -186,12 +191,12 @@ export const fetchData = async <
               query: v.sql,
             })),
           },
-          version
+          clickhouseVersion
         )
 
-        if (version) {
+        if (clickhouseVersion) {
           debug(
-            `[fetchData] Using query for ClickHouse ${version.raw} via variants (config: ${queryConfig.name})`
+            `[fetchData] Using query for ClickHouse ${clickhouseVersion.raw} via variants (config: ${queryConfig.name})`
           )
         }
       }
@@ -205,7 +210,19 @@ export const fetchData = async <
     })
 
     const query_id = resultSet.query_id
+
+    // Use the client's json() method which handles format-specific parsing
     const data = await resultSet.json<T>()
+
+    // For debugging: serialize the parsed data to see what we got
+    const rawText = JSON.stringify(data)
+    debug(`[fetchData] ClickHouse response (${query_id}):`, {
+      dataType: typeof data,
+      isArray: Array.isArray(data),
+      length: Array.isArray(data) ? data.length : 'N/A',
+      preview: rawText.substring(0, 500),
+    })
+
     const end = new Date()
     const duration = (end.getTime() - start.getTime()) / 1000
     let rows: number = 0
@@ -236,8 +253,14 @@ export const fetchData = async <
       duration,
       rows,
       host: clientConfig.host,
-      // Include the actual SQL that was executed (after version selection)
-      sql: effectiveQuery,
+      // Include detected ClickHouse version
+      clickhouseVersion: clickhouseVersion?.raw ?? 'unknown',
+      // Include the actual SQL that was executed (normalized for readability)
+      sql: effectiveQuery.replace(/\s+/g, ' ').trim(),
+      // Include raw response for debugging (truncated if large)
+      rawResponseLength: rawText.length,
+      rawResponsePreview:
+        rawText.length <= 500 ? rawText : rawText.substring(0, 500) + '...',
     }
 
     return { data, metadata }

@@ -38,7 +38,7 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
       className={className}
       chartClassName={chartClassName}
     >
-      {(dataArray, sql) => {
+      {(dataArray, sql, metadata) => {
         const { chartData, users } = transformUserEventCounts(dataArray)
 
         return (
@@ -46,6 +46,7 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
             title={title}
             sql={sql}
             data={chartData}
+            metadata={metadata}
             data-testid="query-count-by-user-chart"
           >
             <BarChart

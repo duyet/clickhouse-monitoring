@@ -3,15 +3,17 @@
 [![Build and Test](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml/badge.svg)](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml)
 [![All-time uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fduyet%2Fuptime%2FHEAD%2Fapi%2Fclickhouse-monitoring-vercel-app%2Fuptime.json)](https://duyet.github.io/uptime/history/clickhouse-monitoring-vercel-app)
 
-The simple Next.js dashboard that relies on `system.*` tables to help monitor and provide an overview of your ClickHouse cluster.
+A modern Next.js 16 dashboard that provides real-time insights into ClickHouse clusters through system tables. Features static site generation with client-side data fetching for optimal performance and CDN caching.
 
 **Features:**
 
-- Query monitor: current queries, query history, query resources (memory, parts read, file_open, ...), most expensive queries, most used tables or columns, etc.
-- Cluster monitor: total memory/CPU usage, distributed queue, global settings, mergetree settings, metrics, etc.
-- Tables and parts information: size, row count, compression, part size, etc., at the column level detail.
-- Useful tools: Zookeeper data exploration, query EXPLAIN, kill queries, etc.
-- Visualization metric charts: queries and resource usage, number of merges/mutation, merge performance, query performance, etc.
+- **Query Monitoring**: Current queries, query history, resources (memory, parts read, file_open), expensive queries, most used tables/columns
+- **Cluster Overview**: Memory/CPU usage, distributed queue, global settings, MergeTree settings, metrics
+- **Data Explorer**: Interactive database tree browser with fast tab switching and column-level details
+- **Table Analytics**: Size, row count, compression, part sizes with column-level granularity
+- **Visualization**: 30+ metric charts for queries, resources, merges, performance, and system health
+- **Developer Tools**: Zookeeper explorer, query EXPLAIN, query kill functionality
+- **Multi-Host Support**: Monitor multiple ClickHouse instances from a single dashboard
 
 ## Demo
 
@@ -59,9 +61,10 @@ bun run cf:deploy
 
 **Important Notes:**
 - Build uses **Webpack** (not Turbopack) due to Cloudflare Workers compatibility
-- Next.js version pinned to **16.0.7** for stability
+- Next.js version pinned to **16.0.7** (React 19) for stability
 - Static pages are pre-rendered at edge for optimal performance
 - API routes run on Workers using Fetch API
+- Supports multi-host monitoring with query parameter routing (`?host=0`)
 
 **Manual Deployment Steps:**
 ```bash

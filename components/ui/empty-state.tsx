@@ -38,6 +38,8 @@ interface EmptyStateProps {
     label: string
     onClick: () => void
   }
+  /** Inline refresh callback - shows small refresh icon next to title */
+  onRefresh?: () => void
   className?: string
   /** Smaller variant for inline use */
   compact?: boolean
@@ -128,6 +130,7 @@ export const EmptyState = memo(function EmptyState({
   icon,
   action,
   secondaryAction,
+  onRefresh,
   className,
   compact = false,
 }: EmptyStateProps) {
@@ -144,9 +147,20 @@ export const EmptyState = memo(function EmptyState({
         <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-muted/50">
           {icon || config.icon}
         </div>
-        <p className="text-sm font-medium text-muted-foreground">
-          {title || config.title}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-sm font-medium text-muted-foreground">
+            {title || config.title}
+          </p>
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              className="p-0.5 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              aria-label="Refresh"
+            >
+              <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.5} />
+            </button>
+          )}
+        </div>
         {action && (
           <Button
             variant="ghost"
@@ -179,9 +193,20 @@ export const EmptyState = memo(function EmptyState({
         </div>
       </div>
 
-      <h3 className="text-base font-semibold text-foreground">
-        {title || config.title}
-      </h3>
+      <div className="flex items-center gap-1.5">
+        <h3 className="text-base font-semibold text-foreground">
+          {title || config.title}
+        </h3>
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            className="p-1 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+            aria-label="Refresh"
+          >
+            <RefreshCw className="h-4 w-4" strokeWidth={1.5} />
+          </button>
+        )}
+      </div>
       <p className="mt-1.5 max-w-xs text-sm text-muted-foreground leading-relaxed">
         {description || config.description}
       </p>

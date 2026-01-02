@@ -1,7 +1,17 @@
-import { RefreshCw } from 'lucide-react'
+'use client'
+
+import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
+import type { ApiResponseMetadata } from '@/lib/api/types'
+import type { ChartDataPoint } from '@/types/chart-data'
 
 import { memo } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { CardToolbar } from '@/components/cards/card-toolbar'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from '@/components/ui/card'
 import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
 
@@ -13,8 +23,22 @@ interface ChartEmptyProps {
   onRetry?: () => void
   /** Use compact layout for smaller charts */
   compact?: boolean
+  /** SQL query that was executed */
+  sql?: string
+  /** Data that was returned (empty array) */
+  data?: ChartDataPoint[]
+  /** Query execution metadata (from API response) */
+  metadata?: Partial<ApiResponseMetadata>
 }
 
+/**
+ * ChartEmpty - Enhanced empty state for charts
+ *
+ * Displays empty state message while still providing access to:
+ * - SQL query via toolbar dropdown menu
+ * - Query execution metadata via toolbar dropdown menu
+ * - Retry option for refreshing data
+ */
 export const ChartEmpty = memo(function ChartEmpty({
   title,
   className,
@@ -22,27 +46,81 @@ export const ChartEmpty = memo(function ChartEmpty({
   variant = 'no-data',
   onRetry,
   compact = false,
+  sql,
+  data,
+  metadata,
 }: ChartEmptyProps) {
+  // Use sql from props or metadata
+  const effectiveSql = sql || metadata?.sql
+
+  // Build metadata for toolbar - use shared ApiResponseMetadata fields
+  const toolbarMetadata: CardToolbarMetadata | undefined = metadata
+    ? {
+        duration: metadata.duration,
+        rows: metadata.rows,
+        clickhouseVersion: metadata.clickhouseVersion,
+        host: metadata.host,
+        queryId: metadata.queryId,
+        status: metadata.status,
+        statusMessage: metadata.statusMessage,
+      }
+    : undefined
+
+  // Check if we have toolbar content (sql, data, or metadata)
+  const hasToolbar =
+    effectiveSql ||
+    (data && data.length > 0) ||
+    (toolbarMetadata &&
+      (toolbarMetadata.duration !== undefined ||
+        toolbarMetadata.rows !== undefined ||
+        toolbarMetadata.clickhouseVersion ||
+        toolbarMetadata.host ||
+        toolbarMetadata.queryId))
+
   return (
     <Card
-      className={cn('rounded-md h-full shadow-none py-2', className)}
-      aria-label={title ? `${title} empty` : 'No data available'}
+      className={cn(
+        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full group gap-2 shadow-none py-2',
+        className
+      )}
+      aria-label={title ? `${title} - no data` : 'No data available'}
     >
-      <CardContent className={compact ? 'p-4' : 'p-6'}>
+      {/* Header with title and toolbar */}
+      {(title || hasToolbar) && (
+        <CardHeader className="px-3 shrink-0">
+          <header className="flex flex-row items-center justify-between gap-2">
+            {title ? (
+              <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase truncate min-w-0 flex-1">
+                {title}
+              </CardDescription>
+            ) : (
+              <div className="flex-1" />
+            )}
+            {hasToolbar && (
+              <CardToolbar
+                sql={effectiveSql}
+                data={data}
+                metadata={toolbarMetadata}
+                alwaysVisible
+              />
+            )}
+          </header>
+        </CardHeader>
+      )}
+
+      {/* Empty state content */}
+      <CardContent
+        className={cn('flex-1 min-h-0', compact ? 'p-4' : 'p-3 pt-0')}
+      >
         <EmptyState
           variant={variant}
-          title={title}
-          description={description}
-          compact={compact}
-          action={
-            onRetry
-              ? {
-                  label: 'Retry',
-                  onClick: onRetry,
-                  icon: <RefreshCw className="mr-1.5 h-3.5 w-3.5" />,
-                }
-              : undefined
+          title={title ? undefined : 'No data'}
+          description={
+            description ||
+            'There is no data to display. This could be due to no activity in the selected time period.'
           }
+          compact={compact}
+          onRefresh={onRetry}
         />
       </CardContent>
     </Card>

@@ -17,11 +17,12 @@ const typeColors: Record<string, string> = {
   ExceptionWhileProcessing: 'bg-orange-500',
 }
 
-export const ChartQueryType = createCustomChart<QueryTypeData>({
+export const ChartQueryType = createCustomChart({
   chartName: 'query-type',
   defaultTitle: 'Query Type Distribution',
   defaultLastHours: 24,
   dataTestId: 'query-type-chart',
+  dateRangeConfig: 'realtime',
   render: (dataArray) => {
     const data = dataArray as QueryTypeData[]
     const total = data.reduce((sum, d) => sum + d.query_count, 0)

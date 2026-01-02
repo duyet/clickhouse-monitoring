@@ -28,6 +28,7 @@ export const DatabaseTableCountCard = memo(function DatabaseTableCountCard() {
     refreshInterval: 30000,
   })
 
+  const isLoading = databaseSwr.isLoading || tablesSwr.isLoading
   const dbCount = databaseSwr.data?.[0]?.count ?? 0
   const tableCount = tablesSwr.data?.[0]?.count ?? 0
 
@@ -39,6 +40,7 @@ export const DatabaseTableCountCard = memo(function DatabaseTableCountCard() {
       label2="Tables"
       href1={buildUrl('/tables-overview', { host: hostId })}
       href2={buildUrl('/tables-overview', { host: hostId })}
+      isLoading={isLoading}
     />
   )
 })

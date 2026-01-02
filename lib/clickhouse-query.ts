@@ -50,6 +50,51 @@ export function nowOrToday(interval: ClickHouseInterval): string {
   return intervalMap.get(interval)?.nowOrToday ?? ''
 }
 
+/**
+ * Build a time filter condition for ClickHouse queries.
+ * Returns empty string when lastHours is undefined (no time filter).
+ *
+ * @param lastHours - Number of hours to look back, or undefined for "all" data
+ * @param column - Column name to filter on (default: 'event_time')
+ * @returns SQL WHERE clause condition (without "WHERE" keyword)
+ *
+ * @example
+ * buildTimeFilter(24) // "event_time >= (now() - INTERVAL 24 HOUR)"
+ * buildTimeFilter(24, 'query_start_time') // "query_start_time >= (now() - INTERVAL 24 HOUR)"
+ * buildTimeFilter(undefined) // "" (no filter)
+ */
+export function buildTimeFilter(
+  lastHours: number | undefined,
+  column: string = 'event_time'
+): string {
+  if (lastHours === undefined) {
+    return '' // No time filter for "all" range
+  }
+  return `${column} >= (now() - INTERVAL ${lastHours} HOUR)`
+}
+
+/**
+ * Build a time filter condition using toIntervalHour.
+ * Alternative to buildTimeFilter() for queries that use toIntervalHour().
+ *
+ * @param lastHours - Number of hours to look back, or undefined for "all" data
+ * @param column - Column name to filter on (default: 'event_time')
+ * @returns SQL WHERE clause condition (without "WHERE" keyword)
+ *
+ * @example
+ * buildTimeFilterInterval(24) // "event_time >= (now() - toIntervalHour(24))"
+ * buildTimeFilterInterval(undefined) // "" (no filter)
+ */
+export function buildTimeFilterInterval(
+  lastHours: number | undefined,
+  column: string = 'event_time'
+): string {
+  if (lastHours === undefined) {
+    return '' // No time filter for "all" range
+  }
+  return `${column} >= (now() - toIntervalHour(${lastHours}))`
+}
+
 export function withQueryParams(
   query: string,
   params?: Record<string, unknown>

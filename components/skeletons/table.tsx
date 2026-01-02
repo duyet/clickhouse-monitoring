@@ -60,16 +60,6 @@ export const TableSkeleton = memo(function TableSkeleton({
       </div>
 
       {/* Pagination footer */}
-      <div className="flex shrink-0 items-center justify-between px-2">
-        <Skeleton className="h-4 w-32" />
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-8" />
-          <Skeleton className="h-8 w-8" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-8 w-8" />
-          <Skeleton className="h-8 w-8" />
-        </div>
-      </div>
       <span className="sr-only">Loading table data...</span>
     </div>
   )

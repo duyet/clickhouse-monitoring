@@ -3,27 +3,24 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 
 import { createAreaChart } from '@/components/charts/factory'
+import { chartTickFormatters } from '@/lib/utils'
 
-export const ChartDisksUsage = createAreaChart<{
-  event_time: string
-  DiskAvailable_default: number
-  DiskUsed_default: number
-  readable_DiskAvailable_default: string
-  readable_DiskUsed_default: string
-}>({
+export const ChartDisksUsage = createAreaChart({
   chartName: 'disks-usage',
   index: 'event_time',
   categories: ['DiskAvailable_default', 'DiskUsed_default'],
-  defaultTitle: 'Disks Usage over last 30 days',
+  defaultTitle: 'Disks Usage',
   defaultInterval: 'toStartOfDay',
   defaultLastHours: 24 * 30,
   dataTestId: 'disk-usage-chart',
+  dateRangeConfig: 'disk-usage',
   areaChartProps: {
     readableColumns: [
       'readable_DiskAvailable_default',
       'readable_DiskUsed_default',
     ],
     stack: true,
+    yAxisTickFormatter: chartTickFormatters.bytes,
   },
 })
 

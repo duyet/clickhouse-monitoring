@@ -21,6 +21,7 @@ export const databaseTableColumnsConfig: QueryConfig = {
       SELECT database,
              table,
              name as column,
+             type,
              compression_codec as codec,
              (default_kind || ' ' || default_expression) as default_expression,
              comment
@@ -55,9 +56,20 @@ export const databaseTableColumnsConfig: QueryConfig = {
                type
       ORDER BY compressed DESC
     )
-    SELECT s.*, c.codec, c.default_expression, c.comment
-    FROM summary s
-    LEFT OUTER JOIN columns c USING (database, table, column)
+    SELECT
+      c.column,
+      c.type,
+      coalesce(s.readable_compressed, '0 B') as readable_compressed,
+      coalesce(s.readable_uncompressed, '0 B') as readable_uncompressed,
+      coalesce(s.compr_ratio, 0) as compr_ratio,
+      coalesce(s.readable_rows_cnt, '0') as readable_rows_cnt,
+      coalesce(s.avg_row_size, 0) as avg_row_size,
+      c.codec,
+      c.default_expression,
+      c.comment
+    FROM columns c
+    LEFT OUTER JOIN summary s USING (database, table, column)
+    ORDER BY c.column
   `,
   columns: [
     'column',

@@ -6,7 +6,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarHeader,
 } from '@/components/ui/sidebar'
 import { useIsMobile } from '@/hooks/use-mobile'
 
@@ -25,10 +24,10 @@ export function ExplorerSidebar({
 
   const content = (
     <>
-      <SidebarHeader>
-        <h2 className="px-2 text-lg font-semibold">Database Explorer</h2>
-      </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent
+        data-role="explorer-sidebar-content"
+        className="overflow-y-auto px-2 pb-4"
+      >
         <SidebarGroup>
           <SidebarGroupContent>
             <DatabaseTree hostId={hostId} />
@@ -48,5 +47,12 @@ export function ExplorerSidebar({
     )
   }
 
-  return <div className="flex h-full flex-col border-r">{content}</div>
+  return (
+    <div
+      data-role="explorer-sidebar"
+      className="flex h-full flex-col border-r"
+    >
+      {content}
+    </div>
+  )
 }

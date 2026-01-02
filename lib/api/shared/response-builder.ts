@@ -29,6 +29,10 @@ export interface SuccessResponseMeta {
   readonly duration?: number
   /** Unique query identifier */
   readonly queryId?: string
+  /** API URL that was called to fetch this data */
+  readonly apiUrl?: string
+  /** Query parameters passed to the API */
+  readonly apiParams?: Record<string, string | number | boolean | undefined>
 }
 
 /**
@@ -85,6 +89,8 @@ export function createSuccessResponse<T>(
     host: '', // Will be populated by route handler
     ...(meta?.cachedAt && { cachedAt: Number(meta.cachedAt) }),
     ...(meta?.sql && { sql: String(meta.sql) }),
+    ...(meta?.apiUrl && { apiUrl: String(meta.apiUrl) }),
+    ...(meta?.apiParams && { apiParams: meta.apiParams }),
   }
 
   const response: ApiResponse<T> = {

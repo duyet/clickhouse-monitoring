@@ -163,7 +163,7 @@ export const DonutChart = memo(function DonutChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className={cn('mx-auto aspect-square max-h-[300px]', className)}
+      className={cn('mx-auto aspect-square max-h-[300px] min-w-0', className)}
     >
       <PieChart>
         <ChartTooltip

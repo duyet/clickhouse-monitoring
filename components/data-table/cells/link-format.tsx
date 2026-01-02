@@ -60,13 +60,13 @@ function LinkFormatComponent<
     <Link
       href={hrefBinding}
       className={cn(
-        'group flex flex-row items-center gap-1 transition-colors',
+        'group inline-flex flex-row items-center gap-1 transition-colors',
         'text-foreground hover:text-primary',
         className
       )}
       {...rest}
     >
-      <span className="truncate text-nowrap">{value}</span>
+      <span className="truncate">{value}</span>
       <ArrowRightIcon
         className="size-3 flex-none text-transparent transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-current"
         aria-hidden="true"

@@ -3,21 +3,21 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 
 import { createBarChart } from '@/components/charts/factory'
+import { chartTickFormatters } from '@/lib/utils'
 
-export const ChartConnectionsInterserver = createBarChart<{
-  event_time: string
-  CurrentMetric_InterserverConnection: number
-  readable_CurrentMetric_InterserverConnection: string
-}>({
+export const ChartConnectionsInterserver = createBarChart({
   chartName: 'connections-interserver',
   index: 'event_time',
   categories: ['CurrentMetric_InterserverConnection'],
-  defaultTitle: 'Interserver Connections Last 7 days (Total Requests / Hour)',
+  defaultTitle: 'Interserver Connections',
   defaultInterval: 'toStartOfHour',
   defaultLastHours: 24 * 7,
+  xAxisDateFormat: true,
+  dateRangeConfig: 'health',
   barChartProps: {
     readableColumn: 'readable_CurrentMetric_InterserverConnection',
     stack: true,
+    yAxisTickFormatter: chartTickFormatters.count,
   },
 })
 

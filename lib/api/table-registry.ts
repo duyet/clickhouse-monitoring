@@ -10,7 +10,10 @@ import {
   explorerColumnsConfig,
   explorerDatabasesConfig,
   explorerDdlConfig,
+  explorerDependenciesDownstreamConfig,
+  explorerDependenciesUpstreamConfig,
   explorerIndexesConfig,
+  explorerProjectionsConfig,
   explorerTablesConfig,
 } from '@/lib/query-config/explorer'
 import { clustersConfig } from '@/lib/query-config/system/clusters'
@@ -63,7 +66,10 @@ const allQueryConfigs: QueryConfig[] = [
   explorerTablesConfig,
   explorerColumnsConfig,
   explorerDdlConfig,
+  explorerDependenciesDownstreamConfig,
+  explorerDependenciesUpstreamConfig,
   explorerIndexesConfig,
+  explorerProjectionsConfig,
 
   // Specific page configs
   clustersConfig,

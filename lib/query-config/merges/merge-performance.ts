@@ -28,8 +28,8 @@ export const mergePerformanceConfig: QueryConfig = {
           bar(avg_duration_ms, 0, max(avg_duration_ms) OVER (), 30) AS bar_avg_duration,
           bar(sum_read_rows, 0, max(sum_read_rows) OVER (), 30) AS bar_sum_read_rows
       FROM merge('system', '^part_log')
-      WHERE (event_type = 'MergeParts')
-        AND (merge_reason = 'RegularMerge')
+      WHERE toInt8(event_type) = 2
+        AND toInt8(merge_reason) = 1
       GROUP BY 1, 2
       ORDER BY 1, 2 ASC
     `,
@@ -48,14 +48,14 @@ export const mergePerformanceConfig: QueryConfig = {
     [
       'merge-avg-duration',
       {
-        title: 'Merge Avg Duration in last 30 days',
+        title: 'Merge Avg Duration',
         lastHours: 24 * 30,
       },
     ],
     [
       'merge-sum-read-rows',
       {
-        title: 'Merge Total Read Rows in last 30 days',
+        title: 'Merge Total Read Rows',
         lastHours: 24 * 30,
       },
     ],

@@ -134,22 +134,23 @@ export function useDebounceWithPending<T>(
   delay: number = DEBOUNCE_DELAY.DEFAULT
 ): { debouncedValue: T; isPending: boolean } {
   const [debouncedValue, setDebouncedValue] = useState(value)
-  const [isPending, setIsPending] = useState(false)
+
+  // Derive isPending from whether value differs from debouncedValue
+  // This avoids separate state updates that could cause extra renders
+  const isPending = value !== debouncedValue
 
   useEffect(() => {
-    // If value changed, mark as pending
-    if (value !== debouncedValue) {
-      setIsPending(true)
+    // Only set up timeout if value differs from current debounced value
+    if (value === debouncedValue) {
+      return
     }
 
     const handler = setTimeout(() => {
       setDebouncedValue(value)
-      setIsPending(false)
     }, delay)
 
     return () => {
       clearTimeout(handler)
-      setIsPending(false)
     }
   }, [value, delay, debouncedValue])
 

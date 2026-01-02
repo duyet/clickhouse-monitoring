@@ -58,7 +58,7 @@ export const diskSpaceConfig: QueryConfig = {
     [
       'disks-usage',
       {
-        title: 'Disk Usage over last 14 days',
+        title: 'Disk Usage',
         interval: 'toStartOfDay',
         lastHours: 24 * 14,
       },

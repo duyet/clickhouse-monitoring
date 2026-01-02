@@ -5,10 +5,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { createCustomChart } from '@/components/charts/factory'
 
-export const ChartReplicationQueueCount = createCustomChart<{
-  count_all: number
-  count_executing: number
-}>({
+export const ChartReplicationQueueCount = createCustomChart({
   chartName: 'replication-queue-count',
   dataTestId: 'replication-queue-count-chart',
   chartCardClassName: 'justify-between',

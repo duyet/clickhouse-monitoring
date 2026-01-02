@@ -5,13 +5,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import { CardMetric } from '@/components/cards/card-metric'
 import { createCustomChart } from '@/components/charts/factory'
 
-export const ChartDiskSize = createCustomChart<{
-  name: string
-  used_space: number
-  readable_used_space: string
-  total_space: number
-  readable_total_space: string
-}>({
+export const ChartDiskSize = createCustomChart({
   chartName: 'disk-size',
   dataTestId: 'disk-size-chart',
   render: (dataArray) => {

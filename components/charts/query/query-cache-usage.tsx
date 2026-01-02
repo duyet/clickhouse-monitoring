@@ -22,11 +22,12 @@ const cacheColors: Record<string, string> = {
  * Shows query cache hit rate breakdown by usage type (Read, Write, None)
  * Available in ClickHouse v24.1+
  */
-export const ChartQueryCacheUsage = createCustomChart<CacheUsageData>({
+export const ChartQueryCacheUsage = createCustomChart({
   chartName: 'query-cache-usage',
   defaultTitle: 'Query Cache Hit Rate',
   defaultLastHours: 24 * 7,
   dataTestId: 'query-cache-usage-chart',
+  dateRangeConfig: 'standard',
   render: (dataArray) => {
     const data = dataArray as CacheUsageData[]
     const total = data.reduce((sum, d) => sum + d.query_count, 0)

@@ -26,6 +26,7 @@ import { Table, TableBody, TableHeader } from '@/components/ui/table'
  * @param isVirtualized - Whether virtualization is enabled (1000+ rows)
  * @param virtualizer - Virtual row instance from useVirtualRows hook
  * @param activeFilterCount - Number of active column filters
+ * @param onAutoFit - Callback when double-clicking column resizer to auto-fit
  */
 export interface DataTableContentProps<
   TData extends RowData,
@@ -51,6 +52,8 @@ export interface DataTableContentProps<
   >['virtualizer']
   /** Number of active column filters */
   activeFilterCount: number
+  /** Callback when double-clicking column resizer to auto-fit */
+  onAutoFit?: (columnId: string) => void
 }
 
 /**
@@ -62,6 +65,7 @@ export interface DataTableContentProps<
  * - Table header and body rendering
  * - Empty state handling with contextual messaging
  * - Accessibility with proper ARIA labels
+ * - Auto-fit column sizing callback propagation
  *
  * Performance considerations:
  * - Virtualization reduces DOM nodes from thousands to ~100
@@ -81,33 +85,27 @@ export const DataTableContent = memo(function DataTableContent<
   isVirtualized,
   virtualizer,
   activeFilterCount,
+  onAutoFit,
 }: DataTableContentProps<TData, TValue>) {
-  // Calculate total table width from column sizes
-  const tableWidth = table.getTotalSize()
-
   return (
     <div
       ref={tableContainerRef}
-      className={`mb-5 min-h-0 flex-1 rounded-lg border border-border/50 bg-card/30 ${
-        isVirtualized ? 'overflow-auto' : 'overflow-x-auto'
+      className={`mb-5 min-h-0 min-w-0 rounded-lg border border-border/50 bg-card/30 ${
+        isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto'
       }`}
       role="region"
       aria-label={`${title || 'Data'} table`}
       style={isVirtualized ? { height: '600px' } : undefined}
     >
-      <Table
-        aria-describedby="table-description"
-        style={{
-          width: tableWidth,
-          minWidth: '100%',
-          tableLayout: 'fixed',
-        }}
-      >
+      <Table aria-describedby="table-description">
         <caption id="table-description" className="sr-only">
           {description || queryConfig.description || `${title} data table`}
         </caption>
         <TableHeader className="bg-muted/50">
-          <TableHeaderRenderer headerGroups={table.getHeaderGroups()} />
+          <TableHeaderRenderer
+            headerGroups={table.getHeaderGroups()}
+            onAutoFit={onAutoFit}
+          />
         </TableHeader>
         <TableBody>
           <TableBodyRenderer

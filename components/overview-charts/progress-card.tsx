@@ -25,6 +25,7 @@ export interface ProgressCardProps {
   percent: number
   href?: string
   variant?: CardVariant
+  isLoading?: boolean
 }
 
 export const ProgressCard = memo(function ProgressCard({
@@ -32,7 +33,27 @@ export const ProgressCard = memo(function ProgressCard({
   percent,
   href,
   variant = 'default',
+  isLoading,
 }: ProgressCardProps) {
+  if (isLoading) {
+    return (
+      <div className={cn(cardStyles.base, 'group p-3')}>
+        <div className="flex flex-1 flex-col justify-center gap-1 sm:gap-2">
+          <div className="flex justify-center">
+            <div className="h-10 w-16 animate-pulse rounded bg-muted/30" />
+          </div>
+          <div className="space-y-1 sm:space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="h-3 w-10 animate-pulse rounded bg-muted/20" />
+              <div className="h-3 w-8 animate-pulse rounded bg-muted/20" />
+            </div>
+            <div className="h-2 sm:h-3 w-full animate-pulse rounded-full bg-muted/30" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const content = (
     <div
       className={cn(

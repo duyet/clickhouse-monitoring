@@ -7,6 +7,7 @@ import type { ChartQueryParams } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
 import { memo } from 'react'
+import { BulkActions } from '@/components/data-table/components/bulk-actions'
 import { ColumnVisibilityButton } from '@/components/data-table/buttons/column-visibility'
 import { ShowSQLButton } from '@/components/data-table/buttons/show-sql'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
@@ -79,8 +80,8 @@ export const DataTableHeader = memo(function DataTableHeader<
   // Use executed SQL if provided, otherwise fallback to config SQL
   const displaySql = executedSql || getSqlForDisplay(queryConfig.sql)
   return (
-    <div className="flex shrink-0 flex-row items-start justify-between pb-2">
-      <div>
+    <div className="flex min-w-0 shrink-0 flex-row items-start justify-between gap-4 pb-2">
+      <div className="min-w-0 flex-1">
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2">
             <h1 className="text-muted-foreground flex-none text-xl">{title}</h1>
@@ -94,6 +95,13 @@ export const DataTableHeader = memo(function DataTableHeader<
           <DataTableToolbar queryConfig={queryConfig}>
             {toolbarExtras}
           </DataTableToolbar>
+          {queryConfig.bulkActions && queryConfig.bulkActions.length > 0 && (
+            <BulkActions
+              table={table}
+              bulkActions={queryConfig.bulkActions}
+              bulkActionKey={queryConfig.bulkActionKey || 'query_id'}
+            />
+          )}
           {enableColumnFilters && activeFilterCount > 0 && (
             <button
               onClick={clearAllColumnFilters}
@@ -105,12 +113,12 @@ export const DataTableHeader = memo(function DataTableHeader<
             </button>
           )}
         </div>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground truncate text-sm">
           {description || queryConfig.description}
         </p>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-3">
         {topRightToolbarExtras}
         {showSQL && <ShowSQLButton sql={displaySql} />}
         <ColumnVisibilityButton table={table} />

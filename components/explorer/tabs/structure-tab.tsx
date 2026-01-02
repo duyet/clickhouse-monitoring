@@ -17,7 +17,6 @@ export function StructureTab() {
       description={`Column details for ${database}.${table}`}
       queryConfig={databaseTableColumnsConfig}
       searchParams={{ database, table }}
-      enableColumnFilters
     />
   )
 }

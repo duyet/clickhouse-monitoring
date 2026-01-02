@@ -1,5 +1,9 @@
 import type { AreaChartProps, BarChartProps } from '@/types/charts'
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+import type {
+  DateRangeConfig,
+  DateRangePresetName,
+} from '@/components/date-range'
 
 interface BaseChartFactoryConfig {
   chartName: string
@@ -8,6 +12,8 @@ interface BaseChartFactoryConfig {
   defaultLastHours?: number
   refreshInterval?: number
   dataTestId?: string
+  /** Enable date range selector with preset or custom config (opt-in) */
+  dateRangeConfig?: DateRangeConfig | DateRangePresetName
 }
 
 // Additional props that AreaChart accepts but aren't in AreaChartProps
@@ -32,6 +38,8 @@ export interface BarChartFactoryConfig extends BaseChartFactoryConfig {
   categories: string[] | ((data: unknown[]) => string[])
   defaultChartClassName?: string
   barChartProps?: Partial<BarChartProps> & BarChartAdditionalProps
+  /** Enable smart x-axis date formatting based on time range */
+  xAxisDateFormat?: boolean
 }
 
 export interface CustomChartFactoryConfig extends BaseChartFactoryConfig {

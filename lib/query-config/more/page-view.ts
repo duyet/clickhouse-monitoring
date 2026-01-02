@@ -29,7 +29,7 @@ export const pageViewConfig: QueryConfig = {
     [
       'page-view',
       {
-        title: 'Daily Page Views (last 14 days)',
+        title: 'Daily Page Views',
         interval: 'toStartOfDay',
         lastHours: 24 * 14,
         colors: ['--chart-1'],
@@ -39,7 +39,7 @@ export const pageViewConfig: QueryConfig = {
     [
       'page-view',
       {
-        title: 'Monthly Page Views (last 12 months)',
+        title: 'Monthly Page Views',
         interval: 'toStartOfMonth',
         lastHours: 24 * 365,
         colors: ['--chart-2'],

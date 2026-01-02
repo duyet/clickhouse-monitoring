@@ -3,19 +3,17 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 
 import { createBarChart } from '@/components/charts/factory'
+import { chartTickFormatters } from '@/lib/utils'
 
-export const ChartMergeSumReadRows = createBarChart<{
-  event_time: string
-  sum_read_rows: number
-  sum_read_rows_scale: number
-  readable_sum_read_rows: string
-}>({
+export const ChartMergeSumReadRows = createBarChart({
   chartName: 'merge-sum-read-rows',
   index: 'event_time',
   categories: ['sum_read_rows_scale'],
+  defaultTitle: 'Merge Read Rows',
   defaultInterval: 'toStartOfDay',
   defaultLastHours: 24 * 14,
   dataTestId: 'merge-sum-read-rows-chart',
+  dateRangeConfig: 'operations',
   barChartProps: {
     readableColumn: 'readable_sum_read_rows',
     labelPosition: 'inside',
@@ -25,6 +23,7 @@ export const ChartMergeSumReadRows = createBarChart<{
     autoMinValue: true,
     relative: false,
     allowDecimals: true,
+    yAxisTickFormatter: chartTickFormatters.count,
   },
 })
 

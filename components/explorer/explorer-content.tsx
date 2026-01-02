@@ -1,12 +1,13 @@
 'use client'
 
-import { Database, Loader2, Table as TableIcon } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 import { ExplorerBreadcrumb } from './explorer-breadcrumb'
 import { ExplorerEmptyState } from './explorer-empty-state'
 import { useExplorerState } from './hooks/use-explorer-state'
 import { DataTab } from './tabs/data-tab'
 import { DdlTab } from './tabs/ddl-tab'
+import { DependenciesTab } from './tabs/dependencies-tab'
 import { IndexesTab } from './tabs/indexes-tab'
 import { StructureTab } from './tabs/structure-tab'
 import { useEffect, useRef, useState } from 'react'
@@ -62,19 +63,14 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
   }
 
   return (
-    <div className="flex h-full flex-col gap-4 p-4">
+    <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
       <ExplorerBreadcrumb hostName={hostName} />
 
-      {/* Quick info bar */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Database className="size-4" />
-        <span>{database}</span>
-        <span className="text-muted-foreground/50">/</span>
-        <TableIcon className="size-4" />
-        <span className="font-medium text-foreground">{table}</span>
-      </div>
-
-      <Tabs value={tab} onValueChange={handleTabChange} className="flex-1">
+      <Tabs
+        id="explorer-tabs"
+        value={tab}
+        onValueChange={handleTabChange}
+      >
         <TabsList>
           <TabsTrigger value="data" className="gap-2">
             Data
@@ -100,32 +96,56 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
               <Loader2 className="size-3 animate-spin" />
             )}
           </TabsTrigger>
+          <TabsTrigger value="dependencies" className="gap-2">
+            Dependencies
+            {isTabSwitching && tab === 'dependencies' && (
+              <Loader2 className="size-3 animate-spin" />
+            )}
+          </TabsTrigger>
         </TabsList>
 
         {/* Data tab: always force-mounted to preserve pagination state */}
-        <TabsContent value="data" className="mt-4" forceMount>
-          <div className={cn(tab !== 'data' && 'hidden')}>
-            <DataTab />
-          </div>
+        <TabsContent
+          value="data"
+          className={cn('mt-4', tab !== 'data' && 'hidden flex-none')}
+          forceMount
+        >
+          <DataTab />
         </TabsContent>
 
         {/* Structure tab: don't force-mount due to complex filter state */}
-        <TabsContent value="structure" className="mt-4">
+        <TabsContent value="structure" className="mt-4 flex-none">
           <StructureTab />
         </TabsContent>
 
         {/* DDL tab: force-mount to keep content cached */}
-        <TabsContent value="ddl" className="mt-4" forceMount>
-          <div className={cn(tab !== 'ddl' && 'hidden')}>
-            {visitedTabs.has('ddl') && <DdlTab />}
-          </div>
+        <TabsContent
+          value="ddl"
+          className={cn('mt-4', tab !== 'ddl' && 'hidden flex-none')}
+          forceMount
+        >
+          {visitedTabs.has('ddl') && <DdlTab />}
         </TabsContent>
 
         {/* Indexes tab: force-mount to keep content cached */}
-        <TabsContent value="indexes" className="mt-4" forceMount>
-          <div className={cn(tab !== 'indexes' && 'hidden')}>
-            {visitedTabs.has('indexes') && <IndexesTab />}
-          </div>
+        <TabsContent
+          value="indexes"
+          className={cn('mt-4', tab !== 'indexes' && 'hidden flex-none')}
+          forceMount
+        >
+          {visitedTabs.has('indexes') && <IndexesTab />}
+        </TabsContent>
+
+        {/* Dependencies tab: force-mount to keep content cached */}
+        <TabsContent
+          value="dependencies"
+          className={cn(
+            'mt-4',
+            tab !== 'dependencies' && 'hidden flex-none'
+          )}
+          forceMount
+        >
+          {visitedTabs.has('dependencies') && <DependenciesTab />}
         </TabsContent>
       </Tabs>
     </div>

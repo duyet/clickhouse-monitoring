@@ -36,7 +36,7 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
 
   return (
     <ChartContainer swr={swr} title={title} className={className}>
-      {(dataArray, sql) => {
+      {(dataArray, sql, metadata) => {
         // For this chart, we need to separate by-size and by-count logic
         // Since the API only returns one query result, we'll use the same data
         // In a real scenario, you might want to create two separate chart endpoints
@@ -58,9 +58,14 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
             className={className}
             sql={sql}
             data={dataArray}
+            metadata={metadata}
             data-testid="top-table-size-chart"
           >
-            <Tabs defaultValue="by-size" className="overflow-hidden">
+            <Tabs
+              id="top-table-tabs"
+              defaultValue="by-size"
+              className="overflow-hidden"
+            >
               <TabsList className="mb-3">
                 <TabsTrigger key="by-size" value="by-size">
                   Top tables by Size

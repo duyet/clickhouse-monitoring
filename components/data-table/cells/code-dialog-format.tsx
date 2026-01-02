@@ -60,12 +60,12 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
   }, [value, options?.json])
 
   if (formatted.length < truncate_length) {
-    return <code>{formatted}</code>
+    return <code className="whitespace-nowrap">{formatted}</code>
   }
 
   // If the code is not truncated, show the full code
   if (!formatted.endsWith('...')) {
-    return <code>{formatted}</code>
+    return <code className="whitespace-nowrap">{formatted}</code>
   }
 
   return (
@@ -73,17 +73,11 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
       <DialogTrigger asChild>
         <div
           className={cn(
-            'flex max-w-fit cursor-pointer flex-row items-center gap-1'
+            'flex max-w-fit cursor-pointer flex-row items-center gap-1',
+            options?.trigger_classname
           )}
         >
-          <code
-            className={cn(
-              'font-normal break-words',
-              options?.trigger_classname
-            )}
-          >
-            {formatted}
-          </code>
+          <code className="font-normal whitespace-nowrap">{formatted}</code>
           <SizeIcon className="size-4 flex-none" />
         </div>
       </DialogTrigger>

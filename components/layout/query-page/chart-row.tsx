@@ -67,7 +67,7 @@ export const ChartRow = memo(function ChartRow({
         {/* Collapsed state - clickable titles to expand */}
         {isCollapsed && (
           <CollapsibleTrigger asChild>
-            <div className="group/row relative flex h-10 items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer px-4">
+            <div className="group/row relative flex h-10 w-full min-w-0 items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer px-4">
               <span className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground opacity-0 group-hover/row:opacity-100 transition-opacity duration-200">
                 Show
                 <ChevronDownIcon className="h-3 w-3" />
@@ -88,28 +88,10 @@ export const ChartRow = memo(function ChartRow({
 
         {/* Expanded state - charts grid */}
         <CollapsibleContent>
-          <div className="relative group">
-            {/* Hide pill - top-right, shows on hover */}
-            <CollapsibleTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'absolute z-50 h-6 px-3 gap-1',
-                  '-top-3 -right-3',
-                  'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
-                  'bg-muted hover:bg-muted/80 text-muted-foreground',
-                  'rounded-full text-xs shadow-sm'
-                )}
-                aria-label="Collapse row"
-              >
-                <ChevronUpIcon className="h-3 w-3" />
-                <span>Hide</span>
-              </Button>
-            </CollapsibleTrigger>
+          <div className="relative group pb-6 overflow-hidden">
             <div
               className={cn(
-                'grid gap-3 items-stretch',
+                'grid gap-3 items-stretch w-full min-w-0 overflow-hidden',
                 // Use 10-column grid when colSpan is used, otherwise 2-column
                 hasColSpan(charts)
                   ? 'grid-cols-1 md:grid-cols-10 auto-rows-[1fr]'
@@ -142,7 +124,7 @@ export const ChartRow = memo(function ChartRow({
                   <div
                     key={`${chartName}-${index}`}
                     className={cn(
-                      'h-full',
+                      'h-full min-w-0',
                       colSpan && `md:col-span-${colSpan}`
                     )}
                     style={
@@ -151,7 +133,7 @@ export const ChartRow = memo(function ChartRow({
                         : undefined
                     }
                   >
-                    <div className="flex h-full min-h-[140px] max-h-[240px] flex-col">
+                    <div className="flex h-full min-h-[140px] max-h-[240px] w-full min-w-0 flex-col">
                       <Suspense fallback={<ChartSkeleton />}>
                         <DynamicChart
                           chartName={chartName}
@@ -164,6 +146,24 @@ export const ChartRow = memo(function ChartRow({
                 )
               })}
             </div>
+            {/* Hide pill - bottom center, shows on hover */}
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  'absolute z-50 h-6 px-3 gap-1',
+                  'bottom-1 left-1/2 -translate-x-1/2',
+                  'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
+                  'bg-muted hover:bg-muted/80 text-muted-foreground',
+                  'rounded-full text-xs shadow-sm'
+                )}
+                aria-label="Collapse row"
+              >
+                <ChevronUpIcon className="h-3 w-3" />
+                <span>Hide</span>
+              </Button>
+            </CollapsibleTrigger>
           </div>
         </CollapsibleContent>
       </div>

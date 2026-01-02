@@ -50,6 +50,8 @@ export interface QueryPageLayoutProps {
   hideTable?: boolean
   /** Additional search params to pass to table */
   searchParams?: Record<string, string | number | boolean>
+  /** Enable row selection with checkboxes */
+  enableRowSelection?: boolean
 }
 
 export const QueryPageLayout = memo(function QueryPageLayout({
@@ -61,6 +63,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   chartsGridClass,
   hideTable = false,
   searchParams,
+  enableRowSelection = false,
 }: QueryPageLayoutProps) {
   const hostId = useHostId()
   const relatedCharts = queryConfig.relatedCharts || []
@@ -69,7 +72,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   const hasCharts = relatedCharts.length > 0
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-4 w-full">
+    <div className="flex min-w-0 flex-1 flex-col gap-4 w-full max-w-full">
       {/* Optional Header Content */}
       {headerContent}
 
@@ -78,7 +81,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
         <div className="flex flex-col gap-2">
           <ChartsToggle isCollapsed={isCollapsed} onToggle={toggleCollapsed} />
           {!isCollapsed && (
-            <FadeIn duration={200} className="overflow-hidden">
+            <FadeIn duration={200}>
               <RelatedCharts
                 relatedCharts={relatedCharts}
                 hostId={hostId}
@@ -101,6 +104,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
               queryConfig={queryConfig}
               searchParams={searchParams}
               className="flex min-w-0 flex-1 flex-col"
+              enableRowSelection={enableRowSelection}
             />
           </FadeIn>
         </Suspense>
@@ -124,6 +128,7 @@ export interface CreateQueryPageOptions {
   chartsGridClass?: string
   hideTable?: boolean
   searchParams?: Record<string, string | number | boolean>
+  enableRowSelection?: boolean
 }
 
 /**

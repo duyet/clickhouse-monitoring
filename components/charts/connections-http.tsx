@@ -3,26 +3,24 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 
 import { createBarChart } from '@/components/charts/factory'
+import { chartTickFormatters } from '@/lib/utils'
 
-export const ChartConnectionsHttp = createBarChart<{
-  event_time: string
-  CurrentMetric_HTTPConnection: number
-  readable_CurrentMetric_HTTPConnection: string
-  CurrentMetric_HTTPConnectionsTotal: number
-  readable_CurrentMetric_HTTPConnectionsTotal: string
-}>({
+export const ChartConnectionsHttp = createBarChart({
   chartName: 'connections-http',
   index: 'event_time',
   categories: [
     'CurrentMetric_HTTPConnectionsTotal',
     'CurrentMetric_HTTPConnection',
   ],
-  defaultTitle: 'HTTP Connections Last 7 days (Total Requests / Hour)',
+  defaultTitle: 'HTTP Connections',
   defaultInterval: 'toStartOfHour',
   defaultLastHours: 24 * 7,
+  xAxisDateFormat: true,
+  dateRangeConfig: 'health',
   barChartProps: {
     stack: true,
     showLabel: false,
+    yAxisTickFormatter: chartTickFormatters.count,
   },
 })
 

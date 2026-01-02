@@ -6,23 +6,20 @@ import type { ChartProps } from '@/components/charts/chart-props'
 
 import Link from 'next/link'
 import { createCustomChart } from '@/components/charts/factory'
-import { AreaChart } from '@/components/charts/primitives/area'
+import { BarChart } from '@/components/charts/primitives/bar'
 import { buildUrl } from '@/lib/url/url-builder'
 
-export const ChartMergeCount = createCustomChart<{
-  event_time: string
-  avg_CurrentMetric_Merge: number
-  avg_CurrentMetric_PartMutation: number
-}>({
+export const ChartMergeCount = createCustomChart({
   chartName: 'merge-count',
   defaultInterval: 'toStartOfFiveMinutes',
   defaultLastHours: 12,
   dataTestId: 'merge-count-chart',
+  dateRangeConfig: 'operations',
   chartCardClassName: 'justify-between',
   contentClassName: 'flex flex-col justify-between',
   render: (dataArray, _sql, hostId) => (
     <>
-      <AreaChart
+      <BarChart
         className="h-full min-h-[140px] sm:min-h-[160px]"
         data={
           dataArray as Array<{
@@ -37,7 +34,7 @@ export const ChartMergeCount = createCustomChart<{
           'avg_CurrentMetric_PartMutation',
         ]}
         colors={['--chart-3', '--chart-4']}
-        readable="quantity"
+        stack
       />
 
       <div className="text-muted-foreground flex flex-row justify-between gap-2 text-right text-sm pt-2">

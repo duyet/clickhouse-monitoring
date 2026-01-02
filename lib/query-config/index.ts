@@ -22,6 +22,7 @@ import { topUsageColumnsConfig } from './more/top-usage-columns'
 import { topUsageTablesConfig } from './more/top-usage-tables'
 import { usersConfig } from './more/users'
 import { zookeeperConfig } from './more/zookeeper'
+import { dictionariesConfig } from './more/dictionaries'
 import { commonErrorsConfig } from './queries/common-errors'
 import { expensiveQueriesConfig } from './queries/expensive-queries'
 import { expensiveQueriesByMemoryConfig } from './queries/expensive-queries-by-memory'
@@ -53,6 +54,17 @@ import { replicasConfig } from './tables/replicas'
 import { replicationQueueConfig } from './tables/replication-queue'
 import { tablesOverviewConfig } from './tables/tables-overview'
 import { viewRefreshesConfig } from './tables/view-refreshes'
+// Security
+import { sessionsConfig } from './security/sessions'
+import { loginAttemptsConfig } from './security/login-attempts'
+// Logs
+import { textLogConfig } from './logs/text-log'
+import { stackTracesConfig } from './logs/stack-traces'
+import { crashLogConfig } from './logs/crashes'
+// Thread Analysis
+import { threadAnalysisConfig } from './queries/thread-analysis'
+import { parallelizationConfig } from './queries/parallelization'
+import { profilerConfig } from './queries/profiler'
 import { cache } from 'react'
 
 export const queries: Array<QueryConfig> = [
@@ -116,6 +128,23 @@ export const queries: Array<QueryConfig> = [
   databaseDiskSpaceByDatabaseConfig,
   databaseTableColumnsConfig,
   tablesListConfig,
+
+  // Security
+  sessionsConfig,
+  loginAttemptsConfig,
+
+  // Logs
+  textLogConfig,
+  stackTracesConfig,
+  crashLogConfig,
+
+  // Thread Analysis
+  threadAnalysisConfig,
+  parallelizationConfig,
+  profilerConfig,
+
+  // Dictionaries
+  dictionariesConfig,
 ]
 
 export const getQueryConfigByName = cache(

@@ -62,6 +62,7 @@ export interface SplitCardProps {
   label2: string
   href1?: string
   href2?: string
+  isLoading?: boolean
 }
 
 export const SplitCard = memo(function SplitCard({
@@ -71,7 +72,26 @@ export const SplitCard = memo(function SplitCard({
   label2,
   href1,
   href2,
+  isLoading,
 }: SplitCardProps) {
+  if (isLoading) {
+    return (
+      <div className={cardStyles.base}>
+        <div className="flex flex-1 items-center justify-center gap-1.5 sm:gap-3 md:gap-6">
+          <div className="flex flex-1 flex-col items-center justify-center gap-1">
+            <div className="h-10 w-12 animate-pulse rounded bg-muted/30" />
+            <div className="h-3 w-16 animate-pulse rounded bg-muted/20" />
+          </div>
+          <div className={cardStyles.divider} />
+          <div className="flex flex-1 flex-col items-center justify-center gap-1">
+            <div className="h-10 w-12 animate-pulse rounded bg-muted/30" />
+            <div className="h-3 w-16 animate-pulse rounded bg-muted/20" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={cardStyles.base}>
       <div className="flex flex-1 items-center justify-center gap-1.5 sm:gap-3 md:gap-6">

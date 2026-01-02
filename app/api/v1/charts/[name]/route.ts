@@ -31,6 +31,7 @@ import {
   getClickHouseVersion,
   getTableInfoMessage,
   selectQueryVariant,
+  selectVersionedSql,
 } from '@/lib/clickhouse-version'
 import { debug, error } from '@/lib/logger'
 
@@ -47,7 +48,8 @@ async function handleMultiQueryChart(
   queryDef: MultiChartQueryResult,
   hostId: number | string,
   chartName: string,
-  routeContext: RouteContext
+  routeContext: RouteContext,
+  api?: string
 ): Promise<Response> {
   debug(`[GET /api/v1/charts/${chartName}]`, {
     hostId,
@@ -134,6 +136,7 @@ async function handleMultiQueryChart(
         rows: 0,
         host: String(hostId),
         sql: combinedSql,
+        api,
       },
       error: hasError ? firstError : undefined,
     }
@@ -184,13 +187,21 @@ export async function GET(
   const interval = (intervalParam || undefined) as
     | ClickHouseInterval
     | undefined
-  const lastHours = searchParams.get('lastHours')
-    ? parseInt(searchParams.get('lastHours') || '24', 10)
-    : undefined
+  // Handle lastHours: if not provided, undefined (which means "all" range - no time filter)
+  const lastHoursParam = searchParams.get('lastHours')
+  const lastHours = lastHoursParam ? parseInt(lastHoursParam, 10) : undefined
   const paramStr = searchParams.get('params')
   const params_obj = paramStr ? JSON.parse(paramStr) : undefined
 
   debug(`[GET /api/v1/charts/${name}]`, { hostId, interval, lastHours })
+
+  // Build full API URL for metadata (includes query params)
+  const apiQueryParams = new URLSearchParams()
+  apiQueryParams.set('hostId', String(hostId))
+  if (interval) apiQueryParams.set('interval', interval)
+  if (lastHours !== undefined) apiQueryParams.set('lastHours', String(lastHours))
+  if (params_obj) apiQueryParams.set('params', JSON.stringify(params_obj))
+  const api = `/api/v1/charts/${name}?${apiQueryParams.toString()}`
 
   // Check if chart exists
   if (!hasChart(name)) {
@@ -232,7 +243,8 @@ export async function GET(
       queryDef as MultiChartQueryResult,
       hostId,
       name,
-      routeContext
+      routeContext,
+      api
     )
   }
 
@@ -244,11 +256,29 @@ export async function GET(
   const clickhouseVersion = await getClickHouseVersion(numericHostId)
 
   // Select appropriate query for this ClickHouse version
-  const selectedQuery = selectQueryVariant(queryDef, clickhouseVersion)
+  // Priority: sql (VersionedSql[]) > variants (deprecated) > query (default)
+  let selectedQuery: string
+  if (queryDef.sql && Array.isArray(queryDef.sql) && queryDef.sql.length > 0) {
+    // New format: sql is VersionedSql[] - uses "since" pattern (oldest→newest)
+    selectedQuery = selectVersionedSql(queryDef.sql, clickhouseVersion)
+    debug(`[GET /api/v1/charts/${name}] Using VersionedSql`, {
+      clickhouseVersion: clickhouseVersion?.raw,
+      variantCount: queryDef.sql.length,
+    })
+  } else if (queryDef.variants && queryDef.variants.length > 0) {
+    // Deprecated format: variants with minVersion/maxVersion ranges
+    selectedQuery = selectQueryVariant(queryDef, clickhouseVersion)
+    debug(`[GET /api/v1/charts/${name}] Using deprecated variants`, {
+      clickhouseVersion: clickhouseVersion?.raw,
+      variantCount: queryDef.variants.length,
+    })
+  } else {
+    // No versioning: use default query
+    selectedQuery = queryDef.query
+  }
 
   debug(`[GET /api/v1/charts/${name}]`, {
     clickhouseVersion: clickhouseVersion?.raw,
-    hasVariants: (queryDef.variants?.length ?? 0) > 0,
     queryChanged: selectedQuery !== queryDef.query,
   })
 
@@ -294,7 +324,8 @@ export async function GET(
           [],
           { queryId: '', duration: 0, rows: 0, host: String(hostId) },
           queryDef.query.trim(),
-          statusInfo
+          statusInfo,
+          api
         )
       }
 
@@ -374,7 +405,8 @@ export async function GET(
             status: 'ok' as DataStatus,
             clickhouseVersion: clickhouseVersion.raw,
           }
-        : undefined
+        : undefined,
+    api
   )
 }
 
@@ -407,6 +439,11 @@ interface ChartResponseMetadata {
   checkedTables?: string[]
   missingTables?: string[]
   clickhouseVersion?: string
+  // Debug fields for raw ClickHouse response
+  rawResponseLength?: number
+  rawResponsePreview?: string
+  // API request URL (full path with query params)
+  api?: string
 }
 
 /**
@@ -423,7 +460,8 @@ function createSuccessResponse<T>(
     checkedTables?: string[]
     missingTables?: string[]
     clickhouseVersion?: string
-  }
+  },
+  api?: string
 ): Response {
   // Transform data to convert numeric strings to numbers
   // This is necessary because ClickHouse returns numbers as strings in JSON
@@ -435,17 +473,33 @@ function createSuccessResponse<T>(
   const dataArray = Array.isArray(transformedData) ? transformedData : []
   const defaultStatus: DataStatus = dataArray.length > 0 ? 'ok' : 'empty'
 
+  // Use metadata.sql if available (has whitespace normalized), fallback to sql param
+  const normalizedSql = metadata.sql
+    ? String(metadata.sql)
+    : sql?.replace(/\s+/g, ' ').trim()
+
   const responseMetadata: ChartResponseMetadata = {
     queryId: String(metadata.queryId || ''),
     duration: Number(metadata.duration || 0),
     rows: Number(metadata.rows || 0),
     host: String(metadata.host || ''),
-    sql,
+    sql: normalizedSql,
     status: statusInfo?.status ?? defaultStatus,
     statusMessage: statusInfo?.statusMessage,
     checkedTables: statusInfo?.checkedTables,
     missingTables: statusInfo?.missingTables,
     clickhouseVersion: statusInfo?.clickhouseVersion,
+    // Debug fields - pass through from fetchData (use 'in' check for falsy values like 0)
+    rawResponseLength:
+      'rawResponseLength' in metadata
+        ? Number(metadata.rawResponseLength)
+        : undefined,
+    rawResponsePreview:
+      'rawResponsePreview' in metadata
+        ? String(metadata.rawResponsePreview)
+        : undefined,
+    // API request URL
+    api,
   }
 
   const response: ApiResponseType<T> = {

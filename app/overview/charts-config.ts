@@ -115,7 +115,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'query-count-24h',
     component: ChartQueryCount,
-    title: 'Query Count last 24h',
+    title: 'Query Count',
     lastHours: 24,
     interval: 'toStartOfHour',
     className: 'w-full h-80',
@@ -124,7 +124,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'query-count-by-user-24h',
     component: ChartQueryCountByUser,
-    title: 'Query Count by User last 24h',
+    title: 'Query Count by User',
     lastHours: 24,
     interval: 'toStartOfHour',
     className: 'w-full h-80',
@@ -133,7 +133,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'query-duration',
     component: ChartQueryDuration,
-    title: 'Query Duration Trend (14 days)',
+    title: 'Avg Query Duration',
     lastHours: 24 * 14,
     interval: 'toStartOfDay',
     className: 'w-full h-80',
@@ -142,7 +142,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'failed-query-count',
     component: ChartFailedQueryCount,
-    title: 'Failed Queries (7 days)',
+    title: 'Failed Queries',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
     className: 'w-full h-80',
@@ -151,7 +151,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'memory-usage',
     component: ChartMemoryUsage,
-    title: 'Memory Usage last 24h (avg / 10 minutes)',
+    title: 'Memory Usage',
     className: 'w-full h-80',
     interval: 'toStartOfTenMinutes',
     lastHours: 24,
@@ -160,7 +160,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'cpu-usage',
     component: ChartCPUUsage,
-    title: 'CPU Usage last 24h (avg / 10 minutes)',
+    title: 'CPU Usage',
     className: 'w-full h-80',
     interval: 'toStartOfTenMinutes',
     lastHours: 24,
@@ -170,7 +170,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'disks-usage-overview',
     component: ChartDisksUsage,
     className: 'w-full h-80',
-    title: 'Disks Usage Trend (30 days)',
+    title: 'Disks Usage Trend',
     interval: 'toStartOfDay',
     lastHours: 24 * 30,
     type: 'area',
@@ -183,11 +183,13 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     type: 'custom',
   },
   {
-    id: 'replication-queue-count-overview',
-    component: ChartReplicationQueueCount,
-    title: 'Replication Queue',
-    className: 'w-full',
-    type: 'metric',
+    id: 'merge-count-overview',
+    component: ChartMergeCount,
+    title: 'Merge and PartMutation',
+    lastHours: 24,
+    interval: 'toStartOfHour',
+    className: 'w-full h-80',
+    type: 'custom',
   },
 ]
 
@@ -198,7 +200,7 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'query-count-14d',
     component: ChartQueryCountByUser,
-    title: 'Query Count last 14 days',
+    title: 'Query Count',
     lastHours: 24 * 14,
     interval: 'toStartOfDay',
     className: 'w-full h-80',
@@ -207,7 +209,7 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'query-memory',
     component: ChartQueryMemory,
-    title: 'Avg Query Memory Usage (14 days)',
+    title: 'Avg Query Memory Usage',
     lastHours: 24 * 14,
     interval: 'toStartOfDay',
     className: 'w-full h-80',
@@ -231,9 +233,9 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'query-type',
     component: ChartQueryType,
-    title: 'Query Type Distribution (24h)',
+    title: 'Query Type Distribution',
     lastHours: 24,
-    className: 'w-full h-80',
+    className: 'w-full',
     type: 'custom',
   },
 ]
@@ -253,7 +255,7 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'disks-usage',
     component: ChartDisksUsage,
     className: 'w-full h-80',
-    title: 'Disks Usage over last 30 days',
+    title: 'Disks Usage',
     interval: 'toStartOfDay',
     lastHours: 24 * 30,
     type: 'area',
@@ -269,7 +271,7 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'new-parts-created',
     component: ChartNewPartsCreated,
     className: 'w-full h-80',
-    title: 'New Parts Created (7 days)',
+    title: 'New Parts Created',
     interval: 'toStartOfHour',
     lastHours: 24 * 7,
     type: 'bar',
@@ -291,7 +293,7 @@ export const OPERATIONS_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'merge-count',
     component: ChartMergeCount,
-    title: 'Merge and PartMutation (24h)',
+    title: 'Merge and PartMutation',
     lastHours: 24,
     interval: 'toStartOfHour',
     className: 'w-full h-80',
@@ -300,7 +302,7 @@ export const OPERATIONS_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'merge-avg-duration',
     component: ChartMergeAvgDuration,
-    title: 'Merge Avg Duration (14 days)',
+    title: 'Merge Avg Duration',
     lastHours: 24 * 14,
     interval: 'toStartOfDay',
     className: 'w-full h-80',
@@ -314,13 +316,6 @@ export const OPERATIONS_TAB_CHARTS: OverviewChartConfig[] = [
     type: 'metric',
   },
   {
-    id: 'replication-lag',
-    component: ChartReplicationLag,
-    title: 'Replication Lag',
-    className: 'w-full',
-    type: 'table',
-  },
-  {
     id: 'replication-summary-table',
     component: ChartReplicationSummaryTable,
     title: 'Replication Queue by Table',
@@ -330,11 +325,18 @@ export const OPERATIONS_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'readonly-replica',
     component: ChartReadonlyReplica,
-    title: 'Readonly Replicas (24h)',
+    title: 'Readonly Replicas',
     lastHours: 24,
     interval: 'toStartOfFifteenMinutes',
     className: 'w-full h-80',
     type: 'bar',
+  },
+  {
+    id: 'replication-lag',
+    component: ChartReplicationLag,
+    title: 'Replication Lag',
+    className: 'w-full',
+    type: 'table',
   },
 ]
 
@@ -345,7 +347,7 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'failed-queries-health',
     component: ChartFailedQueryCount,
-    title: 'Failed Queries (7 days)',
+    title: 'Failed Queries',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
     className: 'w-full h-80',
@@ -361,7 +363,7 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'zookeeper-wait',
     component: ChartZookeeperWait,
-    title: 'ZooKeeper Wait Time (7 days)',
+    title: 'ZooKeeper Wait Time',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
     className: 'w-full h-80',
@@ -370,7 +372,7 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'zookeeper-requests',
     component: ChartZookeeperRequests,
-    title: 'ZooKeeper Requests (7 days)',
+    title: 'ZooKeeper Requests',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
     className: 'w-full h-80',
@@ -379,7 +381,7 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'connections-http',
     component: ChartConnectionsHttp,
-    title: 'HTTP Connections (7 days)',
+    title: 'HTTP Connections',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
     className: 'w-full h-80',
@@ -388,7 +390,7 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'connections-interserver',
     component: ChartConnectionsInterserver,
-    title: 'Interserver Connections (7 days)',
+    title: 'Interserver Connections',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
     className: 'w-full h-80',

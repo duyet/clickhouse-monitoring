@@ -1,10 +1,14 @@
 import type { ClickHouseInterval } from './clickhouse-interval'
+import type { VersionedSql } from './query-config'
 
 /**
  * Semver range string for version matching
  * Examples: ">=24.1", "<24.5", ">=24.1 <24.5", "^24.1"
  */
 export type SemverRange = string
+
+// Re-export VersionedSql for convenience
+export type { VersionedSql }
 
 /**
  * Base chart data point interface
@@ -64,11 +68,34 @@ export interface QueryVariant {
  * Contains SQL query and metadata for execution
  */
 export interface ChartQueryResult<_T extends ChartDataPoint = ChartDataPoint> {
+  /**
+   * SQL query definition - either:
+   * - A string (version-independent query, for backward compatibility also use `query`)
+   * - An array of VersionedSql (version-aware queries, ordered oldest→newest)
+   *
+   * When using VersionedSql[], queries are defined chronologically and the system
+   * picks the highest `since` version that is <= current ClickHouse version.
+   *
+   * @example Version-aware (array of VersionedSql)
+   * ```ts
+   * sql: [
+   *   { since: '20.5', sql: 'SELECT event_type FROM system.part_log WHERE event_type = 2' },
+   *   { since: '23.8', sql: "SELECT event_type FROM system.part_log WHERE event_type = 'MergeParts'" },
+   * ]
+   * ```
+   */
+  sql?: VersionedSql[]
+  /**
+   * Simple SQL query string (version-independent)
+   * If both `sql` (VersionedSql[]) and `query` are provided, `sql` takes precedence
+   */
   query: string
   queryParams?: Record<string, unknown>
   optional?: boolean
   tableCheck?: string | string[]
   /**
+   * @deprecated Use `sql: VersionedSql[]` instead. Will be removed in v0.3.0.
+   *
    * Alternative query variants for different ClickHouse versions
    * The first matching variant (by version) will be used
    * If no variant matches, the main `query` is used as fallback

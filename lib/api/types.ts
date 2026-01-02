@@ -1,6 +1,28 @@
 /**
  * API types and interfaces for the ClickHouse monitoring API layer.
  * Provides type safety for requests, responses, and error handling.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * ⚠️  SECURITY WARNING: INTERNAL TOOL ONLY
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * This is an internal monitoring dashboard for ClickHouse database administration.
+ * API responses INCLUDE SENSITIVE INFORMATION such as:
+ *   - Raw SQL queries executed against the database
+ *   - Query parameters and database structure
+ *   - Host connection details and version information
+ *   - Table names, schemas, and data patterns
+ *
+ * ⚠️  DO NOT expose this dashboard to PUBLIC INTERNET without proper security:
+ *   1. Implement AUTHENTICATION (OAuth, SSO, API keys, etc.)
+ *   2. Implement AUTHORIZATION (role-based access control)
+ *   3. Use VPN/PRIVATE NETWORK for internal access only
+ *   4. Enable AUDIT LOGGING for all access
+ *   5. Consider IP whitelisting for trusted networks only
+ *
+ * The SQL and metadata in responses are intentionally exposed to help DB admins
+ * debug and investigate issues by copying queries to ClickHouse client.
+ * ═══════════════════════════════════════════════════════════════════════════════
  */
 
 import type { QueryConfig } from '@/types/query-config'
@@ -67,10 +89,10 @@ export interface ApiResponseMetadata {
   readonly rows: number
   /** Host that executed the query */
   readonly host: string
+  /** Detected ClickHouse version (e.g., "24.3.1.1") */
+  readonly clickhouseVersion?: string
   /** Timestamp when the response was cached (if applicable) */
   readonly cachedAt?: number
-  /** SQL query that generated this response (read-only display) */
-  readonly sql?: string
   /** Data availability status with context about empty results */
   readonly status?: DataStatus
   /** Human-readable message explaining data status */
@@ -79,6 +101,16 @@ export interface ApiResponseMetadata {
   readonly checkedTables?: readonly string[]
   /** Tables that were found to be missing */
   readonly missingTables?: readonly string[]
+  /** Full API endpoint URL that was called (including query params) */
+  readonly api?: string
+  /** Security warning about exposing sensitive data */
+  readonly securityNote?: string
+  /** Table/query configuration name */
+  readonly table?: string
+  /** Raw SQL query that was executed */
+  readonly sql?: string
+  /** Query parameters that were substituted in the SQL */
+  readonly params?: Record<string, unknown> | null
 }
 
 /**

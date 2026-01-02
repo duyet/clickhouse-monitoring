@@ -3,25 +3,24 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 
 import { createBarChart } from '@/components/charts/factory'
+import { chartTickFormatters } from '@/lib/utils'
 
-export const ChartQueryMemory = createBarChart<{
-  event_time: string
-  memory_usage: number
-  readable_memory_usage: string
-}>({
+export const ChartQueryMemory = createBarChart({
   chartName: 'query-memory',
   index: 'event_time',
   categories: ['memory_usage'],
-  defaultTitle: 'Avg Memory Usage for queries over last 14 days',
+  defaultTitle: 'Query Memory Usage',
   defaultInterval: 'toStartOfDay',
   defaultLastHours: 24 * 14,
   dataTestId: 'query-memory-chart',
+  dateRangeConfig: 'query-duration',
   barChartProps: {
     readableColumn: 'readable_memory_usage',
     stack: true,
     showLegend: false,
     showLabel: false,
     colors: ['--chart-indigo-300'],
+    yAxisTickFormatter: chartTickFormatters.bytes,
   },
 })
 

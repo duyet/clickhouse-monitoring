@@ -46,18 +46,18 @@ export const zookeeperConfig: QueryConfig = {
     [
       'zookeeper-requests',
       {
-        title: 'ZooKeeper Requests/Watch over last 7 days (req/hour)',
-        interval: 'toStartOfHour',
-        lastHours: 24 * 7,
+        title: 'ZooKeeper Requests/Watch',
+        interval: 'toStartOfDay',
+        lastHours: 24 * 14,
       },
     ],
     'break',
     [
       'zookeeper-wait',
       {
-        title: 'ZooKeeper Wait Seconds over last 7 days (AVG/hour)',
-        interval: 'toStartOfHour',
-        lastHours: 24 * 7,
+        title: 'ZooKeeper Wait Seconds',
+        interval: 'toStartOfDay',
+        lastHours: 24 * 14,
       },
     ],
     'break',

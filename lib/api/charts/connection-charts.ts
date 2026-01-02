@@ -5,11 +5,13 @@
 
 import type { ChartQueryBuilder } from './types'
 
-import { applyInterval } from './types'
+import { applyInterval, buildTimeFilter } from './types'
 
 export const connectionCharts: Record<string, ChartQueryBuilder> = {
-  'connections-http': ({ interval = 'toStartOfHour', lastHours = 24 * 7 }) => ({
-    query: `
+  'connections-http': ({ interval = 'toStartOfHour', lastHours = 24 * 7 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     /* HTTPConnection: Number of connections to HTTP server */
     /* HTTPConnectionsTotal: Total count of all sessions: stored in the pool and actively used right now for http hosts */
 
@@ -20,25 +22,29 @@ export const connectionCharts: Record<string, ChartQueryBuilder> = {
       SUM(CurrentMetric_HTTPConnectionsTotal) AS CurrentMetric_HTTPConnectionsTotal,
       formatReadableQuantity(CurrentMetric_HTTPConnectionsTotal) AS readable_CurrentMetric_HTTPConnectionsTotal
     FROM system.metric_log
-    WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
+    ${timeFilter ? `WHERE ${timeFilter}` : ''}
     GROUP BY event_time
     ORDER BY event_time
   `,
-  }),
+    }
+  },
 
   'connections-interserver': ({
     interval = 'toStartOfHour',
     lastHours = 24 * 7,
-  }) => ({
-    query: `
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     SELECT
       ${applyInterval(interval, 'event_time')},
       SUM(CurrentMetric_InterserverConnection) AS CurrentMetric_InterserverConnection,
       formatReadableQuantity(CurrentMetric_InterserverConnection) AS readable_CurrentMetric_InterserverConnection
     FROM system.metric_log
-    WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
+    ${timeFilter ? `WHERE ${timeFilter}` : ''}
     GROUP BY event_time
     ORDER BY event_time
   `,
-  }),
+    }
+  },
 }

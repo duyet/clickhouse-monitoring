@@ -33,6 +33,8 @@ interface TableClientProps {
   enableColumnFilters?: boolean
   /** Columns to enable filtering for (default: all text columns) */
   filterableColumns?: string[]
+  /** Enable row selection with checkboxes */
+  enableRowSelection?: boolean
 }
 
 /**
@@ -62,6 +64,7 @@ export const TableClient = memo(function TableClient({
   topRightToolbarExtras,
   enableColumnFilters = false,
   filterableColumns,
+  enableRowSelection = false,
 }: TableClientProps) {
   const hostId = useHostId()
 
@@ -153,6 +156,7 @@ export const TableClient = memo(function TableClient({
       enableColumnFilters={enableColumnFilters}
       filterableColumns={filterableColumns}
       isRefreshing={isValidating}
+      enableRowSelection={enableRowSelection}
     />
   )
 })

@@ -1,5 +1,6 @@
 'use client'
 
+import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { UseChartResult } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 
@@ -9,9 +10,7 @@ import { memo, type ReactNode } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { cn } from '@/lib/utils'
 
-export interface ChartContainerProps<
-  TData extends ChartDataPoint = ChartDataPoint,
-> {
+export interface ChartContainerProps<TData extends ChartDataPoint = ChartDataPoint> {
   /** SWR response from useChartData hook */
   swr: UseChartResult<TData>
   /** Chart title for skeleton/error/empty states */
@@ -20,8 +19,14 @@ export interface ChartContainerProps<
   className?: string
   /** Chart className */
   chartClassName?: string
-  /** Children render function receives data and sql */
-  children: (data: TData[], sql: string | undefined) => ReactNode
+  /** Children render function receives data, sql, and metadata */
+  children: (
+    data: TData[],
+    sql: string | undefined,
+    metadata: CardToolbarMetadata | undefined
+  ) => ReactNode
+  /** Use compact layout for smaller charts */
+  compact?: boolean
 }
 
 /**
@@ -39,8 +44,8 @@ export interface ChartContainerProps<
  *
  *   return (
  *     <ChartContainer swr={swr} title={title} className="w-full">
- *       {(data, sql) => (
- *         <ChartCard title={title} sql={sql} data={data}>
+ *       {(data, sql, metadata) => (
+ *         <ChartCard title={title} sql={sql} data={data} metadata={metadata}>
  *           <AreaChart data={data} index="time" categories={['value']} />
  *         </ChartCard>
  *       )}
@@ -49,16 +54,15 @@ export interface ChartContainerProps<
  * }
  * ```
  */
-export const ChartContainer = memo(function ChartContainer<
-  TData extends ChartDataPoint = ChartDataPoint,
->({
+export const ChartContainer = memo(function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
   swr,
   title,
   className,
   chartClassName: _chartClassName,
   children,
+  compact = false,
 }: ChartContainerProps<TData>) {
-  const { data, isLoading, error, mutate, sql } = swr
+  const { data, isLoading, error, mutate, sql, metadata } = swr
 
   // Loading state
   if (isLoading) {
@@ -70,19 +74,34 @@ export const ChartContainer = memo(function ChartContainer<
     return <ChartError error={error} title={title} onRetry={() => mutate()} />
   }
 
-  // Empty state
+  // Empty state - now passes SQL, data, and metadata for debugging
   if (!data || data.length === 0) {
-    return <ChartEmpty title={title} className={className} />
+    return (
+      <ChartEmpty
+        title={title}
+        className={className}
+        sql={sql}
+        data={data}
+        metadata={metadata}
+        onRetry={() => mutate()}
+        compact={compact}
+      />
+    )
   }
+
+  // Pass all metadata fields dynamically
+  const toolbarMetadata: CardToolbarMetadata | undefined = metadata
+    ? { ...metadata }
+    : undefined
 
   // Render chart with data
   return (
     <div
-      className={cn('h-full', className)}
+      className={cn('h-full w-full min-w-0 overflow-hidden', className)}
       aria-label={title ? `${title} chart` : 'Chart'}
       role="region"
     >
-      {children(data, sql)}
+      {children(data, sql, toolbarMetadata)}
     </div>
   )
 })

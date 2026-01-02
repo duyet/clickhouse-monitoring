@@ -28,6 +28,7 @@ export const RunningQueriesCard = memo(function RunningQueriesCard() {
     refreshInterval: 30000,
   })
 
+  const isLoading = runningSwr.isLoading || todaySwr.isLoading
   const runningCount = runningSwr.data?.[0]?.count ?? 0
   const todayCount = todaySwr.data?.[0]?.count ?? 0
 
@@ -39,6 +40,7 @@ export const RunningQueriesCard = memo(function RunningQueriesCard() {
       label2="Today"
       href1={buildUrl('/running-queries', { host: hostId })}
       href2={buildUrl('/query-history', { host: hostId })}
+      isLoading={isLoading}
     />
   )
 })

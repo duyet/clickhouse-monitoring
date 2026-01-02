@@ -2,6 +2,12 @@
 
 import { Loader2 } from 'lucide-react'
 import useSWR from 'swr'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
 import { memo, useCallback, useMemo, useState } from 'react'
@@ -14,6 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
@@ -47,7 +61,7 @@ const ExpandableCell = memo(function ExpandableCell({
   )
 
   if (!isLong) {
-    return <span className="whitespace-nowrap">{stringValue}</span>
+    return <span className="block truncate">{stringValue}</span>
   }
 
   return (
@@ -57,8 +71,8 @@ const ExpandableCell = memo(function ExpandableCell({
       onClick={toggleExpand}
       onKeyDown={handleKeyDown}
       className={cn(
-        'cursor-pointer transition-colors',
-        expanded ? 'whitespace-pre-wrap break-words' : 'whitespace-nowrap',
+        'block cursor-pointer transition-colors',
+        expanded ? 'whitespace-pre-wrap break-words' : 'truncate',
         !expanded && 'hover:text-primary'
       )}
       title={expanded ? 'Click to collapse' : 'Click to expand'}
@@ -84,9 +98,12 @@ const fetcher = (
 ): Promise<ApiResponse<Record<string, unknown>[]>> =>
   fetch(url).then((res) => res.json())
 
+type RowData = Record<string, unknown>
+const columnHelper = createColumnHelper<RowData>()
+
 export function DataTab() {
   const hostId = useHostId()
-  const { database, table } = useExplorerState()
+  const { database, table: tableName } = useExplorerState()
   const [limit, setLimit] = useState<number>(100)
   const [offset, setOffset] = useState<number>(0)
 
@@ -95,27 +112,48 @@ export function DataTab() {
     error,
     isLoading,
     isValidating,
-  } = useSWR<ApiResponse<Record<string, unknown>[]>>(
-    database && table
-      ? `/api/v1/explorer/preview?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}&limit=${limit}&offset=${offset}`
+  } = useSWR<ApiResponse<RowData[]>>(
+    database && tableName
+      ? `/api/v1/explorer/preview?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(tableName)}&limit=${limit}&offset=${offset}`
       : null,
     fetcher,
     {
-      keepPreviousData: true, // Keep showing old data while loading new page
+      keepPreviousData: true,
     }
   )
 
   const rows = response?.data || []
+
+  // Generate columns dynamically from data
   const columns = useMemo(() => {
     if (rows.length === 0) return []
-    return Object.keys(rows[0])
+    return Object.keys(rows[0]).map((key) =>
+      columnHelper.accessor(key, {
+        header: key,
+        cell: (info) => <ExpandableCell value={info.getValue()} />,
+        size: 200,
+        minSize: 80,
+        maxSize: 500,
+      })
+    )
   }, [rows])
 
-  if (!database || !table) {
+  const table = useReactTable({
+    data: rows,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    columnResizeMode: 'onChange',
+    defaultColumn: {
+      size: 200,
+      minSize: 80,
+      maxSize: 500,
+    },
+  })
+
+  if (!database || !tableName) {
     return null
   }
 
-  // Show skeleton only on initial load, not during pagination
   if (isLoading && !response) {
     return <TableSkeleton />
   }
@@ -131,7 +169,7 @@ export function DataTab() {
   if (rows.length === 0 && !isValidating) {
     return (
       <div className="p-4 text-sm text-muted-foreground">
-        No data available for {database}.{table}
+        No data available for {database}.{tableName}
       </div>
     )
   }
@@ -198,28 +236,63 @@ export function DataTab() {
           isPaginating && 'opacity-60'
         )}
       >
-        <table className="w-full text-sm">
-          <thead className="border-b bg-muted/50">
-            <tr>
-              {columns.map((col) => (
-                <th key={col} className="px-4 py-3 text-left font-medium">
-                  {col}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => (
-              <tr key={i} className="border-b last:border-0 hover:bg-muted/50">
-                {columns.map((col) => (
-                  <td key={col} className="px-4 py-3 max-w-md">
-                    <ExpandableCell value={row[col]} />
-                  </td>
+        <Table
+          style={{
+            width: table.getCenterTotalSize(),
+          }}
+        >
+          <TableHeader className="bg-muted/50">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="relative select-none"
+                    style={{
+                      width: header.getSize(),
+                    }}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                    {/* Column resize handle */}
+                    {/* biome-ignore lint/a11y/noStaticElementInteractions: resize handle requires mouse/touch events */}
+                    <div
+                      onDoubleClick={() => header.column.resetSize()}
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                      className={cn(
+                        'absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none',
+                        'bg-transparent hover:bg-primary/50',
+                        header.column.getIsResizing() && 'bg-primary'
+                      )}
+                    />
+                  </TableHead>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id} className="hover:bg-muted/50">
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell
+                    key={cell.id}
+                    style={{
+                      width: cell.column.getSize(),
+                      maxWidth: cell.column.getSize(),
+                    }}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   )

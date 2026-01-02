@@ -60,20 +60,24 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
         transform: `translateY(${virtualRow.start}px)`,
       }}
     >
-      {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
-        <TableCell
-          key={cell.id}
-          className="px-4 py-3 text-sm break-words"
-          style={{
-            width: cell.column.getSize(),
-            maxWidth: cell.column.columnDef.maxSize ?? undefined,
-          }}
-        >
-          <div className="whitespace-pre-wrap break-words">
+      {row.getVisibleCells().map((cell: Cell<TData, unknown>) => {
+        const isSelectColumn = cell.column.id === 'select'
+        return (
+          <TableCell
+            key={cell.id}
+            className={cn(
+              'py-3 text-sm',
+              isSelectColumn ? 'px-2' : 'px-4'
+            )}
+            style={{
+              minWidth: cell.column.columnDef.minSize ?? 50,
+              maxWidth: cell.column.columnDef.maxSize ?? undefined,
+            }}
+          >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
-          </div>
-        </TableCell>
-      ))}
+          </TableCell>
+        )
+      })}
     </TableRow>
   )
 }) as <TData extends RowData>(
@@ -111,20 +115,24 @@ export const StandardTableRow = memo(function StandardTableRow<
         index % 2 === 1 && 'odd:bg-muted/30'
       )}
     >
-      {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
-        <TableCell
-          key={cell.id}
-          className="px-4 py-3 text-sm break-words"
-          style={{
-            width: cell.column.getSize(),
-            maxWidth: cell.column.columnDef.maxSize ?? undefined,
-          }}
-        >
-          <div className="whitespace-pre-wrap break-words">
+      {row.getVisibleCells().map((cell: Cell<TData, unknown>) => {
+        const isSelectColumn = cell.column.id === 'select'
+        return (
+          <TableCell
+            key={cell.id}
+            className={cn(
+              'py-3 text-sm',
+              isSelectColumn ? 'px-2' : 'px-4'
+            )}
+            style={{
+              minWidth: cell.column.columnDef.minSize ?? 50,
+              maxWidth: cell.column.columnDef.maxSize ?? undefined,
+            }}
+          >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
-          </div>
-        </TableCell>
-      ))}
+          </TableCell>
+        )
+      })}
     </TableRow>
   )
 }) as <TData extends RowData>(

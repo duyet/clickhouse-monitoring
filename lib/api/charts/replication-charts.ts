@@ -5,7 +5,7 @@
 
 import type { ChartQueryBuilder } from './types'
 
-import { applyInterval } from './types'
+import { applyInterval, buildTimeFilter } from './types'
 
 export const replicationCharts: Record<string, ChartQueryBuilder> = {
   'replication-queue-count': () => ({
@@ -31,16 +31,19 @@ export const replicationCharts: Record<string, ChartQueryBuilder> = {
   'readonly-replica': ({
     interval = 'toStartOfFifteenMinutes',
     lastHours = 24,
-  }) => ({
-    query: `
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
     SELECT ${applyInterval(interval, 'event_time')},
            MAX(CurrentMetric_ReadonlyReplica) AS ReadonlyReplica
     FROM merge('system', '^metric_log')
-    WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
+    ${timeFilter ? `WHERE ${timeFilter}` : ''}
     GROUP BY event_time
     ORDER BY event_time
   `,
-  }),
+    }
+  },
 
   'replication-lag': () => ({
     query: `

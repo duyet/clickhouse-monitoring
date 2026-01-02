@@ -26,7 +26,7 @@ export const ChartZookeeperUptime = memo(function ChartZookeeperUptime({
 
   return (
     <ChartContainer swr={swr} title={title} className={className}>
-      {(dataArray, sql) => {
+      {(dataArray, sql, metadata) => {
         const uptime = dataArray[0] as { uptime: string }
 
         return (
@@ -35,6 +35,7 @@ export const ChartZookeeperUptime = memo(function ChartZookeeperUptime({
             className={cn('justify-between', className)}
             sql={sql}
             data={dataArray}
+            metadata={metadata}
             data-testid="zookeeper-uptime-chart"
           >
             <div className="flex flex-col justify-between p-0">

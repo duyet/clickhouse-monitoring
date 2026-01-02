@@ -32,6 +32,7 @@ export const DiskSizeCard = memo(function DiskSizeCard() {
     refreshInterval: 30000,
   })
 
+  const isLoading = swr.isLoading
   const used = swr.data?.[0]?.used_space ?? 0
   const total = swr.data?.[0]?.total_space ?? 1
   const readableUsed = swr.data?.[0]?.readable_used_space ?? '-'
@@ -46,6 +47,7 @@ export const DiskSizeCard = memo(function DiskSizeCard() {
       percent={percent}
       href={buildUrl('/disks', { host: hostId })}
       variant={variant}
+      isLoading={isLoading}
     />
   )
 })

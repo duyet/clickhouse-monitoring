@@ -10,7 +10,7 @@ export function ExplorerEmptyState() {
         <h3 className="text-lg font-semibold">Welcome to Data Explorer</h3>
         <p className="text-sm text-muted-foreground max-w-md">
           Select a database and table from the sidebar to view its data,
-          structure, DDL, and indexes.
+          structure, DDL, indexes, and dependencies.
         </p>
       </div>
     </div>

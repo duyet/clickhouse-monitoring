@@ -5,6 +5,10 @@ import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries
 
 export default function RunningQueriesPage() {
   return (
-    <PageLayout queryConfig={runningQueriesConfig} title="Running Queries" />
+    <PageLayout
+      queryConfig={runningQueriesConfig}
+      title="Running Queries"
+      enableRowSelection
+    />
   )
 }

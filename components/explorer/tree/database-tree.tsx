@@ -9,6 +9,7 @@ import { TreeSearch } from './tree-search'
 import { TreeSkeleton } from './tree-skeleton'
 import { useState } from 'react'
 import { SidebarMenu } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 interface Database {
   name: string
@@ -73,27 +74,29 @@ export function DatabaseTree({ hostId }: DatabaseTreeProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <TreeSearch value={searchFilter} onChange={setSearchFilter} />
-      <SidebarMenu>
-        {databases.map((db) => (
-          <DatabaseNode
-            key={db.name}
-            hostId={hostId}
-            database={db.name}
-            isExpanded={isDatabaseExpanded(db.name)}
-            isTableExpanded={isTableExpanded}
-            selectedTable={table}
-            selectedDatabase={database}
-            level={0}
-            searchFilter={searchFilter}
-            onToggle={() => toggleDatabase(db.name)}
-            onToggleTable={toggleTable}
-            onSelectDatabase={() => handleSelectDatabase(db.name)}
-            onSelectTable={(tbl) => handleSelectTable(db.name, tbl)}
-          />
-        ))}
-      </SidebarMenu>
-    </div>
+    <TooltipProvider>
+      <div className="flex flex-col gap-2">
+        <TreeSearch value={searchFilter} onChange={setSearchFilter} />
+        <SidebarMenu>
+          {databases.map((db) => (
+            <DatabaseNode
+              key={db.name}
+              hostId={hostId}
+              database={db.name}
+              isExpanded={isDatabaseExpanded(db.name)}
+              isTableExpanded={isTableExpanded}
+              selectedTable={table}
+              selectedDatabase={database}
+              level={0}
+              searchFilter={searchFilter}
+              onToggle={() => toggleDatabase(db.name)}
+              onToggleTable={toggleTable}
+              onSelectDatabase={() => handleSelectDatabase(db.name)}
+              onSelectTable={(tbl) => handleSelectTable(db.name, tbl)}
+            />
+          ))}
+        </SidebarMenu>
+      </div>
+    </TooltipProvider>
   )
 }

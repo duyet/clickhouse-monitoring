@@ -53,8 +53,25 @@ export const DebouncedInput = memo(function DebouncedInput({
 }: DebouncedInputProps) {
   // Support both controlled and uncontrolled modes
   const isControlled = controlledValue !== undefined
-  const [internalValue, setInternalValue] = useState(defaultValue)
-  const inputValue = isControlled ? controlledValue : internalValue
+
+  // Internal value tracks what the user is typing (for debouncing)
+  // In controlled mode, this syncs with controlledValue but allows local edits
+  const [internalValue, setInternalValue] = useState(
+    controlledValue ?? defaultValue
+  )
+
+  // Sync internal value when controlled value changes from parent
+  // This handles external updates (e.g., clear button, programmatic changes)
+  const prevControlledValue = useRef(controlledValue)
+  useEffect(() => {
+    if (isControlled && controlledValue !== prevControlledValue.current) {
+      setInternalValue(controlledValue)
+      prevControlledValue.current = controlledValue
+    }
+  }, [isControlled, controlledValue])
+
+  // The input always shows the internal value for responsive typing
+  const inputValue = internalValue
 
   const { debouncedValue, isPending } = useDebounceWithPending(
     inputValue,
@@ -68,33 +85,24 @@ export const DebouncedInput = memo(function DebouncedInput({
     onValueChangeRef.current = onValueChange
   })
 
-  // Track if this is the initial mount to avoid calling callback with initial value
-  const isInitialMount = useRef(true)
+  // Track the last value we reported to parent to avoid duplicate calls
+  const lastReportedValue = useRef(controlledValue ?? defaultValue)
 
-  // Call onValueChange when debounced value updates (not when callback changes)
+  // Call onValueChange when debounced value changes
+  // Only call if the value actually changed from what we last reported
   useEffect(() => {
-    // Skip calling onValueChange on initial mount to prevent infinite loops
-    // The parent already knows the initial value
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
+    if (debouncedValue !== lastReportedValue.current) {
+      lastReportedValue.current = debouncedValue
+      onValueChangeRef.current?.(debouncedValue)
     }
-    onValueChangeRef.current?.(debouncedValue)
   }, [debouncedValue])
 
-  // Handle input changes
+  // Handle input changes - always update internal state, let debounce handle callback
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = e.target.value
-      if (isControlled) {
-        // In controlled mode, parent manages state
-        onValueChange?.(newValue)
-      } else {
-        // In uncontrolled mode, manage internal state
-        setInternalValue(newValue)
-      }
+      setInternalValue(e.target.value)
     },
-    [isControlled, onValueChange]
+    []
   )
 
   return (

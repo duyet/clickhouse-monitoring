@@ -17,4 +17,10 @@ export type {
 } from '@/types/chart-data'
 
 // Re-export helper functions from clickhouse-query
-export { applyInterval, fillStep, nowOrToday } from '@/lib/clickhouse-query'
+export {
+  applyInterval,
+  buildTimeFilter,
+  buildTimeFilterInterval,
+  fillStep,
+  nowOrToday,
+} from '@/lib/clickhouse-query'

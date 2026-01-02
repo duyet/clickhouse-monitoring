@@ -4,10 +4,14 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const runningQueriesConfig: QueryConfig = {
   name: 'running-queries',
+  // Note: peak_threads_usage in system.processes was added in ClickHouse 26.1
+  // (PR #90459 merged Nov 2025). For now, we use the base query without it.
+  // TODO: Add 26.1 variant when that version becomes common.
   sql: [
     {
       since: '23.8',
-      description: 'Base query',
+      description:
+        'Base query (peak_threads_usage not available in system.processes until 26.1)',
       sql: `
       SELECT *,
         query_id as query_detail,
@@ -44,8 +48,8 @@ export const runningQueriesConfig: QueryConfig = {
     `,
     },
     {
-      since: '24.8',
-      description: 'Added peak_threads_usage column',
+      since: '26.1',
+      description: 'Added peak_threads_usage column (PR #90459, Nov 2025)',
       sql: `
       SELECT *,
         query_id as query_detail,
@@ -102,32 +106,28 @@ export const runningQueriesConfig: QueryConfig = {
     'parts_lock_hold',
     'context_lock',
     'rw_lock_acquired_read_locks',
-    'query_id',
   ],
+  // Bulk actions for selected rows (shown in toolbar)
+  bulkActions: ['kill-query'],
   columnFormats: {
     query: [
       ColumnFormat.CodeDialog,
       {
-        max_truncate: 50,
+        max_truncate: 40,
         hide_query_comment: true,
         dialog_title: 'Running Query',
-        trigger_classname: 'min-w-96',
       },
     ],
     query_detail: [
       ColumnFormat.Link,
       {
         href: '/query?query_id=[query_id]&host=[ctx.hostId]',
-        className: 'truncate max-w-40 text-wrap',
+        className: 'max-w-32 truncate',
         title: 'Query Detail',
       },
     ],
     user: ColumnFormat.ColoredBadge,
     estimated_remaining_time: ColumnFormat.Duration,
-    query_id: [
-      ColumnFormat.Action,
-      ['kill-query', 'explain-query', 'query-settings'],
-    ],
     readable_elapsed: ColumnFormat.BackgroundBar,
     readable_read_rows: ColumnFormat.BackgroundBar,
     readable_written_rows: ColumnFormat.BackgroundBar,
@@ -140,9 +140,9 @@ export const runningQueriesConfig: QueryConfig = {
     [
       'query-count',
       {
-        title: 'Running Queries (12h)',
-        interval: 'toStartOfFiveMinutes',
-        lastHours: 12,
+        title: 'Running Queries',
+        interval: 'toStartOfDay',
+        lastHours: 24 * 14,
         colSpan: 7,
       },
     ],
@@ -156,7 +156,7 @@ export const runningQueriesConfig: QueryConfig = {
     [
       'query-count-by-user',
       {
-        title: 'Queries by User (14d)',
+        title: 'Queries by User',
         interval: 'toStartOfDay',
         lastHours: 24 * 14,
         showLegend: false,

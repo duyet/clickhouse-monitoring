@@ -55,9 +55,9 @@ export const mergesConfig: QueryConfig = {
     [
       'merge-count',
       {
-        title: 'Merge/Mutations over last 12 hours (avg / 5 minutes)',
-        interval: 'toStartOfFiveMinutes',
-        lastHours: 12,
+        title: 'Merge/Mutations',
+        interval: 'toStartOfDay',
+        lastHours: 24 * 14,
       },
     ],
   ],

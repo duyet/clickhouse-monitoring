@@ -38,7 +38,7 @@ export const ChartFailedQueryCountByType = memo(
         className={className}
         chartClassName={chartClassName}
       >
-        {(dataArray, sql) => {
+        {(dataArray, sql, metadata) => {
           const { chartData, users } = transformUserEventCounts(dataArray)
 
           return (
@@ -47,6 +47,7 @@ export const ChartFailedQueryCountByType = memo(
               className={className}
               sql={sql}
               data={chartData}
+              metadata={metadata}
               data-testid="failed-query-count-by-user-chart"
             >
               <BarChart

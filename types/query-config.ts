@@ -36,7 +36,7 @@ export type ColumnNames<T extends string> = [T, ...T[]]
  * Queries are defined chronologically (oldest → newest) and the system
  * picks the highest `since` version that is <= current ClickHouse version.
  *
- * @example
+ * @example Version-aware queries
  * ```ts
  * sql: [
  *   { since: '23.8', sql: 'SELECT col1 FROM system.table' },
@@ -47,6 +47,44 @@ export type ColumnNames<T extends string> = [T, ...T[]]
  * // For CH v25.8 → selects '25.6' query (highest <= 25.8)
  * // For CH v23.5 → selects '23.8' query (fallback to oldest)
  * ```
+ *
+ * ## Cross-Version Enum/Int8 Compatibility
+ *
+ * Some ClickHouse columns changed from Int8 to Enum between versions (e.g.,
+ * `event_type` and `merge_reason` in `system.part_log`). When using `merge()`
+ * to query across shards with different schemas, use `toInt8()` for compatibility:
+ *
+ * @example Enum/Int8 compatible comparison
+ * ```ts
+ * // Works with both Int8 (older) and Enum (newer) column types
+ * sql: `
+ *   SELECT * FROM merge('system', '^part_log')
+ *   WHERE toInt8(event_type) = 2      -- MergeParts
+ *     AND toInt8(merge_reason) = 1    -- RegularMerge
+ * `
+ *
+ * // Known event_type values (from ClickHouse source):
+ * // 1 = NewPart, 2 = MergeParts, 3 = DownloadPart, 4 = RemovePart,
+ * // 5 = MutatePart, 6 = MovePart, 7 = MutatePartStart, 8 = MergePartsStart
+ *
+ * // Known merge_reason values:
+ * // 1 = RegularMerge, 2 = TTLDeleteMerge, 3 = TTLRecompressMerge
+ * ```
+ *
+ * ## Cluster Queries: merge() vs Direct Table Access
+ *
+ * The `merge('system', '^part_log')` function aggregates data across all
+ * shards/replicas in a cluster, matching tables like:
+ * - `system.part_log` (local)
+ * - `system.part_log_1`, `system.part_log_2`, etc. (replicated tables)
+ *
+ * **Tradeoffs:**
+ * - `merge()`: See all cluster data, but may have schema compatibility issues
+ *   between shards with different ClickHouse versions
+ * - `system.part_log`: Simpler, only local node data, no schema conflicts
+ *
+ * When using `merge()` across shards with different schemas, use `toInt8()`
+ * for Enum columns to ensure compatibility.
  */
 export interface VersionedSql {
   /**
@@ -224,6 +262,21 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    * ```
    */
   sortingFns?: Record<string, CustomSortingFnNames>
+  /**
+   * Bulk actions available for selected rows (shown in toolbar).
+   * These actions apply to all selected rows at once.
+   *
+   * Example:
+   * ```ts
+   * bulkActions: ['kill-query', 'explain-query']
+   * ```
+   */
+  bulkActions?: string[]
+  /**
+   * The column key that contains the unique identifier for bulk actions.
+   * Defaults to 'query_id' if not specified.
+   */
+  bulkActionKey?: string
   /**
    * @deprecated Use `sql: VersionedSql[]` instead. Will be removed in v0.3.0.
    *

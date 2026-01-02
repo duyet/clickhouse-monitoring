@@ -95,7 +95,7 @@ export const AreaChart = memo(function AreaChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className={cn('h-full w-full', className)}
+      className={cn('!aspect-auto h-full w-full min-w-0', className)}
     >
       <RechartAreaChart
         accessibilityLayer

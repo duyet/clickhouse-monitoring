@@ -15,12 +15,13 @@
 
 import { createClient } from '@clickhouse/client-web'
 
-import { queries } from '../index'
 import type { QueryConfig } from '@/types/query-config'
+
+import { queries } from '../index'
 import {
+  type ClickHouseVersion,
   parseVersion,
   selectVersionedSql,
-  type ClickHouseVersion,
 } from '@/lib/clickhouse-version'
 
 // Test timeout for slow queries
@@ -55,7 +56,8 @@ function extractTables(sql: string): string[] {
   const tables: string[] = []
 
   // Match FROM clause patterns
-  const fromPattern = /\bFROM\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)?)/gi
+  const fromPattern =
+    /\bFROM\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)?)/gi
   let match: RegExpExecArray | null
   while ((match = fromPattern.exec(sql)) !== null) {
     if (match[1]) {
@@ -64,7 +66,8 @@ function extractTables(sql: string): string[] {
   }
 
   // Match JOIN patterns
-  const joinPattern = /\bJOIN\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)?)/gi
+  const joinPattern =
+    /\bJOIN\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)?)/gi
   while ((match = joinPattern.exec(sql)) !== null) {
     if (match[1]) {
       tables.push(match[1].toLowerCase())

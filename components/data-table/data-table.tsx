@@ -1,11 +1,14 @@
 'use client'
 
 import {
+  type ColumnDef,
   type ColumnSizingState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type Row,
   type RowData,
+  type RowSelectionState,
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
@@ -13,13 +16,14 @@ import {
 import type { ChartQueryParams } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   DataTableContent,
   DataTableFooter,
   DataTableHeader,
 } from '@/components/data-table/components'
 import {
+  useAutoFitColumns,
   useColumnVisibility,
   useFilteredData,
   useTableColumns,
@@ -91,6 +95,10 @@ interface DataTableProps<TData extends RowData> {
   isRefreshing?: boolean
   /** The actual SQL that was executed (after version selection) */
   executedSql?: string
+  /** Enable row selection with checkboxes (default: false) */
+  enableRowSelection?: boolean
+  /** Callback when row selection changes */
+  onRowSelectionChange?: (selectedRows: RowSelectionState) => void
 }
 
 /**
@@ -137,6 +145,8 @@ export function DataTable<
   filterableColumns,
   isRefreshing = false,
   executedSql,
+  enableRowSelection = false,
+  onRowSelectionChange,
 }: DataTableProps<TData>) {
   // Support both old and new prop names for backward compatibility
   const queryParams = apiParams ?? deprecatedQueryParams
@@ -169,6 +179,34 @@ export function DataTable<
     columnFilters,
   })
 
+  // Memoize filterableColumns to prevent filterContext recreation
+  const resolvedFilterableColumns = useMemo(
+    () => filterableColumns || configuredColumns,
+    [filterableColumns, configuredColumns]
+  )
+
+  // Memoize filter context to prevent columnDefs recreation on every render
+  // This is critical to avoid infinite loops when filters change
+  const filterContext = useMemo(
+    () =>
+      enableColumnFilters
+        ? {
+            enableColumnFilters,
+            filterableColumns: resolvedFilterableColumns,
+            columnFilters,
+            setColumnFilter,
+            clearColumnFilter,
+          }
+        : undefined,
+    [
+      enableColumnFilters,
+      resolvedFilterableColumns,
+      columnFilters,
+      setColumnFilter,
+      clearColumnFilter,
+    ]
+  )
+
   // Column calculations and definitions
   const { allColumns, columnDefs, initialColumnVisibility } = useTableColumns<
     TData,
@@ -178,15 +216,7 @@ export function DataTable<
     data,
     context,
     filteredData,
-    filterContext: enableColumnFilters
-      ? {
-          enableColumnFilters,
-          filterableColumns: filterableColumns || configuredColumns,
-          columnFilters,
-          setColumnFilter,
-          clearColumnFilter,
-        }
-      : undefined,
+    filterContext,
   })
 
   // Column visibility
@@ -201,9 +231,83 @@ export function DataTable<
   // Column sizing for resize support
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({})
 
+  // Row selection state
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+
+  // Selection column definition using TanStack Table's row selection
+  const selectionColumn: ColumnDef<TData, unknown> = useMemo(
+    () => ({
+      id: 'select',
+      header: ({ table }) => {
+        const isAllSelected = table.getIsAllPageRowsSelected()
+        const isSomeSelected = table.getIsSomePageRowsSelected()
+        return (
+          <div
+            className="flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              className="size-4 cursor-pointer accent-primary"
+              checked={isAllSelected}
+              ref={(el) => {
+                if (el) el.indeterminate = isSomeSelected && !isAllSelected
+              }}
+              onChange={(e) => table.toggleAllPageRowsSelected(e.target.checked)}
+              onClick={(e) => e.stopPropagation()}
+              aria-label="Select all rows"
+            />
+          </div>
+        )
+      },
+      cell: ({ row }) => (
+        <div
+          className="flex items-center justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <input
+            type="checkbox"
+            className="size-4 cursor-pointer accent-primary"
+            checked={row.getIsSelected()}
+            disabled={!row.getCanSelect()}
+            onChange={row.getToggleSelectedHandler()}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Select row"
+          />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      enableResizing: false,
+      size: 48,
+      minSize: 48,
+      maxSize: 48,
+    }),
+    []
+  )
+
+  // Combine selection column with other columns when enabled
+  const finalColumnDefs = useMemo(
+    () => (enableRowSelection ? [selectionColumn, ...columnDefs] : columnDefs),
+    [enableRowSelection, selectionColumn, columnDefs]
+  )
+
+  // Generate unique row ID from data (use query_id if available, otherwise index)
+  const getRowId = useMemo(
+    () => (row: TData, index: number) => {
+      const record = row as Record<string, unknown>
+      // Try common ID fields first
+      if (record.query_id) return String(record.query_id)
+      if (record.id) return String(record.id)
+      // Fallback to index
+      return String(index)
+    },
+    []
+  )
+
   const table = useReactTable({
     data: filteredData,
-    columns: columnDefs,
+    columns: finalColumnDefs,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
@@ -216,10 +320,15 @@ export function DataTable<
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     onColumnSizingChange: setColumnSizing,
+    // Row selection - pass true to enable for all rows
+    enableRowSelection: enableRowSelection ? true : false,
+    getRowId,
+    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnVisibility,
       columnSizing,
+      rowSelection,
     },
     initialState: {
       pagination: {
@@ -229,14 +338,30 @@ export function DataTable<
     },
   })
 
+
   // Virtual rows for large datasets (auto-enables at 1000+ rows)
   const rows = table.getRowModel().rows
   const { virtualizer, tableContainerRef, isVirtualized } = useVirtualRows(
     rows.length
   )
 
+  // Auto-fit columns functionality
+  const { autoFitColumn } = useAutoFitColumns<TData>(tableContainerRef)
+
+  // Handle auto-fit request for a specific column
+  const handleAutoFit = useCallback(
+    (columnId: string) => {
+      const column = table.getColumn(columnId)
+      if (!column) return
+
+      const headerText = column.columnDef.header as string
+      autoFitColumn(column, rows, headerText)
+    },
+    [autoFitColumn, table, rows]
+  )
+
   return (
-    <div className={`flex flex-col ${className || ''}`}>
+    <div className={`flex min-w-0 flex-col overflow-hidden ${className || ''}`}>
       <DataTableHeader
         title={title}
         description={description}
@@ -258,11 +383,12 @@ export function DataTable<
         description={description}
         queryConfig={queryConfig}
         table={table}
-        columnDefs={columnDefs}
+        columnDefs={finalColumnDefs}
         tableContainerRef={tableContainerRef}
         isVirtualized={isVirtualized}
         virtualizer={virtualizer}
         activeFilterCount={activeFilterCount}
+        onAutoFit={handleAutoFit}
       />
 
       <DataTableFooter table={table} footnote={footnote} />

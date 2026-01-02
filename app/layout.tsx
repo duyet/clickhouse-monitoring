@@ -103,7 +103,7 @@ export default function RootLayout({
                   <HeaderActions />
                 </div>
               </header>
-              <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 pt-0">
+              <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
                 <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
               </div>
             </SidebarInset>
