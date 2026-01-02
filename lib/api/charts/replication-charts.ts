@@ -41,4 +41,27 @@ export const replicationCharts: Record<string, ChartQueryBuilder> = {
     ORDER BY event_time
   `,
   }),
+
+  'replication-lag': () => ({
+    query: `
+    SELECT
+      database,
+      table,
+      replica_name,
+      absolute_delay,
+      CASE
+        WHEN absolute_delay = 0 THEN 'synced'
+        WHEN absolute_delay < 60 THEN 'slight lag'
+        WHEN absolute_delay < 300 THEN 'moderate lag'
+        ELSE 'severe lag'
+      END AS lag_status,
+      formatReadableTimeDelta(absolute_delay) AS readable_delay,
+      inserts_in_queue,
+      merges_in_queue
+    FROM system.replicas
+    WHERE is_leader = 1 OR absolute_delay > 0
+    ORDER BY absolute_delay DESC
+    LIMIT 20
+  `,
+  }),
 }

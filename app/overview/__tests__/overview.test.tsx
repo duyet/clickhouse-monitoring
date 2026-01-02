@@ -3,28 +3,30 @@
  */
 
 import {
-  BACKUPS_TAB_CHARTS,
-  DISKS_TAB_CHARTS,
-  ERRORS_TAB_CHARTS,
   getAllChartIds,
   getChartsForTab,
   getTabConfig,
+  HEALTH_TAB_CHARTS,
+  OPERATIONS_TAB_CHARTS,
   OVERVIEW_TAB_CHARTS,
   OVERVIEW_TABS,
   type OverviewChartConfig,
   type OverviewTabConfig,
+  QUERIES_TAB_CHARTS,
+  STORAGE_TAB_CHARTS,
 } from '../charts-config'
 import { describe, expect, it } from '@jest/globals'
 
 describe('charts-config', () => {
   describe('Configuration Structure', () => {
     it('should have all required tab configurations', () => {
-      expect(OVERVIEW_TABS).toHaveLength(4)
+      expect(OVERVIEW_TABS).toHaveLength(5)
       expect(OVERVIEW_TABS.map((t) => t.value)).toEqual([
         'overview',
-        'errors',
-        'disks',
-        'backups',
+        'queries',
+        'storage',
+        'operations',
+        'health',
       ])
     })
 
@@ -41,9 +43,10 @@ describe('charts-config', () => {
     it('should have properly structured chart configurations', () => {
       const allCharts = [
         ...OVERVIEW_TAB_CHARTS,
-        ...ERRORS_TAB_CHARTS,
-        ...DISKS_TAB_CHARTS,
-        ...BACKUPS_TAB_CHARTS,
+        ...QUERIES_TAB_CHARTS,
+        ...STORAGE_TAB_CHARTS,
+        ...OPERATIONS_TAB_CHARTS,
+        ...HEALTH_TAB_CHARTS,
       ]
 
       allCharts.forEach((chart: OverviewChartConfig) => {
@@ -59,32 +62,34 @@ describe('charts-config', () => {
   })
 
   describe('Overview Tab Charts', () => {
-    it('should have 8 charts in the overview tab', () => {
-      expect(OVERVIEW_TAB_CHARTS).toHaveLength(8)
+    it('should have 9 charts in the overview tab', () => {
+      expect(OVERVIEW_TAB_CHARTS).toHaveLength(9)
     })
 
     it('should have unique chart IDs', () => {
       const allCharts = [
         ...OVERVIEW_TAB_CHARTS,
-        ...ERRORS_TAB_CHARTS,
-        ...DISKS_TAB_CHARTS,
-        ...BACKUPS_TAB_CHARTS,
+        ...QUERIES_TAB_CHARTS,
+        ...STORAGE_TAB_CHARTS,
+        ...OPERATIONS_TAB_CHARTS,
+        ...HEALTH_TAB_CHARTS,
       ]
       const ids = allCharts.map((c) => c.id)
       const uniqueIds = new Set(ids)
-      // Note: ChartQueryCountByUser appears twice with different IDs
-      expect(uniqueIds.size).toBeLessThanOrEqual(ids.length)
+      expect(uniqueIds.size).toBe(ids.length)
     })
 
     it('should include required overview charts', () => {
       const ids = OVERVIEW_TAB_CHARTS.map((c) => c.id)
       expect(ids).toContain('query-count-24h')
       expect(ids).toContain('query-count-by-user-24h')
+      expect(ids).toContain('query-duration')
+      expect(ids).toContain('failed-query-count')
       expect(ids).toContain('memory-usage')
       expect(ids).toContain('cpu-usage')
-      expect(ids).toContain('merge-count')
       expect(ids).toContain('top-table-size')
-      expect(ids).toContain('new-parts-created')
+      expect(ids).toContain('disks-usage-overview')
+      expect(ids).toContain('replication-queue-count-overview')
     })
 
     it('should have proper time intervals configured', () => {
@@ -96,30 +101,37 @@ describe('charts-config', () => {
     })
   })
 
-  describe('Errors Tab Charts', () => {
-    it('should have 1 chart in the errors tab', () => {
-      expect(ERRORS_TAB_CHARTS).toHaveLength(1)
+  describe('Queries Tab Charts', () => {
+    it('should have 5 charts in the queries tab', () => {
+      expect(QUERIES_TAB_CHARTS).toHaveLength(5)
     })
 
-    it('should include keeper exception chart', () => {
-      const ids = ERRORS_TAB_CHARTS.map((c) => c.id)
-      expect(ids).toContain('keeper-exception')
+    it('should include query performance charts', () => {
+      const ids = QUERIES_TAB_CHARTS.map((c) => c.id)
+      expect(ids).toContain('query-count-14d')
+      expect(ids).toContain('query-memory')
+      expect(ids).toContain('query-cache')
+      expect(ids).toContain('query-cache-usage')
+      expect(ids).toContain('query-type')
     })
   })
 
-  describe('Disks Tab Charts', () => {
-    it('should have 2 charts in the disks tab', () => {
-      expect(DISKS_TAB_CHARTS).toHaveLength(2)
+  describe('Storage Tab Charts', () => {
+    it('should have 5 charts in the storage tab', () => {
+      expect(STORAGE_TAB_CHARTS).toHaveLength(5)
     })
 
-    it('should include disk size and disks usage charts', () => {
-      const ids = DISKS_TAB_CHARTS.map((c) => c.id)
+    it('should include storage-related charts', () => {
+      const ids = STORAGE_TAB_CHARTS.map((c) => c.id)
       expect(ids).toContain('disk-size')
       expect(ids).toContain('disks-usage')
+      expect(ids).toContain('top-table-size-storage')
+      expect(ids).toContain('new-parts-created')
+      expect(ids).toContain('backup-size')
     })
 
     it('should have proper disk usage time range', () => {
-      const disksUsageChart = DISKS_TAB_CHARTS.find(
+      const disksUsageChart = STORAGE_TAB_CHARTS.find(
         (c) => c.id === 'disks-usage'
       )
       expect(disksUsageChart?.lastHours).toBe(24 * 30)
@@ -127,14 +139,35 @@ describe('charts-config', () => {
     })
   })
 
-  describe('Backups Tab Charts', () => {
-    it('should have 1 chart in the backups tab', () => {
-      expect(BACKUPS_TAB_CHARTS).toHaveLength(1)
+  describe('Operations Tab Charts', () => {
+    it('should have 6 charts in the operations tab', () => {
+      expect(OPERATIONS_TAB_CHARTS).toHaveLength(6)
     })
 
-    it('should include backup size chart', () => {
-      const ids = BACKUPS_TAB_CHARTS.map((c) => c.id)
-      expect(ids).toContain('backup-size')
+    it('should include merge and replication charts', () => {
+      const ids = OPERATIONS_TAB_CHARTS.map((c) => c.id)
+      expect(ids).toContain('merge-count')
+      expect(ids).toContain('merge-avg-duration')
+      expect(ids).toContain('replication-queue-count')
+      expect(ids).toContain('replication-lag')
+      expect(ids).toContain('replication-summary-table')
+      expect(ids).toContain('readonly-replica')
+    })
+  })
+
+  describe('Health Tab Charts', () => {
+    it('should have 6 charts in the health tab', () => {
+      expect(HEALTH_TAB_CHARTS).toHaveLength(6)
+    })
+
+    it('should include error and connection charts', () => {
+      const ids = HEALTH_TAB_CHARTS.map((c) => c.id)
+      expect(ids).toContain('failed-queries-health')
+      expect(ids).toContain('keeper-exception')
+      expect(ids).toContain('zookeeper-wait')
+      expect(ids).toContain('zookeeper-requests')
+      expect(ids).toContain('connections-http')
+      expect(ids).toContain('connections-interserver')
     })
   })
 
@@ -172,9 +205,10 @@ describe('charts-config', () => {
         const allIds = getAllChartIds()
         const expectedCount =
           OVERVIEW_TAB_CHARTS.length +
-          ERRORS_TAB_CHARTS.length +
-          DISKS_TAB_CHARTS.length +
-          BACKUPS_TAB_CHARTS.length
+          QUERIES_TAB_CHARTS.length +
+          STORAGE_TAB_CHARTS.length +
+          OPERATIONS_TAB_CHARTS.length +
+          HEALTH_TAB_CHARTS.length
         expect(allIds.length).toBe(expectedCount)
       })
 
@@ -184,30 +218,37 @@ describe('charts-config', () => {
         expect(allIds).toContain('keeper-exception')
         expect(allIds).toContain('disk-size')
         expect(allIds).toContain('backup-size')
+        expect(allIds).toContain('replication-lag')
+        expect(allIds).toContain('query-cache-usage')
       })
     })
 
     describe('getChartsForTab', () => {
       it('should return charts for the overview tab', () => {
         const charts = getChartsForTab('overview')
-        expect(charts).toHaveLength(8)
+        expect(charts).toHaveLength(9)
         expect(charts[0].id).toBe('query-count-24h')
       })
 
-      it('should return charts for the errors tab', () => {
-        const charts = getChartsForTab('errors')
-        expect(charts).toHaveLength(1)
-        expect(charts[0].id).toBe('keeper-exception')
+      it('should return charts for the queries tab', () => {
+        const charts = getChartsForTab('queries')
+        expect(charts).toHaveLength(5)
+        expect(charts[0].id).toBe('query-count-14d')
       })
 
-      it('should return charts for the disks tab', () => {
-        const charts = getChartsForTab('disks')
-        expect(charts).toHaveLength(2)
+      it('should return charts for the storage tab', () => {
+        const charts = getChartsForTab('storage')
+        expect(charts).toHaveLength(5)
       })
 
-      it('should return charts for the backups tab', () => {
-        const charts = getChartsForTab('backups')
-        expect(charts).toHaveLength(1)
+      it('should return charts for the operations tab', () => {
+        const charts = getChartsForTab('operations')
+        expect(charts).toHaveLength(6)
+      })
+
+      it('should return charts for the health tab', () => {
+        const charts = getChartsForTab('health')
+        expect(charts).toHaveLength(6)
       })
 
       it('should return empty array for non-existent tab', () => {
@@ -221,9 +262,10 @@ describe('charts-config', () => {
     it('should categorize charts by type', () => {
       const allCharts = [
         ...OVERVIEW_TAB_CHARTS,
-        ...ERRORS_TAB_CHARTS,
-        ...DISKS_TAB_CHARTS,
-        ...BACKUPS_TAB_CHARTS,
+        ...QUERIES_TAB_CHARTS,
+        ...STORAGE_TAB_CHARTS,
+        ...OPERATIONS_TAB_CHARTS,
+        ...HEALTH_TAB_CHARTS,
       ]
 
       const types = new Set(allCharts.map((c) => c.type))
@@ -231,19 +273,23 @@ describe('charts-config', () => {
       expect(types).toContain('bar')
       expect(types).toContain('metric')
       expect(types).toContain('custom')
+      expect(types).toContain('table')
     })
 
     it('should have type property on all charts', () => {
       const allCharts = [
         ...OVERVIEW_TAB_CHARTS,
-        ...ERRORS_TAB_CHARTS,
-        ...DISKS_TAB_CHARTS,
-        ...BACKUPS_TAB_CHARTS,
+        ...QUERIES_TAB_CHARTS,
+        ...STORAGE_TAB_CHARTS,
+        ...OPERATIONS_TAB_CHARTS,
+        ...HEALTH_TAB_CHARTS,
       ]
 
       allCharts.forEach((chart) => {
         expect(chart.type).toBeDefined()
-        expect(['area', 'bar', 'metric', 'custom']).toContain(chart.type)
+        expect(['area', 'bar', 'metric', 'custom', 'table']).toContain(
+          chart.type
+        )
       })
     })
   })
@@ -251,16 +297,21 @@ describe('charts-config', () => {
   describe('Grid Layout Classes', () => {
     it('should have proper grid classes for each tab', () => {
       const overviewTab = getTabConfig('overview')
-      const errorsTab = getTabConfig('errors')
-      const _disksTab = getTabConfig('disks')
-      const _backupsTab = getTabConfig('backups')
+      const healthTab = getTabConfig('health')
+      const operationsTab = getTabConfig('operations')
 
+      // Overview uses 3-column layout
       expect(overviewTab?.gridClassName).toContain('grid-cols-1')
       expect(overviewTab?.gridClassName).toContain('md:grid-cols-2')
       expect(overviewTab?.gridClassName).toContain('2xl:grid-cols-3')
 
-      expect(errorsTab?.gridClassName).toContain('grid-cols-1')
-      expect(errorsTab?.gridClassName).toContain('md:grid-cols-2')
+      // Health uses 3-column layout
+      expect(healthTab?.gridClassName).toContain('grid-cols-1')
+      expect(healthTab?.gridClassName).toContain('md:grid-cols-2')
+
+      // Operations uses 2-column layout
+      expect(operationsTab?.gridClassName).toContain('grid-cols-1')
+      expect(operationsTab?.gridClassName).toContain('md:grid-cols-2')
     })
   })
 
@@ -268,9 +319,10 @@ describe('charts-config', () => {
     it('should have className defined for all charts', () => {
       const allCharts = [
         ...OVERVIEW_TAB_CHARTS,
-        ...ERRORS_TAB_CHARTS,
-        ...DISKS_TAB_CHARTS,
-        ...BACKUPS_TAB_CHARTS,
+        ...QUERIES_TAB_CHARTS,
+        ...STORAGE_TAB_CHARTS,
+        ...OPERATIONS_TAB_CHARTS,
+        ...HEALTH_TAB_CHARTS,
       ]
 
       allCharts.forEach((chart) => {
@@ -280,7 +332,7 @@ describe('charts-config', () => {
     })
 
     it('should have optional chartClassName for some charts', () => {
-      const backupChart = BACKUPS_TAB_CHARTS.find((c) => c.id === 'backup-size')
+      const backupChart = STORAGE_TAB_CHARTS.find((c) => c.id === 'backup-size')
       expect(backupChart?.chartClassName).toBe('h-full h-[140px] sm:h-[160px]')
     })
   })

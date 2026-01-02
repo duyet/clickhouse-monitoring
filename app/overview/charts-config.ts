@@ -3,6 +3,13 @@
  *
  * This module centralizes all chart configurations for the overview page,
  * providing a clean, maintainable structure for chart definitions.
+ *
+ * Tab Structure:
+ * - Overview: At-a-glance health metrics (query, memory, CPU, disk, replication)
+ * - Queries: Query performance and patterns
+ * - Storage: Disk usage, tables, parts, backups
+ * - Operations: Merge operations and replication health
+ * - Health: Errors, connections, and coordination
  */
 
 import type { ComponentType } from 'react'
@@ -16,7 +23,7 @@ import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 /**
  * Chart type categories supported by the overview page
  */
-export type ChartType = 'area' | 'bar' | 'metric' | 'custom'
+export type ChartType = 'area' | 'bar' | 'metric' | 'custom' | 'table'
 
 /**
  * Configuration for a single chart instance in the overview page
@@ -61,24 +68,48 @@ export interface OverviewTabConfig {
 }
 
 // ============================================================================
-// Chart Configurations
+// Chart Imports
 // ============================================================================
 
+// Connection charts
+import { ChartConnectionsHttp } from '@/components/charts/connections-http'
+import { ChartConnectionsInterserver } from '@/components/charts/connections-interserver'
+// Merge charts
+import { ChartMergeAvgDuration } from '@/components/charts/merge/merge-avg-duration'
 import { ChartMergeCount } from '@/components/charts/merge/merge-count'
 import { ChartNewPartsCreated } from '@/components/charts/merge/new-parts-created'
-// Import chart components
+// Query charts
+import { ChartFailedQueryCount } from '@/components/charts/query/failed-query-count'
+import { ChartQueryCache } from '@/components/charts/query/query-cache'
+import { ChartQueryCacheUsage } from '@/components/charts/query/query-cache-usage'
 import { ChartQueryCount } from '@/components/charts/query/query-count'
 import { ChartQueryCountByUser } from '@/components/charts/query/query-count-by-user'
+import { ChartQueryDuration } from '@/components/charts/query/query-duration'
+import { ChartQueryMemory } from '@/components/charts/query/query-memory'
+import { ChartQueryType } from '@/components/charts/query/query-type'
+// Replication charts
+import { ChartReadonlyReplica } from '@/components/charts/replication/readonly-replica'
+import { ChartReplicationLag } from '@/components/charts/replication/replication-lag'
+import { ChartReplicationQueueCount } from '@/components/charts/replication/replication-queue-count'
+import { ChartReplicationSummaryTable } from '@/components/charts/replication/replication-summary-table'
+// System charts
 import { ChartBackupSize } from '@/components/charts/system/backup-size'
 import { ChartCPUUsage } from '@/components/charts/system/cpu-usage'
 import { ChartDiskSize } from '@/components/charts/system/disk-size'
 import { ChartDisksUsage } from '@/components/charts/system/disks-usage'
 import { ChartMemoryUsage } from '@/components/charts/system/memory-usage'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
+// ZooKeeper charts
 import { ChartKeeperException } from '@/components/charts/zookeeper/zookeeper-exception'
+import { ChartZookeeperRequests } from '@/components/charts/zookeeper/zookeeper-requests'
+import { ChartZookeeperWait } from '@/components/charts/zookeeper/zookeeper-wait'
+
+// ============================================================================
+// Chart Configurations by Tab
+// ============================================================================
 
 /**
- * Overview tab charts - main metrics dashboard
+ * Overview tab charts - at-a-glance health metrics
  */
 export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
   {
@@ -100,13 +131,22 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     type: 'bar',
   },
   {
-    id: 'query-count-14d',
-    component: ChartQueryCountByUser,
-    title: 'Query Count last 14d',
+    id: 'query-duration',
+    component: ChartQueryDuration,
+    title: 'Query Duration Trend (14 days)',
     lastHours: 24 * 14,
     interval: 'toStartOfDay',
     className: 'w-full h-80',
     type: 'bar',
+  },
+  {
+    id: 'failed-query-count',
+    component: ChartFailedQueryCount,
+    title: 'Failed Queries (7 days)',
+    lastHours: 24 * 7,
+    interval: 'toStartOfHour',
+    className: 'w-full h-80',
+    type: 'area',
   },
   {
     id: 'memory-usage',
@@ -127,13 +167,13 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     type: 'area',
   },
   {
-    id: 'merge-count',
-    component: ChartMergeCount,
-    title: 'Merge and PartMutation last 24h (avg)',
-    lastHours: 24,
-    interval: 'toStartOfHour',
+    id: 'disks-usage-overview',
+    component: ChartDisksUsage,
     className: 'w-full h-80',
-    type: 'custom',
+    title: 'Disks Usage Trend (30 days)',
+    interval: 'toStartOfDay',
+    lastHours: 24 * 30,
+    type: 'area',
   },
   {
     id: 'top-table-size',
@@ -143,32 +183,65 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     type: 'custom',
   },
   {
-    id: 'new-parts-created',
-    component: ChartNewPartsCreated,
-    className: 'w-full h-80',
-    title: 'New Parts Created over last 7 days',
-    interval: 'toStartOfHour',
-    lastHours: 24 * 7,
-    type: 'bar',
-  },
-]
-
-/**
- * Errors tab charts - ZooKeeper and error monitoring
- */
-export const ERRORS_TAB_CHARTS: OverviewChartConfig[] = [
-  {
-    id: 'keeper-exception',
-    component: ChartKeeperException,
+    id: 'replication-queue-count-overview',
+    component: ChartReplicationQueueCount,
+    title: 'Replication Queue',
     className: 'w-full',
-    type: 'bar',
+    type: 'metric',
   },
 ]
 
 /**
- * Disks tab charts - disk usage and capacity monitoring
+ * Queries tab charts - query performance and patterns (detailed view)
  */
-export const DISKS_TAB_CHARTS: OverviewChartConfig[] = [
+export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
+  {
+    id: 'query-count-14d',
+    component: ChartQueryCountByUser,
+    title: 'Query Count last 14 days',
+    lastHours: 24 * 14,
+    interval: 'toStartOfDay',
+    className: 'w-full h-80',
+    type: 'bar',
+  },
+  {
+    id: 'query-memory',
+    component: ChartQueryMemory,
+    title: 'Avg Query Memory Usage (14 days)',
+    lastHours: 24 * 14,
+    interval: 'toStartOfDay',
+    className: 'w-full h-80',
+    type: 'bar',
+  },
+  {
+    id: 'query-cache',
+    component: ChartQueryCache,
+    title: 'Query Cache Status',
+    className: 'w-full',
+    type: 'metric',
+  },
+  {
+    id: 'query-cache-usage',
+    component: ChartQueryCacheUsage,
+    title: 'Query Cache Hit Rate',
+    lastHours: 24 * 7,
+    className: 'w-full h-80',
+    type: 'bar',
+  },
+  {
+    id: 'query-type',
+    component: ChartQueryType,
+    title: 'Query Type Distribution (24h)',
+    lastHours: 24,
+    className: 'w-full h-80',
+    type: 'custom',
+  },
+]
+
+/**
+ * Storage tab charts - disk usage, tables, parts, backups
+ */
+export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'disk-size',
     component: ChartDiskSize,
@@ -185,25 +258,152 @@ export const DISKS_TAB_CHARTS: OverviewChartConfig[] = [
     lastHours: 24 * 30,
     type: 'area',
   },
-]
-
-/**
- * Backups tab charts - backup monitoring
- */
-export const BACKUPS_TAB_CHARTS: OverviewChartConfig[] = [
+  {
+    id: 'top-table-size-storage',
+    component: ChartTopTableSize,
+    title: 'Top Tables by Size',
+    className: 'w-full',
+    type: 'custom',
+  },
+  {
+    id: 'new-parts-created',
+    component: ChartNewPartsCreated,
+    className: 'w-full h-80',
+    title: 'New Parts Created (7 days)',
+    interval: 'toStartOfHour',
+    lastHours: 24 * 7,
+    type: 'bar',
+  },
   {
     id: 'backup-size',
     component: ChartBackupSize,
     className: 'w-full',
-    title: 'Backup',
+    title: 'Backup Size',
     chartClassName: 'h-full h-[140px] sm:h-[160px]',
     type: 'metric',
+  },
+]
+
+/**
+ * Operations tab charts - merge operations and replication health
+ */
+export const OPERATIONS_TAB_CHARTS: OverviewChartConfig[] = [
+  {
+    id: 'merge-count',
+    component: ChartMergeCount,
+    title: 'Merge and PartMutation (24h)',
+    lastHours: 24,
+    interval: 'toStartOfHour',
+    className: 'w-full h-80',
+    type: 'custom',
+  },
+  {
+    id: 'merge-avg-duration',
+    component: ChartMergeAvgDuration,
+    title: 'Merge Avg Duration (14 days)',
+    lastHours: 24 * 14,
+    interval: 'toStartOfDay',
+    className: 'w-full h-80',
+    type: 'bar',
+  },
+  {
+    id: 'replication-queue-count',
+    component: ChartReplicationQueueCount,
+    title: 'Replication Queue',
+    className: 'w-full',
+    type: 'metric',
+  },
+  {
+    id: 'replication-lag',
+    component: ChartReplicationLag,
+    title: 'Replication Lag',
+    className: 'w-full',
+    type: 'table',
+  },
+  {
+    id: 'replication-summary-table',
+    component: ChartReplicationSummaryTable,
+    title: 'Replication Queue by Table',
+    className: 'w-full',
+    type: 'table',
+  },
+  {
+    id: 'readonly-replica',
+    component: ChartReadonlyReplica,
+    title: 'Readonly Replicas (24h)',
+    lastHours: 24,
+    interval: 'toStartOfFifteenMinutes',
+    className: 'w-full h-80',
+    type: 'bar',
+  },
+]
+
+/**
+ * Health tab charts - errors, connections, and coordination
+ */
+export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
+  {
+    id: 'failed-queries-health',
+    component: ChartFailedQueryCount,
+    title: 'Failed Queries (7 days)',
+    lastHours: 24 * 7,
+    interval: 'toStartOfHour',
+    className: 'w-full h-80',
+    type: 'area',
+  },
+  {
+    id: 'keeper-exception',
+    component: ChartKeeperException,
+    title: 'ZooKeeper/Keeper Exceptions',
+    className: 'w-full h-80',
+    type: 'bar',
+  },
+  {
+    id: 'zookeeper-wait',
+    component: ChartZookeeperWait,
+    title: 'ZooKeeper Wait Time (7 days)',
+    lastHours: 24 * 7,
+    interval: 'toStartOfHour',
+    className: 'w-full h-80',
+    type: 'bar',
+  },
+  {
+    id: 'zookeeper-requests',
+    component: ChartZookeeperRequests,
+    title: 'ZooKeeper Requests (7 days)',
+    lastHours: 24 * 7,
+    interval: 'toStartOfHour',
+    className: 'w-full h-80',
+    type: 'bar',
+  },
+  {
+    id: 'connections-http',
+    component: ChartConnectionsHttp,
+    title: 'HTTP Connections (7 days)',
+    lastHours: 24 * 7,
+    interval: 'toStartOfHour',
+    className: 'w-full h-80',
+    type: 'bar',
+  },
+  {
+    id: 'connections-interserver',
+    component: ChartConnectionsInterserver,
+    title: 'Interserver Connections (7 days)',
+    lastHours: 24 * 7,
+    interval: 'toStartOfHour',
+    className: 'w-full h-80',
+    type: 'bar',
   },
 ]
 
 // ============================================================================
 // Tab Configurations
 // ============================================================================
+
+const GRID_LAYOUT_3_COL =
+  'grid auto-rows-fr items-stretch gap-3 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 min-w-0'
+const GRID_LAYOUT_2_COL =
+  'grid grid-cols-1 items-stretch gap-3 md:grid-cols-2 min-w-0'
 
 /**
  * All tab configurations for the overview page
@@ -212,30 +412,32 @@ export const OVERVIEW_TABS: OverviewTabConfig[] = [
   {
     value: 'overview',
     label: 'Overview',
-    gridClassName:
-      'grid auto-rows-fr items-stretch gap-3 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 min-w-0',
+    gridClassName: GRID_LAYOUT_3_COL,
     charts: OVERVIEW_TAB_CHARTS,
   },
   {
-    value: 'errors',
-    label: 'Errors',
-    gridClassName:
-      'grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0',
-    charts: ERRORS_TAB_CHARTS,
+    value: 'queries',
+    label: 'Queries',
+    gridClassName: GRID_LAYOUT_3_COL,
+    charts: QUERIES_TAB_CHARTS,
   },
   {
-    value: 'disks',
-    label: 'Disks',
-    gridClassName:
-      'grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0',
-    charts: DISKS_TAB_CHARTS,
+    value: 'storage',
+    label: 'Storage',
+    gridClassName: GRID_LAYOUT_3_COL,
+    charts: STORAGE_TAB_CHARTS,
   },
   {
-    value: 'backups',
-    label: 'Backups',
-    gridClassName:
-      'grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 xl:grid-cols-3 min-w-0',
-    charts: BACKUPS_TAB_CHARTS,
+    value: 'operations',
+    label: 'Operations',
+    gridClassName: GRID_LAYOUT_2_COL,
+    charts: OPERATIONS_TAB_CHARTS,
+  },
+  {
+    value: 'health',
+    label: 'Health',
+    gridClassName: GRID_LAYOUT_3_COL,
+    charts: HEALTH_TAB_CHARTS,
   },
 ]
 
