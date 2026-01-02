@@ -1,6 +1,7 @@
 'use client'
 
 import { Loader2 } from 'lucide-react'
+import Link from 'next/link'
 
 import { ExplorerBreadcrumb } from './explorer-breadcrumb'
 import { ExplorerEmptyState } from './explorer-empty-state'
@@ -12,6 +13,7 @@ import { IndexesTab } from './tabs/indexes-tab'
 import { StructureTab } from './tabs/structure-tab'
 import { useEffect, useRef, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 interface ExplorerContentProps {
@@ -39,6 +41,7 @@ function useTabVisitTracker(tableKey: string | null) {
 }
 
 export function ExplorerContent({ hostName }: ExplorerContentProps) {
+  const hostId = useHostId()
   const { database, table, tab, setTab } = useExplorerState()
   const [isTabSwitching, setIsTabSwitching] = useState(false)
   const tableKey = database && table ? `${database}.${table}` : null
@@ -62,9 +65,19 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
     return <ExplorerEmptyState />
   }
 
+  const partInfoUrl = `/part-info?host=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
+
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
-      <ExplorerBreadcrumb hostName={hostName} />
+      <div className="flex items-center justify-between gap-4">
+        <ExplorerBreadcrumb hostName={hostName} />
+        <Link
+          href={partInfoUrl}
+          className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+        >
+          View Parts →
+        </Link>
+      </div>
 
       <Tabs id="explorer-tabs" value={tab} onValueChange={handleTabChange}>
         <TabsList>
