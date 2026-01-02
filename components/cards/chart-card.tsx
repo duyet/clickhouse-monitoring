@@ -47,13 +47,13 @@ export const ChartCard = memo(function ChartCard({
   return (
     <Card
       className={cn(
-        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full w-full min-w-0 group gap-2 shadow-none py-2',
+        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full w-full min-w-0 group gap-2 shadow-none pt-1 pb-2',
         'transition-all duration-200 hover:border-border/80',
         className
       )}
     >
       {title ? (
-        <CardHeader className="px-3 shrink-0">
+        <CardHeader className="px-4 shrink-0">
           <header className="flex flex-row items-center justify-between gap-2">
             <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase truncate min-w-0 flex-1">
               {title}
@@ -74,7 +74,7 @@ export const ChartCard = memo(function ChartCard({
 
       <CardContent
         className={cn(
-          'p-3 pt-0 flex-1 min-h-0 overflow-hidden',
+          'p-4 pt-0 flex-1 min-h-0 overflow-hidden',
           contentClassName
         )}
       >

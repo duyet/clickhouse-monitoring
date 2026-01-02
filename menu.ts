@@ -55,7 +55,8 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'Running Queries',
         href: '/running-queries',
-        description: 'Real-time view of currently executing queries with progress tracking',
+        description:
+          'Real-time view of currently executing queries with progress tracking',
         countKey: 'running-queries',
         icon: MixIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/processes',
@@ -63,28 +64,32 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'History Queries',
         href: '/history-queries',
-        description: 'Historical query log with execution metrics, memory usage, and performance data',
+        description:
+          'Historical query log with execution metrics, memory usage, and performance data',
         icon: CounterClockwiseClockIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
       },
       {
         title: 'Failed Queries',
         href: '/failed-queries',
-        description: 'Query execution failures with error details and stack traces',
+        description:
+          'Query execution failures with error details and stack traces',
         icon: CrossCircledIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
       },
       {
         title: 'Recent Errors',
         href: '/common-errors',
-        description: 'Most frequently occurring errors with timestamps and error messages',
+        description:
+          'Most frequently occurring errors with timestamps and error messages',
         icon: CrossCircledIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/errors',
       },
       {
         title: 'Most Expensive Queries',
         href: '/expensive-queries',
-        description: 'Resource-intensive queries ranked by CPU, memory, and duration',
+        description:
+          'Resource-intensive queries ranked by CPU, memory, and duration',
         icon: CircleDollarSignIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
       },
@@ -119,7 +124,8 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'Thread Analysis',
         href: '/queries/thread-analysis',
-        description: 'Thread-level query performance breakdown and parallelization',
+        description:
+          'Thread-level query performance breakdown and parallelization',
         icon: CpuIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_thread_log',
@@ -127,7 +133,8 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'Parallelization',
         href: '/queries/parallelization',
-        description: 'Parallel query execution effectiveness and thread utilization',
+        description:
+          'Parallel query execution effectiveness and thread utilization',
         icon: ZapIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_thread_log',
@@ -182,7 +189,8 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'Replication Queue',
         href: '/replication-queue',
-        description: 'Pending and in-progress replication tasks from Keeper/ZooKeeper',
+        description:
+          'Pending and in-progress replication tasks from Keeper/ZooKeeper',
         countKey: 'replication-queue',
         icon: ShuffleIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/replication_queue',
@@ -213,7 +221,8 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'View Refreshes',
         href: '/view-refreshes',
-        description: 'Materialized view refresh schedules and execution history',
+        description:
+          'Materialized view refresh schedules and execution history',
         countKey: 'view-refreshes',
         icon: UpdateIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/view_refreshes',
@@ -414,7 +423,8 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'Zookeeper',
         href: '/zookeeper?path=/',
-        description: 'ZooKeeper/Keeper data browser for distributed coordination',
+        description:
+          'ZooKeeper/Keeper data browser for distributed coordination',
         icon: RollerCoasterIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper',
       },

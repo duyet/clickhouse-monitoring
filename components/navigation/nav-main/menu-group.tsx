@@ -39,7 +39,9 @@ export const MenuGroup = memo(function MenuGroup({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{label}</SidebarGroupLabel>
+      <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 px-3 py-2">
+        {label}
+      </SidebarGroupLabel>
       <SidebarMenu>
         {sectionItems.map((item) => (
           <MenuItem key={item.title} item={item} pathname={pathname} />

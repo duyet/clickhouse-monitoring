@@ -66,11 +66,7 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
       <ExplorerBreadcrumb hostName={hostName} />
 
-      <Tabs
-        id="explorer-tabs"
-        value={tab}
-        onValueChange={handleTabChange}
-      >
+      <Tabs id="explorer-tabs" value={tab} onValueChange={handleTabChange}>
         <TabsList>
           <TabsTrigger value="data" className="gap-2">
             Data
@@ -139,10 +135,7 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
         {/* Dependencies tab: force-mount to keep content cached */}
         <TabsContent
           value="dependencies"
-          className={cn(
-            'mt-4',
-            tab !== 'dependencies' && 'hidden flex-none'
-          )}
+          className={cn('mt-4', tab !== 'dependencies' && 'hidden flex-none')}
           forceMount
         >
           {visitedTabs.has('dependencies') && <DependenciesTab />}

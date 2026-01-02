@@ -207,7 +207,7 @@ export const EmptyState = memo(function EmptyState({
           </button>
         )}
       </div>
-      <p className="mt-1.5 max-w-xs text-sm text-muted-foreground leading-relaxed">
+      <p className="mt-1.5 max-w-xs text-sm text-muted-foreground leading-relaxed break-words">
         {description || config.description}
       </p>
 

@@ -90,11 +90,13 @@ export function useAutoFitColumns<TData>(
       rows: Row<TData>[],
       headerText?: string
     ): AutoFitResult => {
-      let maxContentWidth = headerText && opts.includeHeader ? measureTextWidth(headerText) : 0
+      let maxContentWidth =
+        headerText && opts.includeHeader ? measureTextWidth(headerText) : 0
 
       // Sample rows for performance with large datasets
       const sampleSize = Math.min(rows.length, opts.maxSampleRows)
-      const step = rows.length > sampleSize ? Math.floor(rows.length / sampleSize) : 1
+      const step =
+        rows.length > sampleSize ? Math.floor(rows.length / sampleSize) : 1
 
       for (let i = 0; i < rows.length; i += step) {
         const row = rows[i]
@@ -129,7 +131,10 @@ export function useAutoFitColumns<TData>(
    * Auto-fit all columns to their content
    */
   const autoFitAllColumns = useCallback(
-    (columns: Column<TData, unknown>[], rows: Row<TData>[]): AutoFitResult[] => {
+    (
+      columns: Column<TData, unknown>[],
+      rows: Row<TData>[]
+    ): AutoFitResult[] => {
       return columns.map((column) => {
         const headerText = column.columnDef.header as string
         return autoFitColumn(column, rows, headerText)

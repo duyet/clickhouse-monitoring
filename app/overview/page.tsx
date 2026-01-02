@@ -34,7 +34,11 @@ function OverviewPageContent() {
           </div>
 
           {OVERVIEW_TABS.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value} className="space-y-2">
+            <TabsContent
+              key={tab.value}
+              value={tab.value}
+              className="space-y-2"
+            >
               <div
                 className={tab.gridClassName}
                 role="region"

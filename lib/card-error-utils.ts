@@ -333,7 +333,9 @@ export interface TableMissingInfo {
  * Returns undefined if the error is not a table-missing error
  * or if no missing tables can be identified.
  */
-export function getTableMissingInfo(error: CardError): TableMissingInfo | undefined {
+export function getTableMissingInfo(
+  error: CardError
+): TableMissingInfo | undefined {
   const variant = detectCardErrorVariant(error)
   if (variant !== 'table-missing') {
     return undefined

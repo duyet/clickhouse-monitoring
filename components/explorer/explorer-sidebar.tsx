@@ -48,10 +48,7 @@ export function ExplorerSidebar({
   }
 
   return (
-    <div
-      data-role="explorer-sidebar"
-      className="flex h-full flex-col border-r"
-    >
+    <div data-role="explorer-sidebar" className="flex h-full flex-col border-r">
       {content}
     </div>
   )

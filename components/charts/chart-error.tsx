@@ -1,6 +1,6 @@
 'use client'
 
-import { RefreshCw } from 'lucide-react'
+import { ExternalLink, RefreshCw } from 'lucide-react'
 
 import { memo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import {
   getCardErrorClassName,
   getCardErrorDescription,
   getCardErrorTitle,
+  getTableMissingInfo,
   shouldShowRetryButton,
 } from '@/lib/card-error-utils'
 import { cn } from '@/lib/utils'
@@ -36,6 +37,10 @@ export const ChartError = memo(function ChartError({
   const description = getCardErrorDescription(error, variant, compact)
   const errorClassName = getCardErrorClassName(variant)
   const showRetry = onRetry && shouldShowRetryButton(error)
+
+  // Get table guidance for missing tables
+  const tableMissingInfo = getTableMissingInfo(error)
+  const hasTableGuidance = tableMissingInfo?.guidance
 
   return (
     <Card
@@ -63,6 +68,25 @@ export const ChartError = memo(function ChartError({
               : undefined
           }
         />
+        {/* Table guidance for missing tables */}
+        {hasTableGuidance && (
+          <div className="mt-4 pt-3 border-t border-muted/50 text-xs space-y-2">
+            <p className="text-muted-foreground">
+              Enable this system log in your ClickHouse config
+            </p>
+            {tableMissingInfo.guidance.docsUrl && (
+              <a
+                href={tableMissingInfo.guidance.docsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline font-medium"
+              >
+                <ExternalLink className="h-3 w-3" />
+                View ClickHouse docs
+              </a>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )

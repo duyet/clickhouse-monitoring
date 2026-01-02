@@ -65,10 +65,7 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
         return (
           <TableCell
             key={cell.id}
-            className={cn(
-              'py-3 text-sm',
-              isSelectColumn ? 'px-2' : 'px-4'
-            )}
+            className={cn('py-3 text-sm', isSelectColumn ? 'px-2' : 'px-4')}
             style={{
               minWidth: cell.column.columnDef.minSize ?? 50,
               maxWidth: cell.column.columnDef.maxSize ?? undefined,
@@ -120,10 +117,7 @@ export const StandardTableRow = memo(function StandardTableRow<
         return (
           <TableCell
             key={cell.id}
-            className={cn(
-              'py-3 text-sm',
-              isSelectColumn ? 'px-2' : 'px-4'
-            )}
+            className={cn('py-3 text-sm', isSelectColumn ? 'px-2' : 'px-4')}
             style={{
               minWidth: cell.column.columnDef.minSize ?? 50,
               maxWidth: cell.column.columnDef.maxSize ?? undefined,

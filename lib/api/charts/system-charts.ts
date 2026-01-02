@@ -5,7 +5,11 @@
 
 import type { ChartQueryBuilder } from './types'
 
-import { applyInterval, buildTimeFilter, buildTimeFilterInterval } from './types'
+import {
+  applyInterval,
+  buildTimeFilter,
+  buildTimeFilterInterval,
+} from './types'
 
 export const systemCharts: Record<string, ChartQueryBuilder> = {
   'memory-usage': ({ interval = 'toStartOfTenMinutes', lastHours = 24 }) => {

@@ -96,7 +96,11 @@ export const TableClient = memo(function TableClient({
     const guidance = tableMissingInfo?.guidance
 
     // If we have guidance, show the specialized OptionalTableInfo component
-    if (guidance && tableMissingInfo?.missingTables && tableMissingInfo.missingTables.length > 0) {
+    if (
+      guidance &&
+      tableMissingInfo?.missingTables &&
+      tableMissingInfo.missingTables.length > 0
+    ) {
       const tableName = tableMissingInfo.missingTables[0]
       return (
         <div className="flex flex-col gap-3">
@@ -108,7 +112,7 @@ export const TableClient = memo(function TableClient({
           {showRetry && (
             <div className="flex justify-center">
               <button
-                onClick={refresh}
+                onClick={() => refresh()}
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-muted-foreground/20 rounded-md hover:bg-muted/50 transition-colors"
               >
                 <RefreshCw className="h-4 w-4" />
@@ -123,7 +127,10 @@ export const TableClient = memo(function TableClient({
     // Fall back to generic error handling for other error types
     const errorTitle = getCardErrorTitle(variant, title)
     const errorClassName = getCardErrorClassName(variant)
-    const errorDescription = getCardErrorDescription(error as CardError, variant)
+    const errorDescription = getCardErrorDescription(
+      error as CardError,
+      variant
+    )
 
     return (
       <Card

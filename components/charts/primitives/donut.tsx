@@ -138,9 +138,7 @@ export const DonutChart = memo(function DonutChart({
       const categoryName = String(row[index])
       config[categoryName] = {
         label: categoryName,
-        color: colors
-          ? `var(${colors[i]})`
-          : `var(--chart-${(i % 10) + 1})`,
+        color: colors ? `var(${colors[i]})` : `var(--chart-${(i % 10) + 1})`,
       }
     })
     return config

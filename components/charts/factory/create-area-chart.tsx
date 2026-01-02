@@ -49,7 +49,9 @@ function hasOnlyZeroValues(
  * })
  * ```
  */
-export function createAreaChart(config: AreaChartFactoryConfig): FC<ChartProps> {
+export function createAreaChart(
+  config: AreaChartFactoryConfig
+): FC<ChartProps> {
   // Resolve date range config once (stable reference)
   const resolvedDateRangeConfig = config.dateRangeConfig
     ? resolveDateRangeConfig(config.dateRangeConfig)

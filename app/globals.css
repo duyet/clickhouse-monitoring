@@ -81,6 +81,20 @@
   --chart-orange-600: hsl(20.5 90.2% 48.2%);
   --chart-indigo-300: hsl(230 94% 82%);
   --chart-yellow: hsl(45 100% 60%);
+
+  /* Semantic badge colors for user badges */
+  --badge-purple: oklch(0.65 0.2 290);
+  --badge-purple-bg: oklch(0.97 0.03 290);
+  --badge-blue: oklch(0.55 0.2 250);
+  --badge-blue-bg: oklch(0.97 0.03 250);
+  --badge-green: oklch(0.6 0.2 145);
+  --badge-green-bg: oklch(0.97 0.03 145);
+  --badge-amber: oklch(0.7 0.15 85);
+  --badge-amber-bg: oklch(0.98 0.03 85);
+  --badge-pink: oklch(0.65 0.2 350);
+  --badge-pink-bg: oklch(0.97 0.03 350);
+  --badge-slate: oklch(0.5 0 0);
+  --badge-slate-bg: oklch(0.97 0 0);
 }
 
 .dark {

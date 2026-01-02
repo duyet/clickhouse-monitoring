@@ -199,7 +199,8 @@ export async function GET(
   const apiQueryParams = new URLSearchParams()
   apiQueryParams.set('hostId', String(hostId))
   if (interval) apiQueryParams.set('interval', interval)
-  if (lastHours !== undefined) apiQueryParams.set('lastHours', String(lastHours))
+  if (lastHours !== undefined)
+    apiQueryParams.set('lastHours', String(lastHours))
   if (params_obj) apiQueryParams.set('params', JSON.stringify(params_obj))
   const api = `/api/v1/charts/${name}?${apiQueryParams.toString()}`
 

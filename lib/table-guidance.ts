@@ -50,7 +50,8 @@ export const TABLE_GUIDANCE: Record<string, TableGuidance> = {
     description: 'ZooKeeper/Keeper cluster coordination data',
     enableInstructions:
       'This table is only available when ZooKeeper or ClickHouse Keeper is configured for your cluster.',
-    docsUrl: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/zookeeper',
   },
   'system.backup_log': {
     description: 'Backup operation history',
@@ -70,7 +71,8 @@ export const TABLE_GUIDANCE: Record<string, TableGuidance> = {
     description: 'Server crash history',
     enableInstructions:
       'The system.crash_log table is not present on this ClickHouse cluster. This table is automatically created by ClickHouse when server crashes occur. If no crashes have been logged yet, this table may not exist. This is normal for healthy clusters with no crash history. The table will be created automatically when the first crash is detected.',
-    docsUrl: 'https://clickhouse.com/docs/en/operations/system-tables/crash_log',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/crash_log',
   },
   'system.monitoring_events': {
     description: 'Custom monitoring events table',

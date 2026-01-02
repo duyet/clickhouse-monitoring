@@ -10,7 +10,9 @@ import { memo, type ReactNode } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { cn } from '@/lib/utils'
 
-export interface ChartContainerProps<TData extends ChartDataPoint = ChartDataPoint> {
+export interface ChartContainerProps<
+  TData extends ChartDataPoint = ChartDataPoint,
+> {
   /** SWR response from useChartData hook */
   swr: UseChartResult<TData>
   /** Chart title for skeleton/error/empty states */
@@ -54,7 +56,9 @@ export interface ChartContainerProps<TData extends ChartDataPoint = ChartDataPoi
  * }
  * ```
  */
-export const ChartContainer = memo(function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
+export const ChartContainer = memo(function ChartContainer<
+  TData extends ChartDataPoint = ChartDataPoint,
+>({
   swr,
   title,
   className,

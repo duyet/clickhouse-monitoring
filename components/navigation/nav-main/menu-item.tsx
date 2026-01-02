@@ -63,7 +63,7 @@ const SingleMenuItem = memo(function SingleMenuItem({
       <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
         <HostPrefixedLink href={item.href} className="flex w-full items-center">
           {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
-          <span className="group-data-[state=collapsed]/sidebar:hidden truncate">
+          <span className="group-data-[state=collapsed]/sidebar:hidden">
             {item.title}
           </span>
           <NewBadge href={item.href} isNew={item.isNew} />

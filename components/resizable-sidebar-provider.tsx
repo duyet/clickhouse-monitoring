@@ -191,7 +191,9 @@ export function ResizableSidebarProvider({
     return (
       <SidebarProvider
         defaultOpen={defaultOpen}
-        style={{ '--sidebar-width': `${DEFAULT_WIDTH}px` } as React.CSSProperties}
+        style={
+          { '--sidebar-width': `${DEFAULT_WIDTH}px` } as React.CSSProperties
+        }
       >
         {children}
       </SidebarProvider>

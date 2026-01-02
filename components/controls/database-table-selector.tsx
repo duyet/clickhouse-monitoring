@@ -161,7 +161,9 @@ export function DatabaseTableSelector({
           >
             <SelectTrigger className="w-[180px]" data-testid="table-selector">
               <SelectValue
-                placeholder={database ? 'Select table...' : 'Select database first'}
+                placeholder={
+                  database ? 'Select table...' : 'Select database first'
+                }
               />
             </SelectTrigger>
             <SelectContent data-testid="table-options">

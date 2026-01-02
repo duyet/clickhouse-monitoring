@@ -8,7 +8,10 @@ import type { ChartQueryBuilder } from './types'
 import { applyInterval, buildTimeFilter, fillStep, nowOrToday } from './types'
 
 export const securityCharts: Record<string, ChartQueryBuilder> = {
-  'login-success-rate': ({ interval = 'toStartOfHour', lastHours = 24 * 7 }) => {
+  'login-success-rate': ({
+    interval = 'toStartOfHour',
+    lastHours = 24 * 7,
+  }) => {
     const timeFilter = buildTimeFilter(lastHours)
     return {
       query: `

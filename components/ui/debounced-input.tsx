@@ -98,12 +98,9 @@ export const DebouncedInput = memo(function DebouncedInput({
   }, [debouncedValue])
 
   // Handle input changes - always update internal state, let debounce handle callback
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInternalValue(e.target.value)
-    },
-    []
-  )
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInternalValue(e.target.value)
+  }, [])
 
   return (
     <div className="relative" role="search">

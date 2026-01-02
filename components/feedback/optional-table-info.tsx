@@ -7,7 +7,7 @@ import type { TableGuidance } from '@/lib/table-guidance'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
-interface OptionalTableInfoProps {
+export interface OptionalTableInfoProps {
   /** The table name (e.g., "system.text_log") */
   tableName: string
   /** Guidance for enabling the table */
@@ -60,43 +60,53 @@ export function OptionalTableInfo({
           {/* Content */}
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground mb-2">
-              {title || (tableName === 'system.text_log' ? 'Text Log Not Configured' : tableName === 'system.crash_log' ? 'Crash Log Not Available' : 'Table Not Available')}
+              {title ||
+                (tableName === 'system.text_log'
+                  ? 'Text Log Not Configured'
+                  : tableName === 'system.crash_log'
+                    ? 'Crash Log Not Available'
+                    : 'Table Not Available')}
             </h3>
 
             {/* Instructions */}
             <div className="text-sm text-muted-foreground space-y-3">
               <div className="leading-relaxed">
                 {/* Handle markdown-like code blocks by splitting and rendering */}
-                {guidance.enableInstructions.split(/```/g).map((part, index) => {
-                  // Odd indices are inside code blocks
-                  if (index % 2 === 1) {
-                    const language = part.split('\n')[0] || ''
-                    const codeContent = part
-                      .split('\n')
-                      .slice(language ? 1 : 0)
-                      .join('\n')
-                      .trim()
+                {guidance.enableInstructions
+                  .split(/```/g)
+                  .map((part, index) => {
+                    // Odd indices are inside code blocks
+                    if (index % 2 === 1) {
+                      const language = part.split('\n')[0] || ''
+                      const codeContent = part
+                        .split('\n')
+                        .slice(language ? 1 : 0)
+                        .join('\n')
+                        .trim()
 
-                    return (
-                      <pre
-                        key={`code-${index}`}
-                        className="mt-2 mb-2 p-3 bg-black/50 dark:bg-black/70 text-white dark:text-white text-xs rounded border border-blue-900/50 overflow-x-auto"
-                      >
-                        <code>{codeContent}</code>
-                      </pre>
-                    )
-                  }
+                      return (
+                        <pre
+                          key={`code-${index}`}
+                          className="mt-2 mb-2 p-3 bg-black/50 dark:bg-black/70 text-white dark:text-white text-xs rounded border border-blue-900/50 overflow-x-auto"
+                        >
+                          <code>{codeContent}</code>
+                        </pre>
+                      )
+                    }
 
-                  // Even indices are regular text
-                  if (part.trim()) {
-                    return (
-                      <div key={`text-${index}`} className="whitespace-pre-wrap">
-                        {part.trim()}
-                      </div>
-                    )
-                  }
-                  return null
-                })}
+                    // Even indices are regular text
+                    if (part.trim()) {
+                      return (
+                        <div
+                          key={`text-${index}`}
+                          className="whitespace-pre-wrap"
+                        >
+                          {part.trim()}
+                        </div>
+                      )
+                    }
+                    return null
+                  })}
               </div>
 
               {/* Documentation link */}

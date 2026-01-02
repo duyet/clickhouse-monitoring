@@ -192,8 +192,7 @@ export const CardToolbar = memo(function CardToolbar({
   const fullApiUrl = useMemo(() => {
     if (!metadata?.api) return null
     // api field already contains full URL with params
-    const baseUrl =
-      typeof window !== 'undefined' ? window.location.origin : ''
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
     return metadata.api.startsWith('http')
       ? metadata.api
       : `${baseUrl}${metadata.api}`
@@ -300,9 +299,7 @@ export const CardToolbar = memo(function CardToolbar({
                         <Database className="size-3.5" strokeWidth={1.5} />
                         Rows
                       </dt>
-                      <CopyableValue
-                        value={metadata.rows.toLocaleString()}
-                      />
+                      <CopyableValue value={metadata.rows.toLocaleString()} />
                     </div>
                   )}
                   {metadata?.clickhouseVersion && (

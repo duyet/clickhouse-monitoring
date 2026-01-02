@@ -153,7 +153,7 @@ export const ChartRow = memo(function ChartRow({
                 size="sm"
                 className={cn(
                   'absolute z-50 h-6 px-3 gap-1',
-                  'bottom-1 left-1/2 -translate-x-1/2',
+                  'bottom-2 left-1/2 -translate-x-1/2',
                   'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
                   'bg-muted hover:bg-muted/80 text-muted-foreground',
                   'rounded-full text-xs shadow-sm'

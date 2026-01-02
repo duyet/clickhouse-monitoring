@@ -253,7 +253,9 @@ export function DataTable<
               ref={(el) => {
                 if (el) el.indeterminate = isSomeSelected && !isAllSelected
               }}
-              onChange={(e) => table.toggleAllPageRowsSelected(e.target.checked)}
+              onChange={(e) =>
+                table.toggleAllPageRowsSelected(e.target.checked)
+              }
               onClick={(e) => e.stopPropagation()}
               aria-label="Select all rows"
             />
@@ -337,7 +339,6 @@ export function DataTable<
       columnVisibility: initialColumnVisibility,
     },
   })
-
 
   // Virtual rows for large datasets (auto-enables at 1000+ rows)
   const rows = table.getRowModel().rows

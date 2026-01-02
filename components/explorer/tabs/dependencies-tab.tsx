@@ -41,7 +41,9 @@ interface ApiResponse<T> {
 const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
   fetch(url).then((res) => res.json())
 
-function getTypeBadgeVariant(type: string): 'default' | 'secondary' | 'outline' {
+function getTypeBadgeVariant(
+  type: string
+): 'default' | 'secondary' | 'outline' {
   switch (type) {
     case 'Materialized View':
       return 'default'

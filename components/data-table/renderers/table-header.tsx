@@ -43,6 +43,9 @@ function ColumnResizer({ header, onAutoFit }: ColumnResizerProps) {
 
   return (
     <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-valuenow={header.column.getSize()}
       onMouseDown={header.getResizeHandler()}
       onTouchStart={header.getResizeHandler()}
       onDoubleClick={handleDoubleClick}
@@ -52,7 +55,11 @@ function ColumnResizer({ header, onAutoFit }: ColumnResizerProps) {
         'transition-colors',
         header.column.getIsResizing() && 'bg-primary'
       )}
-      title={onAutoFit ? 'Drag to resize, double-click to auto-fit' : 'Drag to resize, double-click to reset'}
+      title={
+        onAutoFit
+          ? 'Drag to resize, double-click to auto-fit'
+          : 'Drag to resize, double-click to reset'
+      }
     />
   )
 }
@@ -94,7 +101,9 @@ export const TableHeaderRow = memo(function TableHeaderRow({
             {header.isPlaceholder
               ? null
               : flexRender(header.column.columnDef.header, header.getContext())}
-            {canResize && <ColumnResizer header={header} onAutoFit={onAutoFit} />}
+            {canResize && (
+              <ColumnResizer header={header} onAutoFit={onAutoFit} />
+            )}
           </TableHead>
         )
       })}
