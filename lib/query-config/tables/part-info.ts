@@ -12,7 +12,7 @@ export const partInfoConfig: QueryConfig = {
   sql: [
     {
       since: '19.1',
-      description: 'Base query without primary_key_bytes_in_memory',
+      description: 'Base query - primary_key_bytes_in_memory not available',
       sql: `
         SELECT
           name,
@@ -26,6 +26,8 @@ export const partInfoConfig: QueryConfig = {
           formatReadableSize(data_uncompressed_bytes) AS readable_uncompressed,
           round(data_uncompressed_bytes / data_compressed_bytes, 2) AS compression_ratio,
           marks,
+          0 AS primary_key_bytes_in_memory,
+          '-' AS readable_primary_key_size,
           modification_time,
           active,
           min_date,
@@ -43,7 +45,7 @@ export const partInfoConfig: QueryConfig = {
     },
     {
       since: '21.8',
-      description: 'Added primary_key_bytes_in_memory columns',
+      description: 'Includes primary_key_bytes_in_memory columns',
       sql: `
         SELECT
           name,
