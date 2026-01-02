@@ -225,8 +225,8 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
     component: ChartQueryCacheUsage,
     title: 'Query Cache Hit Rate',
     lastHours: 24 * 7,
-    className: 'w-full h-80',
-    type: 'bar',
+    className: 'w-full',
+    type: 'custom',
   },
   {
     id: 'query-type',
