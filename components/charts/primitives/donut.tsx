@@ -140,7 +140,7 @@ export const DonutChart = memo(function DonutChart({
         label: categoryName,
         color: colors
           ? `var(${colors[i]})`
-          : `hsl(var(--chart-${(i % 10) + 1}))`,
+          : `var(--chart-${(i % 10) + 1})`,
       }
     })
     return config
@@ -189,7 +189,7 @@ export const DonutChart = memo(function DonutChart({
           {chartData.map((_entry, index) => (
             <Cell
               key={`cell-${index}`}
-              fill={`hsl(var(--chart-${(index % 10) + 1}))`}
+              fill={`var(--chart-${(index % 10) + 1})`}
               className="stroke-background hover:opacity-80 transition-opacity"
             />
           ))}
