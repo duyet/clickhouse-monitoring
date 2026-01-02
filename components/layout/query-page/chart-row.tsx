@@ -91,11 +91,11 @@ export const ChartRow = memo(function ChartRow({
           <div className="relative group pb-6 overflow-hidden">
             <div
               className={cn(
-                'grid gap-3 w-full min-w-0 overflow-hidden',
+                'grid gap-3 w-full min-w-0 overflow-hidden items-stretch',
                 // Use 10-column grid when colSpan is used, otherwise 2-column
                 hasColSpan(charts)
-                  ? 'grid-cols-1 md:grid-cols-10 auto-rows-[1fr]'
-                  : 'grid-cols-1 md:grid-cols-2 auto-rows-[1fr]'
+                  ? 'grid-cols-1 md:grid-cols-10 auto-rows-[minmax(200px,auto)]'
+                  : 'grid-cols-1 md:grid-cols-2 auto-rows-[minmax(200px,auto)]'
               )}
             >
               {charts.map((chartConfig, index) => {

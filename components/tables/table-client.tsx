@@ -106,29 +106,26 @@ export const TableClient = memo(function TableClient({
       return (
         <Card
           className={cn(
-            'rounded-md border-blue-200/50 bg-blue-50/30 dark:border-blue-900/30 dark:bg-blue-950/20 shadow-none',
+            'rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/40 shadow-none',
             className
           )}
           role="alert"
           aria-label={title ? `${title} unavailable` : 'Table not available'}
         >
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <div className="flex gap-4">
-              {/* Icon */}
+              {/* Icon - Info circle */}
               <div className="flex-shrink-0">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/60">
                   <svg
                     className="h-5 w-5 text-blue-600 dark:text-blue-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    strokeWidth={2}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0-3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4M12 8h.01" />
                   </svg>
                 </div>
               </div>
@@ -140,41 +137,26 @@ export const TableClient = memo(function TableClient({
                 </h3>
                 <div className="text-sm text-muted-foreground space-y-2">
                   <p className="leading-relaxed">{errorDescription}</p>
-                  <div className="pt-2 border-t border-blue-200/50 dark:border-blue-900/50">
-                    <p className="text-xs">
-                      This feature requires additional ClickHouse configuration.{' '}
-                      <a
-                        href="https://clickhouse.com/docs/en/operations/system-tables"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline font-medium inline-flex items-center gap-1"
-                      >
-                        View ClickHouse documentation
-                        <svg
-                          className="h-3 w-3 inline"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                          />
-                        </svg>
-                      </a>
-                    </p>
-                  </div>
+                  <p className="text-xs pt-2 border-t border-blue-200 dark:border-blue-800">
+                    This feature requires additional ClickHouse configuration.{' '}
+                    <a
+                      href="https://clickhouse.com/docs/en/operations/system-tables"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                    >
+                      View ClickHouse documentation ↗
+                    </a>
+                  </p>
                 </div>
                 {showRetry && (
-                  <div className="mt-3">
+                  <div className="mt-4">
                     <button
                       onClick={() => refresh()}
-                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-blue-300/50 rounded-md hover:bg-blue-100/50 dark:border-blue-700/50 dark:hover:bg-blue-900/30 transition-colors text-blue-700 dark:text-blue-300"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 transition-colors text-blue-700 dark:text-blue-300"
                     >
-                      <RefreshCw className="h-4 w-4" />
-                      Try Again
+                      <RefreshCw className="h-3 w-3" />
+                      Retry
                     </button>
                   </div>
                 )}
