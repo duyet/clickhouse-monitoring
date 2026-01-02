@@ -179,7 +179,7 @@ export const EmptyState = memo(function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center py-10 text-center',
+        'flex flex-col items-center justify-center py-6 text-center',
         'animate-in fade-in-0 slide-in-from-bottom-2 duration-300',
         className
       )}

@@ -111,7 +111,12 @@ export async function GET(
         message: result.error.message,
         details: result.error.details as Record<
           string,
-          string | number | boolean | undefined
+          | string
+          | number
+          | boolean
+          | undefined
+          | readonly string[]
+          | readonly (string | number | boolean)[]
         >,
       },
       mapErrorTypeToStatusCode(result.error.type as ApiErrorType),
