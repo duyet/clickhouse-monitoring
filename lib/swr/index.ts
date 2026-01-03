@@ -5,6 +5,10 @@
 
 // SWR configuration presets
 export { createPollingConfig, REFRESH_INTERVAL, swrConfig } from './config'
+
+// Host context for static page generation
+export { HostProvider, useHostContext, useHostIdFromContext } from './host-context'
+
 export { SWRProvider } from './provider'
 export {
   type StaleError,

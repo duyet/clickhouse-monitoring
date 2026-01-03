@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 import { buildUrl } from '@/lib/url/url-builder'
+import { useHostId } from '@/lib/swr'
 
 export const HostPrefixedLink = ({
   href,
@@ -15,12 +16,11 @@ export const HostPrefixedLink = ({
   children: React.ReactNode
   className?: string
 } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
-  const searchParams = useSearchParams()
   const pathname = usePathname()
-  const hostId = searchParams.get('host') || '0'
+  const hostId = useHostId()
 
   // Build URL with host query parameter using utility
-  const url = buildUrl(href, { host: hostId })
+  const url = buildUrl(href, { host: String(hostId) })
 
   // Check if this link is active
   const isActive = isMenuItemActive(href, pathname)

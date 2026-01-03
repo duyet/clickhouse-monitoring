@@ -1,8 +1,5 @@
 import type { Metadata } from 'next'
 
-// Force dynamic rendering for all pages - this app requires runtime query params
-export const dynamic = 'force-dynamic'
-
 import { Analytics } from '@vercel/analytics/react'
 import Script from 'next/script'
 import { ThemeProvider } from 'next-themes'
@@ -16,13 +13,13 @@ import { KeyboardShortcuts } from '@/components/controls/keyboard-shortcuts'
 import { HeaderActions } from '@/components/header/header-actions'
 import { Breadcrumb } from '@/components/navigation/breadcrumb'
 import { ResizableSidebarProvider } from '@/components/resizable-sidebar-provider'
-import { PageSkeleton, SidebarSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { NetworkStatusBanner } from '@/components/status/network-status-banner'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Toaster } from '@/components/ui/sonner'
-import { SWRProvider } from '@/lib/swr'
+import { HostProvider, SWRProvider } from '@/lib/swr'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
@@ -43,7 +40,11 @@ function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <SWRProvider>
-        <AppProvider reloadIntervalSecond={120}>{children}</AppProvider>
+        <Suspense fallback={null}>
+          <HostProvider>
+            <AppProvider reloadIntervalSecond={120}>{children}</AppProvider>
+          </HostProvider>
+        </Suspense>
       </SWRProvider>
     </ThemeProvider>
   )
