@@ -45,14 +45,14 @@ export const ChartError = memo(function ChartError({
   return (
     <Card
       className={cn(
-        'rounded-md h-full shadow-none py-2',
+        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full gap-2 shadow-none py-2',
         errorClassName,
         className
       )}
       role="alert"
       aria-label={title ? `${title} error` : 'Error loading chart'}
     >
-      <CardContent className={compact ? 'p-4' : 'p-6'}>
+      <CardContent className="p-4 flex-1 min-h-0">
         <EmptyState
           variant={variant}
           title={title}

@@ -68,7 +68,7 @@ export const ChartCard = memo(function ChartCard({
       )}
     >
       {title ? (
-        <CardHeader className="px-4 shrink-0">
+        <CardHeader className="px-2 shrink-0">
           <header className="flex flex-row items-center justify-between gap-2">
             <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase truncate min-w-0 flex-1">
               {title}

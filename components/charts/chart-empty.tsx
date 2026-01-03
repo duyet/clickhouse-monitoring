@@ -73,14 +73,14 @@ export const ChartEmpty = memo(function ChartEmpty({
   return (
     <Card
       className={cn(
-        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full group gap-2 shadow-none py-2',
+        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full gap-2 shadow-none py-2',
         className
       )}
       aria-label={title ? `${title} - no data` : 'No data available'}
     >
       {/* Header with title and toolbar */}
       {(title || hasToolbar) && (
-        <CardHeader className="px-3 shrink-0">
+        <CardHeader className="px-2 shrink-0">
           <header className="flex flex-row items-center justify-between gap-2">
             {title ? (
               <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase truncate min-w-0 flex-1">
@@ -103,7 +103,7 @@ export const ChartEmpty = memo(function ChartEmpty({
 
       {/* Empty state content */}
       <CardContent
-        className={cn('flex-1 min-h-0', compact ? 'p-4' : 'p-3 pt-0')}
+        className={cn('flex-1 min-h-0', compact ? 'p-3' : 'p-4 pt-0')}
       >
         <EmptyState
           variant={variant}

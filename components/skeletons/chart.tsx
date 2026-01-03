@@ -35,13 +35,13 @@ export const ChartSkeleton = memo(function ChartSkeleton({
       aria-busy="true"
       aria-label={title ? `Loading ${title}` : 'Loading chart'}
     >
-      <CardHeader className="px-3 shrink-0 py-2">
+      <CardHeader className="px-2 shrink-0">
         <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase">
           {title || <Skeleton className="h-3 w-32" />}
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="p-3 pt-0 flex-1 min-h-0">
+      <CardContent className="p-4 pt-0 flex-1 min-h-0">
         <Skeleton className="h-full w-full rounded-md" />
       </CardContent>
     </Card>
