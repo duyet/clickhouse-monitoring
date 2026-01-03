@@ -5,6 +5,22 @@
 import type { ChartConfig } from '@/components/ui/chart'
 
 /**
+ * Sanitize a category name for use as a CSS variable name.
+ * CSS custom properties cannot contain parentheses, brackets, or most special chars.
+ * Example: "(empty)" -> "empty", "user@domain" -> "user-domain"
+ */
+export function sanitizeCssVarName(name: string): string {
+  return (
+    name
+      .replace(/[()[\]{}]/g, '') // Remove brackets/parens
+      .replace(/[^a-zA-Z0-9_-]/g, '-') // Replace other special chars with dash
+      .replace(/^-+|-+$/g, '') // Trim leading/trailing dashes
+      .replace(/-+/g, '-') || // Collapse multiple dashes
+    'unnamed'
+  ) // Fallback for empty result
+}
+
+/**
  * Sort categories by their total values across all data points.
  * Returns categories in ascending order (smallest first = bottom of stack).
  * This ensures larger segments appear on top of stacked bars.
@@ -30,7 +46,10 @@ export function sortCategoriesByTotal<T extends Record<string, unknown>>(
 
 /**
  * Generates chart configuration for bar categories
- * Maps each category to a color from the provided palette
+ * Maps each category to a color from the provided palette.
+ *
+ * Uses sanitized category names as keys to ensure valid CSS variable names.
+ * The original category name is preserved in the label for display.
  */
 export function generateChartConfig(
   categories: string[],
@@ -39,8 +58,9 @@ export function generateChartConfig(
 ): ChartConfig {
   return categories.reduce(
     (acc, category, index) => {
-      acc[category] = {
-        label: category,
+      const sanitizedKey = sanitizeCssVarName(category)
+      acc[sanitizedKey] = {
+        label: category, // Original name for display in tooltips/legends
         color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
       }
 

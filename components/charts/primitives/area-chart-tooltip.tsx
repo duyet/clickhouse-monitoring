@@ -117,7 +117,6 @@ function renderBreakdownTooltip({
       active={tooltipActive}
       content={
         <ChartTooltipContent
-          hideLabel
           className="max-w-[320px]"
           formatter={(value, name, item, _index, payload: any) => {
             return (

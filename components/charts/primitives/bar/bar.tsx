@@ -21,10 +21,11 @@ import {
 
 import type { BarChartProps } from '@/types/charts'
 
-import { BarTooltip } from '../bar-tooltip'
+import { renderBarTooltip } from '../bar-tooltip'
 import {
   generateChartConfig,
   getBarRadius,
+  sanitizeCssVarName,
   sortCategoriesByTotal,
 } from './utils'
 import { memo, useMemo } from 'react'
@@ -71,6 +72,17 @@ export const BarChart = memo(function BarChart({
     [categories, colors, colorLabel]
   )
 
+  // Memoize tooltip to prevent recreation on every render
+  // Must use render function (not component) for Recharts to detect it
+  const tooltip = useMemo(
+    () =>
+      renderBarTooltip({
+        tooltipTotal,
+        categories: sortedCategories,
+      }),
+    [tooltipTotal, sortedCategories]
+  )
+
   return (
     <ChartContainer
       config={chartConfig}
@@ -110,7 +122,7 @@ export const BarChart = memo(function BarChart({
           <Bar
             key={category}
             dataKey={category}
-            fill={`var(--color-${category})`}
+            fill={`var(--color-${sanitizeCssVarName(category)})`}
             stackId={stack ? 'a' : undefined}
             radius={getBarRadius({
               index: idx,
@@ -122,12 +134,7 @@ export const BarChart = memo(function BarChart({
           />
         ))}
 
-        <BarTooltip
-          tooltipTotal={tooltipTotal}
-          chartConfig={chartConfig}
-          categories={sortedCategories}
-          xAxisDataKey={index}
-        />
+        {tooltip}
 
         {showLegend && <ChartLegend content={<ChartLegendContent />} />}
       </RechartBarChart>

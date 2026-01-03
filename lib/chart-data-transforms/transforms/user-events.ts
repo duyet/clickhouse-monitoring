@@ -42,7 +42,9 @@ export function transformUserEventCounts<T extends string = 'event_time'>(
   const nestedData = data.reduce<Record<string, Record<string, number>>>(
     (acc, item) => {
       const event_time = String(item.event_time ?? '')
-      const user = String(item.user ?? '')
+      const rawUser = String(item.user ?? '')
+      // Display "(empty)" for empty/whitespace-only user names in charts
+      const user = rawUser.trim() === '' ? '(empty)' : rawUser
       const count = Number(item.count ?? 0)
 
       userSet.add(user)
