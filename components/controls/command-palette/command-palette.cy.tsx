@@ -27,6 +27,12 @@ const _mockPush = cy.stub().as('routerPush')
 // Mock menu items
 cy.stub().as('menuItemsConfig')
 
+// Mock Next.js navigation hooks for host parameter preservation
+const mockUseSearchParams = cy.stub().returns({
+  get: cy.stub().returns('2'),
+  toString: () => 'host=2',
+})
+
 describe('<CommandPalette />', () => {
   describe('rendering', () => {
     it('renders command dialog', () => {
@@ -211,10 +217,8 @@ describe('<CommandPalette />', () => {
     it('navigates when item is selected', () => {
       cy.mount(<CommandPalette open />)
 
-      // Click on a menu item
       cy.contains('Overview').click()
 
-      // Dialog should close after navigation
       cy.get('[role="dialog"]').should('not.be.visible')
     })
 
@@ -224,6 +228,14 @@ describe('<CommandPalette />', () => {
       cy.contains('Overview').click()
 
       cy.get('[role="dialog"]').should('not.be.visible')
+    })
+
+    it('preserves host parameter in navigation URL', () => {
+      cy.mount(<CommandPalette open />)
+
+      cy.contains('Overview').click()
+
+      cy.get('@router:push').should('have.been.calledWithMatch', /host=/)
     })
   })
 

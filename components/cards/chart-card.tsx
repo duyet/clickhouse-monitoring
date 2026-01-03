@@ -2,10 +2,12 @@
 
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { DateRangeConfig, DateRangeValue } from '@/components/date-range'
+import type { StaleError } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 
 import { memo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
+import { ChartStaleIndicator } from '@/components/charts/chart-stale-indicator'
 import { DateRangeSelector } from '@/components/date-range'
 import {
   Card,
@@ -30,6 +32,10 @@ interface ChartCardProps {
   currentRange?: string
   /** Callback when date range changes */
   onRangeChange?: (range: DateRangeValue) => void
+  /** Error from failed revalidation (data is stale) */
+  staleError?: StaleError
+  /** Callback to retry fetch (used with staleError) */
+  onRetry?: () => void
 }
 
 export const ChartCard = memo(function ChartCard({
@@ -43,12 +49,24 @@ export const ChartCard = memo(function ChartCard({
   dateRangeConfig,
   currentRange,
   onRangeChange,
+  staleError,
+  onRetry,
 }: ChartCardProps) {
   return (
     <Card
       className={cn(
-        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full w-full min-w-0 group gap-2 shadow-none pt-1 pb-2',
-        'transition-all duration-200 hover:border-border/80',
+        'relative flex flex-col h-full w-full min-w-0 group gap-2 pt-1 pb-2',
+        'overflow-hidden rounded-xl',
+        'bg-gradient-to-b from-card/80 to-card/40 dark:from-card/60 dark:to-card/30',
+        'border border-border/50 dark:border-border/30',
+        'shadow-sm shadow-black/[0.03] dark:shadow-black/20',
+        'backdrop-blur-xl',
+        'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-foreground/10 before:to-transparent',
+        'transition-all duration-200 ease-out',
+        'hover:border-border/80 dark:hover:border-border/50',
+        'hover:shadow-md hover:shadow-black/[0.06] dark:hover:shadow-black/30',
+        'hover:-translate-y-0.5',
+        'hover:bg-gradient-to-b hover:from-card/90 hover:to-card/60 dark:hover:from-card/70 dark:hover:to-card/40',
         className
       )}
     >
@@ -59,6 +77,9 @@ export const ChartCard = memo(function ChartCard({
               {title}
             </CardDescription>
             <div className="flex items-center gap-1 shrink-0">
+              {staleError && onRetry && (
+                <ChartStaleIndicator error={staleError} onRetry={onRetry} />
+              )}
               {dateRangeConfig && onRangeChange && (
                 <DateRangeSelector
                   config={dateRangeConfig}

@@ -13,16 +13,6 @@ export function SidebarSkeleton() {
           <Skeleton className="h-6 w-3/4" />
         </div>
       </div>
-      {/* Content skeleton */}
-      <div className="flex-1">
-        <div className="flex h-14 items-center gap-2 border-b px-4">
-          <Skeleton className="h-6 w-6" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-        <div className="p-6">
-          <PageSkeleton />
-        </div>
-      </div>
     </div>
   )
 }

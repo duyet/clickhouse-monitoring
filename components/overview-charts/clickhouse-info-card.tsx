@@ -16,7 +16,7 @@ import { useHostStatus } from '@/lib/swr/use-host-status'
 
 export const ClickHouseInfoCard = memo(function ClickHouseInfoCard() {
   const hostId = useHostId()
-  const statusSwr = useHostStatus(hostId, { refreshInterval: 30000 })
+  const statusSwr = useHostStatus(hostId, { refreshInterval: 300000 })
 
   const version = statusSwr.data?.version ? `v${statusSwr.data?.version}` : '-'
   const uptime = statusSwr.data?.uptime ?? ''

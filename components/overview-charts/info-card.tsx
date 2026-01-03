@@ -2,15 +2,7 @@
 
 import { cardStyles } from './card-styles'
 import { memo } from 'react'
-
-// ============================================================================
-// InfoCard Component
-// ============================================================================
-
-/**
- * InfoCard - A simple info card with value and optional subtitle
- * Used for displaying static info like version number
- */
+import { cn } from '@/lib/utils'
 
 export interface InfoCardProps {
   value: string
@@ -25,25 +17,33 @@ export const InfoCard = memo(function InfoCard({
 }: InfoCardProps) {
   if (isLoading) {
     return (
-      <div className={cardStyles.base}>
-        <div className="flex flex-1 flex-col items-center justify-center gap-1">
-          <div className="h-10 w-20 animate-pulse rounded bg-muted/30" />
-          <div className="h-3 w-16 animate-pulse rounded bg-muted/20" />
+      <div className={cn(cardStyles.base, 'p-3 sm:p-4')}>
+        <div className="flex flex-1 flex-col items-center justify-center gap-2">
+          <div className="h-8 w-20 animate-pulse rounded-md bg-foreground/[0.06]" />
+          <div className="h-3 w-16 animate-pulse rounded bg-foreground/[0.04]" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className={cardStyles.base}>
-      <div className="text-center">
-        <div className={cardStyles.number}>{value}</div>
-      </div>
-      {subtitle && (
-        <div className="text-center text-[10px] uppercase tracking-wider text-muted-foreground/50 line-clamp-1">
-          {subtitle}
+    <div className={cn(cardStyles.base, 'p-3 sm:p-4')}>
+      <div className="flex flex-1 flex-col items-center justify-center gap-1.5">
+        <div className="text-center">
+          <div className={cardStyles.number}>{value}</div>
         </div>
-      )}
+        {subtitle && (
+          <div
+            className={cn(
+              'text-center text-[10px] uppercase tracking-widest font-medium',
+              'text-foreground/40 dark:text-foreground/35',
+              'line-clamp-1 max-w-full px-2'
+            )}
+          >
+            {subtitle}
+          </div>
+        )}
+      </div>
     </div>
   )
 })

@@ -6,15 +6,6 @@ import { memo } from 'react'
 import { AnimatedNumber } from '@/components/cards/metric/animated-number'
 import { cn } from '@/lib/utils'
 
-// ============================================================================
-// SplitValue Component
-// ============================================================================
-
-/**
- * SplitValue - A single value in a split card
- * Displays an animated number with label and hover effect
- */
-
 export interface SplitValueProps {
   value: number | string
   label: string
@@ -29,8 +20,11 @@ export const SplitValue = memo(function SplitValue({
   return (
     <div
       className={cn(
-        'group flex flex-1 flex-col items-center justify-center gap-1 transition-opacity hover:opacity-80 w-full min-w-0 text-center',
-        cardStyles.hover
+        'group/value flex flex-1 flex-col items-center justify-center gap-1.5 w-full min-w-0 text-center',
+        'py-2 px-1 rounded-lg',
+        'transition-all duration-150 ease-out',
+        'hover:bg-foreground/[0.03] dark:hover:bg-foreground/[0.05]',
+        href && 'cursor-pointer'
       )}
     >
       <AnimatedNumber value={value} className={cardStyles.number} />
@@ -45,15 +39,6 @@ export const SplitValue = memo(function SplitValue({
     </div>
   )
 })
-
-// ============================================================================
-// SplitCard Component
-// ============================================================================
-
-/**
- * SplitCard - A card with two values side by side
- * Used for displaying related metrics like "Running / Today" or "Databases / Tables"
- */
 
 export interface SplitCardProps {
   value1: number | string
@@ -76,16 +61,16 @@ export const SplitCard = memo(function SplitCard({
 }: SplitCardProps) {
   if (isLoading) {
     return (
-      <div className={cardStyles.base}>
-        <div className="flex flex-1 items-center justify-center gap-1.5 sm:gap-3 md:gap-6">
-          <div className="flex flex-1 flex-col items-center justify-center gap-1">
-            <div className="h-10 w-12 animate-pulse rounded bg-muted/30" />
-            <div className="h-3 w-16 animate-pulse rounded bg-muted/20" />
+      <div className={cn(cardStyles.base, 'p-2 sm:p-3')}>
+        <div className="flex flex-1 items-center justify-center gap-2 sm:gap-4">
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 py-2">
+            <div className="h-8 w-12 animate-pulse rounded-md bg-foreground/[0.06]" />
+            <div className="h-3 w-14 animate-pulse rounded bg-foreground/[0.04]" />
           </div>
           <div className={cardStyles.divider} />
-          <div className="flex flex-1 flex-col items-center justify-center gap-1">
-            <div className="h-10 w-12 animate-pulse rounded bg-muted/30" />
-            <div className="h-3 w-16 animate-pulse rounded bg-muted/20" />
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 py-2">
+            <div className="h-8 w-12 animate-pulse rounded-md bg-foreground/[0.06]" />
+            <div className="h-3 w-14 animate-pulse rounded bg-foreground/[0.04]" />
           </div>
         </div>
       </div>
@@ -93,8 +78,8 @@ export const SplitCard = memo(function SplitCard({
   }
 
   return (
-    <div className={cardStyles.base}>
-      <div className="flex flex-1 items-center justify-center gap-1.5 sm:gap-3 md:gap-6">
+    <div className={cn(cardStyles.base, 'p-2 sm:p-3')}>
+      <div className="flex flex-1 items-center justify-center gap-2 sm:gap-4">
         <SplitValue value={value1} label={label1} href={href1} />
         <div className={cardStyles.divider} />
         <SplitValue value={value2} label={label2} href={href2} />

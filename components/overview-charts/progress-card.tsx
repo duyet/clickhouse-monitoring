@@ -4,21 +4,14 @@ import {
   type CardVariant,
   cardStyles,
   progressColors,
+  progressFillStyles,
+  progressTrackStyles,
   variantStyles,
 } from './card-styles'
 import Link from 'next/link'
 import { memo } from 'react'
 import { AnimatedNumber } from '@/components/cards/metric/animated-number'
 import { cn } from '@/lib/utils'
-
-// ============================================================================
-// ProgressCard Component
-// ============================================================================
-
-/**
- * ProgressCard - A card with a value and progress bar
- * Used for displaying usage metrics like disk space
- */
 
 export interface ProgressCardProps {
   value: string | number
@@ -37,64 +30,69 @@ export const ProgressCard = memo(function ProgressCard({
 }: ProgressCardProps) {
   if (isLoading) {
     return (
-      <div className={cn(cardStyles.base, 'group p-3')}>
-        <div className="flex flex-1 flex-col justify-center gap-1 sm:gap-2">
+      <div className={cn(cardStyles.base, 'group p-3 sm:p-4')}>
+        <div className="flex flex-1 flex-col justify-center gap-2 sm:gap-3">
           <div className="flex justify-center">
-            <div className="h-10 w-16 animate-pulse rounded bg-muted/30" />
+            <div className="h-8 w-16 animate-pulse rounded-md bg-foreground/[0.06]" />
           </div>
-          <div className="space-y-1 sm:space-y-2">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <div className="h-3 w-10 animate-pulse rounded bg-muted/20" />
-              <div className="h-3 w-8 animate-pulse rounded bg-muted/20" />
+              <div className="h-3 w-10 animate-pulse rounded bg-foreground/[0.04]" />
+              <div className="h-3 w-8 animate-pulse rounded bg-foreground/[0.04]" />
             </div>
-            <div className="h-2 sm:h-3 w-full animate-pulse rounded-full bg-muted/30" />
+            <div className={cn(progressTrackStyles, 'animate-pulse')} />
           </div>
         </div>
       </div>
     )
   }
 
+  const clampedPercent = Math.min(Math.max(percent, 0), 100)
+
   const content = (
     <div
       className={cn(
         cardStyles.base,
-        'group p-3',
+        'group p-3 sm:p-4',
         href && cardStyles.hover,
         variantStyles[variant]
       )}
     >
-      <div className="flex flex-1 flex-col justify-center gap-1 sm:gap-2">
-        {/* Value display */}
+      <div className="flex flex-1 flex-col justify-center gap-2 sm:gap-3">
         <div className="text-center">
           <AnimatedNumber value={value} className={cardStyles.number} />
         </div>
 
-        {/* Progress bar */}
-        <div className="space-y-1 sm:space-y-2">
-          <div className="flex items-center justify-between text-[10px] sm:text-xs font-medium text-foreground/60">
-            <span className={cn(cardStyles.label, 'group-hover:hidden')}>
-              Used
-            </span>
+        <div className="space-y-1.5 sm:space-y-2">
+          <div className="flex items-center justify-between">
+            <span className={cardStyles.label}>Used</span>
             {href ? (
-              <Link
-                href={href}
-                className={cn(
-                  cardStyles.label,
-                  'hidden group-hover:inline text-foreground/90 uppercase tracking-wider truncate'
-                )}
-              >
-                Go to disks →
+              <Link href={href} className={cardStyles.labelHover}>
+                disks →
               </Link>
             ) : null}
-            <span className="tabular-nums shrink-0">{percent.toFixed(0)}%</span>
-          </div>
-          <div className="h-2 sm:h-3 w-full overflow-hidden rounded-full bg-muted/50">
-            <div
+            <span
               className={cn(
-                'h-full rounded-full transition-all duration-500',
-                progressColors[variant]
+                'text-[10px] font-medium tabular-nums',
+                'text-foreground/60 dark:text-foreground/50',
+                clampedPercent >= 90 && 'text-rose-500 dark:text-rose-400',
+                clampedPercent >= 75 &&
+                  clampedPercent < 90 &&
+                  'text-amber-500 dark:text-amber-400'
               )}
-              style={{ width: `${Math.min(percent, 100)}%` }}
+            >
+              {clampedPercent.toFixed(0)}%
+            </span>
+          </div>
+          <div className={progressTrackStyles}>
+            <div
+              className={cn(progressFillStyles, progressColors[variant])}
+              style={
+                {
+                  width: `${clampedPercent}%`,
+                  '--progress-width': `${clampedPercent}%`,
+                } as React.CSSProperties
+              }
             />
           </div>
         </div>

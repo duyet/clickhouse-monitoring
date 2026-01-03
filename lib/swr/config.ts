@@ -13,17 +13,24 @@ import type { SWRConfiguration } from 'swr'
 
 /**
  * Default refresh intervals in milliseconds
+ *
+ * PERFORMANCE NOTE: Longer intervals reduce API load significantly.
+ * - 60s default provides good balance of freshness vs server load
+ * - Use FAST_15S only for critical real-time data (running queries)
+ * - Use SLOW_2M or VERY_SLOW_5M for historical/trend data
  */
 export const REFRESH_INTERVAL = {
   /** Never refresh (static data) */
   NEVER: 0,
-  /** Refresh every 10 seconds - for frequently changing data */
-  FAST_10S: 10_000,
-  /** Refresh every 30 seconds - default for real-time metrics */
-  DEFAULT_30S: 30_000,
-  /** Refresh every minute - for slower changing data */
-  SLOW_1M: 60_000,
-  /** Refresh every 5 minutes - for relatively static data */
+  /** Refresh every 15 seconds - for critical real-time data only */
+  FAST_15S: 15_000,
+  /** Refresh every 30 seconds - for important real-time metrics */
+  MEDIUM_30S: 30_000,
+  /** Refresh every 60 seconds - default for most metrics */
+  DEFAULT_60S: 60_000,
+  /** Refresh every 2 minutes - for slower changing data */
+  SLOW_2M: 120_000,
+  /** Refresh every 5 minutes - for historical/trend data */
   VERY_SLOW_5M: 300_000,
 } as const
 
@@ -31,52 +38,32 @@ export const REFRESH_INTERVAL = {
  * SWR configuration presets for common use cases
  */
 export const swrConfig = {
-  /**
-   * Default polling - refresh every 30 seconds
-   * Use for: Real-time metrics, system stats, query counts
-   */
+  polling15s: {
+    refreshInterval: REFRESH_INTERVAL.FAST_15S,
+  } satisfies SWRConfiguration,
+
   polling30s: {
-    refreshInterval: REFRESH_INTERVAL.DEFAULT_30S,
+    refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
   } satisfies SWRConfiguration,
 
-  /**
-   * Fast polling - refresh every 10 seconds
-   * Use for: Critical metrics that update frequently
-   */
-  polling10s: {
-    refreshInterval: REFRESH_INTERVAL.FAST_10S,
+  polling60s: {
+    refreshInterval: REFRESH_INTERVAL.DEFAULT_60S,
   } satisfies SWRConfiguration,
 
-  /**
-   * Slow polling - refresh every minute
-   * Use for: Less critical data that doesn't change often
-   */
-  polling1m: {
-    refreshInterval: REFRESH_INTERVAL.SLOW_1M,
+  polling2m: {
+    refreshInterval: REFRESH_INTERVAL.SLOW_2M,
   } satisfies SWRConfiguration,
 
-  /**
-   * Very slow polling - refresh every 5 minutes
-   * Use for: Configuration data, static metrics
-   */
   polling5m: {
     refreshInterval: REFRESH_INTERVAL.VERY_SLOW_5M,
   } satisfies SWRConfiguration,
 
-  /**
-   * Static - no refresh after initial fetch
-   * Use for: Historical data, configuration, metadata
-   */
   static: {
     refreshInterval: REFRESH_INTERVAL.NEVER,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   } satisfies SWRConfiguration,
 
-  /**
-   * One-time fetch - no refresh, no revalidation
-   * Use for: Data that should only be fetched once per session
-   */
   once: {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,

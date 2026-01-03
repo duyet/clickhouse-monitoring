@@ -2,7 +2,7 @@
 
 import { SplitCard } from './split-card'
 import { memo } from 'react'
-import { useHostId } from '@/lib/swr'
+import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { buildUrl } from '@/lib/url/url-builder'
 
@@ -20,12 +20,12 @@ export const RunningQueriesCard = memo(function RunningQueriesCard() {
   const runningSwr = useChartData<{ count: number }>({
     chartName: 'running-queries-count',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.FAST_15S,
   })
   const todaySwr = useChartData<{ count: number }>({
     chartName: 'query-count-today',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.SLOW_2M,
   })
 
   const isLoading = runningSwr.isLoading || todaySwr.isLoading

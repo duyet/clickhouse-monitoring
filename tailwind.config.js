@@ -173,6 +173,14 @@ module.exports = {
           '0%': { transform: 'scale(0.95)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
+        'pulse-subtle': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.85' },
+        },
+        'progress-fill': {
+          '0%': { width: '0%' },
+          '100%': { width: 'var(--progress-width)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -180,6 +188,8 @@ module.exports = {
         shimmer: 'shimmer 1.5s infinite',
         'fade-in': 'fade-in 0.2s ease-out',
         'scale-in': 'scale-in 0.2s ease-out',
+        'pulse-subtle': 'pulse-subtle 3s ease-in-out infinite',
+        'progress-fill': 'progress-fill 0.8s ease-out forwards',
       },
     },
   },

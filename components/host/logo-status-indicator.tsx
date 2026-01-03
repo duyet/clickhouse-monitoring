@@ -15,6 +15,8 @@ interface LogoStatusIndicatorProps {
   hostId: number
 }
 
+const indicatorBaseStyles = 'absolute -bottom-0.5 -left-1 size-1.5 rounded-full ring-2 ring-sidebar'
+
 /**
  * Small status indicator positioned at bottom-right corner of logo
  * Only visible when sidebar is collapsed.
@@ -27,16 +29,21 @@ export const LogoStatusIndicator = memo(function LogoStatusIndicator({
     revalidateOnFocus: false,
   })
 
+  if (isLoading) return <LogoStatusIndicatorSkeleton />
+
   return (
     <span
       className={cn(
-        'absolute -bottom-0.5 -left-1 size-1.5 rounded-full',
-        'ring-2 ring-sidebar',
-        isLoading && 'bg-gray-400 animate-pulse',
-        !isLoading && isOnline && 'bg-emerald-500',
-        !isLoading && !isOnline && 'bg-red-400'
+        indicatorBaseStyles,
+        isOnline && 'bg-emerald-500',
+        !isOnline && 'bg-red-400'
       )}
-      title={isLoading ? 'Checking...' : isOnline ? 'Online' : 'Offline'}
+      title={isOnline ? 'Online' : 'Offline'}
     />
   )
 })
+
+
+export const LogoStatusIndicatorSkeleton = () => (
+  <span className={cn(indicatorBaseStyles, 'bg-gray-400 animate-pulse')} />
+)

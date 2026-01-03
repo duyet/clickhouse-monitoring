@@ -1,8 +1,9 @@
 'use client'
 
 import { menuItemsConfig } from '@/menu'
+import { buildUrl } from '@/lib/url/url-builder'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
 import { memo, useCallback } from 'react'
 import {
@@ -24,6 +25,7 @@ export const CommandPalette = memo(function CommandPalette({
   onOpenChange,
 }: CommandPaletteProps = {}) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [internalOpen, setInternalOpen] = React.useState(false)
 
   const open = controlledOpen ?? internalOpen
@@ -45,9 +47,11 @@ export const CommandPalette = memo(function CommandPalette({
   const navigate = useCallback(
     (href: string) => {
       setOpen(false)
-      router.push(href)
+      const hostId = searchParams.get('host') || '0'
+      const url = buildUrl(href, { host: hostId })
+      router.push(url)
     },
-    [router, setOpen]
+    [router, setOpen, searchParams]
   )
 
   return (

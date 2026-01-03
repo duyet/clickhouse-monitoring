@@ -4,7 +4,7 @@ import type { CardVariant } from './card-styles'
 
 import { ProgressCard } from './progress-card'
 import { memo } from 'react'
-import { useHostId } from '@/lib/swr'
+import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { buildUrl } from '@/lib/url/url-builder'
 
@@ -29,7 +29,7 @@ export const DiskSizeCard = memo(function DiskSizeCard() {
   }>({
     chartName: 'disk-size-single',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.SLOW_2M,
   })
 
   const isLoading = swr.isLoading

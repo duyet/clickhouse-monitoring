@@ -124,7 +124,7 @@ export function createAreaChart(
         className={className}
         chartClassName={chartClassName}
       >
-        {(dataArray, sql, metadata) => (
+        {(dataArray, sql, metadata, staleError, mutate) => (
           <ChartCard
             title={title}
             sql={sql}
@@ -136,6 +136,8 @@ export function createAreaChart(
             onRangeChange={
               resolvedDateRangeConfig ? setRangeOverride : undefined
             }
+            staleError={staleError}
+            onRetry={mutate}
           >
             <AreaChart
               className={cn(

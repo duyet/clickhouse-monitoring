@@ -1,7 +1,7 @@
 'use client'
 
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
-import type { UseChartResult } from '@/lib/swr'
+import type { StaleError, UseChartResult } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 
 import { ChartEmpty } from './chart-empty'
@@ -21,11 +21,16 @@ export interface ChartContainerProps<
   className?: string
   /** Chart className */
   chartClassName?: string
-  /** Children render function receives data, sql, and metadata */
+  /**
+   * Children render function receives data, sql, metadata, staleError, and mutate
+   * staleError is set when revalidation fails but previous data exists
+   */
   children: (
     data: TData[],
     sql: string | undefined,
-    metadata: CardToolbarMetadata | undefined
+    metadata: CardToolbarMetadata | undefined,
+    staleError: StaleError | undefined,
+    mutate: () => Promise<unknown>
   ) => ReactNode
   /** Use compact layout for smaller charts */
   compact?: boolean
@@ -66,15 +71,17 @@ export const ChartContainer = memo(function ChartContainer<
   children,
   compact = false,
 }: ChartContainerProps<TData>) {
-  const { data, isLoading, error, mutate, sql, metadata } = swr
+  const { data, isLoading, error, mutate, sql, metadata, hasData, staleError } =
+    swr
 
   // Loading state
   if (isLoading) {
     return <ChartSkeleton title={title} className={className} />
   }
 
-  // Error state
-  if (error) {
+  // Error state - ONLY when no previous data exists (initial load error)
+  // If we have data but error occurred during revalidation, show data with stale indicator
+  if (error && !hasData) {
     return <ChartError error={error} title={title} onRetry={() => mutate()} />
   }
 
@@ -98,14 +105,14 @@ export const ChartContainer = memo(function ChartContainer<
     ? { ...metadata }
     : undefined
 
-  // Render chart with data
+  // Render chart with data (and staleError if revalidation failed)
   return (
     <div
       className={cn('h-full w-full min-w-0 overflow-hidden', className)}
       aria-label={title ? `${title} chart` : 'Chart'}
       role="region"
     >
-      {children(data, sql, toolbarMetadata)}
+      {children(data, sql, toolbarMetadata, staleError, mutate)}
     </div>
   )
 })

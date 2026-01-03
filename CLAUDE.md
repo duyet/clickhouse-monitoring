@@ -229,6 +229,22 @@ The project uses custom chart components with consistent patterns:
 
 **Chart Refactoring**: Donut charts have been replaced with progress bars for better readability in percentage-based displays (query cache usage, query type distribution).
 
+#### Graceful Error Handling Pattern
+
+Charts use graceful error handling during SWR revalidation to preserve user experience:
+
+- **Initial load errors**: Show full `ChartError` component with retry button
+- **Revalidation errors**: Keep showing existing data with subtle amber indicator
+- **Indicator behavior**: Hidden by default, visible on card hover (same pattern as CardToolbar)
+- **Error details**: Click indicator to see error type, message, timestamp, and retry button
+- **Auto-recovery**: Indicator clears automatically when next refresh succeeds
+
+**Implementation**:
+- `useChartData` returns `staleError` (revalidation error) and `hasData` boolean
+- `ChartContainer` only shows `ChartError` when `error && !hasData`
+- `ChartCard` renders `ChartStaleIndicator` when `staleError` exists
+- Icon order in header: `[Stale Indicator] [DateRangeSelector] [CardToolbar]`
+
 ### Development Conventions
 
 #### shadcn/ui Components

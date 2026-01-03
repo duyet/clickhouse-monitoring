@@ -77,12 +77,18 @@ function SidebarProvider({
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
 
-  // This is the internal state of the sidebar.
-  // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(() => {
+  // Start with defaultOpen for consistent SSR/hydration
+  // Cookie state is synced after mount to avoid hydration mismatch
+  const [_open, _setOpen] = React.useState(defaultOpen)
+
+  // Sync with cookie after hydration (client-side only)
+  React.useEffect(() => {
     const cookieState = getSidebarCookie()
-    return cookieState ?? defaultOpen
-  })
+    if (cookieState !== null && cookieState !== _open) {
+      _setOpen(cookieState)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const open = openProp ?? _open
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {

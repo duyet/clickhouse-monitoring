@@ -125,7 +125,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
         className={className}
         chartClassName={chartClassName}
       >
-        {(dataArray, sql, metadata) => (
+        {(dataArray, sql, metadata, staleError, mutate) => (
           <ChartCard
             title={title}
             sql={sql}
@@ -137,6 +137,8 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
             onRangeChange={
               resolvedDateRangeConfig ? setRangeOverride : undefined
             }
+            staleError={staleError}
+            onRetry={mutate}
           >
             <BarChart
               className={cn(

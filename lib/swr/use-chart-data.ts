@@ -9,7 +9,7 @@ import type {
 } from '@/types/chart-data'
 
 import { REFRESH_INTERVAL, type RefreshInterval } from './config'
-import { useCallback } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 /**
  * Chart metadata - re-export ApiResponseMetadata for convenience
@@ -26,6 +26,13 @@ interface ChartDataResponse<T = unknown> {
   metadata: ChartMetadata
 }
 
+/** Error from a failed revalidation (data is stale) */
+export interface StaleError extends Error {
+  timestamp: number
+  type?: string
+  details?: { missingTables?: readonly string[]; [key: string]: unknown }
+}
+
 /** Return type from useChartData hook */
 export interface UseChartResult<TData extends ChartDataPoint = ChartDataPoint> {
   data: TData[]
@@ -35,6 +42,10 @@ export interface UseChartResult<TData extends ChartDataPoint = ChartDataPoint> {
   isLoading: boolean
   isValidating: boolean
   mutate: () => Promise<undefined | unknown>
+  /** True when data exists (even if stale due to revalidation error) */
+  hasData: boolean
+  /** Error from failed revalidation (only set when data exists but refresh failed) */
+  staleError?: StaleError
 }
 
 export type SwrConfigPreset = keyof typeof REFRESH_INTERVAL | SWRConfiguration
@@ -73,7 +84,7 @@ export interface UseChartDataParams {
  * import { REFRESH_INTERVAL } from '@/lib/swr/config'
  * const { data } = useChartData({
  *   chartName: 'query-performance',
- *   refreshInterval: REFRESH_INTERVAL.FAST_10S,
+ *   refreshInterval: REFRESH_INTERVAL.FAST_15S,
  * })
  * ```
  */
@@ -83,7 +94,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   interval,
   lastHours,
   params,
-  refreshInterval = REFRESH_INTERVAL.DEFAULT_30S,
+  refreshInterval = REFRESH_INTERVAL.DEFAULT_60S,
   swrConfig,
 }: UseChartDataParams): UseChartResult<T> {
   // Build query parameters
@@ -156,6 +167,37 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
       ? (data?.data as T[])
       : ([data.data] as T[])
 
+  // Check if we have valid data (even if there's an error from revalidation)
+  const hasData = Boolean(dataArray && dataArray.length > 0)
+
+  // Track timestamp for stale errors - use ref to persist across renders
+  const staleErrorTimestampRef = useRef<number>(0)
+
+  // Create staleError only when we have data but revalidation failed
+  // This distinguishes "initial load error" from "revalidation error"
+  const staleError = useMemo<StaleError | undefined>(() => {
+    if (!error || !hasData || isLoading) {
+      // No error, no data, or still loading - clear stale error
+      staleErrorTimestampRef.current = 0
+      return undefined
+    }
+
+    // We have data AND an error (revalidation failed)
+    // Use existing timestamp if this is the same error, otherwise create new
+    if (staleErrorTimestampRef.current === 0) {
+      staleErrorTimestampRef.current = Date.now()
+    }
+
+    return {
+      ...error,
+      name: error.name,
+      message: error.message,
+      timestamp: staleErrorTimestampRef.current,
+      type: (error as Error & { type?: string }).type,
+      details: (error as Error & { details?: StaleError['details'] }).details,
+    }
+  }, [error, hasData, isLoading])
+
   return {
     data: dataArray,
     metadata: data?.metadata,
@@ -164,5 +206,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     isLoading,
     isValidating,
     mutate,
+    hasData,
+    staleError,
   }
 }

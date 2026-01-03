@@ -2,7 +2,7 @@
 
 import { SplitCard } from './split-card'
 import { memo } from 'react'
-import { useHostId } from '@/lib/swr'
+import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { buildUrl } from '@/lib/url/url-builder'
 
@@ -20,12 +20,12 @@ export const DatabaseTableCountCard = memo(function DatabaseTableCountCard() {
   const databaseSwr = useChartData<{ count: number }>({
     chartName: 'database-count',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.VERY_SLOW_5M,
   })
   const tablesSwr = useChartData<{ count: number }>({
     chartName: 'table-count',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.VERY_SLOW_5M,
   })
 
   const isLoading = databaseSwr.isLoading || tablesSwr.isLoading
