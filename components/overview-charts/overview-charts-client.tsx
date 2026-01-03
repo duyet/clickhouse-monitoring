@@ -26,7 +26,7 @@ export const OverviewCharts = memo(function OverviewCharts({
   return (
     <div
       className={cn(
-        'grid auto-rows-fr grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4',
+        'grid auto-rows-fr grid-cols-1 gap-2 sm:gap-3 sm:grid-cols-2 md:grid-cols-4',
         className
       )}
       role="region"

@@ -1,17 +1,19 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import type { DateRangeValue } from '@/components/date-range'
 
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarChart } from '@/components/charts/primitives/bar'
+import { resolveDateRangeConfig } from '@/components/date-range'
 import { transformUserEventCounts } from '@/lib/chart-data-transforms'
 import { useChartData } from '@/lib/swr'
 import { chartTickFormatters } from '@/lib/utils'
 
 export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
-  title = 'Total Queries over last 14 days by users',
+  title = 'Total Queries by users',
   interval = 'toStartOfDay',
   lastHours = 24 * 14,
   className,
@@ -19,6 +21,15 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
   hostId,
   ...props
 }: ChartProps) {
+  // Date range state for user-selected time range
+  const [rangeOverride, setRangeOverride] = useState<DateRangeValue | null>(
+    null
+  )
+
+  // Use override values when date range is selected, otherwise use props/defaults
+  const effectiveLastHours = rangeOverride?.lastHours ?? lastHours
+  const effectiveInterval = rangeOverride?.interval ?? interval
+
   const swr = useChartData<{
     event_time: string
     user: string
@@ -26,10 +37,13 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
   }>({
     chartName: 'query-count-by-user',
     hostId,
-    interval,
-    lastHours,
+    interval: effectiveInterval,
+    lastHours: effectiveLastHours,
     refreshInterval: 30000,
   })
+
+  // Resolve date range config
+  const dateRangeConfig = resolveDateRangeConfig('query-activity')
 
   return (
     <ChartContainer
@@ -38,7 +52,7 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
       className={className}
       chartClassName={chartClassName}
     >
-      {(dataArray, sql, metadata) => {
+      {(dataArray, sql, metadata, staleError, mutate) => {
         const { chartData, users } = transformUserEventCounts(dataArray)
 
         return (
@@ -47,6 +61,11 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
             sql={sql}
             data={chartData}
             metadata={metadata}
+            dateRangeConfig={dateRangeConfig}
+            currentRange={rangeOverride?.value}
+            onRangeChange={setRangeOverride}
+            staleError={staleError}
+            onRetry={mutate}
             data-testid="query-count-by-user-chart"
           >
             <BarChart

@@ -1,15 +1,17 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import type { DateRangeValue } from '@/components/date-range'
 
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarChart } from '@/components/charts/primitives/bar'
+import { resolveDateRangeConfig } from '@/components/date-range'
 import { useChartData } from '@/lib/swr'
 
 export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
-  title = 'New Parts Created over last 24 hours (part counts / 15 minutes)',
+  title = 'New Parts Created',
   interval = 'toStartOfFifteenMinutes',
   lastHours = 24,
   className,
@@ -17,6 +19,15 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
   hostId,
   ...props
 }: ChartProps) {
+  // Date range state for user-selected time range
+  const [rangeOverride, setRangeOverride] = useState<DateRangeValue | null>(
+    null
+  )
+
+  // Use override values when date range is selected, otherwise use props/defaults
+  const effectiveLastHours = rangeOverride?.lastHours ?? lastHours
+  const effectiveInterval = rangeOverride?.interval ?? interval
+
   const swr = useChartData<{
     event_time: string
     table: string
@@ -24,10 +35,13 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
   }>({
     chartName: 'new-parts-created',
     hostId,
-    interval,
-    lastHours,
+    interval: effectiveInterval,
+    lastHours: effectiveLastHours,
     refreshInterval: 30000,
   })
+
+  // Resolve date range config
+  const dateRangeConfig = resolveDateRangeConfig('operations')
 
   return (
     <ChartContainer
@@ -36,7 +50,7 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
       className={className}
       chartClassName={chartClassName}
     >
-      {(dataArray, sql, metadata) => {
+      {(dataArray, sql, metadata, staleError, mutate) => {
         // Type the data items properly
         type DataItem = { event_time: string; table: string; new_parts: number }
 
@@ -72,6 +86,11 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
             sql={sql}
             data={barData}
             metadata={metadata}
+            dateRangeConfig={dateRangeConfig}
+            currentRange={rangeOverride?.value}
+            onRangeChange={setRangeOverride}
+            staleError={staleError}
+            onRetry={mutate}
             data-testid="new-parts-created-chart"
           >
             <BarChart

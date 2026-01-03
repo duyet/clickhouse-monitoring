@@ -170,7 +170,7 @@ export const DataTableContent = memo(function DataTableContent<
       }`}
       role="region"
       aria-label={`${title || 'Data'} table`}
-      style={isVirtualized ? { height: '600px' } : undefined}
+      style={isVirtualized ? { height: '60vh' } : undefined}
     >
       {enableColumnReordering ? (
         <DndContext

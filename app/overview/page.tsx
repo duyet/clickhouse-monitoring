@@ -71,12 +71,12 @@ function OverviewPageContent() {
           className="space-y-2"
         >
           <div className="overflow-x-auto pb-1 -mx-1 px-1 sm:mx-0 sm:px-0">
-            <TabsList className="w-full sm:w-fit inline-flex min-w-max bg-muted/50 backdrop-blur-sm border border-border/40 shadow-sm">
+            <TabsList className="h-11 sm:h-9 gap-1 w-full sm:w-fit inline-flex min-w-max bg-muted/50 backdrop-blur-sm border border-border/40 shadow-sm p-1">
               {OVERVIEW_TABS.map((tab) => (
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all duration-200"
+                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1 data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all duration-200"
                 >
                   {tab.label}
                 </TabsTrigger>

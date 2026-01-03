@@ -245,7 +245,7 @@ export const CardToolbar = memo(function CardToolbar({
 
       {/* Request Info Dialog (Metadata + SQL combined) */}
       <Dialog open={showRequestInfo} onOpenChange={setShowRequestInfo}>
-        <DialogContent className="w-auto min-w-[550px] max-w-[800px] max-h-[90vh] flex flex-col p-6">
+        <DialogContent className="w-full max-w-[95vw] sm:min-w-[550px] sm:max-w-[800px] max-h-[90vh] flex flex-col p-6">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-lg font-medium">
               Request Info

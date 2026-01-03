@@ -35,7 +35,7 @@ export const InfoCard = memo(function InfoCard({
         {subtitle && (
           <div
             className={cn(
-              'text-center text-[10px] uppercase tracking-widest font-medium',
+              'text-center text-xs uppercase tracking-widest font-medium',
               'text-foreground/40 dark:text-foreground/35',
               'line-clamp-1 max-w-full px-2'
             )}

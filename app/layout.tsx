@@ -29,6 +29,10 @@ const VERCEL_ANALYTICS_ENABLED =
 export const metadata: Metadata = {
   title: 'ClickHouse Monitoring',
   description: 'Simple UI for ClickHouse Monitoring',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+  },
 }
 
 function Providers({ children }: { children: React.ReactNode }) {
