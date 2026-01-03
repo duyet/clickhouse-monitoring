@@ -62,11 +62,8 @@ export const ChartCard = memo(function ChartCard({
         'shadow-sm shadow-black/[0.03] dark:shadow-black/20',
         'backdrop-blur-xl',
         'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-foreground/10 before:to-transparent',
-        'transition-all duration-200 ease-out',
+        'transition-colors duration-200 ease-out',
         'hover:border-border/80 dark:hover:border-border/50',
-        'hover:shadow-md hover:shadow-black/[0.06] dark:hover:shadow-black/30',
-        'hover:-translate-y-0.5',
-        'hover:bg-gradient-to-b hover:from-card/90 hover:to-card/60 dark:hover:from-card/70 dark:hover:to-card/40',
         className
       )}
     >

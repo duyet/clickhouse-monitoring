@@ -17,11 +17,6 @@ export const cardStyles = {
   hover: [
     'cursor-pointer',
     'hover:border-border/80 dark:hover:border-border/50',
-    'hover:scale-[1.02] hover:-translate-y-0.5',
-    'hover:shadow-md hover:shadow-black/[0.08]',
-    'dark:hover:shadow-black/40',
-    'hover:bg-gradient-to-b hover:from-card/90 hover:to-card/60',
-    'dark:hover:from-card/70 dark:hover:to-card/40',
   ].join(' '),
 
   number: [

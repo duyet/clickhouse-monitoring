@@ -1,34 +1,18 @@
-/**
- * @fileoverview Helper functions for ClickHouse operations
- * Provides wrapper functions to reduce boilerplate and improve consistency
- */
-
 import type { DataFormat, QueryParams } from '@clickhouse/client'
 
 import type { QueryConfig } from '@/types/query-config'
 
 import { type FetchDataResult, fetchData } from '@/lib/clickhouse'
 import { ErrorLogger } from '@/lib/logger'
-import { getHostIdCookie } from '@/lib/scoped-link'
 
-// Re-export fetchData for direct use
 export { type FetchDataResult, fetchData } from '@/lib/clickhouse'
 
 type QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{
-    // @since 24.4
     query_cache_system_table_handling: 'throw' | 'save' | 'ignore'
     query_cache_nondeterministic_function_handling: 'throw' | 'save' | 'ignore'
   }>
 
-/**
- * Wrapper function for fetchData that automatically handles hostId
- * This reduces boilerplate across components and ensures consistent host handling
- *
- * @param params - Query parameters (same as fetchData but hostId is optional)
- * @param hostId - Optional hostId override (useful for pages that get it from params)
- * @returns Promise with query results
- */
 export async function fetchDataWithHost<
   T extends
     | unknown[]
@@ -41,7 +25,7 @@ export async function fetchDataWithHost<
   format = 'JSONEachRow' as DataFormat,
   clickhouse_settings,
   queryConfig,
-  hostId,
+  hostId = 0,
 }: Omit<QueryParams, 'format'> & {
   format?: DataFormat
   clickhouse_settings?: QuerySettings
@@ -49,29 +33,8 @@ export async function fetchDataWithHost<
   hostId?: number | string
 }): Promise<FetchDataResult<T>> {
   try {
-    // If hostId is not provided, get it from cookie
-    let finalHostId = hostId
+    const finalHostId = validateHostId(hostId)
 
-    if (finalHostId === undefined || finalHostId === null) {
-      // Get hostId from cookie with proper error handling
-      try {
-        finalHostId = await getHostIdCookie(0)
-      } catch (error) {
-        ErrorLogger.logWarning(
-          'Failed to get hostId from cookie, using default 0',
-          {
-            component: 'fetchDataWithHost',
-            error: error instanceof Error ? error.message : String(error),
-          }
-        )
-        finalHostId = 0
-      }
-    }
-
-    // Validate hostId using the helper function
-    finalHostId = validateHostId(finalHostId)
-
-    // Call the original fetchData with the resolved hostId
     return await fetchData<T>({
       query,
       query_params,
@@ -83,7 +46,6 @@ export async function fetchDataWithHost<
   } catch (error) {
     ErrorLogger.logError(error as Error, { component: 'fetchDataWithHost' })
 
-    // Return a properly typed error result
     return {
       data: null,
       metadata: {
@@ -105,18 +67,12 @@ export async function fetchDataWithHost<
   }
 }
 
-/**
- * Helper to validate and normalize hostId
- * @param hostId - The hostId to validate
- * @returns Validated and normalized hostId
- */
 export function validateHostId(hostId: unknown): number {
   if (hostId === undefined || hostId === null) {
     return 0
   }
 
   if (typeof hostId === 'string') {
-    // Check if string contains only digits (no decimals, no other characters)
     if (!/^\d+$/.test(hostId.trim())) {
       ErrorLogger.logWarning(`Invalid hostId: ${hostId}`, {
         component: 'validateHostId',

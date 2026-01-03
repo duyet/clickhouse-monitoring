@@ -110,7 +110,7 @@ export default function AboutPage() {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Open Source</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Card className="group hover:shadow-md transition-shadow shadow-none">
+          <Card className="group transition-shadow shadow-none">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Github className="size-5" />
@@ -134,7 +134,7 @@ export default function AboutPage() {
             </CardContent>
           </Card>
 
-          <Card className="group hover:shadow-md transition-shadow shadow-none">
+          <Card className="group transition-shadow shadow-none">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BookOpen className="size-5" />

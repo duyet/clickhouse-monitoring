@@ -1,16 +1,29 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getClient } from '@/lib/clickhouse'
+import { getHostIdFromParams } from '@/lib/api/error-handler'
 import { ErrorLogger } from '@/lib/logger'
-import { getHostIdCookie } from '@/lib/scoped-link'
 import { initTrackingTable } from '@/lib/tracking'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
-  const hostId = searchParams.get('hostId')
-    ? parseInt(searchParams.get('hostId')!, 10)
-    : await getHostIdCookie()
+  let hostId: number
+
+  try {
+    const parsedHostId = getHostIdFromParams(searchParams, {
+      route: '/api/init',
+    })
+    hostId =
+      typeof parsedHostId === 'string'
+        ? parseInt(parsedHostId, 10)
+        : parsedHostId
+  } catch {
+    return NextResponse.json(
+      { error: 'Missing required parameter: hostId' },
+      { status: 400 }
+    )
+  }
 
   // getClient will auto-detect and use web client for Cloudflare Workers
   const client = await getClient({ hostId })

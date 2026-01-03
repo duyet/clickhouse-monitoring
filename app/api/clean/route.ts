@@ -4,8 +4,8 @@ import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { getClient } from '@/lib/clickhouse'
+import { getHostIdFromParams } from '@/lib/api/error-handler'
 import { ErrorLogger } from '@/lib/logger'
-import { getHostIdCookie } from '@/lib/scoped-link'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
@@ -15,9 +15,22 @@ export const maxDuration = 30
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
-  const hostId = searchParams.get('hostId')
-    ? parseInt(searchParams.get('hostId')!, 10)
-    : await getHostIdCookie()
+  let hostId: number
+
+  try {
+    const parsedHostId = getHostIdFromParams(searchParams, {
+      route: '/api/clean',
+    })
+    hostId =
+      typeof parsedHostId === 'string'
+        ? parseInt(parsedHostId, 10)
+        : parsedHostId
+  } catch {
+    return NextResponse.json(
+      { error: 'Missing required parameter: hostId' },
+      { status: 400 }
+    )
+  }
 
   try {
     // getClient will auto-detect and use web client for Cloudflare Workers

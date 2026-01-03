@@ -1,12 +1,12 @@
 'use client'
 
 import { Trash2, X } from 'lucide-react'
-import type { RowSelectionState, Table } from '@tanstack/react-table'
+import type { Table } from '@tanstack/react-table'
 
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { killQuery } from '@/components/data-table/cells/actions/actions'
+import { useActions } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 interface BulkActionsProps<TData> {
@@ -15,18 +15,13 @@ interface BulkActionsProps<TData> {
   bulkActionKey: string
 }
 
-/**
- * BulkActions - Toolbar component for bulk operations on selected rows
- *
- * Shows action buttons when rows are selected, allowing users to
- * perform operations on multiple rows at once.
- */
 export function BulkActions<TData>({
   table,
   bulkActions,
   bulkActionKey,
 }: BulkActionsProps<TData>) {
   const [isLoading, setIsLoading] = useState(false)
+  const { killQuery } = useActions()
   const selectedRows = table.getFilteredSelectedRowModel().rows
   const selectedCount = selectedRows.length
 
@@ -44,12 +39,14 @@ export function BulkActions<TData>({
           const queryId = (row.original as Record<string, unknown>)[
             bulkActionKey
           ] as string
-          return killQuery(queryId, new FormData())
+          return killQuery(queryId)
         })
       )
 
-      const succeeded = results.filter((r) => r.status === 'fulfilled').length
-      const failed = results.filter((r) => r.status === 'rejected').length
+      const succeeded = results.filter(
+        (r) => r.status === 'fulfilled' && r.value.success
+      ).length
+      const failed = selectedCount - succeeded
 
       if (failed === 0) {
         toast.success(`Successfully killed ${succeeded} queries`, {
@@ -61,7 +58,6 @@ export function BulkActions<TData>({
         })
       }
 
-      // Clear selection after action
       table.resetRowSelection()
     } catch (error) {
       toast.error(`Failed to kill queries: ${error}`, { id: toastId })

@@ -55,7 +55,7 @@ export const MetricCard = memo(function MetricCard({
     <Card
       className={cn(
         'bg-card border border-border/60 shadow-sm',
-        'transition-all duration-200 hover:shadow-md hover:border-border',
+        'transition-all duration-200 hover:border-border',
         className
       )}
     >
