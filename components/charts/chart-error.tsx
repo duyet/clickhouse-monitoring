@@ -3,6 +3,7 @@
 import { ExternalLink, RefreshCw } from 'lucide-react'
 
 import { memo } from 'react'
+import { chartCard } from '@/components/charts/chart-card-styles'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import {
@@ -45,14 +46,15 @@ export const ChartError = memo(function ChartError({
   return (
     <Card
       className={cn(
-        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full gap-2 shadow-none py-2',
+        chartCard.base,
+        chartCard.variants.error,
         errorClassName,
         className
       )}
       role="alert"
       aria-label={title ? `${title} error` : 'Error loading chart'}
     >
-      <CardContent className="p-4 flex-1 min-h-0">
+      <CardContent className={chartCard.contentError}>
         <EmptyState
           variant={variant}
           title={title}

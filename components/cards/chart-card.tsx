@@ -7,6 +7,7 @@ import type { ChartDataPoint } from '@/types/chart-data'
 
 import { memo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
+import { chartCard } from '@/components/charts/chart-card-styles'
 import { ChartStaleIndicator } from '@/components/charts/chart-stale-indicator'
 import { DateRangeSelector } from '@/components/date-range'
 import {
@@ -53,22 +54,9 @@ export const ChartCard = memo(function ChartCard({
   onRetry,
 }: ChartCardProps) {
   return (
-    <Card
-      className={cn(
-        'relative flex flex-col h-full w-full min-w-0 group gap-2 pt-1 pb-2',
-        'overflow-hidden rounded-xl',
-        'bg-gradient-to-b from-card/80 to-card/40 dark:from-card/60 dark:to-card/30',
-        'border border-border/50 dark:border-border/30',
-        'shadow-sm shadow-black/[0.03] dark:shadow-black/20',
-        'backdrop-blur-xl',
-        'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-foreground/10 before:to-transparent',
-        'transition-colors duration-200 ease-out',
-        'hover:border-border/80 dark:hover:border-border/50',
-        className
-      )}
-    >
+    <Card className={cn(chartCard.base, chartCard.variants.normal, className)}>
       {title ? (
-        <CardHeader className="px-2 shrink-0">
+        <CardHeader className={chartCard.header}>
           <header className="flex flex-row items-center justify-between gap-2">
             <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase truncate min-w-0 flex-1">
               {title}
@@ -91,10 +79,7 @@ export const ChartCard = memo(function ChartCard({
       ) : null}
 
       <CardContent
-        className={cn(
-          'p-4 pt-0 flex-1 min-h-0 overflow-hidden',
-          contentClassName
-        )}
+        className={cn(chartCard.content, 'overflow-hidden', contentClassName)}
       >
         {children}
       </CardContent>

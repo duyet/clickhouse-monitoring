@@ -1,6 +1,7 @@
 'use client'
 
 import { memo } from 'react'
+import { chartCard } from '@/components/charts/chart-card-styles'
 import {
   Card,
   CardContent,
@@ -27,7 +28,8 @@ export const ChartSkeleton = memo(function ChartSkeleton({
   return (
     <Card
       className={cn(
-        'rounded-lg border-border/50 bg-card/50 flex flex-col h-full gap-2 shadow-none py-2',
+        chartCard.base,
+        chartCard.variants.default,
         'min-h-[140px] max-h-[240px]',
         className
       )}
@@ -35,13 +37,13 @@ export const ChartSkeleton = memo(function ChartSkeleton({
       aria-busy="true"
       aria-label={title ? `Loading ${title}` : 'Loading chart'}
     >
-      <CardHeader className="px-2 shrink-0">
+      <CardHeader className={chartCard.header}>
         <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase">
           {title || <Skeleton className="h-3 w-32" />}
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="p-4 pt-0 flex-1 min-h-0">
+      <CardContent className={chartCard.content}>
         <Skeleton className="h-full w-full rounded-md" />
       </CardContent>
     </Card>
