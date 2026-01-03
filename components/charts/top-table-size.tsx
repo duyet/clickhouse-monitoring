@@ -66,11 +66,19 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
               defaultValue="by-size"
               className="overflow-hidden"
             >
-              <TabsList className="mb-3">
-                <TabsTrigger key="by-size" value="by-size">
+              <TabsList className="h-11 sm:h-9 gap-1 mb-3 p-1">
+                <TabsTrigger
+                  key="by-size"
+                  value="by-size"
+                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1"
+                >
                   Top tables by Size
                 </TabsTrigger>
-                <TabsTrigger key="by-count" value="by-count">
+                <TabsTrigger
+                  key="by-count"
+                  value="by-count"
+                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1"
+                >
                   Top tables by Row Count
                 </TabsTrigger>
               </TabsList>
