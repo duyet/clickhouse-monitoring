@@ -259,8 +259,8 @@ export function DataTab() {
                           header.getContext()
                         )}
                     {/* Column resize handle */}
-                    {/* biome-ignore lint/a11y/noStaticElementInteractions: resize handle requires mouse/touch events */}
                     <div
+                      role="presentation"
                       onDoubleClick={() => header.column.resetSize()}
                       onMouseDown={header.getResizeHandler()}
                       onTouchStart={header.getResizeHandler()}

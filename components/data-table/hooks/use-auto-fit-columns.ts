@@ -2,7 +2,7 @@
 
 import type { Column, Row } from '@tanstack/react-table'
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 /**
  * Result from auto-fitting a column
@@ -50,7 +50,7 @@ export function useAutoFitColumns<TData>(
   _tableRef: React.RefObject<HTMLDivElement>,
   options: AutoFitOptions = {}
 ) {
-  const opts = { ...DEFAULT_OPTIONS, ...options }
+  const opts = useMemo(() => ({ ...DEFAULT_OPTIONS, ...options }), [options])
   const measureCache = useRef<Map<string, number>>(new Map())
 
   /**
