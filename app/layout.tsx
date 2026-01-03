@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
 
+// Force dynamic rendering for all pages - this app requires runtime query params
+export const dynamic = 'force-dynamic'
+
 import { Analytics } from '@vercel/analytics/react'
 import Script from 'next/script'
 import { ThemeProvider } from 'next-themes'
