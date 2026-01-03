@@ -59,5 +59,6 @@ cypress/screenshots
 .dev.vars
 
 .claude/*.local.md
+.claude/*.local.json
 .cursor
 .wrangler
