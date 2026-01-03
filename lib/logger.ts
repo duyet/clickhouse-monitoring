@@ -190,6 +190,25 @@ export class ErrorLogger {
 }
 
 // ============================================================================
+// Request Correlation
+// ============================================================================
+
+/**
+ * Generate a unique request ID for request correlation and tracing
+ * Format: uuid-like string with timestamp for uniqueness
+ *
+ * @returns A unique request ID string
+ * @example
+ * const requestId = generateRequestId()
+ * // => "1735633240000-a1b2c3d4"
+ */
+export function generateRequestId(): string {
+  const timestamp = Date.now()
+  const random = Math.random().toString(36).substring(2, 10)
+  return `${timestamp}-${random}`
+}
+
+// ============================================================================
 // Utility Functions
 // ============================================================================
 

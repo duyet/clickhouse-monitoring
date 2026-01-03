@@ -3,17 +3,11 @@ import {
   getHostIdFromParams,
   withApiHandler,
 } from '@/lib/api/error-handler'
+import { type Action, ActionSchema } from '@/lib/api/schemas'
 import { fetchData } from '@/lib/clickhouse'
-import { ErrorLogger } from '@/lib/logger'
+import { ErrorLogger, generateRequestId, log } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
-
-type ActionType = 'killQuery' | 'optimizeTable' | 'querySettings'
-
-interface ActionRequest {
-  action: ActionType
-  params: Record<string, unknown>
-}
 
 interface ActionResult {
   success: boolean
@@ -108,51 +102,61 @@ async function handleQuerySettings(
 }
 
 export const POST = withApiHandler(async (request: Request) => {
+  // Generate request ID for correlation and tracing
+  const requestId = generateRequestId()
+
   const { searchParams } = new URL(request.url)
   const hostId = getHostIdFromParams(searchParams, ROUTE_CONTEXT)
 
-  let body: ActionRequest
+  let body: unknown
   try {
     body = await request.json()
   } catch {
     return createValidationError('Invalid JSON body', ROUTE_CONTEXT)
   }
 
-  const { action, params } = body
-
-  if (!action || !params) {
-    return createValidationError('Missing action or params', ROUTE_CONTEXT)
+  // Parse and validate request body using Zod schema
+  const parseResult = ActionSchema.safeParse(body)
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues
+      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+      .join('; ')
+    return createValidationError(
+      `Invalid action request: ${errorMessages}`,
+      ROUTE_CONTEXT
+    )
   }
+
+  const action: Action = parseResult.data
+
+  // Audit log for sensitive actions
+  log('[AUDIT] Action requested', {
+    requestId,
+    action: action.action,
+    hostId,
+    params: action.params,
+  })
 
   let result: ActionResult
 
-  switch (action) {
+  switch (action.action) {
     case 'killQuery':
-      if (typeof params.queryId !== 'string') {
-        return createValidationError('queryId must be a string', ROUTE_CONTEXT)
-      }
-      result = await handleKillQuery(hostId, params.queryId)
+      result = await handleKillQuery(hostId, action.params.queryId)
       break
 
     case 'optimizeTable':
-      if (typeof params.table !== 'string') {
-        return createValidationError('table must be a string', ROUTE_CONTEXT)
-      }
-      result = await handleOptimizeTable(hostId, params.table)
+      result = await handleOptimizeTable(hostId, action.params.table)
       break
 
     case 'querySettings':
-      if (typeof params.queryId !== 'string') {
-        return createValidationError('queryId must be a string', ROUTE_CONTEXT)
-      }
-      result = await handleQuerySettings(hostId, params.queryId)
+      result = await handleQuerySettings(hostId, action.params.queryId)
       break
-
-    default:
-      return createValidationError(`Unknown action: ${action}`, ROUTE_CONTEXT)
   }
 
   return Response.json(result, {
     status: result.success ? 200 : 500,
+    headers: {
+      'X-Request-ID': requestId,
+    },
   })
 }, ROUTE_CONTEXT)
