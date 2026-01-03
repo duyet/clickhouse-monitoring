@@ -79,7 +79,11 @@ id = "78782c1fcf4141d9b6f26f2046f50ceb"
 # CLICKHOUSE_PASSWORD=your-password
 
 [vars]
-# Non-sensitive default values
+# Maximum query execution time in seconds before ClickHouse terminates the query.
+# Prevents long-running queries from consuming resources. Used in clickhouse-client.ts.
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
-# Enable ClickHouse web client for Cloudflare Workers
+
+# Flag to indicate running in Cloudflare Workers environment.
+# When "1", uses @clickhouse/client-web instead of @clickhouse/client (Node.js).
+# Required because Workers runtime doesn't support Node.js net/tls modules.
 CLOUDFLARE_WORKERS = "1"
