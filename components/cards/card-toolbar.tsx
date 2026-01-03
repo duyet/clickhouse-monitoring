@@ -157,6 +157,16 @@ export const CardToolbar = memo(function CardToolbar({
 
   const [copied, setCopied] = useState(false)
 
+  // Build full API URL for debugging - must be before any early returns
+  const fullApiUrl = useMemo(() => {
+    if (!metadata?.api) return null
+    // api field already contains full URL with params
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    return metadata.api.startsWith('http')
+      ? metadata.api
+      : `${baseUrl}${metadata.api}`
+  }, [metadata?.api])
+
   const handleCopy = async (text: string) => {
     await navigator.clipboard.writeText(text)
     setCopied(true)
@@ -187,16 +197,6 @@ export const CardToolbar = memo(function CardToolbar({
     if (ms < 1000) return `${ms}ms`
     return `${(ms / 1000).toFixed(2)}s`
   }
-
-  // Build full API URL for debugging
-  const fullApiUrl = useMemo(() => {
-    if (!metadata?.api) return null
-    // api field already contains full URL with params
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    return metadata.api.startsWith('http')
-      ? metadata.api
-      : `${baseUrl}${metadata.api}`
-  }, [metadata?.api])
 
   return (
     <>
