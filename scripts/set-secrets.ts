@@ -1,15 +1,18 @@
 #!/usr/bin/env bun
 
 /**
- * Automatically set Wrangler secrets from .env.local in batch
+ * Automatically set Wrangler secrets from environment file in batch
+ * Priority: .env.prod > .env.local
  * Usage: bun run cf:config
  */
 
-import { readFileSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-const ENV_FILE = join(process.cwd(), '.env.local')
+// Priority: .env.prod > .env.local
+const ENV_FILE_PROD = join(process.cwd(), '.env.prod')
+const ENV_FILE_LOCAL = join(process.cwd(), '.env.local')
 
 // Secrets to set (excluding NEXT_PUBLIC_* which are build-time only)
 // Note: Variables already in wrangler.toml [vars] should NOT be in this list
@@ -86,19 +89,31 @@ async function setSecretsBulk(env: Record<string, string>): Promise<boolean> {
 }
 
 async function main() {
-  console.log('📋 Reading environment variables from .env.local...\n')
+  // Determine which env file to use (prefer .env.prod)
+  let envFile: string
+  if (existsSync(ENV_FILE_PROD)) {
+    envFile = ENV_FILE_PROD
+    console.log('📋 Reading environment variables from .env.prod...\n')
+  } else if (existsSync(ENV_FILE_LOCAL)) {
+    envFile = ENV_FILE_LOCAL
+    console.log('📋 Reading environment variables from .env.local...\n')
+  } else {
+    console.error('❌ No .env.prod or .env.local found')
+    process.exit(1)
+  }
 
   let envContent = ''
   try {
-    envContent = readFileSync(ENV_FILE, 'utf-8')
+    envContent = readFileSync(envFile, 'utf-8')
   } catch {
-    console.error(`❌ Could not read ${ENV_FILE}`)
+    console.error(`❌ Could not read ${envFile}`)
     process.exit(1)
   }
 
   const env = parseEnvFile(envContent)
+  const envName = envFile.endsWith('.env.prod') ? '.env.prod' : '.env.local'
 
-  console.log(`Found ${Object.keys(env).length} variables in .env.local`)
+  console.log(`Found ${Object.keys(env).length} variables in ${envName}`)
   console.log(`Setting ${SECRET_KEYS.length} secrets...\n`)
 
   // List what will be set
