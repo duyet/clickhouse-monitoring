@@ -6,6 +6,8 @@
 
 import type { HTMLAttributes } from 'react'
 
+import { cn } from '@/lib/utils'
+
 interface StatusIndicatorProps
   extends Omit<HTMLAttributes<HTMLSpanElement>, 'title'> {
   title?: string[]
@@ -15,6 +17,8 @@ interface StatusIndicatorProps
  * Generic status indicator dot component
  *
  * Used across host components for consistent status display.
+ * NOTE: Uses cn() for proper Tailwind class merging - passing a bg-* class
+ * will correctly override the default bg-red-400.
  */
 export function StatusIndicator({
   className = '',
@@ -23,7 +27,7 @@ export function StatusIndicator({
 }: StatusIndicatorProps) {
   return (
     <span
-      className={`flex-none size-2 rounded-full bg-red-400 ${className}`}
+      className={cn('flex-none size-2 rounded-full bg-red-400', className)}
       title={title?.join(' - ')}
       {...props}
     />
