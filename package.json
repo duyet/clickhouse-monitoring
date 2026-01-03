@@ -30,7 +30,9 @@
     "test": "bun jest",
     "jest": "jest --coverage",
     "test:queries-config": "jest --config jest.config.query-config.js",
-    "preinstall": "npx only-allow bun"
+    "type-check": "tsc --noEmit",
+    "preinstall": "npx only-allow bun",
+    "prepare": "husky"
   },
   "dependencies": {
     "@clickhouse/client": "^0.3.0",
@@ -96,6 +98,8 @@
   "devDependencies": {
     "@biomejs/biome": "^2.3.8",
     "@codecov/webpack-plugin": "^1.0.0",
+    "@commitlint/cli": "^20.3.0",
+    "@commitlint/config-conventional": "^20.3.0",
     "@cypress/code-coverage": "^3.14.0",
     "@opennextjs/cloudflare": "^1.9.0",
     "@types/jest": "^29.5.14",
@@ -104,8 +108,10 @@
     "@types/react-dom": "^18.3.1",
     "cypress": "^15.0.0",
     "cypress-real-events": "^1.13.0",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-junit": "^16.0.0",
+    "lint-staged": "^16.2.7",
     "postcss": "^8",
     "react-is": "^19.1.0",
     "shadcn": "^3.6.2",
@@ -119,6 +125,14 @@
     "onlyBuiltDependencies": [
       "cypress",
       "sharp"
+    ]
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "biome check --write --no-errors-on-unmatched"
+    ],
+    "*.{json,jsonc}": [
+      "biome format --write --no-errors-on-unmatched"
     ]
   }
 }

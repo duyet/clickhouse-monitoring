@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pre-commit hook for clickhouse-monitor
+# Runs: lint-staged (Biome format + lint) → TypeScript type-check
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Run lint-staged for formatting and linting staged files
+echo "🔍 Running lint-staged (Biome check on staged files)..."
+bun x lint-staged
+
+# Run TypeScript type-check on the full project
+# Note: tsc --noEmit is fast because it uses incremental compilation
+echo "📝 Running TypeScript type-check..."
+bun run type-check
+
+echo "✅ Pre-commit checks passed!"

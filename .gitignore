@@ -10,6 +10,7 @@
 /coverage
 .nyc_output
 /jest-reports
+/test-results
 
 # next.js
 /.next/
