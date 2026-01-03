@@ -6,12 +6,14 @@
  * Excludes sensitive information like passwords
  */
 
-import type { ApiResponse } from '@/lib/api/types'
-
 import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
+import {
+  CacheControl,
+  createSuccessResponse,
+} from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
 import { getClickHouseConfigs } from '@/lib/clickhouse'
-import { debug, error } from '@/lib/logger'
+import { debug, error, generateRequestId } from '@/lib/logger'
 import { getHost } from '@/lib/utils'
 
 // This route is dynamic and should not be statically exported
@@ -33,7 +35,8 @@ export interface HostInfo {
  * Handle GET requests for hosts list
  */
 export async function GET(): Promise<Response> {
-  debug('[GET /api/v1/hosts] Fetching host configurations')
+  const requestId = generateRequestId()
+  debug('[GET /api/v1/hosts] Fetching host configurations', { requestId })
 
   try {
     // Get all configured hosts
@@ -47,32 +50,29 @@ export async function GET(): Promise<Response> {
       user: config.user,
     }))
 
-    // Create response
-    const response: ApiResponse<HostInfo[]> = {
-      success: true,
-      data: hosts,
-      metadata: {
-        queryId: 'hosts-list',
-        duration: 0,
-        rows: hosts.length,
-        host: 'system',
-      },
-    }
+    // Create response with standardized builder
+    const response = createSuccessResponse(hosts, {
+      queryId: 'hosts-list',
+      rows: hosts.length,
+    })
 
-    return Response.json(response, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-      },
+    // Add request ID header
+    const newHeaders = new Headers(response.headers)
+    newHeaders.set('X-Request-ID', requestId)
+    newHeaders.set('Cache-Control', CacheControl.LONG)
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders,
     })
   } catch (err) {
     const errorMessage =
       err instanceof Error ? err.message : 'Unknown error occurred'
 
-    error('[GET /api/v1/hosts] Error:', errorMessage)
+    error('[GET /api/v1/hosts] Error:', err, { requestId })
 
-    return createApiErrorResponse(
+    const errorResponse = createApiErrorResponse(
       {
         type: ApiErrorType.QueryError,
         message: errorMessage,
@@ -83,5 +83,15 @@ export async function GET(): Promise<Response> {
       500,
       ROUTE_CONTEXT
     )
+
+    // Add request ID header to error response
+    const errorHeaders = new Headers(errorResponse.headers)
+    errorHeaders.set('X-Request-ID', requestId)
+
+    return new Response(errorResponse.body, {
+      status: errorResponse.status,
+      statusText: errorResponse.statusText,
+      headers: errorHeaders,
+    })
   }
 }

@@ -41,10 +41,27 @@ export interface SuccessResponseMeta {
 export type HttpStatus = number
 
 /**
+ * Standardized cache control presets for API responses
+ */
+export const CacheControl = {
+  /** No caching - for sensitive/dynamic data */
+  NONE: 'private, max-age=0',
+  /** Short cache (30s) - for frequently changing data */
+  SHORT: 'public, s-maxage=30, stale-while-revalidate=60',
+  /** Medium cache (60s) - for moderately stable data */
+  MEDIUM: 'public, s-maxage=60, stale-while-revalidate=120',
+  /** Long cache (5min) - for stable metadata */
+  LONG: 'public, s-maxage=300, stale-while-revalidate=600',
+} as const
+
+export type CacheControlPreset = keyof typeof CacheControl
+
+/**
  * Default cache control headers for API responses
+ * @deprecated Use CacheControl.SHORT instead
  */
 const DEFAULT_CACHE_HEADERS = {
-  'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+  'Cache-Control': CacheControl.SHORT,
 }
 
 /**
