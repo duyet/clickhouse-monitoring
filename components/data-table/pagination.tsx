@@ -68,7 +68,7 @@ export const DataTablePagination = memo(function DataTablePagination({
           onValueChange={handlePageSizeChange}
           aria-label="Rows per page"
         >
-          <SelectTrigger className="h-8 w-16 sm:w-[70px]">
+          <SelectTrigger className="h-10 sm:h-8 w-16 sm:w-[70px]">
             <SelectValue placeholder={table.getState().pagination.pageSize} />
           </SelectTrigger>
           <SelectContent side="top">
@@ -87,7 +87,7 @@ export const DataTablePagination = memo(function DataTablePagination({
       <div className="flex items-center space-x-2">
         <Button
           variant="outline"
-          className="hidden size-8 p-0 lg:flex"
+          className="hidden size-10 sm:size-8 p-0 lg:flex"
           onClick={handleFirstPage}
           disabled={!table.getCanPreviousPage()}
         >
@@ -96,7 +96,7 @@ export const DataTablePagination = memo(function DataTablePagination({
         </Button>
         <Button
           variant="outline"
-          className="size-8 p-0"
+          className="size-10 sm:size-8 p-0"
           onClick={handlePreviousPage}
           disabled={!table.getCanPreviousPage()}
         >
@@ -105,7 +105,7 @@ export const DataTablePagination = memo(function DataTablePagination({
         </Button>
         <Button
           variant="outline"
-          className="size-8 p-0"
+          className="size-10 sm:size-8 p-0"
           onClick={handleNextPage}
           disabled={!table.getCanNextPage()}
         >
@@ -114,7 +114,7 @@ export const DataTablePagination = memo(function DataTablePagination({
         </Button>
         <Button
           variant="outline"
-          className="hidden size-8 p-0 lg:flex"
+          className="hidden size-10 sm:size-8 p-0 lg:flex"
           onClick={handleLastPage}
           disabled={!table.getCanNextPage()}
         >
