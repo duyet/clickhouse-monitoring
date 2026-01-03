@@ -1,12 +1,7 @@
 'use client'
 
-import {
-  createContext,
-  useContext,
-  type ReactNode,
-  useMemo,
-} from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
+import { createContext, type ReactNode, useContext, useMemo } from 'react'
 
 interface HostContextValue {
   hostId: number

@@ -31,7 +31,7 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
   const canSort = column.getCanSort()
 
   const handleSortAsc = useCallback(
-    (e: React.MouseEvent) => {
+    (_e: React.MouseEvent) => {
       column.toggleSorting(false)
       // Close and re-open dropdown to force re-render with new sort
       setOpen(false)
@@ -41,7 +41,7 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
   )
 
   const handleSortDesc = useCallback(
-    (e: React.MouseEvent) => {
+    (_e: React.MouseEvent) => {
       column.toggleSorting(true)
       // Close and re-open dropdown to force re-render with new sort
       setOpen(false)

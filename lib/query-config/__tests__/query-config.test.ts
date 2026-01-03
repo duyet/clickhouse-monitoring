@@ -155,7 +155,7 @@ describe('Query Config Validation', () => {
         isClickHouseAvailable = true
         console.log(`Connected to ClickHouse version: ${versionString}`)
       }
-    } catch (err) {
+    } catch (_err) {
       console.warn(
         'ClickHouse not available - integration tests will be skipped'
       )

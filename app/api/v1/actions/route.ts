@@ -1,9 +1,9 @@
-import { fetchData } from '@/lib/clickhouse'
 import {
   createValidationError,
   getHostIdFromParams,
   withApiHandler,
 } from '@/lib/api/error-handler'
+import { fetchData } from '@/lib/clickhouse'
 import { ErrorLogger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'

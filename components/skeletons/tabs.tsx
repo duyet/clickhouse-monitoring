@@ -2,9 +2,8 @@
  * Tabs skeleton component for loading states
  */
 
-import { cn } from '@/lib/utils'
-
 import { Skeleton } from './base'
+import { cn } from '@/lib/utils'
 
 interface TabsSkeletonProps {
   tabCount?: number

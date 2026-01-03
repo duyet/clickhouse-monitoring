@@ -10,6 +10,7 @@ import { HostPrefixedLink } from '@/components/menu/link-with-context'
 const NewBadge = dynamic(() =>
   import('@/components/menu/components/new-badge').then((mod) => mod.NewBadge)
 )
+
 import {
   Popover,
   PopoverContent,

@@ -74,6 +74,7 @@ function RowCountBadge({ totalRows }: { totalRows: number }) {
 
   return (
     <span
+      role="presentation"
       className="ml-auto text-[10px] text-muted-foreground tabular-nums cursor-default overflow-hidden"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

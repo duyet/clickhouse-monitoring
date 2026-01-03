@@ -1,4 +1,5 @@
 import type { ChartQueryBuilder } from './types'
+
 import { applyInterval, buildTimeFilter, fillStep, nowOrToday } from './types'
 
 export const threadCharts: Record<string, ChartQueryBuilder> = {

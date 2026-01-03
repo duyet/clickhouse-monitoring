@@ -101,7 +101,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     const xAxisTickFormatter = useMemo(() => {
       if (!config.xAxisDateFormat) return undefined
       return createDateTickFormatter(effectiveLastHours ?? 24)
-    }, [effectiveLastHours])
+    }, [effectiveLastHours, config.xAxisDateFormat])
 
     // If data exists but all values are zero, show informative empty state
     if (allZeros && !swr.isLoading && !swr.error) {

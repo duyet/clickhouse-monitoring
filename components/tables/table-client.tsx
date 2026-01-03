@@ -19,10 +19,10 @@ import {
   getTableMissingInfo,
   shouldShowRetryButton,
 } from '@/lib/card-error-utils'
-import { getSqlForDisplay } from '@/types/query-config'
 import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/swr/use-table-data'
 import { cn } from '@/lib/utils'
+import { getSqlForDisplay } from '@/types/query-config'
 
 interface TableClientProps {
   title: string

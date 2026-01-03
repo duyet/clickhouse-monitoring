@@ -1,17 +1,13 @@
 'use client'
 
-import { flexRender, type Header } from '@tanstack/react-table'
-import {
-  SortableContext,
-  horizontalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { ArrowDown, ArrowUp, GripVertical } from 'lucide-react'
+import { flexRender, type Header } from '@tanstack/react-table'
 
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { memo } from 'react'
-import { TableHead, TableRow } from '@/components/ui/table'
 import { ColumnHeaderDropdown } from '@/components/data-table/buttons/column-header-dropdown'
+import { TableHead, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
 /**
@@ -103,7 +99,7 @@ function DraggableTableHeader({
 
   const canResize = enableResize && header.column.getCanResize()
   const canSort = header.column.getCanSort()
-  const isSorted = header.column.getIsSorted()
+  const _isSorted = header.column.getIsSorted()
 
   const style = {
     // Apply CSS transform during drag for visual feedback
@@ -186,7 +182,7 @@ export const TableHeaderRow = memo(function TableHeaderRow({
   enableColumnReordering = false,
 }: TableHeaderRowProps) {
   // Extract column IDs for SortableContext (when reordering is enabled)
-  const columnIds = headers.map((header) => header.column.id)
+  const _columnIds = headers.map((header) => header.column.id)
 
   return (
     <TableRow className="border-b border-border hover:bg-transparent">
@@ -258,6 +254,8 @@ export const TableHeaderRow = memo(function TableHeaderRow({
                     <ArrowDown className="h-3.5 w-3.5 text-primary" />
                   )}
                   <span
+                    role={canSort ? 'button' : undefined}
+                    tabIndex={canSort ? 0 : undefined}
                     className={cn(
                       'flex-1',
                       // Make header clickable for sorting
@@ -265,6 +263,16 @@ export const TableHeaderRow = memo(function TableHeaderRow({
                     )}
                     onClick={(e) => {
                       if (canSort) {
+                        const toggleHandler =
+                          header.column.getToggleSortingHandler()
+                        if (toggleHandler) {
+                          toggleHandler(e)
+                        }
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (canSort && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault()
                         const toggleHandler =
                           header.column.getToggleSortingHandler()
                         if (toggleHandler) {

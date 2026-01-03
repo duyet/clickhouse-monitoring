@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { getClient } from '@/lib/clickhouse'
 import { getHostIdFromParams } from '@/lib/api/error-handler'
+import { getClient } from '@/lib/clickhouse'
 import { ErrorLogger } from '@/lib/logger'
 import { initTrackingTable } from '@/lib/tracking'
 

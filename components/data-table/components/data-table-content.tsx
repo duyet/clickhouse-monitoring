@@ -1,22 +1,22 @@
 'use client'
 
 import type { ColumnDef, RowData } from '@tanstack/react-table'
+
+import type { QueryConfig } from '@/types/query-config'
+
 import {
-  DndContext,
-  PointerSensor,
   closestCenter,
+  DndContext,
   type DragEndEvent,
+  PointerSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
 import { restrictToHorizontalAxis } from '@dnd-kit/modifiers'
 import {
-  SortableContext,
   horizontalListSortingStrategy,
+  SortableContext,
 } from '@dnd-kit/sortable'
-
-import type { QueryConfig } from '@/types/query-config'
-
 import { memo, useCallback } from 'react'
 import {
   TableBody as TableBodyRenderer,
@@ -107,7 +107,7 @@ export const DataTableContent = memo(function DataTableContent<
   onAutoFit,
   enableColumnReordering = true,
   onColumnOrderChange,
-  onResetColumnOrder,
+  onResetColumnOrder: _onResetColumnOrder,
 }: DataTableContentProps<TData, TValue>) {
   // Configure drag-and-drop sensors
   const sensors = useSensors(

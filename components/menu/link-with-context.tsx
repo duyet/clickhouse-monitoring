@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
-import { buildUrl } from '@/lib/url/url-builder'
 import { useHostId } from '@/lib/swr'
+import { buildUrl } from '@/lib/url/url-builder'
 
 export const HostPrefixedLink = ({
   href,

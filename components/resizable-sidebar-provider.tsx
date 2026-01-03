@@ -1,10 +1,10 @@
 'use client'
 
 import { GripVertical } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { cn } from '@/lib/utils'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
 
 const STORAGE_KEY = 'sidebar-width'
 const DEFAULT_WIDTH = 256 // 16rem

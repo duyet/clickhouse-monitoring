@@ -2,8 +2,8 @@
 
 import { GripVertical } from 'lucide-react'
 import {
-  Group as ResizableGroup,
   Panel,
+  Group as ResizableGroup,
   Separator,
 } from 'react-resizable-panels'
 

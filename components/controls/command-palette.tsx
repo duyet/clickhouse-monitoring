@@ -1,7 +1,6 @@
 'use client'
 
 import { menuItemsConfig } from '@/menu'
-import { buildUrl } from '@/lib/url/url-builder'
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
@@ -14,6 +13,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import { buildUrl } from '@/lib/url/url-builder'
 
 interface CommandPaletteProps {
   open?: boolean

@@ -1,18 +1,19 @@
 'use client'
 
 import { ChevronRight } from 'lucide-react'
-import dynamic from 'next/dynamic'
 
 import type { MenuItem as MenuItemType } from '@/components/menu/types'
 import type { MenuItemActiveState, MenuItemProps } from './types'
 
 import { CollapsedSubmenu } from './collapsed-submenu'
+import dynamic from 'next/dynamic'
 import { memo } from 'react'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
 
 const NewBadge = dynamic(() =>
   import('@/components/menu/components/new-badge').then((mod) => mod.NewBadge)
 )
+
 import {
   Collapsible,
   CollapsibleContent,

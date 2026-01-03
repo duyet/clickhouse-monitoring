@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useRef } from 'react'
 import type { Column, Row } from '@tanstack/react-table'
+
+import { useCallback, useRef } from 'react'
 
 /**
  * Result from auto-fitting a column
@@ -46,7 +47,7 @@ const DEFAULT_OPTIONS: Required<AutoFitOptions> = {
  * @returns Function to auto-fit a column to its content
  */
 export function useAutoFitColumns<TData>(
-  tableRef: React.RefObject<HTMLDivElement>,
+  _tableRef: React.RefObject<HTMLDivElement>,
   options: AutoFitOptions = {}
 ) {
   const opts = { ...DEFAULT_OPTIONS, ...options }

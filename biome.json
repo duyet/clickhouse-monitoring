@@ -44,7 +44,8 @@
         "useValidAnchor": "off",
         "useHtmlLang": "off",
         "useFocusableInteractive": "off",
-        "useSemanticElements": "off"
+        "useSemanticElements": "off",
+        "noStaticElementInteractions": "off"
       },
       "complexity": {
         "noForEach": "off",

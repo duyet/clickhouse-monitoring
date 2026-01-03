@@ -1,10 +1,10 @@
 'use client'
 
 import { ArrowDownToLine, ArrowUpFromLine, ExternalLink } from 'lucide-react'
-import Link from 'next/link'
 import useSWR from 'swr'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'

@@ -7,18 +7,17 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  type Row,
   type RowData,
   type RowSelectionState,
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { arrayMove } from '@dnd-kit/sortable'
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartQueryParams } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
+import { arrayMove } from '@dnd-kit/sortable'
 import { useCallback, useMemo, useState } from 'react'
 import {
   DataTableContent,
@@ -155,7 +154,7 @@ export function DataTable<
   isRefreshing = false,
   executedSql,
   enableRowSelection = false,
-  onRowSelectionChange,
+  onRowSelectionChange: _onRowSelectionChange,
   metadata,
   enableColumnReordering = true,
   columnOrderStorageKey,
@@ -305,6 +304,7 @@ export function DataTable<
         const isSomeSelected = table.getIsSomePageRowsSelected()
         return (
           <div
+            role="presentation"
             className="flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
@@ -326,6 +326,7 @@ export function DataTable<
       },
       cell: ({ row }) => (
         <div
+          role="presentation"
           className="flex items-center justify-center"
           onClick={(e) => e.stopPropagation()}
         >
@@ -387,7 +388,7 @@ export function DataTable<
     // Column reordering
     onColumnOrderChange: handleColumnOrderChange,
     // Row selection - pass true to enable for all rows
-    enableRowSelection: enableRowSelection ? true : false,
+    enableRowSelection: !!enableRowSelection,
     getRowId,
     onRowSelectionChange: setRowSelection,
     // Enable sorting (click on header to sort, plus dropdown menu options)

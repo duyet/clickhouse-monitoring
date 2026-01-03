@@ -1,20 +1,21 @@
 'use client'
 
+import { AlertCircle, RefreshCw } from 'lucide-react'
+
 import type { StaleError } from '@/lib/swr/use-chart-data'
 
 import { memo, useState } from 'react'
-import { AlertCircle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
 import {
   detectCardErrorVariant,
   getCardErrorTitle,
 } from '@/lib/card-error-utils'
+import { cn } from '@/lib/utils'
 
 interface ChartStaleIndicatorProps {
   /** Error from failed revalidation */

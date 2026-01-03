@@ -1,9 +1,9 @@
 'use client'
 
 import { Trash2, X } from 'lucide-react'
+import { toast } from 'sonner'
 import type { Table } from '@tanstack/react-table'
 
-import { toast } from 'sonner'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useActions } from '@/lib/swr'

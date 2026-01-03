@@ -1,7 +1,5 @@
 'use client'
 
-import type { ChartProps } from '@/components/charts/chart-props'
-
 import { createCustomChart } from '@/components/charts/factory'
 import { cn } from '@/lib/utils'
 

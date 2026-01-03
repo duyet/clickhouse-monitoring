@@ -260,7 +260,7 @@ export const fetchData = async <
       // Include raw response for debugging (truncated if large)
       rawResponseLength: rawText.length,
       rawResponsePreview:
-        rawText.length <= 500 ? rawText : rawText.substring(0, 500) + '...',
+        rawText.length <= 500 ? rawText : `${rawText.substring(0, 500)}...`,
     }
 
     return { data, metadata }

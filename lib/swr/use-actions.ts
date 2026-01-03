@@ -1,8 +1,7 @@
 'use client'
 
-import { useCallback } from 'react'
-
 import { useHostId } from './use-host'
+import { useCallback } from 'react'
 
 type ActionType = 'killQuery' | 'optimizeTable' | 'querySettings'
 

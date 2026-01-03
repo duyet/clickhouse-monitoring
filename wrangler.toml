@@ -8,6 +8,15 @@ compatibility_date = "2024-12-29"
 # Minification (set to false for debugging, true for production)
 minify = true
 
+# Disable keep_names to fix "__name is not defined" error (appears as "e is not defined" when minified)
+# This is required for libraries like next-themes that convert scripts to strings
+# See: https://opennext.js.org/cloudflare/howtos/keep_names
+keep_names = false
+
+# Upload source maps for better error stack traces in Cloudflare dashboard
+# See: https://developers.cloudflare.com/workers/observability/source-maps/
+upload_source_maps = true
+
 # Compatibility flags
 # Enable Node.js API: https://developers.cloudflare.com/workers/configuration/compatibility-flags/#nodejs-compatibility-flag
 compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env", "global_fetch_strictly_public"]

@@ -119,7 +119,7 @@ export async function getClickHouseVersion(
     // Use raw client to avoid circular dependency with fetchData
     const client = await getClient({ clientConfig })
     const resultSet = await client.query({
-      query: QUERY_COMMENT + 'SELECT version() as version',
+      query: `${QUERY_COMMENT}SELECT version() as version`,
       format: 'JSONEachRow',
     })
 

@@ -1,7 +1,6 @@
 'use client'
 
 import { ExternalLink, Loader2 } from 'lucide-react'
-import Link from 'next/link'
 
 import { ExplorerBreadcrumb } from './explorer-breadcrumb'
 import { ExplorerEmptyState } from './explorer-empty-state'
@@ -11,6 +10,7 @@ import { DdlTab } from './tabs/ddl-tab'
 import { DependenciesTab } from './tabs/dependencies-tab'
 import { IndexesTab } from './tabs/indexes-tab'
 import { StructureTab } from './tabs/structure-tab'
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'

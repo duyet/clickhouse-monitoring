@@ -28,7 +28,7 @@ const _mockPush = cy.stub().as('routerPush')
 cy.stub().as('menuItemsConfig')
 
 // Mock Next.js navigation hooks for host parameter preservation
-const mockUseSearchParams = cy.stub().returns({
+const _mockUseSearchParams = cy.stub().returns({
   get: cy.stub().returns('2'),
   toString: () => 'host=2',
 })

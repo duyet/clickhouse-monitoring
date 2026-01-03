@@ -1,9 +1,9 @@
-import type { AreaChartProps, BarChartProps } from '@/types/charts'
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 import type {
   DateRangeConfig,
   DateRangePresetName,
 } from '@/components/date-range'
+import type { AreaChartProps, BarChartProps } from '@/types/charts'
+import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
 interface BaseChartFactoryConfig {
   chartName: string

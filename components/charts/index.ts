@@ -81,10 +81,10 @@ export { ChartCPUUsage } from './system/cpu-usage'
 export { ChartDiskSize } from './system/disk-size'
 export { ChartDisksUsage } from './system/disks-usage'
 export { ChartMemoryUsage } from './system/memory-usage'
-// Table charts
-export { ChartTopTableSize } from './top-table-size'
 // Thread charts
 export { ChartThreadUtilization } from './threads/thread-utilization'
+// Table charts
+export { ChartTopTableSize } from './top-table-size'
 export { ChartKeeperException } from './zookeeper/zookeeper-exception'
 export { ChartZookeeperRequests } from './zookeeper/zookeeper-requests'
 export { ChartZookeeperSummaryTable } from './zookeeper/zookeeper-summary-table'

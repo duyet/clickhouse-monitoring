@@ -88,7 +88,7 @@ function SidebarProvider({
       _setOpen(cookieState)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [_open])
   const open = openProp ?? _open
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {

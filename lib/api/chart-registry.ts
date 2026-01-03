@@ -21,17 +21,17 @@ import type { ChartDataPoint, ChartQueryBuilder } from './charts/types'
 // Import all domain chart modules
 import { connectionCharts } from './charts/connection-charts'
 import { dashboardCharts } from './charts/dashboard-charts'
+import { dictionaryCharts } from './charts/dictionary-charts'
+import { logsCharts } from './charts/logs-charts'
 import { mergeCharts } from './charts/merge-charts'
 import { overviewCharts } from './charts/overview-charts'
 import { pageViewCharts } from './charts/page-view-charts'
 import { queryCharts } from './charts/query-charts'
 import { replicationCharts } from './charts/replication-charts'
-import { systemCharts } from './charts/system-charts'
-import { zookeeperCharts } from './charts/zookeeper-charts'
 import { securityCharts } from './charts/security-charts'
+import { systemCharts } from './charts/system-charts'
 import { threadCharts } from './charts/thread-charts'
-import { logsCharts } from './charts/logs-charts'
-import { dictionaryCharts } from './charts/dictionary-charts'
+import { zookeeperCharts } from './charts/zookeeper-charts'
 
 // Re-export types from the central types module (via charts/types)
 export type {

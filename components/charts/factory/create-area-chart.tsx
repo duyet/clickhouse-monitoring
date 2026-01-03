@@ -93,7 +93,7 @@ export function createAreaChart(
       return effectiveLastHours
         ? createDateTickFormatter(effectiveLastHours)
         : undefined
-    }, [effectiveLastHours])
+    }, [effectiveLastHours, config.areaChartProps?.tickFormatter])
 
     // Check if data has all zero values - show empty state with message
     // biome-ignore lint/correctness/useExhaustiveDependencies: config.categories is stable from factory

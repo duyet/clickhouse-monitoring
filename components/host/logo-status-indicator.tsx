@@ -8,14 +8,15 @@
 'use client'
 
 import { memo } from 'react'
-import { cn } from '@/lib/utils'
 import { useHostStatus } from '@/lib/swr/use-host-status'
+import { cn } from '@/lib/utils'
 
 interface LogoStatusIndicatorProps {
   hostId: number
 }
 
-const indicatorBaseStyles = 'absolute -bottom-0.5 -left-1 size-1.5 rounded-full ring-2 ring-sidebar'
+const indicatorBaseStyles =
+  'absolute -bottom-0.5 -left-1 size-1.5 rounded-full ring-2 ring-sidebar'
 
 /**
  * Small status indicator positioned at bottom-right corner of logo
@@ -42,7 +43,6 @@ export const LogoStatusIndicator = memo(function LogoStatusIndicator({
     />
   )
 })
-
 
 export const LogoStatusIndicatorSkeleton = () => (
   <span className={cn(indicatorBaseStyles, 'bg-gray-400 animate-pulse')} />

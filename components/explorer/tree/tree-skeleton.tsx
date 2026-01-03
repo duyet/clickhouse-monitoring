@@ -1,7 +1,7 @@
 'use client'
 
-import { Skeleton } from '@/components/ui/skeleton'
 import { SidebarMenu } from '@/components/ui/sidebar'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // Fixed widths to avoid hydration mismatch from Math.random()
 // These are deterministic and consistent between server and client

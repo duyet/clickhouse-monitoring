@@ -6,8 +6,8 @@
 
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 
 const COOKIE_NAME = 'visited_pages'
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year

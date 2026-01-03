@@ -9,9 +9,9 @@ import type { QueryConfig } from '@/types/query-config'
 
 import { memo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
-import { BulkActions } from '@/components/data-table/components/bulk-actions'
 import { ColumnVisibilityButton } from '@/components/data-table/buttons/column-visibility'
 import { ResetColumnOrderButton } from '@/components/data-table/buttons/reset-column-order'
+import { BulkActions } from '@/components/data-table/components/bulk-actions'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { getSqlForDisplay } from '@/types/query-config'
 

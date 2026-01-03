@@ -4,7 +4,10 @@ import { Check, ChevronsUpDown } from 'lucide-react'
 
 import { HostStatusDropdown } from './host-status-dropdown'
 import { HostVersionWithStatus } from './host-version-status'
-import { LogoStatusIndicator, LogoStatusIndicatorSkeleton } from './logo-status-indicator'
+import {
+  LogoStatusIndicator,
+  LogoStatusIndicatorSkeleton,
+} from './logo-status-indicator'
 import Image from 'next/image'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
@@ -75,9 +78,7 @@ export function HostSwitcher() {
                     className="size-5 object-contain"
                     unoptimized
                   />
-                  {state === 'collapsed' && (
-                    <LogoStatusIndicatorSkeleton />
-                  )}
+                  {state === 'collapsed' && <LogoStatusIndicatorSkeleton />}
                 </div>
               )}
               {state === 'expanded' && (

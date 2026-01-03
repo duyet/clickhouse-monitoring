@@ -6,8 +6,8 @@
 
 'use client'
 
-import { memo } from 'react'
 import { useShowNewBadge } from '../hooks/use-visited-pages'
+import { memo } from 'react'
 
 interface NewBadgeProps {
   href: string

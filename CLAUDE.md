@@ -77,13 +77,12 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 ### Static Site Architecture
 
-**IMPORTANT**: This application now uses static site generation with query parameter routing.
+**CRITICAL**: Fully static site. No SSR, no middleware, no server components. Client-side only.
 
-**Key Changes from SSR to Static:**
-- **Routing**: Query parameters (`?host=0`) instead of dynamic routes (`/[host]/`)
-- **Data Fetching**: Client-side via SWR instead of server-side
-- **Pages**: Pre-rendered as static content with client-side data hydration
-- **API**: Separate `/api/v1/*` routes for data fetching
+- Use `'use client'` for all pages
+- Use client-side redirect (`useRouter` + `useEffect`), never `redirect()` from next/navigation
+- Use SWR for all data fetching
+- Query params for routing (`?host=0`), not dynamic routes
 
 ### Routing Pattern
 
