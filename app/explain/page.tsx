@@ -41,9 +41,7 @@ function ExplainContent() {
 
   const { data, error, isLoading } = useSWR<ApiResponse>(
     queryToExplain
-      ? `/api/v1/data?hostId=${hostId}&query=${encodeURIComponent(
-          `EXPLAIN ${queryToExplain}`
-        )}`
+      ? `/api/v1/explain?hostId=${hostId}&query=${encodeURIComponent(queryToExplain)}`
       : null,
     fetcher
   )
