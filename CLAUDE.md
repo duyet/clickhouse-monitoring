@@ -50,6 +50,18 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 - `bun run lint` - Run Next.js ESLint
 - `bun run fmt` - Format code with Prettier
 
+### Deployment
+
+- `bun run cf:deploy` - Deploy to Cloudflare Workers (builds, sets secrets, deploys)
+- `bun run cf:build` - Build for Cloudflare (Next.js build + OpenNext)
+- `bun run cf:preview` - Preview Cloudflare deployment locally
+- `bun run cf:config` - Set Cloudflare secrets from .env.local
+
+**Deployment steps:**
+1. Ensure `.env.local` has required secrets (CLICKHOUSE_HOST, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD)
+2. Run `bun run cf:deploy` (this runs cf:config → cf:build → wrangler deploy)
+3. If build lock error occurs, remove `.next/lock` and retry
+
 ## Architecture
 
 ### Core Technologies
