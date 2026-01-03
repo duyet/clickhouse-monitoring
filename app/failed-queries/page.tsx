@@ -1,13 +1,9 @@
-'use client'
-
 import { Suspense } from 'react'
-import { PageLayout } from '@/components/layout/query-page'
 import { ChartSkeleton } from '@/components/skeletons'
-import { failedQueriesConfig } from '@/lib/query-config/queries/failed-queries'
+import { FailedQueriesPageContent } from './content'
 
-function FailedQueriesPageContent() {
-  return <PageLayout queryConfig={failedQueriesConfig} title="Failed Queries" />
-}
+// Skip static prerendering - page requires query params
+export const dynamic = 'force-dynamic'
 
 export default function FailedQueriesPage() {
   return (

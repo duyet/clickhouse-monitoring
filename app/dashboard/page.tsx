@@ -1,7 +1,9 @@
 'use client'
 
+import { Suspense } from 'react'
 import { ChartParams } from '@/components/dashboard/chart-params'
 import { RenderChart } from '@/components/dashboard/render-chart'
+import { ChartSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
@@ -21,24 +23,21 @@ type DashboardSetting = {
   updated_at: string
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
   const hostId = useHostId()
 
-  // Fetch dashboards
   const { data: dashboards } = useChartData<DashboardChart>({
     chartName: 'dashboard-charts',
     hostId,
     refreshInterval: 30000,
   })
 
-  // Fetch settings
   const { data: settings } = useChartData<DashboardSetting>({
     chartName: 'dashboard-settings',
     hostId,
     refreshInterval: 30000,
   })
 
-  // Cast to array and extract params
   const settingsData = (
     Array.isArray(settings) ? settings : []
   ) as DashboardSetting[]
@@ -46,7 +45,6 @@ export default function DashboardPage() {
     settingsData.find((s) => s.key === 'params')?.value || '{}'
   )
 
-  // Cast dashboards to array
   const dashboardsData = (
     Array.isArray(dashboards) ? dashboards : []
   ) as DashboardChart[]
@@ -68,5 +66,13 @@ export default function DashboardPage() {
         ))}
       </div>
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <DashboardContent />
+    </Suspense>
   )
 }

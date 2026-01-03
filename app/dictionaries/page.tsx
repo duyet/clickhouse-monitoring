@@ -1,8 +1,18 @@
 'use client'
 
+import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
+import { ChartSkeleton } from '@/components/skeletons'
 import { dictionariesConfig } from '@/lib/query-config/more/dictionaries'
 
-export default function DictionariesPage() {
+function DictionariesContent() {
   return <PageLayout queryConfig={dictionariesConfig} title="Dictionaries" />
+}
+
+export default function DictionariesPage() {
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <DictionariesContent />
+    </Suspense>
+  )
 }

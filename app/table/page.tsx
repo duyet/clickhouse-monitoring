@@ -1,10 +1,10 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 
-export default function TablePage() {
+function TableRedirect() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -28,5 +28,22 @@ export default function TablePage() {
         <Skeleton className="h-96 w-full" />
       </div>
     </div>
+  )
+}
+
+export default function TablePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-96 w-full" />
+          </div>
+        </div>
+      }
+    >
+      <TableRedirect />
+    </Suspense>
   )
 }

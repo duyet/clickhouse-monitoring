@@ -13,11 +13,9 @@ interface ChartPageProps {
   }>
 }
 
-export default function ChartPage({ params }: ChartPageProps) {
-  const { name } = use(params)
+function ChartContent({ name }: { name: string }) {
   const hostId = useHostId()
 
-  // Check if chart exists in registry
   if (!hasChart(name)) {
     notFound()
   }
@@ -30,15 +28,23 @@ export default function ChartPage({ params }: ChartPageProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <Suspense fallback={<ChartSkeleton />}>
-        <FadeIn duration={250}>
-          <ChartComponent
-            className="w-full"
-            chartClassName="h-full min-h-[300px]"
-            hostId={hostId}
-          />
-        </FadeIn>
-      </Suspense>
+      <FadeIn duration={250}>
+        <ChartComponent
+          className="w-full"
+          chartClassName="h-full min-h-[300px]"
+          hostId={hostId}
+        />
+      </FadeIn>
     </div>
+  )
+}
+
+export default function ChartPage({ params }: ChartPageProps) {
+  const { name } = use(params)
+
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <ChartContent name={name} />
+    </Suspense>
   )
 }
