@@ -31,11 +31,11 @@ export const ColumnVisibilityButton = memo(function ColumnVisibilityButton({
         <Button
           variant="ghost"
           size="icon"
-          className="size-5 opacity-40 hover:opacity-100 transition-opacity rounded-full"
+          className="size-8 sm:size-5 opacity-40 hover:opacity-100 transition-opacity rounded-full"
           aria-label="Column Options"
           title="Column Options"
         >
-          <MixerHorizontalIcon className="size-3" strokeWidth={2} />
+          <MixerHorizontalIcon className="size-3 sm:size-3" strokeWidth={2} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

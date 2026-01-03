@@ -25,12 +25,12 @@ export const ResetColumnOrderButton = memo(function ResetColumnOrderButton({
           <Button
             variant="ghost"
             size="icon"
-            className="size-5 opacity-40 hover:opacity-100 transition-opacity rounded-full"
+            className="size-8 sm:size-5 opacity-40 hover:opacity-100 transition-opacity rounded-full"
             onClick={onReset}
             disabled={disabled}
             aria-label="Reset column order"
           >
-            <ResetIcon className="size-3" strokeWidth={2} />
+            <ResetIcon className="size-3 sm:size-3" strokeWidth={2} />
           </Button>
         </TooltipTrigger>
         <TooltipContent>

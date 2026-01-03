@@ -76,6 +76,8 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
+            'flex items-center justify-center rounded',
+            'w-10 h-10 sm:w-auto sm:h-auto sm:p-0 p-2',
             'opacity-0 group-hover:opacity-40 hover:opacity-100 focus:opacity-100',
             'focus:outline-none transition-opacity',
             'disabled:cursor-default disabled:opacity-50'
