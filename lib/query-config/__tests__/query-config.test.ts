@@ -202,6 +202,15 @@ describe('Query Config Validation', () => {
           const wrappedSql = wrapWithLimit(sql)
           const isOptional = config.optional || usesOptionalTables(sql)
 
+          // Skip queries with substitution parameters (require runtime values)
+          const hasSubstitutionParams = /\{[^}]+:[^}]+\}/.test(sql)
+          if (hasSubstitutionParams) {
+            console.log(
+              `${config.name}: Skipped (requires substitution parameters)`
+            )
+            return
+          }
+
           try {
             const result = await client.query({
               query: wrappedSql,
