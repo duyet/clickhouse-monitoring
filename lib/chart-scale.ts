@@ -36,7 +36,7 @@ export function analyzeDataForLogScale(
   for (const point of data) {
     for (const category of categories) {
       const value = point[category]
-      if (typeof value === 'number' && !isNaN(value)) {
+      if (typeof value === 'number' && !Number.isNaN(value)) {
         maxValue = Math.max(maxValue, value)
         if (value > 0) {
           minPositive = Math.min(minPositive, value)
@@ -121,8 +121,8 @@ export function resolveYAxisScale(
  * @returns Domain tuple [min, max] for Recharts
  */
 export function getYAxisDomain(
-  data: Record<string, unknown>[],
-  categories: string[],
+  _data: Record<string, unknown>[],
+  _categories: string[],
   isLogScale: boolean
 ): [number | 'auto', number | 'auto'] {
   if (!isLogScale) {
