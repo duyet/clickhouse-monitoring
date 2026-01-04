@@ -76,16 +76,17 @@ describe('clickhouse-fetch', () => {
       it('should return data and metadata on success', async () => {
         const result = await fetchData(defaultParams)
 
-        expect(result).toEqual({
-          data: [{ result: 'data' }],
-          metadata: {
-            queryId: 'test-query-id',
-            duration: expect.any(Number),
-            rows: 1,
-            host: 'http://localhost:8123',
-            sql: 'SELECT 1',
-          },
+        expect(result.data).toEqual([{ result: 'data' }])
+        expect(result.metadata).toMatchObject({
+          queryId: 'test-query-id',
+          duration: expect.any(Number),
+          rows: 1,
+          host: 'http://localhost:8123',
+          sql: 'SELECT 1',
         })
+        expect(result.metadata.clickhouseVersion).toBeDefined()
+        expect(result.metadata.rawResponseLength).toBeGreaterThan(0)
+        expect(result.metadata.rawResponsePreview).toBeDefined()
         expect(result.error).toBeUndefined()
       })
 

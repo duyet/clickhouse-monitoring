@@ -21,37 +21,47 @@ describe('Running Queries Version Selection', () => {
       expect(sql).toContain('FROM system.processes')
     })
 
-    it('should select v23.8 query for ClickHouse 24.1', () => {
+    it('should select v24.1 query for ClickHouse 24.1', () => {
       const version = parseVersion('24.1.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-      // 24.1 < 24.8, so should use 23.8 variant
-      expect(sql).not.toContain('peak_threads_usage')
+      // 24.1 >= 24.1, so should use 24.1 variant with peak_threads_usage
+      expect(sql).toContain('peak_threads_usage')
     })
 
-    it('should select v23.8 query for ClickHouse 24.7', () => {
+    it('should select v24.1 query for ClickHouse 24.7', () => {
       const version = parseVersion('24.7.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-      // 24.7 < 24.8, so should use 23.8 variant
-      expect(sql).not.toContain('peak_threads_usage')
+      // 24.7 >= 24.1, so should use 24.1 variant
+      expect(sql).toContain('peak_threads_usage')
     })
 
     it('should select v24.8 query for ClickHouse 24.8', () => {
       const version = parseVersion('24.8.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-      // Should contain peak_threads_usage (added in 24.8)
+      // Should contain peak_threads_usage (added in 24.1)
       expect(sql).toContain('peak_threads_usage')
       expect(sql).toContain('readable_peak_threads_usage')
       expect(sql).toContain('pct_peak_threads_usage')
     })
 
-    it('should select v24.8 query for ClickHouse 25.1', () => {
+    it('should select v24.1 query for ClickHouse 24.1', () => {
+      const version = parseVersion('24.1.0.0')
+      const sql = selectVersionedSql(runningQueriesConfig.sql, version)
+
+      // Should contain peak_threads_usage (added in 24.1)
+      expect(sql).toContain('peak_threads_usage')
+      expect(sql).toContain('readable_peak_threads_usage')
+      expect(sql).toContain('pct_peak_threads_usage')
+    })
+
+    it('should select v24.1 query for ClickHouse 25.1', () => {
       const version = parseVersion('25.1.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-      // 25.1 >= 24.8, so should use 24.8 variant
+      // 25.1 >= 24.1, so should use 24.1 variant
       expect(sql).toContain('peak_threads_usage')
     })
 
@@ -74,8 +84,8 @@ describe('Running Queries Version Selection', () => {
       expect(sql).toContain('ORDER BY elapsed')
     })
 
-    it('v24.8 query should be valid SQL structure', () => {
-      const version = parseVersion('24.8.0.0')
+    it('v24.1 query should be valid SQL structure', () => {
+      const version = parseVersion('24.1.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
       expect(sql).toContain('SELECT')
@@ -91,7 +101,7 @@ describe('Running Queries Version Selection', () => {
       )
       const v24 = selectVersionedSql(
         runningQueriesConfig.sql,
-        parseVersion('24.8.0.0')
+        parseVersion('24.1.0.0')
       )
 
       // Common columns
@@ -169,24 +179,24 @@ describe('All Versioned Query Configs', () => {
 
 describe('Version Selection Edge Cases', () => {
   it('should handle version with build number', () => {
-    const version = parseVersion('24.8.1.12345')
+    const version = parseVersion('24.1.1.12345')
     const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-    // Should match 24.8 variant
+    // Should match 24.1 variant
     expect(sql).toContain('peak_threads_usage')
   })
 
   it('should handle exact boundary version', () => {
-    // Exactly 24.8.0.0 should match 24.8 variant
-    const version = parseVersion('24.8.0.0')
+    // Exactly 24.1.0.0 should match 24.1 variant
+    const version = parseVersion('24.1.0.0')
     const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
     expect(sql).toContain('peak_threads_usage')
   })
 
   it('should handle version just below boundary', () => {
-    // 24.7.99.99 should NOT match 24.8 variant
-    const version = parseVersion('24.7.99.99')
+    // 24.0.99.99 should NOT match 24.1 variant
+    const version = parseVersion('24.0.99.99')
     const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
     expect(sql).not.toContain('peak_threads_usage')
@@ -220,7 +230,7 @@ describe('getSqlForDisplay vs selectVersionedSql', () => {
       parseVersion('23.8.0.0')
     )
 
-    // Display shows newest (24.8) variant
+    // Display shows newest (24.1) variant
     expect(displaySql).toContain('peak_threads_usage')
 
     // Execution for v23.8 uses older variant

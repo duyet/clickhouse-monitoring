@@ -89,7 +89,7 @@ describe('charts-config', () => {
       expect(ids).toContain('cpu-usage')
       expect(ids).toContain('top-table-size')
       expect(ids).toContain('disks-usage-overview')
-      expect(ids).toContain('replication-queue-count-overview')
+      expect(ids).toContain('merge-count-overview')
     })
 
     it('should have proper time intervals configured', () => {

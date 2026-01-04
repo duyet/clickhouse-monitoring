@@ -4,14 +4,11 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const runningQueriesConfig: QueryConfig = {
   name: 'running-queries',
-  // Note: peak_threads_usage in system.processes was added in ClickHouse 26.1
-  // (PR #90459 merged Nov 2025). For now, we use the base query without it.
-  // TODO: Add 26.1 variant when that version becomes common.
   sql: [
     {
       since: '23.8',
       description:
-        'Base query (peak_threads_usage not available in system.processes until 26.1)',
+        'Base query (peak_threads_usage not available in system.processes until 24.1)',
       sql: `
       SELECT *,
         query_id as query_detail,
@@ -48,8 +45,8 @@ export const runningQueriesConfig: QueryConfig = {
     `,
     },
     {
-      since: '26.1',
-      description: 'Added peak_threads_usage column (PR #90459, Nov 2025)',
+      since: '24.1',
+      description: 'Added peak_threads_usage column',
       sql: `
       SELECT *,
         query_id as query_detail,
