@@ -1,13 +1,48 @@
-Dockerfile
-.dockerignore
+# Build artifacts
+.next
+out
+dist
+build
+
+# Dependencies
 node_modules
 docs/node_modules
-npm-debug.log
-README.md
-.next
-docker
+
+# CI/CD
 .git
-.turbo
+.gitlab-ci.yml
+.github
 .vscode
-.swc
+
+# IDE
+.idea
+*.swp
+*.swo
+*~
+
+# Testing
+coverage
+*.lcov
 .nyc_output
+.cypress
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+README.md
+CHANGELOG.md
+LICENSE
+.turbo
+.swc
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Misc development files
+.env.local
+.env.*.local

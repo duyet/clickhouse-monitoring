@@ -9,6 +9,9 @@ import {
   isMemoryWarning,
 } from '@/lib/memory-monitor'
 
+// This route is dynamic and should not be statically exported
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const metrics = getHealthMetrics()

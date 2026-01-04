@@ -6,70 +6,214 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Next.js 15 (React 19) ClickHouse monitoring dashboard that provides real-time insights into ClickHouse clusters through system tables. The application connects to ClickHouse instances and displays metrics, query performance, table information, and cluster health.
 
+## Claude Skills
+
+Use skill `clickhouse-query-config` for:
+- Version-aware queries with `sql: VersionedSql[]` and `since` field
+- BackgroundBar column format (requires: base column, readable_column, pct_column)
+- ClickHouse system table schema compatibility
+
+### Quick Reference: BackgroundBar Columns
+
+When asked to "format background bar for: X, Y, Z", each column needs 3 SQL columns:
+```sql
+-- For "rows"
+rows,                                                                    -- base
+formatReadableQuantity(rows) AS readable_rows,                           -- display
+round(rows * 100.0 / nullIf(max(rows) OVER (), 0), 2) AS pct_rows       -- percentage
+```
+
+See `.claude/skills/clickhouse-query-config.md` for full patterns.
+
 ## Commands
+
+**Note: This project uses `bun` as the package manager.** Use `bun` instead of `pnpm` or `npm` for all commands.
 
 ### Development
 
-- `pnpm dev` - Start development server with turbopack
-- `pnpm build` - Build for production with turbopack
-- `pnpm start` - Start production server
+- `bun run dev` - Start development server with turbopack
+- `bun run build` - Build for production with turbopack
+- `bun run start` - Start production server
 
 ### Testing
 
-- `pnpm test` - Run Jest unit tests with coverage
-- `pnpm jest` - Run Jest tests (excludes query-config tests)
-- `pnpm test-queries-config` - Run query config specific tests
-- `pnpm component` - Open Cypress component tests
-- `pnpm component:headless` - Run Cypress component tests headless
-- `pnpm e2e` - Open Cypress e2e tests
-- `pnpm e2e:headless` - Run Cypress e2e tests headless
+- `bun run test` - Run Jest unit tests with coverage
+- `bun run jest` - Run Jest tests (excludes query-config tests)
+- `bun run test-queries-config` - Run query config specific tests
+- `bun run component` - Open Cypress component tests
+- `bun run component:headless` - Run Cypress component tests headless
+- `bun run e2e` - Open Cypress e2e tests
+- `bun run e2e:headless` - Run Cypress e2e tests headless
 
 ### Code Quality
 
-- `pnpm lint` - Run Next.js ESLint
-- `pnpm fmt` - Format code with Prettier
+- `bun run lint` - Run Next.js ESLint
+- `bun run fmt` - Format code with Prettier
+
+### Deployment
+
+- `bun run cf:deploy` - Deploy to Cloudflare Workers (builds, sets secrets, deploys)
+- `bun run cf:build` - Build for Cloudflare (Next.js build + OpenNext)
+- `bun run cf:preview` - Preview Cloudflare deployment locally
+- `bun run cf:config` - Set Cloudflare secrets from .env.local
+
+**Deployment steps:**
+1. Ensure `.env.local` has required secrets (CLICKHOUSE_HOST, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD)
+2. Run `bun run cf:deploy` (this runs cf:config → cf:build → wrangler deploy)
+3. If build lock error occurs, remove `.next/lock` and retry
 
 ## Architecture
 
 ### Core Technologies
 
-- **Next.js 15** with App Router and Server Components
+- **Next.js 16** with App Router and Turbopack
 - **React 19** with TypeScript
+- **SWR** for client-side data fetching with caching
 - **ClickHouse clients** (@clickhouse/client and @clickhouse/client-web)
 - **TanStack Table** for data tables
 - **Tailwind CSS** with shadcn/ui components
 - **Recharts** and **Tremor** for charting
 - **Radix UI** for accessible primitives
 
+### Static Site Architecture
+
+**CRITICAL**: Fully static site. No SSR, no middleware, no server components. Client-side only.
+
+- Use `'use client'` for all pages
+- Use client-side redirect (`useRouter` + `useEffect`), never `redirect()` from next/navigation
+- Use SWR for all data fetching
+- Query params for routing (`?host=0`), not dynamic routes
+
+### Routing Pattern
+
+**Old (Dynamic)**: `https://example.com/0/overview`
+**New (Static)**: `https://example.com/overview?host=0`
+
+**Benefits:**
+- Faster initial page load (static shell pre-rendered)
+- Better CDN caching (static pages cache at edge)
+- Simpler deployment (standalone output)
+- Progressive data loading (client fetches data independently)
+
 ### File Structure
 
-- `app/` - Next.js app directory with nested routes
-- `components/` - Reusable UI components
-  - `data-table/` - Advanced data table components with sorting, pagination, filtering
-  - `charts/` - Chart components for various metrics
-  - `ui/` - shadcn/ui components
-- `lib/` - Utility functions and core logic
-  - `clickhouse.ts` - ClickHouse client configuration and query functions
-  - `server-context.ts` - Server-side context management
-- `types/` - TypeScript type definitions
-- `menu.ts` - Navigation menu configuration
+```
+app/
+├── api/v1/              # API routes for data fetching
+│   ├── data/            # Generic query endpoint
+│   ├── charts/[name]/   # Chart-specific data
+│   ├── tables/[name]/   # Table data with pagination
+│   ├── explorer/        # Data explorer API (dependencies, projections)
+│   └── hosts/           # List available hosts
+├── overview/            # Static overview page (5 tabs: Connections, Queries, Merges, Replication, System)
+├── dashboard/           # Static dashboard page
+├── explorer/            # Static database explorer page with tree browser
+├── tables/              # Static tables list
+├── clusters/            # Static clusters overview
+├── running-queries/     # Static query monitoring pages
+├── [query]/             # Dynamic query detail routes
+└── layout.tsx           # Root layout with SWR provider
 
-### Key Patterns
+components/
+├── data-table/          # Advanced data table system
+├── charts/              # Chart components (32 components)
+│   └── * (all use SWR with hostId prop)
+├── overview-chards/     # Overview page charts
+├── header-client.tsx    # Client-side header with host selector
+└── ui/                  # shadcn/ui components
 
-#### Multi-Host Support
+lib/
+├── api/
+│   ├── types.ts         # API request/response types
+│   ├── chart-registry.ts # Chart query registry
+│   └── table-registry.ts # Table query registry
+├── swr/
+│   ├── provider.tsx     # SWR configuration
+│   ├── use-host.ts      # Extract hostId from query params
+│   ├── use-chart-data.ts # Chart data fetching hook
+│   └── use-table-data.ts # Table data fetching hook
+├── query-config/        # Centralized query configurations
+│   ├── queries/         # Query monitoring configs
+│   ├── merges/          # Merge operation configs
+│   ├── more/            # System metrics configs
+│   ├── tables/          # Table-specific configs
+│   └── system/          # System-level configs
+├── clickhouse.ts        # ClickHouse client (hostId required)
+└── server-context.ts    # Server-side context
+```
 
-The application supports multiple ClickHouse instances through environment variables:
+### Multi-Host Support
 
+**IMPORTANT**: All data fetching now requires `hostId` parameter.
+
+**Query Parameter Approach:**
+```typescript
+// URL: /overview?host=1
+'use client'
+import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
+
+export default function OverviewPage() {
+  // OverviewCharts and its child components use useHostId() internally
+  return <OverviewCharts />
+}
+```
+
+**Environment Variables:**
 - `CLICKHOUSE_HOST` - Comma-separated list of hosts
 - `CLICKHOUSE_USER` - Comma-separated list of users
 - `CLICKHOUSE_PASSWORD` - Comma-separated list of passwords
 - `CLICKHOUSE_NAME` - Comma-separated list of custom names
+
+### Key Patterns
+
+#### SWR Data Fetching Pattern
+
+**All client components that fetch data follow this pattern:**
+
+```typescript
+'use client'
+import { Suspense } from 'react'
+import { useHostId } from '@/lib/swr'
+import { ChartSkeleton } from '@/components/skeletons'
+import { YourChart } from '@/components/charts/your-chart'
+
+export default function YourPage() {
+  const hostId = useHostId()
+
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <YourChart hostId={hostId} />
+    </Suspense>
+  )
+}
+```
+
+**Chart Components:**
+```typescript
+'use client'
+import useSWR from 'swr'
+import { useChartData } from '@/lib/swr/use-chart-data'
+
+export function YourChart({ hostId }: { hostId: number }) {
+  const { data, error, isLoading } = useChartData({
+    name: 'your-chart-name',
+    hostId,
+    interval: 300000, // 5 minutes
+  })
+
+  if (isLoading) return <ChartSkeleton />
+  if (error) return <ChartError error={error} />
+  // ... render chart
+}
+```
 
 #### Data Table System
 
 The `components/data-table/` directory contains a sophisticated table system:
 
 - **Column definitions** with custom formatting (badges, links, duration, etc.)
+- **Column resizing** with draggable borders
+- **Text wrapping** toggle for long content
 - **Sorting** with custom sorting functions
 - **Pagination** and **filtering**
 - **Actions** for row-level operations
@@ -86,12 +230,81 @@ Each data view uses a `QueryConfig` type that defines:
 
 #### Chart Components
 
-Two chart systems are used:
+The project uses custom chart components with consistent patterns:
 
-- **Generic charts** in `components/generic-charts/` (area, bar, card-metric, radial)
-- **Tremor charts** in `components/tremor/` for specific visualizations
+- **Area charts** - Time-series data with gradients (merge operations, query counts)
+- **Bar charts** - Categorical data with tooltips (top tables by size, query counts)
+- **Progress bars** - Replaced donut charts for percentage-based metrics (query cache, query types)
+- **Donut/Radial charts** - Circular metrics for system resources (CPU, memory, disk)
+- **Custom charts** - Specialized visualizations (connections, ZooKeeper metrics)
+
+**Chart Refactoring**: Donut charts have been replaced with progress bars for better readability in percentage-based displays (query cache usage, query type distribution).
+
+#### Graceful Error Handling Pattern
+
+Charts use graceful error handling during SWR revalidation to preserve user experience:
+
+- **Initial load errors**: Show full `ChartError` component with retry button
+- **Revalidation errors**: Keep showing existing data with subtle amber indicator
+- **Indicator behavior**: Hidden by default, visible on card hover (same pattern as CardToolbar)
+- **Error details**: Click indicator to see error type, message, timestamp, and retry button
+- **Auto-recovery**: Indicator clears automatically when next refresh succeeds
+
+**Implementation**:
+- `useChartData` returns `staleError` (revalidation error) and `hasData` boolean
+- `ChartContainer` only shows `ChartError` when `error && !hasData`
+- `ChartCard` renders `ChartStaleIndicator` when `staleError` exists
+- Icon order in header: `[Stale Indicator] [DateRangeSelector] [CardToolbar]`
 
 ### Development Conventions
+
+#### shadcn/ui Components
+
+**IMPORTANT: Never customize `components/ui/` files directly.**
+
+The `components/ui/` directory contains shadcn/ui components installed via the CLI. These should remain in their original state to:
+- Allow easy updates via `npx shadcn@latest add <component>`
+- Maintain consistency with shadcn/ui documentation
+- Avoid merge conflicts when updating components
+
+**Guidelines:**
+1. **Don't add custom variants** (e.g., `success`, `warning`, `info`) to base components like Badge or Alert
+2. **Don't add hover effects** or animations to Card, Table, or other base components
+3. **Don't modify base styling** - use className prop at usage site instead
+
+**If you need custom styling or variants:**
+- Pass custom classes via `className` prop where the component is used
+- Create a wrapper component in `components/` (not `components/ui/`)
+- Use Tailwind's `cn()` utility to merge classes
+
+**Example - Custom styling at usage site:**
+```typescript
+// Good: Custom classes passed where used
+<Card className="hover:shadow-lg transition-all">
+  <CardContent>...</CardContent>
+</Card>
+
+// Bad: Modifying components/ui/card.tsx directly
+```
+
+**Example - Creating a wrapper component:**
+```typescript
+// components/info-badge.tsx
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+
+export function InfoBadge({ className, ...props }) {
+  return (
+    <Badge
+      className={cn(
+        'border-transparent bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+        className
+      )}
+      {...props}
+    />
+  )
+}
+```
 
 #### File Organization
 
@@ -107,13 +320,46 @@ Two chart systems are used:
 - Client components for interactivity (context, state management)
 - Compound components for complex UI (e.g., data tables)
 - Custom hooks for shared logic
+- **Hooks at deepest consumer**: Use hooks (like `useHostId`, `useSWR`) at the component that actually needs the data, NOT at parent levels. Avoid prop drilling through intermediate components. Example: `CountBadge` calls `useHostId()` internally rather than receiving `hostId` as a prop from `NavMain → MenuGroup → MenuItem`.
 
 #### Query Patterns
 
 - All queries include `QUERY_COMMENT` for identification
 - Use `fetchData` function for consistent error handling and logging
 - Query parameters are properly sanitized through `query_params`
-- Host selection is handled through server context
+- **CRITICAL**: `fetchData` now requires `hostId` parameter (not optional)
+- Client components use SWR hooks for data fetching
+- Server components can use API routes for data fetching
+
+#### ClickHouse Version Compatibility
+
+**IMPORTANT**: ClickHouse system tables change between versions. See `docs/clickhouse-schemas/` for:
+
+- **Schema documentation** per version (`v23.8.md`, `v24.1.md`, etc.)
+- **Column availability matrix** per table (`tables/query_log.md`, etc.)
+- **Version-aware query patterns** with `since` field
+
+**When modifying query configs:**
+1. Check `docs/clickhouse-schemas/tables/{table}.md` for column availability
+2. Use chronological `sql` array if columns differ across versions:
+
+```typescript
+export const myConfig: QueryConfig = {
+  name: 'my-query',
+  sql: [
+    { since: '23.8', sql: `SELECT col1 FROM system.table` },
+    { since: '24.1', sql: `SELECT col1, new_col FROM system.table` },
+  ],
+  columns: ['col1', 'new_col'],
+}
+```
+
+**Regenerate schema docs:**
+```bash
+bun run scripts/build-ch-schema-docs.ts
+```
+
+See also: `.claude/skills/clickhouse-query-config.md` for Claude skill guidance.
 
 #### Table Validation System
 
@@ -181,20 +427,78 @@ export const backupsConfig: QueryConfig = {
 
 ## Common Tasks
 
-### Adding a New Data View
+### Adding a New Static Route
 
-1. Create route in `app/[host]/[view]/page.tsx`
-2. Define `QueryConfig` in `config.ts`
-3. Add menu item to `menu.ts`
-4. Implement column formatters if needed
-5. Add tests for the component
+1. Create directory in `app/` (e.g., `app/your-route/`)
+2. Create `page.tsx` as client component using `useHostId()`
+3. Add `QueryConfig` to `lib/query-config/` if needed
+4. Add menu item to `menu.ts` with href `/your-route`
+5. Use SWR hooks for data fetching
 
-### Adding a New Chart
+**Template:**
+```typescript
+// app/your-route/page.tsx
+'use client'
 
-1. Create component in `components/charts/`
-2. Define SQL query for data
-3. Use appropriate chart type from generic-charts or tremor
-4. Add to relevant dashboard or create new route
+import { Suspense } from 'react'
+import { RelatedCharts, Table } from '@/components'
+import { ChartSkeleton, TableSkeleton } from '@/components/skeletons'
+import { useHostId } from '@/lib/swr'
+import { yourConfig } from '@/lib/query-config'
+
+export default function YourRoutePage() {
+  const hostId = useHostId()
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Suspense fallback={<ChartSkeleton />}>
+        <RelatedCharts relatedCharts={yourConfig.relatedCharts} hostId={hostId} />
+      </Suspense>
+      <Suspense fallback={<TableSkeleton />}>
+        <Table title="Your Data" queryConfig={yourConfig} />
+      </Suspense>
+    </div>
+  )
+}
+```
+
+### Adding a New Chart Component
+
+1. Create component in `components/charts/your-chart.tsx`
+2. Define SQL query in `lib/query-config/` if not exists
+3. Use SWR `useChartData` hook with `hostId` prop
+4. Handle loading, error, and empty states
+5. Export and use in pages or related charts
+
+**Template:**
+```typescript
+// components/charts/your-chart.tsx
+'use client'
+
+import { useChartData } from '@/lib/swr/use-chart-data'
+import { ChartSkeleton } from '@/components/skeletons'
+import { ChartError } from '@/components/error-alert'
+
+interface YourChartProps {
+  hostId: number
+  interval?: number
+}
+
+export function YourChart({ hostId, interval }: YourChartProps) {
+  const { data, error, isLoading } = useChartData({
+    name: 'your-chart-name',
+    hostId,
+    interval,
+  })
+
+  if (isLoading) return <ChartSkeleton />
+  if (error) return <ChartError error={error} />
+  if (!data || data.length === 0) return <div>No data available</div>
+
+  // Render your chart using data
+  return <div>{/* Chart rendering */}</div>
+}
+```
 
 ### Modifying Data Tables
 
@@ -208,11 +512,45 @@ export const backupsConfig: QueryConfig = {
 - All queries should include proper parameter sanitization
 - Log query performance through built-in logging
 - Use appropriate data formats (JSONEachRow, JSON, etc.)
+- **Always pass `hostId` parameter** (required, not optional)
 
 ## Important Files
 
-- `lib/clickhouse.ts` - ClickHouse client and query functions
-- `menu.ts` - Navigation configuration
-- `app/context.tsx` - Global application context
-- `components/data-table/` - Reusable table system
+### Core Application
+- `next.config.ts` - Next.js configuration (standalone output mode)
+- `app/layout.tsx` - Root layout with SWR provider and Suspense
+- `app/page.tsx` - Root redirect to `/overview?host=0`
+- `components/header-client.tsx` - Client-side header with host selector
+
+### Data Layer
+- `lib/clickhouse.ts` - ClickHouse client and `fetchData` (hostId required)
+- `lib/swr/use-host.ts` - Extract hostId from query params
+- `lib/swr/use-chart-data.ts` - SWR hook for chart data
+- `lib/swr/use-table-data.ts` - SWR hook for table data
+- `lib/api/chart-registry.ts` - Chart query registry
+- `lib/query-config/index.ts` - Centralized query configurations
+
+### Configuration
+- `menu.ts` - Navigation menu configuration (static routes)
+- `.env.local` - Environment variables for ClickHouse hosts
+
+### Types
+- `lib/api/types.ts` - API request/response types
 - `types/query-config.ts` - Query configuration types
+
+## Migration Notes
+
+### Completed (Dec 2024)
+- Migrated from dynamic `app/[host]/*` routes to static routes with `?host=` query parameter
+- All 32 chart components converted to use SWR with `hostId` prop
+- API routes created at `/api/v1/*` for data fetching
+- Query configs centralized in `lib/query-config/`
+
+### Breaking Changes
+- URL structure changed: `/0/overview` → `/overview?host=0`
+- `fetchData()` now requires `hostId` parameter (was optional)
+- All data fetching moved to client-side via SWR
+
+### Deployment
+- Build mode: `output: 'standalone'` (hybrid static + API)
+- Deploy to Cloudflare Workers: `npx wrangler login` then `bun run deploy`

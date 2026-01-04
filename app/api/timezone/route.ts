@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-
 import { fetchData } from '@/lib/clickhouse'
 
 export const dynamic = 'force-dynamic'

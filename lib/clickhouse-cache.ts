@@ -1,5 +1,5 @@
-import { unstable_cache as cache } from 'next/cache'
 import { fetchData } from './clickhouse'
+import { unstable_cache as cache } from 'next/cache'
 
 export const CLICKHOUSE_CACHE_TAG = 'clickhouse_results'
 

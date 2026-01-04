@@ -43,31 +43,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Nextjs Cache
         uses: actions/cache@v5
         with:
           path: .next/cache
           # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-
 
       - name: Install dependencies
-        run: pnpm install
+        run: bun install
 
       - name: Lint
         if: ${{ inputs.job-type == 'lint' }}
-        run: pnpm lint
+        run: bun run lint
 
       - name: Build App
         if: ${{ inputs.job-type == 'build' }}
-        run: pnpm build
+        run: bun run build

@@ -16,9 +16,11 @@
 
 import '@cypress/code-coverage/support'
 import 'cypress-real-events'
+
 import { mount } from 'cypress/react'
 
 import '../../app/globals.css'
+
 import { nextMount } from './nextMount'
 
 // Augment the Cypress namespace to include type definitions for

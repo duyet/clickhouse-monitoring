@@ -20,8 +20,10 @@
  * @see https://github.com/duyet/clickhouse-monitoring/issues/510
  */
 
-import { tableExistenceCache } from '@/lib/table-existence-cache'
 import type { QueryConfig } from '@/types/query-config'
+
+import { tableExistenceCache } from '@/lib/table-existence-cache'
+import { getAllSqlStrings } from '@/types/query-config'
 
 export type TableValidationResult = {
   shouldProceed: boolean
@@ -80,9 +82,13 @@ export async function validateTableExistence(
   hostId: number
 ): Promise<TableValidationResult> {
   // Force into string[] and add SQL parsing fallback
+  // For VersionedSql[], parse tables from all version variants
+  const sqlStrings = queryConfig.sql ? getAllSqlStrings(queryConfig.sql) : []
+  const parsedTables = sqlStrings.flatMap(parseTableFromSQL)
+  const uniqueParsedTables = [...new Set(parsedTables)]
+
   const tablesToCheck = ([] as string[]).concat(
-    queryConfig.tableCheck ??
-      (queryConfig.sql ? parseTableFromSQL(queryConfig.sql) : [])
+    queryConfig.tableCheck ?? uniqueParsedTables
   )
 
   if (tablesToCheck.length === 0) {

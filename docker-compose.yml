@@ -1,0 +1,39 @@
+services:
+  clickhouse:
+    image: ghcr.io/duyet/docker-images:clickhouse_25.1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/?query=SELECT%201"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 5s
+    environment:
+      CLICKHOUSE_SKIP_USER_SETUP: 1
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GITHUB_REF: local
+        GITHUB_SHA: local-build
+    ports:
+      - "3000:3000"
+    environment:
+      CLICKHOUSE_HOST: http://clickhouse:8123
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+      PORT: 3000
+      HOSTNAME: "0.0.0.0"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s

@@ -1,66 +1,37 @@
-import { Badge } from '@/components/ui/badge'
-import { fetchData } from '@/lib/clickhouse'
-import { getHostIdCookie } from '@/lib/scoped-link'
-import { parseTableFromSQL } from '@/lib/table-validator'
+'use client'
+
 import type { BadgeVariant } from '@/types/badge-variant'
-import type { QueryConfig } from '@/types/query-config'
+
+import { useMenuCount } from './hooks/use-menu-count'
+import { memo } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { useHostId } from '@/lib/swr'
 
 export interface CountBadgeProps {
-  sql?: string
-  hostId?: number
+  /** Key for fetching count from /api/v1/menu-counts/[key] */
+  countKey?: string
   className?: string
   variant?: BadgeVariant
 }
 
-export async function CountBadge({
-  sql,
-  hostId,
+/**
+ * Client-side count badge that fetches count via SWR.
+ * Uses countKey to fetch from /api/v1/menu-counts/[key] endpoint.
+ * No raw SQL is sent from the client - security by design.
+ */
+export const CountBadge = memo(function CountBadge({
+  countKey,
   className,
   variant = 'outline',
-}: CountBadgeProps): Promise<JSX.Element | null> {
-  if (!sql) return null
+}: CountBadgeProps) {
+  const hostId = useHostId()
+  const { count, isLoading } = useMenuCount(countKey, hostId)
 
-  const resolvedHostId = hostId ?? (await getHostIdCookie())
-
-  // Create QueryConfig for table validation
-  const tables = parseTableFromSQL(sql)
-  const queryConfig: QueryConfig = {
-    name: 'count-badge',
-    sql: sql,
-    optional: true,
-    columns: ['count()'],
-    // Only add tableCheck if we found tables in the SQL
-    ...(tables.length > 0 && { tableCheck: tables }),
-  }
-
-  const { data, error } = await fetchData<{ 'count()': string }[]>({
-    query: sql,
-    hostId: resolvedHostId,
-    format: 'JSONEachRow',
-    queryConfig,
-    clickhouse_settings: {
-      use_query_cache: 1,
-      query_cache_system_table_handling: 'save',
-      query_cache_nondeterministic_function_handling: 'save',
-      query_cache_ttl: 120,
-    },
-  })
-
-  if (error) {
-    console.error(
-      `<CountBadge />: failed to get count, error: "${error.message}", query: ${sql}`
-    )
-    return null
-  }
-
-  if (!data || !data.length || !data?.[0]?.['count()']) return null
-
-  const count = data[0]['count()'] || 0
-  if (count === 0) return null
+  if (isLoading || !count || count === 0) return null
 
   return (
     <Badge className={className} variant={variant}>
       {count}
     </Badge>
   )
-}
+})

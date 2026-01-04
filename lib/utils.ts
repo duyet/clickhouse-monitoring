@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from 'clsx'
+import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 import { replaceTemplateVariables } from './template-utils'
@@ -53,14 +53,17 @@ export function removeHostPrefix(pathname: string) {
  * Replace [key] placeholders in template string with values from data object
  * @deprecated Use replaceTemplateVariables from '@/lib/template-utils' instead
  */
-export function binding(template: string, data: Record<string, unknown>): string {
+export function binding(
+  template: string,
+  data: Record<string, unknown>
+): string {
   return replaceTemplateVariables(template, data)
 }
 
 // Chart utility functions
 
 /**
- * Format bytes to human readable format (GB, MB, KB, B)
+ * Format bytes to human readable format (PB, TB, GB, MB, KB, B)
  * @param bytes Number of bytes
  * @returns Formatted string
  */
@@ -71,10 +74,13 @@ export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || Number.isNaN(bytes)) return '-'
 
   const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  return `${(bytes / k ** i).toFixed(1)} ${sizes[i]}`
+  // Safety clamp to prevent array overflow for extremely large numbers
+  const safeIndex = Math.min(i, sizes.length - 1)
+
+  return `${(bytes / k ** safeIndex).toFixed(1)} ${sizes[safeIndex]}`
 }
 
 /**
@@ -138,4 +144,55 @@ export const chartTickFormatters = {
     value === null || value === undefined ? '-' : formatDuration(Number(value)),
   default: (value: string | number | null | undefined) =>
     value === null || value === undefined ? '-' : value.toString(),
+}
+
+/**
+ * Create a smart date/time tick formatter based on time range
+ *
+ * - ≤24 hours: Shows only time (e.g., "12:00", "13:00")
+ * - 1-7 days: Shows date and time (e.g., "Dec 25 12:00")
+ * - >7 days: Shows only date (e.g., "Dec 25", "Dec 26")
+ *
+ * @param lastHours Number of hours the chart covers
+ * @returns Tick formatter function
+ */
+export function createDateTickFormatter(
+  lastHours: number
+): (value: string) => string {
+  return (value: string) => {
+    if (!value) return ''
+
+    try {
+      const date = new Date(value)
+      if (Number.isNaN(date.getTime())) return value
+
+      // ≤24 hours: Show time only (HH:MM)
+      if (lastHours <= 24) {
+        return date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+      }
+
+      // 1-7 days: Show short date + time
+      if (lastHours <= 24 * 7) {
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+      }
+
+      // >7 days: Show date only
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      })
+    } catch {
+      return value
+    }
+  }
 }

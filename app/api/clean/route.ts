@@ -1,8 +1,11 @@
-import { getClient } from '@/lib/clickhouse'
-import { getHostIdCookie } from '@/lib/scoped-link'
 import type { ClickHouseClient } from '@clickhouse/client'
+
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
-import { NextResponse, type NextRequest } from 'next/server'
+
+import { type NextRequest, NextResponse } from 'next/server'
+import { getHostIdFromParams } from '@/lib/api/error-handler'
+import { getClient } from '@/lib/clickhouse'
+import { ErrorLogger } from '@/lib/logger'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
@@ -12,16 +15,33 @@ export const maxDuration = 30
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
-  const hostId = searchParams.get('hostId')
-    ? parseInt(searchParams.get('hostId')!, 10)
-    : await getHostIdCookie()
+  let hostId: number
 
   try {
-    const client = await getClient({ web: false, hostId })
+    const parsedHostId = getHostIdFromParams(searchParams, {
+      route: '/api/clean',
+    })
+    hostId =
+      typeof parsedHostId === 'string'
+        ? parseInt(parsedHostId, 10)
+        : parsedHostId
+  } catch {
+    return NextResponse.json(
+      { error: 'Missing required parameter: hostId' },
+      { status: 400 }
+    )
+  }
+
+  try {
+    // getClient will auto-detect and use web client for Cloudflare Workers
+    const client = await getClient({ hostId })
     const resp = await cleanupHangQuery(client)
     return NextResponse.json({ status: true, ...resp }, { status: 200 })
   } catch (error) {
-    console.error('[/api/clean] error', error)
+    ErrorLogger.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      { route: '/api/clean' }
+    )
     return NextResponse.json(
       { status: false, error: `${error}` },
       { status: 500 }
@@ -48,13 +68,17 @@ async function cleanupHangQuery(
     }
   }
 
-  console.log('[/api/clean] Starting clean up hang queries')
+  ErrorLogger.logDebug('[/api/clean] Starting clean up hang queries', {
+    route: '/api/clean',
+  })
 
   const killQueryResp = await killHangingQueries(client)
   await updateLastCleanup(client)
 
   if (!killQueryResp || killQueryResp.rows === 0) {
-    console.log('[/api/clean] Done, nothing to cleanup')
+    ErrorLogger.logDebug('[/api/clean] Done, nothing to cleanup', {
+      route: '/api/clean',
+    })
     return { lastCleanup, message: 'Nothing to cleanup' }
   }
 
@@ -82,7 +106,10 @@ async function getLastCleanup(
     const data: { last_cleanup: string; now: string }[] = await response.json()
     const lastCleanup = new Date(data[0].last_cleanup)
     const now = new Date(data[0].now)
-    console.debug(`[/api/clean] Last cleanup: ${lastCleanup}, now: ${now}`)
+    ErrorLogger.logDebug(
+      `[/api/clean] Last cleanup: ${lastCleanup}, now: ${now}`,
+      { route: '/api/clean' }
+    )
     return [lastCleanup, now]
   } catch (error) {
     throw new Error(`Error when getting last cleanup: ${error}`)
@@ -103,25 +130,30 @@ async function killHangingQueries(
         KILL QUERY
         WHERE user = currentUser()
           AND read_rows = 0
-          AND elapsed > ${QUERY_CLEANUP_MAX_DURATION_SECONDS}
+          AND elapsed > {maxDuration: UInt32}
         ASYNC
       `,
       format: 'JSON',
+      query_params: {
+        maxDuration: QUERY_CLEANUP_MAX_DURATION_SECONDS,
+      },
     })
 
     const killQueryResp = await resp.json<KillQueryResponse>()
 
-    console.log(
-      '[/api/clean] queries found:',
-      killQueryResp.data.map((row) => row.query_id).join(', ')
-    )
+    ErrorLogger.logDebug('[/api/clean] queries found', {
+      route: '/api/clean',
+      queryIds: killQueryResp.data.map((row) => row.query_id).join(', '),
+    })
     return killQueryResp
   } catch (error) {
     if (
       error instanceof Error &&
       error.message.includes('Unexpected end of JSON input')
     ) {
-      console.log('[/api/clean] Done, nothing to cleanup')
+      ErrorLogger.logDebug('[/api/clean] Done, nothing to cleanup', {
+        route: '/api/clean',
+      })
       return null
     }
     throw new Error(`Error when killing queries: ${error}`)
@@ -137,9 +169,14 @@ async function updateLastCleanup(
       values: [{ kind: 'LastCleanup', actor: MONITORING_USER }],
       format: 'JSONEachRow',
     })
-    console.log('[/api/clean] LastCleanup event created')
+    ErrorLogger.logDebug('[/api/clean] LastCleanup event created', {
+      route: '/api/clean',
+    })
   } catch (error) {
-    console.error("[/api/clean] 'LastCleanup' event creating error:", error)
+    ErrorLogger.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      { route: '/api/clean', event: 'LastCleanup' }
+    )
     throw new Error(`'LastCleanup' event creating error: ${error}`)
   }
 }
@@ -156,7 +193,10 @@ async function createSystemKillQueryEvent(
       },
       {} as Record<string, number>
     )
-    console.log('[/api/clean] Kill status:', killStatus)
+    ErrorLogger.logDebug('[/api/clean] Kill status', {
+      route: '/api/clean',
+      killStatus,
+    })
 
     const value = {
       kind: 'SystemKillQuery',
@@ -172,6 +212,9 @@ async function createSystemKillQueryEvent(
 
     return value
   } catch (error) {
-    console.error("[/api/clean] 'SystemKillQuery' event creating error:", error)
+    ErrorLogger.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      { route: '/api/clean', event: 'SystemKillQuery' }
+    )
   }
 }

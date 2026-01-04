@@ -3,8 +3,8 @@
  * This test will be skipped in CI and local environments without ClickHouse
  */
 
-import { fetchData, getClickHouseConfigs } from '@/lib/clickhouse'
 import { describe, expect, it } from '@jest/globals'
+import { fetchData, getClickHouseConfigs } from '@/lib/clickhouse'
 
 // Helper function to check if ClickHouse is available
 async function isClickHouseAvailable(): Promise<boolean> {

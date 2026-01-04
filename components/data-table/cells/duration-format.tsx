@@ -1,20 +1,23 @@
+import { memo, useMemo } from 'react'
 import dayjs from '@/lib/dayjs'
 
 interface DurationFormatProps {
   value: string | number
 }
 
-export function DurationFormat({
+export const DurationFormat = memo(function DurationFormat({
   value,
 }: DurationFormatProps): React.ReactNode {
-  let humanized = value
-  const seconds = parseFloat(value as string)
+  // Memoize dayjs computation
+  const humanized = useMemo(() => {
+    const seconds = parseFloat(value as string)
 
-  if (!Number.isNaN(seconds)) {
-    humanized = dayjs
-      .duration({ seconds: parseFloat(value as string) })
-      .humanize(seconds  < 0) // 2 minutes "ago" for negative values
-  }
+    if (Number.isNaN(seconds)) {
+      return value
+    }
+
+    return dayjs.duration({ seconds }).humanize(seconds < 0) // 2 minutes "ago" for negative values
+  }, [value])
 
   return <span title={value as string}>{humanized}</span>
-}
+})

@@ -1,8 +1,10 @@
-import { replaceTemplateVariables } from '@/lib/template-utils'
-import { cn } from '@/lib/utils'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import type { Row, RowData } from '@tanstack/react-table'
+
 import Link, { type LinkProps } from 'next/link'
+import { memo } from 'react'
+import { replaceTemplateVariables } from '@/lib/template-utils'
+import { cn } from '@/lib/utils'
 
 export interface LinkFormatOptions extends LinkProps {
   className?: string
@@ -20,7 +22,7 @@ interface LinkFormatProps<
   options?: LinkFormatOptions
 }
 
-export function LinkFormat<
+function LinkFormatComponent<
   TData extends RowData,
   TValue extends React.ReactNode,
 >({ row, data, value, context, options }: LinkFormatProps<TData, TValue>) {
@@ -57,11 +59,25 @@ export function LinkFormat<
   return (
     <Link
       href={hrefBinding}
-      className={cn('group flex flex-row items-center gap-1', className)}
+      className={cn(
+        'group inline-flex flex-row items-center gap-1 transition-colors',
+        'text-foreground hover:text-primary',
+        className
+      )}
       {...rest}
     >
-      <span className="truncate text-nowrap">{value}</span>
-      <ArrowRightIcon className="size-3 flex-none text-transparent group-hover:text-current" />
+      <span className="truncate">{value}</span>
+      <ArrowRightIcon
+        className="size-3 flex-none text-transparent transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-current"
+        aria-hidden="true"
+      />
     </Link>
   )
+}
+
+// Use a simpler memo approach without complex type casting
+export const LinkFormat = memo(
+  LinkFormatComponent
+) as typeof LinkFormatComponent & {
+  displayName?: string
 }

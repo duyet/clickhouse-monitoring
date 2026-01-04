@@ -1,10 +1,10 @@
-import { expect } from '@jest/globals'
 import {
   formatQuery,
   formatReadableQuantity,
   formatReadableSecondDuration,
   formatReadableSize,
 } from './format-readable'
+import { expect } from '@jest/globals'
 
 describe('formatReadableSize', () => {
   it('should format 0 bytes correctly', () => {

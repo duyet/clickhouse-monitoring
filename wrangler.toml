@@ -1,0 +1,98 @@
+# wrangler.toml configuration for clickhouse-monitor
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "clickhouse-monitor"
+main = ".open-next/worker.js"
+compatibility_date = "2024-12-29"
+
+# Minification (set to false for debugging, true for production)
+minify = true
+
+# Disable keep_names to fix "__name is not defined" error (appears as "e is not defined" when minified)
+# This is required for libraries like next-themes that convert scripts to strings
+# See: https://opennext.js.org/cloudflare/howtos/keep_names
+keep_names = false
+
+# Upload source maps for better error stack traces in Cloudflare dashboard
+# See: https://developers.cloudflare.com/workers/observability/source-maps/
+upload_source_maps = true
+
+# Compatibility flags
+# Enable Node.js API: https://developers.cloudflare.com/workers/configuration/compatibility-flags/#nodejs-compatibility-flag
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env", "global_fetch_strictly_public"]
+
+# Assets
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# Service binding for self-reference
+[[services]]
+binding = "WORKER_SELF_REFERENCE"
+service = "clickhouse-monitor"
+
+# R2 bucket for incremental cache
+[[r2_buckets]]
+binding = "NEXT_INC_CACHE_R2_BUCKET"
+bucket_name = "clickhouse-monitoring-inc-cache"
+
+# Observability
+[observability]
+enabled = true
+
+# Smart Placement
+# Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
+[placement]
+mode = "smart"
+
+# Durable Objects for cache queue
+[[durable_objects.bindings]]
+name = "NEXT_CACHE_DO_QUEUE"
+class_name = "DOQueueHandler"
+
+# SQLite migrations for Durable Objects
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DOQueueHandler"]
+
+# D1 database for tag cache
+[[d1_databases]]
+binding = "NEXT_TAG_CACHE_D1"
+database_name = "clickhouse-monitor"
+database_id = "f289f509-c33b-4218-8602-7a19d5d567bc"
+migrations_dir = "src/db/migrations"
+
+# KV namespace for incremental cache
+[[kv_namespaces]]
+binding = "NEXT_INC_CACHE_KV"
+id = "78782c1fcf4141d9b6f26f2046f50ceb"
+
+# Environment Variables
+#
+# For local development: Set these in .dev.vars file (not committed to git)
+# For production: Set these in Cloudflare Dashboard or wrangler secret
+#
+# Required variables:
+# - CLICKHOUSE_HOST: Comma-separated list of ClickHouse host URLs
+# - CLICKHOUSE_USER: Comma-separated list of usernames (or single value for all hosts)
+# - CLICKHOUSE_PASSWORD: Comma-separated list of passwords (or single value for all hosts)
+#
+# Optional variables:
+# - CLICKHOUSE_NAME: Comma-separated list of custom names for hosts
+# - CLICKHOUSE_MAX_EXECUTION_TIME: Query timeout in seconds (default: 60)
+# - CLICKHOUSE_TZ: Timezone for ClickHouse queries
+#
+# Example .dev.vars:
+# CLICKHOUSE_HOST=http://localhost:8123
+# CLICKHOUSE_USER=default
+# CLICKHOUSE_PASSWORD=your-password
+
+[vars]
+# Maximum query execution time in seconds before ClickHouse terminates the query.
+# Prevents long-running queries from consuming resources. Used in clickhouse-client.ts.
+CLICKHOUSE_MAX_EXECUTION_TIME = "60"
+
+# Flag to indicate running in Cloudflare Workers environment.
+# When "1", uses @clickhouse/client-web instead of @clickhouse/client (Node.js).
+# Required because Workers runtime doesn't support Node.js net/tls modules.
+CLOUDFLARE_WORKERS = "1"

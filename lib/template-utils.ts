@@ -11,8 +11,8 @@ import React from 'react'
  * Replace [key] placeholders in a template string with values from data object
  *
  * @example
- * replaceTemplateVariables('/database/[database]/[table]', { database: 'default', table: 'users' })
- * // Returns: '/database/default/users'
+ * replaceTemplateVariables('/table?database=[database]&table=[table]', { database: 'default', table: 'users' })
+ * // Returns: '/table?database=default&table=users'
  *
  * @param template - String containing [key] placeholders
  * @param data - Object with key-value pairs for replacement

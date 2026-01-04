@@ -1,6 +1,6 @@
+import { LRUCache } from 'lru-cache'
 import { getClient } from '@/lib/clickhouse'
 import { debug, error } from '@/lib/logger'
-import { LRUCache } from 'lru-cache'
 
 /**
  * Cache configuration with memory limits
@@ -30,7 +30,8 @@ export async function checkTableExists(
   }
 
   try {
-    const client = await getClient({ web: false, hostId })
+    // getClient will auto-detect and use web client for Cloudflare Workers
+    const client = await getClient({ hostId })
     const result = await client.query({
       query: `
         SELECT COUNT() AS count

@@ -129,7 +129,7 @@ describe('Host Switching Integration Tests', () => {
     })
 
     it('should handle nested route parameters', async () => {
-      // Mock nested route like /[host]/database/[database]
+      // Mock nested route like /table?host=[host]&database=[database]
       const mockParams = Promise.resolve({
         host: '1',
         database: 'default',
@@ -218,7 +218,7 @@ describe('Host Switching Integration Tests', () => {
   describe('Regression Tests for Issue #509', () => {
     it('should prevent data from previous host showing after switch', async () => {
       // Mock different data for each host
-      mockFetchData.mockImplementation(({ hostId, query }) => {
+      mockFetchData.mockImplementation(({ hostId, _query }) => {
         const mockData = {
           '0': [{ count: 100, host: 'host-0' }],
           '1': [{ count: 200, host: 'host-1' }],

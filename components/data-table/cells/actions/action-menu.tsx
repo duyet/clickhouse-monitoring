@@ -1,9 +1,12 @@
 'use client'
 
-import type { Row, RowData } from '@tanstack/react-table'
 import { MoreHorizontal } from 'lucide-react'
-import dynamic from 'next/dynamic'
+import type { Row, RowData } from '@tanstack/react-table'
 
+import type { Action } from './types'
+
+import dynamic from 'next/dynamic'
+import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,7 +15,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { Action } from './types'
+
+// Dynamic import moved outside component to prevent re-import on every render
+const ActionItem = dynamic(
+  () => import('./action-item').then((res) => res.ActionItem),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+)
 
 export interface ActionMenuProps<TData extends RowData, TValue> {
   row: Row<TData>
@@ -20,20 +31,15 @@ export interface ActionMenuProps<TData extends RowData, TValue> {
   actions: Action[]
 }
 
-export function ActionMenu<TData extends RowData, TValue>({
+function ActionMenuComponent<TData extends RowData, TValue>({
   row,
   value,
   actions,
 }: ActionMenuProps<TData, TValue>) {
-  // Using dynamic import to avoid cypress components test error
-  const ActionItem = dynamic(() =>
-    import('./action-item').then((res) => res.ActionItem)
-  )
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="size-8 p-0">
+        <Button variant="ghost" className="size-10 sm:size-8 p-0">
           <span className="sr-only">Open menu</span>
           <MoreHorizontal className="size-4" />
         </Button>
@@ -53,3 +59,8 @@ export function ActionMenu<TData extends RowData, TValue>({
     </DropdownMenu>
   )
 }
+
+// Memoized export to prevent unnecessary re-renders
+export const ActionMenu = memo(
+  ActionMenuComponent
+) as typeof ActionMenuComponent

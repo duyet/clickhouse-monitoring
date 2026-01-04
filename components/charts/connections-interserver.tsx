@@ -1,58 +1,26 @@
-import { BarChart } from '@/components/generic-charts/bar'
-import { ChartCard } from '@/components/generic-charts/chart-card'
-import { fetchData } from '@/lib/clickhouse'
-import { applyInterval } from '@/lib/clickhouse-query'
-import { cn } from '@/lib/utils'
-import type { ChartProps } from './chart-props'
+'use client'
 
-export async function ChartConnectionsInterserver({
-  title = 'Interserver Connections Last 7 days (Total Requests / Hour)',
-  interval = 'toStartOfHour',
-  lastHours = 24 * 7,
-  className,
-  chartClassName,
-  hostId,
-}: ChartProps) {
-  const query = `
-    SELECT
-      ${applyInterval(interval, 'event_time')},
-      SUM(CurrentMetric_InterserverConnection) AS CurrentMetric_InterserverConnection,
-      formatReadableQuantity(CurrentMetric_InterserverConnection) AS readable_CurrentMetric_InterserverConnection
-    FROM system.metric_log
-    WHERE event_time >= now() - INTERVAL ${lastHours} HOUR
-    GROUP BY event_time
-    ORDER BY event_time
-  `
+import type { ChartProps } from '@/components/charts/chart-props'
 
-  const { data } = await fetchData<
-    {
-      event_time: string
-      CurrentMetric_InterserverConnection: number
-      readable_CurrentMetric_InterserverConnection: string
-    }[]
-  >({
-    query,
-    format: 'JSONEachRow',
-    hostId,
-  })
+import { createBarChart } from '@/components/charts/factory'
+import { chartTickFormatters } from '@/lib/utils'
 
-  return (
-    <ChartCard
-      title={title}
-      sql={query}
-      data={data || []}
-      className={className}
-    >
-      <BarChart
-        data={data || []}
-        index="event_time"
-        categories={['CurrentMetric_InterserverConnection']}
-        readableColumn="readable_CurrentMetric_InterserverConnection"
-        className={cn('h-52', chartClassName)}
-        stack
-      />
-    </ChartCard>
-  )
-}
+export const ChartConnectionsInterserver = createBarChart({
+  chartName: 'connections-interserver',
+  index: 'event_time',
+  categories: ['CurrentMetric_InterserverConnection'],
+  defaultTitle: 'Interserver Connections',
+  defaultInterval: 'toStartOfHour',
+  defaultLastHours: 24 * 7,
+  xAxisDateFormat: true,
+  dateRangeConfig: 'health',
+  barChartProps: {
+    readableColumn: 'readable_CurrentMetric_InterserverConnection',
+    stack: true,
+    yAxisTickFormatter: chartTickFormatters.count,
+  },
+})
+
+export type ChartConnectionsInterserverProps = ChartProps
 
 export default ChartConnectionsInterserver
