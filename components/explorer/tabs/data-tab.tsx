@@ -1,6 +1,6 @@
 'use client'
 
-import { Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2, RefreshCw, ShieldAlert } from 'lucide-react'
 import useSWR from 'swr'
 import {
   createColumnHelper,
@@ -9,9 +9,12 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 
+import type { ApiError, ApiResponse } from '@/lib/api/types'
+
 import { useExplorerState } from '../hooks/use-explorer-state'
 import { memo, useCallback, useMemo, useState } from 'react'
 import { TableSkeleton } from '@/components/skeletons'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -83,20 +86,34 @@ const ExpandableCell = memo(function ExpandableCell({
   )
 })
 
-interface ApiResponse<T> {
-  data: T
-  metadata?: {
-    rows?: number
-    [key: string]: unknown
+/** Custom error class to carry API error details */
+class DataTabError extends Error {
+  type: string
+  details?: Record<string, unknown>
+
+  constructor(apiError: ApiError) {
+    super(apiError.message)
+    this.name = 'DataTabError'
+    this.type = apiError.type
+    this.details = apiError.details as Record<string, unknown> | undefined
   }
 }
 
 const PAGE_SIZE_OPTIONS = [100, 500, 1000] as const
 
-const fetcher = (
+const fetcher = async (
   url: string
-): Promise<ApiResponse<Record<string, unknown>[]>> =>
-  fetch(url).then((res) => res.json())
+): Promise<ApiResponse<Record<string, unknown>[]>> => {
+  const res = await fetch(url)
+  const json = (await res.json()) as ApiResponse<Record<string, unknown>[]>
+
+  // Check for API-level errors
+  if (!json.success && json.error) {
+    throw new DataTabError(json.error)
+  }
+
+  return json
+}
 
 type RowData = Record<string, unknown>
 const columnHelper = createColumnHelper<RowData>()
@@ -112,6 +129,7 @@ export function DataTab() {
     error,
     isLoading,
     isValidating,
+    mutate,
   } = useSWR<ApiResponse<RowData[]>>(
     database && tableName
       ? `/api/v1/explorer/preview?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(tableName)}&limit=${limit}&offset=${offset}`
@@ -159,10 +177,40 @@ export function DataTab() {
   }
 
   if (error) {
+    const isPermissionError =
+      error instanceof DataTabError && error.type === 'permission_error'
+    const Icon = isPermissionError ? ShieldAlert : AlertCircle
+
     return (
-      <div className="p-4 text-sm text-destructive">
-        Failed to load data: {error.message}
-      </div>
+      <Alert
+        variant="destructive"
+        className={cn(
+          isPermissionError && 'border-amber-500/50 bg-amber-500/10'
+        )}
+      >
+        <Icon className="size-4" />
+        <AlertTitle>
+          {isPermissionError ? 'Permission Denied' : 'Failed to load data'}
+        </AlertTitle>
+        <AlertDescription className="mt-2 space-y-2">
+          <p className="text-sm">
+            {isPermissionError
+              ? `You don't have permission to access this table. This may be a linked external database (PostgreSQL, MySQL, etc.) with restricted access.`
+              : error.message}
+          </p>
+          {!isPermissionError && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => mutate()}
+              className="mt-2"
+            >
+              <RefreshCw className="mr-1.5 size-3" />
+              Retry
+            </Button>
+          )}
+        </AlertDescription>
+      </Alert>
     )
   }
 

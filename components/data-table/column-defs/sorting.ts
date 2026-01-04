@@ -23,8 +23,8 @@ const BUILTIN_SORTING_FNS = [
  *
  * Checks both custom sorting functions and TanStack built-in functions
  */
-export function assignSortingFn<TData>(
-  columnDef: ColumnDef<TData, unknown>,
+export function assignSortingFn<TData, TValue = unknown>(
+  columnDef: ColumnDef<TData, TValue>,
   sortingFnName: string | undefined,
   customSortingFns: ReturnType<typeof getCustomSortingFns<TData>>
 ): void {

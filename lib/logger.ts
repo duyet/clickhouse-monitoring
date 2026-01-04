@@ -2,14 +2,14 @@
  * Unified logging system for ClickHouse Monitor
  *
  * Uses Pino-compatible NDJSON (Newline Delimited JSON) format:
- * {"level":30,"time":1735633240000,"msg":"message","key":"value"}
+ * {"level":"info","time":1735633240000,"msg":"message","key":"value"}
  *
- * Log levels (Pino standard):
- * - 10: trace
- * - 20: debug
- * - 30: info
- * - 40: warn
- * - 50: error
+ * Log levels (Pino standard string enum):
+ * - "trace" (10)
+ * - "debug" (20)
+ * - "info" (30)
+ * - "warn" (40)
+ * - "error" (50)
  *
  * Sources:
  * - https://betterstack.com/community/comparisons/pino-vs-winston/
@@ -37,15 +37,15 @@ export interface ErrorContext {
   [key: string]: unknown
 }
 
-// Pino log levels
-type LogLevel = number // 10=trace, 20=debug, 30=info, 40=warn, 50=error
+// Pino log levels (string enum)
+type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error'
 
 const LogLevel = {
-  trace: 10,
-  debug: 20,
-  info: 30,
-  warn: 40,
-  error: 50,
+  trace: 'trace' as const,
+  debug: 'debug' as const,
+  info: 'info' as const,
+  warn: 'warn' as const,
+  error: 'error' as const,
 } as const
 
 // ============================================================================
@@ -70,12 +70,12 @@ function createLogEntry(
 }
 
 /**
- * Debug logging (level: 20) - only in development or DEBUG=true
+ * Debug logging (level: "debug") - only in development or DEBUG=true
  *
  * @example
  * debug('[API] Query execution', { hostId: 0, query: 'SELECT 1' })
  *
- * Output: {"level":20,"time":1735633240000,"msg":"[API] Query execution","hostId":0,"query":"SELECT 1"}
+ * Output: {"level":"debug","time":1735633240000,"msg":"[API] Query execution","hostId":0,"query":"SELECT 1"}
  */
 export const debug = (
   msg: string,
@@ -91,12 +91,12 @@ export const debug = (
 }
 
 /**
- * Info logging (level: 30) - only in development or DEBUG=true
+ * Info logging (level: "info") - only in development or DEBUG=true
  *
  * @example
  * info('[API] Data fetched successfully', { rows: 100 })
  *
- * Output: {"level":30,"time":1735633240000,"msg":"[API] Data fetched successfully","rows":100}
+ * Output: {"level":"info","time":1735633240000,"msg":"[API] Data fetched successfully","rows":100}
  */
 export const log = (
   msg: string,
@@ -112,12 +112,12 @@ export const log = (
 }
 
 /**
- * Warning logging (level: 40) - always outputs
+ * Warning logging (level: "warn") - always outputs
  *
  * @example
  * warn('[API] Deprecated endpoint accessed', { path: '/old-api' })
  *
- * Output: {"level":40,"time":1735633240000,"msg":"[API] Deprecated endpoint accessed","path":"/old-api"}
+ * Output: {"level":"warn","time":1735633240000,"msg":"[API] Deprecated endpoint accessed","path":"/old-api"}
  */
 export const warn = (
   msg: string,
@@ -131,12 +131,12 @@ export const warn = (
 }
 
 /**
- * Error logging (level: 50) - always outputs
+ * Error logging (level: "error") - always outputs
  *
  * @example
  * error('[API] Query failed', err, { hostId: 0 })
  *
- * Output: {"level":50,"time":1735633240000,"msg":"[API] Query failed","err":{"name":"Error","message":"..."},"hostId":0}
+ * Output: {"level":"error","time":1735633240000,"msg":"[API] Query failed","err":{"name":"Error","message":"..."},"hostId":0}
  */
 export const error = (
   msg: string,
