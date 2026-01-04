@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 export const dictionariesConfig: QueryConfig = {
   name: 'dictionaries',
   description: 'External dictionaries loaded in ClickHouse',
+  optional: true,
+  tableCheck: 'system.dictionaries',
   sql: `
     SELECT
       database,

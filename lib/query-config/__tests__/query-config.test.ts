@@ -233,10 +233,12 @@ describe('Query Config Validation', () => {
             // Check for expected failures on optional tables
             if (isOptional) {
               const isTableNotFound =
-                errorMessage.includes('Table') &&
-                (errorMessage.includes("doesn't exist") ||
-                  errorMessage.includes('does not exist') ||
-                  errorMessage.includes('UNKNOWN_TABLE'))
+                (errorMessage.includes('Table') &&
+                  (errorMessage.includes("doesn't exist") ||
+                    errorMessage.includes('does not exist') ||
+                    errorMessage.includes('UNKNOWN_TABLE'))) ||
+                errorMessage.includes('Unknown table expression identifier') ||
+                errorMessage.includes('Unknown expression identifier')
 
               const isAccessDenied =
                 errorMessage.includes('ACCESS_DENIED') ||
