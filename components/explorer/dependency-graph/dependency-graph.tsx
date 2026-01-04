@@ -16,8 +16,9 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
+import dagre from '@dagrejs/dagre'
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getEngineIconConfig } from '@/lib/clickhouse-engine-icons'
 import { cn } from '@/lib/utils'
 
@@ -53,11 +54,22 @@ interface DependencyGraphProps {
   className?: string
 }
 
+// Layout direction type
+type LayoutDirection = 'TB' | 'LR'
+
+// Node dimensions for dagre layout (must match actual rendered size)
+const NODE_WIDTH = 280
+const NODE_HEIGHT = 65
+
 /**
  * Custom node component for tables/views
+ * Supports dynamic handle positions for vertical (TB) and horizontal (LR) layouts
+ * Handles are invisible but still functional for edge connections
  */
 function TableNode({
   data,
+  targetPosition = Position.Top,
+  sourcePosition = Position.Bottom,
 }: {
   data: {
     label: string
@@ -66,6 +78,8 @@ function TableNode({
     isCurrent: boolean
     hostId: number
   }
+  targetPosition?: Position
+  sourcePosition?: Position
 }) {
   const engineConfig = getEngineIconConfig(data.engine)
   const Icon = engineConfig.icon
@@ -73,40 +87,38 @@ function TableNode({
   return (
     <div
       className={cn(
-        'rounded-lg border bg-card px-3 py-2 shadow-sm transition-all',
+        'w-[260px] rounded-lg border-2 bg-card px-4 py-3 shadow-md transition-all',
         data.isCurrent
-          ? 'border-primary ring-2 ring-primary/20'
-          : 'border-border hover:border-primary/50'
+          ? 'border-primary ring-2 ring-primary/30'
+          : 'border-border hover:border-primary/50 hover:shadow-lg'
       )}
     >
-      <Handle type="target" position={Position.Top} className="!bg-primary" />
+      {/* Invisible handles for edge connections */}
+      <Handle type="target" position={targetPosition} className="!invisible" />
       <Link
         href={`/explorer?host=${data.hostId}&database=${encodeURIComponent(data.database)}&table=${encodeURIComponent(data.label)}&engine=${encodeURIComponent(data.engine)}`}
         className="flex items-center gap-2"
+        title={`${data.label} (${data.engine})`}
       >
         <Icon
-          className={cn('size-4 shrink-0', engineConfig.color)}
+          className={cn('size-5 shrink-0', engineConfig.color)}
           aria-label={data.engine}
         />
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-col">
           <span
             className={cn(
-              'text-sm font-medium',
+              'truncate text-sm font-semibold leading-tight',
               data.isCurrent && 'text-primary'
             )}
           >
             {data.label}
           </span>
-          <span className="text-[10px] text-muted-foreground">
+          <span className="truncate text-xs text-muted-foreground">
             {data.engine}
           </span>
         </div>
       </Link>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!bg-primary"
-      />
+      <Handle type="source" position={sourcePosition} className="!invisible" />
     </div>
   )
 }
@@ -156,18 +168,6 @@ function LegendItem({
 }
 
 /**
- * Get engine category for grouping
- */
-function getEngineCategory(engine: string): string {
-  if (engine === 'Dictionary') return 'dict'
-  if (engine === 'MaterializedView') return 'mv'
-  if (engine === 'View') return 'view'
-  if (engine.includes('PostgreSQL') || engine.includes('MySQL'))
-    return 'external'
-  return 'table'
-}
-
-/**
  * Get edge color based on dependency type
  */
 function getDependencyColor(type?: DependencyType): string {
@@ -206,149 +206,110 @@ function getDependencyLabel(type?: DependencyType): string | undefined {
 }
 
 /**
- * Find connected components using Union-Find algorithm
+ * Apply dagre layout to connected nodes, and grid layout to isolated nodes
+ * Dagre uses center-center anchor, React Flow uses top-left
  */
-function findConnectedComponents(
-  nodeKeys: string[],
-  edges: Array<{ source: string; target: string }>
-): Map<string, number> {
-  const parent = new Map<string, string>()
-  const rank = new Map<string, number>()
+function getLayoutedElements(
+  nodes: Node[],
+  edges: Edge[],
+  direction: LayoutDirection = 'TB'
+): { nodes: Node[]; edges: Edge[] } {
+  const isHorizontal = direction === 'LR'
 
-  // Initialize
-  for (const key of nodeKeys) {
-    parent.set(key, key)
-    rank.set(key, 0)
+  // Find connected node IDs (nodes that have edges)
+  const connectedNodeIds = new Set<string>()
+  edges.forEach((edge) => {
+    connectedNodeIds.add(edge.source)
+    connectedNodeIds.add(edge.target)
+  })
+
+  // Separate connected and isolated nodes
+  const connectedNodes = nodes.filter((n) => connectedNodeIds.has(n.id))
+  const isolatedNodes = nodes.filter((n) => !connectedNodeIds.has(n.id))
+
+  const layoutedNodes: Node[] = []
+
+  // Layout connected nodes with dagre
+  if (connectedNodes.length > 0) {
+    const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(
+      () => ({})
+    )
+
+    // Configure dagre graph with generous spacing
+    dagreGraph.setGraph({
+      rankdir: direction,
+      nodesep: 60, // Spacing between nodes in same rank
+      ranksep: 80, // Spacing between ranks
+      marginx: 40,
+      marginy: 40,
+    })
+
+    // Add connected nodes to dagre
+    connectedNodes.forEach((node) => {
+      dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT })
+    })
+
+    // Add edges to dagre
+    edges.forEach((edge) => {
+      dagreGraph.setEdge(edge.source, edge.target)
+    })
+
+    // Run the layout algorithm
+    dagre.layout(dagreGraph)
+
+    // Apply calculated positions to connected nodes
+    connectedNodes.forEach((node) => {
+      const nodeWithPosition = dagreGraph.node(node.id)
+      layoutedNodes.push({
+        ...node,
+        targetPosition: isHorizontal ? Position.Left : Position.Top,
+        sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
+        position: {
+          x: nodeWithPosition.x - NODE_WIDTH / 2,
+          y: nodeWithPosition.y - NODE_HEIGHT / 2,
+        },
+      })
+    })
   }
 
-  function find(x: string): string {
-    if (parent.get(x) !== x) {
-      parent.set(x, find(parent.get(x)!))
-    }
-    return parent.get(x)!
+  // Layout isolated nodes in a grid below/beside the connected graph
+  if (isolatedNodes.length > 0) {
+    // Calculate bounding box of connected nodes
+    let maxY = 0
+    let maxX = 0
+    layoutedNodes.forEach((node) => {
+      maxY = Math.max(maxY, node.position.y + NODE_HEIGHT)
+      maxX = Math.max(maxX, node.position.x + NODE_WIDTH)
+    })
+
+    // Grid layout for isolated nodes - generous spacing to prevent overlap
+    const GRID_GAP = 30
+    const COLS = isHorizontal ? 3 : 4 // Fewer columns for horizontal layout
+    const startY = connectedNodes.length > 0 ? maxY + 60 : 0
+    const startX = 0
+
+    isolatedNodes.forEach((node, index) => {
+      const col = index % COLS
+      const row = Math.floor(index / COLS)
+      layoutedNodes.push({
+        ...node,
+        targetPosition: isHorizontal ? Position.Left : Position.Top,
+        sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
+        position: {
+          x: startX + col * (NODE_WIDTH + GRID_GAP),
+          y: startY + row * (NODE_HEIGHT + GRID_GAP),
+        },
+      })
+    })
   }
 
-  function union(x: string, y: string) {
-    const px = find(x)
-    const py = find(y)
-    if (px === py) return
-    const rx = rank.get(px)!
-    const ry = rank.get(py)!
-    if (rx < ry) {
-      parent.set(px, py)
-    } else if (rx > ry) {
-      parent.set(py, px)
-    } else {
-      parent.set(py, px)
-      rank.set(px, rx + 1)
-    }
-  }
-
-  // Union connected nodes
-  for (const edge of edges) {
-    if (parent.has(edge.source) && parent.has(edge.target)) {
-      union(edge.source, edge.target)
-    }
-  }
-
-  // Assign component IDs
-  const componentRoots = new Map<string, number>()
-  const nodeComponents = new Map<string, number>()
-  let componentId = 0
-
-  for (const key of nodeKeys) {
-    const root = find(key)
-    if (!componentRoots.has(root)) {
-      componentRoots.set(root, componentId++)
-    }
-    nodeComponents.set(key, componentRoots.get(root)!)
-  }
-
-  return nodeComponents
+  return { nodes: layoutedNodes, edges }
 }
 
 /**
- * Calculate hierarchical levels based on dependency direction
- * Level 0 = root tables (no outgoing deps)
- * Higher levels = tables that depend on lower levels
+ * Build initial nodes and edges from dependency data
  */
-function calculateLevels(
-  nodeKeys: string[],
-  edges: Array<{ source: string; target: string }>
-): Map<string, number> {
-  const levels = new Map<string, number>()
-  const outgoing = new Map<string, Set<string>>()
-  const incoming = new Map<string, Set<string>>()
-
-  // Initialize
-  for (const key of nodeKeys) {
-    outgoing.set(key, new Set())
-    incoming.set(key, new Set())
-    levels.set(key, 0)
-  }
-
-  // Build adjacency
-  for (const edge of edges) {
-    outgoing.get(edge.source)?.add(edge.target)
-    incoming.get(edge.target)?.add(edge.source)
-  }
-
-  // BFS from roots (nodes with no outgoing edges or targets)
-  const visited = new Set<string>()
-  const queue: string[] = []
-
-  // Find root nodes (targets that nothing points to, or have no dependencies)
-  for (const key of nodeKeys) {
-    const out = outgoing.get(key)!
-    if (out.size === 0) {
-      levels.set(key, 0)
-      queue.push(key)
-      visited.add(key)
-    }
-  }
-
-  // If no roots found, start from nodes with no incoming
-  if (queue.length === 0) {
-    for (const key of nodeKeys) {
-      const inc = incoming.get(key)!
-      if (inc.size === 0) {
-        levels.set(key, 0)
-        queue.push(key)
-        visited.add(key)
-      }
-    }
-  }
-
-  // BFS to assign levels
-  while (queue.length > 0) {
-    const current = queue.shift()!
-    const currentLevel = levels.get(current)!
-
-    // Process nodes that point TO this node (they should be one level up)
-    for (const source of incoming.get(current) || []) {
-      if (!visited.has(source)) {
-        levels.set(source, Math.max(levels.get(source)!, currentLevel + 1))
-        visited.add(source)
-        queue.push(source)
-      }
-    }
-  }
-
-  // Handle any remaining unvisited nodes
-  for (const key of nodeKeys) {
-    if (!visited.has(key)) {
-      levels.set(key, 0)
-    }
-  }
-
-  return levels
-}
-
-/**
- * Build nodes and edges from dependency data with smart grouping
- * Uses hierarchical layout with connected components grouped together
- */
-function buildGraph(
+function buildInitialGraph(
   dependencies: DependencyEdge[],
   currentTable: string | undefined,
   currentDatabase: string | undefined,
@@ -358,10 +319,9 @@ function buildGraph(
     string,
     { database: string; table: string; engine: string }
   >()
-  const edgeList: Array<{ source: string; target: string }> = []
   const edges: Edge[] = []
 
-  // Collect all unique tables and build edge list
+  // Collect all unique tables and build edges
   for (const dep of dependencies) {
     const sourceKey = `${dep.source_database}.${dep.source_table}`
     if (!nodeMap.has(sourceKey)) {
@@ -382,8 +342,6 @@ function buildGraph(
         })
       }
 
-      edgeList.push({ source: sourceKey, target: targetKey })
-
       // Create styled edge
       const edgeColor = getDependencyColor(dep.dependency_type)
       const edgeLabel = getDependencyLabel(dep.dependency_type)
@@ -396,11 +354,11 @@ function buildGraph(
         labelStyle: edgeLabel
           ? {
               fill: 'hsl(var(--foreground))',
-              fontSize: 9,
+              fontSize: 10,
               fontWeight: 500,
             }
           : undefined,
-        labelBgPadding: [4, 2] as [number, number],
+        labelBgPadding: [6, 3] as [number, number],
         labelBgBorderRadius: 4,
         labelBgStyle: edgeLabel
           ? {
@@ -413,8 +371,8 @@ function buildGraph(
         markerEnd: {
           type: MarkerType.ArrowClosed,
           color: edgeColor,
-          width: 16,
-          height: 16,
+          width: 20,
+          height: 20,
         },
         style: {
           stroke: edgeColor,
@@ -426,108 +384,26 @@ function buildGraph(
     }
   }
 
-  const nodeKeys = Array.from(nodeMap.keys())
-
-  // Find connected components and calculate levels
-  const components = findConnectedComponents(nodeKeys, edgeList)
-  const levels = calculateLevels(nodeKeys, edgeList)
-
-  // Group nodes by component, then by level
-  const componentGroups = new Map<number, Map<number, string[]>>()
-  for (const key of nodeKeys) {
-    const comp = components.get(key) || 0
-    const level = levels.get(key) || 0
-
-    if (!componentGroups.has(comp)) {
-      componentGroups.set(comp, new Map())
-    }
-    const levelMap = componentGroups.get(comp)!
-    if (!levelMap.has(level)) {
-      levelMap.set(level, [])
-    }
-    levelMap.get(level)!.push(key)
-  }
-
-  // Sort components: connected ones first (by size), then isolated nodes
-  const sortedComponents = Array.from(componentGroups.entries()).sort(
-    ([, a], [, b]) => {
-      const sizeA = Array.from(a.values()).reduce((s, arr) => s + arr.length, 0)
-      const sizeB = Array.from(b.values()).reduce((s, arr) => s + arr.length, 0)
-      // Components with connections first
-      const hasEdgesA = a.size > 1 || (a.get(0)?.length || 0) < sizeA
-      const hasEdgesB = b.size > 1 || (b.get(0)?.length || 0) < sizeB
-      if (hasEdgesA !== hasEdgesB) return hasEdgesA ? -1 : 1
-      return sizeB - sizeA // Larger components first
-    }
-  )
-
-  // Layout constants
-  const NODE_WIDTH = 200
-  const NODE_HEIGHT = 55
-  const H_GAP = 30
-  const V_GAP = 80 // More vertical space for edges
-  const COMPONENT_GAP = 60
-
-  const nodes: Node[] = []
-  let currentX = 0
-
-  // Position each component
-  for (const [, levelMap] of sortedComponents) {
-    const sortedLevels = Array.from(levelMap.entries()).sort(
-      ([a], [b]) => b - a
-    ) // Higher levels (sources) at top
-
-    let maxWidth = 0
-    let componentY = 0
-
-    for (const [, nodesAtLevel] of sortedLevels) {
-      // Sort nodes at this level by engine category then name
-      nodesAtLevel.sort((a, b) => {
-        const infoA = nodeMap.get(a)!
-        const infoB = nodeMap.get(b)!
-        const catA = getEngineCategory(infoA.engine)
-        const catB = getEngineCategory(infoB.engine)
-        if (catA !== catB) return catA.localeCompare(catB)
-        return infoA.table.localeCompare(infoB.table)
-      })
-
-      const levelWidth = nodesAtLevel.length * (NODE_WIDTH + H_GAP) - H_GAP
-      maxWidth = Math.max(maxWidth, levelWidth)
-
-      // Center nodes at this level
-      const startX = currentX + (maxWidth - levelWidth) / 2
-
-      nodesAtLevel.forEach((key, index) => {
-        const info = nodeMap.get(key)!
-        nodes.push({
-          id: key,
-          type: 'tableNode',
-          position: {
-            x: startX + index * (NODE_WIDTH + H_GAP),
-            y: componentY,
-          },
-          data: {
-            label: info.table,
-            engine: info.engine,
-            database: info.database,
-            isCurrent:
-              info.table === currentTable && info.database === currentDatabase,
-            hostId,
-          },
-        })
-      })
-
-      componentY += NODE_HEIGHT + V_GAP
-    }
-
-    currentX += maxWidth + COMPONENT_GAP
-  }
+  // Create nodes with initial positions (will be recalculated by dagre)
+  const nodes: Node[] = Array.from(nodeMap.entries()).map(([key, info]) => ({
+    id: key,
+    type: 'tableNode',
+    position: { x: 0, y: 0 }, // Will be set by dagre
+    data: {
+      label: info.table,
+      engine: info.engine,
+      database: info.database,
+      isCurrent:
+        info.table === currentTable && info.database === currentDatabase,
+      hostId,
+    },
+  }))
 
   return { nodes, edges, edgeCount: edges.length }
 }
 
 /**
- * Dependency graph visualization using React Flow
+ * Dependency graph visualization using React Flow with dagre auto-layout
  */
 export function DependencyGraph({
   dependencies,
@@ -537,34 +413,66 @@ export function DependencyGraph({
   className,
 }: DependencyGraphProps) {
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null)
+  const [direction, setDirection] = useState<LayoutDirection>('TB')
 
+  // Build initial graph structure
   const {
-    nodes: initialNodes,
-    edges: initialEdges,
+    nodes: rawNodes,
+    edges: rawEdges,
     edgeCount,
   } = useMemo(
-    () => buildGraph(dependencies, currentTable, currentDatabase, hostId),
+    () =>
+      buildInitialGraph(dependencies, currentTable, currentDatabase, hostId),
     [dependencies, currentTable, currentDatabase, hostId]
   )
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes)
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges)
+  // Apply dagre layout
+  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
+    () => getLayoutedElements(rawNodes, rawEdges, direction),
+    [rawNodes, rawEdges, direction]
+  )
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges)
+
+  // Update nodes when layout changes
+  useEffect(() => {
+    setNodes(layoutedNodes)
+    setEdges(layoutedEdges)
+  }, [layoutedNodes, layoutedEdges, setNodes, setEdges])
+
+  // Fit view options
+  const fitViewOptions = useMemo(
+    () => ({
+      padding: 0.2,
+      minZoom: 0.5,
+      maxZoom: 1.5,
+    }),
+    []
+  )
 
   // Fit view when nodes change
   useEffect(() => {
     if (reactFlowInstance.current && nodes.length > 0) {
       setTimeout(() => {
-        reactFlowInstance.current?.fitView({ padding: 0.1 })
+        reactFlowInstance.current?.fitView(fitViewOptions)
       }, 50)
     }
-  }, [nodes])
+  }, [nodes, fitViewOptions])
 
-  const onInit = useCallback((instance: ReactFlowInstance) => {
-    reactFlowInstance.current = instance
-    // Initial fit view
-    setTimeout(() => {
-      instance.fitView({ padding: 0.1 })
-    }, 100)
+  const onInit = useCallback(
+    (instance: ReactFlowInstance) => {
+      reactFlowInstance.current = instance
+      setTimeout(() => {
+        instance.fitView(fitViewOptions)
+      }, 100)
+    },
+    [fitViewOptions]
+  )
+
+  // Toggle layout direction
+  const onLayoutChange = useCallback((newDirection: LayoutDirection) => {
+    setDirection(newDirection)
   }, [])
 
   if (dependencies.length === 0) {
@@ -590,19 +498,48 @@ export function DependencyGraph({
         onInit={onInit}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.1 }}
-        minZoom={0.1}
-        maxZoom={1.5}
+        fitViewOptions={fitViewOptions}
+        minZoom={0.2}
+        maxZoom={2}
         defaultEdgeOptions={{
-          animated: true,
+          type: 'smoothstep',
         }}
         proOptions={{ hideAttribution: true }}
       >
         <Background />
         <Controls />
+
+        {/* Layout controls */}
+        <Panel position="top-left" className="flex gap-1">
+          <button
+            onClick={() => onLayoutChange('TB')}
+            className={cn(
+              'rounded px-2 py-1 text-xs font-medium transition-colors',
+              direction === 'TB'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted hover:bg-muted/80'
+            )}
+          >
+            Vertical
+          </button>
+          <button
+            onClick={() => onLayoutChange('LR')}
+            className={cn(
+              'rounded px-2 py-1 text-xs font-medium transition-colors',
+              direction === 'LR'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted hover:bg-muted/80'
+            )}
+          >
+            Horizontal
+          </button>
+        </Panel>
+
+        {/* Stats panel */}
         <Panel position="top-right" className="text-xs text-muted-foreground">
           {nodes.length} tables{edgeCount > 0 && `, ${edgeCount} dependencies`}
         </Panel>
+
         {/* Legend panel - only show when there are edges */}
         {edgeCount > 0 && (
           <Panel

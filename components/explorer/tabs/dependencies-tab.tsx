@@ -158,7 +158,7 @@ export function DependenciesTab() {
           currentTable={table || undefined}
           currentDatabase={database}
           hostId={hostId}
-          className="h-[500px]"
+          className="h-[600px]"
         />
       </CardContent>
     </Card>

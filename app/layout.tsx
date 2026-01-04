@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 
 import { Analytics } from '@vercel/analytics/react'
 import Script from 'next/script'
@@ -29,10 +29,11 @@ const VERCEL_ANALYTICS_ENABLED =
 export const metadata: Metadata = {
   title: 'ClickHouse Monitoring',
   description: 'Simple UI for ClickHouse Monitoring',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-  },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 function Providers({ children }: { children: React.ReactNode }) {
