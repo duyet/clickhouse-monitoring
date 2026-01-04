@@ -14,13 +14,18 @@ export interface ExplorerState {
   hostId: number
   database: string | null
   table: string | null
+  engine: string | null
   tab: ExplorerTab
 }
 
 export function useExplorerState(): ExplorerState & {
   setDatabase: (database: string | null) => void
-  setTable: (table: string | null) => void
-  setDatabaseAndTable: (database: string, table: string) => void
+  setTable: (table: string | null, engine?: string | null) => void
+  setDatabaseAndTable: (
+    database: string,
+    table: string,
+    engine?: string
+  ) => void
   setTab: (tab: ExplorerTab) => void
 } {
   const searchParams = useSearchParams()
@@ -35,6 +40,7 @@ export function useExplorerState(): ExplorerState & {
       hostId: Number.isNaN(hostId) ? 0 : hostId,
       database: searchParams.get('database'),
       table: searchParams.get('table'),
+      engine: searchParams.get('engine'),
       tab: (searchParams.get('tab') as ExplorerTab) || 'data',
     }
   }, [searchParams])
@@ -47,6 +53,7 @@ export function useExplorerState(): ExplorerState & {
         if (updates.database === null) {
           params.delete('database')
           params.delete('table') // Clear table when database is cleared
+          params.delete('engine')
         } else {
           params.set('database', updates.database)
         }
@@ -55,8 +62,17 @@ export function useExplorerState(): ExplorerState & {
       if (updates.table !== undefined) {
         if (updates.table === null) {
           params.delete('table')
+          params.delete('engine')
         } else {
           params.set('table', updates.table)
+        }
+      }
+
+      if (updates.engine !== undefined) {
+        if (updates.engine === null) {
+          params.delete('engine')
+        } else {
+          params.set('engine', updates.engine)
         }
       }
 
@@ -77,15 +93,15 @@ export function useExplorerState(): ExplorerState & {
   )
 
   const setTable = useCallback(
-    (table: string | null) => {
-      updateParams({ table })
+    (table: string | null, engine?: string | null) => {
+      updateParams({ table, engine: engine ?? null })
     },
     [updateParams]
   )
 
   const setDatabaseAndTable = useCallback(
-    (database: string, table: string) => {
-      updateParams({ database, table, tab: 'data' })
+    (database: string, table: string, engine?: string) => {
+      updateParams({ database, table, engine: engine ?? null, tab: 'data' })
     },
     [updateParams]
   )

@@ -1,12 +1,12 @@
 'use client'
 
-import { TableIcon } from 'lucide-react'
 import useSWR from 'swr'
 
 import { ColumnNode } from './column-node'
 import { TreeNode } from './tree-node'
 import { useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getEngineIconConfig } from '@/lib/clickhouse-engine-icons'
 import { cn } from '@/lib/utils'
 
 interface Column {
@@ -25,6 +25,7 @@ interface TableNodeProps {
   hostId: number
   database: string
   table: string
+  engine: string
   totalRows?: number
   isExpanded: boolean
   isSelected: boolean
@@ -42,12 +43,14 @@ const fetcher = (url: string): Promise<ApiResponse<Column[]>> =>
  * - 1500 → "1.5K"
  * - 103194 → "103K" (rounded)
  * - 1250000 → "1.3M"
- * - 1000000 → "1M"
+ * - 11610000000 → "11.6B"
  */
 function formatRowCount(rows: number): string {
   if (rows === 0) return '0'
 
   const thresholds = [
+    { value: 1_000_000_000_000, suffix: 'T' },
+    { value: 1_000_000_000, suffix: 'B' },
     { value: 1_000_000, suffix: 'M' },
     { value: 1_000, suffix: 'K' },
   ]
@@ -98,6 +101,7 @@ export function TableNode({
   hostId,
   database,
   table,
+  engine,
   totalRows,
   isExpanded,
   isSelected,
@@ -106,6 +110,7 @@ export function TableNode({
   onSelect,
 }: TableNodeProps) {
   const [shouldFetch, setShouldFetch] = useState(false)
+  const engineConfig = getEngineIconConfig(engine)
 
   const { data: response, isLoading } = useSWR<ApiResponse<Column[]>>(
     shouldFetch
@@ -128,7 +133,9 @@ export function TableNode({
   return (
     <TreeNode
       label={table}
-      icon={TableIcon}
+      icon={engineConfig.icon}
+      iconClassName={engineConfig.color}
+      iconTooltip={engine}
       isExpanded={isExpanded}
       isSelected={isSelected}
       isLoading={isLoading && isExpanded}

@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 interface Table {
   name: string
+  engine: string
   total_rows: number
 }
 
@@ -30,7 +31,7 @@ interface DatabaseNodeProps {
   onToggle: () => void
   onToggleTable: (key: string) => void
   onSelectDatabase: () => void
-  onSelectTable: (table: string) => void
+  onSelectTable: (table: string, engine: string) => void
 }
 
 const fetcher = (url: string): Promise<ApiResponse<Table[]>> =>
@@ -121,6 +122,7 @@ export function DatabaseNode({
               hostId={hostId}
               database={database}
               table={table.name}
+              engine={table.engine}
               totalRows={table.total_rows}
               isExpanded={isTableExpanded(tableKey)}
               isSelected={
@@ -128,7 +130,7 @@ export function DatabaseNode({
               }
               level={level + 1}
               onToggle={() => onToggleTable(tableKey)}
-              onSelect={() => onSelectTable(table.name)}
+              onSelect={() => onSelectTable(table.name, table.engine)}
             />
           )
         })

@@ -14,11 +14,18 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
 } from '@/components/ui/sidebar'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 interface TreeNodeProps {
   label: string
   icon?: ComponentType<{ className?: string }>
+  iconClassName?: string // Custom class for icon styling (e.g., engine-specific colors)
+  iconTooltip?: string // Optional tooltip for the icon
   isExpanded?: boolean
   isSelected?: boolean
   isHighlighted?: boolean // Parent highlight (e.g., database when table is selected)
@@ -35,6 +42,8 @@ interface TreeNodeProps {
 export function TreeNode({
   label,
   icon: Icon,
+  iconClassName,
+  iconTooltip,
   isExpanded = false,
   isSelected = false,
   isHighlighted = false,
@@ -99,14 +108,31 @@ export function TreeNode({
               isHighlighted && !isSelected && 'font-medium'
             )}
           >
-            {Icon && (
-              <Icon
-                className={cn(
-                  'size-4 shrink-0',
-                  isHighlighted && 'text-primary'
-                )}
-              />
-            )}
+            {Icon &&
+              (iconTooltip ? (
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <Icon
+                      className={cn(
+                        'size-4 shrink-0',
+                        isHighlighted && 'text-primary',
+                        iconClassName
+                      )}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="text-xs">
+                    {iconTooltip}
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <Icon
+                  className={cn(
+                    'size-4 shrink-0',
+                    isHighlighted && 'text-primary',
+                    iconClassName
+                  )}
+                />
+              ))}
             <span className="truncate">{label}</span>
             {badge && <div className="ml-auto">{badge}</div>}
           </SidebarMenuButton>

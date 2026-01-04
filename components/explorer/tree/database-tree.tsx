@@ -47,10 +47,14 @@ export function DatabaseTree({ hostId }: DatabaseTreeProps) {
 
   const handleSelectDatabase = (db: string) => {
     setDatabase(db)
+    // Also expand the database if not already expanded
+    if (!isDatabaseExpanded(db)) {
+      toggleDatabase(db)
+    }
   }
 
-  const handleSelectTable = (db: string, tbl: string) => {
-    setDatabaseAndTable(db, tbl)
+  const handleSelectTable = (db: string, tbl: string, engine: string) => {
+    setDatabaseAndTable(db, tbl, engine)
   }
 
   if (error) {
@@ -92,7 +96,9 @@ export function DatabaseTree({ hostId }: DatabaseTreeProps) {
               onToggle={() => toggleDatabase(db.name)}
               onToggleTable={toggleTable}
               onSelectDatabase={() => handleSelectDatabase(db.name)}
-              onSelectTable={(tbl) => handleSelectTable(db.name, tbl)}
+              onSelectTable={(tbl, engine) =>
+                handleSelectTable(db.name, tbl, engine)
+              }
             />
           ))}
         </SidebarMenu>

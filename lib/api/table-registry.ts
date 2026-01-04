@@ -7,13 +7,17 @@ import type { QueryConfig } from '@/types/query-config'
 
 import { queries } from '@/lib/query-config'
 import {
+  explorerAllDependenciesConfig,
   explorerColumnsConfig,
+  explorerDatabaseDependenciesConfig,
   explorerDatabasesConfig,
   explorerDdlConfig,
   explorerDependenciesDownstreamConfig,
   explorerDependenciesUpstreamConfig,
+  explorerDictionarySourceConfig,
   explorerIndexesConfig,
   explorerProjectionsConfig,
+  explorerTableDependenciesConfig,
   explorerTablesConfig,
 } from '@/lib/query-config/explorer'
 import { clustersConfig } from '@/lib/query-config/system/clusters'
@@ -66,10 +70,14 @@ const allQueryConfigs: QueryConfig[] = [
   explorerTablesConfig,
   explorerColumnsConfig,
   explorerDdlConfig,
+  explorerAllDependenciesConfig,
+  explorerDatabaseDependenciesConfig,
   explorerDependenciesDownstreamConfig,
   explorerDependenciesUpstreamConfig,
+  explorerDictionarySourceConfig,
   explorerIndexesConfig,
   explorerProjectionsConfig,
+  explorerTableDependenciesConfig,
 
   // Specific page configs
   clustersConfig,

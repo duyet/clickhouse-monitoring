@@ -2,6 +2,7 @@
 
 import { ExternalLink, Loader2 } from 'lucide-react'
 
+import { DatabaseOverview } from './database-overview'
 import { ExplorerBreadcrumb } from './explorer-breadcrumb'
 import { ExplorerEmptyState } from './explorer-empty-state'
 import { useExplorerState } from './hooks/use-explorer-state'
@@ -61,8 +62,13 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
     })
   }
 
-  if (!table || !database) {
+  if (!database) {
     return <ExplorerEmptyState />
+  }
+
+  // Show database-level overview when database selected but no table
+  if (!table) {
+    return <DatabaseOverview database={database} hostId={hostId} />
   }
 
   const partInfoUrl = `/part-info?host=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`

@@ -71,7 +71,7 @@ function OverviewPageContent() {
           className="space-y-2"
         >
           <div className="overflow-x-auto pb-1 -mx-1 px-1 sm:mx-0 sm:px-0">
-            <TabsList className="h-11 sm:h-9 gap-1 w-full sm:w-fit inline-flex min-w-max bg-muted/50 backdrop-blur-sm border border-border/40 shadow-sm p-1">
+            <TabsList className="h-11 gap-1 w-full md:w-fit inline-flex min-w-max backdrop-blur-sm border border-border/40 p-1">
               {OVERVIEW_TABS.map((tab) => (
                 <TabsTrigger
                   key={tab.value}
@@ -88,7 +88,7 @@ function OverviewPageContent() {
             <TabsContent
               key={tab.value}
               value={tab.value}
-              className="space-y-2 animate-in fade-in-0 slide-in-from-bottom-1 duration-300 ease-out"
+              className="space-y-2 animate-in fade-in-0 slide-in-from-bottom-1 duration-300 ease-out data-[state=inactive]:hidden"
               forceMount={visitedTabs.has(tab.value) ? true : undefined}
             >
               {visitedTabs.has(tab.value) ? (

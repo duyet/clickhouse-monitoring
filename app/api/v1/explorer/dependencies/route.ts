@@ -1,8 +1,10 @@
 /**
  * Explorer dependencies endpoint
  * GET /api/v1/explorer/dependencies?hostId=0&database=default&table=users&direction=upstream|downstream
+ * GET /api/v1/explorer/dependencies?hostId=0&database=default&direction=database (all deps in database)
+ * GET /api/v1/explorer/dependencies?hostId=0&database=default&table=dict_name&direction=dictionary (dictionary source)
  *
- * Returns dependency information for a table (upstream or downstream)
+ * Returns dependency information for a table (upstream or downstream) or entire database
  */
 
 import type { NextRequest } from 'next/server'
@@ -47,10 +49,29 @@ export async function GET(request: NextRequest): Promise<Response> {
   })
 
   // Determine which query config to use based on direction
-  const configName =
-    direction === 'upstream'
-      ? 'explorer-dependencies-upstream'
-      : 'explorer-dependencies-downstream'
+  let configName: string
+  switch (direction) {
+    case 'upstream':
+      configName = 'explorer-dependencies-upstream'
+      break
+    case 'downstream':
+      configName = 'explorer-dependencies-downstream'
+      break
+    case 'database':
+      configName = 'explorer-database-dependencies'
+      break
+    case 'dictionary':
+      configName = 'explorer-dictionary-source'
+      break
+    case 'all':
+      configName = 'explorer-all-dependencies'
+      break
+    case 'table':
+      configName = 'explorer-table-dependencies'
+      break
+    default:
+      configName = 'explorer-dependencies-downstream'
+  }
 
   // Get query definition
   const queryDef = getTableQuery(configName, {

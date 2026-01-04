@@ -1,56 +1,48 @@
 'use client'
 
-import { ArrowDownToLine, ArrowUpFromLine, ExternalLink } from 'lucide-react'
 import useSWR from 'swr'
 
+import type { ApiResponseMetadata } from '@/lib/api/types'
+
+import {
+  type DependencyEdge,
+  DependencyGraph,
+  type DependencyType,
+} from '../dependency-graph/dependency-graph'
 import { useExplorerState } from '../hooks/use-explorer-state'
-import Link from 'next/link'
-import { Badge } from '@/components/ui/badge'
+import { useMemo } from 'react'
+import { CardToolbar } from '@/components/cards/card-toolbar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { useHostId } from '@/lib/swr/use-host'
-
-interface UpstreamDependency {
-  source_database: string
-  source_table: string
-  engine: string
-  type: string
-}
-
-interface DownstreamDependency {
-  dependent_database: string
-  dependent_table: string
-  engine: string
-  type: string
-  create_table_query: string
-}
 
 interface ApiResponse<T> {
   data: T
-  metadata?: Record<string, unknown>
+  metadata?: ApiResponseMetadata
 }
 
 const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
   fetch(url).then((res) => res.json())
 
-function getTypeBadgeVariant(
-  type: string
-): 'default' | 'secondary' | 'outline' {
+/**
+ * Get a human-readable label for dependency type
+ */
+function getDependencyTypeLabel(type?: DependencyType): string {
   switch (type) {
-    case 'Materialized View':
-      return 'default'
-    case 'View':
-      return 'secondary'
+    case 'dependency':
+      return 'MV/View'
+    case 'dictGet':
+      return 'dictGet()'
+    case 'joinGet':
+      return 'joinGet()'
+    case 'mv_target':
+      return 'MV writes TO'
+    case 'dict_source':
+      return 'Dict source'
+    case 'external':
+      return 'External'
     default:
-      return 'outline'
+      return 'Table'
   }
 }
 
@@ -58,60 +50,64 @@ export function DependenciesTab() {
   const hostId = useHostId()
   const { database, table } = useExplorerState()
 
-  // Fetch upstream dependencies
+  // Use unified API for both table and database level
+  const apiUrl = useMemo(() => {
+    if (!database) return null
+    if (table) {
+      // Table-level: get all dependencies for this specific table
+      return `/api/v1/explorer/dependencies?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}&direction=table`
+    }
+    // Database-level: get all dependencies in the database
+    return `/api/v1/explorer/dependencies?hostId=${hostId}&database=${encodeURIComponent(database)}&direction=all`
+  }, [hostId, database, table])
+
   const {
-    data: upstreamResponse,
-    error: upstreamError,
-    isLoading: upstreamLoading,
-  } = useSWR<ApiResponse<UpstreamDependency[]>>(
-    database && table
-      ? `/api/v1/explorer/dependencies?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}&direction=upstream`
-      : null,
-    fetcher<UpstreamDependency[]>
-  )
+    data: response,
+    error,
+    isLoading,
+  } = useSWR<ApiResponse<DependencyEdge[]>>(apiUrl, fetcher<DependencyEdge[]>)
 
-  // Fetch downstream dependencies
-  const {
-    data: downstreamResponse,
-    error: downstreamError,
-    isLoading: downstreamLoading,
-  } = useSWR<ApiResponse<DownstreamDependency[]>>(
-    database && table
-      ? `/api/v1/explorer/dependencies?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}&direction=downstream`
-      : null,
-    fetcher<DownstreamDependency[]>
-  )
+  const dependencies = response?.data || []
 
-  const upstreamDeps = upstreamResponse?.data || []
-  const downstreamDeps = downstreamResponse?.data || []
+  // Count actual dependency edges (not standalone nodes)
+  const { depCount, hasRealDeps } = useMemo(() => {
+    let count = 0
+    for (const dep of dependencies) {
+      if (dep.target_table && dep.dependency_type) {
+        count++
+      }
+    }
+    return { depCount: count, hasRealDeps: count > 0 }
+  }, [dependencies])
 
-  if (!database || !table) {
+  // Build summary of dependency types
+  const depTypeSummary = useMemo(() => {
+    const types = new Map<DependencyType, number>()
+    for (const dep of dependencies) {
+      if (dep.dependency_type && dep.target_table) {
+        const current = types.get(dep.dependency_type) || 0
+        types.set(dep.dependency_type, current + 1)
+      }
+    }
+    return Array.from(types.entries())
+      .map(([type, count]) => `${count} ${getDependencyTypeLabel(type)}`)
+      .join(', ')
+  }, [dependencies])
+
+  if (!database) {
     return null
   }
 
-  const isLoading = upstreamLoading || downstreamLoading
-  const error = upstreamError || downstreamError
-
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-6">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-32 w-full" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-32 w-full" />
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-48" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[400px] w-full" />
+        </CardContent>
+      </Card>
     )
   }
 
@@ -127,135 +123,44 @@ export function DependenciesTab() {
     )
   }
 
-  const hasDependencies = upstreamDeps.length > 0 || downstreamDeps.length > 0
+  const title = table
+    ? `Dependencies: ${table}`
+    : `Database Dependencies: ${database}`
+
+  const subtitle = hasRealDeps
+    ? `${depCount} relationship${depCount !== 1 ? 's' : ''} (${depTypeSummary})`
+    : table
+      ? 'No dependencies found for this table'
+      : 'No dependencies found in this database'
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Upstream Dependencies */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ArrowUpFromLine className="size-4" />
-            Upstream Dependencies
-            <Badge variant="outline" className="ml-2">
-              {upstreamDeps.length}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {upstreamDeps.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Database</TableHead>
-                  <TableHead>Table</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Engine</TableHead>
-                  <TableHead className="w-10"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {upstreamDeps.map((dep) => (
-                  <TableRow key={`${dep.source_database}.${dep.source_table}`}>
-                    <TableCell>{dep.source_database}</TableCell>
-                    <TableCell className="font-medium">
-                      {dep.source_table}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getTypeBadgeVariant(dep.type)}>
-                        {dep.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {dep.engine}
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/explorer?host=${hostId}&database=${encodeURIComponent(dep.source_database)}&table=${encodeURIComponent(dep.source_table)}`}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <ExternalLink className="size-4" />
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              This table has no upstream dependencies
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Downstream Dependencies */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ArrowDownToLine className="size-4" />
-            Downstream Dependencies
-            <Badge variant="outline" className="ml-2">
-              {downstreamDeps.length}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {downstreamDeps.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Database</TableHead>
-                  <TableHead>Table</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Engine</TableHead>
-                  <TableHead className="w-10"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {downstreamDeps.map((dep) => (
-                  <TableRow
-                    key={`${dep.dependent_database}.${dep.dependent_table}`}
-                  >
-                    <TableCell>{dep.dependent_database}</TableCell>
-                    <TableCell className="font-medium">
-                      {dep.dependent_table}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getTypeBadgeVariant(dep.type)}>
-                        {dep.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {dep.engine}
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/explorer?host=${hostId}&database=${encodeURIComponent(dep.dependent_database)}&table=${encodeURIComponent(dep.dependent_table)}`}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <ExternalLink className="size-4" />
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No tables or views depend on this table
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Help text */}
-      {!hasDependencies && (
-        <p className="text-center text-sm text-muted-foreground">
-          Dependencies are tracked for Materialized Views and Views. Regular
-          tables typically don't have tracked dependencies.
-        </p>
-      )}
-    </div>
+    <Card className="group">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-base">{title}</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+          </div>
+          <CardToolbar
+            sql={response?.metadata?.sql}
+            metadata={
+              response?.metadata
+                ? { ...response.metadata, api: apiUrl || '' }
+                : undefined
+            }
+            data={dependencies as unknown as Record<string, unknown>[]}
+          />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <DependencyGraph
+          dependencies={dependencies}
+          currentTable={table || undefined}
+          currentDatabase={database}
+          hostId={hostId}
+          className="h-[500px]"
+        />
+      </CardContent>
+    </Card>
   )
 }
