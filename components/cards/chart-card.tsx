@@ -193,7 +193,7 @@ function ChartCardContentWithoutScale({
 }
 
 export const ChartCard = memo(function ChartCard({
-  enableScaleToggle = true,
+  enableScaleToggle = false,
   ...props
 }: ChartCardProps) {
   // Wrap in ChartScaleProvider if scale toggle is enabled
