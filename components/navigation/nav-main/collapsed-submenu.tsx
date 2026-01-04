@@ -11,6 +11,12 @@ const NewBadge = dynamic(() =>
   import('@/components/menu/components/new-badge').then((mod) => mod.NewBadge)
 )
 
+const CountBadge = dynamic(() =>
+  import('@/components/menu/components/count-badge').then(
+    (mod) => mod.CountBadge
+  )
+)
+
 import {
   Popover,
   PopoverContent,
@@ -82,14 +88,23 @@ export const CollapsedSubmenu = memo(function CollapsedSubmenu({
                 >
                   <div
                     className={cn(
-                      'flex items-center justify-between',
+                      'flex items-center justify-between gap-2',
                       'text-muted-hover:bg-accent hover:text-accent-foreground rounded-sm px-2 py-1.5 text-sm outline-hidden transition-colors',
                       'focus-visible:bg-accent focus-visible:text-accent-foreground',
                       isActive && 'bg-accent text-accent-foreground'
                     )}
                   >
-                    <span>{subItem.title}</span>
-                    <NewBadge href={subItem.href} isNew={subItem.isNew} />
+                    <span className="truncate">{subItem.title}</span>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      <NewBadge href={subItem.href} isNew={subItem.isNew} />
+                      {subItem.countKey && (
+                        <CountBadge
+                          countKey={subItem.countKey}
+                          countLabel={subItem.countLabel}
+                          countVariant={subItem.countVariant}
+                        />
+                      )}
+                    </span>
                   </div>
                 </HostPrefixedLink>
               )

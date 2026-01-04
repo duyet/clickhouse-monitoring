@@ -320,6 +320,7 @@ export function InfoBadge({ className, ...props }) {
 - Client components for interactivity (context, state management)
 - Compound components for complex UI (e.g., data tables)
 - Custom hooks for shared logic
+- **Hooks at deepest consumer**: Use hooks (like `useHostId`, `useSWR`) at the component that actually needs the data, NOT at parent levels. Avoid prop drilling through intermediate components. Example: `CountBadge` calls `useHostId()` internally rather than receiving `hostId` as a prop from `NavMain → MenuGroup → MenuItem`.
 
 #### Query Patterns
 

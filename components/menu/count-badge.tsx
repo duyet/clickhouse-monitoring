@@ -2,7 +2,8 @@
 
 import type { BadgeVariant } from '@/types/badge-variant'
 
-import { memo, useEffect, useState } from 'react'
+import { useMenuCount } from './hooks/use-menu-count'
+import { memo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { useHostId } from '@/lib/swr'
 
@@ -14,7 +15,7 @@ export interface CountBadgeProps {
 }
 
 /**
- * Client-side count badge that fetches count via secure API.
+ * Client-side count badge that fetches count via SWR.
  * Uses countKey to fetch from /api/v1/menu-counts/[key] endpoint.
  * No raw SQL is sent from the client - security by design.
  */
@@ -24,44 +25,7 @@ export const CountBadge = memo(function CountBadge({
   variant = 'outline',
 }: CountBadgeProps) {
   const hostId = useHostId()
-  const [count, setCount] = useState<number | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    if (!countKey) {
-      setIsLoading(false)
-      return
-    }
-
-    async function fetchCount() {
-      try {
-        // Use the secure menu-counts endpoint with countKey
-        const response = await fetch(
-          `/api/v1/menu-counts/${encodeURIComponent(countKey!)}?hostId=${hostId}`
-        )
-        if (!response.ok) {
-          setCount(null)
-          return
-        }
-
-        const result = (await response.json()) as {
-          success: boolean
-          data?: { count: number | null }
-        }
-        if (result.success && result.data && result.data.count !== null) {
-          setCount(result.data.count)
-        } else {
-          setCount(null)
-        }
-      } catch {
-        setCount(null)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchCount()
-  }, [countKey, hostId])
+  const { count, isLoading } = useMenuCount(countKey, hostId)
 
   if (isLoading || !count || count === 0) return null
 

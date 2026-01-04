@@ -14,6 +14,12 @@ const NewBadge = dynamic(() =>
   import('@/components/menu/components/new-badge').then((mod) => mod.NewBadge)
 )
 
+const CountBadge = dynamic(() =>
+  import('@/components/menu/components/count-badge').then(
+    (mod) => mod.CountBadge
+  )
+)
+
 import {
   Collapsible,
   CollapsibleContent,
@@ -67,7 +73,16 @@ const SingleMenuItem = memo(function SingleMenuItem({
           <span className="group-data-[state=collapsed]/sidebar:hidden">
             {item.title}
           </span>
-          <NewBadge href={item.href} isNew={item.isNew} />
+          <span className="ml-auto flex items-center gap-1.5 group-data-[state=collapsed]/sidebar:hidden">
+            <NewBadge href={item.href} isNew={item.isNew} />
+            {item.countKey && (
+              <CountBadge
+                countKey={item.countKey}
+                countLabel={item.countLabel}
+                countVariant={item.countVariant}
+              />
+            )}
+          </span>
         </HostPrefixedLink>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -96,7 +111,22 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
       <span className="group-data-[state=collapsed]/sidebar:hidden">
         {item.title}
       </span>
-      <ChevronRight className="ml-auto transition-all duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[state=collapsed]/sidebar:hidden" />
+      {item.countKey && (
+        <span className="ml-auto group-data-[state=collapsed]/sidebar:hidden">
+          <CountBadge
+            countKey={item.countKey}
+            countLabel={item.countLabel}
+            countVariant={item.countVariant}
+          />
+        </span>
+      )}
+      <ChevronRight
+        className={
+          item.countKey
+            ? 'ml-1.5 transition-all duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[state=collapsed]/sidebar:hidden'
+            : 'ml-auto transition-all duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[state=collapsed]/sidebar:hidden'
+        }
+      />
     </SidebarMenuButton>
   )
 
@@ -137,7 +167,16 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
                     <span className="group-data-[state=collapsed]/sidebar:hidden min-w-0 truncate">
                       {subItem.title}
                     </span>
-                    <NewBadge href={subItem.href} isNew={subItem.isNew} />
+                    <span className="ml-auto flex shrink-0 items-center gap-1.5">
+                      <NewBadge href={subItem.href} isNew={subItem.isNew} />
+                      {subItem.countKey && (
+                        <CountBadge
+                          countKey={subItem.countKey}
+                          countLabel={subItem.countLabel}
+                          countVariant={subItem.countVariant}
+                        />
+                      )}
+                    </span>
                   </HostPrefixedLink>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>

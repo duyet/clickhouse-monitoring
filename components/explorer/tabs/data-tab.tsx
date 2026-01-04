@@ -238,7 +238,8 @@ export function DataTab() {
       >
         <Table
           style={{
-            width: table.getCenterTotalSize(),
+            minWidth: table.getCenterTotalSize(),
+            width: '100%',
           }}
         >
           <TableHeader className="bg-muted/50">
@@ -249,7 +250,7 @@ export function DataTab() {
                     key={header.id}
                     className="relative select-none"
                     style={{
-                      width: header.getSize(),
+                      minWidth: header.getSize(),
                     }}
                   >
                     {header.isPlaceholder
@@ -282,8 +283,7 @@ export function DataTab() {
                   <TableCell
                     key={cell.id}
                     style={{
-                      width: cell.column.getSize(),
-                      maxWidth: cell.column.getSize(),
+                      minWidth: cell.column.getSize(),
                     }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

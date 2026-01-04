@@ -9,6 +9,8 @@ export interface MenuItem {
   description?: string
   /** Key for fetching count from /api/v1/menu-counts/[key] */
   countKey?: string
+  /** Label shown on hover (e.g., "running", "merges", "tables") */
+  countLabel?: string
   countVariant?: BadgeVariant
   items?: MenuItem[]
   icon?: Icon
