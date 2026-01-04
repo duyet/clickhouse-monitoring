@@ -112,6 +112,13 @@ export interface BarChartProps extends BaseChartProps {
   horizontal?: boolean
   tooltipTotal?: boolean
   onClickHref?: string
+  /**
+   * Y-axis scale type
+   * - 'linear': Standard linear scale (default)
+   * - 'log': Logarithmic scale
+   * - 'auto': Auto-detect based on data range
+   */
+  yAxisScale?: YAxisScale
 }
 
 /**
@@ -122,6 +129,14 @@ export interface BarChartProps extends BaseChartProps {
  * - 'quantity': Format as human-readable quantity (same as number, for semantic clarity)
  */
 export type ReadableFormat = 'bytes' | 'duration' | 'number' | 'quantity'
+
+/**
+ * Y-axis scale type
+ * - 'linear': Standard linear scale (default)
+ * - 'log': Logarithmic scale (for data spanning multiple orders of magnitude)
+ * - 'auto': Auto-detect based on data range (uses log if max/min ratio > 100)
+ */
+export type YAxisScale = 'linear' | 'log' | 'auto'
 
 export interface AreaChartProps extends BaseChartProps {
   categories: string[]
@@ -153,6 +168,14 @@ export interface AreaChartProps extends BaseChartProps {
    * Takes precedence over readableColumn if both are specified
    */
   readableColumns?: string[]
+
+  /**
+   * Y-axis scale type
+   * - 'linear': Standard linear scale (default)
+   * - 'log': Logarithmic scale
+   * - 'auto': Auto-detect based on data range
+   */
+  yAxisScale?: YAxisScale
 }
 
 export interface RadialChartProps extends BaseChartProps {

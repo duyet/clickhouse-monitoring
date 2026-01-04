@@ -146,13 +146,15 @@ export const DATE_RANGE_PRESETS = {
     ],
     defaultValue: '7d',
   },
-  /** System metrics: 1h, 6h, 24h, 7d */
+  /** System metrics: 1h, 6h, 24h, 7d, 14d, 30d */
   'system-metrics': {
     options: [
       RANGE_OPTIONS['1h'],
       RANGE_OPTIONS['6h'],
       RANGE_OPTIONS['24h'],
       RANGE_OPTIONS['7d'],
+      RANGE_OPTIONS['14d'],
+      RANGE_OPTIONS['30d'],
     ],
     defaultValue: '24h',
   },

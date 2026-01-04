@@ -29,9 +29,6 @@ export const CountBadge = memo(function CountBadge({
   const hostId = useHostId()
   const { count, isLoading } = useMenuCount(countKey, hostId)
 
-  // Debug logging
-  console.log('[CountBadge]', { countKey, count, isLoading, hostId })
-
   // Don't render if loading, no count, or count is 0
   if (isLoading || count === null || count === 0) {
     return null

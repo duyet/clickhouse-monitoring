@@ -138,6 +138,7 @@ export function createAreaChart(
             }
             staleError={staleError}
             onRetry={mutate}
+            enableScaleToggle={config.enableScaleToggle}
           >
             <AreaChart
               className={cn(

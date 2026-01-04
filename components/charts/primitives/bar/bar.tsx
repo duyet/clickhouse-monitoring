@@ -29,11 +29,13 @@ import {
   sortCategoriesByTotal,
 } from './utils'
 import { memo, useMemo } from 'react'
+import { useChartScaleValue } from '@/components/charts/chart-scale-context'
 import {
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart'
+import { getYAxisDomain, resolveYAxisScale } from '@/lib/chart-scale'
 import { cn } from '@/lib/utils'
 
 export const BarChart = memo(function BarChart({
@@ -58,6 +60,7 @@ export const BarChart = memo(function BarChart({
   xAxisLabel: _xAxisLabel,
   yAxisLabel: _yAxisLabel,
   className,
+  yAxisScale,
 }: BarChartProps & {
   yAxisTickFormatter?: (value: string | number) => string
 }) {
@@ -65,6 +68,34 @@ export const BarChart = memo(function BarChart({
   const sortedCategories = useMemo(
     () => (stack ? sortCategoriesByTotal(data, categories) : categories),
     [data, categories, stack]
+  )
+
+  // Get scale preference from context (if available)
+  const contextScale = useChartScaleValue()
+
+  // Use prop if provided, otherwise use context, otherwise 'linear'
+  const effectiveScale = yAxisScale ?? contextScale ?? 'linear'
+
+  // Resolve scale type (linear, log, or auto-detect)
+  const resolvedScale = useMemo(
+    () =>
+      resolveYAxisScale(
+        effectiveScale,
+        data as Record<string, unknown>[],
+        categories
+      ),
+    [effectiveScale, data, categories]
+  )
+
+  // Get appropriate domain for the scale type
+  const yAxisDomain = useMemo(
+    () =>
+      getYAxisDomain(
+        data as Record<string, unknown>[],
+        categories,
+        resolvedScale === 'log'
+      ),
+    [data, categories, resolvedScale]
   )
 
   const chartConfig = useMemo(
@@ -114,7 +145,9 @@ export const BarChart = memo(function BarChart({
             axisLine={false}
             tickMargin={8}
             tickFormatter={yAxisTickFormatter}
-            domain={[0, 'auto']}
+            scale={resolvedScale}
+            domain={yAxisDomain}
+            allowDataOverflow={resolvedScale === 'log'}
           />
         )}
 

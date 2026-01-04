@@ -14,6 +14,8 @@ interface BaseChartFactoryConfig {
   dataTestId?: string
   /** Enable date range selector with preset or custom config (opt-in) */
   dateRangeConfig?: DateRangeConfig | DateRangePresetName
+  /** Enable log scale toggle (default: true). Set to false for charts where log scale doesn't work well */
+  enableScaleToggle?: boolean
 }
 
 // Additional props that AreaChart accepts but aren't in AreaChartProps

@@ -12,7 +12,7 @@ import { useChartData } from '@/lib/swr'
 
 export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
   title = 'New Parts Created',
-  interval = 'toStartOfFifteenMinutes',
+  interval = 'toStartOfHour',
   lastHours = 24,
   className,
   chartClassName,

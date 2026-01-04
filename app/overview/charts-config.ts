@@ -273,7 +273,7 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
     className: 'w-full h-80',
     title: 'New Parts Created',
     interval: 'toStartOfHour',
-    lastHours: 24 * 7,
+    lastHours: 24,
     type: 'bar',
   },
   {

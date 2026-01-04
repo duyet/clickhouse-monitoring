@@ -12,7 +12,6 @@ import {
 import { useExplorerState } from '../hooks/use-explorer-state'
 import { useMemo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHostId } from '@/lib/swr/use-host'
 
@@ -100,26 +99,23 @@ export function DependenciesTab() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[400px] w-full" />
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        <Skeleton className="h-[600px] w-full rounded-lg" />
+      </div>
     )
   }
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-sm text-destructive">
-            Failed to load dependencies: {error.message}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex h-[400px] items-center justify-center rounded-lg border bg-muted/10 text-sm text-destructive">
+        Failed to load dependencies: {error.message}
+      </div>
     )
   }
 
@@ -134,33 +130,29 @@ export function DependenciesTab() {
       : 'No dependencies found in this database'
 
   return (
-    <Card className="group">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-base">{title}</CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
-          </div>
-          <CardToolbar
-            sql={response?.metadata?.sql}
-            metadata={
-              response?.metadata
-                ? { ...response.metadata, api: apiUrl || '' }
-                : undefined
-            }
-            data={dependencies as unknown as Record<string, unknown>[]}
-          />
+    <div className="group flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-base font-semibold">{title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         </div>
-      </CardHeader>
-      <CardContent>
-        <DependencyGraph
-          dependencies={dependencies}
-          currentTable={table || undefined}
-          currentDatabase={database}
-          hostId={hostId}
-          className="h-[600px]"
+        <CardToolbar
+          sql={response?.metadata?.sql}
+          metadata={
+            response?.metadata
+              ? { ...response.metadata, api: apiUrl || '' }
+              : undefined
+          }
+          data={dependencies as unknown as Record<string, unknown>[]}
         />
-      </CardContent>
-    </Card>
+      </div>
+      <DependencyGraph
+        dependencies={dependencies}
+        currentTable={table || undefined}
+        currentDatabase={database}
+        hostId={hostId}
+        className="h-[600px]"
+      />
+    </div>
   )
 }
