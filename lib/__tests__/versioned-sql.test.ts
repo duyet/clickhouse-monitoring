@@ -16,59 +16,59 @@ describe('Running Queries Version Selection', () => {
       const version = parseVersion('23.8.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-      // Should NOT contain peak_threads_usage (added in 24.8)
+      // peak_threads_usage is NOT available in ClickHouse 24.x (removed)
       expect(sql).not.toContain('peak_threads_usage')
       expect(sql).toContain('FROM system.processes')
     })
 
-    it('should select v24.1 query for ClickHouse 24.1', () => {
+    it('should select query for ClickHouse 24.1', () => {
       const version = parseVersion('24.1.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-      // 24.1 >= 24.1, so should use 24.1 variant with peak_threads_usage
-      expect(sql).toContain('peak_threads_usage')
+      // peak_threads_usage is NOT available in ClickHouse 24.x
+      expect(sql).not.toContain('peak_threads_usage')
     })
 
-    it('should select v24.1 query for ClickHouse 24.7', () => {
+    it('should select query for ClickHouse 24.7', () => {
       const version = parseVersion('24.7.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-      // 24.7 >= 24.1, so should use 24.1 variant
-      expect(sql).toContain('peak_threads_usage')
+      // peak_threads_usage is NOT available in ClickHouse 24.x
+      expect(sql).not.toContain('peak_threads_usage')
     })
 
-    it('should select v24.8 query for ClickHouse 24.8', () => {
+    it('should select query for ClickHouse 24.8', () => {
       const version = parseVersion('24.8.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-      // Should contain peak_threads_usage (added in 24.1)
-      expect(sql).toContain('peak_threads_usage')
-      expect(sql).toContain('readable_peak_threads_usage')
-      expect(sql).toContain('pct_peak_threads_usage')
+      // peak_threads_usage is NOT available in ClickHouse 24.x
+      expect(sql).not.toContain('peak_threads_usage')
+      expect(sql).not.toContain('readable_peak_threads_usage')
+      expect(sql).not.toContain('pct_peak_threads_usage')
     })
 
-    it('should select v24.1 query for ClickHouse 24.1', () => {
+    it('should select query for ClickHouse 24.1', () => {
       const version = parseVersion('24.1.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-      // Should contain peak_threads_usage (added in 24.1)
-      expect(sql).toContain('peak_threads_usage')
-      expect(sql).toContain('readable_peak_threads_usage')
-      expect(sql).toContain('pct_peak_threads_usage')
+      // peak_threads_usage is NOT available in ClickHouse 24.x
+      expect(sql).not.toContain('peak_threads_usage')
+      expect(sql).not.toContain('readable_peak_threads_usage')
+      expect(sql).not.toContain('pct_peak_threads_usage')
     })
 
-    it('should select v24.1 query for ClickHouse 25.1', () => {
+    it('should select query for ClickHouse 25.1', () => {
       const version = parseVersion('25.1.0.0')
       const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-      // 25.1 >= 24.1, so should use 24.1 variant
-      expect(sql).toContain('peak_threads_usage')
+      // peak_threads_usage is NOT available in ClickHouse 24.x+
+      expect(sql).not.toContain('peak_threads_usage')
     })
 
     it('should fallback to oldest variant when version is null', () => {
       const sql = selectVersionedSql(runningQueriesConfig.sql, null)
 
-      // Should use oldest (23.8) variant as fallback
+      // Should use oldest variant as fallback (no peak_threads_usage)
       expect(sql).not.toContain('peak_threads_usage')
     })
   })
@@ -94,7 +94,7 @@ describe('Running Queries Version Selection', () => {
       expect(sql).toContain('ORDER BY elapsed')
     })
 
-    it('both variants should have same base columns', () => {
+    it('both versions should have same base columns (single query now)', () => {
       const v23 = selectVersionedSql(
         runningQueriesConfig.sql,
         parseVersion('23.8.0.0')
@@ -104,7 +104,7 @@ describe('Running Queries Version Selection', () => {
         parseVersion('24.1.0.0')
       )
 
-      // Common columns
+      // Common columns (same query for all versions now)
       const commonColumns = [
         'query_id as query_detail',
         'readable_elapsed',
@@ -182,20 +182,20 @@ describe('Version Selection Edge Cases', () => {
     const version = parseVersion('24.1.1.12345')
     const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-    // Should match 24.1 variant
-    expect(sql).toContain('peak_threads_usage')
+    // peak_threads_usage is NOT available in ClickHouse 24.x
+    expect(sql).not.toContain('peak_threads_usage')
   })
 
   it('should handle exact boundary version', () => {
-    // Exactly 24.1.0.0 should match 24.1 variant
+    // Exactly 24.1.0.0 should use the single query (no versioning)
     const version = parseVersion('24.1.0.0')
     const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-    expect(sql).toContain('peak_threads_usage')
+    expect(sql).not.toContain('peak_threads_usage')
   })
 
   it('should handle version just below boundary', () => {
-    // 24.0.99.99 should NOT match 24.1 variant
+    // 24.0.99.99 should use the single query
     const version = parseVersion('24.0.99.99')
     const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
@@ -206,7 +206,7 @@ describe('Version Selection Edge Cases', () => {
     const version = parseVersion('22.0.0.0')
     const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-    // Should fallback to oldest variant
+    // Should fallback to single query (no peak_threads_usage)
     expect(sql).not.toContain('peak_threads_usage')
   })
 
@@ -214,14 +214,14 @@ describe('Version Selection Edge Cases', () => {
     const version = parseVersion('30.0.0.0')
     const sql = selectVersionedSql(runningQueriesConfig.sql, version)
 
-    // Should use newest available variant
-    expect(sql).toContain('peak_threads_usage')
+    // Should use the single query (no peak_threads_usage)
+    expect(sql).not.toContain('peak_threads_usage')
   })
 })
 
 describe('getSqlForDisplay vs selectVersionedSql', () => {
-  // This test documents the difference between display and execution
-  it('getSqlForDisplay returns newest, selectVersionedSql uses version', () => {
+  // This test documents the behavior with single (non-versioned) query
+  it('getSqlForDisplay and selectVersionedSql return same query for single query config', () => {
     const { getSqlForDisplay } = require('@/types/query-config')
 
     const displaySql = getSqlForDisplay(runningQueriesConfig.sql)
@@ -230,10 +230,11 @@ describe('getSqlForDisplay vs selectVersionedSql', () => {
       parseVersion('23.8.0.0')
     )
 
-    // Display shows newest (24.1) variant
-    expect(displaySql).toContain('peak_threads_usage')
-
-    // Execution for v23.8 uses older variant
+    // Both should return the same single query (no versioning)
+    expect(displaySql).not.toContain('peak_threads_usage')
     expect(executionSql).not.toContain('peak_threads_usage')
+
+    // Both queries should be identical
+    expect(displaySql).toBe(executionSql)
   })
 })
