@@ -1,11 +1,21 @@
 /**
  * @fileoverview Navigation E2E tests with query parameter routing
  * Tests the new static site architecture with ?host= query parameters
+ *
+ * Note: This test file matches the current menu structure:
+ * - Overview (top-level)
+ * - Queries (dropdown with Running Queries, History Queries, etc.)
+ * - Tables (dropdown with Database Explorer, Tables Overview, etc.)
+ * - Merges (dropdown with Merges, Merge Performance, Mutations)
+ * - Monitoring (dropdown with Metrics, Async Metrics, Custom Dashboard)
+ * - Security, Logs, System, Cluster, Operations (other sections)
  */
 
 describe('Navigation Tests (Query Parameter Routing)', () => {
   beforeEach(() => {
     cy.visit('/overview?host=0', { timeout: 30000 })
+    // Wait for page to be interactive
+    cy.get('body', { timeout: 20000 }).should('exist')
   })
 
   it('should open overview page with query parameter', () => {
@@ -14,56 +24,56 @@ describe('Navigation Tests (Query Parameter Routing)', () => {
     cy.url().should('include', 'host=0')
   })
 
-  it('should navigate to merge section and items', () => {
-    // Hover on "Merge" tab
-    cy.contains('Merge').trigger('mouseover')
+  it('should navigate to merges section via menu', () => {
+    // Click on "Merges" menu item (it's a dropdown trigger)
+    cy.contains('button', 'Merges').click()
 
-    // Merge menu items should be visible
-    cy.get('[data-testid="menu-merges"]').should('be.visible')
+    // Wait for dropdown content and click on Merges submenu item (first one)
+    cy.contains('Merge Performance').should('be.visible')
 
-    // Click on "Merges" item
-    cy.contains('Merges').click()
+    // Click on the first "Merges" link in the dropdown (not the trigger)
+    cy.contains('a', 'Merges').click()
 
     // Verify navigation to merges page with host parameter
     cy.url().should('include', '/merges')
     cy.url().should('include', 'host=0')
   })
 
-  it('should navigate to queries section and items', () => {
-    // Hover on "Queries" tab
-    cy.contains('Queries').trigger('mouseover')
+  it('should navigate to running queries via Queries menu', () => {
+    // Click on "Queries" menu item (dropdown trigger)
+    cy.contains('button', 'Queries').click()
 
-    // Queries menu items should be visible
-    cy.get('[data-testid="menu-running-queries"]').should('be.visible')
+    // Wait for dropdown to appear and click Running Queries
+    cy.contains('Running Queries').should('be.visible')
+    cy.contains('a', 'Running Queries').click()
 
-    // Click on "Running Queries" item
-    cy.contains('Running Queries').click()
-
-    // Verify navigation to running-queries page with host parameter
+    // Verify navigation
     cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
   })
 
-  it('should navigate to database section and items', () => {
-    // Hover on "Database" tab
-    cy.contains('Database').trigger('mouseover')
+  it('should navigate to tables via Tables menu', () => {
+    // Click on "Tables" menu item (dropdown trigger)
+    cy.contains('button', 'Tables').click()
 
-    // Database menu items should be visible
-    cy.get('[data-testid="menu-tables"]').should('be.visible')
+    // Wait for dropdown to appear and click Database Explorer
+    cy.contains('Database Explorer').should('be.visible')
+    cy.contains('a', 'Database Explorer').click()
 
-    // Click on "Tables" item
-    cy.contains('Tables').click()
-
-    // Verify navigation to tables page with host parameter
-    cy.url().should('include', '/tables')
+    // Verify navigation
+    cy.url().should('include', '/explorer')
     cy.url().should('include', 'host=0')
   })
 
-  it('should navigate to clusters section', () => {
-    // Click on Clusters
-    cy.contains('Clusters').click()
+  it('should navigate to clusters via Cluster menu', () => {
+    // Click on "Cluster" menu item (dropdown trigger)
+    cy.contains('button', 'Cluster').click()
 
-    // Verify navigation to clusters page with host parameter
+    // Wait for dropdown to appear and click Clusters (look for link containing "Clusters")
+    cy.contains('a', 'Clusters').should('be.visible')
+    cy.contains('a', 'Clusters').click()
+
+    // Verify navigation
     cy.url().should('include', '/clusters')
     cy.url().should('include', 'host=0')
   })
@@ -119,39 +129,56 @@ describe('Navigation Tests (Query Parameter Routing)', () => {
 describe('Menu Navigation', () => {
   beforeEach(() => {
     cy.visit('/overview?host=0', { timeout: 30000 })
+    // Wait for page to be fully loaded - sidebar takes some time to render
+    cy.get('body', { timeout: 20000 }).should('exist')
   })
 
   it('should display all main menu sections', () => {
-    // Check for main menu sections
+    // The app uses sidebar navigation - menu items are in the sidebar
+    // Check that the sidebar exists and contains main navigation items
     cy.get('body').should('contain', 'Overview')
-    cy.get('body').should('contain', 'Dashboard')
     cy.get('body').should('contain', 'Queries')
-    cy.get('body').should('contain', 'Database')
-    cy.get('body').should('contain', 'Merge')
-    cy.get('body').should('contain', 'Clusters')
+    cy.get('body').should('contain', 'Tables')
+    cy.get('body').should('contain', 'Merges')
   })
 
-  it('should show submenu items on hover', () => {
-    // Hover over Queries menu
-    cy.contains('Queries').trigger('mouseover')
+  it('should show submenu items on click', () => {
+    // Click on Queries menu
+    cy.contains('button', 'Queries').click()
 
     // Verify submenu items appear
-    cy.get('[data-testid="menu-running-queries"]').should('be.visible')
-    cy.get('[data-testid="menu-history-queries"]').should('be.visible')
+    cy.contains('Running Queries').should('be.visible')
+    cy.contains('History Queries').should('be.visible')
   })
 
   it('should navigate to overview from menu', () => {
-    cy.contains('Overview').click()
+    // First go to a different page
+    cy.visit('/dashboard?host=0')
+
+    // Then click Overview (it's a direct link, not dropdown)
+    cy.contains('a', 'Overview').click()
     cy.url().should('include', '/overview')
   })
 
-  it('should navigate to dashboard from menu', () => {
-    cy.contains('Dashboard').click()
+  it('should navigate to dashboard via Monitoring menu', () => {
+    // Click on Monitoring menu
+    cy.contains('button', 'Monitoring').click()
+
+    // Click on Custom Dashboard
+    cy.contains('Custom Dashboard').should('be.visible')
+    cy.contains('a', 'Custom Dashboard').click()
+
     cy.url().should('include', '/dashboard')
   })
 
-  it('should navigate to settings from menu', () => {
-    cy.contains('Settings').click()
+  it('should navigate to settings via System menu', () => {
+    // Click on System menu
+    cy.contains('button', 'System').click()
+
+    // Click on Settings link
+    cy.contains('a', 'Settings').should('be.visible')
+    cy.contains('a', 'Settings').click()
+
     cy.url().should('include', '/settings')
   })
 })

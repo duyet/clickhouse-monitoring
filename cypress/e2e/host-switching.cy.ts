@@ -83,9 +83,9 @@ describe('Host Switching E2E Tests (Query Parameter Routing)', () => {
     cy.url().should('include', 'host=1')
     cy.url().should('include', '/dashboard')
 
-    cy.visit('/table?host=1')
+    cy.visit('/tables?host=1')
     cy.url().should('include', 'host=1')
-    cy.url().should('include', '/table')
+    cy.url().should('include', '/tables')
 
     cy.visit('/running-queries?host=1')
     cy.url().should('include', 'host=1')
@@ -122,7 +122,6 @@ describe('Critical User Flows', () => {
     const pages = [
       '/overview',
       '/dashboard',
-      '/table',
       '/tables',
       '/clusters',
       '/running-queries',
@@ -143,10 +142,10 @@ describe('Critical User Flows', () => {
   it('should load charts on overview page', () => {
     cy.visit('/overview?host=0', { timeout: 30000 })
 
-    // Verify chart containers exist
-    cy.get('[data-testid*="-chart"]').should('have.length.greaterThan', 0)
+    // Wait for charts to load - check for chart titles (case insensitive)
+    cy.contains(/query count/i, { timeout: 30000 }).should('be.visible')
 
-    // Check for loading states or chart elements
+    // Verify the page loaded with chart content
     cy.get('body').should('contain', 'Overview')
   })
 
