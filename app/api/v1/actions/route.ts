@@ -17,6 +17,24 @@ interface ActionResult {
 
 const ROUTE_CONTEXT = { route: '/api/v1/actions', method: 'POST' }
 
+/**
+ * Valid SQL identifier pattern for table names
+ * Allows: database.table, table, `quoted.table`
+ * Pattern: alphanumeric, underscores, dots, backtick-quoted identifiers
+ */
+const VALID_TABLE_IDENTIFIER =
+  /^(`[^`]+`|[a-zA-Z_][a-zA-Z0-9_]*)(\.\s*(`[^`]+`|[a-zA-Z_][a-zA-Z0-9_]*))?$/
+
+/**
+ * Validate table identifier to prevent SQL injection
+ * @param table - Table name to validate (e.g., "default.users", "system.query_log")
+ * @returns true if valid, false if potentially malicious
+ */
+function isValidTableIdentifier(table: string): boolean {
+  if (!table || table.length > 256) return false
+  return VALID_TABLE_IDENTIFIER.test(table.trim())
+}
+
 async function handleKillQuery(
   hostId: number | string,
   queryId: string
@@ -49,6 +67,19 @@ async function handleOptimizeTable(
   hostId: number | string,
   table: string
 ): Promise<ActionResult> {
+  // SECURITY: Validate table identifier to prevent SQL injection
+  if (!isValidTableIdentifier(table)) {
+    ErrorLogger.logError(new Error('Invalid table identifier'), {
+      action: 'optimizeTable',
+      table,
+      reason: 'Failed identifier validation',
+    })
+    return {
+      success: false,
+      message: `Invalid table identifier: ${table}. Table names must be alphanumeric with optional database prefix.`,
+    }
+  }
+
   const { error } = await fetchData({
     query: `OPTIMIZE TABLE ${table}`,
     hostId: typeof hostId === 'string' ? parseInt(hostId, 10) : hostId,

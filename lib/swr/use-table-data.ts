@@ -3,6 +3,9 @@
 import useSWR, { type SWRConfiguration } from 'swr'
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
+import type { StaleError } from './use-chart-data'
+
+import { useMemo, useRef } from 'react'
 
 /**
  * Table data response structure from the API
@@ -130,12 +133,48 @@ export function useTableData<T = unknown>(
     ...swrConfig,
   })
 
+  // Check if we have valid data (even if there's an error from revalidation)
+  const dataArray = data?.data || []
+  const hasData = dataArray.length > 0
+
+  // Track timestamp for stale errors - use ref to persist across renders
+  const staleErrorTimestampRef = useRef<number>(0)
+
+  // Create staleError only when we have data but revalidation failed
+  // This distinguishes "initial load error" from "revalidation error"
+  const staleError = useMemo<StaleError | undefined>(() => {
+    if (!error || !hasData || isLoading) {
+      // No error, no data, or still loading - clear stale error
+      staleErrorTimestampRef.current = 0
+      return undefined
+    }
+
+    // We have data AND an error (revalidation failed)
+    // Use existing timestamp if this is the same error, otherwise create new
+    if (staleErrorTimestampRef.current === 0) {
+      staleErrorTimestampRef.current = Date.now()
+    }
+
+    return {
+      ...error,
+      name: error.name,
+      message: error.message,
+      timestamp: staleErrorTimestampRef.current,
+      type: (error as Error & { type?: string }).type,
+      details: (error as Error & { details?: StaleError['details'] }).details,
+    }
+  }, [error, hasData, isLoading])
+
   return {
-    data: data?.data || [],
+    data: dataArray,
     metadata: data?.metadata,
     error,
     isLoading,
     isValidating,
     refresh: mutate,
+    /** True when data exists (even if stale due to revalidation error) */
+    hasData,
+    /** Error from failed revalidation (only set when data exists but refresh failed) */
+    staleError,
   }
 }

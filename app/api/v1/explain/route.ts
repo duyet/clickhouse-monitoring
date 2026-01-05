@@ -14,9 +14,10 @@ import {
 import { createCachedResponse } from '@/lib/api/shared/response-builder'
 import { mapErrorTypeToStatusCode } from '@/lib/api/shared/status-code-mapper'
 import { getAndValidateHostId } from '@/lib/api/shared/validators'
+import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
-import { debug, error } from '@/lib/logger'
+import { debug, error as logError } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,6 +67,31 @@ export async function GET(request: NextRequest): Promise<Response> {
     )
   }
 
+  // SECURITY: Validate SQL query to prevent injection attacks
+  // Only allow SELECT and WITH queries to be explained
+  try {
+    validateSqlQuery(query)
+  } catch (validationError) {
+    logError('[GET /api/v1/explain] Security: SQL validation failed', {
+      queryPreview: query.substring(0, 100),
+      error:
+        validationError instanceof Error
+          ? validationError.message
+          : 'Unknown error',
+    })
+    return createErrorResponse(
+      {
+        type: ApiErrorType.ValidationError,
+        message:
+          validationError instanceof Error
+            ? validationError.message
+            : 'SQL validation failed',
+      },
+      400,
+      { ...ROUTE_CONTEXT, hostId }
+    )
+  }
+
   debug('[GET /api/v1/explain]', { hostId, queryLength: query.length })
 
   // Wrap query with EXPLAIN
@@ -80,7 +106,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   // Handle errors
   if (result.error) {
-    error('[GET /api/v1/explain] Query error:', result.error)
+    logError('[GET /api/v1/explain] Query error:', result.error)
 
     // Map FetchDataError type to ApiErrorType
     const errorTypeMap: Record<string, ApiErrorType> = {

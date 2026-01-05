@@ -109,8 +109,16 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   const queryString = searchParams.toString()
   const url = `/api/v1/charts/${chartName}${queryString ? `?${queryString}` : ''}`
 
-  // Build cache key
-  const key = ['/api/v1/charts', chartName, hostId, interval, lastHours, params]
+  // Build cache key - stringify params to ensure consistent caching
+  // (identical param objects with different references should share cache)
+  const key = [
+    '/api/v1/charts',
+    chartName,
+    hostId,
+    interval,
+    lastHours,
+    JSON.stringify(params || null),
+  ]
 
   // Fetcher function (memoized with useCallback to prevent recreation on every render)
   const fetcher = useCallback(async () => {

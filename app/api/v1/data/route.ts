@@ -28,6 +28,7 @@ import {
   getAndValidateHostId,
   validateDataRequest,
   validateSearchParams,
+  validateSqlQuery,
 } from '@/lib/api/shared/validators'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
@@ -68,6 +69,25 @@ export const GET = withApiHandler(async (request: Request) => {
       ...ROUTE_CONTEXT,
       method: 'GET',
     })
+  }
+
+  // SECURITY: Validate SQL query to prevent injection attacks
+  try {
+    validateSqlQuery(query)
+  } catch (validationError) {
+    error('[GET /api/v1/data] Security: SQL validation failed', {
+      queryPreview: query.substring(0, 100),
+      error:
+        validationError instanceof Error
+          ? validationError.message
+          : 'Unknown error',
+    })
+    return createValidationError(
+      validationError instanceof Error
+        ? validationError.message
+        : 'SQL validation failed',
+      { ...ROUTE_CONTEXT, method: 'GET' }
+    )
   }
 
   // Get and validate hostId from search params
