@@ -83,6 +83,20 @@ jobs:
       - name: Build
         run: bun run build
 
+      - name: Verify Cypress installation
+        run: |
+          echo "Verifying Cypress binary for ${{ matrix.browser }}..."
+          # Verify with extended timeout to handle CI flakiness
+          timeout 120s npx cypress verify -- ||
+          {
+            echo "Cypress verification failed, clearing cache and retrying..."
+            rm -rf ~/.cache/Cypress
+            bun install --force
+            timeout 120s npx cypress verify
+          }
+        env:
+          CYPRESS_BROWSER: ${{ matrix.browser }}
+
       - name: Test e2e
         uses: cypress-io/github-action@v6
         with:
