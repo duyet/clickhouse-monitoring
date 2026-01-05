@@ -23,7 +23,7 @@ export const distributedDdlQueueConfig: QueryConfig = {
         query_duration_ms
       FROM system.distributed_ddl_queue
       ORDER BY entry DESC, host
-      LIMIT 10_000
+      LIMIT 10000
     `,
   columns: [
     'entry',

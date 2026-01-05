@@ -18,8 +18,10 @@ export const stackTracesConfig: QueryConfig = {
       ) as stack_trace
     FROM system.stack_trace
     ORDER BY thread_name
-    SETTINGS allow_introspection_functions = 1
   `,
+  clickhouseSettings: {
+    allow_introspection_functions: 1,
+  },
   columns: ['thread_name', 'thread_id', 'query_id', 'stack_trace'],
   columnFormats: {
     thread_name: ColumnFormat.ColoredBadge,
