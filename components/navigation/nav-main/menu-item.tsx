@@ -26,6 +26,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import {
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -73,18 +74,22 @@ const SingleMenuItem = memo(function SingleMenuItem({
           <span className="group-data-[state=collapsed]/sidebar:hidden">
             {item.title}
           </span>
-          <span className="ml-auto flex items-center gap-1.5 group-data-[state=collapsed]/sidebar:hidden">
-            <NewBadge href={item.href} isNew={item.isNew} />
-            {item.countKey && (
-              <CountBadge
-                countKey={item.countKey}
-                countLabel={item.countLabel}
-                countVariant={item.countVariant}
-              />
-            )}
-          </span>
         </HostPrefixedLink>
       </SidebarMenuButton>
+      {item.isNew && (
+        <SidebarMenuBadge>
+          <NewBadge href={item.href} isNew={item.isNew} />
+        </SidebarMenuBadge>
+      )}
+      {item.countKey && (
+        <SidebarMenuBadge>
+          <CountBadge
+            countKey={item.countKey}
+            countLabel={item.countLabel}
+            countVariant={item.countVariant}
+          />
+        </SidebarMenuBadge>
+      )}
     </SidebarMenuItem>
   )
 })
@@ -106,6 +111,7 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
   const isCollapsed = state === 'collapsed'
 
   // When collapsed, use Popover submenu
+  // Note: Badges stay inline with button content for collapsed state
   if (isCollapsed) {
     const triggerButton = (
       <SidebarMenuButton isActive={hasActiveChild}>
@@ -150,18 +156,18 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
           <SidebarMenuButton isActive={hasActiveChild} tooltip={item.title}>
             {item.icon && <item.icon className="h-4 w-4" />}
             <span>{item.title}</span>
-            {item.countKey && (
-              <span className="ml-auto">
-                <CountBadge
-                  countKey={item.countKey}
-                  countLabel={item.countLabel}
-                  countVariant={item.countVariant}
-                />
-              </span>
-            )}
             <ChevronRight className="ml-auto transition-all duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
+        {item.countKey && (
+          <SidebarMenuBadge>
+            <CountBadge
+              countKey={item.countKey}
+              countLabel={item.countLabel}
+              countVariant={item.countVariant}
+            />
+          </SidebarMenuBadge>
+        )}
         <CollapsibleContent>
           <SidebarMenuSub>
             {item.items?.map((subItem) => (
@@ -177,16 +183,20 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
                     <span className="group-data-[state=collapsed]/sidebar:hidden min-w-0 truncate">
                       {subItem.title}
                     </span>
-                    <span className="ml-auto flex shrink-0 items-center gap-1.5">
-                      <NewBadge href={subItem.href} isNew={subItem.isNew} />
-                      {subItem.countKey && (
+                    {subItem.isNew && (
+                      <span className="ml-auto flex shrink-0">
+                        <NewBadge href={subItem.href} isNew={subItem.isNew} />
+                      </span>
+                    )}
+                    {subItem.countKey && (
+                      <span className="ml-auto flex shrink-0">
                         <CountBadge
                           countKey={subItem.countKey}
                           countLabel={subItem.countLabel}
                           countVariant={subItem.countVariant}
                         />
-                      )}
-                    </span>
+                      </span>
+                    )}
                   </HostPrefixedLink>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>

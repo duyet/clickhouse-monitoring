@@ -5,8 +5,6 @@ on:
     branches:
       - main
   release:
-    types:
-      - published
   pull_request:
   workflow_dispatch:
 
@@ -32,7 +30,7 @@ jobs:
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
-      clickhouse-versions: '25.1'
+      clickhouse-versions: '["25.1"]'
       platforms: linux/amd64,linux/arm64
       push-image: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags') }}
       cache-scope: buildkit
@@ -42,7 +40,7 @@ jobs:
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
-      clickhouse-versions: ''
+      clickhouse-versions: '["24.5"]'
       platforms: linux/amd64
       load-image: true
       test-container: true
