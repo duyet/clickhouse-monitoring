@@ -91,17 +91,17 @@ docker run -d \
 
 ## Documentation
 
-at https://duyet.github.io/clickhouse-monitoring
-
-- [Getting Started](https://duyet.github.io/clickhouse-monitoring/getting-started)
-  - [Local Development](https://duyet.github.io/clickhouse-monitoring/getting-started/local)
-  - [User Role and Profile](https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-requirements)
-  - [Enable System Tables](https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-enable-system-tables)
-- [Deployments](https://duyet.github.io/clickhouse-monitoring/deploy)
-  - [Vercel](https://duyet.github.io/clickhouse-monitoring/deploy/vercel)
-  - [Docker](https://duyet.github.io/clickhouse-monitoring/deploy/docker)
-  - [Kubernetes Helm Chart](https://duyet.github.io/clickhouse-monitoring/deploy/k8s)
-- [Advanced](https://duyet.github.io/clickhouse-monitoring/advanced)
+- https://zread.ai/duyet/clickhouse-monitoring _(AI Generated)_
+- https://duyet.github.io/clickhouse-monitoring
+  - [Getting Started](https://duyet.github.io/clickhouse-monitoring/getting-started)
+    - [Local Development](https://duyet.github.io/clickhouse-monitoring/getting-started/local)
+    - [User Role and Profile](https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-requirements)
+    - [Enable System Tables](https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-enable-system-tables)
+  - [Deployments](https://duyet.github.io/clickhouse-monitoring/deploy)
+    - [Vercel](https://duyet.github.io/clickhouse-monitoring/deploy/vercel)
+    - [Docker](https://duyet.github.io/clickhouse-monitoring/deploy/docker)
+    - [Kubernetes Helm Chart](https://duyet.github.io/clickhouse-monitoring/deploy/k8s)
+  - [Advanced](https://duyet.github.io/clickhouse-monitoring/advanced)
 
 ## Screenshots
 
