@@ -22,6 +22,8 @@ jobs:
       git_sha: ${{ steps.meta.outputs.git_sha }}
       git_ref: ${{ steps.meta.outputs.git_ref }}
       build_timestamp: ${{ steps.meta.outputs.build_timestamp }}
+      deployment_url: ${{ steps.deploy.outputs.url }}
+      deployment_id: ${{ steps.deploy.outputs.id }}
 
     steps:
       - name: Checkout
@@ -75,21 +77,47 @@ jobs:
           bun run cf:build
 
       - name: Deploy to Cloudflare Workers
+        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --minify
 
+      - name: Extract deployment details
+        id: deployment-details
+        run: |
+          # Get worker URL from wrangler.toml
+          WORKER_NAME=$(grep '^name ' wrangler.toml | awk '{print $2}' | tr -d '"')
+          WORKER_URL="https://${WORKER_NAME}.duyet.workers.dev"
+
+          # Extract version ID from deployment output (captured in wrangler action output)
+          # The wrangler action outputs deployment details we can use
+          echo "url=${WORKER_URL}" >> $GITHUB_OUTPUT
+
+          # Try to get version ID from recent deployment via wrangler
+          VERSION_ID=$(wrangler deployments list --json 2>/dev/null | jq -r '.[0].id' || echo "")
+
+          if [ -n "$VERSION_ID" ]; then
+            echo "id=${VERSION_ID}" >> $GITHUB_OUTPUT
+          fi
+
+          echo "Worker URL: ${WORKER_URL}"
+          echo "Version ID: ${VERSION_ID}"
+
       - name: Deployment summary
         run: |
           echo "### 🚀 Cloudflare Workers Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed clickhouse-monitor**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| URL | ${{ steps.deployment-details.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.deployment-details.outputs.id }}" ]; then
+            echo "| Version ID | \`${{ steps.deployment-details.outputs.id }}\` |" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "| Commit | \`${{ steps.meta.outputs.git_sha }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Branch/Tag | \`${{ steps.meta.outputs.git_ref }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build Time | ${{ steps.meta.outputs.build_timestamp }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Worker | \`clickhouse-monitor\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
