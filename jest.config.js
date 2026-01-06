@@ -38,7 +38,7 @@ module.exports = {
     },
     // Query-config integration tests
     {
-      displayName: 'integration',
+      displayName: 'queries-config',
       preset: 'ts-jest',
       testEnvironment: 'node',
       moduleNameMapper: {

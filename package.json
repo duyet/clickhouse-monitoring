@@ -29,7 +29,7 @@
     "check:fix": "biome check --write .",
     "test": "bun jest",
     "jest": "jest --coverage",
-    "test:integration": "jest --selectProjects integration",
+    "test:queries-config": "jest --selectProjects queries-config",
     "type-check": "tsc --noEmit",
     "preinstall": "npx only-allow bun",
     "prepare": "husky"
