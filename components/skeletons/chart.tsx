@@ -39,7 +39,7 @@ export const ChartSkeleton = memo(function ChartSkeleton({
     >
       <CardHeader className={chartCard.header}>
         <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase">
-          {title || <Skeleton className="h-3 w-32" />}
+          {title + '...' || <Skeleton className="h-3 w-32" />}
         </CardDescription>
       </CardHeader>
 
