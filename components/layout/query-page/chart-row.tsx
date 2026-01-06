@@ -92,10 +92,12 @@ export const ChartRow = memo(function ChartRow({
             <div
               className={cn(
                 'grid gap-3 w-full min-w-0 overflow-hidden items-stretch',
-                // Use 10-column grid when colSpan is used, otherwise 2-column
-                hasColSpan(charts)
-                  ? 'grid-cols-1 md:grid-cols-10 auto-rows-[minmax(200px,auto)]'
-                  : 'grid-cols-1 md:grid-cols-2 auto-rows-[minmax(200px,auto)]'
+                // Single chart: full width (1-column grid)
+                chartCount === 1
+                  ? 'grid-cols-1 auto-rows-[minmax(200px,auto)]'
+                  : hasColSpan(charts)
+                    ? 'grid-cols-1 md:grid-cols-10 auto-rows-[minmax(200px,auto)]'
+                    : 'grid-cols-1 md:grid-cols-2 auto-rows-[minmax(200px,auto)]'
               )}
             >
               {charts.map((chartConfig, index) => {
