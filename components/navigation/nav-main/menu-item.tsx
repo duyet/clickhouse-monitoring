@@ -91,6 +91,7 @@ const SingleMenuItem = memo(function SingleMenuItem({
 
 /**
  * Renders a menu item with children (collapsible)
+ * Uses standard shadcn/ui pattern - entire button triggers toggle
  */
 const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
   item,
@@ -104,34 +105,27 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
   const { state } = useSidebar()
   const isCollapsed = state === 'collapsed'
 
-  // The icon button (trigger) - rendered differently based on state
-  const triggerButton = (
-    <SidebarMenuButton isActive={hasActiveChild}>
-      {item.icon && <item.icon className="h-4 w-4" />}
-      <span className="group-data-[state=collapsed]/sidebar:hidden">
-        {item.title}
-      </span>
-      {item.countKey && (
-        <span className="ml-auto group-data-[state=collapsed]/sidebar:hidden">
-          <CountBadge
-            countKey={item.countKey}
-            countLabel={item.countLabel}
-            countVariant={item.countVariant}
-          />
-        </span>
-      )}
-      <ChevronRight
-        className={
-          item.countKey
-            ? 'ml-1.5 transition-all duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[state=collapsed]/sidebar:hidden'
-            : 'ml-auto transition-all duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[state=collapsed]/sidebar:hidden'
-        }
-      />
-    </SidebarMenuButton>
-  )
-
   // When collapsed, use Popover submenu
   if (isCollapsed) {
+    const triggerButton = (
+      <SidebarMenuButton isActive={hasActiveChild}>
+        {item.icon && <item.icon className="h-4 w-4" />}
+        <span className="group-data-[state=collapsed]/sidebar:hidden">
+          {item.title}
+        </span>
+        {item.countKey && (
+          <span className="ml-auto group-data-[state=collapsed]/sidebar:hidden">
+            <CountBadge
+              countKey={item.countKey}
+              countLabel={item.countLabel}
+              countVariant={item.countVariant}
+            />
+          </span>
+        )}
+        <ChevronRight className="ml-auto transition-all duration-200 group-data-[state=collapsed]/sidebar:hidden" />
+      </SidebarMenuButton>
+    )
+
     return (
       <SidebarMenuItem>
         <CollapsedSubmenu
@@ -143,7 +137,8 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
     )
   }
 
-  // When expanded, use regular Collapsible
+  // Standard shadcn/ui pattern: Collapsible wraps SidebarMenuItem
+  // Entire button (text + chevron) triggers toggle
   return (
     <Collapsible
       asChild
@@ -151,7 +146,22 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
       className="group/collapsible"
     >
       <SidebarMenuItem>
-        <CollapsibleTrigger asChild>{triggerButton}</CollapsibleTrigger>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton isActive={hasActiveChild} tooltip={item.title}>
+            {item.icon && <item.icon className="h-4 w-4" />}
+            <span>{item.title}</span>
+            {item.countKey && (
+              <span className="ml-auto">
+                <CountBadge
+                  countKey={item.countKey}
+                  countLabel={item.countLabel}
+                  countVariant={item.countVariant}
+                />
+              </span>
+            )}
+            <ChevronRight className="ml-auto transition-all duration-200 group-data-[state=open]/collapsible:rotate-90" />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub>
             {item.items?.map((subItem) => (

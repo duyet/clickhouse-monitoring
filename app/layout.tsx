@@ -13,7 +13,6 @@ import { KeyboardShortcuts } from '@/components/controls/keyboard-shortcuts'
 import { HeaderActions } from '@/components/header/header-actions'
 import { Breadcrumb } from '@/components/navigation/breadcrumb'
 import { ResizableSidebarProvider } from '@/components/resizable-sidebar-provider'
-import { PageSkeleton } from '@/components/skeletons'
 import { NetworkStatusBanner } from '@/components/status/network-status-banner'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
@@ -108,7 +107,7 @@ export default function RootLayout({
                 </div>
               </header>
               <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
-                <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+                {children}
               </div>
             </SidebarInset>
           </ResizableSidebarProvider>
