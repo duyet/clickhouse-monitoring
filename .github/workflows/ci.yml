@@ -1,4 +1,4 @@
-name: Build and Push
+name: Image build and Push
 
 on:
   push:
@@ -17,11 +17,13 @@ permissions:
 
 jobs:
   build:
+    name: build
     uses: ./.github/workflows/base.yml
     with:
       job-type: build
 
   lint:
+    name: lint
     uses: ./.github/workflows/base.yml
     with:
       job-type: lint
