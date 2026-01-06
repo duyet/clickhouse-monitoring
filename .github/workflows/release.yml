@@ -1,0 +1,23 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-*'  # Pre-releases like v0.2.0-beta.1
+
+permissions:
+  contents: read
+  id-token: write
+  packages: write
+
+jobs:
+  release-docker:
+    name: release-docker
+    uses: ./.github/workflows/base.yml
+    with:
+      job-type: docker
+      clickhouse-versions: '["24.5","24.6","24.12","25.1"]'
+      platforms: linux/amd64,linux/arm64
+      push-image: true
+      cache-scope: release

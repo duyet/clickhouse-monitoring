@@ -126,12 +126,22 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
+            # Branch name (e.g., main) - for main branch builds
             type=ref,event=branch
+            # PR number - for PR builds
             type=ref,event=pr
+            # Full version (e.g., 0.2.0, 0.2.0-beta.1)
             type=semver,pattern={{version}}
+            # Major.Minor (e.g., 0.2) - only for stable releases, not pre-releases
             type=semver,pattern={{major}}.{{minor}}
+            # Major version (e.g., 0) - only for stable releases, not pre-releases
+            type=semver,pattern={{major}}
+            # Latest tag - for main branch and stable releases only (not pre-releases)
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || (startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-')) }}
+            # Main tag - for main branch and all releases (stable and pre-release)
+            type=raw,value=main,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+            # SHA for uniqueness
             type=sha,prefix=
-            type=schedule,pattern={{date 'YYYYMMDD'}}
 
       - name: Extract first tag
         if: ${{ inputs.job-type == 'docker' && inputs.test-container }}
