@@ -176,8 +176,6 @@ jobs:
           cache-to: |
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
             type=gha,mode=max,scope=buildkit
-          allow: network.host,security.insecure
-          network: host
           platforms: ${{ inputs.platforms }}
 
       # === Container Testing ===
