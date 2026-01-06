@@ -1,5 +1,5 @@
-ARG GITHUB_SHA
-ARG GITHUB_REF
+ARG GITHUB_SHA=${GITHUB_SHA:-unknown}
+ARG GITHUB_REF=${GITHUB_REF:-unknown}
 
 FROM oven/bun:1-alpine AS base
 WORKDIR /app
@@ -34,10 +34,11 @@ RUN addgroup --system --gid 1001 app && \
     mkdir .next && \
     chown app:app .next
 
-COPY --from=deps /app/node_modules /app/node_modules
-COPY --from=builder /app/public/* ./
+# IMPORTANT: .next/standalone already contains all necessary production dependencies
+# DO NOT copy node_modules from deps stage - this causes 438MB+ duplication
 COPY --from=builder --chown=app:app /app/.next/standalone ./
 COPY --from=builder --chown=app:app /app/.next/static ./.next/static
+COPY --from=builder /app/public/* ./
 
 USER app
 

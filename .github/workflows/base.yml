@@ -166,6 +166,9 @@ jobs:
           load: ${{ inputs.load-image }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GITHUB_SHA=${{ github.sha }}
+            GITHUB_REF=${{ github.ref }}
           # Multi-layered cache strategy: registry (primary) + GitHub Actions (fallback)
           cache-from: |
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
