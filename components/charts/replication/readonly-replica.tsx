@@ -9,10 +9,11 @@ export const ChartReadonlyReplica = createBarChart({
   index: 'event_time',
   categories: ['ReadonlyReplica'],
   defaultTitle: 'Readonly Replicated Tables',
-  defaultInterval: 'toStartOfFifteenMinutes',
+  defaultInterval: 'toStartOfHour',
   defaultLastHours: 24,
   dataTestId: 'readonly-replica-chart',
   dateRangeConfig: 'realtime',
+  xAxisDateFormat: true,
 })
 
 export type ChartReadonlyReplicaProps = ChartProps
