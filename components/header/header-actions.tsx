@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Moon, Search, Sun } from 'lucide-react'
+import { Bell, Moon, Sun } from 'lucide-react'
 
 import { useTheme } from 'next-themes'
 import { memo, useEffect, useState } from 'react'
@@ -37,27 +37,6 @@ export const HeaderActions = memo(function HeaderActions({
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
       />
-
-      {/* Search trigger - hidden on mobile */}
-      <button
-        type="button"
-        onClick={() => setCommandPaletteOpen(true)}
-        className="relative hidden h-8 w-40 items-center gap-2 rounded-md border border-transparent bg-muted/30 px-2.5 text-xs transition-all hover:bg-muted/50 hover:ring-1 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30 md:inline-flex md:w-64"
-        aria-label="Search pages and commands"
-        aria-describedby="search-shortcut"
-      >
-        <Search
-          aria-hidden="true"
-          className="h-3.5 w-3.5 text-muted-foreground/60"
-        />
-        <span className="text-muted-foreground/60">Search...</span>
-        <kbd
-          id="search-shortcut"
-          className="ml-auto rounded border bg-muted px-1.5 text-[10px] font-medium"
-        >
-          ⌘K
-        </kbd>
-      </button>
 
       {/* Theme toggle - hidden on mobile */}
       {mounted ? (

@@ -33,6 +33,15 @@
   transition: none !important;
 }
 
+/* Command palette input wrapper - better border */
+[data-slot="command-input-wrapper"] {
+  border-color: oklch(from var(--border) l c h / 0.5);
+  transition: border-color 150ms ease;
+}
+[data-slot="command-input-wrapper"]:hover {
+  border-color: var(--border);
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
