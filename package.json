@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "bun --bun next dev --turbopack",
-    "build": "bun --bun next build --webpack",
+    "build": "bun --bun next build",
     "start": "bun --bun next start",
     "start:coverage": "nyc --silent node server",
     "cf:build": "bun run build && opennextjs-cloudflare build --skipBuild",
