@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git Commit Convention
+
+**IMPORTANT**: All commits should include the co-authorship:
+```
+Co-Authored-By: duyetbot <duyetbot@users.noreply.github.com>
+```
+
 ## Project Overview
 
 This is a Next.js 15 (React 19) ClickHouse monitoring dashboard that provides real-time insights into ClickHouse clusters through system tables. The application connects to ClickHouse instances and displays metrics, query performance, table information, and cluster health.

@@ -1,1 +1,0 @@
-- should commit with co-author "Co-Authored-By: duyetbot <duyetbot@users.noreply.github.com>" for open source project (e.g. duyet/monorepo, duyet/duyetbot, duyet/ccc, duyet/okie.one, ...)

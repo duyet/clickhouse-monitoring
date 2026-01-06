@@ -34,7 +34,6 @@ jobs:
       clickhouse-versions: '["25.1"]'
       platforms: linux/amd64,linux/arm64
       push-image: true
-      cache-scope: buildkit
 
   validate-docker:
     name: validate-docker
@@ -45,4 +44,3 @@ jobs:
       platforms: linux/amd64
       load-image: true
       test-container: true
-      cache-scope: buildkit
