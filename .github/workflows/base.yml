@@ -166,8 +166,13 @@ jobs:
           load: ${{ inputs.load-image }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=buildkit
-          cache-to: type=gha,mode=max,scope=buildkit
+          # Multi-layered cache strategy: registry (primary) + GitHub Actions (fallback)
+          cache-from: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+            type=gha,scope=buildkit
+          cache-to: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+            type=gha,mode=max,scope=buildkit
           allow: network.host,security.insecure
           network: host
           platforms: ${{ inputs.platforms }}

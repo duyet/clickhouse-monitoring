@@ -16,10 +16,11 @@ ENV NODE_ENV=production \
     GITHUB_SHA=${GITHUB_SHA} \
     GITHUB_REF=${GITHUB_REF}
 
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
-
+# Copy dependencies from deps stage (avoid reinstalling)
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Build the application
 RUN bun run build
 
 # Production image, copy all the files and run next
