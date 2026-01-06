@@ -1,4 +1,4 @@
-name: Reusable
+name: Reusable CI/CD Base
 
 on:
   workflow_call:
@@ -6,28 +6,63 @@ on:
       job-type:
         required: true
         type: string
+      clickhouse-versions:
+        type: string
+        documentation: 'Comma-separated ClickHouse versions (e.g., "24.5,24.6")'
+        default: '24.5,24.6'
+      platforms:
+        type: string
+        documentation: 'Platform(s) for Docker build (e.g., "linux/amd64,linux/arm64")'
+        default: 'linux/amd64'
+      push-image:
+        type: boolean
+        default: false
+      load-image:
+        type: boolean
+        default: false
+      test-container:
+        type: boolean
+        default: false
+      image-tag:
+        type: string
+        documentation: 'Custom Docker image tag override'
+
+    outputs:
+      tags:
+        value: ${{ jobs.job.outputs.tags }}
+      first_tag:
+        value: ${{ jobs.job.outputs.first_tag }}
 
 env:
   CLICKHOUSE_HOST: http://localhost:8123
-  CLICKHOST_USER: default
-  CLICKHOST_PASS: ''
+  CLICKHOUSE_USER: default
+  CLICKHOUSE_PASSWORD: ''
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 permissions:
   contents: read
   id-token: write
+  packages: write
 
 jobs:
   job:
     name: ${{ inputs.job-type }}
     runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+      first_tag: ${{ steps.first_tag.outputs.tag }}
 
     strategy:
+      fail-fast: false
       matrix:
-        clickhouse: [24.5, 24.6]
+        clickhouse-version: ${{ inputs.clickhouse-versions != '' && fromJSON(format('[{0}]', inputs.clickhouse-versions)) || ['24.5'] }}
+      exclude:
+        - clickhouse-version: ''
 
     services:
       clickhouse:
-        image: ghcr.io/duyet/docker-images:clickhouse_${{ matrix.clickhouse}}
+        image: ghcr.io/duyet/docker-images:clickhouse_${{ matrix.clickhouse-version }}
         ports:
           - 8123:8123
           - 9000:9000
@@ -46,23 +81,103 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Nextjs Cache
+      - name: Next.js Cache
         uses: actions/cache@v5
         with:
           path: .next/cache
-          # Generate a new cache whenever packages or source files change.
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-
 
       - name: Install dependencies
         run: bun install
 
+      # === Linting ===
       - name: Lint
         if: ${{ inputs.job-type == 'lint' }}
         run: bun run lint
 
+      # === App Build ===
       - name: Build App
         if: ${{ inputs.job-type == 'build' }}
         run: bun run build
+
+      # === Docker Build ===
+      - name: Set up QEMU
+        if: ${{ inputs.job-type == 'docker' }}
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        if: ${{ inputs.job-type == 'docker' }}
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: network=host
+
+      - name: Login to Container registry
+        if: ${{ inputs.job-type == 'docker' && inputs.push-image }}
+        uses: docker/login-action@6862ffc5ab2cdb4405cf318a62a6f4c066e2298b
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        if: ${{ inputs.job-type == 'docker' }}
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=
+            type=schedule,pattern={{date 'YYYYMMDD'}}
+
+      - name: Extract first tag
+        if: ${{ inputs.job-type == 'docker' && inputs.test-container }}
+        id: first_tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tags = JSON.parse('${{ steps.meta.outputs.json }}').tags;
+            core.setOutput('tag', tags[0]);
+
+      - name: Build and push Docker image
+        if: ${{ inputs.job-type == 'docker' }}
+        uses: docker/build-push-action@v6
+        with:
+          push: ${{ inputs.push-image }}
+          load: ${{ inputs.load-image }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=buildkit
+          cache-to: type=gha,mode=max,scope=buildkit
+          allow: network.host,security.insecure
+          network: host
+          platforms: ${{ inputs.platforms }}
+          build-context: .
+
+      # === Container Testing ===
+      - name: Test container
+        if: ${{ inputs.job-type == 'docker' && inputs.test-container }}
+        env:
+          TAG: ${{ steps.first_tag.outputs.tag }}
+        run: |
+          docker run -d \
+            --name test-app \
+            --network host \
+            -e CLICKHOUSE_HOST=http://localhost:8123 \
+            -e CLICKHOUSE_USER=default \
+            -e CLICKHOUSE_PASSWORD="" \
+            -e PORT=3000 \
+            "$TAG"
+
+          # Wait for container health
+          timeout 60 bash -c 'until curl -sSf http://localhost:3000/ > /dev/null 2>&1; do sleep 2; done'
+
+          # Health checks
+          curl -sSf http://localhost:3000/ | grep -q "ClickHouse Monitoring"
+          curl -sSf http://localhost:3000/api/healthz | grep -q "ok"
+          curl -sSf http://localhost:3000/api/version | grep -q "version"

@@ -8,7 +8,7 @@ WORKDIR /app
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile --prod
+RUN bun install --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -33,7 +33,8 @@ RUN addgroup --system --gid 1001 app && \
     mkdir .next && \
     chown app:app .next
 
-COPY --from=builder /app/public ./public
+COPY --from=deps /app/node_modules /app/node_modules
+COPY --from=builder /app/public/* ./
 COPY --from=builder --chown=app:app /app/.next/standalone ./
 COPY --from=builder --chown=app:app /app/.next/static ./.next/static
 
