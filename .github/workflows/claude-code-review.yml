@@ -37,13 +37,13 @@ jobs:
         env:
           ANTHROPIC_BASE_URL: https://openrouter.ai/api
           ANTHROPIC_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          ANTHROPIC_DEFAULT_HAIKU_MODEL: '@preset/claude-code-github-action'
-          ANTHROPIC_DEFAULT_SONNET_MODEL: '@preset/claude-code-github-action'
-          ANTHROPIC_DEFAULT_OPUS_MODEL: '@preset/claude-code-github-action'
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: 'anthropic/claude-3.5-haiku'
+          ANTHROPIC_DEFAULT_SONNET_MODEL: 'anthropic/claude-3.5-sonnet'
+          ANTHROPIC_DEFAULT_OPUS_MODEL: 'anthropic/claude-3.5-sonnet'
         with:
           anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
           claude_args: |
-            --model @preset/claude-code-github-action
+            --model anthropic/claude-3.5-sonnet
             --allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"
           prompt: |
             REPO: ${{ github.repository }}
