@@ -87,8 +87,8 @@ jobs:
       - name: Extract deployment details
         id: deployment-details
         run: |
-          # Get worker URL from wrangler.toml
-          WORKER_NAME=$(grep '^name ' wrangler.toml | awk '{print $2}' | tr -d '"')
+          # Get worker URL from wrangler.toml (TOML format: name = "value")
+          WORKER_NAME=$(grep '^name = ' wrangler.toml | head -n 1 | awk -F'"' '{print $2}')
           WORKER_URL="https://${WORKER_NAME}.duyet.workers.dev"
 
           # Extract version ID from deployment output (captured in wrangler action output)
