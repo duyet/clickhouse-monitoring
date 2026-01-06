@@ -116,7 +116,7 @@ jobs:
           TMPDIR: /home/runner/work/_temp
 
       - name: Login to Container registry
-        if: ${{ inputs.job-type == 'docker' && inputs.push-image }}
+        if: ${{ inputs.job-type == 'docker' }}
         uses: docker/login-action@6862ffc5ab2cdb4405cf318a62a6f4c066e2298b
         with:
           registry: ${{ env.REGISTRY }}
