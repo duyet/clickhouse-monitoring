@@ -73,11 +73,13 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
       <DialogTrigger asChild>
         <div
           className={cn(
-            'flex max-w-fit cursor-pointer flex-row items-center gap-1',
+            'flex max-w-fit cursor-pointer flex-row items-center gap-1 line-clamp-1',
             options?.trigger_classname
           )}
         >
-          <code className="font-normal whitespace-nowrap">{formatted}</code>
+          <code className="font-normal whitespace-nowrap truncated">
+            {formatted}
+          </code>
           <SizeIcon className="size-4 flex-none" />
         </div>
       </DialogTrigger>
