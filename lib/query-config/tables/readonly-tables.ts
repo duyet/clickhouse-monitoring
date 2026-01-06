@@ -5,27 +5,36 @@ import { ColumnFormat } from '@/types/column-format'
 export const readOnlyTablesConfig: QueryConfig = {
   name: 'readonly-tables',
   description: `Readonly tables and their replicas`,
-  sql: `
-      SELECT
-        database || '.' || table as table,
-        is_readonly,
-        absolute_delay,
-        zookeeper_path,
-        last_queue_update_exception,
-        last_queue_update,
-        zookeeper_exception,
-        total_replicas,
-        active_replicas,
-        is_leader,
-        is_session_expired,
-        replica_name,
-        replica_path,
-        log_pointer,
-        engine
-      FROM system.replicas
-      WHERE is_readonly = 1
-      ORDER BY database, table
-    `,
+  // Version-aware queries: system.replicas schema is stable across versions
+  // No documented schema changes - using version-aware pattern for consistency
+  sql: [
+    {
+      since: '19.1',
+      description:
+        'Base query for system.replicas - all columns available since early versions',
+      sql: `
+        SELECT
+          database || '.' || table as table,
+          is_readonly,
+          absolute_delay,
+          zookeeper_path,
+          last_queue_update_exception,
+          last_queue_update,
+          zookeeper_exception,
+          total_replicas,
+          active_replicas,
+          is_leader,
+          is_session_expired,
+          replica_name,
+          replica_path,
+          log_pointer,
+          engine
+        FROM system.replicas
+        WHERE is_readonly = 1
+        ORDER BY database, table
+      `,
+    },
+  ],
   columns: [
     'table',
     'is_readonly',
