@@ -1,9 +1,10 @@
 import type { NextRequest } from 'next/server'
-import { NextResponse, userAgent } from 'next/server'
 
-import { getClient } from '@/lib/clickhouse'
-import { normalizeUrl } from '@/lib/utils'
 import { geolocation } from '@vercel/functions'
+import { NextResponse, userAgent } from 'next/server'
+import { getClient } from '@/lib/clickhouse'
+import { ErrorLogger } from '@/lib/logger'
+import { normalizeUrl } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +20,8 @@ export async function GET(request: NextRequest) {
   }
 
   const url = normalizeUrl(rawUrl)
-  const client = await getClient({ web: true, hostId })
+  // getClient will auto-detect and use web client for Cloudflare Workers
+  const client = await getClient({ hostId })
 
   // https://nextjs.org/docs/app/api-reference/functions/userAgent
   const ua = userAgent(request)
@@ -54,11 +56,15 @@ export async function GET(request: NextRequest) {
         },
       ],
     })
-    console.log(`[/api/pageview] 'PageView' event created: ${request.url}`)
+    ErrorLogger.logDebug('[/api/pageview] PageView event created', {
+      route: '/api/pageview',
+      url: request.url,
+    })
     return NextResponse.json({ message: 'PageView event created', url })
   } catch (error) {
-    console.error(
-      `[/api/pageview] 'PageView' failed create event, error: "${error}"`
+    ErrorLogger.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      { route: '/api/pageview', event: 'PageView' }
     )
     return NextResponse.json(
       { error: `Error creating PageView event: ${error}` },

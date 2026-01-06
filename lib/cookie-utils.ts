@@ -3,6 +3,8 @@
  * Provides functions to prevent cookie injection and XSS attacks
  */
 
+import { ErrorLogger } from '@/lib/logger'
+
 /**
  * Sanitizes a cookie value by encoding special characters
  * This prevents cookie injection and XSS attacks
@@ -38,7 +40,13 @@ export function setSecureCookie(
   }
 ): void {
   if (typeof document === 'undefined') {
-    console.warn('setSecureCookie can only be called in browser context')
+    ErrorLogger.logWarning(
+      'setSecureCookie can only be called in browser context',
+      {
+        component: 'cookie-utils',
+        action: 'setSecureCookie',
+      }
+    )
     return
   }
 
@@ -85,7 +93,9 @@ export function generateSafeCookieScript(
   // For numeric values, we can safely convert them to string without encoding
   // since they won't contain special characters
   if (!Number.isInteger(value) || value < 0) {
-    throw new Error(`Invalid cookie value: ${value}. Must be a non-negative integer.`)
+    throw new Error(
+      `Invalid cookie value: ${value}. Must be a non-negative integer.`
+    )
   }
 
   // Using JSON.stringify ensures proper escaping of any special characters

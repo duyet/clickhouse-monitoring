@@ -3,7 +3,6 @@
  * Tests edge cases and error scenarios for the fetchDataWithHost wrapper
  */
 
-import { fetchDataWithHost, validateHostId } from '@/lib/clickhouse-helpers'
 import {
   afterEach,
   beforeEach,
@@ -12,30 +11,23 @@ import {
   it,
   jest,
 } from '@jest/globals'
+import { fetchDataWithHost, validateHostId } from '@/lib/clickhouse-helpers'
 
 // Mock the dependencies
 jest.mock('@/lib/clickhouse', () => ({
   fetchData: jest.fn(),
 }))
 
-jest.mock('@/lib/scoped-link', () => ({
-  getHostIdCookie: jest.fn(),
-}))
-
 describe('fetchDataWithHost', () => {
   let mockFetchData: jest.Mock
-  let mockGetHostIdCookie: jest.Mock
 
   beforeEach(() => {
     // Reset all mocks before each test
     jest.clearAllMocks()
 
-    // Get mock references
+    // Get mock reference
     const clickhouse = require('@/lib/clickhouse')
-    const scopedLink = require('@/lib/scoped-link')
-
     mockFetchData = clickhouse.fetchData as jest.Mock
-    mockGetHostIdCookie = scopedLink.getHostIdCookie as jest.Mock
 
     // Set default mock implementations
     mockFetchData.mockResolvedValue({
@@ -47,8 +39,6 @@ describe('fetchDataWithHost', () => {
         host: 'test-host',
       },
     })
-
-    mockGetHostIdCookie.mockResolvedValue(0)
   })
 
   afterEach(() => {
@@ -68,22 +58,18 @@ describe('fetchDataWithHost', () => {
           hostId: 2,
         })
       )
-      expect(mockGetHostIdCookie).not.toHaveBeenCalled()
       expect(result.data).toEqual([{ test: 'data' }])
     })
 
-    it('should get hostId from cookie when not provided', async () => {
-      mockGetHostIdCookie.mockResolvedValue(3)
-
+    it('should use default hostId 0 when not provided', async () => {
       const result = await fetchDataWithHost({
         query: 'SELECT 1',
       })
 
-      expect(mockGetHostIdCookie).toHaveBeenCalledWith(0)
       expect(mockFetchData).toHaveBeenCalledWith(
         expect.objectContaining({
           query: 'SELECT 1',
-          hostId: 3,
+          hostId: 0,
         })
       )
       expect(result.data).toEqual([{ test: 'data' }])
@@ -141,34 +127,28 @@ describe('fetchDataWithHost', () => {
       )
     })
 
-    it('should handle null hostId by getting from cookie', async () => {
-      mockGetHostIdCookie.mockResolvedValue(4)
-
+    it('should handle null hostId by using default 0', async () => {
       const _result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: null as any,
       })
 
-      expect(mockGetHostIdCookie).toHaveBeenCalled()
       expect(mockFetchData).toHaveBeenCalledWith(
         expect.objectContaining({
-          hostId: 4,
+          hostId: 0,
         })
       )
     })
 
-    it('should handle undefined hostId by getting from cookie', async () => {
-      mockGetHostIdCookie.mockResolvedValue(1)
-
+    it('should handle undefined hostId by using default 0', async () => {
       const _result = await fetchDataWithHost({
         query: 'SELECT 1',
         hostId: undefined,
       })
 
-      expect(mockGetHostIdCookie).toHaveBeenCalled()
       expect(mockFetchData).toHaveBeenCalledWith(
         expect.objectContaining({
-          hostId: 1,
+          hostId: 0,
         })
       )
     })
@@ -202,23 +182,6 @@ describe('fetchDataWithHost', () => {
       expect(result.error?.type).toBe('query_error')
       expect(result.error?.message).toBe('Database connection failed')
       expect(result.error?.details?.originalError).toBe(error)
-    })
-
-    it('should handle getHostIdCookie rejection', async () => {
-      const error = new Error('Cookie access denied')
-      mockGetHostIdCookie.mockRejectedValue(error)
-
-      // Should still work with default hostId
-      const _result = await fetchDataWithHost({
-        query: 'SELECT 1',
-      })
-
-      // Since getHostIdCookie fails but has a default, it should use 0
-      expect(mockFetchData).toHaveBeenCalledWith(
-        expect.objectContaining({
-          hostId: 0,
-        })
-      )
     })
 
     it('should handle non-Error exceptions', async () => {
@@ -301,9 +264,9 @@ describe('fetchDataWithHost', () => {
         hostId: 0,
       })
 
+      // Structured logging outputs JSON containing error details
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error in fetchDataWithHost:',
-        error
+        expect.stringContaining('Error in fetchDataWithHost')
       )
     })
   })

@@ -1,8 +1,9 @@
 'use client'
 
-import { cn } from '@/lib/utils'
 import type { QueryConfig } from '@/types/query-config'
+
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
+import { cn } from '@/lib/utils'
 
 interface DataTableToolbarProps {
   queryConfig: QueryConfig
@@ -17,7 +18,7 @@ export function DataTableToolbar({
 }: DataTableToolbarProps) {
   return (
     <div className={cn('flex items-center justify-between', className)}>
-      <div className="flex flex-1 flex-wrap items-center space-x-2">
+      <div className="flex flex-1 flex-wrap items-center gap-2">
         {children}
         {queryConfig.filterParamPresets && (
           <DataTableFacetedFilter title="Filters" queryConfig={queryConfig} />

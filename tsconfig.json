@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -24,15 +20,9 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
-    "types": [
-      "cypress",
-      "node",
-      "cypress-real-events"
-    ]
+    "types": ["cypress", "node", "cypress-real-events"]
   },
   "include": [
     "next-env.d.ts",
@@ -48,6 +38,7 @@
     "cypress.config.ts",
     "cypress",
     "docs",
+    "scripts",
     "**/*.cy.ts",
     "**/*.cy.tsx",
     "**/*.test.ts",

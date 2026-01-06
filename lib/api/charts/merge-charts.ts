@@ -1,0 +1,176 @@
+/**
+ * Merge Operation Charts
+ * Charts for tracking merge performance and resource usage
+ *
+ * Version Compatibility:
+ * - merge-count: Requires system.metric_log (ClickHouse 20.5+, needs config)
+ * - merge-avg-duration: Requires system.part_log (available in most versions)
+ * - summary-used-by-merges: Uses system.merges (always available)
+ *
+ * For ClickHouse servers without metric_log configured, these charts will
+ * show empty state with a helpful configuration message.
+ */
+
+import type { ChartQueryBuilder } from './types'
+
+import { applyInterval, buildTimeFilter, fillStep, nowOrToday } from './types'
+
+export const mergeCharts: Record<string, ChartQueryBuilder> = {
+  /**
+   * Merge and PartMutation count over time
+   *
+   * Primary: Uses system.metric_log for historical data
+   * Fallback: Returns current point-in-time values from system.metrics
+   *
+   * Requires: system.metric_log (ClickHouse 20.5+, configured with <metric_log>)
+   *
+   * Version variants:
+   * - 24.10+: Can use query_metric_log for enhanced metrics
+   * - 20.5-24.9: Uses metric_log with standard columns
+   * - <20.5: Falls back to system.metrics (point-in-time only)
+   */
+  'merge-count': ({ interval = 'toStartOfFiveMinutes', lastHours = 12 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      // Default query for ClickHouse 20.5+ with metric_log configured
+      query: `
+    SELECT ${applyInterval(interval, 'event_time')},
+           avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
+           avg(CurrentMetric_PartMutation) AS avg_CurrentMetric_PartMutation
+    FROM merge('system', '^metric_log')
+    ${timeFilter ? `WHERE ${timeFilter}` : ''}
+    GROUP BY 1
+    ORDER BY 1
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+  `,
+      optional: true,
+      tableCheck: 'system.metric_log',
+      // Query variants for different ClickHouse versions
+      variants: [
+        {
+          // For very old versions without metric_log, provide current values only
+          versions: { maxVersion: '20.5' },
+          query: `
+    SELECT
+      now() AS event_time,
+      toFloat64(value) AS avg_CurrentMetric_Merge,
+      0 AS avg_CurrentMetric_PartMutation
+    FROM system.metrics
+    WHERE metric = 'Merge'
+    UNION ALL
+    SELECT
+      now() AS event_time,
+      0 AS avg_CurrentMetric_Merge,
+      toFloat64(value) AS avg_CurrentMetric_PartMutation
+    FROM system.metrics
+    WHERE metric = 'PartMutation'
+    ORDER BY event_time
+        `,
+          description:
+            'Fallback for pre-20.5: returns current merge count only (no history)',
+        },
+      ],
+    }
+  },
+
+  'merge-avg-duration': ({
+    interval = 'toStartOfDay',
+    lastHours = 24 * 14,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      // Use numeric comparison via toInt8() for cross-version/cross-shard compatibility
+      // This works when merge() combines tables with different schemas (Int8 vs Enum)
+      // MergeParts=2, RegularMerge=1 based on ClickHouse source
+      query: `
+    SELECT
+        ${applyInterval(interval, 'event_time')},
+        AVG(duration_ms) AS avg_duration_ms,
+        formatReadableTimeDelta(avg_duration_ms / 1000, 'seconds', 'milliseconds') AS readable_avg_duration_ms,
+        bar(avg_duration_ms, 0, MAX(avg_duration_ms) OVER ()) AS bar
+    FROM merge('system', '^part_log')
+    WHERE toInt8(event_type) = 2
+      AND toInt8(merge_reason) = 1
+      ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY 1
+    ORDER BY 1 ASC
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+  `,
+      optional: true,
+      tableCheck: 'system.part_log',
+    }
+  },
+
+  'merge-sum-read-rows': ({
+    interval = 'toStartOfDay',
+    lastHours = 24 * 14,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      // Use numeric comparison via toInt8() for cross-version/cross-shard compatibility
+      // MergeParts=2, RegularMerge=1 based on ClickHouse source
+      query: `
+    SELECT
+        ${applyInterval(interval, 'event_time')},
+        SUM(read_rows) AS sum_read_rows,
+        log10(sum_read_rows) * 100 AS sum_read_rows_scale,
+        formatReadableQuantity(sum_read_rows) AS readable_sum_read_rows
+    FROM merge('system', '^part_log')
+    WHERE toInt8(event_type) = 2
+      AND toInt8(merge_reason) = 1
+      ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY 1
+    ORDER BY 1 ASC
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+  `,
+      optional: true,
+      tableCheck: 'system.part_log',
+    }
+  },
+
+  'summary-used-by-merges': () => ({
+    queries: [
+      {
+        key: 'used',
+        query: `
+          SELECT
+            SUM(memory_usage) as memory_usage,
+            formatReadableSize(memory_usage) as readable_memory_usage
+          FROM system.merges
+        `,
+      },
+      {
+        key: 'totalMem',
+        query: `
+          SELECT metric, value as total, formatReadableSize(total) AS readable_total
+          FROM system.asynchronous_metrics
+          WHERE
+              metric = 'CGroupMemoryUsed'
+              OR metric = 'OSMemoryTotal'
+          ORDER BY metric ASC
+          LIMIT 1
+        `,
+      },
+      {
+        key: 'rowsReadWritten',
+        query: `
+          SELECT SUM(rows_read) as rows_read,
+                 SUM(rows_written) as rows_written,
+                 formatReadableQuantity(rows_read) as readable_rows_read,
+                 formatReadableQuantity(rows_written) as readable_rows_written
+          FROM system.merges
+        `,
+      },
+      {
+        key: 'bytesReadWritten',
+        query: `
+          SELECT SUM(bytes_read_uncompressed) as bytes_read,
+                 SUM(bytes_written_uncompressed) as bytes_written,
+                 formatReadableSize(bytes_read) as readable_bytes_read,
+                 formatReadableSize(bytes_written) as readable_bytes_written
+          FROM system.merges
+        `,
+      },
+    ],
+  }),
+}

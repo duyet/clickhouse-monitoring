@@ -1,8 +1,8 @@
 import type React from 'react'
 import type { ReactNode } from 'react'
 import type { LabelPosition } from 'recharts/types/component/Label'
-
 import type { ChartConfig } from '@/components/ui/chart'
+import type { ChartDataPoint } from './chart-data'
 
 interface BaseAnimationTimingProps {
   animationDuration?: number
@@ -46,7 +46,7 @@ export interface Payload<TValue extends ValueType, TName extends NameType> {
   value?: TValue
   unit?: ReactNode
   dataKey?: string | number
-  payload?: any
+  payload?: Payload<TValue, TName>[]
   chartType?: string
   stroke?: string
   strokeDasharray?: string | number
@@ -66,7 +66,7 @@ type CustomTooltipProps = {
 export interface BaseChartProps
   extends BaseAnimationTimingProps,
     React.HTMLAttributes<HTMLDivElement> {
-  data: any[]
+  data: ChartDataPoint[]
   labelPosition?: LabelPosition
   labelAngle?: number
   colors?: Color[]
@@ -112,6 +112,13 @@ export interface BarChartProps extends BaseChartProps {
   horizontal?: boolean
   tooltipTotal?: boolean
   onClickHref?: string
+  /**
+   * Y-axis scale type
+   * - 'linear': Standard linear scale (default)
+   * - 'log': Logarithmic scale
+   * - 'auto': Auto-detect based on data range
+   */
+  yAxisScale?: YAxisScale
 }
 
 /**
@@ -122,6 +129,14 @@ export interface BarChartProps extends BaseChartProps {
  * - 'quantity': Format as human-readable quantity (same as number, for semantic clarity)
  */
 export type ReadableFormat = 'bytes' | 'duration' | 'number' | 'quantity'
+
+/**
+ * Y-axis scale type
+ * - 'linear': Standard linear scale (default)
+ * - 'log': Logarithmic scale (for data spanning multiple orders of magnitude)
+ * - 'auto': Auto-detect based on data range (uses log if max/min ratio > 100)
+ */
+export type YAxisScale = 'linear' | 'log' | 'auto'
 
 export interface AreaChartProps extends BaseChartProps {
   categories: string[]
@@ -153,6 +168,14 @@ export interface AreaChartProps extends BaseChartProps {
    * Takes precedence over readableColumn if both are specified
    */
   readableColumns?: string[]
+
+  /**
+   * Y-axis scale type
+   * - 'linear': Standard linear scale (default)
+   * - 'log': Logarithmic scale
+   * - 'auto': Auto-detect based on data range
+   */
+  yAxisScale?: YAxisScale
 }
 
 export interface RadialChartProps extends BaseChartProps {

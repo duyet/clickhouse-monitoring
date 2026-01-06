@@ -3,11 +3,7 @@
     {
       "event_time": "2024-01-01 00:00:00",
       "query_count": 145,
-      "breakdown": [
-        ["Select", 89],
-        ["Insert", 45],
-        ["Create", 11]
-      ],
+      "breakdown": [["Select", 89], ["Insert", 45], ["Create", 11]],
       "avg_memory": 1073741824,
       "readable_avg_memory": "1.00 GiB",
       "avg_cpu": 0.15,
@@ -16,11 +12,7 @@
     {
       "event_time": "2024-01-01 01:00:00",
       "query_count": 178,
-      "breakdown": [
-        ["Select", 112],
-        ["Insert", 52],
-        ["Create", 14]
-      ],
+      "breakdown": [["Select", 112], ["Insert", 52], ["Create", 14]],
       "avg_memory": 1123741824,
       "readable_avg_memory": "1.05 GiB",
       "avg_cpu": 0.18,

@@ -10,6 +10,7 @@
 /coverage
 .nyc_output
 /jest-reports
+/test-results
 
 # next.js
 /.next/
@@ -31,6 +32,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env.prod
 
 # vercel
 .vercel
@@ -55,3 +57,8 @@ cypress/screenshots
 .open-next
 .wrangler
 .dev.vars
+
+.claude/*.local.md
+.claude/*.local.json
+.cursor
+.wrangler

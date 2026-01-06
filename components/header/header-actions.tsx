@@ -1,0 +1,90 @@
+'use client'
+
+import { Bell, Moon, Search, Sun } from 'lucide-react'
+
+import { useTheme } from 'next-themes'
+import { memo, useEffect, useState } from 'react'
+import { CommandPalette } from '@/components/controls/command-palette'
+import { RefreshCountdown } from '@/components/header/refresh-countdown'
+import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
+
+interface HeaderActionsProps {
+  menuComponent?: React.ReactNode
+}
+
+export const HeaderActions = memo(function HeaderActions({
+  menuComponent,
+}: HeaderActionsProps) {
+  const { setTheme, resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+
+  // Handle hydration - set mounted state after client-side render
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+  }
+
+  return (
+    <div className="ml-auto flex items-center gap-2 sm:gap-3">
+      <RefreshCountdown />
+
+      <CommandPalette
+        open={commandPaletteOpen}
+        onOpenChange={setCommandPaletteOpen}
+      />
+
+      {/* Search trigger - hidden on mobile */}
+      <button
+        type="button"
+        onClick={() => setCommandPaletteOpen(true)}
+        className="relative hidden h-8 w-40 items-center gap-2 rounded-md border border-transparent bg-muted/30 px-2.5 text-xs transition-all hover:bg-muted/50 hover:ring-1 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30 md:inline-flex md:w-64"
+        aria-label="Search pages and commands"
+        aria-describedby="search-shortcut"
+      >
+        <Search
+          aria-hidden="true"
+          className="h-3.5 w-3.5 text-muted-foreground/60"
+        />
+        <span className="text-muted-foreground/60">Search...</span>
+        <kbd
+          id="search-shortcut"
+          className="ml-auto rounded border bg-muted px-1.5 text-[10px] font-medium"
+        >
+          ⌘K
+        </kbd>
+      </button>
+
+      {/* Theme toggle - hidden on mobile */}
+      {mounted ? (
+        <IconButton
+          tooltip={
+            resolvedTheme === 'light'
+              ? 'Switch to dark mode'
+              : 'Switch to light mode'
+          }
+          icon={resolvedTheme === 'light' ? <Moon /> : <Sun />}
+          onClick={toggleTheme}
+          className="hidden sm:flex"
+          suppressHydrationWarning
+        />
+      ) : (
+        <Button variant="ghost" size="icon" className="hidden sm:flex">
+          <Sun className="h-4 w-4" />
+        </Button>
+      )}
+
+      {/* Notifications - hidden on mobile */}
+      <IconButton
+        tooltip="Notifications"
+        icon={<Bell />}
+        className="hidden sm:flex"
+      />
+      {menuComponent}
+    </div>
+  )
+})

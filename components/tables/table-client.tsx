@@ -1,0 +1,281 @@
+'use client'
+
+import { RefreshCw } from 'lucide-react'
+
+import type { QueryConfig } from '@/types/query-config'
+
+import { memo } from 'react'
+import { CardToolbar } from '@/components/cards/card-toolbar'
+import { DataTable } from '@/components/data-table/data-table'
+import { TableSkeleton } from '@/components/skeletons'
+import { Card, CardContent } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
+import {
+  type CardError,
+  detectCardErrorVariant,
+  getCardErrorClassName,
+  getCardErrorDescription,
+  getCardErrorTitle,
+  getTableMissingInfo,
+  shouldShowRetryButton,
+} from '@/lib/card-error-utils'
+import { useHostId } from '@/lib/swr/use-host'
+import { useTableData } from '@/lib/swr/use-table-data'
+import { cn } from '@/lib/utils'
+import { getSqlForDisplay } from '@/types/query-config'
+
+interface TableClientProps {
+  title: string
+  description?: string | React.ReactNode
+  queryConfig: QueryConfig
+  searchParams?: Record<string, string | number | boolean>
+  className?: string
+  defaultPageSize?: number
+  topRightToolbarExtras?: React.ReactNode
+  /** Enable client-side column text filtering */
+  enableColumnFilters?: boolean
+  /** Columns to enable filtering for (default: all text columns) */
+  filterableColumns?: string[]
+  /** Enable row selection with checkboxes */
+  enableRowSelection?: boolean
+}
+
+/**
+ * Client-side table wrapper that handles data fetching with SWR
+ * Provides loading, error, and empty states with automatic refresh capability
+ *
+ * @example
+ * ```tsx
+ * export default function QueryLogsPage() {
+ *   return (
+ *     <TableClient
+ *       title="Query Logs"
+ *       description="All queries executed on the cluster"
+ *       queryConfig={queryLogsConfig}
+ *     />
+ *   )
+ * }
+ * ```
+ */
+export const TableClient = memo(function TableClient({
+  title,
+  description,
+  queryConfig,
+  searchParams = {},
+  className,
+  defaultPageSize = 100,
+  topRightToolbarExtras,
+  enableColumnFilters = false,
+  filterableColumns,
+  enableRowSelection = false,
+}: TableClientProps) {
+  const hostId = useHostId()
+
+  const { data, metadata, error, isLoading, isValidating, refresh } =
+    useTableData<Record<string, unknown>>(
+      queryConfig.name,
+      hostId,
+      searchParams,
+      30000
+    )
+
+  // Show skeleton during initial load OR if validating with no existing data
+  // This prevents showing "no data" while waiting for the first response
+  const isInitialLoading =
+    isLoading || (isValidating && (!data || data.length === 0))
+
+  if (isInitialLoading) {
+    return <TableSkeleton />
+  }
+
+  // Get SQL for display in toolbars
+  const sql = queryConfig.sql ? getSqlForDisplay(queryConfig.sql) : undefined
+
+  if (error) {
+    const variant = detectCardErrorVariant(error as CardError)
+    const showRetry = shouldShowRetryButton(error as CardError)
+
+    // Get table-specific guidance for table-missing errors
+    const tableMissingInfo = getTableMissingInfo(error as CardError)
+    const guidance = tableMissingInfo?.guidance
+
+    // For table-missing errors without specific guidance, show a helpful card
+    if (variant === 'table-missing') {
+      const errorTitle = getCardErrorTitle(variant, title)
+      const errorDescription = getCardErrorDescription(
+        error as CardError,
+        variant
+      )
+
+      return (
+        <Card
+          className={cn(
+            'rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/40 shadow-none group relative',
+            className
+          )}
+          role="alert"
+          aria-label={title ? `${title} unavailable` : 'Table not available'}
+        >
+          <div className="absolute top-3 right-3">
+            <CardToolbar sql={sql} metadata={metadata} alwaysVisible />
+          </div>
+          <CardContent className="p-5">
+            <div className="flex gap-4">
+              {/* Icon - Info circle */}
+              <div className="flex-shrink-0">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/60">
+                  <svg
+                    className="h-5 w-5 text-blue-600 dark:text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4M12 8h.01" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-foreground mb-2">
+                  {errorTitle}
+                </h3>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p className="leading-relaxed">{errorDescription}</p>
+                  {guidance ? (
+                    <div className="text-xs pt-2 border-t border-blue-200 dark:border-blue-800 space-y-1">
+                      <p className="text-foreground/80">
+                        {guidance.enableInstructions}
+                      </p>
+                      {guidance.docsUrl && (
+                        <a
+                          href={guidance.docsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-block"
+                        >
+                          View ClickHouse documentation ↗
+                        </a>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs pt-2 border-t border-blue-200 dark:border-blue-800">
+                      This feature requires additional ClickHouse configuration.{' '}
+                      <a
+                        href="https://clickhouse.com/docs/en/operations/system-tables"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                      >
+                        View ClickHouse documentation ↗
+                      </a>
+                    </p>
+                  )}
+                </div>
+                {showRetry && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => refresh()}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 transition-colors text-blue-700 dark:text-blue-300"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      Retry
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    // Fall back to generic error handling for other error types
+    const errorTitle = getCardErrorTitle(variant, title)
+    const errorClassName = getCardErrorClassName(variant)
+    const errorDescription = getCardErrorDescription(
+      error as CardError,
+      variant
+    )
+
+    return (
+      <Card
+        className={cn(
+          'rounded-md shadow-none py-2 group relative',
+          errorClassName,
+          className
+        )}
+        role="alert"
+        aria-label={title ? `${title} error` : 'Error loading table'}
+      >
+        <div className="absolute top-3 right-3">
+          <CardToolbar sql={sql} metadata={metadata} alwaysVisible />
+        </div>
+        <CardContent className="p-4">
+          <EmptyState
+            variant={variant}
+            title={errorTitle}
+            description={errorDescription}
+            compact={true}
+            action={
+              showRetry
+                ? {
+                    label: 'Retry',
+                    onClick: refresh,
+                    icon: <RefreshCw className="mr-1.5 h-3.5 w-3.5" />,
+                  }
+                : undefined
+            }
+          />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!data || (Array.isArray(data) && data.length === 0)) {
+    return (
+      <Card
+        className={cn(
+          'rounded-md border-warning/30 bg-warning/5 shadow-none py-2 group relative',
+          className
+        )}
+      >
+        <div className="absolute top-3 right-3">
+          <CardToolbar sql={sql} metadata={metadata} alwaysVisible />
+        </div>
+        <CardContent className="p-6">
+          <EmptyState
+            variant="no-data"
+            title={title || 'No Data'}
+            description="No data available for this query. Try adjusting your filters or check back later."
+          />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <DataTable
+      title={title}
+      description={description}
+      queryConfig={queryConfig}
+      data={data}
+      context={{ ...searchParams, hostId: String(hostId) }}
+      defaultPageSize={defaultPageSize}
+      footnote={
+        metadata
+          ? `${metadata.rows} row(s) in ${metadata.duration?.toFixed(2)}s`
+          : undefined
+      }
+      className={className}
+      topRightToolbarExtras={topRightToolbarExtras}
+      enableColumnFilters={enableColumnFilters}
+      filterableColumns={filterableColumns}
+      isRefreshing={isValidating}
+      enableRowSelection={enableRowSelection}
+      metadata={metadata}
+    />
+  )
+})

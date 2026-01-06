@@ -1,8 +1,8 @@
-import { afterAll, expect, jest } from '@jest/globals'
-import { getClickHouseHosts, getClient } from './clickhouse'
-
 import { createClient } from '@clickhouse/client'
 import { createClient as createClientWeb } from '@clickhouse/client-web'
+
+import { getClickHouseHosts, getClient } from './clickhouse'
+import { afterAll, expect, jest } from '@jest/globals'
 
 jest.mock('@clickhouse/client', () => ({
   createClient: jest.fn(),

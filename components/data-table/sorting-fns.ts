@@ -1,5 +1,6 @@
-import type { ValueOf } from '@/types/generic'
 import type { Row, RowData, SortingFn } from '@tanstack/react-table'
+
+import type { ValueOf } from '@/types/generic'
 
 /**
  * Get sorting functions for the table.

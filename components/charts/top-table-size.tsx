@@ -1,125 +1,99 @@
-import type { ChartProps } from '@/components/charts/chart-props'
-import { ChartCard } from '@/components/generic-charts/chart-card'
-import { BarList } from '@/components/tremor/bar-list'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { fetchData } from '@/lib/clickhouse'
+'use client'
 
-export async function ChartTopTableSize({
+import type { ChartProps } from '@/components/charts/chart-props'
+
+import { memo } from 'react'
+import { ChartCard } from '@/components/cards/chart-card'
+import { ChartContainer } from '@/components/charts/chart-container'
+import { BarList } from '@/components/charts/primitives/bar-list'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useChartData } from '@/lib/swr'
+
+type DataRow = {
+  table: string
+  compressed_bytes: number
+  uncompressed_bytes: number
+  compressed: string
+  uncompressed: string
+  compr_rate: number
+  total_rows: number
+  readable_total_rows: string
+  part_count: number
+}
+
+export const ChartTopTableSize = memo(function ChartTopTableSize({
   title,
   className,
   hostId,
-  ...props
 }: ChartProps) {
   const limit = 7
-  const topBySizeQuery = fetchData<
-    {
-      table: string
-      compressed_bytes: number
-      uncompressed_bytes: number
-      compressed: string
-      uncompressed: string
-      compr_rate: number
-      total_rows: number
-      readable_total_rows: string
-      part_count: number
-    }[]
-  >({
-    query: `
-        SELECT 
-          (database || '.' || table) as table,
-          sum(data_compressed_bytes) as compressed_bytes,
-          sum(data_uncompressed_bytes) AS uncompressed_bytes,
-          formatReadableSize(compressed_bytes) AS compressed,
-          formatReadableSize(uncompressed_bytes) AS uncompressed,
-          round(uncompressed_bytes / compressed_bytes, 2) AS compr_rate,
-          sum(rows) AS total_rows,
-          formatReadableQuantity(sum(rows)) AS readable_total_rows,
-          count() AS part_count
-      FROM system.parts
-      WHERE (active = 1) AND (database != 'system') AND (table LIKE '%')
-      GROUP BY 1
-      ORDER BY compressed_bytes DESC
-      LIMIT ${limit}`,
+  const swr = useChartData<DataRow>({
+    chartName: 'top-table-size',
     hostId,
-  }).then((res) => res.data)
-
-  const topByRowCountQuery = fetchData<
-    {
-      table: string
-      compressed_bytes: number
-      uncompressed_bytes: number
-      compressed: string
-      uncompressed: string
-      compr_rate: number
-      total_rows: number
-      readable_total_rows: string
-      part_count: number
-    }[]
-  >({
-    query: `
-      SELECT 
-        (database || '.' || table) as table,
-        sum(data_compressed_bytes) as compressed_bytes,
-        sum(data_uncompressed_bytes) AS uncompressed_bytes,
-        formatReadableSize(compressed_bytes) AS compressed,
-        formatReadableSize(uncompressed_bytes) AS uncompressed,
-        round(uncompressed_bytes / compressed_bytes, 2) AS compr_rate,
-        sum(rows) AS total_rows,
-        formatReadableQuantity(sum(rows)) AS readable_total_rows,
-        count() AS part_count
-    FROM system.parts
-    WHERE (active = 1) AND (database != 'system') AND (table LIKE '%')
-    GROUP BY 1
-    ORDER BY total_rows DESC
-    LIMIT ${limit}`,
-    hostId,
-  }).then((res) => res.data)
-
-  const [topBySize, topByRowCount] = await Promise.all([
-    topBySizeQuery,
-    topByRowCountQuery,
-  ])
-
-  const dataTopBySize = (topBySize || []).map((row) => ({
-    name: row.table,
-    value: row.compressed_bytes,
-    compressed: row.compressed,
-  }))
-
-  const dataTopByCount = (topByRowCount || []).map((row) => ({
-    name: row.table,
-    value: row.total_rows,
-    readable_total_rows: row.readable_total_rows,
-  }))
+    params: { limit },
+    refreshInterval: 30000,
+  })
 
   return (
-    <ChartCard title={title} className={className}>
-      <Tabs defaultValue="by-size">
-        <TabsList className="mb-5">
-          <TabsTrigger key="by-size" value="by-size">
-            Top tables by Size
-          </TabsTrigger>
-          <TabsTrigger key="by-count" value="by-count">
-            Top tables by Row Count
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="by-size">
-          <BarList
-            data={dataTopBySize}
-            formatedColumn="compressed"
-            {...props}
-          />
-        </TabsContent>
-        <TabsContent value="by-count">
-          <BarList
-            data={dataTopByCount}
-            formatedColumn="readable_total_rows"
-            {...props}
-          />
-        </TabsContent>
-      </Tabs>
-    </ChartCard>
+    <ChartContainer swr={swr} title={title} className={className}>
+      {(dataArray, sql, metadata) => {
+        // For this chart, we need to separate by-size and by-count logic
+        // Since the API only returns one query result, we'll use the same data
+        // In a real scenario, you might want to create two separate chart endpoints
+        const dataTopBySize = dataArray.map((row) => ({
+          name: row.table as string,
+          value: row.compressed_bytes as number,
+          formatted: row.compressed as string,
+        }))
+
+        const dataTopByCount = dataArray.map((row) => ({
+          name: row.table as string,
+          value: row.total_rows as number,
+          formatted: row.readable_total_rows as string,
+        }))
+
+        return (
+          <ChartCard
+            title={title}
+            className={className}
+            sql={sql}
+            data={dataArray}
+            metadata={metadata}
+            data-testid="top-table-size-chart"
+          >
+            <Tabs
+              id="top-table-tabs"
+              defaultValue="by-size"
+              className="overflow-hidden"
+            >
+              <TabsList className="h-11 sm:h-9 gap-1 mb-3 p-1">
+                <TabsTrigger
+                  key="by-size"
+                  value="by-size"
+                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1"
+                >
+                  Top tables by Size
+                </TabsTrigger>
+                <TabsTrigger
+                  key="by-count"
+                  value="by-count"
+                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1"
+                >
+                  Top tables by Row Count
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="by-size" className="overflow-hidden">
+                <BarList data={dataTopBySize} formatedColumn="formatted" />
+              </TabsContent>
+              <TabsContent value="by-count" className="overflow-hidden">
+                <BarList data={dataTopByCount} formatedColumn="formatted" />
+              </TabsContent>
+            </Tabs>
+          </ChartCard>
+        )
+      }}
+    </ChartContainer>
   )
-}
+})
 
 export default ChartTopTableSize

@@ -1,11 +1,12 @@
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
-import { expect, test } from '@jest/globals'
+
 import {
   applyInterval,
   fillStep,
   nowOrToday,
   withQueryParams,
 } from './clickhouse-query'
+import { expect, test } from '@jest/globals'
 
 describe('applyInterval', () => {
   const testCases: [ClickHouseInterval, string, string | undefined, string][] =
@@ -42,13 +43,12 @@ describe('applyInterval', () => {
       ],
     ]
 
-  test.each(testCases)(
-    'applies %s correctly',
-    (interval, column, alias, expected) => {
-      const result = applyInterval(interval, column, alias)
-      expect(result).toEqual(expected)
-    }
-  )
+  test.each(
+    testCases
+  )('applies %s correctly', (interval, column, alias, expected) => {
+    const result = applyInterval(interval, column, alias)
+    expect(result).toEqual(expected)
+  })
 
   it('should use column name as alias if no alias is provided', () => {
     const result = applyInterval('toStartOfDay', 'myColumn')
@@ -68,12 +68,11 @@ describe('fillStep', () => {
     ['toStartOfMonth', 'toIntervalMonth(1)'],
   ]
 
-  test.each(testCases)(
-    'returns correct interval for %s',
-    (input: ClickHouseInterval, expected: string) => {
-      expect(fillStep(input)).toBe(expected)
-    }
-  )
+  test.each(
+    testCases
+  )('returns correct interval for %s', (input: ClickHouseInterval, expected: string) => {
+    expect(fillStep(input)).toBe(expected)
+  })
 
   it('returns undefined for invalid interval', () => {
     // @ts-expect-error: Testing with invalid input

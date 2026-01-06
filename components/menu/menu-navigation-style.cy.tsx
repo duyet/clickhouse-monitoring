@@ -1,5 +1,6 @@
-import { MenuNavigationStyle } from './menu-navigation-style'
 import type { MenuItem } from './types'
+
+import { MenuNavigationStyle } from './menu-navigation-style'
 
 const items: MenuItem[] = [
   {

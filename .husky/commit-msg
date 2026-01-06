@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Commit message hook for clickhouse-monitor
+# Validates commit messages follow conventional commit format
+# ─────────────────────────────────────────────────────────────────────────────
+
+bun x commitlint --edit "$1"

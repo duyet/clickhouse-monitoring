@@ -2,9 +2,9 @@
 
 import '@/app/globals.css'
 import { BugIcon, RefreshCwIcon } from 'lucide-react'
-import { useEffect } from 'react'
 
-import { ErrorLogger, formatErrorForDisplay } from '@/lib/error-logger'
+import { useEffect } from 'react'
+import { ErrorLogger, formatErrorForDisplay } from '@/lib/logger'
 
 export default function GlobalError({
   error,

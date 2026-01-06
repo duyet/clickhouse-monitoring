@@ -1,4 +1,5 @@
 import type { Row } from '@tanstack/react-table'
+
 import { LinkFormat } from './link-format'
 
 describe('<LinkFormat />', () => {
@@ -6,7 +7,7 @@ describe('<LinkFormat />', () => {
     const row = { index: 0 } as Row<any>
     const data = [{ database: 'testDB', table: 'testTable' }]
     const value = 'Test Link'
-    const options = { href: '/database/[database]/[table]' }
+    const options = { href: '/table?database=[database]&table=[table]' }
 
     cy.mount(
       <LinkFormat
@@ -19,7 +20,7 @@ describe('<LinkFormat />', () => {
     )
 
     cy.get('a')
-      .should('have.attr', 'href', '/database/testDB/testTable')
+      .should('have.attr', 'href', '/table?database=testDB&table=testTable')
       .and('contain.text', 'Test Link')
   })
 

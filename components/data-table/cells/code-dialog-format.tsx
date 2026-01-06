@@ -1,7 +1,8 @@
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { SizeIcon } from '@radix-ui/react-icons'
-import dedent from 'dedent'
 
+import dedent from 'dedent'
+import { memo, useMemo } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -28,36 +29,43 @@ interface CodeDialogFormatProps {
 
 const CODE_TRUNCATE_LENGTH = 50
 
-export function CodeDialogFormat({
+export const CodeDialogFormat = memo(function CodeDialogFormat({
   value,
   options,
 }: CodeDialogFormatProps): React.ReactNode {
   const truncate_length = options?.max_truncate || CODE_TRUNCATE_LENGTH
 
-  const formatted = formatQuery({
-    query: value,
-    comment_remove: options?.hide_query_comment,
-    truncate: truncate_length,
-  })
+  // Memoize query formatting
+  const formatted = useMemo(() => {
+    return formatQuery({
+      query: value,
+      comment_remove: options?.hide_query_comment,
+      truncate: truncate_length,
+    })
+  }, [value, options?.hide_query_comment, truncate_length])
+
+  // Memoize JSON processing for dialog content
+  const content = useMemo(() => {
+    let result = value
+    if (options?.json) {
+      let json = result
+      try {
+        json = JSON.parse(value)
+      } catch {}
+      try {
+        result = JSON.stringify(json, null, 2)
+      } catch {}
+    }
+    return result
+  }, [value, options?.json])
 
   if (formatted.length < truncate_length) {
-    return <code>{formatted}</code>
+    return <code className="whitespace-nowrap">{formatted}</code>
   }
 
   // If the code is not truncated, show the full code
   if (!formatted.endsWith('...')) {
-    return <code>{formatted}</code>
-  }
-
-  let content = value
-  if (options?.json) {
-    let json = content
-    try {
-      json = JSON.parse(value)
-    } catch {}
-    try {
-      content = JSON.stringify(json, null, 2)
-    } catch {}
+    return <code className="whitespace-nowrap">{formatted}</code>
   }
 
   return (
@@ -65,22 +73,19 @@ export function CodeDialogFormat({
       <DialogTrigger asChild>
         <div
           className={cn(
-            'flex max-w-fit cursor-pointer flex-row items-center gap-1'
+            'flex max-w-fit cursor-pointer flex-row items-center gap-1',
+            options?.trigger_classname
           )}
         >
-          <code
-            className={cn(
-              'font-normal break-words',
-              options?.trigger_classname
-            )}
-          >
-            {formatted}
-          </code>
+          <code className="font-normal whitespace-nowrap">{formatted}</code>
           <SizeIcon className="size-4 flex-none" />
         </div>
       </DialogTrigger>
       <DialogContent
-        className={cn('max-w-fit', options?.dialog_classname)}
+        className={cn(
+          'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
+          options?.dialog_classname
+        )}
         aria-describedby={options?.dialog_description}
       >
         <DialogHeader>
@@ -88,8 +93,8 @@ export function CodeDialogFormat({
           <DialogDescription>{options?.dialog_description}</DialogDescription>
         </DialogHeader>
 
-        <div>
-          <code className="text-sm text-wrap whitespace-pre-wrap text-stone-500">
+        <div className="max-h-[80vh] overflow-auto">
+          <code className="text-sm text-wrap whitespace-pre-wrap">
             {typeof content === 'string' ? (
               <pre className="text-wrap whitespace-pre-wrap">
                 {dedent(content)}
@@ -102,4 +107,4 @@ export function CodeDialogFormat({
       </DialogContent>
     </Dialog>
   )
-}
+})
