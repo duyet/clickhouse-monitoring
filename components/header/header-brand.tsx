@@ -2,13 +2,12 @@
 
 import type { HostInfo } from '@/app/api/v1/hosts/route'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { memo } from 'react'
 import { ClickHouseHostSelector } from '@/components/host/clickhouse-host-selector'
+import { ClickHouseLogo } from '@/components/icons/clickhouse-logo'
 
 const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'ClickHouse'
-const LOGO_URL = process.env.NEXT_PUBLIC_LOGO_URL || '/clickhouse.svg'
 
 export const HeaderBrand = memo(function HeaderBrand({
   currentHostId,
@@ -19,23 +18,14 @@ export const HeaderBrand = memo(function HeaderBrand({
 }) {
   return (
     <div className="flex items-center gap-4">
-      {/* Logo - only render if configured */}
-      {LOGO_URL && (
-        <Link
-          href="/overview"
-          aria-label="Go to overview"
-          className="flex items-center transition-opacity hover:opacity-80"
-        >
-          <Image
-            src={LOGO_URL}
-            alt="Logo"
-            width={24}
-            height={24}
-            className="h-6 w-6 object-contain"
-            unoptimized
-          />
-        </Link>
-      )}
+      {/* Logo */}
+      <Link
+        href="/overview"
+        aria-label="Go to overview"
+        className="flex items-center transition-opacity hover:opacity-80"
+      >
+        <ClickHouseLogo width={24} height={24} className="h-6 w-6" />
+      </Link>
 
       {/* Title and Host Selector */}
       <div className="flex items-center gap-1.5 font-medium">

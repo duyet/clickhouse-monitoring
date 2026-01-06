@@ -8,9 +8,9 @@ import {
   LogoStatusIndicator,
   LogoStatusIndicatorSkeleton,
 } from './logo-status-indicator'
-import Image from 'next/image'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
+import { ClickHouseLogo } from '@/components/icons/clickhouse-logo'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,8 +30,6 @@ import { useHostId } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
 import { buildUrl } from '@/lib/url/url-builder'
 import { getHost } from '@/lib/utils'
-
-const LOGO_URL = process.env.NEXT_PUBLIC_LOGO_URL || '/clickhouse.svg'
 
 /**
  * Host switcher component for sidebar header.
@@ -68,19 +66,10 @@ export function HostSwitcher() {
             <div
               className={`flex gap-2 ${state === 'expanded' ? 'items-center' : 'items-center justify-center'}`}
             >
-              {LOGO_URL && (
-                <div className="relative">
-                  <Image
-                    src={LOGO_URL}
-                    alt="Logo"
-                    width={20}
-                    height={20}
-                    className="size-5 object-contain"
-                    unoptimized
-                  />
-                  {state === 'collapsed' && <LogoStatusIndicatorSkeleton />}
-                </div>
-              )}
+              <div className="relative">
+                <ClickHouseLogo width={20} height={20} className="size-5" />
+                {state === 'collapsed' && <LogoStatusIndicatorSkeleton />}
+              </div>
               {state === 'expanded' && (
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <Skeleton className="h-4 w-24" />
@@ -111,21 +100,12 @@ export function HostSwitcher() {
             <div
               className={`flex gap-2 ${state === 'expanded' ? 'items-center' : 'items-center justify-center'}`}
             >
-              {LOGO_URL && (
-                <div className="relative">
-                  <Image
-                    src={LOGO_URL}
-                    alt="Logo"
-                    width={20}
-                    height={20}
-                    className="size-5 object-contain"
-                    unoptimized
-                  />
-                  {state === 'collapsed' && (
-                    <LogoStatusIndicator hostId={activeHost.id} />
-                  )}
-                </div>
-              )}
+              <div className="relative">
+                <ClickHouseLogo width={20} height={20} className="size-5" />
+                {state === 'collapsed' && (
+                  <LogoStatusIndicator hostId={activeHost.id} />
+                )}
+              </div>
               {state === 'expanded' && (
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
@@ -150,21 +130,12 @@ export function HostSwitcher() {
                 <div
                   className={`flex gap-2 ${state === 'expanded' ? 'items-center' : 'items-center justify-center'}`}
                 >
-                  {LOGO_URL && (
-                    <div className="relative">
-                      <Image
-                        src={LOGO_URL}
-                        alt="Logo"
-                        width={20}
-                        height={20}
-                        className="size-5 object-contain"
-                        unoptimized
-                      />
-                      {state === 'collapsed' && (
-                        <LogoStatusIndicator hostId={activeHost.id} />
-                      )}
-                    </div>
-                  )}
+                  <div className="relative">
+                    <ClickHouseLogo width={20} height={20} className="size-5" />
+                    {state === 'collapsed' && (
+                      <LogoStatusIndicator hostId={activeHost.id} />
+                    )}
+                  </div>
                   {state === 'expanded' && (
                     <>
                       <div className="grid flex-1 text-left text-sm leading-tight">

@@ -113,7 +113,12 @@ export const historyQueriesConfig: QueryConfig = {
     readable_query: ColumnFormat.Code,
     query: [
       ColumnFormat.CodeDialog,
-      { max_truncate: 100, hide_query_comment: true, dialog_title: 'Query' },
+      {
+        max_truncate: 100,
+        hide_query_comment: true,
+        dialog_title: 'Query',
+        trigger_classname: '!max-w-[280px] overflow-hidden',
+      },
     ],
     event_time: ColumnFormat.RelatedTime,
     readable_read_rows: ColumnFormat.BackgroundBar,

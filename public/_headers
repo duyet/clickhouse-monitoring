@@ -7,9 +7,6 @@
 /logo.png
   Cache-Control: public, max-age=31536000, immutable
 
-/clickhouse.svg
-  Cache-Control: public, max-age=31536000, immutable
-
 /logo.svg
   Cache-Control: public, max-age=31536000, immutable
 
