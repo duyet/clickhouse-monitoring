@@ -176,7 +176,6 @@ jobs:
           allow: network.host,security.insecure
           network: host
           platforms: ${{ inputs.platforms }}
-          build-context: .
 
       # === Container Testing ===
       - name: Test container
