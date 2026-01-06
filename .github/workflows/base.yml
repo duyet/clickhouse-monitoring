@@ -109,7 +109,11 @@ jobs:
         if: ${{ inputs.job-type == 'docker' }}
         uses: docker/setup-buildx-action@v3
         with:
-          driver-opts: network=host
+          driver-opts: |
+            network=host
+            image=moby/buildkit:latest
+        env:
+          TMPDIR: /home/runner/work/_temp
 
       - name: Login to Container registry
         if: ${{ inputs.job-type == 'docker' && inputs.push-image }}
@@ -155,6 +159,8 @@ jobs:
       - name: Build and push Docker image
         if: ${{ inputs.job-type == 'docker' }}
         uses: docker/build-push-action@v6
+        env:
+          TMPDIR: /home/runner/work/_temp
         with:
           push: ${{ inputs.push-image }}
           load: ${{ inputs.load-image }}

@@ -1,0 +1,95 @@
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy-cloudflare:
+    name: deploy-cloudflare
+    runs-on: ubuntu-latest
+
+    # Export environment variables for next job
+    outputs:
+      git_sha: ${{ steps.meta.outputs.git_sha }}
+      git_ref: ${{ steps.meta.outputs.git_ref }}
+      build_timestamp: ${{ steps.meta.outputs.build_timestamp }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Extract build metadata
+        id: meta
+        run: |
+          # Short SHA (7 chars)
+          GIT_SHA="${{ github.sha }}"
+          echo "git_sha=${GIT_SHA:0:7}" >> $GITHUB_OUTPUT
+
+          # Branch or tag name
+          echo "git_ref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+
+          # Build timestamp (UTC)
+          BUILD_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "build_timestamp=${BUILD_TIMESTAMP}" >> $GITHUB_OUTPUT
+
+          # Debug output
+          echo "Git SHA: ${GIT_SHA:0:7}"
+          echo "Git Ref: ${{ github.ref_name }}"
+          echo "Build Time: ${BUILD_TIMESTAMP}"
+
+      - name: Next.js Cache
+        uses: actions/cache@v5
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build for Cloudflare
+        env:
+          # Build-time environment variables for About page
+          NEXT_PUBLIC_GIT_SHA: ${{ steps.meta.outputs.git_sha }}
+          NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.git_ref }}
+          NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ steps.meta.outputs.build_timestamp }}
+          NEXT_PUBLIC_CI: "true"
+        run: |
+          echo "Building with metadata:"
+          echo "  SHA: ${NEXT_PUBLIC_GIT_SHA}"
+          echo "  Ref: ${NEXT_PUBLIC_GIT_REF}"
+          echo "  Time: ${NEXT_PUBLIC_BUILD_TIMESTAMP}"
+          bun run cf:build
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --minify
+
+      - name: Deployment summary
+        run: |
+          echo "### 🚀 Cloudflare Workers Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ steps.meta.outputs.git_sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch/Tag | \`${{ steps.meta.outputs.git_ref }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Time | ${{ steps.meta.outputs.build_timestamp }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Worker | \`clickhouse-monitor\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY

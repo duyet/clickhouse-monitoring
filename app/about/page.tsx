@@ -162,6 +162,74 @@ export default function AboutPage() {
 
       <Separator />
 
+      {/* Build Information - Only show in production builds */}
+      {process.env.NEXT_PUBLIC_CI && (
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Build Information</h2>
+          <Card className="shadow-none">
+            <CardContent className="pt-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {/* Git Commit */}
+                <div className="space-y-1">
+                  <p className="text-muted-foreground text-sm font-medium">
+                    Git Commit
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <code className="bg-muted rounded px-2 py-1 text-sm font-mono">
+                      {process.env.NEXT_PUBLIC_GIT_SHA?.slice(0, 7)}
+                    </code>
+                    {process.env.NEXT_PUBLIC_GIT_SHA && (
+                      <a
+                        href={`https://github.com/duyet/clickhouse-monitoring/commit/${process.env.NEXT_PUBLIC_GIT_SHA}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-foreground text-sm"
+                        aria-label="View commit on GitHub"
+                      >
+                        <Github className="size-4" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Branch/Tag */}
+                <div className="space-y-1">
+                  <p className="text-muted-foreground text-sm font-medium">
+                    Branch / Tag
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="font-mono text-xs">
+                      {process.env.NEXT_PUBLIC_GIT_REF}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Build Timestamp */}
+                <div className="space-y-1 sm:col-span-2">
+                  <p className="text-muted-foreground text-sm font-medium">
+                    Build Time
+                  </p>
+                  <p className="text-sm">
+                    {process.env.NEXT_PUBLIC_BUILD_TIMESTAMP
+                      ? new Date(
+                          process.env.NEXT_PUBLIC_BUILD_TIMESTAMP
+                        ).toLocaleString('en-US', {
+                          dateStyle: 'long',
+                          timeStyle: 'medium',
+                          timeZone: 'UTC',
+                        })
+                      : 'Unknown'}{' '}
+                    <span className="text-muted-foreground">(UTC)</span>
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      <Separator />
+
       <div className="flex flex-col items-center gap-2 text-center text-sm text-muted-foreground">
         <p>
           Released under the <Badge variant="outline">{LICENSE}</Badge> License
