@@ -6,7 +6,7 @@ main = ".open-next/worker.js"
 compatibility_date = "2024-12-29"
 
 # Minification (set to false for debugging, true for production)
-minify = true
+minify = false
 
 # Disable keep_names to fix "__name is not defined" error (appears as "e is not defined" when minified)
 # This is required for libraries like next-themes that convert scripts to strings

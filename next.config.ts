@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   // Use standalone output for hybrid static pages + dynamic API routes
   output: 'standalone',
 
-  // Enable Turbopack (default in Next.js 16) - Note: using webpack for Cloudflare
+  // Enable Turbopack (default in Next.js 16)
   turbopack: {},
 
   experimental: {
