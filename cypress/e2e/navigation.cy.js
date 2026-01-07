@@ -179,6 +179,7 @@ describe('Menu Navigation', () => {
     cy.contains('a', 'Settings').should('be.visible')
     cy.contains('a', 'Settings').click()
 
-    cy.url().should('include', '/settings')
+    // Settings is now a modal dialog, check for dialog content
+    cy.contains('[role="dialog"]', 'Settings').should('be.visible')
   })
 })
