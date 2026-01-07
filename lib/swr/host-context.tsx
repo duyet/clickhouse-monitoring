@@ -29,30 +29,34 @@ export function HostProvider({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams()
   const params = useParams()
 
-  const hostId = useMemo(() => {
-    // First try query param (for static routes)
-    const hostParam = searchParams.get('host')
-    if (hostParam !== null) {
-      const parsed = Number(hostParam)
-      if (!Number.isNaN(parsed)) {
-        return parsed
-      }
-    }
+  // Calculate hostId directly (no memo) - cheap operation that ensures
+  // we always get the current value from URL params.
+  // useMemo with searchParams dependency was causing stale values because
+  // Next.js may return the same searchParams object reference even when
+  // the URL changes, preventing recalculation.
+  let hostId = 0
 
+  // First try query param (for static routes)
+  const hostParam = searchParams.get('host')
+  if (hostParam !== null) {
+    const parsed = Number(hostParam)
+    if (!Number.isNaN(parsed)) {
+      hostId = parsed
+    }
+  } else {
     // Fallback to route param (for dynamic routes, legacy support)
     if (params.host) {
       const host = params.host
       const hostString = Array.isArray(host) ? host[0] : host
       const hostNum = Number(hostString)
       if (!Number.isNaN(hostNum)) {
-        return hostNum
+        hostId = hostNum
       }
     }
+  }
 
-    // Default to first host
-    return 0
-  }, [searchParams, params.host])
-
+  // Memoize the context value to prevent unnecessary re-renders
+  // when hostId hasn't actually changed
   const value = useMemo(() => ({ hostId }), [hostId])
 
   return <HostContext.Provider value={value}>{children}</HostContext.Provider>
