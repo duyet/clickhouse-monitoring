@@ -287,4 +287,4 @@ jobs:
         run: rm -f next.config.compiled.js .next/next.config.compiled.js
 
       - name: Test queries config
-        run: bun run test:queries-config
+        run: bun run test:query-config
