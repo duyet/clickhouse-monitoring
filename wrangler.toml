@@ -6,7 +6,7 @@ main = ".open-next/worker.js"
 compatibility_date = "2024-12-29"
 
 # Minification (set to false for debugging, true for production)
-minify = false
+minify = true
 
 # Disable keep_names to fix "__name is not defined" error (appears as "e is not defined" when minified)
 # This is required for libraries like next-themes that convert scripts to strings
@@ -15,7 +15,8 @@ keep_names = false
 
 # Upload source maps for better error stack traces in Cloudflare dashboard
 # See: https://developers.cloudflare.com/workers/observability/source-maps/
-upload_source_maps = true
+# Disabled for production to reduce bundle size - enable for debugging if needed
+upload_source_maps = false
 
 # Compatibility flags
 # Enable Node.js API: https://developers.cloudflare.com/workers/configuration/compatibility-flags/#nodejs-compatibility-flag
