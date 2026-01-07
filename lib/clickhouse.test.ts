@@ -1,10 +1,6 @@
-import { createClient } from '@clickhouse/client'
-import { createClient as createClientWeb } from '@clickhouse/client-web'
-
 import { getClickHouseHosts, getClient } from './clickhouse'
 import {
   afterAll,
-  beforeEach,
   beforeEach as bunBeforeEach,
   describe,
   expect,

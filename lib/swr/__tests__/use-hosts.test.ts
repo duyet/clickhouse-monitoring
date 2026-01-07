@@ -13,7 +13,6 @@ import {
   expect,
   it,
   mock,
-  spyOn,
 } from 'bun:test'
 
 // Mock the ErrorLogger before importing the hook

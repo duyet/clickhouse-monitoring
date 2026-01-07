@@ -5,14 +5,21 @@
 import type { QueryConfig } from '@/types/query-config'
 
 import {
+  afterAll,
   afterEach,
+  beforeAll,
   beforeEach,
   describe,
   expect,
   it,
   mock,
-  spyOn,
 } from 'bun:test'
+
+// IMPORTANT: Restore any existing mocks from other test files before setting up our own.
+// This prevents mock pollution from files like clickhouse-helpers.test.ts that mock @/lib/clickhouse.
+beforeAll(() => {
+  mock.restore()
+})
 
 // Mock dependencies
 const mockDebug = mock(() => {})
@@ -43,11 +50,13 @@ mock.module('@/lib/table-validator', () => ({
   validateTableExistence: mockValidateTableExistence,
 }))
 
-import { getClient } from '../clickhouse-client'
-import { getClickHouseConfigs } from '../clickhouse-config'
+// Clean up all module mocks after tests complete
+afterAll(() => {
+  mock.restore()
+})
+
 // Import the actual code to test AFTER all mocks are set up
 import { fetchData, query } from '../clickhouse-fetch'
-import { validateTableExistence } from '@/lib/table-validator'
 
 describe('clickhouse-fetch', () => {
   const mockClientQuery = mock(() => Promise.resolve({}))
