@@ -6,7 +6,7 @@ import type { DateRangeValue } from '@/components/date-range'
 import { memo, useState } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import { BarChart } from '@/components/charts/primitives/bar'
+import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { resolveDateRangeConfig } from '@/components/date-range'
 import { useChartData } from '@/lib/swr'
 

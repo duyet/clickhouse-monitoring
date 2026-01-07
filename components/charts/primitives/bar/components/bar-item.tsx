@@ -9,7 +9,7 @@ import { Bar } from 'recharts'
 import type { BarChartProps } from '@/types/charts'
 
 import { BarLabel } from '../../bar-label'
-import { binding } from '@/lib/utils'
+import { replaceTemplateVariables } from '@/lib/template-utils'
 
 interface BarItemProps
   extends Pick<
@@ -65,7 +65,7 @@ export function BarItem({
       minPointSize={3}
       onClick={(data) => {
         if (onClickHref) {
-          window.location.href = binding(onClickHref, data)
+          window.location.href = replaceTemplateVariables(onClickHref, data)
         }
       }}
       cursor={onClickHref !== undefined ? 'pointer' : 'default'}
