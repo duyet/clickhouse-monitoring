@@ -1,6 +1,6 @@
 'use client'
 
-import { Search } from 'lucide-react'
+import { Search, Settings } from 'lucide-react'
 import { menuItemsConfig } from '@/menu'
 
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -13,6 +13,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from '@/components/ui/command'
 import { IconButton } from '@/components/ui/icon-button'
 import { buildUrl } from '@/lib/url/url-builder'
@@ -20,11 +21,13 @@ import { buildUrl } from '@/lib/url/url-builder'
 interface CommandPaletteProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  onOpenSettings?: () => void
 }
 
 export const CommandPalette = memo(function CommandPalette({
   open: controlledOpen,
   onOpenChange,
+  onOpenSettings,
 }: CommandPaletteProps = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -55,6 +58,11 @@ export const CommandPalette = memo(function CommandPalette({
     },
     [router, setOpen, searchParams]
   )
+
+  const handleOpenSettings = useCallback(() => {
+    setOpen(false)
+    onOpenSettings?.()
+  }, [setOpen, onOpenSettings])
 
   return (
     <>
@@ -131,6 +139,21 @@ export const CommandPalette = memo(function CommandPalette({
               )}
             </CommandGroup>
           ))}
+
+          {onOpenSettings && (
+            <>
+              <CommandSeparator />
+              <CommandGroup heading="Actions">
+                <CommandItem onSelect={handleOpenSettings} value="Settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    ⌘,
+                  </span>
+                </CommandItem>
+              </CommandGroup>
+            </>
+          )}
         </CommandList>
       </CommandDialog>
     </>

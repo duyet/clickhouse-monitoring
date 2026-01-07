@@ -141,10 +141,12 @@ export const chartTickFormatters = {
  * - >7 days: Shows only date (e.g., "Dec 25", "Dec 26")
  *
  * @param lastHours Number of hours the chart covers
+ * @param timezone IANA timezone identifier (e.g., 'America/New_York')
  * @returns Tick formatter function
  */
 export function createDateTickFormatter(
-  lastHours: number
+  lastHours: number,
+  timezone?: string
 ): (value: string) => string {
   return (value: string) => {
     if (!value) return ''
@@ -153,12 +155,18 @@ export function createDateTickFormatter(
       const date = new Date(value)
       if (Number.isNaN(date.getTime())) return value
 
+      const options: Intl.DateTimeFormatOptions = {
+        month: 'short',
+        day: 'numeric',
+      }
+
       // ≤24 hours: Show time only (HH:MM)
       if (lastHours <= 24) {
         return date.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,
+          timeZone: timezone,
         })
       }
 
@@ -170,13 +178,14 @@ export function createDateTickFormatter(
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,
+          timeZone: timezone,
         })
       }
 
       // >7 days: Show date only
       return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
+        ...options,
+        timeZone: timezone,
       })
     } catch {
       return value

@@ -6,6 +6,7 @@ import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { StaleError } from './use-chart-data'
 
 import { useMemo, useRef } from 'react'
+import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 /**
  * Table data response structure from the API
@@ -62,6 +63,9 @@ export function useTableData<T = unknown>(
   refreshInterval?: number,
   swrConfig?: SWRConfiguration
 ) {
+  // Get user settings (including timezone) for API requests
+  const { settings } = useUserSettings()
+
   // Build query string from search parameters
   const params = new URLSearchParams()
   if (hostId !== undefined) params.append('hostId', String(hostId))
@@ -74,15 +78,20 @@ export function useTableData<T = unknown>(
     })
   }
 
+  // Pass timezone to ClickHouse for session-level time conversion
+  if (settings.timezone) params.append('timezone', settings.timezone)
+
   const queryString = params.toString()
   const url = `/api/v1/tables/${queryConfigName}${queryString ? `?${queryString}` : ''}`
 
   // Build cache key - include all parameters that affect the data
+  // Include timezone so cache invalidates when user changes timezone
   const key = [
     '/api/v1/tables',
     queryConfigName,
     hostId,
     JSON.stringify(searchParams || {}),
+    settings.timezone,
   ]
 
   // Fetcher function

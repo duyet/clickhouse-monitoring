@@ -11,6 +11,7 @@ import { ChartContainer } from '@/components/charts/chart-container'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { resolveDateRangeConfig } from '@/components/date-range'
+import { useTimezone } from '@/lib/context/timezone-context'
 import { useChartData, useHostId } from '@/lib/swr'
 import { cn, createDateTickFormatter } from '@/lib/utils'
 
@@ -64,6 +65,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     ...props
   }: ChartProps) {
     const hostId = useHostId()
+    const userTimezone = useTimezone()
 
     // Date range state (only used when dateRangeConfig is provided)
     const [rangeOverride, setRangeOverride] = useState<DateRangeValue | null>(
@@ -100,8 +102,8 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     // Create x-axis date formatter if enabled
     const xAxisTickFormatter = useMemo(() => {
       if (!config.xAxisDateFormat) return undefined
-      return createDateTickFormatter(effectiveLastHours ?? 24)
-    }, [effectiveLastHours, config.xAxisDateFormat])
+      return createDateTickFormatter(effectiveLastHours ?? 24, userTimezone)
+    }, [effectiveLastHours, config.xAxisDateFormat, userTimezone])
 
     // If data exists but all values are zero, show informative empty state
     if (allZeros && !swr.isLoading && !swr.error) {
