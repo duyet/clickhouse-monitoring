@@ -8,7 +8,7 @@ import type { ChartKind, TimeSeriesDataPoint } from './types'
 import { ChartCard } from '@/components/cards/chart-card'
 import { GithubHeatmapChart } from '@/components/charts/github-heatmap-chart'
 import { AreaChart } from '@/components/charts/primitives/area'
-import { BarChart } from '@/components/charts/primitives/bar'
+import { BarChart } from '@/components/charts/primitives/bar/bar'
 
 interface ChartRendererProps {
   kind: ChartKind

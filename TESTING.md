@@ -36,7 +36,7 @@ Tests that simulate integration between components without real external service
 
 **Examples:**
 
-- `app/[host]/[query]/query-config.test.ts` - Tests query configurations with mocked database
+- `lib/query-config/__tests__/query-config.test.ts` - Tests query configurations with mocked database
 - `lib/__tests__/host-switching-integration.test.ts` - Tests host switching logic
 
 **Pattern:**
@@ -112,7 +112,7 @@ All component tests are automatically run as part of the Continuous Integration 
 ### All Tests (Recommended)
 
 ```bash
-pnpm test
+bun run test
 ```
 
 This runs unit tests with mocked dependencies - fast and reliable.
@@ -120,7 +120,7 @@ This runs unit tests with mocked dependencies - fast and reliable.
 ### Query Configuration Tests
 
 ```bash
-pnpm test-queries-config
+bun run test-queries-config
 ```
 
 Tests query configurations with mocked database responses.
@@ -128,15 +128,15 @@ Tests query configurations with mocked database responses.
 ### Component Tests
 
 ```bash
-pnpm component:headless  # Run component tests
-pnpm e2e:headless       # Run end-to-end tests
+bun run component:headless  # Run component tests
+bun run e2e:headless        # Run end-to-end tests
 ```
 
 ### With Coverage
 
 ```bash
-pnpm jest  # Excludes query-config tests
-pnpm test-queries-config  # Only query-config tests
+bun run jest              # Excludes query-config tests
+bun run test-queries-config  # Only query-config tests
 ```
 
 ## Test Environment Setup
@@ -163,7 +163,7 @@ export CLICKHOUSE_USER=default
 export CLICKHOUSE_PASSWORD=
 
 # Run tests (integration tests will now execute)
-pnpm test
+bun run test
 ```
 
 ## Writing New Tests

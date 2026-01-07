@@ -6,7 +6,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 
 import Link from 'next/link'
 import { createCustomChart } from '@/components/charts/factory'
-import { BarChart } from '@/components/charts/primitives/bar'
+import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { buildUrl } from '@/lib/url/url-builder'
 
 export const ChartMergeCount = createCustomChart({

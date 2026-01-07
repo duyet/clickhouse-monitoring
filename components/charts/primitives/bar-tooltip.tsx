@@ -113,14 +113,3 @@ export function renderBarTooltip({
   )
 }
 
-// Legacy component export for backward compatibility
-// @deprecated Use renderBarTooltip instead
-export const BarTooltip = ({
-  tooltipTotal,
-  categories,
-}: RenderBarTooltipOptions & {
-  chartConfig?: ChartConfig
-  xAxisDataKey?: string
-}) => {
-  return renderBarTooltip({ tooltipTotal, categories })
-}
