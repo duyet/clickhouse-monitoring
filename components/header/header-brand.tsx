@@ -24,7 +24,7 @@ export const HeaderBrand = memo(function HeaderBrand({
         aria-label="Go to overview"
         className="flex items-center transition-opacity hover:opacity-80"
       >
-        <ClickHouseLogo width={24} height={24} className="h-6 w-6" />
+        <ClickHouseLogo width={24} height={24} className="h-6 w-6 text-foreground dark:text-white" />
       </Link>
 
       {/* Title and Host Selector */}
