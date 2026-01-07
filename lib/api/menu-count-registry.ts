@@ -67,7 +67,7 @@ export const menuCountRegistry: Record<string, MenuCountQuery> = {
     query: `SELECT COUNT() as count FROM system.merge_tree_settings`,
   },
   clusters: {
-    query: `SELECT COUNT() as count FROM system.clusters`,
+    query: `SELECT COUNT(DISTINCT cluster) as count FROM system.clusters`,
   },
   backups: {
     query: `SELECT COUNT() as count FROM system.backup_log WHERE status = 'BACKUP_CREATED'`,
