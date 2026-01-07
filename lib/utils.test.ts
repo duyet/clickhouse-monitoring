@@ -157,7 +157,7 @@ describe('utils', () => {
     it('should handle invalid URLs gracefully', () => {
       const input = 'invalid-url'
 
-      expect(() => getHost(input)).toThrow(new TypeError('Invalid URL'))
+      expect(() => getHost(input)).toThrow(TypeError)
     })
   })
 

@@ -7,26 +7,43 @@
  * is called with the correct parameters.
  */
 
+import {
+  beforeEach as bunBeforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  spyOn,
+} from 'bun:test'
+
 // Mock the ErrorLogger before importing the hook
-jest.mock('@/lib/logger', () => ({
+const mockLogWarning = mock(() => {})
+const mockLogError = mock(() => {})
+
+mock.module('@/lib/logger', () => ({
   ErrorLogger: {
-    logWarning: jest.fn(),
-    logError: jest.fn(),
+    logWarning: mockLogWarning,
+    logError: mockLogError,
   },
 }))
 
-// Mock React hooks
-jest.mock('react', () => {
-  const actualReact = jest.requireActual('react')
-  return {
-    ...actualReact,
-    useCallback: (fn: () => void) => fn,
-  }
-})
+// Mock React hooks - React's useCallback just returns the function in test environment
+const actualReact = await import('react')
+
+mock.module('react', () => ({
+  ...actualReact,
+  useCallback: (fn: () => void) => fn,
+}))
 
 // Mock SWR - must be before imports
-jest.mock('swr', () => ({
-  default: jest.fn(),
+const mockUseSWR = mock(() => ({
+  data: undefined,
+  error: undefined,
+  isLoading: false,
+}))
+
+mock.module('swr', () => ({
+  default: mockUseSWR,
   __esModule: true,
 }))
 
@@ -36,49 +53,47 @@ describe('useHosts', () => {
     { id: 1, name: 'Staging', host: 'clickhouse.staging.com', user: 'admin' },
   ]
 
-  beforeEach(() => {
-    jest.clearAllMocks()
+  bunBeforeEach(() => {
+    mockUseSWR.mockReset()
+    mockLogWarning.mockReset()
+    mockLogError.mockReset()
   })
 
   describe('SWR integration', () => {
-    it('should call useSWR with correct cache key', () => {
-      const useSWR = require('swr').default
-
+    it('should call useSWR with correct cache key', async () => {
       // Mock SWR to return the data
       const mockSwrResult = {
         data: mockHosts,
         error: undefined,
         isLoading: false,
       }
-      useSWR.mockReturnValue(mockSwrResult)
+      mockUseSWR.mockReturnValue(mockSwrResult)
 
       // Import and call the hook (React hooks are mocked)
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       useHosts()
 
       // SWR should be called with correct key
-      expect(useSWR).toHaveBeenCalledWith(
+      expect(mockUseSWR).toHaveBeenCalledWith(
         '/api/v1/hosts',
         expect.any(Function),
         expect.any(Object)
       )
     })
 
-    it('should configure SWR with correct caching options', () => {
-      const useSWR = require('swr').default
-
+    it('should configure SWR with correct caching options', async () => {
       const mockSwrResult = {
         data: mockHosts,
         error: undefined,
         isLoading: false,
       }
-      useSWR.mockReturnValue(mockSwrResult)
+      mockUseSWR.mockReturnValue(mockSwrResult)
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       useHosts()
 
       // Verify SWR is called with the correct configuration
-      expect(useSWR).toHaveBeenCalledWith(
+      expect(mockUseSWR).toHaveBeenCalledWith(
         '/api/v1/hosts',
         expect.any(Function),
         expect.objectContaining({
@@ -90,17 +105,15 @@ describe('useHosts', () => {
       )
     })
 
-    it('should return data from SWR', () => {
-      const useSWR = require('swr').default
-
+    it('should return data from SWR', async () => {
       const mockSwrResult = {
         data: mockHosts,
         error: undefined,
         isLoading: false,
       }
-      useSWR.mockReturnValue(mockSwrResult)
+      mockUseSWR.mockReturnValue(mockSwrResult)
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       const result = useHosts()
 
       expect(result.hosts).toEqual(mockHosts)
@@ -108,24 +121,21 @@ describe('useHosts', () => {
       expect(result.isLoading).toBe(false)
     })
 
-    it('should return empty array when data is undefined', () => {
-      const useSWR = require('swr').default
-
+    it('should return empty array when data is undefined', async () => {
       const mockSwrResult = {
         data: undefined,
         error: undefined,
         isLoading: false,
       }
-      useSWR.mockReturnValue(mockSwrResult)
+      mockUseSWR.mockReturnValue(mockSwrResult)
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       const result = useHosts()
 
       expect(result.hosts).toEqual([])
     })
 
-    it('should return error from SWR', () => {
-      const useSWR = require('swr').default
+    it('should return error from SWR', async () => {
       const mockError = new Error('Network error')
 
       const mockSwrResult = {
@@ -133,26 +143,24 @@ describe('useHosts', () => {
         error: mockError,
         isLoading: false,
       }
-      useSWR.mockReturnValue(mockSwrResult)
+      mockUseSWR.mockReturnValue(mockSwrResult)
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       const result = useHosts()
 
       expect(result.hosts).toEqual([])
       expect(result.error).toEqual(mockError)
     })
 
-    it('should return loading state from SWR', () => {
-      const useSWR = require('swr').default
-
+    it('should return loading state from SWR', async () => {
       const mockSwrResult = {
         data: undefined,
         error: undefined,
         isLoading: true,
       }
-      useSWR.mockReturnValue(mockSwrResult)
+      mockUseSWR.mockReturnValue(mockSwrResult)
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       const result = useHosts()
 
       expect(result.isLoading).toBe(true)
@@ -162,11 +170,9 @@ describe('useHosts', () => {
 
   describe('fetcher function', () => {
     it('should fetch from /api/v1/hosts endpoint', async () => {
-      const useSWR = require('swr').default
-
       // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
-      useSWR.mockImplementation((_key, fetcher) => {
+      mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
         return {
           data: undefined,
@@ -175,7 +181,7 @@ describe('useHosts', () => {
         }
       })
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       useHosts()
 
       // Mock successful response
@@ -183,10 +189,13 @@ describe('useHosts', () => {
         success: true,
         data: mockHosts,
       }
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      })
+      const mockFetch = mock(() =>
+        Promise.resolve({
+          ok: true,
+          json: async () => mockResponse,
+        })
+      )
+      global.fetch = mockFetch
 
       if (capturedFetcher) {
         const result = await capturedFetcher()
@@ -196,12 +205,9 @@ describe('useHosts', () => {
     })
 
     it('should handle non-OK responses gracefully', async () => {
-      const useSWR = require('swr').default
-      const { ErrorLogger } = require('@/lib/logger')
-
       // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
-      useSWR.mockImplementation((_key, fetcher) => {
+      mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
         return {
           data: undefined,
@@ -210,21 +216,24 @@ describe('useHosts', () => {
         }
       })
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       useHosts()
 
       // Mock non-OK response
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-        json: async () => ({}),
-      })
+      const mockFetch = mock(() =>
+        Promise.resolve({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error',
+          json: async () => ({}),
+        })
+      )
+      global.fetch = mockFetch
 
       if (capturedFetcher) {
         const result = await capturedFetcher()
         expect(result).toEqual([])
-        expect(ErrorLogger.logWarning).toHaveBeenCalledWith(
+        expect(mockLogWarning).toHaveBeenCalledWith(
           'Failed to fetch hosts: 500 Internal Server Error',
           { component: 'useHosts' }
         )
@@ -232,12 +241,9 @@ describe('useHosts', () => {
     })
 
     it('should handle JSON parsing errors', async () => {
-      const useSWR = require('swr').default
-      const { ErrorLogger } = require('@/lib/logger')
-
       // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
-      useSWR.mockImplementation((_key, fetcher) => {
+      mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
         return {
           data: undefined,
@@ -246,31 +252,31 @@ describe('useHosts', () => {
         }
       })
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       useHosts()
 
       // Mock response that throws on json()
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: true,
-        json: async () => {
-          throw new Error('Invalid JSON')
-        },
-      })
+      const mockFetch = mock(() =>
+        Promise.resolve({
+          ok: true,
+          json: async () => {
+            throw new Error('Invalid JSON')
+          },
+        })
+      )
+      global.fetch = mockFetch
 
       if (capturedFetcher) {
         const result = await capturedFetcher()
         expect(result).toEqual([])
-        expect(ErrorLogger.logError).toHaveBeenCalled()
+        expect(mockLogError).toHaveBeenCalled()
       }
     })
 
     it('should handle network errors', async () => {
-      const useSWR = require('swr').default
-      const { ErrorLogger } = require('@/lib/logger')
-
       // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
-      useSWR.mockImplementation((_key, fetcher) => {
+      mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
         return {
           data: undefined,
@@ -279,25 +285,24 @@ describe('useHosts', () => {
         }
       })
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       useHosts()
 
       // Mock network error
-      global.fetch = jest.fn().mockRejectedValueOnce(new Error('Network error'))
+      const mockFetch = mock(() => Promise.reject(new Error('Network error')))
+      global.fetch = mockFetch
 
       if (capturedFetcher) {
         const result = await capturedFetcher()
         expect(result).toEqual([])
-        expect(ErrorLogger.logError).toHaveBeenCalled()
+        expect(mockLogError).toHaveBeenCalled()
       }
     })
 
     it('should return empty array when response success is false', async () => {
-      const useSWR = require('swr').default
-
       // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
-      useSWR.mockImplementation((_key, fetcher) => {
+      mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
         return {
           data: undefined,
@@ -306,7 +311,7 @@ describe('useHosts', () => {
         }
       })
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       useHosts()
 
       // Mock response with success: false
@@ -314,10 +319,13 @@ describe('useHosts', () => {
         success: false,
         data: mockHosts,
       }
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      })
+      const mockFetch = mock(() =>
+        Promise.resolve({
+          ok: true,
+          json: async () => mockResponse,
+        })
+      )
+      global.fetch = mockFetch
 
       if (capturedFetcher) {
         const result = await capturedFetcher()
@@ -326,11 +334,9 @@ describe('useHosts', () => {
     })
 
     it('should return empty array when response data is missing', async () => {
-      const useSWR = require('swr').default
-
       // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
-      useSWR.mockImplementation((_key, fetcher) => {
+      mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
         return {
           data: undefined,
@@ -339,17 +345,20 @@ describe('useHosts', () => {
         }
       })
 
-      const { useHosts } = require('../use-hosts')
+      const { useHosts } = await import('../use-hosts')
       useHosts()
 
       // Mock response without data field
       const mockResponse = {
         success: true,
       }
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      })
+      const mockFetch = mock(() =>
+        Promise.resolve({
+          ok: true,
+          json: async () => mockResponse,
+        })
+      )
+      global.fetch = mockFetch
 
       if (capturedFetcher) {
         const result = await capturedFetcher()

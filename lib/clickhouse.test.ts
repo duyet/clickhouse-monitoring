@@ -2,30 +2,44 @@ import { createClient } from '@clickhouse/client'
 import { createClient as createClientWeb } from '@clickhouse/client-web'
 
 import { getClickHouseHosts, getClient } from './clickhouse'
-import { afterAll, beforeEach, describe, expect, it, jest } from 'bun:test'
+import {
+  afterAll,
+  beforeEach,
+  beforeEach as bunBeforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+} from 'bun:test'
 
-jest.mock('@clickhouse/client', () => ({
-  createClient: jest.fn(),
+const mockCreateClient = mock(() => ({}))
+const mockCreateClientWeb = mock(() => ({}))
+const mockCookies = mock(() => ({}))
+
+mock.module('@clickhouse/client', () => ({
+  createClient: mockCreateClient,
 }))
 
-jest.mock('@clickhouse/client-web', () => ({
-  createClient: jest.fn(),
+mock.module('@clickhouse/client-web', () => ({
+  createClient: mockCreateClientWeb,
 }))
 
-jest.mock('next/headers', () => ({
-  cookies: jest.fn(),
+mock.module('next/headers', () => ({
+  cookies: mockCookies,
 }))
 
 describe('getClickHouseHosts', () => {
-  const originalEnv = process.env
+  const originalEnv = { ...process.env }
 
-  beforeEach(() => {
-    jest.resetModules() // Clears the module cache
-    process.env = { ...originalEnv } // Restores the original environment variables
+  bunBeforeEach(() => {
+    process.env = { ...originalEnv }
+    mockCreateClient.mockReset()
+    mockCreateClientWeb.mockReset()
+    mockCookies.mockReset()
   })
 
   afterAll(() => {
-    process.env = originalEnv // Restores the original environment variables
+    process.env = originalEnv
   })
 
   it('should return an empty array if CLICKHOUSE_HOST is not set', () => {
@@ -66,15 +80,17 @@ describe('getClickHouseHosts', () => {
 })
 
 describe('getClient', () => {
-  const originalEnv = process.env
+  const originalEnv = { ...process.env }
 
-  beforeEach(() => {
-    jest.resetModules() // Clears the module cache
-    process.env = { ...originalEnv } // Restores the original environment variables
+  bunBeforeEach(() => {
+    process.env = { ...originalEnv }
+    mockCreateClient.mockReset()
+    mockCreateClientWeb.mockReset()
+    mockCookies.mockReset()
   })
 
   afterAll(() => {
-    process.env = originalEnv // Restores the original environment variables
+    process.env = originalEnv
   })
 
   it('should create a ClickHouse client using the standard library', async () => {
@@ -82,11 +98,11 @@ describe('getClient', () => {
     process.env.CLICKHOUSE_USER = 'default'
     process.env.CLICKHOUSE_PASSWORD = ''
     const mockClient = {}
-    ;(createClient as jest.Mock).mockReturnValue(mockClient)
+    mockCreateClient.mockReturnValue(mockClient)
 
     const client = await getClient({ web: false })
 
-    expect(createClient).toHaveBeenCalledWith({
+    expect(mockCreateClient).toHaveBeenCalledWith({
       host: 'localhost',
       username: 'default',
       password: '',
@@ -102,11 +118,11 @@ describe('getClient', () => {
     process.env.CLICKHOUSE_USER = 'default'
     process.env.CLICKHOUSE_PASSWORD = ''
     const mockClient = {}
-    ;(createClientWeb as jest.Mock).mockReturnValue(mockClient)
+    mockCreateClientWeb.mockReturnValue(mockClient)
 
     const client = await getClient({ web: true })
 
-    expect(createClientWeb).toHaveBeenCalledWith({
+    expect(mockCreateClientWeb).toHaveBeenCalledWith({
       host: 'localhost',
       username: 'default',
       password: '',
@@ -124,11 +140,11 @@ describe('getClient', () => {
     process.env.CLICKHOUSE_MAX_EXECUTION_TIME = '120'
 
     const mockClient = {}
-    ;(createClient as jest.Mock).mockReturnValue(mockClient)
+    mockCreateClient.mockReturnValue(mockClient)
 
     const client = await getClient({ web: false })
 
-    expect(createClient).toHaveBeenCalledWith({
+    expect(mockCreateClient).toHaveBeenCalledWith({
       host: 'localhost',
       username: 'testuser',
       password: 'testpassword',
