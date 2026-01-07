@@ -18,7 +18,7 @@ import { ErrorAlert } from './index'
 import { useErrorCountdown } from './use-error-countdown'
 import { CompactErrorAlert } from './variants/compact'
 import { FullErrorAlert } from './variants/full'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 
 describe('ErrorAlert', () => {
   describe('Component Structure', () => {

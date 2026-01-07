@@ -9,7 +9,7 @@ import {
   selectVersionedSql,
   versionMatchesRange,
 } from './clickhouse-version'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 
 describe('parseVersion', () => {
   it('should parse simple version strings', () => {

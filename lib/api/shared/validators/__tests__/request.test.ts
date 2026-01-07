@@ -10,7 +10,7 @@ import {
   validateRequiredString,
   validateSearchParams,
 } from '../request'
-import { describe, expect, test } from '@jest/globals'
+import { describe, expect, test } from 'bun:test'
 
 describe('validateRequiredString', () => {
   test('should return undefined for valid non-empty strings', () => {

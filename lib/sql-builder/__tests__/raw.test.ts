@@ -3,7 +3,7 @@
  */
 
 import { param, raw } from '../raw'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 
 describe('RawSql', () => {
   it('should create raw SQL without alias', () => {

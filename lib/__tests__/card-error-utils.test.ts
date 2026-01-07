@@ -13,7 +13,7 @@ import {
   isCardErrorRetryable,
   shouldShowRetryButton,
 } from '../card-error-utils'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 import { ApiErrorType } from '@/lib/api/types'
 
 describe('card-error-utils', () => {

@@ -4,7 +4,7 @@ import {
   formatReadableSecondDuration,
   formatReadableSize,
 } from './format-readable'
-import { expect } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 
 describe('formatReadableSize', () => {
   it('should format 0 bytes correctly', () => {

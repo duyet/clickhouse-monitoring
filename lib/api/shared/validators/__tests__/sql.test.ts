@@ -3,7 +3,7 @@
  */
 
 import { SQL_PATTERNS, validateSqlQuery } from '../sql'
-import { describe, expect, test } from '@jest/globals'
+import { describe, expect, test } from 'bun:test'
 
 describe('SQL_PATTERNS', () => {
   test('should have all required patterns', () => {

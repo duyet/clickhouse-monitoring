@@ -3,7 +3,7 @@
  */
 
 import { col } from '../column'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 
 describe('ColumnBuilder', () => {
   describe('basic operations', () => {

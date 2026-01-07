@@ -5,7 +5,7 @@
  */
 
 import { col, raw, SqlBuilderError, sql } from '../index'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 
 describe('SqlBuilder', () => {
   describe('Basic SELECT queries', () => {

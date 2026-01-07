@@ -16,7 +16,7 @@ import {
   mapErrorTypeToStatusCode,
   mapExtendedErrorTypeToStatusCode,
 } from '../status-code-mapper'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 import { ApiErrorType } from '@/lib/api/types'
 
 describe('status-code-mapper', () => {

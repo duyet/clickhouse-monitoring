@@ -42,7 +42,9 @@
     "**/*.cy.ts",
     "**/*.cy.tsx",
     "**/*.test.ts",
-    "**/*.test.tsx"
+    "**/*.test.tsx",
+    "__mocks__/**/*.ts",
+    "bun.setup.ts"
   ],
   "ts-node": {
     "compilerOptions": {

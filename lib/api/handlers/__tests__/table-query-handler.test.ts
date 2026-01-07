@@ -8,22 +8,45 @@
  */
 
 import { createTableQueryHandler } from '../table-query-handler'
-import { getTableQuery } from '@/lib/api/table-registry'
+import {
+  beforeEach as bunBeforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+} from 'bun:test'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchData } from '@/lib/clickhouse'
 
 // Mock dependencies
-jest.mock('@/lib/api/table-registry')
-jest.mock('@/lib/clickhouse')
-jest.mock('@/lib/logger', () => ({
-  debug: jest.fn(),
-  error: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
+const mockGetTableQuery = mock(() => ({}))
+const mockFetchData = mock(() =>
+  Promise.resolve({ data: [], metadata: {}, error: null })
+)
+const mockDebug = mock(() => {})
+const mockError = mock(() => {})
+const mockInfo = mock(() => {})
+const mockWarn = mock(() => {})
+const mockLogError = mock(() => {})
+const mockLogWarning = mock(() => {})
+const mockLogInfo = mock(() => {})
+
+mock.module('@/lib/api/table-registry', () => ({
+  getTableQuery: mockGetTableQuery,
+}))
+
+mock.module('@/lib/clickhouse', () => ({
+  fetchData: mockFetchData,
+}))
+
+mock.module('@/lib/logger', () => ({
+  debug: mockDebug,
+  error: mockError,
+  info: mockInfo,
+  warn: mockWarn,
   ErrorLogger: {
-    logError: jest.fn(),
-    logWarning: jest.fn(),
-    logInfo: jest.fn(),
+    logError: mockLogError,
+    logWarning: mockLogWarning,
+    logInfo: mockLogInfo,
   },
 }))
 
@@ -32,8 +55,16 @@ describe('createTableQueryHandler', () => {
   const mockQueryConfigName = 'explorer-databases'
   const mockHostId = 0
 
-  beforeEach(() => {
-    jest.clearAllMocks()
+  bunBeforeEach(() => {
+    mockGetTableQuery.mockReset()
+    mockFetchData.mockReset()
+    mockDebug.mockReset()
+    mockError.mockReset()
+    mockInfo.mockReset()
+    mockWarn.mockReset()
+    mockLogError.mockReset()
+    mockLogWarning.mockReset()
+    mockLogInfo.mockReset()
   })
 
   describe('successful query execution', () => {
@@ -59,10 +90,10 @@ describe('createTableQueryHandler', () => {
       }
 
       // Mock getTableQuery to return a valid query definition
-      jest.mocked(getTableQuery).mockReturnValue(mockQueryDef as never)
+      mockGetTableQuery.mockReturnValue(mockQueryDef as never)
 
       // Mock fetchData to return successful result
-      jest.mocked(fetchData).mockResolvedValue({
+      mockFetchData.mockResolvedValue({
         data: mockData,
         metadata: mockMetadata,
         error: null,
@@ -99,11 +130,11 @@ describe('createTableQueryHandler', () => {
       })
 
       // Verify dependencies were called correctly
-      expect(getTableQuery).toHaveBeenCalledWith(mockQueryConfigName, {
+      expect(mockGetTableQuery).toHaveBeenCalledWith(mockQueryConfigName, {
         hostId: 0,
         searchParams: {},
       })
-      expect(fetchData).toHaveBeenCalledWith({
+      expect(mockFetchData).toHaveBeenCalledWith({
         query: mockQueryDef.query,
         query_params: {},
         hostId: 0,
@@ -122,8 +153,8 @@ describe('createTableQueryHandler', () => {
         },
       }
 
-      jest.mocked(getTableQuery).mockReturnValue(mockQueryDef as never)
-      jest.mocked(fetchData).mockResolvedValue({
+      mockGetTableQuery.mockReturnValue(mockQueryDef as never)
+      mockFetchData.mockResolvedValue({
         data: [],
         metadata: { queryId: 'q1', duration: 10, rows: 0, host: 'localhost' },
         error: null,
@@ -140,7 +171,7 @@ describe('createTableQueryHandler', () => {
       await handler(request)
 
       // Verify searchParams were passed correctly (excluding hostId)
-      expect(getTableQuery).toHaveBeenCalledWith(mockQueryConfigName, {
+      expect(mockGetTableQuery).toHaveBeenCalledWith(mockQueryConfigName, {
         hostId: 1,
         searchParams: { database: 'system', table: 'queries' },
       })
@@ -157,8 +188,8 @@ describe('createTableQueryHandler', () => {
         },
       }
 
-      jest.mocked(getTableQuery).mockReturnValue(mockQueryDef as never)
-      jest.mocked(fetchData).mockResolvedValue({
+      mockGetTableQuery.mockReturnValue(mockQueryDef as never)
+      mockFetchData.mockResolvedValue({
         data: [],
         metadata: { queryId: 'q1', duration: 5, rows: 0, host: 'localhost' },
         error: null,
@@ -185,7 +216,7 @@ describe('createTableQueryHandler', () => {
   describe('error handling - query build failures', () => {
     it('should return 500 when query definition cannot be built', async () => {
       // Mock getTableQuery to return null (query build failure)
-      jest.mocked(getTableQuery).mockReturnValue(null)
+      mockGetTableQuery.mockReturnValue(null)
 
       const handler = createTableQueryHandler({
         route: mockRoute,
@@ -215,8 +246,8 @@ describe('createTableQueryHandler', () => {
         },
       }
 
-      jest.mocked(getTableQuery).mockReturnValue(mockQueryDef as never)
-      jest.mocked(fetchData).mockResolvedValue({
+      mockGetTableQuery.mockReturnValue(mockQueryDef as never)
+      mockFetchData.mockResolvedValue({
         data: null,
         metadata: {},
         error: {
@@ -251,8 +282,8 @@ describe('createTableQueryHandler', () => {
         },
       }
 
-      jest.mocked(getTableQuery).mockReturnValue(mockQueryDef as never)
-      jest.mocked(fetchData).mockResolvedValue({
+      mockGetTableQuery.mockReturnValue(mockQueryDef as never)
+      mockFetchData.mockResolvedValue({
         data: null,
         metadata: {},
         error: {
@@ -286,8 +317,8 @@ describe('createTableQueryHandler', () => {
         },
       }
 
-      jest.mocked(getTableQuery).mockReturnValue(mockQueryDef as never)
-      jest.mocked(fetchData).mockResolvedValue({
+      mockGetTableQuery.mockReturnValue(mockQueryDef as never)
+      mockFetchData.mockResolvedValue({
         data: null,
         metadata: {},
         error: {
@@ -321,8 +352,8 @@ describe('createTableQueryHandler', () => {
         },
       }
 
-      jest.mocked(getTableQuery).mockReturnValue(mockQueryDef as never)
-      jest.mocked(fetchData).mockResolvedValue({
+      mockGetTableQuery.mockReturnValue(mockQueryDef as never)
+      mockFetchData.mockResolvedValue({
         data: null,
         metadata: {},
         error: {
@@ -362,8 +393,8 @@ describe('createTableQueryHandler', () => {
         host: 'clickhouse-01',
       }
 
-      jest.mocked(getTableQuery).mockReturnValue(mockQueryDef as never)
-      jest.mocked(fetchData).mockResolvedValue({
+      mockGetTableQuery.mockReturnValue(mockQueryDef as never)
+      mockFetchData.mockResolvedValue({
         data: [{ 1: 1 }],
         metadata: mockMetadata,
         error: null,
@@ -401,8 +432,8 @@ describe('createTableQueryHandler', () => {
         // Missing duration, rows, host
       }
 
-      jest.mocked(getTableQuery).mockReturnValue(mockQueryDef as never)
-      jest.mocked(fetchData).mockResolvedValue({
+      mockGetTableQuery.mockReturnValue(mockQueryDef as never)
+      mockFetchData.mockResolvedValue({
         data: [{ 1: 1 }],
         metadata: incompleteMetadata,
         error: null,
@@ -439,8 +470,8 @@ describe('createTableQueryHandler', () => {
         },
       }
 
-      jest.mocked(getTableQuery).mockReturnValue(mockQueryDef as never)
-      jest.mocked(fetchData).mockResolvedValue({
+      mockGetTableQuery.mockReturnValue(mockQueryDef as never)
+      mockFetchData.mockResolvedValue({
         data: [{ 1: 1 }],
         metadata: { queryId: 'q1', duration: 10, rows: 1, host: 'localhost' },
         error: null,

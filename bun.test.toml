@@ -1,0 +1,14 @@
+# Bun Test Configuration
+# See: https://bun.sh/docs/test/writing-tests
+
+[test]
+# Preload setup file for global test configuration
+preload = ["./bun.setup.ts"]
+
+# Coverage configuration
+coverage = true
+coverage-dir = "coverage"
+coverage-reporter = ["text", "lcov"]
+
+# Root directory
+root = "./"

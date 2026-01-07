@@ -15,7 +15,7 @@ import {
   QUERIES_TAB_CHARTS,
   STORAGE_TAB_CHARTS,
 } from '../charts-config'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 
 describe('charts-config', () => {
   describe('Configuration Structure', () => {

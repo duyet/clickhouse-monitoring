@@ -11,7 +11,7 @@ import {
   RedisCache,
   resetCacheInstance,
 } from '../version-cache'
-import { beforeEach, describe, expect, it } from '@jest/globals'
+import { beforeEach, describe, expect, it, jest } from 'bun:test'
 
 describe('InMemoryCache', () => {
   let cache: InMemoryCache

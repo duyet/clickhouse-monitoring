@@ -7,7 +7,7 @@ import {
   validateHostId,
   validateHostIdWithError,
 } from '../host-id'
-import { describe, expect, test } from '@jest/globals'
+import { describe, expect, test } from 'bun:test'
 
 describe('validateHostId', () => {
   test('should return parsed number for valid hostId string', () => {

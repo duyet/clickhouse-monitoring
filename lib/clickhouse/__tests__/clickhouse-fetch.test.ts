@@ -4,47 +4,71 @@
 
 import type { QueryConfig } from '@/types/query-config'
 
-import { fetchData, query } from '../clickhouse-fetch'
 import {
+  afterAll,
   afterEach,
+  beforeAll,
   beforeEach,
   describe,
   expect,
   it,
-  jest,
-} from '@jest/globals'
+  mock,
+} from 'bun:test'
+
+// IMPORTANT: Restore any existing mocks from other test files before setting up our own.
+// This prevents mock pollution from files like clickhouse-helpers.test.ts that mock @/lib/clickhouse.
+beforeAll(() => {
+  mock.restore()
+})
 
 // Mock dependencies
-jest.mock('@/lib/logger', () => ({
-  debug: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
+const mockDebug = mock(() => {})
+const mockError = mock(() => {})
+const mockWarn = mock(() => {})
+
+mock.module('@/lib/logger', () => ({
+  debug: mockDebug,
+  error: mockError,
+  warn: mockWarn,
 }))
 
-jest.mock('../clickhouse-client', () => ({
-  getClient: jest.fn(),
+const mockGetClient = mock(() => Promise.resolve({}))
+const mockGetClickHouseConfigs = mock(() => [])
+const mockValidateTableExistence = mock(() =>
+  Promise.resolve({ shouldProceed: true, missingTables: [] })
+)
+
+mock.module('../clickhouse-client', () => ({
+  getClient: mockGetClient,
 }))
 
-jest.mock('../clickhouse-config', () => ({
-  getClickHouseConfigs: jest.fn(),
+mock.module('../clickhouse-config', () => ({
+  getClickHouseConfigs: mockGetClickHouseConfigs,
 }))
 
-jest.mock('@/lib/table-validator', () => ({
-  validateTableExistence: jest.fn(),
+mock.module('@/lib/table-validator', () => ({
+  validateTableExistence: mockValidateTableExistence,
 }))
 
-import { getClient } from '../clickhouse-client'
-import { getClickHouseConfigs } from '../clickhouse-config'
-import { validateTableExistence } from '@/lib/table-validator'
+// Clean up all module mocks after tests complete
+afterAll(() => {
+  mock.restore()
+})
+
+// Import the actual code to test AFTER all mocks are set up
+import { fetchData, query } from '../clickhouse-fetch'
 
 describe('clickhouse-fetch', () => {
+  const mockClientQuery = mock(() => Promise.resolve({}))
+  const mockResultSetJson = mock(() => Promise.resolve([{ result: 'data' }]))
+
   const mockClient = {
-    query: jest.fn(),
+    query: mockClientQuery,
   }
 
   const mockResultSet = {
     query_id: 'test-query-id',
-    json: jest.fn(),
+    json: mockResultSetJson,
   }
 
   const mockConfig = {
@@ -60,15 +84,23 @@ describe('clickhouse-fetch', () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    ;(getClient as jest.Mock).mockResolvedValue(mockClient)
-    ;(getClickHouseConfigs as jest.Mock).mockReturnValue([mockConfig])
-    mockResultSet.json.mockResolvedValue([{ result: 'data' }])
-    mockClient.query.mockResolvedValue(mockResultSet)
+    mockGetClient.mockReset()
+    mockGetClickHouseConfigs.mockReset()
+    mockValidateTableExistence.mockReset()
+    mockClientQuery.mockReset()
+    mockResultSetJson.mockReset()
+    mockDebug.mockReset()
+    mockError.mockReset()
+    mockWarn.mockReset()
+
+    mockGetClient.mockResolvedValue(mockClient as never)
+    mockGetClickHouseConfigs.mockReturnValue([mockConfig])
+    mockResultSetJson.mockResolvedValue([{ result: 'data' }])
+    mockClientQuery.mockResolvedValue(mockResultSet as never)
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    // Cleanup happens automatically with mockReset in beforeEach
   })
 
   describe('fetchData', () => {
@@ -95,7 +127,7 @@ describe('clickhouse-fetch', () => {
           { col1: 'val1', col2: 100 },
           { col1: 'val2', col2: 200 },
         ]
-        mockResultSet.json.mockResolvedValue(mockData)
+        mockResultSetJson.mockResolvedValue(mockData)
 
         const result = await fetchData(defaultParams)
 
@@ -104,7 +136,7 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should handle null data', async () => {
-        mockResultSet.json.mockResolvedValue(null)
+        mockResultSetJson.mockResolvedValue(null)
 
         const result = await fetchData(defaultParams)
 
@@ -117,7 +149,7 @@ describe('clickhouse-fetch', () => {
           rows: 100,
           statistics: { read_rows: 1000 },
         }
-        mockResultSet.json.mockResolvedValue(mockData)
+        mockResultSetJson.mockResolvedValue(mockData)
 
         const result = await fetchData(defaultParams)
 
@@ -133,7 +165,7 @@ describe('clickhouse-fetch', () => {
 
         await fetchData({ ...defaultParams, queryConfig })
 
-        expect(mockClient.query).toHaveBeenCalledWith(
+        expect(mockClientQuery).toHaveBeenCalledWith(
           expect.objectContaining({
             query: expect.stringContaining('SELECT 2'),
           })
@@ -143,7 +175,7 @@ describe('clickhouse-fetch', () => {
       it('should use direct query when queryConfig not provided', async () => {
         await fetchData({ query: 'SELECT 3', hostId: 0 })
 
-        expect(mockClient.query).toHaveBeenCalledWith(
+        expect(mockClientQuery).toHaveBeenCalledWith(
           expect.objectContaining({
             query: expect.stringContaining('SELECT 3'),
           })
@@ -154,7 +186,7 @@ describe('clickhouse-fetch', () => {
         const queryParams = { param1: 'value1', param2: 100 }
         await fetchData({ ...defaultParams, query_params: queryParams })
 
-        expect(mockClient.query).toHaveBeenCalledWith(
+        expect(mockClientQuery).toHaveBeenCalledWith(
           expect.objectContaining({
             query_params: queryParams,
           })
@@ -168,7 +200,7 @@ describe('clickhouse-fetch', () => {
           clickhouse_settings: settings,
         })
 
-        expect(mockClient.query).toHaveBeenCalledWith(
+        expect(mockClientQuery).toHaveBeenCalledWith(
           expect.objectContaining({
             clickhouse_settings: settings,
           })
@@ -178,7 +210,7 @@ describe('clickhouse-fetch', () => {
       it('should support different formats', async () => {
         await fetchData({ ...defaultParams, format: 'JSON' })
 
-        expect(mockClient.query).toHaveBeenCalledWith(
+        expect(mockClientQuery).toHaveBeenCalledWith(
           expect.objectContaining({
             format: 'JSON',
           })
@@ -189,12 +221,18 @@ describe('clickhouse-fetch', () => {
     describe('hostId validation', () => {
       it('should throw for invalid hostId (NaN)', async () => {
         await expect(
-          fetchData({ ...defaultParams, hostId: 'invalid' })
+          fetchData({
+            ...defaultParams,
+            hostId: 'invalid' as unknown as number,
+          })
         ).rejects.toThrow('Invalid hostId')
       })
 
       it('should accept numeric string hostId that exists', async () => {
-        const result = await fetchData({ ...defaultParams, hostId: '0' })
+        const result = await fetchData({
+          ...defaultParams,
+          hostId: '0' as unknown as number,
+        })
 
         expect(result.error).toBeUndefined()
       })
@@ -208,7 +246,7 @@ describe('clickhouse-fetch', () => {
 
     describe('configuration validation', () => {
       it('should return error when no configs available', async () => {
-        ;(getClickHouseConfigs as jest.Mock).mockReturnValue([])
+        mockGetClickHouseConfigs.mockReturnValue([])
 
         const result = await fetchData(defaultParams)
 
@@ -221,7 +259,7 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should return error when hostId out of range', async () => {
-        ;(getClickHouseConfigs as jest.Mock).mockReturnValue([mockConfig])
+        mockGetClickHouseConfigs.mockReturnValue([mockConfig])
 
         const result = await fetchData({ ...defaultParams, hostId: 5 })
 
@@ -241,14 +279,14 @@ describe('clickhouse-fetch', () => {
           optional: true,
         } as QueryConfig
 
-        ;(validateTableExistence as jest.Mock).mockResolvedValue({
+        mockValidateTableExistence.mockResolvedValue({
           shouldProceed: true,
           missingTables: [],
         })
 
         await fetchData({ ...defaultParams, queryConfig })
 
-        expect(validateTableExistence).toHaveBeenCalledWith(queryConfig, 0)
+        expect(mockValidateTableExistence).toHaveBeenCalledWith(queryConfig, 0)
       })
 
       it('should skip query when validation fails', async () => {
@@ -258,7 +296,7 @@ describe('clickhouse-fetch', () => {
           optional: true,
         } as QueryConfig
 
-        ;(validateTableExistence as jest.Mock).mockResolvedValue({
+        mockValidateTableExistence.mockResolvedValue({
           shouldProceed: false,
           missingTables: ['system.backup_log'],
           error: 'Table not found',
@@ -270,7 +308,7 @@ describe('clickhouse-fetch', () => {
         expect(result.error).toBeDefined()
         expect(result.error?.type).toBe('table_not_found')
         expect(result.error?.message).toContain('Table not found')
-        expect(mockClient.query).not.toHaveBeenCalled()
+        expect(mockClientQuery).not.toHaveBeenCalled()
       })
 
       it('should not validate when queryConfig.optional is false', async () => {
@@ -282,14 +320,14 @@ describe('clickhouse-fetch', () => {
 
         await fetchData({ ...defaultParams, queryConfig })
 
-        expect(validateTableExistence).not.toHaveBeenCalled()
-        expect(mockClient.query).toHaveBeenCalled()
+        expect(mockValidateTableExistence).not.toHaveBeenCalled()
+        expect(mockClientQuery).toHaveBeenCalled()
       })
 
       it('should not validate when queryConfig not provided', async () => {
         await fetchData(defaultParams)
 
-        expect(validateTableExistence).not.toHaveBeenCalled()
+        expect(mockValidateTableExistence).not.toHaveBeenCalled()
       })
 
       it('should include missingTables in error details', async () => {
@@ -299,7 +337,7 @@ describe('clickhouse-fetch', () => {
           optional: true,
         } as QueryConfig
 
-        ;(validateTableExistence as jest.Mock).mockResolvedValue({
+        mockValidateTableExistence.mockResolvedValue({
           shouldProceed: false,
           missingTables: ['system.backup_log', 'system.error_log'],
         })
@@ -316,19 +354,17 @@ describe('clickhouse-fetch', () => {
     describe('error handling', () => {
       it('should classify table_not_found errors', async () => {
         const error = new Error("Table system.unknown_table doesn't exist")
-        mockClient.query.mockRejectedValue(error)
+        mockClientQuery.mockRejectedValue(error)
 
         const result = await fetchData(defaultParams)
 
         expect(result.data).toBeNull()
-        // Note: The implementation checks for "table", "not", AND "exist" all in lowercase
-        // The message has "doesn't" which when lowercased contains "not" and "exist"
         expect(result.error?.message).toContain("doesn't exist")
       })
 
       it('should classify permission errors', async () => {
         const error = new Error('Permission denied')
-        mockClient.query.mockRejectedValue(error)
+        mockClientQuery.mockRejectedValue(error)
 
         const result = await fetchData(defaultParams)
 
@@ -338,7 +374,7 @@ describe('clickhouse-fetch', () => {
 
       it('should classify network errors', async () => {
         const error = new Error('Network connection failed')
-        mockClient.query.mockRejectedValue(error)
+        mockClientQuery.mockRejectedValue(error)
 
         const result = await fetchData(defaultParams)
 
@@ -348,7 +384,7 @@ describe('clickhouse-fetch', () => {
 
       it('should default to query_error for unknown errors', async () => {
         const error = new Error('Unknown error')
-        mockClient.query.mockRejectedValue(error)
+        mockClientQuery.mockRejectedValue(error)
 
         const result = await fetchData(defaultParams)
 
@@ -358,7 +394,7 @@ describe('clickhouse-fetch', () => {
 
       it('should include original error in details', async () => {
         const originalError = new Error('Test error')
-        mockClient.query.mockRejectedValue(originalError)
+        mockClientQuery.mockRejectedValue(originalError)
 
         const result = await fetchData(defaultParams)
 
@@ -366,7 +402,7 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should handle non-Error errors', async () => {
-        mockClient.query.mockRejectedValue('String error')
+        mockClientQuery.mockRejectedValue('String error')
 
         const result = await fetchData(defaultParams)
 
@@ -376,7 +412,7 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should include host in error details', async () => {
-        mockClient.query.mockRejectedValue(new Error('Test error'))
+        mockClientQuery.mockRejectedValue(new Error('Test error'))
 
         const result = await fetchData(defaultParams)
 
@@ -384,7 +420,7 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should return metadata on error', async () => {
-        mockClient.query.mockRejectedValue(new Error('Test error'))
+        mockClientQuery.mockRejectedValue(new Error('Test error'))
 
         const result = await fetchData(defaultParams)
 
@@ -402,7 +438,7 @@ describe('clickhouse-fetch', () => {
         const result = await fetchData(defaultParams)
 
         expect(result.metadata.duration).toBeGreaterThanOrEqual(0)
-        expect(result.metadata.duration).toBeLessThan(1) // Should be very fast
+        expect(result.metadata.duration).toBeLessThan(1)
       })
 
       it('should include query_id from result set', async () => {
@@ -420,28 +456,25 @@ describe('clickhouse-fetch', () => {
 
     describe('error type classification edge cases', () => {
       it('should handle case insensitive error messages', async () => {
-        mockClient.query.mockRejectedValue(new Error('TABLE NOT FOUND'))
+        mockClientQuery.mockRejectedValue(new Error('TABLE NOT FOUND'))
 
         const result = await fetchData(defaultParams)
 
-        // The implementation checks for all three: "table", "not", "exist"
-        // "NOT FOUND" doesn't have "exist", so it defaults to query_error
         expect(result.error?.type).toBe('query_error')
       })
 
       it('should handle errors with multiple keywords', async () => {
-        mockClient.query.mockRejectedValue(
+        mockClientQuery.mockRejectedValue(
           new Error('Table not found and permission denied')
         )
 
         const result = await fetchData(defaultParams)
 
-        // "permission" appears before "exist" check, so it's classified as permission_error
         expect(result.error?.type).toBe('permission_error')
       })
 
       it('should handle empty error message', async () => {
-        mockClient.query.mockRejectedValue(new Error(''))
+        mockClientQuery.mockRejectedValue(new Error(''))
 
         const result = await fetchData(defaultParams)
 
@@ -451,11 +484,10 @@ describe('clickhouse-fetch', () => {
 
     describe('type safety', () => {
       it('should return correct type for array data', async () => {
-        mockResultSet.json.mockResolvedValue([{ col: 'val' }])
+        mockResultSetJson.mockResolvedValue([{ col: 'val' }])
 
         const result = await fetchData(defaultParams)
 
-        // TypeScript should infer this as FetchDataResult<{ col: string }[]>
         expect(Array.isArray(result.data)).toBe(true)
       })
 
@@ -464,7 +496,7 @@ describe('clickhouse-fetch', () => {
           rows: 10,
           statistics: { read_rows: 100 },
         }
-        mockResultSet.json.mockResolvedValue(mockData)
+        mockResultSetJson.mockResolvedValue(mockData)
 
         const result = await fetchData(defaultParams)
 
@@ -472,7 +504,7 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should return null type for null data', async () => {
-        mockResultSet.json.mockResolvedValue(null)
+        mockResultSetJson.mockResolvedValue(null)
 
         const result = await fetchData(defaultParams)
 
@@ -485,8 +517,8 @@ describe('clickhouse-fetch', () => {
     it('should execute simple query', async () => {
       await query('SELECT 1')
 
-      expect(getClient).toHaveBeenCalled()
-      expect(mockClient.query).toHaveBeenCalledWith({
+      expect(mockGetClient).toHaveBeenCalled()
+      expect(mockClientQuery).toHaveBeenCalledWith({
         query: expect.stringContaining('SELECT 1'),
         format: 'JSON',
         query_params: {},
@@ -497,7 +529,7 @@ describe('clickhouse-fetch', () => {
       const params = { param1: 'value1' }
       await query('SELECT :param1', params)
 
-      expect(mockClient.query).toHaveBeenCalledWith(
+      expect(mockClientQuery).toHaveBeenCalledWith(
         expect.objectContaining({
           query_params: params,
         })
@@ -507,7 +539,7 @@ describe('clickhouse-fetch', () => {
     it('should accept custom format', async () => {
       await query('SELECT 1', {}, 'CSV')
 
-      expect(mockClient.query).toHaveBeenCalledWith(
+      expect(mockClientQuery).toHaveBeenCalledWith(
         expect.objectContaining({
           format: 'CSV',
         })
@@ -517,7 +549,7 @@ describe('clickhouse-fetch', () => {
     it('should pass web: false to getClient', async () => {
       await query('SELECT 1')
 
-      expect(getClient).toHaveBeenCalledWith(
+      expect(mockGetClient).toHaveBeenCalledWith(
         expect.objectContaining({
           web: false,
         })

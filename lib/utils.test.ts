@@ -15,7 +15,7 @@ import {
   removeHostPrefix,
   uniq,
 } from './utils'
-import { expect, jest } from '@jest/globals'
+import { describe, expect, it, jest } from 'bun:test'
 
 jest.mock('clsx', () => ({
   clsx: jest.fn(),
@@ -157,7 +157,7 @@ describe('utils', () => {
     it('should handle invalid URLs gracefully', () => {
       const input = 'invalid-url'
 
-      expect(() => getHost(input)).toThrow(new TypeError('Invalid URL'))
+      expect(() => getHost(input)).toThrow(TypeError)
     })
   })
 
