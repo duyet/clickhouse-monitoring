@@ -10,7 +10,7 @@ Central registry that maps query configuration names to their SQL queries and pa
 
 **Features:**
 - Aggregates all query configs from different sources:
-  - Main queries from `app/[host]/[query]/clickhouse-queries.ts` (35+ queries)
+  - Main queries from `lib/query-config/` (35+ queries)
   - Specific page configs (clusters, disks, database, etc.)
 - Provides query builder with parameter injection from URL search params
 - Supports default parameters with override capability
@@ -179,11 +179,11 @@ All query configs are sourced from existing configuration files:
 
 ```typescript
 // Main queries (35+ configs)
-import { queries } from '@/app/[host]/[query]/clickhouse-queries'
+import { queries } from '@/lib/query-config'
 
 // Specific page configs
-import { queryConfig as clustersConfig } from '@/app/[host]/clusters/config'
-import { diskSpaceConfig } from '@/app/[host]/disks/config'
+import { clustersConfig } from '@/lib/query-config/system/clusters'
+import { diskSpaceConfig } from '@/lib/query-config/system/disks'
 // ... more configs
 ```
 
@@ -340,8 +340,8 @@ curl "http://localhost:3000/api/v1/tables/invalid?hostId=0"
 
 To add a new query configuration to the API:
 
-1. Create the query config in appropriate location (e.g., `app/[host]/[query]/new-query.ts`)
-2. Export it from `clickhouse-queries.ts` or create a new config file
+1. Create the query config in appropriate location (e.g., `lib/query-config/queries/new-query.ts`)
+2. Export it from `lib/query-config/index.ts` or create a new config file
 3. Import it in `lib/api/table-registry.ts` and add to `allQueryConfigs` array
 4. The API automatically picks it up - no other changes needed
 

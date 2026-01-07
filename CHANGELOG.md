@@ -28,6 +28,17 @@
 - **Query Config Registry**: Centralized query configurations in `lib/query-config/`
 - **Table Validation**: Automatic validation for optional system tables (`backup_log`, `error_log`, `zookeeper`)
 
+### Code Cleanup
+- **Removed deprecated re-export wrappers**:
+  - `components/data-table/format-cell.tsx` → use `@/components/data-table/formatters`
+  - `components/data-table/column-defs.tsx` → use `@/components/data-table/column-defs/column-defs`
+  - `components/charts/metric-card.tsx` → use `@/components/cards/metric`
+  - `components/charts/primitives/bar.tsx` → use `@/components/charts/primitives/bar/bar`
+- **Removed deprecated functions**:
+  - `binding()` from `lib/utils.ts` → use `replaceTemplateVariables` from `@/lib/template-utils`
+  - `BarTooltip` component → use `renderBarTooltip` function
+- **Updated deployment config**: `vercel.json` now uses `bun run build` instead of `pnpm build`
+
 ## [0.1.0] - 2024
 
 ### Initial Release
