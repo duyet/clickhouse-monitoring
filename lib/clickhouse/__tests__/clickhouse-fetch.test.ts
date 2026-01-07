@@ -4,7 +4,6 @@
 
 import type { QueryConfig } from '@/types/query-config'
 
-import { fetchData, query } from '../clickhouse-fetch'
 import {
   afterEach,
   beforeEach,
@@ -46,6 +45,8 @@ mock.module('@/lib/table-validator', () => ({
 
 import { getClient } from '../clickhouse-client'
 import { getClickHouseConfigs } from '../clickhouse-config'
+// Import the actual code to test AFTER all mocks are set up
+import { fetchData, query } from '../clickhouse-fetch'
 import { validateTableExistence } from '@/lib/table-validator'
 
 describe('clickhouse-fetch', () => {

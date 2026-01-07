@@ -12,7 +12,6 @@ import {
   mock,
   spyOn,
 } from 'bun:test'
-import { fetchDataWithHost, validateHostId } from '@/lib/clickhouse-helpers'
 
 // Mock the dependencies
 const mockFetchData = mock(() =>
@@ -30,6 +29,9 @@ const mockFetchData = mock(() =>
 mock.module('@/lib/clickhouse', () => ({
   fetchData: mockFetchData,
 }))
+
+// Import AFTER mocks are set up
+import { fetchDataWithHost, validateHostId } from '@/lib/clickhouse-helpers'
 
 describe('fetchDataWithHost', () => {
   let consoleWarnSpy: ReturnType<typeof spyOn>
@@ -200,13 +202,16 @@ describe('fetchDataWithHost', () => {
       const error = new Error('Test error')
       mockFetchData.mockRejectedValue(error)
 
-      // fetchDataWithHost re-throws the error after logging
-      await expect(
-        fetchDataWithHost({
-          query: 'SELECT 1',
-          hostId: 0,
-        })
-      ).rejects.toThrow('Test error')
+      // fetchDataWithHost catches errors and returns a result with error field
+      const result = await fetchDataWithHost({
+        query: 'SELECT 1',
+        hostId: 0,
+      })
+
+      // Should return null data and error object
+      expect(result.data).toBeNull()
+      expect(result.error).toBeDefined()
+      expect(result.error?.message).toBe('Test error')
 
       // Structured logging outputs JSON containing error details
       expect(consoleErrorSpy).toHaveBeenCalledWith(
