@@ -24,13 +24,9 @@ export const queryConfig: QueryConfig = {
   `,
   columns: ['cluster', 'shard_count', 'replica_count', 'replica_status'],
   columnFormats: {
-    cluster: [
-      ColumnFormat.Link,
-      { href: `/clusters/[cluster]?host=[ctx.hostId]` },
-    ],
     replica_status: [
       ColumnFormat.Link,
-      { href: `/clusters/[cluster]/replicas-status?host=[ctx.hostId]` },
+      { href: `/clusters/replicas-status?cluster=[cluster]&host=[ctx.hostId]` },
     ],
   },
 }
