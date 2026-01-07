@@ -6,7 +6,7 @@ import {
   nowOrToday,
   withQueryParams,
 } from './clickhouse-query'
-import { expect, test } from '@jest/globals'
+import { describe, expect, it, test } from 'bun:test'
 
 describe('applyInterval', () => {
   const testCases: [ClickHouseInterval, string, string | undefined, string][] =

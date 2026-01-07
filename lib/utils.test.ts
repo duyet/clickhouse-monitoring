@@ -15,7 +15,7 @@ import {
   removeHostPrefix,
   uniq,
 } from './utils'
-import { expect, jest } from '@jest/globals'
+import { describe, expect, it, jest, test } from 'bun:test'
 
 jest.mock('clsx', () => ({
   clsx: jest.fn(),

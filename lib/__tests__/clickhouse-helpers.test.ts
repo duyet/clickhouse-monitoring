@@ -3,14 +3,7 @@
  * Tests edge cases and error scenarios for the fetchDataWithHost wrapper
  */
 
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  jest,
-} from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, jest } from 'bun:test'
 import { fetchDataWithHost, validateHostId } from '@/lib/clickhouse-helpers'
 
 // Mock the dependencies

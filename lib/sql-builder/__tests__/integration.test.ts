@@ -5,7 +5,7 @@
  */
 
 import { col, fn, param, raw } from '../index'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 
 describe('SQL Builder Integration', () => {
   describe('column + function combinations', () => {

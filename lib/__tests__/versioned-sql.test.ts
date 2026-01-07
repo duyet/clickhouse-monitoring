@@ -5,7 +5,7 @@
  * for query configs with multiple SQL variants based on ClickHouse version.
  */
 
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 import { parseVersion, selectVersionedSql } from '@/lib/clickhouse-version'
 import { queries } from '@/lib/query-config'
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'

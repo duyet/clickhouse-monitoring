@@ -5,14 +5,7 @@
 import type { QueryConfig } from '@/types/query-config'
 
 import { fetchData, query } from '../clickhouse-fetch'
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  jest,
-} from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, jest } from 'bun:test'
 
 // Mock dependencies
 jest.mock('@/lib/logger', () => ({

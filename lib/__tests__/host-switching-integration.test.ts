@@ -3,7 +3,7 @@
  * Tests the complete flow of switching between ClickHouse hosts
  */
 
-import { beforeEach, describe, expect, it, jest } from '@jest/globals'
+import { beforeEach, describe, expect, it, jest } from 'bun:test'
 
 // Import the test utilities
 const {

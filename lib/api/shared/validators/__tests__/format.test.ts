@@ -3,7 +3,7 @@
  */
 
 import { isSupportedFormat, SUPPORTED_FORMATS, validateFormat } from '../format'
-import { describe, expect, test } from '@jest/globals'
+import { describe, expect, test } from 'bun:test'
 
 describe('SUPPORTED_FORMATS', () => {
   test('should contain all expected formats', () => {

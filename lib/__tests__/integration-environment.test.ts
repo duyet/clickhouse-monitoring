@@ -3,7 +3,7 @@
  * This test will be skipped in CI and local environments without ClickHouse
  */
 
-import { describe, expect, it } from '@jest/globals'
+import { beforeAll, describe, expect, it } from 'bun:test'
 import { fetchData, getClickHouseConfigs } from '@/lib/clickhouse'
 
 // Helper function to check if ClickHouse is available

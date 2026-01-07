@@ -3,7 +3,7 @@
  */
 
 import { fn } from '../functions'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'bun:test'
 
 describe('fn (SQL Functions)', () => {
   describe('formatting functions', () => {
