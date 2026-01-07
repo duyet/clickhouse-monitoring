@@ -4,7 +4,7 @@ import {
   formatReadableSecondDuration,
   formatReadableSize,
 } from './format-readable'
-import { describe, expect, it, test } from 'bun:test'
+import { describe, expect, it } from 'bun:test'
 
 describe('formatReadableSize', () => {
   it('should format 0 bytes correctly', () => {

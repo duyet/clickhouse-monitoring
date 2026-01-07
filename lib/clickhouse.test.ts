@@ -2,15 +2,7 @@ import { createClient } from '@clickhouse/client'
 import { createClient as createClientWeb } from '@clickhouse/client-web'
 
 import { getClickHouseHosts, getClient } from './clickhouse'
-import {
-  afterAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  jest,
-  test,
-} from 'bun:test'
+import { afterAll, beforeEach, describe, expect, it, jest } from 'bun:test'
 
 jest.mock('@clickhouse/client', () => ({
   createClient: jest.fn(),
