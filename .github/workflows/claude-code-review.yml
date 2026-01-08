@@ -3,61 +3,13 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: read
-      id-token: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - name: Run Claude Code Review
-        id: claude-review
-        uses: anthropics/claude-code-action@v1
-        env:
-          ANTHROPIC_BASE_URL: https://openrouter.ai/api
-          ANTHROPIC_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          ANTHROPIC_DEFAULT_HAIKU_MODEL: '@preset/claude-code-github-action'
-          ANTHROPIC_DEFAULT_SONNET_MODEL: '@preset/claude-code-github-action'
-          ANTHROPIC_DEFAULT_OPUS_MODEL: '@preset/claude-code-github-action'
-        with:
-          anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
-          claude_args: |
-            --allowed-tools Read,Grep,Glob,Bash,Plan
-          prompt: |
-            REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number }}
-
-            Please review this pull request and provide feedback on:
-            - Code quality and best practices
-            - Potential bugs or issues
-            - Performance considerations
-            - Security concerns
-            - Test coverage
-
-            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
-
-            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
-            Use `gh api` for Inline Comments
-          bot_id: 101855044
-          bot_name: duyetbot
+    uses: duyet/github-actions/.github/workflows/claude-code-review.yml@main
+    with:
+      allowed_tools: 'Read,Grep,Glob,Bash,Plan'
+      openrouter_enabled: true
+      model_preset: '@preset/claude-code-github-action'
+    secrets:
+      api_key: ${{ secrets.OPENROUTER_API_KEY }}
