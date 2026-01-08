@@ -69,6 +69,23 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Cypress Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/bun.lock') }}-${{ matrix.browser }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-${{ hashFiles('**/bun.lock') }}-
+            ${{ runner.os }}-cypress-
+
       - name: Next Cache
         uses: actions/cache@v5
         with:
@@ -137,6 +154,23 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Cypress Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/bun.lock') }}-${{ matrix.browser }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-${{ hashFiles('**/bun.lock') }}-
+            ${{ runner.os }}-cypress-
+
       - name: Next Cache
         uses: actions/cache@v5
         with:
@@ -178,6 +212,23 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Cypress Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/bun.lock') }}-${{ matrix.browser }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-${{ hashFiles('**/bun.lock') }}-
+            ${{ runner.os }}-cypress-
 
       - name: Next Cache
         uses: actions/cache@v5
@@ -269,6 +320,23 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Cypress Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/bun.lock') }}-${{ matrix.browser }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-${{ hashFiles('**/bun.lock') }}-
+            ${{ runner.os }}-cypress-
 
       - name: Next Cache
         uses: actions/cache@v5
