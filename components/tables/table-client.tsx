@@ -10,6 +10,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { TableSkeleton } from '@/components/skeletons'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { SuggestionCard } from '@/components/ui/suggestion-card'
 import {
   type CardError,
   detectCardErrorVariant,
@@ -253,9 +254,10 @@ export const TableClient = memo(function TableClient({
               description="No data available for this query. Try adjusting your filters or check back later."
             />
             {queryConfig.suggestion && (
-              <div className="mt-4 max-w-md text-center text-sm text-muted-foreground whitespace-pre-wrap rounded-lg bg-accent/30 p-4">
-                {queryConfig.suggestion}
-              </div>
+              <SuggestionCard
+                suggestion={queryConfig.suggestion}
+                className="mt-4"
+              />
             )}
           </div>
         </CardContent>
