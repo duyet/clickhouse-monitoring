@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import { ReadonlyTablesWarning } from '@/components/clusters/readonly-tables-warning'
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
 import { clustersReplicasStatusConfig } from '@/lib/query-config/system/replicas-status'
@@ -29,6 +30,9 @@ function ReplicasStatusContent() {
           <span className="text-muted-foreground">/</span>
           <span className="font-medium">{cluster || 'Select a cluster'}</span>
         </div>
+
+        {/* Readonly tables warning indicator */}
+        {cluster && <ReadonlyTablesWarning hostId={hostId} cluster={cluster} />}
       </div>
 
       {/* Table Content */}
