@@ -43,8 +43,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
           claude_args: |
-            --model anthropic/claude-3.5-sonnet
-            --allowed-tools Read,Grep,Glob,Bash
+            --allowed-tools Read,Grep,Glob,Bash,Plan
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
