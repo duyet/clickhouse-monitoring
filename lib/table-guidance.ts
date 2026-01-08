@@ -93,9 +93,14 @@ export const TABLE_GUIDANCE: Record<string, TableGuidance> = {
       'https://clickhouse.com/docs/en/operations/system-tables/query_views_log',
   },
   'system.metric_log': {
-    description: 'System metrics history',
+    description: 'System metrics history (required for Merge/Mutations charts)',
     enableInstructions:
-      'Enable by adding the `<metric_log>` section to your ClickHouse server config with `<collect_interval_milliseconds>1000</collect_interval_milliseconds>`.',
+      'The system.metric_log table requires explicit configuration in ClickHouse. This table does not exist by default.\n\n' +
+      'Add to your config.xml or config.d/metric_log.xml:\n\n' +
+      '```xml\n<metric_log>\n  <database>system</database>\n  <table>metric_log</table>\n  <collect_interval_milliseconds>1000</collect_interval_milliseconds>\n  <flush_interval_milliseconds>7500</flush_interval_milliseconds>\n</metric_log>\n```\n\n' +
+      'Also consider enabling part_log for merge duration/performance charts:\n\n' +
+      '```xml\n<part_log>\n  <database>system</database>\n  <table>part_log</table>\n  <flush_interval_milliseconds>7500</flush_interval_milliseconds>\n</part_log>\n```\n\n' +
+      'After adding the configuration, restart your ClickHouse server.',
     docsUrl:
       'https://clickhouse.com/docs/en/operations/system-tables/metric_log',
   },
@@ -114,9 +119,13 @@ export const TABLE_GUIDANCE: Record<string, TableGuidance> = {
       'https://clickhouse.com/docs/en/operations/system-tables/trace_log',
   },
   'system.part_log': {
-    description: 'Data part operations log (merges, mutations, downloads)',
+    description:
+      'Data part operations log (required for merge duration/performance charts)',
     enableInstructions:
-      'Enable by adding the `<part_log>` section to your ClickHouse server config.',
+      'The system.part_log table requires explicit configuration in ClickHouse. This table does not exist by default.\n\n' +
+      'Add to your config.xml or config.d/part_log.xml:\n\n' +
+      '```xml\n<part_log>\n  <database>system</database>\n  <table>part_log</table>\n  <flush_interval_milliseconds>7500</flush_interval_milliseconds>\n</part_log>\n```\n\n' +
+      'After adding the configuration, restart your ClickHouse server.',
     docsUrl: 'https://clickhouse.com/docs/en/operations/system-tables/part_log',
   },
 }
