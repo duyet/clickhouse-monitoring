@@ -52,7 +52,7 @@ export const pageViewCharts: Record<string, ChartQueryBuilder> = {
       WHERE kind = 'PageView'
         AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
       GROUP BY event_time
-      ORDER BY event_time WITH FILL TO now() STEP toIntervalDay(1)
+      ORDER BY event_time WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
     `,
       optional: true,
       tableCheck: 'system.monitoring_events',

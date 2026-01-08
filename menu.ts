@@ -475,6 +475,8 @@ export const menuItemsConfig: MenuItem[] = [
         title: 'Page Views',
         href: '/page-views',
         description: 'Dashboard usage analytics',
+        countKey: 'page-views',
+        countLabel: 'views',
         icon: BarChartIcon,
       },
       {

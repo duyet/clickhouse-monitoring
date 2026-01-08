@@ -10,9 +10,9 @@ export const PageViewBarChart = createBarChart({
   categories: ['page_views'],
   defaultTitle: 'Page Views',
   defaultInterval: 'toStartOfDay',
-  defaultLastHours: 24 * 14,
+  defaultLastHours: 24 * 30,
   dataTestId: 'page-view-chart',
-  dateRangeConfig: 'standard',
+  dateRangeConfig: 'page-views',
   barChartProps: {
     showLegend: false,
     showXAxis: true,

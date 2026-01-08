@@ -8,9 +8,9 @@ export const HumanVsBotPageviewsChart = createAreaChart({
   categories: ['human_views', 'bot_views'],
   defaultTitle: 'Human vs Bot Pageviews',
   defaultInterval: 'toStartOfDay',
-  defaultLastHours: 24 * 14,
+  defaultLastHours: 24 * 30,
   dataTestId: 'human-vs-bot-pageviews-chart',
-  dateRangeConfig: 'standard',
+  dateRangeConfig: 'page-views',
   areaChartProps: {
     stack: true,
     showLegend: true,

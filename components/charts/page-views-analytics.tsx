@@ -9,13 +9,17 @@ import { BarList } from '@/components/charts/primitives/bar-list'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useChartData } from '@/lib/swr'
 
-type DeviceRow = {
-  device: string
-  views: number
+type PageViewsAnalyticsTabsProps = ChartProps & {
+  defaultTab?: 'top-pages' | 'devices' | 'countries'
 }
 
 type TopPagesRow = {
   url: string
+  views: number
+}
+
+type DeviceRow = {
+  device: string
   views: number
 }
 
@@ -24,11 +28,12 @@ type CountryRow = {
   views: number
 }
 
-export const PageviewsByDeviceChart = memo(function PageviewsByDeviceChart({
+export const PageViewsAnalyticsTabs = memo(function PageViewsAnalyticsTabs({
   title,
   className,
   hostId,
-}: ChartProps) {
+  defaultTab = 'top-pages',
+}: PageViewsAnalyticsTabsProps) {
   const swrTopPages = useChartData<TopPagesRow>({
     chartName: 'top-pages',
     hostId,
@@ -56,10 +61,10 @@ export const PageviewsByDeviceChart = memo(function PageviewsByDeviceChart({
 
   // Combine SWR states for ChartContainer
   const combinedSwr = {
-    ...swrDevices,
+    ...swrTopPages,
     isLoading,
     error,
-    data: swrDevices.data, // Primary data for container
+    data: swrTopPages.data, // Primary data for container
   }
 
   return (
@@ -92,13 +97,13 @@ export const PageviewsByDeviceChart = memo(function PageviewsByDeviceChart({
             title={title}
             className={className}
             sql={primarySql}
-            data={swrDevices.data ?? []}
+            data={swrTopPages.data ?? []}
             metadata={primaryMetadata}
-            data-testid="pageviews-by-device-chart"
+            data-testid="page-views-analytics-chart"
           >
             <Tabs
-              id="pageviews-by-device-tabs"
-              defaultValue="devices"
+              id="page-views-analytics-tabs"
+              defaultValue={defaultTab}
               className="overflow-hidden"
             >
               <TabsList className="h-11 sm:h-9 gap-1 mb-3 p-1">
@@ -140,3 +145,8 @@ export const PageviewsByDeviceChart = memo(function PageviewsByDeviceChart({
     </ChartContainer>
   )
 })
+
+export default PageViewsAnalyticsTabs
+
+// Alias for backward compatibility with existing imports
+export { PageViewsAnalyticsTabs as TopPagesChart }
