@@ -5,6 +5,27 @@ import { ColumnFormat } from '@/types/column-format'
 export const dictionariesConfig: QueryConfig = {
   name: 'dictionaries',
   description: 'External dictionaries loaded in ClickHouse',
+  suggestion: `Create an external dictionary:
+
+CREATE DICTIONARY my_dict
+(
+  id UInt64,
+  name String
+)
+PRIMARY KEY id
+SOURCE(HTTP(URL 'http://source.example.com/data.csv'))
+LIFETIME(MIN 300 MAX 600)
+LAYOUT(FLAT());
+
+Sources: File, HTTP, MySQL, PostgreSQL, ClickHouse, Redis, Mongo, etc.
+
+Enable periodic refresh:
+SET dictionary_refresh_interval = 300;
+
+Monitor status, size, load times, and exceptions here.
+
+Learn more:
+https://clickhouse.com/docs/en/sql-reference/dictionaries`,
   optional: true,
   tableCheck: 'system.dictionaries',
   sql: `
@@ -60,5 +81,5 @@ export const dictionariesConfig: QueryConfig = {
       { max_truncate: 40, dialog_title: 'Dictionary Exception' },
     ],
   },
-  relatedCharts: ['dictionary-memory-usage', 'dictionary-load-times'],
+  relatedCharts: ['dictionary-count'],
 }

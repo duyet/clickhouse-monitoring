@@ -115,6 +115,20 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   name: string
   description?: string
   /**
+   * Helpful suggestion displayed in empty state when no data is available.
+   * Shows below "No data" message with setup examples and documentation links.
+   *
+   * @example
+   * ```ts
+   * suggestion: `Enable query cache with:
+   * SET enable_query_result_cache = 1;
+   * SET query_cache_max_size_in_bytes = 1073741824;
+   *
+   * Learn more: https://clickhouse.com/docs/en/operations/query-cache`
+   * ```
+   */
+  suggestion?: string
+  /**
    * SQL query definition - either:
    * - A string (version-independent query)
    * - An array of VersionedSql (version-aware queries, ordered oldest→newest)

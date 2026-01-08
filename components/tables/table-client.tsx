@@ -246,11 +246,18 @@ export const TableClient = memo(function TableClient({
           <CardToolbar sql={sql} metadata={metadata} alwaysVisible />
         </div>
         <CardContent className="p-6">
-          <EmptyState
-            variant="no-data"
-            title={title || 'No Data'}
-            description="No data available for this query. Try adjusting your filters or check back later."
-          />
+          <div className="flex flex-col items-center gap-4">
+            <EmptyState
+              variant="no-data"
+              title={title || 'No Data'}
+              description="No data available for this query. Try adjusting your filters or check back later."
+            />
+            {queryConfig.suggestion && (
+              <div className="mt-4 max-w-md text-center text-sm text-muted-foreground whitespace-pre-wrap rounded-lg bg-accent/30 p-4">
+                {queryConfig.suggestion}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     )
