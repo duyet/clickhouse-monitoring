@@ -61,7 +61,12 @@ export const pageViewCharts: Record<string, ChartQueryBuilder> = {
 
   'pageviews-by-device': () => ({
     query: `
-    SELECT JSONExtractString(extra, 'device') AS device, count() AS views
+    SELECT
+      if(empty(JSONExtractString(extra, 'device')),
+         'unknown',
+         concat(JSONExtractString(extra, 'device.vendor'), ' ', JSONExtractString(extra, 'device.model'))
+      ) AS device,
+      count() AS views
     FROM system.monitoring_events
     WHERE kind = 'PageView'
     GROUP BY device
@@ -76,7 +81,7 @@ export const pageViewCharts: Record<string, ChartQueryBuilder> = {
     SELECT JSONExtractString(extra, 'country') AS country, count() AS views
     FROM system.monitoring_events
     WHERE kind = 'PageView'
-      AND country != ''
+      AND JSONExtractString(extra, 'country') != ''
     GROUP BY country
     ORDER BY views DESC
     LIMIT 10
