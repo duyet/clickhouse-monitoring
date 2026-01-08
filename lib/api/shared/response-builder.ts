@@ -33,6 +33,8 @@ export interface SuccessResponseMeta {
   readonly apiUrl?: string
   /** Query parameters passed to the API */
   readonly apiParams?: Record<string, string | number | boolean | undefined>
+  /** IANA timezone used for ClickHouse session */
+  readonly timezone?: string
 }
 
 /**
@@ -108,6 +110,7 @@ export function createSuccessResponse<T>(
     ...(meta?.sql && { sql: String(meta.sql) }),
     ...(meta?.apiUrl && { apiUrl: String(meta.apiUrl) }),
     ...(meta?.apiParams && { apiParams: meta.apiParams }),
+    ...(meta?.timezone && { timezone: String(meta.timezone) }),
   }
 
   const response: ApiResponse<T> = {

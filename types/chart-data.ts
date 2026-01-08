@@ -37,6 +37,8 @@ export interface ChartQueryParams {
   interval?: ClickHouseInterval
   lastHours?: number
   params?: Record<string, unknown>
+  /** IANA timezone for ClickHouse session (e.g., "America/Los_Angeles", "UTC") */
+  timezone?: string
 }
 
 /**

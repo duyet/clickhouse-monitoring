@@ -49,7 +49,8 @@ async function handleMultiQueryChart(
   hostId: number | string,
   chartName: string,
   routeContext: RouteContext,
-  api?: string
+  api?: string,
+  timezone?: string
 ): Promise<Response> {
   debug(`[GET /api/v1/charts/${chartName}]`, {
     hostId,
@@ -66,6 +67,10 @@ async function handleMultiQueryChart(
             query: q.query,
             hostId,
             format: 'JSONEachRow',
+            // Pass timezone to ClickHouse for session-level time conversion
+            clickhouse_settings: timezone
+              ? { session_timezone: timezone }
+              : undefined,
           })
           return {
             key: q.key,
@@ -137,6 +142,7 @@ async function handleMultiQueryChart(
         host: String(hostId),
         sql: combinedSql,
         api,
+        timezone,
       },
       error: hasError ? firstError : undefined,
     }
@@ -192,8 +198,15 @@ export async function GET(
   const lastHours = lastHoursParam ? parseInt(lastHoursParam, 10) : undefined
   const paramStr = searchParams.get('params')
   const params_obj = paramStr ? JSON.parse(paramStr) : undefined
+  // Extract timezone for ClickHouse session
+  const timezone = searchParams.get('timezone') || undefined
 
-  debug(`[GET /api/v1/charts/${name}]`, { hostId, interval, lastHours })
+  debug(`[GET /api/v1/charts/${name}]`, {
+    hostId,
+    interval,
+    lastHours,
+    timezone,
+  })
 
   // Build full API URL for metadata (includes query params)
   const apiQueryParams = new URLSearchParams()
@@ -202,6 +215,7 @@ export async function GET(
   if (lastHours !== undefined)
     apiQueryParams.set('lastHours', String(lastHours))
   if (params_obj) apiQueryParams.set('params', JSON.stringify(params_obj))
+  if (timezone) apiQueryParams.set('timezone', timezone)
   const api = `/api/v1/charts/${name}?${apiQueryParams.toString()}`
 
   // Check if chart exists
@@ -245,7 +259,8 @@ export async function GET(
       hostId,
       name,
       routeContext,
-      api
+      api,
+      timezone
     )
   }
 
@@ -346,6 +361,8 @@ export async function GET(
     query_params: queryDef.queryParams,
     hostId,
     format: 'JSONEachRow',
+    // Pass timezone to ClickHouse for session-level time conversion
+    clickhouse_settings: timezone ? { session_timezone: timezone } : undefined,
     // Use the query definition to validate optional tables if needed
     queryConfig: queryDef.optional
       ? {
@@ -402,7 +419,7 @@ export async function GET(
   // Create successful response with SQL from query definition
   return createSuccessResponse(
     result.data,
-    result.metadata,
+    timezone ? { ...result.metadata, timezone } : result.metadata,
     selectedQuery.trim(),
     statusInfo
       ? { ...statusInfo, clickhouseVersion: clickhouseVersion?.raw }
@@ -450,6 +467,8 @@ interface ChartResponseMetadata {
   rawResponsePreview?: string
   // API request URL (full path with query params)
   api?: string
+  // IANA timezone used for ClickHouse session
+  timezone?: string
 }
 
 /**
@@ -506,6 +525,8 @@ function createSuccessResponse<T>(
         : undefined,
     // API request URL
     api,
+    // Timezone used for query
+    timezone: metadata.timezone as string | undefined,
   }
 
   const response: ApiResponseType<T> = {

@@ -111,6 +111,8 @@ export interface ApiResponseMetadata {
   readonly sql?: string
   /** Query parameters that were substituted in the SQL */
   readonly params?: Record<string, unknown> | null
+  /** IANA timezone used for ClickHouse session (e.g., "America/Los_Angeles", "UTC") */
+  readonly timezone?: string
 }
 
 /**
@@ -141,6 +143,8 @@ export interface ApiRequest {
   readonly format?: 'JSONEachRow' | 'JSON' | 'CSV' | 'TSV'
   /** Optional query configuration with metadata */
   readonly queryConfig?: QueryConfig
+  /** IANA timezone for ClickHouse session (e.g., "America/Los_Angeles", "UTC") */
+  readonly timezone?: string
 }
 
 /**

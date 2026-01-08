@@ -54,6 +54,7 @@ export const GET = withApiHandler(async (request: Request) => {
   const query =
     searchParams.get('sql') || searchParams.get('query') || undefined
   const format = searchParams.get('format') as DataFormat | null
+  const timezone = searchParams.get('timezone') || undefined
 
   // Validate required parameters
   const validationError = validateSearchParams(searchParams, ['hostId'])
@@ -100,13 +101,19 @@ export const GET = withApiHandler(async (request: Request) => {
   }
   const hostId = hostIdResult
 
-  debug('[GET /api/v1/data]', { hostId, format: format || 'JSONEachRow' })
+  debug('[GET /api/v1/data]', {
+    hostId,
+    format: format || 'JSONEachRow',
+    timezone,
+  })
 
   // Execute the query
   const result = await fetchData({
     query,
     format: (format || 'JSONEachRow') as DataFormat,
     hostId,
+    // Pass timezone to ClickHouse for session-level time conversion
+    clickhouse_settings: timezone ? { session_timezone: timezone } : undefined,
   })
 
   // Handle errors
@@ -115,8 +122,8 @@ export const GET = withApiHandler(async (request: Request) => {
     return handleQueryError(result.error, hostId, 'GET')
   }
 
-  // Create successful response
-  return createSuccessResponse(result.data, result.metadata)
+  // Create successful response with timezone in metadata
+  return createSuccessResponse(result.data, { ...result.metadata, timezone })
 }, ROUTE_CONTEXT)
 
 /**
@@ -154,12 +161,14 @@ export const POST = withApiHandler(async (request: Request) => {
     hostId,
     format = 'JSONEachRow',
     queryConfig,
+    timezone,
   } = typedBody
 
   debug('[POST /api/v1/data]', {
     hostId,
     format,
     queryConfig: queryConfig?.name,
+    timezone,
   })
 
   // SECURITY: If no queryConfig provided, validate the query exists in dashboard tables
@@ -194,6 +203,8 @@ export const POST = withApiHandler(async (request: Request) => {
     format: dataFormat,
     hostId,
     queryConfig,
+    // Pass timezone to ClickHouse for session-level time conversion
+    clickhouse_settings: timezone ? { session_timezone: timezone } : undefined,
   })
 
   // Handle errors
@@ -202,8 +213,8 @@ export const POST = withApiHandler(async (request: Request) => {
     return handleQueryError(result.error, hostId, 'POST')
   }
 
-  // Create successful response
-  return createSuccessResponse(result.data, result.metadata)
+  // Create successful response with timezone in metadata
+  return createSuccessResponse(result.data, { ...result.metadata, timezone })
 }, ROUTE_CONTEXT)
 
 /**

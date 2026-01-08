@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Toaster } from '@/components/ui/sonner'
+import { TimezoneProvider } from '@/lib/context/timezone-context'
 import { HostProvider, SWRProvider } from '@/lib/swr'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
@@ -37,20 +38,22 @@ export const viewport: Viewport = {
 
 function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <SWRProvider>
-        <Suspense fallback={null}>
-          <HostProvider>
-            <AppProvider reloadIntervalSecond={120}>{children}</AppProvider>
-          </HostProvider>
-        </Suspense>
-      </SWRProvider>
-    </ThemeProvider>
+    <TimezoneProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <SWRProvider>
+          <Suspense fallback={null}>
+            <HostProvider>
+              <AppProvider reloadIntervalSecond={120}>{children}</AppProvider>
+            </HostProvider>
+          </Suspense>
+        </SWRProvider>
+      </ThemeProvider>
+    </TimezoneProvider>
   )
 }
 

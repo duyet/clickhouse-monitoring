@@ -46,7 +46,10 @@ export async function GET(
   // Extract and validate hostId
   const hostId = getHostIdFromParams(searchParams, routeContext)
 
-  debug(`[GET /api/v1/tables/${name}]`, { hostId })
+  // Extract timezone for ClickHouse session
+  const timezone = searchParams.get('timezone') || undefined
+
+  debug(`[GET /api/v1/tables/${name}]`, { hostId, timezone })
 
   // Check if table query exists
   if (!hasTable(name)) {
@@ -98,6 +101,8 @@ export async function GET(
     query_params: queryDef.queryParams,
     hostId,
     format: 'JSONEachRow',
+    // Pass timezone to ClickHouse for session-level time conversion
+    clickhouse_settings: timezone ? { session_timezone: timezone } : undefined,
     // Always pass queryConfig for version-aware SQL selection
     queryConfig: config,
   })
@@ -131,7 +136,8 @@ export async function GET(
     queryDef.query,
     queryDef.queryParams,
     name,
-    searchParams
+    searchParams,
+    timezone
   )
 }
 
@@ -159,7 +165,8 @@ function createSuccessResponse<T>(
   sql: string,
   queryParams: Record<string, unknown> | undefined,
   tableName: string,
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
+  timezone?: string
 ): Response {
   // Build full API URL with query params
   const queryString = searchParams.toString()
@@ -183,6 +190,8 @@ function createSuccessResponse<T>(
       table: tableName,
       sql,
       params: queryParams || null,
+      // IANA timezone used for ClickHouse session
+      timezone,
     },
   }
 
