@@ -37,7 +37,10 @@ export const fetchData = async <
   queryConfig,
 }: QueryParams & {
   hostId: number | string
-  clickhouse_settings?: QueryParams['clickhouse_settings']
+  clickhouse_settings?: QueryParams['clickhouse_settings'] & {
+    /** IANA timezone for ClickHouse session (mapped to session_timezone) */
+    session_timezone?: string
+  }
   queryConfig?: QueryConfig
 }): Promise<FetchDataResult<T>> => {
   const start = new Date()

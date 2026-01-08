@@ -113,6 +113,8 @@ docker run -d \
 ![](.github/screenshots/screenshot_6.png)
 ![](.github/screenshots/screenshot_7.png)
 ![](.github/screenshots/screenshot_8.png)
+![](.github/screenshots/screenshot_9.png)
+![](.github/screenshots/screenshot_10.png)
 
 ## Feedback and Contributions
 

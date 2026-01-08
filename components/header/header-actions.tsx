@@ -1,11 +1,12 @@
 'use client'
 
-import { Bell, Moon, Sun } from 'lucide-react'
+import { Moon, Sun } from 'lucide-react'
 
 import { useTheme } from 'next-themes'
 import { memo, useEffect, useState } from 'react'
 import { CommandPalette } from '@/components/controls/command-palette'
 import { RefreshCountdown } from '@/components/header/refresh-countdown'
+import { NotificationsPopover } from '@/components/notifications/notifications-popover'
 import { SettingsDialog } from '@/components/settings'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'
@@ -61,11 +62,7 @@ export const HeaderActions = memo(function HeaderActions({
       )}
 
       {/* Notifications - hidden on mobile */}
-      <IconButton
-        tooltip="Notifications"
-        icon={<Bell />}
-        className="hidden sm:flex"
-      />
+      <NotificationsPopover />
       {menuComponent}
 
       {/* Settings Dialog */}
