@@ -97,7 +97,6 @@ describe('Navigation Tests (Query Parameter Routing)', () => {
       '/overview',
       '/dashboard',
       '/clusters',
-      '/tables',
       '/running-queries',
       '/merges',
       '/mutations',
@@ -109,6 +108,12 @@ describe('Navigation Tests (Query Parameter Routing)', () => {
       cy.url().should('include', 'host=0')
       cy.get('body').should('exist') // Page loaded without errors
     })
+
+    // /tables redirects to /explorer, test separately
+    cy.visit('/tables?host=0', { timeout: 30000 })
+    cy.url().should('include', '/explorer')
+    cy.url().should('include', 'host=0')
+    cy.get('body').should('exist')
   })
 
   it('should maintain query parameter during browser navigation', () => {
@@ -164,11 +169,13 @@ describe('Menu Navigation', () => {
     // Click on Monitoring menu
     cy.contains('button', 'Monitoring').click()
 
-    // Click on Custom Dashboard
+    // Wait for dropdown and verify Custom Dashboard link is visible
     cy.contains('Custom Dashboard').should('be.visible')
-    cy.contains('a', 'Custom Dashboard').click()
+    cy.contains('a', 'Custom Dashboard').should('be.visible').click()
 
+    // Verify navigation to dashboard with host parameter
     cy.url().should('include', '/dashboard')
+    cy.url().should('include', 'host=0')
   })
 
   it('should navigate to settings via System menu', () => {
