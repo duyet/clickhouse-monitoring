@@ -8,6 +8,7 @@ import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { memo, type ReactNode } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
+import { getGuidanceForMissingTables } from '@/lib/table-guidance'
 import { cn } from '@/lib/utils'
 
 export interface ChartContainerProps<
@@ -85,8 +86,19 @@ export const ChartContainer = memo(function ChartContainer<
     return <ChartError error={error} title={title} onRetry={() => mutate()} />
   }
 
-  // Empty state - now passes SQL, data, and metadata for debugging
+  // Empty state - now passes SQL, data, metadata, and guidance for missing tables
   if (!data || data.length === 0) {
+    // Get guidance for missing tables (if any)
+    const missingTables = metadata?.missingTables
+    const guidance = missingTables
+      ? getGuidanceForMissingTables(missingTables)
+      : undefined
+
+    // Build suggestion message from guidance
+    const suggestion = guidance
+      ? `${guidance.description ? `${guidance.description}\n\n` : ''}${guidance.enableInstructions}${guidance.docsUrl ? `\n\nDocumentation: ${guidance.docsUrl}` : ''}`
+      : undefined
+
     return (
       <ChartEmpty
         title={title}
@@ -94,6 +106,7 @@ export const ChartContainer = memo(function ChartContainer<
         sql={sql}
         data={data}
         metadata={metadata}
+        suggestion={suggestion}
         onRetry={() => mutate()}
         compact={compact}
       />
