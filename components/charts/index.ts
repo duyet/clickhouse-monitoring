@@ -43,6 +43,8 @@ export { createBarChart } from './factory/create-bar-chart'
 export { createCustomChart } from './factory/create-custom-chart'
 // Other
 export { GithubHeatmapChart } from './github-heatmap-chart'
+// Page analytics charts
+export { HumanVsBotPageviewsChart } from './human-vs-bot-pageviews'
 // Logs charts
 export { ChartCrashFrequency } from './logs/crash-frequency'
 export { ChartErrorRateOverTime } from './logs/error-rate-over-time'
@@ -54,6 +56,8 @@ export { ChartMergeSumReadRows } from './merge/merge-sum-read-rows'
 export { ChartNewPartsCreated } from './merge/new-parts-created'
 export { ChartSummaryUsedByMerges } from './merge/summary-used-by-merges'
 export { PageViewBarChart } from './page-view'
+export { PageviewsByCountryChart } from './pageviews-by-country'
+export { PageviewsByDeviceChart } from './pageviews-by-device'
 // Primitive chart components
 export { AreaChart } from './primitives/area'
 export { BarChart } from './primitives/bar/bar'
@@ -82,6 +86,7 @@ export { ChartDisksUsage } from './system/disks-usage'
 export { ChartMemoryUsage } from './system/memory-usage'
 // Thread charts
 export { ChartThreadUtilization } from './threads/thread-utilization'
+export { TopPagesChart } from './top-pages'
 // Table charts
 export { ChartTopTableSize } from './top-table-size'
 export { ChartKeeperException } from './zookeeper/zookeeper-exception'

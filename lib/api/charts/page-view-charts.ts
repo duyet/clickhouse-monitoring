@@ -24,4 +24,64 @@ export const pageViewCharts: Record<string, ChartQueryBuilder> = {
       tableCheck: 'system.monitoring_events',
     }
   },
+
+  'top-pages': () => ({
+    query: `
+    SELECT data AS url, count() AS views
+    FROM system.monitoring_events
+    WHERE kind = 'PageView'
+    GROUP BY url
+    ORDER BY views DESC
+    LIMIT 10
+  `,
+    optional: true,
+    tableCheck: 'system.monitoring_events',
+  }),
+
+  'human-vs-bot-pageviews': ({
+    interval = 'toStartOfDay',
+    lastHours = 24 * 14,
+  }) => {
+    const eventTimeExpr = applyInterval(interval, 'event_time', 'event_time')
+    return {
+      query: `
+      SELECT ${eventTimeExpr},
+             countIf(NOT JSONExtractBool(extra, 'isBot')) AS human_views,
+             countIf(JSONExtractBool(extra, 'isBot')) AS bot_views
+      FROM system.monitoring_events
+      WHERE kind = 'PageView'
+        AND event_time >= (now() - INTERVAL ${lastHours} HOUR)
+      GROUP BY event_time
+      ORDER BY event_time WITH FILL TO now() STEP toIntervalDay(1)
+    `,
+      optional: true,
+      tableCheck: 'system.monitoring_events',
+    }
+  },
+
+  'pageviews-by-device': () => ({
+    query: `
+    SELECT JSONExtractString(extra, 'device') AS device, count() AS views
+    FROM system.monitoring_events
+    WHERE kind = 'PageView'
+    GROUP BY device
+    ORDER BY views DESC
+  `,
+    optional: true,
+    tableCheck: 'system.monitoring_events',
+  }),
+
+  'pageviews-by-country': () => ({
+    query: `
+    SELECT JSONExtractString(extra, 'country') AS country, count() AS views
+    FROM system.monitoring_events
+    WHERE kind = 'PageView'
+      AND country != ''
+    GROUP BY country
+    ORDER BY views DESC
+    LIMIT 10
+  `,
+    optional: true,
+    tableCheck: 'system.monitoring_events',
+  }),
 }
