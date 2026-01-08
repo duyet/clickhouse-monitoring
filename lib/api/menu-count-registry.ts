@@ -81,6 +81,11 @@ export const menuCountRegistry: Record<string, MenuCountQuery> = {
     optional: true,
     tableCheck: 'system.monitoring_events',
   },
+  dictionaries: {
+    query: `SELECT COUNT() as count FROM system.dictionaries`,
+    optional: true,
+    tableCheck: 'system.dictionaries',
+  },
 }
 
 /**
