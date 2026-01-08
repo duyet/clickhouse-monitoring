@@ -14,6 +14,7 @@
 
 # next.js
 /.next/
+/.next-prod/
 /out/
 next.config.compiled.js
 .next/next.config.compiled.js
