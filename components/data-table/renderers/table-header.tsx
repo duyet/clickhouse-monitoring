@@ -105,9 +105,8 @@ function DraggableTableHeader({
     // Apply CSS transform during drag for visual feedback
     // After drag ends, TanStack Table's columnOrder state takes over
     transform: CSS.Transform.toString(transform),
-    minWidth: header.column.columnDef.minSize ?? 50,
-    maxWidth: header.column.columnDef.maxSize ?? undefined,
-    width: header.column.getSize(),
+    width: 'auto' as const,
+    minWidth: 0,
   }
 
   return (
@@ -202,9 +201,8 @@ export const TableHeaderRow = memo(function TableHeaderRow({
                 'px-2'
               )}
               style={{
-                minWidth: header.column.columnDef.minSize ?? 50,
-                maxWidth: header.column.columnDef.maxSize ?? undefined,
-                width: header.column.getSize(),
+                width: 'auto',
+                minWidth: 0,
               }}
             >
               {flexRender(header.column.columnDef.header, header.getContext())}
