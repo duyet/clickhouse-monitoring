@@ -37,9 +37,9 @@ jobs:
         env:
           ANTHROPIC_BASE_URL: https://openrouter.ai/api
           ANTHROPIC_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          ANTHROPIC_DEFAULT_HAIKU_MODEL: 'anthropic/claude-3.5-haiku'
-          ANTHROPIC_DEFAULT_SONNET_MODEL: 'anthropic/claude-3.5-sonnet'
-          ANTHROPIC_DEFAULT_OPUS_MODEL: 'anthropic/claude-3.5-sonnet'
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: '@preset/claude-code-github-action'
+          ANTHROPIC_DEFAULT_SONNET_MODEL: '@preset/claude-code-github-action'
+          ANTHROPIC_DEFAULT_OPUS_MODEL: '@preset/claude-code-github-action'
         with:
           anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
           claude_args: |
@@ -58,5 +58,6 @@ jobs:
             Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 
             Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+            Use `gh api` for Inline Comments
           bot_id: 101855044
           bot_name: duyetbot
