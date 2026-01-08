@@ -68,11 +68,18 @@ export const menuCountRegistry: Record<string, MenuCountQuery> = {
   },
   clusters: {
     query: `SELECT COUNT(DISTINCT cluster) as count FROM system.clusters`,
+    optional: true,
+    tableCheck: 'system.clusters',
   },
   backups: {
     query: `SELECT COUNT() as count FROM system.backup_log WHERE status = 'BACKUP_CREATED'`,
     optional: true,
     tableCheck: 'system.backup_log',
+  },
+  'page-views': {
+    query: `SELECT COUNT() as count FROM system.monitoring_events WHERE kind = 'PageView'`,
+    optional: true,
+    tableCheck: 'system.monitoring_events',
   },
 }
 

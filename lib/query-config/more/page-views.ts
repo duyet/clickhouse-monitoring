@@ -14,7 +14,7 @@ export const pageViewsConfig: QueryConfig = {
     WHERE kind = 'PageView'
       AND (if({event_date: String} != '', event_date = {event_date: String}, true))
     ORDER BY event_time DESC
-    LIMIT 100
+    LIMIT 20
   `,
   columns: ['event_time', 'event_date', 'actor', 'data', 'extra'],
   columnFormats: {
@@ -29,21 +29,21 @@ export const pageViewsConfig: QueryConfig = {
       {
         title: 'Daily Page Views',
         interval: 'toStartOfDay',
-        lastHours: 24 * 14,
+        lastHours: 24 * 30,
         colors: ['--chart-1'],
         xAxisLabel: 'Day',
       },
     ],
+    ['top-pages', { title: 'Top Pages' }],
     [
-      'page-view',
+      'human-vs-bot-pageviews',
       {
-        title: 'Monthly Page Views',
-        interval: 'toStartOfMonth',
-        lastHours: 24 * 365,
-        colors: ['--chart-2'],
-        xAxisLabel: 'Month',
+        title: 'Human vs Bot Pageviews',
+        interval: 'toStartOfDay',
+        lastHours: 24 * 30,
       },
     ],
+    ['pageviews-by-device', { title: 'Pageviews by Device' }],
   ],
   disableSqlValidation: true,
 }

@@ -56,6 +56,10 @@ export const CHART_TYPE_HINTS: Record<string, ChartSkeletonType> = {
 
   // Page Views Charts
   'page-view': 'bar',
+  'top-pages': 'bar',
+  'human-vs-bot-pageviews': 'area',
+  'pageviews-by-device': 'bar',
+  'pageviews-by-country': 'bar',
 
   // ZooKeeper Charts
   'zookeeper-summary-table': 'table',

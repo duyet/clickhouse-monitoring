@@ -5,6 +5,7 @@ import type { BadgeVariant } from '@/types/badge-variant'
 import { useMenuCount } from './hooks/use-menu-count'
 import { memo } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { formatReadableQuantity } from '@/lib/format-readable'
 import { useHostId } from '@/lib/swr'
 
 export interface CountBadgeProps {
@@ -31,7 +32,7 @@ export const CountBadge = memo(function CountBadge({
 
   return (
     <Badge className={className} variant={variant}>
-      {count}
+      {formatReadableQuantity(count, 'short')}
     </Badge>
   )
 })

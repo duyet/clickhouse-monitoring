@@ -12,6 +12,7 @@ import type { BadgeVariant } from '@/types/badge-variant'
 
 import { useMenuCount } from '../hooks/use-menu-count'
 import { memo } from 'react'
+import { formatReadableQuantity } from '@/lib/format-readable'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
@@ -49,7 +50,7 @@ export const CountBadge = memo(function CountBadge({
         variantClasses
       )}
     >
-      <span className="shrink-0">{count}</span>
+      <span className="shrink-0">{formatReadableQuantity(count, 'short')}</span>
       {countLabel && (
         <span
           className={cn(

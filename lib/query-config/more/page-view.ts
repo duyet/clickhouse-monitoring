@@ -46,5 +46,9 @@ export const pageViewConfig: QueryConfig = {
         xAxisLabel: 'Month',
       },
     ],
+    ['top-pages', { title: 'Top Pages by Views' }],
+    ['human-vs-bot-pageviews', { title: 'Human vs Bot Pageviews' }],
+    ['pageviews-by-device', { title: 'Pageviews by Device' }],
+    ['pageviews-by-country', { title: 'Pageviews by Country' }],
   ],
 }

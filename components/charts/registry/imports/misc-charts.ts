@@ -48,4 +48,26 @@ export const miscChartImports: ChartRegistryMap = {
       default: m.PageViewBarChart,
     }))
   ),
+
+  // Page Analytics Charts
+  'top-pages': lazy(() =>
+    import('@/components/charts/top-pages').then((m) => ({
+      default: m.TopPagesChart,
+    }))
+  ),
+  'human-vs-bot-pageviews': lazy(() =>
+    import('@/components/charts/human-vs-bot-pageviews').then((m) => ({
+      default: m.HumanVsBotPageviewsChart,
+    }))
+  ),
+  'pageviews-by-device': lazy(() =>
+    import('@/components/charts/pageviews-by-device').then((m) => ({
+      default: m.PageviewsByDeviceChart,
+    }))
+  ),
+  'pageviews-by-country': lazy(() =>
+    import('@/components/charts/pageviews-by-country').then((m) => ({
+      default: m.PageviewsByCountryChart,
+    }))
+  ),
 }
