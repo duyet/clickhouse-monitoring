@@ -98,19 +98,18 @@ export const failedQueriesConfig: QueryConfig = {
     },
   ],
   columns: [
-    'normalized_query',
+    'query_id',
     'exception',
     'type',
     'query_start_time',
     'query_duration_ms',
-    'query_id',
     'query_kind',
     'is_initial_query',
     'query_cache_usage',
     'read',
     'written',
     'result',
-    'memory usage',
+    'memory_usage',
     'stack_trace',
     'user',
     'initial_user',
@@ -129,14 +128,16 @@ export const failedQueriesConfig: QueryConfig = {
     'used_storages',
     'used_table_functions',
     'thread_ids',
+    'normalized_query',
   ],
   columnFormats: {
     normalized_query: [
       ColumnFormat.CodeDialog,
       {
-        trigger_classname: 'w-80 line-clamp-4',
-        dialog_classname: 'max-w-(--breakpoint-xl)',
-        max_truncate: 200,
+        max_truncate: 100,
+        hide_query_comment: true,
+        dialog_title: 'Query',
+        trigger_classname: '!max-w-[280px] overflow-hidden',
       },
     ],
     type: ColumnFormat.ColoredBadge,
@@ -144,9 +145,20 @@ export const failedQueriesConfig: QueryConfig = {
     query_start_time: ColumnFormat.RelatedTime,
     exception: [
       ColumnFormat.CodeDialog,
-      { trigger_classname: 'w-80 line-clamp-2' },
+      {
+        max_truncate: 100,
+        dialog_title: 'Exception',
+        trigger_classname: '!max-w-[280px] overflow-hidden',
+      },
     ],
-    stack_trace: ColumnFormat.CodeDialog,
+    stack_trace: [
+      ColumnFormat.CodeDialog,
+      {
+        max_truncate: 100,
+        dialog_title: 'Stack Trace',
+        trigger_classname: '!max-w-[280px] overflow-hidden',
+      },
+    ],
     client: ColumnFormat.CodeDialog,
     user: ColumnFormat.ColoredBadge,
     initial_user: ColumnFormat.ColoredBadge,
@@ -163,6 +175,14 @@ export const failedQueriesConfig: QueryConfig = {
     used_functions: ColumnFormat.CodeDialog,
     used_table_functions: ColumnFormat.CodeDialog,
     thread_ids: ColumnFormat.CodeDialog,
+    query_id: [
+      ColumnFormat.Link,
+      {
+        href: '/query?query_id=[query_id]&host=[ctx.hostId]',
+        className: 'truncate max-w-48 text-wrap',
+        title: 'Query Detail',
+      },
+    ],
   },
   relatedCharts: [
     [
