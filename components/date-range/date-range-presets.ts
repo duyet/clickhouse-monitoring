@@ -178,6 +178,16 @@ export const DATE_RANGE_PRESETS = {
     ],
     defaultValue: '7d',
   },
+  /** Page views analytics: 14d, 30d, 6m, 12m */
+  'page-views': {
+    options: [
+      RANGE_OPTIONS['14d'],
+      RANGE_OPTIONS['30d'],
+      RANGE_OPTIONS['6m'],
+      RANGE_OPTIONS['12m'],
+    ],
+    defaultValue: '30d',
+  },
 } as const satisfies Record<string, DateRangeConfig>
 
 /**
