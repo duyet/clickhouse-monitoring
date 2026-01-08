@@ -12,39 +12,6 @@ on:
 
 jobs:
   claude:
-    if: |
-      (github.event_name == 'issue_comment' && (contains(github.event.comment.body, '@claude') || contains(github.event.comment.body, '@duyetbot'))) ||
-      (github.event_name == 'pull_request_review_comment' && (contains(github.event.comment.body, '@claude') || contains(github.event.comment.body, '@duyetbot'))) ||
-      (github.event_name == 'pull_request_review' && (contains(github.event.review.body, '@claude') || contains(github.event.review.body, '@duyetbot'))) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude') || contains(github.event.issue.body, '@duyetbot') || contains(github.event.issue.title, '@duyetbot')))
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-      id-token: write
-      actions: read # Required for Claude to read CI results on PRs
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - name: Run Claude Code
-        id: claude
-        uses: anthropics/claude-code-action@v1
-        env:
-          ANTHROPIC_BASE_URL: https://openrouter.ai/api
-          ANTHROPIC_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          ANTHROPIC_DEFAULT_HAIKU_MODEL: '@preset/claude-code-github-action'
-          ANTHROPIC_DEFAULT_SONNET_MODEL: '@preset/claude-code-github-action'
-          ANTHROPIC_DEFAULT_OPUS_MODEL: '@preset/claude-code-github-action'
-        with:
-          anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
-
-          # This is an optional setting that allows Claude to read CI results on PRs
-          additional_permissions: |
-            actions: read
-
-          bot_id: 101855044
-          bot_name: duyetbot
+    uses: duyet/github-actions/.github/workflows/claude.yml@main
+    secrets:
+      api_key: ${{ secrets.OPENROUTER_API_KEY }}
