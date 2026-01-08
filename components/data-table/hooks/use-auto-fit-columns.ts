@@ -29,7 +29,7 @@ interface AutoFitOptions {
 }
 
 const DEFAULT_OPTIONS: Required<AutoFitOptions> = {
-  minWidth: 50,
+  minWidth: 40,
   maxWidth: 500,
   padding: 16,
   includeHeader: true,

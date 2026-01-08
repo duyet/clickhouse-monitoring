@@ -10,6 +10,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { TableSkeleton } from '@/components/skeletons'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { SuggestionCard } from '@/components/ui/suggestion-card'
 import {
   type CardError,
   detectCardErrorVariant,
@@ -246,11 +247,19 @@ export const TableClient = memo(function TableClient({
           <CardToolbar sql={sql} metadata={metadata} alwaysVisible />
         </div>
         <CardContent className="p-6">
-          <EmptyState
-            variant="no-data"
-            title={title || 'No Data'}
-            description="No data available for this query. Try adjusting your filters or check back later."
-          />
+          <div className="flex flex-col items-center gap-4">
+            <EmptyState
+              variant="no-data"
+              title={title || 'No Data'}
+              description="No data available for this query. Try adjusting your filters or check back later."
+            />
+            {queryConfig.suggestion && (
+              <SuggestionCard
+                suggestion={queryConfig.suggestion}
+                className="mt-4"
+              />
+            )}
+          </div>
         </CardContent>
       </Card>
     )

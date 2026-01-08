@@ -6,6 +6,22 @@ export const distributedDdlQueueConfig: QueryConfig = {
   name: 'distributed-ddl-queue',
   description:
     'Distributed ddl queries (ON CLUSTER clause) that were executed on a cluster',
+  suggestion: `To use Distributed DDL Queue:
+
+1. Set up cluster with replicas:
+CREATE TABLE t ON CLUSTER cluster_name
+(id Int32) ENGINE=ReplicatedMergeTree()
+
+2. Enable distributed DDL:
+SET distributed_ddl_queue_enabled = 1;
+
+3. Run DDL on cluster:
+CREATE TABLE ... ON CLUSTER cluster_name
+
+Requires: Cluster + Keeper/ZooKeeper
+
+Learn more:
+https://clickhouse.com/docs/en/operations/system-tables/distributed_ddl_queue`,
   tableCheck: 'system.distributed_ddl_queue',
   sql: `
       SELECT

@@ -5,6 +5,20 @@ import { ColumnFormat } from '@/types/column-format'
 export const viewRefreshesConfig: QueryConfig = {
   name: 'view-refreshes',
   description: `Contains information about refresh operations for materialized views using the REFRESH keyword. https://clickhouse.com/docs/operations/system-tables/view_refreshes`,
+  suggestion: `Create a materialized view with REFRESH:
+
+CREATE MATERIALIZED VIEW my_view
+REFRESH EVERY 1 HOUR
+AS SELECT col1, col2 FROM my_table;
+
+The view will refresh automatically on schedule.
+Monitor status, failures, and performance here.
+
+Requires: ClickHouse 23.8+
+Only for views with explicit REFRESH intervals.
+
+Learn more:
+https://clickhouse.com/docs/en/sql-reference/statements/create/view#materialized-view`,
   tableCheck: 'system.view_refreshes',
   sql: `
     SELECT *

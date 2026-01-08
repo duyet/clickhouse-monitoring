@@ -239,6 +239,8 @@ export const menuItemsConfig: MenuItem[] = [
         title: 'Dictionaries',
         href: '/dictionaries',
         description: 'External dictionary status and memory usage',
+        countKey: 'dictionaries',
+        countLabel: 'dictionaries',
         icon: BookOpenIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/dictionaries',

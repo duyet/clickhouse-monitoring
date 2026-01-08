@@ -20,6 +20,8 @@ interface ChartEmptyProps {
   title?: string
   className?: string
   description?: string
+  /** Helpful suggestion displayed below the empty state message */
+  suggestion?: string
   variant?: EmptyStateVariant
   onRetry?: () => void
   /** Use compact layout for smaller charts */
@@ -44,6 +46,7 @@ export const ChartEmpty = memo(function ChartEmpty({
   title,
   className,
   description,
+  suggestion,
   variant = 'no-data',
   onRetry,
   compact = false,
@@ -113,6 +116,13 @@ export const ChartEmpty = memo(function ChartEmpty({
           compact={compact}
           onRefresh={onRetry}
         />
+        {suggestion && (
+          <div className="mt-6 flex justify-center">
+            <div className="max-w-md text-center text-sm text-muted-foreground whitespace-pre-wrap rounded-lg bg-accent/30 p-4">
+              {suggestion}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

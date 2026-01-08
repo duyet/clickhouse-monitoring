@@ -73,10 +73,10 @@ export const expensiveQueriesByMemoryConfig: QueryConfig = {
   columns: [
     'query',
     'query_cache_usage',
-    'user',
-    'cnt',
     'readable_avg_memory',
     'readable_sum_memory',
+    'user',
+    'cnt',
   ],
   columnFormats: {
     query: [

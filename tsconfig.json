@@ -25,13 +25,14 @@
     "types": ["cypress", "node", "cypress-real-events"]
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    ".next/dev/types/**/*.ts",
     ".next/types/**/*.ts",
     "cypress.d.ts",
     "cypress/support/index.d.ts",
-    ".next/dev/types/**/*.ts"
+    "next-env.d.ts",
+    ".next-prod/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

@@ -7,6 +7,14 @@ export const queryCacheConfig: QueryConfig = {
   name: 'query-cache',
   description:
     'https://clickhouse.com/blog/introduction-to-the-clickhouse-query-cache-and-design',
+  suggestion: `Enable query cache with these settings:
+
+SET enable_query_result_cache = 1;
+SET query_cache_max_size_in_bytes = 1073741824;
+SET query_cache_min_query_duration_ms = 1000;
+
+Learn more:
+https://clickhouse.com/docs/en/operations/query-cache`,
   docs: QUERY_CACHE,
   tableCheck: 'system.query_cache',
   sql: `

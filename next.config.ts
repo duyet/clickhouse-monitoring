@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   // Use standalone output for hybrid static pages + dynamic API routes
   output: 'standalone',
 
+  // Use separate build directories for dev and production
+  // Allows bun run dev and bun run build to not conflict
+  distDir: process.env.NODE_ENV === 'production' ? '.next-prod' : '.next',
+
   // Automatically bundle external packages in the Pages Router:
   bundlePagesRouterDependencies: true,
   // Opt specific packages out of bundling for both App and Pages Router:
