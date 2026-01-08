@@ -100,13 +100,13 @@ export const NotificationsPopover = memo(function NotificationsPopover() {
         <div className="relative hidden sm:flex">
           <IconButton
             tooltip={`${totalCount} notification${totalCount === 1 ? '' : 's'}`}
-            icon={<Bell className={cn(totalCount > 0 && 'text-destructive')} />}
+            icon={<Bell className="size-4" />}
             className="hidden sm:flex"
           />
           {totalCount > 0 && (
             <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 size-5 flex items-center justify-center p-0 text-xs font-medium tabular-nums"
+              variant="secondary"
+              className="absolute -top-0.5 -right-0.5 size-3.5 flex items-center justify-center p-0 text-[10px] font-medium tabular-nums"
             >
               {totalCount > 99 ? '99+' : totalCount}
             </Badge>
@@ -121,8 +121,8 @@ export const NotificationsPopover = memo(function NotificationsPopover() {
             <h3 className="text-sm font-semibold">Notifications</h3>
             {totalCount > 0 && (
               <Badge
-                variant="destructive"
-                className="h-5 px-1.5 text-xs tabular-nums"
+                variant="secondary"
+                className="h-4 px-1 text-[10px] tabular-nums"
               >
                 {totalCount}
               </Badge>
