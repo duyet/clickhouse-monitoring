@@ -7,9 +7,5 @@ on:
 jobs:
   claude-review:
     uses: duyet/github-actions/.github/workflows/claude-code-review.yml@main
-    with:
-      allowed_tools: 'Read,Grep,Glob,Bash,Plan'
-      openrouter_enabled: true
-      model_preset: '@preset/claude-code-github-action'
     secrets:
       api_key: ${{ secrets.OPENROUTER_API_KEY }}
