@@ -11,6 +11,7 @@ import { ChartContainer } from '@/components/charts/chart-container'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { AreaChart } from '@/components/charts/primitives/area'
 import { resolveDateRangeConfig } from '@/components/date-range'
+import { useTimezone } from '@/lib/context/timezone-context'
 import { useChartData, useHostId } from '@/lib/swr'
 import { cn, createDateTickFormatter } from '@/lib/utils'
 
@@ -66,6 +67,7 @@ export function createAreaChart(
     ...props
   }: ChartProps) {
     const hostId = useHostId()
+    const userTimezone = useTimezone()
 
     // Date range state (only used when dateRangeConfig is provided)
     const [rangeOverride, setRangeOverride] = useState<DateRangeValue | null>(
@@ -91,9 +93,9 @@ export function createAreaChart(
         return config.areaChartProps.tickFormatter
       }
       return effectiveLastHours
-        ? createDateTickFormatter(effectiveLastHours)
+        ? createDateTickFormatter(effectiveLastHours, userTimezone)
         : undefined
-    }, [effectiveLastHours, config.areaChartProps?.tickFormatter])
+    }, [effectiveLastHours, config.areaChartProps?.tickFormatter, userTimezone])
 
     // Check if data has all zero values - show empty state with message
     // biome-ignore lint/correctness/useExhaustiveDependencies: config.categories is stable from factory

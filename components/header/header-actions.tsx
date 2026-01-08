@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes'
 import { memo, useEffect, useState } from 'react'
 import { CommandPalette } from '@/components/controls/command-palette'
 import { RefreshCountdown } from '@/components/header/refresh-countdown'
+import { SettingsDialog } from '@/components/settings'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'
 
@@ -19,6 +20,7 @@ export const HeaderActions = memo(function HeaderActions({
   const { setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   // Handle hydration - set mounted state after client-side render
   useEffect(() => {
@@ -36,6 +38,7 @@ export const HeaderActions = memo(function HeaderActions({
       <CommandPalette
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       {/* Theme toggle - hidden on mobile */}
@@ -64,6 +67,11 @@ export const HeaderActions = memo(function HeaderActions({
         className="hidden sm:flex"
       />
       {menuComponent}
+
+      {/* Settings Dialog */}
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <div />
+      </SettingsDialog>
     </div>
   )
 })

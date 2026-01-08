@@ -10,6 +10,7 @@ import type {
 
 import { REFRESH_INTERVAL, type RefreshInterval } from './config'
 import { useCallback, useMemo, useRef } from 'react'
+import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 /**
  * Chart metadata - re-export ApiResponseMetadata for convenience
@@ -97,6 +98,9 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   refreshInterval = REFRESH_INTERVAL.DEFAULT_60S,
   swrConfig,
 }: UseChartDataParams): UseChartResult<T> {
+  // Get user settings (including timezone) for API requests
+  const { settings } = useUserSettings()
+
   // Build query parameters
   const searchParams = new URLSearchParams()
   if (hostId !== undefined) searchParams.append('hostId', String(hostId))
@@ -105,12 +109,15 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   if (lastHours !== undefined)
     searchParams.append('lastHours', String(lastHours))
   if (params) searchParams.append('params', JSON.stringify(params))
+  // Pass timezone to ClickHouse for session-level time conversion
+  if (settings.timezone) searchParams.append('timezone', settings.timezone)
 
   const queryString = searchParams.toString()
   const url = `/api/v1/charts/${chartName}${queryString ? `?${queryString}` : ''}`
 
   // Build cache key - stringify params to ensure consistent caching
   // (identical param objects with different references should share cache)
+  // Include timezone so cache invalidates when user changes timezone
   const key = [
     '/api/v1/charts',
     chartName,
@@ -118,6 +125,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     interval,
     lastHours,
     JSON.stringify(params || null),
+    settings.timezone,
   ]
 
   // Fetcher function (memoized with useCallback to prevent recreation on every render)

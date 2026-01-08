@@ -1,7 +1,5 @@
 'use client'
 
-import type { ChartConfig } from '@/components/ui/chart'
-
 import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
 interface RenderBarTooltipOptions {
@@ -112,4 +110,3 @@ export function renderBarTooltip({
     />
   )
 }
-
