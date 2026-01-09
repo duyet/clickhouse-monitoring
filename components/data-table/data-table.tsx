@@ -1,24 +1,13 @@
 'use client'
 
-import {
-  type ColumnDef,
-  type ColumnOrderState,
-  type ColumnSizingState,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type RowData,
-  type RowSelectionState,
-  type SortingState,
-  useReactTable,
-} from '@tanstack/react-table'
+import type { ColumnDef, RowData, RowSelectionState } from '@tanstack/react-table'
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartQueryParams } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
+import { useMemo } from 'react'
 import { arrayMove } from '@dnd-kit/sortable'
-import { useCallback, useMemo, useState } from 'react'
 import {
   DataTableContent,
   DataTableFooter,
@@ -26,13 +15,17 @@ import {
 } from '@/components/data-table/components'
 import {
   useAutoFitColumns,
-  useColumnVisibility,
   useFilteredData,
   useTableColumns,
   useTableFilters,
+  useTablePersistence,
+  useTableState,
   useVirtualRows,
 } from '@/components/data-table/hooks'
 import { getCustomSortingFns } from '@/components/data-table/sorting-fns'
+
+import { ColumnManager } from './column-manager'
+import { SelectionManager } from './selection-manager'
 
 /**
  * Props for the DataTable component
@@ -57,6 +50,11 @@ import { getCustomSortingFns } from '@/components/data-table/sorting-fns'
  * @param filterUrlPrefix - URL parameter prefix for filters (default: 'filter')
  * @param filterableColumns - Columns to enable filtering for (default: all text columns)
  * @param isRefreshing - Show loading indicator in header when refreshing data
+ * @param enableRowSelection - Enable row selection with checkboxes (default: false)
+ * @param onRowSelectionChange - Callback when row selection changes
+ * @param metadata - Query execution metadata
+ * @param enableColumnReordering - Enable column reordering with drag-and-drop (default: true)
+ * @param columnOrderStorageKey - Storage key for persisting column order to localStorage
  */
 interface DataTableProps<TData extends RowData> {
   /** Table title displayed in header */
@@ -112,7 +110,11 @@ interface DataTableProps<TData extends RowData> {
 /**
  * DataTable - Main data table component with sorting, filtering, virtualization
  *
- * High-level orchestrator that delegates rendering to specialized sub-components:
+ * High-level orchestrator that delegates to specialized hooks and sub-components:
+ * - useTableState: Centralized state management (sorting, pagination, visibility)
+ * - useTablePersistence: localStorage and URL state persistence
+ * - ColumnManager: Column operations (visibility, sizing, reordering)
+ * - SelectionManager: Row selection with checkboxes
  * - DataTableHeader: Title, toolbar, column visibility controls
  * - DataTableContent: Table with virtualization support
  * - DataTableFooter: Pagination and footnote
@@ -123,12 +125,22 @@ interface DataTableProps<TData extends RowData> {
  * - URL filter synchronization for shareable links
  * - Custom sorting functions
  * - Column visibility controls
+ * - Column resizing with drag-and-drop
+ * - Row selection with checkboxes
+ * - localStorage persistence for column order
  * - Responsive design with shadcn/ui components
  *
  * Performance optimizations:
  * - Memoized sub-components prevent unnecessary re-renders
  * - Virtualization reduces DOM nodes from thousands to ~100
  * - Efficient column calculations with useMemo
+ * - Separate concerns reduce cyclomatic complexity
+ *
+ * Architecture benefits:
+ * - Single responsibility principle: each hook/component handles one concern
+ * - Better testability: individual features can be tested in isolation
+ * - Improved maintainability: easier to understand and modify
+ * - Enhanced reusability: hooks and components can be used independently
  */
 export function DataTable<
   TData extends RowData,
@@ -197,7 +209,6 @@ export function DataTable<
   )
 
   // Memoize filter context to prevent columnDefs recreation on every render
-  // This is critical to avoid infinite loops when filters change
   const filterContext = useMemo(
     () =>
       enableColumnFilters
@@ -230,183 +241,128 @@ export function DataTable<
     filterContext,
   })
 
-  // Column visibility
-  const { columnVisibility, setColumnVisibility } = useColumnVisibility({
+  // Centralized table state management
+  const tableState = useTableState<TData>({
+    queryConfig,
     allColumns,
     configuredColumns,
+    enableRowSelection,
+    defaultPageSize,
   })
 
-  // Sorting
-  const [sorting, setSorting] = useState<SortingState>([])
+  // Table persistence (localStorage + URL)
+  const persistence = useTablePersistence({
+    columnOrderStorageKey,
+    queryConfigName: queryConfig.name,
+    enableUrlSync: enableFilterUrlSync,
+    urlPrefix: filterUrlPrefix,
+  })
 
-  // Column sizing for resize support
-  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({})
-
-  // Column ordering for drag-and-drop reordering (with optional localStorage persistence)
-  const getStorageKey = useCallback(
-    () =>
-      `data-table-column-order-${columnOrderStorageKey || queryConfig.name}`,
-    [columnOrderStorageKey, queryConfig.name]
-  )
+  // Load persisted column order on mount
   const initialColumnOrder = useMemo(() => {
-    if (enableColumnReordering && typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem(getStorageKey())
-        if (saved) return JSON.parse(saved) as ColumnOrderState
-      } catch {
-        // Ignore localStorage errors
-      }
+    if (enableColumnReordering) {
+      return persistence.loadColumnOrder()
     }
     return []
-  }, [enableColumnReordering, getStorageKey])
+  }, [enableColumnReordering, persistence])
 
-  const [columnOrder, setColumnOrder] =
-    useState<ColumnOrderState>(initialColumnOrder)
+  // If we have initial column order from persistence, set it
+  if (enableColumnReordering && tableState.columnOrder.length === 0 && initialColumnOrder.length > 0) {
+    tableState.setColumnOrder(initialColumnOrder)
+  }
 
-  // Persist column order to localStorage when it changes
-  // This handles both direct values and updater functions from TanStack Table
-  const handleColumnOrderChange = useCallback(
-    (
-      updaterOrValue:
-        | ColumnOrderState
-        | ((old: ColumnOrderState) => ColumnOrderState)
-    ) => {
-      // Update both React state and TanStack Table's state
-      setColumnOrder(updaterOrValue)
+  // URL state management for filters
+  if (enableUrlSync) {
+    const urlState = persistence.loadUrlState()
+    if (urlState.sorting.length > 0 && tableState.sorting.length === 0) {
+      tableState.setSorting(urlState.sorting)
+    }
+    if (Object.keys(urlState.columnVisibility).length > 0 && Object.keys(tableState.columnVisibility).length === 0) {
+      tableState.setColumnVisibility({
+        ...initialColumnVisibility,
+        ...urlState.columnVisibility,
+      })
+    }
+    if (Object.keys(urlState.rowSelection).length > 0 && Object.keys(tableState.rowSelection).length === 0) {
+      tableState.setRowSelection(urlState.rowSelection)
+    }
+  }
 
-      // Save to localStorage
-      if (enableColumnReordering && typeof window !== 'undefined') {
-        const newOrder =
-          typeof updaterOrValue === 'function'
-            ? (updaterOrValue as (old: ColumnOrderState) => ColumnOrderState)(
-                columnOrder
-              )
-            : updaterOrValue
-        try {
-          localStorage.setItem(getStorageKey(), JSON.stringify(newOrder))
-        } catch {
-          // Ignore localStorage errors
-        }
+  // Handle column order change with persistence
+  const handleColumnOrderChange = (order: string[]) => {
+    tableState.setColumnOrder(order)
+    if (enableColumnReordering) {
+      persistence.saveColumnOrder(order)
+    }
+  }
+
+  // Handle drag end for column reordering
+  const handleDragEnd = (activeId: string, overId: string) => {
+    if (!enableColumnReordering) return
+
+    const currentOrder = tableState.columnOrder
+    const allColumnIds = columnDefs.map((col) => col.id!).filter(Boolean)
+
+    const effectiveOrder = currentOrder.length > 0 ? currentOrder : allColumnIds
+    const oldIndex = effectiveOrder.indexOf(activeId)
+    const newIndex = effectiveOrder.indexOf(overId)
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const arrayMove = (arr: string[], from: number, to: number) => {
+        const result = [...arr]
+        const [removed] = result.splice(from, 1)
+        result.splice(to, 0, removed)
+        return result
+      }
+      const newOrder = arrayMove(effectiveOrder, oldIndex, newIndex)
+      handleColumnOrderChange(newOrder)
+    }
+  }
+
+  // Handle reset column order
+  const handleResetColumnOrder = () => {
+    handleColumnOrderChange([])
+    if (enableColumnReordering) {
+      persistence.clearColumnOrder()
+    }
+  }
+
+  // Use ColumnManager for column operations
+  const columnManager = ColumnManager<TData>({
+    enabled: enableColumnReordering,
+    columnOrder: tableState.columnOrder,
+    onColumnOrderChange: handleColumnOrderChange,
+    columnVisibility: tableState.columnVisibility,
+    onColumnVisibilityChange: tableState.setColumnVisibility,
+    columnSizing: tableState.columnSizing,
+    onColumnSizingChange: tableState.setColumnSizing,
+    columnDefs,
+    data: filteredData,
+    queryConfig,
+    getRowId: tableState.getRowId,
+    onDragEnd: handleDragEnd,
+    onResetColumnOrder: handleResetColumnOrder,
+  })
+
+  // Use SelectionManager for row selection
+  const selectionManager = SelectionManager<TData>({
+    enabled: enableRowSelection,
+    rowSelection: tableState.rowSelection,
+    onRowSelectionChange: (selection) => {
+      tableState.setRowSelection(selection)
+      _onRowSelectionChange?.(selection)
+      // Update URL if sync enabled
+      if (enableFilterUrlSync) {
+        persistence.updateUrlState({ rowSelection: selection })
       }
     },
-    [enableColumnReordering, getStorageKey, columnOrder]
-  )
-
-  // Row selection state
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-
-  // Selection column definition using TanStack Table's row selection
-  const selectionColumn: ColumnDef<TData, unknown> = useMemo(
-    () => ({
-      id: 'select',
-      header: ({ table }) => {
-        const isAllSelected = table.getIsAllPageRowsSelected()
-        const isSomeSelected = table.getIsSomePageRowsSelected()
-        return (
-          <div
-            role="presentation"
-            className="flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <input
-              type="checkbox"
-              className="size-4 cursor-pointer accent-primary"
-              checked={isAllSelected}
-              ref={(el) => {
-                if (el) el.indeterminate = isSomeSelected && !isAllSelected
-              }}
-              onChange={(e) =>
-                table.toggleAllPageRowsSelected(e.target.checked)
-              }
-              onClick={(e) => e.stopPropagation()}
-              aria-label="Select all rows"
-            />
-          </div>
-        )
-      },
-      cell: ({ row }) => (
-        <div
-          role="presentation"
-          className="flex items-center justify-center"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <input
-            type="checkbox"
-            className="size-4 cursor-pointer accent-primary"
-            checked={row.getIsSelected()}
-            disabled={!row.getCanSelect()}
-            onChange={row.getToggleSelectedHandler()}
-            onClick={(e) => e.stopPropagation()}
-            aria-label="Select row"
-          />
-        </div>
-      ),
-      enableSorting: false,
-      enableHiding: false,
-      enableResizing: false,
-      size: 48,
-      minSize: 48,
-      maxSize: 48,
-    }),
-    []
-  )
-
-  // Combine selection column with other columns when enabled
-  const finalColumnDefs = useMemo(
-    () => (enableRowSelection ? [selectionColumn, ...columnDefs] : columnDefs),
-    [enableRowSelection, selectionColumn, columnDefs]
-  )
-
-  // Generate unique row ID from data (use query_id if available, otherwise index)
-  const getRowId = useMemo(
-    () => (row: TData, index: number) => {
-      const record = row as Record<string, unknown>
-      // Try common ID fields first
-      if (record.query_id) return String(record.query_id)
-      if (record.id) return String(record.id)
-      // Fallback to index
-      return String(index)
-    },
-    []
-  )
-
-  const table = useReactTable({
+    columnDefs: columnManager.finalColumnDefs || columnDefs,
     data: filteredData,
-    columns: finalColumnDefs,
-    getCoreRowModel: getCoreRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    // Add custom sorting functions
-    // Ref: https://tanstack.com/table/v8/docs/guide/sorting#custom-sorting-functions
-    sortingFns: getCustomSortingFns<TData>(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    // Column resizing
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange',
-    onColumnSizingChange: setColumnSizing,
-    // Column reordering
-    onColumnOrderChange: handleColumnOrderChange,
-    // Row selection - pass true to enable for all rows
-    enableRowSelection: !!enableRowSelection,
-    getRowId,
-    onRowSelectionChange: setRowSelection,
-    // Enable sorting (click on header to sort, plus dropdown menu options)
-    enableSorting: true,
-    state: {
-      sorting,
-      columnVisibility,
-      columnSizing,
-      rowSelection,
-      columnOrder,
-    },
-    initialState: {
-      pagination: {
-        pageSize: defaultPageSize,
-      },
-      columnVisibility: initialColumnVisibility,
-    },
+    getRowId: tableState.getRowId,
   })
+
+  // Get the table from selection manager (it's the source of truth with selection enabled)
+  const table = enableRowSelection ? selectionManager.table : columnManager.table
 
   // Virtual rows for large datasets (auto-enables at 1000+ rows)
   const rows = table.getRowModel().rows
@@ -418,53 +374,26 @@ export function DataTable<
   const { autoFitColumn } = useAutoFitColumns<TData>(tableContainerRef)
 
   // Handle auto-fit request for a specific column
-  const handleAutoFit = useCallback(
-    (columnId: string) => {
-      const column = table.getColumn(columnId)
-      if (!column) return
+  const handleAutoFit = (columnId: string) => {
+    const column = table.getColumn(columnId)
+    if (!column) return
 
-      const headerText = column.columnDef.header as string
-      autoFitColumn(column, rows, headerText)
-    },
-    [autoFitColumn, table, rows]
-  )
+    const headerText = column.columnDef.header as string
+    autoFitColumn(column, rows, headerText)
+  }
 
-  // Handle drag end event for column reordering
-  // This is called by table-header when columns are reordered via drag-and-drop
-  const handleDragEndColumnReorder = useCallback(
-    (activeId: string, overId: string) => {
-      const currentOrder = table.getState().columnOrder
+  // Export sorted state to URL when sorting changes
+  if (enableFilterUrlSync && tableState.sorting.length > 0) {
+    persistence.updateUrlState({ sorting: tableState.sorting })
+  }
 
-      // Get ALL columns from the table (not just sortable ones)
-      const allColumnIds = table.getAllLeafColumns().map((col) => col.id)
-
-      // Use currentOrder if it has values, otherwise use all columns in natural order
-      const effectiveOrder =
-        currentOrder.length > 0 ? currentOrder : allColumnIds
-
-      const oldIndex = effectiveOrder.indexOf(activeId)
-      const newIndex = effectiveOrder.indexOf(overId)
-
-      if (oldIndex !== -1 && newIndex !== -1) {
-        // Reorder ALL columns, not just the sortable ones
-        const newOrder = arrayMove(effectiveOrder, oldIndex, newIndex)
-        handleColumnOrderChange(newOrder)
-      }
-    },
-    [table, handleColumnOrderChange]
-  )
-
-  // Reset column order to default (empty array means use natural order)
-  const handleResetColumnOrder = useCallback(() => {
-    handleColumnOrderChange([])
-    if (enableColumnReordering && typeof window !== 'undefined') {
-      try {
-        localStorage.removeItem(getStorageKey())
-      } catch {
-        // Ignore localStorage errors
-      }
+  // Export column visibility to URL when it changes
+  if (enableFilterUrlSync) {
+    const visibleState = tableState.columnVisibility
+    if (Object.keys(visibleState).length > 0) {
+      persistence.updateUrlState({ columnVisibility: visibleState })
     }
-  }, [handleColumnOrderChange, enableColumnReordering, getStorageKey])
+  }
 
   return (
     <div className={`flex min-w-0 flex-col overflow-hidden ${className || ''}`}>
@@ -492,14 +421,14 @@ export function DataTable<
         description={description}
         queryConfig={queryConfig}
         table={table}
-        columnDefs={finalColumnDefs}
+        columnDefs={columnManager.finalColumnDefs || columnDefs}
         tableContainerRef={tableContainerRef}
         isVirtualized={isVirtualized}
         virtualizer={virtualizer}
         activeFilterCount={activeFilterCount}
         onAutoFit={handleAutoFit}
         enableColumnReordering={enableColumnReordering}
-        onColumnOrderChange={handleDragEndColumnReorder}
+        onColumnOrderChange={handleDragEnd}
         onResetColumnOrder={handleResetColumnOrder}
       />
 
