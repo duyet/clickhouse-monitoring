@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   // Use standalone output for hybrid static pages + dynamic API routes
   output: 'standalone',
 
+  // Turbopack configuration for Next.js 16 compatibility
+  turbopack: {},
+
   // Use separate build directories for dev and production
   // Allows bun run dev and bun run build to not conflict
   distDir: process.env.NODE_ENV === 'production' ? '.next-prod' : '.next',
