@@ -12,16 +12,17 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
+    "downlevelIteration": true,
+    "paths": {
+      "@/*": ["./*"]
+    },
     "plugins": [
       {
         "name": "next"
       }
     ],
-    "paths": {
-      "@/*": ["./*"]
-    },
     "types": ["cypress", "node", "cypress-real-events"]
   },
   "include": [
@@ -32,7 +33,8 @@
     "cypress.d.ts",
     "cypress/support/index.d.ts",
     "next-env.d.ts",
-    ".next-prod/types/**/*.ts"
+    ".next-prod/types/**/*.ts",
+    ".next-prod/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

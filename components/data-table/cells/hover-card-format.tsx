@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
-export type HoverCardContent = string | React.ReactNode
+export type HoverCardContent = string | any
 
 export type HoverCardOptions = {
   content: HoverCardContent
@@ -16,7 +16,7 @@ export type HoverCardOptions = {
 
 interface HoverCardProps {
   row: Row<any>
-  value: React.ReactNode
+  value: any
   options?: HoverCardOptions
 }
 
@@ -32,7 +32,7 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   const rowData = extractRowData(content, row)
 
   // Content replacement, e.g. "Hover content: [column_name]"
-  const processedContent = replaceTemplateInReactNode(content, rowData)
+  const processedContent = replaceTemplateInReactNode(content, rowData) as any
 
   return (
     <HoverCard openDelay={0}>
