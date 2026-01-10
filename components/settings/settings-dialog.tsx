@@ -15,7 +15,7 @@ import {
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 interface SettingsDialogProps {
-  children?: React.ReactNode
+  children?: React.ReactElement
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }

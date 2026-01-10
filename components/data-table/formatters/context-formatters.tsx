@@ -124,12 +124,12 @@ export const hoverCardFormatter: RowContextFormatter = <
   TValue,
 >(
   props: FormatterProps<TData, TValue>
-): React.ReactNode => {
+): React.ReactElement => {
   const { row, value, options } = props
   return (
     <HoverCardFormat
       row={row}
-      value={value as React.ReactNode}
+      value={value as React.ReactElement}
       options={options as HoverCardOptions}
     />
   )

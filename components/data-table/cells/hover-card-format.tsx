@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
-export type HoverCardContent = string | React.ReactNode
+export type HoverCardContent = string | React.ReactElement
 
 export type HoverCardOptions = {
   content: HoverCardContent
@@ -16,7 +16,7 @@ export type HoverCardOptions = {
 
 interface HoverCardProps {
   row: Row<any>
-  value: React.ReactNode
+  value: React.ReactElement
   options?: HoverCardOptions
 }
 
@@ -24,7 +24,7 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   row,
   value,
   options,
-}: HoverCardProps): React.ReactNode {
+}: HoverCardProps): React.ReactElement {
   const { content } = options || {}
 
   // Extract row data for template replacement
@@ -36,8 +36,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {value as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {processedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })
@@ -47,19 +51,21 @@ export const HoverCardFormat = memo(function HoverCardFormat({
  * Uses row.getValue() to support TanStack Table's column accessors
  */
 function extractRowData(
-  content: string | React.ReactNode | undefined,
+  content: string | React.ReactElement | undefined,
   row: Row<unknown>
 ): Record<string, unknown> {
   const data: Record<string, unknown> = {}
 
   // Find all [key] placeholders in content
-  const extractKeys = (node: string | React.ReactNode | undefined): void => {
+  const extractKeys = (node: any): void => {
     if (typeof node === 'string') {
       const matches = node.match(/\[(.*?)\]/g)
       if (matches) {
         for (const match of matches) {
           const key = match.slice(1, -1).trim()
-          data[key] = row.getValue(key)
+          const value = row.getValue(key)
+          // Convert bigint to string for compatibility
+          data[key] = typeof value === 'bigint' ? value.toString() : value
         }
       }
     } else if (node && typeof node === 'object') {

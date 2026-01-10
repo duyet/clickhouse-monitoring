@@ -16,7 +16,7 @@ export interface DialogContentProps {
   button?: React.ReactNode
   title?: string
   description?: string
-  content: string | React.ReactNode
+  content: string | React.ReactElement
   contentClassName?: string
   /** Actions to display in the header (right side) */
   headerActions?: React.ReactNode
@@ -44,7 +44,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{button as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
