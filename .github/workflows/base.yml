@@ -126,7 +126,7 @@ jobs:
       - name: Extract Docker metadata
         if: ${{ inputs.job-type == 'docker' }}
         id: meta
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051
+        uses: docker/metadata-action@ed95091677497158a9ff38b314264cd965388d5e
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
