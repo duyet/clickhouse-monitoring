@@ -1,4 +1,4 @@
-import type { ClickHouseClient } from '@clickhouse/client'
+import type { ClickHouseClient, ResponseJSON } from '@clickhouse/client'
 
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 
@@ -49,12 +49,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-type KillQueryResponse = {
-  meta: object[]
-  data: { kill_status: string; query_id: string; user: string }[]
-  rows: number
-  statistics: object
-}
+type KillQueryResult = { kill_status: string; query_id: string; user: string }
+type KillQueryResponse = ResponseJSON<KillQueryResult>
 
 async function cleanupHangQuery(
   client: ClickHouseClient | WebClickHouseClient
@@ -75,7 +71,11 @@ async function cleanupHangQuery(
   const killQueryResp = await killHangingQueries(client)
   await updateLastCleanup(client)
 
-  if (!killQueryResp || killQueryResp.rows === 0) {
+  if (
+    !killQueryResp ||
+    killQueryResp.rows === 0 ||
+    killQueryResp.rows === undefined
+  ) {
     ErrorLogger.logDebug('[/api/clean] Done, nothing to cleanup', {
       route: '/api/clean',
     })
@@ -139,7 +139,7 @@ async function killHangingQueries(
       },
     })
 
-    const killQueryResp = await resp.json<KillQueryResponse>()
+    const killQueryResp: KillQueryResponse = await resp.json<KillQueryResult>()
 
     ErrorLogger.logDebug('[/api/clean] queries found', {
       route: '/api/clean',
@@ -198,10 +198,11 @@ async function createSystemKillQueryEvent(
       killStatus,
     })
 
+    const rows = killQueryResp.rows ?? killQueryResp.data.length
     const value = {
       kind: 'SystemKillQuery',
       actor: MONITORING_USER,
-      data: `Detected ${killQueryResp.rows} hang queries (>${QUERY_CLEANUP_MAX_DURATION_SECONDS}s), killing them, result: ${JSON.stringify(killStatus)}`,
+      data: `Detected ${rows} hang queries (>${QUERY_CLEANUP_MAX_DURATION_SECONDS}s), killing them, result: ${JSON.stringify(killStatus)}`,
     }
 
     await client.insert({

@@ -45,17 +45,19 @@ export async function GET(request: Request): Promise<Response> {
     // Convert rows to a key-value object
     const params = Array.isArray(rows)
       ? rows.reduce(
-          (acc, row: { key: string; value: string }) => {
-            acc[row.key] = row.value
-            return acc
+          (acc, row: unknown) => {
+            const typedRow = row as { key: string; value: string }
+            const typedAcc = acc as Record<string, string>
+            typedAcc[typedRow.key] = typedRow.value
+            return typedAcc
           },
           {} as Record<string, string>
         )
-      : {}
+      : ({} as Record<string, string>)
 
     const response: ApiResponse<{ params: Record<string, string> }> = {
       success: true,
-      data: { params },
+      data: { params: params as Record<string, string> },
       metadata: {
         queryId: 'dashboard-settings-get',
         duration: 0,

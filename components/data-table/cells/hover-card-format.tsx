@@ -1,5 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 
+import * as React from 'react'
 import { memo } from 'react'
 import {
   HoverCard,
@@ -20,6 +21,31 @@ interface HoverCardProps {
   options?: HoverCardOptions
 }
 
+/**
+ * Convert ReactNode to a type compatible with Radix UI components
+ * Converts bigint to string since it's not supported in React 19's ReactNode
+ */
+function sanitizeReactNode(node: React.ReactNode): React.ReactNode {
+  if (typeof node === 'bigint') {
+    return node.toString()
+  }
+  if (typeof node === 'object' && node !== null) {
+    if (Array.isArray(node)) {
+      return node.map(sanitizeReactNode)
+    }
+    // Handle React elements
+    if (React.isValidElement(node)) {
+      // Recursively sanitize children
+      const props = node.props as { children?: React.ReactNode }
+      if (props.children) {
+        return React.cloneElement(node, {}, sanitizeReactNode(props.children))
+      }
+      return node
+    }
+  }
+  return node
+}
+
 export const HoverCardFormat = memo(function HoverCardFormat({
   row,
   value,
@@ -34,10 +60,17 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Also sanitize the value to handle potential bigint
+  const sanitizedValue = sanitizeReactNode(value)
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {sanitizedValue as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {sanitizeReactNode(processedContent) as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })

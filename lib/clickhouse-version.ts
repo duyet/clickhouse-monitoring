@@ -124,7 +124,11 @@ export async function getClickHouseVersion(
     })
 
     const data = await resultSet.json<Array<{ version: string }>>()
-    const versionStr = data?.[0]?.version
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      logError('[clickhouse-version] Invalid response format')
+      return null
+    }
+    const versionStr = (data[0] as unknown as { version: string }).version
 
     if (!versionStr) {
       logError('[clickhouse-version] Failed to get version from response')
@@ -165,7 +169,8 @@ export async function checkTableExists(
     })
 
     const data = await resultSet.json<Array<{ exists: number }>>()
-    return data?.[0]?.exists === 1
+    if (!data || !Array.isArray(data) || data.length === 0) return false
+    return (data[0] as unknown as { exists: number }).exists === 1
   } catch {
     return false
   }
@@ -193,7 +198,8 @@ export async function checkTableHasData(
     })
 
     const data = await resultSet.json<Array<{ has_data: number }>>()
-    return data?.[0]?.has_data === 1
+    if (!data || !Array.isArray(data) || data.length === 0) return false
+    return (data[0] as unknown as { has_data: number }).has_data === 1
   } catch {
     return false
   }
