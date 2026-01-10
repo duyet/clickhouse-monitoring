@@ -150,7 +150,7 @@ jobs:
       - name: Extract first tag
         if: ${{ inputs.job-type == 'docker' && inputs.test-container }}
         id: first_tag
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const tags = JSON.parse('${{ steps.meta.outputs.json }}').tags;
