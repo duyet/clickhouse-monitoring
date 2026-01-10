@@ -24,6 +24,9 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // Configure Turbopack for Next.js 16
+  turbopack: {},
+
   // https://nextjs.org/docs/app/api-reference/next-config-js/webpack
   webpack: (config, { isServer: _isServer }) => {
     // Exclude @vercel/og WASM files from bundle (not compatible with Cloudflare Workers)
