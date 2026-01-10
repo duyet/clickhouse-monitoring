@@ -5,8 +5,8 @@
     "": {
       "name": "clickhouse-monitor",
       "dependencies": {
-        "@clickhouse/client": "^0.3.0",
-        "@clickhouse/client-web": "^0.3.1",
+        "@clickhouse/client": "^0.4.0",
+        "@clickhouse/client-web": "^0.4.0",
         "@dagrejs/dagre": "^1.1.8",
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/modifiers": "^9.0.0",
@@ -468,11 +468,11 @@
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.3.8", "", { "os": "win32", "cpu": "x64" }, "sha512-RguzimPoZWtBapfKhKjcWXBVI91tiSprqdBYu7tWhgN8pKRZhw24rFeNZTNf6UiBfjCYCi9eFQs/JzJZIhuK4w=="],
 
-    "@clickhouse/client": ["@clickhouse/client@0.3.1", "", { "dependencies": { "@clickhouse/client-common": "0.3.1" } }, "sha512-5ywbK3oJJ8HIMzSZ6qJAhr6SyjmaBLy9fnVrLdacnZpFhD8j2RMKyM9yu3kAOzCF2HhFbdTPM/+KVWTpKjJlpA=="],
+    "@clickhouse/client": ["@clickhouse/client@0.4.0", "", { "dependencies": { "@clickhouse/client-common": "0.4.0" } }, "sha512-OxdmJS40cAaJNPxVWPiJWqg2u7aQmFFDuPHH5YXiGcV1q+3+mmtgjNtc/xtHuyw5bLZ8hx38xUzWvVkgzvrTUw=="],
 
-    "@clickhouse/client-common": ["@clickhouse/client-common@0.3.1", "", {}, "sha512-SXErzkCLLp/cRs2P8ihEgOiz1D0RMcQGcccnxrU5+DKWpYMu5/ZR48gBLaUVpVg/hXdBR/9n9XH8CB8d1xKiuQ=="],
+    "@clickhouse/client-common": ["@clickhouse/client-common@0.4.0", "", {}, "sha512-uhDaLT01FH/8qOyyeujQqGKIfwZjuMIoUdLWy/iuE/GjXpIhcUxO0siw+Rz8hSNPXuPAbYadG1ZFCz6P6w9GuA=="],
 
-    "@clickhouse/client-web": ["@clickhouse/client-web@0.3.1", "", { "dependencies": { "@clickhouse/client-common": "0.3.1" } }, "sha512-cOmiooy33TYBY9lqAHE3xMZgzSzlQ/cmKOglxRNqfdo5d+NVgBXUAH2QERXvzmw2o3hOHLkROwAMN1gd9MZ4bA=="],
+    "@clickhouse/client-web": ["@clickhouse/client-web@0.4.0", "", { "dependencies": { "@clickhouse/client-common": "0.4.0" } }, "sha512-SgxllcbXOFQEb9e0BSCfdazD8LKoJS/EfeNQAz7ugqkDoQx0qZDTwnR49LghBSsmp9HjvJCNmZP99dONmYPzUg=="],
 
     "@cloudflare/kv-asset-handler": ["@cloudflare/kv-asset-handler@0.4.0", "", { "dependencies": { "mime": "3.0.0" } }, "sha512-+tv3z+SPp+gqTIcImN9o0hqE9xyfQjI1XD9pL6NuKjua9B1y7mNYv0S9cP+QEbA4ppVgGZEmKOvHX5G5Ei1CVA=="],
 
