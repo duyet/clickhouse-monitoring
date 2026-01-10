@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
   // Opt specific packages out of bundling for both App and Pages Router:
   // serverExternalPackages: [],
 
+  // Configure Turbopack
+  turbopack: {},
+
   images: {
     unoptimized: true,
     remotePatterns: [
