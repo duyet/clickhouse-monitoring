@@ -10,6 +10,6 @@ echo "🔍 Running full Biome check..."
 bun run check
 
 echo "🏗️ Verifying build..."
-bun run build
+bun run build --webpack
 
 echo "✅ Pre-push checks passed!"
