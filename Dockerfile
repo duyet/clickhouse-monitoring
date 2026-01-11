@@ -6,7 +6,8 @@ WORKDIR /app
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+# Add build dependencies for native modules (better-sqlite3 requires python3 and build tools)
+RUN apk add --no-cache libc6-compat python3 make g++
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
