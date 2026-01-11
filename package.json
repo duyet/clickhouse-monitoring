@@ -33,10 +33,17 @@
     "test:coverage": "bun test --coverage",
     "test:watch": "bun test --watch",
     "type-check": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:drop": "drizzle-kit drop",
+    "db:status": "drizzle-kit check",
     "preinstall": "npx only-allow bun",
     "prepare": "husky"
   },
   "dependencies": {
+    "@better-auth/cli": "^1.2.4",
+    "@better-auth/react": "^1.2.4",
     "@clickhouse/client": "^0.3.0",
     "@clickhouse/client-web": "^0.3.1",
     "@dagrejs/dagre": "^1.1.8",
@@ -93,6 +100,13 @@
     "sonner": "^2.0.3",
     "sql-formatter": "^15.6.12",
     "swr": "^2.3.8",
+    "better-auth": "^1.2.4",
+    "drizzle-orm": "^0.40.0",
+    "drizzle-kit": "^0.30.0",
+    "better-sqlite3": "^11.8.1",
+    "argon2": "^0.41.1",
+    "jose": "^5.9.6",
+    "nanoid": "^5.0.9",
     "tailwind-merge": "^3.2.0",
     "tailwindcss": "^4.1.5",
     "tw-animate-css": "^1.2.9",
@@ -123,7 +137,9 @@
     "ts-jest": "^29.2.5",
     "turbo": "^2.0.6",
     "typescript": "^5",
-    "wrangler": "^4.40.3"
+    "wrangler": "^4.40.3",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/argon2": "^0.1.1"
   },
   "bun": {
     "onlyBuiltDependencies": [
