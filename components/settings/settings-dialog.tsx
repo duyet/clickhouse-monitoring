@@ -15,7 +15,7 @@ import {
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 interface SettingsDialogProps {
-  children?: React.ReactNode
+  children?: React.ReactNode | number | bigint | boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
@@ -39,7 +39,11 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
+          {((typeof children === 'bigint' ||
+          typeof children === 'number' ||
+          typeof children === 'boolean'
+            ? String(children)
+            : children) as any) ?? (
             <Button variant="ghost" size="icon">
               <Settings className="h-4 w-4" />
             </Button>

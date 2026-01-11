@@ -13,10 +13,10 @@ import {
 import { cn } from '@/lib/utils'
 
 export interface DialogContentProps {
-  button?: React.ReactNode
+  button?: React.ReactNode | number | bigint | boolean
   title?: string
   description?: string
-  content: string | React.ReactNode
+  content: React.ReactNode
   contentClassName?: string
   /** Actions to display in the header (right side) */
   headerActions?: React.ReactNode
@@ -44,7 +44,13 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>
+        {((typeof button === 'bigint' ||
+        typeof button === 'number' ||
+        typeof button === 'boolean'
+          ? String(button)
+          : button) as any) ?? defaultButton}
+      </DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',

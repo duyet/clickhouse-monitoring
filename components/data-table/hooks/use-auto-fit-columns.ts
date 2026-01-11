@@ -47,7 +47,7 @@ const DEFAULT_OPTIONS: Required<AutoFitOptions> = {
  * @returns Function to auto-fit a column to its content
  */
 export function useAutoFitColumns<TData>(
-  _tableRef: React.RefObject<HTMLDivElement>,
+  _tableRef: React.RefObject<HTMLDivElement | null | undefined>,
   options: AutoFitOptions = {}
 ) {
   const opts = useMemo(() => ({ ...DEFAULT_OPTIONS, ...options }), [options])
