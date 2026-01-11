@@ -1,6 +1,6 @@
 import { CodeIcon } from 'lucide-react'
 
-import { memo } from 'react'
+import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -34,7 +34,7 @@ const defaultButton = (
   </Button>
 )
 
-export const DialogContent = memo(function DialogContent({
+export const DialogContent = React.memo(function DialogContent({
   button = defaultButton,
   title = '',
   description = '',
@@ -42,9 +42,11 @@ export const DialogContent = memo(function DialogContent({
   contentClassName,
   headerActions,
 }: DialogContentProps) {
+  const triggerContent = React.isValidElement(button) ? button : defaultButton
+
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{triggerContent}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
