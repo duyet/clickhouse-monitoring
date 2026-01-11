@@ -6,10 +6,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import {
-  convertBigintsInObject,
-  replaceTemplateInReactNode,
-} from '@/lib/template-utils'
+import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
 /**
  * Convert bigint values to strings for React 19 compatibility
