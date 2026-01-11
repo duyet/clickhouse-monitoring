@@ -42,9 +42,22 @@ export const DialogContent = memo(function DialogContent({
   contentClassName,
   headerActions,
 }: DialogContentProps) {
+  // Convert button to safe ReactNode, handling bigint
+  const toSafeChild = (val: unknown): string => {
+    if (typeof val === 'bigint') return val.toString()
+    if (typeof val === 'string') return val
+    if (typeof val === 'number') return val.toString()
+    if (typeof val === 'boolean') return val.toString()
+    if (val === null || val === undefined) return ''
+    // For complex types, convert to string representation
+    return String(val)
+  }
+
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>
+        {button ? toSafeChild(button) : null}
+      </DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',

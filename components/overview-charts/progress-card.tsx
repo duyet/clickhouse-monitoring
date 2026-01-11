@@ -91,7 +91,7 @@ export const ProgressCard = memo(function ProgressCard({
                 {
                   width: `${clampedPercent}%`,
                   '--progress-width': `${clampedPercent}%`,
-                } as React.CSSProperties
+                } as Record<string, string>
               }
             />
           </div>

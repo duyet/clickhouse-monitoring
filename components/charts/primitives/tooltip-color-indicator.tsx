@@ -32,7 +32,7 @@ export function TooltipColorIndicator({
         {
           '--color-bg': colorVar,
           ...style,
-        } as React.CSSProperties
+        } as Record<string, string>
       }
       {...props}
     />

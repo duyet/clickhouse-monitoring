@@ -16,7 +16,7 @@ export type HoverCardOptions = {
 
 interface HoverCardProps {
   row: Row<any>
-  value: React.ReactNode
+  value: unknown
   options?: HoverCardOptions
 }
 
@@ -34,10 +34,26 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Convert to safe ReactNode, handling bigint and any other potential issues
+  // We must ensure no bigint can pass through to Radix UI components
+  const toSafeChild = (val: unknown): string => {
+    if (typeof val === 'bigint') return val.toString()
+    if (typeof val === 'string') return val
+    if (typeof val === 'number') return val.toString()
+    if (typeof val === 'boolean') return val.toString()
+    if (val === null || val === undefined) return ''
+    // For complex types, convert to string representation
+    return String(val)
+  }
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {toSafeChild(value)}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {toSafeChild(processedContent)}
+      </HoverCardContent>
     </HoverCard>
   )
 })

@@ -35,16 +35,27 @@ export function SettingsDialog({
   // If using controlled mode, don't render DialogTrigger
   const isControlled = controlledOpen !== undefined
 
+  // Filter out any non-React compatible children (like bigint)
+  const isValidChildren =
+    children !== undefined &&
+    children !== null &&
+    typeof children !== 'bigint' &&
+    typeof children !== 'number' &&
+    typeof children !== 'boolean'
+
+  // Only use children if they're valid React nodes
+  const finalChildren = isValidChildren ? (
+    children
+  ) : (
+    <Button variant="ghost" size="icon">
+      <Settings className="h-4 w-4" />
+    </Button>
+  )
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
-        <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
-        </DialogTrigger>
+        <DialogTrigger asChild>{finalChildren as any}</DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
