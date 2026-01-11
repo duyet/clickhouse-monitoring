@@ -6,9 +6,31 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { replaceTemplateInReactNode } from '@/lib/template-utils'
+import {
+  convertBigintsInObject,
+  replaceTemplateInReactNode,
+} from '@/lib/template-utils'
 
-export type HoverCardContent = string | React.ReactNode
+/**
+ * Convert bigint values to strings for React 19 compatibility
+ * React 19's ReactNode no longer includes bigint automatically
+ */
+function convertValueForReact(value: unknown): string | React.ReactNode {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  // Convert to string if value is a primitive type that might not be valid ReactNode
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+  if (value === null || value === undefined) {
+    return ''
+  }
+  // Return as-is for strings and valid React elements
+  return value as string | React.ReactNode
+}
+
+export type HoverCardContent = string | React.ReactNode | number | bigint
 
 export type HoverCardOptions = {
   content: HoverCardContent
@@ -34,10 +56,25 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // For React 19 compatibility, ensure value and processedContent don't contain bigint
+  const renderValue = convertValueForReact(value)
+  const renderContent =
+    typeof processedContent === 'bigint'
+      ? String(processedContent)
+      : processedContent
+
+  // Convert to string explicitly to handle any remaining type issues
+  const valueToRender =
+    typeof renderValue === 'string'
+      ? renderValue
+      : (renderValue as any)?.toString?.() || String(renderValue)
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {valueToRender}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">{renderContent as any}</HoverCardContent>
     </HoverCard>
   )
 })

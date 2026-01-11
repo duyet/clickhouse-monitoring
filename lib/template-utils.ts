@@ -8,6 +8,37 @@ import React from 'react'
  */
 
 /**
+ * Convert bigint values to strings for ReactNode compatibility in React 19
+ * React 19's ReactNode no longer includes bigint automatically
+ */
+export function convertBigintToString(value: unknown): unknown {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  return value
+}
+
+/**
+ * Convert bigint values in an object to strings recursively
+ */
+export function convertBigintsInObject(
+  data: Record<string, unknown>
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(data)) {
+    if (typeof value === 'bigint') {
+      result[key] = String(value)
+    } else if (value && typeof value === 'object') {
+      // Handle nested objects
+      result[key] = convertBigintsInObject(value as Record<string, unknown>)
+    } else {
+      result[key] = value
+    }
+  }
+  return result
+}
+
+/**
  * Replace [key] placeholders in a template string with values from data object
  *
  * @example
@@ -52,13 +83,16 @@ export function replaceTemplateInReactNode(
   content: string | React.ReactNode,
   data: Record<string, unknown>
 ): string | React.ReactNode {
+  // Convert bigint values to strings for React 19 compatibility
+  const convertedData = convertBigintsInObject(data)
+
   if (typeof content === 'string') {
-    return replaceTemplateVariables(content, data)
+    return replaceTemplateVariables(content, convertedData)
   }
 
   return React.Children.map(content, (child) => {
     if (typeof child === 'string') {
-      return replaceTemplateVariables(child, data)
+      return replaceTemplateVariables(child, convertedData)
     }
 
     if (React.isValidElement(child)) {
@@ -68,7 +102,7 @@ export function replaceTemplateInReactNode(
       return React.cloneElement(
         child,
         {},
-        replaceTemplateInReactNode(childElement.props.children, data)
+        replaceTemplateInReactNode(childElement.props.children, convertedData)
       )
     }
 

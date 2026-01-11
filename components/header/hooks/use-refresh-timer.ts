@@ -59,7 +59,7 @@ export function useRefreshTimer({
   // Track if we're currently refreshing to prevent double-triggers
   const isRefreshingRef = useRef(false)
   // Store the animation frame ID for cleanup
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number | undefined>(undefined)
 
   /**
    * Reset countdown to initial value
@@ -95,7 +95,7 @@ export function useRefreshTimer({
     // Reset the refreshing flag after a short delay
     setTimeout(() => {
       isRefreshingRef.current = false
-    }, 1000)
+    }, 1)
   }, [onRefresh])
 
   // Update interval when the interval prop changes
@@ -125,7 +125,7 @@ export function useRefreshTimer({
             setTimeout(() => {
               triggerRefresh()
               setRemaining(initialSeconds)
-            }, 0)
+            }, 1)
             return 0
           }
 
