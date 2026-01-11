@@ -52,7 +52,7 @@ export function useVirtualRows(
     virtualizeThreshold = 1000,
   } = options
 
-  const tableContainerRef = useRef<HTMLDivElement>(null)
+  const tableContainerRef = useRef<HTMLDivElement | null>(null)
 
   // Auto-enable virtualization for large datasets
   const shouldVirtualize = rowCount >= virtualizeThreshold
@@ -67,7 +67,7 @@ export function useVirtualRows(
 
   return {
     virtualizer: shouldVirtualize ? virtualizer : null,
-    tableContainerRef,
+    tableContainerRef: tableContainerRef as RefObject<HTMLDivElement>,
     isVirtualized: shouldVirtualize,
   }
 }

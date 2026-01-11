@@ -129,7 +129,7 @@ export const hoverCardFormatter: RowContextFormatter = <
   return (
     <HoverCardFormat
       row={row}
-      value={value as React.ReactNode}
+      value={value}
       options={options as HoverCardOptions}
     />
   )

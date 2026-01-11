@@ -61,6 +61,10 @@ export function replaceTemplateInReactNode(
       return replaceTemplateVariables(child, data)
     }
 
+    if (typeof child === 'bigint') {
+      return child.toString()
+    }
+
     if (React.isValidElement(child)) {
       const childElement = child as React.ReactElement<{
         children?: React.ReactNode

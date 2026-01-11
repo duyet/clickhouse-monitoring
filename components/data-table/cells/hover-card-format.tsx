@@ -8,6 +8,20 @@ import {
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
+/**
+ * Convert ReactNode to a valid React v19 compatible format
+ * React v19 no longer accepts bigint in ReactNode
+ */
+function toReactNode(value: unknown): React.ReactNode {
+  if (typeof value === 'bigint') {
+    return value.toString()
+  }
+  if (value && typeof value === 'object' && 'toString' in value) {
+    return String(value)
+  }
+  return value as any
+}
+
 export type HoverCardContent = string | React.ReactNode
 
 export type HoverCardOptions = {
@@ -16,7 +30,7 @@ export type HoverCardOptions = {
 
 interface HoverCardProps {
   row: Row<any>
-  value: React.ReactNode
+  value: unknown
   options?: HoverCardOptions
 }
 
@@ -36,8 +50,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {toReactNode(value) as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {toReactNode(processedContent) as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })
