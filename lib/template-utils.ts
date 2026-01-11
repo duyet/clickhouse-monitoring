@@ -56,7 +56,7 @@ export function replaceTemplateInReactNode(
     return replaceTemplateVariables(content, data)
   }
 
-  return React.Children.map(content, (child) => {
+  return React.Children.map(content as React.ReactNode, (child) => {
     if (typeof child === 'string') {
       return replaceTemplateVariables(child, data)
     }
