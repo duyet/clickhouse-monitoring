@@ -152,7 +152,7 @@ function SidebarProvider({
             {
               '--sidebar-width': SIDEBAR_WIDTH,
               '--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
-              ...style,
+              ...(style || {}),
             } as React.CSSProperties
           }
           className={cn(
@@ -208,7 +208,7 @@ function Sidebar({
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
+            } as any
           }
           side={side}
         >

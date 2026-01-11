@@ -56,7 +56,7 @@ export interface DataTableContentProps<
   /** Column definitions for rendering */
   columnDefs: ColumnDef<TData, TValue>[]
   /** Ref for the table container (used for virtualization) */
-  tableContainerRef: React.RefObject<HTMLDivElement>
+  tableContainerRef: React.RefObject<HTMLDivElement | null>
   /** Whether virtualization is enabled (1000+ rows) */
   isVirtualized: boolean
   /** Virtual row instance from useVirtualRows hook */
