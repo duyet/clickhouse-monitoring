@@ -12,6 +12,19 @@ import {
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
+// Helper function to safely convert values to ReactNode
+const toReactNode = (value: React.ReactNode): React.ReactNode => {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  return value
+}
+
+// Safe wrapper for DialogTrigger children
+const TriggerWrapper = ({ children }: { children: React.ReactNode }) => {
+  return <>{children}</>
+}
+
 export interface DialogContentProps {
   button?: React.ReactNode
   title?: string
@@ -44,7 +57,9 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>
+        <TriggerWrapper>{toReactNode(button)}</TriggerWrapper>
+      </DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -66,7 +81,7 @@ export const DialogContent = memo(function DialogContent({
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">{toReactNode(content)}</div>
       </UIDialogContent>
     </Dialog>
   )

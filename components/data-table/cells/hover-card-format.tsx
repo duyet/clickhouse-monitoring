@@ -1,12 +1,8 @@
 import type { Row } from '@tanstack/react-table'
 
 import { memo } from 'react'
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
+import { cn } from '@/lib/utils'
 
 export type HoverCardContent = string | React.ReactNode
 
@@ -20,6 +16,7 @@ interface HoverCardProps {
   options?: HoverCardOptions
 }
 
+// Temporarily disabled due to React 19 compatibility issues
 export const HoverCardFormat = memo(function HoverCardFormat({
   row,
   value,
@@ -34,11 +31,18 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Convert value to string if it's a bigint for ReactNode compatibility
+  const displayValue = typeof value === 'bigint' ? String(value) : value
+
   return (
-    <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
-    </HoverCard>
+    <div className="group relative inline-block">
+      <span className="cursor-help">{displayValue}</span>
+      <div className="hidden group-hover:block absolute z-10 mt-2 w-64 rounded-md border bg-popover p-4 shadow-md text-popover-foreground">
+        {typeof processedContent === 'bigint'
+          ? String(processedContent)
+          : processedContent}
+      </div>
+    </div>
   )
 })
 
@@ -59,7 +63,9 @@ function extractRowData(
       if (matches) {
         for (const match of matches) {
           const key = match.slice(1, -1).trim()
-          data[key] = row.getValue(key)
+          const value = row.getValue(key)
+          // Convert bigint to string for ReactNode compatibility
+          data[key] = typeof value === 'bigint' ? String(value) : value
         }
       }
     } else if (node && typeof node === 'object') {

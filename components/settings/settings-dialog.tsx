@@ -5,6 +5,20 @@ import { Settings } from 'lucide-react'
 import { SettingsForm } from './settings-form'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+
+// Helper function to safely convert values to ReactNode
+const toReactNode = (value: React.ReactNode): React.ReactNode => {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  return value
+}
+
+// Safe wrapper for DialogTrigger children
+const TriggerWrapper = ({ children }: { children: React.ReactNode }) => {
+  return <>{children}</>
+}
+
 import {
   Dialog,
   DialogContent,
@@ -39,11 +53,13 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
+          <TriggerWrapper>
+            {children || (
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            )}
+          </TriggerWrapper>
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">

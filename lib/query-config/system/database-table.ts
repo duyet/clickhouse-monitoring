@@ -83,7 +83,7 @@ export const databaseTableColumnsConfig: QueryConfig = {
     'comment',
   ],
   columnFormats: {
-    column: [ColumnFormat.HoverCard, { content: 'Column comment: [comment]' }],
+    column: ColumnFormat.Text,
     type: ColumnFormat.Code,
     codec: ColumnFormat.Code,
     part_count: ColumnFormat.Number,
