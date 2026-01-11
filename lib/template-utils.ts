@@ -1,3 +1,4 @@
+import { toReact19Node } from './react-19-compat'
 import React from 'react'
 
 /**
@@ -53,7 +54,7 @@ export function replaceTemplateInReactNode(
   data: Record<string, unknown>
 ): string | React.ReactNode {
   if (typeof content === 'string') {
-    return replaceTemplateVariables(content, data)
+    return toReact19Node(replaceTemplateVariables(content, data))
   }
 
   return React.Children.map(content, (child) => {
@@ -72,6 +73,6 @@ export function replaceTemplateInReactNode(
       )
     }
 
-    return child
+    return toReact19Node(child)
   })
 }

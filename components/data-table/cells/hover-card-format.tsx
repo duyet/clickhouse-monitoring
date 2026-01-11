@@ -6,6 +6,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
+import { toReact19Node } from '@/lib/react-19-compat'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
 export type HoverCardContent = string | React.ReactNode
@@ -33,11 +34,18 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
+  const safeProcessedContent = toReact19Node(processedContent)
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details" asChild>
+        {typeof value === 'string' || typeof value === 'number'
+          ? toReact19Node(value)
+          : (value as any)}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {safeProcessedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })

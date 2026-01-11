@@ -10,6 +10,7 @@ import {
   DialogTrigger,
   DialogContent as UIDialogContent,
 } from '@/components/ui/dialog'
+import { toReact19Node } from '@/lib/react-19-compat'
 import { cn } from '@/lib/utils'
 
 export interface DialogContentProps {
@@ -44,7 +45,11 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>
+        {typeof button === 'string' || typeof button === 'number'
+          ? toReact19Node(button)
+          : (button as any)}
+      </DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -66,7 +71,9 @@ export const DialogContent = memo(function DialogContent({
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">
+          {toReact19Node(content)}
+        </div>
       </UIDialogContent>
     </Dialog>
   )

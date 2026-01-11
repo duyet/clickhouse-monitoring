@@ -35,7 +35,7 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
       column.toggleSorting(false)
       // Close and re-open dropdown to force re-render with new sort
       setOpen(false)
-      setTimeout(() => setOpen(true), 0)
+      setTimeout(() => setOpen(true), 1)
     },
     [column]
   )
@@ -45,7 +45,7 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
       column.toggleSorting(true)
       // Close and re-open dropdown to force re-render with new sort
       setOpen(false)
-      setTimeout(() => setOpen(true), 0)
+      setTimeout(() => setOpen(true), 1)
     },
     [column]
   )
