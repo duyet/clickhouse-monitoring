@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import React, { memo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
@@ -34,10 +34,16 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Convert bigint to string for React v19 compatibility
+  const safeValue = convertToReactNode(value)
+  const safeContent = convertToReactNode(processedContent)
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {safeValue as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">{safeContent as any}</HoverCardContent>
     </HoverCard>
   )
 })
@@ -78,4 +84,31 @@ function extractRowData(
 
   extractKeys(content)
   return data
+}
+
+/**
+ * Convert any value to ReactNode-compatible type for React v19
+ */
+function convertToReactNode(value: unknown): React.ReactNode {
+  if (value === null || value === undefined) {
+    return null
+  }
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value
+  }
+  if (React.isValidElement(value)) {
+    return value
+  }
+  if (Array.isArray(value)) {
+    return value.map(convertToReactNode)
+  }
+  // For objects that aren't valid React elements, convert to string
+  return String(value)
 }

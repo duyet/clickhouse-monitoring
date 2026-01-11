@@ -21,8 +21,7 @@
     ],
     "paths": {
       "@/*": ["./*"]
-    },
-    "types": ["cypress", "node", "cypress-real-events"]
+    }
   },
   "include": [
     "**/*.ts",
