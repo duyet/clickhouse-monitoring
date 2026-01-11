@@ -5,6 +5,14 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { PanelLeftIcon } from 'lucide-react'
 
 import * as React from 'react'
+
+declare module 'csstype' {
+  interface Properties {
+    '--sidebar-width'?: string
+    '--sidebar-width-icon'?: string
+  }
+}
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
@@ -153,7 +161,7 @@ function SidebarProvider({
               '--sidebar-width': SIDEBAR_WIDTH,
               '--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
               ...style,
-            } as React.CSSProperties
+            } as any
           }
           className={cn(
             'group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full',
@@ -208,7 +216,7 @@ function Sidebar({
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
+            } as any
           }
           side={side}
         >

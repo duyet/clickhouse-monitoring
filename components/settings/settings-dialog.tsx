@@ -3,7 +3,7 @@
 import { Settings } from 'lucide-react'
 
 import { SettingsForm } from './settings-form'
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,7 +15,7 @@ import {
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 interface SettingsDialogProps {
-  children?: React.ReactNode
+  children?: ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
@@ -39,11 +39,12 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
+          {children ||
+            ((
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            ) as any)}
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">
