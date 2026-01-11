@@ -57,9 +57,9 @@ export function useRefreshTimer({
   const [isPaused, setIsPaused] = useState(false)
 
   // Track if we're currently refreshing to prevent double-triggers
-  const isRefreshingRef = useRef(false)
+  const isRefreshingRef = useRef<boolean>(false)
   // Store the animation frame ID for cleanup
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number | null>(null)
 
   /**
    * Reset countdown to initial value
