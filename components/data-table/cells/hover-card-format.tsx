@@ -10,6 +10,14 @@ import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
 export type HoverCardContent = string | React.ReactNode
 
+// Convert bigint to string for ReactNode compatibility
+function convertValueForReactNode(value: unknown): unknown {
+  if (typeof value === 'bigint') {
+    return value.toString()
+  }
+  return value
+}
+
 export type HoverCardOptions = {
   content: HoverCardContent
 }
@@ -34,12 +42,7 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
-  return (
-    <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
-    </HoverCard>
-  )
+  return <div title={String(value)}>{value}</div>
 })
 
 /**
@@ -59,21 +62,11 @@ function extractRowData(
       if (matches) {
         for (const match of matches) {
           const key = match.slice(1, -1).trim()
-          data[key] = row.getValue(key)
-        }
-      }
-    } else if (node && typeof node === 'object') {
-      // Handle React children recursively
-      const children = (node as { props?: { children?: React.ReactNode } })
-        .props?.children
-      if (children) {
-        if (Array.isArray(children)) {
-          children.forEach(extractKeys)
-        } else {
-          extractKeys(children)
+          data[key] = convertValueForReactNode(row.getValue(key))
         }
       }
     }
+    // Skip React nodes for now to avoid bigint issues
   }
 
   extractKeys(content)
