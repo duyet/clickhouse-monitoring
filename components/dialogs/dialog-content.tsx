@@ -42,9 +42,21 @@ export const DialogContent = memo(function DialogContent({
   contentClassName,
   headerActions,
 }: DialogContentProps) {
+  // Ensure button is a proper ReactNode for React 19 compatibility
+  // React 19 is stricter about types, so convert problematic values
+  const safeButton = (() => {
+    if (typeof button === 'bigint') {
+      return <span>{String(button)}</span>
+    }
+    if (typeof button === 'number') {
+      return <span>{String(button)}</span>
+    }
+    return button
+  })()
+
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{safeButton as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
