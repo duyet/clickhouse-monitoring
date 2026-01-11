@@ -18,7 +18,7 @@ import type { ChartQueryParams } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
 import { arrayMove } from '@dnd-kit/sortable'
-import { useCallback, useMemo, useState } from 'react'
+import { type RefObject, useCallback, useMemo, useState } from 'react'
 import {
   DataTableContent,
   DataTableFooter,
@@ -415,7 +415,9 @@ export function DataTable<
   )
 
   // Auto-fit columns functionality
-  const { autoFitColumn } = useAutoFitColumns<TData>(tableContainerRef)
+  const { autoFitColumn } = useAutoFitColumns<TData>(
+    tableContainerRef as RefObject<HTMLDivElement>
+  )
 
   // Handle auto-fit request for a specific column
   const handleAutoFit = useCallback(
@@ -493,7 +495,7 @@ export function DataTable<
         queryConfig={queryConfig}
         table={table}
         columnDefs={finalColumnDefs}
-        tableContainerRef={tableContainerRef}
+        tableContainerRef={tableContainerRef as RefObject<HTMLDivElement>}
         isVirtualized={isVirtualized}
         virtualizer={virtualizer}
         activeFilterCount={activeFilterCount}
