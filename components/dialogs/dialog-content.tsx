@@ -44,7 +44,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{button as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -54,9 +54,9 @@ export const DialogContent = memo(function DialogContent({
         <DialogHeader className="-mx-6 -mt-6 gap-0.5 rounded-t-lg px-4 py-2">
           <div className="flex items-start justify-between gap-2 pr-6">
             <div className="flex flex-col gap-0.5">
-              <DialogTitle className="text-sm">{title}</DialogTitle>
+              <DialogTitle className="text-sm">{title as any}</DialogTitle>
               <DialogDescription className="text-sx text-muted-foreground">
-                {description}
+                {description as any}
               </DialogDescription>
             </div>
             {headerActions && (
@@ -66,7 +66,7 @@ export const DialogContent = memo(function DialogContent({
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">{content as any}</div>
       </UIDialogContent>
     </Dialog>
   )

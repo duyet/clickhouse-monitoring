@@ -56,7 +56,7 @@ export interface DataTableContentProps<
   /** Column definitions for rendering */
   columnDefs: ColumnDef<TData, TValue>[]
   /** Ref for the table container (used for virtualization) */
-  tableContainerRef: React.RefObject<HTMLDivElement>
+  tableContainerRef: React.RefObject<HTMLDivElement | null>
   /** Whether virtualization is enabled (1000+ rows) */
   isVirtualized: boolean
   /** Virtual row instance from useVirtualRows hook */
@@ -193,4 +193,4 @@ export const DataTableContent = memo(function DataTableContent<
   )
 }) as <TData extends RowData, TValue extends React.ReactNode>(
   props: DataTableContentProps<TData, TValue>
-) => JSX.Element
+) => React.JSX.Element

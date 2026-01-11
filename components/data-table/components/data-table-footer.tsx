@@ -45,4 +45,6 @@ export const DataTableFooter = memo(function DataTableFooter<
       <DataTablePagination table={table} />
     </div>
   )
-}) as <TData extends RowData>(props: DataTableFooterProps<TData>) => JSX.Element
+}) as <TData extends RowData>(
+  props: DataTableFooterProps<TData>
+) => React.JSX.Element
