@@ -1,6 +1,6 @@
 import { CodeIcon } from 'lucide-react'
 
-import { memo } from 'react'
+import React, { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -42,9 +42,14 @@ export const DialogContent = memo(function DialogContent({
   contentClassName,
   headerActions,
 }: DialogContentProps) {
+  // Convert bigint values to strings for React 19 compatibility
+  const safeButton = convertReactNodeToString(button)
+  const safeContent = convertReactNodeToString(content)
+  const safeHeaderActions = convertReactNodeToString(headerActions)
+
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{safeButton as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -59,15 +64,53 @@ export const DialogContent = memo(function DialogContent({
                 {description}
               </DialogDescription>
             </div>
-            {headerActions && (
+            {safeHeaderActions && (
               <div className="flex items-center gap-2 shrink-0">
-                {headerActions}
+                {safeHeaderActions as any}
               </div>
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">{safeContent as any}</div>
       </UIDialogContent>
     </Dialog>
   )
 })
+
+// Convert bigint values in ReactNode to strings for React 19 compatibility
+function convertReactNodeToString(
+  node: React.ReactNode
+): string | React.ReactElement | null {
+  if (typeof node === 'bigint') {
+    return String(node)
+  }
+  if (typeof node === 'string') {
+    return node
+  }
+  if (typeof node === 'number') {
+    return String(node)
+  }
+  if (typeof node === 'boolean') {
+    return node ? 'true' : ''
+  }
+  if (node == null) {
+    return null
+  }
+  if (Array.isArray(node)) {
+    // Return array of converted children - filter out nulls that might cause issues
+    const converted = node
+      .map(convertReactNodeToString)
+      .filter((n) => n !== null && n !== '')
+    return converted.length > 0 ? <>{converted}</> : null
+  }
+  if (React.isValidElement(node)) {
+    const element = node as React.ReactElement<{ children?: React.ReactNode }>
+    return React.cloneElement(
+      element,
+      {},
+      convertReactNodeToString(element.props.children)
+    )
+  }
+  // Handle other types that might slip through
+  return String(node)
+}

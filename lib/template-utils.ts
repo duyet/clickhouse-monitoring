@@ -29,6 +29,7 @@ export function replaceTemplateVariables(
   for (const match of matches) {
     const key = match.slice(1, -1).trim()
     const value = data[key]
+    // Handle bigint conversion to string
     result = result.replace(match, value != null ? String(value) : '')
   }
   return result
@@ -57,6 +58,11 @@ export function replaceTemplateInReactNode(
   }
 
   return React.Children.map(content, (child) => {
+    // Convert bigint to string for ReactNode compatibility
+    if (typeof child === 'bigint') {
+      return String(child)
+    }
+
     if (typeof child === 'string') {
       return replaceTemplateVariables(child, data)
     }

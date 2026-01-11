@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import React, { memo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
@@ -34,13 +34,57 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Convert bigint values to string for React 19 compatibility
+  const safeValue = convertReactNodeToString(value)
+  const safeContent = convertReactNodeToString(processedContent)
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {safeValue as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">{safeContent as any}</HoverCardContent>
     </HoverCard>
   )
 })
+
+// Convert bigint values in ReactNode to strings for React 19 compatibility
+function convertReactNodeToString(
+  node: React.ReactNode
+): string | React.ReactElement | null {
+  if (typeof node === 'bigint') {
+    return String(node)
+  }
+  if (typeof node === 'string') {
+    return node
+  }
+  if (typeof node === 'number') {
+    return String(node)
+  }
+  if (typeof node === 'boolean') {
+    return node ? 'true' : ''
+  }
+  if (node == null) {
+    return null
+  }
+  if (Array.isArray(node)) {
+    // Return array of converted children - filter out nulls that might cause issues
+    const converted = node
+      .map(convertReactNodeToString)
+      .filter((n) => n !== null && n !== '')
+    return converted.length > 0 ? <>{converted}</> : null
+  }
+  if (React.isValidElement(node)) {
+    const element = node as React.ReactElement<{ children?: React.ReactNode }>
+    return React.cloneElement(
+      element,
+      {},
+      convertReactNodeToString(element.props.children)
+    )
+  }
+  // Handle other types that might slip through
+  return String(node)
+}
 
 /**
  * Extract row data for columns referenced in the content template
