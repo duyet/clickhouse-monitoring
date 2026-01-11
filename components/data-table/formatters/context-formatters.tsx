@@ -126,10 +126,14 @@ export const hoverCardFormatter: RowContextFormatter = <
   props: FormatterProps<TData, TValue>
 ): React.ReactNode => {
   const { row, value, options } = props
+  // Convert bigint to string for React v19 compatibility
+  const formattedValue =
+    typeof value === 'bigint' ? value.toString() : (value as React.ReactNode)
+
   return (
     <HoverCardFormat
       row={row}
-      value={value as React.ReactNode}
+      value={formattedValue}
       options={options as HoverCardOptions}
     />
   )

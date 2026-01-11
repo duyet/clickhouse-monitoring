@@ -2,7 +2,7 @@
 
 import { useVirtualizer } from '@tanstack/react-virtual'
 
-import { type RefObject, useRef } from 'react'
+import { type MutableRefObject, type RefObject, useRef } from 'react'
 
 /**
  * Hook for virtualizing table rows to improve performance with large datasets.
@@ -59,7 +59,7 @@ export function useVirtualRows(
 
   const virtualizer = useVirtualizer<HTMLDivElement, Element>({
     count: rowCount,
-    getScrollElement: () => tableContainerRef.current,
+    getScrollElement: () => tableContainerRef.current!,
     estimateSize: () => estimateSize,
     overscan,
     enabled: shouldVirtualize,
@@ -67,7 +67,7 @@ export function useVirtualRows(
 
   return {
     virtualizer: shouldVirtualize ? virtualizer : null,
-    tableContainerRef,
+    tableContainerRef: tableContainerRef as RefObject<HTMLDivElement>,
     isVirtualized: shouldVirtualize,
   }
 }

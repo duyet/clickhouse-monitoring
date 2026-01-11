@@ -3,7 +3,7 @@
 import { Settings } from 'lucide-react'
 
 import { SettingsForm } from './settings-form'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,7 +15,7 @@ import {
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 interface SettingsDialogProps {
-  children?: React.ReactNode
+  children?: React.ReactNode | bigint
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
@@ -28,6 +28,10 @@ export function SettingsDialog({
   const [internalOpen, setInternalOpen] = useState(false)
   const { settings, updateSettings } = useUserSettings()
 
+  // Convert bigint to string for React v19 compatibility
+  const displayChildren =
+    typeof children === 'bigint' ? children.toString() : children
+
   // Use controlled state if provided, otherwise use internal state
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
   const onOpenChange = controlledOnOpenChange || setInternalOpen
@@ -39,11 +43,13 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
+          <Fragment>
+            {displayChildren || (
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            )}
+          </Fragment>
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">

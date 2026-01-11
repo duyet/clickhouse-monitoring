@@ -19,13 +19,15 @@ import React from 'react'
  * @returns String with placeholders replaced by values
  */
 export function replaceTemplateVariables(
-  template: string,
+  template: string | bigint,
   data: Record<string, unknown>
 ): string {
-  const matches = template.match(/\[(.*?)\]/g)
-  if (!matches) return template
+  const templateStr =
+    typeof template === 'bigint' ? template.toString() : template
+  const matches = templateStr.match(/\[(.*?)\]/g)
+  if (!matches) return templateStr
 
-  let result = template
+  let result = templateStr
   for (const match of matches) {
     const key = match.slice(1, -1).trim()
     const value = data[key]
@@ -57,7 +59,7 @@ export function replaceTemplateInReactNode(
   }
 
   return React.Children.map(content, (child) => {
-    if (typeof child === 'string') {
+    if (typeof child === 'string' || typeof child === 'bigint') {
       return replaceTemplateVariables(child, data)
     }
 

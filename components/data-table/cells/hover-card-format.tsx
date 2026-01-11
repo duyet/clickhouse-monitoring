@@ -1,10 +1,10 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import { Fragment, memo } from 'react'
 import {
   HoverCard,
-  HoverCardContent,
   HoverCardTrigger,
+  HoverCardContent as RadixHoverCardContent,
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
@@ -16,7 +16,7 @@ export type HoverCardOptions = {
 
 interface HoverCardProps {
   row: Row<any>
-  value: React.ReactNode
+  value: React.ReactNode | bigint | string | number
   options?: HoverCardOptions
 }
 
@@ -27,17 +27,41 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 }: HoverCardProps): React.ReactNode {
   const { content } = options || {}
 
+  // Convert bigint to string for React v19 compatibility
+  const displayValue = typeof value === 'bigint' ? value.toString() : value
+
   // Extract row data for template replacement
   // Uses row.getValue() for each column to get the value
   const rowData = extractRowData(content, row)
 
+  // Convert all bigint values to strings for React v19 compatibility
+  const safeRowData = Object.entries(rowData).reduce(
+    (acc, [key, value]) => {
+      acc[key] = typeof value === 'bigint' ? value.toString() : value
+      return acc
+    },
+    {} as Record<string, unknown>
+  )
+
   // Content replacement, e.g. "Hover content: [column_name]"
-  const processedContent = replaceTemplateInReactNode(content, rowData)
+  // Convert content to string if it's a bigint for React v19 compatibility
+  const safeContent = typeof content === 'bigint' ? content.toString() : content
+  const processedContent = replaceTemplateInReactNode(safeContent, safeRowData)
+
+  // Ensure processedContent is always a string for React v19 compatibility
+  const displayContent =
+    typeof processedContent === 'string'
+      ? processedContent
+      : String(processedContent)
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        <Fragment>{displayValue}</Fragment>
+      </HoverCardTrigger>
+      <RadixHoverCardContent role="tooltip">
+        {displayContent}
+      </RadixHoverCardContent>
     </HoverCard>
   )
 })

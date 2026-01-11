@@ -1,6 +1,6 @@
 import { CodeIcon } from 'lucide-react'
 
-import { memo } from 'react'
+import { Fragment, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
 import { cn } from '@/lib/utils'
 
 export interface DialogContentProps {
-  button?: React.ReactNode
+  button?: React.ReactNode | bigint
   title?: string
   description?: string
   content: string | React.ReactNode
@@ -42,9 +42,14 @@ export const DialogContent = memo(function DialogContent({
   contentClassName,
   headerActions,
 }: DialogContentProps) {
+  // Convert bigint to string for React v19 compatibility
+  const displayButton = typeof button === 'bigint' ? button.toString() : button
+
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>
+        <Fragment>{displayButton}</Fragment>
+      </DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
