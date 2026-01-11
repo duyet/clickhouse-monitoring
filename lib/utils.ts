@@ -192,3 +192,17 @@ export function createDateTickFormatter(
     }
   }
 }
+
+/**
+ * Helper to convert potentially problematic values (like bigint) to React 19 compatible nodes
+ * This is needed because React 19's ReactNode type excludes bigint
+ */
+export function toReact19Node(value: unknown): React.ReactNode {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  if (value === null || value === undefined) {
+    return null
+  }
+  return value as React.ReactNode
+}
