@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
-export type HoverCardContent = string | React.ReactNode
+export type HoverCardContent = React.ReactNode
 
 export type HoverCardOptions = {
   content: HoverCardContent
