@@ -4,7 +4,7 @@
 
 import type { AuditLog, NewAuditLog } from '@/lib/db/schema'
 
-import { and, desc, eq } from 'drizzle-orm'
+import { and, desc, eq, gte, lt } from 'drizzle-orm'
 import { auditLog } from '@/lib/db/schema'
 import { generateAuditId } from '@/lib/db/utils'
 
@@ -118,23 +118,20 @@ export class AuditLogRepository {
   }
 
   /**
-   * Get recent logs for organization
+   * Get recent logs for organization within a time window
    */
   async getRecentForOrganization(
     orgId: string,
     hoursBack: number = 24,
     limit: number = 100
   ): Promise<AuditLog[]> {
-    const _since = new Date(Date.now() - hoursBack * 60 * 60 * 1000)
+    const since = new Date(Date.now() - hoursBack * 60 * 60 * 1000)
 
     return this.db
       .select()
       .from(auditLog)
       .where(
-        and(
-          eq(auditLog.organizationId, orgId)
-          // Add time comparison if supported by your DB
-        )
+        and(eq(auditLog.organizationId, orgId), gte(auditLog.createdAt, since))
       )
       .orderBy(desc(auditLog.createdAt))
       .limit(limit)
@@ -142,11 +139,22 @@ export class AuditLogRepository {
 
   /**
    * Delete logs older than specified days
+   * Returns the number of deleted records
    */
   async deleteOlderThan(days: number): Promise<number> {
-    const _before = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    const before = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-    // This would need DB-specific SQL, simplified for now
-    return 0
+    const result = await this.db
+      .delete(auditLog)
+      .where(lt(auditLog.createdAt, before))
+
+    // Drizzle returns different structures depending on adapter
+    // For SQLite: { changes: number }
+    // For Postgres: { rowCount: number }
+    return (
+      (result as { changes?: number }).changes ??
+      (result as { rowCount?: number }).rowCount ??
+      0
+    )
   }
 }

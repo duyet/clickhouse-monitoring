@@ -75,11 +75,17 @@ function getSocialProviders() {
  * Used for auto-creating personal organization slugs
  */
 function generateSlug(name: string): string {
-  return name
+  const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 32)
+
+  // Fallback for empty slugs (e.g., names with only special characters)
+  if (!slug) {
+    return `workspace-${Date.now().toString(36)}`
+  }
+  return slug
 }
 
 /**
@@ -91,10 +97,18 @@ async function createAuth() {
   const { getDb } = await import('@/lib/db')
   const db = await getDb()
 
+  // Validate AUTH_SECRET in production
+  const authSecret = process.env.AUTH_SECRET
+  if (process.env.NODE_ENV === 'production' && !authSecret) {
+    throw new Error(
+      'AUTH_SECRET environment variable is required in production. ' +
+        'Generate one with: openssl rand -base64 32'
+    )
+  }
+
   return betterAuth({
-    // Auth secret for signing tokens
-    secret:
-      process.env.AUTH_SECRET || 'development-secret-change-in-production',
+    // Auth secret for signing tokens - required in production
+    secret: authSecret || 'development-secret-do-not-use-in-production',
 
     // Base URL for OAuth redirects
     baseURL:
@@ -198,22 +212,5 @@ export const auth = {
   },
 }
 
-/**
- * Type exports for TypeScript autocomplete
- * These are approximations - actual types come from Better Auth
- */
-export interface Session {
-  user: {
-    id: string
-    email: string
-    name: string | null
-    image: string | null
-  }
-  session: {
-    id: string
-    userId: string
-    expiresAt: Date
-  }
-}
-
-export type User = Session['user']
+// Re-export types from canonical types.ts
+export type { Session, User } from './types'

@@ -88,9 +88,13 @@ export async function getAuthContext(
         })
 
         if (memberResponse) {
-          const member = (memberResponse as any).members?.find(
-            (m: any) => m.userId === session.user.id
-          )
+          // Type-safe access to organization members
+          interface OrgMember {
+            userId: string
+            role: string
+          }
+          const org = memberResponse as { members?: OrgMember[] }
+          const member = org.members?.find((m) => m.userId === session.user.id)
           if (member) {
             role = member.role as Role
           }
@@ -123,7 +127,20 @@ export async function getAuthContext(
 }
 
 /**
+ * Options for withAuth wrapper
+ */
+export interface WithAuthWrapperOptions {
+  /** Whether authentication is required (default: true when auth is enabled) */
+  requireAuth?: boolean
+  /** Required permission for access */
+  permission?: Permission
+  /** Minimum role required for access */
+  minRole?: Role
+}
+
+/**
  * Higher-order function that wraps an API route handler with auth protection
+ * Supports both NextRequest/NextResponse and standard Request/Response
  */
 export function withAuth<
   T extends Record<string, unknown> = Record<string, unknown>,
@@ -141,6 +158,11 @@ export function withAuth<
     request: NextRequest,
     context: { params: Promise<T> }
   ): Promise<NextResponse> => {
+    // Skip auth checks if auth is disabled
+    if (!isAuthEnabled()) {
+      return handler(request, context, GUEST_CONTEXT)
+    }
+
     const authContext = await getAuthContext(request)
 
     if (required && !authContext.isAuthenticated) {

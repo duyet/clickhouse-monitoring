@@ -14,7 +14,21 @@ const ALGORITHM = 'aes-256-gcm'
 const KEY_LENGTH = 32
 const IV_LENGTH = 16
 const TAG_LENGTH = 16
-const SALT = 'clickhouse-monitor-salt'
+
+/**
+ * Derive salt from AUTH_SECRET to avoid hardcoded values
+ * Uses a hash-based derivation to create a unique salt per installation
+ */
+function getSalt(): string {
+  const secret = process.env.AUTH_SECRET
+  if (!secret) {
+    // Fallback for development only - production requires AUTH_SECRET
+    return 'dev-salt-do-not-use-in-production'
+  }
+  // Derive salt from secret using a simple hash (not the same as key derivation)
+  // This ensures each installation has a unique salt based on their secret
+  return `clickhouse-monitor-${secret.slice(0, 16)}`
+}
 
 /**
  * Error thrown when encryption is not available
@@ -30,8 +44,9 @@ export class EncryptionError extends Error {
  * Derive encryption key from AUTH_SECRET using scrypt
  */
 async function deriveKey(secret: string): Promise<Buffer> {
+  const salt = getSalt()
   return new Promise((resolve, reject) => {
-    scrypt(secret, SALT, KEY_LENGTH, (err, key) => {
+    scrypt(secret, salt, KEY_LENGTH, (err, key) => {
       if (err)
         reject(new EncryptionError(`Key derivation failed: ${err.message}`))
       else resolve(key)

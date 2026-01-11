@@ -3,6 +3,8 @@
  * Handles both environment-based and database-based host configurations
  */
 
+import type { AuthContext } from './types'
+
 import { isDatabaseConfigured } from './config'
 
 /**
@@ -16,22 +18,8 @@ export interface Host {
   source: 'env' | 'database'
 }
 
-/**
- * User session information
- */
-export interface Session {
-  userId: string
-  email: string
-  role: 'owner' | 'admin' | 'member' | 'viewer' | 'guest'
-}
-
-/**
- * Authentication context for host resolution
- */
-export interface AuthContext {
-  session: Session | null
-  organizationId?: string
-}
+// Re-export AuthContext for convenience
+export type { AuthContext } from './types'
 
 /**
  * Visibility mode for environment-based hosts

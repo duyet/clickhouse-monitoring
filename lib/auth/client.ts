@@ -56,17 +56,19 @@ export const authClient = createAuthClient({
 
   fetchOptions: {
     onError(error: BetterAuthError) {
-      if (error.error.status === 429) {
-        console.error('Too many requests. Please try again later.')
-      } else if (error.error.status === 401) {
-        console.error('Unauthorized')
-      } else {
-        console.error('Auth error:', error.error.message)
+      // Only log errors in development for debugging
+      if (process.env.NODE_ENV === 'development') {
+        if (error.error.status === 429) {
+          console.error('Too many requests. Please try again later.')
+        } else if (error.error.status === 401) {
+          // 401 is common during auth flow, don't log as error
+          console.debug('Auth: Unauthorized (expected during login flow)')
+        } else {
+          console.error('Auth error:', error.error.message)
+        }
       }
     },
-    onSuccess(data: unknown) {
-      console.log('Auth action successful:', data)
-    },
+    // Success logging removed for production cleanliness
   },
 })
 

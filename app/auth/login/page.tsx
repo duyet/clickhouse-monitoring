@@ -236,6 +236,8 @@ export default function LoginPage() {
                 )}
                 onClick={() => handleSignIn('github')}
                 disabled={isLoading !== null}
+                data-testid="github-login"
+                aria-label="Sign in with GitHub"
               >
                 {isLoading === 'github' ? (
                   <div className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
@@ -261,6 +263,8 @@ export default function LoginPage() {
                 )}
                 onClick={() => handleSignIn('google')}
                 disabled={isLoading !== null}
+                data-testid="google-login"
+                aria-label="Sign in with Google"
               >
                 {isLoading === 'google' ? (
                   <div className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />

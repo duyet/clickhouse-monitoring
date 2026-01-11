@@ -4,19 +4,83 @@
  *
  * Tests connection to a ClickHouse instance using provided credentials
  * Returns success status and ClickHouse version if successful
+ *
+ * Security:
+ * - Requires authentication (when auth is enabled)
+ * - SSRF protection: blocks internal IP ranges
  */
 
 import { createClient as createClientWeb } from '@clickhouse/client-web'
 
-import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
-import { createSuccessResponse } from '@/lib/api/shared/response-builder'
-import { ApiErrorType } from '@/lib/api/types'
+import type { NextRequest } from 'next/server'
+
+import { NextResponse } from 'next/server'
+import { type AuthContext, withAuth } from '@/lib/auth/middleware'
 import { debug, error, generateRequestId } from '@/lib/logger'
+
+/**
+ * SSRF protection: validate host URL to prevent internal network access
+ * Blocks private IP ranges and localhost
+ */
+function isInternalHost(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    const hostname = url.hostname.toLowerCase()
+
+    // Block localhost variants
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '::1' ||
+      hostname === '0.0.0.0'
+    ) {
+      return true
+    }
+
+    // Block private IP ranges (RFC 1918)
+    const ipParts = hostname.split('.')
+    if (ipParts.length === 4) {
+      const [a, b] = ipParts.map(Number)
+      // 10.0.0.0/8
+      if (a === 10) return true
+      // 172.16.0.0/12
+      if (a === 172 && b >= 16 && b <= 31) return true
+      // 192.168.0.0/16
+      if (a === 192 && b === 168) return true
+      // 169.254.0.0/16 (link-local)
+      if (a === 169 && b === 254) return true
+    }
+
+    // Block metadata endpoints (cloud provider internal APIs)
+    if (
+      hostname === '169.254.169.254' ||
+      hostname.endsWith('.internal') ||
+      hostname.endsWith('.local')
+    ) {
+      return true
+    }
+
+    return false
+  } catch {
+    // Invalid URL
+    return true
+  }
+}
+
+/**
+ * Validate URL scheme (only allow http/https)
+ */
+function isValidScheme(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
-
-const ROUTE_CONTEXT = { route: '/api/v1/hosts/test', method: 'POST' }
 
 /**
  * Request body for testing a connection
@@ -29,8 +93,13 @@ interface TestConnectionRequest {
 
 /**
  * Handle POST requests to test connection
+ * Protected by authentication when auth is enabled
  */
-export async function POST(request: Request): Promise<Response> {
+async function handleTestConnection(
+  request: NextRequest,
+  _context: { params: Promise<Record<string, unknown>> },
+  _authContext: AuthContext
+): Promise<NextResponse> {
   const requestId = generateRequestId()
   debug('[POST /api/v1/hosts/test] Testing connection', { requestId })
 
@@ -40,16 +109,45 @@ export async function POST(request: Request): Promise<Response> {
 
     // Validate required fields
     if (!body.host || !body.username || !body.password) {
-      return createApiErrorResponse(
+      return NextResponse.json(
         {
-          type: ApiErrorType.ValidationError,
-          message: 'Missing required fields',
-          details: {
-            required: ['host', 'username', 'password'],
+          error: {
+            type: 'ValidationError',
+            message: 'Missing required fields',
+            details: { required: ['host', 'username', 'password'] },
           },
         },
-        400,
-        ROUTE_CONTEXT
+        { status: 400, headers: { 'X-Request-ID': requestId } }
+      )
+    }
+
+    // SSRF protection: validate URL scheme
+    if (!isValidScheme(body.host)) {
+      return NextResponse.json(
+        {
+          error: {
+            type: 'ValidationError',
+            message:
+              'Invalid host URL scheme. Only http:// and https:// are allowed.',
+            details: { host: body.host },
+          },
+        },
+        { status: 400, headers: { 'X-Request-ID': requestId } }
+      )
+    }
+
+    // SSRF protection: block internal/private networks
+    if (isInternalHost(body.host)) {
+      return NextResponse.json(
+        {
+          error: {
+            type: 'ValidationError',
+            message:
+              'Connection to internal or private networks is not allowed for security reasons.',
+            details: { host: body.host },
+          },
+        },
+        { status: 400, headers: { 'X-Request-ID': requestId } }
       )
     }
 
@@ -82,26 +180,20 @@ export async function POST(request: Request): Promise<Response> {
       await client.close()
 
       // Return success response
-      const response = createSuccessResponse(
+      return NextResponse.json(
         {
-          success: true,
-          version,
-          message: 'Connection successful',
+          data: {
+            success: true,
+            version,
+            message: 'Connection successful',
+          },
+          meta: {
+            queryId: 'host-connection-test',
+            rows: 1,
+          },
         },
-        {
-          queryId: 'host-connection-test',
-          rows: 1,
-        }
+        { status: 200, headers: { 'X-Request-ID': requestId } }
       )
-
-      const newHeaders = new Headers(response.headers)
-      newHeaders.set('X-Request-ID', requestId)
-
-      return new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: newHeaders,
-      })
     } catch (connectionError) {
       // Close the client even on error
       try {
@@ -120,16 +212,15 @@ export async function POST(request: Request): Promise<Response> {
         error: errorMessage,
       })
 
-      return createApiErrorResponse(
+      return NextResponse.json(
         {
-          type: ApiErrorType.NetworkError,
-          message: 'Connection test failed',
-          details: {
-            error: errorMessage,
+          error: {
+            type: 'NetworkError',
+            message: 'Connection test failed',
+            details: { error: errorMessage },
           },
         },
-        400,
-        ROUTE_CONTEXT
+        { status: 400, headers: { 'X-Request-ID': requestId } }
       )
     }
   } catch (err) {
@@ -138,25 +229,23 @@ export async function POST(request: Request): Promise<Response> {
 
     error('[POST /api/v1/hosts/test] Error:', err, { requestId })
 
-    const errorResponse = createApiErrorResponse(
+    return NextResponse.json(
       {
-        type: ApiErrorType.QueryError,
-        message: errorMessage,
-        details: {
-          timestamp: new Date().toISOString(),
+        error: {
+          type: 'QueryError',
+          message: errorMessage,
+          details: { timestamp: new Date().toISOString() },
         },
       },
-      500,
-      ROUTE_CONTEXT
+      { status: 500, headers: { 'X-Request-ID': requestId } }
     )
-
-    const errorHeaders = new Headers(errorResponse.headers)
-    errorHeaders.set('X-Request-ID', requestId)
-
-    return new Response(errorResponse.body, {
-      status: errorResponse.status,
-      statusText: errorResponse.statusText,
-      headers: errorHeaders,
-    })
   }
 }
+
+/**
+ * Export POST handler with authentication
+ * Requires user to be authenticated to test connections
+ */
+export const POST = withAuth(handleTestConnection, {
+  required: true,
+})

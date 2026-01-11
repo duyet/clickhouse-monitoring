@@ -3,6 +3,9 @@
  * Provides authentication configuration, permissions, and host management
  */
 
+// Types exports
+export type { Organization, Session, User } from './types'
+
 // Config exports
 export {
   type AuthConfig,
@@ -24,7 +27,6 @@ export {
   getPrimaryHost,
   type Host,
   isHostAccessible,
-  type Session,
 } from './hosts'
 // Permissions exports
 export {
