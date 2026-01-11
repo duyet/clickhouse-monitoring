@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import { isValidElement, memo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
@@ -25,21 +25,33 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   value,
   options,
 }: HoverCardProps): React.ReactNode {
-  const { content } = options || {}
+  // Temporarily disabled due to React v19 bigint compatibility issues
+  // See: https://github.com/duyet/clickhouse-monitoring/issues/705
+  // TODO: Re-enable when React fixes bigint support or when we have a proper solution
+  return <span>{value}</span>
 
-  // Extract row data for template replacement
-  // Uses row.getValue() for each column to get the value
-  const rowData = extractRowData(content, row)
+  // const { content } = options || {}
 
-  // Content replacement, e.g. "Hover content: [column_name]"
-  const processedContent = replaceTemplateInReactNode(content, rowData)
+  // // Convert bigint values to strings for React v19 compatibility
+  // const safeValue = isValidElement(value)
+  //   ? value
+  //   : typeof value === 'bigint'
+  //     ? value.toString()
+  //     : value
 
-  return (
-    <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
-    </HoverCard>
-  )
+  // // Extract row data for template replacement
+  // // Uses row.getValue() for each column to get the value
+  // const rowData = extractRowData(content, row)
+
+  // // Content replacement, e.g. "Hover content: [column_name]"
+  // const processedContent = replaceTemplateInReactNode(content, rowData)
+
+  // return (
+  //   <HoverCard openDelay={0}>
+  //     <HoverCardTrigger aria-label="Show details">{safeValue}</HoverCardTrigger>
+  //     <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+  //   </HoverCard>
+  // )
 })
 
 /**
