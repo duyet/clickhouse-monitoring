@@ -36,8 +36,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {value as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {processedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })
@@ -59,7 +63,7 @@ function extractRowData(
       if (matches) {
         for (const match of matches) {
           const key = match.slice(1, -1).trim()
-          data[key] = row.getValue(key)
+          data[key] = String(row.getValue(key))
         }
       }
     } else if (node && typeof node === 'object') {
