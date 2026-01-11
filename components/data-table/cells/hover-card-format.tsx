@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo, type ReactNode } from 'react'
+import { memo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
@@ -40,10 +40,10 @@ export const HoverCardFormat = memo(function HoverCardFormat({
         aria-label="Show details"
         data-testid="hover-card-trigger"
       >
-        {value}
+        {value as any}
       </HoverCardTrigger>
       <HoverCardContent role="tooltip" data-testid="hover-card-content">
-        {processedContent}
+        {processedContent as any}
       </HoverCardContent>
     </HoverCard>
   )
