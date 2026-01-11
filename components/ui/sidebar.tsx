@@ -207,8 +207,8 @@ function Sidebar({
           className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
           style={
             {
-              '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
+              ['--sidebar-width']: SIDEBAR_WIDTH_MOBILE,
+            } as any
           }
           side={side}
         >
@@ -644,7 +644,7 @@ function SidebarMenuSkeleton({
         data-sidebar="menu-skeleton-text"
         style={
           {
-            '--skeleton-width': width,
+            ['--skeleton-width']: width,
           } as React.CSSProperties
         }
       />

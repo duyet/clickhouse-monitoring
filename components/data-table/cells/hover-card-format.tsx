@@ -1,11 +1,7 @@
 import type { Row } from '@tanstack/react-table'
 
 import { memo } from 'react'
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card'
+import { SafeHoverCard } from '@/components/ui/safe-hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
 export type HoverCardContent = string | React.ReactNode
@@ -34,12 +30,7 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
-  return (
-    <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
-    </HoverCard>
-  )
+  return <SafeHoverCard trigger={value}>{processedContent}</SafeHoverCard>
 })
 
 /**
