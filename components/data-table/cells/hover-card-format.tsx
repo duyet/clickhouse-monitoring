@@ -36,8 +36,21 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {(() => {
+          const val = typeof value === 'bigint' ? value.toString() : value
+          return <>{val}</>
+        })()}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {(() => {
+          const content =
+            typeof processedContent === 'bigint'
+              ? processedContent.toString()
+              : processedContent
+          return <>{content}</>
+        })()}
+      </HoverCardContent>
     </HoverCard>
   )
 })
