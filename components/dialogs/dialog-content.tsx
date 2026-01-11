@@ -10,6 +10,7 @@ import {
   DialogTrigger,
   DialogContent as UIDialogContent,
 } from '@/components/ui/dialog'
+import { asReactNode } from '@/lib/react-node-utils'
 import { cn } from '@/lib/utils'
 
 export interface DialogContentProps {
@@ -44,7 +45,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{asReactNode(button)}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
