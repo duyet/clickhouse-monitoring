@@ -1,5 +1,7 @@
 import type { Row } from '@tanstack/react-table'
 
+import type React from 'react'
+
 import { memo } from 'react'
 import {
   HoverCard,
@@ -8,7 +10,15 @@ import {
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
-export type HoverCardContent = string | React.ReactNode
+// Helper function to convert values to React 19 compatible ReactNode
+function toReact19Node(value: unknown): any {
+  if (typeof value === 'bigint') {
+    return value.toString()
+  }
+  return value as any
+}
+
+export type HoverCardContent = React.ReactNode
 
 export type HoverCardOptions = {
   content: HoverCardContent
@@ -24,7 +34,7 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   row,
   value,
   options,
-}: HoverCardProps): React.ReactNode {
+}: HoverCardProps): React.ReactElement {
   const { content } = options || {}
 
   // Extract row data for template replacement
@@ -36,8 +46,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {toReact19Node(value)}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {toReact19Node(processedContent)}
+      </HoverCardContent>
     </HoverCard>
   )
 })
@@ -59,7 +73,9 @@ function extractRowData(
       if (matches) {
         for (const match of matches) {
           const key = match.slice(1, -1).trim()
-          data[key] = row.getValue(key)
+          const value = row.getValue(key)
+          // Convert bigint to string for React 19 compatibility
+          data[key] = typeof value === 'bigint' ? value.toString() : value
         }
       }
     } else if (node && typeof node === 'object') {

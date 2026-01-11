@@ -12,6 +12,14 @@ import {
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
+// Helper function to convert values to React 19 compatible ReactNode
+function toReact19Node(value: unknown): any {
+  if (typeof value === 'bigint') {
+    return value.toString()
+  }
+  return value as any
+}
+
 export interface DialogContentProps {
   button?: React.ReactNode
   title?: string
@@ -44,7 +52,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{toReact19Node(button)}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',

@@ -415,7 +415,9 @@ export function DataTable<
   )
 
   // Auto-fit columns functionality
-  const { autoFitColumn } = useAutoFitColumns<TData>(tableContainerRef)
+  const { autoFitColumn } = useAutoFitColumns<TData>(
+    tableContainerRef as React.RefObject<HTMLDivElement>
+  )
 
   // Handle auto-fit request for a specific column
   const handleAutoFit = useCallback(
@@ -493,7 +495,7 @@ export function DataTable<
         queryConfig={queryConfig}
         table={table}
         columnDefs={finalColumnDefs}
-        tableContainerRef={tableContainerRef}
+        tableContainerRef={tableContainerRef as React.RefObject<HTMLDivElement>}
         isVirtualized={isVirtualized}
         virtualizer={virtualizer}
         activeFilterCount={activeFilterCount}

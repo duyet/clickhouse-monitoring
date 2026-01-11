@@ -5,6 +5,15 @@ import { Settings } from 'lucide-react'
 import { SettingsForm } from './settings-form'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+
+// Helper function to convert values to React 19 compatible ReactNode
+function toReact19Node(value: unknown): any {
+  if (typeof value === 'bigint') {
+    return value.toString()
+  }
+  return value as any
+}
+
 import {
   Dialog,
   DialogContent,
@@ -39,11 +48,12 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
+          {toReact19Node(children) ||
+            toReact19Node(
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            )}
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">
