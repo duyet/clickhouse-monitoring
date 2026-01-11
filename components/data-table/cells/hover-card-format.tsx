@@ -32,12 +32,18 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   const rowData = extractRowData(content, row)
 
   // Content replacement, e.g. "Hover content: [column_name]"
-  const processedContent = replaceTemplateInReactNode(content, rowData)
+  const processedContent = replaceTemplateInReactNode(content || '', rowData)
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {String(value)}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {typeof processedContent === 'string'
+          ? processedContent
+          : String(processedContent)}
+      </HoverCardContent>
     </HoverCard>
   )
 })
