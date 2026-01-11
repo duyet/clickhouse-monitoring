@@ -170,3 +170,61 @@ export function isCloudMode(): boolean {
 export function isSelfHosted(): boolean {
   return getDeploymentMode() === 'self-hosted'
 }
+
+/**
+ * Checks if a database is configured
+ *
+ * @returns True if a valid database adapter is detected
+ */
+export function isDatabaseConfigured(): boolean {
+  return detectDatabaseAdapter() !== 'none'
+}
+
+/**
+ * Checks if auto-migration is enabled
+ * Defaults to true for development, false for production
+ *
+ * @returns True if auto-migration is enabled
+ */
+export function isAutoMigrationEnabled(): boolean {
+  if (typeof process === 'undefined' || !process.env) {
+    return false
+  }
+
+  // Explicit setting takes precedence
+  const autoMigrate = process.env.AUTO_MIGRATE
+  if (autoMigrate !== undefined) {
+    return autoMigrate === 'true' || autoMigrate === '1'
+  }
+
+  // Default: enabled in development, disabled in production
+  return process.env.NODE_ENV !== 'production'
+}
+
+/**
+ * Gets the normalized database URL for connection
+ * Strips scheme prefixes for file-based databases
+ *
+ * @returns The normalized database URL, or null if not configured
+ */
+export function getNormalizedDatabaseUrl(): string | null {
+  if (typeof process === 'undefined' || !process.env) {
+    return null
+  }
+
+  const databaseUrl = process.env.DATABASE_URL
+  if (!databaseUrl) {
+    return null
+  }
+
+  // For SQLite, strip the file: or sqlite: prefix
+  if (databaseUrl.startsWith('file:')) {
+    return databaseUrl.substring(5)
+  }
+  if (databaseUrl.startsWith('sqlite:')) {
+    return databaseUrl.substring(7)
+  }
+
+  // For Postgres and LibSQL, return as-is
+  return databaseUrl
+}

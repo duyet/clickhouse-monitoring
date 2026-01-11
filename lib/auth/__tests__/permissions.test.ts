@@ -9,7 +9,6 @@ import {
   isRoleHigherThan,
   type Permission,
   permissions,
-  type Role,
 } from '../permissions'
 
 describe('lib/auth/permissions', () => {

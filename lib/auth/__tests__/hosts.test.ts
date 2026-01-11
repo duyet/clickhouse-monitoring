@@ -4,7 +4,6 @@ import {
   getHost,
   getHosts,
   getPrimaryHost,
-  type Host,
   isHostAccessible,
 } from '../hosts'
 
