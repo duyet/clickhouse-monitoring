@@ -36,7 +36,7 @@ function getSidebarCookie(): boolean | null {
   return match ? match[2] === 'true' : null
 }
 const SIDEBAR_WIDTH = '14rem'
-const SIDEBAR_WIDTH_MOBILE = '18rem'
+const _SIDEBAR_WIDTH_MOBILE = '18rem'
 const SIDEBAR_WIDTH_ICON = '3rem'
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
 

@@ -38,9 +38,11 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   return (
     <HoverCard openDelay={0}>
       <HoverCardTrigger aria-label="Show details">
+        {/* @ts-ignore - React 19 stricter ReactNode type doesn't include bigint */}
         {asReactNode(value)}
       </HoverCardTrigger>
       <HoverCardContent role="tooltip">
+        {/* @ts-ignore - React 19 stricter ReactNode type doesn't include bigint */}
         {asReactNode(processedContent)}
       </HoverCardContent>
     </HoverCard>

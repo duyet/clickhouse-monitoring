@@ -40,6 +40,7 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
+          {/* @ts-ignore - React 19 stricter ReactNode type doesn't include bigint */}
           {asReactNode(
             children || (
               <Button variant="ghost" size="icon">
