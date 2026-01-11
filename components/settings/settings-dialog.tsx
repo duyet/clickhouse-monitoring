@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 
 // Helper function to safely convert values to ReactNode
-const toReactNode = (value: React.ReactNode): React.ReactNode => {
+const _toReactNode = (value: React.ReactNode): React.ReactNode => {
   if (typeof value === 'bigint') {
     return String(value)
   }

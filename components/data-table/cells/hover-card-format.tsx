@@ -2,7 +2,6 @@ import type { Row } from '@tanstack/react-table'
 
 import { memo } from 'react'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
-import { cn } from '@/lib/utils'
 
 export type HoverCardContent = string | React.ReactNode
 
