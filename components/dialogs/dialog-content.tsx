@@ -66,7 +66,7 @@ export const DialogContent = memo(function DialogContent({
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">{content as any}</div>
       </UIDialogContent>
     </Dialog>
   )
