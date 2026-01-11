@@ -13,13 +13,13 @@ import {
 import { cn } from '@/lib/utils'
 
 export interface DialogContentProps {
-  button?: React.ReactNode
+  button?: Exclude<React.ReactNode, bigint>
   title?: string
   description?: string
-  content: string | React.ReactNode
+  content: string | Exclude<React.ReactNode, bigint>
   contentClassName?: string
   /** Actions to display in the header (right side) */
-  headerActions?: React.ReactNode
+  headerActions?: Exclude<React.ReactNode, bigint>
 }
 
 // Default button - defined outside component to avoid re-creation
@@ -44,7 +44,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{button as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',

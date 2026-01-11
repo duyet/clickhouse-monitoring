@@ -37,7 +37,7 @@ export const actionFormatter: RowContextFormatter = <
   return (
     <ActionFormat
       row={row}
-      value={value as React.ReactNode}
+      value={value as any}
       actions={options as Action[]}
     />
   )
@@ -68,7 +68,7 @@ export const linkFormatter: RowContextFormatter = <
     <LinkFormat
       row={row}
       data={data}
-      value={value as React.ReactNode}
+      value={value as any}
       context={context}
       options={options as LinkFormatOptions}
     />
@@ -101,7 +101,7 @@ export const backgroundBarFormatter: RowContextFormatter = <
       table={table}
       row={row}
       columnName={columnName}
-      value={value as React.ReactNode}
+      value={value as any}
       options={options as BackgroundBarOptions}
     />
   )
@@ -129,7 +129,7 @@ export const hoverCardFormatter: RowContextFormatter = <
   return (
     <HoverCardFormat
       row={row}
-      value={value as React.ReactNode}
+      value={value as any}
       options={options as HoverCardOptions}
     />
   )
