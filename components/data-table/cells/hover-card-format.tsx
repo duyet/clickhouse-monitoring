@@ -24,7 +24,7 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   row,
   value,
   options,
-}: HoverCardProps): React.ReactNode {
+}: HoverCardProps): React.ReactElement {
   const { content } = options || {}
 
   // Extract row data for template replacement
@@ -36,8 +36,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {value as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip" asChild>
+        <div>{processedContent as any}</div>
+      </HoverCardContent>
     </HoverCard>
   )
 })
