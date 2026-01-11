@@ -34,10 +34,19 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Convert value to a safe string representation for React 19
+  const safeValue = value?.toString() ?? ''
+
+  // Convert processed content to string if it's not already safe
+  const safeContent =
+    typeof processedContent === 'string'
+      ? processedContent
+      : (processedContent?.toString() ?? '')
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">{safeValue}</HoverCardTrigger>
+      <HoverCardContent role="tooltip">{safeContent}</HoverCardContent>
     </HoverCard>
   )
 })

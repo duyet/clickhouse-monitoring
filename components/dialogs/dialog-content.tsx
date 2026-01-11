@@ -42,9 +42,12 @@ export const DialogContent = memo(function DialogContent({
   contentClassName,
   headerActions,
 }: DialogContentProps) {
+  // Convert button to string representation for React 19
+  const safeButton = button?.toString() ?? ''
+
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{safeButton}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
