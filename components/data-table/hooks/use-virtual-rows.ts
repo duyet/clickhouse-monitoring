@@ -2,7 +2,9 @@
 
 import { useVirtualizer } from '@tanstack/react-virtual'
 
-import { type RefObject, useRef } from 'react'
+import type { RefObject } from 'react'
+
+import { useRef } from 'react'
 
 /**
  * Hook for virtualizing table rows to improve performance with large datasets.
@@ -37,7 +39,7 @@ export interface UseVirtualRowsResult {
   /** The virtualizer instance from @tanstack/react-virtual */
   virtualizer: ReturnType<typeof useVirtualizer<HTMLDivElement, Element>> | null
   /** Ref to attach to the scroll container element */
-  tableContainerRef: RefObject<HTMLDivElement>
+  tableContainerRef: React.RefObject<HTMLDivElement | null>
   /** Whether virtualization is enabled */
   isVirtualized: boolean
 }
