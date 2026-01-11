@@ -3,6 +3,7 @@
 import { Settings } from 'lucide-react'
 
 import { SettingsForm } from './settings-form'
+import * as React from 'react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,17 +36,17 @@ export function SettingsDialog({
   // If using controlled mode, don't render DialogTrigger
   const isControlled = controlledOpen !== undefined
 
+  const triggerContent = React.isValidElement(children) ? (
+    children
+  ) : (
+    <Button variant="ghost" size="icon">
+      <Settings className="h-4 w-4" />
+    </Button>
+  )
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {!isControlled && (
-        <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
-        </DialogTrigger>
-      )}
+      {!isControlled && <DialogTrigger asChild>{triggerContent}</DialogTrigger>}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
