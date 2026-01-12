@@ -1,5 +1,7 @@
 import type { Row } from '@tanstack/react-table'
 
+import type * as React from 'react'
+
 import { memo } from 'react'
 import {
   HoverCard,
@@ -8,7 +10,10 @@ import {
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
-export type HoverCardContent = string | React.ReactNode
+// Custom ReactNode type that handles bigint compatibility
+type ReactNodeWithoutBigint = React.ReactNode | Exclude<React.ReactNode, bigint>
+
+export type HoverCardContent = string | ReactNodeWithoutBigint
 
 export type HoverCardOptions = {
   content: HoverCardContent
@@ -16,7 +21,7 @@ export type HoverCardOptions = {
 
 interface HoverCardProps {
   row: Row<any>
-  value: React.ReactNode
+  value: ReactNodeWithoutBigint
   options?: HoverCardOptions
 }
 
@@ -24,7 +29,7 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   row,
   value,
   options,
-}: HoverCardProps): React.ReactNode {
+}: HoverCardProps): ReactNodeWithoutBigint {
   const { content } = options || {}
 
   // Extract row data for template replacement
@@ -35,9 +40,13 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
   return (
-    <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+    <HoverCard>
+      <HoverCardTrigger aria-label="Show details">
+        {value as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {processedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })
@@ -47,13 +56,15 @@ export const HoverCardFormat = memo(function HoverCardFormat({
  * Uses row.getValue() to support TanStack Table's column accessors
  */
 function extractRowData(
-  content: string | React.ReactNode | undefined,
+  content: string | ReactNodeWithoutBigint | undefined,
   row: Row<unknown>
 ): Record<string, unknown> {
   const data: Record<string, unknown> = {}
 
   // Find all [key] placeholders in content
-  const extractKeys = (node: string | React.ReactNode | undefined): void => {
+  const extractKeys = (
+    node: string | ReactNodeWithoutBigint | undefined
+  ): void => {
     if (typeof node === 'string') {
       const matches = node.match(/\[(.*?)\]/g)
       if (matches) {
@@ -64,8 +75,9 @@ function extractRowData(
       }
     } else if (node && typeof node === 'object') {
       // Handle React children recursively
-      const children = (node as { props?: { children?: React.ReactNode } })
-        .props?.children
+      const children = (
+        node as { props?: { children?: ReactNodeWithoutBigint } }
+      ).props?.children
       if (children) {
         if (Array.isArray(children)) {
           children.forEach(extractKeys)
