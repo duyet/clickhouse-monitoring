@@ -1,5 +1,7 @@
 import type { Row } from '@tanstack/react-table'
 
+import type { ReactNode } from 'react'
+
 import { memo } from 'react'
 import {
   HoverCard,
@@ -8,7 +10,7 @@ import {
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
-export type HoverCardContent = string | React.ReactNode
+export type HoverCardContent = string | ReactNode
 
 export type HoverCardOptions = {
   content: HoverCardContent
@@ -16,7 +18,7 @@ export type HoverCardOptions = {
 
 interface HoverCardProps {
   row: Row<any>
-  value: React.ReactNode
+  value: unknown
   options?: HoverCardOptions
 }
 
@@ -24,7 +26,7 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   row,
   value,
   options,
-}: HoverCardProps): React.ReactNode {
+}: HoverCardProps): ReactNode {
   const { content } = options || {}
 
   // Extract row data for template replacement
@@ -34,9 +36,18 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Render the trigger with proper typing for React 19
+  const renderTrigger = () => {
+    if (value == null) return null
+    if (typeof value === 'bigint') return String(value)
+    return value
+  }
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
+      <HoverCardTrigger aria-label="Show details">
+        {renderTrigger()}
+      </HoverCardTrigger>
       <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
     </HoverCard>
   )

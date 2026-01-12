@@ -22,7 +22,7 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "types": ["cypress", "node", "cypress-real-events"]
+    "types": ["node", "jest", "cypress", "cypress-real-events"]
   },
   "include": [
     "**/*.ts",
