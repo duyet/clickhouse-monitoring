@@ -111,7 +111,7 @@ export function useRefreshTimer({
 
     let lastTime = Date.now()
 
-    const tick = (timestamp?: number) => {
+    const tick = (_timestamp?: number) => {
       const now = Date.now()
       const elapsed = now - lastTime
 
