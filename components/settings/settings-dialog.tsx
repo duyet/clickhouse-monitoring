@@ -3,7 +3,7 @@
 import { Settings } from 'lucide-react'
 
 import { SettingsForm } from './settings-form'
-import { useState } from 'react'
+import { isValidElement, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -39,7 +39,9 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
+          {isValidElement(children) ? (
+            children
+          ) : (
             <Button variant="ghost" size="icon">
               <Settings className="h-4 w-4" />
             </Button>
