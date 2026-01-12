@@ -72,6 +72,11 @@ export function replaceTemplateInReactNode(
       )
     }
 
+    // Filter out bigint values which are not valid ReactNode in React 19
+    if (typeof child === 'bigint') {
+      return null
+    }
+
     return child
   })
 }

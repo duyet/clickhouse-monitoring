@@ -1,11 +1,12 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import { isValidElement, memo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
+import { toReactNode } from '@/lib/react19-compat'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
 export type HoverCardContent = string | React.ReactNode
@@ -34,10 +35,41 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Convert to React 19 compatible ReactNode
+  const safeContent = toReactNode(processedContent)
+
+  // Convert the value to a safe format for Radix UI compatibility
+  // This handles bigint values that would otherwise cause type conflicts
+  const getSafeValue = (): React.ReactNode => {
+    if (typeof value === 'bigint') {
+      return String(value)
+    }
+    if (isValidElement(value)) {
+      return value
+    }
+    if (value === null || value === undefined) {
+      return null
+    }
+    if (typeof value === 'object') {
+      // Filter out bigints from arrays and objects
+      if (Array.isArray(value)) {
+        return value.map((v) => {
+          if (typeof v === 'bigint') return String(v)
+          return v
+        })
+      }
+      // Convert plain objects to strings
+      return JSON.stringify(value)
+    }
+    return value
+  }
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {getSafeValue() as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">{safeContent as any}</HoverCardContent>
     </HoverCard>
   )
 })
@@ -59,7 +91,11 @@ function extractRowData(
       if (matches) {
         for (const match of matches) {
           const key = match.slice(1, -1).trim()
-          data[key] = row.getValue(key)
+          const value = row.getValue(key)
+          // Filter out bigint values which are not valid ReactNode in React 19
+          if (typeof value !== 'bigint') {
+            data[key] = value
+          }
         }
       }
     } else if (node && typeof node === 'object') {
