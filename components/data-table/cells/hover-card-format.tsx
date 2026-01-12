@@ -6,6 +6,14 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
+
+// Type assertion to bypass Radix UI's React v18 types
+const HoverCardComponents = {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} as any
+
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
 export type HoverCardContent = string | React.ReactNode
@@ -35,11 +43,15 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
   return (
-    <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
-    </HoverCard>
-  )
+    <HoverCardComponents.HoverCard openDelay={0}>
+      <HoverCardComponents.HoverCardTrigger aria-label="Show details">
+        {value}
+      </HoverCardComponents.HoverCardTrigger>
+      <HoverCardComponents.HoverCardContent role="tooltip">
+        {processedContent}
+      </HoverCardComponents.HoverCardContent>
+    </HoverCardComponents.HoverCard>
+  ) as React.ReactElement
 })
 
 /**

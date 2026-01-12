@@ -10,6 +10,13 @@ import {
   DialogTrigger,
   DialogContent as UIDialogContent,
 } from '@/components/ui/dialog'
+
+// Type assertion to bypass Radix UI's React v18 types
+const DialogComponents = {
+  Dialog,
+  DialogTrigger,
+} as any
+
 import { cn } from '@/lib/utils'
 
 export interface DialogContentProps {
@@ -32,7 +39,7 @@ const defaultButton = (
   >
     <CodeIcon className="size-4" />
   </Button>
-)
+) as React.ReactElement
 
 export const DialogContent = memo(function DialogContent({
   button = defaultButton,
@@ -43,8 +50,10 @@ export const DialogContent = memo(function DialogContent({
   headerActions,
 }: DialogContentProps) {
   return (
-    <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+    <DialogComponents.Dialog>
+      <DialogComponents.DialogTrigger asChild>
+        {button as React.ReactElement}
+      </DialogComponents.DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -68,6 +77,6 @@ export const DialogContent = memo(function DialogContent({
         </DialogHeader>
         <div className="max-h-[80vh] overflow-auto">{content}</div>
       </UIDialogContent>
-    </Dialog>
+    </DialogComponents.Dialog>
   )
 })

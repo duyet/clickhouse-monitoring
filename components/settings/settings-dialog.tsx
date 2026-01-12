@@ -12,6 +12,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+
+// Type assertion to bypass Radix UI's React v18 types
+const DialogComponents = {
+  Dialog,
+  DialogTrigger,
+} as any
+
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 interface SettingsDialogProps {
@@ -36,15 +43,16 @@ export function SettingsDialog({
   const isControlled = controlledOpen !== undefined
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogComponents.Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
-        <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
-        </DialogTrigger>
+        <DialogComponents.DialogTrigger asChild>
+          {children ||
+            ((
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            ) as React.ReactElement)}
+        </DialogComponents.DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -56,6 +64,6 @@ export function SettingsDialog({
           onClose={() => onOpenChange(false)}
         />
       </DialogContent>
-    </Dialog>
+    </DialogComponents.Dialog>
   )
 }
