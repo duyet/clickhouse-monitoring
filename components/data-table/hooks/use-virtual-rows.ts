@@ -37,7 +37,7 @@ export interface UseVirtualRowsResult {
   /** The virtualizer instance from @tanstack/react-virtual */
   virtualizer: ReturnType<typeof useVirtualizer<HTMLDivElement, Element>> | null
   /** Ref to attach to the scroll container element */
-  tableContainerRef: RefObject<HTMLDivElement>
+  tableContainerRef: RefObject<HTMLDivElement | null>
   /** Whether virtualization is enabled */
   isVirtualized: boolean
 }
