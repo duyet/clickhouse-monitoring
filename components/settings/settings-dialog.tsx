@@ -14,6 +14,28 @@ import {
 } from '@/components/ui/dialog'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
+// Helper function to convert BigInt to string for React 19 compatibility
+// React 19 excludes bigint from ReactNode type
+const sanitizeForReact = (
+  value: React.ReactNode
+): string | number | boolean | null | undefined => {
+  if (typeof value === 'bigint') {
+    return value.toString()
+  }
+  if (value === null || value === undefined) {
+    return value
+  }
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value
+  }
+  // For React elements or other complex types, convert to string representation
+  return String(value)
+}
+
 interface SettingsDialogProps {
   children?: React.ReactNode
   open?: boolean
@@ -39,7 +61,7 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
+          {sanitizeForReact(children) || (
             <Button variant="ghost" size="icon">
               <Settings className="h-4 w-4" />
             </Button>

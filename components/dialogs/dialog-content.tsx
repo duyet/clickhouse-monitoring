@@ -34,6 +34,28 @@ const defaultButton = (
   </Button>
 )
 
+// Helper function to convert BigInt to string for React 19 compatibility
+// React 19 excludes bigint from ReactNode type
+const sanitizeForReact = (
+  value: React.ReactNode
+): string | number | boolean | null | undefined => {
+  if (typeof value === 'bigint') {
+    return value.toString()
+  }
+  if (value === null || value === undefined) {
+    return value
+  }
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value
+  }
+  // For React elements or other complex types, convert to string representation
+  return String(value)
+}
+
 export const DialogContent = memo(function DialogContent({
   button = defaultButton,
   title = '',
@@ -44,7 +66,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{sanitizeForReact(button)}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -54,19 +76,23 @@ export const DialogContent = memo(function DialogContent({
         <DialogHeader className="-mx-6 -mt-6 gap-0.5 rounded-t-lg px-4 py-2">
           <div className="flex items-start justify-between gap-2 pr-6">
             <div className="flex flex-col gap-0.5">
-              <DialogTitle className="text-sm">{title}</DialogTitle>
+              <DialogTitle className="text-sm">
+                {sanitizeForReact(title)}
+              </DialogTitle>
               <DialogDescription className="text-sx text-muted-foreground">
-                {description}
+                {sanitizeForReact(description)}
               </DialogDescription>
             </div>
-            {headerActions && (
+            {sanitizeForReact(headerActions) && (
               <div className="flex items-center gap-2 shrink-0">
-                {headerActions}
+                {sanitizeForReact(headerActions)}
               </div>
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">
+          {sanitizeForReact(content)}
+        </div>
       </UIDialogContent>
     </Dialog>
   )

@@ -34,10 +34,36 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Convert BigInt values to strings for React 19 compatibility
+  // React 19 excludes bigint from ReactNode type
+  const sanitizeValue = (
+    val: React.ReactNode
+  ): string | number | boolean | null | undefined => {
+    if (typeof val === 'bigint') {
+      return val.toString()
+    }
+    if (val === null || val === undefined) {
+      return val
+    }
+    if (
+      typeof val === 'string' ||
+      typeof val === 'number' ||
+      typeof val === 'boolean'
+    ) {
+      return val
+    }
+    // For React elements or other complex types, convert to string representation
+    return String(val)
+  }
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {sanitizeValue(value)}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {sanitizeValue(processedContent)}
+      </HoverCardContent>
     </HoverCard>
   )
 })
