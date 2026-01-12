@@ -3,6 +3,14 @@
 import { Settings } from 'lucide-react'
 
 import { SettingsForm } from './settings-form'
+
+function SafeReactNode({ children }: { children: unknown }) {
+  if (typeof children === 'bigint') {
+    return String(children)
+  }
+  return children as React.ReactNode
+}
+
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -39,11 +47,13 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
+          <SafeReactNode>
+            {children || (
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            )}
+          </SafeReactNode>
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">

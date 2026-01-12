@@ -1,6 +1,14 @@
 import { CodeIcon } from 'lucide-react'
 
 import { memo } from 'react'
+
+function SafeReactNode({ children }: { children: unknown }) {
+  if (typeof children === 'bigint') {
+    return String(children)
+  }
+  return children as React.ReactNode
+}
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,7 +24,7 @@ export interface DialogContentProps {
   button?: React.ReactNode
   title?: string
   description?: string
-  content: string | React.ReactNode
+  content: unknown
   contentClassName?: string
   /** Actions to display in the header (right side) */
   headerActions?: React.ReactNode
@@ -44,7 +52,9 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>
+        <SafeReactNode>{button}</SafeReactNode>
+      </DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -61,12 +71,14 @@ export const DialogContent = memo(function DialogContent({
             </div>
             {headerActions && (
               <div className="flex items-center gap-2 shrink-0">
-                {headerActions}
+                <SafeReactNode>{headerActions}</SafeReactNode>
               </div>
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">
+          <SafeReactNode>{content}</SafeReactNode>
+        </div>
       </UIDialogContent>
     </Dialog>
   )

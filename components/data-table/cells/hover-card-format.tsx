@@ -8,6 +8,13 @@ import {
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
+function SafeReactNode({ children }: { children: unknown }) {
+  if (typeof children === 'bigint') {
+    return String(children)
+  }
+  return children as React.ReactNode
+}
+
 export type HoverCardContent = string | React.ReactNode
 
 export type HoverCardOptions = {
@@ -36,8 +43,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        <SafeReactNode>{value}</SafeReactNode>
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        <SafeReactNode>{processedContent}</SafeReactNode>
+      </HoverCardContent>
     </HoverCard>
   )
 })

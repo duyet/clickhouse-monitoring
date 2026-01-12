@@ -1,3 +1,4 @@
+import { toReactNode } from './react-utils'
 import React from 'react'
 
 /**
@@ -72,6 +73,12 @@ export function replaceTemplateInReactNode(
       )
     }
 
-    return child
+    return toReactNode(child)
   })
 }
+
+/**
+ * Safely convert a value to a ReactNode, handling BigInt conversion
+ * Re-export from react-utils for convenience
+ */
+export { toReactNode } from './react-utils'
