@@ -6,6 +6,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
+import { toSafeReactNode } from '@/lib/react-19-compat'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
 export type HoverCardContent = string | React.ReactNode
@@ -36,8 +37,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {String(value)}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {String(processedContent)}
+      </HoverCardContent>
     </HoverCard>
   )
 })
