@@ -60,6 +60,7 @@ export function replaceTemplateInReactNode(
     return replaceTemplateVariables(content, data)
   }
 
+  // Filter out bigint values from React nodes
   return React.Children.map(content, (child) => {
     if (typeof child === 'string') {
       return replaceTemplateVariables(child, data)

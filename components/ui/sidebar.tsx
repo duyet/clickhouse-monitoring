@@ -36,7 +36,7 @@ function getSidebarCookie(): boolean | null {
   return match ? match[2] === 'true' : null
 }
 const SIDEBAR_WIDTH = '14rem'
-const SIDEBAR_WIDTH_MOBILE = '18rem'
+const _SIDEBAR_WIDTH_MOBILE = '18rem'
 const SIDEBAR_WIDTH_ICON = '3rem'
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
 
@@ -617,7 +617,7 @@ function SidebarMenuSkeleton({
   showIcon?: boolean
 }) {
   // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
+  const _width = React.useMemo(() => {
     return `${Math.floor(Math.random() * 40) + 50}%`
   }, [])
 

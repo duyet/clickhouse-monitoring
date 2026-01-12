@@ -37,16 +37,17 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
   // Render the trigger with proper typing for React 19
-  const renderTrigger = () => {
-    if (value == null) return null
-    if (typeof value === 'bigint') return String(value)
-    return value
-  }
+  const triggerContent =
+    value == null
+      ? null
+      : typeof value === 'bigint'
+        ? String(value)
+        : (value as ReactNode)
 
   return (
     <HoverCard openDelay={0}>
       <HoverCardTrigger aria-label="Show details">
-        {renderTrigger()}
+        {triggerContent}
       </HoverCardTrigger>
       <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
     </HoverCard>
