@@ -1,12 +1,12 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { replaceTemplateInReactNode } from '@/lib/template-utils'
+import { replaceTemplateInReactNodeSafe } from '@/lib/template-utils'
 
 export type HoverCardContent = string | React.ReactNode
 
@@ -18,6 +18,16 @@ interface HoverCardProps {
   row: Row<any>
   value: React.ReactNode
   options?: HoverCardOptions
+}
+
+/**
+ * Safely convert ReactNode to ensure bigint compatibility with React 19
+ */
+function safeReactNode(value: React.ReactNode): string | React.ReactNode {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  return value
 }
 
 export const HoverCardFormat = memo(function HoverCardFormat({
@@ -32,12 +42,21 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   const rowData = extractRowData(content, row)
 
   // Content replacement, e.g. "Hover content: [column_name]"
-  const processedContent = replaceTemplateInReactNode(content, rowData)
+  const processedContent = useMemo(() => {
+    const result = replaceTemplateInReactNodeSafe(content, rowData)
+    return safeReactNode(result)
+  }, [content, rowData])
+
+  const safeValue = useMemo(() => safeReactNode(value), [value])
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {safeValue as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {processedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })

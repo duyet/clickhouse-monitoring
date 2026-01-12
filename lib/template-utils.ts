@@ -75,3 +75,51 @@ export function replaceTemplateInReactNode(
     return child
   })
 }
+
+/**
+ * Replace [key] placeholders in React nodes recursively with React 19 bigint support
+ *
+ * This version properly handles bigint values by converting them to strings,
+ * which is required for React 19 compatibility.
+ *
+ * @param content - String or React node containing [key] placeholders
+ * @param data - Object with key-value pairs for replacement
+ * @returns Content with placeholders replaced by values
+ */
+export function replaceTemplateInReactNodeSafe(
+  content: string | React.ReactNode,
+  data: Record<string, unknown>
+): string | React.ReactNode {
+  if (typeof content === 'string') {
+    return replaceTemplateVariables(content, data)
+  }
+
+  // Convert data values to handle bigint compatibility
+  const safeData: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(data)) {
+    if (typeof value === 'bigint') {
+      safeData[key] = String(value)
+    } else {
+      safeData[key] = value
+    }
+  }
+
+  return React.Children.map(content, (child) => {
+    if (typeof child === 'string') {
+      return replaceTemplateVariables(child, safeData)
+    }
+
+    if (React.isValidElement(child)) {
+      const childElement = child as React.ReactElement<{
+        children?: React.ReactNode
+      }>
+      return React.cloneElement(
+        child,
+        {},
+        replaceTemplateInReactNodeSafe(childElement.props.children, safeData)
+      )
+    }
+
+    return child
+  })
+}

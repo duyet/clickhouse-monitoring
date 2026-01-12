@@ -3,7 +3,7 @@
 import { Settings } from 'lucide-react'
 
 import { SettingsForm } from './settings-form'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -18,6 +18,16 @@ interface SettingsDialogProps {
   children?: React.ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
+}
+
+/**
+ * Safely convert ReactNode to ensure bigint compatibility with React 19
+ */
+function safeReactNode(value: React.ReactNode): string | React.ReactNode {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  return value
 }
 
 export function SettingsDialog({
@@ -35,15 +45,19 @@ export function SettingsDialog({
   // If using controlled mode, don't render DialogTrigger
   const isControlled = controlledOpen !== undefined
 
+  const safeChildren = useMemo(() => safeReactNode(children), [children])
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
+          {
+            (safeChildren || (
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            )) as any
+          }
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">
