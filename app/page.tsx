@@ -2,19 +2,37 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { useSession } from '@/lib/auth/client'
 
 /**
- * Root page - client-side redirect to /overview?host=0
+ * Root page - redirects based on authentication status
  *
- * This is a fully static site. No SSR, no middleware, no server components.
- * Uses client-side redirect for static compatibility.
+ * If authenticated: redirect to /overview?host=0
+ * If not authenticated: redirect to /auth/login
  */
 export default function Home() {
   const router = useRouter()
+  const { session, isLoading } = useSession()
 
   useEffect(() => {
-    router.replace('/overview?host=0')
-  }, [router])
+    if (isLoading) return
+
+    if (session) {
+      // User is authenticated, redirect to dashboard
+      router.replace('/overview?host=0')
+    } else {
+      // User is not authenticated, redirect to login
+      router.replace('/auth/login')
+    }
+  }, [router, session, isLoading])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   return null
 }
