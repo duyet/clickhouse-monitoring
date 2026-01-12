@@ -36,8 +36,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {String(value)}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {processedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })
@@ -49,8 +53,8 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 function extractRowData(
   content: string | React.ReactNode | undefined,
   row: Row<unknown>
-): Record<string, unknown> {
-  const data: Record<string, unknown> = {}
+): Record<string, string> {
+  const data: Record<string, string> = {}
 
   // Find all [key] placeholders in content
   const extractKeys = (node: string | React.ReactNode | undefined): void => {
@@ -59,7 +63,8 @@ function extractRowData(
       if (matches) {
         for (const match of matches) {
           const key = match.slice(1, -1).trim()
-          data[key] = row.getValue(key)
+          // Convert all values to strings for React 19 compatibility
+          data[key] = String(row.getValue(key))
         }
       }
     } else if (node && typeof node === 'object') {

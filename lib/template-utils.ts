@@ -50,7 +50,7 @@ export function replaceTemplateVariables(
  */
 export function replaceTemplateInReactNode(
   content: string | React.ReactNode,
-  data: Record<string, unknown>
+  data: Record<string, string>
 ): string | React.ReactNode {
   if (typeof content === 'string') {
     return replaceTemplateVariables(content, data)
@@ -70,6 +70,12 @@ export function replaceTemplateInReactNode(
         {},
         replaceTemplateInReactNode(childElement.props.children, data)
       )
+    }
+
+    // Convert non-string/non-element values to strings for React 19 compatibility
+    // ReactNode in React 19 doesn't accept bigint, so we convert to string
+    if (child != null && typeof child !== 'object') {
+      return String(child)
     }
 
     return child
