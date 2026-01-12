@@ -67,7 +67,7 @@ export function useVirtualRows(
 
   return {
     virtualizer: shouldVirtualize ? virtualizer : null,
-    tableContainerRef,
+    tableContainerRef: tableContainerRef as React.RefObject<HTMLDivElement>,
     isVirtualized: shouldVirtualize,
   }
 }
