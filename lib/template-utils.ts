@@ -1,3 +1,4 @@
+import { toReact19Node } from './react-19-compat'
 import React from 'react'
 
 /**
@@ -29,7 +30,10 @@ export function replaceTemplateVariables(
   for (const match of matches) {
     const key = match.slice(1, -1).trim()
     const value = data[key]
-    result = result.replace(match, value != null ? String(value) : '')
+    result = result.replace(
+      match,
+      value != null ? String(toReact19Node(value)) : ''
+    )
   }
   return result
 }
@@ -72,6 +76,7 @@ export function replaceTemplateInReactNode(
       )
     }
 
-    return child
+    // Convert bigint values to strings for React 19 compatibility
+    return toReact19Node(child)
   })
 }
