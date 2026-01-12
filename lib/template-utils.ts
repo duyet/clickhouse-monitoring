@@ -72,6 +72,11 @@ export function replaceTemplateInReactNode(
       )
     }
 
+    // Convert bigint to string to maintain React 19 compatibility
+    if (typeof child === 'bigint') {
+      return String(child)
+    }
+
     return child
   })
 }

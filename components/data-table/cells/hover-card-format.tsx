@@ -14,10 +14,26 @@ export type HoverCardOptions = {
   content: HoverCardContent
 }
 
+// Helper function to convert ReactNode to bigint-safe ReactNode
+function toSafeReactNode(node: React.ReactNode): React.ReactNode {
+  if (typeof node === 'bigint') {
+    return String(node)
+  }
+  if (Array.isArray(node)) {
+    return node.map(toSafeReactNode)
+  }
+  return node
+}
+
 interface HoverCardProps {
   row: Row<any>
   value: React.ReactNode
   options?: HoverCardOptions
+}
+
+// Helper component to handle bigint values in ReactNode
+function BigintSafeContent({ children }: { children: React.ReactNode }) {
+  return <>{children}</>
 }
 
 export const HoverCardFormat = memo(function HoverCardFormat({
@@ -34,10 +50,18 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Convert values to strings if they're bigint to maintain React 19 compatibility
+  const displayValue = toSafeReactNode(value)
+  const safeContent = toSafeReactNode(processedContent)
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        <BigintSafeContent>{displayValue}</BigintSafeContent>
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        <BigintSafeContent>{safeContent}</BigintSafeContent>
+      </HoverCardContent>
     </HoverCard>
   )
 })

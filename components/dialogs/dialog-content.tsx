@@ -1,5 +1,6 @@
 import { CodeIcon } from 'lucide-react'
 
+import * as React from 'react'
 import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,6 +12,18 @@ import {
   DialogContent as UIDialogContent,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
+
+// Helper to convert bigint to string for React 19 compatibility
+// Also handles any nested ReactNode values that Radix UI might receive
+function _sanitizeReactNode(value: unknown): React.ReactNode {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  if (Array.isArray(value)) {
+    return value.map(_sanitizeReactNode)
+  }
+  return value as React.ReactNode
+}
 
 export interface DialogContentProps {
   button?: React.ReactNode
@@ -32,7 +45,7 @@ const defaultButton = (
   >
     <CodeIcon className="size-4" />
   </Button>
-)
+) as React.ReactNode
 
 export const DialogContent = memo(function DialogContent({
   button = defaultButton,
@@ -44,7 +57,13 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>
+        {React.isValidElement(button) ? (
+          button
+        ) : (
+          <span>{String(button || '')}</span>
+        )}
+      </DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -61,12 +80,14 @@ export const DialogContent = memo(function DialogContent({
             </div>
             {headerActions && (
               <div className="flex items-center gap-2 shrink-0">
-                {headerActions}
+                {headerActions as React.ReactNode}
               </div>
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">
+          {content as React.ReactNode}
+        </div>
       </UIDialogContent>
     </Dialog>
   )
