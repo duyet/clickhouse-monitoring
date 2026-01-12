@@ -1,5 +1,7 @@
 import type { Row } from '@tanstack/react-table'
 
+import type * as React from 'react'
+
 import { memo } from 'react'
 import {
   HoverCard,
@@ -38,13 +40,13 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
   return (
-    // @ts-expect-error
-    <HoverCard openDelay={0}>
+    <HoverCard>
       <HoverCardTrigger aria-label="Show details">
         {value as any}
       </HoverCardTrigger>
-      {/* @ts-ignore */}
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardContent role="tooltip">
+        {processedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })
