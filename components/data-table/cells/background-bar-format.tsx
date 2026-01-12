@@ -1,6 +1,6 @@
 import type { Row, Table } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import React, { memo } from 'react'
 import { getBarStyle, getColorFromBank, getShade } from '@/lib/color-bank'
 import { formatReadableQuantity } from '@/lib/format-readable'
 
@@ -23,8 +23,13 @@ export const BackgroundBarFormat = memo(function BackgroundBarFormat({
   value,
   options,
 }: BackgroundBarFormatProps): React.ReactNode {
+  // Convert value to ReactNode-compatible type (React v19 doesn't allow bigint)
+  const renderableValue: React.ReactNode = React.isValidElement(value)
+    ? value
+    : String(value)
+
   // Disable if row count <= 1
-  if (table.getCoreRowModel()?.rows?.length <= 1) return value
+  if (table.getCoreRowModel()?.rows?.length <= 1) return renderableValue
 
   // Looking at pct_{columnName} for the value
   const colName = columnName.replace('readable_', '')
@@ -34,7 +39,7 @@ export const BackgroundBarFormat = memo(function BackgroundBarFormat({
 
   if (pct === undefined) {
     // Column pct_{columnName} is not defined in the query
-    return value
+    return renderableValue
   }
 
   // Get color from bank based on column name (deterministic)
@@ -61,8 +66,13 @@ export const BackgroundBarFormat = memo(function BackgroundBarFormat({
       />
       <span className="relative inline-block min-w-0 truncate px-2">
         {options?.numberFormat
-          ? formatReadableQuantity(value as number, 'long')
-          : value}
+          ? formatReadableQuantity(
+              typeof renderableValue === 'number'
+                ? renderableValue
+                : Number(renderableValue),
+              'long'
+            )
+          : renderableValue}
       </span>
     </div>
   )

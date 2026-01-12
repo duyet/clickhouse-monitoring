@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import React, { memo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
@@ -27,17 +27,32 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 }: HoverCardProps): React.ReactNode {
   const { content } = options || {}
 
+  // Convert value to ReactNode-compatible type (React v19 doesn't allow bigint)
+  // Filter out bigint since it's not compatible with Radix UI's React types
+  const renderableValue: React.ReactNode = React.isValidElement(value)
+    ? value
+    : typeof value === 'bigint'
+      ? String(value)
+      : String(value)
+
   // Extract row data for template replacement
   // Uses row.getValue() for each column to get the value
   const rowData = extractRowData(content, row)
 
   // Content replacement, e.g. "Hover content: [column_name]"
-  const processedContent = replaceTemplateInReactNode(content, rowData)
+  // Use any to avoid ReactNode type conflicts
+  const processedContent = replaceTemplateInReactNode(content, rowData) as any
 
+  // Use explicit string type to avoid ReactNode conflicts with bigint
+  // between React 19 and Radix UI's nested React type dependencies
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {renderableValue as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {processedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })

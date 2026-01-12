@@ -2,7 +2,7 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 import type { Row, RowData } from '@tanstack/react-table'
 
 import Link, { type LinkProps } from 'next/link'
-import { memo } from 'react'
+import React, { memo } from 'react'
 import { replaceTemplateVariables } from '@/lib/template-utils'
 import { cn } from '@/lib/utils'
 
@@ -28,8 +28,13 @@ function LinkFormatComponent<
 >({ row, data, value, context, options }: LinkFormatProps<TData, TValue>) {
   let { href, className, ...rest } = options ?? {}
 
+  // Convert value to ReactNode-compatible type (React v19 doesn't allow bigint)
+  const renderableValue: React.ReactNode = React.isValidElement(value)
+    ? value
+    : String(value)
+
   // No href provided, return value as is
-  if (!href) return value
+  if (!href) return renderableValue
 
   if (typeof href === 'object' && href !== null) {
     // Handle URL object - convert to full string including protocol and host
@@ -66,7 +71,7 @@ function LinkFormatComponent<
       )}
       {...rest}
     >
-      <span className="truncate">{value}</span>
+      <span className="truncate">{renderableValue}</span>
       <ArrowRightIcon
         className="size-3 flex-none text-transparent transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-current"
         aria-hidden="true"
