@@ -36,7 +36,7 @@ function getSidebarCookie(): boolean | null {
   return match ? match[2] === 'true' : null
 }
 const SIDEBAR_WIDTH = '14rem'
-const SIDEBAR_WIDTH_MOBILE = '18rem'
+const SIDEBAR_WIDTH_MOBILE = 288 // 18rem in pixels
 const SIDEBAR_WIDTH_ICON = '3rem'
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
 
@@ -207,8 +207,8 @@ function Sidebar({
           className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
           style={
             {
-              '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
+              '--sidebar-width': `${SIDEBAR_WIDTH_MOBILE}px`,
+            } as any
           }
           side={side}
         >

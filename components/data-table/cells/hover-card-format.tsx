@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import { memo, type ReactNode } from 'react'
 import {
   HoverCard,
   HoverCardContent,
@@ -8,7 +8,25 @@ import {
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
-export type HoverCardContent = string | React.ReactNode
+export type HoverCardContent =
+  | string
+  | React.ReactNode
+  | bigint
+  | number
+  | boolean
+
+/**
+ * Convert bigint and other primitive values to ReactNode
+ */
+function toReactNode(value: unknown): ReactNode {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  if (value === null || value === undefined) {
+    return null
+  }
+  return value as ReactNode
+}
 
 export type HoverCardOptions = {
   content: HoverCardContent
@@ -36,8 +54,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {value as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {processedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })
@@ -47,13 +69,15 @@ export const HoverCardFormat = memo(function HoverCardFormat({
  * Uses row.getValue() to support TanStack Table's column accessors
  */
 function extractRowData(
-  content: string | React.ReactNode | undefined,
+  content: string | React.ReactNode | bigint | number | boolean | undefined,
   row: Row<unknown>
 ): Record<string, unknown> {
   const data: Record<string, unknown> = {}
 
   // Find all [key] placeholders in content
-  const extractKeys = (node: string | React.ReactNode | undefined): void => {
+  const extractKeys = (
+    node: string | React.ReactNode | bigint | number | boolean | undefined
+  ): void => {
     if (typeof node === 'string') {
       const matches = node.match(/\[(.*?)\]/g)
       if (matches) {

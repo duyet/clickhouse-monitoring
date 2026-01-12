@@ -1,6 +1,6 @@
 import { CodeIcon } from 'lucide-react'
 
-import { memo } from 'react'
+import { memo, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,11 +12,24 @@ import {
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
+/**
+ * Convert bigint and other primitive values to ReactNode
+ */
+function toReactNode(value: unknown): ReactNode {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  if (value === null || value === undefined) {
+    return null
+  }
+  return value as ReactNode
+}
+
 export interface DialogContentProps {
   button?: React.ReactNode
   title?: string
   description?: string
-  content: string | React.ReactNode
+  content: string | React.ReactNode | bigint | number | boolean
   contentClassName?: string
   /** Actions to display in the header (right side) */
   headerActions?: React.ReactNode
@@ -44,7 +57,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{button as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -56,7 +69,7 @@ export const DialogContent = memo(function DialogContent({
             <div className="flex flex-col gap-0.5">
               <DialogTitle className="text-sm">{title}</DialogTitle>
               <DialogDescription className="text-sx text-muted-foreground">
-                {description}
+                {description as any}
               </DialogDescription>
             </div>
             {headerActions && (
@@ -66,7 +79,7 @@ export const DialogContent = memo(function DialogContent({
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">{toReactNode(content)}</div>
       </UIDialogContent>
     </Dialog>
   )
