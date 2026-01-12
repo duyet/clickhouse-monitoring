@@ -20,22 +20,6 @@ interface SettingsDialogProps {
   onOpenChange?: (open: boolean) => void
 }
 
-// Helper function to ensure ReactNode compatibility for React 19
-function toReactNode(value: React.ReactNode): React.ReactNode {
-  if (typeof value === 'bigint') {
-    return String(value)
-  }
-  return value
-}
-
-// Helper function to filter out non-ReactNode values
-function filterReactNode(value: React.ReactNode): React.ReactNode {
-  if (typeof value === 'bigint' || typeof value === 'object') {
-    return String(value)
-  }
-  return value
-}
-
 export function SettingsDialog({
   children,
   open: controlledOpen,
