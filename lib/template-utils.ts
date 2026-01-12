@@ -72,6 +72,15 @@ export function replaceTemplateInReactNode(
       )
     }
 
+    // Convert non-nullish, non-element, non-string values to strings
+    if (
+      child != null &&
+      typeof child !== 'object' &&
+      typeof child !== 'function'
+    ) {
+      return String(child)
+    }
+
     return child
   })
 }
