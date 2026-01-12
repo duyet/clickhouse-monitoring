@@ -51,7 +51,7 @@ export function useRefreshTimer({
   interval: intervalMs = DEFAULT_INTERVAL,
   onRefresh,
   enabled = true,
-}: UseRefreshTimerOptions = {}): UseRefreshTimerReturn {
+}: UseRefreshTimerOptions): UseRefreshTimerReturn {
   const initialSeconds = Math.floor(intervalMs / 1000)
   const [remaining, setRemaining] = useState(initialSeconds)
   const [isPaused, setIsPaused] = useState(false)
@@ -59,7 +59,7 @@ export function useRefreshTimer({
   // Track if we're currently refreshing to prevent double-triggers
   const isRefreshingRef = useRef(false)
   // Store the animation frame ID for cleanup
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number | undefined>(undefined)
 
   /**
    * Reset countdown to initial value
