@@ -13,13 +13,13 @@ import {
 import { cn } from '@/lib/utils'
 
 export interface DialogContentProps {
-  button?: React.ReactNode
+  button?: React.ReactNode | bigint
   title?: string
   description?: string
-  content: string | React.ReactNode
+  content: string | React.ReactNode | bigint
   contentClassName?: string
   /** Actions to display in the header (right side) */
-  headerActions?: React.ReactNode
+  headerActions?: React.ReactNode | bigint
 }
 
 // Default button - defined outside component to avoid re-creation
@@ -44,7 +44,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{button as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -61,12 +61,12 @@ export const DialogContent = memo(function DialogContent({
             </div>
             {headerActions && (
               <div className="flex items-center gap-2 shrink-0">
-                {headerActions}
+                {headerActions as any}
               </div>
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">{content as any}</div>
       </UIDialogContent>
     </Dialog>
   )
