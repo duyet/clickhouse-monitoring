@@ -56,26 +56,43 @@ export function replaceTemplateInReactNode(
     return replaceTemplateVariables(content, data)
   }
 
-  return React.Children.map(content, (child) => {
-    if (
-      typeof child === 'string' ||
-      typeof child === 'number' ||
-      typeof child === 'boolean'
-    ) {
-      return replaceTemplateVariables(String(child), data)
-    }
+  // Handle arrays of React nodes
+  if (Array.isArray(content)) {
+    return content.map((child) => {
+      if (
+        typeof child === 'string' ||
+        typeof child === 'number' ||
+        typeof child === 'boolean'
+      ) {
+        return replaceTemplateVariables(String(child), data)
+      }
 
-    if (React.isValidElement(child)) {
-      const childElement = child as React.ReactElement<{
-        children?: React.ReactNode
-      }>
-      return React.cloneElement(
-        child,
-        {},
-        replaceTemplateInReactNode(childElement.props.children, data)
-      )
-    }
+      if (React.isValidElement(child)) {
+        const childElement = child as React.ReactElement<{
+          children?: React.ReactNode
+        }>
+        return React.cloneElement(
+          child,
+          {},
+          replaceTemplateInReactNode(childElement.props.children, data)
+        )
+      }
 
-    return child
-  })
+      return child
+    })
+  }
+
+  // Handle single React node
+  if (React.isValidElement(content)) {
+    const childElement = content as React.ReactElement<{
+      children?: React.ReactNode
+    }>
+    return React.cloneElement(
+      content,
+      {},
+      replaceTemplateInReactNode(childElement.props.children, data)
+    )
+  }
+
+  return content
 }

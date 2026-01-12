@@ -15,9 +15,25 @@ import {
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 interface SettingsDialogProps {
-  children?: React.ReactNode
+  children?: React.ReactElement | string | number | null
   open?: boolean
   onOpenChange?: (open: boolean) => void
+}
+
+// Helper function to ensure ReactNode compatibility for React 19
+function toReactNode(value: React.ReactNode): React.ReactNode {
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+  return value
+}
+
+// Helper function to filter out non-ReactNode values
+function filterReactNode(value: React.ReactNode): React.ReactNode {
+  if (typeof value === 'bigint' || typeof value === 'object') {
+    return String(value)
+  }
+  return value
 }
 
 export function SettingsDialog({
@@ -35,17 +51,18 @@ export function SettingsDialog({
   // If using controlled mode, don't render DialogTrigger
   const isControlled = controlledOpen !== undefined
 
+  // Render the default button
+  const defaultButton = (
+    <Button variant="ghost" size="icon">
+      <Settings className="h-4 w-4" />
+    </Button>
+  )
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children ||
-            (true && (
-              <Button variant="ghost" size="icon">
-                <Settings className="h-4 w-4" />
-              </Button>
-            )) ||
-            null}
+          {children && typeof children !== 'bigint' ? children : defaultButton}
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">
