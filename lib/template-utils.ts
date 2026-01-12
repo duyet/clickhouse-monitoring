@@ -29,7 +29,14 @@ export function replaceTemplateVariables(
   for (const match of matches) {
     const key = match.slice(1, -1).trim()
     const value = data[key]
-    result = result.replace(match, value != null ? String(value) : '')
+    result = result.replace(
+      match,
+      value != null
+        ? typeof value === 'bigint'
+          ? `${value.toString()}n`
+          : String(value)
+        : ''
+    )
   }
   return result
 }
