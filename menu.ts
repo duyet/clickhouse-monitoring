@@ -35,10 +35,17 @@ import {
   UsersIcon,
   ZapIcon,
 } from 'lucide-react'
+import { DatabaseIcon } from 'lucide-react'
 
 import type { MenuItem } from '@/components/menu/types'
 
 export const menuItemsConfig: MenuItem[] = [
+  {
+    title: 'Hosts',
+    href: '/hosts',
+    icon: DatabaseIcon,
+    section: 'main',
+  },
   {
     title: 'Overview',
     href: '/overview',
