@@ -1,5 +1,7 @@
 import { CodeIcon } from 'lucide-react'
 
+import type * as React from 'react'
+
 import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,7 +25,7 @@ export interface DialogContentProps {
 }
 
 // Default button - defined outside component to avoid re-creation
-const defaultButton = (
+const defaultButton: React.ReactNode = (
   <Button
     variant="outline"
     className="ml-auto"
@@ -44,7 +46,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{button as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
