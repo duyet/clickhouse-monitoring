@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import { isValidElement, memo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
@@ -34,10 +34,19 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Ensure ReactNode compatibility by converting non-string values
+  const safeValue = isValidElement(value) ? value : String(value)
+  const safeContent =
+    typeof processedContent === 'string'
+      ? processedContent
+      : String(processedContent)
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {safeValue as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">{safeContent as any}</HoverCardContent>
     </HoverCard>
   )
 })

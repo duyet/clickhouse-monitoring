@@ -1,6 +1,6 @@
 import { CodeIcon } from 'lucide-react'
 
-import { memo } from 'react'
+import { isValidElement, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -42,9 +42,12 @@ export const DialogContent = memo(function DialogContent({
   contentClassName,
   headerActions,
 }: DialogContentProps) {
+  // Ensure ReactNode compatibility by converting non-string values
+  const safeButton = isValidElement(button) ? button : String(button)
+
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{safeButton as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',

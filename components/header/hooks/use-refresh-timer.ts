@@ -59,7 +59,7 @@ export function useRefreshTimer({
   // Track if we're currently refreshing to prevent double-triggers
   const isRefreshingRef = useRef(false)
   // Store the animation frame ID for cleanup
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number | undefined>(undefined)
 
   /**
    * Reset countdown to initial value
@@ -111,7 +111,7 @@ export function useRefreshTimer({
 
     let lastTime = Date.now()
 
-    const tick = () => {
+    const tick = (_timestamp?: number) => {
       const now = Date.now()
       const elapsed = now - lastTime
 
@@ -135,10 +135,14 @@ export function useRefreshTimer({
         lastTime = now
       }
 
-      animationFrameRef.current = requestAnimationFrame(tick)
+      animationFrameRef.current = requestAnimationFrame((timestamp) =>
+        tick(timestamp)
+      )
     }
 
-    animationFrameRef.current = requestAnimationFrame(tick)
+    animationFrameRef.current = requestAnimationFrame((timestamp) =>
+      tick(timestamp)
+    )
 
     return () => {
       if (animationFrameRef.current) {
