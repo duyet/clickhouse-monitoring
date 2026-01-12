@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
@@ -27,17 +27,20 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 }: HoverCardProps): React.ReactNode {
   const { content } = options || {}
 
-  // Extract row data for template replacement
-  // Uses row.getValue() for each column to get the value
-  const rowData = extractRowData(content, row)
+  // Memoize row data extraction for performance
+  const rowData = useMemo(() => extractRowData(content, row), [content, row])
 
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {value as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {processedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })
