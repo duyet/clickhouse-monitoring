@@ -1,6 +1,8 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
+import type React from 'react'
+
 /**
  * Create a class name from a list of class names
  *
@@ -45,6 +47,22 @@ export function normalizeUrl(url: string) {
 
 export function removeHostPrefix(pathname: string) {
   return pathname.split('/').filter(Boolean).slice(1).join('/')
+}
+
+/**
+ * Safely convert any value to ReactNode for React 19 compatibility
+ */
+export function toReactNode(value: unknown): React.ReactNode {
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  // React 19 is stricter about ReactNode types
+  if (typeof value === 'bigint') {
+    return String(value)
+  }
+
+  return value as React.ReactNode
 }
 
 // Chart utility functions
