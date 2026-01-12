@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
+import React, { memo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
@@ -24,8 +24,16 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   row,
   value,
   options,
-}: HoverCardProps): React.ReactNode {
+}: HoverCardProps) {
   const { content } = options || {}
+
+  // Convert bigint values for React 19 compatibility
+  const safeValue =
+    typeof value === 'bigint'
+      ? value.toString()
+      : React.isValidElement(value)
+        ? value
+        : (value as React.ReactNode)
 
   // Extract row data for template replacement
   // Uses row.getValue() for each column to get the value
@@ -34,10 +42,22 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Convert processed content to string if it's a bigint
+  const safeProcessedContent =
+    typeof processedContent === 'bigint'
+      ? processedContent.toString()
+      : React.isValidElement(processedContent)
+        ? processedContent
+        : (processedContent as React.ReactNode)
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        <React.Fragment>{safeValue}</React.Fragment>
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        <React.Fragment>{safeProcessedContent}</React.Fragment>
+      </HoverCardContent>
     </HoverCard>
   )
 })
@@ -59,7 +79,9 @@ function extractRowData(
       if (matches) {
         for (const match of matches) {
           const key = match.slice(1, -1).trim()
-          data[key] = row.getValue(key)
+          const value = row.getValue(key)
+          // Convert bigint to string for React 19 compatibility
+          data[key] = typeof value === 'bigint' ? value.toString() : value
         }
       }
     } else if (node && typeof node === 'object') {

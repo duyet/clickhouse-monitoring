@@ -1,6 +1,6 @@
 import { CodeIcon } from 'lucide-react'
 
-import { memo } from 'react'
+import React, { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -42,9 +42,26 @@ export const DialogContent = memo(function DialogContent({
   contentClassName,
   headerActions,
 }: DialogContentProps) {
+  // Convert bigint values to string for React 19 compatibility
+  const safeContent =
+    typeof content === 'bigint'
+      ? content.toString()
+      : (content as React.ReactNode)
+  const safeHeaderActions =
+    typeof headerActions === 'bigint'
+      ? headerActions.toString()
+      : (headerActions as React.ReactNode)
+
+  // Convert button to React.ReactNode for React 19 compatibility
+  const safeButton = React.isValidElement(button)
+    ? button
+    : (button as React.ReactNode)
+
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>
+        <React.Fragment>{safeButton}</React.Fragment>
+      </DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -59,14 +76,14 @@ export const DialogContent = memo(function DialogContent({
                 {description}
               </DialogDescription>
             </div>
-            {headerActions && (
+            {safeHeaderActions && (
               <div className="flex items-center gap-2 shrink-0">
-                {headerActions}
+                {safeHeaderActions}
               </div>
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">{safeContent}</div>
       </UIDialogContent>
     </Dialog>
   )

@@ -3,7 +3,7 @@
 import { Settings } from 'lucide-react'
 
 import { SettingsForm } from './settings-form'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -35,15 +35,25 @@ export function SettingsDialog({
   // If using controlled mode, don't render DialogTrigger
   const isControlled = controlledOpen !== undefined
 
+  // Convert children to React.ReactNode for React 19 compatibility
+  const safeChildren =
+    typeof children === 'bigint'
+      ? children.toString()
+      : React.isValidElement(children)
+        ? children
+        : (children as React.ReactNode)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
+          <React.Fragment>
+            {safeChildren || (
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            )}
+          </React.Fragment>
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">
