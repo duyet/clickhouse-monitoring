@@ -25,6 +25,10 @@ export function SettingsDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
 }: SettingsDialogProps) {
+  const safeChildren =
+    children && typeof children !== 'bigint' && children !== true
+      ? children
+      : undefined
   const [internalOpen, setInternalOpen] = useState(false)
   const { settings, updateSettings } = useUserSettings()
 
@@ -39,7 +43,9 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
+          {safeChildren ? (
+            <div>{safeChildren}</div>
+          ) : (
             <Button variant="ghost" size="icon">
               <Settings className="h-4 w-4" />
             </Button>
