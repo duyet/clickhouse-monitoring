@@ -41,7 +41,9 @@ export function SettingsDialog({
         <DialogTrigger asChild>
           {children || (
             <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
+              <span>
+                <Settings className="h-4 w-4" />
+              </span>
             </Button>
           )}
         </DialogTrigger>

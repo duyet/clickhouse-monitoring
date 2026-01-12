@@ -1,5 +1,7 @@
 import type { Row } from '@tanstack/react-table'
 
+import type React from 'react'
+
 import { memo } from 'react'
 import {
   HoverCard,
@@ -36,8 +38,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        <span>{typeof value === 'bigint' ? value.toString() : value}</span>
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        <span>{processedContent}</span>
+      </HoverCardContent>
     </HoverCard>
   )
 })
@@ -59,7 +65,13 @@ function extractRowData(
       if (matches) {
         for (const match of matches) {
           const key = match.slice(1, -1).trim()
-          data[key] = row.getValue(key)
+          const value = row.getValue(key)
+          // Handle BigInt values properly for React 19 compatibility
+          if (typeof value === 'bigint') {
+            data[key] = value.toString()
+          } else {
+            data[key] = value
+          }
         }
       }
     } else if (node && typeof node === 'object') {

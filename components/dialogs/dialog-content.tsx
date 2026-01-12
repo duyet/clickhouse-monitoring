@@ -1,5 +1,7 @@
 import { CodeIcon } from 'lucide-react'
 
+import type React from 'react'
+
 import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,7 +32,9 @@ const defaultButton = (
     aria-label="Show SQL"
     title="Show SQL for this table"
   >
-    <CodeIcon className="size-4" />
+    <span>
+      <CodeIcon className="size-4" />
+    </span>
   </Button>
 )
 
