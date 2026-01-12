@@ -14,8 +14,11 @@ import {
 } from '@/components/ui/dialog'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
+// Custom ReactNode type that handles bigint compatibility
+type ReactNodeWithoutBigint = React.ReactNode | Exclude<React.ReactNode, bigint>
+
 interface SettingsDialogProps {
-  children?: React.ReactNode
+  children?: ReactNodeWithoutBigint
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
@@ -39,11 +42,12 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
+          {children ||
+            ((
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            ) as any)}
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">

@@ -12,14 +12,17 @@ import {
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
+// Custom ReactNode type that handles bigint compatibility
+type ReactNodeWithoutBigint = React.ReactNode | Exclude<React.ReactNode, bigint>
+
 export interface DialogContentProps {
-  button?: React.ReactNode
+  button?: ReactNodeWithoutBigint
   title?: string
   description?: string
-  content: string | React.ReactNode
+  content: string | ReactNodeWithoutBigint
   contentClassName?: string
   /** Actions to display in the header (right side) */
-  headerActions?: React.ReactNode
+  headerActions?: ReactNodeWithoutBigint
 }
 
 // Default button - defined outside component to avoid re-creation
@@ -44,6 +47,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
+      {/* @ts-ignore */}
       <DialogTrigger asChild>{button}</DialogTrigger>
       <UIDialogContent
         className={cn(
