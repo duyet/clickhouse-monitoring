@@ -1,5 +1,7 @@
 import { CodeIcon } from 'lucide-react'
 
+import type * as React from 'react'
+
 import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -44,6 +46,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
+      {/* @ts-ignore - React 19 compatibility */}
       <DialogTrigger asChild>{button}</DialogTrigger>
       <UIDialogContent
         className={cn(

@@ -51,7 +51,7 @@ export function replaceTemplateVariables(
 export function replaceTemplateInReactNode(
   content: string | React.ReactNode,
   data: Record<string, unknown>
-): string | React.ReactNode {
+): React.ReactNode {
   if (typeof content === 'string') {
     return replaceTemplateVariables(content, data)
   }
@@ -70,6 +70,11 @@ export function replaceTemplateInReactNode(
         {},
         replaceTemplateInReactNode(childElement.props.children, data)
       )
+    }
+
+    // Convert non-string, non-element values to strings to avoid ReactNode issues
+    if (child != null && typeof child !== 'object') {
+      return String(child)
     }
 
     return child
