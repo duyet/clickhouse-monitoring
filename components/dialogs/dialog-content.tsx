@@ -44,7 +44,9 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>
+        {button ? <div>{String(button)}</div> : null}
+      </DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
@@ -66,7 +68,9 @@ export const DialogContent = memo(function DialogContent({
             )}
           </div>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{content}</div>
+        <div className="max-h-[80vh] overflow-auto">
+          {typeof content === 'string' ? <div>{content}</div> : content}
+        </div>
       </UIDialogContent>
     </Dialog>
   )

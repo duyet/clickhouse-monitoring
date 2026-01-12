@@ -3,7 +3,7 @@
 import { Settings } from 'lucide-react'
 
 import { SettingsForm } from './settings-form'
-import { useState } from 'react'
+import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -25,7 +25,7 @@ export function SettingsDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
 }: SettingsDialogProps) {
-  const [internalOpen, setInternalOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = React.useState(false)
   const { settings, updateSettings } = useUserSettings()
 
   // Use controlled state if provided, otherwise use internal state
@@ -35,17 +35,23 @@ export function SettingsDialog({
   // If using controlled mode, don't render DialogTrigger
   const isControlled = controlledOpen !== undefined
 
+  // Render dialog trigger based on children presence
+  const renderTrigger = () => {
+    if (children) {
+      return <DialogTrigger asChild>{children as any}</DialogTrigger>
+    }
+    return (
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Settings className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {!isControlled && (
-        <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
-        </DialogTrigger>
-      )}
+      {!isControlled && renderTrigger()}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
