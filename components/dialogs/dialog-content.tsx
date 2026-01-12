@@ -32,7 +32,7 @@ const defaultButton = (
   >
     <CodeIcon className="size-4" />
   </Button>
-)
+) as React.ReactNode
 
 export const DialogContent = memo(function DialogContent({
   button = defaultButton,
@@ -44,7 +44,7 @@ export const DialogContent = memo(function DialogContent({
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{button as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',

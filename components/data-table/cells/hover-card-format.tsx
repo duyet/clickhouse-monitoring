@@ -3,8 +3,8 @@ import type { Row } from '@tanstack/react-table'
 import { memo } from 'react'
 import {
   HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
+  HoverCardContent as HoverCardContentPrimitive,
+  HoverCardTrigger as HoverCardTriggerPrimitive,
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
@@ -34,10 +34,17 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Handle bigint values from ClickHouse
+  const displayValue = typeof value === 'bigint' ? String(value) : value
+
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTriggerPrimitive aria-label="Show details">
+        {displayValue as any}
+      </HoverCardTriggerPrimitive>
+      <HoverCardContentPrimitive role="tooltip">
+        {processedContent as any}
+      </HoverCardContentPrimitive>
     </HoverCard>
   )
 })
@@ -59,7 +66,7 @@ function extractRowData(
       if (matches) {
         for (const match of matches) {
           const key = match.slice(1, -1).trim()
-          data[key] = row.getValue(key)
+          data[key] = row.getValue(key) as React.ReactNode
         }
       }
     } else if (node && typeof node === 'object') {

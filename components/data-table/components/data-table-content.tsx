@@ -56,7 +56,7 @@ export interface DataTableContentProps<
   /** Column definitions for rendering */
   columnDefs: ColumnDef<TData, TValue>[]
   /** Ref for the table container (used for virtualization) */
-  tableContainerRef: React.RefObject<HTMLDivElement>
+  tableContainerRef: React.RefObject<HTMLDivElement | null>
   /** Whether virtualization is enabled (1000+ rows) */
   isVirtualized: boolean
   /** Virtual row instance from useVirtualRows hook */
@@ -164,7 +164,7 @@ export const DataTableContent = memo(function DataTableContent<
 
   return (
     <div
-      ref={tableContainerRef}
+      ref={tableContainerRef as React.RefObject<HTMLDivElement>}
       className={`mb-5 min-h-0 min-w-0 rounded-lg border border-border/50 bg-card/30 ${
         isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto'
       }`}

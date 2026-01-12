@@ -77,7 +77,7 @@ export default nextConfig
 if (process.env.ENABLE_CLOUDFLARE === 'true') {
   import('@opennextjs/cloudflare').then(({ initOpenNextCloudflareForDev }) => {
     initOpenNextCloudflareForDev({
-      experimental: { remoteBindings: true },
+      remoteBindings: true,
     })
   })
 }
