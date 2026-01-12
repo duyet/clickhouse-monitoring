@@ -38,13 +38,13 @@ export const DialogContent = memo(function DialogContent({
   button = defaultButton,
   title = '',
   description = '',
-  content = '',
+  content = '' as React.ReactNode,
   contentClassName,
   headerActions,
 }: DialogContentProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{button}</DialogTrigger>
+      <DialogTrigger asChild>{button as any}</DialogTrigger>
       <UIDialogContent
         className={cn(
           'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',

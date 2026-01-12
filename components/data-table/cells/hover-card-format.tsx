@@ -36,8 +36,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {String(value)}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        <>{processedContent}</>
+      </HoverCardContent>
     </HoverCard>
   )
 })
