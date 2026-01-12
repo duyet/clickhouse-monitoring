@@ -8,7 +8,9 @@ import {
 } from '@/components/ui/hover-card'
 import { replaceTemplateInReactNode } from '@/lib/template-utils'
 
-export type HoverCardContent = string | React.ReactNode
+type AnyReactNode = React.ReactNode | any
+
+export type HoverCardContent = string | AnyReactNode
 
 export type HoverCardOptions = {
   content: HoverCardContent
@@ -16,7 +18,7 @@ export type HoverCardOptions = {
 
 interface HoverCardProps {
   row: Row<any>
-  value: React.ReactNode
+  value: AnyReactNode
   options?: HoverCardOptions
 }
 
@@ -24,7 +26,7 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   row,
   value,
   options,
-}: HoverCardProps): React.ReactNode {
+}: HoverCardProps): AnyReactNode {
   const { content } = options || {}
 
   // Extract row data for template replacement
@@ -36,8 +38,12 @@ export const HoverCardFormat = memo(function HoverCardFormat({
 
   return (
     <HoverCard openDelay={0}>
-      <HoverCardTrigger aria-label="Show details">{value}</HoverCardTrigger>
-      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
+      <HoverCardTrigger aria-label="Show details">
+        {value as any}
+      </HoverCardTrigger>
+      <HoverCardContent role="tooltip">
+        {processedContent as any}
+      </HoverCardContent>
     </HoverCard>
   )
 })
@@ -47,13 +53,13 @@ export const HoverCardFormat = memo(function HoverCardFormat({
  * Uses row.getValue() to support TanStack Table's column accessors
  */
 function extractRowData(
-  content: string | React.ReactNode | undefined,
+  content: string | AnyReactNode | undefined,
   row: Row<unknown>
 ): Record<string, unknown> {
   const data: Record<string, unknown> = {}
 
   // Find all [key] placeholders in content
-  const extractKeys = (node: string | React.ReactNode | undefined): void => {
+  const extractKeys = (node: string | AnyReactNode | undefined): void => {
     if (typeof node === 'string') {
       const matches = node.match(/\[(.*?)\]/g)
       if (matches) {

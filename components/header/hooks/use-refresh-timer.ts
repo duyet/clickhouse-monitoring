@@ -59,7 +59,7 @@ export function useRefreshTimer({
   // Track if we're currently refreshing to prevent double-triggers
   const isRefreshingRef = useRef(false)
   // Store the animation frame ID for cleanup
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number | null>(null)
 
   /**
    * Reset countdown to initial value
@@ -141,7 +141,7 @@ export function useRefreshTimer({
     animationFrameRef.current = requestAnimationFrame(tick)
 
     return () => {
-      if (animationFrameRef.current) {
+      if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
