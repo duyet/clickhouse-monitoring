@@ -72,6 +72,6 @@ export function replaceTemplateInReactNode(
       )
     }
 
-    return child
+    return child != null ? String(child) : ''
   })
 }
