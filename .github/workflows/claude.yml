@@ -15,7 +15,7 @@ jobs:
     uses: duyet/github-actions/.github/workflows/claude.yml@main
     permissions:
       actions: read
-      contents: write
+      contents: read
       issues: write
       pull-requests: write
       id-token: write
