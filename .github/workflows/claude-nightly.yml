@@ -1,0 +1,107 @@
+name: Claude Nightly Enhancements
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (plan only, no PR)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  nightly:
+    uses: duyet/github-actions/.github/workflows/claude-schedule.yml@main
+    permissions:
+      actions: read
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    secrets:
+      api_key: ${{ secrets.OPENROUTER_API_KEY }}
+      bot_github_token: ${{ secrets.DUYETBOT_GITHUB_TOKEN }}
+    with:
+      dry_run: ${{ inputs.dry_run }}
+      # Custom prompt for comprehensive code enhancement
+      prompt: |
+        You are running a nightly code enhancement job for the clickhouse-monitoring repository.
+
+        ## Your Task
+        Analyze the codebase and create improvements following this workflow:
+
+        ### 1. Plan Phase
+        - Analyze the codebase for opportunities in:
+          - **Security**: Potential vulnerabilities, unsafe patterns, input validation issues
+          - **Performance**: Component memoization, query optimization, memory usage
+          - **Bugs**: Type errors, edge cases, error handling gaps
+          - **Refactoring**: Code duplication, SOLID violations, inconsistent patterns
+          - **UI/UX**: Accessibility improvements, responsive design issues, user experience enhancements
+          - **Testing**: Missing test coverage, flaky tests
+          - **Documentation**: Outdated docs, missing JSDoc comments
+
+        - Prioritize findings by impact (high/medium/low)
+        - Create a structured plan in a GitHub issue
+
+        ### 2. Implementation Phase
+        - For high-priority items that are safe to automate:
+          - Implement the fixes using Write and Edit tools
+          - Follow the existing code patterns (Biome formatting, TypeScript strict mode)
+          - Add tests for any bug fixes or new functionality
+          - Update documentation as needed
+
+        ### 3. Test Phase
+        - Run `bun test` to verify unit tests pass
+        - Run `bun run lint` to verify code quality
+        - Check for TypeScript errors
+
+        ### 4. PR Creation Phase
+        - Create a pull request with your changes
+        - PR title format: `nightly(nlp): [category] brief description`
+        - Include in the PR body:
+          - Summary of changes
+          - Link to the planning issue
+          - Testing performed
+          - Co-authored-by: duyetbot <noreply@anthropic.com>
+
+        ## Important Notes
+        - Focus on safe, non-breaking changes
+        - Run tests before creating PR
+        - Use semantic branch names: `nightly/[category]-description`
+        - Always co-author commits with duyetbot
+        - If dry_run is 'true', only create the planning issue, do not implement or create PR
+
+        ## Repository Context
+        - Next.js 16 app with React 19 and TypeScript
+        - ClickHouse monitoring dashboard with client-side data fetching
+        - Uses SWR for caching, Recharts for visualization
+        - Static site generation, no SSR
+        - Biome for linting, Bun as package manager
+        - Multi-version ClickHouse support (v24.5-v25.6)
+
+        Begin your analysis now.
+
+      # File patterns to analyze (exclude tests, mocks, node_modules)
+      file_patterns: |
+        **/*.ts
+        **/*.tsx
+        !**/__tests__/**
+        !**/*.test.ts
+        !**/*.test.tsx
+        !**/*.mock.ts
+        !**/node_modules/**
+
+      # Enable write tools for implementation
+      allowed_tools: Read,Grep,Glob,Write,Edit,Bash,Skill
+
+      # Extended timeout for comprehensive analysis
+      timeout_minutes: 90
+
+      # Use the preset model optimized for GitHub Actions
+      model: "@preset/claude-code-github-action"
