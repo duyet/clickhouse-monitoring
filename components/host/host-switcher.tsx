@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, ChevronsUpDown } from 'lucide-react'
+import { Check, ChevronsUpDown, Plus } from 'lucide-react'
 
 import { HostStatusDropdown } from './host-status-dropdown'
 import { HostVersionWithStatus } from './host-version-status'
@@ -26,6 +26,8 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { type AuthSession, useSession } from '@/lib/auth/client'
+import { useAuthConfig } from '@/lib/auth/use-auth-config'
 import { useHostId } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
 import { buildUrl } from '@/lib/url/url-builder'
@@ -45,7 +47,29 @@ export function HostSwitcher() {
   const { hosts, isLoading } = useHosts()
   const currentHostId = useHostId()
 
+  // Auth state for "Add Host" action
+  const { data: session } = useSession() as { data: AuthSession | null }
+  const { isAuthEnabled } = useAuthConfig()
+  const isAuthenticated = !!session?.user
+
   const activeHost = hosts[currentHostId] || hosts[0]
+
+  /**
+   * Handle "Add Host" action
+   * If auth is enabled and user is not authenticated, redirect to login
+   * Otherwise, navigate directly to add host page
+   */
+  const handleAddHost = useCallback(() => {
+    if (isAuthEnabled && !isAuthenticated) {
+      // Store intent to add host after login
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('auth_redirect', '/hosts/new')
+      }
+      router.push('/auth/login?redirect=/hosts/new')
+    } else {
+      router.push('/hosts/new')
+    }
+  }, [isAuthEnabled, isAuthenticated, router])
 
   const handleHostChange = useCallback(
     (hostId: number) => {
@@ -88,14 +112,15 @@ export function HostSwitcher() {
     return null
   }
 
-  // For single host, render simplified view without dropdown
-  const isSingleHost = hosts.length <= 1
+  // Show dropdown if multiple hosts OR if auth is enabled (so users can add hosts)
+  // Only show simplified view for single host when auth is not enabled
+  const showDropdown = hosts.length > 1 || isAuthEnabled
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        {isSingleHost ? (
-          // Single host: simplified display without dropdown
+        {!showDropdown ? (
+          // Single host without auth: simplified display without dropdown
           <SidebarMenuButton size="lg" asChild>
             <div
               className={`flex gap-2 ${state === 'expanded' ? 'items-center' : 'items-center justify-center'}`}
@@ -178,6 +203,17 @@ export function HostSwitcher() {
                   )}
                 </DropdownMenuItem>
               ))}
+
+              {/* Add Host action */}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleAddHost}
+                className="gap-2 p-2 text-muted-foreground hover:text-foreground"
+                data-testid="add-host-action"
+              >
+                <Plus className="size-4" />
+                <span>Add ClickHouse Host</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
