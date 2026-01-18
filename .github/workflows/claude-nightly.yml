@@ -17,7 +17,7 @@ on:
 
 jobs:
   nightly:
-    uses: duyet/github-actions/.github/workflows/claude-schedule.yml@02472419b3e1a62b37ec0c201cad336d26a680d3
+    uses: duyet/github-actions/.github/workflows/claude-schedule.yml@main
     permissions:
       actions: read
       contents: write
