@@ -68,13 +68,15 @@ jobs:
           - Summary of changes
           - Link to the planning issue
           - Testing performed
-          - Co-authored-by: duyetbot <noreply@anthropic.com>
+          - Co-authored-by: duyet <noreply@github.com> and duyetbot <noreply@anthropic.com>
 
         ## Important Notes
         - Focus on safe, non-breaking changes
         - Run tests before creating PR
         - Use semantic branch names: `nightly/[category]-description`
-        - Always co-author commits with duyetbot
+        - Use semantic commit types: feat, fix, chore, docs, refactor, perf, test, ci, build
+        - PR commit messages MUST follow: `type(scope): brief description`
+        - Always co-author commits with both duyet and duyetbot
         - If dry_run is 'true', only create the planning issue, do not implement or create PR
 
         ## Repository Context
