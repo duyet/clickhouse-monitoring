@@ -316,6 +316,18 @@ describe('template-utils', () => {
       const data = { value: 'test' }
       const result = replaceTemplateInReactNode(content, data)
 
+    it('should handle errors in React element processing gracefully', () => {
+      const content = React.createElement(
+        'div',
+        null,
+        React.createElement('span', { 'data-bad': null as any }, '[value]')
+      )
+      const data = { value: '42' }
+      // Should not throw, catch block handles errors
+      const result = replaceTemplateInReactNode(content, data)
+      expect(result).toBeTruthy()
+    })
+
       const expected = React.createElement(
         'div',
         null,
