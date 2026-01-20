@@ -12,6 +12,7 @@ import {
   formatPercentage,
   getHost,
   removeHostPrefix,
+  normalizeUrl,
   uniq,
 } from './utils'
 import { describe, expect, it, jest } from 'bun:test'
@@ -75,6 +76,30 @@ describe('utils', () => {
   })
 
   describe('getHost', () => {
+    describe('normalizeUrl', () => {
+      it('should remove trailing slash', () => {
+        expect(normalizeUrl('https://example.com/')).toBe('https://example.com')
+        expect(normalizeUrl('https://example.com/path/')).toBe(
+          'https://example.com/path'
+        )
+      })
+
+      it('should remove trailing question mark', () => {
+        expect(normalizeUrl('https://example.com?')).toBe('https://example.com')
+        expect(normalizeUrl('https://example.com/path?')).toBe(
+          'https://example.com/path'
+        )
+      })
+
+      it('should trim whitespace', () => {
+        expect(normalizeUrl(' https://example.com ')).toBe(
+          'https://example.com'
+        )
+        expect(normalizeUrl('  https://example.com  ')).toBe(
+          'https://example.com'
+        )
+      })
+    })
     it('should return the host from a URL', () => {
       const input = 'https://example.com/path'
       const expectedOutput = 'example.com'
