@@ -1,0 +1,23 @@
+There is no tracking information for the current branch.
+Please specify which branch you want to merge with.
+See git-pull(1) for details.
+
+    git pull <remote> <branch>
+
+If you wish to set tracking information for this branch you can do so with:
+
+    git branch --set-upstream-to=origin/<branch> feature/100-coverage-tests-format-clean
+
+error This project's package.json defines "packageManager": "yarn@bun@10.18.2". However the current global version of Yarn is 1.22.22.
+
+Presence of the "packageManager" field indicates that the project is meant to be used with Corepack, a tool included by default with all official Node.js distributions starting from 16.9 and 14.19.
+Corepack must currently be enabled by running corepack enable in your terminal. For more information, check out https://yarnpkg.com/corepack.
+● clickhouse-monitoring.service - ClickHouse Monitoring
+     Loaded: loaded (/etc/systemd/system/clickhouse-monitoring.service; disabled; preset: enabled)
+     Active: activating (auto-restart) (Result: exit-code) since Tue 2026-01-20 15:30:05 +07; 22ms ago
+    Process: 128366 ExecStartPre=/home/duyet/.bun/bin/bun run build (code=exited, status=200/CHDIR)
+        CPU: 10ms
+
+Jan 20 15:30:05 duet-ubuntu systemd[1]: clickhouse-monitoring.service: Control process exited, code=exited, status=200/CHDIR
+Jan 20 15:30:05 duet-ubuntu systemd[1]: clickhouse-monitoring.service: Failed with result 'exit-code'.
+Jan 20 15:30:05 duet-ubuntu systemd[1]: Failed to start clickhouse-monitoring.service - ClickHouse Monitoring.
