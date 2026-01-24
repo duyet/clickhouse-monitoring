@@ -174,3 +174,170 @@ export interface TableDataRequest {
   /** Search and filter parameters from URL search params */
   readonly searchParams?: Record<string, string | string[]>
 }
+
+// ============================================================================
+// Centralized API Response Types
+// ============================================================================
+
+/**
+ * Standard API response structure with metadata
+ */
+export interface ApiResponse<T = {
+  data: T
+  metadata: ApiResponseMetadata
+}
+
+/**
+ * API response with optional data
+ */
+export interface ApiResponseOptional<T = {
+  data: T | null
+  metadata: ApiResponseMetadata
+}
+
+/**
+ * Metadata included in all API responses
+ */
+export interface ApiResponseMetadata {
+  queryId: string
+  duration: number
+  rows: number
+  host: string
+  sql?: string
+  columns?: Array<{
+    name: string
+    type: string
+  }>
+  /**
+   * Timestamp when this response was generated
+   */
+  timestamp: number
+}
+
+/**
+ * Error response from API
+ */
+export interface ApiErrorResponse {
+  error: ApiError
+  metadata?: ApiResponseMetadata
+}
+
+/**
+ * API error structure
+ */
+export interface ApiError {
+  type: string
+  message: string
+  details?: {
+    missingTables?: readonly string[]
+    [key: string]: unknown
+  }
+}
+
+/**
+ * Chart-specific response types
+ */
+export interface ChartDataResponse<T = {
+  data: T[]
+  metadata: ApiResponseMetadata
+}
+
+/**
+ * Multi-query chart response
+ */
+export interface MultiQueryResponse {
+  main: unknown[]
+  totalMem: unknown[]
+  [key: string]: unknown[]
+}
+
+/**
+ * Table data response with pagination
+ */
+
+export interface TableDataResponse<T> {
+  data: T[]
+  metadata: ApiResponseMetadata & {
+    hasMore: boolean
+    offset: number
+    limit: number
+    total: number
+  }
+}
+
+// ============================================================================
+// Centralized API Response Types (Consolidated)
+// ============================================================================
+
+/**
+ * Standard API response structure with metadata
+ */
+export interface ApiResponse<T = {
+  data: T
+  metadata: ApiResponseMetadata
+}
+
+/**
+ * API response with optional data
+ */
+export interface ApiResponseOptional<T = {
+  data: T | null
+  metadata: ApiResponseMetadata
+}
+
+/**
+ * Metadata included in all API responses
+ */
+export interface ApiResponseMetadata {
+  queryId: string
+  duration: number
+  rows: number
+  host: string
+  sql?: string
+  columns?: Array<{
+    name: string
+    type: string
+  }>
+  /**
+   * Timestamp when this response was generated
+   */
+  timestamp: number
+}
+
+/**
+ * Error response from API
+ */
+export interface ApiErrorResponse {
+  error: ApiError
+  metadata?: ApiResponseMetadata
+}
+
+/**
+ * API error structure
+ */
+export interface ApiError {
+  type: string
+  message: string
+  details?: {
+    missingTables?: readonly string[]
+    [key: string]: unknown
+  }
+}
+
+/**
+ * Chart-specific response types
+ */
+export interface ChartDataResponse<T> {
+  data: T[]
+  metadata: ApiResponseMetadata
+}
+
+/**
+ * Multi-query chart response
+ */
+export interface MultiQueryResponse {
+  main: unknown[]
+  totalMem: unknown[]
+  [key: string]: unknown[]
+}
+

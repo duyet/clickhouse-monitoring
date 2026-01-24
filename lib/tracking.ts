@@ -3,6 +3,7 @@ import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 
 import { ErrorLogger } from '@/lib/logger'
+import { createStaleError, type StaleError } from '@/lib/types/error'
 
 const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 
@@ -18,7 +19,7 @@ const error = (...args: string[]) =>
 const schema = [
   {
     latest: true,
-    hash: '4488700278788044716',
+    hash: '448870278788044716',
     schema: `
       CREATE TABLE IF NOT EXISTS ${EVENTS_TABLE} (
         kind Enum('PageView', 'UserKillQuery', 'SystemKillQuery', 'LastCleanup'),
@@ -65,11 +66,11 @@ export async function initTrackingTable(
 
     if (current !== expected) {
       log(
-        `schema hash (${current}) DO NOT matched with expected (${expected}), TODO`
+        `schema hash (${current}) does not match expected (${expected}), requires investigation`
       )
     } else {
       log(
-        `schema hash (${current}) matched with expected (${expected}), skip migration`
+        `schema hash (${current}) matched with expected (${expected}), skipping migration`
       )
     }
   } catch (err) {
