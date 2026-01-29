@@ -26,14 +26,24 @@ services:
       CLICKHOUSE_HOST: http://clickhouse:8123
       CLICKHOUSE_USER: default
       CLICKHOUSE_PASSWORD: ""
+      DEPLOYMENT_MODE: self-hosted
+      DATABASE_URL: file:/data/auth.db
+      AUTH_SECRET: ${AUTH_SECRET:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       PORT: 3000
       HOSTNAME: "0.0.0.0"
     depends_on:
       clickhouse:
         condition: service_healthy
+    volumes:
+      - sqlite_data:/data
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 30s
+
+volumes:
+  sqlite_data:

@@ -63,10 +63,24 @@ database_name = "clickhouse-monitor"
 database_id = "f289f509-c33b-4218-8602-7a19d5d567bc"
 migrations_dir = "src/db/migrations"
 
+# D1 database for authentication
+# Create with: wrangler d1 create clickhouse-monitor-auth
+# Then update database_id below
+[[d1_databases]]
+binding = "AUTH_DB"
+database_name = "clickhouse-monitor-auth"
+database_id = "your-d1-database-id"  # Replace after running: wrangler d1 create clickhouse-monitor-auth
+migrations_dir = "src/db/auth-migrations"
+
 # KV namespace for incremental cache
 [[kv_namespaces]]
 binding = "NEXT_INC_CACHE_KV"
 id = "78782c1fcf4141d9b6f26f2046f50ceb"
+
+# KV namespace for session cache (optional, improves performance)
+# [[kv_namespaces]]
+# binding = "AUTH_SESSION_KV"
+# id = "your-kv-namespace-id"  # Replace with actual KV namespace ID
 
 # Environment Variables
 #
