@@ -31,8 +31,21 @@ jobs:
     with:
       job-type: lint
 
+  # Fast amd64-only build for PRs
   build-docker:
     name: build-docker
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/base.yml
+    with:
+      job-type: docker
+      clickhouse-versions: '["25.1"]'
+      platforms: linux/amd64
+      push-image: true
+
+  # Multi-arch build only for main branch and releases (slower but complete)
+  build-docker-multiarch:
+    name: build-docker-multiarch
+    if: github.event_name != 'pull_request'
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
