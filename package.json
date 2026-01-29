@@ -3,7 +3,7 @@
   "description": "Simple ClickHouse UI that relies on system tables to help monitor and provide overview of your cluster",
   "version": "0.2.0",
   "private": true,
-  "packageManager": "bun@10.18.2",
+  "packageManager": "bun@1.3.3",
   "repository": {
     "url": "https://github.com/duyet/clickhouse-monitoring"
   },
