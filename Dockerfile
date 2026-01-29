@@ -34,11 +34,10 @@ RUN addgroup --system --gid 1001 app && \
     mkdir .next && \
     chown app:app .next
 
-# IMPORTANT: .next-prod/standalone already contains all necessary production dependencies
+# IMPORTANT: .next/standalone already contains all necessary production dependencies
 # DO NOT copy node_modules from deps stage - this causes 438MB+ duplication
-# Note: Production builds use .next-prod directory (configured in next.config.ts)
-COPY --from=builder --chown=app:app /app/.next-prod/standalone ./
-COPY --from=builder --chown=app:app /app/.next-prod/static ./.next/static
+COPY --from=builder --chown=app:app /app/.next/standalone ./
+COPY --from=builder --chown=app:app /app/.next/static ./.next/static
 COPY --from=builder --chown=app:app /app/public ./public
 
 USER app

@@ -31,8 +31,7 @@
     ".next/types/**/*.ts",
     "cypress.d.ts",
     "cypress/support/index.d.ts",
-    "next-env.d.ts",
-    ".next-prod/types/**/*.ts"
+    "next-env.d.ts"
   ],
   "exclude": [
     "node_modules",
