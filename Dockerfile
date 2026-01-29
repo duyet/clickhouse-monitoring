@@ -39,7 +39,7 @@ RUN addgroup --system --gid 1001 app && \
 # Note: Production builds use .next-prod directory (configured in next.config.ts)
 COPY --from=builder --chown=app:app /app/.next-prod/standalone ./
 COPY --from=builder --chown=app:app /app/.next-prod/static ./.next/static
-COPY --from=builder /app/public/* ./
+COPY --from=builder --chown=app:app /app/public ./public
 
 USER app
 
