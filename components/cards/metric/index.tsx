@@ -1,13 +1,8 @@
 'use client'
 
 import { memo } from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ExpandableText } from '@/components/utilities/expandable-text'
 import { cn } from '@/lib/utils'
 
 export * from './hooks'
@@ -273,24 +268,28 @@ const MetricCardHeader = memo(function MetricCardHeader({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <CardTitle
+            <ExpandableText
+              variant="popover"
+              maxLines={1}
               className={cn(
-                'font-semibold tracking-tight truncate',
+                'font-semibold tracking-tight',
                 compact ? 'text-xs' : 'text-sm',
                 themeConfig.textColor
               )}
             >
               {title}
-            </CardTitle>
+            </ExpandableText>
             {description && (
-              <CardDescription
+              <ExpandableText
+                variant="inline"
+                maxLines={2}
                 className={cn(
-                  'text-muted-foreground truncate',
+                  'text-muted-foreground',
                   compact ? 'text-[10px]' : 'text-xs'
                 )}
               >
                 {description}
-              </CardDescription>
+              </ExpandableText>
             )}
           </div>
         </div>

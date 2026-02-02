@@ -2,6 +2,7 @@
 
 import { cardStyles } from './card-styles'
 import { memo } from 'react'
+import { ExpandableText } from '@/components/utilities/expandable-text'
 import { cn } from '@/lib/utils'
 
 export interface InfoCardProps {
@@ -33,15 +34,17 @@ export const InfoCard = memo(function InfoCard({
           <div className={cardStyles.number}>{value}</div>
         </div>
         {subtitle && (
-          <div
+          <ExpandableText
+            variant="inline"
+            maxLines={1}
             className={cn(
               'text-center text-xs uppercase tracking-widest font-medium',
               'text-foreground/40 dark:text-foreground/35',
-              'line-clamp-1 max-w-full px-2'
+              'max-w-full px-2'
             )}
           >
             {subtitle}
-          </div>
+          </ExpandableText>
         )}
       </div>
     </div>
