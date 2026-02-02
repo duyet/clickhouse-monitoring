@@ -17,17 +17,13 @@ import {
 import { ChartStaleIndicator } from '@/components/charts/chart-stale-indicator'
 import { DateRangeSelector } from '@/components/date-range'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { ExpandableText } from '@/components/utilities/expandable-text'
 import { cn } from '@/lib/utils'
 
 /**
@@ -111,9 +107,13 @@ function ChartCardContentWithScale({
       {title ? (
         <CardHeader className={chartCard.header}>
           <header className="flex flex-row items-center justify-between gap-2">
-            <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase truncate min-w-0 flex-1">
+            <ExpandableText
+              variant="popover"
+              maxLines={1}
+              className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1"
+            >
               {title}
-            </CardDescription>
+            </ExpandableText>
             <div className="flex items-center gap-1 shrink-0">
               {staleError && onRetry && (
                 <ChartStaleIndicator error={staleError} onRetry={onRetry} />
@@ -163,9 +163,13 @@ function ChartCardContentWithoutScale({
       {title ? (
         <CardHeader className={chartCard.header}>
           <header className="flex flex-row items-center justify-between gap-2">
-            <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase truncate min-w-0 flex-1">
+            <ExpandableText
+              variant="popover"
+              maxLines={1}
+              className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1"
+            >
               {title}
-            </CardDescription>
+            </ExpandableText>
             <div className="flex items-center gap-1 shrink-0">
               {staleError && onRetry && (
                 <ChartStaleIndicator error={staleError} onRetry={onRetry} />
