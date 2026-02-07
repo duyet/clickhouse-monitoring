@@ -1,7 +1,15 @@
 'use client'
 
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Info } from 'lucide-react'
 
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
 interface SuggestionCardProps {
@@ -13,24 +21,45 @@ interface SuggestionCardProps {
  * Renders suggestion text with formatted code blocks, links, and better visual hierarchy
  * Detects URLs and converts them to clickable links
  * Handles multi-line text with code blocks gracefully
+ *
+ * Text is truncated with line-clamp and expands to a modal when clicked
  */
 export function SuggestionCard({ suggestion, className }: SuggestionCardProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [isOverflowing, setIsOverflowing] = useState(false)
+
   // Split by code block markers or detect SQL patterns
   const parts = parseIntelligent(suggestion)
 
-  return (
+  // Check if content overflows after mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Re-measuring on suggestion change is intentional
+  useEffect(() => {
+    const element = contentRef.current
+    if (!element) return
+
+    // Check after a short delay to ensure rendering is complete
+    const timer = requestAnimationFrame(() => {
+      setIsOverflowing(element.scrollHeight > element.clientHeight)
+    })
+
+    return () => cancelAnimationFrame(timer)
+  }, [suggestion])
+
+  // Render the truncated content
+  const renderContent = (isInModal = false) => (
     <div
-      className={cn(
-        'rounded-lg border border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-950/20 p-4 space-y-3',
-        className
-      )}
+      className={cn(isInModal ? 'max-h-[70vh] overflow-y-auto' : 'space-y-3')}
     >
       {parts.map((part, idx) => {
         if (part.type === 'text') {
           return (
             <p
               key={idx}
-              className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap"
+              className={cn(
+                'text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap',
+                !isInModal && 'line-clamp-3'
+              )}
             >
               {renderTextWithLinks(part.content)}
             </p>
@@ -62,6 +91,69 @@ export function SuggestionCard({ suggestion, className }: SuggestionCardProps) {
         return null
       })}
     </div>
+  )
+
+  const handleClick = useCallback(() => {
+    if (isOverflowing) {
+      setIsOpen(true)
+    }
+  }, [isOverflowing])
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        if (isOverflowing) {
+          setIsOpen(true)
+        }
+      }
+    },
+    [isOverflowing]
+  )
+
+  return (
+    <>
+      <div
+        ref={contentRef}
+        className={cn(
+          'rounded-lg border border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-950/20 p-4 relative',
+          isOverflowing && 'cursor-pointer',
+          className
+        )}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        role={isOverflowing ? 'button' : undefined}
+        tabIndex={isOverflowing ? 0 : -1}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+      >
+        {renderContent(false)}
+        {isOverflowing && (
+          <div className="mt-3 flex items-center justify-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400">
+            <Info className="h-3.5 w-3.5" />
+            <span>Click to view full suggestion</span>
+          </div>
+        )}
+      </div>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Suggestion</DialogTitle>
+            <DialogDescription>
+              Full suggestion details and configuration help
+            </DialogDescription>
+          </DialogHeader>
+          <div
+            className={cn(
+              'rounded-lg border border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-950/20 p-4'
+            )}
+          >
+            {renderContent(true)}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
