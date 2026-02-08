@@ -13,6 +13,10 @@ import {
   type HoverCardOptions,
 } from '../cells/hover-card-format'
 import { LinkFormat, type LinkFormatOptions } from '../cells/link-format'
+import {
+  SparklineCell,
+  type SparklineCellOptions,
+} from '@/components/charts/sparkline-cell'
 import { ColumnFormat } from '@/types/column-format'
 
 /**
@@ -136,6 +140,38 @@ export const hoverCardFormatter: RowContextFormatter = <
 }
 
 /**
+ * Sparkline formatter - displays inline trend chart
+ *
+ * @example
+ * ```tsx
+ * <SparklineCell
+ *   table={table}
+ *   row={row}
+ *   columnName="count"
+ *   value={value}
+ *   options={{ points: 10, type: 'area' }}
+ * />
+ * ```
+ */
+export const sparklineFormatter: RowContextFormatter = <
+  TData extends RowData,
+  TValue,
+>(
+  props: FormatterProps<TData, TValue>
+): React.ReactNode => {
+  const { table, row, columnName, value, options } = props
+  return (
+    <SparklineCell
+      table={table}
+      row={row}
+      columnName={columnName}
+      value={value as React.ReactNode}
+      options={options as SparklineCellOptions}
+    />
+  )
+}
+
+/**
  * Registry of context formatters
  * These formatters need access to row, table, and context data
  */
@@ -143,11 +179,13 @@ export const CONTEXT_FORMATTERS: Record<
   | ColumnFormat.Action
   | ColumnFormat.BackgroundBar
   | ColumnFormat.HoverCard
-  | ColumnFormat.Link,
+  | ColumnFormat.Link
+  | ColumnFormat.Sparkline,
   RowContextFormatter
 > = {
   [ColumnFormat.Action]: actionFormatter,
   [ColumnFormat.BackgroundBar]: backgroundBarFormatter,
   [ColumnFormat.HoverCard]: hoverCardFormatter,
   [ColumnFormat.Link]: linkFormatter,
+  [ColumnFormat.Sparkline]: sparklineFormatter,
 } as const

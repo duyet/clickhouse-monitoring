@@ -4,8 +4,12 @@ import { ClickHouseInfoCard } from './clickhouse-info-card'
 import { DatabaseTableCountCard } from './database-table-count-card'
 import { DiskSizeCard } from './disk-size-card'
 import { RunningQueriesCard } from './running-queries-card'
+import { RunningQueriesProgressiveCard } from './running-queries-progressive-card'
 import { memo } from 'react'
 import { cn } from '@/lib/utils'
+
+// Feature flag for progressive disclosure (can be enabled via URL param)
+const PROGRESSIVE_DISCLOSURE_ENABLED = false
 
 // ============================================================================
 // OverviewCharts Component
@@ -14,6 +18,8 @@ import { cn } from '@/lib/utils'
 /**
  * OverviewCharts - Main grid component for overview metrics
  * Displays 4 cards: Running/Today Queries, Databases/Tables, Disk Usage, Version
+ *
+ * Progressive disclosure cards can be enabled by adding ?progressive=1 to URL
  */
 
 interface OverviewChartsProps {
@@ -32,7 +38,11 @@ export const OverviewCharts = memo(function OverviewCharts({
       role="region"
       aria-label="Overview metrics"
     >
-      <RunningQueriesCard />
+      {PROGRESSIVE_DISCLOSURE_ENABLED ? (
+        <RunningQueriesProgressiveCard />
+      ) : (
+        <RunningQueriesCard />
+      )}
       <DatabaseTableCountCard />
       <DiskSizeCard />
       <ClickHouseInfoCard />

@@ -97,3 +97,10 @@ export { ChartZookeeperUptime } from './zookeeper/zookeeper-uptime'
 export { ChartZookeeperWait } from './zookeeper/zookeeper-wait'
 // Re-export ChartSkeleton from skeletons
 export { ChartSkeleton } from '@/components/skeletons'
+// Sparkline components
+export {
+  Sparkline,
+  type SparklinePoint,
+  type SparklineProps,
+} from './sparkline'
+export { SparklineCell, type SparklineCellOptions } from './sparkline-cell'

@@ -27,6 +27,7 @@ export const mergesConfig: QueryConfig = {
     'elapsed',
     'readable_progress',
     'num_parts',
+    'rows_read',
     'readable_rows_read',
     'readable_rows_written',
     'readable_memory_usage',
@@ -44,6 +45,18 @@ export const mergesConfig: QueryConfig = {
     readable_memory_usage: ColumnFormat.BackgroundBar,
     readable_rows_read: ColumnFormat.BackgroundBar,
     readable_rows_written: ColumnFormat.BackgroundBar,
+    // Example: Add sparkline to show merge activity trend
+    // Note: This uses mock data for now - in production, fetch historical data via API
+    rows_read: [
+      ColumnFormat.Sparkline,
+      {
+        type: 'area',
+        points: 12,
+        width: 80,
+        height: 24,
+        trendColor: true,
+      },
+    ],
   },
   relatedCharts: [
     [

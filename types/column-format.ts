@@ -6,6 +6,7 @@ import type { ColoredBadgeOptions } from '@/components/data-table/cells/colored-
 import type { HoverCardOptions } from '@/components/data-table/cells/hover-card-format'
 import type { LinkFormatOptions } from '@/components/data-table/cells/link-format'
 import type { MarkdownFormatOptions } from '@/components/data-table/cells/markdown-format'
+import type { SparklineCellOptions } from '@/components/charts/sparkline-cell'
 import type { TextFormatOptions } from '@/components/data-table/cells/text-format'
 
 export enum ColumnFormat {
@@ -25,6 +26,7 @@ export enum ColumnFormat {
   Code = 'code',
   Link = 'link',
   Text = 'text',
+  Sparkline = 'sparkline',
   None = 'none',
 }
 
@@ -38,6 +40,7 @@ export type ColumnFormatWithArgs =
   | [ColumnFormat.CodeDialog, CodeDialogOptions]
   | [ColumnFormat.CodeToggle, CodeToggleOptions]
   | [ColumnFormat.BackgroundBar, BackgroundBarOptions]
+  | [ColumnFormat.Sparkline, SparklineCellOptions]
 
 // Union of all possible format options
 export type ColumnFormatOptions = ColumnFormatWithArgs[1]

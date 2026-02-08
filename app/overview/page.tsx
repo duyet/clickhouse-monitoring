@@ -7,12 +7,17 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { memo, Suspense, useCallback, useMemo, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
+import { BentoOverview } from '@/components/overview/bento-overview'
 import { ChartSkeleton, TabsSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
 import { useHostId } from '@/lib/swr'
+import { RowsIcon, ListBulletIcon } from '@radix-ui/react-icons'
 
 const VALID_TABS = new Set(OVERVIEW_TABS.map((tab) => tab.value))
 const DEFAULT_TAB = 'overview'
+
+type ViewMode = 'bento' | 'classic'
 
 interface LazyTabContentProps {
   charts: OverviewChartConfig[]
@@ -54,6 +59,12 @@ function OverviewPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
+  // Read view mode from URL params
+  const viewMode = useMemo(() => {
+    const mode = searchParams.get('view')
+    return mode === 'classic' ? 'classic' : 'bento'
+  }, [searchParams])
+
   // Read tab from URL, validate and fallback to default
   const activeTab = useMemo(() => {
     const tabParam = searchParams.get('tab')
@@ -92,9 +103,51 @@ function OverviewPageContent() {
     [searchParams, router]
   )
 
+  const handleViewModeChange = useCallback(
+    (mode: ViewMode) => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (mode === 'bento') {
+        params.delete('view')
+      } else {
+        params.set('view', mode)
+      }
+      const newUrl = `${window.location.pathname}?${params.toString()}`
+      router.replace(newUrl, { scroll: false })
+    },
+    [searchParams, router]
+  )
+
   return (
     <div>
-      <OverviewCharts className="mb-6" />
+      {/* View mode toggle and header section */}
+      <div className="mb-6">
+        {/* View toggle button */}
+        <div className="flex justify-end mb-4">
+          <div className="inline-flex items-center gap-1 rounded-lg border border-border/50 bg-background/80 p-1 backdrop-blur-sm">
+            <Button
+              variant={viewMode === 'bento' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleViewModeChange('bento')}
+              className="gap-1.5 h-8 px-2.5"
+            >
+              <RowsIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Bento</span>
+            </Button>
+            <Button
+              variant={viewMode === 'classic' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleViewModeChange('classic')}
+              className="gap-1.5 h-8 px-2.5"
+            >
+              <ListBulletIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Classic</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* View mode content */}
+        {viewMode === 'bento' ? <BentoOverview /> : <OverviewCharts />}
+      </div>
 
       <ClientOnly fallback={<TabsSkeleton tabCount={OVERVIEW_TABS.length} />}>
         <Tabs
