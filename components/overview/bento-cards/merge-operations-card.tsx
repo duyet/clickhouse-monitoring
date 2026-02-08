@@ -1,13 +1,14 @@
 'use client'
 
-import { BentoCardWrapper } from './bento-card-wrapper'
-import { useHostId } from '@/lib/swr'
-import { memo } from 'react'
-import { useChartData } from '@/lib/swr/use-chart-data'
-import { AnimatedNumber } from '@/components/cards/metric/animated-number'
-import { buildUrl } from '@/lib/url/url-builder'
-import Link from 'next/link'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
+
+import { BentoCardWrapper } from './bento-card-wrapper'
+import Link from 'next/link'
+import { memo } from 'react'
+import { AnimatedNumber } from '@/components/cards/metric/animated-number'
+import { useHostId } from '@/lib/swr'
+import { useChartData } from '@/lib/swr/use-chart-data'
+import { buildUrl } from '@/lib/url/url-builder'
 import { cn } from '@/lib/utils'
 
 /**
@@ -29,8 +30,8 @@ export const MergeOperationsCard = memo(function MergeOperationsCard() {
   const currentMerges = mergeSwr.data?.[0]?.avg_CurrentMetric_Merge ?? 0
 
   return (
-    <BentoCardWrapper className="p-4">
-      <div className="flex h-full flex-col gap-3">
+    <BentoCardWrapper className="p-3">
+      <div className="flex h-full flex-col gap-2">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-foreground/80">Merges</h3>

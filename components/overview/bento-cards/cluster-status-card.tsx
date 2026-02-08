@@ -1,19 +1,20 @@
 'use client'
 
-import { BentoCardWrapper } from './bento-card-wrapper'
-import { useHostId } from '@/lib/swr'
-import { useChartData } from '@/lib/swr/use-chart-data'
-import { memo } from 'react'
-import { cn } from '@/lib/utils'
-import { AnimatedNumber } from '@/components/cards/metric/animated-number'
 import {
   CheckCircledIcon,
   ClockIcon,
   CrossCircledIcon,
   QuestionMarkIcon,
 } from '@radix-ui/react-icons'
-import { buildUrl } from '@/lib/url/url-builder'
+
+import { BentoCardWrapper } from './bento-card-wrapper'
 import Link from 'next/link'
+import { memo } from 'react'
+import { AnimatedNumber } from '@/components/cards/metric/animated-number'
+import { useHostId } from '@/lib/swr'
+import { useChartData } from '@/lib/swr/use-chart-data'
+import { buildUrl } from '@/lib/url/url-builder'
+import { cn } from '@/lib/utils'
 
 export interface ClusterStatusProps {
   label: string
@@ -113,11 +114,11 @@ export const ClusterStatusCard = memo(function ClusterStatusCard() {
 
   if (isLoading) {
     return (
-      <BentoCardWrapper className="p-4">
+      <BentoCardWrapper className="p-3">
         <div className="flex items-center justify-center h-full">
-          <div className="space-y-3 w-full">
+          <div className="space-y-2 w-full">
             <div className="h-20 animate-pulse rounded-lg bg-foreground/[0.06]" />
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <div className="flex-1 h-20 animate-pulse rounded-lg bg-foreground/[0.06]" />
               <div className="flex-1 h-20 animate-pulse rounded-lg bg-foreground/[0.06]" />
             </div>
@@ -128,8 +129,8 @@ export const ClusterStatusCard = memo(function ClusterStatusCard() {
   }
 
   return (
-    <BentoCardWrapper className="p-4">
-      <div className="flex h-full flex-col gap-3">
+    <BentoCardWrapper className="p-3">
+      <div className="flex h-full flex-col gap-2">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-foreground/80">
@@ -144,7 +145,7 @@ export const ClusterStatusCard = memo(function ClusterStatusCard() {
         {/* Status Items */}
         <div className="flex flex-1 flex-col gap-3">
           {/* Main metric - Running Queries */}
-          <div className="flex items-center justify-center p-4 rounded-lg bg-foreground/[0.02] border border-foreground/[0.05]">
+          <div className="flex items-center justify-center p-3 rounded-lg bg-foreground/[0.02] border border-foreground/[0.05]">
             <div className="text-center">
               <AnimatedNumber
                 value={runningCount}
@@ -157,7 +158,7 @@ export const ClusterStatusCard = memo(function ClusterStatusCard() {
           </div>
 
           {/* Secondary metrics */}
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <ClusterStatusItem
               label="Today"
               value={todayCount}

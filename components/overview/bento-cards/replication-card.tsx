@@ -1,16 +1,17 @@
 'use client'
 
-import { BentoCardWrapper } from './bento-card-wrapper'
-import { useHostId } from '@/lib/swr'
-import { memo } from 'react'
-import { useChartData } from '@/lib/swr/use-chart-data'
-import { buildUrl } from '@/lib/url/url-builder'
-import Link from 'next/link'
 import {
   ArrowRightIcon,
   CheckCircledIcon,
   ClockIcon,
 } from '@radix-ui/react-icons'
+
+import { BentoCardWrapper } from './bento-card-wrapper'
+import Link from 'next/link'
+import { memo } from 'react'
+import { useHostId } from '@/lib/swr'
+import { useChartData } from '@/lib/swr/use-chart-data'
+import { buildUrl } from '@/lib/url/url-builder'
 import { cn } from '@/lib/utils'
 
 interface QueueItemProps {
@@ -86,8 +87,8 @@ export const ReplicationCard = memo(function ReplicationCard() {
   const isLoading = queueSwr.isLoading || readonlySwr.isLoading
 
   return (
-    <BentoCardWrapper className="p-4">
-      <div className="flex h-full flex-col gap-3">
+    <BentoCardWrapper className="p-3">
+      <div className="flex h-full flex-col gap-2">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-foreground/80">
@@ -102,7 +103,7 @@ export const ReplicationCard = memo(function ReplicationCard() {
         </div>
 
         {/* Queue items */}
-        <div className="flex flex-1 flex-col justify-center gap-3">
+        <div className="flex flex-1 flex-col justify-center gap-2">
           {isLoading ? (
             <>
               <div className="h-10 animate-pulse rounded-lg bg-foreground/[0.06]" />

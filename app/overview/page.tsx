@@ -1,18 +1,19 @@
 'use client'
 
+import { ListBulletIcon, RowsIcon } from '@radix-ui/react-icons'
+
 import type { OverviewChartConfig } from './charts-config'
 
 import { OVERVIEW_TABS } from './charts-config'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { memo, Suspense, useCallback, useMemo, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
-import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 import { BentoOverview } from '@/components/overview/bento-overview'
+import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 import { ChartSkeleton, TabsSkeleton } from '@/components/skeletons'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
-import { RowsIcon, ListBulletIcon } from '@radix-ui/react-icons'
 
 const VALID_TABS = new Set(OVERVIEW_TABS.map((tab) => tab.value))
 const DEFAULT_TAB = 'overview'
@@ -120,9 +121,9 @@ function OverviewPageContent() {
   return (
     <div>
       {/* View mode toggle and header section */}
-      <div className="mb-6">
+      <div className="mb-4">
         {/* View toggle button */}
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end mb-2">
           <div className="inline-flex items-center gap-1 rounded-lg border border-border/50 bg-background/80 p-1 backdrop-blur-sm">
             <Button
               variant={viewMode === 'bento' ? 'default' : 'ghost'}

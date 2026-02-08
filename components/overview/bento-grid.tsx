@@ -37,7 +37,7 @@ export const BentoItem = memo(function BentoItem({
   }
 
   return (
-    <div className={cn('min-h-[180px] min-w-0', sizeClasses[size], className)}>
+    <div className={cn('min-h-[140px] min-w-0', sizeClasses[size], className)}>
       {children}
     </div>
   )
@@ -75,7 +75,7 @@ export const BentoGrid = memo(function BentoGrid({
     <div
       className={cn(
         // Grid container with responsive columns
-        'grid gap-3',
+        'grid gap-2',
         // Mobile: 1 column
         'grid-cols-1',
         // Tablet: 2 columns
