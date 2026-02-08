@@ -10,6 +10,7 @@ import type { QueryConfig } from '@/types/query-config'
 import { memo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { ColumnVisibilityButton } from '@/components/data-table/buttons/column-visibility'
+import { CsvExportButton } from '@/components/data-table/buttons/csv-export-button'
 import { ResetColumnOrderButton } from '@/components/data-table/buttons/reset-column-order'
 import { BulkActions } from '@/components/data-table/components/bulk-actions'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
@@ -134,6 +135,7 @@ export const DataTableHeader = memo(function DataTableHeader<
         {enableColumnReordering && onResetColumnOrder && (
           <ResetColumnOrderButton onReset={onResetColumnOrder} />
         )}
+        <CsvExportButton table={table} filename={queryConfig.name} />
         <ColumnVisibilityButton table={table} />
         {showSQL && (
           <CardToolbar sql={displaySql} metadata={metadata} alwaysVisible />

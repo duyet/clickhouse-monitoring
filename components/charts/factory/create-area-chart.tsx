@@ -95,10 +95,9 @@ export function createAreaChart(
       return effectiveLastHours
         ? createDateTickFormatter(effectiveLastHours, userTimezone)
         : undefined
-    }, [effectiveLastHours, config.areaChartProps?.tickFormatter, userTimezone])
+    }, [effectiveLastHours, userTimezone])
 
     // Check if data has all zero values - show empty state with message
-    // biome-ignore lint/correctness/useExhaustiveDependencies: config.categories is stable from factory
     const allZeros = useMemo(() => {
       if (!swr.data || swr.data.length === 0) return false
       return hasOnlyZeroValues(swr.data, config.categories)
