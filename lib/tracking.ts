@@ -15,10 +15,19 @@ const error = (...args: string[]) =>
     component: 'tracking',
   })
 
-const schema = [
+interface SchemaVersion {
+  latest: boolean
+  hash: string
+  version: number
+  schema: string
+  migration?: string // SQL to migrate from previous version
+}
+
+const schema: SchemaVersion[] = [
   {
     latest: true,
     hash: '4488700278788044716',
+    version: 1,
     schema: `
       CREATE TABLE IF NOT EXISTS ${EVENTS_TABLE} (
         kind Enum('PageView', 'UserKillQuery', 'SystemKillQuery', 'LastCleanup'),
@@ -33,6 +42,46 @@ const schema = [
     `,
   },
 ]
+
+async function migrateSchema(
+  client: WebClickHouseClient | ClickHouseClient,
+  currentHash: string,
+  expectedHash: string
+): Promise<void> {
+  const currentSchema = schema.find((s) => s.hash === currentHash)
+  const targetSchema = schema.find((s) => s.hash === expectedHash && s.latest)
+
+  if (!targetSchema) {
+    return error(`target schema not found for hash ${expectedHash}`)
+  }
+
+  if (currentSchema && currentSchema.version >= targetSchema.version) {
+    log(
+      'current schema version is newer or equal to target, no migration needed'
+    )
+    return
+  }
+
+  try {
+    // For monitoring_events table, we can safely drop and recreate
+    // since it's temporary tracking data
+    log(`dropping existing ${EVENTS_TABLE} table for recreation`)
+    await client.query({
+      query: `DROP TABLE IF EXISTS ${EVENTS_TABLE} NO DELAY`,
+    })
+    log(`dropped ${EVENTS_TABLE} table`)
+
+    // Recreate with latest schema
+    const resp = await client.query({ query: targetSchema.schema })
+    await resp.text()
+    log(
+      `recreated ${EVENTS_TABLE} with latest schema (version ${targetSchema.version})`
+    )
+  } catch (err) {
+    error(`schema migration failed`, `${err}`)
+    throw err
+  }
+}
 
 export async function initTrackingTable(
   client: WebClickHouseClient | ClickHouseClient
@@ -65,8 +114,9 @@ export async function initTrackingTable(
 
     if (current !== expected) {
       log(
-        `schema hash (${current}) DO NOT matched with expected (${expected}), TODO`
+        `schema hash (${current}) does not match expected (${expected}), attempting migration`
       )
+      await migrateSchema(client, current, expected)
     } else {
       log(
         `schema hash (${current}) matched with expected (${expected}), skip migration`

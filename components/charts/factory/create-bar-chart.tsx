@@ -85,7 +85,6 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     })
 
     // Get categories (resolve if function)
-    // biome-ignore lint/correctness/useExhaustiveDependencies: config.categories is stable from factory
     const categories = useMemo(() => {
       if (typeof config.categories === 'function') {
         return swr.data ? config.categories(swr.data) : []
@@ -103,7 +102,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     const xAxisTickFormatter = useMemo(() => {
       if (!config.xAxisDateFormat) return undefined
       return createDateTickFormatter(effectiveLastHours ?? 24, userTimezone)
-    }, [effectiveLastHours, config.xAxisDateFormat, userTimezone])
+    }, [effectiveLastHours, userTimezone])
 
     // If data exists but all values are zero, show informative empty state
     if (allZeros && !swr.isLoading && !swr.error) {
