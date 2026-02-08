@@ -1,12 +1,13 @@
 'use client'
 
-import { useHostId } from '@/lib/swr'
-import { memo } from 'react'
-import { useHostStatus } from '@/lib/swr/use-host-status'
-import { useChartData } from '@/lib/swr/use-chart-data'
 import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons'
-import { cn } from '@/lib/utils'
+
 import { SectionHeader } from '../section-header'
+import { memo } from 'react'
+import { useHostId } from '@/lib/swr'
+import { useChartData } from '@/lib/swr/use-chart-data'
+import { useHostStatus } from '@/lib/swr/use-host-status'
+import { cn } from '@/lib/utils'
 
 interface StatusItemProps {
   label: string
@@ -84,9 +85,9 @@ export const SystemStatusCard = memo(function SystemStatusCard() {
       <div className="flex flex-1 flex-col justify-center gap-2">
         {isLoading ? (
           <>
-            <div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
-            <div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
-            <div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
+            <div className="h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
           </>
         ) : (
           <>

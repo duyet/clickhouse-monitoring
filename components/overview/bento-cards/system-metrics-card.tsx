@@ -1,10 +1,10 @@
 'use client'
 
-import { useHostId } from '@/lib/swr'
+import { SectionHeader } from '../section-header'
 import { memo } from 'react'
+import { useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { cn } from '@/lib/utils'
-import { SectionHeader } from '../section-header'
 
 interface MetricMiniProps {
   label: string
@@ -110,9 +110,9 @@ export const SystemMetricsCard = memo(function SystemMetricsCard() {
       <div className="flex flex-1 flex-col justify-center gap-2">
         {isLoading ? (
           <>
-            <div className="h-12 animate-pulse rounded bg-foreground/[0.06]" />
-            <div className="h-12 animate-pulse rounded bg-foreground/[0.06]" />
-            <div className="h-12 animate-pulse rounded bg-foreground/[0.06]" />
+            <div className="h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
           </>
         ) : (
           <>

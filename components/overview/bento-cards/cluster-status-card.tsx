@@ -7,6 +7,7 @@ import {
   QuestionMarkIcon,
 } from '@radix-ui/react-icons'
 
+import { SectionHeader } from '../section-header'
 import Link from 'next/link'
 import { memo } from 'react'
 import { AnimatedNumber } from '@/components/cards/metric/animated-number'
@@ -14,7 +15,6 @@ import { useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { buildUrl } from '@/lib/url/url-builder'
 import { cn } from '@/lib/utils'
-import { SectionHeader } from '../section-header'
 
 export interface ClusterStatusProps {
   label: string
@@ -66,7 +66,7 @@ function ClusterStatusItem({ label, value, status, href }: ClusterStatusProps) {
     return (
       <Link
         href={href}
-        className="flex-1 min-w-0 hover:bg-foreground/[0.02] transition-colors rounded-lg"
+        className="flex-1 min-w-0 rounded-lg hover:bg-foreground/[0.02] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         {content}
       </Link>
@@ -117,10 +117,10 @@ export const ClusterStatusCard = memo(function ClusterStatusCard() {
         <SectionHeader title="Cluster Status" />
         <div className="flex items-center justify-center flex-1">
           <div className="space-y-2 w-full">
-            <div className="h-20 animate-pulse rounded bg-foreground/[0.06]" />
+            <div className="h-20 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
             <div className="flex gap-2">
-              <div className="flex-1 h-20 animate-pulse rounded bg-foreground/[0.06]" />
-              <div className="flex-1 h-20 animate-pulse rounded bg-foreground/[0.06]" />
+              <div className="flex-1 h-20 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+              <div className="flex-1 h-20 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
             </div>
           </div>
         </div>
@@ -134,7 +134,7 @@ export const ClusterStatusCard = memo(function ClusterStatusCard() {
       <div className="flex items-center justify-between">
         <SectionHeader title="Cluster Status" />
         <div className="flex items-center gap-1.5">
-          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="h-2 w-2 rounded-full bg-emerald-500 [animation:pulse_2s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
           <span className="text-xs text-foreground/60">Online</span>
         </div>
       </div>

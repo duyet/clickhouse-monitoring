@@ -1,17 +1,18 @@
 'use client'
 
-import { useHostId } from '@/lib/swr'
-import { memo } from 'react'
-import { useChartData } from '@/lib/swr/use-chart-data'
-import { buildUrl } from '@/lib/url/url-builder'
-import Link from 'next/link'
 import {
   ArrowRightIcon,
   CheckCircledIcon,
   ClockIcon,
 } from '@radix-ui/react-icons'
-import { cn } from '@/lib/utils'
+
 import { SectionHeader } from '../section-header'
+import Link from 'next/link'
+import { memo } from 'react'
+import { useHostId } from '@/lib/swr'
+import { useChartData } from '@/lib/swr/use-chart-data'
+import { buildUrl } from '@/lib/url/url-builder'
+import { cn } from '@/lib/utils'
 
 interface QueueItemProps {
   label: string
@@ -92,7 +93,7 @@ export const ReplicationCard = memo(function ReplicationCard() {
         <SectionHeader title="Replication" />
         <Link
           href={buildUrl('/overview', { host: hostId, tab: 'operations' })}
-          className="text-xs text-foreground/50 hover:text-foreground/70 transition-colors"
+          className="text-xs text-foreground/50 hover:text-foreground/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded px-1 py-0.5"
         >
           <ArrowRightIcon className="h-4 w-4" />
         </Link>
@@ -102,8 +103,8 @@ export const ReplicationCard = memo(function ReplicationCard() {
       <div className="flex flex-1 flex-col justify-center gap-2">
         {isLoading ? (
           <>
-            <div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
-            <div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
+            <div className="h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
           </>
         ) : (
           <>

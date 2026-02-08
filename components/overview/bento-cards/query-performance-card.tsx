@@ -2,6 +2,7 @@
 
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 
+import { SectionHeader } from '../section-header'
 import Link from 'next/link'
 import { memo } from 'react'
 import { AnimatedNumber } from '@/components/cards/metric/animated-number'
@@ -9,7 +10,6 @@ import { ChartQueryCount } from '@/components/charts/query/query-count'
 import { useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { buildUrl } from '@/lib/url/url-builder'
-import { SectionHeader } from '../section-header'
 
 /**
  * QueryPerformanceCard - Wide bento card showing query performance metrics
@@ -50,7 +50,7 @@ export const QueryPerformanceCard = memo(function QueryPerformanceCard() {
         <SectionHeader title="Query Performance" />
         <Link
           href={buildUrl('/query-history', { host: hostId })}
-          className="text-xs text-foreground/50 hover:text-foreground/70 flex items-center gap-1 transition-colors"
+          className="text-xs text-foreground/50 hover:text-foreground/70 flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded px-1 py-0.5"
         >
           Details <ArrowRightIcon className="h-3 w-3" />
         </Link>
@@ -61,7 +61,7 @@ export const QueryPerformanceCard = memo(function QueryPerformanceCard() {
         {/* Left: Big metric number */}
         <div className="flex w-full flex-col justify-center gap-2 sm:w-1/3">
           {isLoading ? (
-            <div className="h-16 animate-pulse rounded bg-foreground/[0.06]" />
+            <div className="h-16 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
           ) : (
             <>
               <AnimatedNumber
