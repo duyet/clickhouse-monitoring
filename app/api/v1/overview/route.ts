@@ -34,28 +34,28 @@ export const GET = withApiHandler(async (request: Request) => {
     const result = await fetchData({
       query: `
         -- Running queries count
-        SELECT 'running_queries' as metric, COUNT() as value, 0 as value_num
+        SELECT 'running_queries' as metric, COUNT() as value, COUNT() as value_num
         FROM system.processes
         WHERE is_cancelled = 0
 
         UNION ALL
 
         -- Today's query count
-        SELECT 'today_queries' as metric, COUNT() as value, 0 as value_num
+        SELECT 'today_queries' as metric, COUNT() as value, COUNT() as value_num
         FROM merge('system', '^query_log')
         WHERE type = 'QueryFinish' AND toDate(event_time) = today()
 
         UNION ALL
 
         -- Database count
-        SELECT 'database_count' as metric, countDistinct(database) as value, 0 as value_num
+        SELECT 'database_count' as metric, countDistinct(database) as value, countDistinct(database) as value_num
         FROM system.tables
         WHERE lower(database) NOT IN ('system', 'information_schema')
 
         UNION ALL
 
         -- Table count
-        SELECT 'table_count' as metric, countDistinct(format('{}.{}', database, table)) as value, 0 as value_num
+        SELECT 'table_count' as metric, countDistinct(format('{}.{}', database, table)) as value, countDistinct(format('{}.{}', database, table)) as value_num
         FROM system.tables
         WHERE lower(database) NOT IN ('system', 'information_schema')
 
