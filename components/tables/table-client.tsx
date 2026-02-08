@@ -20,6 +20,7 @@ import {
   getTableMissingInfo,
   shouldShowRetryButton,
 } from '@/lib/card-error-utils'
+import { useUserSettings } from '@/lib/hooks/use-user-settings'
 import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/swr/use-table-data'
 import { cn } from '@/lib/utils'
@@ -39,6 +40,8 @@ interface TableClientProps {
   filterableColumns?: string[]
   /** Enable row selection with checkboxes */
   enableRowSelection?: boolean
+  /** Override density from user settings */
+  density?: 'compact' | 'comfortable' | 'spacious'
 }
 
 /**
@@ -69,8 +72,11 @@ export const TableClient = memo(function TableClient({
   enableColumnFilters = false,
   filterableColumns,
   enableRowSelection = false,
+  density: propsDensity,
 }: TableClientProps) {
   const hostId = useHostId()
+  const { settings } = useUserSettings()
+  const density = propsDensity ?? settings.tableDensity
 
   const { data, metadata, error, isLoading, isValidating, refresh } =
     useTableData<Record<string, unknown>>(
@@ -273,6 +279,7 @@ export const TableClient = memo(function TableClient({
       data={data}
       context={{ ...searchParams, hostId: String(hostId) }}
       defaultPageSize={defaultPageSize}
+      density={density}
       footnote={
         metadata
           ? `${metadata.rows} row(s) in ${metadata.duration?.toFixed(2)}s`

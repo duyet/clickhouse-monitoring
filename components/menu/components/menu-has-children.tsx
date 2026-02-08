@@ -54,7 +54,7 @@ export const MenuHasChildren = memo(function MenuHasChildren({
         <ActiveIndicator position="bottom" active={hasActiveChild} />
       </NavigationMenuTrigger>
       <NavigationMenuContent>
-        <ul className="grid w-fit min-w-[380px] grid-cols-1 content-center items-stretch gap-1 p-1.5 md:min-w-[580px] md:grid-cols-2">
+        <ul className="grid w-fit min-w-[280px] max-w-[calc(100vw-32px)] grid-cols-1 content-center items-stretch gap-1 p-1.5 sm:min-w-[320px] md:min-w-[580px] md:grid-cols-2">
           {item.items
             ?.filter((childItem) => childItem.title && childItem.href)
             .map((childItem) => (
