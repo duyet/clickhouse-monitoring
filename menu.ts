@@ -19,7 +19,6 @@ import {
 import {
   BookOpenIcon,
   CircleDollarSignIcon,
-  CombineIcon,
   CpuIcon,
   DatabaseZapIcon,
   FilePlus2Icon,
@@ -252,7 +251,7 @@ export const menuItemsConfig: MenuItem[] = [
     href: '/merges',
     countKey: 'merges',
     countLabel: 'active',
-    icon: CombineIcon,
+    icon: ShuffleIcon,
     section: 'main',
     items: [
       {
@@ -261,7 +260,7 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Active merge and mutation operations with progress',
         countKey: 'merges',
         countLabel: 'active',
-        icon: CombineIcon,
+        icon: ShuffleIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/merges',
       },
       {
