@@ -9,7 +9,8 @@ import type {
 } from '@/types/chart-data'
 
 import { REFRESH_INTERVAL, type RefreshInterval } from './config'
-import { useCallback, useMemo, useRef } from 'react'
+import { useAdaptiveInterval } from './use-adaptive-polling'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 /**
@@ -61,6 +62,8 @@ export interface UseChartDataParams {
   refreshInterval?: RefreshInterval | number
   /** Additional SWR config options */
   swrConfig?: SWRConfiguration
+  /** Enable adaptive polling (default: true) - slows polling when tab is inactive */
+  adaptive?: boolean
 }
 
 /**
@@ -97,9 +100,23 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   params,
   refreshInterval = REFRESH_INTERVAL.DEFAULT_60S,
   swrConfig,
+  adaptive = true,
 }: UseChartDataParams): UseChartResult<T> {
   // Get user settings (including timezone) for API requests
   const { settings } = useUserSettings()
+
+  // Get adaptive refresh interval (slows down when tab is inactive)
+  // If user disabled auto-refresh, respect that setting
+  const baseInterval = settings.autoRefresh ? refreshInterval : 0
+  const adaptiveInterval = useAdaptiveInterval(adaptive ? baseInterval : 0)
+
+  // Use the adapted interval for SWR, or original if adaptive is disabled
+  const effectiveInterval =
+    adaptive && adaptiveInterval > 0
+      ? adaptiveInterval
+      : baseInterval > 0
+        ? baseInterval
+        : 0
 
   // Build query parameters
   const searchParams = new URLSearchParams()
@@ -171,7 +188,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     revalidateOnReconnect: true,
     dedupingInterval: 5000,
     focusThrottleInterval: 5000,
-    refreshInterval: refreshInterval > 0 ? refreshInterval : 0,
+    refreshInterval: effectiveInterval,
     ...swrConfig,
   })
 

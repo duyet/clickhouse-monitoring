@@ -5,6 +5,7 @@ import useSWR, { type SWRConfiguration } from 'swr'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { StaleError } from './use-chart-data'
 
+import { useAdaptiveInterval } from './use-adaptive-polling'
 import { useMemo, useRef } from 'react'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
@@ -12,7 +13,7 @@ import { useUserSettings } from '@/lib/hooks/use-user-settings'
  * Table data response structure from the API
  * Extends the standard ApiResponse with table-specific metadata
  */
-interface TableDataResponse<T = unknown> {
+export interface TableDataResponse<T = unknown> {
   /** Array of table row data */
   data: T[]
   /** Response metadata including query execution info */
@@ -26,7 +27,7 @@ interface TableDataResponse<T = unknown> {
 /**
  * Query parameters for table data requests
  */
-interface TableQueryParams {
+export interface TableQueryParams {
   search?: string
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
@@ -45,6 +46,7 @@ interface TableQueryParams {
  * @param {TableQueryParams} [searchParams] - Query parameters (search, sort, pagination, etc.)
  * @param {number} [refreshInterval] - Auto-refresh interval in milliseconds (disabled if 0 or undefined)
  * @param {SWRConfiguration} [swrConfig] - Additional SWR configuration options
+ * @param {boolean} [adaptive] - Enable adaptive polling (default: true) - slows polling when tab is inactive
  * @returns {Object} SWR state object with data array, metadata, error, isLoading, isValidating, and refresh function
  *
  * @example
@@ -61,10 +63,27 @@ export function useTableData<T = unknown>(
   hostId?: number,
   searchParams?: TableQueryParams,
   refreshInterval?: number,
-  swrConfig?: SWRConfiguration
+  swrConfig?: SWRConfiguration,
+  adaptive = true
 ) {
   // Get user settings (including timezone) for API requests
   const { settings } = useUserSettings()
+
+  // Get adaptive refresh interval (slows down when tab is inactive)
+  // If user disabled auto-refresh, respect that setting
+  const baseInterval =
+    settings.autoRefresh && refreshInterval ? refreshInterval : 0
+  const adaptiveInterval = useAdaptiveInterval(
+    adaptive && baseInterval ? baseInterval : 0
+  )
+
+  // Use the adapted interval for SWR, or original if adaptive is disabled
+  const effectiveInterval =
+    adaptive && adaptiveInterval > 0
+      ? adaptiveInterval
+      : baseInterval > 0
+        ? baseInterval
+        : 0
 
   // Build query string from search parameters
   const params = new URLSearchParams()
@@ -137,8 +156,7 @@ export function useTableData<T = unknown>(
     revalidateOnReconnect: true,
     dedupingInterval: 3000,
     focusThrottleInterval: 5000,
-    refreshInterval:
-      refreshInterval && refreshInterval > 0 ? refreshInterval : 0,
+    refreshInterval: effectiveInterval,
     ...swrConfig,
   })
 

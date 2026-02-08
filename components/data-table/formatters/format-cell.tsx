@@ -27,7 +27,6 @@ import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
  * It checks formatters in order: inline → value → advanced → context
  *
  * @param table - TanStack Table instance
- * @param data - Full table data array
  * @param row - Current row being formatted
  * @param value - Cell value to format
  * @param columnName - Name of the column
@@ -40,7 +39,6 @@ export function formatCell<
   TValue extends React.ReactNode,
 >(
   table: Table<TData>,
-  data: TData[],
   row: Row<TData>,
   value: TValue,
   columnName: string,
@@ -73,7 +71,6 @@ export function formatCell<
       if (format === ColumnFormat.CodeToggle) {
         return (formatter as any)({
           table,
-          data,
           row,
           value,
           columnName,
@@ -92,7 +89,6 @@ export function formatCell<
     if (formatter) {
       return formatter({
         table,
-        data,
         row,
         value,
         columnName,

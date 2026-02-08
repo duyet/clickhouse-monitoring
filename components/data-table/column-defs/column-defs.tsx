@@ -32,6 +32,11 @@ export { normalizeColumnName } from './utils'
 /**
  * Generates an array of column definitions based on the provided configuration.
  *
+ * Filter context is memoized in data-table.tsx to prevent unnecessary re-renders.
+ * Only columnFilters value changes, but the entire filterContext object is recreated
+ * on each keystroke. However, since we memoize filterContext properly, this should
+ * not cause columnDefs to be recreated.
+ *
  * @param config - The configuration object for the query.
  * @param data - The data array for cell rendering context.
  * @param context - Additional context for cell formatting.
@@ -65,7 +70,7 @@ export function getColumnDefs<
   const {
     enableColumnFilters = false,
     filterableColumns = [],
-    columnFilters = {},
+    getFilterValue = () => '',
     setColumnFilter,
   } = filterContext || {}
 
@@ -94,7 +99,7 @@ export function getColumnDefs<
           format={columnFormat as ColumnFormat}
           icon={config.columnIcons?.[name]}
           isFilterable={isFilterable}
-          filterValue={columnFilters[name] || ''}
+          filterValue={getFilterValue(name)}
           onFilterChange={(value) => setColumnFilter?.(name, value)}
         />
       ),
@@ -110,7 +115,6 @@ export function getColumnDefs<
       }) => (
         <ColumnCell<TData, TValue>
           table={table}
-          data={data}
           row={row}
           getValue={getValue}
           columnKey={column}

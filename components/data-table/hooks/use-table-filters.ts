@@ -1,5 +1,5 @@
 import { useSearchParams } from 'next/navigation'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 export interface UseTableFiltersOptions {
   /** Enable URL synchronization for filters (default: false) */
@@ -108,8 +108,20 @@ export function useTableFilters(options: UseTableFiltersOptions = {}) {
     [columnFilters]
   )
 
+  // Store latest columnFilters in a ref for stable access
+  // This allows getFilterValue to always access current values without being recreated
+  const filtersRef = useRef(columnFilters)
+  filtersRef.current = columnFilters
+
+  // Stable callback to get filter value for a specific column
+  // This callback never changes, allowing filterContext to remain stable
+  const getFilterValue = useCallback((column: string) => {
+    return filtersRef.current[column] || ''
+  }, []) // Empty deps - this function is created once and never changes
+
   return {
     columnFilters,
+    getFilterValue,
     setColumnFilter,
     clearColumnFilter,
     clearAllColumnFilters,

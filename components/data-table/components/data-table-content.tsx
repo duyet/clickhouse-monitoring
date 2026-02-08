@@ -4,20 +4,7 @@ import type { ColumnDef, RowData } from '@tanstack/react-table'
 
 import type { QueryConfig } from '@/types/query-config'
 
-import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
-import { restrictToHorizontalAxis } from '@dnd-kit/modifiers'
-import {
-  horizontalListSortingStrategy,
-  SortableContext,
-} from '@dnd-kit/sortable'
-import { memo, useCallback } from 'react'
+import { memo, useMemo } from 'react'
 import {
   TableBody as TableBodyRenderer,
   TableHeader as TableHeaderRenderer,
@@ -90,6 +77,11 @@ export interface DataTableContentProps<
  * - Virtualization reduces DOM nodes from thousands to ~100
  * - Memoized to prevent unnecessary re-renders
  * - Auto-enables virtualization at 1000+ rows
+ * - Drag-and-drop dependencies are lazy-loaded (~62KB saved when not needed)
+ *
+ * Code Splitting:
+ * - When enableColumnReordering is false: No dnd-kit dependencies loaded
+ * - When enableColumnReordering is true: Lazy-loads data-table-content-dnd.tsx
  */
 export const DataTableContent = memo(function DataTableContent<
   TData extends RowData,
@@ -109,30 +101,19 @@ export const DataTableContent = memo(function DataTableContent<
   onColumnOrderChange,
   onResetColumnOrder: _onResetColumnOrder,
 }: DataTableContentProps<TData, TValue>) {
-  // Configure drag-and-drop sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // 8px movement required to start drag (prevents accidental drags)
-      },
-    })
+  // Lazy load drag-and-drop version when reordering is enabled
+  // This creates a separate chunk in the bundle
+  // IMPORTANT: Must call hooks before any conditional returns
+  const DraggableTableContentComponent = useMemo(
+    () =>
+      enableColumnReordering
+        ? require('@/components/data-table/components/data-table-content-dnd')
+            .DraggableTableContent
+        : null,
+    [enableColumnReordering]
   )
 
-  // Handle drag end event for column reordering
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event
-      if (over && active.id !== over.id) {
-        onColumnOrderChange?.(String(active.id), String(over.id))
-      }
-    },
-    [onColumnOrderChange]
-  )
-
-  // Extract column IDs for SortableContext
-  // IMPORTANT: Must match all columns, not just sortable ones, for proper reordering
-  const columnIds = table.getAllLeafColumns().map((col) => col.id)
-
+  // Common table content without drag-and-drop
   const tableContent = (
     <Table
       aria-describedby="table-description"
@@ -162,35 +143,43 @@ export const DataTableContent = memo(function DataTableContent<
     </Table>
   )
 
-  return (
-    <div
-      ref={tableContainerRef}
-      className={`mb-5 min-h-0 min-w-0 rounded-lg border border-border/50 bg-card/30 ${
-        isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto'
-      }`}
-      role="region"
-      aria-label={`${title || 'Data'} table`}
-      style={isVirtualized ? { height: '60vh' } : undefined}
-    >
-      {enableColumnReordering ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-          modifiers={[restrictToHorizontalAxis]}
-        >
-          <SortableContext
-            items={columnIds}
-            strategy={horizontalListSortingStrategy}
-          >
-            {tableContent}
-          </SortableContext>
-        </DndContext>
-      ) : (
-        tableContent
-      )}
-    </div>
-  )
+  // Standard version without drag-and-drop (most common case)
+  if (!enableColumnReordering) {
+    return (
+      <div
+        ref={tableContainerRef}
+        className={`mb-5 min-h-0 min-w-0 rounded-lg border border-border/50 bg-card/30 ${
+          isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto'
+        }`}
+        role="region"
+        aria-label={`${title || 'Data'} table`}
+        style={isVirtualized ? { height: '60vh' } : undefined}
+      >
+        {tableContent}
+      </div>
+    )
+  }
+
+  if (enableColumnReordering && DraggableTableContentComponent) {
+    return (
+      <DraggableTableContentComponent
+        title={title}
+        description={description}
+        queryConfig={queryConfig}
+        table={table}
+        columnDefs={columnDefs}
+        tableContainerRef={tableContainerRef}
+        isVirtualized={isVirtualized}
+        virtualizer={virtualizer}
+        activeFilterCount={activeFilterCount}
+        onAutoFit={onAutoFit}
+        onColumnOrderChange={onColumnOrderChange}
+      />
+    )
+  }
+
+  // Should never reach here, but TypeScript needs a return
+  return null
 }) as <TData extends RowData, TValue extends React.ReactNode>(
   props: DataTableContentProps<TData, TValue>
 ) => JSX.Element

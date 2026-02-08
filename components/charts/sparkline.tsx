@@ -126,6 +126,12 @@ export function Sparkline({
   smooth = true,
   ...svgProps
 }: SparklineProps) {
+  // Generate unique ID for this instance's gradient
+  const gradientId = useMemo(
+    () => `sparkline-gradient-${type}-${Math.random().toString(36).slice(2)}`,
+    [type]
+  )
+
   const { points, path, areaPath, extremes, trend } = useMemo(() => {
     const normalizedPoints = normalizePoints(data)
 
@@ -211,21 +217,15 @@ export function Sparkline({
 
   return (
     <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 1 1`}
+      width="100%"
+      height="100%"
+      viewBox={`0 0 ${width} ${height}`}
       preserveAspectRatio="none"
       className="inline-block align-middle overflow-visible"
       {...svgProps}
     >
       <defs>
-        <linearGradient
-          id={`sparkline-gradient-${type}`}
-          x1="0"
-          x2="0"
-          y1="0"
-          y2="1"
-        >
+        <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
           <stop
             offset="0%"
             stopColor={fillColor || strokeColor}
@@ -243,8 +243,9 @@ export function Sparkline({
       {type === 'area' && areaPath && (
         <path
           d={areaPath}
-          fill={`url(#sparkline-gradient-${type})`}
+          fill={`url(#${gradientId})`}
           stroke="none"
+          transform={`scale(${width}, ${height})`}
         />
       )}
 
@@ -253,31 +254,32 @@ export function Sparkline({
         d={path}
         fill="none"
         stroke={strokeColor}
-        strokeWidth={strokeWidth / width}
+        strokeWidth={strokeWidth / Math.max(width, height)}
         strokeLinecap="round"
         strokeLinejoin="round"
+        transform={`scale(${width}, ${height})`}
       />
 
       {/* Min/Max dots */}
       {extremes && (
-        <>
+        <g transform={`scale(${width}, ${height})`}>
           <circle
             cx={extremes.min.x}
             cy={extremes.min.y}
-            r={0.05}
+            r={0.03}
             fill="rgb(239 68 68)" // red-500
             stroke="white"
-            strokeWidth={0.02}
+            strokeWidth={0.01}
           />
           <circle
             cx={extremes.max.x}
             cy={extremes.max.y}
-            r={0.05}
+            r={0.03}
             fill="rgb(34 197 94)" // green-500
             stroke="white"
-            strokeWidth={0.02}
+            strokeWidth={0.01}
           />
-        </>
+        </g>
       )}
     </svg>
   )

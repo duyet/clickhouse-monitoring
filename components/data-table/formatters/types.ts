@@ -4,10 +4,12 @@ import type { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
 
 /**
  * Props passed to all formatter components
+ *
+ * Note: 'data' prop was removed to improve memoization effectiveness.
+ * Formatters that need row data should use row.original instead of data[row.index].
  */
 export interface FormatterProps<TData extends RowData, TValue> {
   table: Table<TData>
-  data: TData[]
   row: Row<TData>
   value: TValue
   columnName: string

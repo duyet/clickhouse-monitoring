@@ -17,8 +17,24 @@ import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartQueryParams } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
-import { arrayMove } from '@dnd-kit/sortable'
 import { useCallback, useMemo, useState } from 'react'
+
+/**
+ * Local implementation of arrayMove to avoid importing from @dnd-kit/sortable
+ * This reduces bundle size when drag-and-drop is disabled.
+ *
+ * @param array - The array to reorder
+ * @param from - Index of item to move
+ * @param to - Index where item should be moved
+ * @returns New array with item moved
+ */
+function arrayMove<T>(array: T[], from: number, to: number): T[] {
+  const newArray = [...array]
+  const [moved] = newArray.splice(from, 1)
+  newArray.splice(to, 0, moved)
+  return newArray
+}
+
 import {
   DataTableContent,
   DataTableFooter,
@@ -77,8 +93,10 @@ interface DataTableProps<TData extends RowData> {
   data: TData[]
   /** Template replacement context for links (e.g., { database: 'system', table: 'users' }) */
   context: Record<string, string>
-  /** Initial page size (default: 100) */
+  /** Initial page size (default: 100, overridden by density prop) */
   defaultPageSize?: number
+  /** Table density preset (compact/comfortable/spacious) - overrides defaultPageSize */
+  density?: 'compact' | 'comfortable' | 'spacious'
   /** Show SQL button visibility (default: true) */
   showSQL?: boolean
   /** Custom footnote content */
@@ -144,6 +162,7 @@ export function DataTable<
   data,
   context,
   defaultPageSize = 100,
+  density,
   showSQL = true,
   footnote,
   className,
@@ -162,6 +181,14 @@ export function DataTable<
   // Support both old and new prop names for backward compatibility
   const queryParams = apiParams ?? deprecatedQueryParams
 
+  // Calculate effective page size based on density prop
+  // Density takes precedence over defaultPageSize
+  const effectivePageSize = useMemo(() => {
+    if (density === 'compact') return 200
+    if (density === 'spacious') return 50
+    return defaultPageSize // comfortable or default
+  }, [density, defaultPageSize])
+
   // Determine which columns should be filterable (memoized)
   const configuredColumns = useMemo(
     () =>
@@ -174,6 +201,7 @@ export function DataTable<
   // Client-side column filtering state with optional URL sync
   const {
     columnFilters,
+    getFilterValue,
     setColumnFilter,
     clearColumnFilter,
     clearAllColumnFilters,
@@ -197,22 +225,23 @@ export function DataTable<
   )
 
   // Memoize filter context to prevent columnDefs recreation on every render
-  // This is critical to avoid infinite loops when filters change
+  // IMPORTANT: getFilterValue is now a stable reference (created once with useCallback + ref)
+  // This prevents columnDefs recreation on every keystroke - MAJOR performance improvement
   const filterContext = useMemo(
     () =>
       enableColumnFilters
         ? {
             enableColumnFilters,
             filterableColumns: resolvedFilterableColumns,
-            columnFilters,
+            getFilterValue,
             setColumnFilter,
             clearColumnFilter,
           }
         : undefined,
+    // getFilterValue is excluded - it's a stable reference created once in useTableFilters
     [
       enableColumnFilters,
       resolvedFilterableColumns,
-      columnFilters,
       setColumnFilter,
       clearColumnFilter,
     ]
@@ -402,7 +431,7 @@ export function DataTable<
     },
     initialState: {
       pagination: {
-        pageSize: defaultPageSize,
+        pageSize: effectivePageSize,
       },
       columnVisibility: initialColumnVisibility,
     },

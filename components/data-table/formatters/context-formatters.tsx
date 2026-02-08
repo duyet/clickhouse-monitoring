@@ -67,11 +67,10 @@ export const linkFormatter: RowContextFormatter = <
 >(
   props: FormatterProps<TData, TValue>
 ): React.ReactNode => {
-  const { row, data, value, context, options } = props
+  const { row, value, context, options } = props
   return (
     <LinkFormat
       row={row}
-      data={data}
       value={value as React.ReactNode}
       context={context}
       options={options as LinkFormatOptions}
