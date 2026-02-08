@@ -1,0 +1,11 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow test/documentation routes
+Disallow: /test/
+Disallow: /_next/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://example.com/sitemap.xml
