@@ -26,4 +26,10 @@ export {
 } from './use-chart-data'
 export { useFetchData } from './use-fetch-data'
 export { useHostId } from './use-host'
+export {
+  type OverviewData,
+  type UseOverviewDataOptions,
+  type UseOverviewDataResult,
+  useOverviewData,
+} from './use-overview-data'
 export { useTableData } from './use-table-data'
