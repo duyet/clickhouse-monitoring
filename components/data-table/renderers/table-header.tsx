@@ -5,10 +5,7 @@ import { flexRender, type Header } from '@tanstack/react-table'
 
 import { memo } from 'react'
 import { ColumnHeaderDropdown } from '@/components/data-table/buttons/column-header-dropdown'
-import {
-  DraggableTableHeaderLoader,
-  type DraggableTableHeaderProps,
-} from '@/components/data-table/lazy-dnd'
+import { DraggableTableHeaderLoader } from '@/components/data-table/lazy-dnd'
 import { TableHead, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 

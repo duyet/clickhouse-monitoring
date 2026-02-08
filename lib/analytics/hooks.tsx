@@ -107,7 +107,16 @@ export function useAnalytics(): AnalyticsContextValue {
       trackPerformance,
       trackUserAction,
     }),
-    [hasConsent, client]
+    [
+      hasConsent,
+      setConsent,
+      trackError,
+      trackEvent,
+      trackFeatureUsage,
+      trackPageView,
+      trackPerformance,
+      trackUserAction,
+    ]
   )
 }
 

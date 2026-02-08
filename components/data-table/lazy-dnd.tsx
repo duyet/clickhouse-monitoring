@@ -21,7 +21,7 @@
 
 'use client'
 
-import { type ComponentType, lazy, type ReactNode, Suspense } from 'react'
+import { lazy, type ReactNode, Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 // Types for the DraggableTableHeader component

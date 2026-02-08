@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { isDevelopment } from '@/lib/env-utils'
 import { ErrorLogger } from '@/lib/logger'
 
@@ -287,12 +287,12 @@ export function useTrackedFetcher<T>(
   return useCallback(
     async (key: string) => {
       const startTime = performance.now()
-      let success = false
+      let _success = false
       const retryCount = 0
 
       try {
         const result = await fetcher(key)
-        success = true
+        _success = true
 
         // Track the request
         metrics.trackRequest({

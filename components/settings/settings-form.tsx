@@ -109,7 +109,7 @@ export function SettingsForm({
     try {
       exportSettings(settings)
       toast.success('Settings exported successfully')
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to export settings')
     }
   }
@@ -128,7 +128,7 @@ export function SettingsForm({
         onUpdate(result.settings)
         toast.success('Settings imported successfully')
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to import settings')
     }
 

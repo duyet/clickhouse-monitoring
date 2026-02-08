@@ -10,7 +10,7 @@ import type {
 
 import { REFRESH_INTERVAL, type RefreshInterval } from './config'
 import { useAdaptiveInterval } from './use-adaptive-polling'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 /**

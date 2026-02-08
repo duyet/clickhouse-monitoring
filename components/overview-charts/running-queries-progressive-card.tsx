@@ -1,8 +1,9 @@
 'use client'
 
+import type { MetricItem } from '@/components/cards/disclosure-levels'
+
 import { memo, useMemo } from 'react'
 import { ProgressiveMetricCard } from '@/components/cards/progressive-metric-card'
-import type { MetricItem } from '@/components/cards/disclosure-levels'
 
 /**
  * RunningQueriesProgressiveCard - Progressive disclosure version of RunningQueriesCard

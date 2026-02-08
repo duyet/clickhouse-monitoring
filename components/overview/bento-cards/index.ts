@@ -1,6 +1,6 @@
 export { ClusterStatusCard } from './cluster-status-card'
-export { SystemMetricsCard } from './system-metrics-card'
-export { QueryPerformanceCard } from './query-performance-card'
 export { MergeOperationsCard } from './merge-operations-card'
+export { QueryPerformanceCard } from './query-performance-card'
 export { ReplicationCard } from './replication-card'
+export { SystemMetricsCard } from './system-metrics-card'
 export { SystemStatusCard } from './system-status-card'

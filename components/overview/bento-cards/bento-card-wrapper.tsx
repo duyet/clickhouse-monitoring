@@ -1,7 +1,7 @@
 'use client'
 
-import { cardStyles } from '@/components/overview-charts/card-styles'
 import { memo, type ReactNode } from 'react'
+import { cardStyles } from '@/components/overview-charts/card-styles'
 import { cn } from '@/lib/utils'
 
 export interface BentoCardWrapperProps {

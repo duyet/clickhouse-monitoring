@@ -95,7 +95,7 @@ test.describe('Keyboard Navigation', () => {
 
   test('should toggle sidebar with keyboard shortcut', async ({ page }) => {
     // Press Cmd/Ctrl + B to toggle sidebar
-    const modifier = process.platform === 'darwin' ? 'Meta' : 'Control'
+    const _modifier = process.platform === 'darwin' ? 'Meta' : 'Control'
     await page.keyboard.press(`${Modifier}+b`)
 
     // Sidebar should toggle (verify by checking body class or data attribute)

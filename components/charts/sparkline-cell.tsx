@@ -2,9 +2,8 @@
 
 import type { Row, Table } from '@tanstack/react-table'
 
-import { memo, useMemo } from 'react'
-
 import { Sparkline } from './sparkline'
+import { memo, useMemo } from 'react'
 
 export interface SparklineCellOptions {
   /** Number of data points to show */

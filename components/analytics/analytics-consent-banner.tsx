@@ -21,7 +21,7 @@ const CONSENT_DISMISSED_KEY = 'analytics-consent-dismissed'
 
 export function AnalyticsConsentBanner() {
   const { hasConsent, setConsent } = useAnalyticsContext()
-  const [dismissed, setDismissed] = useState(false)
+  const [_dismissed, setDismissed] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {

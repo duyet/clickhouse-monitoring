@@ -244,6 +244,7 @@ export function DataTable<
       resolvedFilterableColumns,
       setColumnFilter,
       clearColumnFilter,
+      getFilterValue,
     ]
   )
 

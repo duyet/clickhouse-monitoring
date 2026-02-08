@@ -1,3 +1,4 @@
+import type { SparklineCellOptions } from '@/components/charts/sparkline-cell'
 import type { Action } from '@/components/data-table/cells/actions/types'
 import type { BackgroundBarOptions } from '@/components/data-table/cells/background-bar-format'
 import type { CodeDialogOptions } from '@/components/data-table/cells/code-dialog-format'
@@ -6,7 +7,6 @@ import type { ColoredBadgeOptions } from '@/components/data-table/cells/colored-
 import type { HoverCardOptions } from '@/components/data-table/cells/hover-card-format'
 import type { LinkFormatOptions } from '@/components/data-table/cells/link-format'
 import type { MarkdownFormatOptions } from '@/components/data-table/cells/markdown-format'
-import type { SparklineCellOptions } from '@/components/charts/sparkline-cell'
 import type { TextFormatOptions } from '@/components/data-table/cells/text-format'
 
 export enum ColumnFormat {

@@ -1,23 +1,24 @@
 'use client'
 
-import { memo, useCallback } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+
 import {
-  useDisclosureState,
-  type DisclosureLevel,
-} from '@/lib/use-disclosure-state'
-import { cn } from '@/lib/utils'
-import {
-  HeadlineLevel,
-  KeyMetricsLevel,
   DetailedTableLevel,
-  RawDataLevel,
-  type HeadlineLevelProps,
-  type KeyMetricsLevelProps,
   type DetailedTableLevelProps,
+  HeadlineLevel,
+  type HeadlineLevelProps,
+  KeyMetricsLevel,
+  type KeyMetricsLevelProps,
+  RawDataLevel,
   type RawDataLevelProps,
 } from './disclosure-levels'
+import { memo, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
+import {
+  type DisclosureLevel,
+  useDisclosureState,
+} from '@/lib/use-disclosure-state'
+import { cn } from '@/lib/utils'
 
 /**
  * ProgressiveMetricCard - 4-level progressive disclosure card

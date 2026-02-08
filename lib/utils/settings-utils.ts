@@ -73,7 +73,7 @@ export async function importSettings(
  */
 function validateAndMigrateSettings(
   settings: Partial<UserSettings>,
-  version?: number
+  _version?: number
 ): Partial<UserSettings> {
   const migrated: Partial<UserSettings> = {}
 
@@ -98,7 +98,7 @@ function validateAndMigrateSettings(
  * Preserves backend-specific settings like timezone if available
  */
 export function resetToDefaults(
-  currentSettings: UserSettings,
+  _currentSettings: UserSettings,
   backendDefaults?: Partial<UserSettings>
 ): UserSettings {
   return {
@@ -131,7 +131,7 @@ export async function getSettingsFileInfo(
     reader.onload = () => {
       try {
         const text = reader.result as string
-        const data = JSON.parse(text) as {
+        const _data = JSON.parse(text) as {
           version?: number
           exportedAt?: string
         }

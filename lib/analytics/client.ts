@@ -24,7 +24,7 @@ interface QueuedEvent extends AnalyticsEvent {
 export class AnalyticsClient {
   private queue: QueuedEvent[] = []
   private flushTimer: ReturnType<typeof setTimeout> | null = null
-  private isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true
+  private isOnline = true
 
   constructor(private config: AnalyticsConfig) {
     if (typeof window !== 'undefined') {

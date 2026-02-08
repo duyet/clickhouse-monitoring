@@ -1,10 +1,11 @@
 'use client'
 
-import { memo, useState, useCallback, useMemo } from 'react'
-import { Copy, Check, Code2, FileJson } from 'lucide-react'
+import { Check, Code2, Copy, FileJson } from 'lucide-react'
+
+import { memo, useCallback, useMemo, useState } from 'react'
+import { format } from 'sql-formatter'
 import { Button } from '@/components/ui/button'
 import { cn, dedent } from '@/lib/utils'
-import { format } from 'sql-formatter'
 
 /**
  * RawDataLevel - Level 4: Raw data/SQL/explanation

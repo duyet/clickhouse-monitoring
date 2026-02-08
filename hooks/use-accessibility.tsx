@@ -1,7 +1,5 @@
 'use client'
 
-import type { ReactElement } from 'react'
-
 import { useEffect, useState } from 'react'
 
 /**
@@ -155,7 +153,11 @@ export function useFocusTrap(isActive: boolean) {
       // Restore focus when trap is disabled
       previousActiveElement?.focus()
     }
-  }, [isActive, trapRef])
+  }, [
+    isActive,
+    trapRef, // Restore focus when trap is disabled
+    previousActiveElement,
+  ])
 
   return setTrapRef
 }

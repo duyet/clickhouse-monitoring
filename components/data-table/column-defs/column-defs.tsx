@@ -60,7 +60,7 @@ export function getColumnDefs<
   TValue extends React.ReactNode,
 >(
   config: GetColumnDefsOptions<TData>['config'],
-  data: TData[],
+  _data: TData[],
   context: GetColumnDefsOptions<TData>['context'],
   filterContext?: ColumnFilterContext
 ): ColumnDef<TData, TValue>[] {
