@@ -1,13 +1,12 @@
 'use client'
 
-import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons'
-
-import { BentoCardWrapper } from './bento-card-wrapper'
-import { memo } from 'react'
 import { useHostId } from '@/lib/swr'
-import { useChartData } from '@/lib/swr/use-chart-data'
+import { memo } from 'react'
 import { useHostStatus } from '@/lib/swr/use-host-status'
+import { useChartData } from '@/lib/swr/use-chart-data'
+import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons'
 import { cn } from '@/lib/utils'
+import { SectionHeader } from '../section-header'
 
 interface StatusItemProps {
   label: string
@@ -77,34 +76,30 @@ export const SystemStatusCard = memo(function SystemStatusCard() {
     statusSwr.isLoading || databaseSwr.isLoading || tablesSwr.isLoading
 
   return (
-    <BentoCardWrapper className="p-3">
-      <div className="flex h-full flex-col gap-2">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground/80">System</h3>
-        </div>
+    <div className="flex h-full flex-col gap-2">
+      {/* Header */}
+      <SectionHeader title="System" />
 
-        {/* Status items */}
-        <div className="flex flex-1 flex-col justify-center gap-2">
-          {isLoading ? (
-            <>
-              <div className="h-10 animate-pulse rounded-lg bg-foreground/[0.06]" />
-              <div className="h-10 animate-pulse rounded-lg bg-foreground/[0.06]" />
-              <div className="h-10 animate-pulse rounded-lg bg-foreground/[0.06]" />
-            </>
-          ) : (
-            <>
-              <StatusItem label="Version" value={version} status="ok" />
-              <StatusItem label="Uptime" value={uptime} status="ok" />
-              <StatusItem
-                label="Tables"
-                value={`${dbCount} db / ${tableCount} tbl`}
-                status="ok"
-              />
-            </>
-          )}
-        </div>
+      {/* Status items */}
+      <div className="flex flex-1 flex-col justify-center gap-2">
+        {isLoading ? (
+          <>
+            <div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
+            <div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
+            <div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
+          </>
+        ) : (
+          <>
+            <StatusItem label="Version" value={version} status="ok" />
+            <StatusItem label="Uptime" value={uptime} status="ok" />
+            <StatusItem
+              label="Tables"
+              value={`${dbCount} db / ${tableCount} tbl`}
+              status="ok"
+            />
+          </>
+        )}
       </div>
-    </BentoCardWrapper>
+    </div>
   )
 })

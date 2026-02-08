@@ -1,10 +1,10 @@
 'use client'
 
-import { BentoCardWrapper } from './bento-card-wrapper'
-import { memo } from 'react'
 import { useHostId } from '@/lib/swr'
+import { memo } from 'react'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { cn } from '@/lib/utils'
+import { SectionHeader } from '../section-header'
 
 interface MetricMiniProps {
   label: string
@@ -102,44 +102,38 @@ export const SystemMetricsCard = memo(function SystemMetricsCard() {
   const isLoading = cpuSwr.isLoading || memorySwr.isLoading || diskSwr.isLoading
 
   return (
-    <BentoCardWrapper className="p-3">
-      <div className="flex h-full flex-col gap-2">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground/80">
-            System Metrics
-          </h3>
-        </div>
+    <div className="flex h-full flex-col gap-2">
+      {/* Header */}
+      <SectionHeader title="System Metrics" />
 
-        {/* Mini Metrics */}
-        <div className="flex flex-1 flex-col justify-center gap-2">
-          {isLoading ? (
-            <>
-              <div className="h-12 animate-pulse rounded-lg bg-foreground/[0.06]" />
-              <div className="h-12 animate-pulse rounded-lg bg-foreground/[0.06]" />
-              <div className="h-12 animate-pulse rounded-lg bg-foreground/[0.06]" />
-            </>
-          ) : (
-            <>
-              <MetricMini
-                label="CPU"
-                value={formatCpu(latestCpu)}
-                percent={Math.min(latestCpu * 10, 100)}
-              />
-              <MetricMini
-                label="Memory"
-                value={formatMemory(latestMemory)}
-                percent={(latestMemory / (16 * 1024 ** 3)) * 100} // Assume 16GB baseline
-              />
-              <MetricMini
-                label="Disk"
-                value={diskSwr.data?.[0]?.readable_used_space ?? '-'}
-                percent={diskPercent}
-              />
-            </>
-          )}
-        </div>
+      {/* Mini Metrics */}
+      <div className="flex flex-1 flex-col justify-center gap-2">
+        {isLoading ? (
+          <>
+            <div className="h-12 animate-pulse rounded bg-foreground/[0.06]" />
+            <div className="h-12 animate-pulse rounded bg-foreground/[0.06]" />
+            <div className="h-12 animate-pulse rounded bg-foreground/[0.06]" />
+          </>
+        ) : (
+          <>
+            <MetricMini
+              label="CPU"
+              value={formatCpu(latestCpu)}
+              percent={Math.min(latestCpu * 10, 100)}
+            />
+            <MetricMini
+              label="Memory"
+              value={formatMemory(latestMemory)}
+              percent={(latestMemory / (16 * 1024 ** 3)) * 100} // Assume 16GB baseline
+            />
+            <MetricMini
+              label="Disk"
+              value={diskSwr.data?.[0]?.readable_used_space ?? '-'}
+              percent={diskPercent}
+            />
+          </>
+        )}
       </div>
-    </BentoCardWrapper>
+    </div>
   )
 })

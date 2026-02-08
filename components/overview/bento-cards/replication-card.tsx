@@ -1,18 +1,17 @@
 'use client'
 
+import { useHostId } from '@/lib/swr'
+import { memo } from 'react'
+import { useChartData } from '@/lib/swr/use-chart-data'
+import { buildUrl } from '@/lib/url/url-builder'
+import Link from 'next/link'
 import {
   ArrowRightIcon,
   CheckCircledIcon,
   ClockIcon,
 } from '@radix-ui/react-icons'
-
-import { BentoCardWrapper } from './bento-card-wrapper'
-import Link from 'next/link'
-import { memo } from 'react'
-import { useHostId } from '@/lib/swr'
-import { useChartData } from '@/lib/swr/use-chart-data'
-import { buildUrl } from '@/lib/url/url-builder'
 import { cn } from '@/lib/utils'
+import { SectionHeader } from '../section-header'
 
 interface QueueItemProps {
   label: string
@@ -87,44 +86,40 @@ export const ReplicationCard = memo(function ReplicationCard() {
   const isLoading = queueSwr.isLoading || readonlySwr.isLoading
 
   return (
-    <BentoCardWrapper className="p-3">
-      <div className="flex h-full flex-col gap-2">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground/80">
-            Replication
-          </h3>
-          <Link
-            href={buildUrl('/overview', { host: hostId, tab: 'operations' })}
-            className="text-xs text-foreground/50 hover:text-foreground/70 transition-colors"
-          >
-            <ArrowRightIcon className="h-4 w-4" />
-          </Link>
-        </div>
-
-        {/* Queue items */}
-        <div className="flex flex-1 flex-col justify-center gap-2">
-          {isLoading ? (
-            <>
-              <div className="h-10 animate-pulse rounded-lg bg-foreground/[0.06]" />
-              <div className="h-10 animate-pulse rounded-lg bg-foreground/[0.06]" />
-            </>
-          ) : (
-            <>
-              <QueueItem
-                label="In Queue"
-                count={queueCount}
-                status={queueCount > 100 ? 'warning' : 'ok'}
-              />
-              <QueueItem
-                label="Readonly"
-                count={readonlyCount}
-                status={readonlyCount > 0 ? 'warning' : 'ok'}
-              />
-            </>
-          )}
-        </div>
+    <div className="flex h-full flex-col gap-2">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <SectionHeader title="Replication" />
+        <Link
+          href={buildUrl('/overview', { host: hostId, tab: 'operations' })}
+          className="text-xs text-foreground/50 hover:text-foreground/70 transition-colors"
+        >
+          <ArrowRightIcon className="h-4 w-4" />
+        </Link>
       </div>
-    </BentoCardWrapper>
+
+      {/* Queue items */}
+      <div className="flex flex-1 flex-col justify-center gap-2">
+        {isLoading ? (
+          <>
+            <div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
+            <div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
+          </>
+        ) : (
+          <>
+            <QueueItem
+              label="In Queue"
+              count={queueCount}
+              status={queueCount > 100 ? 'warning' : 'ok'}
+            />
+            <QueueItem
+              label="Readonly"
+              count={readonlyCount}
+              status={readonlyCount > 0 ? 'warning' : 'ok'}
+            />
+          </>
+        )}
+      </div>
+    </div>
   )
 })

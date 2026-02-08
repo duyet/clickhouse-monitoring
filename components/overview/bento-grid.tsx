@@ -20,8 +20,8 @@ export interface BentoItemProps {
 // ============================================================================
 
 /**
- * BentoItem - A single item in the bento grid
- * Supports different sizes for asymmetric layouts
+ * BentoItem - A single item in the bento grid with divider lines
+ * Following Vercel dashboard pattern: no card borders, use dividers between cells
  */
 export const BentoItem = memo(function BentoItem({
   children,
@@ -37,7 +37,18 @@ export const BentoItem = memo(function BentoItem({
   }
 
   return (
-    <div className={cn('min-h-[140px] min-w-0', sizeClasses[size], className)}>
+    <div
+      className={cn(
+        // Grid positioning
+        sizeClasses[size],
+        // Divider lines following Vercel pattern
+        'border-b border-border/50 last:border-b-0',
+        'md:border-r md:last:border-r-0',
+        // Padding for content
+        'p-3',
+        className
+      )}
+    >
       {children}
     </div>
   )
@@ -55,10 +66,16 @@ export interface BentoGridProps {
 /**
  * BentoGrid - Modern asymmetric grid layout for dashboard widgets
  *
+ * Following Vercel dashboard design pattern:
+ * - No individual card borders/shadows (avoid box-in-box)
+ * - Use border-border/50 divider lines between cells
+ * - Lightweight section headers with icon + uppercase title
+ * - Dense info display with efficient space usage
+ *
  * Responsive behavior:
- * - Mobile (< 768px): Single column stacked
- * - Tablet (768-1024px): 2 columns with some spanning
- * - Desktop (> 1024px): 4 columns with full bento layout
+ * - Mobile (< 768px): Single column stacked with bottom dividers
+ * - Tablet (768-1024px): 2 columns with right dividers
+ * - Desktop (> 1024px): 4 columns with right and bottom dividers
  *
  * Size variants:
  * - small: 1x1 unit
@@ -75,7 +92,7 @@ export const BentoGrid = memo(function BentoGrid({
     <div
       className={cn(
         // Grid container with responsive columns
-        'grid gap-2',
+        'grid gap-0',
         // Mobile: 1 column
         'grid-cols-1',
         // Tablet: 2 columns
@@ -84,6 +101,10 @@ export const BentoGrid = memo(function BentoGrid({
         'lg:grid-cols-4',
         // Ensure items stretch to fill
         'auto-rows-fr',
+        // Outer border following Vercel pattern
+        'border border-border/50 rounded-lg overflow-hidden',
+        // Background
+        'bg-background/[0.3]',
         className
       )}
       role="region"
