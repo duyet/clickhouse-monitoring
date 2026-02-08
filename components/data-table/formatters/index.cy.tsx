@@ -41,14 +41,12 @@ describe('Formatters Module', () => {
     value: TValue,
     overrides?: Partial<{
       table: Table<TData>
-      data: TData[]
       row: Row<TData>
       context: Record<string, string>
     }>
   ) => {
     return {
       table: {} as Table<TData>,
-      data: [],
       row: {
         original: {},
         index: 0,
@@ -226,7 +224,6 @@ describe('Formatters Module', () => {
 
   describe('formatCell - Main Entry Point', () => {
     const mockTable = {} as Table<any>
-    const mockData: any[] = []
     const mockRow = {
       original: {},
       index: 0,
@@ -236,7 +233,6 @@ describe('Formatters Module', () => {
     it('should use inline formatter for Code format', () => {
       const result = formatCell(
         mockTable,
-        mockData,
         mockRow,
         'query_text',
         'query',
@@ -250,7 +246,6 @@ describe('Formatters Module', () => {
     it('should use value formatter for Badge format', () => {
       const result = formatCell(
         mockTable,
-        mockData,
         mockRow,
         'status',
         'status',
@@ -270,7 +265,6 @@ describe('Formatters Module', () => {
 
       const result = formatCell(
         mockTable,
-        mockData,
         rowWithData,
         'View',
         'name',
@@ -285,7 +279,6 @@ describe('Formatters Module', () => {
     it('should use default formatter for unknown format', () => {
       const result = formatCell(
         mockTable,
-        mockData,
         mockRow,
         'plain value',
         'column',
