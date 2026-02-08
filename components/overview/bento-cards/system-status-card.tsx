@@ -31,13 +31,15 @@ function StatusItem({ label, value, status }: StatusItemProps) {
   const Icon = config.icon
 
   return (
-    <div className="flex items-center gap-2">
-      <Icon className={cn('h-3.5 w-3.5 shrink-0', config.className)} />
+    <div className="flex items-center gap-1.5 sm:gap-2">
+      <Icon
+        className={cn('h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0', config.className)}
+      />
       <div className="min-w-0 flex-1">
-        <div className="text-[10px] uppercase tracking-wider text-foreground/50 truncate">
+        <div className="text-[10px] sm:text-xs uppercase tracking-[0.1em] text-muted-foreground truncate">
           {label}
         </div>
-        <div className="font-mono text-sm font-semibold tabular-nums text-foreground/80 truncate">
+        <div className="font-mono text-base sm:text-lg font-semibold tabular-nums text-foreground truncate">
           {value}
         </div>
       </div>
@@ -77,17 +79,17 @@ export const SystemStatusCard = memo(function SystemStatusCard() {
     statusSwr.isLoading || databaseSwr.isLoading || tablesSwr.isLoading
 
   return (
-    <div className="flex h-full flex-col gap-2">
+    <div className="flex h-full flex-col gap-2 sm:gap-2.5 md:gap-3">
       {/* Header */}
       <SectionHeader title="System" />
 
       {/* Status items */}
-      <div className="flex flex-1 flex-col justify-center gap-2">
+      <div className="flex flex-1 flex-col justify-center gap-2 sm:gap-2.5 md:gap-3">
         {isLoading ? (
           <>
-            <div className="h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
-            <div className="h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
-            <div className="h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-9 sm:h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-9 sm:h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-9 sm:h-10 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
           </>
         ) : (
           <>

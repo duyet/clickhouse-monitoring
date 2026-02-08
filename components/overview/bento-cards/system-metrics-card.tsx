@@ -21,21 +21,24 @@ function MetricMini({ label, value, percent, className }: MetricMiniProps) {
   }
 
   return (
-    <div className={cn('flex flex-col gap-1.5 min-w-0', className)}>
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-[10px] uppercase tracking-wider text-foreground/50">
+    <div className={cn('flex flex-col gap-1.5 sm:gap-2 min-w-0', className)}>
+      <div className="flex items-center justify-between gap-1.5">
+        <span className="text-[10px] sm:text-xs uppercase tracking-[0.1em] text-muted-foreground">
           {label}
         </span>
         <span
-          className={cn('text-xs font-medium tabular-nums', getColor(percent))}
+          className={cn(
+            'text-xs sm:text-sm font-semibold tabular-nums',
+            getColor(percent)
+          )}
         >
           {percent.toFixed(0)}%
         </span>
       </div>
-      <div className="text-sm font-mono font-semibold tabular-nums text-foreground/80 truncate">
+      <div className="text-base sm:text-lg font-mono font-semibold tabular-nums text-foreground truncate">
         {value}
       </div>
-      <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/[0.06]">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/30">
         <div
           className={cn(
             'h-full rounded-full transition-all duration-500',
@@ -102,17 +105,17 @@ export const SystemMetricsCard = memo(function SystemMetricsCard() {
   const isLoading = cpuSwr.isLoading || memorySwr.isLoading || diskSwr.isLoading
 
   return (
-    <div className="flex h-full flex-col gap-2">
+    <div className="flex h-full flex-col gap-2 sm:gap-2.5 md:gap-3">
       {/* Header */}
       <SectionHeader title="System Metrics" />
 
       {/* Mini Metrics */}
-      <div className="flex flex-1 flex-col justify-center gap-2">
+      <div className="flex flex-1 flex-col justify-center gap-1.5 sm:gap-2">
         {isLoading ? (
           <>
-            <div className="h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
-            <div className="h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
-            <div className="h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-10 sm:h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-10 sm:h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="h-10 sm:h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
           </>
         ) : (
           <>

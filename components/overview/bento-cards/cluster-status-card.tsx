@@ -47,15 +47,15 @@ function ClusterStatusItem({ label, value, status, href }: ClusterStatusProps) {
   const Icon = config.icon
 
   const content = (
-    <div className="flex flex-1 flex-col items-center justify-center gap-2">
-      <div className={cn('p-2 rounded-full', 'bg-foreground/[0.03]')}>
-        <Icon className={cn('h-5 w-5', config.className)} />
+    <div className="flex flex-1 flex-col items-center justify-center gap-1.5 sm:gap-2">
+      <div className={cn('p-1.5 sm:p-2 rounded-full', 'bg-muted/50')}>
+        <Icon className={cn('h-3.5 w-3.5 sm:h-4 sm:w-4', config.className)} />
       </div>
       <div className="text-center">
-        <div className="font-mono text-lg font-semibold tabular-nums text-foreground/90 dark:text-foreground/80">
+        <div className="font-mono text-lg sm:text-xl font-bold tabular-nums text-foreground">
           {value}
         </div>
-        <div className="mt-1 text-[10px] uppercase tracking-widest font-medium text-foreground/45">
+        <div className="mt-1 text-[10px] sm:text-xs uppercase tracking-[0.1em] font-medium text-muted-foreground">
           {label}
         </div>
       </div>
@@ -66,7 +66,7 @@ function ClusterStatusItem({ label, value, status, href }: ClusterStatusProps) {
     return (
       <Link
         href={href}
-        className="flex-1 min-w-0 rounded-lg hover:bg-foreground/[0.02] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="flex-1 min-w-0 rounded-lg hover:bg-muted/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         {content}
       </Link>
@@ -113,14 +113,14 @@ export const ClusterStatusCard = memo(function ClusterStatusCard() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         <SectionHeader title="Cluster Status" />
         <div className="flex items-center justify-center flex-1">
-          <div className="space-y-2 w-full">
-            <div className="h-20 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
-            <div className="flex gap-2">
-              <div className="flex-1 h-20 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
-              <div className="flex-1 h-20 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+          <div className="space-y-1.5 w-full">
+            <div className="h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+            <div className="flex gap-1.5">
+              <div className="flex-1 h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
+              <div className="flex-1 h-12 rounded bg-foreground/[0.06] [animation:pulse_1.5s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
             </div>
           </div>
         </div>
@@ -129,33 +129,33 @@ export const ClusterStatusCard = memo(function ClusterStatusCard() {
   }
 
   return (
-    <div className="flex h-full flex-col gap-2">
+    <div className="flex h-full flex-col gap-2 sm:gap-2.5 md:gap-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <SectionHeader title="Cluster Status" />
         <div className="flex items-center gap-1.5">
           <div className="h-2 w-2 rounded-full bg-emerald-500 [animation:pulse_2s_ease-in-out_infinite] motion-reduce:transition-opacity motion-reduce:opacity-50" />
-          <span className="text-xs text-foreground/60">Online</span>
+          <span className="text-xs text-muted-foreground">Online</span>
         </div>
       </div>
 
       {/* Status Items */}
-      <div className="flex flex-1 flex-col gap-2">
+      <div className="flex flex-1 flex-col gap-2 sm:gap-2.5 md:gap-3">
         {/* Main metric - Running Queries */}
-        <div className="flex items-center justify-center p-3 rounded-lg bg-foreground/[0.02] border border-border/30">
+        <div className="flex items-center justify-center p-2.5 sm:p-3 md:p-4 rounded-lg bg-muted/20 border border-border/40">
           <div className="text-center">
             <AnimatedNumber
               value={runningCount}
-              className="text-3xl font-mono font-semibold tabular-nums text-foreground/90"
+              className="text-4xl sm:text-5xl font-mono font-bold tabular-nums text-foreground"
             />
-            <div className="mt-1 text-xs uppercase tracking-wider text-foreground/50">
+            <div className="mt-1 text-xs uppercase tracking-[0.1em] text-muted-foreground">
               Running Queries
             </div>
           </div>
         </div>
 
         {/* Secondary metrics */}
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           <ClusterStatusItem
             label="Today"
             value={todayCount}

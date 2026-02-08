@@ -1,61 +1,65 @@
 'use client'
 
-import { BentoGrid, BentoItem } from './bento-grid'
 import {
   ClusterStatusCard,
-  SystemMetricsCard,
-  QueryPerformanceCard,
   MergeOperationsCard,
+  QueryPerformanceCard,
   ReplicationCard,
+  SystemMetricsCard,
   SystemStatusCard,
 } from './bento-cards'
+import { BentoGrid, BentoItem } from './bento-grid'
 import { memo } from 'react'
 
 /**
  * BentoOverview - Modern bento grid layout for the overview page
  *
- * Layout structure:
- * ┌─────────────────────────────────────────────────────────┐
- * │  CLUSTER STATUS (Large)  │  METRICS (Medium)          │
- * │  - Health indicators      │  - CPU, Memory, Disk      │
- * │  - Active connections     │  - Mini progress bars     │
- * ├───────────────────────────┴────────────────────────────┤
- * │  QUERY PERFORMANCE (Wide)                            │
- * │  - Query count with sparkline                         │
- * │  - Duration percentiles                               │
- * ├──────────────────┬──────────────────┬─────────────────┤
- * │  MERGES (Small)  │  REPLICATION     │  SYSTEM (Small) │
- * │  - Progress bars │  (Small)         │  - Status list  │
- * └──────────────────┴──────────────────┴─────────────────┘
+ * Mobile-first responsive layout:
+ * - Base (< 640px): 1 column - all cards stacked vertically
+ * - sm (640px+): 2 columns - wide cards take full row
+ * - md (768px+): 4 columns - small cards in 2x2 grid, wide card wraps
+ * - lg (1024px+): 12 columns - optimized 3-column layout
+ * - xl (1280px+): 16 columns - expanded layout
+ * - 2xl (1536px+): 20 columns - maximum density
  *
- * Responsive behavior:
- * - Mobile: Single column stacked
- * - Tablet: 2 columns with some spanning
- * - Desktop: 4 columns full bento layout
+ * Desktop layout (12-column grid):
+ * ┌──────────────┬──────────────┬──────────────┐
+ * │ CLUSTER      │ SYSTEM       │ QUERY PERF   │
+ * │ STATUS (4)   │ METRICS (4)  │ (wide/8)     │
+ * │ - Health     │ - CPU, Mem   │ - Query count│
+ * │ - Metrics    │ - Disk       │ - Sparkline  │
+ * ├──────────────┼──────────────┤              │
+ * │ MERGES (4)   │ REPLIC (4)   │              │
+ * ├──────────────┼──────────────┤              │
+ * │ SYSTEM (4)   │              │              │
+ * └──────────────┴──────────────┴──────────────┘
+ *
+ * Mobile layout:
+ * All cards stack vertically with full width
  */
 export const BentoOverview = memo(function BentoOverview() {
   return (
     <BentoGrid>
-      {/* Row 1: Large cluster status + Medium metrics */}
-      <BentoItem size="large">
+      {/* Row 1: Cluster status (4) + System metrics (4) */}
+      <BentoItem size="small" interactive>
         <ClusterStatusCard />
       </BentoItem>
 
-      <BentoItem size="medium">
+      <BentoItem size="small">
         <SystemMetricsCard />
       </BentoItem>
 
-      {/* Row 2: Wide query performance */}
-      <BentoItem size="wide">
+      {/* Row 1-2: Query performance wide (8) - spans 2 rows */}
+      <BentoItem size="wide" interactive>
         <QueryPerformanceCard />
       </BentoItem>
 
-      {/* Row 3: Three small cards */}
-      <BentoItem size="small">
+      {/* Row 2: Merges (4) + Replication (4) + System status (4) */}
+      <BentoItem size="small" interactive>
         <MergeOperationsCard />
       </BentoItem>
 
-      <BentoItem size="small">
+      <BentoItem size="small" interactive>
         <ReplicationCard />
       </BentoItem>
 

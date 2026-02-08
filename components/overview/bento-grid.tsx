@@ -7,12 +7,21 @@ import { cn } from '@/lib/utils'
 // Types
 // ============================================================================
 
-export type BentoSize = 'small' | 'medium' | 'large' | 'wide' | 'tall'
+export type BentoSize =
+  | 'small' // 1 col on mobile, scales up
+  | 'medium' // Same as small (kept for compatibility, no row spanning)
+  | 'wide' // 1 col on mobile, wider on larger screens
+  | 'full' // Full width on all screens
 
 export interface BentoItemProps {
   children: ReactNode
   size?: BentoSize
   className?: string
+  /**
+   * Whether the item is interactive (contains links or clickable elements).
+   * Adds hover state and focus-visible styles for better UX.
+   */
+  interactive?: boolean
 }
 
 // ============================================================================
@@ -22,18 +31,26 @@ export interface BentoItemProps {
 /**
  * BentoItem - A single item in the bento grid with divider lines
  * Following Vercel dashboard pattern: no card borders, use dividers between cells
+ *
+ * Interactive prop adds hover state and focus-visible styles for cards with links.
  */
 export const BentoItem = memo(function BentoItem({
   children,
   size = 'small',
   className,
+  interactive = false,
 }: BentoItemProps) {
   const sizeClasses: Record<BentoSize, string> = {
-    small: 'col-span-1 row-span-1',
-    medium: 'col-span-1 row-span-1 md:col-span-2 md:row-span-1',
-    large: 'col-span-1 row-span-1 md:col-span-2 md:row-span-2',
-    wide: 'col-span-1 row-span-1 md:col-span-2 lg:col-span-3',
-    tall: 'col-span-1 row-span-1 md:col-span-1 md:row-span-2',
+    // Small: Scales to fill space better on large screens
+    small:
+      'col-span-1 sm:col-span-1 md:col-span-2 lg:col-span-4 xl:col-span-6 2xl:col-span-6',
+    // Medium: Same as small (no row spanning)
+    medium:
+      'col-span-1 sm:col-span-1 md:col-span-2 lg:col-span-4 xl:col-span-6 2xl:col-span-6',
+    // Wide: Spans more on larger screens
+    wide: 'col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-8 xl:col-span-16 2xl:col-span-16',
+    // Full: Full row width
+    full: 'col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-12 xl:col-span-16 2xl:col-span-20',
   }
 
   return (
@@ -42,10 +59,20 @@ export const BentoItem = memo(function BentoItem({
         // Grid positioning
         sizeClasses[size],
         // Divider lines following Vercel pattern
-        'border-b border-border/50 last:border-b-0',
-        'md:border-r md:last:border-r-0',
-        // Padding for content
-        'p-3',
+        'border-b border-border/40 last:border-b-0',
+        'sm:border-r sm:last:border-r-0',
+        // Responsive padding: less on mobile, more on larger screens
+        'p-2 sm:p-2.5 md:p-3',
+        // Consistent minimum height for visual alignment
+        'min-h-[180px] sm:min-h-[200px]',
+        // Flex column for content distribution
+        'flex flex-col',
+        // Interactive hover state (subtle, like Vercel dashboard)
+        interactive && [
+          'hover:bg-muted/30',
+          'transition-colors duration-150',
+          'focus-within:ring-2 focus-within:ring-ring/50 focus-within:ring-inset',
+        ],
         className
       )}
     >
@@ -64,25 +91,28 @@ export interface BentoGridProps {
 }
 
 /**
- * BentoGrid - Modern asymmetric grid layout for dashboard widgets
+ * BentoGrid - Full-width responsive bento grid for dashboard widgets
  *
- * Following Vercel dashboard design pattern:
- * - No individual card borders/shadows (avoid box-in-box)
- * - Use border-border/50 divider lines between cells
- * - Lightweight section headers with icon + uppercase title
- * - Dense info display with efficient space usage
+ * Following Vercel Geist design pattern with responsive columns:
+ * - No max-width constraint - scales to full viewport width
+ * - Grid columns increase with screen size for better space utilization
+ * - Geist color tokens (border/foreground/muted)
+ * - 4px base unit for spacing
+ * - Lightweight section headers
  *
- * Responsive behavior:
- * - Mobile (< 768px): Single column stacked with bottom dividers
- * - Tablet (768-1024px): 2 columns with right dividers
- * - Desktop (> 1024px): 4 columns with right and bottom dividers
+ * Mobile-first responsive behavior:
+ * - Base (< 640px): 1 column (stacked, full-width cards)
+ * - sm (640px+): 2 columns (2 items per row)
+ * - md (768px+): 4 columns (4 items per row)
+ * - lg (1024px+): 12 columns (3 items per row)
+ * - xl (1280px+): 16 columns (4 items per row)
+ * - 2xl (1536px+): 20 columns (5 items per row)
  *
- * Size variants:
- * - small: 1x1 unit
- * - medium: 2x1 units (spans 2 columns on desktop)
- * - large: 2x2 units (spans 2 columns and 2 rows on desktop)
- * - wide: 3x1 units (spans 3 columns on desktop)
- * - tall: 1x2 units (spans 1 column and 2 rows on desktop)
+ * Size variants (scales to fill space on large screens):
+ * - small: 1→1→2→4→6→6 cols (6 cols on xl/2xl = ~30-40% width)
+ * - medium: Same as small
+ * - wide: 1→2→4→8→16→16 cols (full row on xl/2xl)
+ * - full: 1→2→4→12→16→20 cols (full row on all breakpoints)
  */
 export const BentoGrid = memo(function BentoGrid({
   children,
@@ -91,20 +121,26 @@ export const BentoGrid = memo(function BentoGrid({
   return (
     <div
       className={cn(
-        // Grid container with responsive columns
-        'grid gap-0',
-        // Mobile: 1 column
+        // Full width responsive grid
+        'w-full grid gap-0',
+        // Mobile: 1 column (stacked)
         'grid-cols-1',
-        // Tablet: 2 columns
-        'md:grid-cols-2',
-        // Desktop: 4 columns
-        'lg:grid-cols-4',
+        // sm: 2 columns
+        'sm:grid-cols-2',
+        // md: 4 columns
+        'md:grid-cols-4',
+        // lg: 12 columns
+        'lg:grid-cols-12',
+        // xl: 16 columns
+        'xl:grid-cols-16',
+        // 2xl: 20 columns
+        '2xl:grid-cols-20',
         // Ensure items stretch to fill
         'auto-rows-fr',
         // Outer border following Vercel pattern
-        'border border-border/50 rounded-lg overflow-hidden',
-        // Background
-        'bg-background/[0.3]',
+        'border border-border/40 rounded-lg overflow-hidden',
+        // Background (Geist: subtle transparency)
+        'bg-background/[0.4]',
         className
       )}
       role="region"
