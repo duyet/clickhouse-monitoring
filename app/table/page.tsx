@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect } from 'react'
-import { Skeleton } from '@/components/ui/skeleton'
+import { RedirectSkeleton } from '@/components/skeletons'
 
 function TableRedirect() {
   const router = useRouter()
@@ -22,27 +22,16 @@ function TableRedirect() {
   }, [searchParams, router])
 
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-96 w-full" />
-      </div>
-    </div>
+    <RedirectSkeleton
+      title="Loading table..."
+      description="Opening table explorer..."
+    />
   )
 }
 
 export default function TablePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-screen items-center justify-center">
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-96 w-full" />
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<RedirectSkeleton />}>
       <TableRedirect />
     </Suspense>
   )

@@ -1,18 +1,9 @@
 'use client'
 
-import { Suspense } from 'react'
-import { QueryPageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { createPage } from '@/lib/create-page'
 import { mutationsConfig } from '@/lib/query-config/merges/mutations'
 
-function MutationsPageContent() {
-  return <QueryPageLayout queryConfig={mutationsConfig} />
-}
-
-export default function MutationsPage() {
-  return (
-    <Suspense fallback={<ChartSkeleton />}>
-      <MutationsPageContent />
-    </Suspense>
-  )
-}
+export default createPage({
+  queryConfig: mutationsConfig,
+  title: 'Mutations',
+})

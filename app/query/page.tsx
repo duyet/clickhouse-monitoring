@@ -12,7 +12,7 @@ function QueryDetailContent() {
 
   if (!query_id) {
     return (
-      <div className="flex h-96 items-center justify-center">
+      <div className="flex min-h-[50vh] sm:h-96 items-center justify-center">
         <p className="text-muted-foreground text-sm">Query ID is required</p>
       </div>
     )
