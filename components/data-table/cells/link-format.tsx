@@ -16,7 +16,6 @@ interface LinkFormatProps<
   TValue extends React.ReactNode,
 > {
   row: Row<TData>
-  data: TData[]
   value: TValue
   context: Record<string, string>
   options?: LinkFormatOptions
@@ -25,7 +24,7 @@ interface LinkFormatProps<
 function LinkFormatComponent<
   TData extends RowData,
   TValue extends React.ReactNode,
->({ row, data, value, context, options }: LinkFormatProps<TData, TValue>) {
+>({ row, value, context, options }: LinkFormatProps<TData, TValue>) {
   let { href, className, ...rest } = options ?? {}
 
   // No href provided, return value as is
@@ -46,7 +45,8 @@ function LinkFormatComponent<
     return value
   }
 
-  const originalRow = data[row.index] as Record<string, string | undefined>
+  // Use row.original instead of data[row.index] for better memoization
+  const originalRow = row.original as Record<string, string | undefined>
   const mappingKeyValue = {
     ...originalRow,
     ...context,

@@ -37,6 +37,19 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Focus visible utility - only show focus ring when navigating with keyboard */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Skip link styles - visible only when focused */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100];
+    @apply focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground;
+    @apply focus:rounded-md focus:text-sm focus:font-medium focus:shadow-lg;
+    @apply transition-all;
+  }
 }
 
 /* Disable sidebar transitions during resize for instant feedback */
@@ -201,4 +214,15 @@
   --color-chart-indigo-300: var(--chart-indigo-300);
   --color-chart-yellow: var(--chart-yellow);
   --color-sidebar: var(--sidebar);
+}
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

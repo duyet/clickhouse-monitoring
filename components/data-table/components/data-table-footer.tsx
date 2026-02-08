@@ -40,7 +40,7 @@ export const DataTableFooter = memo(function DataTableFooter<
   TData extends RowData,
 >({ table, footnote }: DataTableFooterProps<TData>) {
   return (
-    <div className="flex shrink-0 items-center justify-between px-2">
+    <div className="flex shrink-0 flex-col sm:flex-row items-center justify-between gap-2 px-2 py-1">
       <Footnote table={table} footnote={footnote} />
       <DataTablePagination table={table} />
     </div>

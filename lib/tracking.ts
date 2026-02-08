@@ -26,6 +26,23 @@ interface SchemaVersion {
 const schema: SchemaVersion[] = [
   {
     latest: true,
+    hash: '9208451267780351928',
+    version: 2,
+    schema: `
+      CREATE TABLE IF NOT EXISTS ${EVENTS_TABLE} (
+        kind Enum('PageView', 'FeatureUsage', 'ErrorCaught', 'PerformanceMetric', 'UserAction', 'UserKillQuery', 'SystemKillQuery', 'LastCleanup'),
+        actor LowCardinality(String) DEFAULT user(),
+        data String,
+        extra String,
+        event_time DateTime DEFAULT now(),
+        event_date Date DEFAULT today()
+      ) ENGINE = ReplacingMergeTree
+      PARTITION BY event_date
+      ORDER BY (kind, actor, event_time)
+    `,
+  },
+  {
+    latest: false,
     hash: '4488700278788044716',
     version: 1,
     schema: `

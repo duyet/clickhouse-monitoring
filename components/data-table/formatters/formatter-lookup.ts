@@ -41,7 +41,6 @@ export function getContextFormatter<TData extends RowData, TValue>(
 ):
   | ((props: {
       table: Table<TData>
-      data: TData[]
       row: Row<TData>
       value: TValue
       columnName: string
@@ -61,7 +60,6 @@ export function getAdvancedFormatter<TData extends RowData, TValue>(
   | ((value: unknown, options?: ColumnFormatOptions) => React.ReactNode)
   | ((props: {
       table: Table<TData>
-      data: TData[]
       row: Row<TData>
       value: TValue
       columnName: string

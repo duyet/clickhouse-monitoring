@@ -76,6 +76,13 @@ export { ChartReadonlyReplica } from './replication/readonly-replica'
 // Replication charts
 export { ChartReplicationQueueCount } from './replication/replication-queue-count'
 export { ChartReplicationSummaryTable } from './replication/replication-summary-table'
+// Sparkline components
+export {
+  Sparkline,
+  type SparklinePoint,
+  type SparklineProps,
+} from './sparkline'
+export { SparklineCell, type SparklineCellOptions } from './sparkline-cell'
 export { ChartSummaryUsedByMutations } from './summary-used-by-mutations'
 export { ChartSummaryUsedByRunningQueries } from './summary-used-by-running-queries'
 export { ChartBackupSize } from './system/backup-size'

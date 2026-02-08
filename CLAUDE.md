@@ -561,3 +561,79 @@ export function YourChart({ hostId, interval }: YourChartProps) {
 ### Deployment
 - Build mode: `output: 'standalone'` (hybrid static + API)
 - Deploy to Cloudflare Workers: `npx wrangler login` then `bun run deploy`
+
+## Vercel Grid Pattern (Bento Overview)
+
+**IMPORTANT**: The Bento Overview page follows Vercel/Geist dashboard design patterns to avoid "card-in-card" nesting and maximize data density.
+
+### Key Principles
+
+1. **No bordered cards** - Avoid box-in-box when inside panels. Use subtle `border-border/50` divider lines between grid cells instead of individual card borders
+2. **Lightweight section headers** - Use `SectionHeader` component (icon + uppercase title) instead of card headers
+3. **Divider lines** - Apply `border-b`/`border-r` at grid cell level, not on individual cards
+4. **CSS Grid `gap-0`** - Use borders on cells instead of grid gaps for precise control
+5. **Dense info display** - Minimize padding and margins to maximize data visibility
+
+### Component Pattern
+
+```typescript
+// BentoGrid - Outer container with single border and overflow-hidden
+<BentoGrid>
+  {/* BentoItem - Grid cell with dividers, padding applied here */}
+  <BentoItem size="large">
+    {/* Content without BentoCardWrapper */}
+    <div className="flex h-full flex-col gap-2">
+      <SectionHeader title="Cluster Status" />
+      {/* Content */}
+    </div>
+  </BentoItem>
+</BentoGrid>
+```
+
+### Section Header Component
+
+```typescript
+// components/overview/section-header.tsx
+<SectionHeader title="Cluster Status" />  // No icon
+<SectionHeader title="System" icon={<ServerIcon />} />  // With icon
+```
+
+### Grid Cell Styling
+
+- `border-border/50` - Half-opacity border color (subtle)
+- `border-b` - Bottom divider (all rows except last)
+- `border-r` - Right divider (desktop, all columns except last)
+- `p-3` - Padding applied at BentoItem level (not on individual cards)
+- `last:border-b-0` / `md:last:border-r-0` - Remove borders at edges
+
+### Skeleton Loading Pattern
+
+Match skeleton shapes to real content layout to prevent CLS (Cumulative Layout Shift):
+
+```typescript
+// For simple metrics
+<div className="h-10 animate-pulse rounded bg-foreground/[0.06]" />
+
+// For grid layouts (matches 2-column card layout)
+<div className="space-y-2">
+  <div className="h-20 animate-pulse rounded bg-foreground/[0.06]" />
+  <div className="flex gap-2">
+    <div className="flex-1 h-20 animate-pulse rounded bg-foreground/[0.06]" />
+    <div className="flex-1 h-20 animate-pulse rounded bg-foreground/[0.06]" />
+  </div>
+</div>
+```
+
+### When to Use This Pattern
+
+- **Use for**: Dense info displays (config panels, status grids, dashboard overviews)
+- **Use for**: Bento-style asymmetric grid layouts
+- **Use for**: Multi-section cards with related content
+- **Avoid for**: Standalone cards that need visual separation
+- **Avoid for**: Forms with input validation (use Card components instead)
+
+### Files
+
+- `components/overview/bento-grid.tsx` - Grid container with divider pattern
+- `components/overview/section-header.tsx` - Lightweight header component
+- `components/overview/bento-cards/` - Card content without BentoCardWrapper

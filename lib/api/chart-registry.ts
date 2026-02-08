@@ -19,6 +19,7 @@
 import type { ChartDataPoint, ChartQueryBuilder } from './charts/types'
 
 // Import all domain chart modules
+import { analyticsCharts } from './charts/analytics-charts'
 import { connectionCharts } from './charts/connection-charts'
 import { dashboardCharts } from './charts/dashboard-charts'
 import { dictionaryCharts } from './charts/dictionary-charts'
@@ -91,6 +92,9 @@ export const chartRegistry: Record<
 
   // Dictionary charts
   ...dictionaryCharts,
+
+  // Application analytics charts
+  ...analyticsCharts,
 }
 
 /**

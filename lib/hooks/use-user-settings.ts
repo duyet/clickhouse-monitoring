@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import {
   DEFAULT_USER_SETTINGS,
+  getBrowserTimezone,
   USER_SETTINGS_STORAGE_KEY,
   type UserSettings,
 } from '@/lib/types/user-settings'
+import { resetToDefaults } from '@/lib/utils/settings-utils'
 
 /**
  * Fetch default settings from backend API
@@ -49,13 +51,30 @@ function loadSettings(): UserSettings {
   try {
     const stored = localStorage.getItem(USER_SETTINGS_STORAGE_KEY)
     if (stored) {
-      return { ...DEFAULT_USER_SETTINGS, ...JSON.parse(stored) }
+      const parsed = JSON.parse(stored) as Partial<UserSettings>
+      // Merge with defaults to handle new properties from updates
+      return migrateSettings({ ...DEFAULT_USER_SETTINGS, ...parsed })
     }
   } catch (error) {
     console.error('Failed to load user settings:', error)
   }
 
-  return DEFAULT_USER_SETTINGS
+  // No stored settings - use browser timezone as default
+  return {
+    ...DEFAULT_USER_SETTINGS,
+    timezone: getBrowserTimezone(),
+  }
+}
+
+/**
+ * Migrate settings from older versions
+ * Ensures all new properties have their default values
+ */
+function migrateSettings(settings: UserSettings): UserSettings {
+  return {
+    ...DEFAULT_USER_SETTINGS,
+    ...settings,
+  }
 }
 
 function saveSettings(settings: UserSettings): void {
@@ -90,6 +109,16 @@ export function useUserSettings() {
           setMounted(true)
           return
         }
+
+        // No backend defaults - use browser timezone and save to localStorage
+        const browserDefaults = {
+          ...DEFAULT_USER_SETTINGS,
+          timezone: getBrowserTimezone(),
+        }
+        setSettings(browserDefaults)
+        saveSettings(browserDefaults)
+        setMounted(true)
+        return
       }
 
       setSettings(stored)
@@ -105,5 +134,11 @@ export function useUserSettings() {
     saveSettings(newSettings)
   }
 
-  return { settings, updateSettings, mounted }
+  const resetSettings = (backendDefaults?: Partial<UserSettings>) => {
+    const newSettings = resetToDefaults(settings, backendDefaults)
+    setSettings(newSettings)
+    saveSettings(newSettings)
+  }
+
+  return { settings, updateSettings, resetSettings, mounted }
 }

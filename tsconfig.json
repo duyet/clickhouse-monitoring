@@ -43,6 +43,7 @@
     "**/*.cy.tsx",
     "**/*.test.ts",
     "**/*.test.tsx",
+    "**/*.spec.ts",
     "__mocks__/**/*.ts",
     "bun.setup.ts"
   ],

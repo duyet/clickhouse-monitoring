@@ -1,12 +1,11 @@
 'use client'
 
-import { ArrowDown, ArrowUp, GripVertical } from 'lucide-react'
+import { ArrowDown, ArrowUp } from 'lucide-react'
 import { flexRender, type Header } from '@tanstack/react-table'
 
-import { useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { memo } from 'react'
 import { ColumnHeaderDropdown } from '@/components/data-table/buttons/column-header-dropdown'
+import { DraggableTableHeaderLoader } from '@/components/data-table/lazy-dnd'
 import { TableHead, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
@@ -71,96 +70,6 @@ function ColumnResizer({ header, onAutoFit }: ColumnResizerProps) {
 }
 
 /**
- * Props for DraggableTableHeader component
- */
-interface DraggableTableHeaderProps {
-  header: Header<any, unknown>
-  enableResize?: boolean
-  onAutoFit?: (columnId: string) => void
-  isSelectColumn?: boolean
-}
-
-/**
- * DraggableTableHeader - Column header with drag-and-drop support
- *
- * Integrates with @dnd-kit for column reordering while maintaining
- * all existing functionality (sorting, resizing, etc.).
- */
-function DraggableTableHeader({
-  header,
-  enableResize,
-  onAutoFit,
-  isSelectColumn,
-}: DraggableTableHeaderProps) {
-  const { attributes, isDragging, listeners, setNodeRef, transform } =
-    useSortable({
-      id: header.column.id,
-    })
-
-  const canResize = enableResize && header.column.getCanResize()
-  const canSort = header.column.getCanSort()
-  const _isSorted = header.column.getIsSorted()
-
-  const style = {
-    // Apply CSS transform during drag for visual feedback
-    // After drag ends, TanStack Table's columnOrder state takes over
-    transform: CSS.Transform.toString(transform),
-    width: 'auto' as const,
-    minWidth: 0,
-  }
-
-  return (
-    <TableHead
-      ref={setNodeRef}
-      key={header.id}
-      scope="col"
-      className={cn(
-        'relative py-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground',
-        isSelectColumn ? 'px-2' : 'px-4',
-        // Visual feedback during drag
-        isDragging && 'opacity-50'
-      )}
-      style={style}
-      colSpan={header.colSpan}
-    >
-      <div className="group flex items-center">
-        {/* Drag handle for column reordering - hidden by default, shown on hover */}
-        <button
-          {...attributes}
-          {...listeners}
-          className={cn(
-            'mr-1.5 cursor-grab active:cursor-grabbing text-muted-foreground opacity-0',
-            'group-hover:opacity-40 hover:opacity-100 focus:opacity-100',
-            'focus:outline-none',
-            'transition-opacity',
-            'disabled:cursor-default disabled:opacity-50'
-          )}
-          aria-label={`Drag to reorder ${header.column.id} column`}
-          tabIndex={0}
-          style={{ touchAction: 'none' }}
-          onClick={(e) => e.stopPropagation()} // Prevent drag from triggering sort
-        >
-          <GripVertical className="h-3.5 w-3.5" />
-        </button>
-        <div className="flex-1">
-          <div className="group flex items-center gap-1">
-            <span className="flex-1">
-              {header.isPlaceholder
-                ? null
-                : flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-            </span>
-            {/* Dropdown menu for sort/copy actions - shown on hover */}
-            {canSort && <ColumnHeaderDropdown header={header} />}
-          </div>
-        </div>
-      </div>
-      {canResize && <ColumnResizer header={header} onAutoFit={onAutoFit} />}
-    </TableHead>
-  )
-}
 
 /**
  * TableHeaderRow - Renders a single header row with sortable columns
@@ -210,10 +119,10 @@ export const TableHeaderRow = memo(function TableHeaderRow({
           )
         }
 
-        // If column reordering is enabled, use DraggableTableHeader
+        // If column reordering is enabled, use lazy-loaded DraggableTableHeader
         if (enableColumnReordering) {
           return (
-            <DraggableTableHeader
+            <DraggableTableHeaderLoader
               key={header.id}
               header={header}
               enableResize={enableResize}

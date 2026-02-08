@@ -1,3 +1,4 @@
+import type { SparklineCellOptions } from '@/components/charts/sparkline-cell'
 import type { Action } from '@/components/data-table/cells/actions/types'
 import type { BackgroundBarOptions } from '@/components/data-table/cells/background-bar-format'
 import type { CodeDialogOptions } from '@/components/data-table/cells/code-dialog-format'
@@ -25,6 +26,7 @@ export enum ColumnFormat {
   Code = 'code',
   Link = 'link',
   Text = 'text',
+  Sparkline = 'sparkline',
   None = 'none',
 }
 
@@ -38,6 +40,7 @@ export type ColumnFormatWithArgs =
   | [ColumnFormat.CodeDialog, CodeDialogOptions]
   | [ColumnFormat.CodeToggle, CodeToggleOptions]
   | [ColumnFormat.BackgroundBar, BackgroundBarOptions]
+  | [ColumnFormat.Sparkline, SparklineCellOptions]
 
 // Union of all possible format options
 export type ColumnFormatOptions = ColumnFormatWithArgs[1]
