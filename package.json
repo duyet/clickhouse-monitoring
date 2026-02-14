@@ -131,7 +131,7 @@
     "@codecov/webpack-plugin": "^1.9.1",
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
-    "@cypress/code-coverage": "^3.14.7",
+    "@cypress/code-coverage": "^4.0.0",
     "@opennextjs/cloudflare": "^1.16.3",
     "@types/jest": "^29.5.14",
     "@types/node": "^25.2.2",
