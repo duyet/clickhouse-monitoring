@@ -4,8 +4,14 @@ import useSWR from 'swr'
 
 import type { HostInfo } from '@/app/api/v1/hosts/route'
 
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
+import { useCustomHosts } from '@/lib/hooks/use-custom-hosts'
 import { ErrorLogger } from '@/lib/logger'
+
+export type ExtendedHostInfo = HostInfo & {
+  source: 'env' | 'custom'
+  customConnection?: { host: string; user: string; password: string }
+}
 
 interface HostsResponse {
   success: boolean
@@ -14,7 +20,7 @@ interface HostsResponse {
 
 /**
  * SWR hook to fetch the list of configured ClickHouse hosts.
- * Provides automatic caching and deduplication.
+ * Merges environment-configured hosts with user-added custom hosts.
  *
  * @returns {Object} SWR state with hosts array, error, isLoading
  *
@@ -24,6 +30,8 @@ interface HostsResponse {
  * ```
  */
 export function useHosts() {
+  const { hosts: customHosts } = useCustomHosts()
+
   const fetcher = useCallback(async () => {
     try {
       const response = await fetch('/api/v1/hosts')
@@ -56,8 +64,33 @@ export function useHosts() {
     }
   )
 
+  const envHosts = data ?? []
+
+  // Merge env hosts with custom hosts from localStorage
+  const hosts: ExtendedHostInfo[] = useMemo(() => {
+    const env: ExtendedHostInfo[] = envHosts.map((h) => ({
+      ...h,
+      source: 'env' as const,
+    }))
+
+    const custom: ExtendedHostInfo[] = customHosts.map((ch, index) => ({
+      id: envHosts.length + index,
+      name: ch.name || ch.host,
+      host: ch.host,
+      user: ch.user,
+      source: 'custom' as const,
+      customConnection: {
+        host: ch.host,
+        user: ch.user,
+        password: ch.password,
+      },
+    }))
+
+    return [...env, ...custom]
+  }, [envHosts, customHosts])
+
   return {
-    hosts: data ?? [],
+    hosts,
     error,
     isLoading,
   }

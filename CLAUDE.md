@@ -1,10 +1,11 @@
-# CLAUDE.md
+# [CLAUDE.md](http://CLAUDE.md)
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Git Commit Convention
 
 **IMPORTANT**: All commits should include the co-authorship:
+
 ```
 Co-Authored-By: duyetbot <duyetbot@users.noreply.github.com>
 ```
@@ -16,6 +17,7 @@ This is a Next.js 16 (React 19) ClickHouse monitoring dashboard that provides re
 ## Claude Skills
 
 Use skill `clickhouse-query-config` for:
+
 - Version-aware queries with `sql: VersionedSql[]` and `since` field
 - BackgroundBar column format (requires: base column, readable_column, pct_column)
 - ClickHouse system table schema compatibility
@@ -23,6 +25,7 @@ Use skill `clickhouse-query-config` for:
 ### Quick Reference: BackgroundBar Columns
 
 When asked to "format background bar for: X, Y, Z", each column needs 3 SQL columns:
+
 ```sql
 -- For "rows"
 rows,                                                                    -- base
@@ -34,7 +37,7 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 ## Commands
 
-**Note: This project uses `bun` as the package manager.** Use `bun` instead of `pnpm` or `npm` for all commands.
+**Note: This project uses** `bun` **as the package manager.** Use `bun` instead of `pnpm` or `npm` for all commands.
 
 ### Development
 
@@ -65,6 +68,7 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 - `bun run cf:config` - Set Cloudflare secrets from .env.local
 
 **Deployment steps:**
+
 1. Ensure `.env.local` has required secrets (CLICKHOUSE_HOST, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD)
 2. Run `bun run cf:deploy` (this runs cf:config → cf:build → wrangler deploy)
 3. If build lock error occurs, remove `.next/lock` and retry
@@ -93,10 +97,10 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 ### Routing Pattern
 
-**Old (Dynamic)**: `https://example.com/0/overview`
-**New (Static)**: `https://example.com/overview?host=0`
+**Old (Dynamic)**: `https://example.com/0/overview`**New (Static)**: `https://example.com/overview?host=0`
 
 **Benefits:**
+
 - Faster initial page load (static shell pre-rendered)
 - Better CDN caching (static pages cache at edge)
 - Simpler deployment (standalone output)
@@ -154,6 +158,7 @@ lib/
 **IMPORTANT**: All data fetching now requires `hostId` parameter.
 
 **Query Parameter Approach:**
+
 ```typescript
 // URL: /overview?host=1
 'use client'
@@ -166,6 +171,7 @@ export default function OverviewPage() {
 ```
 
 **Environment Variables:**
+
 - `CLICKHOUSE_HOST` - Comma-separated list of hosts
 - `CLICKHOUSE_USER` - Comma-separated list of users
 - `CLICKHOUSE_PASSWORD` - Comma-separated list of passwords
@@ -196,6 +202,7 @@ export default function YourPage() {
 ```
 
 **Chart Components:**
+
 ```typescript
 'use client'
 import useSWR from 'swr'
@@ -258,6 +265,7 @@ Charts use graceful error handling during SWR revalidation to preserve user expe
 - **Auto-recovery**: Indicator clears automatically when next refresh succeeds
 
 **Implementation**:
+
 - `useChartData` returns `staleError` (revalidation error) and `hasData` boolean
 - `ChartContainer` only shows `ChartError` when `error && !hasData`
 - `ChartCard` renders `ChartStaleIndicator` when `staleError` exists
@@ -267,24 +275,28 @@ Charts use graceful error handling during SWR revalidation to preserve user expe
 
 #### shadcn/ui Components
 
-**IMPORTANT: Never customize `components/ui/` files directly.**
+**IMPORTANT: Never customize** `components/ui/` **files directly.**
 
 The `components/ui/` directory contains shadcn/ui components installed via the CLI. These should remain in their original state to:
+
 - Allow easy updates via `npx shadcn@latest add <component>`
 - Maintain consistency with shadcn/ui documentation
 - Avoid merge conflicts when updating components
 
 **Guidelines:**
+
 1. **Don't add custom variants** (e.g., `success`, `warning`, `info`) to base components like Badge or Alert
 2. **Don't add hover effects** or animations to Card, Table, or other base components
 3. **Don't modify base styling** - use className prop at usage site instead
 
 **If you need custom styling or variants:**
+
 - Pass custom classes via `className` prop where the component is used
 - Create a wrapper component in `components/` (not `components/ui/`)
 - Use Tailwind's `cn()` utility to merge classes
 
 **Example - Custom styling at usage site:**
+
 ```typescript
 // Good: Custom classes passed where used
 <Card className="hover:shadow-lg transition-all">
@@ -295,6 +307,7 @@ The `components/ui/` directory contains shadcn/ui components installed via the C
 ```
 
 **Example - Creating a wrapper component:**
+
 ```typescript
 // components/info-badge.tsx
 import { Badge } from '@/components/ui/badge'
@@ -347,6 +360,7 @@ export function InfoBadge({ className, ...props }) {
 - **Version-aware query patterns** with `since` field
 
 **When modifying query configs:**
+
 1. Check `docs/clickhouse-schemas/tables/{table}.md` for column availability
 2. Use chronological `sql` array if columns differ across versions:
 
@@ -362,6 +376,7 @@ export const myConfig: QueryConfig = {
 ```
 
 **Regenerate schema docs:**
+
 ```bash
 bun run scripts/build-ch-schema-docs.ts
 ```
@@ -443,6 +458,7 @@ export const backupsConfig: QueryConfig = {
 5. Use SWR hooks for data fetching
 
 **Template:**
+
 ```typescript
 // app/your-route/page.tsx
 'use client'
@@ -478,6 +494,7 @@ export default function YourRoutePage() {
 5. Export and use in pages or related charts
 
 **Template:**
+
 ```typescript
 // components/charts/your-chart.tsx
 'use client'
@@ -519,17 +536,19 @@ export function YourChart({ hostId, interval }: YourChartProps) {
 - All queries should include proper parameter sanitization
 - Log query performance through built-in logging
 - Use appropriate data formats (JSONEachRow, JSON, etc.)
-- **Always pass `hostId` parameter** (required, not optional)
+- **Always pass** `hostId` **parameter** (required, not optional)
 
 ## Important Files
 
 ### Core Application
+
 - `next.config.ts` - Next.js configuration (standalone output mode)
 - `app/layout.tsx` - Root layout with SWR provider and Suspense
 - `app/page.tsx` - Root redirect to `/overview?host=0`
 - `components/header-client.tsx` - Client-side header with host selector
 
 ### Data Layer
+
 - `lib/clickhouse.ts` - ClickHouse client and `fetchData` (hostId required)
 - `lib/swr/use-host.ts` - Extract hostId from query params
 - `lib/swr/use-chart-data.ts` - SWR hook for chart data
@@ -538,27 +557,32 @@ export function YourChart({ hostId, interval }: YourChartProps) {
 - `lib/query-config/index.ts` - Centralized query configurations
 
 ### Configuration
+
 - `menu.ts` - Navigation menu configuration (static routes)
 - `.env.local` - Environment variables for ClickHouse hosts
 
 ### Types
+
 - `lib/api/types.ts` - API request/response types
 - `types/query-config.ts` - Query configuration types
 
 ## Migration Notes
 
 ### Completed (Dec 2024)
+
 - Migrated from dynamic `app/[host]/*` routes to static routes with `?host=` query parameter
 - All 32 chart components converted to use SWR with `hostId` prop
 - API routes created at `/api/v1/*` for data fetching
 - Query configs centralized in `lib/query-config/`
 
 ### Breaking Changes
+
 - URL structure changed: `/0/overview` → `/overview?host=0`
 - `fetchData()` now requires `hostId` parameter (was optional)
 - All data fetching moved to client-side via SWR
 
 ### Deployment
+
 - Build mode: `output: 'standalone'` (hybrid static + API)
 - Deploy to Cloudflare Workers: `npx wrangler login` then `bun run deploy`
 
@@ -571,7 +595,7 @@ export function YourChart({ hostId, interval }: YourChartProps) {
 1. **No bordered cards** - Avoid box-in-box when inside panels. Use subtle `border-border/50` divider lines between grid cells instead of individual card borders
 2. **Lightweight section headers** - Use `SectionHeader` component (icon + uppercase title) instead of card headers
 3. **Divider lines** - Apply `border-b`/`border-r` at grid cell level, not on individual cards
-4. **CSS Grid `gap-0`** - Use borders on cells instead of grid gaps for precise control
+4. **CSS Grid** `gap-0` - Use borders on cells instead of grid gaps for precise control
 5. **Dense info display** - Minimize padding and margins to maximize data visibility
 
 ### Component Pattern

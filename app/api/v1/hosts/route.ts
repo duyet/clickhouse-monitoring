@@ -29,6 +29,7 @@ export interface HostInfo {
   readonly name: string
   readonly host: string
   readonly user: string
+  readonly source?: 'env' | 'custom'
 }
 
 /**
@@ -48,6 +49,7 @@ export async function GET(): Promise<Response> {
       name: config.customName || getHost(config.host) || `Host ${config.id}`,
       host: config.host,
       user: config.user,
+      source: 'env' as const,
     }))
 
     // Create response with standardized builder

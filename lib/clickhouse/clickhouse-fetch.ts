@@ -6,7 +6,11 @@
 import type { DataFormat, QueryParams } from '@clickhouse/client'
 
 import type { QueryConfig } from '@/types/query-config'
-import type { FetchDataErrorType, FetchDataResult } from './types'
+import type {
+  ClickHouseConfig,
+  FetchDataErrorType,
+  FetchDataResult,
+} from './types'
 
 import { getClient } from './clickhouse-client'
 import { getClickHouseConfigs } from './clickhouse-config'
@@ -35,6 +39,7 @@ export const fetchData = async <
   clickhouse_settings,
   hostId,
   queryConfig,
+  clientConfig: providedConfig,
 }: QueryParams & {
   hostId: number | string
   clickhouse_settings?: QueryParams['clickhouse_settings'] & {
@@ -42,76 +47,89 @@ export const fetchData = async <
     session_timezone?: string
   }
   queryConfig?: QueryConfig
+  /** Optional direct client config, bypasses env-based host lookup */
+  clientConfig?: ClickHouseConfig
 }): Promise<FetchDataResult<T>> => {
   const start = new Date()
 
-  // Parse and validate hostId to prevent NaN
+  // Resolve config: use provided config directly, or look up from env configs
+  let config: ClickHouseConfig
+
+  if (providedConfig) {
+    config = providedConfig
+  } else {
+    // Parse and validate hostId to prevent NaN
+    const currentHostId = Number(hostId)
+    if (Number.isNaN(currentHostId)) {
+      throw new Error(`Invalid hostId: ${hostId}. Must be a valid number.`)
+    }
+
+    const configs = getClickHouseConfigs()
+
+    // Check if any configs are available
+    if (configs.length === 0) {
+      const errorMessage =
+        'No ClickHouse hosts configured. Please set CLICKHOUSE_HOST environment variable.\n' +
+        'Example: CLICKHOUSE_HOST=http://localhost:8123\n' +
+        'See console logs for more details.'
+
+      error('[fetchData] No ClickHouse configurations available!')
+      error('[fetchData] Make sure environment variables are loaded.')
+      error(
+        '[fetchData] Check .env, .env.local, or deployment environment settings.'
+      )
+
+      return {
+        data: null,
+        metadata: {
+          queryId: '',
+          duration: 0,
+          rows: 0,
+          host: 'unknown',
+        },
+        error: {
+          type: 'validation_error',
+          message: errorMessage,
+          details: {
+            originalError: new Error(errorMessage),
+            host: 'unknown',
+          },
+        },
+      }
+    }
+
+    const envConfig = configs[currentHostId]
+
+    // Check if envConfig exists before using it
+    if (!envConfig) {
+      const availableHosts = configs.map((c) => c.id).join(', ')
+      const errorMessage = `Invalid hostId: ${currentHostId}. Available hosts: ${availableHosts} (total: ${configs.length})`
+
+      error('[fetchData]', errorMessage)
+
+      return {
+        data: null,
+        metadata: {
+          queryId: '',
+          duration: 0,
+          rows: 0,
+          host: 'unknown',
+        },
+        error: {
+          type: 'validation_error',
+          message: errorMessage,
+          details: {
+            originalError: new Error(errorMessage),
+            host: 'unknown',
+          },
+        },
+      }
+    }
+
+    config = envConfig
+  }
+
   const currentHostId = Number(hostId)
-  if (Number.isNaN(currentHostId)) {
-    throw new Error(`Invalid hostId: ${hostId}. Must be a valid number.`)
-  }
-
-  const configs = getClickHouseConfigs()
-
-  // Check if any configs are available
-  if (configs.length === 0) {
-    const errorMessage =
-      'No ClickHouse hosts configured. Please set CLICKHOUSE_HOST environment variable.\n' +
-      'Example: CLICKHOUSE_HOST=http://localhost:8123\n' +
-      'See console logs for more details.'
-
-    error('[fetchData] No ClickHouse configurations available!')
-    error('[fetchData] Make sure environment variables are loaded.')
-    error(
-      '[fetchData] Check .env, .env.local, or deployment environment settings.'
-    )
-
-    return {
-      data: null,
-      metadata: {
-        queryId: '',
-        duration: 0,
-        rows: 0,
-        host: 'unknown',
-      },
-      error: {
-        type: 'validation_error',
-        message: errorMessage,
-        details: {
-          originalError: new Error(errorMessage),
-          host: 'unknown',
-        },
-      },
-    }
-  }
-
-  const clientConfig = configs[currentHostId]
-
-  // Check if clientConfig exists before using it
-  if (!clientConfig) {
-    const availableHosts = configs.map((c) => c.id).join(', ')
-    const errorMessage = `Invalid hostId: ${currentHostId}. Available hosts: ${availableHosts} (total: ${configs.length})`
-
-    error('[fetchData]', errorMessage)
-
-    return {
-      data: null,
-      metadata: {
-        queryId: '',
-        duration: 0,
-        rows: 0,
-        host: 'unknown',
-      },
-      error: {
-        type: 'validation_error',
-        message: errorMessage,
-        details: {
-          originalError: new Error(errorMessage),
-          host: 'unknown',
-        },
-      },
-    }
-  }
 
   try {
     // Perform table validation if queryConfig is provided and query is optional
@@ -138,14 +156,14 @@ export const fetchData = async <
             queryId: '',
             duration: 0,
             rows: 0,
-            host: clientConfig.host,
+            host: config.host,
           },
           error: {
             type: 'table_not_found',
             message: errorMessage,
             details: {
               missingTables,
-              host: clientConfig.host,
+              host: config.host,
             },
           },
         }
@@ -155,7 +173,7 @@ export const fetchData = async <
     // getClient will auto-detect and use web client for Cloudflare Workers
     // Cloudflare Workers don't support Node.js APIs like https.request
     const client = await getClient({
-      clientConfig,
+      clientConfig: config,
     })
 
     // Select version-appropriate query
@@ -231,7 +249,7 @@ export const fetchData = async <
     let rows: number = 0
 
     debug(
-      `--> Query (${query_id}, host: ${clientConfig.host}):`,
+      `--> Query (${query_id}, host: ${config.host}):`,
       effectiveQuery.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
     )
 
@@ -255,7 +273,7 @@ export const fetchData = async <
       queryId: query_id,
       duration,
       rows,
-      host: clientConfig.host,
+      host: config.host,
       // Include detected ClickHouse version
       clickhouseVersion: clickhouseVersion?.raw ?? 'unknown',
       // Include the actual SQL that was executed (normalized for readability)
@@ -294,7 +312,7 @@ export const fetchData = async <
       errorType = 'network_error'
     }
 
-    error(`Query failed (host: ${clientConfig.host}):`, errorMessage)
+    error(`Query failed (host: ${config.host}):`, errorMessage)
 
     return {
       data: null,
@@ -302,7 +320,7 @@ export const fetchData = async <
         queryId: '',
         duration: (Date.now() - start.getTime()) / 1000,
         rows: 0,
-        host: clientConfig.host,
+        host: config.host,
       },
       error: {
         type: errorType,
@@ -310,7 +328,7 @@ export const fetchData = async <
         details: {
           originalError:
             originalError instanceof Error ? originalError : undefined,
-          host: clientConfig.host,
+          host: config.host,
         },
       },
     }

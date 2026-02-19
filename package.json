@@ -8,7 +8,7 @@
     "url": "https://github.com/duyet/clickhouse-monitoring"
   },
   "scripts": {
-    "dev": "bun --bun next dev",
+    "dev": "bun --bun next dev --turbo",
     "build": "bun --bun next build",
     "start": "bun --bun next start",
     "start:coverage": "nyc --silent node server",
