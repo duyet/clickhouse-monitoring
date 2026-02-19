@@ -2,9 +2,11 @@
 
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { ApiResponseMetadata } from '@/lib/api/types'
+import type { TableGuidance } from '@/lib/table-guidance'
 import type { ChartDataPoint } from '@/types/chart-data'
 
-import { memo } from 'react'
+import { memo, useState, type ReactNode } from 'react'
+import { Info } from 'lucide-react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { chartCard } from '@/components/charts/chart-card-styles'
 import {
@@ -13,6 +15,12 @@ import {
   CardDescription,
   CardHeader,
 } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
 
@@ -20,8 +28,10 @@ interface ChartEmptyProps {
   title?: string
   className?: string
   description?: string
-  /** Helpful suggestion displayed below the empty state message */
+  /** @deprecated Use `guidance` instead */
   suggestion?: string
+  /** Table guidance with description, enableInstructions, and docsUrl */
+  guidance?: TableGuidance
   variant?: EmptyStateVariant
   onRetry?: () => void
   /** Use compact layout for smaller charts */
@@ -32,6 +42,82 @@ interface ChartEmptyProps {
   data?: ChartDataPoint[]
   /** Query execution metadata (from API response) */
   metadata?: Partial<ApiResponseMetadata>
+}
+
+/**
+ * Renders enableInstructions with basic markdown-like formatting.
+ * Splits on ``` to detect code blocks.
+ */
+function FormattedInstructions({ text }: { text: string }) {
+  const parts = text.split(/```(\w*)\n?([\s\S]*?)```/g)
+  const nodes: ReactNode[] = []
+
+  let i = 0
+  while (i < parts.length) {
+    if (i % 3 === 0) {
+      // Plain text segment
+      if (parts[i]) {
+        nodes.push(
+          <p key={i} className="text-sm text-foreground whitespace-pre-wrap">
+            {parts[i].trim()}
+          </p>
+        )
+      }
+    } else if (i % 3 === 1) {
+      // Language label (skip, used in next iteration)
+    } else {
+      // Code block content
+      nodes.push(
+        <pre
+          key={i}
+          className="bg-muted rounded-md p-3 text-xs overflow-x-auto font-mono"
+        >
+          <code>{parts[i]}</code>
+        </pre>
+      )
+    }
+    i++
+  }
+
+  return <div className="flex flex-col gap-3">{nodes}</div>
+}
+
+function TableGuidanceDialog({ guidance }: { guidance: TableGuidance }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex-none text-xs text-primary underline-offset-2 hover:underline cursor-pointer whitespace-nowrap"
+      >
+        How to enable →
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              {guidance.description ?? 'How to enable'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 overflow-y-auto max-h-96">
+            <FormattedInstructions text={guidance.enableInstructions} />
+            {guidance.docsUrl && (
+              <a
+                href={guidance.docsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-primary underline-offset-2 hover:underline"
+              >
+                View Documentation →
+              </a>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
 }
 
 /**
@@ -46,7 +132,8 @@ export const ChartEmpty = memo(function ChartEmpty({
   title,
   className,
   description,
-  suggestion,
+  suggestion: _suggestion,
+  guidance,
   variant = 'no-data',
   onRetry,
   compact = false,
@@ -116,11 +203,11 @@ export const ChartEmpty = memo(function ChartEmpty({
           compact={compact}
           onRefresh={onRetry}
         />
-        {suggestion && (
-          <div className="mt-6 flex justify-center">
-            <div className="max-w-md text-center text-sm text-muted-foreground whitespace-pre-wrap rounded-lg bg-accent/30 p-4">
-              {suggestion}
-            </div>
+        {guidance && (
+          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <Info className="h-3.5 w-3.5 flex-none" />
+            <span className="truncate">{guidance.description}</span>
+            <TableGuidanceDialog guidance={guidance} />
           </div>
         )}
       </CardContent>

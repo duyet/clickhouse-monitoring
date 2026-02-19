@@ -94,11 +94,6 @@ export const ChartContainer = memo(function ChartContainer<
       ? getGuidanceForMissingTables(missingTables)
       : undefined
 
-    // Build suggestion message from guidance
-    const suggestion = guidance
-      ? `${guidance.description ? `${guidance.description}\n\n` : ''}${guidance.enableInstructions}${guidance.docsUrl ? `\n\nDocumentation: ${guidance.docsUrl}` : ''}`
-      : undefined
-
     return (
       <ChartEmpty
         title={title}
@@ -106,7 +101,7 @@ export const ChartContainer = memo(function ChartContainer<
         sql={sql}
         data={data}
         metadata={metadata}
-        suggestion={suggestion}
+        guidance={guidance}
         onRetry={() => mutate()}
         compact={compact}
       />
