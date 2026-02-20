@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "ClickHouse Monitoring Docs",
   "license": "AGPL-3.0-only",
-  "packageManager": "pnpm@10.18.2",
+  "packageManager": "pnpm@10.30.1",
   "scripts": {
     "dev": "next --turbopack",
     "build": "next build",
@@ -12,7 +12,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "lucide-react": "^0.545.0",
+    "lucide-react": "^0.575.0",
     "next": "^16.0.0",
     "nextra": "^4.2.17",
     "nextra-theme-docs": "^4.2.17",
