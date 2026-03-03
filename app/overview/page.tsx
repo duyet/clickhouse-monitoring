@@ -102,13 +102,13 @@ function OverviewPageContent() {
           onValueChange={handleTabChange}
           className="space-y-2"
         >
-          <div className="overflow-x-auto pb-1 -mx-1 px-1 sm:mx-0 sm:px-0">
-            <TabsList className="h-11 gap-1 w-full md:w-fit inline-flex min-w-max backdrop-blur-sm border border-border/40 p-1">
+          <div className="overflow-x-auto pb-2 -mx-2 px-2 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <TabsList className="h-12 gap-1 w-full md:w-fit inline-flex min-w-max rounded-[1rem] bg-muted/30 p-1 backdrop-blur-xl border border-border/40 shadow-inner">
               {OVERVIEW_TABS.map((tab) => (
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1 data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all duration-200"
+                  className="rounded-[0.75rem] px-5 py-2 font-medium text-sm text-muted-foreground hover:text-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-300 ease-out"
                 >
                   {tab.label}
                 </TabsTrigger>

@@ -68,8 +68,6 @@ export interface OverviewTabConfig {
 }
 
 // ============================================================================
-// Chart Imports
-// ============================================================================
 
 // Connection charts
 import { ChartConnectionsHttp } from '@/components/charts/connections-http'
