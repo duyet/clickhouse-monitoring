@@ -13,7 +13,9 @@ import type { Action } from './types'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
+import { buildExplorerQueryUrl } from '@/lib/explorer-url'
 import { useActions } from '@/lib/swr'
+import { useHostId } from '@/lib/swr/use-host'
 
 interface ActionButtonProps<TData extends RowData, TValue> {
   row: Row<TData>
@@ -30,6 +32,7 @@ export function ActionItem<TData extends RowData, TValue>({
     'none' | 'loading' | 'success' | 'failed'
   >('none')
   const router = useRouter()
+  const hostId = useHostId()
   const { killQuery, optimizeTable, querySettings } = useActions()
 
   const availableActions: {
@@ -49,6 +52,18 @@ export function ActionItem<TData extends RowData, TValue>({
         return {
           success: true,
           message: `/explain?query=${encodeURIComponent(String(query))}`,
+        }
+      },
+    },
+    'open-in-explorer': {
+      label: 'Open in Explorer',
+      handler: async () => {
+        const query = String(
+          row.getValue('query') || row.getValue('normalized_query') || ''
+        )
+        return {
+          success: true,
+          message: buildExplorerQueryUrl(query, hostId),
         }
       },
     },
@@ -74,7 +89,10 @@ export function ActionItem<TData extends RowData, TValue>({
     try {
       const result = await handler()
 
-      if (action === 'explain-query' && result.success) {
+      if (
+        (action === 'explain-query' || action === 'open-in-explorer') &&
+        result.success
+      ) {
         router.push(result.message)
         return
       }

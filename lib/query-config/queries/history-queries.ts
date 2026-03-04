@@ -90,6 +90,7 @@ export const historyQueriesConfig: QueryConfig = {
   ],
 
   columns: [
+    'action',
     'user',
     'query',
     'query_id',
@@ -105,6 +106,7 @@ export const historyQueriesConfig: QueryConfig = {
     'client_name',
   ],
   columnFormats: {
+    action: [ColumnFormat.Action, ['explain-query', 'open-in-explorer']],
     user: ColumnFormat.ColoredBadge,
     type: ColumnFormat.ColoredBadge,
     query_duration: ColumnFormat.Duration,

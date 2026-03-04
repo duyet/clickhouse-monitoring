@@ -71,6 +71,7 @@ export const expensiveQueriesByMemoryConfig: QueryConfig = {
     },
   ] as VersionedSql[],
   columns: [
+    'action',
     'query',
     'query_cache_usage',
     'readable_avg_memory',
@@ -79,6 +80,7 @@ export const expensiveQueriesByMemoryConfig: QueryConfig = {
     'cnt',
   ],
   columnFormats: {
+    action: [ColumnFormat.Action, ['explain-query', 'open-in-explorer']],
     query: [
       ColumnFormat.CodeDialog,
       { max_truncate: 100, hide_query_comment: true },

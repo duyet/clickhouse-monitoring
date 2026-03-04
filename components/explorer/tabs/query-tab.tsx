@@ -23,7 +23,9 @@ import type {
 } from '@/lib/api/types'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
+import dynamic from 'next/dynamic'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { format } from 'sql-formatter'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -35,9 +37,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
+
+const SqlEditor = dynamic(
+  () => import('../sql-editor').then((mod) => mod.SqlEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[120px] rounded-md border border-input bg-muted/30 animate-pulse" />
+    ),
+  }
+)
 
 const MAX_CELL_LENGTH = 100
 
@@ -177,7 +188,6 @@ export function QueryTab() {
   const [validationError, setValidationError] = useState<string | null>(null)
   // The query to execute (set on Run, drives the SWR key)
   const [executedQuery, setExecutedQuery] = useState<string | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const initialized = useRef(false)
 
   // Initialize editor from URL state or auto-populate from selected table
@@ -256,25 +266,25 @@ export function QueryTab() {
     setCustomQuery(sql)
   }, [editorValue, setCustomQuery])
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        e.preventDefault()
-        handleRun()
-      }
-    },
-    [handleRun]
-  )
-
   const handleEditorChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setEditorValue(e.target.value)
+    (newValue: string) => {
+      setEditorValue(newValue)
       if (validationError) {
         setValidationError(null)
       }
     },
     [validationError]
   )
+
+  const handleFormat = useCallback(() => {
+    try {
+      setEditorValue(
+        format(editorValue, { language: 'sql', keywordCase: 'upper' })
+      )
+    } catch {
+      // If formatting fails (e.g., invalid SQL), keep the current value
+    }
+  }, [editorValue])
 
   return (
     <div className="flex flex-col gap-4">
@@ -286,14 +296,11 @@ export function QueryTab() {
             Ctrl+Enter to run
           </span>
         </div>
-        <Textarea
-          ref={textareaRef}
+        <SqlEditor
           value={editorValue}
           onChange={handleEditorChange}
-          onKeyDown={handleKeyDown}
+          onRun={handleRun}
           placeholder="SELECT * FROM system.tables LIMIT 100"
-          className="min-h-[120px] font-mono text-sm"
-          spellCheck={false}
         />
         {validationError && (
           <p className="text-sm text-destructive">{validationError}</p>
@@ -310,6 +317,14 @@ export function QueryTab() {
               <Play className="mr-1.5 size-3.5" />
             )}
             Run Query
+          </Button>
+          <Button
+            onClick={handleFormat}
+            disabled={!editorValue.trim()}
+            size="sm"
+            variant="outline"
+          >
+            Format
           </Button>
         </div>
       </div>
