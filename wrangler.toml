@@ -73,9 +73,11 @@ id = "78782c1fcf4141d9b6f26f2046f50ceb"
 # For local development: Set these in .dev.vars file (not committed to git)
 # For production: Set these in Cloudflare Dashboard or wrangler secret
 #
-# Required variables:
+# Variables (non-sensitive, set in [vars]):
 # - CLICKHOUSE_HOST: Comma-separated list of ClickHouse host URLs
 # - CLICKHOUSE_USER: Comma-separated list of usernames (or single value for all hosts)
+#
+# Secrets (sensitive, set via `wrangler secret put`):
 # - CLICKHOUSE_PASSWORD: Comma-separated list of passwords (or single value for all hosts)
 #
 # Optional variables:
@@ -89,6 +91,11 @@ id = "78782c1fcf4141d9b6f26f2046f50ceb"
 # CLICKHOUSE_PASSWORD=your-password
 
 [vars]
+# ClickHouse connection (non-sensitive)
+# Override these per-environment or via Cloudflare Dashboard.
+# CLICKHOUSE_HOST = "http://localhost:8123"
+# CLICKHOUSE_USER = "default"
+
 # Maximum query execution time in seconds before ClickHouse terminates the query.
 # Prevents long-running queries from consuming resources. Used in clickhouse-client.ts.
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
@@ -104,9 +111,9 @@ CLOUDFLARE_WORKERS = "1"
 # Inherits all top-level settings; overrides listed below.
 #
 # One-time setup required:
-#   wrangler secret put CLICKHOUSE_HOST --env preview
-#   wrangler secret put CLICKHOUSE_USER --env preview
-#   wrangler secret put CLICKHOUSE_PASSWORD --env preview
+#   1. Set CLICKHOUSE_HOST and CLICKHOUSE_USER via Cloudflare Dashboard
+#      or uncomment and edit env.preview.vars below
+#   2. wrangler secret put CLICKHOUSE_PASSWORD --env preview
 # ─────────────────────────────────────────────────────────────────────────────
 [env.preview]
 name = "clickhouse-monitor-preview"
