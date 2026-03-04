@@ -21,13 +21,13 @@ Agent Skills are folders of instructions, scripts, and resources that AI agents 
 Install using the skills CLI:
 
 ```bash
-npx skills add duyet/clickhouse-monitor
+npx skills add duyet/clickhouse-monitoring
 ```
 
 Or specify a custom path:
 
 ```bash
-npx skills add duyet/clickhouse-monitor --path skills/clickhouse-monitor
+npx skills add duyet/clickhouse-monitoring --path skills/clickhouse-monitor
 ```
 
 ### Manual Installation
