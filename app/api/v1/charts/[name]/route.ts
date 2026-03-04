@@ -10,6 +10,7 @@ import type {
   ApiResponse as ApiResponseType,
   DataStatus,
 } from '@/lib/api/types'
+import type { CachePolicy } from '@/types/chart-data'
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
 import {
@@ -50,7 +51,8 @@ async function handleMultiQueryChart(
   chartName: string,
   routeContext: RouteContext,
   api?: string,
-  timezone?: string
+  timezone?: string,
+  cachePolicy?: CachePolicy
 ): Promise<Response> {
   debug(`[GET /api/v1/charts/${chartName}]`, {
     hostId,
@@ -151,7 +153,7 @@ async function handleMultiQueryChart(
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+        'Cache-Control': getCacheHeaders(cachePolicy),
       },
     })
   } catch (err) {
@@ -260,7 +262,8 @@ export async function GET(
       name,
       routeContext,
       api,
-      timezone
+      timezone,
+      (queryDef as MultiChartQueryResult).cachePolicy
     )
   }
 
@@ -341,7 +344,8 @@ export async function GET(
           { queryId: '', duration: 0, rows: 0, host: String(hostId) },
           queryDef.query.trim(),
           statusInfo,
-          api
+          api,
+          queryDef.cachePolicy
         )
       }
 
@@ -429,8 +433,24 @@ export async function GET(
             clickhouseVersion: clickhouseVersion.raw,
           }
         : undefined,
-    api
+    api,
+    queryDef.cachePolicy
   )
+}
+
+/**
+ * Map cachePolicy to Cache-Control header value
+ */
+function getCacheHeaders(cachePolicy?: CachePolicy): string {
+  switch (cachePolicy) {
+    case 'realtime':
+      return 'public, s-maxage=10, stale-while-revalidate=30'
+    case 'historical':
+      return 'public, s-maxage=120, stale-while-revalidate=300'
+    case 'standard':
+    default:
+      return 'public, s-maxage=30, stale-while-revalidate=60'
+  }
 }
 
 /**
@@ -486,7 +506,8 @@ function createSuccessResponse<T>(
     missingTables?: string[]
     clickhouseVersion?: string
   },
-  api?: string
+  api?: string,
+  cachePolicy?: CachePolicy
 ): Response {
   // Transform data to convert numeric strings to numbers
   // This is necessary because ClickHouse returns numbers as strings in JSON
@@ -539,7 +560,7 @@ function createSuccessResponse<T>(
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+      'Cache-Control': getCacheHeaders(cachePolicy),
     },
   })
 }

@@ -49,7 +49,11 @@ export const TableSkeleton = memo(function TableSkeleton({
           {Array.from({ length: rows }).map((_, i) => (
             <div
               key={`row-${i}`}
-              className="flex items-center gap-4 border-b px-4 py-3 last:border-b-0"
+              className="flex items-center gap-4 border-b px-4 py-3 last:border-b-0 animate-pulse"
+              style={{
+                animationDelay: `${i * 75}ms`,
+                animationFillMode: 'backwards',
+              }}
             >
               {Array.from({ length: cols }).map((_, j) => (
                 <Skeleton key={`col-${j}`} className="h-4 flex-1" />

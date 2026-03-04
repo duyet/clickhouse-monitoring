@@ -8,7 +8,11 @@ import type {
   ChartQueryParams as TypedChartQueryParams,
 } from '@/types/chart-data'
 
-import { REFRESH_INTERVAL, type RefreshInterval } from './config'
+import {
+  REFRESH_INTERVAL,
+  type RefreshInterval,
+  visibilityAwareInterval,
+} from './config'
 import { useCallback, useMemo, useRef } from 'react'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
@@ -171,7 +175,8 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     revalidateOnReconnect: true,
     dedupingInterval: 5000,
     focusThrottleInterval: 5000,
-    refreshInterval: refreshInterval > 0 ? refreshInterval : 0,
+    refreshInterval:
+      refreshInterval > 0 ? visibilityAwareInterval(refreshInterval) : 0,
     ...swrConfig,
   })
 

@@ -3,6 +3,8 @@
  * Provides client-side data fetching and caching hooks for the ClickHouse monitoring dashboard
  */
 
+export type { PrefetchConfig } from './route-prefetch-map'
+
 // SWR configuration presets
 export { createPollingConfig, REFRESH_INTERVAL, swrConfig } from './config'
 // Host context for static page generation
@@ -11,6 +13,7 @@ export {
   useHostContext,
   useHostIdFromContext,
 } from './host-context'
+export { prefetchRoute } from './prefetch'
 export { SWRProvider } from './provider'
 export {
   revalidateAllData,
@@ -18,6 +21,7 @@ export {
   revalidateCharts,
   revalidateTables,
 } from './revalidate'
+export { routePrefetchMap } from './route-prefetch-map'
 export { useActions } from './use-actions'
 export {
   type StaleError,

@@ -85,6 +85,12 @@ export function ColumnHeader<TData extends RowData>({
       >
         <HeaderContent name={name} format={format} icon={icon} />
         <SortIcon sortState={sortState} />
+        {filterValue && (
+          <span
+            className="ml-1 h-1.5 w-1.5 rounded-full bg-primary shrink-0"
+            aria-label="Filter active"
+          />
+        )}
       </Button>
 
       {isFilterable && (

@@ -70,7 +70,7 @@ function renderStandardTooltip(chartConfig: ChartConfig) {
       wrapperStyle={{ zIndex: 1000 }}
       content={
         <ChartTooltipContent
-          className="max-w-[280px]"
+          className="max-w-[300px] [font-variant-numeric:tabular-nums]"
           formatter={(
             value,
             name,
@@ -117,7 +117,7 @@ function renderBreakdownTooltip({
       active={tooltipActive}
       content={
         <ChartTooltipContent
-          className="max-w-[320px]"
+          className="max-w-[320px] [font-variant-numeric:tabular-nums]"
           formatter={(value, name, item, _index, payload: any) => {
             return (
               <BreakdownTooltipContent

@@ -6,7 +6,7 @@ import {
 } from '@radix-ui/react-icons'
 import type { Table } from '@tanstack/react-table'
 
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { formatNumber } from '@/lib/format-number'
 import { cn } from '@/lib/utils'
 
 interface DataTablePaginationProps {
@@ -23,6 +24,34 @@ interface DataTablePaginationProps {
 }
 
 const pageSizeOptions = [10, 25, 50, 100, 200, 500, 1000]
+
+/**
+ * Memoized pagination info displaying row range (desktop) or page number (mobile).
+ * Uses cached Intl.NumberFormat from @/lib/format-number.
+ */
+const PaginationInfo = memo(function PaginationInfo({
+  table,
+}: DataTablePaginationProps) {
+  const { pageIndex, pageSize } = table.getState().pagination
+  const totalRows = table.getRowModel().rows.length
+  const pageCount = table.getPageCount()
+
+  const info = useMemo(() => {
+    const from = pageIndex * pageSize + 1
+    const to = Math.min((pageIndex + 1) * pageSize, totalRows)
+    return {
+      range: `${formatNumber(from)}–${formatNumber(to)} of ${formatNumber(totalRows)} rows`,
+      page: `${pageIndex + 1}/${pageCount}`,
+    }
+  }, [pageIndex, pageSize, totalRows, pageCount])
+
+  return (
+    <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+      <span className="hidden sm:inline">{info.range}</span>
+      <span className="sm:hidden">{info.page}</span>
+    </div>
+  )
+})
 
 export const DataTablePagination = memo(function DataTablePagination({
   table,
@@ -62,7 +91,7 @@ export const DataTablePagination = memo(function DataTablePagination({
       )}
     >
       <div className="flex items-center space-x-2">
-        <p className="text-sm font-medium">Rows per page</p>
+        <p className="hidden sm:block text-sm font-medium">Rows per page</p>
         <Select
           value={`${table.getState().pagination.pageSize}`}
           onValueChange={handlePageSizeChange}
@@ -80,10 +109,7 @@ export const DataTablePagination = memo(function DataTablePagination({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex w-20 sm:w-[100px] items-center justify-center text-sm font-medium">
-        Page {table.getState().pagination.pageIndex + 1} of{' '}
-        {table.getPageCount()}
-      </div>
+      <PaginationInfo table={table} />
       <div className="flex items-center space-x-2">
         <Button
           variant="outline"

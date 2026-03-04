@@ -87,3 +87,12 @@ export function createPollingConfig(
     refreshInterval: interval,
   }
 }
+
+/**
+ * Creates a visibility-aware refresh interval function for SWR.
+ * Returns 0 (paused) when the tab is hidden, otherwise returns the given interval.
+ * SWR's refreshInterval accepts a function: () => number
+ */
+export function visibilityAwareInterval(ms: number): () => number {
+  return () => (typeof document !== 'undefined' && document.hidden ? 0 : ms)
+}

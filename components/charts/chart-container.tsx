@@ -8,6 +8,7 @@ import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { memo, type ReactNode } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
+import { FadeIn } from '@/components/ui/fade-in'
 import { getGuidanceForMissingTables } from '@/lib/table-guidance'
 import { cn } from '@/lib/utils'
 
@@ -120,12 +121,14 @@ export const ChartContainer = memo(function ChartContainer<
 
   // Render chart with data (and staleError if revalidation failed)
   return (
-    <div
-      className={cn('h-full w-full min-w-0 overflow-hidden', className)}
-      aria-label={title ? `${title} chart` : 'Chart'}
-      role="region"
-    >
-      {children(data, sql, toolbarMetadata, staleError, mutate)}
-    </div>
+    <FadeIn className="h-full w-full min-w-0">
+      <div
+        className={cn('h-full w-full min-w-0 overflow-hidden', className)}
+        aria-label={title ? `${title} chart` : 'Chart'}
+        role="region"
+      >
+        {children(data, sql, toolbarMetadata, staleError, mutate)}
+      </div>
+    </FadeIn>
   )
 })

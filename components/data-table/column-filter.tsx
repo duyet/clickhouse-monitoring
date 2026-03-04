@@ -17,7 +17,7 @@
 
 'use client'
 
-import { X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 
 import { memo, useCallback, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -62,20 +62,32 @@ export const ColumnFilter = memo(function ColumnFilter({
       role="search"
       aria-label={`Filter ${column} column`}
     >
-      <DebouncedInput
-        value={value}
-        onValueChange={onChange}
-        placeholder={placeholder}
-        debounceMs={300}
-        className={cn(
-          'h-7 w-full text-xs shadow-none',
-          'bg-muted/30 border-transparent',
-          'focus:bg-background focus:border-primary/50',
-          'placeholder:text-muted-foreground/60',
-          'transition-colors'
-        )}
-        aria-label={`Filter ${column}`}
-      />
+      <div className="relative flex-1">
+        <Search
+          className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50"
+          aria-hidden="true"
+        />
+        <DebouncedInput
+          value={value}
+          onValueChange={onChange}
+          placeholder={placeholder}
+          debounceMs={300}
+          className={cn(
+            'h-7 w-full pl-6 text-xs shadow-none',
+            'bg-muted/30 border-transparent',
+            'focus:bg-background focus:border-primary/50',
+            'placeholder:text-muted-foreground/60',
+            'transition-colors'
+          )}
+          aria-label={`Filter ${column}`}
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === 'Escape' && hasValue) {
+              e.preventDefault()
+              onChange('')
+            }
+          }}
+        />
+      </div>
       {showClear && hasValue && (
         <Button
           variant="ghost"

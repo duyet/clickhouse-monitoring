@@ -52,8 +52,9 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
       data-state={row.getIsSelected() && 'selected'}
       data-index={virtualRow.index}
       className={cn(
-        'border-b border-border/50 transition-colors hover:bg-muted/50',
-        virtualRow.index % 2 === 1 && 'odd:bg-muted/30'
+        'border-b border-border/50 transition-colors hover:bg-accent/50 dark:hover:bg-accent/20',
+        virtualRow.index % 2 === 1 && 'odd:bg-muted/30',
+        row.getIsSelected() && 'border-l-2 border-l-primary'
       )}
       style={{
         height: `${virtualRow.size}px`,
@@ -111,8 +112,9 @@ export const StandardTableRow = memo(function StandardTableRow<
       key={row.id}
       data-state={row.getIsSelected() && 'selected'}
       className={cn(
-        'border-b border-border/50 transition-colors hover:bg-muted/50',
-        index % 2 === 1 && 'odd:bg-muted/30'
+        'border-b border-border/50 transition-colors hover:bg-accent/50 dark:hover:bg-accent/20',
+        index % 2 === 1 && 'odd:bg-muted/30',
+        row.getIsSelected() && 'border-l-2 border-l-primary'
       )}
     >
       {row.getVisibleCells().map((cell: Cell<TData, unknown>) => {

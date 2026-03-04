@@ -5,6 +5,7 @@ import useSWR, { type SWRConfiguration } from 'swr'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { StaleError } from './use-chart-data'
 
+import { visibilityAwareInterval } from './config'
 import { useMemo, useRef } from 'react'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
@@ -138,7 +139,9 @@ export function useTableData<T = unknown>(
     dedupingInterval: 3000,
     focusThrottleInterval: 5000,
     refreshInterval:
-      refreshInterval && refreshInterval > 0 ? refreshInterval : 0,
+      refreshInterval && refreshInterval > 0
+        ? visibilityAwareInterval(refreshInterval)
+        : 0,
     ...swrConfig,
   })
 

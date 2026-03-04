@@ -2,14 +2,17 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useCallback } from 'react'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 import { useHostId } from '@/lib/swr'
+import { prefetchRoute } from '@/lib/swr/prefetch'
 import { buildUrl } from '@/lib/url/url-builder'
 
 export const HostPrefixedLink = ({
   href,
   children,
   className,
+  onMouseEnter,
   ...props
 }: {
   href: string
@@ -25,6 +28,19 @@ export const HostPrefixedLink = ({
   // Check if this link is active
   const isActive = isMenuItemActive(href, pathname)
 
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      // Prefetch route data on hover using idle callback to avoid blocking
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        requestIdleCallback(() => prefetchRoute(href, hostId))
+      } else {
+        setTimeout(() => prefetchRoute(href, hostId), 100)
+      }
+      onMouseEnter?.(e)
+    },
+    [href, hostId, onMouseEnter]
+  )
+
   return (
     <Link
       prefetch={false}
@@ -32,6 +48,7 @@ export const HostPrefixedLink = ({
       className={className}
       data-active={isActive ? 'true' : undefined}
       aria-current={isActive ? 'page' : undefined}
+      onMouseEnter={handleMouseEnter}
       {...props}
     >
       {children}

@@ -40,8 +40,9 @@ export const chartCard = {
       'shadow-sm shadow-black/[0.03] dark:shadow-black/20',
       'backdrop-blur-xl',
       'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-foreground/10 before:to-transparent',
-      'transition-colors duration-200 ease-out',
+      'transition-[transform,box-shadow,border-color] duration-200 ease-out',
       'hover:border-border/80 dark:hover:border-border/50',
+      'hover:shadow-md hover:-translate-y-px',
       'pt-1 pb-2'
     ),
   },

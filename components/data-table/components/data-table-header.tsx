@@ -1,6 +1,6 @@
 'use client'
 
-import { Loader2Icon } from 'lucide-react'
+import { Loader2Icon, X } from 'lucide-react'
 import type { RowData } from '@tanstack/react-table'
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
@@ -92,9 +92,9 @@ export const DataTableHeader = memo(function DataTableHeader<
   // Use executed SQL if provided, otherwise fallback to config SQL
   const displaySql = executedSql || getSqlForDisplay(queryConfig.sql)
   return (
-    <div className="flex min-w-0 shrink-0 flex-row items-start justify-between gap-4 pb-2">
+    <div className="flex min-w-0 shrink-0 flex-col sm:flex-row items-start justify-between gap-2 sm:gap-4 pb-2">
       <div className="min-w-0 flex-1">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
+        <div className="mb-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
           <div className="flex items-center gap-2">
             <h1 className="text-muted-foreground flex-none text-xl">{title}</h1>
             {isRefreshing && (
@@ -117,11 +117,11 @@ export const DataTableHeader = memo(function DataTableHeader<
           {enableColumnFilters && activeFilterCount > 0 && (
             <button
               onClick={clearAllColumnFilters}
-              className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
               aria-label={`Clear ${activeFilterCount} active filter${activeFilterCount > 1 ? 's' : ''}`}
             >
-              Clear {activeFilterCount} filter
-              {activeFilterCount > 1 ? 's' : ''}
+              <X className="h-3 w-3" />
+              Clear {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
             </button>
           )}
         </div>
@@ -130,7 +130,7 @@ export const DataTableHeader = memo(function DataTableHeader<
         </p>
       </div>
 
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 sm:gap-3">
         {topRightToolbarExtras}
         {enableColumnReordering && onResetColumnOrder && (
           <ResetColumnOrderButton onReset={onResetColumnOrder} />

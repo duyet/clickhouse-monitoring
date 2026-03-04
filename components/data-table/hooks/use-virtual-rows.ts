@@ -27,9 +27,9 @@ import { type RefObject, useRef } from 'react'
 export interface UseVirtualRowsOptions {
   /** Estimated row height in pixels (default: 40) */
   estimateSize?: number
-  /** Number of rows to render outside viewport (default: 10) */
+  /** Number of rows to render outside viewport (default: 20) */
   overscan?: number
-  /** Row count threshold to enable virtualization (default: 1000) */
+  /** Row count threshold to enable virtualization (default: 200) */
   virtualizeThreshold?: number
 }
 
@@ -48,8 +48,8 @@ export function useVirtualRows(
 ): UseVirtualRowsResult {
   const {
     estimateSize = 40,
-    overscan = 10,
-    virtualizeThreshold = 1000,
+    overscan = 20,
+    virtualizeThreshold = 200,
   } = options
 
   const tableContainerRef = useRef<HTMLDivElement>(null)

@@ -1,6 +1,7 @@
 'use client'
 
 import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { formatCompactNumber } from '@/lib/format-number'
 
 interface RenderBarTooltipOptions {
   tooltipTotal: boolean
@@ -58,18 +59,21 @@ export function renderBarTooltip({
                 <span className="text-muted-foreground">
                   {name === '' || name == null ? '(empty)' : name}
                 </span>
-                <span className="ml-auto font-mono font-medium tabular-nums text-foreground">
-                  {typeof value === 'number' ? value.toLocaleString() : value}
+                <span className="ml-auto font-mono text-xs font-medium tabular-nums text-foreground">
+                  {typeof value === 'number'
+                    ? formatCompactNumber(value)
+                    : value}
                 </span>
                 {/* Show total after last item */}
                 {index === categories.length - 1 && (
                   <div className="mt-1.5 flex basis-full items-center border-t pt-1.5 text-xs font-medium text-foreground">
                     Total
-                    <span className="ml-auto font-mono font-medium tabular-nums">
-                      {categories
-                        .map((cat) => Number(item.payload[cat]) || 0)
-                        .reduce((a, b) => a + b, 0)
-                        .toLocaleString()}
+                    <span className="ml-auto font-mono text-xs font-medium tabular-nums">
+                      {formatCompactNumber(
+                        categories
+                          .map((cat) => Number(item.payload[cat]) || 0)
+                          .reduce((a, b) => a + b, 0)
+                      )}
                     </span>
                   </div>
                 )}
@@ -100,8 +104,8 @@ export function renderBarTooltip({
                   ? '(empty)'
                   : name}
               </span>
-              <span className="ml-auto font-mono font-medium tabular-nums text-foreground">
-                {typeof value === 'number' ? value.toLocaleString() : value}
+              <span className="ml-auto font-mono text-xs font-medium tabular-nums text-foreground">
+                {typeof value === 'number' ? formatCompactNumber(value) : value}
               </span>
             </>
           )}

@@ -7,6 +7,14 @@ import type { VersionedSql } from './query-config'
  */
 export type SemverRange = string
 
+/**
+ * Cache policy for HTTP Cache-Control headers.
+ * - realtime: short TTL (10s/30s) for frequently changing data
+ * - standard: moderate TTL (30s/60s) for typical dashboard data
+ * - historical: long TTL (120s/300s) for rarely changing historical data
+ */
+export type CachePolicy = 'realtime' | 'standard' | 'historical'
+
 // Re-export VersionedSql for convenience
 export type { VersionedSql }
 
@@ -95,6 +103,8 @@ export interface ChartQueryResult<_T extends ChartDataPoint = ChartDataPoint> {
   queryParams?: Record<string, unknown>
   optional?: boolean
   tableCheck?: string | string[]
+  /** Cache policy for HTTP Cache-Control headers */
+  cachePolicy?: CachePolicy
   /**
    * @deprecated Use `sql: VersionedSql[]` instead. Will be removed in v0.3.0.
    *
@@ -111,6 +121,8 @@ export interface ChartQueryResult<_T extends ChartDataPoint = ChartDataPoint> {
  */
 export interface MultiChartQueryResult {
   queries: Array<{ key: string; query: string; optional?: boolean }>
+  /** Cache policy for HTTP Cache-Control headers */
+  cachePolicy?: CachePolicy
 }
 
 /**

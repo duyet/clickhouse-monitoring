@@ -142,7 +142,7 @@ export const DataTableContent = memo(function DataTableContent<
       <caption id="table-description" className="sr-only">
         {description || queryConfig.description || `${title} data table`}
       </caption>
-      <TableHeader className="bg-muted/50">
+      <TableHeader className="bg-muted/95 backdrop-blur-sm sticky top-0 z-10 border-b border-border/50 shadow-[0_1px_3px_0_rgb(0_0_0/0.05)]">
         <TableHeaderRenderer
           headerGroups={table.getHeaderGroups()}
           onAutoFit={onAutoFit}
@@ -163,32 +163,41 @@ export const DataTableContent = memo(function DataTableContent<
   )
 
   return (
-    <div
-      ref={tableContainerRef}
-      className={`mb-5 min-h-0 min-w-0 rounded-lg border border-border/50 bg-card/30 ${
-        isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto'
-      }`}
-      role="region"
-      aria-label={`${title || 'Data'} table`}
-      style={isVirtualized ? { height: '60vh' } : undefined}
-    >
-      {enableColumnReordering ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-          modifiers={[restrictToHorizontalAxis]}
-        >
-          <SortableContext
-            items={columnIds}
-            strategy={horizontalListSortingStrategy}
+    <div className="relative">
+      {/* Right-edge gradient hint for horizontal scroll on mobile */}
+      <div
+        className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent z-10 rounded-r-lg sm:hidden"
+        aria-hidden="true"
+      />
+      <div
+        ref={tableContainerRef}
+        className={`mb-5 min-h-0 min-w-0 rounded-lg border border-border/50 bg-card/30 ${
+          isVirtualized
+            ? 'flex-1 overflow-auto'
+            : 'w-full overflow-auto max-h-[70vh]'
+        }`}
+        role="region"
+        aria-label={`${title || 'Data'} table`}
+        style={isVirtualized ? { height: '60vh' } : undefined}
+      >
+        {enableColumnReordering ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToHorizontalAxis]}
           >
-            {tableContent}
-          </SortableContext>
-        </DndContext>
-      ) : (
-        tableContent
-      )}
+            <SortableContext
+              items={columnIds}
+              strategy={horizontalListSortingStrategy}
+            >
+              {tableContent}
+            </SortableContext>
+          </DndContext>
+        ) : (
+          tableContent
+        )}
+      </div>
     </div>
   )
 }) as <TData extends RowData, TValue extends React.ReactNode>(

@@ -7,6 +7,7 @@
 import type { ChartConfig } from '@/components/ui/chart'
 
 import { TooltipColorIndicator } from './tooltip-color-indicator'
+import { formatCompactNumber } from '@/lib/format-number'
 
 interface StandardTooltipRowProps {
   name: string
@@ -83,9 +84,9 @@ interface TooltipRowValueProps {
  */
 function TooltipRowValue({ item, name, value }: TooltipRowValueProps) {
   return (
-    <div className="text-foreground shrink-0 flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+    <div className="text-foreground shrink-0 flex items-baseline gap-0.5 font-mono text-xs font-medium tabular-nums">
       {item.payload[`readable_${name}` as keyof typeof item] ||
-        value.toLocaleString()}
+        (typeof value === 'number' ? formatCompactNumber(value) : value)}
       <span className="text-muted-foreground font-normal"></span>
     </div>
   )

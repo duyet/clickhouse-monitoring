@@ -184,7 +184,7 @@ export const TableHeaderRow = memo(function TableHeaderRow({
   const _columnIds = headers.map((header) => header.column.id)
 
   return (
-    <TableRow className="border-b border-border hover:bg-transparent">
+    <TableRow className="border-b border-border/70 hover:bg-transparent">
       {headers.map((header) => {
         const canResize = enableResize && header.column.getCanResize()
         const isSelectColumn = header.column.id === 'select'
