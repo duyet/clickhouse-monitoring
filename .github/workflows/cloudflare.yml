@@ -58,22 +58,30 @@ jobs:
         run: bun install
 
       - name: Build for Cloudflare
+        id: build
+        continue-on-error: true
         env:
           NEXT_PUBLIC_GIT_SHA: ${{ steps.meta.outputs.git_sha }}
           NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.git_ref }}
           NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ steps.meta.outputs.build_timestamp }}
           NEXT_PUBLIC_CI: "true"
-        run: bun run cf:build
+        run: |
+          bun run cf:build 2>&1 | tee /tmp/build-output.txt
+          exit ${PIPESTATUS[0]}
 
       - name: Deploy preview to Cloudflare Workers
         id: deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --env preview --minify
+        if: steps.build.outcome == 'success'
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler deploy --env preview --minify 2>&1 | tee /tmp/deploy-output.txt
+          exit ${PIPESTATUS[0]}
 
       - name: Comment preview URL on PR
+        if: steps.deploy.outcome == 'success'
         uses: actions/github-script@v7
         with:
           script: |
@@ -117,6 +125,84 @@ jobs:
                 body,
               });
             }
+
+      - name: Comment failure on PR
+        if: always() && (steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const sha = '${{ steps.meta.outputs.git_sha }}';
+            const buildOutcome = '${{ steps.build.outcome }}';
+            const deployOutcome = '${{ steps.deploy.outcome }}';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            let failedStep, logContent;
+            if (buildOutcome === 'failure') {
+              failedStep = 'Build (`bun run cf:build`)';
+              logContent = fs.existsSync('/tmp/build-output.txt')
+                ? fs.readFileSync('/tmp/build-output.txt', 'utf8')
+                : 'No build output captured.';
+            } else {
+              failedStep = 'Deploy (`wrangler deploy --env preview`)';
+              logContent = fs.existsSync('/tmp/deploy-output.txt')
+                ? fs.readFileSync('/tmp/deploy-output.txt', 'utf8')
+                : 'No deploy output captured.';
+            }
+
+            // Truncate to last 200 lines to stay within comment size limits
+            const lines = logContent.split('\n');
+            const truncated = lines.length > 200;
+            const tail = lines.slice(-200).join('\n');
+
+            const body = [
+              '### ☁️ Cloudflare Preview Deployment — Failed',
+              '',
+              `| Property | Value |`,
+              `|----------|-------|`,
+              `| **Failed step** | ${failedStep} |`,
+              `| **Commit** | \`${sha}\` |`,
+              `| **Workflow run** | [View logs](${runUrl}) |`,
+              '',
+              '<details>',
+              '<summary>Error log (click to expand)</summary>',
+              '',
+              truncated ? `> Showing last 200 of ${lines.length} lines\n` : '',
+              '```',
+              tail,
+              '```',
+              '',
+              '</details>',
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const botComment = comments.find(
+              (c) => c.body?.includes('Cloudflare Preview Deployment')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail job if build or deploy failed
+        if: always() && (steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure')
+        run: exit 1
 
   # ──────────────────────────────────────────────────────────────────────────
   # Production: deploy on merge to main, releases, or manual trigger
