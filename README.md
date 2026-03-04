@@ -91,6 +91,7 @@ docker run -d \
 
 ## Documentation
 
+- **llms.txt** - AI agent discovery file for automated code understanding
 - https://zread.ai/duyet/clickhouse-monitoring _(AI Generated)_
 - https://duyet.github.io/clickhouse-monitoring
   - [Getting Started](https://duyet.github.io/clickhouse-monitoring/getting-started)
@@ -102,6 +103,20 @@ docker run -d \
     - [Docker](https://duyet.github.io/clickhouse-monitoring/deploy/docker)
     - [Kubernetes Helm Chart](https://duyet.github.io/clickhouse-monitoring/deploy/k8s)
   - [Advanced](https://duyet.github.io/clickhouse-monitoring/advanced)
+
+### AI Agent Access (llms.txt)
+
+This project includes `llms.txt`, a standardized file that helps AI coding agents (like Claude Code, GitHub Copilot Workspace, etc.) discover and understand the codebase structure.
+
+**What it contains:**
+- Project overview and features
+- Links to key documentation files
+- API structure and endpoints
+- Directory structure with purposes
+- Development patterns and conventions
+
+**How to use:**
+Access at `https://your-domain.com/llms.txt` or `/llms.txt` in local development.
 
 ## Screenshots
 
