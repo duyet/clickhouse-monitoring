@@ -107,13 +107,20 @@ CLOUDFLARE_WORKERS = "1"
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview environment for PR deployments
 # Deployed by GitHub Actions on pull requests.
-# Inherits all top-level settings; overrides listed below.
+# Inherits most top-level settings; vars require explicit declaration.
 #
 # One-time setup required:
 #   wrangler secret put CLICKHOUSE_PASSWORD --env preview
 # ─────────────────────────────────────────────────────────────────────────────
 [env.preview]
 name = "clickhouse-monitor-preview"
+
+# Vars must be explicitly set per environment (not inherited from top-level)
+[env.preview.vars]
+CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,http://100.81.220.21:8124,http://duet-ubuntu:8124"
+CLICKHOUSE_USER = "duyet,duyet,duyet"
+CLICKHOUSE_MAX_EXECUTION_TIME = "60"
+CLOUDFLARE_WORKERS = "1"
 
 # Self-reference must point to the preview worker
 [[env.preview.services]]

@@ -69,6 +69,14 @@ jobs:
           bun run cf:build 2>&1 | tee /tmp/build-output.txt
           exit ${PIPESTATUS[0]}
 
+      - name: Set preview secrets
+        if: steps.build.outcome == 'success'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "${{ secrets.CLICKHOUSE_PASSWORD }}" | npx wrangler secret put CLICKHOUSE_PASSWORD --env preview
+
       - name: Deploy preview to Cloudflare Workers
         id: deploy
         if: steps.build.outcome == 'success'
