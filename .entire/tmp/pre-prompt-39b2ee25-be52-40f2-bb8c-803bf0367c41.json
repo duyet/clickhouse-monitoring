@@ -1,9 +1,7 @@
 {
   "session_id": "39b2ee25-be52-40f2-bb8c-803bf0367c41",
   "timestamp": "2026-02-11T15:07:01Z",
-  "untracked_files": [
-    ".claude/hooks/notify-app.sh"
-  ],
+  "untracked_files": [".claude/hooks/notify-app.sh"],
   "last_transcript_identifier": "8d6acdd2-aab1-48d3-a38d-597e8e40ec5a",
   "step_transcript_start": 8
 }
