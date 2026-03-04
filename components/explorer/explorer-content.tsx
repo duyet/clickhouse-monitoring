@@ -120,12 +120,6 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
               <Loader2 className="size-3 animate-spin" />
             )}
           </TabsTrigger>
-          <TabsTrigger value="query" className="gap-2">
-            Query
-            {isTabSwitching && tab === 'query' && (
-              <Loader2 className="size-3 animate-spin" />
-            )}
-          </TabsTrigger>
           <Link
             href={partInfoUrl}
             className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -176,14 +170,6 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
           {visitedTabs.has('dependencies') && <DependenciesTab />}
         </TabsContent>
 
-        {/* Query tab: force-mount to preserve editor state */}
-        <TabsContent
-          value="query"
-          className={cn('mt-4', tab !== 'query' && 'hidden flex-none')}
-          forceMount
-        >
-          {visitedTabs.has('query') && <QueryTab />}
-        </TabsContent>
       </Tabs>
     </div>
   )
