@@ -16,24 +16,27 @@ Agent Skills are folders of instructions, scripts, and resources that AI agents 
 
 ## Installation
 
-### Option 1: Clone Repository
+### Via Skills CLI
+
+Install using the skills CLI:
+
+```bash
+npx skills add duyet/clickhouse-monitor
+```
+
+Or specify a custom path:
+
+```bash
+npx skills add duyet/clickhouse-monitor --path skills/clickhouse-monitor
+```
+
+### Manual Installation
 
 Clone the repository and copy the skill directory:
 
 ```bash
 git clone https://github.com/duyet/clickhouse-monitor.git
 cp -r clickhouse-monitor/skills/clickhouse-monitor ~/.claude/skills/
-```
-
-### Option 2: Download from GitHub
-
-Download the skill files directly from GitHub:
-
-```bash
-# Download individual files
-curl -o SKILL.md https://raw.githubusercontent.com/duyet/clickhouse-monitor/main/skills/clickhouse-monitor/SKILL.md
-curl -o README.md https://raw.githubusercontent.com/duyet/clickhouse-monitor/main/skills/clickhouse-monitor/README.md
-# ... download other files
 ```
 
 ### Local Development

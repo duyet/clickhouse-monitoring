@@ -23,7 +23,7 @@ Specialized knowledge for the ClickHouse Monitor dashboard - a real-time monitor
 
 **Installation:**
 ```bash
-npx skills add https://github.com/duyet/clickhouse-monitor --path skills/clickhouse-monitor
+npx skills add duyet/clickhouse-monitor
 ```
 
 **Usage:**
