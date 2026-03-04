@@ -9,7 +9,7 @@ import {
   syntaxHighlighting,
 } from '@codemirror/language'
 import { searchKeymap } from '@codemirror/search'
-import { EditorState } from '@codemirror/state'
+import { Compartment, EditorState } from '@codemirror/state'
 import {
   placeholder as cmPlaceholder,
   EditorView,
@@ -111,6 +111,8 @@ interface SqlEditorProps {
   onChange: (value: string) => void
   onRun?: () => void
   placeholder?: string
+  /** Database/table schema for SQL autocomplete: { "db.table": ["col1", "col2"] } */
+  schema?: Record<string, string[]>
 }
 
 export function SqlEditor({
@@ -118,11 +120,13 @@ export function SqlEditor({
   onChange,
   onRun,
   placeholder = 'SELECT * FROM system.tables LIMIT 100',
+  schema,
 }: SqlEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const onChangeRef = useRef(onChange)
   const onRunRef = useRef(onRun)
+  const sqlCompartment = useRef(new Compartment())
   const { resolvedTheme } = useTheme()
 
   // Keep refs in sync
@@ -159,7 +163,7 @@ export function SqlEditor({
         history(),
         bracketMatching(),
         autocompletion(),
-        sql(),
+        sqlCompartment.current.of(sql({ schema: schema || {} })),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         keymap.of([
           ...defaultKeymap,
@@ -185,9 +189,19 @@ export function SqlEditor({
       view.destroy()
       viewRef.current = null
     }
-    // Only recreate on theme change — value sync handled separately
+    // Only recreate on theme change — value/schema sync handled separately
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedTheme])
+
+  // Dynamically reconfigure SQL schema when it changes (e.g., databases load)
+  useEffect(() => {
+    const view = viewRef.current
+    if (!view || !schema) return
+
+    view.dispatch({
+      effects: sqlCompartment.current.reconfigure(sql({ schema })),
+    })
+  }, [schema])
 
   // Sync external value changes (e.g., format button, URL prefill)
   useEffect(() => {

@@ -123,7 +123,13 @@ export function useExplorerState(): ExplorerState & {
 
   const setDatabaseAndTable = useCallback(
     (database: string, table: string, engine?: string) => {
-      updateParams({ database, table, engine: engine ?? null, tab: 'data' })
+      updateParams({
+        database,
+        table,
+        engine: engine ?? null,
+        tab: 'data',
+        customQuery: null, // Clear stale query when switching tables
+      })
     },
     [updateParams]
   )

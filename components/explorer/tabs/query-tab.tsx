@@ -2,6 +2,8 @@
 
 import {
   AlertCircle,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Loader2,
   Play,
@@ -13,6 +15,7 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 
@@ -51,6 +54,29 @@ const SqlEditor = dynamic(
 )
 
 const MAX_CELL_LENGTH = 100
+const DEFAULT_LIMIT = 1000
+const PAGE_SIZE = 50
+
+/**
+ * Check if a SQL query already contains a LIMIT clause.
+ * Handles LIMIT inside subqueries by only checking the outermost level.
+ */
+function hasLimitClause(sql: string): boolean {
+  // Simple heuristic: check if LIMIT appears after the last closing paren
+  // or if there are no parens, just check the whole string
+  const upper = sql.toUpperCase()
+  const lastParen = sql.lastIndexOf(')')
+  const searchPortion = lastParen >= 0 ? upper.slice(lastParen) : upper
+  return /\bLIMIT\b/i.test(searchPortion)
+}
+
+/**
+ * Append a default LIMIT clause to a query if it doesn't have one.
+ */
+function ensureLimit(sql: string, limit: number = DEFAULT_LIMIT): string {
+  if (hasLimitClause(sql)) return sql
+  return `${sql.trimEnd()}\nLIMIT ${limit}`
+}
 
 /**
  * Expandable cell component for long text content
@@ -174,6 +200,34 @@ function validateSelectOnly(sql: string): string | null {
   return null
 }
 
+/**
+ * Fetch database.table list for SQL autocomplete schema.
+ * Returns a map like { "db.table": [] } for CodeMirror's sql() extension.
+ */
+function useAutoCompleteSchema(hostId: number) {
+  // Fetch all databases
+  const { data: dbResponse } = useSWR<ApiResponse<{ name: string }[]>>(
+    `/api/v1/explorer/databases?hostId=${hostId}`,
+    async (url: string) => {
+      const res = await fetch(url)
+      return res.json() as Promise<ApiResponse<{ name: string }[]>>
+    },
+    { revalidateOnFocus: false }
+  )
+
+  return useMemo(() => {
+    const schema: Record<string, string[]> = {}
+    const databases = dbResponse?.data || []
+
+    for (const db of databases) {
+      // Add database names as completions
+      schema[db.name] = []
+    }
+
+    return schema
+  }, [dbResponse])
+}
+
 export function QueryTab() {
   const hostId = useHostId()
   const {
@@ -186,9 +240,14 @@ export function QueryTab() {
   // Local editor state (not synced to URL until Run)
   const [editorValue, setEditorValue] = useState('')
   const [validationError, setValidationError] = useState<string | null>(null)
+  // Track if LIMIT was auto-added so we can show an indicator
+  const [limitAdded, setLimitAdded] = useState(false)
   // The query to execute (set on Run, drives the SWR key)
   const [executedQuery, setExecutedQuery] = useState<string | null>(null)
   const initialized = useRef(false)
+
+  // Autocomplete schema from database metadata
+  const schema = useAutoCompleteSchema(hostId)
 
   // Initialize editor from URL state or auto-populate from selected table
   useEffect(() => {
@@ -246,7 +305,13 @@ export function QueryTab() {
     data: rows,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     columnResizeMode: 'onChange',
+    initialState: {
+      pagination: {
+        pageSize: PAGE_SIZE,
+      },
+    },
     defaultColumn: {
       size: 200,
       minSize: 80,
@@ -262,8 +327,14 @@ export function QueryTab() {
       return
     }
     setValidationError(null)
-    setExecutedQuery(sql)
-    setCustomQuery(sql)
+
+    // Auto-add LIMIT if missing to prevent oversized results
+    const finalSql = ensureLimit(sql)
+    const wasLimitAdded = finalSql !== sql
+    setLimitAdded(wasLimitAdded)
+
+    setExecutedQuery(finalSql)
+    setCustomQuery(finalSql)
   }, [editorValue, setCustomQuery])
 
   const handleEditorChange = useCallback(
@@ -286,6 +357,9 @@ export function QueryTab() {
     }
   }, [editorValue])
 
+  const pageCount = table.getPageCount()
+  const currentPage = table.getState().pagination.pageIndex
+
   return (
     <div className="flex flex-col gap-4">
       {/* Query Editor */}
@@ -300,7 +374,12 @@ export function QueryTab() {
           value={editorValue}
           onChange={handleEditorChange}
           onRun={handleRun}
-          placeholder="SELECT * FROM system.tables LIMIT 100"
+          placeholder={
+            database && tableName
+              ? `SELECT * FROM \`${database}\`.\`${tableName}\` LIMIT 100`
+              : 'SELECT * FROM system.tables LIMIT 100'
+          }
+          schema={schema}
         />
         {validationError && (
           <p className="text-sm text-destructive">{validationError}</p>
@@ -358,7 +437,11 @@ export function QueryTab() {
 
       {/* Metadata Bar */}
       {metadata && !error && (
-        <MetadataBar metadata={metadata} isValidating={isValidating} />
+        <MetadataBar
+          metadata={metadata}
+          isValidating={isValidating}
+          limitAdded={limitAdded}
+        />
       )}
 
       {/* Results Table */}
@@ -432,6 +515,33 @@ export function QueryTab() {
         </div>
       )}
 
+      {/* Pagination */}
+      {rows.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">
+            Page {currentPage + 1} of {pageCount}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Empty result */}
       {executedQuery && !isLoading && !error && rows.length === 0 && (
         <div className="p-4 text-sm text-muted-foreground">
@@ -445,9 +555,11 @@ export function QueryTab() {
 function MetadataBar({
   metadata,
   isValidating,
+  limitAdded,
 }: {
   metadata: ApiResponseMetadata
   isValidating: boolean
+  limitAdded: boolean
 }) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -459,6 +571,14 @@ function MetadataBar({
         <Clock className="size-3" />
         {Math.round(metadata.duration * 1000)}ms
       </Badge>
+      {limitAdded && (
+        <Badge
+          variant="outline"
+          className="gap-1 text-xs text-amber-600 dark:text-amber-400"
+        >
+          LIMIT {DEFAULT_LIMIT} auto-added
+        </Badge>
+      )}
       {isValidating && (
         <Loader2 className="size-3 animate-spin text-muted-foreground" />
       )}
