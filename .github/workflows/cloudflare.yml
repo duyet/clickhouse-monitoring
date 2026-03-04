@@ -12,13 +12,12 @@ on:
 
 # Cancel in-progress runs for same PR / branch
 concurrency:
-  group: cloudflare-${{ github.head_ref || github.ref }}
+  group: cloudflare-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
   deployments: write
-  pull-requests: write
 
 jobs:
   # ──────────────────────────────────────────────────────────────────────────
@@ -28,6 +27,10 @@ jobs:
     name: preview
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
 
     steps:
       - name: Checkout
@@ -115,7 +118,7 @@ jobs:
               issue_number: context.issue.number,
             });
             const botComment = comments.find(
-              (c) => c.body?.includes('Cloudflare Preview Deployment')
+              (c) => c.user?.login === 'github-actions[bot]' && c.body?.includes('Cloudflare Preview Deployment')
             );
 
             if (botComment) {
@@ -189,7 +192,7 @@ jobs:
               issue_number: context.issue.number,
             });
             const botComment = comments.find(
-              (c) => c.body?.includes('Cloudflare Preview Deployment')
+              (c) => c.user?.login === 'github-actions[bot]' && c.body?.includes('Cloudflare Preview Deployment')
             );
 
             if (botComment) {

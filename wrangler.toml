@@ -127,6 +127,11 @@ CLOUDFLARE_WORKERS = "1"
 binding = "WORKER_SELF_REFERENCE"
 service = "clickhouse-monitor-preview"
 
+# Durable Objects for cache queue (not inherited from top-level)
+[[env.preview.durable_objects.bindings]]
+name = "NEXT_CACHE_DO_QUEUE"
+class_name = "DOQueueHandler"
+
 # Reuse the same R2 bucket (read-heavy monitoring data)
 [[env.preview.r2_buckets]]
 binding = "NEXT_INC_CACHE_R2_BUCKET"
