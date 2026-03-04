@@ -14,7 +14,7 @@
   "homepage": "https://github.com/duyet/clickhouse-monitor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/duyet/clickhouse-monitor.git"
+    "url": "https://github.com/duyet/clickhouse-monitoring.git"
   },
-  "skills": ["clickhouse-monitor"]
+  "skills": ["."]
 }

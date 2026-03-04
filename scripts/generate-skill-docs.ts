@@ -13,7 +13,7 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
 const ROOT = process.cwd()
-const SKILL_DIR = join(ROOT, 'skills/clickhouse-monitor')
+const SKILL_DIR = join(ROOT, 'skills')
 
 // Types extracted from the codebase
 interface ChartModule {
