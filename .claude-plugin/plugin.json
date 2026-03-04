@@ -1,0 +1,20 @@
+{
+  "name": "clickhouse-monitor",
+  "version": "1.0.0",
+  "description": "Specialized assistance for the ClickHouse Monitor dashboard - a real-time monitoring dashboard for ClickHouse clusters",
+  "author": "duyet",
+  "license": "MIT",
+  "keywords": [
+    "clickhouse",
+    "monitoring",
+    "dashboard",
+    "database",
+    "observability"
+  ],
+  "homepage": "https://github.com/duyet/clickhouse-monitor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/duyet/clickhouse-monitor.git"
+  },
+  "skills": ["clickhouse-monitor"]
+}
