@@ -60,6 +60,291 @@ All requests require `hostId` parameter:
 GET /api/v1/charts/query-count?hostId=0
 ```
 
+## API Usage Guide
+
+### Authentication
+No built-in authentication. **WARNING**: This dashboard exposes sensitive data (SQL queries, database structure). Protect behind:
+- VPN or private network
+- Reverse proxy with authentication (OAuth, SSO, API keys)
+- IP whitelisting
+
+### Response Format
+All endpoints return consistent JSON structure:
+```json
+{
+  "success": true,
+  "data": [...],
+  "metadata": {
+    "queryId": "...",
+    "duration": 123,
+    "rows": 42,
+    "host": "0",
+    "sql": "SELECT ...",
+    "clickhouseVersion": "24.3.1.1",
+    "status": "ok",
+    "api": "/api/v1/charts/..."
+  },
+  "error": { "type": "...", "message": "..." }
+}
+```
+
+### Endpoint Examples
+
+#### 1. Generic Data Endpoint (`/api/v1/data`)
+
+**GET request** (for simple queries):
+```bash
+GET /api/v1/data?hostId=0&sql=SELECT%20count()%20FROM%20system.tables&format=JSONEachRow
+```
+
+**POST request** (for complex queries with parameters):
+```bash
+POST /api/v1/data
+Content-Type: application/json
+
+{
+  "query": "SELECT count() AS total FROM system.tables WHERE database = {database:String}",
+  "queryParams": { "database": "system" },
+  "hostId": "0",
+  "format": "JSONEachRow",
+  "timezone": "UTC"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    { "total": "42" }
+  ],
+  "metadata": {
+    "queryId": "...",
+    "duration": 45,
+    "rows": 1,
+    "host": "0",
+    "sql": "SELECT count() AS total FROM system.tables WHERE database = {database:String}",
+    "timezone": "UTC"
+  }
+}
+```
+
+**Note**: POST queries are validated against dashboard tables to prevent arbitrary SQL execution.
+
+#### 2. Chart Data Endpoint (`/api/v1/charts/[name]`)
+
+**Basic chart request:**
+```bash
+GET /api/v1/charts/query-count?hostId=0
+```
+
+**With time interval and historical range:**
+```bash
+GET /api/v1/charts/query-count?hostId=0&interval=toStartOfTenMinutes&lastHours=24
+```
+
+**With custom timezone:**
+```bash
+GET /api/v1/charts/query-count?hostId=0&timezone=America/Los_Angeles
+```
+
+**With custom parameters:**
+```bash
+GET /api/v1/charts/query-performance?hostId=0&params={"minDuration":1000}
+```
+
+**Response (time-series data):**
+```json
+{
+  "success": true,
+  "data": [
+    { "event_time": "2026-03-04 10:00:00", "count": 150 },
+    { "event_time": "2026-03-04 10:10:00", "count": 142 }
+  ],
+  "metadata": {
+    "queryId": "...",
+    "duration": 89,
+    "rows": 2,
+    "host": "0",
+    "sql": "SELECT toStartOfTenMinutes(event_time) AS event_time, count() AS count FROM system.query_log WHERE event_time > now() - INTERVAL 24 HOUR GROUP BY event_time ORDER BY event_time",
+    "clickhouseVersion": "24.3.1.1",
+    "status": "ok",
+    "api": "/api/v1/charts/query-count?hostId=0&interval=toStartOfTenMinutes&lastHours=24"
+  }
+}
+```
+
+**Available chart names** (from `lib/api/chart-registry.ts`):
+- `query-count`, `query-duration`, `query-memory`
+- `merge-count`, `merge-performance`
+- `replication-queue`, `distributed-queue`
+- `connections-active`, `connections-current`
+- And 25+ more
+
+#### 3. Table Data Endpoint (`/api/v1/tables/[name]`)
+
+**Basic table request:**
+```bash
+GET /api/v1/tables/running-queries?hostId=0
+```
+
+**With pagination:**
+```bash
+GET /api/v1/tables/running-queries?hostId=0&page=1&pageSize=50
+```
+
+**With sorting:**
+```bash
+GET /api/v1/tables/running-queries?hostId=0&sortColumn=duration&sortOrder=desc
+```
+
+**With search filter:**
+```bash
+GET /api/v1/tables/running-queries?hostId=0&search=SELECT%20*%20FROM
+```
+
+**Response (paginated table data):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "query_id": "...",
+      "query": "SELECT * FROM system.numbers",
+      "user": "default",
+      "duration": 1234,
+      "memory_usage": "1048576"
+    }
+  ],
+  "metadata": {
+    "queryId": "...",
+    "duration": 67,
+    "rows": 10,
+    "host": "0",
+    "sql": "SELECT query_id, query, user, elapsed AS duration, memory_usage FROM system.processes WHERE query NOT LIKE '%system.processes%' ORDER BY query_start_time DESC",
+    "page": 1,
+    "pageSize": 50,
+    "totalRows": 125
+  }
+}
+```
+
+**Available table names** (from `lib/api/table-registry.ts`):
+- `running-queries`, `history-queries`, `failed-queries`
+- `tables`, `clusters`, `merges`
+- `expensive-queries`, `mutations`
+- And many more
+
+#### 4. Explorer APIs (`/api/v1/explorer/*`)
+
+**List databases:**
+```bash
+GET /api/v1/explorer/databases?hostId=0
+```
+
+**List tables in database:**
+```bash
+GET /api/v1/explorer/tables?hostId=0&database=system
+```
+
+**Get table columns:**
+```bash
+GET /api/v1/explorer/columns?hostId=0&database=system&table=tables
+```
+
+**Get table DDL:**
+```bash
+GET /api/v1/explorer/ddl?hostId=0&database=system&table=tables
+```
+
+**Query table data:**
+```bash
+POST /api/v1/explorer/query
+Content-Type: application/json
+
+{
+  "query": "SELECT * FROM system.tables LIMIT 10",
+  "hostId": "0"
+}
+```
+
+**Get dependencies:**
+```bash
+GET /api/v1/explorer/dependencies?hostId=0&database=default&table=my_table
+```
+
+#### 5. Hosts Endpoint (`/api/v1/hosts`)
+
+**List configured hosts:**
+```bash
+GET /api/v1/hosts
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 0, "name": "Production", "host": "clickhouse.prod.example.com" },
+    { "id": 1, "name": "Staging", "host": "clickhouse.staging.example.com" }
+  ],
+  "metadata": { "queryId": "...", "duration": 5, "rows": 2, "host": "N/A" }
+}
+```
+
+### Cache Policies
+
+API responses include `Cache-Control` headers:
+
+| Policy | Cache Duration | Use Case |
+|--------|---------------|----------|
+| `realtime` | 10s | Current running queries, live metrics |
+| `standard` | 30s | Most chart data |
+| `historical` | 120s | Historical data, aggregated metrics |
+
+### Error Handling
+
+**Error response format:**
+```json
+{
+  "success": false,
+  "data": null,
+  "metadata": { ... },
+  "error": {
+    "type": "table_not_found",
+    "message": "Table system.backup_log does not exist",
+    "details": {
+      "checkedTables": ["system.backup_log"],
+      "missingTables": ["system.backup_log"]
+    }
+  }
+}
+```
+
+**Error types:**
+- `table_not_found` (404) - Requested table doesn't exist
+- `validation_error` (400) - Invalid request parameters
+- `query_error` (500) - SQL execution error
+- `network_error` (503) - Connection to ClickHouse failed
+- `permission_error` (403) - Query validation failed
+
+### Timezone Support
+
+Pass `timezone` parameter for session-level time conversion:
+```bash
+GET /api/v1/charts/query-count?hostId=0&timezone=America/New_York
+```
+
+Supported formats: IANA timezone identifiers (e.g., `UTC`, `America/Los_Angeles`, `Europe/Berlin`)
+
+### Data Formats
+
+Supported ClickHouse response formats (via `format` parameter):
+- `JSONEachRow` (default) - One JSON object per row
+- `JSON` - Complete JSON array
+- `CSV` - Comma-separated values
+- `TSV` - Tab-separated values
+
 ## Key Directories
 
 ### Application
