@@ -1,0 +1,3 @@
+It looks like you pasted a CLI command as a message. The `--teleport` flag is a Claude Code CLI feature that would need to be run directly in your terminal, not as a message within an existing session.
+
+You're already in an active session on branch `ux/overview-improvements`. What would you like to work on?
