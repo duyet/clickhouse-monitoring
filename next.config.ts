@@ -72,8 +72,9 @@ export default nextConfig
 // Only initialize Cloudflare for dev when ENABLE_CLOUDFLARE is set
 if (process.env.ENABLE_CLOUDFLARE === 'true') {
   import('@opennextjs/cloudflare').then(({ initOpenNextCloudflareForDev }) => {
-    initOpenNextCloudflareForDev({
-      experimental: { remoteBindings: true },
-    })
+    initOpenNextCloudflareForDev(
+      // @ts-expect-error -- experimental option may not exist in all versions
+      { experimental: { remoteBindings: true } }
+    )
   })
 }

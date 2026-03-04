@@ -98,6 +98,7 @@ export const failedQueriesConfig: QueryConfig = {
     },
   ],
   columns: [
+    'action',
     'query_id',
     'exception',
     'type',
@@ -131,6 +132,7 @@ export const failedQueriesConfig: QueryConfig = {
     'normalized_query',
   ],
   columnFormats: {
+    action: [ColumnFormat.Action, ['explain-query', 'open-in-explorer']],
     normalized_query: [
       ColumnFormat.CodeDialog,
       {

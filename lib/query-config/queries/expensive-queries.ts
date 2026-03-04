@@ -130,6 +130,7 @@ export const expensiveQueriesConfig: QueryConfig = {
     },
   ] as VersionedSql[],
   columns: [
+    'action',
     'query',
     'query_cache_usage',
     'queries_duration',
@@ -159,6 +160,7 @@ export const expensiveQueriesConfig: QueryConfig = {
     'selected_bytes',
   ],
   columnFormats: {
+    action: [ColumnFormat.Action, ['explain-query', 'open-in-explorer']],
     query: [
       ColumnFormat.CodeDialog,
       { max_truncate: 100, hide_query_comment: true },

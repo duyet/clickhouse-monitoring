@@ -8,7 +8,9 @@ import { TableSkeleton } from '@/components/skeletons'
 
 function defaultFallbackRender({ error, resetErrorBoundary }: FallbackProps) {
   // Use ChartError for consistent error display across the app
-  return <ChartError error={error} onRetry={resetErrorBoundary} />
+  const normalizedError =
+    error instanceof Error ? error : new Error(String(error))
+  return <ChartError error={normalizedError} onRetry={resetErrorBoundary} />
 }
 
 export type ServerComponentLazyProps = {

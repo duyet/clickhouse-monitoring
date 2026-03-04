@@ -30,7 +30,7 @@ export function ExplorerLayout() {
           >
             <MenuIcon className="size-4" />
           </Button>
-          <h2 className="text-lg font-semibold">Database Explorer</h2>
+          <h2 className="text-lg font-semibold">Data Explorer</h2>
         </div>
         <div className="flex-1 overflow-auto">
           <ExplorerContent />

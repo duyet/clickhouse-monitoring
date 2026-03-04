@@ -1,0 +1,18 @@
+Everything is intact. Nothing was removed or changed in your pages.
+
+- **`/` (root)** — Still renders `HomePage` with `BentoOverview` + navigation grid
+- **`/overview`** — Still renders `OverviewPage` with Bento/Classic view toggle + all the tabbed charts (Connections, Queries, Merges, Replication, System)
+
+The custom hosts feature only touched:
+- The **host switcher** component (sidebar dropdown — added "Connect New Cluster" button)
+- The **hosts API** (added `source: 'env'` field)
+- The **useHosts hook** (merges custom hosts after env hosts)
+- New files for proxy/form/dialogs
+
+No pages, charts, or dashboard components were modified. All your numbers, charts, and tabs are exactly where they were.
+
+`★ Insight ─────────────────────────────────────`
+**Additive-only changes**: This feature was designed to be purely additive — new files + minimal modifications to existing wiring points. The `ExtendedHostInfo` type extends `HostInfo` (backward compatible), and `useHosts()` returns the same array shape with an extra `source` field. Existing consumers that don't check `source` work identically.
+`─────────────────────────────────────────────────`
+
+Is there something specific that looks different when you load the app? If so, it might be related to the `app/page.tsx` changes that were already in the git working tree *before* this session (the `git status` showed `M app/page.tsx` as a pre-existing modification on the `ux/overview-improvements` branch).

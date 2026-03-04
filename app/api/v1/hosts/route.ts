@@ -42,6 +42,19 @@ export async function GET(): Promise<Response> {
     // Get all configured hosts
     const configs = getClickHouseConfigs()
 
+    if (configs.length === 0) {
+      return createApiErrorResponse(
+        {
+          type: ApiErrorType.NetworkError,
+          message:
+            'No ClickHouse hosts configured. CLICKHOUSE_HOST environment variable is missing or empty.',
+          details: { timestamp: new Date().toISOString() },
+        },
+        503,
+        ROUTE_CONTEXT
+      )
+    }
+
     // Transform to public API format (exclude passwords)
     const hosts: HostInfo[] = configs.map((config) => ({
       id: config.id,

@@ -16,11 +16,13 @@ const ENV_FILE_LOCAL = join(process.cwd(), '.env.local')
 
 // Secrets to set (excluding NEXT_PUBLIC_* which are build-time only)
 // Note: Variables already in wrangler.toml [vars] should NOT be in this list
+// Note: CLICKHOUSE_HOST and CLICKHOUSE_USER are non-sensitive and should be
+//       set as [vars] in wrangler.toml or via Cloudflare Dashboard, not secrets.
 const SECRET_KEYS = [
-  'CLICKHOUSE_HOST',
-  'CLICKHOUSE_USER',
   'CLICKHOUSE_PASSWORD',
   // These are already set in wrangler.toml [vars], so skip them:
+  // 'CLICKHOUSE_HOST',
+  // 'CLICKHOUSE_USER',
   // 'CLICKHOUSE_MAX_EXECUTION_TIME',
   // 'CLICKHOUSE_DEFAULT_CLUSTER',
   // 'CLICKHOUSE_TABLE_MAX_PARTS_WARN',

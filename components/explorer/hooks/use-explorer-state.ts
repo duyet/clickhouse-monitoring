@@ -9,6 +9,7 @@ export type ExplorerTab =
   | 'ddl'
   | 'indexes'
   | 'dependencies'
+  | 'query'
 
 export interface ExplorerState {
   hostId: number
@@ -16,6 +17,7 @@ export interface ExplorerState {
   table: string | null
   engine: string | null
   tab: ExplorerTab
+  customQuery: string | null
 }
 
 export function useExplorerState(): ExplorerState & {
@@ -27,6 +29,7 @@ export function useExplorerState(): ExplorerState & {
     engine?: string
   ) => void
   setTab: (tab: ExplorerTab) => void
+  setCustomQuery: (sql: string | null) => void
 } {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -36,12 +39,23 @@ export function useExplorerState(): ExplorerState & {
     const hostParam = searchParams.get('host')
     const hostId = hostParam !== null ? Number(hostParam) : 0
 
+    const q = searchParams.get('q')
+    let customQuery: string | null = null
+    if (q) {
+      try {
+        customQuery = decodeURIComponent(atob(q))
+      } catch {
+        customQuery = null
+      }
+    }
+
     return {
       hostId: Number.isNaN(hostId) ? 0 : hostId,
       database: searchParams.get('database'),
       table: searchParams.get('table'),
       engine: searchParams.get('engine'),
       tab: (searchParams.get('tab') as ExplorerTab) || 'data',
+      customQuery,
     }
   }, [searchParams])
 
@@ -80,6 +94,14 @@ export function useExplorerState(): ExplorerState & {
         params.set('tab', updates.tab)
       }
 
+      if (updates.customQuery !== undefined) {
+        if (updates.customQuery === null) {
+          params.delete('q')
+        } else {
+          params.set('q', btoa(encodeURIComponent(updates.customQuery)))
+        }
+      }
+
       router.push(`${pathname}?${params.toString()}`)
     },
     [searchParams, pathname, router]
@@ -101,7 +123,13 @@ export function useExplorerState(): ExplorerState & {
 
   const setDatabaseAndTable = useCallback(
     (database: string, table: string, engine?: string) => {
-      updateParams({ database, table, engine: engine ?? null, tab: 'data' })
+      updateParams({
+        database,
+        table,
+        engine: engine ?? null,
+        tab: 'data',
+        customQuery: null, // Clear stale query when switching tables
+      })
     },
     [updateParams]
   )
@@ -113,11 +141,19 @@ export function useExplorerState(): ExplorerState & {
     [updateParams]
   )
 
+  const setCustomQuery = useCallback(
+    (sql: string | null) => {
+      updateParams({ customQuery: sql })
+    },
+    [updateParams]
+  )
+
   return {
     ...state,
     setDatabase,
     setTable,
     setDatabaseAndTable,
     setTab,
+    setCustomQuery,
   }
 }

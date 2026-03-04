@@ -149,7 +149,7 @@ export const menuItemsConfig: MenuItem[] = [
     section: 'main',
     items: [
       {
-        title: 'Database Explorer',
+        title: 'Data Explorer',
         href: '/explorer',
         description: 'Interactive database schema browser with metadata',
         countKey: 'tables-explorer',

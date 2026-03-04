@@ -207,9 +207,9 @@ export const EmptyState = memo(function EmptyState({
           </button>
         )}
       </div>
-      <p className="mt-1.5 max-w-xs text-sm text-muted-foreground leading-relaxed break-words">
+      <div className="mt-1.5 max-w-full sm:max-w-md w-full px-4 text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-wrap overflow-hidden">
         {description || config.description}
-      </p>
+      </div>
 
       {(action || secondaryAction) && (
         <div className="mt-4 flex items-center gap-2">

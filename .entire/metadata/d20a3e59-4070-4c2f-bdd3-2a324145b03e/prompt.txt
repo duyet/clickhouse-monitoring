@@ -1,0 +1,136 @@
+/batch
+
+/explorer page support custom query , only support SELECT only
+query and selected database / tables store the state in url (query -> base64)
+
+---
+
+spanw a team
+
+---
+
+Please address the comments from this code review:
+## Individual Comments
+### Comment 1
+<location path="components/explorer/explorer-content.tsx" line_range="66-75" />
+<code_context>
+     })
+   }
++  // When query tab is active, show it regardless of database/table selection
++  if (tab === 'query') {
++    return (
+</code_context>
+<issue_to_address>
+**suggestion:** The query tab is rendered via two separate code paths, which looks redundant and potentially confusing.
+When `tab === 'query'` you return early and render `<QueryTab />`, so the `<Tabs>` block (and the `TabsContent value="query"`) never renders, even though there’s also a `TabsTrigger` and `TabsContent` for `query` with `forceMount`. This duplication makes the flow harder to reason about and risks the two paths diverging. It’d be clearer to use a single code path: either keep the early return and remove the `TabsTrigger`/`TabsContent` for `query`, or drop the early return and rely entirely on the tab system (with `forceMount` or a similar wrapper to handle the no database/table case).
+</issue_to_address>
+
+---
+
+Verify each finding against the current code and only fix it if needed.
+Inline comments:
+In `@app/api/v1/explorer/query/route.ts`:
+- Line 27: The GET handler using the sql/q URL parameter with a very large
+MAX_QUERY_LENGTH (const MAX_QUERY_LENGTH = 100_000) will hit browser/proxy URL
+length limits before this guard; change the endpoint to accept large queries in
+the POST body (move execution logic from the GET route to a POST route that
+reads SQL from the request body) and keep the GET q/sql param only for short,
+shareable editor state (validate and cap it to a small length). Update the route
+handling in route.ts to add/route POST -> executeQuery handler (use existing
+execution logic but read payload from req.body) and keep GET for
+read-only/shareable state checks that enforce a much smaller limit.
+- Around line 116-120: The current debug call logs the full SQL string (`sql`)
+which can leak sensitive data; change the logging in the route handler that
+calls debug(`[GET /api/v1/explorer/query] Executing query:`, { sql, format,
+timezone }) to avoid emitting raw SQL—instead compute and log a non-reversible
+fingerprint (e.g. SHA-256 hash) of `sql`, the `sql.length`, and the query
+operation (first token or verb parsed from `sql`), while still including
+`format` and `timezone`; update the debug invocation to use these derived values
+so `sql` itself is never written to logs.
+- Around line 39-41: The calls to getHostIdFromParams(...) and fetchData(...)
+can throw and currently bypass your API error contract; wrap both invocations in
+try/catch blocks inside the route handler (the function that uses
+getHostIdFromParams and fetchData) and convert any caught exceptions into your
+structured API error shape (same format as result.error) with appropriate HTTP
+status instead of letting them bubble to a framework 500; ensure you reference
+getHostIdFromParams(...) and fetchData(...) in the catches so thrown errors are
+logged/normalized and returned in the same typed error response path you already
+use for result.error.
+In `@components/explorer/explorer-content.tsx`:
+- Around line 66-74: The early return when tab === 'query' causes the tab strip
+and TabsContent/visitedTabs logic to be bypassed; change the flow so QueryTab is
+only rendered standalone when there is no DB/table context (e.g., when
+selectedTable or selectedDatabase is null/undefined), otherwise render the
+QueryTab inside the normal tab shell/TabsContent so the tab strip and
+visitedTabs logic (TabsContent, visitedTabs) remain active; update the blocks
+around ExplorerBreadcrumb and QueryTab (and the similar occurrences at the other
+locations mentioned) to conditionally choose standalone vs in-shell rendering
+based on the presence of a table/database selection rather than solely on tab
+=== 'query'.
+In `@components/explorer/tabs/query-tab.tsx`:
+- Around line 257-265: The SQL editor currently uses a plain Textarea (component
+Textarea with ref textareaRef, value editorValue, onChange handleEditorChange,
+onKeyDown handleKeyDown) so add a syntax-highlighting editor component instead:
+replace the Textarea with your chosen code editor (e.g., MonacoEditor or
+CodeMirror) configured for SQL mode, wire its value and change/keydown handlers
+to editorValue, handleEditorChange, and handleKeyDown (or adapt handlers to the
+editor's API), and preserve the className/font and spellCheck behavior so users
+get SQL token highlighting while existing refs and event logic continue to work.
+- Around line 413-415: The UI displays metadata.duration with an incorrect "ms"
+unit; metadata.duration is in seconds (from the ClickHouse fetch layer) so
+update the rendering in the QueryTab component: either change the unit label
+from "ms" to "s" (e.g., render "{metadata.duration}s") or convert the value to
+milliseconds before rendering (e.g., render "{Math.round(metadata.duration *
+1000)}ms") depending on desired display; ensure the change is applied where
+<Clock className="size-3" /> and {metadata.duration}ms are rendered so the label
+and value are consistent.
+---
+Nitpick comments:
+In `@components/explorer/database-overview.tsx`:
+- Line 12: The import for useExplorerState should use the project alias instead
+of a relative path; replace the current import statement that references
+useExplorerState (the line importing from './hooks/use-explorer-state') with the
+absolute alias form (e.g., import { useExplorerState } from
+'@/components/explorer/hooks/use-explorer-state' or the correct @ path used in
+your repo) so component imports follow the @ alias convention and remain
+consistent; update the single import declaration for useExplorerState
+accordingly.
+In `@components/explorer/explorer-content.tsx`:
+- Line 13: Replace the relative import of QueryTab with the project's absolute
+alias import; update the import that currently reads "./tabs/query-tab" to use
+the @ alias (e.g., "@/components/explorer/tabs/query-tab") so the QueryTab
+component import follows the repository's absolute path convention.
+In `@components/explorer/hooks/use-explorer-state.ts`:
+- Around line 130-141: The setCustomQuery function duplicates URL mutation logic
+instead of reusing the existing updateParams updater; modify setCustomQuery to
+delegate to updateParams (or extend updateParams to accept a q/customQuery
+argument) so all query param changes go through a single path. Specifically,
+build the encoded/removed q value using the same URLSearchParams approach but
+call updateParams({ searchParams: params }) or updateParams({ q: encodedOrNull
+}) (depending on how updateParams is designed) rather than calling router.push
+directly, and keep references to setCustomQuery, updateParams, searchParams,
+pathname, and router to locate the code.
+In `@components/explorer/tabs/query-tab.tsx`:
+- Line 21: Replace the relative import of the explorer state hook with the
+project's absolute @ alias: update the import of useExplorerState (currently
+"import { useExplorerState } from '../hooks/use-explorer-state'") to the
+corresponding absolute path under the components alias (e.g.,
+"@/components/explorer/hooks/use-explorer-state") so the file uses the
+consistent `@/components` import style expected by the codebase.
+
+---
+
+Continue from where you left off.
+
+---
+
+Please setup wrangler build from Github Actions and push to cloudflare
+Support Preview on PR and Prod on merged to master
+
+---
+
+This session is being continued from another machine. Application state may have changed. The updated working directory is /Users/duet/project/clickhouse-monitor
+
+---
+
+please read @.env.production.local and setup wrangler and github secrets

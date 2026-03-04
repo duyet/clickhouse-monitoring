@@ -39,6 +39,7 @@ export const runningQueriesConfig: QueryConfig = {
     ORDER BY elapsed
   `,
   columns: [
+    'action',
     'query',
     'query_detail',
     'user',
@@ -59,6 +60,7 @@ export const runningQueriesConfig: QueryConfig = {
   // Bulk actions for selected rows (shown in toolbar)
   bulkActions: ['kill-query'],
   columnFormats: {
+    action: [ColumnFormat.Action, ['explain-query', 'open-in-explorer']],
     query: [
       ColumnFormat.CodeDialog,
       {

@@ -20,7 +20,7 @@ function LayoutErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
         <div className="space-y-2">
           <h2 className="text-xl font-semibold">Something went wrong</h2>
           <p className="text-muted-foreground text-sm">
-            {error.message ||
+            {(error instanceof Error ? error.message : String(error)) ||
               'An unexpected error occurred while loading this page.'}
           </p>
         </div>
@@ -45,11 +45,14 @@ export function LayoutErrorBoundary({
   return (
     <ErrorBoundary
       fallbackRender={LayoutErrorFallback}
-      onError={(error) => {
-        ErrorLogger.logError(error, {
-          component: 'LayoutErrorBoundary',
-          action: 'caught',
-        })
+      onError={(error: unknown) => {
+        ErrorLogger.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          {
+            component: 'LayoutErrorBoundary',
+            action: 'caught',
+          }
+        )
       }}
     >
       {children}

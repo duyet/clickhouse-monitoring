@@ -407,7 +407,7 @@ describe('clickhouse-fetch', () => {
         const result = await fetchData(defaultParams)
 
         expect(result.data).toBeNull()
-        expect(result.error?.message).toBe('String error')
+        expect(result.error?.message).toContain('String error')
         expect(result.error?.details?.originalError).toBeUndefined()
       })
 

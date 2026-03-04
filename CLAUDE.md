@@ -36,11 +36,17 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 **Note: This project uses `bun` as the package manager.** Use `bun` instead of `pnpm` or `npm` for all commands.
 
+### Setup
+
+- `bun install` - Install all dependencies (required before dev/build)
+
 ### Development
 
 - `bun run dev` - Start development server with turbopack
-- `bun run build` - Build for production with turbopack
+- `bun run build` - Build for production with turbopack (also runs type checking)
 - `bun run start` - Start production server
+
+**Verification workflow:** After making changes, always run `bun run build` to catch type errors. The build includes TypeScript type checking via `tsc`. If `node_modules/` is missing, run `bun install` first.
 
 ### Testing
 
@@ -58,6 +64,28 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 - `bun run fmt` - Format code with Prettier
 
 ### Deployment
+
+#### Dual Deployment Support
+
+This application supports **two production-ready deployment options**. Both use the same codebase—choose based on your infrastructure preferences:
+
+**Docker Deployment**
+- Best for: Self-hosted environments, on-premises deployments, VPS hosting
+- Advantages: Full control over the runtime, traditional server environment, easier debugging
+- Use when: You have existing Docker infrastructure or need complete control
+
+**Cloudflare Workers Deployment**
+- Best for: Serverless deployments, global edge distribution, zero-ops maintenance
+- Advantages: Automatic global CDN, built-in DDoS protection, pay-per-use pricing
+- Use when: You want global edge performance without managing servers
+
+Both deployment methods provide:
+- Static site generation with the same build output
+- Client-side data fetching via SWR
+- Multi-host ClickHouse monitoring support
+- Environment variable configuration for secrets
+
+**Cloudflare Workers Commands**:
 
 - `bun run cf:deploy` - Deploy to Cloudflare Workers (builds, sets secrets, deploys)
 - `bun run cf:build` - Build for Cloudflare (Next.js build + OpenNext)
