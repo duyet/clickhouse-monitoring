@@ -92,9 +92,8 @@ id = "78782c1fcf4141d9b6f26f2046f50ceb"
 
 [vars]
 # ClickHouse connection (non-sensitive)
-# Override these per-environment or via Cloudflare Dashboard.
-# CLICKHOUSE_HOST = "http://localhost:8123"
-# CLICKHOUSE_USER = "default"
+CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,http://100.81.220.21:8124,http://duet-ubuntu:8124"
+CLICKHOUSE_USER = "duyet,duyet,duyet"
 
 # Maximum query execution time in seconds before ClickHouse terminates the query.
 # Prevents long-running queries from consuming resources. Used in clickhouse-client.ts.
@@ -111,9 +110,7 @@ CLOUDFLARE_WORKERS = "1"
 # Inherits all top-level settings; overrides listed below.
 #
 # One-time setup required:
-#   1. Set CLICKHOUSE_HOST and CLICKHOUSE_USER via Cloudflare Dashboard
-#      or uncomment and edit env.preview.vars below
-#   2. wrangler secret put CLICKHOUSE_PASSWORD --env preview
+#   wrangler secret put CLICKHOUSE_PASSWORD --env preview
 # ─────────────────────────────────────────────────────────────────────────────
 [env.preview]
 name = "clickhouse-monitor-preview"
