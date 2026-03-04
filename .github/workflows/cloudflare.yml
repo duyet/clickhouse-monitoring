@@ -4,26 +4,30 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    types: [opened, synchronize, reopened]
   release:
     types: [published]
   workflow_dispatch:
 
+# Cancel in-progress runs for same PR / branch
+concurrency:
+  group: cloudflare-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   deployments: write
+  pull-requests: write
 
 jobs:
-  deploy-cloudflare:
-    name: deploy-cloudflare
+  # ──────────────────────────────────────────────────────────────────────────
+  # Preview: deploy on every PR so reviewers can test changes live
+  # ──────────────────────────────────────────────────────────────────────────
+  preview:
+    name: preview
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-
-    # Export environment variables for next job
-    outputs:
-      git_sha: ${{ steps.meta.outputs.git_sha }}
-      git_ref: ${{ steps.meta.outputs.git_ref }}
-      build_timestamp: ${{ steps.meta.outputs.build_timestamp }}
-      deployment_url: ${{ steps.deploy.outputs.url }}
-      deployment_id: ${{ steps.deploy.outputs.id }}
 
     steps:
       - name: Checkout
@@ -35,18 +39,115 @@ jobs:
       - name: Extract build metadata
         id: meta
         run: |
-          # Short SHA (7 chars)
-          GIT_SHA="${{ github.sha }}"
+          GIT_SHA="${{ github.event.pull_request.head.sha }}"
           echo "git_sha=${GIT_SHA:0:7}" >> $GITHUB_OUTPUT
-
-          # Branch or tag name
-          echo "git_ref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-
-          # Build timestamp (UTC)
+          echo "git_ref=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
           BUILD_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           echo "build_timestamp=${BUILD_TIMESTAMP}" >> $GITHUB_OUTPUT
 
-          # Debug output
+      - name: Next.js Cache
+        uses: actions/cache@v5
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-preview-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-preview-${{ hashFiles('**/bun.lock') }}-
+            ${{ runner.os }}-nextjs-
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build for Cloudflare
+        env:
+          NEXT_PUBLIC_GIT_SHA: ${{ steps.meta.outputs.git_sha }}
+          NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.git_ref }}
+          NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ steps.meta.outputs.build_timestamp }}
+          NEXT_PUBLIC_CI: "true"
+        run: bun run cf:build
+
+      - name: Deploy preview to Cloudflare Workers
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --env preview --minify
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = 'https://clickhouse-monitor-preview.duyet.workers.dev';
+            const sha = '${{ steps.meta.outputs.git_sha }}';
+            const timestamp = '${{ steps.meta.outputs.build_timestamp }}';
+            const body = [
+              '### ☁️ Cloudflare Preview Deployment',
+              '',
+              `| Property | Value |`,
+              `|----------|-------|`,
+              `| **Preview URL** | ${previewUrl} |`,
+              `| **Commit** | \`${sha}\` |`,
+              `| **Deployed at** | ${timestamp} |`,
+              '',
+              '> This preview is automatically updated on every push to this PR.',
+            ].join('\n');
+
+            // Find existing bot comment to update
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const botComment = comments.find(
+              (c) => c.body?.includes('Cloudflare Preview Deployment')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Production: deploy on merge to main, releases, or manual trigger
+  # ──────────────────────────────────────────────────────────────────────────
+  production:
+    name: production
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    outputs:
+      git_sha: ${{ steps.meta.outputs.git_sha }}
+      git_ref: ${{ steps.meta.outputs.git_ref }}
+      build_timestamp: ${{ steps.meta.outputs.build_timestamp }}
+      deployment_url: ${{ steps.deployment-details.outputs.url }}
+      deployment_id: ${{ steps.deployment-details.outputs.id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Extract build metadata
+        id: meta
+        run: |
+          GIT_SHA="${{ github.sha }}"
+          echo "git_sha=${GIT_SHA:0:7}" >> $GITHUB_OUTPUT
+          echo "git_ref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          BUILD_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "build_timestamp=${BUILD_TIMESTAMP}" >> $GITHUB_OUTPUT
           echo "Git SHA: ${GIT_SHA:0:7}"
           echo "Git Ref: ${{ github.ref_name }}"
           echo "Build Time: ${BUILD_TIMESTAMP}"
@@ -64,7 +165,6 @@ jobs:
 
       - name: Build for Cloudflare
         env:
-          # Build-time environment variables for About page
           NEXT_PUBLIC_GIT_SHA: ${{ steps.meta.outputs.git_sha }}
           NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.git_ref }}
           NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ steps.meta.outputs.build_timestamp }}
@@ -87,17 +187,11 @@ jobs:
       - name: Extract deployment details
         id: deployment-details
         run: |
-          # Get worker URL from wrangler.toml (TOML format: name = "value")
           WORKER_NAME=$(grep '^name = ' wrangler.toml | head -n 1 | awk -F'"' '{print $2}')
           WORKER_URL="https://${WORKER_NAME}.duyet.workers.dev"
-
-          # Extract version ID from deployment output (captured in wrangler action output)
-          # The wrangler action outputs deployment details we can use
           echo "url=${WORKER_URL}" >> $GITHUB_OUTPUT
 
-          # Try to get version ID from recent deployment via wrangler
           VERSION_ID=$(wrangler deployments list --json 2>/dev/null | jq -r '.[0].id' || echo "")
-
           if [ -n "$VERSION_ID" ]; then
             echo "id=${VERSION_ID}" >> $GITHUB_OUTPUT
           fi
