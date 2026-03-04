@@ -1,5 +1,5 @@
 ---
-name: clickhouse-monitor
+name: clickhouse-monitoring
 description: Specialized knowledge for the ClickHouse Monitor dashboard. Use this skill when: working with ClickHouse monitoring dashboards, analyzing query performance, writing ClickHouse system table queries, developing dashboard features, or integrating with the ClickHouse Monitor API. Covers query monitoring, table management, merge operations, system metrics, and ClickHouse version compatibility.
 version: 1.0.0
 author: duyet
