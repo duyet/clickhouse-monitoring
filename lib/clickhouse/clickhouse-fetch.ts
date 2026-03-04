@@ -289,11 +289,19 @@ export const fetchData = async <
       errorType = 'permission_error'
     } else if (
       errorMessage.toLowerCase().includes('network') ||
-      errorMessage.toLowerCase().includes('connection')
+      errorMessage.toLowerCase().includes('connection') ||
+      errorMessage.includes('fetch failed') ||
+      errorMessage.includes('ECONNREFUSED') ||
+      errorMessage.includes('ETIMEDOUT') ||
+      errorMessage.includes('ENOTFOUND') ||
+      errorMessage.includes('getaddrinfo') ||
+      errorMessage.includes('socket hang up') ||
+      errorMessage.includes('UND_ERR')
     ) {
       errorType = 'network_error'
     }
 
+    const enrichedMessage = `${errorMessage} (host: ${clientConfig.host})`
     error(`Query failed (host: ${clientConfig.host}):`, errorMessage)
 
     return {
@@ -306,7 +314,7 @@ export const fetchData = async <
       },
       error: {
         type: errorType,
-        message: errorMessage,
+        message: enrichedMessage,
         details: {
           originalError:
             originalError instanceof Error ? originalError : undefined,
