@@ -10,6 +10,7 @@ import { DataTab } from './tabs/data-tab'
 import { DdlTab } from './tabs/ddl-tab'
 import { DependenciesTab } from './tabs/dependencies-tab'
 import { IndexesTab } from './tabs/indexes-tab'
+import { QueryTab } from './tabs/query-tab'
 import { StructureTab } from './tabs/structure-tab'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -62,6 +63,16 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
     })
   }
 
+  // When query tab is active, show it regardless of database/table selection
+  if (tab === 'query') {
+    return (
+      <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
+        <ExplorerBreadcrumb hostName={hostName} />
+        <QueryTab />
+      </div>
+    )
+  }
+
   if (!database) {
     return <ExplorerEmptyState />
   }
@@ -106,6 +117,12 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
           <TabsTrigger value="dependencies" className="gap-2">
             Dependencies
             {isTabSwitching && tab === 'dependencies' && (
+              <Loader2 className="size-3 animate-spin" />
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="query" className="gap-2">
+            Query
+            {isTabSwitching && tab === 'query' && (
               <Loader2 className="size-3 animate-spin" />
             )}
           </TabsTrigger>
@@ -157,6 +174,15 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
           forceMount
         >
           {visitedTabs.has('dependencies') && <DependenciesTab />}
+        </TabsContent>
+
+        {/* Query tab: force-mount to preserve editor state */}
+        <TabsContent
+          value="query"
+          className={cn('mt-4', tab !== 'query' && 'hidden flex-none')}
+          forceMount
+        >
+          {visitedTabs.has('query') && <QueryTab />}
         </TabsContent>
       </Tabs>
     </div>

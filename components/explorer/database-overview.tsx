@@ -1,6 +1,6 @@
 'use client'
 
-import { DatabaseIcon } from 'lucide-react'
+import { DatabaseIcon, SquareTerminal } from 'lucide-react'
 import useSWR from 'swr'
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
@@ -9,7 +9,9 @@ import {
   type DependencyEdge,
   DependencyGraph,
 } from './dependency-graph/dependency-graph'
+import { useExplorerState } from './hooks/use-explorer-state'
 import { useMemo } from 'react'
+import { Button } from '@/components/ui/button'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -27,6 +29,8 @@ interface DatabaseOverviewProps {
 }
 
 export function DatabaseOverview({ database, hostId }: DatabaseOverviewProps) {
+  const { setTab } = useExplorerState()
+
   // Use unified query that includes all dependency types + standalone tables
   const depsUrl = `/api/v1/explorer/dependencies?hostId=${hostId}&database=${encodeURIComponent(database)}&direction=all`
 
@@ -90,6 +94,15 @@ export function DatabaseOverview({ database, hostId }: DatabaseOverviewProps) {
               ` · ${depCount} dependency relationship${depCount !== 1 ? 's' : ''}`}
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setTab('query')}
+          className="gap-1.5"
+        >
+          <SquareTerminal className="size-4" />
+          Query Editor
+        </Button>
         <CardToolbar
           sql={depsData?.metadata?.sql}
           metadata={metadata}

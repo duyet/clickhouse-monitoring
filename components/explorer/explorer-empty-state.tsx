@@ -8,11 +8,13 @@ import {
   Loader2,
   RefreshCwIcon,
   ServerIcon,
+  SquareTerminal,
   TableIcon,
 } from 'lucide-react'
 import useSWR from 'swr'
 
 import { useExplorerState } from './hooks/use-explorer-state'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHostId } from '@/lib/swr'
@@ -81,7 +83,7 @@ const fetcher = (url: string): Promise<ApiResponse<Database[]>> =>
 
 export function ExplorerEmptyState() {
   const hostId = useHostId()
-  const { setDatabase } = useExplorerState()
+  const { setDatabase, setTab } = useExplorerState()
   const {
     data: response,
     error,
@@ -105,6 +107,15 @@ export function ExplorerEmptyState() {
             structure, DDL, indexes, and dependencies.
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setTab('query')}
+          className="gap-1.5"
+        >
+          <SquareTerminal className="size-4" />
+          Query Editor
+        </Button>
       </div>
 
       {/* Database List */}
