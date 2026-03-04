@@ -15,12 +15,31 @@ This is a Next.js 16 (React 19) ClickHouse monitoring dashboard that provides re
 
 ## Claude Skills
 
-Use skill `clickhouse-query-config` for:
-- Version-aware queries with `sql: VersionedSql[]` and `since` field
-- BackgroundBar column format (requires: base column, readable_column, pct_column)
+### ClickHouse Monitor Agent Skill
+
+For comprehensive dashboard knowledge, use the standalone agent skill:
+
+```bash
+npx skills add duyet/clickhouse-monitoring
+```
+
+The skill covers:
+- Dashboard navigation and features
+- API endpoints and usage
+- Query monitoring, table management, merge operations
+- Development patterns and conventions
+- ClickHouse version compatibility
+
+**Repository**: https://github.com/duyet/clickhouse-monitoring
+
+### Internal: clickhouse-query-config
+
+For version-aware query patterns:
+- `sql: VersionedSql[]` with `since` field
+- BackgroundBar column format (base, readable_column, pct_column)
 - ClickHouse system table schema compatibility
 
-### Quick Reference: BackgroundBar Columns
+**Quick Reference: BackgroundBar Columns**
 
 When asked to "format background bar for: X, Y, Z", each column needs 3 SQL columns:
 ```sql
