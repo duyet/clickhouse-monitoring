@@ -94,6 +94,14 @@ export function useExplorerState(): ExplorerState & {
         params.set('tab', updates.tab)
       }
 
+      if (updates.customQuery !== undefined) {
+        if (updates.customQuery === null) {
+          params.delete('q')
+        } else {
+          params.set('q', btoa(encodeURIComponent(updates.customQuery)))
+        }
+      }
+
       router.push(`${pathname}?${params.toString()}`)
     },
     [searchParams, pathname, router]
@@ -129,15 +137,9 @@ export function useExplorerState(): ExplorerState & {
 
   const setCustomQuery = useCallback(
     (sql: string | null) => {
-      const params = new URLSearchParams(searchParams.toString())
-      if (sql === null) {
-        params.delete('q')
-      } else {
-        params.set('q', btoa(encodeURIComponent(sql)))
-      }
-      router.push(`${pathname}?${params.toString()}`)
+      updateParams({ customQuery: sql })
     },
-    [searchParams, pathname, router]
+    [updateParams]
   )
 
   return {

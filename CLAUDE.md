@@ -36,11 +36,17 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 **Note: This project uses `bun` as the package manager.** Use `bun` instead of `pnpm` or `npm` for all commands.
 
+### Setup
+
+- `bun install` - Install all dependencies (required before dev/build)
+
 ### Development
 
 - `bun run dev` - Start development server with turbopack
-- `bun run build` - Build for production with turbopack
+- `bun run build` - Build for production with turbopack (also runs type checking)
 - `bun run start` - Start production server
+
+**Verification workflow:** After making changes, always run `bun run build` to catch type errors. The build includes TypeScript type checking via `tsc`. If `node_modules/` is missing, run `bun install` first.
 
 ### Testing
 

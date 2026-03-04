@@ -16,7 +16,11 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 
-import type { ApiError, ApiResponse, ApiResponseMetadata } from '@/lib/api/types'
+import type {
+  ApiError,
+  ApiResponse,
+  ApiResponseMetadata,
+} from '@/lib/api/types'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -99,10 +103,34 @@ class QueryTabError extends Error {
   }
 }
 
+/** Max query length for GET requests — longer queries use POST */
+const MAX_GET_QUERY_LENGTH = 8_000
+
 const fetcher = async (
   url: string
 ): Promise<ApiResponse<Record<string, unknown>[]>> => {
-  const res = await fetch(url)
+  let res: Response
+
+  // For long queries, switch to POST to avoid URL length limits
+  if (url.length > MAX_GET_QUERY_LENGTH) {
+    const parsed = new URL(url, window.location.origin)
+    const sql = parsed.searchParams.get('sql') || ''
+    const hostId = parsed.searchParams.get('hostId') || '0'
+    const format = parsed.searchParams.get('format') || 'JSONEachRow'
+
+    res = await fetch('/api/v1/explorer/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sql,
+        hostId: Number(hostId),
+        format,
+      }),
+    })
+  } else {
+    res = await fetch(url)
+  }
+
   const json = (await res.json()) as ApiResponse<Record<string, unknown>[]>
 
   if (!json.success && json.error) {
@@ -137,8 +165,12 @@ function validateSelectOnly(sql: string): string | null {
 
 export function QueryTab() {
   const hostId = useHostId()
-  const { database, table: tableName, customQuery, setCustomQuery } =
-    useExplorerState()
+  const {
+    database,
+    table: tableName,
+    customQuery,
+    setCustomQuery,
+  } = useExplorerState()
 
   // Local editor state (not synced to URL until Run)
   const [editorValue, setEditorValue] = useState('')
@@ -299,8 +331,7 @@ export function QueryTab() {
             <AlertCircle className="size-4" />
           )}
           <AlertTitle>
-            {error instanceof QueryTabError &&
-            error.type === 'permission_error'
+            {error instanceof QueryTabError && error.type === 'permission_error'
               ? 'Permission Denied'
               : 'Query Error'}
           </AlertTitle>
@@ -411,7 +442,7 @@ function MetadataBar({
       </Badge>
       <Badge variant="secondary" className="gap-1 font-mono text-xs">
         <Clock className="size-3" />
-        {metadata.duration}ms
+        {Math.round(metadata.duration * 1000)}ms
       </Badge>
       {isValidating && (
         <Loader2 className="size-3 animate-spin text-muted-foreground" />

@@ -1,6 +1,6 @@
 'use client'
 
-import { ExternalLink, Loader2 } from 'lucide-react'
+import { ExternalLink, Loader2, SquareTerminal } from 'lucide-react'
 
 import { DatabaseOverview } from './database-overview'
 import { ExplorerBreadcrumb } from './explorer-breadcrumb'
@@ -63,8 +63,18 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
     })
   }
 
-  // When query tab is active, show it regardless of database/table selection
-  if (tab === 'query') {
+  // No database selected and not on query tab — show empty state
+  if (!database && tab !== 'query') {
+    return <ExplorerEmptyState />
+  }
+
+  // Database selected but no table, and not on query tab — show database overview
+  if (database && !table && tab !== 'query') {
+    return <DatabaseOverview database={database} hostId={hostId} />
+  }
+
+  // Query tab without a table context — render standalone (no tab strip)
+  if (tab === 'query' && !table) {
     return (
       <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
         <ExplorerBreadcrumb hostName={hostName} />
@@ -73,16 +83,7 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
     )
   }
 
-  if (!database) {
-    return <ExplorerEmptyState />
-  }
-
-  // Show database-level overview when database selected but no table
-  if (!table) {
-    return <DatabaseOverview database={database} hostId={hostId} />
-  }
-
-  const partInfoUrl = `/part-info?host=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
+  const partInfoUrl = `/part-info?host=${hostId}&database=${encodeURIComponent(database!)}&table=${encodeURIComponent(table!)}`
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
@@ -117,6 +118,13 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
           <TabsTrigger value="dependencies" className="gap-2">
             Dependencies
             {isTabSwitching && tab === 'dependencies' && (
+              <Loader2 className="size-3 animate-spin" />
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="query" className="gap-2">
+            <SquareTerminal className="size-3.5" />
+            Query
+            {isTabSwitching && tab === 'query' && (
               <Loader2 className="size-3 animate-spin" />
             )}
           </TabsTrigger>
@@ -170,6 +178,14 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
           {visitedTabs.has('dependencies') && <DependenciesTab />}
         </TabsContent>
 
+        {/* Query tab: force-mount to preserve editor state */}
+        <TabsContent
+          value="query"
+          className={cn('mt-4', tab !== 'query' && 'hidden flex-none')}
+          forceMount
+        >
+          {visitedTabs.has('query') && <QueryTab />}
+        </TabsContent>
       </Tabs>
     </div>
   )
