@@ -65,6 +65,28 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 ### Deployment
 
+#### Dual Deployment Support
+
+This application supports **two production-ready deployment options**. Both use the same codebase—choose based on your infrastructure preferences:
+
+**Docker Deployment**
+- Best for: Self-hosted environments, on-premises deployments, VPS hosting
+- Advantages: Full control over the runtime, traditional server environment, easier debugging
+- Use when: You have existing Docker infrastructure or need complete control
+
+**Cloudflare Workers Deployment**
+- Best for: Serverless deployments, global edge distribution, zero-ops maintenance
+- Advantages: Automatic global CDN, built-in DDoS protection, pay-per-use pricing
+- Use when: You want global edge performance without managing servers
+
+Both deployment methods provide:
+- Static site generation with the same build output
+- Client-side data fetching via SWR
+- Multi-host ClickHouse monitoring support
+- Environment variable configuration for secrets
+
+**Cloudflare Workers Commands**:
+
 - `bun run cf:deploy` - Deploy to Cloudflare Workers (builds, sets secrets, deploys)
 - `bun run cf:build` - Build for Cloudflare (Next.js build + OpenNext)
 - `bun run cf:preview` - Preview Cloudflare deployment locally

@@ -2,14 +2,11 @@
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Pre-push hook for clickhouse-monitor
-# Runs: Full Biome check → Build verification
-# Note: Tests are skipped due to known Jest hanging issue (see CLAUDE.md)
+# Runs: Full Biome check
+# Note: Build verification runs in CI; tests skipped due to Jest hanging issue
 # ─────────────────────────────────────────────────────────────────────────────
 
 echo "🔍 Running full Biome check..."
 bun run check
-
-echo "🏗️ Verifying build..."
-bun run build
 
 echo "✅ Pre-push checks passed!"

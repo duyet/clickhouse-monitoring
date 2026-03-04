@@ -17,6 +17,8 @@
     "cf:config": "bun scripts/set-secrets.ts",
     "cf:deploy": "bun run cf:config && bun run cf:build && wrangler deploy",
     "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "docker:health": "docker compose exec app wget -q -O /dev/null http://localhost:3000/api/healthz || exit 1",
+    "cf:health": "curl -sSf https://clickhouse-monitor.duyet.workers.dev/api/healthz | jq .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "cy:open": "start-server-and-test dev http://localhost:3000 \"cypress open\"",
