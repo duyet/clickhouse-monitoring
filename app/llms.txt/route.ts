@@ -1,0 +1,500 @@
+import { NextResponse } from 'next/server'
+
+const CONTENT = `# ClickHouse Monitor
+
+A modern Next.js 16 dashboard for real-time ClickHouse cluster monitoring through system tables.
+
+## Purpose
+
+Provides real-time insights into ClickHouse clusters with:
+- Query monitoring and performance analysis
+- Table analytics and storage optimization
+- Merge operation tracking
+- Cluster health metrics
+- Multi-instance monitoring from single dashboard
+
+## Documentation
+
+### Primary
+- README.md - Project overview, quick start, deployment options
+- CLAUDE.md - Comprehensive development guide (architecture, patterns, conventions)
+
+### Deployment
+- docs/deployment.md - Docker and Cloudflare Workers deployment guides
+- .env.local.example - Environment variable reference
+
+### ClickHouse Compatibility
+- docs/clickhouse-schemas/ - System table schema documentation by version
+  - v23.8.md, v24.1.md, v24.3.md, etc. - Version-specific column availability
+  - tables/{table}.md - Per-table schema compatibility matrix
+
+## Architecture
+
+### Tech Stack
+- Next.js 16 with App Router and Turbopack
+- React 19 with TypeScript
+- SWR for client-side data fetching with caching
+- ClickHouse clients (@clickhouse/client, @clickhouse/client-web)
+- TanStack Table for data tables
+- Tailwind CSS with shadcn/ui components
+
+### Static Site Design
+**Fully static architecture** - No SSR, no middleware, no server components:
+- All pages use 'use client' directive
+- Client-side data fetching via SWR
+- Query params for routing (?host=0) instead of dynamic routes
+- Better CDN caching and faster initial page loads
+
+## API Structure
+
+Base URL: \`/api/v1/\`
+
+### Endpoints
+- \`/data\` - Generic query endpoint with parameterized queries
+- \`/charts/[name]\` - Chart-specific data with caching
+- \`/tables/[name]\` - Table data with pagination support
+- \`/explorer/*\` - Database explorer APIs (dependencies, projections)
+- \`/hosts\` - List available ClickHouse hosts
+
+### Request Pattern
+All requests require \`hostId\` parameter:
+\`\`\`
+GET /api/v1/charts/query-count?hostId=0
+\`\`\`
+
+## API Usage Guide
+
+### Authentication
+No built-in authentication. **WARNING**: This dashboard exposes sensitive data (SQL queries, database structure). Protect behind:
+- VPN or private network
+- Reverse proxy with authentication (OAuth, SSO, API keys)
+- IP whitelisting
+
+### Response Format
+All endpoints return consistent JSON structure:
+\`\`\`json
+{
+  "success": true,
+  "data": [...],
+  "metadata": {
+    "queryId": "...",
+    "duration": 123,
+    "rows": 42,
+    "host": "0",
+    "sql": "SELECT ...",
+    "clickhouseVersion": "24.3.1.1",
+    "status": "ok",
+    "api": "/api/v1/charts/..."
+  },
+  "error": { "type": "...", "message": "..." }
+}
+\`\`\`
+
+### Endpoint Examples
+
+#### 1. Generic Data Endpoint (\`/api/v1/data\`)
+
+**GET request** (for simple queries):
+\`\`\`bash
+GET /api/v1/data?hostId=0&sql=SELECT%20count()%20FROM%20system.tables&format=JSONEachRow
+\`\`\`
+
+**POST request** (for complex queries with parameters):
+\`\`\`bash
+POST /api/v1/data
+Content-Type: application/json
+
+{
+  "query": "SELECT count() AS total FROM system.tables WHERE database = {database:String}",
+  "queryParams": { "database": "system" },
+  "hostId": "0",
+  "format": "JSONEachRow",
+  "timezone": "UTC"
+}
+\`\`\`
+
+**Response:**
+\`\`\`json
+{
+  "success": true,
+  "data": [
+    { "total": "42" }
+  ],
+  "metadata": {
+    "queryId": "...",
+    "duration": 45,
+    "rows": 1,
+    "host": "0",
+    "sql": "SELECT count() AS total FROM system.tables WHERE database = {database:String}",
+    "timezone": "UTC"
+  }
+}
+\`\`\`
+
+**Note**: POST queries are validated against dashboard tables to prevent arbitrary SQL execution.
+
+#### 2. Chart Data Endpoint (\`/api/v1/charts/[name]\`)
+
+**Basic chart request:**
+\`\`\`bash
+GET /api/v1/charts/query-count?hostId=0
+\`\`\`
+
+**With time interval and historical range:**
+\`\`\`bash
+GET /api/v1/charts/query-count?hostId=0&interval=toStartOfTenMinutes&lastHours=24
+\`\`\`
+
+**With custom timezone:**
+\`\`\`bash
+GET /api/v1/charts/query-count?hostId=0&timezone=America/Los_Angeles
+\`\`\`
+
+**With custom parameters:**
+\`\`\`bash
+GET /api/v1/charts/query-performance?hostId=0&params={"minDuration":1000}
+\`\`\`
+
+**Response (time-series data):**
+\`\`\`json
+{
+  "success": true,
+  "data": [
+    { "event_time": "2026-03-04 10:00:00", "count": 150 },
+    { "event_time": "2026-03-04 10:10:00", "count": 142 }
+  ],
+  "metadata": {
+    "queryId": "...",
+    "duration": 89,
+    "rows": 2,
+    "host": "0",
+    "sql": "SELECT toStartOfTenMinutes(event_time) AS event_time, count() AS count FROM system.query_log WHERE event_time > now() - INTERVAL 24 HOUR GROUP BY event_time ORDER BY event_time",
+    "clickhouseVersion": "24.3.1.1",
+    "status": "ok",
+    "api": "/api/v1/charts/query-count?hostId=0&interval=toStartOfTenMinutes&lastHours=24"
+  }
+}
+\`\`\`
+
+**Available chart names** (from \`lib/api/chart-registry.ts\`):
+- \`query-count\`, \`query-duration\`, \`query-memory\`
+- \`merge-count\`, \`merge-performance\`
+- \`replication-queue\`, \`distributed-queue\`
+- \`connections-active\`, \`connections-current\`
+- And 25+ more
+
+#### 3. Table Data Endpoint (\`/api/v1/tables/[name]\`)
+
+**Basic table request:**
+\`\`\`bash
+GET /api/v1/tables/running-queries?hostId=0
+\`\`\`
+
+**With pagination:**
+\`\`\`bash
+GET /api/v1/tables/running-queries?hostId=0&page=1&pageSize=50
+\`\`\`
+
+**With sorting:**
+\`\`\`bash
+GET /api/v1/tables/running-queries?hostId=0&sortColumn=duration&sortOrder=desc
+\`\`\`
+
+**With search filter:**
+\`\`\`bash
+GET /api/v1/tables/running-queries?hostId=0&search=SELECT%20*%20FROM
+\`\`\`
+
+**Response (paginated table data):**
+\`\`\`json
+{
+  "success": true,
+  "data": [
+    {
+      "query_id": "...",
+      "query": "SELECT * FROM system.numbers",
+      "user": "default",
+      "duration": 1234,
+      "memory_usage": "1048576"
+    }
+  ],
+  "metadata": {
+    "queryId": "...",
+    "duration": 67,
+    "rows": 10,
+    "host": "0",
+    "sql": "SELECT query_id, query, user, elapsed AS duration, memory_usage FROM system.processes WHERE query NOT LIKE '%system.processes%' ORDER BY query_start_time DESC",
+    "page": 1,
+    "pageSize": 50,
+    "totalRows": 125
+  }
+}
+\`\`\`
+
+**Available table names** (from \`lib/api/table-registry.ts\`):
+- \`running-queries\`, \`history-queries\`, \`failed-queries\`
+- \`tables\`, \`clusters\`, \`merges\`
+- \`expensive-queries\`, \`mutations\`
+- And many more
+
+#### 4. Explorer APIs (\`/api/v1/explorer/*\`)
+
+**List databases:**
+\`\`\`bash
+GET /api/v1/explorer/databases?hostId=0
+\`\`\`
+
+**List tables in database:**
+\`\`\`bash
+GET /api/v1/explorer/tables?hostId=0&database=system
+\`\`\`
+
+**Get table columns:**
+\`\`\`bash
+GET /api/v1/explorer/columns?hostId=0&database=system&table=tables
+\`\`\`
+
+**Get table DDL:**
+\`\`\`bash
+GET /api/v1/explorer/ddl?hostId=0&database=system&table=tables
+\`\`\`
+
+**Query table data:**
+\`\`\`bash
+POST /api/v1/explorer/query
+Content-Type: application/json
+
+{
+  "query": "SELECT * FROM system.tables LIMIT 10",
+  "hostId": "0"
+}
+\`\`\`
+
+**Get dependencies:**
+\`\`\`bash
+GET /api/v1/explorer/dependencies?hostId=0&database=default&table=my_table
+\`\`\`
+
+#### 5. Hosts Endpoint (\`/api/v1/hosts\`)
+
+**List configured hosts:**
+\`\`\`bash
+GET /api/v1/hosts
+\`\`\`
+
+**Response:**
+\`\`\`json
+{
+  "success": true,
+  "data": [
+    { "id": 0, "name": "Production", "host": "clickhouse.prod.example.com" },
+    { "id": 1, "name": "Staging", "host": "clickhouse.staging.example.com" }
+  ],
+  "metadata": { "queryId": "...", "duration": 5, "rows": 2, "host": "N/A" }
+}
+\`\`\`
+
+### Cache Policies
+
+API responses include \`Cache-Control\` headers:
+
+| Policy | Cache Duration | Use Case |
+|--------|---------------|----------|
+| \`realtime\` | 10s | Current running queries, live metrics |
+| \`standard\` | 30s | Most chart data |
+| \`historical\` | 120s | Historical data, aggregated metrics |
+
+### Error Handling
+
+**Error response format:**
+\`\`\`json
+{
+  "success": false,
+  "data": null,
+  "metadata": { ... },
+  "error": {
+    "type": "table_not_found",
+    "message": "Table system.backup_log does not exist",
+    "details": {
+      "checkedTables": ["system.backup_log"],
+      "missingTables": ["system.backup_log"]
+    }
+  }
+}
+\`\`\`
+
+**Error types:**
+- \`table_not_found\` (404) - Requested table doesn't exist
+- \`validation_error\` (400) - Invalid request parameters
+- \`query_error\` (500) - SQL execution error
+- \`network_error\` (503) - Connection to ClickHouse failed
+- \`permission_error\` (403) - Query validation failed
+
+### Timezone Support
+
+Pass \`timezone\` parameter for session-level time conversion:
+\`\`\`bash
+GET /api/v1/charts/query-count?hostId=0&timezone=America/New_York
+\`\`\`
+
+Supported formats: IANA timezone identifiers (e.g., \`UTC\`, \`America/Los_Angeles\`, \`Europe/Berlin\`)
+
+### Data Formats
+
+Supported ClickHouse response formats (via \`format\` parameter):
+- \`JSONEachRow\` (default) - One JSON object per row
+- \`JSON\` - Complete JSON array
+- \`CSV\` - Comma-separated values
+- \`TSV\` - Tab-separated values
+
+## Key Directories
+
+### Application
+- \`app/\` - Next.js 16 App Router (all client components with 'use client')
+  - \`overview/\` - Dashboard with 5 tabs (Connections, Queries, Merges, Replication, System)
+  - \`explorer/\` - Database tree browser
+  - \`tables/\`, \`clusters/\`, \`running-queries/\` - Feature pages
+  - \`api/v1/\` - API routes for data fetching
+
+### Components
+- \`components/charts/\` - 30+ chart components (all use SWR with hostId prop)
+- \`components/data-table/\` - Advanced table system (sorting, filtering, pagination)
+- \`components/overview-charts/\` - Overview page chart compositions
+- \`components/ui/\` - shadcn/ui base components (never customize directly)
+
+### Data Layer
+- \`lib/query-config/\` - Centralized query configurations with version awareness
+  - \`queries/\` - Query monitoring configs
+  - \`merges/\` - Merge operation configs
+  - \`tables/\` - Table-specific configs
+  - \`system/\` - System-level configs
+- \`lib/swr/\` - SWR hooks (use-chart-data, use-table-data, use-host)
+- \`lib/clickhouse.ts\` - ClickHouse client (requires hostId)
+- \`lib/api/chart-registry.ts\` - Chart query registry
+
+### Configuration
+- \`menu.ts\` - Navigation menu (defines static routes)
+- \`next.config.ts\` - Next.js configuration (standalone output mode)
+
+## Development Patterns
+
+### SWR Data Fetching Pattern
+All client components follow this pattern:
+\`\`\`typescript
+'use client'
+import { Suspense } from 'react'
+import { useHostId } from '@/lib/swr'
+import { YourChart } from '@/components/charts/your-chart'
+
+export default function YourPage() {
+  const hostId = useHostId() // Extract from ?host= query param
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <YourChart hostId={hostId} />
+    </Suspense>
+  )
+}
+\`\`\`
+
+### Multi-Host Support
+- Environment variables: CLICKHOUSE_HOST, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD
+- Comma-separated values for multiple hosts
+- Routing via query parameter: \`/overview?host=1\`
+- useHostId() hook extracts hostId from URL
+
+### Version-Aware Queries
+Query configs support multiple SQL variants for ClickHouse versions:
+\`\`\`typescript
+export const myConfig: QueryConfig = {
+  name: 'my-query',
+  sql: [
+    { since: '23.8', sql: \`SELECT col1 FROM system.table\` },
+    { since: '24.1', sql: \`SELECT col1, new_col FROM system.table\` },
+  ],
+}
+\`\`\`
+
+### Table Validation
+Optional system tables are validated before querying:
+- \`lib/table-validator.ts\` - Validates table existence
+- \`lib/table-existence-cache.ts\` - Caches validation results (5min TTL)
+- Mark optional configs with \`optional: true\`
+
+## Dashboard Features
+
+### Query Monitoring
+- Current running queries with real-time updates
+- Query history with performance metrics
+- Resource usage tracking (memory, parts read, files)
+- Expensive queries identification
+- Most-used tables and columns
+
+### Cluster Overview
+- Memory/CPU usage charts
+- Distributed queue monitoring
+- Global and MergeTree settings
+- System metrics visualization
+
+### Data Explorer
+- Interactive database tree browser
+- Fast tab switching between tables
+- Column-level details and statistics
+
+### Table Analytics
+- Table size and row counts
+- Compression ratios
+- Part size distribution
+- Column-level granularity
+
+### Developer Tools
+- ZooKeeper explorer
+- Query EXPLAIN analyzer
+- Query kill functionality
+
+## Conventions
+
+### Git Commits
+All commits include co-authorship:
+\`\`\`
+Co-Authored-By: duyetbot <duyetbot@users.noreply.github.com>
+\`\`\`
+
+### shadcn/ui Components
+Never customize \`components/ui/\` files directly:
+- Pass custom classes via \`className\` prop
+- Create wrapper components in \`components/\` (not \`components/ui/\`)
+- Allows easy updates via \`npx shadcn@latest add <component>\`
+
+### File Organization
+- Server components: \`.tsx\` without "use client"
+- Client components: explicit "use client" directive
+- Hooks at deepest consumer level (avoid prop drilling)
+- Co-locate test files: \`.cy.tsx\` for Cypress
+
+## Package Management
+
+**Uses Bun as package manager** - Always use \`bun\` instead of \`npm\` or \`pnpm\`:
+
+- \`bun install\` - Install dependencies
+- \`bun run dev\` - Start dev server with turbopack
+- \`bun run build\` - Build for production (includes type checking)
+- \`bun run test\` - Run Jest tests
+
+## Quality Verification
+
+After making changes:
+1. Run \`bun run build\` - TypeScript type checking included
+2. Fix any type errors before marking complete
+3. Use \`bun run lint\` for ESLint checks
+4. Use \`bun run fmt\` for Prettier formatting
+`
+
+export async function GET() {
+  return new NextResponse(CONTENT, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600, must-revalidate',
+    },
+  })
+}
