@@ -148,7 +148,7 @@ export const EmptyState = memo(function EmptyState({
           {icon || config.icon}
         </div>
         <div className="flex items-center gap-1.5">
-          <p className="text-sm font-medium text-muted-foreground">
+          <p className="text-sm font-medium text-muted-foreground truncate max-w-full">
             {title || config.title}
           </p>
           {onRefresh && (
@@ -207,7 +207,7 @@ export const EmptyState = memo(function EmptyState({
           </button>
         )}
       </div>
-      <div className="mt-1.5 max-w-full sm:max-w-md w-full px-4 text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-wrap overflow-hidden">
+      <div className="mt-1.5 max-w-full sm:max-w-md w-full px-4 text-sm text-muted-foreground leading-relaxed line-clamp-2 overflow-hidden">
         {description || config.description}
       </div>
 

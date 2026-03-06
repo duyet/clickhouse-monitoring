@@ -14,6 +14,7 @@ import {
   CardHeader,
 } from '@/components/ui/card'
 import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
+import { SuggestionCard } from '@/components/ui/suggestion-card'
 import { cn } from '@/lib/utils'
 
 interface ChartEmptyProps {
@@ -117,10 +118,8 @@ export const ChartEmpty = memo(function ChartEmpty({
           onRefresh={onRetry}
         />
         {suggestion && (
-          <div className="mt-6 flex justify-center">
-            <div className="max-w-md text-center text-sm text-muted-foreground whitespace-pre-wrap rounded-lg bg-accent/30 p-4">
-              {suggestion}
-            </div>
+          <div className="mt-4">
+            <SuggestionCard suggestion={suggestion} />
           </div>
         )}
       </CardContent>
