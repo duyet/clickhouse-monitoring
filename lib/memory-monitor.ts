@@ -18,7 +18,9 @@ export interface HealthMetrics {
   memory: MemoryMetrics
   connectionPool: {
     poolSize: number
-    totalConnections: number
+    maxPoolSize: number
+    totalInUse: number
+    totalIdle: number
   }
   tableCache: {
     size: number

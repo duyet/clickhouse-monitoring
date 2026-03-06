@@ -134,6 +134,7 @@ export function SqlEditor({
   onRunRef.current = onRun
 
   // Create editor on mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional — value/schema/placeholder are initial values; sync handled by separate effects
   useEffect(() => {
     if (!containerRef.current) return
 
@@ -190,7 +191,6 @@ export function SqlEditor({
       viewRef.current = null
     }
     // Only recreate on theme change — value/schema sync handled separately
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedTheme])
 
   // Dynamically reconfigure SQL schema when it changes (e.g., databases load)

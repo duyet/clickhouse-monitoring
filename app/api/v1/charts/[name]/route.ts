@@ -447,7 +447,6 @@ function getCacheHeaders(cachePolicy?: CachePolicy): string {
       return 'public, s-maxage=10, stale-while-revalidate=30'
     case 'historical':
       return 'public, s-maxage=120, stale-while-revalidate=300'
-    case 'standard':
     default:
       return 'public, s-maxage=30, stale-while-revalidate=60'
   }
