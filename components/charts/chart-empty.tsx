@@ -118,7 +118,7 @@ export const ChartEmpty = memo(function ChartEmpty({
         />
         {suggestion && (
           <div className="mt-6 flex justify-center">
-            <div className="max-w-md text-center text-sm text-muted-foreground whitespace-pre-wrap rounded-lg bg-accent/30 p-4">
+            <div className="max-w-md w-full text-center text-sm text-muted-foreground whitespace-pre-wrap rounded-lg bg-accent/30 p-4 overflow-hidden">
               {suggestion}
             </div>
           </div>

@@ -26,10 +26,10 @@ export const chartCard = {
    */
   variants: {
     /** Loading and empty states - simpler appearance */
-    default: cn('rounded-lg', 'bg-card/50', 'py-2'),
+    default: cn('rounded-lg', 'bg-card/50', 'py-2', 'overflow-hidden'),
 
     /** Error state - applies error-specific coloring via errorClassName */
-    error: cn('rounded-lg', 'bg-card/50', 'py-2'),
+    error: cn('rounded-lg', 'bg-card/50', 'py-2', 'overflow-hidden'),
 
     /** Normal data state - enhanced visual treatment */
     normal: cn(
