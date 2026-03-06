@@ -165,16 +165,30 @@ describe('validateSqlQuery', () => {
       )
     })
 
-    test('should reject line comments', () => {
-      expect(() => validateSqlQuery('SELECT * FROM users -- comment')).toThrow(
-        'Potentially dangerous SQL detected'
-      )
+    test('should allow line comments', () => {
+      expect(() =>
+        validateSqlQuery('-- comment\nSELECT * FROM users')
+      ).not.toThrow()
     })
 
-    test('should reject block comments', () => {
+    test('should allow block comments', () => {
       expect(() =>
         validateSqlQuery('SELECT /* comment */ * FROM users')
-      ).toThrow('Potentially dangerous SQL detected')
+      ).not.toThrow()
+    })
+
+    test('should allow QUERY_COMMENT prefix', () => {
+      expect(() =>
+        validateSqlQuery(
+          '/* { "client": "clickhouse-monitoring" } */ SELECT * FROM system.processes'
+        )
+      ).not.toThrow()
+    })
+
+    test('should allow block comment before SELECT', () => {
+      expect(() =>
+        validateSqlQuery('/* comment */ SELECT * FROM t')
+      ).not.toThrow()
     })
 
     test('should reject chained dangerous statements', () => {

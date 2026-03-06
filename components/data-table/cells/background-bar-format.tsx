@@ -32,7 +32,7 @@ export const BackgroundBarFormat = memo(function BackgroundBarFormat({
   const pct = row.original[pctColName]
   const orgValue = row.original[colName]
 
-  if (pct === undefined) {
+  if (pct === undefined || pct === null || !Number.isFinite(Number(pct))) {
     // Column pct_{columnName} is not defined in the query
     return value
   }

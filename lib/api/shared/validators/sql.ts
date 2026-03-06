@@ -58,8 +58,9 @@ export const SQL_PATTERNS = {
   /** ClickHouse SET commands that modify server behavior */
   SET_COMMAND: /\bSET\b/i,
 
-  /** ClickHouse SYSTEM commands (RELOAD, SHUTDOWN, etc.) */
-  SYSTEM_COMMAND: /\bSYSTEM\b/i,
+  /** ClickHouse SYSTEM commands (RELOAD, SHUTDOWN, etc.) - not system.table references */
+  SYSTEM_COMMAND:
+    /\bSYSTEM\s+(RELOAD|SHUTDOWN|KILL|FLUSH|SYNC|START|STOP|DROP)\b/i,
 
   /** KILL queries that terminate running operations */
   KILL_COMMAND: /\bKILL\b/i,
@@ -83,9 +84,6 @@ export const SQL_PATTERNS = {
 const SQL_INJECTION_PATTERNS = [
   SQL_PATTERNS.DANGEROUS_KEYWORDS,
   SQL_PATTERNS.EXECUTION_COMMANDS,
-  SQL_PATTERNS.LINE_COMMENT,
-  SQL_PATTERNS.BLOCK_COMMENT_START,
-  SQL_PATTERNS.BLOCK_COMMENT_END,
   SQL_PATTERNS.CHAINED_DANGEROUS,
   SQL_PATTERNS.STRING_INJECTION_SINGLE,
   SQL_PATTERNS.STRING_INJECTION_OR_SINGLE,
@@ -138,8 +136,12 @@ export function validateSqlQuery(sql: string): void {
     }
   }
 
-  // Ensure query starts with SELECT or WITH (CTE)
-  const trimmed = sql.trim().toUpperCase()
+  // Strip leading comments before checking the statement type
+  const trimmed = sql
+    .trim()
+    .replace(/^(\/\*[\s\S]*?\*\/\s*|--[^\n]*\n\s*)*/g, '')
+    .trimStart()
+    .toUpperCase()
   if (!trimmed.startsWith('SELECT') && !trimmed.startsWith('WITH')) {
     throw new Error('Only SELECT queries are allowed')
   }

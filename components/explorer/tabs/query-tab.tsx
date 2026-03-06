@@ -187,7 +187,10 @@ function validateSelectOnly(sql: string): string | null {
   const trimmed = sql.trim()
   if (!trimmed) return 'SQL query cannot be empty'
 
-  const upper = trimmed.toUpperCase()
+  const stripped = trimmed
+    .replace(/^(\/\*[\s\S]*?\*\/\s*|--[^\n]*\n\s*)*/g, '')
+    .trimStart()
+  const upper = stripped.toUpperCase()
   if (!upper.startsWith('SELECT') && !upper.startsWith('WITH')) {
     return 'Only SELECT queries are allowed'
   }
