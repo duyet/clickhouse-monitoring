@@ -1,8 +1,8 @@
 'use client'
 
-import { ExternalLink, Info } from 'lucide-react'
+import { ChevronDown, ExternalLink, Info } from 'lucide-react'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -26,40 +26,18 @@ interface SuggestionCardProps {
  */
 export function SuggestionCard({ suggestion, className }: SuggestionCardProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const contentRef = useRef<HTMLDivElement>(null)
-  const [isOverflowing, setIsOverflowing] = useState(false)
 
   // Split by code block markers or detect SQL patterns
   const parts = parseIntelligent(suggestion)
 
-  // Check if content overflows after mount
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Re-measuring on suggestion change is intentional
-  useEffect(() => {
-    const element = contentRef.current
-    if (!element) return
-
-    // Check after a short delay to ensure rendering is complete
-    const timer = requestAnimationFrame(() => {
-      setIsOverflowing(element.scrollHeight > element.clientHeight)
-    })
-
-    return () => cancelAnimationFrame(timer)
-  }, [suggestion])
-
-  // Render the truncated content
-  const renderContent = (isInModal = false) => (
-    <div
-      className={cn(isInModal ? 'max-h-[70vh] overflow-y-auto' : 'space-y-3')}
-    >
+  const renderContent = () => (
+    <div className="max-h-[70vh] overflow-y-auto space-y-3">
       {parts.map((part, idx) => {
         if (part.type === 'text') {
           return (
             <p
               key={idx}
-              className={cn(
-                'text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap',
-                !isInModal && 'line-clamp-3'
-              )}
+              className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap"
             >
               {renderTextWithLinks(part.content)}
             </p>
@@ -93,47 +71,19 @@ export function SuggestionCard({ suggestion, className }: SuggestionCardProps) {
     </div>
   )
 
-  const handleClick = useCallback(() => {
-    if (isOverflowing) {
-      setIsOpen(true)
-    }
-  }, [isOverflowing])
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        if (isOverflowing) {
-          setIsOpen(true)
-        }
-      }
-    },
-    [isOverflowing]
-  )
-
   return (
     <>
-      <div
-        ref={contentRef}
-        className={cn(
-          'rounded-lg border border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-950/20 p-4 relative',
-          isOverflowing && 'cursor-pointer',
-          className
-        )}
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
-        role={isOverflowing ? 'button' : undefined}
-        tabIndex={isOverflowing ? 0 : -1}
-        aria-expanded={isOpen}
-        aria-haspopup="dialog"
-      >
-        {renderContent(false)}
-        {isOverflowing && (
-          <div className="mt-3 flex items-center justify-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400">
-            <Info className="h-3.5 w-3.5" />
-            <span>Click to view full suggestion</span>
-          </div>
-        )}
+      <div className={cn('flex justify-center', className)}>
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 hover:bg-muted px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          aria-haspopup="dialog"
+        >
+          <Info className="h-3.5 w-3.5" />
+          <span>Show</span>
+          <ChevronDown className="h-3 w-3" />
+        </button>
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -141,15 +91,11 @@ export function SuggestionCard({ suggestion, className }: SuggestionCardProps) {
           <DialogHeader>
             <DialogTitle>Suggestion</DialogTitle>
             <DialogDescription>
-              Full suggestion details and configuration help
+              Configuration help and details
             </DialogDescription>
           </DialogHeader>
-          <div
-            className={cn(
-              'rounded-lg border border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-950/20 p-4'
-            )}
-          >
-            {renderContent(true)}
+          <div className="rounded-lg border border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-950/20 p-4">
+            {renderContent()}
           </div>
         </DialogContent>
       </Dialog>
