@@ -9,6 +9,7 @@ import type {
 } from '@/types/chart-data'
 
 import {
+  onErrorRetry,
   REFRESH_INTERVAL,
   type RefreshInterval,
   visibilityAwareInterval,
@@ -151,9 +152,13 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
         errorData.error?.message ||
           `Failed to fetch chart data: ${response.statusText}`
       ) as Error & {
+        status?: number
         type?: string
         details?: { missingTables?: readonly string[]; [key: string]: unknown }
       }
+
+      // Attach HTTP status so onErrorRetry can skip retrying 4xx errors
+      error.status = response.status
 
       // Attach error metadata if available
       if (errorData.error) {
@@ -177,6 +182,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     focusThrottleInterval: 5000,
     refreshInterval:
       refreshInterval > 0 ? visibilityAwareInterval(refreshInterval) : 0,
+    onErrorRetry,
     ...swrConfig,
   })
 

@@ -18,7 +18,7 @@ import {
   getPooledClient,
   getPoolKey,
 } from './connection-pool'
-import { DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME } from './constants'
+import { validateClickHouseEnv } from './env-schema'
 
 /**
  * Detect if running in Cloudflare Workers environment
@@ -86,11 +86,8 @@ export const getClient = async ({
       username: config.user ?? 'default',
       password: config.password ?? '',
       clickhouse_settings: {
-        max_execution_time: parseInt(
-          process.env.CLICKHOUSE_MAX_EXECUTION_TIME ??
-            DEFAULT_CLICKHOUSE_MAX_EXECUTION_TIME,
-          10
-        ),
+        max_execution_time:
+          validateClickHouseEnv().CLICKHOUSE_MAX_EXECUTION_TIME,
         ...clickhouseSettings,
       },
     })

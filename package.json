@@ -4,6 +4,9 @@
   "version": "0.2.0",
   "private": true,
   "packageManager": "bun@1.3.3",
+  "engines": {
+    "node": ">=18"
+  },
   "repository": {
     "url": "https://github.com/duyet/clickhouse-monitoring"
   },
@@ -11,6 +14,7 @@
     "dev": "bun --bun next dev",
     "build": "bun --bun next build",
     "start": "bun --bun next start",
+    "analyze": "ANALYZE=true bun run build",
     "start:coverage": "nyc --silent node server",
     "cf:build": "bun run build && opennextjs-cloudflare build --skipBuild",
     "cf:preview": "bun run cf:build && opennextjs-cloudflare preview",

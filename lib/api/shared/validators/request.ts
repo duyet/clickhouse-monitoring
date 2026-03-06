@@ -104,6 +104,100 @@ export function validateSearchParams(
   return undefined
 }
 
+/** Maximum allowed limit to prevent DoS via large result sets */
+const MAX_LIMIT = 10_000
+/** Default limit when not specified */
+const DEFAULT_LIMIT = 100
+
+/**
+ * Validate pagination parameters (limit and offset)
+ * Prevents DoS via excessively large limits and invalid offsets
+ */
+export function validatePaginationParams(searchParams: URLSearchParams): {
+  limit: number
+  offset: number
+  error?: ApiError
+} {
+  const limitStr = searchParams.get('limit')
+  const offsetStr = searchParams.get('offset')
+
+  let limit = DEFAULT_LIMIT
+  let offset = 0
+
+  if (limitStr !== null) {
+    limit = parseInt(limitStr, 10)
+    if (Number.isNaN(limit) || limit < 1) {
+      return {
+        limit: DEFAULT_LIMIT,
+        offset: 0,
+        error: {
+          type: ApiErrorType.ValidationError,
+          message: `Invalid limit: must be a positive integer`,
+        },
+      }
+    }
+    if (limit > MAX_LIMIT) {
+      return {
+        limit: DEFAULT_LIMIT,
+        offset: 0,
+        error: {
+          type: ApiErrorType.ValidationError,
+          message: `Limit exceeds maximum allowed value of ${MAX_LIMIT}`,
+        },
+      }
+    }
+  }
+
+  if (offsetStr !== null) {
+    offset = parseInt(offsetStr, 10)
+    if (Number.isNaN(offset) || offset < 0) {
+      return {
+        limit,
+        offset: 0,
+        error: {
+          type: ApiErrorType.ValidationError,
+          message: `Invalid offset: must be a non-negative integer`,
+        },
+      }
+    }
+  }
+
+  return { limit, offset }
+}
+
+/** Valid ClickHouse interval functions */
+const VALID_INTERVALS = [
+  'toStartOfSecond',
+  'toStartOfMinute',
+  'toStartOfFiveMinutes',
+  'toStartOfTenMinutes',
+  'toStartOfFifteenMinutes',
+  'toStartOfHour',
+  'toStartOfDay',
+  'toStartOfWeek',
+  'toStartOfMonth',
+  'toStartOfQuarter',
+  'toStartOfYear',
+] as const
+
+/**
+ * Validate ClickHouse interval parameter
+ */
+export function validateIntervalParam(
+  interval: string | null
+): ApiError | undefined {
+  if (!interval) return undefined
+
+  if (!VALID_INTERVALS.includes(interval as (typeof VALID_INTERVALS)[number])) {
+    return {
+      type: ApiErrorType.ValidationError,
+      message: `Invalid interval: ${interval}. Must be one of: ${VALID_INTERVALS.join(', ')}`,
+    }
+  }
+
+  return undefined
+}
+
 /**
  * Validate that a query parameter is one of the allowed values
  *
@@ -114,15 +208,6 @@ export function validateSearchParams(
  * @param allowedValues - Array of allowed string values
  * @param fieldName - The name of the field for error messages
  * @returns ApiError if validation fails, undefined otherwise
- *
- * @example
- * ```ts
- * const error = validateEnumValue(format, ['JSONEachRow', 'JSON', 'CSV'], 'format')
- * if (error) return createErrorResponse(error, 400)
- *
- * const error = validateEnumValue(order, ['asc', 'desc'], 'order')
- * if (error) return createErrorResponse(error, 400)
- * ```
  */
 export function validateEnumValue<T extends string>(
   value: unknown,

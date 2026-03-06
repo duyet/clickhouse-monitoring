@@ -14,8 +14,8 @@ concurrency:
 
 env:
   CLICKHOUSE_HOST: http://localhost:8123
-  CLICKHOST_USER: default
-  CLICKHOST_PASS: ''
+  CLICKHOUSE_USER: default
+  CLICKHOUSE_PASSWORD: ''
   CLICKHOUSE_SKIP_USER_SETUP: 1
   CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

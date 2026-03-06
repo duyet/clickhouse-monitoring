@@ -54,6 +54,25 @@ export const SQL_PATTERNS = {
    * UNION-based injection attacks
    */
   UNION_INJECTION: /\bunion\s+select\b/i,
+
+  /** ClickHouse SET commands that modify server behavior */
+  SET_COMMAND: /\bSET\b/i,
+
+  /** ClickHouse SYSTEM commands (RELOAD, SHUTDOWN, etc.) */
+  SYSTEM_COMMAND: /\bSYSTEM\b/i,
+
+  /** KILL queries that terminate running operations */
+  KILL_COMMAND: /\bKILL\b/i,
+
+  /** ATTACH/DETACH operations on tables and databases */
+  ATTACH_DETACH: /\b(ATTACH|DETACH)\b/i,
+
+  /** GRANT/REVOKE permission operations */
+  PERMISSION_COMMANDS: /\b(GRANT|REVOKE)\b/i,
+
+  /** Dangerous ClickHouse table functions that access external resources */
+  DANGEROUS_FUNCTIONS:
+    /\b(remote|remoteSecure|url|s3|hdfs|input|jdbc|odbc|mysql|postgresql)\s*\(/i,
 } as const
 
 /**
@@ -73,6 +92,12 @@ const SQL_INJECTION_PATTERNS = [
   SQL_PATTERNS.STRING_INJECTION_DOUBLE,
   SQL_PATTERNS.TAUTOLOGY,
   SQL_PATTERNS.UNION_INJECTION,
+  SQL_PATTERNS.SET_COMMAND,
+  SQL_PATTERNS.SYSTEM_COMMAND,
+  SQL_PATTERNS.KILL_COMMAND,
+  SQL_PATTERNS.ATTACH_DETACH,
+  SQL_PATTERNS.PERMISSION_COMMANDS,
+  SQL_PATTERNS.DANGEROUS_FUNCTIONS,
 ]
 
 /**

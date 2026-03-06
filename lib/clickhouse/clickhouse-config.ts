@@ -5,15 +5,14 @@
 
 import type { ClickHouseConfig } from './types'
 
+import { validateClickHouseEnv } from './env-schema'
 import { debug, error } from '@/lib/logger'
 
 export const getClickHouseHosts = () => {
-  const hosts = (process.env.CLICKHOUSE_HOST || '')
-    .split(',')
+  const { CLICKHOUSE_HOST } = validateClickHouseEnv()
+  return CLICKHOUSE_HOST.split(',')
     .map((host) => host.trim())
     .filter(Boolean)
-
-  return hosts
 }
 
 function splitByComma(value: string) {
@@ -24,10 +23,12 @@ function splitByComma(value: string) {
 }
 
 export const getClickHouseConfigs = (): ClickHouseConfig[] => {
-  const hostEnv = process.env.CLICKHOUSE_HOST || ''
-  const userEnv = process.env.CLICKHOUSE_USER || ''
-  const passwordEnv = process.env.CLICKHOUSE_PASSWORD || ''
-  const customNameEnv = process.env.CLICKHOUSE_NAME || ''
+  const env = validateClickHouseEnv()
+
+  const hostEnv = env.CLICKHOUSE_HOST
+  const userEnv = env.CLICKHOUSE_USER
+  const passwordEnv = env.CLICKHOUSE_PASSWORD
+  const customNameEnv = env.CLICKHOUSE_NAME || ''
 
   // Debug logging for environment variables
   if (!hostEnv) {
