@@ -30,6 +30,7 @@ export interface VirtualItem {
 export interface VirtualizedTableRowProps<TData extends RowData> {
   row: Row<TData>
   virtualRow: VirtualItem
+  rowClassName?: (row: Record<string, unknown>) => string | undefined
 }
 
 /**
@@ -45,7 +46,8 @@ export interface VirtualizedTableRowProps<TData extends RowData> {
  */
 export const VirtualizedTableRow = memo(function VirtualizedTableRow<
   TData extends RowData,
->({ row, virtualRow }: VirtualizedTableRowProps<TData>) {
+>({ row, virtualRow, rowClassName }: VirtualizedTableRowProps<TData>) {
+  const customClass = rowClassName?.(row.original as Record<string, unknown>)
   return (
     <TableRow
       key={row.id}
@@ -54,7 +56,8 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
       className={cn(
         'border-b border-border/50 transition-colors hover:bg-accent/50 dark:hover:bg-accent/20',
         virtualRow.index % 2 === 1 && 'odd:bg-muted/30',
-        row.getIsSelected() && 'border-l-2 border-l-primary'
+        row.getIsSelected() && 'border-l-2 border-l-primary',
+        customClass
       )}
       style={{
         height: `${virtualRow.size}px`,
@@ -91,6 +94,7 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
 export interface StandardTableRowProps<TData extends RowData> {
   row: Row<TData>
   index: number
+  rowClassName?: (row: Record<string, unknown>) => string | undefined
 }
 
 /**
@@ -106,7 +110,8 @@ export interface StandardTableRowProps<TData extends RowData> {
  */
 export const StandardTableRow = memo(function StandardTableRow<
   TData extends RowData,
->({ row, index }: StandardTableRowProps<TData>) {
+>({ row, index, rowClassName }: StandardTableRowProps<TData>) {
+  const customClass = rowClassName?.(row.original as Record<string, unknown>)
   return (
     <TableRow
       key={row.id}
@@ -114,7 +119,8 @@ export const StandardTableRow = memo(function StandardTableRow<
       className={cn(
         'border-b border-border/50 transition-colors hover:bg-accent/50 dark:hover:bg-accent/20',
         index % 2 === 1 && 'odd:bg-muted/30',
-        row.getIsSelected() && 'border-l-2 border-l-primary'
+        row.getIsSelected() && 'border-l-2 border-l-primary',
+        customClass
       )}
     >
       {row.getVisibleCells().map((cell: Cell<TData, unknown>) => {
@@ -155,6 +161,7 @@ export interface TableBodyRowsProps<TData extends RowData> {
   table: Table<TData>
   isVirtualized: boolean
   virtualizer: Virtualizer | null
+  rowClassName?: (row: Record<string, unknown>) => string | undefined
 }
 
 /**
@@ -172,7 +179,7 @@ export interface TableBodyRowsProps<TData extends RowData> {
  */
 export const TableBodyRows = memo(function TableBodyRows<
   TData extends RowData,
->({ table, isVirtualized, virtualizer }: TableBodyRowsProps<TData>) {
+>({ table, isVirtualized, virtualizer, rowClassName }: TableBodyRowsProps<TData>) {
   const rows = table.getRowModel().rows
 
   if (isVirtualized && virtualizer) {
@@ -187,6 +194,7 @@ export const TableBodyRows = memo(function TableBodyRows<
               key={row.id}
               row={row}
               virtualRow={virtualRow}
+              rowClassName={rowClassName}
             />
           )
         })}
@@ -198,7 +206,12 @@ export const TableBodyRows = memo(function TableBodyRows<
   return (
     <>
       {rows.map((row: Row<TData>, index: number) => (
-        <StandardTableRow<TData> key={row.id} row={row} index={index} />
+        <StandardTableRow<TData>
+          key={row.id}
+          row={row}
+          index={index}
+          rowClassName={rowClassName}
+        />
       ))}
     </>
   )
@@ -274,6 +287,7 @@ export interface TableBodyProps<
   virtualizer: Virtualizer | null
   title: string
   activeFilterCount: number
+  rowClassName?: (row: Record<string, unknown>) => string | undefined
 }
 
 /**
@@ -303,6 +317,7 @@ export const TableBody = memo(function TableBody<
   virtualizer,
   title,
   activeFilterCount,
+  rowClassName,
 }: TableBodyProps<TData, TValue>) {
   const rows = table.getRowModel().rows
 
@@ -313,6 +328,7 @@ export const TableBody = memo(function TableBody<
           table={table}
           isVirtualized={isVirtualized}
           virtualizer={virtualizer}
+          rowClassName={rowClassName}
         />
       ) : (
         <TableBodyEmptyState
