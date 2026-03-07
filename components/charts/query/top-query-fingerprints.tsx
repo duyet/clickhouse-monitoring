@@ -32,7 +32,10 @@ function pivotFingerprints(data: readonly FingerprintRow[]) {
     const hash = String(row.hash)
     if (!labelMap.has(hash)) {
       const preview = String(row.query_preview || hash).slice(0, 50)
-      labelMap.set(hash, preview)
+      // Append short hash suffix to disambiguate collisions
+      const hashSuffix = hash.slice(0, 6)
+      const label = `${preview} (${hashSuffix})`
+      labelMap.set(hash, label)
     }
 
     const time = String(row.event_time)
