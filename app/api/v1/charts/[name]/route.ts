@@ -196,9 +196,7 @@ export async function GET(
     intervalParam && isValidInterval(intervalParam) ? intervalParam : undefined
   // Handle lastHours: parse as integer, reject non-numeric/negative values
   const lastHoursParam = searchParams.get('lastHours')
-  const lastHoursParsed = lastHoursParam
-    ? parseInt(lastHoursParam, 10)
-    : undefined
+  const lastHoursParsed = lastHoursParam ? Number(lastHoursParam) : undefined
   const lastHours =
     lastHoursParsed !== undefined &&
     Number.isFinite(lastHoursParsed) &&

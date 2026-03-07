@@ -71,7 +71,7 @@ export function buildTimeFilter(
     return '' // No time filter for "all" range
   }
   // Ensure lastHours is a safe positive integer to prevent SQL injection
-  const safe = Math.floor(Math.abs(lastHours))
+  const safe = Math.floor(lastHours)
   if (!Number.isFinite(safe) || safe <= 0) return ''
   return `${column} >= (now() - INTERVAL ${safe} HOUR)`
 }
@@ -96,7 +96,7 @@ export function buildTimeFilterInterval(
     return '' // No time filter for "all" range
   }
   // Ensure lastHours is a safe positive integer to prevent SQL injection
-  const safe = Math.floor(Math.abs(lastHours))
+  const safe = Math.floor(lastHours)
   if (!Number.isFinite(safe) || safe <= 0) return ''
   return `${column} >= (now() - toIntervalHour(${safe}))`
 }
