@@ -51,6 +51,7 @@ export const CHARTS_BY_CATEGORY: Record<ChartCategory, string[]> = {
   [CHART_CATEGORIES.SYSTEM]: [
     'summary-used-by-running-queries',
     'disk-size',
+    'disk-usage-trend',
     'disks-usage',
     'backup-size',
     'memory-usage',

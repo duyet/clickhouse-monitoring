@@ -63,6 +63,14 @@ export const diskSpaceConfig: QueryConfig = {
         lastHours: 24 * 14,
       },
     ],
+    [
+      'disk-usage-trend',
+      {
+        title: 'Disk Usage Trend (7 Days)',
+        interval: 'toStartOfHour',
+        lastHours: 24 * 7,
+      },
+    ],
   ],
 }
 

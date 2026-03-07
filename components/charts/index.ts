@@ -82,6 +82,7 @@ export { ChartBackupSize } from './system/backup-size'
 // System charts
 export { ChartCPUUsage } from './system/cpu-usage'
 export { ChartDiskSize } from './system/disk-size'
+export { ChartDiskUsageTrend } from './system/disk-usage-trend'
 export { ChartDisksUsage } from './system/disks-usage'
 export { ChartMemoryUsage } from './system/memory-usage'
 // Thread charts
