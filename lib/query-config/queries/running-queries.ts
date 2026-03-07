@@ -60,7 +60,7 @@ export const runningQueriesConfig: QueryConfig = {
   // Bulk actions for selected rows (shown in toolbar)
   bulkActions: ['kill-query'],
   columnFormats: {
-    action: [ColumnFormat.Action, ['explain-query', 'open-in-explorer']],
+    action: [ColumnFormat.InlineAction, ['kill-query', 'open-in-explorer']],
     query: [
       ColumnFormat.CodeDialog,
       {

@@ -1,15 +1,20 @@
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { SizeIcon } from '@radix-ui/react-icons'
+import { ExternalLinkIcon } from 'lucide-react'
 
 import dedent from 'dedent'
+import Link from 'next/link'
 import { memo, useMemo } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { buildExplorerQueryUrl } from '@/lib/explorer-url'
 import { formatQuery } from '@/lib/format-readable'
+import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
 export interface CodeDialogOptions {
@@ -20,6 +25,19 @@ export interface CodeDialogOptions {
   hide_query_comment?: boolean
   json?: boolean
   dialog_classname?: string
+  show_explorer_link?: boolean
+}
+
+function ExplorerLink({ query }: { query: string }) {
+  const hostId = useHostId()
+  const href = buildExplorerQueryUrl(query, hostId)
+  return (
+    <Button variant="ghost" size="icon" className="size-7" asChild>
+      <Link href={href} title="Open in Explorer">
+        <ExternalLinkIcon className="size-3.5" />
+      </Link>
+    </Button>
+  )
 }
 
 interface CodeDialogFormatProps {
@@ -91,7 +109,13 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
         aria-describedby={options?.dialog_description}
       >
         <DialogHeader>
-          <DialogTitle>{options?.dialog_title}</DialogTitle>
+          <div className="flex items-center gap-2">
+            <DialogTitle>{options?.dialog_title}</DialogTitle>
+            {(options?.show_explorer_link ||
+              options?.dialog_title === 'Running Query') && (
+              <ExplorerLink query={value} />
+            )}
+          </div>
           <DialogDescription>{options?.dialog_description}</DialogDescription>
         </DialogHeader>
 

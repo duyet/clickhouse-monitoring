@@ -4,6 +4,7 @@ import type { Action } from '../cells/actions/types'
 import type { FormatterProps, RowContextFormatter } from './types'
 
 import { ActionFormat } from '../cells/action-format'
+import { InlineActions } from '../cells/actions/inline-actions'
 import {
   BackgroundBarFormat,
   type BackgroundBarOptions,
@@ -36,6 +37,25 @@ export const actionFormatter: RowContextFormatter = <
   const { row, value, options } = props
   return (
     <ActionFormat
+      row={row}
+      value={value as React.ReactNode}
+      actions={options as Action[]}
+    />
+  )
+}
+
+/**
+ * Inline action formatter - renders action buttons as inline icons (no dropdown)
+ */
+export const inlineActionFormatter: RowContextFormatter = <
+  TData extends RowData,
+  TValue,
+>(
+  props: FormatterProps<TData, TValue>
+): React.ReactNode => {
+  const { row, value, options } = props
+  return (
+    <InlineActions
       row={row}
       value={value as React.ReactNode}
       actions={options as Action[]}
@@ -141,12 +161,14 @@ export const hoverCardFormatter: RowContextFormatter = <
  */
 export const CONTEXT_FORMATTERS: Record<
   | ColumnFormat.Action
+  | ColumnFormat.InlineAction
   | ColumnFormat.BackgroundBar
   | ColumnFormat.HoverCard
   | ColumnFormat.Link,
   RowContextFormatter
 > = {
   [ColumnFormat.Action]: actionFormatter,
+  [ColumnFormat.InlineAction]: inlineActionFormatter,
   [ColumnFormat.BackgroundBar]: backgroundBarFormatter,
   [ColumnFormat.HoverCard]: hoverCardFormatter,
   [ColumnFormat.Link]: linkFormatter,

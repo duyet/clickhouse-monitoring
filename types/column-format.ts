@@ -20,6 +20,7 @@ export enum ColumnFormat {
   Markdown = 'markdown',
   Boolean = 'boolean',
   Action = 'action',
+  InlineAction = 'inline-action',
   Number = 'number',
   Badge = 'badge',
   Code = 'code',
@@ -30,6 +31,7 @@ export enum ColumnFormat {
 
 export type ColumnFormatWithArgs =
   | [ColumnFormat.Action, Action[]]
+  | [ColumnFormat.InlineAction, Action[]]
   | [ColumnFormat.Link, LinkFormatOptions]
   | [ColumnFormat.Text, TextFormatOptions]
   | [ColumnFormat.Markdown, MarkdownFormatOptions]
