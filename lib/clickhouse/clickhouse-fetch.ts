@@ -215,7 +215,8 @@ export const fetchData = async <
     const query_id = resultSet.query_id
 
     // Use the client's json() method which handles format-specific parsing
-    const data = await resultSet.json<T>()
+    // Cast needed because ResultJSONType<T, unknown> is a union wider than T
+    const data = (await resultSet.json<T>()) as T
 
     // For debugging: serialize the parsed data to see what we got
     const rawText = JSON.stringify(data)

@@ -38,14 +38,15 @@ export async function GET(request: Request): Promise<Response> {
     const client = await getClient({ hostId })
     const resultSet = await client.query({
       query,
+      format: 'JSONEachRow',
     })
 
-    const rows = await resultSet.json()
+    const rows = await resultSet.json<{ key: string; value: string }>()
 
     // Convert rows to a key-value object
     const params = Array.isArray(rows)
       ? rows.reduce(
-          (acc, row: { key: string; value: string }) => {
+          (acc, row) => {
             acc[row.key] = row.value
             return acc
           },
