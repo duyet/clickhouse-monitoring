@@ -123,7 +123,7 @@ export async function getClickHouseVersion(
       format: 'JSONEachRow',
     })
 
-    const data = await resultSet.json<Array<{ version: string }>>()
+    const data = (await resultSet.json()) as { version: string }[]
     const versionStr = data?.[0]?.version
 
     if (!versionStr) {
@@ -164,7 +164,7 @@ export async function checkTableExists(
       format: 'JSONEachRow',
     })
 
-    const data = await resultSet.json<Array<{ exists: number }>>()
+    const data = (await resultSet.json()) as { exists: number }[]
     return data?.[0]?.exists === 1
   } catch {
     return false
@@ -192,7 +192,7 @@ export async function checkTableHasData(
       format: 'JSONEachRow',
     })
 
-    const data = await resultSet.json<Array<{ has_data: number }>>()
+    const data = (await resultSet.json()) as { has_data: number }[]
     return data?.[0]?.has_data === 1
   } catch {
     return false

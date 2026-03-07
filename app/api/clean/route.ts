@@ -49,9 +49,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
+type KillQueryRow = { kill_status: string; query_id: string; user: string }
+
 type KillQueryResponse = {
   meta: object[]
-  data: { kill_status: string; query_id: string; user: string }[]
+  data: KillQueryRow[]
   rows: number
   statistics: object
 }
@@ -139,7 +141,7 @@ async function killHangingQueries(
       },
     })
 
-    const killQueryResp = await resp.json<KillQueryResponse>()
+    const killQueryResp = (await resp.json()) as unknown as KillQueryResponse
 
     ErrorLogger.logDebug('[/api/clean] queries found', {
       route: '/api/clean',

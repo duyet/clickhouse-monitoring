@@ -40,18 +40,19 @@ export async function GET(request: Request): Promise<Response> {
       query,
     })
 
-    const rows = await resultSet.json()
+    const rows = (await resultSet.json()) as unknown as {
+      key: string
+      value: string
+    }[]
 
     // Convert rows to a key-value object
-    const params = Array.isArray(rows)
-      ? rows.reduce(
-          (acc, row: { key: string; value: string }) => {
-            acc[row.key] = row.value
-            return acc
-          },
-          {} as Record<string, string>
-        )
-      : {}
+    const params = rows.reduce(
+      (acc, row) => {
+        acc[row.key] = row.value
+        return acc
+      },
+      {} as Record<string, string>
+    )
 
     const response: ApiResponse<{ params: Record<string, string> }> = {
       success: true,
@@ -59,7 +60,7 @@ export async function GET(request: Request): Promise<Response> {
       metadata: {
         queryId: 'dashboard-settings-get',
         duration: 0,
-        rows: Array.isArray(rows) ? rows.length : 0,
+        rows: rows.length,
         host: String(hostId),
       },
     }

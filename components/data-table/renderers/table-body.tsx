@@ -179,7 +179,12 @@ export interface TableBodyRowsProps<TData extends RowData> {
  */
 export const TableBodyRows = memo(function TableBodyRows<
   TData extends RowData,
->({ table, isVirtualized, virtualizer, rowClassName }: TableBodyRowsProps<TData>) {
+>({
+  table,
+  isVirtualized,
+  virtualizer,
+  rowClassName,
+}: TableBodyRowsProps<TData>) {
   const rows = table.getRowModel().rows
 
   if (isVirtualized && virtualizer) {
