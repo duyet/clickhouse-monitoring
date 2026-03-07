@@ -23,10 +23,13 @@ export const dynamic = 'force-dynamic'
 
 const ROUTE_CONTEXT = { route: '/api/v1/explain', method: 'GET' }
 
-/** Valid EXPLAIN modes in ClickHouse */
+/**
+ * Valid ClickHouse EXPLAIN modes. PLAN is excluded — the UI Plan tab sends
+ * mode='' (empty string) which maps to plain EXPLAIN (same as EXPLAIN PLAN).
+ * This keeps the allowlist in sync with the UI so PLAN is never unreachable.
+ */
 const VALID_EXPLAIN_MODES = [
   '',
-  'PLAN',
   'PIPELINE',
   'AST',
   'SYNTAX',
