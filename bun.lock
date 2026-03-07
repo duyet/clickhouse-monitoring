@@ -12,8 +12,8 @@
         "@aws-sdk/credential-provider-web-identity": "^3.972.5",
         "@aws-sdk/nested-clients": "^3.985.0",
         "@aws-sdk/xml-builder": "^3.972.4",
-        "@clickhouse/client": "^0.3.1",
-        "@clickhouse/client-web": "^0.3.1",
+        "@clickhouse/client": "^0.100.0",
+        "@clickhouse/client-web": "^0.100.0",
         "@codemirror/autocomplete": "^6.20.1",
         "@codemirror/commands": "^6.10.2",
         "@codemirror/lang-sql": "^6.10.0",
@@ -73,7 +73,7 @@
         "js-yaml": "^4.1.1",
         "lodash": "^4.17.23",
         "lru-cache": "^11.2.5",
-        "lucide-react": "^0.562.0",
+        "lucide-react": "^0.577.0",
         "mdast-util-to-hast": "^13.2.1",
         "miniflare": "^4.20260205.0",
         "next": "^15.5.12",
@@ -508,11 +508,11 @@
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.3.14", "", { "os": "win32", "cpu": "x64" }, "sha512-oizCjdyQ3WJEswpb3Chdngeat56rIdSYK12JI3iI11Mt5T5EXcZ7WLuowzEaFPNJ3zmOQFliMN8QY1Pi+qsfdQ=="],
 
-    "@clickhouse/client": ["@clickhouse/client@0.3.1", "", { "dependencies": { "@clickhouse/client-common": "0.3.1" } }, "sha512-5ywbK3oJJ8HIMzSZ6qJAhr6SyjmaBLy9fnVrLdacnZpFhD8j2RMKyM9yu3kAOzCF2HhFbdTPM/+KVWTpKjJlpA=="],
+    "@clickhouse/client": ["@clickhouse/client@0.100.1", "", { "dependencies": { "@clickhouse/client-common": "0.100.1" } }, "sha512-+Cp8TsWTcktq1W1FR+dOxlshi5kKWypSrkOpdEt2RJGqyHg7UsLs1tA+5sSKh1KEC6WOvqlRmxCg4yn2XLrCyA=="],
 
-    "@clickhouse/client-common": ["@clickhouse/client-common@0.3.1", "", {}, "sha512-SXErzkCLLp/cRs2P8ihEgOiz1D0RMcQGcccnxrU5+DKWpYMu5/ZR48gBLaUVpVg/hXdBR/9n9XH8CB8d1xKiuQ=="],
+    "@clickhouse/client-common": ["@clickhouse/client-common@0.100.1", "", {}, "sha512-iEWk/7OIyFznr/W/Bgp/1PkwkDA8YsAXVs4xYYri7RImWCop76tNA1KylX+EzIWF2HaAw6c58ghWMJnohopdtA=="],
 
-    "@clickhouse/client-web": ["@clickhouse/client-web@0.3.1", "", { "dependencies": { "@clickhouse/client-common": "0.3.1" } }, "sha512-cOmiooy33TYBY9lqAHE3xMZgzSzlQ/cmKOglxRNqfdo5d+NVgBXUAH2QERXvzmw2o3hOHLkROwAMN1gd9MZ4bA=="],
+    "@clickhouse/client-web": ["@clickhouse/client-web@0.100.1", "", { "dependencies": { "@clickhouse/client-common": "0.100.1" } }, "sha512-/myi1WrfVoVjdXIgYwqcxBUjEpG/7QS0CEHPnVrtsQ7B6Nzm1enFVFnMQvLBw78dHoZUXpt5oYf/2jU1q6/RTQ=="],
 
     "@cloudflare/kv-asset-handler": ["@cloudflare/kv-asset-handler@0.4.2", "", {}, "sha512-SIOD2DxrRRwQ+jgzlXCqoEFiKOFqaPjhnNTGKXSRLvp1HiOvapLaFG2kEr9dYQTYe8rKrd9uvDUzmAITeNyaHQ=="],
 
@@ -2164,7 +2164,7 @@
 
     "lru-cache": ["lru-cache@11.2.5", "", {}, "sha512-vFrFJkWtJvJnD5hg+hJvVE8Lh/TcMzKnTgCWmtBipwI5yLX/iX+5UB2tfuyODF5E7k9xEzMdYgGqaSb1c0c5Yw=="],
 
-    "lucide-react": ["lucide-react@0.562.0", "", { "peerDependencies": { "react": "^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-82hOAu7y0dbVuFfmO4bYF1XEwYk/mEbM5E+b1jgci/udUBEE/R7LF5Ip0CCEmXe8AybRM8L+04eP+LGZeDvkiw=="],
+    "lucide-react": ["lucide-react@0.577.0", "", { "peerDependencies": { "react": "^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-4LjoFv2eEPwYDPg/CUdBJQSDfPyzXCRrVW1X7jrx/trgxnxkHFjnVZINbzvzxjN70dxychOfg+FTYwBiS3pQ5A=="],
 
     "magic-string": ["magic-string@0.30.21", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.5" } }, "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ=="],
 
