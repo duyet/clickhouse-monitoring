@@ -158,7 +158,7 @@ jobs:
 
       - name: Build and push Docker image
         if: ${{ inputs.job-type == 'docker' }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         env:
           TMPDIR: /home/runner/work/_temp
         with:
