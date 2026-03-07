@@ -136,6 +136,13 @@ export const historyQueriesConfig: QueryConfig = {
     ],
   },
 
+  rowClassName: (row) => {
+    const duration = Number(row.query_duration_ms || 0)
+    if (duration > 30000) return 'bg-red-50 dark:bg-red-950/20'
+    if (duration > 5000) return 'bg-amber-50 dark:bg-amber-950/20'
+    return undefined
+  },
+
   defaultParams: {
     type: '',
     duration_1m: '',

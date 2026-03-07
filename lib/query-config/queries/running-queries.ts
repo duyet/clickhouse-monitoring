@@ -57,6 +57,14 @@ export const runningQueriesConfig: QueryConfig = {
     'context_lock',
     'rw_lock_acquired_read_locks',
   ],
+  rowClassName: (row) => {
+    // elapsed is in seconds for running queries
+    const elapsed = Number(row.elapsed || 0)
+    if (elapsed > 30) return 'bg-red-50 dark:bg-red-950/20'
+    if (elapsed > 5) return 'bg-amber-50 dark:bg-amber-950/20'
+    return undefined
+  },
+
   // Bulk actions for selected rows (shown in toolbar)
   bulkActions: ['kill-query'],
   columnFormats: {

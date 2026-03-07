@@ -129,6 +129,14 @@ export const expensiveQueriesConfig: QueryConfig = {
       description: 'Added query_cache_usage column',
     },
   ] as VersionedSql[],
+  rowClassName: (row) => {
+    // queries_duration is total seconds across all executions
+    const duration = Number(row.queries_duration || 0)
+    if (duration > 30) return 'bg-red-50 dark:bg-red-950/20'
+    if (duration > 5) return 'bg-amber-50 dark:bg-amber-950/20'
+    return undefined
+  },
+
   columns: [
     'action',
     'query',

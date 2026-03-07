@@ -277,6 +277,21 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    */
   sortingFns?: Record<string, CustomSortingFnNames>
   /**
+   * Callback to compute a CSS class name for a given row.
+   * Useful for conditional row highlighting (e.g., slow queries).
+   *
+   * @example
+   * ```ts
+   * rowClassName: (row) => {
+   *   const duration = Number(row.query_duration_ms || 0)
+   *   if (duration > 30000) return 'bg-red-50 dark:bg-red-950/20'
+   *   if (duration > 5000) return 'bg-amber-50 dark:bg-amber-950/20'
+   *   return undefined
+   * }
+   * ```
+   */
+  rowClassName?: (row: Record<string, unknown>) => string | undefined
+  /**
    * Bulk actions available for selected rows (shown in toolbar).
    * These actions apply to all selected rows at once.
    *

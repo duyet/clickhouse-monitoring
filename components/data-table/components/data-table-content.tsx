@@ -157,6 +157,7 @@ export const DataTableContent = memo(function DataTableContent<
           virtualizer={virtualizer}
           title={title}
           activeFilterCount={activeFilterCount}
+          rowClassName={queryConfig.rowClassName}
         />
       </TableBody>
     </Table>
