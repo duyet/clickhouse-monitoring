@@ -86,7 +86,7 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
   )
 }) as <TData extends RowData>(
   props: VirtualizedTableRowProps<TData>
-) => JSX.Element
+) => React.JSX.Element
 
 /**
  * Props for StandardTableRow component
@@ -145,7 +145,7 @@ export const StandardTableRow = memo(function StandardTableRow<
   )
 }) as <TData extends RowData>(
   props: StandardTableRowProps<TData>
-) => JSX.Element
+) => React.JSX.Element
 
 /**
  * Virtualizer interface from @tanstack/react-virtual
@@ -220,7 +220,9 @@ export const TableBodyRows = memo(function TableBodyRows<
       ))}
     </>
   )
-}) as <TData extends RowData>(props: TableBodyRowsProps<TData>) => JSX.Element
+}) as <TData extends RowData>(
+  props: TableBodyRowsProps<TData>
+) => React.JSX.Element
 
 /**
  * Column metadata type for column definitions
@@ -277,7 +279,7 @@ export const TableBodyEmptyState = memo(function TableBodyEmptyState<
   )
 }) as <TData extends RowData, TValue extends ReactNode>(
   props: TableBodyEmptyStateProps<TData, TValue>
-) => JSX.Element
+) => React.JSX.Element
 
 /**
  * Props for TableBody component
@@ -346,4 +348,4 @@ export const TableBody = memo(function TableBody<
   )
 }) as <TData extends RowData, TValue extends ReactNode>(
   props: TableBodyProps<TData, TValue>
-) => JSX.Element
+) => React.JSX.Element

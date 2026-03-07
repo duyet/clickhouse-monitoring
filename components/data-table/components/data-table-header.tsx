@@ -143,4 +143,6 @@ export const DataTableHeader = memo(function DataTableHeader<
       </div>
     </div>
   )
-}) as <TData extends RowData>(props: DataTableHeaderProps<TData>) => JSX.Element
+}) as <TData extends RowData>(
+  props: DataTableHeaderProps<TData>
+) => React.JSX.Element

@@ -42,7 +42,7 @@ function useKeyboardToggle(toggle: () => void) {
 
 function useClickOutside(
   enabled: boolean,
-  refs: Array<React.RefObject<HTMLElement>>,
+  refs: ReadonlyArray<{ current: HTMLElement | null }>,
   onClose: () => void
 ) {
   useEffect(() => {
@@ -90,7 +90,7 @@ const PopoverVariant = memo(function PopoverVariant({
   className?: string
   isOverflowing: boolean
   textContent: string
-  contentRef: React.RefObject<HTMLDivElement>
+  contentRef: React.RefObject<HTMLDivElement | null>
   children: ReactNode
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -168,7 +168,7 @@ const InlineVariant = memo(function InlineVariant({
   showIndicator: boolean
   className?: string
   isOverflowing: boolean
-  contentRef: React.RefObject<HTMLDivElement>
+  contentRef: React.RefObject<HTMLDivElement | null>
   children: ReactNode
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
