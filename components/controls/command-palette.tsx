@@ -21,7 +21,7 @@ import { buildUrl } from '@/lib/url/url-builder'
 const UUID_PATTERN =
   /^[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}$/i
 const UUID_PREFIX_PATTERN = /^[a-f0-9-]{8,}/i
-const TABLE_PATTERN = /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*/i
+const TABLE_PATTERN = /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*$/i
 
 interface CommandPaletteProps {
   open?: boolean

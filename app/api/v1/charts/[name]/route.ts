@@ -11,7 +11,6 @@ import type {
   DataStatus,
 } from '@/lib/api/types'
 import type { CachePolicy } from '@/types/chart-data'
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
 import {
   getAvailableCharts,
@@ -35,6 +34,7 @@ import {
   selectVersionedSql,
 } from '@/lib/clickhouse-version'
 import { debug, error } from '@/lib/logger'
+import { isValidInterval } from '@/types/clickhouse-interval'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -189,15 +189,22 @@ export async function GET(
   // Extract and validate hostId
   const hostId = getHostIdFromParams(searchParams, routeContext)
 
-  // Extract optional query parameters
+  // Extract and validate optional query parameters
   const intervalParam = searchParams.get('interval')
-  // Ensure empty string is treated as undefined (use chart's default interval)
-  const interval = (intervalParam || undefined) as
-    | ClickHouseInterval
-    | undefined
-  // Handle lastHours: if not provided, undefined (which means "all" range - no time filter)
+  // Validate interval against allowlist to prevent SQL injection
+  const interval =
+    intervalParam && isValidInterval(intervalParam) ? intervalParam : undefined
+  // Handle lastHours: parse as integer, reject non-numeric/negative values
   const lastHoursParam = searchParams.get('lastHours')
-  const lastHours = lastHoursParam ? parseInt(lastHoursParam, 10) : undefined
+  const lastHoursParsed = lastHoursParam
+    ? parseInt(lastHoursParam, 10)
+    : undefined
+  const lastHours =
+    lastHoursParsed !== undefined &&
+    Number.isFinite(lastHoursParsed) &&
+    lastHoursParsed > 0
+      ? lastHoursParsed
+      : undefined
   const paramStr = searchParams.get('params')
   const params_obj = paramStr ? JSON.parse(paramStr) : undefined
   // Extract timezone for ClickHouse session

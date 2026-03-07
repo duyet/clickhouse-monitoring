@@ -70,7 +70,10 @@ export function buildTimeFilter(
   if (lastHours === undefined) {
     return '' // No time filter for "all" range
   }
-  return `${column} >= (now() - INTERVAL ${lastHours} HOUR)`
+  // Ensure lastHours is a safe positive integer to prevent SQL injection
+  const safe = Math.floor(Math.abs(lastHours))
+  if (!Number.isFinite(safe) || safe <= 0) return ''
+  return `${column} >= (now() - INTERVAL ${safe} HOUR)`
 }
 
 /**
@@ -92,7 +95,10 @@ export function buildTimeFilterInterval(
   if (lastHours === undefined) {
     return '' // No time filter for "all" range
   }
-  return `${column} >= (now() - toIntervalHour(${lastHours}))`
+  // Ensure lastHours is a safe positive integer to prevent SQL injection
+  const safe = Math.floor(Math.abs(lastHours))
+  if (!Number.isFinite(safe) || safe <= 0) return ''
+  return `${column} >= (now() - toIntervalHour(${safe}))`
 }
 
 export function withQueryParams(

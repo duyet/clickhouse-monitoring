@@ -6,6 +6,11 @@ import type { ColumnFormat, ColumnFormatWithArgs } from '@/types/column-format'
 import type { PartialBy } from '@/types/generic'
 import type { Icon } from '@/types/icon'
 
+/** Callback to compute conditional CSS class for a table row */
+export type RowClassNameFn = (
+  row: Record<string, unknown>
+) => string | undefined
+
 /**
  * Infer row data type from column names array
  *
@@ -290,7 +295,7 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    * }
    * ```
    */
-  rowClassName?: (row: Record<string, unknown>) => string | undefined
+  rowClassName?: RowClassNameFn
   /**
    * Bulk actions available for selected rows (shown in toolbar).
    * These actions apply to all selected rows at once.
