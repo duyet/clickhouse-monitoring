@@ -42,7 +42,7 @@ function useKeyboardToggle(toggle: () => void) {
 
 function useClickOutside(
   enabled: boolean,
-  refs: ReadonlyArray<{ current: HTMLElement | null }>,
+  refs: ReadonlyArray<React.RefObject<HTMLElement | null>>,
   onClose: () => void
 ) {
   useEffect(() => {
