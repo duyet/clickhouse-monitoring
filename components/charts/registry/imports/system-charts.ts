@@ -14,6 +14,11 @@ export const systemChartImports: ChartRegistryMap = {
       default: m.ChartDiskSize,
     }))
   ),
+  'disk-usage-trend': lazy(() =>
+    import('@/components/charts/system/disk-usage-trend').then((m) => ({
+      default: m.ChartDiskUsageTrend,
+    }))
+  ),
   'disks-usage': lazy(() =>
     import('@/components/charts/system/disks-usage').then((m) => ({
       default: m.ChartDisksUsage,

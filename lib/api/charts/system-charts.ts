@@ -187,6 +187,25 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   `,
   }),
 
+  'disk-usage-trend': ({ interval = 'toStartOfHour', lastHours = 24 * 7 }) => {
+    const timeFilter = buildTimeFilterInterval(lastHours)
+    return {
+      query: `
+    SELECT
+        ${applyInterval(interval, 'event_time')},
+        metric,
+        avg(value) AS usage
+    FROM merge('system', '^asynchronous_metric_log')
+    WHERE metric LIKE 'DiskUsed_%'
+      ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY 1, metric
+    ORDER BY 1 ASC
+  `,
+      optional: true,
+      tableCheck: 'system.asynchronous_metric_log',
+    }
+  },
+
   'top-table-size': ({ params }) => {
     const limit = (params?.limit as number) || 7
     return {
