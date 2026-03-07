@@ -39,11 +39,14 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isControlled && (
         <DialogTrigger asChild>
-          {children || (
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {
+            (children || (
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            )) as any
+          }
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-md">

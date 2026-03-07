@@ -18,7 +18,8 @@ import {
 import { IconButton } from '@/components/ui/icon-button'
 import { buildUrl } from '@/lib/url/url-builder'
 
-const UUID_PATTERN = /^[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}$/i
+const UUID_PATTERN =
+  /^[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}$/i
 const UUID_PREFIX_PATTERN = /^[a-f0-9-]{8,}/i
 const TABLE_PATTERN = /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*/i
 
@@ -67,7 +68,8 @@ export const CommandPalette = memo(function CommandPalette({
   )
 
   const isQueryId =
-    UUID_PATTERN.test(inputValue.trim()) || UUID_PREFIX_PATTERN.test(inputValue.trim())
+    UUID_PATTERN.test(inputValue.trim()) ||
+    UUID_PREFIX_PATTERN.test(inputValue.trim())
   const isTableName = TABLE_PATTERN.test(inputValue.trim())
   const showQuickNav = isQueryId || isTableName
 

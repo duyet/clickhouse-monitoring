@@ -34,13 +34,18 @@ export const HoverCardFormat = memo(function HoverCardFormat({
   // Content replacement, e.g. "Hover content: [column_name]"
   const processedContent = replaceTemplateInReactNode(content, rowData)
 
+  // Normalize bigint to string: React 19 ReactNode includes bigint but radix-ui's
+  // bundled @types/react does not, causing a type mismatch at the JSX boundary.
+  const normalizedValue =
+    typeof value === 'bigint' ? value.toString() : (value as React.ReactNode)
+
   return (
     <HoverCard openDelay={0}>
       <HoverCardTrigger aria-label="Show details">
-        {value as React.ReactNode & string}
+        {normalizedValue as any}
       </HoverCardTrigger>
       <HoverCardContent role="tooltip">
-        {processedContent as React.ReactNode & string}
+        {processedContent as any}
       </HoverCardContent>
     </HoverCard>
   )
