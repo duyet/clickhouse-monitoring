@@ -24,6 +24,20 @@ export const dynamic = 'force-dynamic'
 const ROUTE_CONTEXT = { route: '/api/v1/explain', method: 'GET' }
 
 /**
+ * Valid ClickHouse EXPLAIN modes. PLAN is excluded — the UI Plan tab sends
+ * mode='' (empty string) which maps to plain EXPLAIN (same as EXPLAIN PLAN).
+ * This keeps the allowlist in sync with the UI so PLAN is never unreachable.
+ */
+const VALID_EXPLAIN_MODES = [
+  '',
+  'PIPELINE',
+  'AST',
+  'SYNTAX',
+  'ESTIMATE',
+] as const
+type ExplainMode = (typeof VALID_EXPLAIN_MODES)[number]
+
+/**
  * Handle GET requests for EXPLAIN queries
  * Accepts query via URL query string
  *
@@ -92,10 +106,24 @@ export async function GET(request: NextRequest): Promise<Response> {
     )
   }
 
-  debug('[GET /api/v1/explain]', { hostId, queryLength: query.length })
+  // Get and validate explain mode
+  const modeParam = (searchParams.get('mode') || '').toUpperCase()
+  if (modeParam && !VALID_EXPLAIN_MODES.includes(modeParam as ExplainMode)) {
+    return createValidationError(
+      `Invalid explain mode: ${modeParam}. Valid modes: ${VALID_EXPLAIN_MODES.filter(Boolean).join(', ')}`,
+      ROUTE_CONTEXT
+    )
+  }
 
-  // Wrap query with EXPLAIN
-  const explainQuery = `EXPLAIN ${query}`
+  debug('[GET /api/v1/explain]', {
+    hostId,
+    queryLength: query.length,
+    mode: modeParam || 'default',
+  })
+
+  // Wrap query with EXPLAIN [MODE]
+  const modePrefix = modeParam ? `EXPLAIN ${modeParam}` : 'EXPLAIN'
+  const explainQuery = `${modePrefix} ${query}`
 
   // Execute the query
   const result = await fetchData({

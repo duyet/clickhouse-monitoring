@@ -61,5 +61,6 @@ cypress/screenshots
 
 .claude/*.local.md
 .claude/*.local.json
+.claude/worktrees/
 .cursor
 .wrangler

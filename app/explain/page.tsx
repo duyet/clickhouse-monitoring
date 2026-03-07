@@ -9,9 +9,18 @@ import { ErrorAlert } from '@/components/feedback'
 import { ChartSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
+
+const EXPLAIN_MODES = [
+  { value: '', label: 'Plan' },
+  { value: 'PIPELINE', label: 'Pipeline' },
+  { value: 'AST', label: 'AST' },
+  { value: 'SYNTAX', label: 'Syntax' },
+  { value: 'ESTIMATE', label: 'Estimate' },
+] as const
 
 interface ExplainResult {
   explain: string
@@ -38,10 +47,11 @@ function ExplainContent() {
 
   const [queryInput, setQueryInput] = useState(queryFromUrl)
   const [queryToExplain, setQueryToExplain] = useState(queryFromUrl)
+  const [mode, setMode] = useState('')
 
   const { data, error, isLoading } = useSWR<ApiResponse>(
     queryToExplain
-      ? `/api/v1/explain?hostId=${hostId}&query=${encodeURIComponent(queryToExplain)}`
+      ? `/api/v1/explain?hostId=${hostId}&query=${encodeURIComponent(queryToExplain)}${mode ? `&mode=${mode}` : ''}`
       : null,
     fetcher
   )
@@ -69,6 +79,15 @@ function ExplainContent() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <Tabs value={mode} onValueChange={setMode}>
+            <TabsList>
+              {EXPLAIN_MODES.map((m) => (
+                <TabsTrigger key={m.value} value={m.value}>
+                  {m.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
           <div className="space-y-2">
             <Textarea
               placeholder="Enter SQL query to explain..."
@@ -102,7 +121,9 @@ function ExplainContent() {
       {data?.data && data.data.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Execution Plan</CardTitle>
+            <CardTitle className="text-lg">
+              {mode ? `EXPLAIN ${mode}` : 'Execution Plan'}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <pre
