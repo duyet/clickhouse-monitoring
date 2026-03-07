@@ -127,6 +127,9 @@ export function SqlEditor({
   const onChangeRef = useRef(onChange)
   const onRunRef = useRef(onRun)
   const sqlCompartment = useRef(new Compartment())
+  // Track whether the latest value change came from the editor (internal)
+  // to avoid syncing it back and creating a feedback loop
+  const isInternalChange = useRef(false)
   const { resolvedTheme } = useTheme()
 
   // Keep refs in sync
@@ -151,6 +154,7 @@ export function SqlEditor({
 
     const updateListener = EditorView.updateListener.of((update) => {
       if (update.docChanged) {
+        isInternalChange.current = true
         onChangeRef.current(update.state.doc.toString())
       }
     })
@@ -204,7 +208,13 @@ export function SqlEditor({
   }, [schema])
 
   // Sync external value changes (e.g., format button, URL prefill)
+  // Skip when the change originated from the editor itself to avoid feedback loops
   useEffect(() => {
+    if (isInternalChange.current) {
+      isInternalChange.current = false
+      return
+    }
+
     const view = viewRef.current
     if (!view) return
 
