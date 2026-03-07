@@ -196,5 +196,6 @@ export const historyQueriesConfig: QueryConfig = {
         showLegend: false,
       },
     ],
+    ['top-query-fingerprints', { showLegend: false }],
   ],
 }

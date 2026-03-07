@@ -196,5 +196,5 @@ export const expensiveQueriesConfig: QueryConfig = {
     written_rows: [ColumnFormat.BackgroundBar, { numberFormat: true }],
     result_rows: [ColumnFormat.BackgroundBar, { numberFormat: true }],
   },
-  relatedCharts: [],
+  relatedCharts: [['top-query-fingerprints', {}]],
 }
