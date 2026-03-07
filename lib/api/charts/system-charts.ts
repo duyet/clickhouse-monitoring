@@ -46,7 +46,8 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
 
   'disk-size': ({ params }) => {
     const name = params?.name as string | undefined
-    const condition = name ? `WHERE name = '${name}'` : ''
+    // Use parameterized query to prevent SQL injection — never interpolate user-supplied strings
+    const condition = name ? `WHERE name = {name: String}` : ''
     return {
       query: `
     SELECT name,
@@ -58,6 +59,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     ${condition}
     ORDER BY name
   `,
+      queryParams: name ? { name } : undefined,
     }
   },
 
@@ -207,7 +209,9 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   },
 
   'top-table-size': ({ params }) => {
-    const limit = (params?.limit as number) || 7
+    // Coerce to integer and clamp to a safe range to prevent SQL injection
+    const rawLimit = parseInt(String(params?.limit ?? 7), 10)
+    const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 7
     return {
       query: `
       SELECT

@@ -7,6 +7,14 @@ import type { PartialBy } from '@/types/generic'
 import type { Icon } from '@/types/icon'
 
 /**
+ * Callback type for computing a CSS class name for a table row.
+ * Shared across QueryConfig and data-table renderer props.
+ */
+export type RowClassNameFn = (
+  row: Record<string, unknown>
+) => string | undefined
+
+/**
  * Infer row data type from column names array
  *
  * @example
@@ -290,7 +298,7 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    * }
    * ```
    */
-  rowClassName?: (row: Record<string, unknown>) => string | undefined
+  rowClassName?: RowClassNameFn
   /**
    * Bulk actions available for selected rows (shown in toolbar).
    * These actions apply to all selected rows at once.

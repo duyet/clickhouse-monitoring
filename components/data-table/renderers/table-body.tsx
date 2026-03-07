@@ -10,6 +10,8 @@ import {
   type Table,
 } from '@tanstack/react-table'
 
+import type { RowClassNameFn } from '@/types/query-config'
+
 import { memo, type ReactNode } from 'react'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TableCell, TableRow } from '@/components/ui/table'
@@ -30,7 +32,7 @@ export interface VirtualItem {
 export interface VirtualizedTableRowProps<TData extends RowData> {
   row: Row<TData>
   virtualRow: VirtualItem
-  rowClassName?: (row: Record<string, unknown>) => string | undefined
+  rowClassName?: RowClassNameFn
 }
 
 /**
@@ -94,7 +96,7 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
 export interface StandardTableRowProps<TData extends RowData> {
   row: Row<TData>
   index: number
-  rowClassName?: (row: Record<string, unknown>) => string | undefined
+  rowClassName?: RowClassNameFn
 }
 
 /**
@@ -161,7 +163,7 @@ export interface TableBodyRowsProps<TData extends RowData> {
   table: Table<TData>
   isVirtualized: boolean
   virtualizer: Virtualizer | null
-  rowClassName?: (row: Record<string, unknown>) => string | undefined
+  rowClassName?: RowClassNameFn
 }
 
 /**
@@ -294,7 +296,7 @@ export interface TableBodyProps<
   virtualizer: Virtualizer | null
   title: string
   activeFilterCount: number
-  rowClassName?: (row: Record<string, unknown>) => string | undefined
+  rowClassName?: RowClassNameFn
 }
 
 /**
