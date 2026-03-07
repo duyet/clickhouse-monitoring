@@ -1,11 +1,11 @@
 'use client'
 
-import { Search, Settings } from 'lucide-react'
+import { Search, Settings, Table, TextSearch } from 'lucide-react'
 import { menuItemsConfig } from '@/menu'
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
 import {
   CommandDialog,
   CommandEmpty,
@@ -17,6 +17,10 @@ import {
 } from '@/components/ui/command'
 import { IconButton } from '@/components/ui/icon-button'
 import { buildUrl } from '@/lib/url/url-builder'
+
+const UUID_PATTERN = /^[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}$/i
+const UUID_PREFIX_PATTERN = /^[a-f0-9-]{8,}/i
+const TABLE_PATTERN = /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*/i
 
 interface CommandPaletteProps {
   open?: boolean
@@ -32,6 +36,7 @@ export const CommandPalette = memo(function CommandPalette({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [internalOpen, setInternalOpen] = React.useState(false)
+  const [inputValue, setInputValue] = useState('')
 
   const open = controlledOpen ?? internalOpen
   const setOpen = onOpenChange ?? setInternalOpen
@@ -49,15 +54,44 @@ export const CommandPalette = memo(function CommandPalette({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [open, setOpen])
 
+  const hostId = searchParams.get('host') || '0'
+
   const navigate = useCallback(
     (href: string) => {
       setOpen(false)
-      const hostId = searchParams.get('host') || '0'
+      setInputValue('')
       const url = buildUrl(href, { host: hostId })
       router.push(url)
     },
-    [router, setOpen, searchParams]
+    [router, setOpen, hostId]
   )
+
+  const isQueryId =
+    UUID_PATTERN.test(inputValue.trim()) || UUID_PREFIX_PATTERN.test(inputValue.trim())
+  const isTableName = TABLE_PATTERN.test(inputValue.trim())
+  const showQuickNav = isQueryId || isTableName
+
+  const handleGoToQuery = useCallback(() => {
+    setOpen(false)
+    setInputValue('')
+    const url = buildUrl('/query', {
+      host: hostId,
+      query_id: inputValue.trim(),
+    })
+    router.push(url)
+  }, [router, setOpen, hostId, inputValue])
+
+  const handleOpenInExplorer = useCallback(() => {
+    setOpen(false)
+    setInputValue('')
+    const [database, table] = inputValue.trim().split('.')
+    const url = buildUrl('/explorer', {
+      host: hostId,
+      database,
+      table,
+    })
+    router.push(url)
+  }, [router, setOpen, hostId, inputValue])
 
   const handleOpenSettings = useCallback(() => {
     setOpen(false)
@@ -97,15 +131,52 @@ export const CommandPalette = memo(function CommandPalette({
 
       <CommandDialog
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={(value) => {
+          setOpen(value)
+          if (!value) setInputValue('')
+        }}
         aria-label="Command palette"
       >
         <CommandInput
           placeholder="Type a command or search..."
           aria-label="Search commands"
+          value={inputValue}
+          onValueChange={setInputValue}
         />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
+
+          {showQuickNav && (
+            <>
+              <CommandGroup heading="Quick Navigation">
+                {isQueryId && (
+                  <CommandItem
+                    onSelect={handleGoToQuery}
+                    value={`query-id-${inputValue}`}
+                  >
+                    <TextSearch className="mr-2 h-4 w-4" />
+                    <span>Go to query: </span>
+                    <span className="ml-1 font-mono text-xs text-muted-foreground truncate">
+                      {inputValue.trim()}
+                    </span>
+                  </CommandItem>
+                )}
+                {isTableName && (
+                  <CommandItem
+                    onSelect={handleOpenInExplorer}
+                    value={`explorer-${inputValue}`}
+                  >
+                    <Table className="mr-2 h-4 w-4" />
+                    <span>Open in explorer: </span>
+                    <span className="ml-1 font-mono text-xs text-muted-foreground">
+                      {inputValue.trim()}
+                    </span>
+                  </CommandItem>
+                )}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          )}
 
           {menuItemsConfig.map((group) => (
             <CommandGroup key={group.title} heading={group.title}>
