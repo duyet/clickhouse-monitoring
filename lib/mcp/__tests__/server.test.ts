@@ -18,11 +18,6 @@ describe('createMcpServer', () => {
     const server = createMcpServer()
     // McpServer stores config internally; verify via the server object
     expect(server).toBeDefined()
-    // Access internal server info
-    const info =
-      (server as any).server?.serverInfo ?? (server as any)._serverInfo
-    // The name/version are passed to the constructor and used during initialization
-    // We verify the server was created successfully with our config
     expect(server).toBeInstanceOf(McpServer)
   })
 })
