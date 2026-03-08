@@ -29,6 +29,15 @@ export function pivotRows(rows: RawRow[]): {
   const byTime = new Map<string, Record<string, string | number>>()
 
   for (const row of rows) {
+    // Skip prototype-polluting keys
+    if (
+      row.metric === '__proto__' ||
+      row.metric === 'constructor' ||
+      row.metric === 'prototype'
+    ) {
+      continue
+    }
+
     metricSet.add(row.metric)
     let entry = byTime.get(row.event_time)
     if (!entry) {
