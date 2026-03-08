@@ -5,6 +5,7 @@ import type { OverviewChartConfig } from './charts-config'
 import { OVERVIEW_TABS } from './charts-config'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { memo, Suspense, useCallback, useMemo, useState } from 'react'
+import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { ClientOnly } from '@/components/client-only'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 import { ChartSkeleton, TabsSkeleton } from '@/components/skeletons'
@@ -21,6 +22,10 @@ interface LazyTabContentProps {
   hostId: number
 }
 
+// Number of charts to load immediately (first row in a 3-column grid).
+// Charts at index >= EAGER_CHART_COUNT are deferred until scrolled into view.
+const EAGER_CHART_COUNT = 3
+
 const LazyTabContent = memo(function LazyTabContent({
   charts,
   gridClassName,
@@ -29,9 +34,9 @@ const LazyTabContent = memo(function LazyTabContent({
 }: LazyTabContentProps) {
   return (
     <div className={gridClassName} role="region" aria-label={`${label} charts`}>
-      {charts.map((chartConfig) => {
+      {charts.map((chartConfig, index) => {
         const ChartComponent = chartConfig.component
-        return (
+        const chartEl = (
           <ChartComponent
             key={chartConfig.id}
             title={chartConfig.title}
@@ -43,6 +48,19 @@ const LazyTabContent = memo(function LazyTabContent({
             hostId={hostId}
             {...(chartConfig.props ?? {})}
           />
+        )
+
+        if (index < EAGER_CHART_COUNT) {
+          return chartEl
+        }
+
+        return (
+          <LazyChartWrapper
+            key={chartConfig.id}
+            className={chartConfig.className}
+          >
+            {chartEl}
+          </LazyChartWrapper>
         )
       })}
     </div>
