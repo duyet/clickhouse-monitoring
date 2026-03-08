@@ -10,6 +10,7 @@ import {
   buildTimeFilter,
   buildTimeFilterInterval,
 } from './types'
+import { STUCK_THRESHOLD_SECONDS } from '@/lib/query-config/merges/mutations'
 
 export const systemCharts: Record<string, ChartQueryBuilder> = {
   'memory-usage': ({ interval = 'toStartOfTenMinutes', lastHours = 24 }) => {
@@ -199,7 +200,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     query: `
     SELECT
       countIf(is_done = 0) AS active,
-      countIf(is_done = 0 AND parts_to_do > 0 AND (now() - create_time) > 600) AS stuck,
+      countIf(is_done = 0 AND parts_to_do > 0 AND (now() - create_time) > ${STUCK_THRESHOLD_SECONDS}) AS stuck,
       countIf(latest_fail_reason != '') AS failed
     FROM system.mutations
   `,
