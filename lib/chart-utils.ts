@@ -15,6 +15,11 @@ export type RawRow = {
 }
 
 /**
+ * Keys blocked from metric names to prevent prototype pollution attacks
+ */
+const BLOCKED_KEYS = ['__proto__', 'constructor', 'prototype']
+
+/**
  * Pivot long-form (event_time, metric, value) rows into wide-form rows
  * suitable for AreaChart: { event_time, MetricA: n, MetricB: n, ... }
  *
@@ -27,8 +32,6 @@ export function pivotRows(rows: RawRow[]): {
 } {
   const metricSet = new Set<string>()
   const byTime = new Map<string, Record<string, string | number>>()
-
-  const BLOCKED_KEYS = ['__proto__', 'constructor', 'prototype']
 
   for (const row of rows) {
     // Skip prototype-polluting keys
