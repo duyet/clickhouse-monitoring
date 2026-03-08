@@ -197,5 +197,6 @@ export const historyQueriesConfig: QueryConfig = {
       },
     ],
     ['top-query-fingerprints', { showLegend: false }],
+    ['cancelled-queries', {}],
   ],
 }

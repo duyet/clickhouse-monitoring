@@ -56,4 +56,9 @@ export const queryChartImports: ChartRegistryMap = {
       default: m.ChartTopQueryFingerprints,
     }))
   ),
+  'cancelled-queries': lazy(() =>
+    import('@/components/charts/query/cancelled-queries').then((m) => ({
+      default: m.ChartCancelledQueries,
+    }))
+  ),
 }
