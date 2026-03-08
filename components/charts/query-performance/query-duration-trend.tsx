@@ -3,14 +3,14 @@
 import { createAreaChart } from '@/components/charts/factory'
 import { chartTickFormatters } from '@/lib/utils'
 
-export const ChartQueryFingerprintTrend = createAreaChart({
-  chartName: 'query-fingerprint-trend',
+export const ChartQueryDurationTrend = createAreaChart({
+  chartName: 'query-duration-trend',
   index: 'event_time',
   categories: ['avg_duration_ms', 'p95_duration_ms'],
   defaultTitle: 'Query Duration Trend',
   defaultInterval: 'toStartOfHour',
   defaultLastHours: 24 * 7,
-  dataTestId: 'query-fingerprint-trend-chart',
+  dataTestId: 'query-duration-trend-chart',
   dateRangeConfig: 'query-activity',
   areaChartProps: {
     readable: 'duration',
@@ -23,4 +23,4 @@ export const ChartQueryFingerprintTrend = createAreaChart({
   },
 })
 
-export default ChartQueryFingerprintTrend
+export default ChartQueryDurationTrend
