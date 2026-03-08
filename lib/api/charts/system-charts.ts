@@ -288,15 +288,15 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     SELECT
       concat(database, '.', table) AS table_path,
       max(modification_time) AS latest_part_time,
-      dateDiff('second', max(modification_time), now()) AS staleness_seconds,
-      formatReadableTimeDelta(dateDiff('second', max(modification_time), now())) AS readable_staleness,
+      dateDiff('second', latest_part_time, now()) AS staleness_seconds,
+      formatReadableTimeDelta(staleness_seconds) AS readable_staleness,
       count() AS active_parts,
       formatReadableQuantity(sum(rows)) AS readable_rows
     FROM system.parts
     WHERE active = 1
       AND database NOT IN ('system', 'information_schema', 'INFORMATION_SCHEMA')
     GROUP BY database, table
-    ORDER BY staleness_seconds DESC
+    ORDER BY staleness_seconds DESC, table_path ASC
     LIMIT 20`,
   }),
 
@@ -304,16 +304,18 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     query: `
     SELECT
       concat(database, '.', table) AS table_path,
-      formatReadableSize(sum(data_compressed_bytes)) AS compressed_size,
-      formatReadableSize(sum(data_uncompressed_bytes)) AS uncompressed_size,
-      round(sum(data_uncompressed_bytes) / nullIf(sum(data_compressed_bytes), 0), 2) AS compression_ratio,
+      sum(data_compressed_bytes) AS compressed_bytes,
+      sum(data_uncompressed_bytes) AS uncompressed_bytes,
+      formatReadableSize(compressed_bytes) AS compressed_size,
+      formatReadableSize(uncompressed_bytes) AS uncompressed_size,
+      round(uncompressed_bytes / nullIf(compressed_bytes, 0), 2) AS compression_ratio,
       formatReadableQuantity(sum(rows)) AS readable_rows
     FROM system.parts
     WHERE active = 1
       AND database NOT IN ('system', 'information_schema', 'INFORMATION_SCHEMA')
     GROUP BY database, table
-    HAVING sum(data_compressed_bytes) > 0
-    ORDER BY compression_ratio ASC
+    HAVING compressed_bytes > 0
+    ORDER BY compression_ratio ASC, table_path ASC
     LIMIT 20`,
   }),
 }
