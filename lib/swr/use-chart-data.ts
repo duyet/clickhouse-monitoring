@@ -15,11 +15,9 @@ import {
   visibilityAwareInterval,
 } from './config'
 import { useCallback, useMemo, useRef } from 'react'
-import { getChartQuery } from '@/lib/api/chart-registry'
 import { useBrowserConnectionsContext } from '@/lib/context/browser-connections-context'
 import { useTimeRange } from '@/lib/context/time-range-context'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
-import { getSqlForDisplay } from '@/types/query-config'
 
 /**
  * Chart metadata - re-export ApiResponseMetadata for convenience
@@ -156,6 +154,13 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
         `Browser connection not found for hostId ${String(hostId)}`
       )
     }
+
+    // Dynamically import the chart registry — only loads when a browser
+    // connection is actually used, keeping the default bundle lean.
+    const [{ getChartQuery }, { getSqlForDisplay }] = await Promise.all([
+      import('@/lib/api/chart-registry'),
+      import('@/types/query-config'),
+    ])
 
     // Build SQL from the chart registry client-side
     const queryDef = getChartQuery(chartName, {

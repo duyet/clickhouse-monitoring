@@ -7,7 +7,6 @@ import type { StaleError } from './use-chart-data'
 
 import { visibilityAwareInterval } from './config'
 import { useMemo, useRef } from 'react'
-import { getTableQuery } from '@/lib/api/table-registry'
 import { useBrowserConnectionsContext } from '@/lib/context/browser-connections-context'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
@@ -96,6 +95,10 @@ export function useTableData<T = unknown>(
         `Browser connection not found for hostId ${String(hostId)}`
       )
     }
+
+    // Dynamically import the table registry — only loads when a browser
+    // connection is actually used, keeping the default bundle lean.
+    const { getTableQuery } = await import('@/lib/api/table-registry')
 
     // Build SQL from the table registry client-side
     const queryResult = getTableQuery(queryConfigName, {
