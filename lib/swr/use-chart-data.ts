@@ -17,6 +17,7 @@ import {
 import { useCallback, useMemo, useRef } from 'react'
 import { getChartQuery } from '@/lib/api/chart-registry'
 import { useBrowserConnectionsContext } from '@/lib/context/browser-connections-context'
+import { useTimeRange } from '@/lib/context/time-range-context'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 import { getSqlForDisplay } from '@/types/query-config'
 
@@ -100,14 +101,23 @@ export interface UseChartDataParams {
 export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   chartName,
   hostId,
-  interval,
-  lastHours,
+  interval: intervalProp,
+  lastHours: lastHoursProp,
   params,
   refreshInterval = REFRESH_INTERVAL.DEFAULT_60S,
   swrConfig,
 }: UseChartDataParams): UseChartResult<T> {
   // Get user settings (including timezone) for API requests
   const { settings } = useUserSettings()
+
+  // Global time range — charts that do NOT explicitly pass lastHours fall back
+  // to the global selection. Per-chart overrides (lastHoursProp !== undefined)
+  // always take precedence.
+  const { timeRange: globalTimeRange } = useTimeRange()
+  const lastHours =
+    lastHoursProp !== undefined ? lastHoursProp : globalTimeRange.lastHours
+  const interval =
+    intervalProp !== undefined ? intervalProp : globalTimeRange.interval
 
   // Browser connections context (for negative hostId proxy routing)
   const { getConnection } = useBrowserConnectionsContext()
