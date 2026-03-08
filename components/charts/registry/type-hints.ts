@@ -51,6 +51,7 @@ export const CHART_TYPE_HINTS: Record<string, ChartSkeletonType> = {
   // Connection Charts
   'connections-interserver': 'metric',
   'connections-http': 'metric',
+  'connections-pool': 'area',
 
   // Table Charts
   'top-table-size': 'bar',
