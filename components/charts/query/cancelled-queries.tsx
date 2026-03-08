@@ -10,6 +10,16 @@ import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { DATE_RANGE_PRESETS } from '@/components/date-range'
 import { useChartData } from '@/lib/swr'
 
+// Human-readable labels for ClickHouse exception codes related to cancellation
+const EXCEPTION_LABELS: Record<string, string> = {
+  '159': 'Timeout',
+  '394': 'Killed',
+}
+
+function labelForCode(code: string): string {
+  return EXCEPTION_LABELS[code] ?? `Code ${code}`
+}
+
 export const ChartCancelledQueries = memo(function ChartCancelledQueries({
   title,
   interval = 'toStartOfHour',
@@ -54,7 +64,7 @@ export const ChartCancelledQueries = memo(function ChartCancelledQueries({
 
         for (const item of dataArray) {
           const time = String(item.event_time ?? '')
-          const code = String(item.exception_code ?? '')
+          const code = labelForCode(String(item.exception_code ?? ''))
           const count = Number(item.count ?? 0)
 
           codeSet.add(code)
