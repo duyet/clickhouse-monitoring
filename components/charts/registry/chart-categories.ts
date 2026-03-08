@@ -75,6 +75,7 @@ export const CHARTS_BY_CATEGORY: Record<ChartCategory, string[]> = {
   [CHART_CATEGORIES.CONNECTION]: [
     'connections-interserver',
     'connections-http',
+    'connections-pool',
   ],
   [CHART_CATEGORIES.TABLE]: ['top-table-size'],
   [CHART_CATEGORIES.PAGE_VIEW]: ['page-view'],

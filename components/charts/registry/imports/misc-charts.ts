@@ -34,6 +34,11 @@ export const miscChartImports: ChartRegistryMap = {
       default: m.ChartConnectionsHttp,
     }))
   ),
+  'connections-pool': lazy(() =>
+    import('@/components/charts/connections-pool').then((m) => ({
+      default: m.ChartConnectionsPool,
+    }))
+  ),
 
   // Table Charts
   'top-table-size': lazy(() =>

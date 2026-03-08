@@ -47,4 +47,24 @@ export const connectionCharts: Record<string, ChartQueryBuilder> = {
   `,
     }
   },
+
+  'connections-pool': ({
+    interval = 'toStartOfFiveMinutes',
+    lastHours = 24,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+      SELECT
+        ${applyInterval(interval, 'event_time')} AS event_time,
+        SUM(CurrentMetric_TCPConnection) AS TCPConnection,
+        SUM(CurrentMetric_HTTPConnection) AS HTTPConnection,
+        SUM(CurrentMetric_InterserverConnection) AS InterserverConnection
+      FROM system.metric_log
+      ${timeFilter ? `WHERE ${timeFilter}` : ''}
+      GROUP BY event_time
+      ORDER BY event_time
+    `,
+    }
+  },
 }

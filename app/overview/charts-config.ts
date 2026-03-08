@@ -72,8 +72,7 @@ export interface OverviewTabConfig {
 // ============================================================================
 
 // Connection charts
-import { ChartConnectionsHttp } from '@/components/charts/connections-http'
-import { ChartConnectionsInterserver } from '@/components/charts/connections-interserver'
+import { ChartConnectionsPool } from '@/components/charts/connections-pool'
 // Merge charts
 import { ChartMergeAvgDuration } from '@/components/charts/merge/merge-avg-duration'
 import { ChartMergeCount } from '@/components/charts/merge/merge-count'
@@ -389,22 +388,13 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
     type: 'bar',
   },
   {
-    id: 'connections-http',
-    component: ChartConnectionsHttp,
-    title: 'HTTP Connections',
-    lastHours: 24 * 7,
-    interval: 'toStartOfHour',
+    id: 'connections-pool',
+    component: ChartConnectionsPool,
+    title: 'Connection Pool',
+    lastHours: 24,
+    interval: 'toStartOfFiveMinutes',
     className: 'w-full h-80',
-    type: 'bar',
-  },
-  {
-    id: 'connections-interserver',
-    component: ChartConnectionsInterserver,
-    title: 'Interserver Connections',
-    lastHours: 24 * 7,
-    interval: 'toStartOfHour',
-    className: 'w-full h-80',
-    type: 'bar',
+    type: 'area',
   },
 ]
 
