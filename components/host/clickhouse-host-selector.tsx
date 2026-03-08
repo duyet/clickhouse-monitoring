@@ -1,10 +1,13 @@
 'use client'
 
-import type { HostInfo } from '@/app/api/v1/hosts/route'
+import { GlobeIcon, PlusIcon } from 'lucide-react'
+
+import type { MergedHostInfo } from '@/lib/swr/use-merged-hosts'
 
 import { StatusIndicator } from './shared'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
+import { ConnectionManagerDialog } from '@/components/connections'
 import {
   Select,
   SelectContent,
@@ -12,13 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useBrowserConnections } from '@/lib/hooks/use-browser-connections'
 import { useHostStatus } from '@/lib/swr/use-host-status'
 import { buildUrl } from '@/lib/url/url-builder'
 import { getHost } from '@/lib/utils'
 
 type ClickHouseHostSelectorProps = {
   currentHostId: number
-  hosts: Array<Omit<HostInfo, 'user'>>
+  hosts: MergedHostInfo[]
 }
 
 /**
@@ -33,11 +37,18 @@ export function ClickHouseHostSelector({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const { connections, addConnection, updateConnection, deleteConnection } =
+    useBrowserConnections()
 
   const handleValueChange = useCallback(
     (val: string) => {
+      if (val === '__add_connection__') {
+        setDialogOpen(true)
+        return
+      }
       const hostId = parseInt(val, 10)
-      if (!Number.isNaN(hostId) && hostId >= 0) {
+      if (!Number.isNaN(hostId)) {
         const url = buildUrl(pathname, { host: hostId }, searchParams)
         router.push(url)
       }
@@ -45,39 +56,66 @@ export function ClickHouseHostSelector({
     [searchParams, pathname, router]
   )
 
-  const current = hosts[currentHostId]
+  // Find current host by id (works for both positive env hosts and negative browser hosts)
+  const current = hosts.find((h) => h.id === currentHostId) ?? hosts[0]
 
   if (!current) {
     return null
   }
 
   return (
-    <Select value={current.id.toString()} onValueChange={handleValueChange}>
-      <SelectTrigger
-        className="w-auto border-0 p-1 shadow-none focus:ring-0"
-        data-testid="host-selector"
-        aria-label={`Select ClickHouse host. Current host: ${current.name || getHost(current.host)}`}
-      >
-        <SelectValue
-          placeholder={current.name || getHost(current.host)}
-          className="mr-2 w-fit truncate"
-        />
-      </SelectTrigger>
-      <SelectContent data-testid="host-options">
-        {hosts.map((host) => (
+    <>
+      <Select value={current.id.toString()} onValueChange={handleValueChange}>
+        <SelectTrigger
+          className="w-auto border-0 p-1 shadow-none focus:ring-0"
+          data-testid="host-selector"
+          aria-label={`Select ClickHouse host. Current host: ${current.name || getHost(current.host)}`}
+        >
+          <SelectValue
+            placeholder={current.name || getHost(current.host)}
+            className="mr-2 w-fit truncate"
+          />
+        </SelectTrigger>
+        <SelectContent data-testid="host-options">
+          {hosts.map((host) => (
+            <SelectItem
+              key={host.host + host.id}
+              value={host.id.toString()}
+              data-testid={`host-option-${host.id}`}
+            >
+              <div className="flex items-center gap-2">
+                {host.source === 'browser' && (
+                  <GlobeIcon className="size-3 text-muted-foreground" />
+                )}
+                <HostStatusIndicator
+                  hostId={host.id}
+                  hostName={host.name || getHost(host.host)}
+                />
+              </div>
+            </SelectItem>
+          ))}
           <SelectItem
-            key={host.host + host.id}
-            value={host.id.toString()}
-            data-testid={`host-option-${host.id}`}
+            value="__add_connection__"
+            data-testid="add-connection"
+            className="text-muted-foreground"
           >
-            <HostStatusIndicator
-              hostId={host.id}
-              hostName={host.name || getHost(host.host)}
-            />
+            <div className="flex items-center gap-2">
+              <PlusIcon className="size-3" />
+              <span>Add connection</span>
+            </div>
           </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+        </SelectContent>
+      </Select>
+
+      <ConnectionManagerDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        connections={connections}
+        onAdd={addConnection}
+        onUpdate={updateConnection}
+        onDelete={deleteConnection}
+      />
+    </>
   )
 }
 

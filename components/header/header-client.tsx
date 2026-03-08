@@ -10,12 +10,12 @@ import {
   HeaderBrandSkeleton,
 } from '@/components/header/header-brand'
 import { MenuNavigationStyle } from '@/components/menu/menu-navigation-style'
-import { useHosts } from '@/lib/swr/use-hosts'
+import { useMergedHosts } from '@/lib/swr/use-merged-hosts'
 
 export const HeaderClient = memo(function HeaderClient() {
   const searchParams = useSearchParams()
   const hostId = searchParams.get('host') || '0'
-  const { hosts } = useHosts()
+  const { hosts } = useMergedHosts()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60">
