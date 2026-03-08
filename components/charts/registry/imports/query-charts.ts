@@ -51,4 +51,9 @@ export const queryChartImports: ChartRegistryMap = {
       default: m.ChartQueryCache,
     }))
   ),
+  'top-query-fingerprints': lazy(() =>
+    import('@/components/charts/query/top-query-fingerprints').then((m) => ({
+      default: m.ChartTopQueryFingerprints,
+    }))
+  ),
 }

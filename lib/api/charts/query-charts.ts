@@ -163,6 +163,37 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
+  'top-query-fingerprints': ({
+    interval = 'toStartOfHour',
+    lastHours = 24 * 7,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    WITH top_hashes AS (
+      SELECT normalized_query_hash, count() AS total
+      FROM merge('system', '^query_log')
+      WHERE type = 'QueryFinish'
+            ${timeFilter ? `AND ${timeFilter}` : ''}
+      GROUP BY normalized_query_hash
+      ORDER BY total DESC
+      LIMIT 10
+    )
+    SELECT
+        ${applyInterval(interval, 'q.event_time', 'event_time')},
+        q.normalized_query_hash AS hash,
+        substring(any(q.query), 1, 80) AS query_preview,
+        count() AS count
+    FROM merge('system', '^query_log') AS q
+    INNER JOIN top_hashes AS t ON q.normalized_query_hash = t.normalized_query_hash
+    WHERE q.type = 'QueryFinish'
+          ${timeFilter ? `AND ${buildTimeFilter(lastHours, 'q.event_time')}` : ''}
+    GROUP BY 1, 2
+    ORDER BY 1 ASC, 4 DESC
+  `,
+    }
+  },
+
   'failed-query-count': ({
     interval = 'toStartOfMinute',
     lastHours = 24 * 7,
