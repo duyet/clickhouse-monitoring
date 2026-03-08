@@ -207,18 +207,35 @@ export async function GET(
   let params_obj: Record<string, unknown> | undefined
   if (paramStr) {
     try {
-      params_obj = JSON.parse(paramStr)
-    } catch {
-      // Ignore malformed params
+      const parsed: unknown = JSON.parse(paramStr)
+      if (
+        parsed !== null &&
+        typeof parsed === 'object' &&
+        !Array.isArray(parsed)
+      ) {
+        params_obj = parsed as Record<string, unknown>
+      }
+    } catch (e) {
+      debug('Failed to parse "params" query parameter', {
+        paramStr,
+        error: e instanceof Error ? e.message : String(e),
+      })
     }
   }
   // Extract timezone for ClickHouse session
   const timezoneParam = searchParams.get('timezone') || undefined
-  // Basic IANA timezone validation: must be like "America/New_York" or "UTC"
-  const timezone =
-    timezoneParam && /^[A-Za-z_]+\/[A-Za-z_]+$|^UTC$|^GMT$/i.test(timezoneParam)
-      ? timezoneParam
-      : undefined
+  // Validate timezone using Intl.DateTimeFormat to cover all valid IANA timezone formats
+  let timezone: string | undefined
+  if (timezoneParam) {
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone: timezoneParam }).format(
+        new Date()
+      )
+      timezone = timezoneParam
+    } catch {
+      // Invalid timezone, ignore
+    }
+  }
 
   debug(`[GET /api/v1/charts/${name}]`, {
     hostId,
