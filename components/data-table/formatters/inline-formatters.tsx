@@ -25,7 +25,7 @@ export const codeFormatter: InlineFormatter = (value) => (
  * ```
  */
 export const numberFormatter: InlineFormatter = (value) => (
-  <span className="text-center text-nowrap">
+  <span className="text-right text-nowrap font-mono tabular-nums">
     {formatReadableQuantity(value as number, 'long')}
   </span>
 )

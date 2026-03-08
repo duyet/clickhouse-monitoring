@@ -24,11 +24,13 @@ import {
   DataTableFooter,
   DataTableHeader,
 } from '@/components/data-table/components'
+import { TableDensityProvider } from '@/components/data-table/context/table-density-context'
 import {
   useAutoFitColumns,
   useColumnVisibility,
   useFilteredData,
   useTableColumns,
+  useTableDensity,
   useTableFilters,
   useVirtualRows,
 } from '@/components/data-table/hooks'
@@ -235,6 +237,9 @@ export function DataTable<
     allColumns,
     configuredColumns,
   })
+
+  // Density mode with localStorage persistence
+  const { density, setDensity, cellClassName } = useTableDensity()
 
   // Sorting
   const [sorting, setSorting] = useState<SortingState>([])
@@ -467,43 +472,49 @@ export function DataTable<
   }, [handleColumnOrderChange, enableColumnReordering, getStorageKey])
 
   return (
-    <div className={`flex min-w-0 flex-col overflow-hidden ${className || ''}`}>
-      <DataTableHeader
-        title={title}
-        description={description}
-        queryConfig={queryConfig}
-        toolbarExtras={toolbarExtras}
-        topRightToolbarExtras={topRightToolbarExtras}
-        showSQL={showSQL}
-        table={table}
-        queryParams={queryParams}
-        isRefreshing={isRefreshing}
-        enableColumnFilters={enableColumnFilters}
-        activeFilterCount={activeFilterCount}
-        clearAllColumnFilters={clearAllColumnFilters}
-        executedSql={executedSql}
-        metadata={metadata}
-        enableColumnReordering={enableColumnReordering}
-        onResetColumnOrder={handleResetColumnOrder}
-      />
+    <TableDensityProvider value={{ cellClassName }}>
+      <div
+        className={`flex min-w-0 flex-col overflow-hidden ${className || ''}`}
+      >
+        <DataTableHeader
+          title={title}
+          description={description}
+          queryConfig={queryConfig}
+          toolbarExtras={toolbarExtras}
+          topRightToolbarExtras={topRightToolbarExtras}
+          showSQL={showSQL}
+          table={table}
+          queryParams={queryParams}
+          isRefreshing={isRefreshing}
+          enableColumnFilters={enableColumnFilters}
+          activeFilterCount={activeFilterCount}
+          clearAllColumnFilters={clearAllColumnFilters}
+          executedSql={executedSql}
+          metadata={metadata}
+          enableColumnReordering={enableColumnReordering}
+          onResetColumnOrder={handleResetColumnOrder}
+          density={density}
+          onDensityChange={setDensity}
+        />
 
-      <DataTableContent
-        title={title}
-        description={description}
-        queryConfig={queryConfig}
-        table={table}
-        columnDefs={finalColumnDefs}
-        tableContainerRef={tableContainerRef}
-        isVirtualized={isVirtualized}
-        virtualizer={virtualizer}
-        activeFilterCount={activeFilterCount}
-        onAutoFit={handleAutoFit}
-        enableColumnReordering={enableColumnReordering}
-        onColumnOrderChange={handleDragEndColumnReorder}
-        onResetColumnOrder={handleResetColumnOrder}
-      />
+        <DataTableContent
+          title={title}
+          description={description}
+          queryConfig={queryConfig}
+          table={table}
+          columnDefs={finalColumnDefs}
+          tableContainerRef={tableContainerRef}
+          isVirtualized={isVirtualized}
+          virtualizer={virtualizer}
+          activeFilterCount={activeFilterCount}
+          onAutoFit={handleAutoFit}
+          enableColumnReordering={enableColumnReordering}
+          onColumnOrderChange={handleDragEndColumnReorder}
+          onResetColumnOrder={handleResetColumnOrder}
+        />
 
-      <DataTableFooter table={table} footnote={footnote} />
-    </div>
+        <DataTableFooter table={table} footnote={footnote} />
+      </div>
+    </TableDensityProvider>
   )
 }

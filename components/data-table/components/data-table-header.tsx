@@ -3,6 +3,7 @@
 import { Loader2Icon, X } from 'lucide-react'
 import type { RowData } from '@tanstack/react-table'
 
+import type { TableDensity } from '@/components/data-table/hooks'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartQueryParams } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
@@ -11,6 +12,7 @@ import { memo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { ColumnVisibilityButton } from '@/components/data-table/buttons/column-visibility'
 import { CsvExportButton } from '@/components/data-table/buttons/csv-export-button'
+import { DensityToggle } from '@/components/data-table/buttons/density-toggle'
 import { ResetColumnOrderButton } from '@/components/data-table/buttons/reset-column-order'
 import { BulkActions } from '@/components/data-table/components/bulk-actions'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
@@ -67,6 +69,10 @@ export interface DataTableHeaderProps<TData extends RowData> {
   enableColumnReordering?: boolean
   /** Callback to reset column order to default */
   onResetColumnOrder?: () => void
+  /** Current row density mode */
+  density?: TableDensity
+  /** Callback to change row density mode */
+  onDensityChange?: (density: TableDensity) => void
 }
 
 export const DataTableHeader = memo(function DataTableHeader<
@@ -88,6 +94,8 @@ export const DataTableHeader = memo(function DataTableHeader<
   metadata,
   enableColumnReordering = false,
   onResetColumnOrder,
+  density = 'comfortable',
+  onDensityChange,
 }: DataTableHeaderProps<TData>) {
   // Use executed SQL if provided, otherwise fallback to config SQL
   const displaySql = executedSql || getSqlForDisplay(queryConfig.sql)
@@ -134,6 +142,9 @@ export const DataTableHeader = memo(function DataTableHeader<
         {topRightToolbarExtras}
         {enableColumnReordering && onResetColumnOrder && (
           <ResetColumnOrderButton onReset={onResetColumnOrder} />
+        )}
+        {onDensityChange && (
+          <DensityToggle density={density} onDensityChange={onDensityChange} />
         )}
         <CsvExportButton table={table} filename={queryConfig.name} />
         <ColumnVisibilityButton table={table} />
