@@ -35,8 +35,9 @@ export const ChartCancelledQueries = memo(function ChartCancelledQueries({
   )
 
   // Use override values when date range is selected, otherwise use props/defaults
-  const effectiveLastHours = rangeOverride?.lastHours ?? lastHours
-  const effectiveInterval = rangeOverride?.interval ?? interval
+  // Must use ternary (not ??) so explicit `undefined` override (e.g. "all time") is preserved
+  const effectiveLastHours = rangeOverride ? rangeOverride.lastHours : lastHours
+  const effectiveInterval = rangeOverride ? rangeOverride.interval : interval
 
   const swr = useChartData<{
     event_time: string
@@ -60,7 +61,10 @@ export const ChartCancelledQueries = memo(function ChartCancelledQueries({
       {(dataArray, sql, metadata) => {
         // Collect unique exception codes
         const codeSet = new Set<string>()
-        const nestedData: Record<string, Record<string, number>> = {}
+        const nestedData: Record<
+          string,
+          Record<string, number>
+        > = Object.create(null)
 
         for (const item of dataArray) {
           const time = String(item.event_time ?? '')
@@ -70,7 +74,7 @@ export const ChartCancelledQueries = memo(function ChartCancelledQueries({
           codeSet.add(code)
 
           if (nestedData[time] === undefined) {
-            nestedData[time] = {}
+            nestedData[time] = Object.create(null)
           }
           nestedData[time][code] = count
         }
