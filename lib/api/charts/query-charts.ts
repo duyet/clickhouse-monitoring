@@ -285,12 +285,9 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     return {
       query: `
   SELECT ${applyInterval(interval, 'event_time')},
-         quantile(0.50)(query_duration_ms) AS p50_ms,
-         quantile(0.95)(query_duration_ms) AS p95_ms,
-         quantile(0.99)(query_duration_ms) AS p99_ms,
-         round(p50_ms / 1000, 3) AS p50_s,
-         round(p95_ms / 1000, 3) AS p95_s,
-         round(p99_ms / 1000, 3) AS p99_s
+         round(quantile(0.50)(query_duration_ms) / 1000, 3) AS p50_s,
+         round(quantile(0.95)(query_duration_ms) / 1000, 3) AS p95_s,
+         round(quantile(0.99)(query_duration_ms) / 1000, 3) AS p99_s
   FROM merge('system', '^query_log')
   WHERE type = 'QueryFinish'
         ${timeFilter ? `AND ${timeFilter}` : ''}
