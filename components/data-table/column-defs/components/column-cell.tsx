@@ -8,6 +8,7 @@ import type { Row, RowData, Table } from '@tanstack/react-table'
 
 import type { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
 
+import { memo } from 'react'
 import { formatCell } from '@/components/data-table/formatters'
 
 interface ColumnCellProps<
@@ -27,7 +28,7 @@ interface ColumnCellProps<
 /**
  * Wrapper component for formatted cell content
  */
-export function ColumnCell<
+function ColumnCellInner<
   TData extends RowData,
   TValue extends React.ReactNode,
 >({
@@ -53,3 +54,5 @@ export function ColumnCell<
     formatOptions
   )
 }
+
+export const ColumnCell = memo(ColumnCellInner) as typeof ColumnCellInner
