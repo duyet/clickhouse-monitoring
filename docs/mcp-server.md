@@ -16,13 +16,13 @@ MCP provides a standardized way for AI tools to access your ClickHouse data. Ins
 | Tool | Description | Parameters |
 |------|-------------|------------|
 | `query` | Execute a read-only SQL query | `sql` (string, required) |
-| `list_databases` | List all databases | none |
-| `list_tables` | List tables in a database | `database` (string, required) |
-| `describe_table` | Show columns and types | `database` (string), `table` (string) |
-| `server_info` | Server version and uptime | none |
-| `running_queries` | Currently executing queries | none |
-| `slow_queries` | Slowest queries from query log | `limit` (number, default: 10) |
-| `table_stats` | Row counts, sizes, part info | `database` (string), `table` (string) |
+| `list_databases` | List all databases with engines and comments | `hostId` (number, optional, default: 0) |
+| `list_tables` | List tables in a database with row counts and sizes | `database` (string, required), `hostId` (number, optional, default: 0) |
+| `get_table_schema` | Show columns, types, defaults, and comments for a table | `database` (string, required), `table` (string, required), `hostId` (number, optional, default: 0) |
+| `get_metrics` | Get server version, uptime, and active connections | `hostId` (number, optional, default: 0) |
+| `get_running_queries` | List currently executing queries ordered by elapsed time | `hostId` (number, optional, default: 0) |
+| `get_slow_queries` | Get slowest completed queries from query log | `limit` (number, optional, default: 10), `hostId` (number, optional, default: 0) |
+| `get_merge_status` | Get currently running merge operations with progress | `hostId` (number, optional, default: 0) |
 
 ## Setup
 
