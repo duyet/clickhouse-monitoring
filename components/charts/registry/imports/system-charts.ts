@@ -59,4 +59,14 @@ export const systemChartImports: ChartRegistryMap = {
       default: m.ChartPartitionPartHealth,
     }))
   ),
+  'oom-killed-queries': lazy(() =>
+    import('@/components/charts/system/oom-killed-queries').then((m) => ({
+      default: m.ChartOomKilledQueries,
+    }))
+  ),
+  'top-memory-queries': lazy(() =>
+    import('@/components/charts/system/top-memory-queries').then((m) => ({
+      default: m.ChartTopMemoryQueries,
+    }))
+  ),
 }

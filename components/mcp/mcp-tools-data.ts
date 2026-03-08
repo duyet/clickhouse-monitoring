@@ -1,0 +1,266 @@
+export interface McpToolParam {
+  name: string
+  type: string
+  required: boolean
+  default?: string | number
+  description: string
+}
+
+export interface McpTool {
+  name: string
+  description: string
+  params: McpToolParam[]
+  exampleResponse: string
+}
+
+export const MCP_TOOLS: McpTool[] = [
+  {
+    name: 'query',
+    description: 'Execute a read-only SQL query against ClickHouse',
+    params: [
+      {
+        name: 'sql',
+        type: 'string',
+        required: true,
+        description: 'The SQL query to execute (SELECT statements only)',
+      },
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host to query (default: 0)',
+      },
+    ],
+    exampleResponse: `[
+  { "database": "default", "name": "events", "total_rows": 1234567 },
+  { "database": "analytics", "name": "sessions", "total_rows": 987654 }
+]`,
+  },
+  {
+    name: 'list_databases',
+    description: 'List all databases with their engines and comments',
+    params: [
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host (default: 0)',
+      },
+    ],
+    exampleResponse: `[
+  { "name": "default", "engine": "Atomic", "comment": "" },
+  { "name": "analytics", "engine": "Atomic", "comment": "Analytics data" },
+  { "name": "system", "engine": "Memory", "comment": "" }
+]`,
+  },
+  {
+    name: 'list_tables',
+    description: 'List tables in a database with row counts and sizes',
+    params: [
+      {
+        name: 'database',
+        type: 'string',
+        required: true,
+        description: 'Database name to list tables from',
+      },
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host (default: 0)',
+      },
+    ],
+    exampleResponse: `[
+  {
+    "name": "events",
+    "engine": "MergeTree",
+    "total_rows": 1234567,
+    "total_bytes": 52428800,
+    "comment": "User events"
+  }
+]`,
+  },
+  {
+    name: 'get_table_schema',
+    description:
+      'Get column definitions for a table including types, defaults, and comments',
+    params: [
+      {
+        name: 'database',
+        type: 'string',
+        required: true,
+        description: 'Database name',
+      },
+      {
+        name: 'table',
+        type: 'string',
+        required: true,
+        description: 'Table name',
+      },
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host (default: 0)',
+      },
+    ],
+    exampleResponse: `[
+  {
+    "name": "id",
+    "type": "UInt64",
+    "default_kind": "",
+    "default_expression": "",
+    "comment": "Primary key"
+  },
+  {
+    "name": "created_at",
+    "type": "DateTime",
+    "default_kind": "DEFAULT",
+    "default_expression": "now()",
+    "comment": ""
+  }
+]`,
+  },
+  {
+    name: 'get_metrics',
+    description:
+      'Get key ClickHouse server metrics: version, uptime, connections, and memory',
+    params: [
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host (default: 0)',
+      },
+    ],
+    exampleResponse: `{
+  "version": "24.3.1",
+  "uptime_seconds": 864000,
+  "connections": 42,
+  "memory_usage_bytes": 8589934592,
+  "queries_in_flight": 3
+}`,
+  },
+  {
+    name: 'get_running_queries',
+    description: 'List currently running queries ordered by elapsed time',
+    params: [
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host (default: 0)',
+      },
+    ],
+    exampleResponse: `[
+  {
+    "query_id": "abc123",
+    "user": "default",
+    "elapsed": 12.5,
+    "query": "SELECT count() FROM events WHERE ...",
+    "memory_usage": 134217728,
+    "read_rows": 5000000
+  }
+]`,
+  },
+  {
+    name: 'get_slow_queries',
+    description: 'Get the slowest completed queries from the query log',
+    params: [
+      {
+        name: 'limit',
+        type: 'number',
+        required: false,
+        default: 10,
+        description: 'Number of slow queries to return (default: 10)',
+      },
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host (default: 0)',
+      },
+    ],
+    exampleResponse: `[
+  {
+    "query_id": "xyz789",
+    "user": "analyst",
+    "query_duration_ms": 45000,
+    "read_rows": 100000000,
+    "memory_usage": 2147483648,
+    "query": "SELECT ... FROM large_table GROUP BY ..."
+  }
+]`,
+  },
+  {
+    name: 'get_merge_status',
+    description:
+      'Get currently running merge operations with progress and elapsed time',
+    params: [
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host (default: 0)',
+      },
+    ],
+    exampleResponse: `[
+  {
+    "database": "default",
+    "table": "events",
+    "elapsed": 30.2,
+    "progress": 0.75,
+    "num_parts": 8,
+    "result_part_name": "20240101_1_8_1",
+    "memory_usage": 524288000
+  }
+]`,
+  },
+]
+
+export const EXAMPLE_PROMPTS = [
+  {
+    category: 'Schema & Discovery',
+    prompts: [
+      'List all databases and show me their sizes',
+      'Show me the schema of the events table in the analytics database',
+      'How many tables are in the default database?',
+      'Find all tables with more than 1 billion rows',
+    ],
+  },
+  {
+    category: 'Performance & Queries',
+    prompts: [
+      'Show me the slowest queries in the last hour',
+      'Are there any queries running for more than 60 seconds?',
+      'What queries are consuming the most memory right now?',
+      'Find the top 5 most expensive queries by CPU time',
+    ],
+  },
+  {
+    category: 'Replication & Merges',
+    prompts: [
+      'Check if any replicas are lagging',
+      'Are there any merge operations stuck or taking too long?',
+      'Show me the replication queue status',
+      'Which tables have the most pending merges?',
+    ],
+  },
+  {
+    category: 'System Health',
+    prompts: [
+      "What's the current memory usage of the ClickHouse server?",
+      'How many connections are currently active?',
+      'Show me the server uptime and version',
+      'Are there any errors in the recent logs?',
+    ],
+  },
+]

@@ -25,6 +25,7 @@ import {
   FilePlus2Icon,
   Grid2x2CheckIcon,
   HardDriveIcon,
+  HeartPulseIcon,
   KeyIcon,
   RollerCoasterIcon,
   ScrollTextIcon,
@@ -39,6 +40,12 @@ import {
 import type { MenuItem } from '@/components/menu/types'
 
 export const menuItemsConfig: MenuItem[] = [
+  {
+    title: 'Health',
+    href: '/health',
+    icon: HeartPulseIcon,
+    section: 'main',
+  },
   {
     title: 'Overview',
     href: '/overview',
