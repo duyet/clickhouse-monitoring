@@ -46,7 +46,9 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
 
   'disk-size': ({ params }) => {
     const name = params?.name as string | undefined
-    const condition = name ? `WHERE name = '${name}'` : ''
+    // Sanitize disk name: allow only alphanumeric, underscore, hyphen
+    const safeName = name && /^[\w-]+$/.test(name) ? name : undefined
+    const condition = safeName ? `WHERE name = '${safeName}'` : ''
     return {
       query: `
     SELECT name,
@@ -83,8 +85,14 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   },
 
   'backup-size': ({ lastHours }) => {
-    const startTimeCondition = lastHours
-      ? `AND start_time > (now() - INTERVAL ${lastHours} HOUR)`
+    const safeLastHours =
+      typeof lastHours === 'number' &&
+      Number.isFinite(lastHours) &&
+      lastHours > 0
+        ? Math.floor(lastHours)
+        : undefined
+    const startTimeCondition = safeLastHours
+      ? `AND start_time > (now() - INTERVAL ${safeLastHours} HOUR)`
       : ''
 
     return {
@@ -207,7 +215,11 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   },
 
   'top-table-size': ({ params }) => {
-    const limit = (params?.limit as number) || 7
+    const rawLimit = Number(params?.limit)
+    const limit =
+      Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= 100
+        ? rawLimit
+        : 7
     return {
       query: `
       SELECT
