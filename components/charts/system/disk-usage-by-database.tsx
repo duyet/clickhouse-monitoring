@@ -2,7 +2,7 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
+import { memo, useId } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
@@ -23,6 +23,7 @@ export const ChartDiskUsageByDatabase = memo(function ChartDiskUsageByDatabase({
   className,
   hostId,
 }: ChartProps) {
+  const tabsId = useId()
   const swr = useChartData<DataRow>({
     chartName: 'disk-usage-by-database',
     hostId,
@@ -32,16 +33,18 @@ export const ChartDiskUsageByDatabase = memo(function ChartDiskUsageByDatabase({
   return (
     <ChartContainer swr={swr} title={title} className={className}>
       {(dataArray, sql, metadata, staleError, mutate) => {
-        const dataBySize = dataArray.map((row) => ({
-          name: row.database as string,
-          value: row.total_bytes as number,
-          formatted: row.readable_size as string,
+        const rows = dataArray as DataRow[]
+
+        const dataBySize = rows.map((row) => ({
+          name: row.database,
+          value: row.total_bytes,
+          formatted: row.readable_size,
         }))
 
-        const dataByRows = dataArray.map((row) => ({
-          name: row.database as string,
-          value: row.total_rows as number,
-          formatted: row.readable_rows as string,
+        const dataByRows = rows.map((row) => ({
+          name: row.database,
+          value: row.total_rows,
+          formatted: row.readable_rows,
         }))
 
         return (
@@ -56,7 +59,7 @@ export const ChartDiskUsageByDatabase = memo(function ChartDiskUsageByDatabase({
             onRetry={mutate}
           >
             <Tabs
-              id="disk-usage-db-tabs"
+              id={tabsId}
               defaultValue="by-size"
               className="overflow-hidden"
             >
