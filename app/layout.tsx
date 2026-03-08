@@ -102,7 +102,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <KeyboardShortcuts />
           </Suspense>
-          <ResizableSidebarProvider defaultOpen={false}>
+          <ResizableSidebarProvider defaultOpen={true}>
             <AppSidebar />
             <SidebarInset className="min-w-0 overflow-hidden">
               <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">

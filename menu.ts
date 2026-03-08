@@ -310,7 +310,7 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/asynchronous_metrics',
       },
       {
-        title: 'Custom Dashboard',
+        title: 'Chart Builder',
         href: '/dashboard',
         description: 'Build custom monitoring dashboards with charts',
         icon: DashboardIcon,
