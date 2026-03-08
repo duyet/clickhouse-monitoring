@@ -102,8 +102,8 @@ describe('charts-config', () => {
   })
 
   describe('Queries Tab Charts', () => {
-    it('should have 5 charts in the queries tab', () => {
-      expect(QUERIES_TAB_CHARTS).toHaveLength(5)
+    it('should have 6 charts in the queries tab', () => {
+      expect(QUERIES_TAB_CHARTS).toHaveLength(6)
     })
 
     it('should include query performance charts', () => {
@@ -113,6 +113,7 @@ describe('charts-config', () => {
       expect(ids).toContain('query-cache')
       expect(ids).toContain('query-cache-usage')
       expect(ids).toContain('query-type')
+      expect(ids).toContain('query-duration-percentiles')
     })
   })
 
@@ -156,8 +157,8 @@ describe('charts-config', () => {
   })
 
   describe('Health Tab Charts', () => {
-    it('should have 6 charts in the health tab', () => {
-      expect(HEALTH_TAB_CHARTS).toHaveLength(6)
+    it('should have 5 charts in the health tab', () => {
+      expect(HEALTH_TAB_CHARTS).toHaveLength(5)
     })
 
     it('should include error and connection charts', () => {
@@ -166,8 +167,7 @@ describe('charts-config', () => {
       expect(ids).toContain('keeper-exception')
       expect(ids).toContain('zookeeper-wait')
       expect(ids).toContain('zookeeper-requests')
-      expect(ids).toContain('connections-http')
-      expect(ids).toContain('connections-interserver')
+      expect(ids).toContain('connections-pool')
     })
   })
 
@@ -232,7 +232,7 @@ describe('charts-config', () => {
 
       it('should return charts for the queries tab', () => {
         const charts = getChartsForTab('queries')
-        expect(charts).toHaveLength(5)
+        expect(charts).toHaveLength(6)
         expect(charts[0].id).toBe('query-count-14d')
       })
 
@@ -248,7 +248,7 @@ describe('charts-config', () => {
 
       it('should return charts for the health tab', () => {
         const charts = getChartsForTab('health')
-        expect(charts).toHaveLength(6)
+        expect(charts).toHaveLength(5)
       })
 
       it('should return empty array for non-existent tab', () => {
