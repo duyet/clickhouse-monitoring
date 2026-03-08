@@ -286,6 +286,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   'mutation-progress': () => ({
     query: `
     SELECT
+      mutation_id,
       concat(database, '.', table) AS table_path,
       command,
       parts_to_do,
@@ -505,4 +506,39 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
       tableCheck: 'system.metric_log',
     }
   },
+
+  'disk-io-throughput': ({
+    interval = 'toStartOfFifteenMinutes',
+    lastHours = 24,
+  }) => {
+    const timeFilter = buildTimeFilterInterval(lastHours)
+    return {
+      query: `
+      SELECT
+        ${applyInterval(interval, 'event_time')},
+        metric,
+        avg(value) AS avg_value
+      FROM merge('system', '^asynchronous_metric_log')
+      WHERE metric IN ('OSReadBytes', 'OSWriteBytes')
+        ${timeFilter ? `AND ${timeFilter}` : ''}
+      GROUP BY 1, metric
+      ORDER BY 1 ASC
+    `,
+      optional: true,
+      tableCheck: 'system.asynchronous_metric_log',
+    }
+  },
+
+  'storage-policies': () => ({
+    query: `
+    SELECT
+      policy_name,
+      volume_name,
+      disks,
+      volume_priority,
+      prefer_not_to_merge
+    FROM system.storage_policies
+    ORDER BY policy_name, volume_priority
+  `,
+  }),
 }

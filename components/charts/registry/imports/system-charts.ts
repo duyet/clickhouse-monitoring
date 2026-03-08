@@ -84,4 +84,14 @@ export const systemChartImports: ChartRegistryMap = {
       default: m.ChartKeeperWaitTime,
     }))
   ),
+  'disk-io-throughput': lazy(() =>
+    import('@/components/charts/system/disk-io-throughput').then((m) => ({
+      default: m.ChartDiskIOThroughput,
+    }))
+  ),
+  'storage-policies': lazy(() =>
+    import('@/components/charts/system/storage-policies').then((m) => ({
+      default: m.ChartStoragePolicies,
+    }))
+  ),
 }
