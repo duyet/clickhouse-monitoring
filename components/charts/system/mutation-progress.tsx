@@ -10,6 +10,7 @@ import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 type DataRow = {
+  mutation_id: string
   table_path: string
   command: string
   parts_to_do: number
@@ -94,9 +95,9 @@ export const ChartMutationProgress = memo(function ChartMutationProgress({
                 <span className="text-right">Parts Left</span>
                 <span className="text-right">Elapsed</span>
               </div>
-              {rows.map((row, i) => (
+              {rows.map((row) => (
                 <div
-                  key={i}
+                  key={row.mutation_id}
                   className={cn(
                     'grid grid-cols-[1fr_60px_80px_80px] gap-2 rounded px-2 py-1.5',
                     row.elapsed_seconds > STUCK_THRESHOLD_SECONDS &&
