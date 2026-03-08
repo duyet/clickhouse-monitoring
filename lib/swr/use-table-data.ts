@@ -5,8 +5,11 @@ import useSWR, { type SWRConfiguration } from 'swr'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { StaleError } from './use-chart-data'
 
+import { fetchViaBrowserProxy } from './browser-proxy-fetcher'
 import { visibilityAwareInterval } from './config'
-import { useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
+import { getTableQuery } from '@/lib/api/table-registry'
+import { useBrowserConnectionsContext } from '@/lib/context/browser-connections-context'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 /**
@@ -67,6 +70,68 @@ export function useTableData<T = unknown>(
   // Get user settings (including timezone) for API requests
   const { settings } = useUserSettings()
 
+  // Browser connections context (for negative hostId proxy routing)
+  const { getConnection } = useBrowserConnectionsContext()
+
+  const isBrowserConnection = hostId !== undefined && hostId < 0
+
+  const browserConnection = isBrowserConnection
+    ? getConnection(hostId)
+    : undefined
+
+  // Early error when browser connection is expected but missing
+  const browserConnectionMissing = isBrowserConnection && !browserConnection
+  const browserConnectionError = useMemo(
+    () =>
+      browserConnectionMissing
+        ? new Error(`Browser connection not found for hostId ${String(hostId)}`)
+        : undefined,
+    [browserConnectionMissing, hostId]
+  )
+
+  // --- Browser connection proxy path (negative hostId) ---
+  const browserProxyKey = useMemo(() => {
+    if (!isBrowserConnection || !browserConnection) return null
+    return [
+      '/api/v1/browser-connections/proxy',
+      'table',
+      queryConfigName,
+      browserConnection.id,
+      JSON.stringify(searchParams || {}),
+    ]
+  }, [isBrowserConnection, browserConnection, queryConfigName, searchParams])
+
+  const browserProxyFetcher = useCallback(async () => {
+    if (!browserConnection) {
+      throw new Error(
+        `Browser connection not found for hostId ${String(hostId)}`
+      )
+    }
+
+    // Build SQL from the table registry client-side
+    const queryResult = getTableQuery(queryConfigName, {
+      hostId: hostId!,
+      searchParams: Object.fromEntries(
+        Object.entries(searchParams || {}).map(([k, v]) => [k, String(v)])
+      ),
+    })
+
+    if (!queryResult) {
+      throw new Error(`Table query config "${queryConfigName}" not found`)
+    }
+
+    const result = await fetchViaBrowserProxy<T>({
+      connection: browserConnection,
+      query: queryResult.query,
+      queryParams: queryResult.queryParams as
+        | Record<string, string | number | boolean>
+        | undefined,
+    })
+
+    return result as unknown as TableDataResponse<T>
+  }, [browserConnection, queryConfigName, hostId, searchParams])
+
+  // --- Normal path (non-negative hostId) ---
   // Build query string from search parameters
   const params = new URLSearchParams()
   if (hostId !== undefined) params.append('hostId', String(hostId))
@@ -87,7 +152,7 @@ export function useTableData<T = unknown>(
 
   // Build cache key - include all parameters that affect the data
   // Include timezone so cache invalidates when user changes timezone
-  const key = [
+  const normalKey = [
     '/api/v1/tables',
     queryConfigName,
     hostId,
@@ -95,8 +160,8 @@ export function useTableData<T = unknown>(
     settings.timezone,
   ]
 
-  // Fetcher function
-  const fetcher = async () => {
+  // Fetcher function (memoized with useCallback to prevent recreation on every render)
+  const normalFetcher = useCallback(async () => {
     const response = await fetch(url)
 
     if (!response.ok) {
@@ -128,7 +193,11 @@ export function useTableData<T = unknown>(
     }
 
     return response.json() as Promise<TableDataResponse<T>>
-  }
+  }, [url])
+
+  // Select which key/fetcher to use based on hostId sign
+  const key = isBrowserConnection ? browserProxyKey : normalKey
+  const fetcher = isBrowserConnection ? browserProxyFetcher : normalFetcher
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<
     TableDataResponse<T>,
@@ -180,8 +249,8 @@ export function useTableData<T = unknown>(
   return {
     data: dataArray,
     metadata: data?.metadata,
-    error,
-    isLoading,
+    error: browserConnectionError || error,
+    isLoading: browserConnectionError ? false : isLoading,
     isValidating,
     refresh: mutate,
     /** True when data exists (even if stale due to revalidation error) */
