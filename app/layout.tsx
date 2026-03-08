@@ -8,6 +8,7 @@ import { Suspense } from 'react'
 import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
+import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { AppSidebar } from '@/components/app-sidebar'
 import { KeyboardShortcuts } from '@/components/controls/keyboard-shortcuts'
 import { HeaderActions } from '@/components/header/header-actions'
@@ -39,24 +40,28 @@ export const viewport: Viewport = {
 
 function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <TimezoneProvider>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <SWRProvider>
-          <BrowserConnectionsProvider>
-            <Suspense fallback={null}>
-              <HostProvider>
-                <AppProvider reloadIntervalSecond={120}>{children}</AppProvider>
-              </HostProvider>
-            </Suspense>
-          </BrowserConnectionsProvider>
-        </SWRProvider>
-      </ThemeProvider>
-    </TimezoneProvider>
+    <PostHogProvider>
+      <TimezoneProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SWRProvider>
+            <BrowserConnectionsProvider>
+              <Suspense fallback={null}>
+                <HostProvider>
+                  <AppProvider reloadIntervalSecond={120}>
+                    {children}
+                  </AppProvider>
+                </HostProvider>
+              </Suspense>
+            </BrowserConnectionsProvider>
+          </SWRProvider>
+        </ThemeProvider>
+      </TimezoneProvider>
+    </PostHogProvider>
   )
 }
 
