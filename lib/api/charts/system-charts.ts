@@ -195,6 +195,16 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   `,
   }),
 
+  'summary-stuck-mutations': () => ({
+    query: `
+    SELECT
+      countIf(is_done = 0) AS active,
+      countIf(is_done = 0 AND parts_to_do > 0 AND (now() - create_time) > 600) AS stuck,
+      countIf(latest_fail_reason != '') AS failed
+    FROM system.mutations
+  `,
+  }),
+
   'disk-usage-trend': ({ interval = 'toStartOfHour', lastHours = 24 * 7 }) => {
     const timeFilter = buildTimeFilterInterval(lastHours)
     return {
