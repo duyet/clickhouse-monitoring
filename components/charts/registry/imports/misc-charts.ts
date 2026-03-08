@@ -46,6 +46,11 @@ export const miscChartImports: ChartRegistryMap = {
       default: m.default,
     }))
   ),
+  'parts-per-table': lazy(() =>
+    import('@/components/charts/parts-per-table').then((m) => ({
+      default: m.ChartPartsPerTable,
+    }))
+  ),
 
   // Page Views Charts
   'page-view': lazy(() =>

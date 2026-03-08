@@ -59,6 +59,7 @@ export const CHARTS_BY_CATEGORY: Record<ChartCategory, string[]> = {
     'backup-size',
     'memory-usage',
     'cpu-usage',
+    'disk-usage-by-database',
   ],
   [CHART_CATEGORIES.REPLICATION]: [
     'replication-queue-count',
@@ -77,7 +78,7 @@ export const CHARTS_BY_CATEGORY: Record<ChartCategory, string[]> = {
     'connections-http',
     'connections-pool',
   ],
-  [CHART_CATEGORIES.TABLE]: ['top-table-size'],
+  [CHART_CATEGORIES.TABLE]: ['top-table-size', 'parts-per-table'],
   [CHART_CATEGORIES.PAGE_VIEW]: ['page-view'],
   [CHART_CATEGORIES.FACTORY]: [],
   [CHART_CATEGORIES.PRIMITIVES]: [],

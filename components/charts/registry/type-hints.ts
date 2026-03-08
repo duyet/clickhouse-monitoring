@@ -42,6 +42,7 @@ export const CHART_TYPE_HINTS: Record<string, ChartSkeletonType> = {
   'backup-size': 'metric',
   'memory-usage': 'area',
   'cpu-usage': 'area',
+  'disk-usage-by-database': 'bar',
 
   // Replication Charts
   'replication-queue-count': 'area',
@@ -55,6 +56,7 @@ export const CHART_TYPE_HINTS: Record<string, ChartSkeletonType> = {
 
   // Table Charts
   'top-table-size': 'bar',
+  'parts-per-table': 'bar',
 
   // Page Views Charts
   'page-view': 'bar',
