@@ -42,7 +42,7 @@ export const GithubHeatmapChart = memo(function GithubHeatmapChart({
 
   const value: HeatMapProps['value'] = data.map((d) => ({
     ...d,
-    date: String(d[index]),
+    date: d[index] != null ? String(d[index]) : '',
     count: d.count || 0,
   }))
 

@@ -13,7 +13,7 @@ import {
 import { cn } from '@/lib/utils'
 
 export interface DialogContentProps {
-  button?: React.ReactNode
+  button?: React.ReactElement
   title?: string
   description?: string
   content: string | React.ReactNode
