@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes'
 import { memo, useEffect, useState } from 'react'
 import { CommandPalette } from '@/components/controls/command-palette'
 import { RefreshCountdown } from '@/components/header/refresh-countdown'
+import { GlobalTimeRangePicker } from '@/components/header/time-range-picker'
 import { NotificationsPopover } from '@/components/notifications/notifications-popover'
 import { SettingsDialog } from '@/components/settings'
 import { Button } from '@/components/ui/button'
@@ -34,6 +35,8 @@ export const HeaderActions = memo(function HeaderActions({
 
   return (
     <div className="ml-auto flex items-center gap-2 sm:gap-3">
+      <GlobalTimeRangePicker />
+
       <RefreshCountdown />
 
       <CommandPalette

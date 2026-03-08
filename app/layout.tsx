@@ -20,6 +20,7 @@ import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Toaster } from '@/components/ui/sonner'
 import { BrowserConnectionsProvider } from '@/lib/context/browser-connections-context'
+import { TimeRangeProvider } from '@/lib/context/time-range-context'
 import { TimezoneProvider } from '@/lib/context/timezone-context'
 import { HostProvider, SWRProvider } from '@/lib/swr'
 
@@ -48,17 +49,19 @@ function Providers({ children }: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <SWRProvider>
-            <BrowserConnectionsProvider>
-              <Suspense fallback={null}>
-                <HostProvider>
-                  <AppProvider reloadIntervalSecond={120}>
-                    {children}
-                  </AppProvider>
-                </HostProvider>
-              </Suspense>
-            </BrowserConnectionsProvider>
-          </SWRProvider>
+          <TimeRangeProvider>
+            <SWRProvider>
+              <BrowserConnectionsProvider>
+                <Suspense fallback={null}>
+                  <HostProvider>
+                    <AppProvider reloadIntervalSecond={120}>
+                      {children}
+                    </AppProvider>
+                  </HostProvider>
+                </Suspense>
+              </BrowserConnectionsProvider>
+            </SWRProvider>
+          </TimeRangeProvider>
         </ThemeProvider>
       </TimezoneProvider>
     </PostHogProvider>
