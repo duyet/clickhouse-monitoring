@@ -482,6 +482,13 @@ export const menuItemsConfig: MenuItem[] = [
         icon: BarChartIcon,
       },
       {
+        title: 'MCP Server',
+        href: '/mcp',
+        description: 'Connect AI assistants via Model Context Protocol',
+        icon: UnplugIcon,
+        isNew: true,
+      },
+      {
         title: 'About',
         href: '/about',
         description: 'Dashboard and server version information',

@@ -1,6 +1,6 @@
 'use client'
 
-import { Monitor, Moon, RotateCcw, Sun } from 'lucide-react'
+import { Globe, Monitor, Moon, RotateCcw, Sun } from 'lucide-react'
 
 import type { UserSettings } from '@/lib/types/user-settings'
 
@@ -170,6 +170,28 @@ export function SettingsForm({
             )
           })}
         </div>
+      </div>
+
+      {/* MCP Server Section */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium flex items-center gap-1.5">
+          <Globe className="h-3.5 w-3.5" />
+          MCP Server
+        </Label>
+        <p className="text-xs text-muted-foreground">
+          Connect AI assistants to your ClickHouse cluster via the Model Context
+          Protocol.
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full justify-start text-xs"
+          onClick={() => window.open('/mcp', '_blank')}
+        >
+          <Globe className="h-3 w-3 mr-2" />
+          View MCP Server Details
+        </Button>
       </div>
 
       <div className="flex justify-end pt-4">
