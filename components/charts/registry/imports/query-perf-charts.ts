@@ -21,4 +21,18 @@ export const queryPerfChartImports: ChartRegistryMap = {
       default: m.ChartTopInserters,
     }))
   ),
+  'top-query-fingerprints': lazy(() =>
+    import('@/components/charts/query-performance/top-query-fingerprints').then(
+      (m) => ({
+        default: m.ChartTopQueryFingerprints,
+      })
+    )
+  ),
+  'query-fingerprint-trend': lazy(() =>
+    import(
+      '@/components/charts/query-performance/query-fingerprint-trend'
+    ).then((m) => ({
+      default: m.ChartQueryFingerprintTrend,
+    }))
+  ),
 }
