@@ -82,11 +82,11 @@ export function ConnectionForm({
         }),
       })
       const json = (await response.json()) as {
-        success?: boolean
+        ok?: boolean
         version?: string
         error?: string
       }
-      if (response.ok && json.success) {
+      if (json.ok) {
         setTestStatus({
           state: 'success',
           message: json.version
@@ -202,6 +202,11 @@ export function ConnectionForm({
           </button>
         </div>
       </div>
+
+      {/* Storage disclaimer */}
+      <p className="text-xs text-muted-foreground">
+        Credentials are stored locally in your browser only.
+      </p>
 
       {/* Test Connection */}
       <div className="flex items-center gap-3">

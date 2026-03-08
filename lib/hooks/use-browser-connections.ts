@@ -48,41 +48,48 @@ export function useBrowserConnections() {
     input: Omit<BrowserConnection, 'id' | 'hostId' | 'createdAt' | 'updatedAt'>
   ): BrowserConnection => {
     const now = new Date().toISOString()
-    const existingHostIds = connections.map((c) => c.hostId)
-    const hostId = Math.min(...existingHostIds, 0) - 1
-
     const newConnection: BrowserConnection = {
       ...input,
       id: crypto.randomUUID(),
-      hostId,
+      hostId: 0, // temporary; replaced inside setConnections below
       createdAt: now,
       updatedAt: now,
     }
 
-    const updated = [...connections, newConnection]
-    setConnections(updated)
-    saveConnections(updated)
+    let result = newConnection
+    setConnections((prev) => {
+      const existingHostIds = prev.map((c) => c.hostId)
+      const hostId = Math.min(...existingHostIds, 0) - 1
+      result = { ...newConnection, hostId }
+      const updated = [...prev, result]
+      saveConnections(updated)
+      return updated
+    })
 
-    return newConnection
+    return result
   }
 
   const updateConnection = (
     id: string,
     updates: Partial<Omit<BrowserConnection, 'id' | 'hostId' | 'createdAt'>>
   ): void => {
-    const updated = connections.map((c) =>
-      c.id === id
-        ? { ...c, ...updates, updatedAt: new Date().toISOString() }
-        : c
-    )
-    setConnections(updated)
-    saveConnections(updated)
+    setConnections((prev) => {
+      const updated = prev.map((c) =>
+        c.id === id
+          ? { ...c, ...updates, updatedAt: new Date().toISOString() }
+          : c
+      )
+      saveConnections(updated)
+      return updated
+    })
   }
 
   const deleteConnection = (id: string): void => {
-    const updated = connections.filter((c) => c.id !== id)
-    setConnections(updated)
-    saveConnections(updated)
+    setConnections((prev) => {
+      const updated = prev.filter((c) => c.id !== id)
+      saveConnections(updated)
+      return updated
+    })
   }
 
   return {
