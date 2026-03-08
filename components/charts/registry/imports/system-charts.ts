@@ -69,4 +69,19 @@ export const systemChartImports: ChartRegistryMap = {
       default: m.ChartTopMemoryQueries,
     }))
   ),
+  'mutation-progress': lazy(() =>
+    import('@/components/charts/system/mutation-progress').then((m) => ({
+      default: m.ChartMutationProgress,
+    }))
+  ),
+  'keeper-requests': lazy(() =>
+    import('@/components/charts/system/keeper-requests').then((m) => ({
+      default: m.ChartKeeperRequests,
+    }))
+  ),
+  'keeper-wait-time': lazy(() =>
+    import('@/components/charts/system/keeper-wait-time').then((m) => ({
+      default: m.ChartKeeperWaitTime,
+    }))
+  ),
 }
