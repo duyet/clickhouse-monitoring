@@ -68,4 +68,9 @@ export const queryChartImports: ChartRegistryMap = {
       })
     )
   ),
+  'slow-query-occurrences': lazy(() =>
+    import('@/components/charts/query/slow-query-occurrences').then((m) => ({
+      default: m.ChartSlowQueryOccurrences,
+    }))
+  ),
 }
