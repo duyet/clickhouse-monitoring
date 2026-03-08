@@ -1,6 +1,6 @@
 'use client'
 
-import type { HostInfo } from '@/app/api/v1/hosts/route'
+import type { MergedHostInfo } from '@/lib/swr/use-merged-hosts'
 
 import Link from 'next/link'
 import { memo } from 'react'
@@ -14,7 +14,7 @@ export const HeaderBrand = memo(function HeaderBrand({
   hosts,
 }: {
   currentHostId: string
-  hosts: Array<Omit<HostInfo, 'user'>>
+  hosts: MergedHostInfo[]
 }) {
   return (
     <div className="flex items-center gap-4">
