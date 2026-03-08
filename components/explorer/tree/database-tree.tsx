@@ -7,7 +7,7 @@ import { useTreeState } from '../hooks/use-tree-state'
 import { DatabaseNode } from './database-node'
 import { TreeSearch } from './tree-search'
 import { TreeSkeleton } from './tree-skeleton'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { SidebarMenu } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
@@ -45,17 +45,23 @@ export function DatabaseTree({ hostId }: DatabaseTreeProps) {
 
   const databases = response?.data
 
-  const handleSelectDatabase = (db: string) => {
-    setDatabase(db)
-    // Also expand the database if not already expanded
-    if (!isDatabaseExpanded(db)) {
-      toggleDatabase(db)
-    }
-  }
+  const handleSelectDatabase = useCallback(
+    (db: string) => {
+      setDatabase(db)
+      // Also expand the database if not already expanded
+      if (!isDatabaseExpanded(db)) {
+        toggleDatabase(db)
+      }
+    },
+    [setDatabase, isDatabaseExpanded, toggleDatabase]
+  )
 
-  const handleSelectTable = (db: string, tbl: string, engine: string) => {
-    setDatabaseAndTable(db, tbl, engine)
-  }
+  const handleSelectTable = useCallback(
+    (db: string, tbl: string, engine: string) => {
+      setDatabaseAndTable(db, tbl, engine)
+    },
+    [setDatabaseAndTable]
+  )
 
   if (error) {
     return (
@@ -93,12 +99,10 @@ export function DatabaseTree({ hostId }: DatabaseTreeProps) {
               selectedDatabase={database}
               level={0}
               searchFilter={searchFilter}
-              onToggle={() => toggleDatabase(db.name)}
+              onToggleDatabase={toggleDatabase}
               onToggleTable={toggleTable}
-              onSelectDatabase={() => handleSelectDatabase(db.name)}
-              onSelectTable={(tbl, engine) =>
-                handleSelectTable(db.name, tbl, engine)
-              }
+              onSelectDatabase={handleSelectDatabase}
+              onSelectTable={handleSelectTable}
             />
           ))}
         </SidebarMenu>

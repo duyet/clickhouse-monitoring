@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 export type ExplorerTab =
   | 'data'
@@ -59,9 +59,15 @@ export function useExplorerState(): ExplorerState & {
     }
   }, [searchParams])
 
+  // Use a ref for searchParams so updateParams doesn't depend on it.
+  // This prevents ALL setter callbacks from being recreated on every URL change,
+  // which was causing the entire database tree to re-render on each navigation.
+  const searchParamsRef = useRef(searchParams)
+  searchParamsRef.current = searchParams
+
   const updateParams = useCallback(
     (updates: Partial<Omit<ExplorerState, 'hostId'>>) => {
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(searchParamsRef.current.toString())
 
       if (updates.database !== undefined) {
         if (updates.database === null) {
@@ -104,7 +110,7 @@ export function useExplorerState(): ExplorerState & {
 
       router.push(`${pathname}?${params.toString()}`)
     },
-    [searchParams, pathname, router]
+    [pathname, router]
   )
 
   const setDatabase = useCallback(

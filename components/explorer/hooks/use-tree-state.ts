@@ -63,16 +63,28 @@ export function useTreeState(
   useEffect(() => {
     if (database) {
       setState((prev) => {
-        const newState = { ...prev }
-        newState.expandedDatabases = new Set(prev.expandedDatabases)
-        newState.expandedDatabases.add(database)
+        const dbAlreadyExpanded = prev.expandedDatabases.has(database)
+        const tableKey = table ? `${database}.${table}` : null
+        const tableAlreadyExpanded = tableKey
+          ? prev.expandedTables.has(tableKey)
+          : true
 
-        if (table) {
-          newState.expandedTables = new Set(prev.expandedTables)
-          newState.expandedTables.add(`${database}.${table}`)
+        // Skip state update if nothing needs to change
+        if (dbAlreadyExpanded && tableAlreadyExpanded) return prev
+
+        const newExpandedDatabases = dbAlreadyExpanded
+          ? prev.expandedDatabases
+          : new Set([...prev.expandedDatabases, database])
+
+        const newExpandedTables =
+          tableKey && !tableAlreadyExpanded
+            ? new Set([...prev.expandedTables, tableKey])
+            : prev.expandedTables
+
+        return {
+          expandedDatabases: newExpandedDatabases,
+          expandedTables: newExpandedTables,
         }
-
-        return newState
       })
     }
   }, [database, table])

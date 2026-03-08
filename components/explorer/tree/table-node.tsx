@@ -4,7 +4,7 @@ import useSWR from 'swr'
 
 import { ColumnNode } from './column-node'
 import { TreeNode } from './tree-node'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getEngineIconConfig } from '@/lib/clickhouse-engine-icons'
 import { cn } from '@/lib/utils'
@@ -97,7 +97,7 @@ function RowCountBadge({ totalRows }: { totalRows: number }) {
   )
 }
 
-export function TableNode({
+export const TableNode = memo(function TableNode({
   hostId,
   database,
   table,
@@ -173,4 +173,4 @@ export function TableNode({
       )}
     </TreeNode>
   )
-}
+})

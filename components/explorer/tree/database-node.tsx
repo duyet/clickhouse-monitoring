@@ -5,7 +5,7 @@ import useSWR from 'swr'
 
 import { TableNode } from './table-node'
 import { TreeNode } from './tree-node'
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface Table {
@@ -28,16 +28,16 @@ interface DatabaseNodeProps {
   selectedDatabase: string | null
   level: number
   searchFilter: string
-  onToggle: () => void
+  onToggleDatabase: (database: string) => void
   onToggleTable: (key: string) => void
-  onSelectDatabase: () => void
-  onSelectTable: (table: string, engine: string) => void
+  onSelectDatabase: (database: string) => void
+  onSelectTable: (database: string, table: string, engine: string) => void
 }
 
 const fetcher = (url: string): Promise<ApiResponse<Table[]>> =>
   fetch(url).then((res) => res.json())
 
-export function DatabaseNode({
+export const DatabaseNode = memo(function DatabaseNode({
   hostId,
   database,
   isExpanded,
@@ -46,7 +46,7 @@ export function DatabaseNode({
   selectedDatabase,
   level,
   searchFilter,
-  onToggle,
+  onToggleDatabase,
   onToggleTable,
   onSelectDatabase,
   onSelectTable,
@@ -79,12 +79,23 @@ export function DatabaseNode({
     )
   }, [tables, searchFilter])
 
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     if (!shouldFetch) {
       setShouldFetch(true)
     }
-    onToggle()
-  }
+    onToggleDatabase(database)
+  }, [shouldFetch, onToggleDatabase, database])
+
+  const handleSelect = useCallback(() => {
+    onSelectDatabase(database)
+  }, [onSelectDatabase, database])
+
+  const handleSelectTable = useCallback(
+    (tbl: string, engine: string) => {
+      onSelectTable(database, tbl, engine)
+    },
+    [onSelectTable, database]
+  )
 
   const showLoadingSkeleton = isLoading && isExpanded && !tables
 
@@ -102,7 +113,7 @@ export function DatabaseNode({
       hasChildren
       level={level}
       onToggle={handleToggle}
-      onSelect={onSelectDatabase}
+      onSelect={handleSelect}
     >
       {showLoadingSkeleton ? (
         <div
@@ -130,11 +141,11 @@ export function DatabaseNode({
               }
               level={level + 1}
               onToggle={() => onToggleTable(tableKey)}
-              onSelect={() => onSelectTable(table.name, table.engine)}
+              onSelect={() => handleSelectTable(table.name, table.engine)}
             />
           )
         })
       )}
     </TreeNode>
   )
-}
+})
