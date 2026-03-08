@@ -238,6 +238,23 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
+  'cancelled-queries': ({ interval = 'toStartOfHour', lastHours = 24 * 7 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT ${applyInterval(interval, 'event_time')},
+           exception_code,
+           COUNT() AS count
+    FROM merge('system', '^query_log')
+    WHERE type IN ('ExceptionBeforeStart', 'ExceptionWhileProcessing')
+          AND exception_code IN (394, 159)
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY 1, 2
+    ORDER BY 1 ASC
+  `,
+    }
+  },
+
   'failed-query-count-by-user': ({
     interval = 'toStartOfDay',
     lastHours = 24 * 14,
