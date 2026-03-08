@@ -20,6 +20,7 @@ import {
   hasInlineFormatter,
   hasValueFormatter,
 } from './formatter-selector'
+import { ExpandableCell } from '@/components/data-table/components/expandable-cell'
 import { ColumnFormat, type ColumnFormatOptions } from '@/types/column-format'
 
 /**
@@ -104,6 +105,7 @@ export function formatCell<
     }
   }
 
-  // 5. Default fallback - simple text display
-  return <span className="truncate text-wrap">{value as string}</span>
+  // 5. Default fallback - expandable text display for long content
+  const strValue = String(value ?? '')
+  return <ExpandableCell value={strValue} />
 }

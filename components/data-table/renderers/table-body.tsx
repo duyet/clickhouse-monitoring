@@ -13,6 +13,7 @@ import {
 import type { RowClassNameFn } from '@/types/query-config'
 
 import { memo, type ReactNode } from 'react'
+import { useTableDensityContext } from '@/components/data-table/context/table-density-context'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
@@ -49,6 +50,7 @@ export interface VirtualizedTableRowProps<TData extends RowData> {
 export const VirtualizedTableRow = memo(function VirtualizedTableRow<
   TData extends RowData,
 >({ row, virtualRow, rowClassName }: VirtualizedTableRowProps<TData>) {
+  const { cellClassName } = useTableDensityContext()
   const customClass = rowClassName?.(row.original as Record<string, unknown>)
   return (
     <TableRow
@@ -72,8 +74,8 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
           <TableCell
             key={cell.id}
             className={cn(
-              'py-3 text-sm whitespace-nowrap',
-              isSelectColumn ? 'px-2' : 'px-4'
+              'text-sm whitespace-nowrap',
+              isSelectColumn ? 'py-3 px-2' : cellClassName
             )}
             style={{
               width: 'auto',
@@ -113,6 +115,7 @@ export interface StandardTableRowProps<TData extends RowData> {
 export const StandardTableRow = memo(function StandardTableRow<
   TData extends RowData,
 >({ row, index, rowClassName }: StandardTableRowProps<TData>) {
+  const { cellClassName } = useTableDensityContext()
   const customClass = rowClassName?.(row.original as Record<string, unknown>)
   return (
     <TableRow
@@ -131,8 +134,8 @@ export const StandardTableRow = memo(function StandardTableRow<
           <TableCell
             key={cell.id}
             className={cn(
-              'py-3 text-sm whitespace-nowrap',
-              isSelectColumn ? 'px-2' : 'px-4'
+              'text-sm whitespace-nowrap',
+              isSelectColumn ? 'py-3 px-2' : cellClassName
             )}
             style={{
               width: 'auto',
