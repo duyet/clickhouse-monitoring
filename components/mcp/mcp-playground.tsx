@@ -98,36 +98,31 @@ export function McpPlayground() {
     return args
   }, [tool, paramValues])
 
-  const jsonRpcRequest = useMemo(
-    () =>
-      JSON.stringify(
-        {
-          jsonrpc: '2.0',
-          method: 'tools/call',
-          id: 1,
-          params: {
-            name: selectedTool,
-            arguments: toolArguments,
-          },
-        },
-        null,
-        2
-      ),
-    [selectedTool, toolArguments]
-  )
-
-  const curlCommand = useMemo(() => {
-    const jsonPayload = JSON.stringify({
+  const jsonRpcPayload = useMemo(
+    () => ({
       jsonrpc: '2.0',
       method: 'tools/call',
       id: 1,
-      params: { name: selectedTool, arguments: toolArguments },
-    })
+      params: {
+        name: selectedTool,
+        arguments: toolArguments,
+      },
+    }),
+    [selectedTool, toolArguments]
+  )
+
+  const jsonRpcRequest = useMemo(
+    () => JSON.stringify(jsonRpcPayload, null, 2),
+    [jsonRpcPayload]
+  )
+
+  const curlCommand = useMemo(() => {
+    const jsonPayload = JSON.stringify(jsonRpcPayload)
     const escapedJson = jsonPayload.replace(/'/g, "'\\''")
     return `curl -X POST ${endpointUrl} \\
   -H "Content-Type: application/json" \\
   -d '${escapedJson}'`
-  }, [endpointUrl, selectedTool, toolArguments])
+  }, [endpointUrl, jsonRpcPayload])
 
   return (
     <Card>

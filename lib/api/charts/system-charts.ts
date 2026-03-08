@@ -286,6 +286,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   'mutation-progress': () => ({
     query: `
     SELECT
+      mutation_id,
       concat(database, '.', table) AS table_path,
       command,
       parts_to_do,
