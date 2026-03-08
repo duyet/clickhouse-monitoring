@@ -204,9 +204,21 @@ export async function GET(
       ? lastHoursParsed
       : undefined
   const paramStr = searchParams.get('params')
-  const params_obj = paramStr ? JSON.parse(paramStr) : undefined
+  let params_obj: Record<string, unknown> | undefined
+  if (paramStr) {
+    try {
+      params_obj = JSON.parse(paramStr)
+    } catch {
+      // Ignore malformed params
+    }
+  }
   // Extract timezone for ClickHouse session
-  const timezone = searchParams.get('timezone') || undefined
+  const timezoneParam = searchParams.get('timezone') || undefined
+  // Basic IANA timezone validation: must be like "America/New_York" or "UTC"
+  const timezone =
+    timezoneParam && /^[A-Za-z_]+\/[A-Za-z_]+$|^UTC$|^GMT$/i.test(timezoneParam)
+      ? timezoneParam
+      : undefined
 
   debug(`[GET /api/v1/charts/${name}]`, {
     hostId,
