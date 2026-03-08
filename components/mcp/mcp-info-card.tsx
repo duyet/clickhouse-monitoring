@@ -1,8 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Check, Copy, Globe, Terminal } from 'lucide-react'
 
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -20,41 +20,38 @@ const MCP_TOOLS = [
   },
   {
     name: 'list_databases',
-    description: 'List all databases in the ClickHouse cluster',
+    description: 'List all databases with their engines and comments',
   },
   {
     name: 'list_tables',
-    description: 'List tables in a specific database with metadata',
+    description: 'List tables in a database with row counts and sizes',
   },
   {
-    name: 'describe_table',
-    description: 'Show column names, types, and comments for a table',
+    name: 'get_table_schema',
+    description:
+      'Get column definitions for a specific table including types, defaults, and comments',
   },
   {
-    name: 'server_info',
-    description: 'Get ClickHouse server version and uptime',
+    name: 'get_metrics',
+    description:
+      'Get key ClickHouse server metrics: version, uptime, connections, and memory',
   },
   {
-    name: 'running_queries',
-    description: 'List currently executing queries with progress',
+    name: 'get_running_queries',
+    description: 'List currently running queries ordered by elapsed time',
   },
   {
-    name: 'slow_queries',
-    description: 'Find slowest queries from the query log',
+    name: 'get_slow_queries',
+    description: 'Get the slowest completed queries from the query log',
   },
   {
-    name: 'table_stats',
-    description: 'Get row counts, sizes, and part info for a table',
+    name: 'get_merge_status',
+    description:
+      'Get currently running merge operations with progress and elapsed time',
   },
 ] as const
 
-function CopyButton({
-  text,
-  className,
-}: {
-  text: string
-  className?: string
-}) {
+function CopyButton({ text, className }: { text: string; className?: string }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = useCallback(async () => {
@@ -102,7 +99,7 @@ export function McpInfoCard() {
   const [endpointUrl, setEndpointUrl] = useState('')
 
   useEffect(() => {
-    setEndpointUrl(window.location.origin + '/api/mcp')
+    setEndpointUrl(`${window.location.origin}/api/mcp`)
   }, [])
 
   const claudeDesktopConfig = useMemo(
@@ -133,8 +130,8 @@ export function McpInfoCard() {
           MCP Server
         </CardTitle>
         <CardDescription>
-          Connect AI assistants to your ClickHouse cluster via the Model
-          Context Protocol (MCP).
+          Connect AI assistants to your ClickHouse cluster via the Model Context
+          Protocol (MCP).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
