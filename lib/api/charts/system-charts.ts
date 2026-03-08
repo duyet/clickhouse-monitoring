@@ -282,4 +282,38 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     LIMIT ${limit}`,
     }
   },
+
+  'data-freshness': () => ({
+    query: `
+    SELECT
+      concat(database, '.', table) AS table_path,
+      max(modification_time) AS latest_part_time,
+      dateDiff('second', max(modification_time), now()) AS staleness_seconds,
+      formatReadableTimeDelta(dateDiff('second', max(modification_time), now())) AS readable_staleness,
+      count() AS active_parts,
+      formatReadableQuantity(sum(rows)) AS readable_rows
+    FROM system.parts
+    WHERE active = 1
+      AND database NOT IN ('system', 'information_schema', 'INFORMATION_SCHEMA')
+    GROUP BY database, table
+    ORDER BY staleness_seconds DESC
+    LIMIT 20`,
+  }),
+
+  'compression-ratio': () => ({
+    query: `
+    SELECT
+      concat(database, '.', table) AS table_path,
+      formatReadableSize(sum(data_compressed_bytes)) AS compressed_size,
+      formatReadableSize(sum(data_uncompressed_bytes)) AS uncompressed_size,
+      round(sum(data_uncompressed_bytes) / nullIf(sum(data_compressed_bytes), 0), 2) AS compression_ratio,
+      formatReadableQuantity(sum(rows)) AS readable_rows
+    FROM system.parts
+    WHERE active = 1
+      AND database NOT IN ('system', 'information_schema', 'INFORMATION_SCHEMA')
+    GROUP BY database, table
+    HAVING sum(data_compressed_bytes) > 0
+    ORDER BY compression_ratio ASC
+    LIMIT 20`,
+  }),
 }

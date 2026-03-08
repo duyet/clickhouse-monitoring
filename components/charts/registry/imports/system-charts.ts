@@ -44,4 +44,14 @@ export const systemChartImports: ChartRegistryMap = {
       default: m.ChartDiskUsageByDatabase,
     }))
   ),
+  'data-freshness': lazy(() =>
+    import('@/components/charts/system/data-freshness').then((m) => ({
+      default: m.ChartDataFreshness,
+    }))
+  ),
+  'compression-ratio': lazy(() =>
+    import('@/components/charts/system/compression-ratio').then((m) => ({
+      default: m.ChartCompressionRatio,
+    }))
+  ),
 }
