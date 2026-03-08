@@ -63,8 +63,8 @@ export function registerMetricsTool(server: McpServer) {
       ) as Record<string, unknown>
 
       const combined = {
-        version: versionRow?.['version'],
-        uptime_seconds: uptimeRow?.['uptime_seconds'],
+        version: versionRow?.version,
+        uptime_seconds: uptimeRow?.uptime_seconds,
         metrics: metricsResult.data,
       }
 
