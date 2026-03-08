@@ -285,18 +285,29 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
 
   'data-freshness': () => ({
     query: `
+    WITH latest_data AS (
+      SELECT
+        database,
+        table,
+        concat(database, '.', table) AS table_path,
+        max(modification_time) AS latest_part_time,
+        count() AS active_parts,
+        sum(rows) AS total_rows,
+        dateDiff('second', latest_part_time, now()) AS staleness_seconds
+      FROM system.parts
+      WHERE active = 1
+        AND database NOT IN ('system', 'information_schema', 'INFORMATION_SCHEMA')
+      GROUP BY database, table
+    )
     SELECT
-      concat(database, '.', table) AS table_path,
-      max(modification_time) AS latest_part_time,
-      dateDiff('second', latest_part_time, now()) AS staleness_seconds,
+      table_path,
+      latest_part_time,
+      staleness_seconds,
       formatReadableTimeDelta(staleness_seconds) AS readable_staleness,
-      count() AS active_parts,
-      formatReadableQuantity(sum(rows)) AS readable_rows
-    FROM system.parts
-    WHERE active = 1
-      AND database NOT IN ('system', 'information_schema', 'INFORMATION_SCHEMA')
-    GROUP BY database, table
-    ORDER BY staleness_seconds DESC, table_path ASC
+      active_parts,
+      formatReadableQuantity(total_rows) AS readable_rows
+    FROM latest_data
+    ORDER BY staleness_seconds DESC, database ASC, table ASC
     LIMIT 20`,
   }),
 
@@ -317,5 +328,25 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     HAVING compressed_bytes > 0
     ORDER BY compression_ratio ASC, table_path ASC
     LIMIT 20`,
+  }),
+
+  'partition-part-health': () => ({
+    query: `
+    SELECT
+      concat(database, '.', table) AS table_path,
+      partition,
+      count() AS part_count,
+      formatReadableQuantity(part_count) AS readable_part_count,
+      sum(rows) AS total_rows,
+      formatReadableQuantity(total_rows) AS readable_rows,
+      sum(bytes_on_disk) AS total_bytes,
+      formatReadableSize(total_bytes) AS readable_size
+    FROM system.parts
+    WHERE active
+    GROUP BY database, table, partition
+    HAVING part_count > 50
+    ORDER BY part_count DESC
+    LIMIT 30
+  `,
   }),
 }

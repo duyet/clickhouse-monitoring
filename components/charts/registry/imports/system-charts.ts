@@ -54,4 +54,9 @@ export const systemChartImports: ChartRegistryMap = {
       default: m.ChartCompressionRatio,
     }))
   ),
+  'partition-part-health': lazy(() =>
+    import('@/components/charts/system/partition-part-health').then((m) => ({
+      default: m.ChartPartitionPartHealth,
+    }))
+  ),
 }
