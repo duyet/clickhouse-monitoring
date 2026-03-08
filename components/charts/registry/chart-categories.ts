@@ -51,6 +51,7 @@ export const CHARTS_BY_CATEGORY: Record<ChartCategory, string[]> = {
     'merge-sum-read-rows',
     'new-parts-created',
     'summary-used-by-mutations',
+    'summary-stuck-mutations',
   ],
   [CHART_CATEGORIES.SYSTEM]: [
     'summary-used-by-running-queries',

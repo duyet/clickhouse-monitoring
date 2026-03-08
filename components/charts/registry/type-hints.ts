@@ -33,6 +33,7 @@ export const CHART_TYPE_HINTS: Record<string, ChartSkeletonType> = {
 
   // Mutation Charts
   'summary-used-by-mutations': 'table',
+  'summary-stuck-mutations': 'metric',
 
   // Running Queries Charts
   'summary-used-by-running-queries': 'table',

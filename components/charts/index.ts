@@ -76,6 +76,7 @@ export { ChartReadonlyReplica } from './replication/readonly-replica'
 // Replication charts
 export { ChartReplicationQueueCount } from './replication/replication-queue-count'
 export { ChartReplicationSummaryTable } from './replication/replication-summary-table'
+export { ChartSummaryStuckMutations } from './summary-stuck-mutations'
 export { ChartSummaryUsedByMutations } from './summary-used-by-mutations'
 export { ChartSummaryUsedByRunningQueries } from './summary-used-by-running-queries'
 export { ChartBackupSize } from './system/backup-size'

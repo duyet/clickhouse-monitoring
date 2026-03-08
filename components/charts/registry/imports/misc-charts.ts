@@ -15,6 +15,11 @@ export const miscChartImports: ChartRegistryMap = {
       default: m.ChartSummaryUsedByMutations,
     }))
   ),
+  'summary-stuck-mutations': lazy(() =>
+    import('@/components/charts/summary-stuck-mutations').then((m) => ({
+      default: m.ChartSummaryStuckMutations,
+    }))
+  ),
 
   // Running Queries Charts
   'summary-used-by-running-queries': lazy(() =>
