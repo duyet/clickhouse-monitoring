@@ -214,6 +214,38 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
+  'disk-usage-by-database': () => ({
+    query: `
+    SELECT
+      database,
+      sum(bytes_on_disk) AS total_bytes,
+      formatReadableSize(total_bytes) AS readable_size,
+      sum(rows) AS total_rows,
+      formatReadableQuantity(total_rows) AS readable_rows,
+      count() AS part_count
+    FROM system.parts
+    WHERE active
+    GROUP BY database
+    ORDER BY total_bytes DESC
+  `,
+  }),
+
+  'parts-per-table': () => ({
+    query: `
+    SELECT
+      concat(database, '.', table) AS table_path,
+      count() AS part_count,
+      formatReadableQuantity(part_count) AS readable_part_count,
+      sum(rows) AS total_rows,
+      sum(bytes_on_disk) AS total_bytes,
+      formatReadableSize(total_bytes) AS readable_size
+    FROM system.parts
+    WHERE active
+    GROUP BY database, table
+    ORDER BY part_count DESC
+    LIMIT 20`,
+  }),
+
   'top-table-size': ({ params }) => {
     const rawLimit = Number(params?.limit)
     const limit =
@@ -230,7 +262,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
         formatReadableSize(uncompressed_bytes) AS uncompressed,
         round(uncompressed_bytes / compressed_bytes, 2) AS compr_rate,
         sum(rows) AS total_rows,
-        formatReadableQuantity(sum(rows)) AS readable_total_rows,
+        formatReadableQuantity(total_rows) AS readable_total_rows,
         count() AS part_count
     FROM system.parts
     WHERE (active = 1) AND (database != 'system') AND (table LIKE '%')

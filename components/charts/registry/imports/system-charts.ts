@@ -39,4 +39,9 @@ export const systemChartImports: ChartRegistryMap = {
       default: m.ChartCPUUsage,
     }))
   ),
+  'disk-usage-by-database': lazy(() =>
+    import('@/components/charts/system/disk-usage-by-database').then((m) => ({
+      default: m.ChartDiskUsageByDatabase,
+    }))
+  ),
 }
