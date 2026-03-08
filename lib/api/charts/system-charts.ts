@@ -283,6 +283,23 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
+  'mutation-progress': () => ({
+    query: `
+    SELECT
+      concat(database, '.', table) AS table_path,
+      command,
+      parts_to_do,
+      formatReadableQuantity(parts_to_do) AS readable_parts_to_do,
+      if(is_done, 'done', if(parts_to_do = 0, 'waiting', 'running')) AS status,
+      dateDiff('second', create_time, now()) AS elapsed_seconds,
+      formatReadableTimeDelta(dateDiff('second', create_time, now())) AS readable_elapsed,
+      latest_fail_reason
+    FROM system.mutations
+    WHERE is_done = 0
+    ORDER BY create_time ASC
+  `,
+  }),
+
   'data-freshness': () => ({
     query: `
     WITH latest_data AS (
@@ -446,4 +463,46 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     LIMIT 1
   `,
   }),
+
+  'keeper-requests': ({
+    interval = 'toStartOfFifteenMinutes',
+    lastHours = 24,
+  }) => {
+    const timeFilter = buildTimeFilterInterval(lastHours)
+    return {
+      query: `
+      SELECT
+        ${applyInterval(interval, 'event_time')},
+        avg(value) AS avg_value,
+        metric
+      FROM merge('system', '^asynchronous_metric_log')
+      WHERE metric IN ('ZooKeeperRequest', 'ZooKeeperWatch', 'ZooKeeperSession')
+        ${timeFilter ? `AND ${timeFilter}` : ''}
+      GROUP BY 1, metric
+      ORDER BY 1 ASC
+    `,
+      optional: true,
+      tableCheck: 'system.asynchronous_metric_log',
+    }
+  },
+
+  'keeper-wait-time': ({
+    interval = 'toStartOfFifteenMinutes',
+    lastHours = 24,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+      SELECT
+        ${applyInterval(interval, 'event_time')},
+        sum(ProfileEvent_ZooKeeperWaitMicroseconds) / 1000 AS wait_ms
+      FROM merge('system', '^metric_log')
+      ${timeFilter ? `WHERE ${timeFilter}` : ''}
+      GROUP BY 1
+      ORDER BY 1 ASC
+    `,
+      optional: true,
+      tableCheck: 'system.metric_log',
+    }
+  },
 }
