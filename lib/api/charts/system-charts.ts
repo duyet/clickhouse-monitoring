@@ -343,12 +343,56 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
       formatReadableSize(total_bytes) AS readable_size
     FROM system.parts
     WHERE active
+      AND database NOT IN ('system', 'INFORMATION_SCHEMA', 'information_schema')
     GROUP BY database, table, partition
     HAVING part_count > 50
     ORDER BY part_count DESC
     LIMIT 30
   `,
   }),
+
+  'oom-killed-queries': ({
+    interval = 'toStartOfHour',
+    lastHours = 24 * 7,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+      SELECT
+        ${applyInterval(interval, 'event_time')},
+        count() AS kill_count,
+        formatReadableQuantity(count()) AS readable_count
+      FROM system.query_log
+      WHERE type = 'ExceptionWhileProcessing'
+        AND (exception_code = 241 OR exception LIKE '%MEMORY_LIMIT_EXCEEDED%')
+        ${timeFilter ? `AND ${timeFilter}` : ''}
+      GROUP BY 1
+      ORDER BY 1 ASC
+    `,
+    }
+  },
+
+  'top-memory-queries': ({ lastHours = 24 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+      SELECT
+        normalized_query_hash,
+        any(substring(query, 1, 120)) AS query_preview,
+        count() AS execution_count,
+        max(memory_usage) AS peak_memory,
+        formatReadableSize(max(memory_usage)) AS readable_peak_memory,
+        avg(memory_usage) AS avg_memory,
+        formatReadableSize(avg(memory_usage)) AS readable_avg_memory
+      FROM system.query_log
+      WHERE type = 'QueryFinish'
+        ${timeFilter ? `AND ${timeFilter}` : ''}
+      GROUP BY normalized_query_hash
+      ORDER BY peak_memory DESC
+      LIMIT 15
+    `,
+    }
+  },
 
   'replication-lag': () => ({
     query: `
@@ -363,10 +407,43 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
         active_replicas,
         total_replicas
     FROM system.replicas
-    WHERE is_leader = 1 OR replication_lag > 0
+    WHERE is_leader = 1 OR (log_max_index - log_pointer) > 0
     ORDER BY replication_lag DESC
     LIMIT 20`,
     optional: true,
     tableCheck: 'system.replicas',
+  }),
+
+  'health-readonly-replicas': () => ({
+    query: `
+    SELECT count() AS readonly_count
+    FROM system.replicas
+    WHERE is_readonly = 1
+  `,
+    optional: true,
+    tableCheck: 'system.replicas',
+  }),
+
+  'health-delayed-inserts': () => ({
+    query: `
+    SELECT
+      value AS delayed_inserts
+    FROM system.metrics
+    WHERE metric = 'DelayedInserts'
+  `,
+  }),
+
+  'health-max-part-count': () => ({
+    query: `
+    SELECT
+      concat(database, '.', table) AS table_path,
+      partition,
+      count() AS part_count
+    FROM system.parts
+    WHERE active AND database NOT IN ('system', 'INFORMATION_SCHEMA', 'information_schema')
+    GROUP BY database, table, partition
+    ORDER BY part_count DESC
+    LIMIT 1
+  `,
   }),
 }

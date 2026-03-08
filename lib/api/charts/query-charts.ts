@@ -326,7 +326,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
         toDayOfWeek(event_time) AS day_of_week,
         toHour(event_time) AS hour_of_day,
         count() AS query_count,
-        formatReadableQuantity(query_count) AS readable_count
+        formatReadableQuantity(count()) AS readable_count
     FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
       ${timeFilter ? `AND ${timeFilter}` : ''}
