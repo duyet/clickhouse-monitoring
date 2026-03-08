@@ -61,6 +61,7 @@ export const slowQueriesConfig: QueryConfig = {
             query_duration_ms,
             query_duration_ms / 1000 AS query_duration,
             user,
+            '' AS query_cache_usage,
             replace(substr(query, 1, 500), '\n', ' ') AS query,
             read_rows,
             formatReadableQuantity(read_rows) AS readable_read_rows,
