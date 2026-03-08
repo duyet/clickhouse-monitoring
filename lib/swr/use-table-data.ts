@@ -160,8 +160,8 @@ export function useTableData<T = unknown>(
     settings.timezone,
   ]
 
-  // Fetcher function
-  const normalFetcher = async () => {
+  // Fetcher function (memoized with useCallback to prevent recreation on every render)
+  const normalFetcher = useCallback(async () => {
     const response = await fetch(url)
 
     if (!response.ok) {
@@ -193,7 +193,7 @@ export function useTableData<T = unknown>(
     }
 
     return response.json() as Promise<TableDataResponse<T>>
-  }
+  }, [url])
 
   // Select which key/fetcher to use based on hostId sign
   const key = isBrowserConnection ? browserProxyKey : normalKey
