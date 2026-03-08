@@ -42,7 +42,7 @@ export const HeaderActions = memo(function HeaderActions({
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
-      {/* Theme toggle - hidden on mobile */}
+      {/* Theme toggle - visible on all viewports */}
       {mounted ? (
         <IconButton
           tooltip={
@@ -52,11 +52,11 @@ export const HeaderActions = memo(function HeaderActions({
           }
           icon={resolvedTheme === 'light' ? <Moon /> : <Sun />}
           onClick={toggleTheme}
-          className="hidden sm:flex"
+          className="flex"
           suppressHydrationWarning
         />
       ) : (
-        <Button variant="ghost" size="icon" className="hidden sm:flex">
+        <Button variant="ghost" size="icon" className="flex">
           <Sun className="h-4 w-4" />
         </Button>
       )}
