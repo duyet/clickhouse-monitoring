@@ -69,14 +69,10 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
       }}
     >
       {row.getVisibleCells().map((cell: Cell<TData, unknown>) => {
-        const isSelectColumn = cell.column.id === 'select'
         return (
           <TableCell
             key={cell.id}
-            className={cn(
-              'text-sm whitespace-nowrap',
-              isSelectColumn ? 'py-3 px-2' : cellClassName
-            )}
+            className={cn('text-sm whitespace-nowrap', cellClassName)}
             style={{
               width: 'auto',
               minWidth: 0,
@@ -129,14 +125,10 @@ export const StandardTableRow = memo(function StandardTableRow<
       )}
     >
       {row.getVisibleCells().map((cell: Cell<TData, unknown>) => {
-        const isSelectColumn = cell.column.id === 'select'
         return (
           <TableCell
             key={cell.id}
-            className={cn(
-              'text-sm whitespace-nowrap',
-              isSelectColumn ? 'py-3 px-2' : cellClassName
-            )}
+            className={cn('text-sm whitespace-nowrap', cellClassName)}
             style={{
               width: 'auto',
               minWidth: 0,
