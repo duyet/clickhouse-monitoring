@@ -15,7 +15,10 @@ import {
   visibilityAwareInterval,
 } from './config'
 import { useCallback, useMemo, useRef } from 'react'
+import { getChartQuery } from '@/lib/api/chart-registry'
+import { useBrowserConnectionsContext } from '@/lib/context/browser-connections-context'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
+import { getSqlForDisplay } from '@/types/query-config'
 
 /**
  * Chart metadata - re-export ApiResponseMetadata for convenience
@@ -106,6 +109,105 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   // Get user settings (including timezone) for API requests
   const { settings } = useUserSettings()
 
+  // Browser connections context (for negative hostId proxy routing)
+  const { getConnection } = useBrowserConnectionsContext()
+
+  const isBrowserConnection = hostId !== undefined && Number(hostId) < 0
+
+  // --- Browser connection proxy path (negative hostId) ---
+  // Build proxy fetcher key and function when hostId is negative
+  const browserConnection = isBrowserConnection
+    ? getConnection(Number(hostId))
+    : undefined
+
+  const browserProxyKey = useMemo(() => {
+    if (!isBrowserConnection || !browserConnection) return null
+    return [
+      '/api/v1/browser-connections/proxy',
+      'chart',
+      chartName,
+      browserConnection.id,
+      interval,
+      lastHours,
+      JSON.stringify(params || null),
+    ]
+  }, [
+    isBrowserConnection,
+    browserConnection,
+    chartName,
+    interval,
+    lastHours,
+    params,
+  ])
+
+  const browserProxyFetcher = useCallback(async () => {
+    if (!browserConnection) {
+      throw new Error(
+        `Browser connection not found for hostId ${String(hostId)}`
+      )
+    }
+
+    // Build SQL from the chart registry client-side
+    const queryDef = getChartQuery(chartName, {
+      interval: interval as TypedChartQueryParams['interval'],
+      lastHours,
+      params,
+    })
+
+    if (!queryDef || 'queries' in queryDef) {
+      throw new Error(
+        `Chart "${chartName}" not found or is a multi-query chart (not supported for browser connections)`
+      )
+    }
+
+    // Resolve SQL: prefer versioned sql array (pick latest), fall back to query string
+    const resolvedQuery =
+      queryDef.sql && queryDef.sql.length > 0
+        ? getSqlForDisplay(queryDef.sql)
+        : queryDef.query
+
+    const response = await fetch('/api/v1/browser-connections/proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        connection: {
+          host: browserConnection.host,
+          user: browserConnection.user,
+          password: browserConnection.password,
+        },
+        query: resolvedQuery,
+        query_params: queryDef.queryParams as
+          | Record<string, string | number | boolean>
+          | undefined,
+        format: 'JSONEachRow',
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as {
+        error?: { message?: string; type?: string }
+      }
+      const error = new Error(
+        errorData.error?.message ||
+          `Proxy request failed: ${response.statusText}`
+      ) as Error & { status?: number; type?: string }
+      error.status = response.status
+      if (errorData.error) {
+        error.type = errorData.error.type
+      }
+      throw error
+    }
+
+    // Proxy returns { success, data, metadata }
+    const json = (await response.json()) as {
+      success: boolean
+      data: T[]
+      metadata: ChartMetadata
+    }
+    return { data: json.data, metadata: json.metadata } as ChartDataResponse<T>
+  }, [browserConnection, chartName, interval, lastHours, params, hostId])
+
+  // --- Normal path (non-negative hostId) ---
   // Build query parameters
   const searchParams = new URLSearchParams()
   if (hostId !== undefined) searchParams.append('hostId', String(hostId))
@@ -123,7 +225,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   // Build cache key - stringify params to ensure consistent caching
   // (identical param objects with different references should share cache)
   // Include timezone so cache invalidates when user changes timezone
-  const key = [
+  const normalKey = [
     '/api/v1/charts',
     chartName,
     hostId,
@@ -134,7 +236,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   ]
 
   // Fetcher function (memoized with useCallback to prevent recreation on every render)
-  const fetcher = useCallback(async () => {
+  const normalFetcher = useCallback(async () => {
     const response = await fetch(url)
 
     if (!response.ok) {
@@ -171,6 +273,10 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
 
     return response.json() as Promise<ChartDataResponse<T>>
   }, [url])
+
+  // Select which key/fetcher to use based on hostId sign
+  const key = isBrowserConnection ? browserProxyKey : normalKey
+  const fetcher = isBrowserConnection ? browserProxyFetcher : normalFetcher
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<
     ChartDataResponse<T>,
