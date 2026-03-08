@@ -6,6 +6,8 @@
 
 import type { Row, RowData, Table } from '@tanstack/react-table'
 
+import type { RowContextFormatter, ValueOnlyFormatter } from './types'
+
 import {
   getAdvancedFormatter,
   getContextFormatter,
@@ -71,7 +73,7 @@ export function formatCell<
       // Advanced formatters can be either value-only or context-based
       // Check if it's CodeToggle (needs row context)
       if (format === ColumnFormat.CodeToggle) {
-        return (formatter as any)({
+        return (formatter as RowContextFormatter<TData, TValue>)({
           table,
           data,
           row,
@@ -82,7 +84,7 @@ export function formatCell<
         })
       }
       // Other advanced formatters are value-only
-      return (formatter as any)(value, columnFormatOptions)
+      return (formatter as ValueOnlyFormatter)(value, columnFormatOptions)
     }
   }
 

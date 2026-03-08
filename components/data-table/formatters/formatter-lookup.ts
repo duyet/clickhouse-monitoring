@@ -7,6 +7,7 @@
 import type { Row, RowData, Table } from '@tanstack/react-table'
 
 import type { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
+import type { RowContextFormatter, ValueOnlyFormatter } from './types'
 
 import { ADVANCED_FORMATTERS } from './advanced-formatters'
 import { CONTEXT_FORMATTERS } from './context-formatters'
@@ -49,7 +50,9 @@ export function getContextFormatter<TData extends RowData, TValue>(
       options?: ColumnFormatOptions
     }) => React.ReactNode)
   | undefined {
-  return CONTEXT_FORMATTERS[format as keyof typeof CONTEXT_FORMATTERS] as any
+  return CONTEXT_FORMATTERS[
+    format as keyof typeof CONTEXT_FORMATTERS
+  ] as RowContextFormatter<TData, TValue>
 }
 
 /**
@@ -69,5 +72,7 @@ export function getAdvancedFormatter<TData extends RowData, TValue>(
       options?: ColumnFormatOptions
     }) => React.ReactNode)
   | undefined {
-  return ADVANCED_FORMATTERS[format as keyof typeof ADVANCED_FORMATTERS] as any
+  return ADVANCED_FORMATTERS[format as keyof typeof ADVANCED_FORMATTERS] as
+    | ValueOnlyFormatter
+    | RowContextFormatter<TData, TValue>
 }
