@@ -5,7 +5,7 @@ import { ExternalLink, Loader2, SquareTerminal } from 'lucide-react'
 import { DatabaseOverview } from './database-overview'
 import { ExplorerBreadcrumb } from './explorer-breadcrumb'
 import { ExplorerEmptyState } from './explorer-empty-state'
-import { useExplorerState } from './hooks/use-explorer-state'
+import { type ExplorerTab, useExplorerState } from './hooks/use-explorer-state'
 import { DataTab } from './tabs/data-tab'
 import { DdlTab } from './tabs/ddl-tab'
 import { DependenciesTab } from './tabs/dependencies-tab'
@@ -55,7 +55,7 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
 
     setIsTabSwitching(true)
     markVisited(value)
-    setTab(value as any)
+    setTab(value as ExplorerTab)
 
     // Clear switching state after a brief moment
     requestAnimationFrame(() => {

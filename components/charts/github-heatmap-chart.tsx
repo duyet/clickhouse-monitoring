@@ -10,9 +10,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
+export interface HeatmapDataPoint {
+  [key: string]: string | number | undefined
+  count?: number
+}
+
 // Full of props https://uiwjs.github.io/react-heat-map/#props
 export interface GithubHeatmapChartProps extends HeatMapProps {
-  data: Record<string, any>[]
+  data: HeatmapDataPoint[]
   index?: string
   colors?: string[]
   weekLabels?: HeatMapProps['weekLabels']
@@ -37,7 +42,7 @@ export const GithubHeatmapChart = memo(function GithubHeatmapChart({
 
   const value: HeatMapProps['value'] = data.map((d) => ({
     ...d,
-    date: d[index],
+    date: d[index] != null ? String(d[index]) : '',
     count: d.count || 0,
   }))
 
