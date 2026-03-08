@@ -5,9 +5,9 @@ import useSWR, { type SWRConfiguration } from 'swr'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { StaleError } from './use-chart-data'
 
+import { fetchViaBrowserProxy } from './browser-proxy-fetcher'
 import { visibilityAwareInterval } from './config'
-import { useMemo, useRef } from 'react'
-import { getTableQuery } from '@/lib/api/table-registry'
+import { useCallback, useMemo, useRef } from 'react'
 import { useBrowserConnectionsContext } from '@/lib/context/browser-connections-context'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
@@ -78,6 +78,16 @@ export function useTableData<T = unknown>(
     ? getConnection(hostId)
     : undefined
 
+  // Early error when browser connection is expected but missing
+  const browserConnectionMissing = isBrowserConnection && !browserConnection
+  const browserConnectionError = useMemo(
+    () =>
+      browserConnectionMissing
+        ? new Error(`Browser connection not found for hostId ${String(hostId)}`)
+        : undefined,
+    [browserConnectionMissing, hostId]
+  )
+
   // --- Browser connection proxy path (negative hostId) ---
   const browserProxyKey = useMemo(() => {
     if (!isBrowserConnection || !browserConnection) return null
@@ -90,12 +100,16 @@ export function useTableData<T = unknown>(
     ]
   }, [isBrowserConnection, browserConnection, queryConfigName, searchParams])
 
-  const browserProxyFetcher = async () => {
+  const browserProxyFetcher = useCallback(async () => {
     if (!browserConnection) {
       throw new Error(
         `Browser connection not found for hostId ${String(hostId)}`
       )
     }
+
+    // Dynamically import the table registry — only loads when a browser
+    // connection is actually used, keeping the default bundle lean.
+    const { getTableQuery } = await import('@/lib/api/table-registry')
 
     // Build SQL from the table registry client-side
     const queryResult = getTableQuery(queryConfigName, {
@@ -109,55 +123,16 @@ export function useTableData<T = unknown>(
       throw new Error(`Table query config "${queryConfigName}" not found`)
     }
 
-    const response = await fetch('/api/v1/browser-connections/proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        connection: {
-          host: browserConnection.host,
-          user: browserConnection.user,
-          password: browserConnection.password,
-        },
-        query: queryResult.query,
-        query_params: queryResult.queryParams as
-          | Record<string, string | number | boolean>
-          | undefined,
-        format: 'JSONEachRow',
-      }),
+    const result = await fetchViaBrowserProxy<T>({
+      connection: browserConnection,
+      query: queryResult.query,
+      queryParams: queryResult.queryParams as
+        | Record<string, string | number | boolean>
+        | undefined,
     })
 
-    if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as {
-        error?: {
-          message?: string
-          type?: string
-          details?: {
-            missingTables?: readonly string[]
-            [key: string]: unknown
-          }
-        }
-      }
-      const error = new Error(
-        errorData.error?.message ||
-          `Proxy request failed: ${response.statusText}`
-      ) as Error & {
-        type?: string
-        details?: { missingTables?: readonly string[]; [key: string]: unknown }
-      }
-      if (errorData.error) {
-        error.type = errorData.error.type
-        error.details = errorData.error.details
-      }
-      throw error
-    }
-
-    const json = (await response.json()) as {
-      success: boolean
-      data: T[]
-      metadata: ApiResponseMetadata
-    }
-    return { data: json.data, metadata: json.metadata } as TableDataResponse<T>
-  }
+    return result as unknown as TableDataResponse<T>
+  }, [browserConnection, queryConfigName, hostId, searchParams])
 
   // --- Normal path (non-negative hostId) ---
   // Build query string from search parameters
@@ -188,8 +163,8 @@ export function useTableData<T = unknown>(
     settings.timezone,
   ]
 
-  // Fetcher function
-  const normalFetcher = async () => {
+  // Fetcher function (memoized with useCallback to prevent recreation on every render)
+  const normalFetcher = useCallback(async () => {
     const response = await fetch(url)
 
     if (!response.ok) {
@@ -221,7 +196,7 @@ export function useTableData<T = unknown>(
     }
 
     return response.json() as Promise<TableDataResponse<T>>
-  }
+  }, [url])
 
   // Select which key/fetcher to use based on hostId sign
   const key = isBrowserConnection ? browserProxyKey : normalKey
@@ -277,8 +252,8 @@ export function useTableData<T = unknown>(
   return {
     data: dataArray,
     metadata: data?.metadata,
-    error,
-    isLoading,
+    error: browserConnectionError || error,
+    isLoading: browserConnectionError ? false : isLoading,
     isValidating,
     refresh: mutate,
     /** True when data exists (even if stale due to revalidation error) */

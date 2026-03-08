@@ -1,7 +1,11 @@
 'use client'
 
-import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons'
-import { ExternalLinkIcon, InfoCircledIcon } from '@radix-ui/react-icons'
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ExternalLinkIcon,
+  InfoCircledIcon,
+} from '@radix-ui/react-icons'
 import useSWR from 'swr'
 
 import { useSearchParams } from 'next/navigation'

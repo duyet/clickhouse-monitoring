@@ -117,7 +117,7 @@ export const ChartMutationProgress = memo(function ChartMutationProgress({
                       title={row.command}
                     >
                       {row.command.length > 80
-                        ? row.command.slice(0, 80) + '...'
+                        ? `${row.command.slice(0, 80)}...`
                         : row.command}
                     </div>
                     {row.latest_fail_reason && (

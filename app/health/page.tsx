@@ -135,9 +135,9 @@ function MutationsCard({ hostId }: { hostId: number }) {
     label = 'Unavailable'
   } else if (swr.data && swr.data.length > 0) {
     const row = swr.data[0] as Record<string, unknown>
-    stuck = Number(row['stuck'] ?? 0)
-    active = Number(row['active'] ?? 0)
-    failed = Number(row['failed'] ?? 0)
+    stuck = Number(row.stuck ?? 0)
+    active = Number(row.active ?? 0)
+    failed = Number(row.failed ?? 0)
     label = `${active} active, ${stuck} stuck, ${failed} failed`
 
     if (stuck > 0 || failed > 0) {
@@ -193,7 +193,7 @@ function RunningMutationsCard({ hostId }: { hostId: number }) {
     label = 'Unavailable'
   } else if (swr.data && swr.data.length > 0) {
     const row = swr.data[0] as Record<string, unknown>
-    value = Number(row['running_count'] ?? 0)
+    value = Number(row.running_count ?? 0)
     label = `${value} running mutations`
     status = value >= 10 ? 'critical' : value >= 3 ? 'warning' : 'ok'
   } else {
