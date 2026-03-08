@@ -28,11 +28,11 @@ export const queryPerfChartImports: ChartRegistryMap = {
       })
     )
   ),
-  'query-fingerprint-trend': lazy(() =>
-    import(
-      '@/components/charts/query-performance/query-fingerprint-trend'
-    ).then((m) => ({
-      default: m.ChartQueryFingerprintTrend,
-    }))
+  'query-duration-trend': lazy(() =>
+    import('@/components/charts/query-performance/query-duration-trend').then(
+      (m) => ({
+        default: m.ChartQueryDurationTrend,
+      })
+    )
   ),
 }
