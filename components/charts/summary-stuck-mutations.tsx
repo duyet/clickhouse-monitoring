@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
+import type { ChartDataPoint } from '@/types/chart-data'
 
 import { memo } from 'react'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
@@ -10,8 +11,7 @@ import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/skeletons'
 import { useChartData } from '@/lib/swr'
 
-interface MutationMetrics {
-  [key: string]: unknown
+interface MutationMetrics extends ChartDataPoint {
   active: number
   stuck: number
   failed: number
