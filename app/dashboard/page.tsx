@@ -22,12 +22,8 @@ const DEFAULT_CHARTS: string[] = [
 
 function DashboardContent() {
   const hostId = useHostId()
-  const [selectedCharts, setSelectedCharts] = useState<string[]>(DEFAULT_CHARTS)
-
-  // Persist selection to sessionStorage so it survives navigation within the
-  // same tab but resets on new tab (intentional UX — saved dashboards use
-  // localStorage for cross-tab persistence).
-  useEffect(() => {
+  const [selectedCharts, setSelectedCharts] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return DEFAULT_CHARTS
     const stored = sessionStorage.getItem('dashboard-current-charts')
     if (stored) {
       try {
@@ -36,15 +32,18 @@ function DashboardContent() {
           Array.isArray(parsed) &&
           parsed.every((c) => typeof c === 'string')
         ) {
-          setSelectedCharts(parsed)
-          return
+          return parsed
         }
       } catch {
         // ignore
       }
     }
-  }, [])
+    return DEFAULT_CHARTS
+  })
 
+  // Persist selection to sessionStorage so it survives navigation within the
+  // same tab but resets on new tab (intentional UX — saved dashboards use
+  // localStorage for cross-tab persistence).
   useEffect(() => {
     sessionStorage.setItem(
       'dashboard-current-charts',

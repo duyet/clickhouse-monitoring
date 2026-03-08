@@ -23,6 +23,7 @@ import {
   CpuIcon,
   DatabaseZapIcon,
   FilePlus2Icon,
+  GitCompareArrowsIcon,
   Grid2x2CheckIcon,
   HardDriveIcon,
   HeartPulseIcon,
@@ -462,6 +463,14 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Client and inter-server connection metrics',
         icon: UnplugIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/metrics',
+      },
+      {
+        title: 'Cluster Compare',
+        href: '/cluster',
+        description:
+          'Side-by-side comparison of CPU, memory, and query load across all configured hosts',
+        icon: GitCompareArrowsIcon,
+        isNew: true,
       },
     ],
   },
