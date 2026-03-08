@@ -3,7 +3,7 @@ import { createMcpServer } from '@/lib/mcp/server'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(req: Request) {
+async function handleMcpRequest(req: Request) {
   const server = createMcpServer()
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
@@ -14,24 +14,6 @@ export async function POST(req: Request) {
   return transport.handleRequest(req)
 }
 
-export async function GET(req: Request) {
-  const server = createMcpServer()
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  })
-
-  await server.connect(transport)
-
-  return transport.handleRequest(req)
-}
-
-export async function DELETE(req: Request) {
-  const server = createMcpServer()
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  })
-
-  await server.connect(transport)
-
-  return transport.handleRequest(req)
-}
+export const POST = handleMcpRequest
+export const GET = handleMcpRequest
+export const DELETE = handleMcpRequest

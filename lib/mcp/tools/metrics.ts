@@ -51,9 +51,16 @@ export function registerMetricsTool(server: McpServer) {
         }
       }
 
+      const versionData = Array.isArray(versionResult.data)
+        ? versionResult.data[0]
+        : versionResult.data
+      const uptimeData = Array.isArray(uptimeResult.data)
+        ? uptimeResult.data[0]
+        : uptimeResult.data
+
       const combined = {
-        version: versionResult.data,
-        uptime: uptimeResult.data,
+        version: versionData,
+        uptime: uptimeData,
         metrics: metricsResult.data,
       }
 
