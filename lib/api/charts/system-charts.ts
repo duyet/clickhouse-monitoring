@@ -329,4 +329,24 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     ORDER BY compression_ratio ASC, table_path ASC
     LIMIT 20`,
   }),
+
+  'partition-part-health': () => ({
+    query: `
+    SELECT
+      concat(database, '.', table) AS table_path,
+      partition,
+      count() AS part_count,
+      formatReadableQuantity(part_count) AS readable_part_count,
+      sum(rows) AS total_rows,
+      formatReadableQuantity(total_rows) AS readable_rows,
+      sum(bytes_on_disk) AS total_bytes,
+      formatReadableSize(total_bytes) AS readable_size
+    FROM system.parts
+    WHERE active
+    GROUP BY database, table, partition
+    HAVING part_count > 50
+    ORDER BY part_count DESC
+    LIMIT 30
+  `,
+  }),
 }
