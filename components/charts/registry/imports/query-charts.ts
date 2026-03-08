@@ -73,4 +73,9 @@ export const queryChartImports: ChartRegistryMap = {
       default: m.ChartSlowQueryOccurrences,
     }))
   ),
+  'query-count-heatmap': lazy(() =>
+    import('@/components/charts/query/query-count-heatmap').then((m) => ({
+      default: m.ChartQueryCountHeatmap,
+    }))
+  ),
 }

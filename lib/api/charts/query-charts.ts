@@ -317,4 +317,22 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
   `,
     }
   },
+
+  'query-count-heatmap': ({ lastHours = 24 * 7 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT
+        toDayOfWeek(event_time) AS day_of_week,
+        toHour(event_time) AS hour_of_day,
+        count() AS query_count,
+        formatReadableQuantity(query_count) AS readable_count
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+      ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY day_of_week, hour_of_day
+    ORDER BY day_of_week, hour_of_day
+  `,
+    }
+  },
 }
