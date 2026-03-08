@@ -60,7 +60,7 @@ export const queryPerfCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
-  'query-fingerprint-trend': ({
+  'query-duration-trend': ({
     interval = 'toStartOfHour',
     lastHours = 24 * 7,
   }) => {
