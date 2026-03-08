@@ -34,6 +34,54 @@ export const queryPerfCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
+  'top-query-fingerprints': ({ lastHours = 24 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+      SELECT
+        normalized_query_hash,
+        any(substring(query, 1, 120)) AS query_preview,
+        count() AS execution_count,
+        formatReadableQuantity(count()) AS readable_count,
+        round(avg(query_duration_ms), 1) AS avg_duration_ms,
+        round(quantile(0.95)(query_duration_ms), 1) AS p95_duration_ms,
+        sum(read_rows) AS total_read_rows,
+        formatReadableQuantity(sum(read_rows)) AS readable_read_rows,
+        sum(memory_usage) AS total_memory,
+        formatReadableSize(sum(memory_usage)) AS readable_memory
+      FROM system.query_log
+      WHERE type = 'QueryFinish'
+        AND query_kind = 'Select'
+        ${timeFilter ? `AND ${timeFilter}` : ''}
+      GROUP BY normalized_query_hash
+      ORDER BY count() DESC
+      LIMIT 20
+    `,
+    }
+  },
+
+  'query-fingerprint-trend': ({
+    interval = 'toStartOfHour',
+    lastHours = 24 * 7,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+      SELECT
+        ${applyInterval(interval, 'event_time')},
+        count() AS query_count,
+        round(avg(query_duration_ms), 1) AS avg_duration_ms,
+        round(quantile(0.95)(query_duration_ms), 1) AS p95_duration_ms
+      FROM system.query_log
+      WHERE type = 'QueryFinish'
+        AND query_kind = 'Select'
+        ${timeFilter ? `AND ${timeFilter}` : ''}
+      GROUP BY 1
+      ORDER BY 1 ASC
+    `,
+    }
+  },
+
   'top-inserters': ({ lastHours = 24 }) => {
     const timeFilter = buildTimeFilter(lastHours)
     return {
