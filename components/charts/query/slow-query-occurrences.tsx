@@ -36,7 +36,7 @@ export const ChartSlowQueryOccurrences = memo(
       hostId,
       interval: effectiveInterval,
       lastHours: effectiveLastHours,
-      refreshInterval: 30000,
+      refreshInterval: 60000,
     })
 
     return (
