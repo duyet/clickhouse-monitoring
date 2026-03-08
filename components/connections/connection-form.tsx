@@ -2,22 +2,15 @@
 
 import { Check, Eye, EyeOff, Globe, Loader2, X } from 'lucide-react'
 
+import type { BrowserConnection } from '@/lib/types/browser-connection'
+
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
-export interface BrowserConnection {
-  id: string
-  hostId: number
-  name: string
-  host: string
-  user: string
-  password: string
-  createdAt: string
-  updatedAt: string
-}
+export type { BrowserConnection }
 
 export type ConnectionFormData = Pick<
   BrowserConnection,
