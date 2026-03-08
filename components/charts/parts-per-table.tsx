@@ -29,8 +29,7 @@ export const ChartPartsPerTable = memo(function ChartPartsPerTable({
 
   return (
     <ChartContainer swr={swr} title={title} className={className}>
-      {(dataArray, sql, metadata) => {
-        const rows = dataArray as DataRow[]
+      {(rows, sql, metadata) => {
         const barData = rows.map((row) => ({
           name: row.table_path,
           value: row.part_count,

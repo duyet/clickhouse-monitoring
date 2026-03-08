@@ -32,9 +32,7 @@ export const ChartDiskUsageByDatabase = memo(function ChartDiskUsageByDatabase({
 
   return (
     <ChartContainer swr={swr} title={title} className={className}>
-      {(dataArray, sql, metadata, staleError, mutate) => {
-        const rows = dataArray as DataRow[]
-
+      {(rows, sql, metadata, staleError, mutate) => {
         const dataBySize = rows.map((row) => ({
           name: row.database,
           value: row.total_bytes,
@@ -52,7 +50,7 @@ export const ChartDiskUsageByDatabase = memo(function ChartDiskUsageByDatabase({
             title={title}
             className={className}
             sql={sql}
-            data={dataArray}
+            data={rows}
             metadata={metadata}
             data-testid="disk-usage-by-database-chart"
             staleError={staleError}

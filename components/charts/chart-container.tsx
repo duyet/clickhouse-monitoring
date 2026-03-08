@@ -1,12 +1,12 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { StaleError, UseChartResult } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
-import { memo, type ReactNode } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
 import { getGuidanceForMissingTables } from '@/lib/table-guidance'
@@ -63,9 +63,7 @@ export interface ChartContainerProps<
  * }
  * ```
  */
-export const ChartContainer = memo(function ChartContainer<
-  TData extends ChartDataPoint = ChartDataPoint,
->({
+export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
   swr,
   title,
   className,
@@ -131,4 +129,4 @@ export const ChartContainer = memo(function ChartContainer<
       </div>
     </FadeIn>
   )
-})
+}
