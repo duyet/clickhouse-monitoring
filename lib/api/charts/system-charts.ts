@@ -349,4 +349,24 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     LIMIT 30
   `,
   }),
+
+  'replication-lag': () => ({
+    query: `
+    SELECT
+        database,
+        table,
+        replica_name,
+        log_max_index - log_pointer AS replication_lag,
+        queue_size,
+        inserts_in_queue,
+        merges_in_queue,
+        active_replicas,
+        total_replicas
+    FROM system.replicas
+    WHERE is_leader = 1 OR replication_lag > 0
+    ORDER BY replication_lag DESC
+    LIMIT 20`,
+    optional: true,
+    tableCheck: 'system.replicas',
+  }),
 }
