@@ -8,6 +8,7 @@ import type {
   ChartQueryParams as TypedChartQueryParams,
 } from '@/types/chart-data'
 
+import { fetchViaBrowserProxy } from './browser-proxy-fetcher'
 import {
   onErrorRetry,
   REFRESH_INTERVAL,
@@ -128,6 +129,16 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     ? getConnection(Number(hostId))
     : undefined
 
+  // Early error when browser connection is expected but missing
+  const browserConnectionMissing = isBrowserConnection && !browserConnection
+  const browserConnectionError = useMemo(
+    () =>
+      browserConnectionMissing
+        ? new Error(`Browser connection not found for hostId ${String(hostId)}`)
+        : undefined,
+    [browserConnectionMissing, hostId]
+  )
+
   const browserProxyKey = useMemo(() => {
     if (!isBrowserConnection || !browserConnection) return null
     return [
@@ -181,45 +192,15 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
         ? getSqlForDisplay(queryDef.sql)
         : queryDef.query
 
-    const response = await fetch('/api/v1/browser-connections/proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        connection: {
-          host: browserConnection.host,
-          user: browserConnection.user,
-          password: browserConnection.password,
-        },
-        query: resolvedQuery,
-        query_params: queryDef.queryParams as
-          | Record<string, string | number | boolean>
-          | undefined,
-        format: 'JSONEachRow',
-      }),
+    const result = await fetchViaBrowserProxy<T>({
+      connection: browserConnection,
+      query: resolvedQuery!,
+      queryParams: queryDef.queryParams as
+        | Record<string, string | number | boolean>
+        | undefined,
     })
 
-    if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as {
-        error?: { message?: string; type?: string }
-      }
-      const error = new Error(
-        errorData.error?.message ||
-          `Proxy request failed: ${response.statusText}`
-      ) as Error & { status?: number; type?: string }
-      error.status = response.status
-      if (errorData.error) {
-        error.type = errorData.error.type
-      }
-      throw error
-    }
-
-    // Proxy returns { success, data, metadata }
-    const json = (await response.json()) as {
-      success: boolean
-      data: T[]
-      metadata: ChartMetadata
-    }
-    return { data: json.data, metadata: json.metadata } as ChartDataResponse<T>
+    return result as unknown as ChartDataResponse<T>
   }, [browserConnection, chartName, interval, lastHours, params, hostId])
 
   // --- Normal path (non-negative hostId) ---
@@ -350,8 +331,8 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     data: dataArray,
     metadata: data?.metadata,
     sql: data?.metadata?.sql,
-    error,
-    isLoading,
+    error: browserConnectionError || error,
+    isLoading: browserConnectionError ? false : isLoading,
     isValidating,
     mutate,
     hasData,
