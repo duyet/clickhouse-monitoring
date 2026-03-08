@@ -28,13 +28,11 @@ export function pivotRows(rows: RawRow[]): {
   const metricSet = new Set<string>()
   const byTime = new Map<string, Record<string, string | number>>()
 
+  const BLOCKED_KEYS = ['__proto__', 'constructor', 'prototype']
+
   for (const row of rows) {
     // Skip prototype-polluting keys
-    if (
-      row.metric === '__proto__' ||
-      row.metric === 'constructor' ||
-      row.metric === 'prototype'
-    ) {
+    if (BLOCKED_KEYS.includes(row.metric)) {
       continue
     }
 
