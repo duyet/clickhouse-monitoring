@@ -36,7 +36,7 @@ export const ChartReplicationLag = memo(function ChartReplicationLag({
       {(dataArray, sql, metadata) => {
         const rows = dataArray as DataRow[]
         const barData = rows.map((row) => ({
-          name: `${row.database}.${row.table}`,
+          name: `${row.database}.${row.table} (${row.replica_name})`,
           value: row.replication_lag,
           formatted: String(row.replication_lag),
         }))

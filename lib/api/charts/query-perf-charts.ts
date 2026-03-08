@@ -19,11 +19,11 @@ export const queryPerfCharts: Record<string, ChartQueryBuilder> = {
         ${applyInterval(interval, 'event_time')},
         count() AS insert_count,
         sum(written_rows) AS total_rows,
-        formatReadableQuantity(total_rows) AS readable_rows,
+        formatReadableQuantity(sum(written_rows)) AS readable_rows,
         sum(written_bytes) AS total_bytes,
-        formatReadableSize(total_bytes) AS readable_bytes,
+        formatReadableSize(sum(written_bytes)) AS readable_bytes,
         round(avg(written_rows), 0) AS avg_batch_size,
-        formatReadableQuantity(avg_batch_size) AS readable_avg_batch
+        formatReadableQuantity(round(avg(written_rows), 0)) AS readable_avg_batch
       FROM system.query_log
       WHERE type = 'QueryFinish'
         AND query_kind = 'Insert'
@@ -42,11 +42,11 @@ export const queryPerfCharts: Record<string, ChartQueryBuilder> = {
         user,
         count() AS insert_count,
         sum(written_rows) AS total_rows,
-        formatReadableQuantity(total_rows) AS readable_rows,
+        formatReadableQuantity(sum(written_rows)) AS readable_rows,
         round(avg(written_rows), 0) AS avg_batch_size,
-        formatReadableQuantity(avg_batch_size) AS readable_avg_batch,
+        formatReadableQuantity(round(avg(written_rows), 0)) AS readable_avg_batch,
         sum(written_bytes) AS total_bytes,
-        formatReadableSize(total_bytes) AS readable_bytes
+        formatReadableSize(sum(written_bytes)) AS readable_bytes
       FROM system.query_log
       WHERE type = 'QueryFinish'
         AND query_kind = 'Insert'
