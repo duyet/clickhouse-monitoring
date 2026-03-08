@@ -276,4 +276,25 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
   `,
     }
   },
+
+  'query-duration-percentiles': ({
+    interval = 'toStartOfHour',
+    lastHours = 24 * 7,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+  SELECT ${applyInterval(interval, 'event_time')},
+         round(quantile(0.50)(query_duration_ms) / 1000, 3) AS p50_s,
+         round(quantile(0.95)(query_duration_ms) / 1000, 3) AS p95_s,
+         round(quantile(0.99)(query_duration_ms) / 1000, 3) AS p99_s
+  FROM merge('system', '^query_log')
+  WHERE type = 'QueryFinish'
+        ${timeFilter ? `AND ${timeFilter}` : ''}
+  GROUP BY event_time
+  ORDER BY event_time ASC
+  WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+`,
+    }
+  },
 }

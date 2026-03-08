@@ -41,6 +41,7 @@ export const CHARTS_BY_CATEGORY: Record<ChartCategory, string[]> = {
     'query-cache',
     'top-query-fingerprints',
     'cancelled-queries',
+    'query-duration-percentiles',
   ],
   [CHART_CATEGORIES.MERGE]: [
     'merge-count',
