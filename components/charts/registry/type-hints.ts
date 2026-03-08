@@ -22,6 +22,7 @@ export const CHART_TYPE_HINTS: Record<string, ChartSkeletonType> = {
   'failed-query-count-by-user': 'bar',
   'query-cache': 'metric',
   'query-duration-percentiles': 'area',
+  'slow-query-occurrences': 'bar',
 
   // Merge Charts - area and metric
   'merge-count': 'area',

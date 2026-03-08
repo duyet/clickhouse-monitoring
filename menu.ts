@@ -102,6 +102,13 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
       },
       {
+        title: 'Slow Queries',
+        href: '/slow-queries',
+        description: 'Top 10 slowest finished queries by duration',
+        icon: CounterClockwiseClockIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
+      },
+      {
         title: 'New Parts Created',
         href: '/charts?name=new-parts-created',
         description: 'Part creation frequency for MergeTree table optimization',

@@ -297,4 +297,24 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
 `,
     }
   },
+
+  'slow-query-occurrences': ({
+    interval = 'toStartOfHour',
+    lastHours = 24 * 7,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT ${applyInterval(interval, 'event_time')},
+           COUNT() AS count
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+          AND query_duration_ms >= 5000
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY event_time
+    ORDER BY event_time ASC
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+  `,
+    }
+  },
 }
