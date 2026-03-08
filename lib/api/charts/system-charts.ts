@@ -285,18 +285,29 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
 
   'data-freshness': () => ({
     query: `
+    WITH latest_data AS (
+      SELECT
+        database,
+        table,
+        concat(database, '.', table) AS table_path,
+        max(modification_time) AS latest_part_time,
+        count() AS active_parts,
+        sum(rows) AS total_rows,
+        dateDiff('second', latest_part_time, now()) AS staleness_seconds
+      FROM system.parts
+      WHERE active = 1
+        AND database NOT IN ('system', 'information_schema', 'INFORMATION_SCHEMA')
+      GROUP BY database, table
+    )
     SELECT
-      concat(database, '.', table) AS table_path,
-      max(modification_time) AS latest_part_time,
-      dateDiff('second', latest_part_time, now()) AS staleness_seconds,
+      table_path,
+      latest_part_time,
+      staleness_seconds,
       formatReadableTimeDelta(staleness_seconds) AS readable_staleness,
-      count() AS active_parts,
-      formatReadableQuantity(sum(rows)) AS readable_rows
-    FROM system.parts
-    WHERE active = 1
-      AND database NOT IN ('system', 'information_schema', 'INFORMATION_SCHEMA')
-    GROUP BY database, table
-    ORDER BY staleness_seconds DESC, table_path ASC
+      active_parts,
+      formatReadableQuantity(total_rows) AS readable_rows
+    FROM latest_data
+    ORDER BY staleness_seconds DESC, database ASC, table ASC
     LIMIT 20`,
   }),
 
