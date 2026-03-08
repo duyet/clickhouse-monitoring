@@ -1,69 +1,105 @@
 'use client'
 
-import { Suspense } from 'react'
-import { ChartParams } from '@/components/dashboard/chart-params'
-import { RenderChart } from '@/components/dashboard/render-chart'
+import { Suspense, useCallback, useEffect, useState } from 'react'
+import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
+import { getChartComponent, hasChart } from '@/components/charts/registry'
+import { ChartPicker } from '@/components/dashboard/chart-picker'
+import { SavedDashboardsToolbar } from '@/components/dashboard/saved-dashboards-toolbar'
 import { ChartSkeleton } from '@/components/skeletons'
-import { Button } from '@/components/ui/button'
 import { useHostId } from '@/lib/swr'
-import { useChartData } from '@/lib/swr/use-chart-data'
 
-type DashboardChart = {
-  kind: 'area' | 'bar' | 'calendar'
-  title: string
-  query: string
-  ordering: number
-  created_at: string
-  updated_at: string
-}
-
-type DashboardSetting = {
-  key: string
-  value: string
-  updated_at: string
-}
+/** Charts shown when no saved dashboard is loaded */
+const DEFAULT_CHARTS: string[] = [
+  'query-count',
+  'query-duration',
+  'query-memory',
+  'failed-query-count',
+  'merge-count',
+  'memory-usage',
+  'cpu-usage',
+  'disk-size',
+]
 
 function DashboardContent() {
   const hostId = useHostId()
+  const [selectedCharts, setSelectedCharts] = useState<string[]>(DEFAULT_CHARTS)
 
-  const { data: dashboards } = useChartData<DashboardChart>({
-    chartName: 'dashboard-charts',
-    hostId,
-    refreshInterval: 30000,
-  })
+  // Persist selection to sessionStorage so it survives navigation within the
+  // same tab but resets on new tab (intentional UX — saved dashboards use
+  // localStorage for cross-tab persistence).
+  useEffect(() => {
+    const stored = sessionStorage.getItem('dashboard-current-charts')
+    if (stored) {
+      try {
+        const parsed: unknown = JSON.parse(stored)
+        if (
+          Array.isArray(parsed) &&
+          parsed.every((c) => typeof c === 'string')
+        ) {
+          setSelectedCharts(parsed)
+          return
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, [])
 
-  const { data: settings } = useChartData<DashboardSetting>({
-    chartName: 'dashboard-settings',
-    hostId,
-    refreshInterval: 30000,
-  })
+  useEffect(() => {
+    sessionStorage.setItem(
+      'dashboard-current-charts',
+      JSON.stringify(selectedCharts)
+    )
+  }, [selectedCharts])
 
-  const settingsData = (
-    Array.isArray(settings) ? settings : []
-  ) as DashboardSetting[]
-  const params: Record<string, string> = JSON.parse(
-    settingsData.find((s) => s.key === 'params')?.value || '{}'
-  )
+  const handleLoad = useCallback((charts: string[]) => {
+    setSelectedCharts(charts)
+  }, [])
 
-  const dashboardsData = (
-    Array.isArray(dashboards) ? dashboards : []
-  ) as DashboardChart[]
+  const handleChartsChange = useCallback((charts: string[]) => {
+    setSelectedCharts(charts)
+  }, [])
+
+  // Filter to only charts that exist in the registry
+  const validCharts = selectedCharts.filter(hasChart)
 
   return (
-    <div>
-      <div className="mb-4 flex flex-row items-center justify-between gap-4">
-        <ChartParams params={params} />
-        <Button>Add Chart</Button>
+    <div className="flex flex-col gap-4">
+      {/* Toolbar */}
+      <div className="flex flex-row flex-wrap items-center justify-between gap-3">
+        <SavedDashboardsToolbar
+          selectedCharts={validCharts}
+          onLoad={handleLoad}
+        />
+        <ChartPicker
+          selectedCharts={validCharts}
+          onChange={handleChartsChange}
+        />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {dashboardsData.map((dashboard, i) => (
-          <RenderChart
-            key={`dashboard${i}`}
-            {...dashboard}
-            params={params}
-            hostId={hostId}
-          />
-        ))}
+
+      {/* Empty state */}
+      {validCharts.length === 0 && (
+        <div className="flex h-64 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-muted-foreground">
+          <p className="text-sm font-medium">No charts selected</p>
+          <p className="text-xs">
+            Use &ldquo;Add Charts&rdquo; to build your dashboard.
+          </p>
+        </div>
+      )}
+
+      {/* Chart grid */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {validCharts.map((chartName) => {
+          const Chart = getChartComponent(chartName)
+          if (!Chart) return null
+          return (
+            <LazyChartWrapper key={chartName}>
+              <Suspense fallback={<ChartSkeleton />}>
+                <Chart hostId={hostId} />
+              </Suspense>
+            </LazyChartWrapper>
+          )
+        })}
       </div>
     </div>
   )
