@@ -61,4 +61,11 @@ export const queryChartImports: ChartRegistryMap = {
       default: m.ChartCancelledQueries,
     }))
   ),
+  'query-duration-percentiles': lazy(() =>
+    import('@/components/charts/query/query-duration-percentiles').then(
+      (m) => ({
+        default: m.ChartQueryDurationPercentiles,
+      })
+    )
+  ),
 }

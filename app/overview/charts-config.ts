@@ -85,6 +85,7 @@ import { ChartQueryCacheUsage } from '@/components/charts/query/query-cache-usag
 import { ChartQueryCount } from '@/components/charts/query/query-count'
 import { ChartQueryCountByUser } from '@/components/charts/query/query-count-by-user'
 import { ChartQueryDuration } from '@/components/charts/query/query-duration'
+import { ChartQueryDurationPercentiles } from '@/components/charts/query/query-duration-percentiles'
 import { ChartQueryMemory } from '@/components/charts/query/query-memory'
 import { ChartQueryType } from '@/components/charts/query/query-type'
 // Replication charts
@@ -237,6 +238,15 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
     lastHours: 24,
     className: 'w-full',
     type: 'custom',
+  },
+  {
+    id: 'query-duration-percentiles',
+    component: ChartQueryDurationPercentiles,
+    title: 'Query Duration Percentiles',
+    lastHours: 24 * 7,
+    interval: 'toStartOfHour',
+    className: 'w-full h-80',
+    type: 'area',
   },
 ]
 

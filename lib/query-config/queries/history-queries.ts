@@ -189,6 +189,7 @@ export const historyQueriesConfig: QueryConfig = {
   relatedCharts: [
     ['query-count', {}],
     ['query-duration', {}],
+    ['query-duration-percentiles', {}],
     ['query-memory', {}],
     [
       'query-count-by-user',
