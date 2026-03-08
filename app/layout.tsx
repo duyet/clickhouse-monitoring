@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Toaster } from '@/components/ui/sonner'
+import { BrowserConnectionsProvider } from '@/lib/context/browser-connections-context'
 import { TimezoneProvider } from '@/lib/context/timezone-context'
 import { HostProvider, SWRProvider } from '@/lib/swr'
 
@@ -46,11 +47,13 @@ function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <SWRProvider>
-          <Suspense fallback={null}>
-            <HostProvider>
-              <AppProvider reloadIntervalSecond={120}>{children}</AppProvider>
-            </HostProvider>
-          </Suspense>
+          <BrowserConnectionsProvider>
+            <Suspense fallback={null}>
+              <HostProvider>
+                <AppProvider reloadIntervalSecond={120}>{children}</AppProvider>
+              </HostProvider>
+            </Suspense>
+          </BrowserConnectionsProvider>
         </SWRProvider>
       </ThemeProvider>
     </TimezoneProvider>

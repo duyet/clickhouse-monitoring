@@ -53,8 +53,14 @@ export function useHostStatus(
 ) {
   const { refreshInterval = 60000, revalidateOnFocus = false } = options
 
+  // Skip status check for browser connections (negative hostId) — they have
+  // no server-side host entry and the proxy endpoint handles connectivity.
+  const isBrowserConnection = hostId !== null && hostId < 0
+
   const { data, error, isLoading } = useSWR<HostStatus>(
-    hostId !== null ? `/api/v1/host-status?hostId=${hostId}` : null,
+    hostId !== null && !isBrowserConnection
+      ? `/api/v1/host-status?hostId=${hostId}`
+      : null,
     async (url: string) => {
       const res = await fetch(url)
       if (!res.ok) {

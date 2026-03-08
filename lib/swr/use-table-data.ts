@@ -7,6 +7,8 @@ import type { StaleError } from './use-chart-data'
 
 import { visibilityAwareInterval } from './config'
 import { useMemo, useRef } from 'react'
+import { getTableQuery } from '@/lib/api/table-registry'
+import { useBrowserConnectionsContext } from '@/lib/context/browser-connections-context'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 /**
@@ -67,6 +69,97 @@ export function useTableData<T = unknown>(
   // Get user settings (including timezone) for API requests
   const { settings } = useUserSettings()
 
+  // Browser connections context (for negative hostId proxy routing)
+  const { getConnection } = useBrowserConnectionsContext()
+
+  const isBrowserConnection = hostId !== undefined && hostId < 0
+
+  const browserConnection = isBrowserConnection
+    ? getConnection(hostId)
+    : undefined
+
+  // --- Browser connection proxy path (negative hostId) ---
+  const browserProxyKey = useMemo(() => {
+    if (!isBrowserConnection || !browserConnection) return null
+    return [
+      '/api/v1/browser-connections/proxy',
+      'table',
+      queryConfigName,
+      browserConnection.id,
+      JSON.stringify(searchParams || {}),
+    ]
+  }, [isBrowserConnection, browserConnection, queryConfigName, searchParams])
+
+  const browserProxyFetcher = async () => {
+    if (!browserConnection) {
+      throw new Error(
+        `Browser connection not found for hostId ${String(hostId)}`
+      )
+    }
+
+    // Build SQL from the table registry client-side
+    const queryResult = getTableQuery(queryConfigName, {
+      hostId: hostId!,
+      searchParams: Object.fromEntries(
+        Object.entries(searchParams || {}).map(([k, v]) => [k, String(v)])
+      ),
+    })
+
+    if (!queryResult) {
+      throw new Error(`Table query config "${queryConfigName}" not found`)
+    }
+
+    const response = await fetch('/api/v1/browser-connections/proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        connection: {
+          host: browserConnection.host,
+          user: browserConnection.user,
+          password: browserConnection.password,
+        },
+        query: queryResult.query,
+        query_params: queryResult.queryParams as
+          | Record<string, string | number | boolean>
+          | undefined,
+        format: 'JSONEachRow',
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as {
+        error?: {
+          message?: string
+          type?: string
+          details?: {
+            missingTables?: readonly string[]
+            [key: string]: unknown
+          }
+        }
+      }
+      const error = new Error(
+        errorData.error?.message ||
+          `Proxy request failed: ${response.statusText}`
+      ) as Error & {
+        type?: string
+        details?: { missingTables?: readonly string[]; [key: string]: unknown }
+      }
+      if (errorData.error) {
+        error.type = errorData.error.type
+        error.details = errorData.error.details
+      }
+      throw error
+    }
+
+    const json = (await response.json()) as {
+      success: boolean
+      data: T[]
+      metadata: ApiResponseMetadata
+    }
+    return { data: json.data, metadata: json.metadata } as TableDataResponse<T>
+  }
+
+  // --- Normal path (non-negative hostId) ---
   // Build query string from search parameters
   const params = new URLSearchParams()
   if (hostId !== undefined) params.append('hostId', String(hostId))
@@ -87,7 +180,7 @@ export function useTableData<T = unknown>(
 
   // Build cache key - include all parameters that affect the data
   // Include timezone so cache invalidates when user changes timezone
-  const key = [
+  const normalKey = [
     '/api/v1/tables',
     queryConfigName,
     hostId,
@@ -96,7 +189,7 @@ export function useTableData<T = unknown>(
   ]
 
   // Fetcher function
-  const fetcher = async () => {
+  const normalFetcher = async () => {
     const response = await fetch(url)
 
     if (!response.ok) {
@@ -129,6 +222,10 @@ export function useTableData<T = unknown>(
 
     return response.json() as Promise<TableDataResponse<T>>
   }
+
+  // Select which key/fetcher to use based on hostId sign
+  const key = isBrowserConnection ? browserProxyKey : normalKey
+  const fetcher = isBrowserConnection ? browserProxyFetcher : normalFetcher
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<
     TableDataResponse<T>,
