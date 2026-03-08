@@ -27,6 +27,8 @@ export const LazyChartWrapper = memo(function LazyChartWrapper({
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
+    if (isVisible) return // already visible, no need for observer
+
     const el = ref.current
     if (!el) return
 
@@ -41,7 +43,7 @@ export const LazyChartWrapper = memo(function LazyChartWrapper({
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [rootMargin])
+  }, [rootMargin, isVisible])
 
   return (
     <div ref={ref} className={className}>
