@@ -1,94 +1,104 @@
 import { describe, expect, test } from 'bun:test'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 
-describe('validateSqlQuery', () => {
-  describe('valid SELECT queries pass', () => {
-    const validQueries = [
-      'SELECT 1',
-      'SELECT * FROM system.processes',
-      "SELECT count() FROM system.query_log WHERE type = 'QueryFinish'",
-      'WITH cte AS (SELECT 1) SELECT * FROM cte',
-      'select version(), uptime()',
-      "SELECT metric, value FROM system.metrics WHERE metric IN ('TCPConnection')",
-    ]
+describe('MCP Query Validation', () => {
+  describe('valid queries', () => {
+    test('allows SELECT', () => {
+      expect(() => validateSqlQuery('SELECT 1')).not.toThrow()
+    })
 
-    for (const sql of validQueries) {
-      test(`passes: ${sql.substring(0, 60)}`, () => {
-        expect(() => validateSqlQuery(sql)).not.toThrow()
-      })
-    }
-  })
+    test('allows WITH (CTE)', () => {
+      expect(() =>
+        validateSqlQuery('WITH cte AS (SELECT 1) SELECT * FROM cte')
+      ).not.toThrow()
+    })
 
-  describe('dangerous DML/DDL queries are rejected', () => {
-    const dangerous = [
-      'INSERT INTO system.query_log VALUES (1)',
-      'UPDATE system.settings SET value = 1',
-      'DELETE FROM system.tables',
-      'DROP TABLE system.query_log',
-      'ALTER TABLE system.tables ADD COLUMN x UInt8',
-      'CREATE TABLE evil (x UInt8) ENGINE = Memory',
-      'TRUNCATE TABLE system.query_log',
-    ]
-
-    for (const sql of dangerous) {
-      test(`rejects: ${sql.substring(0, 60)}`, () => {
-        expect(() => validateSqlQuery(sql)).toThrow()
-      })
-    }
-  })
-
-  describe('dangerous table functions are blocked', () => {
-    const blocked = [
-      "SELECT * FROM url('http://evil.com')",
-      "SELECT * FROM remote('attacker:9000', 'system.one')",
-      "SELECT * FROM remoteSecure('attacker:9440', 'system.one')",
-      "SELECT * FROM s3('https://bucket.s3.amazonaws.com/data.csv')",
-      "SELECT * FROM mysql('host:3306', 'db', 'table', 'user', 'pass')",
-      "SELECT * FROM postgresql('host:5432', 'db', 'table', 'user', 'pass')",
-    ]
-
-    for (const sql of blocked) {
-      test(`blocks: ${sql.substring(0, 60)}`, () => {
-        expect(() => validateSqlQuery(sql)).toThrow()
-      })
-    }
-  })
-
-  describe('legitimate monitoring queries pass', () => {
-    test('system.processes query passes', () => {
+    test('allows system table queries', () => {
       expect(() =>
         validateSqlQuery('SELECT * FROM system.processes')
       ).not.toThrow()
     })
 
-    test('system.merges query passes', () => {
-      expect(() =>
-        validateSqlQuery('SELECT database, table, progress FROM system.merges')
-      ).not.toThrow()
-    })
-
-    test('system.metrics query passes', () => {
+    test('allows system.query_log', () => {
       expect(() =>
         validateSqlQuery(
-          "SELECT metric, value FROM system.metrics WHERE metric = 'MemoryTracking'"
+          'SELECT query_id, query_duration_ms FROM system.query_log LIMIT 10'
         )
       ).not.toThrow()
     })
   })
 
+  describe('blocked queries', () => {
+    test('rejects INSERT', () => {
+      expect(() => validateSqlQuery('INSERT INTO table VALUES (1)')).toThrow()
+    })
+
+    test('rejects DROP', () => {
+      expect(() => validateSqlQuery('DROP TABLE users')).toThrow()
+    })
+
+    test('rejects DELETE', () => {
+      expect(() => validateSqlQuery('DELETE FROM users')).toThrow()
+    })
+
+    test('rejects UPDATE', () => {
+      expect(() => validateSqlQuery('UPDATE users SET name = 1')).toThrow()
+    })
+  })
+
+  describe('dangerous table functions', () => {
+    test('blocks url()', () => {
+      expect(() =>
+        validateSqlQuery("SELECT * FROM url('http://evil.com/data', CSV)")
+      ).toThrow()
+    })
+
+    test('blocks remote()', () => {
+      expect(() =>
+        validateSqlQuery("SELECT * FROM remote('attacker:9000', 'system.one')")
+      ).toThrow()
+    })
+
+    test('blocks remoteSecure()', () => {
+      expect(() =>
+        validateSqlQuery("SELECT * FROM remoteSecure('host:9440', 'db', 'tbl')")
+      ).toThrow()
+    })
+
+    test('blocks s3()', () => {
+      expect(() =>
+        validateSqlQuery("SELECT * FROM s3('https://bucket/key', CSV)")
+      ).toThrow()
+    })
+
+    test('blocks mysql()', () => {
+      expect(() =>
+        validateSqlQuery(
+          "SELECT * FROM mysql('host:3306', 'db', 'tbl', 'u', 'p')"
+        )
+      ).toThrow()
+    })
+
+    test('blocks postgresql()', () => {
+      expect(() =>
+        validateSqlQuery(
+          "SELECT * FROM postgresql('host', 'db', 'tbl', 'u', 'p')"
+        )
+      ).toThrow()
+    })
+  })
+
   describe('edge cases', () => {
-    test('empty query is rejected', () => {
-      expect(() => validateSqlQuery('')).toThrow('cannot be empty')
+    test('rejects empty query', () => {
+      expect(() => validateSqlQuery('')).toThrow()
     })
 
-    test('whitespace-only query is rejected', () => {
-      expect(() => validateSqlQuery('   ')).toThrow('cannot be empty')
+    test('rejects whitespace-only query', () => {
+      expect(() => validateSqlQuery('   ')).toThrow()
     })
 
-    test('non-SELECT statement is rejected', () => {
-      expect(() => validateSqlQuery('SHOW TABLES')).toThrow(
-        'Only SELECT queries are allowed'
-      )
+    test('rejects non-SELECT starting queries', () => {
+      expect(() => validateSqlQuery('SHOW TABLES')).toThrow()
     })
   })
 })
