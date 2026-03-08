@@ -25,6 +25,7 @@ import { logsChartImports } from './imports/logs-charts'
 import { mergeChartImports } from './imports/merge-charts'
 import { miscChartImports } from './imports/misc-charts'
 import { queryChartImports } from './imports/query-charts'
+import { queryPerfChartImports } from './imports/query-perf-charts'
 import { replicationChartImports } from './imports/replication-charts'
 import { systemChartImports } from './imports/system-charts'
 import { threadChartImports } from './imports/thread-charts'
@@ -42,4 +43,5 @@ export const chartImports: ChartRegistryMap = {
   ...logsChartImports,
   ...threadChartImports,
   ...miscChartImports,
+  ...queryPerfChartImports,
 }

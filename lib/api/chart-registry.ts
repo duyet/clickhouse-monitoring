@@ -27,6 +27,7 @@ import { mergeCharts } from './charts/merge-charts'
 import { overviewCharts } from './charts/overview-charts'
 import { pageViewCharts } from './charts/page-view-charts'
 import { queryCharts } from './charts/query-charts'
+import { queryPerfCharts } from './charts/query-perf-charts'
 import { replicationCharts } from './charts/replication-charts'
 import { securityCharts } from './charts/security-charts'
 import { systemCharts } from './charts/system-charts'
@@ -91,6 +92,9 @@ export const chartRegistry: Record<
 
   // Dictionary charts
   ...dictionaryCharts,
+
+  // Query performance charts (insert throughput, top inserters)
+  ...queryPerfCharts,
 }
 
 /**
