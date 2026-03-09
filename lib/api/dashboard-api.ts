@@ -1,6 +1,6 @@
 /**
  * Dashboard API constants and types
- * Provides table names and DDL for custom dashboards
+ * Provides table names and DDL for Chart Builder
  */
 
 export const DATABASE = 'system'

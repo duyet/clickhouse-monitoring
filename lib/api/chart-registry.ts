@@ -12,7 +12,7 @@
  * - zookeeper-charts: ZooKeeper/Keeper metrics
  * - page-view-charts: Application page views
  * - overview-charts: Overview page system status
- * - dashboard-charts: Custom dashboard configuration
+ * - dashboard-charts: Chart Builder configuration
  */
 
 // Import types for use within this file

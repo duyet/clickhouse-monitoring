@@ -1,7 +1,7 @@
 /**
  * Dashboard Storage - localStorage persistence for saved dashboards
  *
- * Provides save/load/list/delete operations for custom dashboard configurations.
+ * Provides save/load/list/delete operations for Chart Builder configurations.
  * Data is stored under a single JSON key in localStorage.
  */
 

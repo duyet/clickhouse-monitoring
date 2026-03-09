@@ -1,6 +1,6 @@
 /**
  * Dashboard Charts
- * Charts for custom dashboard configuration and settings
+ * Charts for Chart Builder configuration and settings
  */
 
 import type { ChartQueryBuilder } from './types'
