@@ -14,6 +14,7 @@ import { KeyboardShortcuts } from '@/components/controls/keyboard-shortcuts'
 import { HeaderActions } from '@/components/header/header-actions'
 import { Breadcrumb } from '@/components/navigation/breadcrumb'
 import { ResizableSidebarProvider } from '@/components/resizable-sidebar-provider'
+import { DynamicTitle } from '@/components/status/dynamic-title'
 import { NetworkStatusBanner } from '@/components/status/network-status-banner'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
@@ -101,6 +102,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased bg-background">
         <Providers>
+          <DynamicTitle />
           <NetworkStatusBanner />
           <Suspense fallback={null}>
             <KeyboardShortcuts />
