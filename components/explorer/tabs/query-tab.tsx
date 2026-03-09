@@ -9,6 +9,7 @@ import {
   Play,
   RowsIcon,
   ShieldAlert,
+  X,
 } from 'lucide-react'
 import useSWR from 'swr'
 import {
@@ -143,38 +144,56 @@ class QueryTabError extends Error {
 /** Max query length for GET requests — longer queries use POST */
 const MAX_GET_QUERY_LENGTH = 8_000
 
+/** Request timeout in milliseconds */
+const QUERY_TIMEOUT = 120_000 // 2 minutes
+
 const fetcher = async (
-  url: string
+  url: string,
+  signal?: AbortSignal
 ): Promise<ApiResponse<Record<string, unknown>[]>> => {
-  let res: Response
+  // Create timeout abort controller
+  const timeoutController = new AbortController()
+  const timeoutId = setTimeout(() => timeoutController.abort(), QUERY_TIMEOUT)
 
-  // For long queries, switch to POST to avoid URL length limits
-  if (url.length > MAX_GET_QUERY_LENGTH) {
-    const parsed = new URL(url, window.location.origin)
-    const sql = parsed.searchParams.get('sql') || ''
-    const hostId = parsed.searchParams.get('hostId') || '0'
-    const format = parsed.searchParams.get('format') || 'JSONEachRow'
+  // Chain abort signals - abort if either timeout or external abort
+  const combinedSignal = signal
+    ? AbortSignal.any([signal, timeoutController.signal])
+    : timeoutController.signal
 
-    res = await fetch('/api/v1/explorer/query', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sql,
-        hostId: Number(hostId),
-        format,
-      }),
-    })
-  } else {
-    res = await fetch(url)
+  try {
+    let res: Response
+
+    // For long queries, switch to POST to avoid URL length limits
+    if (url.length > MAX_GET_QUERY_LENGTH) {
+      const parsed = new URL(url, window.location.origin)
+      const sql = parsed.searchParams.get('sql') || ''
+      const hostId = parsed.searchParams.get('hostId') || '0'
+      const format = parsed.searchParams.get('format') || 'JSONEachRow'
+
+      res = await fetch('/api/v1/explorer/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sql,
+          hostId: Number(hostId),
+          format,
+        }),
+        signal: combinedSignal,
+      })
+    } else {
+      res = await fetch(url, { signal: combinedSignal })
+    }
+
+    const json = (await res.json()) as ApiResponse<Record<string, unknown>[]>
+
+    if (!json.success && json.error) {
+      throw new QueryTabError(json.error)
+    }
+
+    return json
+  } finally {
+    clearTimeout(timeoutId)
   }
-
-  const json = (await res.json()) as ApiResponse<Record<string, unknown>[]>
-
-  if (!json.success && json.error) {
-    throw new QueryTabError(json.error)
-  }
-
-  return json
 }
 
 type RowData = Record<string, unknown>
@@ -248,6 +267,8 @@ export function QueryTab() {
   // The query to execute (set on Run, drives the SWR key)
   const [executedQuery, setExecutedQuery] = useState<string | null>(null)
   const initialized = useRef(false)
+  // AbortController for cancelling in-flight requests
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Autocomplete schema from database metadata
   const schema = useAutoCompleteSchema(hostId)
@@ -277,12 +298,24 @@ export function QueryTab() {
     return `/api/v1/explorer/query?${params.toString()}`
   }, [executedQuery, hostId])
 
+  // SWR fetcher with AbortController support
+  const swrFetcher = useCallback(async (url: string) => {
+    // Cancel previous request if still running
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController()
+    return fetcher(url, abortControllerRef.current.signal)
+  }, [])
+
   const {
     data: response,
     error,
     isLoading,
     isValidating,
-  } = useSWR<ApiResponse<RowData[]>>(swrKey, fetcher, {
+    mutate,
+  } = useSWR<ApiResponse<RowData[]>>(swrKey, swrFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   })
@@ -339,6 +372,15 @@ export function QueryTab() {
     setExecutedQuery(finalSql)
     setCustomQuery(finalSql)
   }, [editorValue, setCustomQuery])
+
+  const handleCancel = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    // Clear the SWR cache to stop loading state
+    mutate(undefined, false)
+  }, [mutate])
 
   const handleEditorChange = useCallback(
     (newValue: string) => {
@@ -400,6 +442,12 @@ export function QueryTab() {
             )}
             Run Query
           </Button>
+          {isLoading && (
+            <Button onClick={handleCancel} size="sm" variant="destructive">
+              <X className="mr-1.5 size-3.5" />
+              Cancel
+            </Button>
+          )}
           <Button
             onClick={handleFormat}
             disabled={!editorValue.trim()}
