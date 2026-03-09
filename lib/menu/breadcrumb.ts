@@ -29,7 +29,7 @@ function buildFallbackPath(normalizedPath: string): BreadcrumbItem[] {
 
   return segments.map((segment, index) => ({
     title: segmentToTitle(segment),
-    href: '/' + segments.slice(0, index + 1).join('/'),
+    href: `/${segments.slice(0, index + 1).join('/')}`,
   }))
 }
 
