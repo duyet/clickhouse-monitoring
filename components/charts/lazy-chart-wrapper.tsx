@@ -47,7 +47,11 @@ export const LazyChartWrapper = memo(function LazyChartWrapper({
 
   return (
     <div ref={ref} className={className}>
-      {isVisible ? children : <Skeleton className="h-80 w-full rounded-xl" />}
+      {isVisible ? (
+        children
+      ) : (
+        <Skeleton className="h-full w-full min-h-[320px] rounded-xl" />
+      )}
     </div>
   )
 })
