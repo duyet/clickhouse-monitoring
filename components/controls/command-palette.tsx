@@ -187,17 +187,20 @@ export const CommandPalette = memo(function CommandPalette({
                   <CommandItem
                     key={item.href}
                     onSelect={() => navigate(item.href)}
-                    value={`${group.title} ${item.title}`}
+                    value={[group.title, item.title, item.description]
+                      .filter(Boolean)
+                      .join(' ')}
+                    className="flex-col items-start gap-0.5"
                   >
-                    {item.icon && <item.icon className="mr-2 h-4 w-4" />}
+                    <div className="flex w-full items-center gap-2">
+                      {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
+                      <span className="font-medium">{item.title}</span>
+                    </div>
                     {item.description && (
-                      <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
+                      <span className="text-muted-foreground w-full truncate pl-6 text-xs">
                         {item.description}
                       </span>
                     )}
-                    <span className="ml-auto shrink-0 text-xs">
-                      {item.title}
-                    </span>
                   </CommandItem>
                 ))
               ) : (
