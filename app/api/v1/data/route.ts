@@ -7,7 +7,7 @@
  *
  * SECURITY: This endpoint validates that queries being executed are either:
  * 1. Pre-defined in the chart/table registries (recommended)
- * 2. Stored in the dashboard tables (for custom dashboards)
+ * 2. Stored in the dashboard tables (for Chart Builder)
  * This prevents clients from sending arbitrary SQL queries.
  */
 
