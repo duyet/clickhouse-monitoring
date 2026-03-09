@@ -30,7 +30,7 @@ export const ChartSkeleton = memo(function ChartSkeleton({
       className={cn(
         chartCard.base,
         chartCard.variants.default,
-        'min-h-[140px] max-h-[240px]',
+        'min-h-[140px]',
         className
       )}
       role="status"
