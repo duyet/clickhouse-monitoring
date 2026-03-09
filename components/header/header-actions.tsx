@@ -55,11 +55,11 @@ export const HeaderActions = memo(function HeaderActions({
           }
           icon={resolvedTheme === 'light' ? <Moon /> : <Sun />}
           onClick={toggleTheme}
-          className="flex"
+          className="inline-flex"
           suppressHydrationWarning
         />
       ) : (
-        <Button variant="ghost" size="icon" className="flex">
+        <Button variant="ghost" size="icon" className="inline-flex">
           <Sun className="h-4 w-4" />
         </Button>
       )}
