@@ -130,7 +130,7 @@ function ClusterComparisonContent() {
                 </div>
 
                 <Suspense fallback={<ChartSkeleton />}>
-                  <Component hostId={host.id} title={undefined} />
+                  <Component hostId={host.id} />
                 </Suspense>
               </div>
             ))}
