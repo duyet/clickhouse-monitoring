@@ -13,7 +13,6 @@ import {
   MixIcon,
   ShuffleIcon,
   TableIcon,
-  TextAlignBottomIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
 import {
@@ -21,8 +20,6 @@ import {
   CircleDollarSignIcon,
   CombineIcon,
   CpuIcon,
-  DatabaseZapIcon,
-  FilePlus2Icon,
   GitCompareArrowsIcon,
   Grid2x2CheckIcon,
   HardDriveIcon,
@@ -35,7 +32,6 @@ import {
   UngroupIcon,
   UnplugIcon,
   UsersIcon,
-  ZapIcon,
 } from 'lucide-react'
 
 import type { MenuItem } from '@/components/menu/types'
@@ -87,25 +83,10 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
       },
       {
-        title: 'Recent Errors',
-        href: '/common-errors',
-        description:
-          'Most frequently occurring errors with timestamps and error messages',
-        icon: CrossCircledIcon,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/errors',
-      },
-      {
         title: 'Most Expensive Queries',
         href: '/expensive-queries',
         description:
           'Resource-intensive queries ranked by CPU, memory, and duration',
-        icon: CircleDollarSignIcon,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
-      },
-      {
-        title: 'Expensive by Memory',
-        href: '/expensive-queries-by-memory',
-        description: 'Queries with highest memory consumption for optimization',
         icon: CircleDollarSignIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
       },
@@ -117,13 +98,6 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
       },
       {
-        title: 'New Parts Created',
-        href: '/charts?name=new-parts-created',
-        description: 'Part creation frequency for MergeTree table optimization',
-        icon: FilePlus2Icon,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/part_log',
-      },
-      {
         title: 'Explain',
         href: '/explain',
         description: 'Query execution plan analysis for performance tuning',
@@ -131,27 +105,11 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/sql-reference/statements/explain',
       },
       {
-        title: 'Query Cache',
-        href: '/query-cache',
-        description: 'Cache hit/miss statistics and performance impact',
-        icon: DatabaseZapIcon,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
-      },
-      {
-        title: 'Thread Analysis',
+        title: 'Thread & Parallelization',
         href: '/queries/thread-analysis',
         description:
-          'Thread-level query performance breakdown and parallelization',
+          'Thread-level performance breakdown and parallel execution analysis',
         icon: CpuIcon,
-        isNew: true,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_thread_log',
-      },
-      {
-        title: 'Parallelization',
-        href: '/queries/parallelization',
-        description:
-          'Parallel query execution effectiveness and thread utilization',
-        icon: ZapIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_thread_log',
       },
@@ -218,37 +176,6 @@ export const menuItemsConfig: MenuItem[] = [
         countVariant: 'destructive',
         icon: ExclamationTriangleIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/replicas',
-      },
-      {
-        title: 'Top Usage Tables',
-        href: '/top-usage-tables',
-        description: 'Table access frequency for identifying hot data',
-        icon: TextAlignBottomIcon,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
-      },
-      {
-        title: 'Projections',
-        href: '/projections',
-        description: 'Projection definitions and usage statistics',
-        icon: DatabaseZapIcon,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/projections',
-      },
-      {
-        title: 'View Refreshes',
-        href: '/view-refreshes',
-        description:
-          'Materialized view refresh schedules and execution history',
-        countKey: 'view-refreshes',
-        countLabel: 'views',
-        icon: UpdateIcon,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/view_refreshes',
-      },
-      {
-        title: 'Part Info',
-        href: '/part-info',
-        description: 'Active part details with levels and sizes',
-        icon: DatabaseZapIcon,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/parts',
       },
       {
         title: 'Dictionaries',
