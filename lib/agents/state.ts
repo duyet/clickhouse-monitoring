@@ -116,6 +116,7 @@ export interface AgentResponse {
       readonly type: 'table' | 'chart' | 'metric'
       readonly config: unknown
     }
+    readonly [key: string]: unknown // Allow arbitrary data for flexibility
   }
   /** Suggested follow-up questions */
   readonly suggestions?: readonly string[]
@@ -159,6 +160,10 @@ export interface AgentState {
     readonly includeSql?: boolean
     readonly maxResults?: number
   }
+  /** Query analysis results from query analyzer node */
+  readonly queryInsights?: import('./nodes/query-analyzer').QueryInsights
+  /** Optimization recommendations from query optimizer node */
+  readonly optimizationSuggestions?: import('./nodes/query-optimizer').OptimizationRecommendations
 }
 
 /**

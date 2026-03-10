@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useCallback, useEffect, useState } from 'react'
+import { DailyInsightsWithSuspense } from '@/components/ai-chat/daily-insights'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { getChartComponent, hasChart } from '@/components/charts/registry'
 import { ChartPicker } from '@/components/dashboard/chart-picker'
@@ -75,6 +76,11 @@ function DashboardContent() {
           onChange={handleChartsChange}
         />
       </div>
+
+      {/* AI Insights Card */}
+      <Suspense fallback={<ChartSkeleton />}>
+        <DailyInsightsWithSuspense hostId={hostId} />
+      </Suspense>
 
       {/* Empty state */}
       {validCharts.length === 0 && (

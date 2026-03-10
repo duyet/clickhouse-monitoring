@@ -619,9 +619,9 @@ Add to `.env.local`:
 
 ```bash
 # LangGraph Agent Configuration
-LLM_API_KEY=your_anthropic_or_openai_key
-LLM_API_BASE=https://api.anthropic.com  # or https://api.openai.com
-LLM_MODEL=claude-3-5-sonnet-20241022     # or gpt-4
+LLM_API_KEY=your-openrouter-api-key
+LLM_API_BASE=https://openrouter.ai/api/v1  # OpenRouter supports multiple providers
+LLM_MODEL=openrouter/free                # Free tier available
 ```
 
 ### Agent Architecture

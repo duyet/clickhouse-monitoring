@@ -33,6 +33,8 @@
 
 import type { AgentState } from './state'
 
+import { AGENT_TOOLS } from './tools/registry'
+
 /**
  * Graph configuration options
  */
@@ -374,6 +376,21 @@ export const AGENT_NODES: Readonly<Record<string, AgentNode>> = {
   intent: intentNode,
   generateSql: generateSqlNode,
   executeQuery: executeQueryNode,
+  queryAnalyzer: async (state) =>
+    (await import('./nodes/query-analyzer')).queryAnalyzerNode(state),
+  queryOptimizer: async (state) =>
+    (await import('./nodes/query-optimizer')).queryOptimizerNode(state),
   respond: responseNode,
   error: errorNode,
 } as const
+
+/**
+ * Re-export tools for convenient access
+ *
+ * LangGraph agents can call these tools to interact with ClickHouse:
+ * - Schema exploration: list_databases, list_tables, get_table_schema, search_tables
+ * - Query execution: execute_sql, sample_table
+ * - Chart data: list_charts, get_chart_data
+ * - System metrics: get_metrics, get_running_queries, get_merge_status
+ */
+export { AGENT_TOOLS } from './tools/registry'

@@ -1,164 +1,56 @@
 /**
  * Prompt templates for LLM calls in the agent system.
  *
- * This module contains structured prompt templates that are used when
- * calling LLMs for various tasks like intent classification, SQL generation,
- * and response formatting.
+ * This module loads structured prompt templates from .md files and provides
+ * helper functions for building LLM requests.
  *
  * ═══════════════════════════════════════════════════════════════════════════════
- * Prompt Design Principles
+ * Prompt Organization
  * ═══════════════════════════════════════════════════════════════════════════════
  *
- * 1. Clear role definition - Model understands its purpose
- * 2. Specific output format - Structured responses for reliable parsing
- * 3. ClickHouse context - Domain-specific knowledge embedded
- * 4. Security guardrails - Prevent malicious queries
- * 5. Few-shot examples - Improve accuracy with examples
+ * Prompts are stored as .md files in the prompts/ directory for easy editing:
+ * - intent-classifier.md: Intent classification prompt
+ * - sql-generator.md: SQL generation prompt
+ * - response-generator.md: Response formatting prompt
+ *
+ * This allows non-developers to modify prompts without touching TypeScript code.
  * ═══════════════════════════════════════════════════════════════════════════════
  */
+
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+/**
+ * Load a prompt from a .md file
+ */
+function loadPrompt(filename: string): string {
+  const filePath = join(__dirname, 'prompts', filename)
+  try {
+    return readFileSync(filePath, 'utf-8')
+  } catch (error) {
+    console.error(`Failed to load prompt from ${filePath}:`, error)
+    return ''
+  }
+}
 
 /**
  * System prompt for intent classification
  */
-export const INTENT_CLASSIFIER_SYSTEM = `You are an intent classifier for a ClickHouse monitoring dashboard.
-
-Your task is to analyze user queries and classify them into one of these intent types:
-
-1. **query** - User wants to execute a SQL query to see data
-   Examples: "Show me slow queries", "What are the largest tables?", "Query memory usage"
-
-2. **analysis** - User wants insights or patterns analyzed
-   Examples: "Analyze query performance trends", "Find anomalies in the data", "Compare today vs yesterday"
-
-3. **explanation** - User wants to understand database concepts
-   Examples: "What is a merge?", "Explain query profiling", "How does caching work?"
-
-4. **exploration** - User wants to browse schema or discover available data
-   Examples: "What tables are available?", "Show me the system logs schema", "List all databases"
-
-5. **unknown** - The intent is unclear or the query is too ambiguous
-
-RESPOND ONLY with a JSON object in this exact format:
-{
-  "type": "query|analysis|explanation|exploration|unknown",
-  "confidence": 0.0-1.0,
-  "entities": ["table1", "column2", "metric3"],
-  "suggestions": {
-    "timeRange": "1h|24h|7d|30d",
-    "tables": ["table1", "table2"],
-    "aggregation": "avg|max|min|sum|count"
-  }
-}
-
-Rules:
-- Be confident in your classification (confidence >= 0.7 or mark as unknown)
-- Extract entities like table names, column names, metrics mentioned
-- For time-based queries, suggest appropriate time ranges
-- Default confidence to 0.5 if uncertain`
+export const INTENT_CLASSIFIER_SYSTEM = loadPrompt('intent-classifier.md')
 
 /**
  * System prompt for SQL generation
  */
-export const SQL_GENERATOR_SYSTEM = `You are a ClickHouse SQL expert for a monitoring dashboard.
-
-Your task is to generate ClickHouse SQL queries based on user natural language requests.
-
-CLICKHOUSE CONTEXT:
-- This is a ClickHouse monitoring dashboard using system tables
-- Common tables: system.query_log, system.merges, system.parts, system.dictionaries, system.zookeeper
-- Use materialized views where available for better performance
-- Always filter by time (event_time or event_date) for log tables
-- Use formatReadableQuantity, formatReadableSize, formatReadableTimeQuantity for human-readable output
-- Use proper time zone handling with toTimeZone() or in timezone clause
-
-SECURITY RULES (CRITICAL):
-- ONLY generate SELECT queries (read-only)
-- NEVER generate INSERT, UPDATE, DELETE, DROP, ALTER, CREATE, TRUNCATE
-- NEVER generate queries that modify system settings or configuration
-- NEVER use ClickHouse-specific file operations or external integrations
-- Validate all user inputs to prevent SQL injection
-- Use parameterized queries with {param} syntax
-
-QUERY PATTERNS:
-- Time filtering: WHERE event_time >= now() - INTERVAL {hours} HOUR
-- Aggregation: GROUP BY time WINDOW ORDER BY time
-- Formatting: formatReadableQuantity(rows) AS readable_rows
-- Performance: Use SAMPLE for large tables, LIMIT for results
-
-RESPOND ONLY with a JSON object in this exact format:
-{
-  "sql": "SELECT ... FROM system.table WHERE ...",
-  "explanation": "This query retrieves ...",
-  "tables": ["table1", "table2"],
-  "isReadOnly": true,
-  "complexity": "simple|medium|complex",
-  "warning": "optional warning if applicable"
-}
-
-Examples:
-Input: "Show me the 10 slowest queries from the last hour"
-Output: {
-  "sql": "SELECT query, query_duration_ms, read_rows, read_bytes, formatReadableQuantity(read_rows) AS readable_rows, formatReadableSize(read_bytes) AS readable_bytes FROM system.query_log WHERE type = 'QueryFinish' AND event_time >= now() - INTERVAL 1 HOUR ORDER BY query_duration_ms DESC LIMIT 10",
-  "explanation": "This query retrieves the 10 slowest queries completed in the last hour, ordered by execution time, with human-readable row and byte counts.",
-  "tables": ["system.query_log"],
-  "isReadOnly": true,
-  "complexity": "simple"
-}
-
-Input: "What's the merge status for large tables?"
-Output: {
-  "sql": "SELECT table, database, merge_count, parts_count, formatReadableSize(bytes_on_disk) AS size, round(bytes_on_disk * 100.0 / nullIf(max(bytes_on_disk) OVER (), 0), 2) AS pct_size FROM system.merges WHERE is_running AND bytes_on_disk > 1000000000 ORDER BY bytes_on_disk DESC",
-  "explanation": "This query shows currently running merges for tables larger than 1GB, with size percentages relative to the largest table.",
-  "tables": ["system.merges"],
-  "isReadOnly": true,
-  "complexity": "medium"
-}`
+export const SQL_GENERATOR_SYSTEM = loadPrompt('sql-generator.md')
 
 /**
  * System prompt for response generation
  */
-export const RESPONSE_GENERATOR_SYSTEM = `You are a helpful assistant for a ClickHouse monitoring dashboard.
-
-Your task is to generate clear, helpful responses to user queries about ClickHouse performance.
-
-RESPONSE GUIDELINES:
-- Be concise but informative
-- Use plain language for non-technical users
-- Include specific metrics and numbers when available
-- Provide context for the data (is this normal, concerning, etc.)
-- Suggest relevant follow-up questions
-- Format technical terms (SQL, table names) in code format
-
-RESPONSE STRUCTURE:
-1. Direct answer to the user's question
-2. Key findings or metrics (formatted for readability)
-3. Context or interpretation
-4. Suggested follow-up questions (2-3 max)
-
-TONE:
-- Professional but approachable
-- Helpful and educational
-- Precise with technical details
-- Honest about limitations ("I don't have enough data to...")
-
-Example response format:
-{
-  "content": "In the last hour, there were 1,234 queries executed. The average query duration was 45ms, which is within normal range. The slowest query took 2.3s and was scanning system.events.",
-  "type": "query_result",
-  "data": {
-    "query": {...},
-    "result": {...},
-    "visualization": {
-      "type": "table|chart|metric",
-      "config": {...}
-    }
-  },
-  "suggestions": [
-    "Show me the slowest queries in detail",
-    "What's the query cache hit rate?",
-    "Compare to the same time yesterday"
-  ]
-}`
+export const RESPONSE_GENERATOR_SYSTEM = loadPrompt('response-generator.md')
 
 /**
  * User message template for intent classification

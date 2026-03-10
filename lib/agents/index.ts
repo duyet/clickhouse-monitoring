@@ -20,6 +20,13 @@ export {
   routeAfterIntent,
   routeAfterSqlGeneration,
 } from './graph'
+export {
+  type AnomalyDetectorConfig,
+  anomalyDetectorNode,
+  quickAnomalyCheck,
+} from './nodes/anomaly-detector'
+// Nodes
+export { textToSqlNode } from './nodes/text-to-sql'
 // Prompt templates
 export {
   buildIntentPrompt,
@@ -46,3 +53,13 @@ export {
   type QueryIntent,
   type QueryResult,
 } from './state'
+// Tools
+export {
+  type Anomaly,
+  type AnomalySeverity,
+  type AnomalyType,
+  analyzeBaselines,
+  type BaselineAnalysis,
+  type BaselineAnalyzerConfig,
+  quickAnomalyCheck as quickAnomalyCheckTool,
+} from './tools/baseline-analyzer'
