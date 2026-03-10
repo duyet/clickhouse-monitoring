@@ -10,7 +10,7 @@ function HistoryQueriesPageContent() {
     <PageLayout
       queryConfig={historyQueriesConfig}
       title="History Queries"
-      defaultPageSize={20}
+      defaultPageSize={100}
       maxTableHeight="400px"
     />
   )
