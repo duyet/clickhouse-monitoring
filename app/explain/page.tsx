@@ -113,21 +113,6 @@ const PLAN_SETTINGS: PlanSetting[] = [
     defaultValue: 0,
     group: 'advanced',
   },
-  {
-    key: 'input_headers',
-    label: 'Input headers',
-    description: 'Print input headers for each step (developer debugging)',
-    defaultValue: 0,
-    group: 'advanced',
-  },
-  {
-    key: 'column_structure',
-    label: 'Column structure',
-    description:
-      'Print column structure in headers beyond name and type (developer debugging)',
-    defaultValue: 0,
-    group: 'advanced',
-  },
 ]
 
 const SETTING_GROUPS: { key: PlanSetting['group']; label: string }[] = [
