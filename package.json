@@ -70,6 +70,8 @@
     "@hookform/resolvers": "^5.2.2",
     "@isaacs/brace-expansion": "^5.0.1",
     "@istanbuljs/load-nyc-config": "^1.1.0",
+    "@langchain/core": "^1.1.31",
+    "@langchain/langgraph": "^1.2.1",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@opennextjs/aws": "^3.9.15",
     "@radix-ui/react-accordion": "^1.2.12",

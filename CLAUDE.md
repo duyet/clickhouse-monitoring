@@ -608,3 +608,95 @@ export function YourChart({ hostId, interval }: YourChartProps) {
 ### Deployment
 - Build mode: `output: 'standalone'` (hybrid static + API)
 - Deploy to Cloudflare Workers: `npx wrangler login` then `bun run deploy`
+
+## AI Agents (LangGraph)
+
+This application includes AI-powered agents for natural language queries and intelligent analysis, built on LangGraph.
+
+### Environment Variables
+
+Add to `.env.local`:
+
+```bash
+# LangGraph Agent Configuration
+LLM_API_KEY=your_anthropic_or_openai_key
+LLM_API_BASE=https://api.anthropic.com  # or https://api.openai.com
+LLM_MODEL=claude-3-5-sonnet-20241022     # or gpt-4
+```
+
+### Agent Architecture
+
+```
+lib/agents/
+├── state.ts           # AgentState schema definition
+├── graph.ts           # LangGraph workflow definition
+├── nodes/             # Individual agent nodes
+│   ├── text-to-sql.ts # Natural language to SQL
+│   ├── analysis.ts    # Query analysis
+│   └── anomaly.ts     # Anomaly detection
+├── tools/             # Tools for agent use
+│   ├── clickhouse.ts  # Query execution tools
+│   └── schema.ts      # Schema introspection
+└── prompts/           # LLM prompt templates
+    └── text-to-sql.ts
+```
+
+### Common Tasks
+
+#### Adding a New Agent Node
+
+1. Create node function in `lib/agents/nodes/`:
+
+```typescript
+// lib/agents/nodes/my-agent.ts
+import { AgentState } from '../state'
+
+export async function myAgentNode(
+  state: typeof AgentState.State
+): Promise<Partial<AgentState>> {
+  const { messages, hostId } = state
+
+  // Process input and return state updates
+  return {
+    messages: [
+      {
+        role: 'assistant',
+        content: 'Response here'
+      }
+    ]
+  }
+}
+```
+
+2. Register in `lib/agents/graph.ts`:
+
+```typescript
+import { myAgentNode } from './nodes/my-agent'
+
+workflow.addNode('my-agent', myAgentNode)
+```
+
+#### Modifying Agent Prompts
+
+Prompts are in `lib/agents/prompts/`. Edit the prompt templates to change agent behavior:
+
+```typescript
+// lib/agents/prompts/text-to-sql.ts
+export const TEXT_TO_SQL_PROMPT = `You are a ClickHouse SQL expert...
+// Modify the prompt text here
+```
+
+#### Extending the Chat Interface
+
+The chat interface uses SSE streaming for real-time responses. To extend:
+
+1. Add new tools to `lib/agents/tools/`
+2. Update the prompt to include tool descriptions
+3. Handle new response types in the UI
+
+See `docs/agents/` for detailed API reference and examples.
+
+### Documentation
+
+- **Feature Guide**: `docs/agents/feature-guide.md` - User-facing documentation
+- **API Reference**: `docs/agents/api-reference.md` - Developer guide
