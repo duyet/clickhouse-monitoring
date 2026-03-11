@@ -33,6 +33,10 @@ export interface AgentMessage {
   /** Optional metadata for the message */
   readonly metadata?: {
     readonly node?: string
+    readonly iterations?: number
+    readonly duration?: number
+    readonly model?: string
+    readonly tokens?: number
     readonly [key: string]: unknown
   }
 }
@@ -134,6 +138,8 @@ export interface AgentState {
   readonly userInput: string
   /** Host identifier for multi-instance support */
   readonly hostId: number
+  /** Optional LLM model to use for this request (from client selection) */
+  readonly model?: string
   /** Conversation history for context */
   readonly messages: readonly AgentMessage[]
   /** Detected intent from the user's query */
@@ -174,6 +180,8 @@ export interface CreateAgentStateInput {
   readonly message: string
   /** Host identifier (default: 0) */
   readonly hostId?: number
+  /** Optional LLM model to use (overrides default) */
+  readonly model?: string
   /** Optional existing conversation history */
   readonly history?: readonly AgentMessage[]
   /** Optional user preferences */
@@ -191,6 +199,7 @@ export function createInitialState(input: CreateAgentStateInput): AgentState {
   return {
     userInput: input.message,
     hostId: input.hostId ?? 0,
+    model: input.model,
     messages: input.history ?? [
       {
         id: crypto.randomUUID(),

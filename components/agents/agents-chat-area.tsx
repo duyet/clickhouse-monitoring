@@ -34,6 +34,7 @@ import { Suggestion } from '@/components/ai-elements/suggestion'
 import { DataTable } from '@/components/data-table/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { getSavedModel } from '@/lib/hooks/use-agent-model'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -45,6 +46,9 @@ interface AgentsChatAreaProps {
   readonly isMobile: boolean
   readonly onMenuClick: () => void
 }
+
+// Note: Chat state is managed internally by useChat when props are not provided.
+// For external state management, messages are passed via props but types need to match exactly.
 
 // ============================================================================
 // Sub-components
@@ -430,10 +434,13 @@ export function AgentsChatArea({
   isMobile,
   onMenuClick,
 }: AgentsChatAreaProps) {
+  // Get the selected model from localStorage
+  const model = useMemo(() => getSavedModel(), [])
+
   const { messages, sendMessage, setMessages, status, error, stop } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/v1/agent',
-      body: { hostId },
+      body: { hostId, model },
     }),
   })
 

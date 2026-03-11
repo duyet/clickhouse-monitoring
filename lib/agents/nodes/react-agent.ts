@@ -107,6 +107,10 @@ export interface ReactAgentConfig {
   readonly debug?: boolean
   /** Optional callback for streaming tool execution events */
   readonly onToolEvent?: ToolStreamCallback
+  /** Enable automatic model fallback on errors */
+  readonly enableFallback?: boolean
+  /** Fallback models to try (in order) if primary model fails */
+  readonly fallbackModels?: readonly string[]
 }
 
 /**
@@ -198,10 +202,13 @@ function shouldContinue(
  *
  * Uses OpenRouter as the provider, allowing access to multiple LLMs
  * including free models.
+ *
+ * @param model - Optional model identifier (defaults to LLM_MODEL env var)
  */
-async function createLLM() {
+async function createLLM(model?: string) {
   const { ChatOpenAI } = await import('@langchain/openai')
   const { OPENROUTER_CONFIG } = await import('../llm/openrouter')
+  const { getModelCapabilities } = await import('../llm/openrouter')
 
   const apiKey = process.env.LLM_API_KEY
   if (!apiKey) {
@@ -210,13 +217,18 @@ async function createLLM() {
     )
   }
 
+  // Use provided model, or fall back to environment/default
+  const modelName = model || process.env.LLM_MODEL || 'openrouter/free'
+
+  const capabilities = getModelCapabilities(modelName)
+
   const config = OPENROUTER_CONFIG(apiKey)
 
   return new ChatOpenAI({
     ...config,
-    modelName: process.env.LLM_MODEL || 'openrouter/free',
+    modelName,
     temperature: 0.7,
-    maxTokens: 4096,
+    maxTokens: Math.min(capabilities.contextLength, 4096),
   })
 }
 
@@ -260,8 +272,30 @@ export async function reactAgentNode(
     // Get all tools as an array
     const tools = getAllTools()
 
-    // Create LLM with tools bound
-    const llm = await createLLM()
+    // Create LLM with tools bound (use model from state if provided)
+    const llm = config.enableFallback
+      ? await (async () => {
+          const openrouter = await import('../llm/openrouter')
+
+          // Default fallback models (free tier)
+          const defaultFallbacks = [
+            'google/gemma-3-4b-it:free',
+            'openrouter/free',
+          ]
+
+          return openrouter.createLLMWithFallback(
+            state.model,
+            [...(config.fallbackModels ?? []), ...defaultFallbacks],
+            undefined,
+            (event) => {
+              console.warn(
+                `[ReAct Agent] Model fallback: ${event.from} → ${event.to}`
+              )
+            }
+          )
+        })()
+      : await createLLM(state.model)
+
     const llmWithTools = llm.bindTools(tools)
 
     // Create tool node for executing tools

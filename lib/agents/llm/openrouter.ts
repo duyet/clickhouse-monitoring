@@ -470,3 +470,138 @@ export async function createLLM(
 export { OPENROUTER_BASE_URL as BASE_URL }
 export { OPENROUTER_DEFAULT_MODEL as DEFAULT_MODEL }
 export { OPENROUTER_MODELS as MODELS }
+
+/**
+ * Fallback model event for logging
+ */
+export interface FallbackEvent {
+  /** Original model that failed */
+  from: string
+  /** Fallback model used */
+  to: string
+  /** Error that triggered fallback */
+  error: string
+  /** Timestamp of fallback */
+  timestamp: number
+}
+
+/**
+ * Callback for fallback events
+ */
+export type FallbackCallback = (event: FallbackEvent) => void
+
+/**
+ * Create a ChatOpenAI instance with automatic fallback
+ *
+ * Attempts to create an LLM with the specified model. If the API call fails,
+ * automatically retries with fallback models in order. Logs each fallback event.
+ *
+ * @param model - Preferred model identifier
+ * @param fallbackModels - Array of fallback models to try (in order)
+ * @param options - Additional ChatOpenAI options
+ * @param onFallback - Optional callback when fallback occurs
+ * @returns Promise resolving to a ChatOpenAI instance
+ * @throws Error if all models (including fallbacks) fail
+ *
+ * @example
+ * ```ts
+ * const llm = await createLLMWithFallback(
+ *   'meta-llama/llama-3.1-8b:free',
+ *   ['google/gemma-3-4b-it:free', 'openrouter/free'],
+ *   {},
+ *   (event) => console.log(`Fallback: ${event.from} → ${event.to}`)
+ * )
+ * ```
+ */
+export async function createLLMWithFallback(
+  model?: string,
+  fallbackModels: string[] = ['openrouter/free'],
+  options?: {
+    temperature?: number
+    maxTokens?: number
+    topP?: number
+  },
+  onFallback?: FallbackCallback
+) {
+  const { ChatOpenAI } = await import('@langchain/openai')
+  const { getModelCapabilities } = await import('./openrouter')
+
+  const apiKey = process.env.LLM_API_KEY
+  if (!apiKey) {
+    throw new Error(
+      'LLM_API_KEY environment variable is required. ' +
+        'Get your API key at https://openrouter.ai/keys ' +
+        'and add it to your .env.local file.'
+    )
+  }
+
+  const config = OPENROUTER_CONFIG(apiKey)
+
+  // Models to try in order (primary first, then fallbacks)
+  const modelsToTry = [
+    model || getModelName(),
+    ...fallbackModels.filter((m) => m !== (model || getModelName())),
+  ]
+
+  let lastError: Error | undefined
+
+  for (const modelName of modelsToTry) {
+    try {
+      const capabilities = getModelCapabilities(modelName)
+
+      // Log attempt in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[OpenRouter] Trying model: ${modelName}`)
+      }
+
+      // Create ChatOpenAI instance (this validates the connection)
+      const llm = new ChatOpenAI({
+        ...config,
+        modelName,
+        streaming: false,
+        verbose: process.env.NODE_ENV === 'development',
+        temperature: options?.temperature ?? 0.7,
+        maxTokens:
+          options?.maxTokens ?? Math.min(capabilities.contextLength, 4096),
+        topP: options?.topP,
+      })
+
+      // Test the connection with a minimal invoke
+      const { HumanMessage } = await import('@langchain/core/messages')
+      await llm.invoke([new HumanMessage('test')])
+
+      // If we got here, the model works
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[OpenRouter] Using model: ${modelName}`)
+      }
+
+      return llm
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error))
+
+      // Log fallback event if this isn't the last model
+      if (modelName !== modelsToTry[modelsToTry.length - 1]) {
+        const nextModel = modelsToTry[modelsToTry.indexOf(modelName) + 1]
+
+        const fallbackEvent: FallbackEvent = {
+          from: modelName,
+          to: nextModel,
+          error: lastError.message,
+          timestamp: Date.now(),
+        }
+
+        // Call fallback callback
+        onFallback?.(fallbackEvent)
+
+        // Log fallback
+        console.warn(
+          `[OpenRouter] Model "${modelName}" failed: ${lastError.message}. ` +
+            `Falling back to "${nextModel}".`
+        )
+      }
+    }
+  }
+
+  // All models failed
+  throw lastError || new Error('All models failed')
+}

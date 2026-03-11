@@ -2,6 +2,7 @@
 
 import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
 
+import { AgentSettings } from './agent-settings'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -136,6 +137,15 @@ export function AgentsSidebar({
     <div className="h-full overflow-auto">
       <div className="p-4 space-y-4">
         <HostInfoSection hostId={hostId} />
+
+        {/* Model Settings */}
+        <div className="border-b pb-4">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+            Model Settings
+          </h3>
+          <AgentSettings />
+        </div>
+
         <ToolsSection />
         <SuggestedPromptsSection />
       </div>

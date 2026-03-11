@@ -1,7 +1,8 @@
 'use client'
 
-import { lazy, Suspense } from 'react'
 import { Loader2Icon } from 'lucide-react'
+
+import { lazy, Suspense } from 'react'
 
 // Lazy load chart primitives for performance
 const AreaChartPrimitive = lazy(() =>

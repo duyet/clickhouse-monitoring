@@ -41,6 +41,7 @@ export async function POST(request: Request) {
     message?: string
     messages?: Array<{ role: string; content: string; parts?: unknown[] }>
     hostId?: number
+    model?: string // Allow client to specify model
   }
 
   // Support both direct `message` and AI SDK's UIMessage format with parts array
@@ -73,6 +74,7 @@ export async function POST(request: Request) {
   const stateInput: CreateAgentStateInput = {
     message: userMessage,
     hostId,
+    model: body.model, // Pass client-specified model (if any)
   }
 
   const initialState = createInitialState(stateInput)
