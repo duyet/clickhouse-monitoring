@@ -6,11 +6,11 @@
  * Adapts patterns from lib/mcp/tools/query.ts and lib/api/shared/validators/sql.ts.
  */
 
+import { getToolProgressCallback } from '../registry'
 import { tool } from '@langchain/core/tools'
 import { z } from 'zod/v3'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { fetchData } from '@/lib/clickhouse'
-import { getToolProgressCallback } from '../registry'
 
 /**
  * Execute a read-only SQL query on ClickHouse with progress reporting

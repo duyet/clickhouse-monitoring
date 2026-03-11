@@ -6,10 +6,10 @@
  * Adapts the MCP tool pattern from lib/mcp/tools/tables.ts for LangGraph.
  */
 
+import { getToolProgressCallback } from '../registry'
 import { tool } from '@langchain/core/tools'
 import { z } from 'zod/v3'
 import { fetchData } from '@/lib/clickhouse'
-import { getToolProgressCallback } from '../registry'
 
 /**
  * List tables in a ClickHouse database with progress reporting
