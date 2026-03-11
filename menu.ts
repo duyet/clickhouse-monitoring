@@ -45,6 +45,13 @@ export const menuItemsConfig: MenuItem[] = [
     section: 'main',
   },
   {
+    title: 'AI Agents',
+    href: '/agents',
+    icon: SparklesIcon,
+    section: 'main',
+    isNew: true,
+  },
+  {
     title: 'Overview',
     href: '/overview',
     icon: HomeIcon,
@@ -258,13 +265,6 @@ export const menuItemsConfig: MenuItem[] = [
         icon: CpuIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/processors_profile_log',
-      },
-      {
-        title: 'AI Chat',
-        href: '/ai-chat',
-        description: 'Ask questions in natural language to query ClickHouse',
-        icon: SparklesIcon,
-        isNew: true,
       },
     ],
   },

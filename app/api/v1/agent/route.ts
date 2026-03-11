@@ -1,157 +1,220 @@
 /**
- * AI Agent API Endpoint
+ * AI Agent API Endpoint (Streaming)
  *
  * POST /api/v1/agent
  *
- * Processes natural language queries through the LangGraph agent workflow.
- * Handles text-to-SQL conversion, query execution, and response generation.
- *
- * ═══════════════════════════════════════════════════════════════════════════════
- * Request/Response Format
- * ═══════════════════════════════════════════════════════════════════════════════
- *
- * Request:
- * {
- *   "message": "Show me the 10 slowest queries",
- *   "hostId": 0,
- *   "history": [...],  // Optional conversation history
- *   "preferences": {...}  // Optional user preferences
- * }
- *
- * Response:
- * {
- *   "response": {...},  // AgentResponse
- *   "messages": [...],  // Updated conversation history
- *   "generatedQuery": {...},  // If SQL was generated
- *   "queryResult": {...},  // If query was executed
- * }
- * ═══════════════════════════════════════════════════════════════════════════════
+ * Processes natural language queries through the agent workflow
+ * and streams results back using the Vercel AI SDK's UI Message Stream format.
+ * This enables the frontend `useChat` hook to consume events in real-time,
+ * including tool call rendering.
  */
 
+import type { UIMessageStreamWriter } from 'ai'
 import type { CreateAgentStateInput } from '@/lib/agents/state'
-import type { ApiRequest } from '@/lib/api/types'
 
-import { executeAgent } from '@/lib/agents/graph'
-import { createInitialState } from '@/lib/agents/state'
+import { createUIMessageStream, createUIMessageStreamResponse } from 'ai'
 import {
-  createErrorResponse as createApiErrorResponse,
-  createValidationError,
-  withApiHandler,
-} from '@/lib/api/error-handler'
-import { createSuccessResponse } from '@/lib/api/shared/response-builder'
-import { getAndValidateHostId } from '@/lib/api/shared/validators'
-import { ApiErrorType } from '@/lib/api/types'
+  AGENT_NODES,
+  executeQueryNode,
+  generateSqlNode,
+  intentNode,
+  responseNode,
+  routeAfterIntent,
+  routeAfterSqlGeneration,
+} from '@/lib/agents/graph'
+import { createInitialState } from '@/lib/agents/state'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
 
-const ROUTE_CONTEXT = { route: '/api/v1/agent' }
-
 /**
- * Handle POST requests for agent processing
- *
- * @example
- * POST /api/v1/agent
- * {
- *   "message": "Show me the 10 slowest queries from today",
- *   "hostId": 0
- * }
+ * Handle POST requests for agent processing with streaming
  */
-export const POST = withApiHandler(async (request: Request) => {
+export async function POST(request: Request) {
   // Parse request body
-  const body = (await request.json()) as Partial<AgentRequestBody>
-
-  // Validate required fields
-  if (!body.message || typeof body.message !== 'string') {
-    return createValidationError('Message is required and must be a string', {
-      ...ROUTE_CONTEXT,
-      method: 'POST',
-    })
+  const body = (await request.json()) as {
+    message?: string
+    messages?: Array<{ role: string; content: string; parts?: unknown[] }>
+    hostId?: number
   }
 
-  // Get and validate hostId
-  let hostId: number
-  if (body.hostId !== undefined) {
-    const params = new URLSearchParams()
-    params.set('hostId', String(body.hostId))
-    const hostIdResult = getAndValidateHostId(params)
-    if (typeof hostIdResult !== 'number') {
-      return createValidationError(hostIdResult.message, {
-        ...ROUTE_CONTEXT,
-        method: 'POST',
-      })
-    }
-    hostId = hostIdResult
-  } else {
-    hostId = 0
+  // Support both direct `message` and AI SDK's `messages` array format
+  const userMessage =
+    body.message ||
+    body.messages?.filter((m) => m.role === 'user')?.pop()?.content
+
+  if (!userMessage || typeof userMessage !== 'string') {
+    return new Response(
+      JSON.stringify({
+        error: { message: 'Message is required and must be a string' },
+      }),
+      { status: 400, headers: { 'content-type': 'application/json' } }
+    )
   }
+
+  const hostId = typeof body.hostId === 'number' ? body.hostId : 0
 
   // Create initial agent state
   const stateInput: CreateAgentStateInput = {
-    message: body.message,
+    message: userMessage,
     hostId,
-    history: body.history,
-    preferences: body.preferences,
   }
 
   const initialState = createInitialState(stateInput)
 
-  try {
-    // Execute the agent workflow
-    const finalState = await executeAgent(initialState)
+  // Create streaming response using AI SDK
+  const stream = createUIMessageStream({
+    execute: async ({ writer }) => {
+      await executeAgentWithStream(initialState, writer)
+    },
+    onError: (error) => {
+      console.error('[Agent API] Stream error:', error)
+      return error instanceof Error
+        ? error.message
+        : 'An unknown error occurred'
+    },
+  })
 
-    // Return successful response
-    return createSuccessResponse(
-      {
-        response: finalState.response,
-        messages: finalState.messages,
-        generatedQuery: finalState.generatedQuery,
-        queryResult: finalState.queryResult,
-        intent: finalState.intent,
-      },
-      {
-        duration: Date.now() - finalState.startedAt,
-      }
-    )
-  } catch (error) {
-    // Handle execution errors
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred'
-
-    return createApiErrorResponse(
-      {
-        type: ApiErrorType.QueryError,
-        message: errorMessage,
-      },
-      500,
-      { ...ROUTE_CONTEXT, method: 'POST', hostId }
-    )
-  }
-}, ROUTE_CONTEXT)
+  return createUIMessageStreamResponse({ stream })
+}
 
 /**
- * Request body type for agent endpoint
+ * Execute the agent workflow, streaming events to the writer at each step.
  */
-interface AgentRequestBody {
-  /** User's natural language message */
-  readonly message: string
-  /** ClickHouse host identifier */
-  readonly hostId?: number
-  /** Optional conversation history */
-  readonly history?: readonly {
-    readonly id: string
-    readonly role: 'user' | 'assistant' | 'system'
-    readonly content: string
-    readonly timestamp: number
-    readonly metadata?: {
-      readonly node?: string
-      readonly [key: string]: unknown
+async function executeAgentWithStream(
+  state: import('@/lib/agents/state').AgentState,
+  writer: UIMessageStreamWriter
+) {
+  let currentState = state
+  const textId = crypto.randomUUID()
+
+  // Step 1: Intent classification
+  const intentResult = await intentNode(currentState)
+  currentState = { ...currentState, ...intentResult }
+
+  // Route based on intent
+  const nextNode = routeAfterIntent(currentState)
+
+  if (nextNode === 'reactAgent') {
+    // Use ReAct agent for autonomous tool calling
+    // Stream tool calls as they happen
+    try {
+      const reactResult = await AGENT_NODES.reactAgent(currentState)
+      currentState = { ...currentState, ...reactResult }
+
+      // Stream any tool call info from the ReAct agent messages
+      for (const msg of currentState.messages) {
+        if (msg.metadata?.toolName) {
+          const toolCallId = crypto.randomUUID()
+          // Emit tool call
+          writer.write({
+            type: 'tool-input-available',
+            toolCallId,
+            toolName: msg.metadata.toolName as string,
+            input: msg.metadata.toolInput ?? {},
+          })
+          // Emit tool result
+          writer.write({
+            type: 'tool-output-available',
+            toolCallId,
+            output: msg.content,
+          })
+        }
+      }
+    } catch (error) {
+      writer.write({
+        type: 'error',
+        errorText:
+          error instanceof Error ? error.message : 'ReAct agent failed',
+      })
+      return
     }
-  }[]
-  /** Optional user preferences */
-  readonly preferences?: {
-    readonly verbose?: boolean
-    readonly includeSql?: boolean
-    readonly maxResults?: number
   }
+
+  if (nextNode === 'generateSql') {
+    // Step 2: SQL generation
+    const sqlToolCallId = crypto.randomUUID()
+
+    // Start tool call for SQL generation
+    writer.write({
+      type: 'tool-input-start',
+      toolCallId: sqlToolCallId,
+      toolName: 'generate_sql',
+    })
+
+    const sqlResult = await generateSqlNode(currentState)
+    currentState = { ...currentState, ...sqlResult }
+
+    if (currentState.generatedQuery) {
+      // Emit the tool input (the generated SQL)
+      writer.write({
+        type: 'tool-input-available',
+        toolCallId: sqlToolCallId,
+        toolName: 'generate_sql',
+        input: {
+          sql: currentState.generatedQuery.sql,
+          explanation: currentState.generatedQuery.explanation,
+          tables: currentState.generatedQuery.tables,
+        },
+      })
+
+      // Route after SQL generation
+      const afterSqlNode = routeAfterSqlGeneration(currentState)
+
+      if (afterSqlNode === 'executeQuery') {
+        // Step 3: Query execution
+        const execToolCallId = crypto.randomUUID()
+
+        writer.write({
+          type: 'tool-input-available',
+          toolCallId: execToolCallId,
+          toolName: 'execute_sql',
+          input: { sql: currentState.generatedQuery.sql },
+        })
+
+        const execResult = await executeQueryNode(currentState)
+        currentState = { ...currentState, ...execResult }
+
+        if (currentState.queryResult) {
+          if (currentState.queryResult.success) {
+            writer.write({
+              type: 'tool-output-available',
+              toolCallId: execToolCallId,
+              output: {
+                rows: currentState.queryResult.rows,
+                rowCount: currentState.queryResult.rowCount,
+                duration: currentState.queryResult.duration,
+              },
+            })
+          } else {
+            writer.write({
+              type: 'tool-output-error',
+              toolCallId: execToolCallId,
+              errorText: currentState.queryResult.error || 'Query failed',
+            })
+          }
+        }
+      }
+    } else {
+      // SQL generation produced no query
+      writer.write({
+        type: 'tool-output-error',
+        toolCallId: sqlToolCallId,
+        errorText: 'Could not generate SQL for this query',
+      })
+    }
+  }
+
+  // Step 4: Response generation - stream as text
+  const responseResult = await responseNode(currentState)
+  currentState = { ...currentState, ...responseResult }
+
+  const responseContent =
+    currentState.response?.content ||
+    'I received your message. The agent infrastructure is still being set up.'
+
+  // Stream the response text
+  writer.write({ type: 'text-start', id: textId })
+  writer.write({ type: 'text-delta', id: textId, delta: responseContent })
+  writer.write({ type: 'text-end', id: textId })
 }

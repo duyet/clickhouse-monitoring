@@ -33,6 +33,7 @@
 
 import type { AgentState } from './state'
 
+import { shouldUseReactAgent } from './nodes/react-agent'
 import { AGENT_TOOLS } from './tools/registry'
 
 /**
@@ -284,6 +285,7 @@ export async function errorNode(
  * Routing function after intent classification
  *
  * Determines which node to execute next based on the classified intent.
+ * Uses ReAct agent for exploration-style queries, explicit routing for others.
  */
 export function routeAfterIntent(state: AgentState): string {
   if (state.error) {
@@ -294,6 +296,14 @@ export function routeAfterIntent(state: AgentState): string {
     return 'error'
   }
 
+  // Check if we should use ReAct agent for autonomous tool calling
+  const useReactAgent = state.userInput && shouldUseReactAgent(state.userInput)
+
+  if (useReactAgent) {
+    return 'reactAgent'
+  }
+
+  // Traditional explicit routing
   switch (state.intent?.type) {
     case 'query':
     case 'analysis':
@@ -346,6 +356,12 @@ export async function executeAgent(state: AgentState): Promise<AgentState> {
   // Route based on intent
   const nextNode = routeAfterIntent(currentState)
 
+  if (nextNode === 'reactAgent') {
+    // Use ReAct agent for autonomous tool calling
+    const reactResult = await AGENT_NODES.reactAgent(currentState)
+    return { ...currentState, ...reactResult }
+  }
+
   if (nextNode === 'generateSql') {
     const sqlResult = await generateSqlNode(currentState)
     currentState = { ...currentState, ...sqlResult }
@@ -376,6 +392,8 @@ export const AGENT_NODES: Readonly<Record<string, AgentNode>> = {
   intent: intentNode,
   generateSql: generateSqlNode,
   executeQuery: executeQueryNode,
+  reactAgent: async (state) =>
+    (await import('./nodes/react-agent')).reactAgentNode(state),
   queryAnalyzer: async (state) =>
     (await import('./nodes/query-analyzer')).queryAnalyzerNode(state),
   queryOptimizer: async (state) =>
