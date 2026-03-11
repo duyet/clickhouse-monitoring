@@ -129,8 +129,11 @@ function ToolCallPart({
   }
 }) {
   const toolName = part.toolName || part.type.replace('tool-', '')
-  const isLoading =
+
+  // Determine state
+  const isStarting =
     part.state === 'input-streaming' || part.state === 'input-available'
+  const isStreaming = part.state === 'output-streaming' // NEW: Tool is executing
   const hasOutput = part.state === 'output-available'
   const hasError = part.state === 'output-error'
 
@@ -138,18 +141,49 @@ function ToolCallPart({
     <div className="my-2 rounded-lg border bg-muted/30 overflow-hidden">
       {/* Tool header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/50">
+        {/* Status indicator */}
         <div
           className={cn(
             'h-2 w-2 rounded-full',
-            isLoading && 'bg-yellow-500 animate-pulse',
+            // Starting state - gray/yellow pulsing
+            isStarting && 'bg-yellow-500 animate-pulse',
+            // Streaming/Executing state - yellow pulsing faster
+            isStreaming && 'bg-yellow-400 animate-ping',
+            // Completed - green
             hasOutput && 'bg-green-500',
+            // Error - red
             hasError && 'bg-red-500'
           )}
         />
         <span className="text-xs font-medium font-mono">{toolName}</span>
-        <Badge variant="outline" className="text-[10px] ml-auto">
-          {String(part.state)}
-        </Badge>
+
+        {/* Status badge */}
+        {isStreaming && (
+          <Badge
+            variant="outline"
+            className="text-[10px] ml-auto text-yellow-600"
+          >
+            Executing...
+          </Badge>
+        )}
+        {hasOutput && (
+          <Badge
+            variant="outline"
+            className="text-[10px] ml-auto text-green-600"
+          >
+            ✓ Done
+          </Badge>
+        )}
+        {hasError && (
+          <Badge variant="outline" className="text-[10px] ml-auto text-red-600">
+            ✗ Failed
+          </Badge>
+        )}
+        {!isStarting && !isStreaming && !hasOutput && !hasError && (
+          <Badge variant="outline" className="text-[10px] ml-auto">
+            {String(part.state)}
+          </Badge>
+        )}
       </div>
 
       {/* Tool input */}
@@ -163,6 +197,18 @@ function ToolCallPart({
               ? part.input
               : JSON.stringify(part.input as Record<string, unknown>, null, 2)}
           </pre>
+        </div>
+      )}
+
+      {/* Streaming state - show skeleton */}
+      {isStreaming && (
+        <div className="px-3 py-4">
+          <div className="flex items-center gap-2">
+            <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
+            <span className="text-xs text-muted-foreground">
+              Executing {toolName}...
+            </span>
+          </div>
         </div>
       )}
 
