@@ -35,7 +35,6 @@
  */
 
 import type { TrendPeriod } from '@/lib/agents/tools/trend-analyzer'
-import type { ApiRequest } from '@/lib/api/types'
 
 import { generateInsights } from '@/lib/agents/nodes/insight-generator'
 import { getInsightsSummary } from '@/lib/agents/tools/trend-analyzer'

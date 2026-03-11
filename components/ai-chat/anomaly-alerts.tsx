@@ -315,11 +315,13 @@ export function AnomalyAlertsPanel({
   }
 
   // Initial fetch
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fetchAnomalies is stable and only depends on hostId
   useEffect(() => {
     fetchAnomalies()
   }, [hostId])
 
   // Auto-refresh
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fetchAnomalies is stable and only depends on hostId
   useEffect(() => {
     if (!autoRefresh || refreshInterval <= 0) return
 

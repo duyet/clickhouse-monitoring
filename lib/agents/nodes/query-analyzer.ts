@@ -211,7 +211,7 @@ function detectFullTableScans(
 function detectMissingPartitionKey(
   sql: string,
   tables: readonly string[],
-  config: Required<QueryAnalyzerConfig>
+  _config: Required<QueryAnalyzerConfig>
 ): QueryIssue[] {
   const issues: QueryIssue[] = []
 
@@ -265,7 +265,7 @@ function detectMissingPartitionKey(
  */
 function analyzeJoinEfficiency(sql: string): QueryIssue[] {
   const issues: QueryIssue[] = []
-  const normalized = sql.replace(/\s+/g, ' ').toUpperCase()
+  const _normalized = sql.replace(/\s+/g, ' ').toUpperCase()
 
   // Check for CROSS JOIN (Cartesian product)
   if (/\bCROSS\s+JOIN\b/i.test(sql)) {
@@ -380,7 +380,7 @@ function detectLargeResultSets(sql: string): QueryIssue[] {
  */
 function detectSuboptimalAggregation(sql: string): QueryIssue[] {
   const issues: QueryIssue[] = []
-  const normalized = sql.replace(/\s+/g, ' ').toUpperCase()
+  const _normalized = sql.replace(/\s+/g, ' ').toUpperCase()
 
   // Check for DISTINCT instead of GROUP BY (for single column)
   if (/\bSELECT\s+DISTINCT\b/i.test(sql)) {

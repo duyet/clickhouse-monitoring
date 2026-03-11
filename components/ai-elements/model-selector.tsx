@@ -171,6 +171,7 @@ export const ModelSelectorLogo = ({
   className,
   ...props
 }: ModelSelectorLogoProps) => (
+  // biome-ignore lint/performance/noImgElement: External SVG logo from models.dev
   <img
     {...props}
     alt={`${provider} logo`}

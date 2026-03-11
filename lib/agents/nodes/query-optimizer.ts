@@ -20,7 +20,7 @@
  */
 
 import type { AgentState } from '../state'
-import type { QueryInsights, QueryIssue } from './query-analyzer'
+import type { QueryIssue } from './query-analyzer'
 
 /**
  * Optimization suggestion types
@@ -169,7 +169,7 @@ const OPTIMIZATION_PATTERNS: Readonly<
   ],
 
   missing_partition_key: [
-    (issue, query) => ({
+    (issue, _query) => ({
       id: crypto.randomUUID(),
       issueId: issue.id,
       category: 'partitioning' as const,
@@ -210,7 +210,7 @@ const OPTIMIZATION_PATTERNS: Readonly<
       },
       difficulty: 'easy' as const,
     }),
-    (issue, query) => ({
+    (issue, _query) => ({
       id: crypto.randomUUID(),
       issueId: issue.id,
       category: 'schema' as const,
@@ -336,7 +336,7 @@ const OPTIMIZATION_PATTERNS: Readonly<
 function generateSuggestionsForIssue(
   issue: QueryIssue,
   query: string,
-  config: Required<QueryOptimizerConfig>
+  _config: Required<QueryOptimizerConfig>
 ): OptimizationSuggestion[] {
   const generators = OPTIMIZATION_PATTERNS[issue.type]
 

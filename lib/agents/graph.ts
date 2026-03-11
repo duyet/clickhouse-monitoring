@@ -34,7 +34,6 @@
 import type { AgentState } from './state'
 
 import { shouldUseReactAgent } from './nodes/react-agent'
-import { AGENT_TOOLS } from './tools/registry'
 
 /**
  * Graph configuration options

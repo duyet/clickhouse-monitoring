@@ -13,6 +13,7 @@ export const Image = ({
   mediaType,
   ...props
 }: ImageProps) => (
+  // biome-ignore lint/performance/noImgElement: Data URI cannot use Next.js Image
   <img
     {...props}
     alt={props.alt}

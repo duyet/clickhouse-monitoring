@@ -20,8 +20,6 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-import type { FetchDataResult } from '@/lib/clickhouse/types'
-
 import { fetchData } from '@/lib/clickhouse'
 
 /**

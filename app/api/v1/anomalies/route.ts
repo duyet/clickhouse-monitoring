@@ -22,7 +22,6 @@
  */
 
 import type { AnomalyType } from '@/lib/agents/tools/baseline-analyzer'
-import type { ApiRequest } from '@/lib/api/types'
 
 import { analyzeBaselines } from '@/lib/agents/tools/baseline-analyzer'
 import {

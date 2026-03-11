@@ -96,10 +96,10 @@ export async function reactAgentNode(
 
   try {
     // Import LangGraph dependencies dynamically
-    const { StateGraph } = await import('@langchain/langgraph')
     const { ToolNode } = await import('@langchain/langgraph/prebuilt')
-    const { HumanMessage, AIMessage, SystemMessage, ToolMessage } =
-      await import('@langchain/core/messages')
+    const { HumanMessage, SystemMessage, ToolMessage } = await import(
+      '@langchain/core/messages'
+    )
 
     // Get all tools as an array
     const tools = getAllTools()

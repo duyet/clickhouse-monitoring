@@ -164,8 +164,8 @@ function parseClauses(sql: string): readonly ParsedClause[] {
     { type: 'UNION', regex: /\bUNION\s+ALL\b/i },
   ]
 
-  const remaining = normalized
-  const globalPosition = 0
+  const _remaining = normalized
+  const _globalPosition = 0
 
   // Sort by position in query
   const matches: Array<{ type: QueryClause; index: number; length: number }> =
@@ -209,7 +209,7 @@ function parseClauses(sql: string): readonly ParsedClause[] {
  * Extract column usage from query
  */
 function extractColumns(
-  sql: string,
+  _sql: string,
   clauses: readonly ParsedClause[]
 ): readonly ColumnUsage[] {
   const columns: ColumnUsage[] = []
@@ -354,7 +354,7 @@ function identifyFeatures(
  * Generate execution flow description
  */
 function generateExecutionFlow(
-  queryType: QueryExplanation['queryType'],
+  _queryType: QueryExplanation['queryType'],
   clauses: readonly ParsedClause[]
 ): readonly string[] {
   const flow: string[] = []

@@ -20,7 +20,6 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-import type { TableSchema } from '../schemas/clickhouse-schema'
 import type { AgentState, GeneratedQuery } from '../state'
 
 import { SQL_GENERATOR_SYSTEM } from '../prompts'
@@ -131,10 +130,10 @@ function buildPrompt(
   schemaContext: string,
   config: Required<TextToSqlConfig>
 ): string {
-  let prompt = config.systemPrompt + '\n\n'
+  let prompt = `${config.systemPrompt}\n\n`
 
   prompt += 'AVAILABLE SCHEMA:\n\n'
-  prompt += schemaContext + '\n\n'
+  prompt += `${schemaContext}\n\n`
 
   prompt += 'USER REQUEST:\n'
   prompt += `"${userInput}"\n\n`

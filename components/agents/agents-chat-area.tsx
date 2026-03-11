@@ -6,7 +6,7 @@ import type { UIMessage } from 'ai'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import { Suspense, useCallback, useEffect, useRef } from 'react'
+import { Suspense, useCallback } from 'react'
 import {
   Conversation,
   ConversationContent,
@@ -22,7 +22,7 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
 } from '@/components/ai-elements/prompt-input'
-import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
+import { Suggestion } from '@/components/ai-elements/suggestion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'

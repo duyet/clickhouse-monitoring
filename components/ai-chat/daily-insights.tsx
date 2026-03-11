@@ -28,7 +28,6 @@
 
 import type { VariantProps } from 'class-variance-authority'
 import {
-  Loader2Icon,
   MinusIcon,
   RefreshCwIcon,
   SparklesIcon,
