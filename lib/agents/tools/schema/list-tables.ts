@@ -58,8 +58,19 @@ export const listTablesTool = tool(
   },
   {
     name: 'list_tables',
-    description:
-      'List tables in a ClickHouse database with row counts and sizes. Returns table name, engine type, row count, and disk size.',
+    description: `List tables in a ClickHouse database with row counts and disk sizes.
+
+**Use this tool when user asks about:**
+- "What tables in <database>?", "show tables"
+- "List tables with sizes", "which tables are largest?"
+- Database/table discovery
+
+**Parameters:**
+- database (required): Database name to list tables from
+
+**Returns:** Table objects with name, engine, rows, size (ordered by size descending)
+
+**Example:** list_tables(database="system") → { tables: [{name: "query_log", engine: "MergeTree", rows: 1000000, size: "1.2 GB"}], count: 25 }`,
     schema: z.object({
       database: z.string().describe('Database name to list tables from'),
       hostId: z

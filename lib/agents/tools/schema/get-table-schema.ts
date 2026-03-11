@@ -65,8 +65,20 @@ export const getTableSchemaTool = tool(
   },
   {
     name: 'get_table_schema',
-    description:
-      'Get column definitions for a specific ClickHouse table including types, defaults, and comments. Returns detailed schema information.',
+    description: `Get column definitions for a specific ClickHouse table including types, defaults, and comments.
+
+**Use this tool when user asks about:**
+- "What columns does <table> have?", "show schema"
+- "Describe table <table>", "table structure"
+- "What is the type of <column>?"
+
+**Parameters:**
+- database (required): Database name
+- table (required): Table name
+
+**Returns:** Array of column objects with name, type, default, comment (ordered by position)
+
+**Example:** get_table_schema(database="system", table="query_log") → { columns: [{name: "query_id", type: "String", default: null, comment: "Query identifier"}], columnCount: 15 }`,
     schema: z.object({
       database: z.string().describe('Database name'),
       table: z.string().describe('Table name'),

@@ -44,8 +44,16 @@ export const listDatabasesTool = tool(
   },
   {
     name: 'list_databases',
-    description:
-      'List all databases on the ClickHouse server. Returns an array of database names.',
+    description: `List all databases on the ClickHouse server.
+
+**Use this tool when user asks about:**
+- "What databases exist?", "show databases", "list databases"
+- "What data is available?", "explore the database"
+- Starting database exploration workflow
+
+**Returns:** Array of database names (e.g., ["default", "system", "information_schema"])
+
+**Example:** list_databases() → { databases: ["default", "system", "logs"], count: 3 }`,
     schema: z.object({
       hostId: z
         .number()

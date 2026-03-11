@@ -285,8 +285,8 @@ export async function responseNode(
         content += '**Preview of results:**\n'
         content += '```\n'
         // Header
-        content += columns.join(' | ') + '\n'
-        content += '-'.repeat(Math.min(80, columns.join(' | ').length)) + '\n'
+        content += `${columns.join(' | ')}\n`
+        content += `${'-'.repeat(Math.min(80, columns.join(' | ').length))}\n`
 
         // Data rows
         for (const row of previewRows) {
@@ -294,7 +294,7 @@ export async function responseNode(
             const val = (row as Record<string, unknown>)[col]
             return val === null ? 'NULL' : String(val).slice(0, 20)
           })
-          content += values.join(' | ') + '\n'
+          content += `${values.join(' | ')}\n`
         }
 
         if (rowCount > previewLimit) {

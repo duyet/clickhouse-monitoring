@@ -7,6 +7,11 @@ import type { UIMessage } from 'ai'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import { Suspense, useCallback } from 'react'
+import ReactMarkdown from 'react-markdown'
+import rehypeHighlight from 'rehype-highlight'
+import remarkGfm from 'remark-gfm'
+import 'highlight.js/styles/github-dark.css'
+
 import {
   Conversation,
   ConversationContent,
@@ -218,10 +223,66 @@ function ChatMessage({ message }: { readonly message: UIMessage }) {
     <Message from={isUser ? 'user' : 'assistant'}>
       <MessageContent>
         {message.parts.map((part, i) => {
-          // Text part
+          // Text part - render as markdown for assistant messages
           if (part.type === 'text') {
             return (
-              <MessageResponse key={`text-${i}`}>{part.text}</MessageResponse>
+              <MessageResponse key={`text-${i}`}>
+                {isUser ? (
+                  // User messages: plain text
+                  part.text
+                ) : (
+                  // Assistant messages: markdown rendering (wrapped in div)
+                  <div className="markdown-content">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeHighlight]}
+                      components={{
+                        // Custom table styling
+                        table: ({ children }) => (
+                          <div className="overflow-x-auto my-2">
+                            <table className="min-w-full border-collapse border border-border">
+                              {children}
+                            </table>
+                          </div>
+                        ),
+                        thead: ({ children }) => (
+                          <thead className="bg-muted">{children}</thead>
+                        ),
+                        th: ({ children }) => (
+                          <th className="border border-border px-3 py-2 text-left text-sm font-medium">
+                            {children}
+                          </th>
+                        ),
+                        td: ({ children }) => (
+                          <td className="border border-border px-3 py-2 text-sm">
+                            {children}
+                          </td>
+                        ),
+                        // Code block styling
+                        pre: ({ children }) => (
+                          <pre className="bg-muted rounded-md p-3 my-2 overflow-x-auto">
+                            {children}
+                          </pre>
+                        ),
+                        code: ({ className, children }) => {
+                          // Check if this is inline code (no language class)
+                          const isInline =
+                            !className || className === 'language-'
+                          return isInline ? (
+                            <code className="bg-muted px-1 py-0.5 rounded text-sm">
+                              {children}
+                            </code>
+                          ) : (
+                            <code className={className}>{children}</code>
+                          )
+                        },
+                      }}
+                    >
+                      {part.text}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </MessageResponse>
             )
           }
 

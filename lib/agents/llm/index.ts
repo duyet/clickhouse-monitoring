@@ -4,6 +4,17 @@
  * Exports LLM configuration and utilities for the agent system.
  */
 
+// Model selection registry - use for intelligent model selection
+export {
+  getBestModel,
+  getFastModels,
+  getFreeModels,
+  getSelectionModelCapabilities,
+  MODEL_REGISTRY,
+  type ModelSelectionCriteria,
+  modelSupports,
+  type SelectionModelCapabilities,
+} from './model-registry'
 export {
   BASE_URL,
   DEFAULT_MODEL,
