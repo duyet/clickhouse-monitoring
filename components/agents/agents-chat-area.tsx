@@ -6,12 +6,15 @@ import type { UIMessage } from 'ai'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import { Suspense, useCallback } from 'react'
+import { Suspense, useCallback, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
 import 'highlight.js/styles/github-dark.css'
 
+import type { QueryConfig } from '@/types/query-config'
+
+import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
 import {
   Conversation,
   ConversationContent,
@@ -28,6 +31,7 @@ import {
   PromptInputTextarea,
 } from '@/components/ai-elements/prompt-input'
 import { Suggestion } from '@/components/ai-elements/suggestion'
+import { DataTable } from '@/components/data-table/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -60,12 +64,36 @@ function ChatSkeleton() {
   )
 }
 
-function ResultTable({ rows }: { readonly rows: readonly unknown[] }) {
-  const displayRows = rows.slice(0, 100)
-  const columns =
-    displayRows.length > 0
-      ? Object.keys(displayRows[0] as Record<string, unknown>)
-      : []
+/**
+ * Enhanced result table using the full-featured DataTable component.
+ * Supports sorting, pagination, column filtering, and virtualization for large datasets.
+ */
+function ResultTable({
+  rows,
+  maxRows = 100,
+}: {
+  readonly rows: readonly unknown[]
+  readonly maxRows?: number
+}) {
+  const displayRows = rows.slice(0, maxRows) as Record<string, unknown>[]
+
+  // Extract column names from first row
+  const columns = useMemo(() => {
+    if (displayRows.length === 0) return []
+    return Object.keys(displayRows[0])
+  }, [displayRows])
+
+  // Dynamically build QueryConfig for the DataTable
+  const queryConfig = useMemo<QueryConfig<string[]>>(
+    () => ({
+      name: 'agent-query-result',
+      description: 'Query results from AI agent',
+      sql: 'SELECT * FROM agent_result', // Placeholder SQL for dynamic table
+      columns: columns as string[],
+      // No specific column formats - use default text rendering
+    }),
+    [columns]
+  )
 
   if (columns.length === 0) {
     return (
@@ -76,35 +104,19 @@ function ResultTable({ rows }: { readonly rows: readonly unknown[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-md border">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b bg-muted/50">
-            {columns.map((col) => (
-              <th
-                key={col}
-                className="px-3 py-1.5 text-left font-medium text-xs"
-              >
-                {col}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {displayRows.map((row, i) => (
-            <tr key={i} className="border-b hover:bg-muted/30">
-              {columns.map((col) => (
-                <td key={col} className="px-3 py-1.5 max-w-xs truncate text-xs">
-                  {String((row as Record<string, unknown>)[col] ?? '')}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {rows.length > 100 && (
-        <div className="text-center text-xs text-muted-foreground py-2">
-          Showing 100 of {rows.length} rows
+    <div className="border rounded-md">
+      <DataTable
+        data={displayRows}
+        queryConfig={queryConfig}
+        context={{}}
+        defaultPageSize={rows.length > 50 ? 25 : 10}
+        showSQL={false}
+        enableColumnFilters={true}
+        enableColumnReordering={true}
+      />
+      {rows.length > maxRows && (
+        <div className="text-center text-xs text-muted-foreground py-2 px-3 border-t bg-muted/30">
+          Showing {maxRows} of {rows.length} rows
         </div>
       )}
     </div>
@@ -235,8 +247,37 @@ function ToolCallPart({
 function renderToolOutput(output: unknown) {
   if (!output) return null
 
-  // Check if output has rows (query result)
   const outputObj = output as Record<string, unknown>
+
+  // Check if output has chart data
+  if (
+    outputObj.chartData &&
+    Array.isArray(outputObj.chartData) &&
+    outputObj.chartData.length > 0
+  ) {
+    return (
+      <AgentChartRenderer
+        type={
+          (outputObj.chartType as 'area' | 'bar' | 'donut' | undefined) || 'bar'
+        }
+        data={outputObj.chartData as readonly Record<string, unknown>[]}
+        title={outputObj.chartTitle as string | undefined}
+        xKey={outputObj.xKey as string | undefined}
+        yKey={outputObj.yKey as string | undefined}
+        categories={outputObj.categories as string[] | undefined}
+        readable={
+          outputObj.readable as
+            | 'bytes'
+            | 'duration'
+            | 'number'
+            | 'quantity'
+            | undefined
+        }
+      />
+    )
+  }
+
+  // Check if output has rows (query result)
   if (Array.isArray(outputObj.rows) && outputObj.rows.length > 0) {
     return (
       <div>
@@ -246,7 +287,7 @@ function renderToolOutput(output: unknown) {
             <span> · {String(outputObj.duration)}ms</span>
           )}
         </div>
-        <ResultTable rows={outputObj.rows as unknown[]} />
+        <ResultTable rows={outputObj.rows as unknown[]} maxRows={100} />
       </div>
     )
   }
