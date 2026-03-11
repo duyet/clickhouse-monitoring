@@ -1,4 +1,5 @@
 import { getClickHouseHosts, getClient } from './clickhouse'
+import { _resetEnvCache } from './clickhouse/env-schema'
 import {
   afterAll,
   beforeEach as bunBeforeEach,
@@ -29,6 +30,7 @@ describe('getClickHouseHosts', () => {
 
   bunBeforeEach(() => {
     process.env = { ...originalEnv }
+    _resetEnvCache() // Reset cached environment between tests
     mockCreateClient.mockReset()
     mockCreateClientWeb.mockReset()
     mockCookies.mockReset()
@@ -80,6 +82,7 @@ describe('getClient', () => {
 
   bunBeforeEach(() => {
     process.env = { ...originalEnv }
+    _resetEnvCache() // Reset cached environment between tests
     mockCreateClient.mockReset()
     mockCreateClientWeb.mockReset()
     mockCookies.mockReset()
