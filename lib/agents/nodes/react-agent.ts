@@ -305,9 +305,10 @@ export async function reactAgentNode(
         break
       }
 
-      // Execute tool calls
+      // Execute tool calls (only if shouldContinue returned true)
       const toolResults: any[] = []
-      for (const toolCall of response.tool_calls) {
+      const toolCalls = response.tool_calls ?? []
+      for (const toolCall of toolCalls) {
         try {
           const result = await toolNode.invoke({
             messages,

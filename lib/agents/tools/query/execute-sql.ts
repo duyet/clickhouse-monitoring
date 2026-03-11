@@ -58,8 +58,26 @@ export const executeSqlTool = tool(
   },
   {
     name: 'execute_sql',
-    description:
-      'Execute a read-only SELECT query on ClickHouse. Only allows SELECT queries and WITH (CTE) clauses. Returns query results as an array of rows.',
+    description: `Execute a read-only SELECT query on ClickHouse with safety validation.
+
+**Use this tool when user asks:**
+- Custom SQL queries not covered by specialized tools
+- "Run SELECT...", "execute query..."
+- Complex aggregations, joins, or filters
+
+**Safety constraints:**
+- Only SELECT and WITH (CTE) queries allowed
+- Blocks DROP, DELETE, INSERT, UPDATE, ALTER, etc.
+- Validates query before execution
+
+**Parameters:**
+- sql (required): The SQL SELECT query to execute
+
+**Returns:** Query results as array of rows with metadata (queryId, host, version)
+
+**Example:** execute_sql(sql="SELECT count() FROM system.query_log WHERE type = 'QueryFinish'") → { success: true, rows: [{count(): 12345}], rowCount: 1 }
+
+**Note:** For system metrics like CPU/memory/disk, use get_metrics instead. For schema exploration, use list_tables/get_table_schema.`,
     schema: z.object({
       sql: z.string().describe('The SQL SELECT query to execute'),
       hostId: z

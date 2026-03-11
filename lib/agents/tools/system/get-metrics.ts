@@ -63,8 +63,18 @@ export const getMetricsTool = tool(
   },
   {
     name: 'get_metrics',
-    description:
-      'Get ClickHouse server metrics including version, uptime, current connections, and memory usage.',
+    description: `Get ClickHouse server health metrics including version, uptime, connections, and memory usage.
+
+**IMPORTANT: Use THIS tool (NOT execute_sql) when user asks about:**
+- "CPU usage", "memory usage", "disk usage"
+- "server health", "system status", "cluster status"
+- "server version", "uptime", "how many connections"
+
+**Returns:** Server metrics object with version, uptime_seconds, current_connections, memory_usage
+
+**Example:** get_metrics() → { version: "24.3.1", uptime_seconds: 86400, current_connections: 15, memory_usage: "2.5 GB" }
+
+**Note:** For detailed CPU/memory/disk metrics, this is the correct tool - do NOT use execute_sql for these queries.`,
     schema: z.object({
       hostId: z
         .number()

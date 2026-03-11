@@ -42,8 +42,21 @@ export const sampleTableTool = tool(
   },
   {
     name: 'sample_table',
-    description:
-      'Get sample rows from a ClickHouse table to preview data. Returns up to the specified number of rows (default 10).',
+    description: `Get sample rows from a ClickHouse table to preview data.
+
+**Use this tool when user asks about:**
+- "Show me sample data from <table>", "preview <table>"
+- "What does the data look like?", "show first N rows"
+- Quick data inspection before writing queries
+
+**Parameters:**
+- database (required): Database name
+- table (required): Table name
+- limit (optional): Number of rows (1-100, default: 10)
+
+**Returns:** Array of rows from the table (limited to specified count)
+
+**Example:** sample_table(database="system", table="query_log", limit=5) → { database: "system", table: "query_log", rows: [...], rowCount: 5, limit: 5 }`,
     schema: z.object({
       database: z.string().describe('Database name'),
       table: z.string().describe('Table name'),

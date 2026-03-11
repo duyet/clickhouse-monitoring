@@ -97,8 +97,21 @@ export const searchTablesTool = tool(
   },
   {
     name: 'search_tables',
-    description:
-      'Search for tables by name pattern. Supports LIKE (simple wildcards) or regex patterns. Returns matching tables with metadata.',
+    description: `Search for tables by name pattern. Supports LIKE (simple wildcards) or regex patterns.
+
+**Use this tool when user asks about:**
+- "Find tables with <pattern>", "search for tables"
+- "Show me all log tables", "tables starting with 'query'"
+- Pattern-based table discovery
+
+**Parameters:**
+- pattern (required): Pattern to search for (e.g., "query%", "log.*", "metrics_")
+- database (optional): Database to search (default: all databases)
+- searchType (optional): "like" for wildcards, "regex" for regex (default: "like")
+
+**Returns:** Matching tables with database, name, engine, rows, size
+
+**Example:** search_tables(pattern="query%", searchType="like") → { tables: [{database: "system", name: "query_log", engine: "MergeTree", rows: 500000, size: "500 MB"}], count: 3 }`,
     schema: z.object({
       database: z
         .string()

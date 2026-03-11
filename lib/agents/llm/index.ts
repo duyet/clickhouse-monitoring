@@ -17,12 +17,19 @@ export {
 } from './model-registry'
 export {
   BASE_URL,
+  createLLM,
+  createStreamingLLM,
   DEFAULT_MODEL,
+  getModelCapabilities,
   getModelName,
+  isStreamingCapable,
+  isToolsCapable,
   MODELS,
+  type ModelCapabilities,
   OPENROUTER_BASE_URL,
   OPENROUTER_CONFIG,
   OPENROUTER_DEFAULT_MODEL,
   OPENROUTER_MODELS,
+  STREAMING_CAPABLE_MODELS,
   validateConfig,
 } from './openrouter'

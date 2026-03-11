@@ -67,8 +67,19 @@ export const getRunningQueriesTool = tool(
   },
   {
     name: 'get_running_queries',
-    description:
-      'Get currently running queries on the ClickHouse server. Returns query ID, user, SQL, elapsed time, and resource usage.',
+    description: `Get currently running queries on the ClickHouse server.
+
+**Use this tool when user asks about:**
+- "What queries are running?", "show active queries"
+- "Current query status", "what's executing now?"
+- "Long-running queries", "query performance"
+
+**Parameters:**
+- limit (optional): Maximum queries to return (1-100, default: 20)
+
+**Returns:** Array of running queries with queryId, user, query, elapsedSeconds, memoryUsage, rowCount, bytesRead
+
+**Example:** get_running_queries(limit=10) → { queries: [{queryId: "abc-123", user: "default", query: "SELECT count() FROM...", elapsedSeconds: 5.2, memoryUsage: 1048576}], count: 10 }`,
     schema: z.object({
       hostId: z
         .number()
