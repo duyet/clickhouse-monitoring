@@ -31,6 +31,7 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
+import type { ReactAgentConfig } from './nodes/react-agent'
 import type { AgentState } from './state'
 
 import { shouldUseReactAgent } from './nodes/react-agent'
@@ -523,8 +524,8 @@ export const AGENT_NODES: Readonly<Record<string, AgentNode>> = {
   intent: intentNode,
   generateSql: generateSqlNode,
   executeQuery: executeQueryNode,
-  reactAgent: async (state) =>
-    (await import('./nodes/react-agent')).reactAgentNode(state),
+  reactAgent: async (state, config?: ReactAgentConfig) =>
+    (await import('./nodes/react-agent')).reactAgentNode(state, config),
   queryAnalyzer: async (state) =>
     (await import('./nodes/query-analyzer')).queryAnalyzerNode(state),
   queryOptimizer: async (state) =>

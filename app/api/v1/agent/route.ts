@@ -10,11 +10,15 @@
  */
 
 import type { UIMessageStreamWriter } from 'ai'
+import type {
+  ReactAgentConfig,
+  ToolStreamCallback,
+  ToolStreamEvent,
+} from '@/lib/agents/nodes/react-agent'
 import type { CreateAgentStateInput } from '@/lib/agents/state'
 
 import { createUIMessageStream, createUIMessageStreamResponse } from 'ai'
 import {
-  AGENT_NODES,
   executeQueryNode,
   generateSqlNode,
   intentNode,
@@ -22,6 +26,7 @@ import {
   routeAfterIntent,
   routeAfterSqlGeneration,
 } from '@/lib/agents/graph'
+import { reactAgentNode } from '@/lib/agents/nodes/react-agent'
 import { createInitialState } from '@/lib/agents/state'
 
 // This route is dynamic and should not be statically exported
@@ -107,30 +112,63 @@ async function executeAgentWithStream(
 
   if (nextNode === 'reactAgent') {
     // Use ReAct agent for autonomous tool calling
-    // Stream tool calls as they happen
+    // Stream tool calls as they happen using the onToolEvent callback
     try {
-      const reactResult = await AGENT_NODES.reactAgent(currentState)
-      currentState = { ...currentState, ...reactResult }
+      // Create a stream callback that writes to the AI SDK stream
+      const streamCallback: ToolStreamCallback = async (
+        event: ToolStreamEvent
+      ) => {
+        switch (event.type) {
+          case 'tool-input-start':
+            writer.write({
+              type: 'tool-input-start',
+              toolCallId: event.toolCallId,
+              toolName: event.toolName,
+            } as any)
+            break
 
-      // Stream any tool call info from the ReAct agent messages
-      for (const msg of currentState.messages) {
-        if (msg.metadata?.toolName) {
-          const toolCallId = crypto.randomUUID()
-          // Emit tool call
-          writer.write({
-            type: 'tool-input-available',
-            toolCallId,
-            toolName: msg.metadata.toolName as string,
-            input: msg.metadata.toolInput ?? {},
-          })
-          // Emit tool result
-          writer.write({
-            type: 'tool-output-available',
-            toolCallId,
-            output: msg.content,
-          })
+          case 'tool-input-available':
+            writer.write({
+              type: 'tool-input-available',
+              toolCallId: event.toolCallId,
+              toolName: event.toolName,
+              input: event.input,
+            } as any)
+            break
+
+          case 'tool-output-streaming':
+            writer.write({
+              type: 'tool-output-streaming',
+              toolCallId: event.toolCallId,
+              toolName: event.toolName,
+            } as any)
+            break
+
+          case 'tool-output-available':
+            writer.write({
+              type: 'tool-output-available',
+              toolCallId: event.toolCallId,
+              output: event.output,
+            } as any)
+            break
+
+          case 'tool-output-error':
+            writer.write({
+              type: 'tool-output-error',
+              toolCallId: event.toolCallId,
+              errorText: event.error ?? 'Unknown error',
+            })
+            break
         }
       }
+
+      // Execute ReAct agent with streaming callback
+      const reactConfig: ReactAgentConfig = {
+        onToolEvent: streamCallback,
+      }
+      const reactResult = await reactAgentNode(currentState, reactConfig)
+
+      currentState = { ...currentState, ...reactResult }
     } catch (error) {
       writer.write({
         type: 'error',

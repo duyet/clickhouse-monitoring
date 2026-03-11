@@ -39,6 +39,41 @@ export enum IterationStrategy {
 }
 
 /**
+ * Tool stream event types for real-time UI updates
+ */
+export type ToolStreamEventType =
+  | 'tool-input-start'
+  | 'tool-input-available'
+  | 'tool-output-streaming'
+  | 'tool-output-available'
+  | 'tool-output-error'
+
+/**
+ * Tool stream event payload
+ */
+export interface ToolStreamEvent {
+  /** Event type indicating the current stage of tool execution */
+  type: ToolStreamEventType
+  /** Unique identifier for this tool call */
+  toolCallId: string
+  /** Name of the tool being executed */
+  toolName: string
+  /** Tool input arguments (for input-available events) */
+  input?: unknown
+  /** Tool output result (for output-available events) */
+  output?: unknown
+  /** Error message (for output-error events) */
+  error?: string
+}
+
+/**
+ * Callback function for streaming tool execution events
+ */
+export type ToolStreamCallback = (
+  event: ToolStreamEvent
+) => void | Promise<void>
+
+/**
  * ReAct agent configuration
  */
 export interface ReactAgentConfig {
@@ -48,6 +83,8 @@ export interface ReactAgentConfig {
   readonly strategy?: IterationStrategy
   /** Enable debug logging */
   readonly debug?: boolean
+  /** Optional callback for streaming tool execution events */
+  readonly onToolEvent?: ToolStreamCallback
 }
 
 /**
@@ -218,21 +255,29 @@ export async function reactAgentNode(
         `\n• Analyze performance trends` +
         `\n• Generate insights and recommendations` +
         `\n\n` +
-        `Available tools:` +
+        `**Available Tools by Category:**` +
+        `\n\n` +
+        `📊 **Schema Exploration:**` +
         `\n• list_databases - List all databases` +
         `\n• list_tables - List tables in a database with sizes` +
         `\n• get_table_schema - Get column definitions for a table` +
         `\n• search_tables - Search tables by pattern` +
+        `\n\n` +
+        `🔍 **Query Execution:**` +
         `\n• execute_sql - Execute SELECT queries (validated for safety)` +
         `\n• sample_table - Get sample rows from a table` +
-        `\n• get_metrics - Server health metrics` +
+        `\n\n` +
+        `📈 **System Metrics (IMPORTANT - use for CPU/memory/disk queries):**` +
+        `\n• get_metrics - Server health metrics (CPU, memory, disk, uptime)` +
         `\n• get_running_queries - Currently executing queries` +
         `\n• get_merge_status - Active merge operations` +
+        `\n\n` +
+        `📉 **Monitoring Charts:**` +
         `\n• list_charts - List available monitoring charts` +
         `\n• get_chart_data - Get data for a specific chart` +
         `\n\n` +
-        `Guidelines:` +
-        `\n• Always use tools to gather data before answering` +
+        `**Guidelines:**` +
+        `\n• For "CPU usage?", "memory usage?", "disk usage?" - USE get_metrics (NOT execute_sql)` +
         `\n• For schema questions, use list_databases → list_tables → get_table_schema` +
         `\n• For data questions, use execute_sql or sample_table` +
         `\n• For metrics, use get_metrics, get_running_queries, get_merge_status` +
@@ -309,7 +354,33 @@ export async function reactAgentNode(
       const toolResults: any[] = []
       const toolCalls = response.tool_calls ?? []
       for (const toolCall of toolCalls) {
+        const toolCallId = toolCall.id!
+        const toolName = toolCall.name
+        const toolInput = toolCall.args
+
+        // Emit tool input start event
+        await config.onToolEvent?.({
+          type: 'tool-input-start',
+          toolCallId,
+          toolName,
+        })
+
+        // Emit tool input available event (with arguments)
+        await config.onToolEvent?.({
+          type: 'tool-input-available',
+          toolCallId,
+          toolName,
+          input: toolInput,
+        })
+
         try {
+          // Emit tool output streaming event (tool is starting execution)
+          await config.onToolEvent?.({
+            type: 'tool-output-streaming',
+            toolCallId,
+            toolName,
+          })
+
           const result = await toolNode.invoke({
             messages,
           })
@@ -330,6 +401,14 @@ export async function reactAgentNode(
                 : 'complex result'
             )
           }
+
+          // Emit tool output available event
+          await config.onToolEvent?.({
+            type: 'tool-output-available',
+            toolCallId,
+            toolName,
+            output: result,
+          })
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : 'Unknown error'
@@ -347,6 +426,14 @@ export async function reactAgentNode(
               errorMessage
             )
           }
+
+          // Emit tool output error event
+          await config.onToolEvent?.({
+            type: 'tool-output-error',
+            toolCallId,
+            toolName,
+            error: errorMessage,
+          })
         }
       }
 
