@@ -194,6 +194,91 @@ export const executeQueryTool = tool(
 )
 ```
 
+### Tool Progress Monitoring
+
+For long-running tools, you can add progress reporting to provide real-time feedback to users:
+
+```typescript
+// lib/agents/tools/clickhouse-tools.ts
+import { tool } from '@langchain/core/tools'
+import { z } from 'zod'
+import { fetchData } from '@/lib/clickhouse'
+import type { ToolContext } from '../registry'
+
+export const executeQueryTool = tool(
+  async ({ sql, hostId }, config?: ToolContext) => {
+    const { onProgress } = config ?? {}
+
+    // Report starting
+    await onProgress?.({ message: 'Validating query...' })
+
+    try {
+      // Validate
+      validateSqlQuery(sql)
+
+      // Report executing
+      await onProgress?.({ message: 'Executing query...', percent: 50 })
+
+      const result = await fetchData({
+        query: sql,
+        hostId,
+        format: 'JSONEachRow'
+      })
+
+      // Report completion
+      await onProgress?.({ message: 'Complete', percent: 100 })
+
+      return {
+        success: true,
+        data: result,
+        rows: result.length
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }
+  },
+  {
+    name: 'execute_clickhouse_query',
+    description: 'Execute a read-only SELECT query on ClickHouse',
+    schema: z.object({
+      sql: z.string().describe('The SQL query to execute'),
+      hostId: z.number().describe('The ClickHouse host ID')
+    })
+  }
+)
+```
+
+**Progress Event Interface:**
+
+```typescript
+import type { ToolProgressEvent, ToolContext } from '@/lib/agents/tools/registry'
+
+// ToolContext is passed as the second parameter to tool functions
+// ToolProgressEvent has the following fields:
+interface ToolProgressEvent {
+  percent?: number      // Progress percentage (0-100)
+  message: string       // Current status message
+  step?: number         // Current step in multi-step operations
+  totalSteps?: number   // Total steps in multi-step operations
+}
+```
+
+**Example usage patterns:**
+
+```typescript
+// Simple progress
+await onProgress?.({ message: 'Starting operation...' })
+
+// Progress with percentage
+await onProgress?.({ message: 'Processing...', percent: 50 })
+
+// Multi-step progress
+await onProgress?.({ message: 'Step 1 of 3', step: 1, totalSteps: 3 })
+```
+
 ### Registering Tools
 
 ```typescript
