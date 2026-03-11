@@ -45,7 +45,7 @@ export const historyQueriesConfig: QueryConfig = {
             AND if ({user: String} != '', user = {user: String}, true)
             AND if ({excluded_users: String} != '', not(has(splitByChar(',', {excluded_users: String}), user)), true)
           ORDER BY event_time DESC
-          LIMIT 1000
+          LIMIT 100
       `,
     },
     {
@@ -84,7 +84,7 @@ export const historyQueriesConfig: QueryConfig = {
             AND if ({user: String} != '', user = {user: String}, true)
             AND if ({excluded_users: String} != '', not(has(splitByChar(',', {excluded_users: String}), user)), true)
           ORDER BY event_time DESC
-          LIMIT 1000
+          LIMIT 100
       `,
     },
   ],

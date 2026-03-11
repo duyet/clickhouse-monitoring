@@ -29,6 +29,7 @@ import {
   ScrollTextIcon,
   ShieldAlertIcon,
   ShieldIcon,
+  SparklesIcon,
   UngroupIcon,
   UnplugIcon,
   UsersIcon,
@@ -42,6 +43,13 @@ export const menuItemsConfig: MenuItem[] = [
     href: '/health',
     icon: HeartPulseIcon,
     section: 'main',
+  },
+  {
+    title: 'AI Agents',
+    href: '/agents',
+    icon: SparklesIcon,
+    section: 'main',
+    isNew: true,
   },
   {
     title: 'Overview',

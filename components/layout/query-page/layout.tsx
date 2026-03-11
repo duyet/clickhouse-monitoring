@@ -52,6 +52,10 @@ export interface QueryPageLayoutProps {
   searchParams?: Record<string, string | number | boolean>
   /** Enable row selection with checkboxes */
   enableRowSelection?: boolean
+  /** Default page size for the table */
+  defaultPageSize?: number
+  /** Maximum height for the table card */
+  maxTableHeight?: string
 }
 
 export const QueryPageLayout = memo(function QueryPageLayout({
@@ -64,6 +68,8 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   hideTable = false,
   searchParams,
   enableRowSelection = false,
+  defaultPageSize,
+  maxTableHeight,
 }: QueryPageLayoutProps) {
   const hostId = useHostId()
   const relatedCharts = queryConfig.relatedCharts || []
@@ -97,7 +103,11 @@ export const QueryPageLayout = memo(function QueryPageLayout({
       {/* Data Table - flex-1 to fill remaining space */}
       {!hideTable && (
         <Suspense fallback={<TableSkeleton />}>
-          <FadeIn duration={300} className="flex min-w-0 flex-1 flex-col">
+          <FadeIn
+            duration={300}
+            className="flex min-w-0 flex-1 flex-col"
+            style={maxTableHeight ? { maxHeight: maxTableHeight } : undefined}
+          >
             <TableClient
               title={title || queryConfig.name}
               description={description || queryConfig.description}
@@ -105,6 +115,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
               searchParams={searchParams}
               className="flex min-w-0 flex-1 flex-col"
               enableRowSelection={enableRowSelection}
+              defaultPageSize={defaultPageSize}
             />
           </FadeIn>
         </Suspense>
@@ -129,6 +140,8 @@ export interface CreateQueryPageOptions {
   hideTable?: boolean
   searchParams?: Record<string, string | number | boolean>
   enableRowSelection?: boolean
+  defaultPageSize?: number
+  maxTableHeight?: string
 }
 
 /**
