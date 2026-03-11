@@ -10,15 +10,28 @@ import { tool } from '@langchain/core/tools'
 import { z } from 'zod/v3'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { fetchData } from '@/lib/clickhouse'
+import { getToolProgressCallback } from '../registry'
 
 /**
- * Execute a read-only SQL query on ClickHouse
+ * Execute a read-only SQL query on ClickHouse with progress reporting
  *
  * Validates the SQL for security before execution. Only allows SELECT queries
  * and WITH (CTE) clauses. Blocks dangerous operations like DROP, DELETE, etc.
+ *
+ * Progress events:
+ * - { message: 'Validating query...' } - Initial validation phase
+ * - { message: 'Executing query...', percent: 50 } - Query execution phase
+ * - { message: 'Processing results...', percent: 80 } - Results processing phase
+ * - { message: 'Complete', percent: 100 } - Query completion
  */
 export const executeSqlTool = tool(
   async ({ sql, hostId = 0 }) => {
+    // Get progress callback from context
+    const onProgress = getToolProgressCallback()
+
+    // Report starting validation
+    await onProgress?.({ message: 'Validating query...' })
+
     // Validate SQL for security
     try {
       validateSqlQuery(sql)
@@ -27,6 +40,9 @@ export const executeSqlTool = tool(
         `SQL validation failed: ${error instanceof Error ? error.message : String(error)}`
       )
     }
+
+    // Report starting execution
+    await onProgress?.({ message: 'Executing query...', percent: 50 })
 
     const result = await fetchData({
       query: sql,
@@ -39,7 +55,13 @@ export const executeSqlTool = tool(
       throw new Error(`Query execution failed: ${result.error.message}`)
     }
 
+    // Report processing results
+    await onProgress?.({ message: 'Processing results...', percent: 80 })
+
     const rows = (result.data ?? []) as readonly unknown[]
+
+    // Report completion
+    await onProgress?.({ message: 'Complete', percent: 100 })
 
     return {
       success: true,

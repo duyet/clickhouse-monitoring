@@ -42,6 +42,52 @@ export interface ToolContext {
 }
 
 /**
+ * Async local storage for tool progress callbacks
+ *
+ * This provides a way to pass the progress callback from the agent node
+ * to individual tools without modifying LangChain's tool signature.
+ *
+ * The pattern works by storing the callback in a module-level variable
+ * that tools can access via `getToolProgressCallback()`.
+ */
+let currentProgressCallback: ToolProgressCallback | undefined
+
+/**
+ * Set the current tool progress callback (called by agent node)
+ */
+export function setToolProgressCallback(
+  callback: ToolProgressCallback | undefined
+): void {
+  currentProgressCallback = callback
+}
+
+/**
+ * Get the current tool progress callback (called by tools)
+ */
+export function getToolProgressCallback(): ToolProgressCallback | undefined {
+  return currentProgressCallback
+}
+
+/**
+ * Run a function with a tool progress callback
+ *
+ * This is a convenience wrapper that ensures the callback is cleaned up
+ * after the function completes, even if an error is thrown.
+ */
+export async function withToolProgressCallback<T>(
+  callback: ToolProgressCallback | undefined,
+  fn: () => Promise<T>
+): Promise<T> {
+  const previousCallback = currentProgressCallback
+  currentProgressCallback = callback
+  try {
+    return await fn()
+  } finally {
+    currentProgressCallback = previousCallback
+  }
+}
+
+/**
  * Central tool registry for LangGraph agents.
  *
  * This module exports all available tools that LLMs can call when interacting

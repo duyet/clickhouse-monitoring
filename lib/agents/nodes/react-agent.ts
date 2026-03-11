@@ -20,7 +20,12 @@
 
 import type { AgentState } from '../state'
 
-import { AGENT_TOOLS, getAllTools } from '../tools/registry'
+import {
+  AGENT_TOOLS,
+  getAllTools,
+  type ToolProgressEvent,
+  withToolProgressCallback,
+} from '../tools/registry'
 
 /**
  * Iteration strategy for ReAct agent
@@ -47,6 +52,21 @@ export type ToolStreamEventType =
   | 'tool-output-streaming'
   | 'tool-output-available'
   | 'tool-output-error'
+  | 'tool-progress'
+
+/**
+ * Progress data for tool-progress events
+ */
+export interface ToolProgressData {
+  /** Progress percentage (0-100) */
+  percent?: number
+  /** Current status message */
+  message: string
+  /** Current step in multi-step operations */
+  step?: number
+  /** Total steps in multi-step operations */
+  totalSteps?: number
+}
 
 /**
  * Tool stream event payload
@@ -64,6 +84,8 @@ export interface ToolStreamEvent {
   output?: unknown
   /** Error message (for output-error events) */
   error?: string
+  /** Progress data (for tool-progress events) */
+  progress?: ToolProgressData
 }
 
 /**
@@ -381,9 +403,24 @@ export async function reactAgentNode(
             toolName,
           })
 
-          const result = await toolNode.invoke({
-            messages,
-          })
+          // Set up progress callback for this tool execution
+          const onProgress = config.onToolEvent
+            ? async (event: ToolProgressEvent) => {
+                await config.onToolEvent!({
+                  type: 'tool-progress',
+                  toolCallId,
+                  toolName,
+                  progress: event,
+                })
+              }
+            : undefined
+
+          // Execute tool with progress callback
+          const result = await withToolProgressCallback(onProgress, () =>
+            toolNode.invoke({
+              messages,
+            })
+          )
 
           // Extract tool result content
           const toolMessage = new ToolMessage({

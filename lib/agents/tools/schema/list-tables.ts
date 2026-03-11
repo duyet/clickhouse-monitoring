@@ -9,15 +9,26 @@
 import { tool } from '@langchain/core/tools'
 import { z } from 'zod/v3'
 import { fetchData } from '@/lib/clickhouse'
+import { getToolProgressCallback } from '../registry'
 
 /**
- * List tables in a ClickHouse database with metadata
+ * List tables in a ClickHouse database with progress reporting
  *
  * Returns table information including engine type, row counts, and disk usage.
  * Ordered by size descending to help identify the largest tables.
+ *
+ * Progress events:
+ * - { message: 'Querying system.tables...' } - Query execution phase
+ * - { message: 'Processing table metadata...', percent: 66 } - Results processing phase
+ * - { message: 'Complete', percent: 100 } - Query completion
  */
 export const listTablesTool = tool(
   async ({ database, hostId = 0 }) => {
+    const onProgress = getToolProgressCallback()
+
+    // Report starting query
+    await onProgress?.({ message: 'Querying system.tables...', percent: 33 })
+
     const result = await fetchData({
       query: `SELECT
         name,
@@ -37,12 +48,18 @@ export const listTablesTool = tool(
       throw new Error(`Failed to list tables: ${result.error.message}`)
     }
 
+    // Report processing results
+    await onProgress?.({ message: 'Processing table metadata...', percent: 66 })
+
     const tables = (result.data ?? []) as Array<{
       name: string
       engine: string
       total_rows: bigint | number
       size: string
     }>
+
+    // Report completion
+    await onProgress?.({ message: 'Complete', percent: 100 })
 
     return {
       database,
