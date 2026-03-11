@@ -38,10 +38,20 @@ export async function POST(request: Request) {
     hostId?: number
   }
 
-  // Support both direct `message` and AI SDK's `messages` array format
-  const userMessage =
-    body.message ||
-    body.messages?.filter((m) => m.role === 'user')?.pop()?.content
+  // Support both direct `message` and AI SDK's UIMessage format with parts array
+  const lastUserMessage = body.messages?.filter((m) => m.role === 'user')?.pop()
+
+  // Extract from AI SDK UIMessage parts array
+  const textPart = lastUserMessage?.parts?.find(
+    (p: unknown) =>
+      typeof p === 'object' &&
+      p !== null &&
+      'type' in p &&
+      p.type === 'text' &&
+      'text' in p
+  ) as { type: string; text: string } | undefined
+
+  const userMessage = body.message || textPart?.text || lastUserMessage?.content
 
   if (!userMessage || typeof userMessage !== 'string') {
     return new Response(

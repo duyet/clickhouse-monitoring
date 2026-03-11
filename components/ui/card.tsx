@@ -72,4 +72,34 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = 'CardFooter'
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+/**
+ * CardAction - Action area at the bottom of a card
+ *
+ * Semantically different from CardFooter:
+ * - CardFooter: informational footer content (metadata, timestamps, captions)
+ * - CardAction: interactive action buttons (confirm, cancel, submit actions)
+ *
+ * While both have the same styling, using separate components improves
+ * semantic clarity and makes component intent explicit.
+ */
+const CardAction = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn('flex items-center p-6 pt-0', className)}
+    {...props}
+  />
+))
+CardAction.displayName = 'CardAction'
+
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardAction,
+}
