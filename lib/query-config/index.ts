@@ -1,5 +1,7 @@
 import type { QueryConfig } from '@/types/query-config'
 
+// Anomaly Detection
+import { anomalyQueries } from './anomaly/anomaly-queries'
 import {
   explorerColumnsConfig,
   explorerDatabasesConfig,
@@ -147,6 +149,9 @@ export const queries: Array<QueryConfig> = [
 
   // Dictionaries
   dictionariesConfig,
+
+  // Anomaly Detection
+  ...anomalyQueries,
 ]
 
 export const getQueryConfigByName = cache(

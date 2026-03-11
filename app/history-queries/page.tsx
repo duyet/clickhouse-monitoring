@@ -7,7 +7,12 @@ import { historyQueriesConfig } from '@/lib/query-config/queries/history-queries
 
 function HistoryQueriesPageContent() {
   return (
-    <PageLayout queryConfig={historyQueriesConfig} title="History Queries" />
+    <PageLayout
+      queryConfig={historyQueriesConfig}
+      title="History Queries"
+      defaultPageSize={100}
+      maxTableHeight="400px"
+    />
   )
 }
 
