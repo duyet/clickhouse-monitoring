@@ -58,8 +58,22 @@ export const getChartDataTool = tool(
   },
   {
     name: 'get_chart_data',
-    description:
-      'Get data for a specific pre-configured chart by name. Charts include time-series metrics, query statistics, and more.',
+    description: `Get data for a specific pre-configured monitoring chart.
+
+**Use this tool when user asks about:**
+- "Show me <chart name> data", "get chart data for..."
+- Specific metrics that have pre-configured charts
+- Time-series data and visualization data
+
+**Parameters:**
+- name (required): Chart name (use list_charts to discover available charts)
+- params (optional): Chart-specific parameters (e.g., time range filters)
+
+**Returns:** Chart data array with metadata
+
+**Example:** get_chart_data(name="query-count") → { chart: "query-count", data: [{timestamp: "2024-01-01", count: 100}], dataPointCount: 1440 }
+
+**Common charts:** query-count, top-tables-size, merge-operations, running-queries, disk-usage, query-types`,
     schema: z.object({
       name: z
         .string()

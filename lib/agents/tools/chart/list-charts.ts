@@ -26,8 +26,18 @@ export const listChartsTool = tool(
   },
   {
     name: 'list_charts',
-    description:
-      'List all available pre-configured charts. Returns an array of chart names that can be used with get_chart_data.',
+    description: `List all available pre-configured monitoring charts.
+
+**Use this tool when user asks about:**
+- "What charts are available?", "show available charts"
+- "What metrics can I visualize?", "available monitoring"
+- Before using get_chart_data to discover chart names
+
+**Returns:** Array of chart names (e.g., ["query-count", "top-tables-size", "merge-operations"])
+
+**Example:** list_charts() → { charts: ["query-count", "top-tables-size", "merge-operations", "cpu-usage"], count: 32 }
+
+**Next step:** Use get_chart_data with a specific chart name to fetch the data.`,
     schema: z.object({}),
   }
 )

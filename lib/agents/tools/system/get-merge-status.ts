@@ -73,8 +73,19 @@ export const getMergeStatusTool = tool(
   },
   {
     name: 'get_merge_status',
-    description:
-      'Get active merge operations on the ClickHouse server. Returns database, table, progress, and resource usage for each merge.',
+    description: `Get active merge operations on the ClickHouse server.
+
+**Use this tool when user asks about:**
+- "Merge status", "what merges are running?"
+- "Table maintenance", "merge operations"
+- "Background merges", "merge progress"
+
+**Parameters:**
+- limit (optional): Maximum merges to return (1-100, default: 20)
+
+**Returns:** Array of active merges with database, table, elapsedSeconds, progress (0-1), rowsRead, rowsWritten, memoryUsage
+
+**Example:** get_merge_status(limit=10) → { merges: [{database: "default", table: "events", elapsedSeconds: 120, progress: 0.75, rowsRead: 1000000, rowsWritten: 750000}], count: 5 }`,
     schema: z.object({
       hostId: z
         .number()
