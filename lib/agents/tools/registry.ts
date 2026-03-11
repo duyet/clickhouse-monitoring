@@ -1,4 +1,47 @@
 /**
+ * Tool progress event for long-running operations
+ */
+export interface ToolProgressEvent {
+  /** Progress percentage (0-100) */
+  percent?: number
+  /** Current status message */
+  message: string
+  /** Current step in multi-step operations */
+  step?: number
+  /** Total steps in multi-step operations */
+  totalSteps?: number
+}
+
+/**
+ * Tool progress callback for reporting intermediate progress
+ *
+ * This callback is passed to tools to allow them to report progress during
+ * long-running operations. The callback can be used to emit progress events
+ * that will be streamed to the client via the tool execution streaming protocol.
+ *
+ * Example usage in a tool:
+ * ```typescript
+ * await onProgress?.({ message: 'Validating query...' })
+ * await onProgress?.({ message: 'Executing query...', percent: 50 })
+ * await onProgress?.({ message: 'Complete', percent: 100 })
+ * ```
+ */
+export type ToolProgressCallback = (
+  event: ToolProgressEvent
+) => void | Promise<void>
+
+/**
+ * Tool execution context passed to tool implementations
+ *
+ * This interface extends the standard LangChain tool config with progress
+ * reporting capabilities for long-running operations.
+ */
+export interface ToolContext {
+  /** Optional progress callback for reporting intermediate progress */
+  onProgress?: ToolProgressCallback
+}
+
+/**
  * Central tool registry for LangGraph agents.
  *
  * This module exports all available tools that LLMs can call when interacting
@@ -8,7 +51,7 @@
  * Usage:
  * ```typescript
  * import { AGENT_TOOLS } from '@/lib/agents/tools/registry'
- * import { bindTools } from '@langchain/core/runnaries'
+ * import { bindTools } from '@langchain/core/runnables'
  *
  * const llmWithTools = llm.bindTools(Object.values(AGENT_TOOLS))
  * ```
