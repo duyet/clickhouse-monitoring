@@ -23,11 +23,29 @@ import type { AgentState } from '../state'
 import { AGENT_TOOLS, getAllTools } from '../tools/registry'
 
 /**
+ * Iteration strategy for ReAct agent
+ *
+ * Each strategy defines the maximum number of reasoning steps the agent
+ * can take before terminating. Higher values allow more complex multi-hop
+ * reasoning but increase cost and latency.
+ */
+export enum IterationStrategy {
+  /** Safe for simple queries (default) */
+  CONSERVATIVE = 10,
+  /** Good for multi-step reasoning */
+  BALANCED = 30,
+  /** For complex multi-hop queries */
+  AGGRESSIVE = 100,
+}
+
+/**
  * ReAct agent configuration
  */
 export interface ReactAgentConfig {
-  /** Maximum number of LLM/tool iterations */
+  /** Maximum number of LLM/tool iterations (DEPRECATED - use strategy) */
   readonly maxIterations?: number
+  /** Iteration strategy (overrides maxIterations) */
+  readonly strategy?: IterationStrategy
   /** Enable debug logging */
   readonly debug?: boolean
 }
@@ -36,8 +54,84 @@ export interface ReactAgentConfig {
  * Default ReAct agent configuration
  */
 export const DEFAULT_REACT_CONFIG: ReactAgentConfig = {
-  maxIterations: 10,
+  strategy: IterationStrategy.CONSERVATIVE,
   debug: process.env.NODE_ENV === 'development',
+}
+
+/**
+ * Get the maximum iterations from config
+ *
+ * Supports legacy maxIterations field while prioritizing the new strategy field.
+ */
+function getMaxIterations(config: ReactAgentConfig): number {
+  // Strategy takes precedence over deprecated maxIterations
+  if (config.strategy !== undefined) {
+    return config.strategy
+  }
+  // Backward compatibility: fall back to maxIterations
+  return config.maxIterations ?? IterationStrategy.CONSERVATIVE
+}
+
+/**
+ * Check if ReAct agent should continue iterating
+ *
+ * Convergence detection:
+ * - LLM stops calling tools → natural completion
+ * - Tool results are repetitive (same tool called 3+ times with similar args) → loop detection
+ * - Max iterations reached → safety limit
+ *
+ * @param iteration - Current iteration number (1-indexed)
+ * @param response - Latest LLM response
+ * @param history - Full message history for pattern detection
+ * @param maxIterations - Maximum allowed iterations
+ * @returns Object with shouldContinue flag and optional reason
+ */
+function shouldContinue(
+  iteration: number,
+  response: any,
+  history: any[],
+  maxIterations: number
+): { shouldContinue: boolean; reason?: string } {
+  // Check if LLM wants to call tools
+  if (!response.tool_calls || response.tool_calls.length === 0) {
+    return { shouldContinue: false, reason: 'No more tool calls' }
+  }
+
+  // Check max iterations
+  if (iteration >= maxIterations) {
+    return {
+      shouldContinue: false,
+      reason: `Max iterations (${maxIterations}) reached`,
+    }
+  }
+
+  // Check for repetitive patterns (simple convergence detection)
+  // Count how many times each tool has been called in recent history
+  const recentHistory = history.slice(-10) // Look at last 10 messages
+  const toolCallCounts = new Map<string, number>()
+
+  for (const msg of recentHistory) {
+    if (msg.tool_calls) {
+      for (const tc of msg.tool_calls) {
+        const key = `${tc.name}:${JSON.stringify(tc.args)}`
+        toolCallCounts.set(key, (toolCallCounts.get(key) ?? 0) + 1)
+      }
+    }
+  }
+
+  // Check if current tool calls are repetitive
+  for (const tc of response.tool_calls) {
+    const key = `${tc.name}:${JSON.stringify(tc.args)}`
+    const count = toolCallCounts.get(key) ?? 0
+    if (count >= 3) {
+      return {
+        shouldContinue: false,
+        reason: `Repetitive tool call detected: ${tc.name} called ${count + 1} times`,
+      }
+    }
+  }
+
+  return { shouldContinue: true }
 }
 
 /**
@@ -84,12 +178,15 @@ export async function reactAgentNode(
   state: AgentState,
   config: ReactAgentConfig = DEFAULT_REACT_CONFIG
 ): Promise<Partial<AgentState>> {
-  const { maxIterations = 10, debug = false } = config
+  const maxIterations = getMaxIterations(config)
+  const debug = config.debug ?? DEFAULT_REACT_CONFIG.debug
   const startTime = Date.now()
 
   if (debug) {
     console.log('[reactAgentNode] Starting ReAct agent with tools:', {
       tools: Object.keys(AGENT_TOOLS),
+      maxIterations,
+      strategy: config.strategy ?? config.maxIterations ?? 'CONSERVATIVE',
       userInput: state.userInput?.slice(0, 100),
     })
   }
@@ -165,9 +262,10 @@ export async function reactAgentNode(
       }
     }
 
-    // ReAct loop: continue until LLM stops calling tools
+    // ReAct loop: continue until shouldContinue returns false
     let iteration = 0
     let lastResponse: any = null
+    let stopReason: string | undefined
 
     while (iteration < maxIterations) {
       iteration++
@@ -192,11 +290,17 @@ export async function reactAgentNode(
       messages.push(response)
       lastResponse = response
 
-      // Check if LLM wants to call tools
-      if (!response.tool_calls || response.tool_calls.length === 0) {
-        // No more tool calls - LLM is ready to respond
+      // Check if we should continue using adaptive strategy
+      const continueCheck = shouldContinue(
+        iteration,
+        response,
+        messages,
+        maxIterations
+      )
+      if (!continueCheck.shouldContinue) {
+        stopReason = continueCheck.reason
         if (debug) {
-          console.log('[reactAgentNode] LLM finished reasoning')
+          console.log(`[reactAgentNode] Stopping: ${stopReason}`)
         }
         break
       }
@@ -249,11 +353,14 @@ export async function reactAgentNode(
       messages.push(...toolResults)
     }
 
-    // Check if we exceeded max iterations
-    if (iteration >= maxIterations && lastResponse?.tool_calls?.length) {
+    // Check if we stopped due to iteration limit with pending tool calls
+    if (
+      stopReason?.includes('Max iterations') &&
+      lastResponse?.tool_calls?.length
+    ) {
       return {
         response: {
-          content: `I need more steps to answer your question, but I've reached the maximum number of iterations (${maxIterations}). Please try a more specific question.`,
+          content: `I need more steps to answer your question, but I've reached the maximum number of iterations (${maxIterations}). ${stopReason}. Please try a more specific question.`,
           type: 'error',
           suggestions: [
             'Try breaking down your question into smaller parts',
@@ -266,7 +373,7 @@ export async function reactAgentNode(
           {
             id: crypto.randomUUID(),
             role: 'system',
-            content: `ReAct agent exceeded max iterations (${maxIterations})`,
+            content: `ReAct agent stopped: ${stopReason}`,
             timestamp: Date.now(),
             metadata: { node: 'reactAgent', iterations: iteration },
           },
