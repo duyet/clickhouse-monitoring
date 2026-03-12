@@ -5,6 +5,7 @@
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  ExternalLinkIcon,
   Loader2Icon,
   PanelRightClose,
   PanelRightOpen,
@@ -53,6 +54,13 @@ import {
 import { DataTable } from '@/components/data-table/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
 import { cn } from '@/lib/utils'
@@ -100,17 +108,52 @@ function TypingIndicator() {
 }
 
 /**
- * Enhanced result table using the full-featured DataTable component.
- * Supports sorting, pagination, column filtering, and virtualization for large datasets.
+ * Simple summary row for query results - shows row count and duration
+ * Click to open modal with full table
  */
-function ResultTable({
+function QueryResultSummary({
+  rowCount,
+  duration,
+  onViewDetails,
+}: {
+  readonly rowCount: number
+  readonly duration?: number
+  readonly onViewDetails: () => void
+}) {
+  return (
+    <button
+      onClick={onViewDetails}
+      className="w-full flex items-center justify-between gap-3 px-3 py-2 hover:bg-muted/50 rounded-md transition-colors text-left group"
+    >
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <span>{rowCount} rows</span>
+        {duration && <span>· {duration}ms</span>}
+      </div>
+      <div className="flex items-center gap-1 text-xs text-muted-foreground/70 group-hover:text-foreground transition-colors">
+        View results
+        <ExternalLinkIcon className="h-3.5 w-3.5" />
+      </div>
+    </button>
+  )
+}
+
+/**
+ * Modal dialog showing full query results with DataTable
+ */
+function QueryResultModal({
   rows,
-  maxRows = 100,
+  rowCount,
+  duration,
+  isOpen,
+  onClose,
 }: {
   readonly rows: readonly unknown[]
-  readonly maxRows?: number
+  readonly rowCount: number
+  readonly duration?: number
+  readonly isOpen: boolean
+  readonly onClose: () => void
 }) {
-  const displayRows = rows.slice(0, maxRows) as Record<string, unknown>[]
+  const displayRows = rows as Record<string, unknown>[]
 
   // Extract column names from first row
   const columns = useMemo(() => {
@@ -132,29 +175,40 @@ function ResultTable({
 
   if (columns.length === 0) {
     return (
-      <div className="text-center text-muted-foreground py-4 text-sm">
-        No columns to display
-      </div>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Query Results</DialogTitle>
+            <DialogDescription>No columns to display</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     )
   }
 
   return (
-    <div className="border rounded-md">
-      <DataTable
-        data={displayRows}
-        queryConfig={queryConfig}
-        context={{}}
-        defaultPageSize={rows.length > 50 ? 25 : 10}
-        showSQL={false}
-        enableColumnFilters={true}
-        enableColumnReordering={true}
-      />
-      {rows.length > maxRows && (
-        <div className="text-center text-xs text-muted-foreground py-2 px-3 border-t bg-muted/30">
-          Showing {maxRows} of {rows.length} rows
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+          <DialogTitle>Query Results</DialogTitle>
+          <DialogDescription>
+            {rowCount} rows
+            {duration && ` · ${duration}ms`}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto">
+          <DataTable
+            data={displayRows}
+            queryConfig={queryConfig}
+            context={{}}
+            defaultPageSize={rows.length > 50 ? 25 : 10}
+            showSQL={false}
+            enableColumnFilters={true}
+            enableColumnReordering={true}
+          />
         </div>
-      )}
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -332,6 +386,36 @@ function ToolCallPart({
   )
 }
 
+// Internal component to render table results with modal
+function TableResultWithModal({
+  rows,
+  rowCount,
+  duration,
+}: {
+  readonly rows: readonly unknown[]
+  readonly rowCount: number
+  readonly duration?: number
+}) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  return (
+    <>
+      <QueryResultSummary
+        rowCount={rowCount}
+        duration={duration}
+        onViewDetails={() => setIsModalOpen(true)}
+      />
+      <QueryResultModal
+        rows={rows}
+        rowCount={rowCount}
+        duration={duration}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+    </>
+  )
+}
+
 function renderToolOutput(output: unknown) {
   if (output == null) return null
 
@@ -345,14 +429,7 @@ function renderToolOutput(output: unknown) {
       !Array.isArray(firstItem)
 
     if (isArrayOfObjects) {
-      return (
-        <div>
-          <div className="text-xs text-muted-foreground mb-2">
-            {output.length} {output.length === 1 ? 'row' : 'rows'}
-          </div>
-          <ResultTable rows={output as unknown[]} maxRows={100} />
-        </div>
-      )
+      return <TableResultWithModal rows={output} rowCount={output.length} />
     }
     // Array of primitives or mixed types - fall through to JSON rendering
   }
@@ -390,15 +467,11 @@ function renderToolOutput(output: unknown) {
   // Check if output has rows (query result)
   if (Array.isArray(outputObj.rows) && outputObj.rows.length > 0) {
     return (
-      <div>
-        <div className="text-xs text-muted-foreground mb-2">
-          {String(outputObj.rowCount ?? '')} rows
-          {Boolean(outputObj.duration) && (
-            <span> · {String(outputObj.duration)}ms</span>
-          )}
-        </div>
-        <ResultTable rows={outputObj.rows as unknown[]} maxRows={100} />
-      </div>
+      <TableResultWithModal
+        rows={outputObj.rows}
+        rowCount={Number(outputObj.rowCount ?? outputObj.rows.length)}
+        duration={outputObj.duration as number | undefined}
+      />
     )
   }
 
@@ -852,7 +925,7 @@ export const AgentsChatArea = forwardRef<
       <div className="border-t p-3 sm:p-4 shrink-0">
         <PromptInput onSubmit={handleSubmit} className="max-w-none">
           <PromptInputTextarea
-            placeholder="Ask about your ClickHouse data..."
+            placeholder="Ask about your ClickHouse data... (Press Enter to send, Shift+Enter for new line)"
             disabled={isLoading}
           />
           <PromptInputSubmit disabled={isLoading}>
@@ -861,9 +934,6 @@ export const AgentsChatArea = forwardRef<
             ) : null}
           </PromptInputSubmit>
         </PromptInput>
-        <p className="text-xs text-muted-foreground mt-2 text-center hidden sm:block">
-          Press Enter to send, Shift+Enter for new line
-        </p>
       </div>
     </div>
   )
