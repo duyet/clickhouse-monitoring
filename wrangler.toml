@@ -68,29 +68,40 @@ migrations_dir = "src/db/migrations"
 binding = "NEXT_INC_CACHE_KV"
 id = "78782c1fcf4141d9b6f26f2046f50ceb"
 
+# ─────────────────────────────────────────────────────────────────────────────
 # Environment Variables
-#
+# ─────────────────────────────────────────────────────────────────────────────
 # For local development: Set these in .dev.vars file (not committed to git)
-# For production: Set these in Cloudflare Dashboard or wrangler secret
+# For production: Set these in Cloudflare Dashboard or via `wrangler secret put`
+#
+# Documentation: https://developers.cloudflare.com/workers/configuration/environment-variables/
 #
 # Variables (non-sensitive, set in [vars]):
-# - CLICKHOUSE_HOST: Comma-separated list of ClickHouse host URLs
-# - CLICKHOUSE_USER: Comma-separated list of usernames (or single value for all hosts)
+#   - CLICKHOUSE_HOST: Comma-separated list of ClickHouse host URLs
+#   - CLICKHOUSE_USER: Comma-separated list of usernames (or single value for all hosts)
+#   - CLICKHOUSE_MAX_EXECUTION_TIME: Query timeout in seconds (default: 60)
+#   - CLICKHOUSE_NAME: Comma-separated list of custom names for hosts (optional)
+#   - CLICKHOUSE_TZ: Timezone for ClickHouse queries (optional)
+#   - CLOUDFLARE_WORKERS: Set to "1" when running in Workers environment
+#   - LLM_MODEL: Model identifier for AI agent (default: openrouter/free)
+#   - LLM_API_BASE: Base URL for LLM API (default: https://openrouter.ai/api/v1)
+#   - OPENROUTER_REFERER: App URL for OpenRouter attribution (optional)
+#   - OPENROUTER_APP_NAME: App display name for OpenRouter (optional)
 #
-# Secrets (sensitive, set via `wrangler secret put`):
-# - CLICKHOUSE_PASSWORD: Comma-separated list of passwords (or single value for all hosts)
-#
-# Optional variables:
-# - CLICKHOUSE_NAME: Comma-separated list of custom names for hosts
-# - CLICKHOUSE_MAX_EXECUTION_TIME: Query timeout in seconds (default: 60)
-# - CLICKHOUSE_TZ: Timezone for ClickHouse queries
-# - OPENROUTER_REFERER: App URL for OpenRouter attribution (https://openrouter.ai/docs/app-attribution)
-# - OPENROUTER_APP_NAME: App display name for OpenRouter rankings/logs
+# Secrets (sensitive, set via `wrangler secret put <env>`):
+#   - CLICKHOUSE_PASSWORD: Comma-separated list of passwords (or single value for all hosts)
+#   - LLM_API_KEY: API key for LLM provider (OpenRouter, Anthropic, etc.)
 #
 # Example .dev.vars:
-# CLICKHOUSE_HOST=http://localhost:8123
-# CLICKHOUSE_USER=default
-# CLICKHOUSE_PASSWORD=your-password
+#   CLICKHOUSE_HOST=http://localhost:8123
+#   CLICKHOUSE_USER=default
+#   LLM_API_KEY=sk-...
+#   OPENROUTER_REFERER=https://your-app.com
+#   OPENROUTER_APP_NAME=Your App Name
+#
+# Then set secret:
+#   wrangler secret put CLICKHOUSE_PASSWORD --env development
+# ─────────────────────────────────────────────────────────────────────────────
 
 [vars]
 # ClickHouse connection (non-sensitive)
