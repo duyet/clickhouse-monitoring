@@ -820,12 +820,8 @@ export function AgentsChatArea({
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
                 ))}
-                {/* Show typing indicator during streaming when assistant message is minimal */}
-                {status === 'streaming' && (
-                  <StreamingTypingIndicator messages={messages} />
-                )}
-                {/* Show skeleton while waiting for first response */}
-                {isLoading && status === 'submitted' && <ChatSkeleton />}
+                {/* Show typing indicator during streaming/submitted when assistant message is minimal */}
+                {isLoading && <StreamingTypingIndicator messages={messages} />}
               </>
             )}
           </ConversationContent>
