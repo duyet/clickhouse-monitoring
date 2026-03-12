@@ -13,28 +13,13 @@ import { useMemo } from 'react'
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
 /**
- * Available OpenAI models
+ * Available OpenAI models (openrouter/free only)
  */
 export const OPENAI_MODELS = {
-  'gpt-4o': {
-    name: 'GPT-4o',
-    description: 'Most capable model for complex tasks',
+  'openrouter/free': {
+    name: 'Free Tier',
+    description: 'Free model via OpenRouter',
     contextLength: 128000,
-  },
-  'gpt-4o-mini': {
-    name: 'GPT-4o Mini',
-    description: 'Fast and efficient model',
-    contextLength: 128000,
-  },
-  'gpt-4-turbo': {
-    name: 'GPT-4 Turbo',
-    description: 'Balanced performance model',
-    contextLength: 128000,
-  },
-  'gpt-3.5-turbo': {
-    name: 'GPT-3.5 Turbo',
-    description: 'Fastest model for simple tasks',
-    contextLength: 16385,
   },
 } as const
 
@@ -44,14 +29,8 @@ export type OpenAIModel = keyof typeof OPENAI_MODELS
  * Get default model from environment or fallback
  */
 function getDefaultModel(): OpenAIModel {
-  // Check environment variable first
-  const envModel = process.env.NEXT_PUBLIC_OPENAI_MODEL
-  if (envModel && envModel in OPENAI_MODELS) {
-    return envModel as OpenAIModel
-  }
-
-  // Fall back to gpt-4o-mini (best balance)
-  return 'gpt-4o-mini'
+  // Always use openrouter/free
+  return 'openrouter/free'
 }
 
 /**

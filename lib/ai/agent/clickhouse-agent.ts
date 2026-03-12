@@ -12,7 +12,7 @@ import { stepCountIs, ToolLoopAgent } from 'ai'
 /**
  * Default model configuration
  */
-const DEFAULT_MODEL = 'gpt-4o-mini'
+const DEFAULT_MODEL = 'openrouter/free'
 const DEFAULT_MAX_STEPS = 10
 
 /**
@@ -20,7 +20,7 @@ const DEFAULT_MAX_STEPS = 10
  */
 export function createClickHouseAgent(options: {
   /**
-   * The model to use for the agent (e.g., 'gpt-4o-mini', 'gpt-4o')
+   * The model to use for the agent (e.g., 'openrouter/free')
    */
   model?: string
 

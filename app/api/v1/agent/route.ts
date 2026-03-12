@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   }
 
   const hostId = typeof body.hostId === 'number' ? body.hostId : 0
-  const model = body.model || process.env.OPENAI_MODEL || 'gpt-4o-mini'
+  const model = body.model || process.env.OPENAI_MODEL || 'openrouter/free'
 
   // Create agent with specified model and host
   const agent = createClickHouseAgent({
