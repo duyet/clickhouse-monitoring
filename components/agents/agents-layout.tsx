@@ -5,14 +5,12 @@ import { AgentsChatArea } from './agents-chat-area'
 import { AgentsSidebar } from './agents-sidebar'
 import { useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { useLLMConfig } from '@/lib/hooks/use-llm-config'
 import { useHostId } from '@/lib/swr'
 
 export function AgentsLayout() {
   const hostId = useHostId()
-  const isMobile = useIsMobile()
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const {
     isConfigured,
     missingKeys,
@@ -39,8 +37,8 @@ export function AgentsLayout() {
 
         <AgentsChatArea
           hostId={hostId}
-          isMobile={isMobile}
-          onMenuClick={() => setIsSidebarOpen(true)}
+          isSidebarOpen={isSidebarOpen}
+          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
         />
       </div>
 

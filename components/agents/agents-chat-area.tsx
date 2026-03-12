@@ -1,12 +1,20 @@
 'use client'
 
-import { Loader2Icon, MenuIcon, SparklesIcon, TrashIcon } from 'lucide-react'
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  Loader2Icon,
+  PanelRightClose,
+  PanelRightOpen,
+  SparklesIcon,
+  TrashIcon,
+} from 'lucide-react'
 
 import type { UIMessage } from 'ai'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import { Suspense, useCallback, useMemo } from 'react'
+import { Suspense, useCallback, useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
@@ -43,7 +51,7 @@ import { cn } from '@/lib/utils'
 
 interface AgentsChatAreaProps {
   readonly hostId: number
-  readonly isMobile: boolean
+  readonly isSidebarOpen: boolean
   readonly onMenuClick: () => void
 }
 
@@ -129,6 +137,7 @@ function ResultTable({
 
 /**
  * Renders a single tool invocation part from the AI SDK UIMessage
+ * with toggleable content for cleaner UI
  */
 function ToolCallPart({
   part,
@@ -149,99 +158,131 @@ function ToolCallPart({
   // Determine state
   const isStarting =
     part.state === 'input-streaming' || part.state === 'input-available'
-  const isStreaming = part.state === 'output-streaming' // NEW: Tool is executing
+  const isStreaming = part.state === 'output-streaming'
   const hasOutput = part.state === 'output-available'
   const hasError = part.state === 'output-error'
 
+  // Auto-expand when streaming, has error, or starting. Collapsed by default for completed.
+  const [isExpanded, setIsExpanded] = useState(
+    isStreaming || hasError || isStarting
+  )
+
+  // Toggle expand/collapse
+  const toggleExpanded = () => setIsExpanded((prev) => !prev)
+
+  // Format input parameters as muted inline text (e.g., "hostId=0")
+  const inputParams = useMemo(() => {
+    if (!part.input || typeof part.input !== 'object') return null
+
+    const inputObj = part.input as Record<string, unknown>
+    const entries = Object.entries(inputObj)
+
+    // For single param like hostId, show "hostId=0"
+    // For multiple params, join with ", "
+    const params = entries
+      .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
+      .join(', ')
+
+    return params
+  }, [part.input])
+
   return (
-    <div className="my-2 rounded-lg border bg-muted/30 overflow-hidden">
-      {/* Tool header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/50">
+    <div className="my-2 rounded-lg border bg-muted/20 overflow-hidden">
+      {/* Tool header - clickable to toggle */}
+      <button
+        onClick={toggleExpanded}
+        className="w-full flex items-center gap-2 px-3 py-2.5 bg-muted/30 hover:bg-muted/50 transition-colors text-left border-b border-border/50"
+      >
+        {/* Expand/collapse icon */}
+        <span className="shrink-0 text-muted-foreground">
+          {isExpanded ? (
+            <ChevronDownIcon className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronRightIcon className="h-3.5 w-3.5" />
+          )}
+        </span>
+
         {/* Status indicator */}
         <div
           className={cn(
-            'h-2 w-2 rounded-full',
-            // Starting state - gray/yellow pulsing
+            'h-2 w-2 rounded-full shrink-0',
             isStarting && 'bg-yellow-500 animate-pulse',
-            // Streaming/Executing state - yellow pulsing faster
             isStreaming && 'bg-yellow-400 animate-ping',
-            // Completed - green
             hasOutput && 'bg-green-500',
-            // Error - red
             hasError && 'bg-red-500'
           )}
         />
-        <span className="text-xs font-medium font-mono">{toolName}</span>
+
+        {/* Tool name with muted input params */}
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-xs font-medium font-mono">{toolName}</span>
+          {inputParams && (
+            <span className="text-xs text-muted-foreground/70 font-mono truncate">
+              {inputParams}
+            </span>
+          )}
+        </div>
 
         {/* Status badge */}
-        {isStreaming && (
-          <Badge
-            variant="outline"
-            className="text-[10px] ml-auto text-yellow-600"
-          >
-            Executing...
-          </Badge>
-        )}
-        {hasOutput && (
-          <Badge
-            variant="outline"
-            className="text-[10px] ml-auto text-green-600"
-          >
-            ✓ Done
-          </Badge>
-        )}
-        {hasError && (
-          <Badge variant="outline" className="text-[10px] ml-auto text-red-600">
-            ✗ Failed
-          </Badge>
-        )}
-        {!isStarting && !isStreaming && !hasOutput && !hasError && (
-          <Badge variant="outline" className="text-[10px] ml-auto">
-            {String(part.state)}
-          </Badge>
-        )}
-      </div>
-
-      {/* Tool input */}
-      {Boolean(part.input) && (
-        <div className="px-3 py-2 border-b">
-          <div className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
-            Input
-          </div>
-          <pre className="text-xs whitespace-pre-wrap break-all max-h-32 overflow-auto font-mono text-muted-foreground">
-            {typeof part.input === 'string'
-              ? part.input
-              : JSON.stringify(part.input as Record<string, unknown>, null, 2)}
-          </pre>
+        <div className="ml-auto flex items-center gap-2">
+          {isStreaming && (
+            <Badge
+              variant="outline"
+              className="text-[10px] text-yellow-600 shrink-0"
+            >
+              Executing...
+            </Badge>
+          )}
+          {hasOutput && (
+            <Badge
+              variant="outline"
+              className="text-[10px] text-green-600 shrink-0"
+            >
+              ✓ Done
+            </Badge>
+          )}
+          {hasError && (
+            <Badge
+              variant="outline"
+              className="text-[10px] text-red-600 shrink-0"
+            >
+              ✗ Failed
+            </Badge>
+          )}
         </div>
-      )}
+      </button>
 
-      {/* Streaming state - show skeleton */}
-      {isStreaming && (
-        <div className="px-3 py-4">
-          <div className="flex items-center gap-2">
-            <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
-            <span className="text-xs text-muted-foreground">
-              Executing {toolName}...
-            </span>
-          </div>
-        </div>
-      )}
+      {/* Collapsible content */}
+      {isExpanded && (
+        <div className="border-t border-border/50">
+          {/* Streaming state */}
+          {isStreaming && (
+            <div className="px-3 py-3">
+              <div className="flex items-center gap-2">
+                <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
+                <span className="text-xs text-muted-foreground">
+                  Executing {toolName}...
+                </span>
+              </div>
+            </div>
+          )}
 
-      {/* Tool output */}
-      {hasOutput && Boolean(part.output) && (
-        <div className="px-3 py-2">
-          <div className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
-            Output
-          </div>
-          {renderToolOutput(part.output)}
-        </div>
-      )}
+          {/* Tool output */}
+          {hasOutput && Boolean(part.output) && (
+            <div className="px-3 py-2">
+              <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+                Output
+              </div>
+              {renderToolOutput(part.output)}
+            </div>
+          )}
 
-      {/* Tool error */}
-      {hasError && Boolean(part.errorText) && (
-        <div className="px-3 py-2 text-sm text-destructive">
-          {String(part.errorText)}
+          {/* Tool error */}
+          {hasError && Boolean(part.errorText) && (
+            <div className="px-3 py-2 text-sm text-destructive">
+              {String(part.errorText)}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -250,6 +291,21 @@ function ToolCallPart({
 
 function renderToolOutput(output: unknown) {
   if (!output) return null
+
+  // Handle direct array output (e.g., list_databases, list_tables, get_table_schema)
+  if (Array.isArray(output) && output.length > 0) {
+    const firstItem = output[0] as Record<string, unknown>
+    if (typeof firstItem === 'object' && firstItem !== null) {
+      return (
+        <div>
+          <div className="text-xs text-muted-foreground mb-2">
+            {output.length} {output.length === 1 ? 'row' : 'rows'}
+          </div>
+          <ResultTable rows={output as unknown[]} maxRows={100} />
+        </div>
+      )
+    }
+  }
 
   const outputObj = output as Record<string, unknown>
 
@@ -431,7 +487,7 @@ const DEFAULT_SUGGESTIONS = [
 
 export function AgentsChatArea({
   hostId,
-  isMobile,
+  isSidebarOpen,
   onMenuClick,
 }: AgentsChatAreaProps) {
   // Get the selected model from localStorage
@@ -473,16 +529,19 @@ export function AgentsChatArea({
       {/* Header */}
       <div className="flex items-center justify-between border-b px-3 sm:px-4 py-3 shrink-0">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          {isMobile && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onMenuClick}
-              className="h-8 w-8 shrink-0"
-            >
-              <MenuIcon className="h-4 w-4" />
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onMenuClick}
+            className="h-8 w-8 shrink-0"
+            title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+          >
+            {isSidebarOpen ? (
+              <PanelRightClose className="h-4 w-4" />
+            ) : (
+              <PanelRightOpen className="h-4 w-4" />
+            )}
+          </Button>
           <div className="flex items-center gap-2 min-w-0">
             <SparklesIcon className="h-5 w-5 text-purple-500 shrink-0" />
             <h2 className="font-semibold truncate text-sm sm:text-base">

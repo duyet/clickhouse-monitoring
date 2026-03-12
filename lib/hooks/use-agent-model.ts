@@ -17,8 +17,8 @@ const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
  */
 export const OPENAI_MODELS = {
   'openrouter/free': {
-    name: 'Free Tier',
-    description: 'Free model via OpenRouter',
+    name: 'OpenRouter Free',
+    description: '',
     contextLength: 128000,
   },
   'nvidia/nemotron-3-super-120b-a12b:free': {

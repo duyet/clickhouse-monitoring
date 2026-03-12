@@ -1,10 +1,11 @@
 'use client'
 
-import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronRightIcon, XIcon } from 'lucide-react'
 
 import { AgentSettings } from './agent-settings'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Collapsible,
   CollapsibleContent,
@@ -163,8 +164,24 @@ export function AgentsSidebar({
   }
 
   return (
-    <div className="w-72 lg:w-80 border-l h-full shrink-0 hidden md:block">
-      {content}
-    </div>
+    <>
+      {isOpen ? (
+        <div className="w-72 lg:w-80 border-l h-full shrink-0 hidden md:flex flex-col">
+          {/* Header with close button */}
+          <div className="flex items-center justify-between border-b px-4 py-3 shrink-0">
+            <h3 className="font-semibold text-sm">Agent Settings</h3>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onOpenChange?.(false)}
+              className="h-7 w-7"
+            >
+              <XIcon className="h-4 w-4" />
+            </Button>
+          </div>
+          {content}
+        </div>
+      ) : null}
+    </>
   )
 }
