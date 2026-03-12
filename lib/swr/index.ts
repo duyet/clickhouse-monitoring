@@ -31,6 +31,13 @@ export {
 export { useFetchData } from './use-fetch-data'
 export { useHostId } from './use-host'
 export {
+  type McpResource,
+  type McpServerInfo,
+  type McpServerInfoResult,
+  type McpTool,
+  useMcpServerInfo,
+} from './use-mcp-server-info'
+export {
   type OverviewData,
   type UseOverviewDataOptions,
   type UseOverviewDataResult,
