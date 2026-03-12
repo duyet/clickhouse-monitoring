@@ -2,7 +2,6 @@
 
 import { ChevronDownIcon, ChevronRightIcon, XIcon } from 'lucide-react'
 
-import { AgentSettings } from './agent-settings'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -32,9 +31,6 @@ function HostInfoSection({ hostId }: { readonly hostId: number }) {
 
   return (
     <div className="mb-4">
-      <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-        Current Host
-      </h3>
       <Badge variant="secondary" className="text-sm">
         {currentHost?.name || `Host ${hostId}`}
       </Badge>
@@ -138,14 +134,6 @@ export function AgentsSidebar({
     <div className="h-full overflow-auto">
       <div className="p-4 space-y-4">
         <HostInfoSection hostId={hostId} />
-
-        {/* Model Settings */}
-        <div className="border-b pb-4">
-          <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-            Model Settings
-          </h3>
-          <AgentSettings />
-        </div>
 
         <ToolsSection />
         <SuggestedPromptsSection />

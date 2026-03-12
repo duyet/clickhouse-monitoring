@@ -9,6 +9,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
   SparklesIcon,
+  SquareIcon,
   TrashIcon,
 } from 'lucide-react'
 
@@ -614,21 +615,6 @@ export function AgentsChatArea({
     }),
   })
 
-  // Debug logging for messages
-  useEffect(() => {
-    console.log(
-      '[ChatArea] Messages:',
-      messages.map((m) => ({
-        id: m.id,
-        role: m.role,
-        partsCount: m.parts?.length || 0,
-        parts: m.parts?.map((p) => ({ type: p.type, hasText: 'text' in p })),
-      }))
-    )
-    console.log('[ChatArea] Status:', status)
-    console.log('[ChatArea] Error:', error)
-  }, [messages, status, error])
-
   // Ref to track last saved messages to avoid infinite loops
   const lastSavedMessagesRef = useRef<UIMessage[]>([])
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -718,49 +704,50 @@ export function AgentsChatArea({
       {/* Header (hidden when in page-level layout) */}
       {!hideHeader && (
         <div className="flex items-center justify-between border-b px-3 sm:px-4 py-3 shrink-0">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onMenuClick}
-              className="h-8 w-8 shrink-0"
-              title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-            >
-              {isSidebarOpen ? (
-                <PanelRightClose className="h-4 w-4" />
-              ) : (
-                <PanelRightOpen className="h-4 w-4" />
-              )}
-            </Button>
-            <div className="flex items-center gap-2 min-w-0">
-              <SparklesIcon className="h-5 w-5 text-purple-500 shrink-0" />
-              <h2 className="font-semibold truncate text-sm sm:text-base">
-                AI Agent
-              </h2>
-              <span className="text-xs text-muted-foreground shrink-0 hidden xs:inline">
-                Host {hostId}
-              </span>
-            </div>
+          {/* Left: Toggle button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onMenuClick}
+            className="h-8 w-8 shrink-0"
+            title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+          >
+            {isSidebarOpen ? (
+              <PanelRightClose className="h-4 w-4" />
+            ) : (
+              <PanelRightOpen className="h-4 w-4" />
+            )}
+          </Button>
+
+          {/* Center: AI Agent title */}
+          <div className="flex items-center gap-2 min-w-0">
+            <SparklesIcon className="h-5 w-5 text-purple-500 shrink-0" />
+            <h2 className="font-semibold truncate text-sm sm:text-base">
+              AI Agent
+            </h2>
           </div>
-          <div className="flex items-center gap-1 shrink-0 ml-2">
+
+          {/* Right: Stop (when loading) and Clear */}
+          <div className="flex items-center gap-1 shrink-0">
             {isLoading && (
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={stop}
-                className="h-8 text-xs"
+                className="h-8 w-8"
+                title="Stop generation"
               >
-                Stop
+                <SquareIcon className="h-4 w-4" />
               </Button>
             )}
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={handleClear}
-              className="h-8 text-xs"
+              className="h-8 w-8"
+              title="Clear conversation"
             >
-              <TrashIcon className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Clear</span>
+              <TrashIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -772,21 +759,22 @@ export function AgentsChatArea({
           {isLoading && (
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={stop}
-              className="h-7 text-xs"
+              className="h-7 w-7"
+              title="Stop generation"
             >
-              Stop
+              <SquareIcon className="h-3.5 w-3.5" />
             </Button>
           )}
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={handleClear}
-            className="h-7 text-xs"
+            className="h-7 w-7"
+            title="Clear conversation"
           >
-            <TrashIcon className="h-3.5 w-3.5 mr-1" />
-            Clear
+            <TrashIcon className="h-3.5 w-3.5" />
           </Button>
         </div>
       )}
@@ -816,10 +804,6 @@ export function AgentsChatArea({
               </ConversationEmptyState>
             ) : (
               <>
-                {/* Debug: Show message count */}
-                <div className="text-xs text-muted-foreground bg-muted/50 p-1 rounded">
-                  Messages: {messages.length} | Status: {status}
-                </div>
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
                 ))}
