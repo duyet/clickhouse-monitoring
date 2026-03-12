@@ -111,31 +111,13 @@ jobs:
               '> This preview is automatically updated on every push to this PR.',
             ].join('\n');
 
-            // Find existing bot comment to update
-            const { data: comments } = await github.rest.issues.listComments({
+            // Always create a new comment to preserve deployment history
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
+              body,
             });
-            const botComment = comments.find(
-              (c) => c.user?.login === 'github-actions[bot]' && c.body?.includes('Cloudflare Preview Deployment')
-            );
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
 
       - name: Comment failure on PR
         if: always() && (steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure')
@@ -186,30 +168,13 @@ jobs:
               '</details>',
             ].join('\n');
 
-            const { data: comments } = await github.rest.issues.listComments({
+            // Always create a new comment to preserve deployment history
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
+              body,
             });
-            const botComment = comments.find(
-              (c) => c.user?.login === 'github-actions[bot]' && c.body?.includes('Cloudflare Preview Deployment')
-            );
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
 
       - name: Fail job if build or deploy failed
         if: always() && (steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure')
