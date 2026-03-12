@@ -50,7 +50,6 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
 } from '@/components/ai-elements/prompt-input'
-import { Suggestion } from '@/components/ai-elements/suggestion'
 import { DataTable } from '@/components/data-table/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -812,15 +811,22 @@ export const AgentsChatArea = forwardRef<
                 <SparklesIcon className="h-8 w-8 sm:h-12 sm:w-12 text-purple-500" />
               }
             >
-              <div className="flex flex-wrap justify-center gap-2 pt-4 px-2 sm:px-4 max-w-2xl">
-                {DEFAULT_SUGGESTIONS.map((suggestion) => (
-                  <Suggestion
-                    key={suggestion}
-                    suggestion={suggestion}
-                    onClick={handleSuggestionClick}
-                    className="text-xs sm:text-sm whitespace-normal text-left h-auto py-2"
-                  />
-                ))}
+              <div className="pt-6 px-2 sm:px-4 max-w-xl mx-auto w-full">
+                <p className="text-xs text-muted-foreground mb-3 text-center">
+                  Try asking:
+                </p>
+                <ul className="space-y-1">
+                  {DEFAULT_SUGGESTIONS.map((suggestion) => (
+                    <li key={suggestion}>
+                      <button
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="w-full text-left text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md px-3 py-2 transition-colors"
+                      >
+                        {suggestion}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </ConversationEmptyState>
           ) : (
