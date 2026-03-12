@@ -462,12 +462,10 @@ function getStablePartKey(
     return `msg-${messageId}-tool-${p.toolCallId as string}`
   }
 
-  // Text parts: use message ID + type to create stable key
-  // Multiple text parts can exist, so include type but not index
+  // Text parts: include index to ensure uniqueness across multiple text parts
+  // This is necessary because incremental updates can add/remove text parts
   if (p.type === 'text') {
-    // Use a hash of first few chars of text for stability during incremental updates
-    const textPreview = (p.text as string)?.slice(0, 10) || 'empty'
-    return `msg-${messageId}-text-${textPreview.length}`
+    return `msg-${messageId}-text-${index}`
   }
 
   // Step parts: use index (they're separators so position matters)
