@@ -41,11 +41,19 @@
 
 /* Markdown content styling for agent responses */
 .markdown-content {
-  @apply prose prose-sm dark:prose-invert max-w-none;
+  max-width: none;
+  color: oklch(from var(--foreground) l c h);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.markdown-content > * + * {
+  margin-top: 1em;
 }
 
 .markdown-content p {
-  @apply my-3 leading-relaxed;
+  margin: 0.75em 0;
+  line-height: 1.6;
 }
 
 .markdown-content h1,
@@ -54,28 +62,101 @@
 .markdown-content h4,
 .markdown-content h5,
 .markdown-content h6 {
-  @apply font-semibold mt-4 mb-2;
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+.markdown-content h1 {
+  font-size: 1.5rem;
+}
+
+.markdown-content h2 {
+  font-size: 1.25rem;
+}
+
+.markdown-content h3 {
+  font-size: 1.125rem;
 }
 
 .markdown-content ul,
 .markdown-content ol {
-  @apply my-2 ml-4;
+  margin: 0.5em 0;
+  padding-left: 1.5em;
 }
 
 .markdown-content li {
-  @apply my-1;
+  margin: 0.25em 0;
+}
+
+.markdown-content ul {
+  list-style-type: disc;
+}
+
+.markdown-content ol {
+  list-style-type: decimal;
 }
 
 .markdown-content code {
-  @apply text-xs;
+  font-size: 0.75rem;
+  background-color: oklch(from var(--muted) l c h);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
 }
 
 .markdown-content pre {
-  @apply my-3;
+  margin: 0.75em 0;
+  padding: 0.75rem;
+  background-color: oklch(from var(--muted) l c h);
+  border-radius: 0.375rem;
+  overflow-x: auto;
+}
+
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
 }
 
 .markdown-content table {
-  @apply my-3;
+  margin: 0.75em 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markdown-content a {
+  color: oklch(from var(--primary) l c h);
+  text-decoration: underline;
+}
+
+.markdown-content a:hover {
+  text-decoration: none;
+}
+
+.markdown-content blockquote {
+  border-left: 2px solid oklch(from var(--border) l c h);
+  padding-left: 1em;
+  margin: 0.75em 0;
+  color: oklch(from var(--muted-foreground) l c h);
+}
+
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid oklch(from var(--border) l c h);
+  margin: 1.5em 0;
+}
+
+/* Dark mode adjustments */
+.dark .markdown-content {
+  color: oklch(from var(--foreground) l c h);
+}
+
+.dark .markdown-content code {
+  background-color: oklch(from var(--muted) l c h);
+}
+
+.dark .markdown-content pre {
+  background-color: oklch(from var(--muted) l c h);
 }
 
 /* Disable sidebar transitions during resize for instant feedback */
