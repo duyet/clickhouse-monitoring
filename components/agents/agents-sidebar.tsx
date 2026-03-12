@@ -3,6 +3,7 @@
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  DatabaseIcon,
   MonitorIcon,
   XIcon,
 } from 'lucide-react'
@@ -25,12 +26,9 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { useIsMobile } from '@/hooks/use-mobile'
-import {
-  getToolMetadata,
-  SUGGESTED_PROMPTS,
-  TOOL_CATEGORIES,
-} from '@/lib/ai/agent/metadata'
+import { SUGGESTED_PROMPTS } from '@/lib/ai/agent/metadata'
 import { useAgentModel } from '@/lib/hooks/use-agent-model'
+import { useMcpServerInfo } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
 
 interface AgentsSidebarProps {
@@ -101,66 +99,158 @@ function ModelSelector() {
   )
 }
 
-function ToolsSection() {
-  const [openCategories, setOpenCategories] = useState<Set<string>>(
-    new Set(['Schema'])
+function McpToolsSection() {
+  const { data: mcpInfo, isLoading } = useMcpServerInfo()
+  const [openSections, setOpenSections] = useState<Set<string>>(
+    new Set(['Tools'])
   )
 
-  const toggleCategory = (categoryName: string) => {
-    setOpenCategories((prev) => {
+  const toggleSection = (sectionName: string) => {
+    setOpenSections((prev) => {
       const next = new Set(prev)
-      if (next.has(categoryName)) {
-        next.delete(categoryName)
+      if (next.has(sectionName)) {
+        next.delete(sectionName)
       } else {
-        next.add(categoryName)
+        next.add(sectionName)
       }
       return next
     })
   }
 
+  if (isLoading) {
+    return (
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+          Available Tools
+        </h3>
+        <p className="text-xs text-muted-foreground">Loading tools...</p>
+      </div>
+    )
+  }
+
+  if (!mcpInfo) {
+    return (
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+          Available Tools
+        </h3>
+        <p className="text-xs text-muted-foreground">Unable to load tools</p>
+      </div>
+    )
+  }
+
+  // Group tools by category based on name prefix
+  const toolCategories: Record<string, typeof mcpInfo.tools> = {
+    Query: mcpInfo.tools.filter((t) => t.name === 'query'),
+    Schema: mcpInfo.tools.filter(
+      (t) => t.name.startsWith('list_') || t.name.startsWith('get_table_')
+    ),
+    System: mcpInfo.tools.filter(
+      (t) => t.name.startsWith('get_') && t.name !== 'get_table_schema'
+    ),
+  }
+
   return (
     <div className="mb-4">
-      <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-        Available Tools
-      </h3>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-semibold text-muted-foreground">
+          {mcpInfo.name}
+        </h3>
+        <span className="text-xs text-muted-foreground">
+          v{mcpInfo.version}
+        </span>
+      </div>
+
       <div className="space-y-2">
-        {TOOL_CATEGORIES.map((category) => (
-          <Collapsible
-            key={category.name}
-            open={openCategories.has(category.name)}
-            onOpenChange={() => toggleCategory(category.name)}
-          >
-            <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-muted rounded-md transition-colors">
-              <span className="text-sm font-medium flex items-center gap-2">
-                <span>{category.icon}</span>
-                {category.name} Tools
-              </span>
-              {openCategories.has(category.name) ? (
-                <ChevronDownIcon className="h-4 w-4" />
-              ) : (
-                <ChevronRightIcon className="h-4 w-4" />
-              )}
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pl-4 space-y-1 mt-1">
-              {category.tools.map((toolName) => {
-                const tool = getToolMetadata(toolName)
-                return (
+        {/* Resources Section */}
+        <Collapsible
+          open={openSections.has('Resources')}
+          onOpenChange={() => toggleSection('Resources')}
+        >
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-muted rounded-md transition-colors">
+            <span className="text-sm font-medium flex items-center gap-2">
+              <DatabaseIcon className="h-3.5 w-3.5" />
+              Resources ({mcpInfo.resources.length})
+            </span>
+            {openSections.has('Resources') ? (
+              <ChevronDownIcon className="h-4 w-4" />
+            ) : (
+              <ChevronRightIcon className="h-4 w-4" />
+            )}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pl-5 space-y-1 mt-1">
+            {mcpInfo.resources.map((resource) => (
+              <div
+                key={resource.name}
+                className="text-xs text-muted-foreground py-1"
+              >
+                <span className="font-medium text-foreground">
+                  {resource.name}
+                </span>
+                <p className="mt-0.5 opacity-80">{resource.description}</p>
+              </div>
+            ))}
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Tools by Category */}
+        {Object.entries(toolCategories).map(([category, tools]) =>
+          tools.length === 0 ? null : (
+            <Collapsible
+              key={category}
+              open={openSections.has(category)}
+              onOpenChange={() => toggleSection(category)}
+            >
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-muted rounded-md transition-colors">
+                <span className="text-sm font-medium">{category}</span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  ({tools.length})
+                  {openSections.has(category) ? (
+                    <ChevronDownIcon className="h-4 w-4" />
+                  ) : (
+                    <ChevronRightIcon className="h-4 w-4" />
+                  )}
+                </span>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pl-4 space-y-1 mt-1">
+                {tools.map((tool) => (
                   <div
-                    key={toolName}
+                    key={tool.name}
                     className="text-xs text-muted-foreground py-1"
                   >
                     <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                      {toolName}
+                      {tool.name}
                     </code>
-                    <p className="mt-1 text-xs opacity-80">
-                      {tool?.description || ''}
-                    </p>
+                    <p className="mt-1 opacity-80">{tool.description}</p>
+                    {tool.params.length > 0 && (
+                      <div className="mt-1 pl-2 space-y-0.5">
+                        {tool.params.map((param) => (
+                          <div
+                            key={param.name}
+                            className="text-xs"
+                            title={param.description}
+                          >
+                            <span className="text-blue-600 dark:text-blue-400">
+                              {param.name}
+                            </span>
+                            <span className="text-muted-foreground">
+                              :{param.type}
+                            </span>
+                            {!param.required && (
+                              <span className="text-muted-foreground opacity-60">
+                                ?
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )
-              })}
-            </CollapsibleContent>
-          </Collapsible>
-        ))}
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )
+        )}
       </div>
     </div>
   )
@@ -201,8 +291,8 @@ export function AgentsSidebar({
 
         <Separator />
 
-        {/* Tools Section */}
-        <ToolsSection />
+        {/* MCP Tools Section */}
+        <McpToolsSection />
 
         <Separator />
 
