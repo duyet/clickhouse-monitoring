@@ -74,6 +74,25 @@ export function AgentsLayout() {
               onSelect={switchConversation}
               onDelete={deleteConversation}
             />
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-semibold truncate text-sm">AI Agent</span>
+              <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">
+                Host {hostId}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            {/* Clear conversation button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => chatAreaRef.current?.clearMessages()}
+              className="h-8 w-8 shrink-0"
+              title="Clear conversation"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+            {/* Sidebar toggle button */}
             <Button
               variant="ghost"
               size="icon"
@@ -89,22 +108,6 @@ export function AgentsLayout() {
               ) : (
                 <PanelRightOpen className="h-4 w-4" />
               )}
-            </Button>
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="font-semibold truncate text-sm">AI Agent</span>
-              <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">
-                Host {hostId}
-              </span>
-            </div>
-            {/* Clear conversation button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => chatAreaRef.current?.clearMessages()}
-              className="h-8 w-8 shrink-0"
-              title="Clear conversation"
-            >
-              <TrashIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>
