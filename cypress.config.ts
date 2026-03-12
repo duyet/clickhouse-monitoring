@@ -24,6 +24,13 @@ export default defineConfig({
       // 3. Run with NEXT_TURBO=false for coverage builds
       require('@cypress/code-coverage/task')(on, config)
 
+      // Custom task to check environment variables
+      on('task', {
+        checkEnvVar(envVar: string) {
+          return !!process.env[envVar]
+        },
+      })
+
       // The config object must be returned for Cypress to pick up
       // any changed environment variables
       return config

@@ -54,10 +54,21 @@ export function createClickHouseAgent(options: {
     hostId,
   } = options
 
-  // Create OpenAI provider
+  // Detect if using OpenRouter by checking the baseURL
+  const isOpenRouter = (baseURL || process.env.LLM_API_BASE || '').includes(
+    'openrouter'
+  )
+
+  // Create OpenAI provider with optional OpenRouter headers
   const openai = createOpenAI({
     apiKey: apiKey || process.env.LLM_API_KEY,
     baseURL: baseURL || process.env.LLM_API_BASE,
+    ...(isOpenRouter && {
+      headers: {
+        'HTTP-Referer': 'https://clickhouse.duyet.net',
+        'X-OpenRouter-Title': 'ClickHouse Monitoring',
+      },
+    }),
   })
 
   // Get the model instance
