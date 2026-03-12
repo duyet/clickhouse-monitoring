@@ -1,11 +1,11 @@
 'use client'
 
-import { PanelRightClose, PanelRightOpen, TrashIcon } from 'lucide-react'
+import { PanelRightClose, PanelRightOpen } from 'lucide-react'
 
 import type { ConversationListItem } from './conversation-switcher'
 
 import { AgentConfigGuidance } from './agent-config-guidance'
-import { AgentsChatArea, type AgentsChatAreaRef } from './agents-chat-area'
+import { AgentsChatArea } from './agents-chat-area'
 import { AgentsSidebar } from './agents-sidebar'
 import { ConversationSwitcher } from './conversation-switcher'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -18,9 +18,6 @@ import { useHostId } from '@/lib/swr'
 export function AgentsLayout() {
   const hostId = useHostId()
   const isMobile = useIsMobile()
-
-  // Ref for accessing chat area methods (clear messages)
-  const chatAreaRef = useRef<AgentsChatAreaRef>(null)
 
   // Track if user manually toggled sidebar (to prevent auto-closing on resize)
   const userToggledRef = useRef(false)
@@ -74,25 +71,6 @@ export function AgentsLayout() {
               onSelect={switchConversation}
               onDelete={deleteConversation}
             />
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="font-semibold truncate text-sm">AI Agent</span>
-              <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">
-                Host {hostId}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            {/* Clear conversation button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => chatAreaRef.current?.clearMessages()}
-              className="h-8 w-8 shrink-0"
-              title="Clear conversation"
-            >
-              <TrashIcon className="h-4 w-4" />
-            </Button>
-            {/* Sidebar toggle button */}
             <Button
               variant="ghost"
               size="icon"
@@ -109,6 +87,12 @@ export function AgentsLayout() {
                 <PanelRightOpen className="h-4 w-4" />
               )}
             </Button>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-semibold truncate text-sm">AI Agent</span>
+              <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">
+                Host {hostId}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -120,7 +104,6 @@ export function AgentsLayout() {
         )}
 
         <AgentsChatArea
-          ref={chatAreaRef}
           hostId={hostId}
           isSidebarOpen={isSidebarOpen}
           onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}

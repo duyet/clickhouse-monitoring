@@ -5,10 +5,10 @@
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  ExternalLinkIcon,
   Loader2Icon,
   PanelRightClose,
   PanelRightOpen,
+  RefreshCwIcon,
   SparklesIcon,
   SquareIcon,
   TrashIcon,
@@ -18,15 +18,7 @@ import type { UIMessage } from 'ai'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
@@ -54,13 +46,6 @@ import {
 import { DataTable } from '@/components/data-table/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
 import { cn } from '@/lib/utils'
@@ -74,11 +59,6 @@ interface AgentsChatAreaProps {
   readonly isSidebarOpen: boolean
   readonly onMenuClick: () => void
   readonly hideHeader?: boolean
-}
-
-// Exposed methods via ref
-export interface AgentsChatAreaRef {
-  clearMessages: () => void
 }
 
 // Note: Chat state is managed internally by useChat when props are not provided.
@@ -108,52 +88,17 @@ function TypingIndicator() {
 }
 
 /**
- * Simple summary row for query results - shows row count and duration
- * Click to open modal with full table
+ * Enhanced result table using the full-featured DataTable component.
+ * Supports sorting, pagination, column filtering, and virtualization for large datasets.
  */
-function QueryResultSummary({
-  rowCount,
-  duration,
-  onViewDetails,
-}: {
-  readonly rowCount: number
-  readonly duration?: number
-  readonly onViewDetails: () => void
-}) {
-  return (
-    <button
-      onClick={onViewDetails}
-      className="w-full flex items-center justify-between gap-3 px-3 py-2 hover:bg-muted/50 rounded-md transition-colors text-left group"
-    >
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span>{rowCount} rows</span>
-        {duration && <span>· {duration}ms</span>}
-      </div>
-      <div className="flex items-center gap-1 text-xs text-muted-foreground/70 group-hover:text-foreground transition-colors">
-        View results
-        <ExternalLinkIcon className="h-3.5 w-3.5" />
-      </div>
-    </button>
-  )
-}
-
-/**
- * Modal dialog showing full query results with DataTable
- */
-function QueryResultModal({
+function ResultTable({
   rows,
-  rowCount,
-  duration,
-  isOpen,
-  onClose,
+  maxRows = 100,
 }: {
   readonly rows: readonly unknown[]
-  readonly rowCount: number
-  readonly duration?: number
-  readonly isOpen: boolean
-  readonly onClose: () => void
+  readonly maxRows?: number
 }) {
-  const displayRows = rows as Record<string, unknown>[]
+  const displayRows = rows.slice(0, maxRows) as Record<string, unknown>[]
 
   // Extract column names from first row
   const columns = useMemo(() => {
@@ -175,40 +120,29 @@ function QueryResultModal({
 
   if (columns.length === 0) {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Query Results</DialogTitle>
-            <DialogDescription>No columns to display</DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
+      <div className="text-center text-muted-foreground py-4 text-sm">
+        No columns to display
+      </div>
     )
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-hidden flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle>Query Results</DialogTitle>
-          <DialogDescription>
-            {rowCount} rows
-            {duration && ` · ${duration}ms`}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex-1 overflow-auto">
-          <DataTable
-            data={displayRows}
-            queryConfig={queryConfig}
-            context={{}}
-            defaultPageSize={rows.length > 50 ? 25 : 10}
-            showSQL={false}
-            enableColumnFilters={true}
-            enableColumnReordering={true}
-          />
+    <div className="border rounded-md">
+      <DataTable
+        data={displayRows}
+        queryConfig={queryConfig}
+        context={{}}
+        defaultPageSize={rows.length > 50 ? 25 : 10}
+        showSQL={false}
+        enableColumnFilters={true}
+        enableColumnReordering={true}
+      />
+      {rows.length > maxRows && (
+        <div className="text-center text-xs text-muted-foreground py-2 px-3 border-t bg-muted/30">
+          Showing {maxRows} of {rows.length} rows
         </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </div>
   )
 }
 
@@ -239,29 +173,14 @@ function ToolCallPart({
   const hasOutput = part.state === 'output-available'
   const hasError = part.state === 'output-error'
 
-  // Track if user has manually toggled (to avoid overriding their choice)
-  const userToggledRef = useRef(false)
-
-  // Auto-expand during streaming/error/starting, but allow manual toggle
+  // Use derived state for auto-expand behavior (no useState + useEffect needed)
+  // Track if user manually toggled to closed
+  const [userToggledClosed, setUserToggledClosed] = useState(false)
   const shouldAutoExpand = isStreaming || hasError || isStarting
-  const [isExpanded, setIsExpanded] = useState(shouldAutoExpand)
+  const isExpanded = shouldAutoExpand && !userToggledClosed
 
-  // Auto-expand when state changes, unless user has manually toggled
-  useEffect(() => {
-    if (shouldAutoExpand) {
-      setIsExpanded(true)
-      userToggledRef.current = false // Reset on state change
-    }
-  }, [shouldAutoExpand])
-
-  // Generate stable ID for aria-controls
-  const contentId = `tool-content-${part.toolCallId}`
-
-  // Toggle expand/collapse (user override)
-  const toggleExpanded = () => {
-    userToggledRef.current = true
-    setIsExpanded((prev) => !prev)
-  }
+  // Toggle expand/collapse
+  const toggleExpanded = () => setUserToggledClosed((prev) => !prev)
 
   // Format input parameters as muted inline text (e.g., "hostId=0")
   const inputParams = useMemo(() => {
@@ -284,8 +203,6 @@ function ToolCallPart({
       {/* Tool header - clickable to toggle */}
       <button
         onClick={toggleExpanded}
-        aria-expanded={isExpanded}
-        aria-controls={contentId}
         className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left"
       >
         {/* Expand/collapse icon */}
@@ -347,72 +264,40 @@ function ToolCallPart({
         </div>
       </button>
 
-      {/* Collapsible content - always rendered for a11y, hidden via CSS when collapsed */}
-      <div
-        id={contentId}
-        className={isExpanded ? 'bg-background/60' : 'hidden'}
-        aria-hidden={!isExpanded}
-      >
-        {/* Streaming state */}
-        {isStreaming && (
-          <div className="px-3 py-3">
-            <div className="flex items-center gap-2">
-              <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
-              <span className="text-xs text-muted-foreground">
-                Executing {toolName}...
-              </span>
+      {/* Collapsible content */}
+      {isExpanded && (
+        <div className="bg-background/60">
+          {/* Streaming state */}
+          {isStreaming && (
+            <div className="px-3 py-3">
+              <div className="flex items-center gap-2">
+                <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
+                <span className="text-xs text-muted-foreground">
+                  Executing {toolName}...
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Tool output */}
-        {hasOutput && part.output != null && (
-          <div className="px-3 py-2">
-            <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
-              Output
+          {/* Tool output */}
+          {hasOutput && part.output != null && (
+            <div className="px-3 py-2">
+              <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+                Output
+              </div>
+              {renderToolOutput(part.output)}
             </div>
-            {renderToolOutput(part.output)}
-          </div>
-        )}
+          )}
 
-        {/* Tool error */}
-        {hasError && Boolean(part.errorText) && (
-          <div className="px-3 py-2 text-sm text-destructive">
-            {String(part.errorText)}
-          </div>
-        )}
-      </div>
+          {/* Tool error */}
+          {hasError && Boolean(part.errorText) && (
+            <div className="px-3 py-2 text-sm text-destructive">
+              {String(part.errorText)}
+            </div>
+          )}
+        </div>
+      )}
     </div>
-  )
-}
-
-// Internal component to render table results with modal
-function TableResultWithModal({
-  rows,
-  rowCount,
-  duration,
-}: {
-  readonly rows: readonly unknown[]
-  readonly rowCount: number
-  readonly duration?: number
-}) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-
-  return (
-    <>
-      <QueryResultSummary
-        rowCount={rowCount}
-        duration={duration}
-        onViewDetails={() => setIsModalOpen(true)}
-      />
-      <QueryResultModal
-        rows={rows}
-        rowCount={rowCount}
-        duration={duration}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
-    </>
   )
 }
 
@@ -421,17 +306,17 @@ function renderToolOutput(output: unknown) {
 
   // Handle direct array output (e.g., list_databases, list_tables, get_table_schema)
   if (Array.isArray(output) && output.length > 0) {
-    const firstItem = output[0]
-    // Check if array contains objects (table-like data) vs primitives
-    const isArrayOfObjects =
-      typeof firstItem === 'object' &&
-      firstItem !== null &&
-      !Array.isArray(firstItem)
-
-    if (isArrayOfObjects) {
-      return <TableResultWithModal rows={output} rowCount={output.length} />
+    const firstItem = output[0] as Record<string, unknown>
+    if (typeof firstItem === 'object' && firstItem !== null) {
+      return (
+        <div>
+          <div className="text-xs text-muted-foreground mb-2">
+            {output.length} {output.length === 1 ? 'row' : 'rows'}
+          </div>
+          <ResultTable rows={output as unknown[]} maxRows={100} />
+        </div>
+      )
     }
-    // Array of primitives or mixed types - fall through to JSON rendering
   }
 
   const outputObj = output as Record<string, unknown>
@@ -467,11 +352,15 @@ function renderToolOutput(output: unknown) {
   // Check if output has rows (query result)
   if (Array.isArray(outputObj.rows) && outputObj.rows.length > 0) {
     return (
-      <TableResultWithModal
-        rows={outputObj.rows}
-        rowCount={Number(outputObj.rowCount ?? outputObj.rows.length)}
-        duration={outputObj.duration as number | undefined}
-      />
+      <div>
+        <div className="text-xs text-muted-foreground mb-2">
+          {String(outputObj.rowCount ?? '')} rows
+          {Boolean(outputObj.duration) && (
+            <span> · {String(outputObj.duration)}ms</span>
+          )}
+        </div>
+        <ResultTable rows={outputObj.rows as unknown[]} maxRows={100} />
+      </div>
     )
   }
 
@@ -574,96 +463,128 @@ function getStablePartKey(
 /**
  * Renders a single UIMessage with its parts (text, tool calls, etc.)
  */
-function ChatMessage({ message }: { readonly message: UIMessage }) {
+function ChatMessage({
+  message,
+  isLastUserMessage,
+  onRegenerate,
+}: {
+  readonly message: UIMessage
+  readonly isLastUserMessage?: boolean
+  readonly onRegenerate?: () => void
+}) {
   const isUser = message.role === 'user'
 
   return (
     <Message from={isUser ? 'user' : 'assistant'}>
       <MessageContent>
-        {message.parts.map((part, i) => {
-          const stableKey = getStablePartKey(message.id, part, i)
+        <div
+          className={cn(
+            'relative group',
+            isLastUserMessage && isUser && onRegenerate && 'pr-8'
+          )}
+        >
+          {message.parts.map((part, i) => {
+            const stableKey = getStablePartKey(message.id, part, i)
 
-          // Text part - render as markdown for assistant messages
-          if (part.type === 'text') {
-            // For user messages, use MessageResponse (plain text)
-            if (isUser) {
+            // Text part - render as markdown for assistant messages
+            if (part.type === 'text') {
+              // For user messages, use MessageResponse (plain text)
+              if (isUser) {
+                return (
+                  <MessageResponse key={stableKey}>{part.text}</MessageResponse>
+                )
+              }
+
+              // For assistant messages, use markdown rendering
               return (
-                <MessageResponse key={stableKey}>{part.text}</MessageResponse>
+                <div key={stableKey} className="markdown-content">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeHighlight]}
+                    components={{
+                      // Custom table styling
+                      table: ({ children }) => (
+                        <div className="overflow-x-auto my-2">
+                          <table className="min-w-full border-collapse border border-border">
+                            {children}
+                          </table>
+                        </div>
+                      ),
+                      thead: ({ children }) => (
+                        <thead className="bg-muted">{children}</thead>
+                      ),
+                      th: ({ children }) => (
+                        <th className="border border-border px-3 py-2 text-left text-sm font-medium">
+                          {children}
+                        </th>
+                      ),
+                      td: ({ children }) => (
+                        <td className="border border-border px-3 py-2 text-sm">
+                          {children}
+                        </td>
+                      ),
+                      // Code block styling
+                      pre: ({ children }) => (
+                        <pre className="bg-muted rounded-md p-3 my-2 overflow-x-auto">
+                          {children}
+                        </pre>
+                      ),
+                      code: ({ className, children }) => {
+                        // Check if this is inline code (no language class)
+                        const isInline = !className || className === 'language-'
+                        return isInline ? (
+                          <code className="bg-muted px-1 py-0.5 rounded text-sm">
+                            {children}
+                          </code>
+                        ) : (
+                          <code className={className}>{children}</code>
+                        )
+                      },
+                    }}
+                  >
+                    {part.text}
+                  </ReactMarkdown>
+                </div>
               )
             }
 
-            // For assistant messages, use markdown rendering
-            return (
-              <div key={stableKey} className="markdown-content">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeHighlight]}
-                  components={{
-                    // Custom table styling
-                    table: ({ children }) => (
-                      <div className="overflow-x-auto my-2">
-                        <table className="min-w-full border-collapse border border-border">
-                          {children}
-                        </table>
-                      </div>
-                    ),
-                    thead: ({ children }) => (
-                      <thead className="bg-muted">{children}</thead>
-                    ),
-                    th: ({ children }) => (
-                      <th className="border border-border px-3 py-2 text-left text-sm font-medium">
-                        {children}
-                      </th>
-                    ),
-                    td: ({ children }) => (
-                      <td className="border border-border px-3 py-2 text-sm">
-                        {children}
-                      </td>
-                    ),
-                    // Code block styling
-                    pre: ({ children }) => (
-                      <pre className="bg-muted rounded-md p-3 my-2 overflow-x-auto">
-                        {children}
-                      </pre>
-                    ),
-                    code: ({ className, children }) => {
-                      // Check if this is inline code (no language class)
-                      const isInline = !className || className === 'language-'
-                      return isInline ? (
-                        <code className="bg-muted px-1 py-0.5 rounded text-sm">
-                          {children}
-                        </code>
-                      ) : (
-                        <code className={className}>{children}</code>
-                      )
-                    },
-                  }}
-                >
-                  {part.text}
-                </ReactMarkdown>
-              </div>
-            )
-          }
+            // Tool call part (dynamic tool - from our custom agent)
+            if (part.type === 'dynamic-tool') {
+              return <ToolCallPart key={stableKey} part={part as any} />
+            }
 
-          // Tool call part (dynamic tool - from our custom agent)
-          if (part.type === 'dynamic-tool') {
-            return <ToolCallPart key={stableKey} part={part as any} />
-          }
+            // Static typed tool call part (type starts with 'tool-')
+            if (
+              typeof part.type === 'string' &&
+              part.type.startsWith('tool-')
+            ) {
+              return <ToolCallPart key={stableKey} part={part as any} />
+            }
 
-          // Static typed tool call part (type starts with 'tool-')
-          if (typeof part.type === 'string' && part.type.startsWith('tool-')) {
-            return <ToolCallPart key={stableKey} part={part as any} />
-          }
+            // Step start part
+            if (part.type === 'step-start') {
+              return (
+                <div
+                  key={stableKey}
+                  className="border-t border-muted/30 my-2"
+                />
+              )
+            }
 
-          // Step start part
-          if (part.type === 'step-start') {
-            return (
-              <div key={stableKey} className="border-t border-muted/30 my-2" />
-            )
-          }
+            return null
+          })}
 
-          return null
-        })}
+          {/* Refresh icon button - shown on hover for last user message */}
+          {isLastUserMessage && isUser && onRegenerate && (
+            <button
+              onClick={onRegenerate}
+              className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+              title="Regenerate response"
+            >
+              <RefreshCwIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
+        </div>
       </MessageContent>
     </Message>
   )
@@ -685,18 +606,12 @@ const DEFAULT_SUGGESTIONS = [
 // Main Component
 // ============================================================================
 
-export const AgentsChatArea = forwardRef<
-  AgentsChatAreaRef,
-  AgentsChatAreaProps
->(function AgentsChatArea(
-  {
-    hostId,
-    isSidebarOpen,
-    onMenuClick,
-    hideHeader = false,
-  }: AgentsChatAreaProps,
-  ref
-) {
+export function AgentsChatArea({
+  hostId,
+  isSidebarOpen,
+  onMenuClick,
+  hideHeader = false,
+}: AgentsChatAreaProps) {
   // Get conversation context for loading/saving messages
   const { conversations, currentConversationId, updateMessages } =
     useConversationContext()
@@ -795,14 +710,42 @@ export const AgentsChatArea = forwardRef<
     [handleSubmit]
   )
 
-  // Expose clear function via ref for parent components
-  useImperativeHandle(
-    ref,
-    () => ({
-      clearMessages: handleClear,
-    }),
-    [handleClear]
-  )
+  const handleRegenerate = useCallback(() => {
+    // Stop current generation
+    stop()
+
+    // Find the last user message
+    const lastUserMessage = [...messages]
+      .reverse()
+      .find((m) => m.role === 'user')
+
+    if (lastUserMessage) {
+      // Get text from the last user message
+      const textPart = lastUserMessage.parts.find(
+        (p): p is { type: 'text'; text: string } =>
+          typeof p === 'object' &&
+          p !== null &&
+          'type' in p &&
+          p.type === 'text'
+      )
+
+      if (textPart) {
+        // Remove the last assistant response and user message, then resend
+        const messagesWithoutLastExchange = messages.slice(
+          0,
+          messages.lastIndexOf(lastUserMessage)
+        )
+        setMessages(messagesWithoutLastExchange)
+
+        // Resend the user message
+        setTimeout(() => {
+          sendMessage({
+            parts: [{ type: 'text', text: textPart.text }],
+          })
+        }, 100)
+      }
+    }
+  }, [messages, stop, sendMessage, setMessages])
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -859,16 +802,27 @@ export const AgentsChatArea = forwardRef<
       )}
 
       {/* Compact controls bar (shown when header is hidden) */}
-      {hideHeader && isLoading && (
+      {hideHeader && (isLoading || messages.length > 0) && (
         <div className="flex items-center justify-end gap-1 px-3 py-2 border-b shrink-0">
+          {isLoading && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={stop}
+              className="h-7 w-7"
+              title="Stop generation"
+            >
+              <SquareIcon className="h-3.5 w-3.5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
-            onClick={stop}
+            onClick={handleClear}
             className="h-7 w-7"
-            title="Stop generation"
+            title="Clear conversation"
           >
-            <SquareIcon className="h-3.5 w-3.5" />
+            <TrashIcon className="h-3.5 w-3.5" />
           </Button>
         </div>
       )}
@@ -904,9 +858,24 @@ export const AgentsChatArea = forwardRef<
             </ConversationEmptyState>
           ) : (
             <>
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))}
+              {messages.map((message, index) => {
+                // Find the last user message index
+                const lastUserMessageIndex = messages.findLastIndex(
+                  (m) => m.role === 'user'
+                )
+                const isLastUserMessage = index === lastUserMessageIndex
+
+                return (
+                  <ChatMessage
+                    key={message.id}
+                    message={message}
+                    isLastUserMessage={isLastUserMessage}
+                    onRegenerate={
+                      isLastUserMessage ? handleRegenerate : undefined
+                    }
+                  />
+                )
+              })}
               {/* Show typing indicator during streaming/submitted when assistant message is minimal */}
               {isLoading && <StreamingTypingIndicator messages={messages} />}
             </>
@@ -934,7 +903,31 @@ export const AgentsChatArea = forwardRef<
             ) : null}
           </PromptInputSubmit>
         </PromptInput>
+        {/* Regenerate button during streaming */}
+        {isLoading && messages.length > 0 && (
+          <div className="flex items-center gap-2 mt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRegenerate}
+              className="h-7 text-xs"
+            >
+              <RefreshCwIcon className="h-3 w-3 mr-1" />
+              Regenerate
+            </Button>
+            <span className="text-xs text-muted-foreground">or</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={stop}
+              className="h-7 text-xs"
+            >
+              <SquareIcon className="h-3 w-3 mr-1" />
+              Stop
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )
-})
+}

@@ -1,15 +1,29 @@
 'use client'
 
-import { ChevronDownIcon, ChevronRightIcon, XIcon } from 'lucide-react'
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  MonitorIcon,
+  XIcon,
+} from 'lucide-react'
 
+import { AgentSettings } from './agent-settings'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { useIsMobile } from '@/hooks/use-mobile'
 import {
@@ -25,15 +39,35 @@ interface AgentsSidebarProps {
   onOpenChange?: (open: boolean) => void
 }
 
-function HostInfoSection({ hostId }: { readonly hostId: number }) {
+function HostSelector({ hostId }: { readonly hostId: number }) {
+  const router = useRouter()
   const { hosts } = useHosts()
-  const currentHost = hosts[hostId]
+
+  const handleHostChange = (newHostId: string) => {
+    // Update URL query parameter to switch hosts
+    const url = new URL(window.location.href)
+    url.searchParams.set('host', newHostId)
+    router.push(url.toString())
+  }
 
   return (
     <div className="mb-4">
-      <Badge variant="secondary" className="text-sm">
-        {currentHost?.name || `Host ${hostId}`}
-      </Badge>
+      <label className="text-xs text-muted-foreground mb-1.5 block">Host</label>
+      <Select value={String(hostId)} onValueChange={handleHostChange}>
+        <SelectTrigger className="h-8 text-xs">
+          <SelectValue placeholder="Select host" />
+        </SelectTrigger>
+        <SelectContent>
+          {hosts.map((host, index) => (
+            <SelectItem key={index} value={String(index)} className="text-xs">
+              <div className="flex items-center gap-2">
+                <MonitorIcon className="h-3 w-3" />
+                <span>{host.name || `Host ${index}`}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }
@@ -106,14 +140,14 @@ function ToolsSection() {
 function SuggestedPromptsSection() {
   return (
     <div>
-      <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+      <h3 className="text-xs font-medium text-foreground mb-2">
         Try asking...
       </h3>
-      <ul className="space-y-2">
+      <ul className="space-y-1">
         {SUGGESTED_PROMPTS.map((prompt, i) => (
           <li
             key={i}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer p-2 hover:bg-muted rounded-md"
+            className="text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer rounded px-2 py-1.5"
           >
             {prompt}
           </li>
@@ -133,9 +167,18 @@ export function AgentsSidebar({
   const content = (
     <div className="h-full overflow-auto">
       <div className="p-4 space-y-4">
-        <HostInfoSection hostId={hostId} />
+        {/* Host and Model Settings */}
+        <HostSelector hostId={hostId} />
+        <AgentSettings />
 
+        <Separator />
+
+        {/* Tools Section */}
         <ToolsSection />
+
+        <Separator />
+
+        {/* Suggested Prompts */}
         <SuggestedPromptsSection />
       </div>
     </div>
