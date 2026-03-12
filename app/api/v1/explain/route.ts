@@ -9,7 +9,7 @@
  *   planSettings - Comma-separated key=value pairs for EXPLAIN PLAN settings.
  *                  Valid keys: optimize, header, description, indexes,
  *                  projections, actions, sorting, keep_logical_steps, json,
- *                  input_headers, column_structure, distributed.
+ *                  distributed.
  *                  Values must be 0 or 1. Only non-default values need to be sent.
  *
  * @example
@@ -58,8 +58,6 @@ const VALID_PLAN_SETTING_KEYS = new Set([
   'sorting',
   'keep_logical_steps',
   'json',
-  'input_headers',
-  'column_structure',
   'distributed',
 ])
 
@@ -193,6 +191,13 @@ export async function GET(request: NextRequest): Promise<Response> {
   const planSettingsRaw = searchParams.get('planSettings') || ''
   let settingsClause = ''
 
+  if (planSettingsRaw && modeParam) {
+    return createValidationError(
+      'planSettings cannot be combined with a non-PLAN explain mode',
+      ROUTE_CONTEXT
+    )
+  }
+
   if (planSettingsRaw && !modeParam) {
     const result = parsePlanSettings(planSettingsRaw)
     if ('error' in result) {
@@ -205,7 +210,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     hostId,
     queryLength: query.length,
     mode: modeParam || 'PLAN',
-    planSettings: planSettingsRaw || '(defaults)',
+    planSettings: settingsClause || '(defaults)',
   })
 
   // Build EXPLAIN query.
@@ -213,7 +218,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   // so the settings clause has a valid position in the grammar.
   let explainQuery: string
   if (settingsClause) {
-    explainQuery = `EXPLAIN PLAN ${settingsClause}${query}`
+    explainQuery = `EXPLAIN PLAN ${settingsClause.trim()} ${query}`
   } else if (modeParam) {
     explainQuery = `EXPLAIN ${modeParam} ${query}`
   } else {
