@@ -54,14 +54,14 @@ export async function POST(request: Request) {
   }
 
   const hostId = typeof body.hostId === 'number' ? body.hostId : 0
-  const model = body.model || process.env.OPENAI_MODEL || 'openrouter/free'
+  const model = body.model || process.env.LLM_MODEL || 'openrouter/free'
 
   // Create agent with specified model and host
   const agent = createClickHouseAgent({
     hostId,
     model,
-    apiKey: process.env.OPENAI_API_KEY,
-    baseURL: process.env.OPENAI_API_BASE,
+    apiKey: process.env.LLM_API_KEY,
+    baseURL: process.env.LLM_API_BASE,
   })
 
   // Build UI messages from the user message

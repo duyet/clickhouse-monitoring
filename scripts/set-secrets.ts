@@ -20,6 +20,9 @@ const ENV_FILE_LOCAL = join(process.cwd(), '.env.local')
 //       set as [vars] in wrangler.toml or via Cloudflare Dashboard, not secrets.
 const SECRET_KEYS = [
   'CLICKHOUSE_PASSWORD',
+  // LLM API keys for AI Agent
+  'LLM_API_KEY',
+  'LLM_API_BASE',
   // These are already set in wrangler.toml [vars], so skip them:
   // 'CLICKHOUSE_HOST',
   // 'CLICKHOUSE_USER',

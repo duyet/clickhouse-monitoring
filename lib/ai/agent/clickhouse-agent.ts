@@ -25,12 +25,12 @@ export function createClickHouseAgent(options: {
   model?: string
 
   /**
-   * OpenAI API key (falls back to OPENAI_API_KEY env var)
+   * LLM API key (falls back to LLM_API_KEY env var)
    */
   apiKey?: string
 
   /**
-   * Base URL for OpenAI API (for custom endpoints)
+   * Base URL for LLM API (for custom endpoints like OpenRouter)
    */
   baseURL?: string
 
@@ -54,8 +54,8 @@ export function createClickHouseAgent(options: {
 
   // Create OpenAI provider
   const openai = createOpenAI({
-    apiKey,
-    baseURL: baseURL || process.env.OPENAI_API_BASE,
+    apiKey: apiKey || process.env.LLM_API_KEY,
+    baseURL: baseURL || process.env.LLM_API_BASE,
   })
 
   // Get the model instance
