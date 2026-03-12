@@ -27,7 +27,7 @@ import { mapErrorTypeToStatusCode } from '@/lib/api/shared/status-code-mapper'
 import { getAndValidateHostId } from '@/lib/api/shared/validators'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchData, QUERY_COMMENT } from '@/lib/clickhouse'
 import { debug, error as logError } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
@@ -191,9 +191,11 @@ export async function GET(request: NextRequest): Promise<Response> {
   const planSettingsRaw = searchParams.get('planSettings') || ''
   let settingsClause = ''
 
-  if (planSettingsRaw && modeParam) {
+  // planSettings can only be used with PLAN mode (empty string)
+  // modeParam='' means PLAN, so we allow planSettings with modeParam=''
+  if (planSettingsRaw && modeParam && modeParam !== '') {
     return createValidationError(
-      'planSettings cannot be combined with a non-PLAN explain mode',
+      'planSettings can only be used with PLAN mode (empty mode parameter)',
       ROUTE_CONTEXT
     )
   }
@@ -216,13 +218,14 @@ export async function GET(request: NextRequest): Promise<Response> {
   // Build EXPLAIN query.
   // When plan settings are provided, use explicit "EXPLAIN PLAN <settings>"
   // so the settings clause has a valid position in the grammar.
+  // All queries include QUERY_COMMENT for attribution and tracking.
   let explainQuery: string
   if (settingsClause) {
-    explainQuery = `EXPLAIN PLAN ${settingsClause.trim()} ${query}`
+    explainQuery = `${QUERY_COMMENT}EXPLAIN PLAN ${settingsClause.trim()} ${query}`
   } else if (modeParam) {
-    explainQuery = `EXPLAIN ${modeParam} ${query}`
+    explainQuery = `${QUERY_COMMENT}EXPLAIN ${modeParam} ${query}`
   } else {
-    explainQuery = `EXPLAIN ${query}`
+    explainQuery = `${QUERY_COMMENT}EXPLAIN ${query}`
   }
 
   // Execute the query
