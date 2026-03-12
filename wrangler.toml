@@ -121,6 +121,7 @@ CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,http://100.81.220.21:81
 CLICKHOUSE_USER = "duyet,duyet,duyet"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
+LLM_MODEL = "openrouter/free"
 
 # Self-reference must point to the preview worker
 [[env.preview.services]]
