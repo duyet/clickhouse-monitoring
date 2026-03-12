@@ -64,10 +64,21 @@ export function createClickHouseAgent(options: {
   const openRouterReferer = process.env.OPENROUTER_REFERER
   const openRouterAppName = process.env.OPENROUTER_APP_NAME
 
+  // Get the base URL (ensure it points to chat completions endpoint)
+  const apiBaseURL = baseURL || process.env.LLM_API_BASE
+
+  // For OpenRouter, ensure we're using the standard chat completions endpoint
+  // The AI SDK should automatically handle this, but we explicitly avoid
+  // the /responses endpoint which has a different schema
+  const normalizedBaseURL =
+    isOpenRouter && apiBaseURL
+      ? apiBaseURL.replace(/\/responses$/, '').replace(/\/$/, '')
+      : apiBaseURL
+
   // Create OpenAI provider with optional OpenRouter headers
   const openai = createOpenAI({
     apiKey: apiKey || process.env.LLM_API_KEY,
-    baseURL: baseURL || process.env.LLM_API_BASE,
+    baseURL: normalizedBaseURL,
     ...(isOpenRouter && {
       headers: {
         ...(openRouterReferer && { 'HTTP-Referer': openRouterReferer }),
