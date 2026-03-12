@@ -5,7 +5,6 @@
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  ExternalLinkIcon,
   Loader2Icon,
   PanelRightClose,
   PanelRightOpen,
@@ -44,7 +43,6 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
 } from '@/components/ai-elements/prompt-input'
-import { Suggestion } from '@/components/ai-elements/suggestion'
 import { DataTable } from '@/components/data-table/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

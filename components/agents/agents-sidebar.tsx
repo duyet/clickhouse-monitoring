@@ -7,12 +7,9 @@ import {
   XIcon,
 } from 'lucide-react'
 
-import type { OpenAIModel, useAgentModel } from '@/lib/hooks/use-agent-model'
-
 import { AgentSettings } from './agent-settings'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -71,19 +68,6 @@ function HostSelector({ hostId }: { readonly hostId: number }) {
           ))}
         </SelectContent>
       </Select>
-    </div>
-  )
-}
-
-function HostInfoSection({ hostId }: { readonly hostId: number }) {
-  const { hosts } = useHosts()
-  const currentHost = hosts[hostId]
-
-  return (
-    <div className="mb-4">
-      <Badge variant="secondary" className="text-sm">
-        {currentHost?.name || `Host ${hostId}`}
-      </Badge>
     </div>
   )
 }
