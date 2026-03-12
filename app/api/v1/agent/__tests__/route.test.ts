@@ -19,8 +19,8 @@ mock.module('@/lib/ai/agent', () => ({
 // Mock createAgentUIStreamResponse
 mock.module('ai', () => ({
   createAgentUIStreamResponse: ({
-    uiMessages,
-    onError,
+    uiMessages: _uiMessages,
+    onError: _onError,
   }: {
     uiMessages: unknown[]
     onError?: (error: unknown) => string
