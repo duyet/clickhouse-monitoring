@@ -1,18 +1,11 @@
 /**
  * useAgentModel Hook
  *
- * Client-side hook for managing LLM model selection for the agent.
+ * Client-side hook for managing OpenAI model selection for the agent.
  * Persists selection to localStorage and provides model metadata.
  */
 
 import { useMemo } from 'react'
-import {
-  getBestModel,
-  getFreeModels,
-  getSelectionModelCapabilities,
-  MODEL_REGISTRY,
-} from '@/lib/agents/llm/model-registry'
-import { getModelCapabilities } from '@/lib/agents/llm/openrouter'
 
 /**
  * LocalStorage key for model selection
@@ -20,27 +13,57 @@ import { getModelCapabilities } from '@/lib/agents/llm/openrouter'
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
 /**
- * Get default model from environment or registry
+ * Available OpenAI models
  */
-function getDefaultModel(): string {
-  // Check environment variable first
-  const envModel = process.env.NEXT_PUBLIC_LLM_MODEL
-  if (envModel) return envModel
+export const OPENAI_MODELS = {
+  'gpt-4o': {
+    name: 'GPT-4o',
+    description: 'Most capable model for complex tasks',
+    contextLength: 128000,
+  },
+  'gpt-4o-mini': {
+    name: 'GPT-4o Mini',
+    description: 'Fast and efficient model',
+    contextLength: 128000,
+  },
+  'gpt-4-turbo': {
+    name: 'GPT-4 Turbo',
+    description: 'Balanced performance model',
+    contextLength: 128000,
+  },
+  'gpt-3.5-turbo': {
+    name: 'GPT-3.5 Turbo',
+    description: 'Fastest model for simple tasks',
+    contextLength: 16385,
+  },
+} as const
 
-  // Fall back to best free model from registry
-  return getBestModel({ streaming: true, tools: true })
+export type OpenAIModel = keyof typeof OPENAI_MODELS
+
+/**
+ * Get default model from environment or fallback
+ */
+function getDefaultModel(): OpenAIModel {
+  // Check environment variable first
+  const envModel = process.env.NEXT_PUBLIC_OPENAI_MODEL
+  if (envModel && envModel in OPENAI_MODELS) {
+    return envModel as OpenAIModel
+  }
+
+  // Fall back to gpt-4o-mini (best balance)
+  return 'gpt-4o-mini'
 }
 
 /**
  * Get saved model from localStorage or return default
  */
-export function getSavedModel(): string {
+export function getSavedModel(): OpenAIModel {
   if (typeof window === 'undefined') return getDefaultModel()
 
   try {
     const saved = localStorage.getItem(MODEL_STORAGE_KEY)
-    if (saved && MODEL_REGISTRY[saved]) {
-      return saved
+    if (saved && saved in OPENAI_MODELS) {
+      return saved as OpenAIModel
     }
   } catch {
     // localStorage may be disabled
@@ -52,7 +75,7 @@ export function getSavedModel(): string {
 /**
  * Save model to localStorage
  */
-function saveModel(model: string): void {
+function saveModel(model: OpenAIModel): void {
   if (typeof window === 'undefined') return
 
   try {
@@ -67,21 +90,13 @@ function saveModel(model: string): void {
  */
 export interface ModelDisplayInfo {
   /** Model ID */
-  id: string
-  /** Display name (shortened) */
+  id: OpenAIModel
+  /** Display name */
   name: string
-  /** Full model ID for display */
-  fullName: string
-  /** Supports streaming */
-  streaming: boolean
-  /** Supports tools */
-  tools: boolean
+  /** Description */
+  description: string
   /** Context length in tokens */
   contextLength: number
-  /** Optimized for speed */
-  fast?: boolean
-  /** Is a fallback model */
-  fallback?: boolean
 }
 
 /**
@@ -89,34 +104,13 @@ export interface ModelDisplayInfo {
  */
 export interface UseAgentModelResult {
   /** Currently selected model */
-  model: string
+  model: OpenAIModel
   /** All available models with metadata */
   models: readonly ModelDisplayInfo[]
-  /** Capabilities of current model */
-  capabilities: ReturnType<typeof getModelCapabilities>
   /** Update the selected model */
-  setModel: (model: string) => void
+  setModel: (model: OpenAIModel) => void
   /** Reset to default model */
   resetModel: () => void
-}
-
-/**
- * Format model ID for display
- */
-function formatModelName(modelId: string): string {
-  // Remove provider prefix for cleaner display
-  // e.g., "meta-llama/llama-3.1-8b:free" → "Llama 3.1 8B"
-  // e.g., "google/gemma-3-4b-it:free" → "Gemma 3 4B"
-
-  const parts = modelId.split('/')
-  if (parts.length < 2) return modelId
-
-  const name = parts[parts.length - 1] // Get last part (model name)
-    .replace(/:free$/, '') // Remove :free suffix
-    .replace(/-/g, ' ') // Replace hyphens with spaces
-    .replace(/\b(\w)/g, (_, char) => char.toUpperCase()) // Capitalize
-
-  return name
 }
 
 /**
@@ -129,9 +123,9 @@ function formatModelName(modelId: string): string {
  *
  * @example
  * ```tsx
- * const { model, models, setModel, capabilities } = useAgentModel()
+ * const { model, models, setModel } = useAgentModel()
  *
- * <select value={model} onChange={(e) => setModel(e.target.value)}>
+ * <select value={model} onChange={(e) => setModel(e.target.value as OpenAIModel)}>
  *   {models.map((m) => (
  *     <option key={m.id} value={m.id}>{m.name}</option>
  *   ))}
@@ -142,33 +136,22 @@ export function useAgentModel(): UseAgentModelResult {
   // Get current model (uses saved value or default)
   const model = useMemo(() => getSavedModel(), [])
 
-  // Get all free models from registry
+  // Get all available models
   const models = useMemo(() => {
-    return getFreeModels().map((modelId): ModelDisplayInfo => {
-      const registryCaps = getSelectionModelCapabilities(modelId)
-      const llmCaps = getModelCapabilities(modelId)
-
-      return {
-        id: modelId,
-        name: formatModelName(modelId),
-        fullName: modelId,
-        streaming: registryCaps?.streaming ?? llmCaps.streaming,
-        tools: registryCaps?.tools ?? llmCaps.tools,
-        contextLength: registryCaps?.contextLength ?? llmCaps.contextLength,
-        fast: registryCaps?.fast,
-        fallback: registryCaps?.fallback,
-      }
-    })
+    return Object.entries(OPENAI_MODELS).map(
+      ([id, info]): ModelDisplayInfo => ({
+        id: id as OpenAIModel,
+        name: info.name,
+        description: info.description,
+        contextLength: info.contextLength,
+      })
+    )
   }, [])
 
-  // Get capabilities of current model
-  const capabilities = useMemo(() => getModelCapabilities(model), [model])
-
   // Update model selection
-  const setModel = (newModel: string): void => {
+  const setModel = (newModel: OpenAIModel): void => {
     saveModel(newModel)
     // Force re-render by reloading the page (simplest approach)
-    // In a more complex app, we'd use React state + context
     window.location.reload()
   }
 
@@ -181,7 +164,6 @@ export function useAgentModel(): UseAgentModelResult {
   return {
     model,
     models,
-    capabilities,
     setModel,
     resetModel,
   }

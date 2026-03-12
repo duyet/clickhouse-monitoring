@@ -7,7 +7,6 @@
 export { getSavedModel, useAgentModel } from './use-agent-model'
 export {
   formatDuration,
-  formatModelName,
   useAgentSessionStats,
 } from './use-agent-session-stats'
 export {

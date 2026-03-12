@@ -7,17 +7,16 @@ import {
   ZapIcon,
 } from 'lucide-react'
 
-import type { AgentMessage } from '@/lib/agents/state'
+import type { UIMessage } from 'ai'
 
 import {
   formatDuration,
-  formatModelName,
   useAgentSessionStats,
 } from '@/lib/hooks/use-agent-session-stats'
 
 export interface SessionStatsProps {
-  /** Agent message history */
-  readonly messages: readonly AgentMessage[]
+  /** AI SDK message history */
+  readonly messages: readonly UIMessage[]
 }
 
 /**
@@ -45,10 +44,9 @@ function StatItem({
  * Session Stats Display Component
  *
  * Shows aggregated statistics from the agent conversation:
- * - Model used
- * - Total iterations
- * - Average duration
+ * - Total messages
  * - Request count
+ * - Tool call count
  *
  * @example
  * ```tsx
@@ -69,34 +67,25 @@ export function SessionStats({ messages }: SessionStatsProps) {
 
   return (
     <div className="space-y-2">
-      {/* Model */}
-      {stats.model && (
-        <StatItem
-          icon={ZapIcon}
-          label="Model"
-          value={formatModelName(stats.model)}
-        />
-      )}
-
-      {/* Iterations */}
+      {/* Messages */}
       <StatItem
-        icon={ActivityIcon}
-        label="Total Iterations"
-        value={stats.totalIterations}
+        icon={MessageSquareIcon}
+        label="Messages"
+        value={stats.totalMessages}
       />
 
-      {/* Duration */}
-      <StatItem
-        icon={ClockIcon}
-        label="Avg Duration"
-        value={formatDuration(stats.avgDuration)}
-      />
-
-      {/* Request count */}
+      {/* Requests */}
       <StatItem
         icon={MessageSquareIcon}
         label="Requests"
         value={stats.requestCount}
+      />
+
+      {/* Tool calls */}
+      <StatItem
+        icon={ActivityIcon}
+        label="Tool Calls"
+        value={stats.toolCallCount}
       />
     </div>
   )

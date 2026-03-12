@@ -1,88 +1,74 @@
 /**
  * useAgentSessionStats Hook
  *
- * Extracts and aggregates session statistics from agent messages.
- * Provides model info, iteration counts, duration, and token estimates.
+ * Extracts and aggregates session statistics from AI SDK messages.
+ * Provides message counts and timing information.
  */
 
-import type { AgentMessage } from '@/lib/agents/state'
+import type { UIMessage } from 'ai'
 
 import { useMemo } from 'react'
 
 /**
- * Session statistics aggregated from agent messages
+ * Session statistics aggregated from messages
  */
 export interface SessionStats {
-  /** Model used for the most recent request */
-  model: string | undefined
-  /** Total number of iterations across all requests */
-  totalIterations: number
-  /** Total duration across all requests (ms) */
-  totalDuration: number
+  /** Total number of messages */
+  totalMessages: number
   /** Number of user messages (requests) */
   requestCount: number
-  /** Average iterations per request */
-  avgIterations: number
-  /** Average duration per request (ms) */
-  avgDuration: number
-  /** Timestamp of the most recent request */
-  lastRequestAt: number | undefined
+  /** Number of assistant messages (responses) */
+  responseCount: number
+  /** Number of tool calls */
+  toolCallCount: number
+  /** Timestamp of the most recent message */
 }
 
 /**
  * Empty stats for initialization
  */
 const EMPTY_STATS: SessionStats = {
-  model: undefined,
-  totalIterations: 0,
-  totalDuration: 0,
+  totalMessages: 0,
   requestCount: 0,
-  avgIterations: 0,
-  avgDuration: 0,
-  lastRequestAt: undefined,
+  responseCount: 0,
+  toolCallCount: 0,
 }
 
 /**
- * Extract stats from agent messages
+ * Extract stats from AI SDK messages
  */
-function extractStats(messages: readonly AgentMessage[]): SessionStats {
-  let totalIterations = 0
-  let totalDuration = 0
+function extractStats(messages: readonly UIMessage[]): SessionStats {
   let requestCount = 0
-  let lastModel: string | undefined
-  let lastRequestAt: number | undefined
+  let responseCount = 0
+  let toolCallCount = 0
 
   for (const msg of messages) {
-    // Count user messages as requests
-    if (msg.role === 'assistant' && msg.metadata) {
-      const { iterations, duration, model } = msg.metadata
-
-      if (typeof iterations === 'number') {
-        totalIterations += iterations
-      }
-      if (typeof duration === 'number') {
-        totalDuration += duration
-      }
-      if (typeof model === 'string') {
-        lastModel = model
-      }
+    // Count user and assistant messages
+    if (msg.role === 'user') {
       requestCount++
-    }
-
-    // Track most recent message timestamp
-    if (!lastRequestAt || msg.timestamp > lastRequestAt) {
-      lastRequestAt = msg.timestamp
+    } else if (msg.role === 'assistant') {
+      responseCount++
+      // Count tool calls from parts
+      if (msg.parts) {
+        for (const part of msg.parts) {
+          if (
+            typeof part === 'object' &&
+            part !== null &&
+            'type' in part &&
+            part.type === 'tool-call'
+          ) {
+            toolCallCount++
+          }
+        }
+      }
     }
   }
 
   return {
-    model: lastModel,
-    totalIterations,
-    totalDuration,
+    totalMessages: messages.length,
     requestCount,
-    avgIterations: requestCount > 0 ? totalIterations / requestCount : 0,
-    avgDuration: requestCount > 0 ? totalDuration / requestCount : 0,
-    lastRequestAt,
+    responseCount,
+    toolCallCount,
   }
 }
 
@@ -90,25 +76,24 @@ function extractStats(messages: readonly AgentMessage[]): SessionStats {
  * Hook for computing agent session statistics
  *
  * Analyzes message history to extract:
- * - Model used
- * - Iteration counts
- * - Duration metrics
- * - Request counts
+ * - Message counts
+ * - Tool call counts
+ * - Timing information
  *
- * @param messages - Agent message history
+ * @param messages - AI SDK message history
  * @returns Computed session statistics
  *
  * @example
  * ```tsx
- * const { model, totalIterations, avgDuration, requestCount } = useAgentSessionStats(messages)
+ * const { totalMessages, requestCount, toolCallCount } = useAgentSessionStats(messages)
  *
- * <div>Model: {model}</div>
- * <div>Iterations: {totalIterations}</div>
- * <div>Avg Duration: {avgDuration}ms</div>
+ * <div>Messages: {totalMessages}</div>
+ * <div>Requests: {requestCount}</div>
+ * <div>Tool Calls: {toolCallCount}</div>
  * ```
  */
 export function useAgentSessionStats(
-  messages: readonly AgentMessage[] = []
+  messages: readonly UIMessage[] = []
 ): SessionStats {
   return useMemo(() => {
     if (!messages || messages.length === 0) {
@@ -126,18 +111,4 @@ export function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
   return `${(ms / 60000).toFixed(1)}m`
-}
-
-/**
- * Format model name for display
- */
-export function formatModelName(modelId: string): string {
-  // Extract model name from ID
-  // e.g., "meta-llama/llama-3.1-8b:free" → "Llama 3.1 8B"
-  const parts = modelId.split('/')
-  if (parts.length < 2) return modelId
-
-  const name = parts[parts.length - 1].replace(/:free$/, '').replace(/-/g, ' ')
-
-  return name
 }

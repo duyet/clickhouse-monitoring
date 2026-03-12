@@ -16,7 +16,7 @@ import {
   getToolMetadata,
   SUGGESTED_PROMPTS,
   TOOL_CATEGORIES,
-} from '@/lib/agents/tools/metadata'
+} from '@/lib/ai/agent/metadata'
 import { useHosts } from '@/lib/swr/use-hosts'
 
 interface AgentsSidebarProps {

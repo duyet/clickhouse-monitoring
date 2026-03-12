@@ -1,8 +1,7 @@
 'use client'
 
-import { CheckIcon, ZapIcon } from 'lucide-react'
+import { ZapIcon } from 'lucide-react'
 
-import { useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {
   Select,
@@ -11,33 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useAgentModel } from '@/lib/hooks/use-agent-model'
+import { useAgentModel, type OpenAIModel } from '@/lib/hooks/use-agent-model'
 
 export interface AgentSettingsProps {
   /** Callback when model changes */
   onModelChange?: (model: string) => void
-}
-
-/**
- * Model capability badge component
- */
-function CapabilityBadge({
-  enabled,
-  label,
-}: {
-  readonly enabled: boolean
-  readonly label: string
-}) {
-  return (
-    <Badge
-      variant={enabled ? 'default' : 'outline'}
-      className="text-[10px]"
-      title={enabled ? `Supported: ${label}` : `Not supported: ${label}`}
-    >
-      {enabled ? <CheckIcon className="h-2.5 w-2.5 mr-0.5" /> : null}
-      {label}
-    </Badge>
-  )
 }
 
 /**
@@ -58,20 +35,15 @@ function CapabilityBadge({
  * ```
  */
 export function AgentSettings({ onModelChange }: AgentSettingsProps) {
-  const { model, models, capabilities, setModel } = useAgentModel()
-
-  // Format context length for display
-  const contextDisplay = useMemo(() => {
-    const cl = capabilities.contextLength
-    if (cl >= 1_000_000) return `${(cl / 1_000_000).toFixed(0)}M`
-    if (cl >= 1000) return `${(cl / 1000).toFixed(0)}K`
-    return String(cl)
-  }, [capabilities.contextLength])
+  const { model, models, setModel } = useAgentModel()
 
   // Handle model change
   const handleModelChange = (newModel: string): void => {
-    setModel(newModel)
-    onModelChange?.(newModel)
+    // Validate that the model exists before setting
+    if (newModel in models.map(m => m.id)) {
+      setModel(newModel as OpenAIModel)
+      onModelChange?.(newModel)
+    }
   }
 
   const currentModelData = models.find((m) => m.id === model)
@@ -90,16 +62,6 @@ export function AgentSettings({ onModelChange }: AgentSettingsProps) {
               <SelectItem key={m.id} value={m.id} className="text-xs">
                 <div className="flex items-center gap-2">
                   <span>{m.name}</span>
-                  {m.fast && (
-                    <span title="Fast model">
-                      <ZapIcon className="h-3 w-3 text-yellow-500" />
-                    </span>
-                  )}
-                  {m.fallback && (
-                    <Badge variant="outline" className="text-[9px]">
-                      Default
-                    </Badge>
-                  )}
                 </div>
               </SelectItem>
             ))}
@@ -107,28 +69,12 @@ export function AgentSettings({ onModelChange }: AgentSettingsProps) {
         </Select>
       </div>
 
-      {/* Capability badges */}
-      <div className="flex flex-wrap gap-1.5">
-        <CapabilityBadge enabled={capabilities.streaming} label="Streaming" />
-        <CapabilityBadge enabled={capabilities.tools} label="Tools" />
-        <Badge
-          variant="outline"
-          className="text-[10px]"
-          title={`Context window: ${capabilities.contextLength} tokens`}
-        >
-          {contextDisplay} Context
-        </Badge>
-        {currentModelData?.fast && (
-          <Badge
-            variant="outline"
-            className="text-[10px] text-yellow-600 dark:text-yellow-400"
-            title="Optimized for low latency"
-          >
-            <ZapIcon className="h-2.5 w-2.5 mr-0.5" />
-            Fast
-          </Badge>
-        )}
-      </div>
+      {/* Model info */}
+      {currentModelData && (
+        <div className="text-xs text-muted-foreground">
+          {currentModelData.description}
+        </div>
+      )}
     </div>
   )
 }
