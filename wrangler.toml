@@ -74,7 +74,9 @@ id = "78782c1fcf4141d9b6f26f2046f50ceb"
 # For local development: Set these in .dev.vars file (not committed to git)
 # For production: Set these in Cloudflare Dashboard or via `wrangler secret put`
 #
-# Documentation: https://developers.cloudflare.com/workers/configuration/environment-variables/
+# Documentation:
+#   - Wrangler env vars: https://developers.cloudflare.com/workers/wrangler/configuration/
+#   - OpenRouter attribution: https://openrouter.ai/docs/app-attribution
 #
 # Variables (non-sensitive, set in [vars]):
 #   - CLICKHOUSE_HOST: Comma-separated list of ClickHouse host URLs
