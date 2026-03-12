@@ -8,6 +8,7 @@
 import { createMcpTools } from './mcp-tool-adapter'
 import { CLICKHOUSE_AGENT_INSTRUCTIONS } from './prompts/clickhouse-instructions'
 import { createOpenAI } from '@ai-sdk/openai'
+import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { stepCountIs, ToolLoopAgent } from 'ai'
 
 /**
@@ -54,41 +55,42 @@ export function createClickHouseAgent(options: {
     hostId,
   } = options
 
-  // Detect if using OpenRouter by checking the baseURL
-  const isOpenRouter = (baseURL || process.env.LLM_API_BASE || '').includes(
-    'openrouter'
-  )
+  // Detect if using OpenRouter by checking the baseURL or model name
+  const isOpenRouter =
+    (baseURL || process.env.LLM_API_BASE || '').includes('openrouter') ||
+    model.startsWith('openrouter/')
 
   // OpenRouter identification headers for rankings/analytics
   // Configurable via OPENROUTER_REFERER and OPENROUTER_APP_NAME env vars
   const openRouterReferer = process.env.OPENROUTER_REFERER
   const openRouterAppName = process.env.OPENROUTER_APP_NAME
 
-  // Get the base URL (ensure it points to chat completions endpoint)
+  // Get the base URL and API key
   const apiBaseURL = baseURL || process.env.LLM_API_BASE
+  const apiKeyValue = apiKey || process.env.LLM_API_KEY
 
-  // For OpenRouter, ensure we're using the standard chat completions endpoint
-  // The AI SDK should automatically handle this, but we explicitly avoid
-  // the /responses endpoint which has a different schema
-  const normalizedBaseURL =
-    isOpenRouter && apiBaseURL
-      ? apiBaseURL.replace(/\/responses$/, '').replace(/\/$/, '')
-      : apiBaseURL
-
-  // Create OpenAI provider with optional OpenRouter headers
-  const openai = createOpenAI({
-    apiKey: apiKey || process.env.LLM_API_KEY,
-    baseURL: normalizedBaseURL,
-    ...(isOpenRouter && {
-      headers: {
-        ...(openRouterReferer && { 'HTTP-Referer': openRouterReferer }),
-        ...(openRouterAppName && { 'X-OpenRouter-Title': openRouterAppName }),
-      },
-    }),
-  })
+  // Create the appropriate provider based on detection
+  // Use dedicated OpenRouter provider to avoid Responses API issues
+  const provider = isOpenRouter
+    ? createOpenRouter({
+        apiKey: apiKeyValue,
+        headers: {
+          ...(openRouterReferer && { 'HTTP-Referer': openRouterReferer }),
+          ...(openRouterAppName && { 'X-OpenRouter-Title': openRouterAppName }),
+        },
+      })
+    : createOpenAI({
+        apiKey: apiKeyValue,
+        baseURL: apiBaseURL,
+      })
 
   // Get the model instance
-  const modelInstance = openai(model)
+  // For OpenRouter, strip the 'openrouter/' prefix if present (provider handles it)
+  const modelId =
+    isOpenRouter && model.startsWith('openrouter/')
+      ? model.replace('openrouter/', '')
+      : model
+  const modelInstance = provider(modelId)
 
   // Get tools for this host
   const tools = createMcpTools(hostId)
