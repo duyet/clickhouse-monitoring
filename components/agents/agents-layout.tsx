@@ -10,7 +10,13 @@ import { useHostId } from '@/lib/swr'
 
 export function AgentsLayout() {
   const hostId = useHostId()
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    // Desktop open, mobile closed by default
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768 // md breakpoint
+    }
+    return true // SSR fallback
+  })
   const {
     isConfigured,
     missingKeys,

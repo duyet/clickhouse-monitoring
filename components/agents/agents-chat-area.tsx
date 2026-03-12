@@ -268,7 +268,7 @@ function ToolCallPart({
           )}
 
           {/* Tool output */}
-          {hasOutput && Boolean(part.output) && (
+          {hasOutput && part.output != null && (
             <div className="px-3 py-2">
               <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
                 Output
@@ -290,7 +290,7 @@ function ToolCallPart({
 }
 
 function renderToolOutput(output: unknown) {
-  if (!output) return null
+  if (output == null) return null
 
   // Handle direct array output (e.g., list_databases, list_tables, get_table_schema)
   if (Array.isArray(output) && output.length > 0) {

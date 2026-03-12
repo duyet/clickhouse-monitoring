@@ -175,6 +175,7 @@ export function AgentsSidebar({
               size="icon"
               onClick={() => onOpenChange?.(false)}
               className="h-7 w-7"
+              aria-label="Close"
             >
               <XIcon className="h-4 w-4" />
             </Button>
