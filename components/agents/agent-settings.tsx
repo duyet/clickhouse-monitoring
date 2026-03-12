@@ -37,7 +37,7 @@ export function AgentSettings({ onModelChange }: AgentSettingsProps) {
   // Handle model change
   const handleModelChange = (newModel: string): void => {
     // Validate that the model exists before setting
-    if (newModel in models.map((m) => m.id)) {
+    if (models.some((m) => m.id === newModel)) {
       setModel(newModel as OpenAIModel)
       onModelChange?.(newModel)
     }

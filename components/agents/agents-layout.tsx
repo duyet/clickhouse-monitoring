@@ -11,19 +11,17 @@ import { ConversationSwitcher } from './conversation-switcher'
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { useLLMConfig } from '@/lib/hooks/use-llm-config'
 import { useHostId } from '@/lib/swr'
 
 export function AgentsLayout() {
   const hostId = useHostId()
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    // Desktop open, mobile closed by default
-    if (typeof window !== 'undefined') {
-      return window.innerWidth >= 768 // md breakpoint
-    }
-    return true // SSR fallback
-  })
+  const isMobile = useIsMobile()
+
+  // Sidebar defaults to open on desktop, closed on mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => !isMobile)
   const {
     isConfigured,
     missingKeys,
