@@ -611,6 +611,21 @@ export function AgentsChatArea({
     }),
   })
 
+  // Debug logging for messages
+  useEffect(() => {
+    console.log(
+      '[ChatArea] Messages:',
+      messages.map((m) => ({
+        id: m.id,
+        role: m.role,
+        partsCount: m.parts?.length || 0,
+        parts: m.parts?.map((p) => ({ type: p.type, hasText: 'text' in p })),
+      }))
+    )
+    console.log('[ChatArea] Status:', status)
+    console.log('[ChatArea] Error:', error)
+  }, [messages, status, error])
+
   // Ref to track last saved messages to avoid infinite loops
   const lastSavedMessagesRef = useRef<UIMessage[]>([])
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
