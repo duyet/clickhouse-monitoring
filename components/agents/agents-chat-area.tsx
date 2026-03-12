@@ -173,17 +173,29 @@ function ToolCallPart({
   const hasOutput = part.state === 'output-available'
   const hasError = part.state === 'output-error'
 
-  // Use derived state for auto-expand behavior (no useState + useEffect needed)
-  // Track if user manually toggled to closed
-  const [userToggledClosed, setUserToggledClosed] = useState(false)
+  // Track if user has manually toggled (to avoid overriding their choice)
+  const userToggledRef = useRef(false)
+
+  // Auto-expand during streaming/error/starting, but allow manual toggle
   const shouldAutoExpand = isStreaming || hasError || isStarting
-  const isExpanded = shouldAutoExpand && !userToggledClosed
+  const [isExpanded, setIsExpanded] = useState(shouldAutoExpand)
+
+  // Auto-expand when state changes, unless user has manually toggled
+  useEffect(() => {
+    if (shouldAutoExpand) {
+      setIsExpanded(true)
+      userToggledRef.current = false // Reset on state change
+    }
+  }, [shouldAutoExpand])
 
   // Generate stable ID for aria-controls
   const contentId = `tool-content-${part.toolCallId}`
 
-  // Toggle expand/collapse
-  const toggleExpanded = () => setUserToggledClosed((prev) => !prev)
+  // Toggle expand/collapse (user override)
+  const toggleExpanded = () => {
+    userToggledRef.current = true
+    setIsExpanded((prev) => !prev)
+  }
 
   // Format input parameters as muted inline text (e.g., "hostId=0")
   const inputParams = useMemo(() => {
