@@ -486,7 +486,7 @@ export function AgentsChatArea({
           <div className="flex items-center gap-2 min-w-0">
             <SparklesIcon className="h-5 w-5 text-purple-500 shrink-0" />
             <h2 className="font-semibold truncate text-sm sm:text-base">
-              ClickHouse AI Assistant
+              AI Agent
             </h2>
             <span className="text-xs text-muted-foreground shrink-0 hidden xs:inline">
               Host {hostId}
@@ -522,7 +522,7 @@ export function AgentsChatArea({
           <ConversationContent>
             {isEmpty ? (
               <ConversationEmptyState
-                title="ClickHouse AI Assistant"
+                title="AI Agent"
                 description="Ask questions about your data using natural language"
                 icon={
                   <SparklesIcon className="h-8 w-8 sm:h-12 sm:w-12 text-purple-500" />
