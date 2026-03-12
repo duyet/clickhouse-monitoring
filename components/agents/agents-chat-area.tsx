@@ -5,9 +5,11 @@
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  ExternalLinkIcon,
   Loader2Icon,
   PanelRightClose,
   PanelRightOpen,
+  RefreshCwIcon,
   SparklesIcon,
   SquareIcon,
   TrashIcon,
@@ -463,96 +465,128 @@ function getStablePartKey(
 /**
  * Renders a single UIMessage with its parts (text, tool calls, etc.)
  */
-function ChatMessage({ message }: { readonly message: UIMessage }) {
+function ChatMessage({
+  message,
+  isLastUserMessage,
+  onRegenerate,
+}: {
+  readonly message: UIMessage
+  readonly isLastUserMessage?: boolean
+  readonly onRegenerate?: () => void
+}) {
   const isUser = message.role === 'user'
 
   return (
     <Message from={isUser ? 'user' : 'assistant'}>
       <MessageContent>
-        {message.parts.map((part, i) => {
-          const stableKey = getStablePartKey(message.id, part, i)
+        <div
+          className={cn(
+            'relative group',
+            isLastUserMessage && isUser && onRegenerate && 'pr-8'
+          )}
+        >
+          {message.parts.map((part, i) => {
+            const stableKey = getStablePartKey(message.id, part, i)
 
-          // Text part - render as markdown for assistant messages
-          if (part.type === 'text') {
-            // For user messages, use MessageResponse (plain text)
-            if (isUser) {
+            // Text part - render as markdown for assistant messages
+            if (part.type === 'text') {
+              // For user messages, use MessageResponse (plain text)
+              if (isUser) {
+                return (
+                  <MessageResponse key={stableKey}>{part.text}</MessageResponse>
+                )
+              }
+
+              // For assistant messages, use markdown rendering
               return (
-                <MessageResponse key={stableKey}>{part.text}</MessageResponse>
+                <div key={stableKey} className="markdown-content">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeHighlight]}
+                    components={{
+                      // Custom table styling
+                      table: ({ children }) => (
+                        <div className="overflow-x-auto my-2">
+                          <table className="min-w-full border-collapse border border-border">
+                            {children}
+                          </table>
+                        </div>
+                      ),
+                      thead: ({ children }) => (
+                        <thead className="bg-muted">{children}</thead>
+                      ),
+                      th: ({ children }) => (
+                        <th className="border border-border px-3 py-2 text-left text-sm font-medium">
+                          {children}
+                        </th>
+                      ),
+                      td: ({ children }) => (
+                        <td className="border border-border px-3 py-2 text-sm">
+                          {children}
+                        </td>
+                      ),
+                      // Code block styling
+                      pre: ({ children }) => (
+                        <pre className="bg-muted rounded-md p-3 my-2 overflow-x-auto">
+                          {children}
+                        </pre>
+                      ),
+                      code: ({ className, children }) => {
+                        // Check if this is inline code (no language class)
+                        const isInline = !className || className === 'language-'
+                        return isInline ? (
+                          <code className="bg-muted px-1 py-0.5 rounded text-sm">
+                            {children}
+                          </code>
+                        ) : (
+                          <code className={className}>{children}</code>
+                        )
+                      },
+                    }}
+                  >
+                    {part.text}
+                  </ReactMarkdown>
+                </div>
               )
             }
 
-            // For assistant messages, use markdown rendering
-            return (
-              <div key={stableKey} className="markdown-content">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeHighlight]}
-                  components={{
-                    // Custom table styling
-                    table: ({ children }) => (
-                      <div className="overflow-x-auto my-2">
-                        <table className="min-w-full border-collapse border border-border">
-                          {children}
-                        </table>
-                      </div>
-                    ),
-                    thead: ({ children }) => (
-                      <thead className="bg-muted">{children}</thead>
-                    ),
-                    th: ({ children }) => (
-                      <th className="border border-border px-3 py-2 text-left text-sm font-medium">
-                        {children}
-                      </th>
-                    ),
-                    td: ({ children }) => (
-                      <td className="border border-border px-3 py-2 text-sm">
-                        {children}
-                      </td>
-                    ),
-                    // Code block styling
-                    pre: ({ children }) => (
-                      <pre className="bg-muted rounded-md p-3 my-2 overflow-x-auto">
-                        {children}
-                      </pre>
-                    ),
-                    code: ({ className, children }) => {
-                      // Check if this is inline code (no language class)
-                      const isInline = !className || className === 'language-'
-                      return isInline ? (
-                        <code className="bg-muted px-1 py-0.5 rounded text-sm">
-                          {children}
-                        </code>
-                      ) : (
-                        <code className={className}>{children}</code>
-                      )
-                    },
-                  }}
-                >
-                  {part.text}
-                </ReactMarkdown>
-              </div>
-            )
-          }
+            // Tool call part (dynamic tool - from our custom agent)
+            if (part.type === 'dynamic-tool') {
+              return <ToolCallPart key={stableKey} part={part as any} />
+            }
 
-          // Tool call part (dynamic tool - from our custom agent)
-          if (part.type === 'dynamic-tool') {
-            return <ToolCallPart key={stableKey} part={part as any} />
-          }
+            // Static typed tool call part (type starts with 'tool-')
+            if (
+              typeof part.type === 'string' &&
+              part.type.startsWith('tool-')
+            ) {
+              return <ToolCallPart key={stableKey} part={part as any} />
+            }
 
-          // Static typed tool call part (type starts with 'tool-')
-          if (typeof part.type === 'string' && part.type.startsWith('tool-')) {
-            return <ToolCallPart key={stableKey} part={part as any} />
-          }
+            // Step start part
+            if (part.type === 'step-start') {
+              return (
+                <div
+                  key={stableKey}
+                  className="border-t border-muted/30 my-2"
+                />
+              )
+            }
 
-          // Step start part
-          if (part.type === 'step-start') {
-            return (
-              <div key={stableKey} className="border-t border-muted/30 my-2" />
-            )
-          }
+            return null
+          })}
 
-          return null
-        })}
+          {/* Refresh icon button - shown on hover for last user message */}
+          {isLastUserMessage && isUser && onRegenerate && (
+            <button
+              onClick={onRegenerate}
+              className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+              title="Regenerate response"
+            >
+              <RefreshCwIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
+        </div>
       </MessageContent>
     </Message>
   )
@@ -678,6 +712,43 @@ export function AgentsChatArea({
     [handleSubmit]
   )
 
+  const handleRegenerate = useCallback(() => {
+    // Stop current generation
+    stop()
+
+    // Find the last user message
+    const lastUserMessage = [...messages]
+      .reverse()
+      .find((m) => m.role === 'user')
+
+    if (lastUserMessage) {
+      // Get text from the last user message
+      const textPart = lastUserMessage.parts.find(
+        (p): p is { type: 'text'; text: string } =>
+          typeof p === 'object' &&
+          p !== null &&
+          'type' in p &&
+          p.type === 'text'
+      )
+
+      if (textPart) {
+        // Remove the last assistant response and user message, then resend
+        const messagesWithoutLastExchange = messages.slice(
+          0,
+          messages.lastIndexOf(lastUserMessage)
+        )
+        setMessages(messagesWithoutLastExchange)
+
+        // Resend the user message
+        setTimeout(() => {
+          sendMessage({
+            parts: [{ type: 'text', text: textPart.text }],
+          })
+        }, 100)
+      }
+    }
+  }, [messages, stop, sendMessage, setMessages])
+
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Header (hidden when in page-level layout) */}
@@ -769,22 +840,44 @@ export function AgentsChatArea({
                 <SparklesIcon className="h-8 w-8 sm:h-12 sm:w-12 text-purple-500" />
               }
             >
-              <div className="flex flex-wrap justify-center gap-2 pt-4 px-2 sm:px-4 max-w-2xl">
-                {DEFAULT_SUGGESTIONS.map((suggestion) => (
-                  <Suggestion
-                    key={suggestion}
-                    suggestion={suggestion}
-                    onClick={handleSuggestionClick}
-                    className="text-xs sm:text-sm whitespace-normal text-left h-auto py-2"
-                  />
-                ))}
+              <div className="pt-6 px-2 sm:px-4 max-w-xl mx-auto w-full">
+                <p className="text-xs text-muted-foreground mb-3 text-center">
+                  Try asking:
+                </p>
+                <ul className="space-y-1">
+                  {DEFAULT_SUGGESTIONS.map((suggestion) => (
+                    <li key={suggestion}>
+                      <button
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="w-full text-left text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md px-3 py-2 transition-colors"
+                      >
+                        {suggestion}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </ConversationEmptyState>
           ) : (
             <>
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))}
+              {messages.map((message, index) => {
+                // Find the last user message index
+                const lastUserMessageIndex = messages.findLastIndex(
+                  (m) => m.role === 'user'
+                )
+                const isLastUserMessage = index === lastUserMessageIndex
+
+                return (
+                  <ChatMessage
+                    key={message.id}
+                    message={message}
+                    isLastUserMessage={isLastUserMessage}
+                    onRegenerate={
+                      isLastUserMessage ? handleRegenerate : undefined
+                    }
+                  />
+                )
+              })}
               {/* Show typing indicator during streaming/submitted when assistant message is minimal */}
               {isLoading && <StreamingTypingIndicator messages={messages} />}
             </>
@@ -803,7 +896,7 @@ export function AgentsChatArea({
       <div className="border-t p-3 sm:p-4 shrink-0">
         <PromptInput onSubmit={handleSubmit} className="max-w-none">
           <PromptInputTextarea
-            placeholder="Ask about your ClickHouse data..."
+            placeholder="Ask about your ClickHouse data... (Press Enter to send, Shift+Enter for new line)"
             disabled={isLoading}
           />
           <PromptInputSubmit disabled={isLoading}>
@@ -812,9 +905,30 @@ export function AgentsChatArea({
             ) : null}
           </PromptInputSubmit>
         </PromptInput>
-        <p className="text-xs text-muted-foreground mt-2 text-center hidden sm:block">
-          Press Enter to send, Shift+Enter for new line
-        </p>
+        {/* Regenerate button during streaming */}
+        {isLoading && messages.length > 0 && (
+          <div className="flex items-center gap-2 mt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRegenerate}
+              className="h-7 text-xs"
+            >
+              <RefreshCwIcon className="h-3 w-3 mr-1" />
+              Regenerate
+            </Button>
+            <span className="text-xs text-muted-foreground">or</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={stop}
+              className="h-7 text-xs"
+            >
+              <SquareIcon className="h-3 w-3 mr-1" />
+              Stop
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )
