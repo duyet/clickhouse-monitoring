@@ -77,19 +77,24 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Pass LLM secrets from GitHub Secrets to environment
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
         run: |
-          # ClickHouse password
-          echo "${{ secrets.CLICKHOUSE_PASSWORD }}" | npx wrangler secret put CLICKHOUSE_PASSWORD --env preview
+          # Create temporary .env.local with secrets for the config script
+          cat > .env.local << EOF
+          CLICKHOUSE_PASSWORD=${{ secrets.CLICKHOUSE_PASSWORD }}
+          LLM_API_KEY=$LLM_API_KEY
+          LLM_API_BASE=$LLM_API_BASE
+          LLM_MODEL=$LLM_MODEL
+          EOF
 
-          # LLM API keys for AI agents feature
-          if [ -n "${{ secrets.LLM_API_KEY }}" ]; then
-            echo "${{ secrets.LLM_API_KEY }}" | npx wrangler secret put LLM_API_KEY --env preview
-          fi
+          # Run the config script to set all secrets
+          bun run cf:config
 
-          # Optional: Set model (defaults to openrouter/free if not set)
-          if [ -n "${{ secrets.LLM_MODEL }}" ]; then
-            echo "${{ secrets.LLM_MODEL }}" | npx wrangler secret put LLM_MODEL --env preview
-          fi
+          # Clean up temporary file
+          rm -f .env.local
 
       - name: Deploy preview to Cloudflare Workers
         id: deploy
@@ -253,19 +258,24 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Pass LLM secrets from GitHub Secrets to environment
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
         run: |
-          # ClickHouse password
-          echo "${{ secrets.CLICKHOUSE_PASSWORD }}" | npx wrangler secret put CLICKHOUSE_PASSWORD
+          # Create temporary .env.local with secrets for the config script
+          cat > .env.local << EOF
+          CLICKHOUSE_PASSWORD=${{ secrets.CLICKHOUSE_PASSWORD }}
+          LLM_API_KEY=$LLM_API_KEY
+          LLM_API_BASE=$LLM_API_BASE
+          LLM_MODEL=$LLM_MODEL
+          EOF
 
-          # LLM API keys for AI agents feature
-          if [ -n "${{ secrets.LLM_API_KEY }}" ]; then
-            echo "${{ secrets.LLM_API_KEY }}" | npx wrangler secret put LLM_API_KEY
-          fi
+          # Run the config script to set all secrets
+          bun run cf:config
 
-          # Optional: Set model (defaults to openrouter/free if not set)
-          if [ -n "${{ secrets.LLM_MODEL }}" ]; then
-            echo "${{ secrets.LLM_MODEL }}" | npx wrangler secret put LLM_MODEL
-          fi
+          # Clean up temporary file
+          rm -f .env.local
 
       - name: Deploy to Cloudflare Workers
         id: deploy
