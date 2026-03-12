@@ -7,7 +7,6 @@ import {
   XIcon,
 } from 'lucide-react'
 
-import { AgentSettings } from './agent-settings'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -140,9 +139,6 @@ function ToolsSection() {
 function SuggestedPromptsSection() {
   return (
     <div>
-      <h3 className="text-xs font-medium text-foreground mb-2">
-        Try asking...
-      </h3>
       <ul className="space-y-1">
         {SUGGESTED_PROMPTS.map((prompt, i) => (
           <li
@@ -167,9 +163,8 @@ export function AgentsSidebar({
   const content = (
     <div className="h-full overflow-auto">
       <div className="p-4 space-y-4">
-        {/* Host and Model Settings */}
+        {/* Host Selector */}
         <HostSelector hostId={hostId} />
-        <AgentSettings />
 
         <Separator />
 
