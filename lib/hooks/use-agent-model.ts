@@ -13,12 +13,22 @@ import { useMemo } from 'react'
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
 /**
- * Available OpenAI models (openrouter/free only)
+ * Available OpenAI models (free tier via OpenRouter)
  */
 export const OPENAI_MODELS = {
   'openrouter/free': {
     name: 'Free Tier',
     description: 'Free model via OpenRouter',
+    contextLength: 128000,
+  },
+  'nvidia/nemotron-3-super-120b-a12b:free': {
+    name: 'Nemotron 3 Super 120B',
+    description: 'NVIDIA 120B parameter model',
+    contextLength: 128000,
+  },
+  'stepfun/step-3.5-flash:free': {
+    name: 'Step 3.5 Flash',
+    description: 'StepFun fast model',
     contextLength: 128000,
   },
 } as const
