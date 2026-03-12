@@ -13,7 +13,7 @@ import { stepCountIs, ToolLoopAgent } from 'ai'
  * Default model configuration
  */
 const DEFAULT_MODEL = 'openrouter/free'
-const DEFAULT_MAX_STEPS = 10
+const DEFAULT_MAX_STEPS = 30
 
 /**
  * Create a ClickHouse agent with the specified model and configuration
