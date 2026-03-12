@@ -39,9 +39,9 @@ import type { MenuItem } from '@/components/menu/types'
 
 export const menuItemsConfig: MenuItem[] = [
   {
-    title: 'Health',
-    href: '/health',
-    icon: HeartPulseIcon,
+    title: 'Overview',
+    href: '/overview',
+    icon: HomeIcon,
     section: 'main',
   },
   {
@@ -52,9 +52,9 @@ export const menuItemsConfig: MenuItem[] = [
     isNew: true,
   },
   {
-    title: 'Overview',
-    href: '/overview',
-    icon: HomeIcon,
+    title: 'Health',
+    href: '/health',
+    icon: HeartPulseIcon,
     section: 'main',
   },
   {
