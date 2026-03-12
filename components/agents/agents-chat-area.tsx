@@ -87,6 +87,25 @@ function ChatSkeleton() {
 }
 
 /**
+ * Animated typing indicator with three bouncing dots
+ */
+function TypingIndicator() {
+  return (
+    <Message from="assistant">
+      <MessageContent>
+        <div className="flex items-center gap-1 py-2">
+          <span className="flex gap-0.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-foreground/60 animate-bounce [animation-delay:-0.3s]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-foreground/60 animate-bounce [animation-delay:-0.15s]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-foreground/60 animate-bounce" />
+          </span>
+        </div>
+      </MessageContent>
+    </Message>
+  )
+}
+
+/**
  * Enhanced result table using the full-featured DataTable component.
  * Supports sorting, pagination, column filtering, and virtualization for large datasets.
  */
@@ -368,6 +387,57 @@ function renderToolOutput(output: unknown) {
       {typeof output === 'string' ? output : JSON.stringify(output, null, 2)}
     </pre>
   )
+}
+
+/**
+ * Checks if an assistant message has meaningful content (text with actual characters)
+ */
+function hasMeaningfulContent(message: UIMessage): boolean {
+  if (message.role !== 'assistant') return false
+
+  // Find text parts and check if any have meaningful content
+  const textParts = message.parts.filter(
+    (p): p is { type: 'text'; text: string } =>
+      typeof p === 'object' && p !== null && 'type' in p && p.type === 'text'
+  )
+
+  return textParts.some((part) => {
+    // Clean markdown and check for actual content
+    const cleaned = part.text
+      .replace(/```[\w]*\n?[\s\S]*?```/g, '') // Remove code blocks
+      .replace(/#{1,6}\s/g, '') // Remove headers
+      .replace(/\*\*/g, '') // Remove bold
+      .replace(/\*/g, '') // Remove italic
+      .replace(/`/g, '') // Remove inline code
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links
+      .replace(/\n+/g, ' ') // Replace newlines
+      .trim()
+
+    return cleaned.length > 10 // Consider meaningful if more than 10 chars
+  })
+}
+
+/**
+ * Shows typing indicator only when streaming AND assistant message has minimal content
+ */
+function StreamingTypingIndicator({
+  messages,
+}: {
+  readonly messages: readonly UIMessage[]
+}) {
+  const lastMessage = messages[messages.length - 1]
+
+  // Only show typing indicator if:
+  // 1. Last message is from assistant
+  // 2. Assistant message doesn't have meaningful content yet
+  const shouldShowTyping =
+    lastMessage &&
+    lastMessage.role === 'assistant' &&
+    !hasMeaningfulContent(lastMessage)
+
+  if (!shouldShowTyping) return null
+
+  return <TypingIndicator />
 }
 
 /**
@@ -689,6 +759,11 @@ export function AgentsChatArea({
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
                 ))}
+                {/* Show typing indicator during streaming when assistant message is minimal */}
+                {status === 'streaming' && (
+                  <StreamingTypingIndicator messages={messages} />
+                )}
+                {/* Show skeleton while waiting for first response */}
                 {isLoading && status === 'submitted' && <ChatSkeleton />}
               </>
             )}
