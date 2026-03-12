@@ -23,6 +23,7 @@ const SECRET_KEYS = [
   // LLM API keys for AI Agent
   'LLM_API_KEY',
   'LLM_API_BASE',
+  'LLM_MODEL',
   // These are already set in wrangler.toml [vars], so skip them:
   // 'CLICKHOUSE_HOST',
   // 'CLICKHOUSE_USER',
