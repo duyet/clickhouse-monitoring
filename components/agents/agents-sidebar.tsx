@@ -30,6 +30,7 @@ import {
   SUGGESTED_PROMPTS,
   TOOL_CATEGORIES,
 } from '@/lib/ai/agent/metadata'
+import { useAgentModel } from '@/lib/hooks/use-agent-model'
 import { useHosts } from '@/lib/swr/use-hosts'
 
 interface AgentsSidebarProps {
@@ -62,6 +63,35 @@ function HostSelector({ hostId }: { readonly hostId: number }) {
               <div className="flex items-center gap-2">
                 <MonitorIcon className="h-3 w-3" />
                 <span>{host.name || `Host ${index}`}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
+function ModelSelector() {
+  const { model, models, setModel } = useAgentModel()
+
+  return (
+    <div className="mb-4">
+      <label className="text-xs text-muted-foreground mb-1.5 block">
+        Model
+      </label>
+      <Select value={model} onValueChange={setModel}>
+        <SelectTrigger className="h-8 text-xs">
+          <SelectValue placeholder="Select model" />
+        </SelectTrigger>
+        <SelectContent>
+          {models.map((m) => (
+            <SelectItem key={m.id} value={m.id} className="text-xs">
+              <div className="flex flex-col">
+                <span className="font-medium">{m.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {m.description}
+                </span>
               </div>
             </SelectItem>
           ))}
@@ -165,6 +195,9 @@ export function AgentsSidebar({
       <div className="p-4 space-y-4">
         {/* Host Selector */}
         <HostSelector hostId={hostId} />
+
+        {/* Model Selector */}
+        <ModelSelector />
 
         <Separator />
 

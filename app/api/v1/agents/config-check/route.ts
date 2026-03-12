@@ -14,33 +14,31 @@ interface ConfigStatus {
   configured: {
     apiKey: boolean
     apiBase: boolean
-    model: boolean
   }
   isFullyConfigured: boolean
   requiredKeys: {
     apiKey: string
     apiBase: string
-    model: string
   }
 }
 
 /**
  * Handle GET requests for config status
+ *
+ * Note: LLM_MODEL is not required as it has a default value and can be
+ * selected via UI dropdown. Only LLM_API_KEY and LLM_API_BASE are required.
  */
 export async function GET() {
   const configured: ConfigStatus['configured'] = {
     apiKey: !!process.env.LLM_API_KEY,
     apiBase: !!process.env.LLM_API_BASE,
-    model: !!process.env.LLM_MODEL,
   }
 
-  const isFullyConfigured =
-    configured.apiKey && configured.apiBase && configured.model
+  const isFullyConfigured = configured.apiKey && configured.apiBase
 
   const requiredKeys: ConfigStatus['requiredKeys'] = {
     apiKey: 'LLM_API_KEY',
     apiBase: 'LLM_API_BASE',
-    model: 'LLM_MODEL',
   }
 
   return NextResponse.json({

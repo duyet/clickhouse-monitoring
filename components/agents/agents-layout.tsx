@@ -25,6 +25,10 @@ export function AgentsLayout() {
   // Sidebar defaults to open on desktop, closed on mobile
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => !isMobile)
 
+  // Track if user dismissed the config guidance
+  const [isConfigGuidanceDismissed, setIsConfigGuidanceDismissed] =
+    useState(false)
+
   // Sync sidebar state with isMobile changes (only if user hasn't manually toggled)
   useEffect(() => {
     if (!userToggledRef.current) {
@@ -96,10 +100,13 @@ export function AgentsLayout() {
           </div>
         </div>
 
-        {/* Config guidance (when missing) */}
-        {!isConfigLoading && !isConfigured && (
+        {/* Config guidance (when missing and not dismissed) */}
+        {!isConfigLoading && !isConfigured && !isConfigGuidanceDismissed && (
           <div className="border-b p-4 shrink-0">
-            <AgentConfigGuidance missingKeys={missingKeys} />
+            <AgentConfigGuidance
+              missingKeys={missingKeys}
+              onDismiss={() => setIsConfigGuidanceDismissed(true)}
+            />
           </div>
         )}
 
