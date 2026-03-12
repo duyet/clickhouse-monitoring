@@ -11,7 +11,7 @@ import { ConversationSwitcher } from './conversation-switcher'
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useConversationContext } from '@/lib/agents/conversation-context'
+import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { useLLMConfig } from '@/lib/hooks/use-llm-config'
 import { useHostId } from '@/lib/swr'
 
@@ -55,27 +55,35 @@ export function AgentsLayout() {
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Page header with conversation switcher */}
-        <div className="flex items-center gap-2 border-b px-3 sm:px-4 py-3 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="h-8 w-8 shrink-0"
-            title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-          >
-            {isSidebarOpen ? (
-              <PanelRightClose className="h-4 w-4" />
-            ) : (
-              <PanelRightOpen className="h-4 w-4" />
-            )}
-          </Button>
-          <ConversationSwitcher
-            currentConversationId={currentConversationId}
-            conversations={conversationList}
-            onNew={createNewConversation}
-            onSelect={switchConversation}
-            onDelete={deleteConversation}
-          />
+        <div className="flex items-center justify-between gap-2 border-b px-3 sm:px-4 py-3 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <ConversationSwitcher
+              currentConversationId={currentConversationId}
+              conversations={conversationList}
+              onNew={createNewConversation}
+              onSelect={switchConversation}
+              onDelete={deleteConversation}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="h-8 w-8 shrink-0"
+              title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+            >
+              {isSidebarOpen ? (
+                <PanelRightClose className="h-4 w-4" />
+              ) : (
+                <PanelRightOpen className="h-4 w-4" />
+              )}
+            </Button>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-semibold truncate text-sm">AI Agent</span>
+              <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">
+                Host {hostId}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Config guidance (when missing) */}

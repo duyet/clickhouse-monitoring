@@ -3,6 +3,7 @@
 import { Suspense } from 'react'
 import { AgentsLayout } from '@/components/agents/agents-layout'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ConversationProvider } from '@/lib/ai/agent/conversation-context'
 
 function AgentsSkeleton() {
   return (
@@ -21,9 +22,11 @@ function AgentsSkeleton() {
 export default function AgentsPage() {
   return (
     <Suspense fallback={<AgentsSkeleton />}>
-      <div className="h-[calc(100dvh-8rem)] overflow-hidden">
-        <AgentsLayout />
-      </div>
+      <ConversationProvider>
+        <div className="h-[calc(100dvh-8rem)] overflow-hidden">
+          <AgentsLayout />
+        </div>
+      </ConversationProvider>
     </Suspense>
   )
 }
