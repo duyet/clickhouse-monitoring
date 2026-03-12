@@ -108,11 +108,16 @@ export const TOOL_CATEGORIES: readonly ToolCategory[] = [
 ] as const
 
 export const SUGGESTED_PROMPTS = [
-  'Show me all databases in this cluster',
-  'What are the slowest queries today?',
-  'List the top 10 largest tables by size',
-  'Show me active merge operations',
-  'What is the current CPU and memory usage?',
+  'What databases are available and which ones have the most tables?',
+  'Show me the 10 largest tables and their disk usage',
+  'Which queries are running right now and how long have they been executing?',
+  'What are the slowest queries from the past 24 hours?',
+  'How is the merge queue performing? Are there any large merges stuck?',
+  'What is the current CPU, memory, and disk usage of this server?',
+  'Show me replication lag across all replica tables',
+  'Which users are consuming the most resources?',
+  'Are there any long-running queries that should be killed?',
+  'What are the most frequently accessed tables recently?',
 ] as const
 
 /**

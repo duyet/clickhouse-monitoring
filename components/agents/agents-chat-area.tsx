@@ -595,11 +595,16 @@ function ChatMessage({
 // ============================================================================
 
 const DEFAULT_SUGGESTIONS = [
-  'Show me all databases in this cluster',
-  'What are the slowest queries today?',
-  'List the top 10 largest tables by size',
-  'Show me active merge operations',
-  'What is the current CPU and memory usage?',
+  'What databases are available and which ones have the most tables?',
+  'Show me the 10 largest tables and their disk usage',
+  'Which queries are running right now and how long have they been executing?',
+  'What are the slowest queries from the past 24 hours?',
+  'How is the merge queue performing? Are there any large merges stuck?',
+  'What is the current CPU, memory, and disk usage of this server?',
+  'Show me replication lag across all replica tables',
+  'Which users are consuming the most resources?',
+  'Are there any long-running queries that should be killed?',
+  'What are the most frequently accessed tables recently?',
 ]
 
 // ============================================================================
@@ -839,9 +844,6 @@ export function AgentsChatArea({
               }
             >
               <div className="pt-6 px-2 sm:px-4 max-w-xl mx-auto w-full">
-                <p className="text-xs text-muted-foreground mb-3 text-center">
-                  Try asking:
-                </p>
                 <ul className="space-y-1">
                   {DEFAULT_SUGGESTIONS.map((suggestion) => (
                     <li key={suggestion}>
