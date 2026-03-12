@@ -816,6 +816,10 @@ export function AgentsChatArea({
               </ConversationEmptyState>
             ) : (
               <>
+                {/* Debug: Show message count */}
+                <div className="text-xs text-muted-foreground bg-muted/50 p-1 rounded">
+                  Messages: {messages.length} | Status: {status}
+                </div>
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
                 ))}
