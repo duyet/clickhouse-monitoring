@@ -5,6 +5,7 @@
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  ExternalLinkIcon,
   Loader2Icon,
   PanelRightClose,
   PanelRightOpen,
@@ -17,7 +18,15 @@ import type { UIMessage } from 'ai'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
@@ -42,10 +51,16 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
 } from '@/components/ai-elements/prompt-input'
-import { Suggestion } from '@/components/ai-elements/suggestion'
 import { DataTable } from '@/components/data-table/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
 import { cn } from '@/lib/utils'
@@ -59,6 +74,11 @@ interface AgentsChatAreaProps {
   readonly isSidebarOpen: boolean
   readonly onMenuClick: () => void
   readonly hideHeader?: boolean
+}
+
+// Exposed methods via ref
+export interface AgentsChatAreaRef {
+  clearMessages: () => void
 }
 
 // Note: Chat state is managed internally by useChat when props are not provided.
@@ -88,17 +108,52 @@ function TypingIndicator() {
 }
 
 /**
- * Enhanced result table using the full-featured DataTable component.
- * Supports sorting, pagination, column filtering, and virtualization for large datasets.
+ * Simple summary row for query results - shows row count and duration
+ * Click to open modal with full table
  */
-function ResultTable({
+function QueryResultSummary({
+  rowCount,
+  duration,
+  onViewDetails,
+}: {
+  readonly rowCount: number
+  readonly duration?: number
+  readonly onViewDetails: () => void
+}) {
+  return (
+    <button
+      onClick={onViewDetails}
+      className="w-full flex items-center justify-between gap-3 px-3 py-2 hover:bg-muted/50 rounded-md transition-colors text-left group"
+    >
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <span>{rowCount} rows</span>
+        {duration && <span>· {duration}ms</span>}
+      </div>
+      <div className="flex items-center gap-1 text-xs text-muted-foreground/70 group-hover:text-foreground transition-colors">
+        View results
+        <ExternalLinkIcon className="h-3.5 w-3.5" />
+      </div>
+    </button>
+  )
+}
+
+/**
+ * Modal dialog showing full query results with DataTable
+ */
+function QueryResultModal({
   rows,
-  maxRows = 100,
+  rowCount,
+  duration,
+  isOpen,
+  onClose,
 }: {
   readonly rows: readonly unknown[]
-  readonly maxRows?: number
+  readonly rowCount: number
+  readonly duration?: number
+  readonly isOpen: boolean
+  readonly onClose: () => void
 }) {
-  const displayRows = rows.slice(0, maxRows) as Record<string, unknown>[]
+  const displayRows = rows as Record<string, unknown>[]
 
   // Extract column names from first row
   const columns = useMemo(() => {
@@ -120,29 +175,40 @@ function ResultTable({
 
   if (columns.length === 0) {
     return (
-      <div className="text-center text-muted-foreground py-4 text-sm">
-        No columns to display
-      </div>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Query Results</DialogTitle>
+            <DialogDescription>No columns to display</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     )
   }
 
   return (
-    <div className="border rounded-md">
-      <DataTable
-        data={displayRows}
-        queryConfig={queryConfig}
-        context={{}}
-        defaultPageSize={rows.length > 50 ? 25 : 10}
-        showSQL={false}
-        enableColumnFilters={true}
-        enableColumnReordering={true}
-      />
-      {rows.length > maxRows && (
-        <div className="text-center text-xs text-muted-foreground py-2 px-3 border-t bg-muted/30">
-          Showing {maxRows} of {rows.length} rows
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+          <DialogTitle>Query Results</DialogTitle>
+          <DialogDescription>
+            {rowCount} rows
+            {duration && ` · ${duration}ms`}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto">
+          <DataTable
+            data={displayRows}
+            queryConfig={queryConfig}
+            context={{}}
+            defaultPageSize={rows.length > 50 ? 25 : 10}
+            showSQL={false}
+            enableColumnFilters={true}
+            enableColumnReordering={true}
+          />
         </div>
-      )}
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -173,17 +239,29 @@ function ToolCallPart({
   const hasOutput = part.state === 'output-available'
   const hasError = part.state === 'output-error'
 
-  // Use derived state for auto-expand behavior (no useState + useEffect needed)
-  // Track if user manually toggled to closed
-  const [userToggledClosed, setUserToggledClosed] = useState(false)
+  // Track if user has manually toggled (to avoid overriding their choice)
+  const userToggledRef = useRef(false)
+
+  // Auto-expand during streaming/error/starting, but allow manual toggle
   const shouldAutoExpand = isStreaming || hasError || isStarting
-  const isExpanded = shouldAutoExpand && !userToggledClosed
+  const [isExpanded, setIsExpanded] = useState(shouldAutoExpand)
+
+  // Auto-expand when state changes, unless user has manually toggled
+  useEffect(() => {
+    if (shouldAutoExpand) {
+      setIsExpanded(true)
+      userToggledRef.current = false // Reset on state change
+    }
+  }, [shouldAutoExpand])
 
   // Generate stable ID for aria-controls
   const contentId = `tool-content-${part.toolCallId}`
 
-  // Toggle expand/collapse
-  const toggleExpanded = () => setUserToggledClosed((prev) => !prev)
+  // Toggle expand/collapse (user override)
+  const toggleExpanded = () => {
+    userToggledRef.current = true
+    setIsExpanded((prev) => !prev)
+  }
 
   // Format input parameters as muted inline text (e.g., "hostId=0")
   const inputParams = useMemo(() => {
@@ -308,6 +386,36 @@ function ToolCallPart({
   )
 }
 
+// Internal component to render table results with modal
+function TableResultWithModal({
+  rows,
+  rowCount,
+  duration,
+}: {
+  readonly rows: readonly unknown[]
+  readonly rowCount: number
+  readonly duration?: number
+}) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  return (
+    <>
+      <QueryResultSummary
+        rowCount={rowCount}
+        duration={duration}
+        onViewDetails={() => setIsModalOpen(true)}
+      />
+      <QueryResultModal
+        rows={rows}
+        rowCount={rowCount}
+        duration={duration}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+    </>
+  )
+}
+
 function renderToolOutput(output: unknown) {
   if (output == null) return null
 
@@ -321,14 +429,7 @@ function renderToolOutput(output: unknown) {
       !Array.isArray(firstItem)
 
     if (isArrayOfObjects) {
-      return (
-        <div>
-          <div className="text-xs text-muted-foreground mb-2">
-            {output.length} {output.length === 1 ? 'row' : 'rows'}
-          </div>
-          <ResultTable rows={output as unknown[]} maxRows={100} />
-        </div>
-      )
+      return <TableResultWithModal rows={output} rowCount={output.length} />
     }
     // Array of primitives or mixed types - fall through to JSON rendering
   }
@@ -366,15 +467,11 @@ function renderToolOutput(output: unknown) {
   // Check if output has rows (query result)
   if (Array.isArray(outputObj.rows) && outputObj.rows.length > 0) {
     return (
-      <div>
-        <div className="text-xs text-muted-foreground mb-2">
-          {String(outputObj.rowCount ?? '')} rows
-          {Boolean(outputObj.duration) && (
-            <span> · {String(outputObj.duration)}ms</span>
-          )}
-        </div>
-        <ResultTable rows={outputObj.rows as unknown[]} maxRows={100} />
-      </div>
+      <TableResultWithModal
+        rows={outputObj.rows}
+        rowCount={Number(outputObj.rowCount ?? outputObj.rows.length)}
+        duration={outputObj.duration as number | undefined}
+      />
     )
   }
 
@@ -588,12 +685,18 @@ const DEFAULT_SUGGESTIONS = [
 // Main Component
 // ============================================================================
 
-export function AgentsChatArea({
-  hostId,
-  isSidebarOpen,
-  onMenuClick,
-  hideHeader = false,
-}: AgentsChatAreaProps) {
+export const AgentsChatArea = forwardRef<
+  AgentsChatAreaRef,
+  AgentsChatAreaProps
+>(function AgentsChatArea(
+  {
+    hostId,
+    isSidebarOpen,
+    onMenuClick,
+    hideHeader = false,
+  }: AgentsChatAreaProps,
+  ref
+) {
   // Get conversation context for loading/saving messages
   const { conversations, currentConversationId, updateMessages } =
     useConversationContext()
@@ -692,6 +795,15 @@ export function AgentsChatArea({
     [handleSubmit]
   )
 
+  // Expose clear function via ref for parent components
+  useImperativeHandle(
+    ref,
+    () => ({
+      clearMessages: handleClear,
+    }),
+    [handleClear]
+  )
+
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Header (hidden when in page-level layout) */}
@@ -747,27 +859,16 @@ export function AgentsChatArea({
       )}
 
       {/* Compact controls bar (shown when header is hidden) */}
-      {hideHeader && (isLoading || messages.length > 0) && (
+      {hideHeader && isLoading && (
         <div className="flex items-center justify-end gap-1 px-3 py-2 border-b shrink-0">
-          {isLoading && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={stop}
-              className="h-7 w-7"
-              title="Stop generation"
-            >
-              <SquareIcon className="h-3.5 w-3.5" />
-            </Button>
-          )}
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleClear}
+            onClick={stop}
             className="h-7 w-7"
-            title="Clear conversation"
+            title="Stop generation"
           >
-            <TrashIcon className="h-3.5 w-3.5" />
+            <SquareIcon className="h-3.5 w-3.5" />
           </Button>
         </div>
       )}
@@ -783,15 +884,22 @@ export function AgentsChatArea({
                 <SparklesIcon className="h-8 w-8 sm:h-12 sm:w-12 text-purple-500" />
               }
             >
-              <div className="flex flex-wrap justify-center gap-2 pt-4 px-2 sm:px-4 max-w-2xl">
-                {DEFAULT_SUGGESTIONS.map((suggestion) => (
-                  <Suggestion
-                    key={suggestion}
-                    suggestion={suggestion}
-                    onClick={handleSuggestionClick}
-                    className="text-xs sm:text-sm whitespace-normal text-left h-auto py-2"
-                  />
-                ))}
+              <div className="pt-6 px-2 sm:px-4 max-w-xl mx-auto w-full">
+                <p className="text-xs text-muted-foreground mb-3 text-center">
+                  Try asking:
+                </p>
+                <ul className="space-y-1">
+                  {DEFAULT_SUGGESTIONS.map((suggestion) => (
+                    <li key={suggestion}>
+                      <button
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="w-full text-left text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md px-3 py-2 transition-colors"
+                      >
+                        {suggestion}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </ConversationEmptyState>
           ) : (
@@ -817,7 +925,7 @@ export function AgentsChatArea({
       <div className="border-t p-3 sm:p-4 shrink-0">
         <PromptInput onSubmit={handleSubmit} className="max-w-none">
           <PromptInputTextarea
-            placeholder="Ask about your ClickHouse data..."
+            placeholder="Ask about your ClickHouse data... (Press Enter to send, Shift+Enter for new line)"
             disabled={isLoading}
           />
           <PromptInputSubmit disabled={isLoading}>
@@ -826,10 +934,7 @@ export function AgentsChatArea({
             ) : null}
           </PromptInputSubmit>
         </PromptInput>
-        <p className="text-xs text-muted-foreground mt-2 text-center hidden sm:block">
-          Press Enter to send, Shift+Enter for new line
-        </p>
       </div>
     </div>
   )
-}
+})
