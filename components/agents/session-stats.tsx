@@ -1,18 +1,10 @@
 'use client'
 
-import {
-  ActivityIcon,
-  ClockIcon,
-  MessageSquareIcon,
-  ZapIcon,
-} from 'lucide-react'
+import { ActivityIcon, MessageSquareIcon } from 'lucide-react'
 
 import type { UIMessage } from 'ai'
 
-import {
-  formatDuration,
-  useAgentSessionStats,
-} from '@/lib/hooks/use-agent-session-stats'
+import { useAgentSessionStats } from '@/lib/hooks/use-agent-session-stats'
 
 export interface SessionStatsProps {
   /** AI SDK message history */

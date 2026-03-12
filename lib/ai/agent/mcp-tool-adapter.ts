@@ -9,8 +9,8 @@ import type { DataFormat } from '@clickhouse/client'
 
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
-import { fetchData } from '@/lib/clickhouse'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
+import { fetchData } from '@/lib/clickhouse'
 
 /**
  * Create AI SDK tools from MCP tool definitions
@@ -25,10 +25,17 @@ export function createMcpTools(hostId: number) {
       inputSchema: z.object({
         sql: z.string().describe('SQL query to execute (SELECT only)'),
         hostId: z.number().optional().describe('Host index (default: 0)'),
-        format: z.string().optional().describe('ClickHouse output format (default: JSONEachRow)'),
+        format: z
+          .string()
+          .optional()
+          .describe('ClickHouse output format (default: JSONEachRow)'),
       }),
       execute: async (input: unknown) => {
-        const { sql, hostId: toolHostId, format } = input as {
+        const {
+          sql,
+          hostId: toolHostId,
+          format,
+        } = input as {
           sql: string
           hostId?: number
           format?: string
@@ -118,7 +125,11 @@ export function createMcpTools(hostId: number) {
         hostId: z.number().optional().describe('Host index (default: 0)'),
       }),
       execute: async (input: unknown) => {
-        const { database, table, hostId: toolHostId } = input as {
+        const {
+          database,
+          table,
+          hostId: toolHostId,
+        } = input as {
           database: string
           table: string
           hostId?: number
@@ -189,7 +200,8 @@ export function createMcpTools(hostId: number) {
 
         return {
           version: (versionRow as Record<string, unknown>)?.version,
-          uptime_seconds: (uptimeRow as Record<string, unknown>)?.uptime_seconds,
+          uptime_seconds: (uptimeRow as Record<string, unknown>)
+            ?.uptime_seconds,
           metrics: metricsResult.data,
         }
       },
@@ -223,7 +235,10 @@ export function createMcpTools(hostId: number) {
       description:
         'Get the slowest completed queries from the query log, ordered by duration.',
       inputSchema: z.object({
-        limit: z.number().optional().describe('Max number of queries to return (default: 10)'),
+        limit: z
+          .number()
+          .optional()
+          .describe('Max number of queries to return (default: 10)'),
         hostId: z.number().optional().describe('Host index (default: 0)'),
       }),
       execute: async (input: unknown) => {

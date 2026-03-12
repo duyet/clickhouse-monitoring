@@ -5,9 +5,9 @@
  * Replaces the LangGraph-based agent with simpler, more efficient architecture.
  */
 
-import { createOpenAI } from '@ai-sdk/openai'
-import { ToolLoopAgent, stepCountIs } from 'ai'
 import { createMcpTools } from './mcp-tool-adapter'
+import { createOpenAI } from '@ai-sdk/openai'
+import { stepCountIs, ToolLoopAgent } from 'ai'
 
 /**
  * Default model configuration
@@ -65,7 +65,7 @@ export function createClickHouseAgent(options: {
   const tools = createMcpTools(hostId)
 
   // Build instructions as a plain string to avoid escaping issues
-  const instructions = String.raw`You are a ClickHouse database expert assistant. Your role is to help users analyze their ClickHouse databases through natural language queries.
+  const instructions = `You are a ClickHouse database expert assistant. Your role is to help users analyze their ClickHouse databases through natural language queries.
 
 ## Available Tools
 

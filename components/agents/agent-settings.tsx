@@ -1,8 +1,5 @@
 'use client'
 
-import { ZapIcon } from 'lucide-react'
-
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -10,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useAgentModel, type OpenAIModel } from '@/lib/hooks/use-agent-model'
+import { type OpenAIModel, useAgentModel } from '@/lib/hooks/use-agent-model'
 
 export interface AgentSettingsProps {
   /** Callback when model changes */
@@ -40,7 +37,7 @@ export function AgentSettings({ onModelChange }: AgentSettingsProps) {
   // Handle model change
   const handleModelChange = (newModel: string): void => {
     // Validate that the model exists before setting
-    if (newModel in models.map(m => m.id)) {
+    if (newModel in models.map((m) => m.id)) {
       setModel(newModel as OpenAIModel)
       onModelChange?.(newModel)
     }
