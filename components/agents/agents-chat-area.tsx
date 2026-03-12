@@ -17,7 +17,15 @@ import type { UIMessage } from 'ai'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
@@ -59,6 +67,11 @@ interface AgentsChatAreaProps {
   readonly isSidebarOpen: boolean
   readonly onMenuClick: () => void
   readonly hideHeader?: boolean
+}
+
+// Exposed methods via ref
+export interface AgentsChatAreaRef {
+  clearMessages: () => void
 }
 
 // Note: Chat state is managed internally by useChat when props are not provided.
@@ -600,12 +613,18 @@ const DEFAULT_SUGGESTIONS = [
 // Main Component
 // ============================================================================
 
-export function AgentsChatArea({
-  hostId,
-  isSidebarOpen,
-  onMenuClick,
-  hideHeader = false,
-}: AgentsChatAreaProps) {
+export const AgentsChatArea = forwardRef<
+  AgentsChatAreaRef,
+  AgentsChatAreaProps
+>(function AgentsChatArea(
+  {
+    hostId,
+    isSidebarOpen,
+    onMenuClick,
+    hideHeader = false,
+  }: AgentsChatAreaProps,
+  ref
+) {
   // Get conversation context for loading/saving messages
   const { conversations, currentConversationId, updateMessages } =
     useConversationContext()
@@ -704,6 +723,15 @@ export function AgentsChatArea({
     [handleSubmit]
   )
 
+  // Expose clear function via ref for parent components
+  useImperativeHandle(
+    ref,
+    () => ({
+      clearMessages: handleClear,
+    }),
+    [handleClear]
+  )
+
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Header (hidden when in page-level layout) */}
@@ -759,27 +787,16 @@ export function AgentsChatArea({
       )}
 
       {/* Compact controls bar (shown when header is hidden) */}
-      {hideHeader && (isLoading || messages.length > 0) && (
+      {hideHeader && isLoading && (
         <div className="flex items-center justify-end gap-1 px-3 py-2 border-b shrink-0">
-          {isLoading && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={stop}
-              className="h-7 w-7"
-              title="Stop generation"
-            >
-              <SquareIcon className="h-3.5 w-3.5" />
-            </Button>
-          )}
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleClear}
+            onClick={stop}
             className="h-7 w-7"
-            title="Clear conversation"
+            title="Stop generation"
           >
-            <TrashIcon className="h-3.5 w-3.5" />
+            <SquareIcon className="h-3.5 w-3.5" />
           </Button>
         </div>
       )}
@@ -844,4 +861,4 @@ export function AgentsChatArea({
       </div>
     </div>
   )
-}
+})
