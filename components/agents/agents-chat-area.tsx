@@ -179,6 +179,12 @@ function ToolCallPart({
   const shouldAutoExpand = isStreaming || hasError || isStarting
   const isExpanded = shouldAutoExpand && !userToggledClosed
 
+  // Generate stable ID for aria-controls
+  const contentId = useMemo(
+    () => `tool-content-${part.toolCallId}`,
+    [part.toolCallId]
+  )
+
   // Toggle expand/collapse
   const toggleExpanded = () => setUserToggledClosed((prev) => !prev)
 
@@ -203,6 +209,8 @@ function ToolCallPart({
       {/* Tool header - clickable to toggle */}
       <button
         onClick={toggleExpanded}
+        aria-expanded={isExpanded}
+        aria-controls={contentId}
         className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left"
       >
         {/* Expand/collapse icon */}
@@ -266,7 +274,7 @@ function ToolCallPart({
 
       {/* Collapsible content */}
       {isExpanded && (
-        <div className="bg-background/60">
+        <div id={contentId} className="bg-background/60">
           {/* Streaming state */}
           {isStreaming && (
             <div className="px-3 py-3">
@@ -306,8 +314,14 @@ function renderToolOutput(output: unknown) {
 
   // Handle direct array output (e.g., list_databases, list_tables, get_table_schema)
   if (Array.isArray(output) && output.length > 0) {
-    const firstItem = output[0] as Record<string, unknown>
-    if (typeof firstItem === 'object' && firstItem !== null) {
+    const firstItem = output[0]
+    // Check if array contains objects (table-like data) vs primitives
+    const isArrayOfObjects =
+      typeof firstItem === 'object' &&
+      firstItem !== null &&
+      !Array.isArray(firstItem)
+
+    if (isArrayOfObjects) {
       return (
         <div>
           <div className="text-xs text-muted-foreground mb-2">
@@ -317,6 +331,7 @@ function renderToolOutput(output: unknown) {
         </div>
       )
     }
+    // Array of primitives or mixed types - fall through to JSON rendering
   }
 
   const outputObj = output as Record<string, unknown>
