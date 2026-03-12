@@ -14,13 +14,11 @@ interface ConfigStatus {
   configured: {
     apiKey: boolean
     apiBase: boolean
-    model: boolean
   }
   isFullyConfigured: boolean
   requiredKeys: {
     apiKey: string
     apiBase: string
-    model: string
   }
 }
 
