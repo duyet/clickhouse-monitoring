@@ -1,5 +1,7 @@
 'use client'
 
+'use no memo'
+
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -195,6 +197,12 @@ function ToolCallPart({
   const [isExpanded, setIsExpanded] = useState(
     isStreaming || hasError || isStarting
   )
+
+  // Sync expand state with streaming state changes
+  // This ensures the tool auto-expands when it starts streaming or errors
+  useEffect(() => {
+    setIsExpanded(isStreaming || hasError || isStarting)
+  }, [isStreaming, hasError, isStarting])
 
   // Toggle expand/collapse
   const toggleExpanded = () => setIsExpanded((prev) => !prev)
@@ -441,6 +449,42 @@ function StreamingTypingIndicator({
 }
 
 /**
+ * Generates a stable key for a message part to avoid React remounting during streaming
+ * Using message.id + part type + index ensures keys don't shift when parts are added
+ */
+function getStablePartKey(
+  messageId: string,
+  part: unknown,
+  index: number
+): string {
+  const p = part as Record<string, unknown>
+
+  // Tool parts have stable toolCallId
+  if (
+    p.type === 'dynamic-tool' ||
+    (typeof p.type === 'string' && p.type.startsWith('tool-'))
+  ) {
+    return `msg-${messageId}-tool-${p.toolCallId as string}`
+  }
+
+  // Text parts: use message ID + type to create stable key
+  // Multiple text parts can exist, so include type but not index
+  if (p.type === 'text') {
+    // Use a hash of first few chars of text for stability during incremental updates
+    const textPreview = (p.text as string)?.slice(0, 10) || 'empty'
+    return `msg-${messageId}-text-${textPreview.length}`
+  }
+
+  // Step parts: use index (they're separators so position matters)
+  if (p.type === 'step-start') {
+    return `msg-${messageId}-step-${index}`
+  }
+
+  // Fallback
+  return `msg-${messageId}-part-${index}`
+}
+
+/**
  * Renders a single UIMessage with its parts (text, tool calls, etc.)
  */
 function ChatMessage({ message }: { readonly message: UIMessage }) {
@@ -450,18 +494,20 @@ function ChatMessage({ message }: { readonly message: UIMessage }) {
     <Message from={isUser ? 'user' : 'assistant'}>
       <MessageContent>
         {message.parts.map((part, i) => {
+          const stableKey = getStablePartKey(message.id, part, i)
+
           // Text part - render as markdown for assistant messages
           if (part.type === 'text') {
             // For user messages, use MessageResponse (plain text)
             if (isUser) {
               return (
-                <MessageResponse key={`text-${i}`}>{part.text}</MessageResponse>
+                <MessageResponse key={stableKey}>{part.text}</MessageResponse>
               )
             }
 
             // For assistant messages, use markdown rendering
             return (
-              <div key={`text-${i}`} className="markdown-content">
+              <div key={stableKey} className="markdown-content">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   rehypePlugins={[rehypeHighlight]}
@@ -514,31 +560,18 @@ function ChatMessage({ message }: { readonly message: UIMessage }) {
 
           // Tool call part (dynamic tool - from our custom agent)
           if (part.type === 'dynamic-tool') {
-            return (
-              <ToolCallPart
-                key={`tool-${part.toolCallId}`}
-                part={part as any}
-              />
-            )
+            return <ToolCallPart key={stableKey} part={part as any} />
           }
 
           // Static typed tool call part (type starts with 'tool-')
           if (typeof part.type === 'string' && part.type.startsWith('tool-')) {
-            return (
-              <ToolCallPart
-                key={`tool-${(part as any).toolCallId}`}
-                part={part as any}
-              />
-            )
+            return <ToolCallPart key={stableKey} part={part as any} />
           }
 
           // Step start part
           if (part.type === 'step-start') {
             return (
-              <div
-                key={`step-${i}`}
-                className="border-t border-muted/30 my-2"
-              />
+              <div key={stableKey} className="border-t border-muted/30 my-2" />
             )
           }
 
