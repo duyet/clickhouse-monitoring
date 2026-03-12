@@ -421,7 +421,10 @@ function hasMeaningfulContent(message: UIMessage): boolean {
 }
 
 /**
- * Shows typing indicator only when streaming AND assistant message has minimal content
+ * Shows typing indicator during streaming when assistant response is minimal
+ * Shows for both cases:
+ * 1. User just sent a message (last message is from user, waiting for assistant)
+ * 2. Assistant started streaming but hasn't produced meaningful content yet
  */
 function StreamingTypingIndicator({
   messages,
@@ -430,13 +433,13 @@ function StreamingTypingIndicator({
 }) {
   const lastMessage = messages[messages.length - 1]
 
-  // Only show typing indicator if:
-  // 1. Last message is from assistant
-  // 2. Assistant message doesn't have meaningful content yet
+  // Show typing indicator if:
+  // 1. Last message is from user (waiting for assistant to start)
+  // 2. Last message is from assistant but has no meaningful content yet
   const shouldShowTyping =
-    lastMessage &&
-    lastMessage.role === 'assistant' &&
-    !hasMeaningfulContent(lastMessage)
+    !lastMessage ||
+    lastMessage.role === 'user' ||
+    (lastMessage.role === 'assistant' && !hasMeaningfulContent(lastMessage))
 
   if (!shouldShowTyping) return null
 
