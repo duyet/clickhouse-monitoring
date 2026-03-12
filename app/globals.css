@@ -39,6 +39,45 @@
   }
 }
 
+/* Markdown content styling for agent responses */
+.markdown-content {
+  @apply prose prose-sm dark:prose-invert max-w-none;
+}
+
+.markdown-content p {
+  @apply my-3 leading-relaxed;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  @apply font-semibold mt-4 mb-2;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  @apply my-2 ml-4;
+}
+
+.markdown-content li {
+  @apply my-1;
+}
+
+.markdown-content code {
+  @apply text-xs;
+}
+
+.markdown-content pre {
+  @apply my-3;
+}
+
+.markdown-content table {
+  @apply my-3;
+}
+
 /* Disable sidebar transitions during resize for instant feedback */
 [data-slot="sidebar-wrapper"][data-resizing="true"] [data-slot="sidebar-gap"],
 [data-slot="sidebar-wrapper"][data-resizing="true"] [data-slot="sidebar-container"] {
