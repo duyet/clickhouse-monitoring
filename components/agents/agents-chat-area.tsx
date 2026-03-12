@@ -17,14 +17,7 @@ import type { UIMessage } from 'ai'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
@@ -74,20 +67,6 @@ interface AgentsChatAreaProps {
 // ============================================================================
 // Sub-components
 // ============================================================================
-
-function ChatSkeleton() {
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      <div className="flex items-start gap-3">
-        <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
-        <div className="flex-1 space-y-2">
-          <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-          <div className="h-16 w-full animate-pulse rounded bg-muted" />
-        </div>
-      </div>
-    </div>
-  )
-}
 
 /**
  * Animated typing indicator with three bouncing dots
@@ -780,40 +759,38 @@ export function AgentsChatArea({
       )}
 
       {/* Messages Area */}
-      <Suspense fallback={<ChatSkeleton />}>
-        <ConversationUI>
-          <ConversationContent>
-            {isEmpty ? (
-              <ConversationEmptyState
-                title="AI Agent"
-                description="Ask questions about your data using natural language"
-                icon={
-                  <SparklesIcon className="h-8 w-8 sm:h-12 sm:w-12 text-purple-500" />
-                }
-              >
-                <div className="flex flex-wrap justify-center gap-2 pt-4 px-2 sm:px-4 max-w-2xl">
-                  {DEFAULT_SUGGESTIONS.map((suggestion) => (
-                    <Suggestion
-                      key={suggestion}
-                      suggestion={suggestion}
-                      onClick={handleSuggestionClick}
-                      className="text-xs sm:text-sm whitespace-normal text-left h-auto py-2"
-                    />
-                  ))}
-                </div>
-              </ConversationEmptyState>
-            ) : (
-              <>
-                {messages.map((message) => (
-                  <ChatMessage key={message.id} message={message} />
+      <ConversationUI>
+        <ConversationContent>
+          {isEmpty ? (
+            <ConversationEmptyState
+              title="AI Agent"
+              description="Ask questions about your data using natural language"
+              icon={
+                <SparklesIcon className="h-8 w-8 sm:h-12 sm:w-12 text-purple-500" />
+              }
+            >
+              <div className="flex flex-wrap justify-center gap-2 pt-4 px-2 sm:px-4 max-w-2xl">
+                {DEFAULT_SUGGESTIONS.map((suggestion) => (
+                  <Suggestion
+                    key={suggestion}
+                    suggestion={suggestion}
+                    onClick={handleSuggestionClick}
+                    className="text-xs sm:text-sm whitespace-normal text-left h-auto py-2"
+                  />
                 ))}
-                {/* Show typing indicator during streaming/submitted when assistant message is minimal */}
-                {isLoading && <StreamingTypingIndicator messages={messages} />}
-              </>
-            )}
-          </ConversationContent>
-        </ConversationUI>
-      </Suspense>
+              </div>
+            </ConversationEmptyState>
+          ) : (
+            <>
+              {messages.map((message) => (
+                <ChatMessage key={message.id} message={message} />
+              ))}
+              {/* Show typing indicator during streaming/submitted when assistant message is minimal */}
+              {isLoading && <StreamingTypingIndicator messages={messages} />}
+            </>
+          )}
+        </ConversationContent>
+      </ConversationUI>
 
       {/* Error display */}
       {error && (

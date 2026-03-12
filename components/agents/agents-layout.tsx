@@ -10,7 +10,6 @@ import { AgentsSidebar } from './agents-sidebar'
 import { ConversationSwitcher } from './conversation-switcher'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { useLLMConfig } from '@/lib/hooks/use-llm-config'
@@ -101,13 +100,6 @@ export function AgentsLayout() {
         {!isConfigLoading && !isConfigured && (
           <div className="border-b p-4 shrink-0">
             <AgentConfigGuidance missingKeys={missingKeys} />
-          </div>
-        )}
-
-        {/* Loading skeleton for config check */}
-        {isConfigLoading && (
-          <div className="border-b p-4 shrink-0">
-            <Skeleton className="h-24 w-full" />
           </div>
         )}
 
