@@ -24,7 +24,10 @@ export async function POST(request: Request) {
   // Parse request body
   const body = (await request.json()) as {
     message?: string
-    messages?: Array<{ role: string; content: string; parts?: unknown[] }>
+    messages?: Array<
+      | { id: string; role: string; parts: Array<unknown> }
+      | { role: string; content: string; parts?: unknown[] }
+    >
     hostId?: number
     model?: string // Allow client to specify model
   }
@@ -32,17 +35,22 @@ export async function POST(request: Request) {
   // Support both direct `message` and AI SDK's UIMessage format with parts array
   const lastUserMessage = body.messages?.filter((m) => m.role === 'user')?.pop()
 
-  // Extract from AI SDK UIMessage parts array
+  // Extract text from parts array (simplified type guard)
   const textPart = lastUserMessage?.parts?.find(
-    (p: unknown) =>
+    (p): p is { type: 'text'; text: string } =>
       typeof p === 'object' &&
       p !== null &&
       'type' in p &&
       p.type === 'text' &&
-      'text' in p
-  ) as { type: string; text: string } | undefined
+      'text' in p &&
+      typeof p.text === 'string'
+  )
 
-  const userMessage = body.message || textPart?.text || lastUserMessage?.content
+  // Get message text from various sources (old format for backward compatibility)
+  const userMessage =
+    body.message ||
+    textPart?.text ||
+    (lastUserMessage as { content?: string } | undefined)?.content
 
   if (!userMessage || typeof userMessage !== 'string') {
     return new Response(
@@ -64,13 +72,22 @@ export async function POST(request: Request) {
     baseURL: process.env.LLM_API_BASE,
   })
 
-  // Build UI messages from the user message
-  const uiMessages = [
-    {
-      role: 'user' as const,
-      content: userMessage,
-    },
-  ]
+  // Build UI messages in the correct format for AI SDK v6
+  // If client sent proper UIMessage format, preserve it; otherwise create new
+  const uiMessages =
+    lastUserMessage &&
+    typeof lastUserMessage === 'object' &&
+    'id' in lastUserMessage &&
+    'parts' in lastUserMessage &&
+    Array.isArray(lastUserMessage.parts)
+      ? [lastUserMessage as { id: string; role: 'user'; parts: Array<unknown> }]
+      : [
+          {
+            id: crypto.randomUUID(),
+            role: 'user' as const,
+            parts: [{ type: 'text' as const, text: userMessage }],
+          },
+        ]
 
   // Create streaming response using AI SDK
   return createAgentUIStreamResponse({

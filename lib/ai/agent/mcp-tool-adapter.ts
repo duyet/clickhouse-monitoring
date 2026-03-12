@@ -20,8 +20,21 @@ export function createMcpTools(hostId: number) {
 
   return {
     query: dynamicTool({
-      description:
-        'Execute a read-only SQL query against ClickHouse. Only SELECT and WITH (CTE) queries are allowed.',
+      description: `Execute a read-only SQL query against ClickHouse (SELECT and WITH/CTE only).
+
+When to use:
+- Ad-hoc data analysis and exploration
+- Custom aggregations and joins
+- Filtering and sorting results
+- Calculating statistics and metrics
+
+Best practices:
+- Use LIMIT with large result sets
+- Prefer formatReadableSize() for bytes, formatReadableQuantity() for counts
+- Filter by time columns (event_time, query_start_time) for query_log
+- Use SAMPLE clause for very large tables
+
+Use list_databases/list_tables/get_table_schema first to understand structure.`,
       inputSchema: z.object({
         sql: z.string().describe('SQL query to execute (SELECT only)'),
         hostId: z.number().optional().describe('Host index (default: 0)'),
@@ -64,8 +77,14 @@ export function createMcpTools(hostId: number) {
     }),
 
     list_databases: dynamicTool({
-      description:
-        'List all databases on the ClickHouse server with their engines and comments.',
+      description: `List all databases on the ClickHouse server with their engines and comments.
+
+When to use:
+- Starting point for database exploration
+- Understanding database structure
+- Finding available databases to query
+
+Returns: Array of databases with name, engine, and comment fields.`,
       inputSchema: z.object({
         hostId: z.number().optional().describe('Host index (default: 0)'),
       }),
@@ -88,8 +107,15 @@ export function createMcpTools(hostId: number) {
     }),
 
     list_tables: dynamicTool({
-      description:
-        'List tables in a ClickHouse database with row counts and sizes, ordered by size descending.',
+      description: `List tables in a ClickHouse database with row counts and sizes, ordered by size descending.
+
+When to use:
+- Finding the largest tables in a database
+- Understanding table distribution
+- Identifying targets for optimization
+- Exploring database structure
+
+Returns: Tables with name, engine, total_rows, and size (formatted).`,
       inputSchema: z.object({
         database: z.string().describe('Database name'),
         hostId: z.number().optional().describe('Host index (default: 0)'),
@@ -117,8 +143,15 @@ export function createMcpTools(hostId: number) {
     }),
 
     get_table_schema: dynamicTool({
-      description:
-        'Get column definitions for a specific ClickHouse table including types, defaults, and comments.',
+      description: `Get column definitions for a specific ClickHouse table including types, defaults, and comments.
+
+When to use:
+- Before writing complex queries
+- Understanding table structure
+- Checking column types for joins
+- Finding available columns for filtering
+
+Returns: Array of columns with name, type, default_kind, default_expression, and comment.`,
       inputSchema: z.object({
         database: z.string().describe('Database name'),
         table: z.string().describe('Table name'),
@@ -152,8 +185,15 @@ export function createMcpTools(hostId: number) {
     }),
 
     get_metrics: dynamicTool({
-      description:
-        'Get key ClickHouse server metrics: version, uptime, active connections, and memory usage.',
+      description: `Get key ClickHouse server metrics: version, uptime, active connections, and memory usage.
+
+When to use:
+- Checking server health and status
+- Understanding cluster configuration
+- Diagnosing connection issues
+- Verifying server version for feature compatibility
+
+Returns: Object with version, uptime_seconds, and metrics array (TCPConnection, HTTPConnection, MemoryTracking).`,
       inputSchema: z.object({
         hostId: z.number().optional().describe('Host index (default: 0)'),
       }),
@@ -208,8 +248,15 @@ export function createMcpTools(hostId: number) {
     }),
 
     get_running_queries: dynamicTool({
-      description:
-        'List currently running queries on the ClickHouse server, ordered by elapsed time.',
+      description: `List currently running queries on the ClickHouse server, ordered by elapsed time.
+
+When to use:
+- Identifying long-running queries
+- Finding queries that may be blocking others
+- Real-time performance monitoring
+- Investigating system load
+
+Returns: Array with query_id, user, elapsed (seconds), read_rows, memory_usage, and truncated query text.`,
       inputSchema: z.object({
         hostId: z.number().optional().describe('Host index (default: 0)'),
       }),
@@ -232,8 +279,15 @@ export function createMcpTools(hostId: number) {
     }),
 
     get_slow_queries: dynamicTool({
-      description:
-        'Get the slowest completed queries from the query log, ordered by duration.',
+      description: `Get the slowest completed queries from the query log, ordered by duration.
+
+When to use:
+- Performance analysis and optimization
+- Finding queries that need tuning
+- Identifying resource-intensive operations
+- Historical performance review
+
+Returns: Array with query_id, user, query_duration_ms, read_rows, memory_usage, truncated query, and event_time.`,
       inputSchema: z.object({
         limit: z
           .number()
@@ -266,8 +320,15 @@ export function createMcpTools(hostId: number) {
     }),
 
     get_merge_status: dynamicTool({
-      description:
-        'Get currently running merge operations with progress, size, and elapsed time.',
+      description: `Get currently running merge operations with progress, size, and elapsed time.
+
+When to use:
+- Monitoring background merge activity
+- Understanding write amplification
+- Identifying stuck or long-running merges
+- Analyzing partition maintenance
+
+Returns: Array with database, table, progress_pct, size (formatted), and elapsed (seconds).`,
       inputSchema: z.object({
         hostId: z.number().optional().describe('Host index (default: 0)'),
       }),
