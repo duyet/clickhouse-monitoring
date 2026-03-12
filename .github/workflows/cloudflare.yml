@@ -78,7 +78,18 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          # ClickHouse password
           echo "${{ secrets.CLICKHOUSE_PASSWORD }}" | npx wrangler secret put CLICKHOUSE_PASSWORD --env preview
+
+          # LLM API keys for AI agents feature
+          if [ -n "${{ secrets.LLM_API_KEY }}" ]; then
+            echo "${{ secrets.LLM_API_KEY }}" | npx wrangler secret put LLM_API_KEY --env preview
+          fi
+
+          # Optional: Set model (defaults to openrouter/free if not set)
+          if [ -n "${{ secrets.LLM_MODEL }}" ]; then
+            echo "${{ secrets.LLM_MODEL }}" | npx wrangler secret put LLM_MODEL --env preview
+          fi
 
       - name: Deploy preview to Cloudflare Workers
         id: deploy
@@ -237,6 +248,24 @@ jobs:
           echo "  Ref: ${NEXT_PUBLIC_GIT_REF}"
           echo "  Time: ${NEXT_PUBLIC_BUILD_TIMESTAMP}"
           bun run cf:build
+
+      - name: Set production secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # ClickHouse password
+          echo "${{ secrets.CLICKHOUSE_PASSWORD }}" | npx wrangler secret put CLICKHOUSE_PASSWORD
+
+          # LLM API keys for AI agents feature
+          if [ -n "${{ secrets.LLM_API_KEY }}" ]; then
+            echo "${{ secrets.LLM_API_KEY }}" | npx wrangler secret put LLM_API_KEY
+          fi
+
+          # Optional: Set model (defaults to openrouter/free if not set)
+          if [ -n "${{ secrets.LLM_MODEL }}" ]; then
+            echo "${{ secrets.LLM_MODEL }}" | npx wrangler secret put LLM_MODEL
+          fi
 
       - name: Deploy to Cloudflare Workers
         id: deploy
