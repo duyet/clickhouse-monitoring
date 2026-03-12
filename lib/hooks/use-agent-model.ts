@@ -49,7 +49,12 @@ export type OpenAIModel = keyof typeof OPENAI_MODELS
  * Get default model from environment or fallback
  */
 function getDefaultModel(): OpenAIModel {
-  // Use stepfun/step-3.5-flash:free for better agent compatibility
+  // Check if LLM_MODEL env var is set and valid
+  const envModel = process.env.LLM_MODEL
+  if (envModel && envModel in OPENAI_MODELS) {
+    return envModel as OpenAIModel
+  }
+  // Fallback to stepfun model for better agent compatibility
   return 'stepfun/step-3.5-flash:free'
 }
 

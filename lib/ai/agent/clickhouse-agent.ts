@@ -12,8 +12,9 @@ import { stepCountIs, ToolLoopAgent } from 'ai'
 
 /**
  * Default model configuration
+ * Falls back to stepfun/step-3.5-flash:free if LLM_MODEL env var is not set
  */
-const DEFAULT_MODEL = 'stepfun/step-3.5-flash:free'
+const DEFAULT_MODEL = process.env.LLM_MODEL || 'stepfun/step-3.5-flash:free'
 const DEFAULT_MAX_STEPS = 30
 
 /**
