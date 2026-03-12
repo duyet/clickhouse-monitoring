@@ -13,7 +13,7 @@ import { stepCountIs, ToolLoopAgent } from 'ai'
 /**
  * Default model configuration
  */
-const DEFAULT_MODEL = 'openrouter/free'
+const DEFAULT_MODEL = 'stepfun/step-3.5-flash:free'
 const DEFAULT_MAX_STEPS = 30
 
 /**

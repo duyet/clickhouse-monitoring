@@ -95,6 +95,11 @@ export async function POST(request: Request) {
     uiMessages,
     onError: (error) => {
       console.error('[Agent API] Stream error:', error)
+      console.error('[Agent API] Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      })
       return error instanceof Error
         ? error.message
         : 'An unknown error occurred'
