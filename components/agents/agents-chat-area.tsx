@@ -193,19 +193,14 @@ function ToolCallPart({
   const hasOutput = part.state === 'output-available'
   const hasError = part.state === 'output-error'
 
-  // Auto-expand when streaming, has error, or starting. Collapsed by default for completed.
-  const [isExpanded, setIsExpanded] = useState(
-    isStreaming || hasError || isStarting
-  )
-
-  // Sync expand state with streaming state changes
-  // This ensures the tool auto-expands when it starts streaming or errors
-  useEffect(() => {
-    setIsExpanded(isStreaming || hasError || isStarting)
-  }, [isStreaming, hasError, isStarting])
+  // Use derived state for auto-expand behavior (no useState + useEffect needed)
+  // Track if user manually toggled to closed
+  const [userToggledClosed, setUserToggledClosed] = useState(false)
+  const shouldAutoExpand = isStreaming || hasError || isStarting
+  const isExpanded = shouldAutoExpand && !userToggledClosed
 
   // Toggle expand/collapse
-  const toggleExpanded = () => setIsExpanded((prev) => !prev)
+  const toggleExpanded = () => setUserToggledClosed((prev) => !prev)
 
   // Format input parameters as muted inline text (e.g., "hostId=0")
   const inputParams = useMemo(() => {
@@ -620,6 +615,7 @@ export function AgentsChatArea({
 
   // Ref to track last saved messages to avoid infinite loops
   const lastSavedMessagesRef = useRef<UIMessage[]>([])
+  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Load messages when conversation changes
   useEffect(() => {
@@ -629,33 +625,49 @@ export function AgentsChatArea({
       (c: Conversation) => c.id === currentConversationId
     )
     if (conversation) {
-      // Only update if messages are different to avoid clearing chat
-      const currentMessagesJson = JSON.stringify(messages)
-      const storedMessagesJson = JSON.stringify(conversation.messages)
+      const storedMsgs = conversation.messages
+      // Fast path: same reference
+      if (storedMsgs === messages) return
 
-      if (currentMessagesJson !== storedMessagesJson) {
-        setMessages(conversation.messages)
-        lastSavedMessagesRef.current = conversation.messages
+      // Check if update needed (length + ID comparison)
+      const needsUpdate =
+        storedMsgs.length !== messages.length ||
+        storedMsgs.some((m, i) => m.id !== messages[i]?.id)
+
+      if (needsUpdate) {
+        setMessages(storedMsgs)
+        lastSavedMessagesRef.current = storedMsgs
       }
     }
-  }, [currentConversationId, conversations, setMessages])
+  }, [currentConversationId, conversations, messages, setMessages])
 
   // Save messages to conversation when they change (debounced)
   useEffect(() => {
     if (!currentConversationId) return
 
-    // Check if messages actually changed
-    const currentMessagesJson = JSON.stringify(messages)
-    const lastSavedJson = JSON.stringify(lastSavedMessagesRef.current)
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
 
-    if (currentMessagesJson === lastSavedJson) return
+    // Check if messages actually changed (reference check)
+    if (messages === lastSavedMessagesRef.current) return
 
-    // Update ref
-    lastSavedMessagesRef.current = messages
+    // Debounce save: wait 1s after last message change (or 100ms during streaming)
+    const isStreaming = status === 'streaming'
+    const debounceMs = isStreaming ? 100 : 1000
 
-    // Save to conversation (will auto-generate title if first user message)
-    updateMessages(currentConversationId, messages)
-  }, [messages, currentConversationId, updateMessages])
+    saveTimeoutRef.current = setTimeout(() => {
+      lastSavedMessagesRef.current = messages
+      updateMessages(currentConversationId, messages)
+    }, debounceMs)
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [messages, currentConversationId, updateMessages, status])
 
   const isLoading = status === 'streaming' || status === 'submitted'
   const isEmpty = messages.length === 0

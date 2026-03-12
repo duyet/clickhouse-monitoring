@@ -18,6 +18,10 @@ import {
   useState,
 } from 'react'
 
+// Memory limits to prevent localStorage quota exceeded
+const MAX_MESSAGES_PER_CONVERSATION = 100
+const MAX_CONVERSATIONS = 20
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -159,6 +163,7 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
   /**
    * Update messages for a conversation and refresh its updatedAt timestamp.
    * Also auto-generates title if this is the first user message.
+   * Applies memory limits: truncates old messages and limits total conversations.
    */
   const updateMessages = useCallback((id: string, messages: UIMessage[]) => {
     setConversations((prev) => {
@@ -168,10 +173,15 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
       const conversation = prev[index]
       const now = Date.now()
 
+      // Truncate messages to prevent localStorage quota exceeded
+      const truncatedMessages = messages.slice(-MAX_MESSAGES_PER_CONVERSATION)
+
       // Auto-generate title from first user message if still default
       let title = conversation.title
-      if (title === 'New Conversation' && messages.length > 0) {
-        const firstUserMessage = messages.find((m) => m.role === 'user')
+      if (title === 'New Conversation' && truncatedMessages.length > 0) {
+        const firstUserMessage = truncatedMessages.find(
+          (m) => m.role === 'user'
+        )
         if (firstUserMessage) {
           // Extract text from first message part
           const textPart = firstUserMessage.parts.find((p) => p.type === 'text')
@@ -185,12 +195,16 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
       const updated: Conversation = {
         ...conversation,
         title,
-        messages,
+        messages: truncatedMessages,
         updatedAt: now,
       }
 
       // Re-sort conversations by updatedAt (move updated to top)
-      const updatedList = [updated, ...prev.filter((c) => c.id !== id)]
+      // Also limit total conversations to prevent localStorage quota exceeded
+      const updatedList = [updated, ...prev.filter((c) => c.id !== id)].slice(
+        0,
+        MAX_CONVERSATIONS
+      )
 
       saveConversations(updatedList)
       return updatedList

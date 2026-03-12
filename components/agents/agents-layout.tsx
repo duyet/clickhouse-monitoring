@@ -8,7 +8,7 @@ import { AgentConfigGuidance } from './agent-config-guidance'
 import { AgentsChatArea } from './agents-chat-area'
 import { AgentsSidebar } from './agents-sidebar'
 import { ConversationSwitcher } from './conversation-switcher'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -20,8 +20,18 @@ export function AgentsLayout() {
   const hostId = useHostId()
   const isMobile = useIsMobile()
 
+  // Track if user manually toggled sidebar (to prevent auto-closing on resize)
+  const userToggledRef = useRef(false)
+
   // Sidebar defaults to open on desktop, closed on mobile
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => !isMobile)
+
+  // Sync sidebar state with isMobile changes (only if user hasn't manually toggled)
+  useEffect(() => {
+    if (!userToggledRef.current) {
+      setIsSidebarOpen(!isMobile)
+    }
+  }, [isMobile])
   const {
     isConfigured,
     missingKeys,
@@ -65,7 +75,10 @@ export function AgentsLayout() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              onClick={() => {
+                userToggledRef.current = true
+                setIsSidebarOpen(!isSidebarOpen)
+              }}
               className="h-8 w-8 shrink-0"
               title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
             >
