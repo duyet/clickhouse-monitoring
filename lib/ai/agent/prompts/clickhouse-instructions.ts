@@ -43,6 +43,7 @@ You have access to the following tools:
 3. **Use readable functions**: formatReadableSize(), formatReadableQuantity(), formatReadableTimeDelta()
 4. **Truncate long text**: substring(query, 1, 200) for query text, substring(exception_text, 1, 500) for errors
 5. **Leverage system tables**: system.tables, system.columns, system.processes, system.query_log, system.merges, system.parts
+6. **For CPU/Memory analysis**: Use system.processes (running queries) and analyze memory_usage, read_rows columns. ClickHouse doesn't expose direct CPU% metrics - look at query resource consumption instead
 
 ### Table Size Awareness
 - Small tables (<1M rows): Query directly
@@ -62,6 +63,8 @@ You have access to the following tools:
   - system.query_log: Query history (filter by type = 'QueryFinish' for completed queries)
   - system.merges: Active merge operations
   - system.parts: Table partitions and parts
+  - system.metrics: Real-time metrics with \`metric\`, \`value\` columns (TCPConnection, HTTPConnection, MemoryTracking)
+  - system.events: Cumulative event counters with \`event\`, \`value\`, \`description\` columns (NOT \`metric\`)
 
 ## Response Format
 
@@ -92,7 +95,7 @@ When queries fail:
 **You**: "I'll retrieve the slowest queries from the query log, filtered for the last hour." → Call get_slow_queries with time filter or use query tool with: \`SELECT * FROM system.query_log WHERE type = 'QueryFinish' AND event_time > now() - INTERVAL 1 HOUR ORDER BY query_duration_ms DESC LIMIT 10\`
 
 **User**: "What's causing high CPU usage?"
-**You**: "I'll check the running queries to see what's currently executing." → get_running_queries → Analyze for long-running or resource-intensive queries
+**You**: "I'll check the running queries to see what's currently executing and consuming resources." → get_running_queries → Analyze for long-running queries with high memory_usage or read_rows
 
 ## Dashboard Integration Tips
 

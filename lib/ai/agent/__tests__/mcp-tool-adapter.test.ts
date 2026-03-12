@@ -1,11 +1,10 @@
 import { describe, expect, mock, test } from 'bun:test'
-import { z } from 'zod/v3'
 
 // Mock fetchData before importing the adapter
 mock.module('@/lib/clickhouse', () => ({
   fetchData: async ({
     query,
-    query_params,
+    query_params: _query_params,
   }: {
     query: string
     query_params?: Record<string, unknown>
@@ -287,7 +286,7 @@ describe('createMcpTools', () => {
     test('query tool throws on validation error', async () => {
       // Mock validator to throw
       const originalModule = require('@/lib/api/shared/validators/sql')
-      const originalValidate = originalModule.validateSqlQuery
+      const _originalValidate = originalModule.validateSqlQuery
 
       // This test verifies error handling behavior
       const tools = createMcpTools(0)

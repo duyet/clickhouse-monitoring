@@ -17,18 +17,28 @@ const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
  */
 export const OPENAI_MODELS = {
   'openrouter/free': {
-    name: 'Free Tier',
-    description: 'Free model via OpenRouter',
+    name: 'OpenRouter Free',
+    description: 'Free routing model (may have compatibility issues)',
     contextLength: 128000,
   },
   'nvidia/nemotron-3-super-120b-a12b:free': {
     name: 'Nemotron 3 Super 120B',
-    description: 'NVIDIA 120B parameter model',
+    description: 'NVIDIA 120B parameter model (recommended)',
     contextLength: 128000,
   },
   'stepfun/step-3.5-flash:free': {
     name: 'Step 3.5 Flash',
     description: 'StepFun fast model',
+    contextLength: 128000,
+  },
+  'google/gemma-3-27b-it:free': {
+    name: 'Gemma 3 27B',
+    description: 'Google 27B parameter model',
+    contextLength: 128000,
+  },
+  'meta-llama/llama-3.1-8b-instruct:free': {
+    name: 'Llama 3.1 8B',
+    description: 'Meta 8B parameter model',
     contextLength: 128000,
   },
 } as const
@@ -39,8 +49,13 @@ export type OpenAIModel = keyof typeof OPENAI_MODELS
  * Get default model from environment or fallback
  */
 function getDefaultModel(): OpenAIModel {
-  // Always use openrouter/free
-  return 'openrouter/free'
+  // Check if LLM_MODEL env var is set and valid
+  const envModel = process.env.LLM_MODEL
+  if (envModel && envModel in OPENAI_MODELS) {
+    return envModel as OpenAIModel
+  }
+  // Fallback to stepfun model for better agent compatibility
+  return 'stepfun/step-3.5-flash:free'
 }
 
 /**

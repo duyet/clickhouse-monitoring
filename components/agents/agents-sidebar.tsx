@@ -1,10 +1,10 @@
 'use client'
 
-import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronRightIcon, XIcon } from 'lucide-react'
 
-import { AgentSettings } from './agent-settings'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Collapsible,
   CollapsibleContent,
@@ -31,9 +31,6 @@ function HostInfoSection({ hostId }: { readonly hostId: number }) {
 
   return (
     <div className="mb-4">
-      <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-        Current Host
-      </h3>
       <Badge variant="secondary" className="text-sm">
         {currentHost?.name || `Host ${hostId}`}
       </Badge>
@@ -138,14 +135,6 @@ export function AgentsSidebar({
       <div className="p-4 space-y-4">
         <HostInfoSection hostId={hostId} />
 
-        {/* Model Settings */}
-        <div className="border-b pb-4">
-          <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-            Model Settings
-          </h3>
-          <AgentSettings />
-        </div>
-
         <ToolsSection />
         <SuggestedPromptsSection />
       </div>
@@ -163,8 +152,31 @@ export function AgentsSidebar({
   }
 
   return (
-    <div className="w-72 lg:w-80 border-l h-full shrink-0 hidden md:block">
-      {content}
-    </div>
+    <>
+      {isOpen ? (
+        <div className="w-72 lg:w-80 border-l h-full shrink-0 hidden md:flex flex-col">
+          {/* Header - clickable title to close */}
+          <div
+            className="flex items-center justify-between border-b px-4 py-2.5 shrink-0 cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={() => onOpenChange?.(false)}
+          >
+            <h3 className="font-semibold text-sm">Agent Settings</h3>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpenChange?.(false)
+              }}
+              className="h-7 w-7"
+              aria-label="Close"
+            >
+              <XIcon className="h-4 w-4" />
+            </Button>
+          </div>
+          {content}
+        </div>
+      ) : null}
+    </>
   )
 }

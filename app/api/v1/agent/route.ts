@@ -32,6 +32,27 @@ export async function POST(request: Request) {
     model?: string // Allow client to specify model
   }
 
+  // Debug logging
+  console.log('[Agent API] Request body keys:', Object.keys(body))
+  console.log('[Agent API] Messages count:', body.messages?.length)
+  console.log(
+    '[Agent API] Messages sample:',
+    body.messages?.slice(-2).map((m) => ({
+      role: m.role,
+      hasParts: 'parts' in m,
+      partsCount: 'parts' in m ? m.parts?.length : 0,
+      hasContent: 'content' in m,
+      id: 'id' in m ? m.id : undefined,
+    }))
+  )
+  // Log full first message structure for deep debugging
+  if (body.messages && body.messages.length > 0) {
+    console.log(
+      '[Agent API] First message structure:',
+      JSON.stringify(body.messages[0], null, 2)
+    )
+  }
+
   // Support both direct `message` and AI SDK's UIMessage format with parts array
   const lastUserMessage = body.messages?.filter((m) => m.role === 'user')?.pop()
 
@@ -89,12 +110,25 @@ export async function POST(request: Request) {
           },
         ]
 
+  // Debug logging
+  console.log(
+    '[Agent API] uiMessages being sent:',
+    JSON.stringify(uiMessages, null, 2)
+  )
+  console.log('[Agent API] Model being used:', model)
+  console.log('[Agent API] OpenAI baseURL:', process.env.LLM_API_BASE)
+
   // Create streaming response using AI SDK
   return createAgentUIStreamResponse({
     agent,
     uiMessages,
     onError: (error) => {
       console.error('[Agent API] Stream error:', error)
+      console.error('[Agent API] Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      })
       return error instanceof Error
         ? error.message
         : 'An unknown error occurred'

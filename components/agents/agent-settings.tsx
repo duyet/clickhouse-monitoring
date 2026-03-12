@@ -37,7 +37,7 @@ export function AgentSettings({ onModelChange }: AgentSettingsProps) {
   // Handle model change
   const handleModelChange = (newModel: string): void => {
     // Validate that the model exists before setting
-    if (newModel in models.map((m) => m.id)) {
+    if (models.some((m) => m.id === newModel)) {
       setModel(newModel as OpenAIModel)
       onModelChange?.(newModel)
     }
@@ -48,23 +48,20 @@ export function AgentSettings({ onModelChange }: AgentSettingsProps) {
   return (
     <div className="space-y-3">
       {/* Model selection */}
-      <div className="flex items-center gap-2">
-        <label className="text-sm font-medium">Model:</label>
-        <Select value={model} onValueChange={handleModelChange}>
-          <SelectTrigger className="h-8 text-xs max-w-[200px]">
-            <SelectValue placeholder="Select model" />
-          </SelectTrigger>
-          <SelectContent>
-            {models.map((m) => (
-              <SelectItem key={m.id} value={m.id} className="text-xs">
-                <div className="flex items-center gap-2">
-                  <span>{m.name}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Select value={model} onValueChange={handleModelChange}>
+        <SelectTrigger className="h-8 text-xs max-w-[200px]">
+          <SelectValue placeholder="Select model" />
+        </SelectTrigger>
+        <SelectContent>
+          {models.map((m) => (
+            <SelectItem key={m.id} value={m.id} className="text-xs">
+              <div className="flex items-center gap-2">
+                <span>{m.name}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {/* Model info */}
       {currentModelData && (
