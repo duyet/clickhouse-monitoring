@@ -59,14 +59,19 @@ export function createClickHouseAgent(options: {
     'openrouter'
   )
 
+  // OpenRouter identification headers for rankings/analytics
+  // Configurable via OPENROUTER_REFERER and OPENROUTER_APP_NAME env vars
+  const openRouterReferer = process.env.OPENROUTER_REFERER
+  const openRouterAppName = process.env.OPENROUTER_APP_NAME
+
   // Create OpenAI provider with optional OpenRouter headers
   const openai = createOpenAI({
     apiKey: apiKey || process.env.LLM_API_KEY,
     baseURL: baseURL || process.env.LLM_API_BASE,
     ...(isOpenRouter && {
       headers: {
-        'HTTP-Referer': 'https://clickhouse.duyet.net',
-        'X-OpenRouter-Title': 'ClickHouse Monitoring',
+        ...(openRouterReferer && { 'HTTP-Referer': openRouterReferer }),
+        ...(openRouterAppName && { 'X-OpenRouter-Title': openRouterAppName }),
       },
     }),
   })

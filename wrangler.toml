@@ -84,6 +84,8 @@ id = "78782c1fcf4141d9b6f26f2046f50ceb"
 # - CLICKHOUSE_NAME: Comma-separated list of custom names for hosts
 # - CLICKHOUSE_MAX_EXECUTION_TIME: Query timeout in seconds (default: 60)
 # - CLICKHOUSE_TZ: Timezone for ClickHouse queries
+# - OPENROUTER_REFERER: App URL for OpenRouter attribution (https://openrouter.ai/docs/app-attribution)
+# - OPENROUTER_APP_NAME: App display name for OpenRouter rankings/logs
 #
 # Example .dev.vars:
 # CLICKHOUSE_HOST=http://localhost:8123
@@ -104,6 +106,11 @@ CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 # Required because Workers runtime doesn't support Node.js net/tls modules.
 CLOUDFLARE_WORKERS = "1"
 
+# OpenRouter identification headers for rankings/analytics
+# See: https://openrouter.ai/docs#hosts
+OPENROUTER_REFERER = "https://clickhouse.duyet.net"
+OPENROUTER_APP_NAME = "ClickHouse Monitoring"
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview environment for PR deployments
 # Deployed by GitHub Actions on pull requests.
@@ -122,6 +129,8 @@ CLICKHOUSE_USER = "duyet,duyet,duyet"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
 LLM_MODEL = "openrouter/free"
+OPENROUTER_REFERER = "https://clickhouse.duyet.net"
+OPENROUTER_APP_NAME = "ClickHouse Monitoring"
 
 # Self-reference must point to the preview worker
 [[env.preview.services]]
