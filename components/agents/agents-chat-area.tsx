@@ -180,10 +180,7 @@ function ToolCallPart({
   const isExpanded = shouldAutoExpand && !userToggledClosed
 
   // Generate stable ID for aria-controls
-  const contentId = useMemo(
-    () => `tool-content-${part.toolCallId}`,
-    [part.toolCallId]
-  )
+  const contentId = `tool-content-${part.toolCallId}`
 
   // Toggle expand/collapse
   const toggleExpanded = () => setUserToggledClosed((prev) => !prev)
@@ -272,39 +269,41 @@ function ToolCallPart({
         </div>
       </button>
 
-      {/* Collapsible content */}
-      {isExpanded && (
-        <div id={contentId} className="bg-background/60">
-          {/* Streaming state */}
-          {isStreaming && (
-            <div className="px-3 py-3">
-              <div className="flex items-center gap-2">
-                <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
-                <span className="text-xs text-muted-foreground">
-                  Executing {toolName}...
-                </span>
-              </div>
+      {/* Collapsible content - always rendered for a11y, hidden via CSS when collapsed */}
+      <div
+        id={contentId}
+        className={isExpanded ? 'bg-background/60' : 'hidden'}
+        aria-hidden={!isExpanded}
+      >
+        {/* Streaming state */}
+        {isStreaming && (
+          <div className="px-3 py-3">
+            <div className="flex items-center gap-2">
+              <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
+              <span className="text-xs text-muted-foreground">
+                Executing {toolName}...
+              </span>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Tool output */}
-          {hasOutput && part.output != null && (
-            <div className="px-3 py-2">
-              <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
-                Output
-              </div>
-              {renderToolOutput(part.output)}
+        {/* Tool output */}
+        {hasOutput && part.output != null && (
+          <div className="px-3 py-2">
+            <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+              Output
             </div>
-          )}
+            {renderToolOutput(part.output)}
+          </div>
+        )}
 
-          {/* Tool error */}
-          {hasError && Boolean(part.errorText) && (
-            <div className="px-3 py-2 text-sm text-destructive">
-              {String(part.errorText)}
-            </div>
-          )}
-        </div>
-      )}
+        {/* Tool error */}
+        {hasError && Boolean(part.errorText) && (
+          <div className="px-3 py-2 text-sm text-destructive">
+            {String(part.errorText)}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
