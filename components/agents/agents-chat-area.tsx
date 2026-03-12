@@ -14,19 +14,27 @@ import type { UIMessage } from 'ai'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import { Suspense, useCallback, useMemo, useState } from 'react'
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
 import 'highlight.js/styles/github-dark.css'
 
+import type { Conversation } from '@/lib/ai/agent/conversation-utils'
 import type { QueryConfig } from '@/types/query-config'
 
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
 import {
-  Conversation,
   ConversationContent,
   ConversationEmptyState,
+  Conversation as ConversationUI,
 } from '@/components/ai-elements/conversation'
 import {
   Message,
@@ -42,6 +50,7 @@ import { Suggestion } from '@/components/ai-elements/suggestion'
 import { DataTable } from '@/components/data-table/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
 import { cn } from '@/lib/utils'
 
@@ -53,6 +62,7 @@ interface AgentsChatAreaProps {
   readonly hostId: number
   readonly isSidebarOpen: boolean
   readonly onMenuClick: () => void
+  readonly hideHeader?: boolean
 }
 
 // Note: Chat state is managed internally by useChat when props are not provided.
@@ -187,11 +197,11 @@ function ToolCallPart({
   }, [part.input])
 
   return (
-    <div className="my-2 rounded-lg border bg-muted/20 overflow-hidden">
+    <div className="my-2 rounded-lg border bg-muted/30 overflow-hidden">
       {/* Tool header - clickable to toggle */}
       <button
         onClick={toggleExpanded}
-        className="w-full flex items-center gap-2 px-3 py-2.5 bg-muted/30 hover:bg-muted/50 transition-colors text-left border-b border-border/50"
+        className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left"
       >
         {/* Expand/collapse icon */}
         <span className="shrink-0 text-muted-foreground">
@@ -254,7 +264,7 @@ function ToolCallPart({
 
       {/* Collapsible content */}
       {isExpanded && (
-        <div className="border-t border-border/50">
+        <div className="bg-background/60">
           {/* Streaming state */}
           {isStreaming && (
             <div className="px-3 py-3">
@@ -489,7 +499,12 @@ export function AgentsChatArea({
   hostId,
   isSidebarOpen,
   onMenuClick,
+  hideHeader = false,
 }: AgentsChatAreaProps) {
+  // Get conversation context for loading/saving messages
+  const { conversations, currentConversationId, updateMessages } =
+    useConversationContext()
+
   // Get the selected model from localStorage
   const model = useMemo(() => getSavedModel(), [])
 
@@ -499,6 +514,45 @@ export function AgentsChatArea({
       body: { hostId, model },
     }),
   })
+
+  // Ref to track last saved messages to avoid infinite loops
+  const lastSavedMessagesRef = useRef<UIMessage[]>([])
+
+  // Load messages when conversation changes
+  useEffect(() => {
+    if (!currentConversationId) return
+
+    const conversation = conversations.find(
+      (c: Conversation) => c.id === currentConversationId
+    )
+    if (conversation) {
+      // Only update if messages are different to avoid clearing chat
+      const currentMessagesJson = JSON.stringify(messages)
+      const storedMessagesJson = JSON.stringify(conversation.messages)
+
+      if (currentMessagesJson !== storedMessagesJson) {
+        setMessages(conversation.messages)
+        lastSavedMessagesRef.current = conversation.messages
+      }
+    }
+  }, [currentConversationId, conversations, setMessages])
+
+  // Save messages to conversation when they change (debounced)
+  useEffect(() => {
+    if (!currentConversationId) return
+
+    // Check if messages actually changed
+    const currentMessagesJson = JSON.stringify(messages)
+    const lastSavedJson = JSON.stringify(lastSavedMessagesRef.current)
+
+    if (currentMessagesJson === lastSavedJson) return
+
+    // Update ref
+    lastSavedMessagesRef.current = messages
+
+    // Save to conversation (will auto-generate title if first user message)
+    updateMessages(currentConversationId, messages)
+  }, [messages, currentConversationId, updateMessages])
 
   const isLoading = status === 'streaming' || status === 'submitted'
   const isEmpty = messages.length === 0
@@ -515,7 +569,12 @@ export function AgentsChatArea({
 
   const handleClear = useCallback(() => {
     setMessages([])
-  }, [setMessages])
+    // Clear messages in current conversation too
+    if (currentConversationId) {
+      updateMessages(currentConversationId, [])
+      lastSavedMessagesRef.current = []
+    }
+  }, [setMessages, currentConversationId, updateMessages])
 
   const handleSuggestionClick = useCallback(
     (suggestion: string) => {
@@ -526,39 +585,66 @@ export function AgentsChatArea({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b px-3 sm:px-4 py-3 shrink-0">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onMenuClick}
-            className="h-8 w-8 shrink-0"
-            title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-          >
-            {isSidebarOpen ? (
-              <PanelRightClose className="h-4 w-4" />
-            ) : (
-              <PanelRightOpen className="h-4 w-4" />
+      {/* Header (hidden when in page-level layout) */}
+      {!hideHeader && (
+        <div className="flex items-center justify-between border-b px-3 sm:px-4 py-3 shrink-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onMenuClick}
+              className="h-8 w-8 shrink-0"
+              title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+            >
+              {isSidebarOpen ? (
+                <PanelRightClose className="h-4 w-4" />
+              ) : (
+                <PanelRightOpen className="h-4 w-4" />
+              )}
+            </Button>
+            <div className="flex items-center gap-2 min-w-0">
+              <SparklesIcon className="h-5 w-5 text-purple-500 shrink-0" />
+              <h2 className="font-semibold truncate text-sm sm:text-base">
+                AI Agent
+              </h2>
+              <span className="text-xs text-muted-foreground shrink-0 hidden xs:inline">
+                Host {hostId}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 shrink-0 ml-2">
+            {isLoading && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={stop}
+                className="h-8 text-xs"
+              >
+                Stop
+              </Button>
             )}
-          </Button>
-          <div className="flex items-center gap-2 min-w-0">
-            <SparklesIcon className="h-5 w-5 text-purple-500 shrink-0" />
-            <h2 className="font-semibold truncate text-sm sm:text-base">
-              AI Agent
-            </h2>
-            <span className="text-xs text-muted-foreground shrink-0 hidden xs:inline">
-              Host {hostId}
-            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClear}
+              className="h-8 text-xs"
+            >
+              <TrashIcon className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Clear</span>
+            </Button>
           </div>
         </div>
-        <div className="flex items-center gap-1 shrink-0 ml-2">
+      )}
+
+      {/* Compact controls bar (shown when header is hidden) */}
+      {hideHeader && (isLoading || messages.length > 0) && (
+        <div className="flex items-center justify-end gap-1 px-3 py-2 border-b shrink-0">
           {isLoading && (
             <Button
               variant="ghost"
               size="sm"
               onClick={stop}
-              className="h-8 text-xs"
+              className="h-7 text-xs"
             >
               Stop
             </Button>
@@ -567,17 +653,17 @@ export function AgentsChatArea({
             variant="ghost"
             size="sm"
             onClick={handleClear}
-            className="h-8 text-xs"
+            className="h-7 text-xs"
           >
-            <TrashIcon className="h-4 w-4 mr-1" />
-            <span className="hidden sm:inline">Clear</span>
+            <TrashIcon className="h-3.5 w-3.5 mr-1" />
+            Clear
           </Button>
         </div>
-      </div>
+      )}
 
       {/* Messages Area */}
       <Suspense fallback={<ChatSkeleton />}>
-        <Conversation>
+        <ConversationUI>
           <ConversationContent>
             {isEmpty ? (
               <ConversationEmptyState
@@ -607,7 +693,7 @@ export function AgentsChatArea({
               </>
             )}
           </ConversationContent>
-        </Conversation>
+        </ConversationUI>
       </Suspense>
 
       {/* Error display */}
