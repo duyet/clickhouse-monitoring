@@ -633,29 +633,28 @@ export function AgentsChatArea({
   const lastSavedMessagesRef = useRef<UIMessage[]>([])
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
-  // Load messages when conversation changes
+  // Track previous conversation ID to detect conversation switches
+  const prevConversationIdRef = useRef<string | undefined>(undefined)
+
+  // Load messages ONLY when conversation ID changes (not on every message update)
   useEffect(() => {
+    // Skip if no conversation or same conversation (not a switch)
     if (!currentConversationId) return
+    if (currentConversationId === prevConversationIdRef.current) return
 
     const conversation = conversations.find(
       (c: Conversation) => c.id === currentConversationId
     )
     if (conversation) {
       const storedMsgs = conversation.messages
-      // Fast path: same reference
-      if (storedMsgs === messages) return
-
-      // Check if update needed (length + ID comparison)
-      const needsUpdate =
-        storedMsgs.length !== messages.length ||
-        storedMsgs.some((m, i) => m.id !== messages[i]?.id)
-
-      if (needsUpdate) {
-        setMessages(storedMsgs)
-        lastSavedMessagesRef.current = storedMsgs
-      }
+      // Load messages from storage when switching conversations
+      setMessages(storedMsgs)
+      lastSavedMessagesRef.current = storedMsgs
     }
-  }, [currentConversationId, conversations, messages, setMessages])
+
+    // Update previous conversation ID
+    prevConversationIdRef.current = currentConversationId
+  }, [currentConversationId, conversations, setMessages])
 
   // Save messages to conversation when they change (debounced)
   useEffect(() => {
