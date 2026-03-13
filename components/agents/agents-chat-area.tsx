@@ -198,12 +198,20 @@ function ToolCallPart({
     return params
   }, [part.input])
 
+  // Get tool parameter info for optional display
+  const toolParams = useMemo(() => {
+    // Import from consolidated data
+    const { getToolMetadata } = require('@/components/mcp/mcp-tools-data')
+    const tool = getToolMetadata(toolName)
+    return tool?.params || []
+  }, [toolName])
+
   return (
-    <div className="my-2 rounded-lg border bg-muted/30 overflow-hidden">
+    <div className="my-3 rounded-lg border bg-muted/30 overflow-hidden">
       {/* Tool header - clickable to toggle */}
       <button
         onClick={toggleExpanded}
-        className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left"
+        className="w-full flex items-center gap-2 px-3 py-3 hover:bg-muted/50 transition-colors text-left"
       >
         {/* Expand/collapse icon */}
         <span className="shrink-0 text-muted-foreground">
@@ -265,10 +273,10 @@ function ToolCallPart({
       </button>
 
       {/* Collapsible content */}
-      {isExpanded && (
+      {isExpanded ? (
         <div className="bg-background/60">
           {/* Streaming state */}
-          {isStreaming && (
+          {isStreaming ? (
             <div className="px-3 py-3">
               <div className="flex items-center gap-2">
                 <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
@@ -277,26 +285,71 @@ function ToolCallPart({
                 </span>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Tool output */}
-          {hasOutput && part.output != null && (
-            <div className="px-3 py-2">
-              <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
-                Output
+          {hasOutput && part.output != null ? (
+            <div className="max-h-96 overflow-auto">
+              <div className="px-3 py-2">
+                <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+                  Output
+                </div>
+                {renderToolOutput(part.output)}
               </div>
-              {renderToolOutput(part.output)}
             </div>
-          )}
+          ) : null}
 
           {/* Tool error */}
-          {hasError && Boolean(part.errorText) && (
+          {hasError && Boolean(part.errorText) ? (
             <div className="px-3 py-2 text-sm text-destructive">
               {String(part.errorText)}
             </div>
-          )}
+          ) : null}
+
+          {/* Input parameters with optional indicators */}
+          {part.input && typeof part.input === 'object' ? (
+            <div className="px-3 py-2 border-t bg-muted/20">
+              <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+                Parameters
+              </div>
+              <div className="space-y-1">
+                {Object.entries(part.input as Record<string, unknown>).map(
+                  ([key, value]) => {
+                    const paramDef = toolParams.find((p: any) => p.name === key)
+                    const isOptional = paramDef?.required === false
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-center gap-2 text-xs"
+                      >
+                        <span
+                          className={cn(
+                            'font-mono',
+                            isOptional
+                              ? 'text-muted-foreground'
+                              : 'text-foreground font-medium'
+                          )}
+                        >
+                          {key}
+                        </span>
+                        <span className="text-muted-foreground">:</span>
+                        <span className="font-mono text-muted-foreground">
+                          {JSON.stringify(value)}
+                        </span>
+                        {isOptional ? (
+                          <span className="text-[10px] text-muted-foreground/60">
+                            (optional)
+                          </span>
+                        ) : null}
+                      </div>
+                    )
+                  }
+                )}
+              </div>
+            </div>
+          ) : null}
         </div>
-      )}
+      ) : null}
     </div>
   )
 }
@@ -814,27 +867,27 @@ export function AgentsChatArea({
               variant="ghost"
               size="icon"
               onClick={stop}
-              className="h-7 w-7"
+              className="h-8 w-8"
               title="Stop generation"
             >
-              <SquareIcon className="h-3.5 w-3.5" />
+              <SquareIcon className="h-4 w-4" />
             </Button>
           )}
           <Button
             variant="ghost"
             size="icon"
             onClick={handleClear}
-            className="h-7 w-7"
+            className="h-8 w-8"
             title="Clear conversation"
           >
-            <TrashIcon className="h-3.5 w-3.5" />
+            <TrashIcon className="h-4 w-4" />
           </Button>
         </div>
       )}
 
       {/* Messages Area */}
       <ConversationUI>
-        <ConversationContent>
+        <ConversationContent className="gap-4">
           {isEmpty ? (
             <ConversationEmptyState
               title="AI Agent"
@@ -843,7 +896,7 @@ export function AgentsChatArea({
                 <SparklesIcon className="h-8 w-8 sm:h-12 sm:w-12 text-purple-500" />
               }
             >
-              <div className="pt-6 px-2 sm:px-4 max-w-xl mx-auto w-full">
+              <div className="pt-6 px-4 sm:px-4 max-w-xl mx-auto w-full">
                 <ul className="space-y-1">
                   {DEFAULT_SUGGESTIONS.map((suggestion) => (
                     <li key={suggestion}>
