@@ -11,18 +11,38 @@ import type {
   McpResource,
   McpServerInfo,
   McpTool,
+  McpToolCategory,
+  McpToolParam,
 } from '@/components/mcp/mcp-tools-data'
 
 import { swrConfig } from '@/lib/swr/config'
 
+/**
+ * API response tool type - subset of McpTool without exampleResponse
+ */
+export interface ApiMcpTool {
+  name: string
+  description: string
+  category: McpToolCategory
+  params: McpToolParam[]
+}
+
+export interface ApiMcpServerInfo {
+  name: string
+  version: string
+  description: string
+  tools: ApiMcpTool[]
+  resources: McpResource[]
+}
+
 export interface McpServerInfoResult {
-  data: McpServerInfo | undefined
+  data: ApiMcpServerInfo | undefined
   isLoading: boolean
   error: Error | undefined
   retry: () => void
 }
 
-async function fetchMcpServerInfo(): Promise<McpServerInfo> {
+async function fetchMcpServerInfo(): Promise<ApiMcpServerInfo> {
   const response = await fetch('/api/v1/mcp/info')
   if (!response.ok) {
     throw new Error(`Failed to fetch MCP info: ${response.statusText}`)
@@ -60,7 +80,7 @@ async function fetchMcpServerInfo(): Promise<McpServerInfo> {
  * ```
  */
 export function useMcpServerInfo(): McpServerInfoResult {
-  const { data, isLoading, error, mutate } = useSWR<McpServerInfo>(
+  const { data, isLoading, error, mutate } = useSWR<ApiMcpServerInfo>(
     '/api/v1/mcp/info',
     fetchMcpServerInfo,
     {
