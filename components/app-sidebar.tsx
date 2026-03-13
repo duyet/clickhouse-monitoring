@@ -11,12 +11,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from '@/components/ui/sidebar'
-
-const guestUser = {
-  name: 'Guest',
-  email: 'guest@local',
-  avatar: '',
-}
+import { GUEST_USER } from '@/lib/clerk/guest-user'
 
 export function AppSidebar() {
   return (
@@ -30,7 +25,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={guestUser} />
+        <NavUser user={GUEST_USER} />
       </SidebarFooter>
     </Sidebar>
   )

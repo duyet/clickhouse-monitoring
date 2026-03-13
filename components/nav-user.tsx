@@ -21,6 +21,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { isClerkEnabled } from '@/lib/clerk/clerk-client'
+
+// Lazy load Clerk components to avoid hydration issues when Clerk is disabled
+const ClerkNavWrapper = isClerkEnabled()
+  ? require('./nav-user/clerk-nav').ClerkNavWrapper
+  : null
 
 export function NavUser({
   user,
@@ -48,19 +54,30 @@ export function NavUser({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  // If Clerk is enabled, use Clerk navigation
+  if (isClerkEnabled() && ClerkNavWrapper) {
+    return <ClerkNavWrapper />
+  }
+
+  // Otherwise, show guest user dropdown (original behavior)
   // Static fallback button shown during SSR (no dropdown interaction)
   const userButton = (
     <SidebarMenuButton
       size="lg"
       className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+      data-testid="nav-user-trigger"
     >
       <Avatar className="h-8 w-8 rounded-lg">
         <AvatarImage src={user.avatar} alt={user.name} />
         <AvatarFallback className="rounded-lg">G</AvatarFallback>
       </Avatar>
       <div className="grid flex-1 text-left text-sm leading-tight">
-        <span className="truncate font-medium">{user.name}</span>
-        <span className="truncate text-xs">{user.email}</span>
+        <span className="truncate font-medium" data-testid="nav-user-name">
+          {user.name}
+        </span>
+        <span className="truncate text-xs" data-testid="nav-user-email">
+          {user.email}
+        </span>
       </div>
       <ChevronsUpDown className="ml-auto size-4" />
     </SidebarMenuButton>
@@ -96,6 +113,7 @@ export function NavUser({
                   <DropdownMenuItem
                     className="flex items-center gap-2"
                     onClick={() => (window.location.href = '/about')}
+                    data-testid="nav-user-about"
                   >
                     <Info className="h-4 w-4" />
                     <span>About</span>
@@ -106,6 +124,7 @@ export function NavUser({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2"
+                      data-testid="nav-user-github"
                     >
                       <Github className="h-4 w-4" />
                       <span>GitHub Repo</span>
@@ -117,6 +136,7 @@ export function NavUser({
                       e.preventDefault()
                       setSettingsOpen(true)
                     }}
+                    data-testid="nav-user-settings"
                   >
                     <Settings className="h-4 w-4" />
                     <span>Settings</span>

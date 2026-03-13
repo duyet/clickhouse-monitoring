@@ -52,6 +52,7 @@
     "@aws-sdk/credential-provider-web-identity": "^3.972.5",
     "@aws-sdk/nested-clients": "^3.985.0",
     "@aws-sdk/xml-builder": "^3.972.4",
+    "@clerk/nextjs": "^7.0.4",
     "@clickhouse/client": "^0.100.0",
     "@clickhouse/client-web": "^0.100.0",
     "@codemirror/autocomplete": "^6.20.1",

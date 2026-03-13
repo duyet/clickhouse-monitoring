@@ -68,7 +68,12 @@ jobs:
           NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.git_ref }}
           NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ steps.meta.outputs.build_timestamp }}
           NEXT_PUBLIC_CI: "true"
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_TEST }}
         run: |
+          # Update wrangler.toml with the test public key for preview environment
+          if [ -n "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
+            sed -i "s|^NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = \".*\"|NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = \"$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY\"|g" wrangler.toml
+          fi
           bun run cf:build 2>&1 | tee /tmp/build-output.txt
           exit ${PIPESTATUS[0]}
 
@@ -81,6 +86,8 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          # Pass Clerk secret key (test environment for preview deployments)
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY_TEST }}
         run: |
           # Create temporary .env.local with secrets for the config script
           cat > .env.local << EOF
@@ -88,6 +95,7 @@ jobs:
           LLM_API_KEY=$LLM_API_KEY
           LLM_API_BASE=$LLM_API_BASE
           LLM_MODEL=$LLM_MODEL
+          CLERK_SECRET_KEY=$CLERK_SECRET_KEY
           EOF
 
           # Run the config script to set all secrets
@@ -247,11 +255,16 @@ jobs:
           NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.git_ref }}
           NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ steps.meta.outputs.build_timestamp }}
           NEXT_PUBLIC_CI: "true"
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
         run: |
           echo "Building with metadata:"
           echo "  SHA: ${NEXT_PUBLIC_GIT_SHA}"
           echo "  Ref: ${NEXT_PUBLIC_GIT_REF}"
           echo "  Time: ${NEXT_PUBLIC_BUILD_TIMESTAMP}"
+          # Update wrangler.toml with the production public key
+          if [ -n "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
+            sed -i "s|^NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = \".*\"|NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = \"$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY\"|g" wrangler.toml
+          fi
           bun run cf:build
 
       - name: Set production secrets
@@ -262,6 +275,8 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          # Pass Clerk secret key (production environment)
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
         run: |
           # Create temporary .env.local with secrets for the config script
           cat > .env.local << EOF
@@ -269,6 +284,7 @@ jobs:
           LLM_API_KEY=$LLM_API_KEY
           LLM_API_BASE=$LLM_API_BASE
           LLM_MODEL=$LLM_MODEL
+          CLERK_SECRET_KEY=$CLERK_SECRET_KEY
           EOF
 
           # Run the config script to set all secrets

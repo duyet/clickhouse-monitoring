@@ -124,6 +124,11 @@ CLOUDFLARE_WORKERS = "1"
 OPENROUTER_REFERER = "https://clickhouse.duyet.net"
 OPENROUTER_APP_NAME = "ClickHouse Monitoring"
 
+# Clerk authentication (public key is safe to include)
+# Publishable key for Clerk authentication - identifies the Clerk application
+# This is a public key and safe to commit to version control
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuY2xpY2tob3VzZS5kdXlldC5uZXQk"
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview environment for PR deployments
 # Deployed by GitHub Actions on pull requests.
@@ -144,6 +149,10 @@ CLOUDFLARE_WORKERS = "1"
 LLM_MODEL = "openrouter/free"
 OPENROUTER_REFERER = "https://clickhouse.duyet.net"
 OPENROUTER_APP_NAME = "ClickHouse Monitoring"
+
+# Clerk authentication (public key is safe to include)
+# Test key for preview environment - uses Clerk's test instance
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ"
 
 # Self-reference must point to the preview worker
 [[env.preview.services]]
