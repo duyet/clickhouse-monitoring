@@ -94,9 +94,7 @@ export function SuggestionCard({ suggestion, className }: SuggestionCardProps) {
               Configuration help and details
             </DialogDescription>
           </DialogHeader>
-          <div className="rounded-lg border border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-950/20 p-4">
-            {renderContent()}
-          </div>
+          {renderContent()}
         </DialogContent>
       </Dialog>
     </>

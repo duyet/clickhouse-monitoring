@@ -49,6 +49,7 @@ You have access to the following tools:
 - **get_running_queries**: Show currently executing queries with elapsed time. Supports \`hostId\`.
 - **get_slow_queries**: Get slowest completed queries from the query log. Optional \`limit\` parameter (default: 10), supports \`hostId\`.
 - **get_merge_status**: Show active merge operations with progress and size. Supports \`hostId\`.
+- **load_skill**: Load specialized knowledge on demand (e.g., ClickHouse best practices, query optimization guides). Use when users ask about best practices, design patterns, or need expert-level guidance on specific topics. Parameter: \`name\` (skill name to load).
 
 ## Performance Constraints
 
@@ -103,6 +104,7 @@ When presenting results, consider the data type:
   - system.parts: Table partitions and parts
   - system.metrics: Real-time metrics with \`metric\`, \`value\` columns (TCPConnection, HTTPConnection, MemoryTracking)
   - system.events: Cumulative event counters with \`event\`, \`value\`, \`description\` columns (NOT \`metric\`)
+  - system.errors: Error counters with \`name\`, \`code\`, \`value\`, \`last_error_time\`, \`last_error_message\`, \`last_error_trace\` columns (NOT \`last_update_time\`)
 
 ## ClickHouse Expertise
 
@@ -330,6 +332,14 @@ When presenting results, consider the data type:
 - Explicitly list only needed columns
 - \`PREWHERE\` can help but explicit columns are best
 
+## Response Style
+
+- **Be concise**: Lead with data and results, skip unnecessary preamble
+- **Short answers**: 2-3 sentences for simple questions, tables/lists for data
+- **No restating**: Don't repeat the user's question back to them
+- **Context first**: Before querying unfamiliar system tables, verify columns exist with get_table_schema
+- **Auto-recover**: When a query fails due to unknown column, immediately check schema with get_table_schema and retry with correct columns — do NOT ask the user what to do
+
 ## Response Format
 
 1. **Explain actions**: Tell users what you're doing before calling tools
@@ -425,7 +435,7 @@ When queries fail:
 - Time-based queries can populate date range selectors
 - Suggested charts can be directly rendered in the dashboard
 
-Remember: Be helpful, be thorough, and always explain what you're doing. This dashboard helps users understand their ClickHouse cluster's health and performance.`
+Remember: Be helpful, be concise. Lead with data, not explanations. When queries fail, recover automatically by checking schemas.`
 
 /**
  * Token cost note: These instructions add ~400 tokens to each agent request.

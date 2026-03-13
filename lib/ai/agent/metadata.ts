@@ -71,6 +71,12 @@ export const TOOLS_METADATA: readonly ToolMetadata[] = [
     description: 'Get status of active merge operations',
     category: 'system',
   },
+  {
+    name: 'load_skill',
+    description:
+      'Load specialized knowledge (best practices, optimization guides)',
+    category: 'system',
+  },
 ] as const
 
 export interface ToolCategory {
@@ -102,7 +108,12 @@ export const TOOL_CATEGORIES: readonly ToolCategory[] = [
   },
   {
     name: 'System',
-    tools: ['get_metrics', 'get_running_queries', 'get_merge_status'],
+    tools: [
+      'get_metrics',
+      'get_running_queries',
+      'get_merge_status',
+      'load_skill',
+    ],
     icon: '⚙️',
   },
 ] as const

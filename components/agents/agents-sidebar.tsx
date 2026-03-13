@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  BookOpenIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   DatabaseIcon,
@@ -40,6 +41,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { SUGGESTED_PROMPTS } from '@/lib/ai/agent/metadata'
+import { getSkillsMetadata } from '@/lib/ai/agent/skills/registry'
 import { useAgentModel } from '@/lib/hooks/use-agent-model'
 import { useMcpServerInfo } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
@@ -383,6 +385,52 @@ function McpToolsSection() {
   )
 }
 
+function SkillsSection() {
+  const skills = getSkillsMetadata()
+  const [isOpen, setIsOpen] = useState(true)
+
+  if (skills.length === 0) return null
+
+  return (
+    <div className="mb-4">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger className="flex items-center gap-1.5 w-full py-1.5 px-2 hover:bg-muted rounded-md transition-colors text-left">
+          <span className="relative z-10 flex items-center justify-center w-4 h-4 bg-background">
+            {isOpen ? (
+              <ChevronDownIcon className="h-3 w-3" />
+            ) : (
+              <ChevronRightIcon className="h-3 w-3" />
+            )}
+          </span>
+          <BookOpenIcon className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Skills</span>
+          <span className="text-xs text-muted-foreground">
+            ({skills.length})
+          </span>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="ml-5 py-0.5 space-y-0.5">
+            {skills.map((skill) => (
+              <Tooltip key={skill.name}>
+                <TooltipTrigger asChild>
+                  <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">
+                    <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
+                      {skill.name}
+                    </code>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs">
+                  <p>{skill.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  )
+}
+
 function SuggestedPromptsSection() {
   return (
     <div>
@@ -420,6 +468,11 @@ export function AgentsSidebar({
 
         {/* MCP Tools Section */}
         <McpToolsSection />
+
+        <Separator />
+
+        {/* Skills Section */}
+        <SkillsSection />
 
         <Separator />
 
