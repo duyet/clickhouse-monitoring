@@ -1,5 +1,16 @@
 import { describe, expect, mock, test } from 'bun:test'
 
+// Mock SQL validator for MCP tool tests
+// This is needed because createMcpTools uses validateSqlQuery internally
+// The mock is applied globally by Bun's mock.module() - known limitation
+// To run SQL validator tests without this mock, run them separately:
+//   bun test lib/api/shared/validators/__tests__/sql.test.ts
+mock.module('@/lib/api/shared/validators/sql', () => ({
+  validateSqlQuery: () => {
+    // Do nothing - validation always passes for MCP tool tests
+  },
+}))
+
 // Mock fetchData before importing the adapter
 mock.module('@/lib/clickhouse', () => ({
   fetchData: async ({
