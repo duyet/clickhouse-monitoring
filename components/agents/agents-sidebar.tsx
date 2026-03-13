@@ -11,7 +11,6 @@ import {
 
 import type {
   McpResource,
-  McpTool,
   McpToolCategory,
 } from '@/components/mcp/mcp-tools-data'
 import type { ApiMcpTool } from '@/lib/swr/use-mcp-server-info'
