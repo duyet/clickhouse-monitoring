@@ -40,6 +40,7 @@
     "test:watch": "bun test --watch",
     "type-check": "tsc --noEmit",
     "preinstall": "npx only-allow bun",
+    "build:skills": "bun run scripts/build-skills-registry.ts",
     "prepare": "husky"
   },
   "dependencies": {
