@@ -1,4 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { beforeAll, describe, expect, mock, test } from 'bun:test'
 
 // Mock the agent factory
 mock.module('@/lib/ai/agent', () => ({

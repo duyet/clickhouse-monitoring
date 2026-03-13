@@ -107,12 +107,8 @@ mock.module('@/lib/clickhouse', () => ({
   },
 }))
 
-// Mock SQL validator to always pass
-mock.module('@/lib/api/shared/validators/sql', () => ({
-  validateSqlQuery: () => {
-    // Do nothing - validation passes
-  },
-}))
+// Note: SQL validator mock is applied via spyOn in tests that need it
+// We don't use mock.module here to avoid polluting other test files
 
 import { createMcpTools } from '../mcp-tool-adapter'
 
