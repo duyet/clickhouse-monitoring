@@ -56,8 +56,9 @@ async function main() {
   let dirNames: string[]
   try {
     const entries = await readdir(skillsDir, { withFileTypes: true })
-    dirNames = entries.filter((e) => e.isDirectory()).map((e) => String(e.name))
-  } catch {
+    dirNames = entries.filter((e) => e.isDirectory()).map((e) => e.name)
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
     console.log('No .agents/skills/ directory found, generating empty registry')
     dirNames = []
   }
