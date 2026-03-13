@@ -118,7 +118,6 @@ export function AgentsLayout() {
 
         <AgentsChatArea
           ref={chatAreaRef}
-          hostId={hostId}
           isSidebarOpen={isSidebarOpen}
           onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
           hideHeader={true}

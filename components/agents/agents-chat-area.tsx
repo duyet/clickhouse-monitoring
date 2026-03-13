@@ -58,6 +58,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
+import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -69,7 +70,6 @@ export interface AgentsChatAreaRef {
 }
 
 interface AgentsChatAreaProps {
-  readonly hostId: number
   readonly isSidebarOpen: boolean
   readonly onMenuClick: () => void
   readonly hideHeader?: boolean
@@ -801,7 +801,6 @@ export const AgentsChatArea = forwardRef<
   AgentsChatAreaProps
 >(function AgentsChatArea(
   {
-    hostId,
     isSidebarOpen,
     onMenuClick,
     hideHeader = false,
@@ -809,6 +808,9 @@ export const AgentsChatArea = forwardRef<
   }: AgentsChatAreaProps,
   ref
 ) {
+  // Get hostId from URL query params
+  const hostId = useHostId()
+
   // Get conversation context for loading/saving messages
   const { conversations, currentConversationId, updateMessages } =
     useConversationContext()
@@ -892,13 +894,24 @@ export const AgentsChatArea = forwardRef<
   )
 
   const handleClear = useCallback(() => {
+    // Stop any active streaming first
+    stop()
+
+    // Cancel any pending debounced saves
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+      saveTimeoutRef.current = undefined
+    }
+
+    // Clear messages state
     setMessages([])
+
     // Clear messages in current conversation too
     if (currentConversationId) {
       updateMessages(currentConversationId, [])
       lastSavedMessagesRef.current = []
     }
-  }, [setMessages, currentConversationId, updateMessages])
+  }, [stop, setMessages, currentConversationId, updateMessages])
 
   // Expose handleClear to parent via ref
   useImperativeHandle(ref, () => ({ handleClear }), [handleClear])
