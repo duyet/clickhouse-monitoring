@@ -188,14 +188,16 @@ function ToolCallPart({
   const hasOutput = part.state === 'output-available'
   const hasError = part.state === 'output-error'
 
-  // Use derived state for auto-expand behavior (no useState + useEffect needed)
-  // Track if user manually toggled to closed
-  const [userToggledClosed, setUserToggledClosed] = useState(false)
+  // Track expanded state directly, auto-expand during streaming/error
   const shouldAutoExpand = isStreaming || hasError || isStarting
-  const isExpanded = shouldAutoExpand && !userToggledClosed
+  const [isExpanded, setIsExpanded] = useState(shouldAutoExpand)
 
-  // Toggle expand/collapse
-  const toggleExpanded = () => setUserToggledClosed((prev) => !prev)
+  // Auto-expand when tool starts streaming or errors
+  useEffect(() => {
+    if (shouldAutoExpand) setIsExpanded(true)
+  }, [shouldAutoExpand])
+
+  const toggleExpanded = () => setIsExpanded((prev) => !prev)
 
   // Format input parameters as muted inline text (e.g., "hostId=0")
   const inputParams = useMemo(() => {

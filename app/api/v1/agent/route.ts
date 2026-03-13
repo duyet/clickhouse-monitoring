@@ -73,7 +73,14 @@ export async function POST(request: Request) {
     textPart?.text ||
     (lastUserMessage as { content?: string } | undefined)?.content
 
-  if (!userMessage || typeof userMessage !== 'string') {
+  // Allow messages with non-text parts (e.g., tool-call only) to proceed
+  const hasNonTextParts =
+    lastUserMessage?.parts && lastUserMessage.parts.length > 0 && !textPart
+
+  if (
+    !hasNonTextParts &&
+    (typeof userMessage !== 'string' || !userMessage.trim())
+  ) {
     return new Response(
       JSON.stringify({
         error: { message: 'Message is required and must be a string' },

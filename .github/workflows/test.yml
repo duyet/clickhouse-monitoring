@@ -34,6 +34,8 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.3'
 
       - name: Bun Cache
         uses: actions/cache@v5
@@ -75,6 +77,8 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.3'
 
       - name: Bun Cache
         uses: actions/cache@v5
@@ -123,16 +127,13 @@ jobs:
           CLICKHOUSE_SKIP_USER_SETUP: 1
 
       keeper:
-        image: clickhouse/clickhouse-server:25.6
+        image: clickhouse/clickhouse-keeper:25.6
         options: >-
-          --entrypoint /keeper/entrypoint.sh
-          --health-cmd /keeper/healthcheck.sh
+          --health-cmd "clickhouse-keeper client -h 127.0.0.1 -p 9181 -q 'ruok' 2>/dev/null | grep -q imok || exit 1"
           --health-interval 5s
           --health-timeout 10s
           --health-retries 20
           --health-start-period 5s
-        env:
-          CLICKHOUSE_SKIP_USER_SETUP: 1
 
     steps:
       - name: Checkout
@@ -140,6 +141,8 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.3'
 
       - name: Bun Cache
         uses: actions/cache@v5

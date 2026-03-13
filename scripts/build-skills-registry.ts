@@ -81,14 +81,11 @@ async function main() {
 
   const skillEntries = skills
     .map(
-      (s) => `  [
-    '${s.name}',
-    {
-      name: '${s.name}',
-      description: '${escapeForTemplate(s.description)}',
-      content: \`${escapeForTemplate(s.content)}\`,
-    },
-  ]`
+      (s) => `  {
+    name: '${s.name}',
+    description: '${escapeForTemplate(s.description)}',
+    content: \`${escapeForTemplate(s.content)}\`,
+  }`
     )
     .join(',\n')
 
@@ -101,16 +98,16 @@ async function main() {
 
 import type { Skill } from './types'
 
-export const SKILLS_REGISTRY: ReadonlyMap<string, Skill> = new Map([
+const SKILLS: readonly Skill[] = [
 ${skillEntries}
-])
+]
 
 /** Get all available skills metadata (without content) */
 export function getSkillsMetadata(): ReadonlyArray<{
   name: string
   description: string
 }> {
-  return Array.from(SKILLS_REGISTRY.values()).map(({ name, description }) => ({
+  return SKILLS.map(({ name, description }) => ({
     name,
     description,
   }))
@@ -118,7 +115,7 @@ export function getSkillsMetadata(): ReadonlyArray<{
 
 /** Load a skill by name, returns null if not found */
 export function loadSkillContent(name: string): Skill | null {
-  return SKILLS_REGISTRY.get(name) ?? null
+  return SKILLS.find((s) => s.name === name) ?? null
 }
 `
 

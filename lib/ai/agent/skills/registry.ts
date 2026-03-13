@@ -7,14 +7,12 @@
 
 import type { Skill } from './types'
 
-export const SKILLS_REGISTRY: ReadonlyMap<string, Skill> = new Map([
-  [
-    'clickhouse-best-practices',
-    {
-      name: 'clickhouse-best-practices',
-      description:
-        'ClickHouse schema design, query optimization, and operational best practices for production deployments.',
-      content: `# ClickHouse Best Practices
+const SKILLS: readonly Skill[] = [
+  {
+    name: 'clickhouse-best-practices',
+    description:
+      'ClickHouse schema design, query optimization, and operational best practices for production deployments.',
+    content: `# ClickHouse Best Practices
 
 ## When to use this skill
 Load this skill when users ask about:
@@ -103,16 +101,15 @@ Load this skill when users ask about:
 - Avoid small frequent inserts (< 1000 rows)
 - Use async inserts for high-frequency small writes
 - Max 1-2 inserts per second per table`,
-    },
-  ],
-])
+  },
+]
 
 /** Get all available skills metadata (without content) */
 export function getSkillsMetadata(): ReadonlyArray<{
   name: string
   description: string
 }> {
-  return Array.from(SKILLS_REGISTRY.values()).map(({ name, description }) => ({
+  return SKILLS.map(({ name, description }) => ({
     name,
     description,
   }))
@@ -120,5 +117,5 @@ export function getSkillsMetadata(): ReadonlyArray<{
 
 /** Load a skill by name, returns null if not found */
 export function loadSkillContent(name: string): Skill | null {
-  return SKILLS_REGISTRY.get(name) ?? null
+  return SKILLS.find((s) => s.name === name) ?? null
 }
