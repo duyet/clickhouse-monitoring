@@ -85,6 +85,15 @@ describe('validateSqlQuery', () => {
       ).not.toThrow()
     })
 
+    test('should accept DESCRIBE queries', () => {
+      expect(() =>
+        validateSqlQuery('DESCRIBE TABLE system.tables')
+      ).not.toThrow()
+      expect(() =>
+        validateSqlQuery('DESCRIBE TABLE analytics.events')
+      ).not.toThrow()
+    })
+
     test('should accept complex SELECT queries', () => {
       expect(() =>
         validateSqlQuery(`
@@ -229,13 +238,7 @@ describe('validateSqlQuery', () => {
 
     test('should reject SHOW queries', () => {
       expect(() => validateSqlQuery('SHOW TABLES')).toThrow(
-        'Only SELECT queries are allowed'
-      )
-    })
-
-    test('should reject DESCRIBE queries', () => {
-      expect(() => validateSqlQuery('DESCRIBE TABLE users')).toThrow(
-        'Only SELECT queries are allowed'
+        'Only SELECT, WITH (CTE), and DESCRIBE queries are allowed'
       )
     })
   })

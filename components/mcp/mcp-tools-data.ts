@@ -249,6 +249,52 @@ export const MCP_TOOLS: McpTool[] = [
   }
 ]`,
   },
+  {
+    name: 'explore_table_schema',
+    description:
+      'Comprehensive schema exploration with relationship discovery. Three modes: no params (list databases), database only (summarize tables), database+table (full schema with relationships)',
+    category: 'schema',
+    params: [
+      {
+        name: 'database',
+        type: 'string',
+        required: false,
+        description:
+          'Database name (optional - if omitted, lists all databases)',
+      },
+      {
+        name: 'table',
+        type: 'string',
+        required: false,
+        description:
+          'Table name (requires database. If provided, returns full schema with relationships)',
+      },
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host (default: 0)',
+      },
+    ],
+    exampleResponse: `// Mode 1: No params
+[{ "name": "default", "engine": "Atomic", "comment": "" }]
+
+// Mode 2: Database only
+[{ "name": "events", "engine": "MergeTree", "partition_key": "toYYYYMM(event_time)", "sorting_key": "(user_id, event_time)", "total_rows": 1234567 }]
+
+// Mode 3: Database + table
+{
+  "table": { "database": "analytics", "name": "events", "engine": "MergeTree", "partition_key": "toYYYYMM(event_time)", "sorting_key": "(user_id, event_time)", "primary_key": "(user_id, event_time)", "total_rows": 1234567 },
+  "columns": [
+    { "name": "user_id", "type": "UInt64", "is_in_primary_key": true, "is_in_sorting_key": true, "is_in_partition_key": false },
+    { "name": "event_time", "type": "DateTime", "is_in_primary_key": true, "is_in_sorting_key": true, "is_in_partition_key": false }
+  ],
+  "upstream_dependencies": [{ "dep_database": "raw", "dep_table": "events_staging", "engine": "MergeTree" }],
+  "downstream_dependencies": [{ "dependent_database": "analytics", "dependent_table": "events_summary", "engine": "AggregatingMergeTree" }],
+  "potential_foreign_keys": [{ "column": "user_id", "potential_table": "users" }]
+}`,
+  },
 ]
 
 export const EXAMPLE_PROMPTS = [

@@ -10,7 +10,7 @@
  * SQL injection patterns to detect and prevent
  *
  * These patterns are used to identify potentially dangerous SQL operations.
- * The validator only allows SELECT queries and WITH (CTE) clauses.
+ * The validator allows SELECT queries, WITH (CTE) clauses, and DESCRIBE commands.
  *
  * @constant
  * @readonly
@@ -102,7 +102,7 @@ const SQL_INJECTION_PATTERNS = [
  * Validate SQL query for basic safety and correctness
  *
  * Detects common SQL injection patterns and ensures the query is non-empty.
- * Only SELECT queries and WITH (CTE) clauses are allowed.
+ * Only SELECT queries, WITH (CTE) clauses, and DESCRIBE commands are allowed.
  *
  * @param sql - The SQL query string to validate
  * @throws {Error} If the query contains suspicious patterns or is invalid
@@ -113,6 +113,7 @@ const SQL_INJECTION_PATTERNS = [
  * validateSqlQuery('SELECT * FROM system.users')
  * validateSqlQuery('SELECT count() FROM system.tables WHERE name = {name:String}')
  * validateSqlQuery('WITH cte AS (SELECT 1) SELECT * FROM cte')
+ * validateSqlQuery('DESCRIBE TABLE system.tables')
  *
  * // Invalid queries - throws errors
  * validateSqlQuery('') // Throws: "SQL query cannot be empty"
@@ -131,7 +132,7 @@ export function validateSqlQuery(sql: string): void {
   for (const pattern of SQL_INJECTION_PATTERNS) {
     if (pattern.test(sql)) {
       throw new Error(
-        'Potentially dangerous SQL detected. Only SELECT queries are allowed.'
+        'Potentially dangerous SQL detected. Only SELECT, WITH, and DESCRIBE queries are allowed.'
       )
     }
   }
@@ -142,7 +143,11 @@ export function validateSqlQuery(sql: string): void {
     .replace(/^(\/\*[\s\S]*?\*\/\s*|--[^\n]*\n\s*)*/g, '')
     .trimStart()
     .toUpperCase()
-  if (!trimmed.startsWith('SELECT') && !trimmed.startsWith('WITH')) {
-    throw new Error('Only SELECT queries are allowed')
+  if (
+    !trimmed.startsWith('SELECT') &&
+    !trimmed.startsWith('WITH') &&
+    !trimmed.startsWith('DESCRIBE')
+  ) {
+    throw new Error('Only SELECT, WITH (CTE), and DESCRIBE queries are allowed')
   }
 }

@@ -349,5 +349,173 @@ Returns: Array with database, table, progress_pct, size (formatted), and elapsed
         return result.data
       },
     }),
+
+    explore_table_schema: dynamicTool({
+      description: `Comprehensive schema exploration with relationship discovery.
+
+Three modes based on parameters:
+1. No params: List all databases (same as list_databases)
+2. database only: Summary of all tables with keys, engine, and sizes
+3. database + table: Full metadata with columns, keys, and upstream/downstream dependencies
+
+When to use:
+- Understanding table structure and relationships
+- Finding what tables depend on each other
+- Analyzing key definitions (partition, sorting, primary keys)
+- Discovering potential foreign key relationships
+- Checking engine types and table metadata
+
+Returns for database+table mode:
+- Table info: engine, keys (partition/sorting/primary/sampling), rows, bytes, create_table_query
+- Columns: with flags for is_in_primary_key, is_in_sorting_key, is_in_partition_key
+- Upstream dependencies: tables this table depends on
+- Downstream dependencies: tables that depend on this table
+- Potential foreign keys: pattern-based detection (_id columns)`,
+      inputSchema: z.object({
+        database: z
+          .string()
+          .optional()
+          .describe(
+            'Database name (optional - if omitted, lists all databases)'
+          ),
+        table: z
+          .string()
+          .optional()
+          .describe(
+            'Table name (requires database. If provided, returns full schema with relationships)'
+          ),
+        hostId: z.number().optional().describe('Host index (default: 0)'),
+      }),
+      execute: async (input: unknown) => {
+        const {
+          database,
+          table,
+          hostId: toolHostId,
+        } = input as {
+          database?: string
+          table?: string
+          hostId?: number
+        }
+        const targetHostId = toolHostId ?? effectiveHostId
+
+        // Mode 1: No database - list all databases
+        if (!database) {
+          const result = await fetchData({
+            query:
+              'SELECT name, engine, comment FROM system.databases ORDER BY name',
+            hostId: targetHostId,
+            format: 'JSONEachRow',
+            clickhouse_settings: { readonly: '1' },
+          })
+
+          if (result.error) {
+            throw new Error(result.error.message)
+          }
+
+          return result.data
+        }
+
+        // Mode 2: Database only - summary of all tables
+        if (!table) {
+          const result = await fetchData({
+            query:
+              "SELECT name, engine, partition_key, sorting_key, primary_key, sampling_key, total_rows, formatReadableSize(total_bytes) AS readable_size FROM system.tables WHERE database = {database:String} AND is_temporary = 0 AND name NOT LIKE '.inner.%' ORDER BY total_bytes DESC",
+            query_params: { database },
+            hostId: targetHostId,
+            format: 'JSONEachRow',
+            clickhouse_settings: { readonly: '1' },
+          })
+
+          if (result.error) {
+            throw new Error(result.error.message)
+          }
+
+          return result.data
+        }
+
+        // Mode 3: Database + table - full schema with relationships
+        const [tableResult, columnsResult, upstreamResult, downstreamResult] =
+          await Promise.all([
+            // Table metadata
+            fetchData({
+              query:
+                'SELECT database, name, engine, engine_full, partition_key, sorting_key, primary_key, sampling_key, total_rows, total_bytes, formatReadableSize(total_bytes) AS readable_size, create_table_query FROM system.tables WHERE database = {database:String} AND name = {table:String}',
+              query_params: { database, table },
+              hostId: targetHostId,
+              format: 'JSONEachRow',
+              clickhouse_settings: { readonly: '1' },
+            }),
+            // Columns with key flags
+            fetchData({
+              query:
+                'SELECT name, type, default_kind, default_expression, comment, is_in_primary_key, is_in_sorting_key, is_in_partition_key FROM system.columns WHERE database = {database:String} AND table = {table:String} ORDER BY position',
+              query_params: { database, table },
+              hostId: targetHostId,
+              format: 'JSONEachRow',
+              clickhouse_settings: { readonly: '1' },
+            }),
+            // Upstream dependencies (tables this table depends on)
+            fetchData({
+              query:
+                "SELECT dep_database, dep_table, t.engine FROM (SELECT arrayJoin(dependencies_database) AS dep_database, arrayJoin(dependencies_table) AS dep_table FROM system.tables WHERE database = {database:String} AND name = {table:String}) AS deps LEFT JOIN system.tables AS t ON t.database = deps.dep_database AND t.name = deps.dep_table WHERE dep_database != '' AND dep_table != ''",
+              query_params: { database, table },
+              hostId: targetHostId,
+              format: 'JSONEachRow',
+              clickhouse_settings: { readonly: '1' },
+            }),
+            // Downstream dependencies (tables that depend on this table)
+            fetchData({
+              query:
+                'SELECT database AS dependent_database, name AS dependent_table, engine FROM system.tables WHERE has(dependencies_database, {database:String}) AND has(dependencies_table, {table:String}) ORDER BY database, name',
+              query_params: { database, table },
+              hostId: targetHostId,
+              format: 'JSONEachRow',
+              clickhouse_settings: { readonly: '1' },
+            }),
+          ])
+
+        const errors = [
+          tableResult,
+          columnsResult,
+          upstreamResult,
+          downstreamResult,
+        ]
+          .filter((r) => r.error)
+          .map((r) => r.error!.message)
+
+        if (errors.length > 0) {
+          throw new Error(`Errors: ${errors.join('; ')}`)
+        }
+
+        const tableRow = Array.isArray(tableResult.data)
+          ? tableResult.data[0]
+          : tableResult.data
+
+        // Detect potential foreign keys from column names ending with _id
+        const columns = Array.isArray(columnsResult.data)
+          ? columnsResult.data
+          : []
+        const potentialForeignKeys = (columns as Record<string, unknown>[])
+          .filter((col) => {
+            const name = col.name as string
+            return name.endsWith('_id') && name !== 'id'
+          })
+          .map((col) => {
+            const name = col.name as string
+            const tableName = name.endsWith('_id')
+              ? `${name.slice(0, -3)}s` // user_id -> users
+              : name
+            return { column: name, potential_table: tableName }
+          })
+
+        return {
+          table: tableRow,
+          columns: columnsResult.data,
+          upstream_dependencies: upstreamResult.data,
+          downstream_dependencies: downstreamResult.data,
+          potential_foreign_keys: potentialForeignKeys,
+        }
+      },
+    }),
   }
 }
