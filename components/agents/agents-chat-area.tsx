@@ -51,6 +51,7 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
 } from '@/components/ai-elements/prompt-input'
+import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
 import { DataTable } from '@/components/data-table/data-table'
 import { getToolMetadata } from '@/components/mcp/mcp-tools-data'
 import { Badge } from '@/components/ui/badge'
@@ -527,17 +528,29 @@ function getStablePartKey(
 
 /**
  * Renders a single UIMessage with its parts (text, tool calls, etc.)
+ * Includes follow-up suggestions for assistant messages
  */
 function ChatMessage({
   message,
+  allMessages,
   isLastUserMessage,
   onRegenerate,
+  onSuggestionClick,
 }: {
   readonly message: UIMessage
+  readonly allMessages: readonly UIMessage[]
   readonly isLastUserMessage?: boolean
   readonly onRegenerate?: () => void
+  readonly onSuggestionClick?: (suggestion: string) => void
 }) {
   const isUser = message.role === 'user'
+  const isAssistant = message.role === 'assistant'
+
+  // Generate follow-up suggestions for assistant messages with tool calls
+  const followUpSuggestions = useMemo(() => {
+    if (!isAssistant) return []
+    return generateFollowUpSuggestions(message, allMessages)
+  }, [message, allMessages, isAssistant])
 
   return (
     <Message from={isUser ? 'user' : 'assistant'}>
@@ -650,9 +663,116 @@ function ChatMessage({
             </button>
           )}
         </div>
+
+        {/* Follow-up suggestions for assistant messages */}
+        {isAssistant && followUpSuggestions.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-muted/30">
+            <Suggestions>
+              {followUpSuggestions.map((suggestion) => (
+                <Suggestion
+                  key={suggestion}
+                  suggestion={suggestion}
+                  onClick={onSuggestionClick}
+                />
+              ))}
+            </Suggestions>
+          </div>
+        )}
       </MessageContent>
     </Message>
   )
+}
+
+// ============================================================================
+// Follow-up Suggestions
+// ============================================================================
+
+/**
+ * Generates contextual follow-up suggestions based on the assistant message
+ * Analyzes tool outputs and conversation context to provide relevant next actions
+ */
+function generateFollowUpSuggestions(
+  message: UIMessage,
+  allMessages: readonly UIMessage[]
+): string[] {
+  const suggestions: string[] = []
+
+  // Get tool names that were used in this message
+  const toolNames: string[] = []
+  for (const part of message.parts) {
+    if (typeof part === 'object' && part !== null) {
+      if ('type' in part) {
+        const partType = (part as { type: string }).type
+        if (partType === 'dynamic-tool') {
+          const toolName = (part as { toolName?: string }).toolName
+          if (toolName) toolNames.push(toolName)
+        } else if (
+          typeof partType === 'string' &&
+          partType.startsWith('tool-')
+        ) {
+          toolNames.push(partType.replace(/^tool-/, ''))
+        }
+      }
+    }
+  }
+
+  // Generate suggestions based on tools used
+  if (toolNames.includes('query')) {
+    suggestions.push('Explain the query results in more detail')
+    suggestions.push('Export this data to CSV')
+    suggestions.push('Create a chart from this data')
+  }
+
+  if (toolNames.includes('list_tables')) {
+    suggestions.push('Show me the schema of a specific table')
+    suggestions.push('What are the largest tables by disk usage?')
+    suggestions.push('Which tables have the most rows?')
+  }
+
+  if (toolNames.includes('list_databases')) {
+    suggestions.push('Show tables in a specific database')
+    suggestions.push('Which database has the most tables?')
+    suggestions.push('What is the total size of all databases?')
+  }
+
+  if (toolNames.includes('get_slow_queries')) {
+    suggestions.push('Show me the query patterns for slow queries')
+    suggestions.push('What are the most common slow query types?')
+    suggestions.push('Are there any queries that should be optimized?')
+  }
+
+  if (toolNames.includes('get_running_queries')) {
+    suggestions.push('Which queries are using the most memory?')
+    suggestions.push('Kill a specific long-running query')
+    suggestions.push('Show query execution progress')
+  }
+
+  if (toolNames.includes('get_table_schema')) {
+    suggestions.push('Show sample data from this table')
+    suggestions.push('What indexes exist on this table?')
+    suggestions.push('Who is querying this table?')
+  }
+
+  if (toolNames.includes('get_metrics')) {
+    suggestions.push('Show me the historical metrics trend')
+    suggestions.push('What is the memory usage breakdown?')
+    suggestions.push('Are there any performance anomalies?')
+  }
+
+  if (toolNames.includes('get_merge_status')) {
+    suggestions.push('Which tables have the largest merged parts?')
+    suggestions.push('Show merge performance over time')
+    suggestions.push('Are there any stuck merges?')
+  }
+
+  // Add general follow-up if no specific suggestions
+  if (suggestions.length === 0) {
+    suggestions.push('Tell me more about this')
+    suggestions.push('What are the key insights?')
+  }
+
+  // Return top 3-4 suggestions
+  return suggestions.slice(0, 4)
 }
 
 // ============================================================================
@@ -948,10 +1068,12 @@ export const AgentsChatArea = forwardRef<
                   <ChatMessage
                     key={message.id}
                     message={message}
+                    allMessages={messages}
                     isLastUserMessage={isLastUserMessage}
                     onRegenerate={
                       isLastUserMessage ? handleRegenerate : undefined
                     }
+                    onSuggestionClick={handleSuggestionClick}
                   />
                 )
               })}
