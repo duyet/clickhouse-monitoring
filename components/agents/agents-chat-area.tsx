@@ -693,7 +693,7 @@ function ChatMessage({
  */
 function generateFollowUpSuggestions(
   message: UIMessage,
-  allMessages: readonly UIMessage[]
+  _allMessages: readonly UIMessage[]
 ): string[] {
   const suggestions: string[] = []
 
