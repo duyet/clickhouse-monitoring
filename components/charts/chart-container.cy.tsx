@@ -1,7 +1,14 @@
 import { ChartContainer } from './chart-container'
 
 describe('<ChartContainer />', () => {
-  const mockChildren = cy.stub().returns(<div>Chart Content</div>)
+  // Regular function (not cy.stub) since tests don't need to spy on children calls
+  const mockChildren = (
+    _data: unknown[],
+    _sql: string | undefined,
+    _metadata: unknown,
+    _staleError: unknown,
+    _mutate: unknown
+  ) => <div data-testid="chart-content">Chart Content</div>
 
   it('renders skeleton when loading', () => {
     const swr = {
@@ -69,13 +76,9 @@ describe('<ChartContainer />', () => {
       sql: 'SELECT 42',
     }
 
-    const children = cy
-      .stub()
-      .returns(<div data-testid="chart-content">Chart Content</div>)
-
     cy.mount(
       <ChartContainer swr={swr} title="Test Chart">
-        {children}
+        {mockChildren}
       </ChartContainer>
     )
 
