@@ -44,6 +44,7 @@ import {
   PromptInputTextarea,
 } from '@/components/ai-elements/prompt-input'
 import { DataTable } from '@/components/data-table/data-table'
+import { getToolMetadata } from '@/components/mcp/mcp-tools-data'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
@@ -200,8 +201,6 @@ function ToolCallPart({
 
   // Get tool parameter info for optional display
   const toolParams = useMemo(() => {
-    // Import from consolidated data
-    const { getToolMetadata } = require('@/components/mcp/mcp-tools-data')
     const tool = getToolMetadata(toolName)
     return tool?.params || []
   }, [toolName])
@@ -315,7 +314,7 @@ function ToolCallPart({
               <div className="space-y-1">
                 {Object.entries(part.input as Record<string, unknown>).map(
                   ([key, value]) => {
-                    const paramDef = toolParams.find((p: any) => p.name === key)
+                    const paramDef = toolParams.find((p) => p.name === key)
                     const isOptional = paramDef?.required === false
                     return (
                       <div

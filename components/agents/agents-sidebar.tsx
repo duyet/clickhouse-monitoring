@@ -9,7 +9,12 @@ import {
   XIcon,
 } from 'lucide-react'
 
-import type { McpToolCategory } from '@/components/mcp/mcp-tools-data'
+import type {
+  McpResource,
+  McpTool,
+  McpToolCategory,
+} from '@/components/mcp/mcp-tools-data'
+import type { ApiMcpTool } from '@/lib/swr/use-mcp-server-info'
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -208,26 +213,20 @@ function McpToolsSection() {
             )}
           </CollapsibleTrigger>
           <CollapsibleContent className="pl-3 space-y-1 mt-1">
-            {mcpInfo.resources.map(
-              (resource: {
-                name: string
-                description: string
-                uri: string
-              }) => (
-                <Tooltip key={resource.name}>
-                  <TooltipTrigger asChild>
-                    <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">
-                      <span className="font-medium text-foreground">
-                        {resource.name}
-                      </span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="max-w-xs">
-                    <p>{resource.description}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )
-            )}
+            {mcpInfo.resources.map((resource: McpResource) => (
+              <Tooltip key={resource.name}>
+                <TooltipTrigger asChild>
+                  <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">
+                    <span className="font-medium text-foreground">
+                      {resource.name}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs">
+                  <p>{resource.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
           </CollapsibleContent>
         </Collapsible>
 
@@ -235,7 +234,7 @@ function McpToolsSection() {
         {toolCategories.map((categoryKey) => {
           const categoryInfo = MCP_TOOL_CATEGORIES[categoryKey]
           const tools = mcpInfo.tools.filter(
-            (t: { category: string }) => t.category === categoryKey
+            (t: ApiMcpTool) => t.category === categoryKey
           )
 
           if (tools.length === 0) return null
@@ -261,59 +260,51 @@ function McpToolsSection() {
                 </span>
               </CollapsibleTrigger>
               <CollapsibleContent className="pl-3 space-y-1 mt-1">
-                {tools.map(
-                  (tool: {
-                    name: string
-                    description: string
-                    params: { name: string; type: string; required: boolean }[]
-                  }) => (
-                    <Tooltip key={tool.name}>
-                      <TooltipTrigger asChild>
-                        <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">
-                          <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                            {tool.name}
-                          </code>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="max-w-xs">
-                        <div className="space-y-1">
-                          <p className="font-medium">{tool.description}</p>
-                          {tool.params.length > 0 && (
-                            <div className="text-xs text-muted-foreground space-y-0.5">
-                              <div className="font-medium mt-2">
-                                Parameters:
-                              </div>
-                              {tool.params.map((param) => (
-                                <div
-                                  key={param.name}
-                                  className="flex items-center gap-1"
-                                >
-                                  <span
-                                    className={cn(
-                                      param.required
-                                        ? 'text-foreground'
-                                        : 'text-muted-foreground opacity-70'
-                                    )}
-                                  >
-                                    {param.name}
-                                  </span>
-                                  <span className="text-muted-foreground">
-                                    :{param.type}
-                                  </span>
-                                  {!param.required && (
-                                    <span className="text-muted-foreground/60 text-[10px]">
-                                      optional
-                                    </span>
+                {tools.map((tool: ApiMcpTool) => (
+                  <Tooltip key={tool.name}>
+                    <TooltipTrigger asChild>
+                      <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">
+                        <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
+                          {tool.name}
+                        </code>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      <div className="space-y-1">
+                        <p className="font-medium">{tool.description}</p>
+                        {tool.params.length > 0 && (
+                          <div className="text-xs text-muted-foreground space-y-0.5">
+                            <div className="font-medium mt-2">Parameters:</div>
+                            {tool.params.map((param) => (
+                              <div
+                                key={param.name}
+                                className="flex items-center gap-1"
+                              >
+                                <span
+                                  className={cn(
+                                    param.required
+                                      ? 'text-foreground'
+                                      : 'text-muted-foreground opacity-70'
                                   )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  )
-                )}
+                                >
+                                  {param.name}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  :{param.type}
+                                </span>
+                                {!param.required && (
+                                  <span className="text-muted-foreground/60 text-[10px]">
+                                    optional
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
               </CollapsibleContent>
             </Collapsible>
           )
