@@ -18,7 +18,15 @@ import type { UIMessage } from 'ai'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
@@ -55,11 +63,16 @@ import { cn } from '@/lib/utils'
 // Types
 // ============================================================================
 
+export interface AgentsChatAreaRef {
+  handleClear: () => void
+}
+
 interface AgentsChatAreaProps {
   readonly hostId: number
   readonly isSidebarOpen: boolean
   readonly onMenuClick: () => void
   readonly hideHeader?: boolean
+  readonly hideCompactControls?: boolean
 }
 
 // Note: Chat state is managed internally by useChat when props are not provided.
@@ -663,12 +676,19 @@ const DEFAULT_SUGGESTIONS = [
 // Main Component
 // ============================================================================
 
-export function AgentsChatArea({
-  hostId,
-  isSidebarOpen,
-  onMenuClick,
-  hideHeader = false,
-}: AgentsChatAreaProps) {
+export const AgentsChatArea = forwardRef<
+  AgentsChatAreaRef,
+  AgentsChatAreaProps
+>(function AgentsChatArea(
+  {
+    hostId,
+    isSidebarOpen,
+    onMenuClick,
+    hideHeader = false,
+    hideCompactControls = false,
+  }: AgentsChatAreaProps,
+  ref
+) {
   // Get conversation context for loading/saving messages
   const { conversations, currentConversationId, updateMessages } =
     useConversationContext()
@@ -759,6 +779,9 @@ export function AgentsChatArea({
       lastSavedMessagesRef.current = []
     }
   }, [setMessages, currentConversationId, updateMessages])
+
+  // Expose handleClear to parent via ref
+  useImperativeHandle(ref, () => ({ handleClear }), [handleClear])
 
   const handleSuggestionClick = useCallback(
     (suggestion: string) => {
@@ -858,31 +881,33 @@ export function AgentsChatArea({
         </div>
       )}
 
-      {/* Compact controls bar (shown when header is hidden) */}
-      {hideHeader && (isLoading || messages.length > 0) && (
-        <div className="flex items-center justify-end gap-1 px-3 py-2 border-b shrink-0">
-          {isLoading && (
+      {/* Compact controls bar (shown when header is hidden and not hidden by parent) */}
+      {hideHeader &&
+        !hideCompactControls &&
+        (isLoading || messages.length > 0) && (
+          <div className="flex items-center justify-end gap-1 px-3 py-2 border-b shrink-0">
+            {isLoading && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={stop}
+                className="h-8 w-8"
+                title="Stop generation"
+              >
+                <SquareIcon className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
-              onClick={stop}
+              onClick={handleClear}
               className="h-8 w-8"
-              title="Stop generation"
+              title="Clear conversation"
             >
-              <SquareIcon className="h-4 w-4" />
+              <TrashIcon className="h-4 w-4" />
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleClear}
-            className="h-8 w-8"
-            title="Clear conversation"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+          </div>
+        )}
 
       {/* Messages Area */}
       <ConversationUI>
@@ -984,4 +1009,4 @@ export function AgentsChatArea({
       </div>
     </div>
   )
-}
+})

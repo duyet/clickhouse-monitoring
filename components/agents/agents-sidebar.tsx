@@ -262,10 +262,7 @@ function McpToolsSection() {
                           <ChevronRightIcon className="h-3 w-3" />
                         )}
                       </span>
-                      <span className="text-sm">
-                        <span className="text-xs text-muted-foreground">|</span>{' '}
-                        Resources
-                      </span>
+                      <span className="text-sm">Resources</span>
                       <span className="text-xs text-muted-foreground">
                         ({mcpInfo.resources.length})
                       </span>
@@ -273,8 +270,6 @@ function McpToolsSection() {
                     <CollapsibleContent>
                       {mcpInfo.resources.map((resource: McpResource) => (
                         <div key={resource.name} className="relative pl-8">
-                          {/* Horizontal connector line */}
-                          <div className="absolute left-[-9px] top-1/2 w-2.5 h-px bg-border" />
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">
@@ -317,9 +312,6 @@ function McpToolsSection() {
                           )}
                         </span>
                         <span className="text-sm">
-                          <span className="text-xs text-muted-foreground">
-                            |
-                          </span>{' '}
                           {categoryInfo.icon} {categoryInfo.name}
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -329,8 +321,6 @@ function McpToolsSection() {
                       <CollapsibleContent>
                         {tools.map((tool: ApiMcpTool) => (
                           <div key={tool.name} className="relative pl-8">
-                            {/* Horizontal connector line */}
-                            <div className="absolute left-[-9px] top-1/2 w-2.5 h-px bg-border" />
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">

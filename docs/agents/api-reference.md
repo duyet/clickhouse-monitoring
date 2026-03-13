@@ -43,16 +43,17 @@ LLM_MODEL=gpt-4o-mini
 
 # Alternative: OpenRouter (supports multiple providers)
 LLM_API_BASE=https://openrouter.ai/api/v1
-LLM_MODEL=openrouter/free
+LLM_MODEL=stepfun/step-3.5-flash:free
 ```
 
 ### Model Options
 
 | Model | Provider | Cost | Notes |
 |-------|----------|------|-------|
-| `openrouter/free` | OpenRouter | Free | Good for testing |
-| `openrouter/meta-llama/llama-3-8b-instruct:free` | OpenRouter | Free | Llama 3 8B |
-| `openrouter/google/gemma-7b-it:free` | OpenRouter | Free | Gemma 7B |
+| `stepfun/step-3.5-flash:free` | OpenRouter | Free | Fast & reliable (recommended) |
+| `nvidia/nemotron-3-super-120b-a12b:free` | OpenRouter | Free | Large 120B model |
+| `google/gemma-3-27b-it:free` | OpenRouter | Free | Google 27B model |
+| `meta-llama/llama-3.1-8b-instruct:free` | OpenRouter | Free | Meta 8B model |
 | `gpt-4o-mini` | OpenAI | Paid | Best quality |
 | `anthropic/claude-3-haiku` | Anthropic | Paid | Fast & accurate |
 
@@ -65,7 +66,7 @@ import { createClickHouseAgent } from '@/lib/ai/agent'
 
 const agent = createClickHouseAgent({
   hostId: 0,
-  model: 'openrouter/free',
+  model: 'stepfun/step-3.5-flash:free',
   apiKey: process.env.LLM_API_KEY,
   baseURL: process.env.LLM_API_BASE,
 })
@@ -76,7 +77,7 @@ const agent = createClickHouseAgent({
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
 | `hostId` | `number` | Yes | - | ClickHouse host ID |
-| `model` | `string` | No | `'openrouter/free'` | LLM model identifier |
+| `model` | `string` | No | `'stepfun/step-3.5-flash:free'` | LLM model identifier |
 | `apiKey` | `string` | No | `process.env.LLM_API_KEY` | LLM API key |
 | `baseURL` | `string` | No | `process.env.LLM_API_BASE` | LLM API base URL |
 | `maxSteps` | `number` | No | `30` | Max tool execution steps |
@@ -228,7 +229,7 @@ export function ChatComponent() {
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/v1/agent',
-      body: { hostId: 0, model: 'openrouter/free' },
+      body: { hostId: 0, model: 'stepfun/step-3.5-flash:free' },
     }),
   })
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { PanelRightClose, PanelRightOpen } from 'lucide-react'
+import { PanelRightClose, PanelRightOpen, TrashIcon } from 'lucide-react'
 
 import type { ConversationListItem } from './conversation-switcher'
 
@@ -28,6 +28,9 @@ export function AgentsLayout() {
   // Track if user dismissed the config guidance
   const [isConfigGuidanceDismissed, setIsConfigGuidanceDismissed] =
     useState(false)
+
+  // Ref to access child component's handleClear function
+  const chatAreaRef = useRef<{ handleClear: () => void } | null>(null)
 
   // Sync sidebar state with isMobile changes (only if user hasn't manually toggled)
   useEffect(() => {
@@ -67,14 +70,23 @@ export function AgentsLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Page header with conversation switcher */}
         <div className="flex items-center justify-between gap-2 border-b px-3 sm:px-4 py-3 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <ConversationSwitcher
-              currentConversationId={currentConversationId}
-              conversations={conversationList}
-              onNew={createNewConversation}
-              onSelect={switchConversation}
-              onDelete={deleteConversation}
-            />
+          <ConversationSwitcher
+            currentConversationId={currentConversationId}
+            conversations={conversationList}
+            onNew={createNewConversation}
+            onSelect={switchConversation}
+            onDelete={deleteConversation}
+          />
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => chatAreaRef.current?.handleClear()}
+              className="h-8 w-8 shrink-0"
+              title="Clear conversation"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -91,12 +103,6 @@ export function AgentsLayout() {
                 <PanelRightOpen className="h-4 w-4" />
               )}
             </Button>
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="font-semibold truncate text-sm">AI Agent</span>
-              <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">
-                Host {hostId}
-              </span>
-            </div>
           </div>
         </div>
 
@@ -111,10 +117,12 @@ export function AgentsLayout() {
         )}
 
         <AgentsChatArea
+          ref={chatAreaRef}
           hostId={hostId}
           isSidebarOpen={isSidebarOpen}
           onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
           hideHeader={true}
+          hideCompactControls={true}
         />
       </div>
 

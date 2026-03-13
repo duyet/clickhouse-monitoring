@@ -85,7 +85,7 @@ id = "78782c1fcf4141d9b6f26f2046f50ceb"
 #   - CLICKHOUSE_NAME: Comma-separated list of custom names for hosts (optional)
 #   - CLICKHOUSE_TZ: Timezone for ClickHouse queries (optional)
 #   - CLOUDFLARE_WORKERS: Set to "1" when running in Workers environment
-#   - LLM_MODEL: Model identifier for AI agent (default: openrouter/free)
+#   - LLM_MODEL: Model identifier for AI agent (default: stepfun/step-3.5-flash:free)
 #   - LLM_API_BASE: Base URL for LLM API (default: https://openrouter.ai/api/v1)
 #   - OPENROUTER_REFERER: App URL for OpenRouter attribution (optional)
 #   - OPENROUTER_APP_NAME: App display name for OpenRouter (optional)
@@ -146,7 +146,7 @@ CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,http://100.81.220.21:81
 CLICKHOUSE_USER = "duyet,duyet,duyet"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
-LLM_MODEL = "openrouter/free"
+LLM_MODEL = "stepfun/step-3.5-flash:free"
 OPENROUTER_REFERER = "https://clickhouse.duyet.net"
 OPENROUTER_APP_NAME = "ClickHouse Monitoring"
 

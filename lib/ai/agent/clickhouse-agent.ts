@@ -23,7 +23,7 @@ const DEFAULT_MAX_STEPS = 30
  */
 export function createClickHouseAgent(options: {
   /**
-   * The model to use for the agent (e.g., 'openrouter/free')
+   * The model to use for the agent (e.g., 'stepfun/step-3.5-flash:free')
    */
   model?: string
 
@@ -71,26 +71,42 @@ export function createClickHouseAgent(options: {
 
   // Create the appropriate provider based on detection
   // Use dedicated OpenRouter provider to avoid Responses API issues
-  const provider = isOpenRouter
-    ? createOpenRouter({
-        apiKey: apiKeyValue,
-        headers: {
-          ...(openRouterReferer && { 'HTTP-Referer': openRouterReferer }),
-          ...(openRouterAppName && { 'X-OpenRouter-Title': openRouterAppName }),
-        },
-      })
-    : createOpenAI({
-        apiKey: apiKeyValue,
-        baseURL: apiBaseURL,
-      })
+  if (isOpenRouter) {
+    const openrouter = createOpenRouter({
+      apiKey: apiKeyValue,
+      headers: {
+        ...(openRouterReferer && { 'HTTP-Referer': openRouterReferer }),
+        ...(openRouterAppName && { 'X-OpenRouter-Title': openRouterAppName }),
+      },
+    })
 
-  // Get the model instance
-  // For OpenRouter, strip the 'openrouter/' prefix if present (provider handles it)
-  const modelId =
-    isOpenRouter && model.startsWith('openrouter/')
+    // For OpenRouter, use .chat() method and strip 'openrouter/' prefix if present
+    const modelId = model.startsWith('openrouter/')
       ? model.replace('openrouter/', '')
       : model
-  const modelInstance = provider(modelId)
+    const modelInstance = openrouter.chat(modelId)
+
+    // Get tools for this host
+    const tools = createMcpTools(hostId)
+
+    // Create the agent
+    const agent = new ToolLoopAgent({
+      id: 'clickhouse-agent',
+      model: modelInstance,
+      tools,
+      instructions: CLICKHOUSE_AGENT_INSTRUCTIONS,
+      stopWhen: stepCountIs(maxSteps),
+    })
+
+    return agent
+  }
+
+  // For OpenAI-compatible providers (including Azure OpenAI)
+  const openai = createOpenAI({
+    apiKey: apiKeyValue,
+    baseURL: apiBaseURL,
+  })
+  const modelInstance = openai.chat(model)
 
   // Get tools for this host
   const tools = createMcpTools(hostId)
