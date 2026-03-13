@@ -621,7 +621,7 @@ Add to `.env.local`:
 # LangGraph Agent Configuration
 LLM_API_KEY=your-openrouter-api-key
 LLM_API_BASE=https://openrouter.ai/api/v1  # OpenRouter supports multiple providers
-LLM_MODEL=openrouter/free                # Free tier available
+LLM_MODEL=stepfun/step-3.5-flash:free      # Free tier (recommended)
 ```
 
 ### Agent Architecture

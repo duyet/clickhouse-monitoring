@@ -149,7 +149,7 @@
     "sonner": "^2.0.7",
     "sql-formatter": "^15.7.0",
     "streamdown": "^2.4.0",
-    "swr": "^2.4.0",
+    "swr": "^2.4.1",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "tar": "^7.5.8",
