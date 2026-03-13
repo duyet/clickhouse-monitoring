@@ -2,44 +2,24 @@
  * useMcpServerInfo Hook
  *
  * Fetches MCP server information including available tools and resources.
+ * Includes retry logic with exponential backoff for transient errors.
  */
 
 import useSWR from 'swr'
 
+import type {
+  McpResource,
+  McpServerInfo,
+  McpTool,
+} from '@/components/mcp/mcp-tools-data'
+
 import { swrConfig } from '@/lib/swr/config'
-
-export interface McpToolParam {
-  name: string
-  type: string
-  required: boolean
-  default?: string | number
-  description: string
-}
-
-export interface McpTool {
-  name: string
-  description: string
-  params: McpToolParam[]
-}
-
-export interface McpResource {
-  name: string
-  uri: string
-  description: string
-}
-
-export interface McpServerInfo {
-  name: string
-  version: string
-  description: string
-  tools: McpTool[]
-  resources: McpResource[]
-}
 
 export interface McpServerInfoResult {
   data: McpServerInfo | undefined
   isLoading: boolean
   error: Error | undefined
+  retry: () => void
 }
 
 async function fetchMcpServerInfo(): Promise<McpServerInfo> {
@@ -51,16 +31,23 @@ async function fetchMcpServerInfo(): Promise<McpServerInfo> {
 }
 
 /**
- * Hook to fetch MCP server information
+ * Hook to fetch MCP server information with retry support
  *
- * @returns Object with server info, loading/error states
+ * @returns Object with server info, loading/error states, and retry function
  *
  * @example
  * ```tsx
- * const { data, isLoading, error } = useMcpServerInfo()
+ * const { data, isLoading, error, retry } = useMcpServerInfo()
  *
  * if (isLoading) return <Skeleton />
- * if (error) return <ErrorAlert error={error} />
+ * if (error) {
+ *   return (
+ *     <div>
+ *       <ErrorAlert error={error} />
+ *       <Button onClick={retry}>Retry</Button>
+ *     </div>
+ *   )
+ * }
  * if (!data) return null
  *
  * return (
@@ -73,19 +60,28 @@ async function fetchMcpServerInfo(): Promise<McpServerInfo> {
  * ```
  */
 export function useMcpServerInfo(): McpServerInfoResult {
-  const { data, isLoading, error } = useSWR<McpServerInfo>(
+  const { data, isLoading, error, mutate } = useSWR<McpServerInfo>(
     '/api/v1/mcp/info',
     fetchMcpServerInfo,
     {
       ...swrConfig.once,
       dedupingInterval: 300_000, // Cache for 5 minutes
-      shouldRetryOnError: false,
+      shouldRetryOnError: true,
+      errorRetryCount: 3,
     }
   )
+
+  const retry = () => {
+    mutate()
+  }
 
   return {
     data,
     isLoading,
     error,
+    retry,
   }
 }
+
+// Re-export types from mcp-tools-data.ts for convenience
+export type { McpTool, McpResource, McpServerInfo }

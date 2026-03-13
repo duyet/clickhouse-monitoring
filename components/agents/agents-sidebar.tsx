@@ -5,11 +5,15 @@ import {
   ChevronRightIcon,
   DatabaseIcon,
   MonitorIcon,
+  RefreshCwIcon,
   XIcon,
 } from 'lucide-react'
 
+import type { McpToolCategory } from '@/components/mcp/mcp-tools-data'
+
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { MCP_TOOL_CATEGORIES } from '@/components/mcp/mcp-tools-data'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -25,11 +29,17 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { SUGGESTED_PROMPTS } from '@/lib/ai/agent/metadata'
 import { useAgentModel } from '@/lib/hooks/use-agent-model'
 import { useMcpServerInfo } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
+import { cn } from '@/lib/utils'
 
 interface AgentsSidebarProps {
   hostId: number
@@ -100,9 +110,9 @@ function ModelSelector() {
 }
 
 function McpToolsSection() {
-  const { data: mcpInfo, isLoading } = useMcpServerInfo()
+  const { data: mcpInfo, isLoading, error, retry } = useMcpServerInfo()
   const [openSections, setOpenSections] = useState<Set<string>>(
-    new Set(['Tools'])
+    new Set(['schema', 'system'])
   )
 
   const toggleSection = (sectionName: string) => {
@@ -128,6 +138,33 @@ function McpToolsSection() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-muted-foreground">
+            Available Tools
+          </h3>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={retry}
+                className="h-6 w-6"
+                title="Retry loading tools"
+              >
+                <RefreshCwIcon className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Retry loading tools</TooltipContent>
+          </Tooltip>
+        </div>
+        <p className="text-xs text-destructive">Failed to load tools</p>
+      </div>
+    )
+  }
+
   if (!mcpInfo) {
     return (
       <div className="mb-4">
@@ -139,16 +176,8 @@ function McpToolsSection() {
     )
   }
 
-  // Group tools by category based on name prefix
-  const toolCategories: Record<string, typeof mcpInfo.tools> = {
-    Query: mcpInfo.tools.filter((t) => t.name === 'query'),
-    Schema: mcpInfo.tools.filter(
-      (t) => t.name.startsWith('list_') || t.name.startsWith('get_table_')
-    ),
-    System: mcpInfo.tools.filter(
-      (t) => t.name.startsWith('get_') && t.name !== 'get_table_schema'
-    ),
-  }
+  // Group tools by category from the API response
+  const toolCategories = Object.keys(MCP_TOOL_CATEGORIES) as McpToolCategory[]
 
   return (
     <div className="mb-4">
@@ -178,79 +207,117 @@ function McpToolsSection() {
               <ChevronRightIcon className="h-4 w-4" />
             )}
           </CollapsibleTrigger>
-          <CollapsibleContent className="pl-5 space-y-1 mt-1">
-            {mcpInfo.resources.map((resource) => (
-              <div
-                key={resource.name}
-                className="text-xs text-muted-foreground py-1"
-              >
-                <span className="font-medium text-foreground">
-                  {resource.name}
-                </span>
-                <p className="mt-0.5 opacity-80">{resource.description}</p>
-              </div>
-            ))}
+          <CollapsibleContent className="pl-3 space-y-1 mt-1">
+            {mcpInfo.resources.map(
+              (resource: {
+                name: string
+                description: string
+                uri: string
+              }) => (
+                <Tooltip key={resource.name}>
+                  <TooltipTrigger asChild>
+                    <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">
+                      <span className="font-medium text-foreground">
+                        {resource.name}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-xs">
+                    <p>{resource.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )
+            )}
           </CollapsibleContent>
         </Collapsible>
 
         {/* Tools by Category */}
-        {Object.entries(toolCategories).map(([category, tools]) =>
-          tools.length === 0 ? null : (
+        {toolCategories.map((categoryKey) => {
+          const categoryInfo = MCP_TOOL_CATEGORIES[categoryKey]
+          const tools = mcpInfo.tools.filter(
+            (t: { category: string }) => t.category === categoryKey
+          )
+
+          if (tools.length === 0) return null
+
+          return (
             <Collapsible
-              key={category}
-              open={openSections.has(category)}
-              onOpenChange={() => toggleSection(category)}
+              key={categoryKey}
+              open={openSections.has(categoryKey)}
+              onOpenChange={() => toggleSection(categoryKey)}
             >
               <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-muted rounded-md transition-colors">
-                <span className="text-sm font-medium">{category}</span>
+                <span className="text-sm font-medium flex items-center gap-1.5">
+                  <span>{categoryInfo.icon}</span>
+                  {categoryInfo.name}
+                </span>
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   ({tools.length})
-                  {openSections.has(category) ? (
+                  {openSections.has(categoryKey) ? (
                     <ChevronDownIcon className="h-4 w-4" />
                   ) : (
                     <ChevronRightIcon className="h-4 w-4" />
                   )}
                 </span>
               </CollapsibleTrigger>
-              <CollapsibleContent className="pl-4 space-y-1 mt-1">
-                {tools.map((tool) => (
-                  <div
-                    key={tool.name}
-                    className="text-xs text-muted-foreground py-1"
-                  >
-                    <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                      {tool.name}
-                    </code>
-                    <p className="mt-1 opacity-80">{tool.description}</p>
-                    {tool.params.length > 0 && (
-                      <div className="mt-1 pl-2 space-y-0.5">
-                        {tool.params.map((param) => (
-                          <div
-                            key={param.name}
-                            className="text-xs"
-                            title={param.description}
-                          >
-                            <span className="text-blue-600 dark:text-blue-400">
-                              {param.name}
-                            </span>
-                            <span className="text-muted-foreground">
-                              :{param.type}
-                            </span>
-                            {!param.required && (
-                              <span className="text-muted-foreground opacity-60">
-                                ?
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+              <CollapsibleContent className="pl-3 space-y-1 mt-1">
+                {tools.map(
+                  (tool: {
+                    name: string
+                    description: string
+                    params: { name: string; type: string; required: boolean }[]
+                  }) => (
+                    <Tooltip key={tool.name}>
+                      <TooltipTrigger asChild>
+                        <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">
+                          <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
+                            {tool.name}
+                          </code>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        <div className="space-y-1">
+                          <p className="font-medium">{tool.description}</p>
+                          {tool.params.length > 0 && (
+                            <div className="text-xs text-muted-foreground space-y-0.5">
+                              <div className="font-medium mt-2">
+                                Parameters:
+                              </div>
+                              {tool.params.map((param) => (
+                                <div
+                                  key={param.name}
+                                  className="flex items-center gap-1"
+                                >
+                                  <span
+                                    className={cn(
+                                      param.required
+                                        ? 'text-foreground'
+                                        : 'text-muted-foreground opacity-70'
+                                    )}
+                                  >
+                                    {param.name}
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    :{param.type}
+                                  </span>
+                                  {!param.required && (
+                                    <span className="text-muted-foreground/60 text-[10px]">
+                                      optional
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  )
+                )}
               </CollapsibleContent>
             </Collapsible>
           )
-        )}
+        })}
       </div>
     </div>
   )
@@ -282,7 +349,7 @@ export function AgentsSidebar({
 
   const content = (
     <div className="h-full overflow-auto">
-      <div className="p-4 space-y-4">
+      <div className="p-5 space-y-4">
         {/* Host Selector */}
         <HostSelector hostId={hostId} />
 
@@ -305,7 +372,7 @@ export function AgentsSidebar({
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-[min(320px,85vw)] p-0">
+        <SheetContent side="right" className="w-[min(340px,90vw)] p-0">
           <div className="flex h-full flex-col">{content}</div>
         </SheetContent>
       </Sheet>
@@ -315,7 +382,7 @@ export function AgentsSidebar({
   return (
     <>
       {isOpen ? (
-        <div className="w-72 lg:w-80 border-l h-full shrink-0 hidden md:flex flex-col">
+        <div className="w-80 lg:w-96 border-l h-full shrink-0 hidden md:flex flex-col">
           {/* Header - clickable title to close */}
           <div
             className="flex items-center justify-between border-b px-4 py-2.5 shrink-0 cursor-pointer hover:bg-muted/50 transition-colors"

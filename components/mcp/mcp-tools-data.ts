@@ -6,17 +6,35 @@ export interface McpToolParam {
   description: string
 }
 
+export type McpToolCategory = 'schema' | 'query' | 'system'
+
 export interface McpTool {
   name: string
   description: string
+  category: McpToolCategory
   params: McpToolParam[]
   exampleResponse: string
+}
+
+export interface McpResource {
+  name: string
+  uri: string
+  description: string
+}
+
+export interface McpServerInfo {
+  name: string
+  version: string
+  description: string
+  tools: McpTool[]
+  resources: McpResource[]
 }
 
 export const MCP_TOOLS: McpTool[] = [
   {
     name: 'query',
     description: 'Execute a read-only SQL query against ClickHouse',
+    category: 'query',
     params: [
       {
         name: 'sql',
@@ -40,6 +58,7 @@ export const MCP_TOOLS: McpTool[] = [
   {
     name: 'list_databases',
     description: 'List all databases with their engines and comments',
+    category: 'schema',
     params: [
       {
         name: 'hostId',
@@ -58,6 +77,7 @@ export const MCP_TOOLS: McpTool[] = [
   {
     name: 'list_tables',
     description: 'List tables in a database with row counts and sizes',
+    category: 'schema',
     params: [
       {
         name: 'database',
@@ -87,6 +107,7 @@ export const MCP_TOOLS: McpTool[] = [
     name: 'get_table_schema',
     description:
       'Get column definitions for a table including types, defaults, and comments',
+    category: 'schema',
     params: [
       {
         name: 'database',
@@ -129,6 +150,7 @@ export const MCP_TOOLS: McpTool[] = [
     name: 'get_metrics',
     description:
       'Get key ClickHouse server metrics: version, uptime, connections, and memory',
+    category: 'system',
     params: [
       {
         name: 'hostId',
@@ -149,6 +171,7 @@ export const MCP_TOOLS: McpTool[] = [
   {
     name: 'get_running_queries',
     description: 'List currently running queries ordered by elapsed time',
+    category: 'system',
     params: [
       {
         name: 'hostId',
@@ -172,6 +195,7 @@ export const MCP_TOOLS: McpTool[] = [
   {
     name: 'get_slow_queries',
     description: 'Get the slowest completed queries from the query log',
+    category: 'system',
     params: [
       {
         name: 'limit',
@@ -203,6 +227,7 @@ export const MCP_TOOLS: McpTool[] = [
     name: 'get_merge_status',
     description:
       'Get currently running merge operations with progress and elapsed time',
+    category: 'system',
     params: [
       {
         name: 'hostId',
@@ -264,3 +289,47 @@ export const EXAMPLE_PROMPTS = [
     ],
   },
 ]
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+export interface McpToolCategoryInfo {
+  readonly name: string
+  readonly icon: string
+  readonly description: string
+}
+
+export const MCP_TOOL_CATEGORIES: Readonly<
+  Record<McpToolCategory, McpToolCategoryInfo>
+> = {
+  schema: {
+    name: 'Schema',
+    icon: '📊',
+    description: 'Explore database structure and table schemas',
+  },
+  query: {
+    name: 'Query',
+    icon: '🔍',
+    description: 'Execute custom SQL queries',
+  },
+  system: {
+    name: 'System',
+    icon: '⚙️',
+    description: 'Monitor server health and performance',
+  },
+}
+
+/**
+ * Get tool metadata by name
+ */
+export function getToolMetadata(name: string): McpTool | undefined {
+  return MCP_TOOLS.find((tool) => tool.name === name)
+}
+
+/**
+ * Get tools by category
+ */
+export function getToolsByCategory(category: McpToolCategory): McpTool[] {
+  return MCP_TOOLS.filter((tool) => tool.category === category)
+}

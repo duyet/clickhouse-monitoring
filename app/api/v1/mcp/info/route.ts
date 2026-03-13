@@ -23,6 +23,7 @@ interface McpServerInfo {
   tools: {
     name: string
     description: string
+    category: 'schema' | 'query' | 'system'
     params: Array<{
       name: string
       type: string
@@ -44,6 +45,7 @@ export async function GET() {
     tools: MCP_TOOLS.map((tool) => ({
       name: tool.name,
       description: tool.description,
+      category: tool.category,
       params: tool.params,
     })),
     resources: [
