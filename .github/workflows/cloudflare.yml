@@ -96,6 +96,10 @@ jobs:
           LLM_API_BASE=$LLM_API_BASE
           LLM_MODEL=$LLM_MODEL
           CLERK_SECRET_KEY=$CLERK_SECRET_KEY
+          # Optional environment variables with defaults
+          CLICKHOUSE_TZ=${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
+          CLICKHOUSE_EXCLUDE_USER_DEFAULT=${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
+          NEXT_QUERY_CACHE_TTL=${{ secrets.NEXT_QUERY_CACHE_TTL || '3600' }}
           EOF
 
           # Run the config script to set all secrets
@@ -285,6 +289,10 @@ jobs:
           LLM_API_BASE=$LLM_API_BASE
           LLM_MODEL=$LLM_MODEL
           CLERK_SECRET_KEY=$CLERK_SECRET_KEY
+          # Optional environment variables with defaults
+          CLICKHOUSE_TZ=${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
+          CLICKHOUSE_EXCLUDE_USER_DEFAULT=${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
+          NEXT_QUERY_CACHE_TTL=${{ secrets.NEXT_QUERY_CACHE_TTL || '3600' }}
           EOF
 
           # Run the config script to set all secrets
