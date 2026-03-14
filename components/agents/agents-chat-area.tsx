@@ -6,6 +6,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   Loader2Icon,
+  Maximize2Icon,
   PanelRightClose,
   PanelRightOpen,
   RefreshCwIcon,
@@ -51,13 +52,32 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
 } from '@/components/ai-elements/prompt-input'
+import {
+  Reasoning,
+  ReasoningContent,
+  ReasoningTrigger,
+} from '@/components/ai-elements/reasoning'
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
+import {
+  Task,
+  TaskContent,
+  TaskItem,
+  TaskTrigger,
+} from '@/components/ai-elements/task'
 import { DataTable } from '@/components/data-table/data-table'
 import { getToolMetadata } from '@/components/mcp/mcp-tools-data'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
+import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
@@ -126,9 +146,8 @@ function ResultTable({
     () => ({
       name: 'agent-query-result',
       description: 'Query results from AI agent',
-      sql: 'SELECT * FROM agent_result', // Placeholder SQL for dynamic table
+      sql: 'SELECT * FROM agent_result',
       columns: columns as string[],
-      // No specific column formats - use default text rendering
     }),
     [columns]
   )
@@ -143,11 +162,41 @@ function ResultTable({
 
   return (
     <>
+      <div className="flex items-center justify-end mb-1">
+        <Dialog>
+          <DialogTrigger asChild>
+            <button
+              className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
+              title="Expand table"
+            >
+              <Maximize2Icon className="h-3.5 w-3.5" />
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle>
+                Query Results ({displayRows.length} rows)
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-auto min-h-0">
+              <DataTable
+                data={displayRows}
+                queryConfig={queryConfig}
+                context={{}}
+                defaultPageSize={50}
+                showSQL={false}
+                enableColumnFilters={true}
+                enableColumnReordering={false}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
       <DataTable
         data={displayRows}
         queryConfig={queryConfig}
         context={{}}
-        defaultPageSize={10}
+        defaultPageSize={25}
         showSQL={false}
         enableColumnFilters={false}
         enableColumnReordering={false}
@@ -305,8 +354,8 @@ function ToolCallPart({
 
           {/* Tool output */}
           {hasOutput && part.output != null ? (
-            <div className="max-h-72 overflow-auto">
-              <div className="px-2 py-1.5">{renderToolOutput(part.output)}</div>
+            <div className="max-h-96 overflow-auto">
+              <div className="px-1 py-1">{renderToolOutput(part.output)}</div>
             </div>
           ) : null}
 
@@ -520,6 +569,11 @@ function getStablePartKey(
     return `msg-${messageId}-step-${index}`
   }
 
+  // Reasoning parts
+  if (p.type === 'reasoning') {
+    return `msg-${messageId}-reasoning-${index}`
+  }
+
   // Fallback
   return `msg-${messageId}-part-${index}`
 }
@@ -568,6 +622,23 @@ function ChatMessage({
               if (isUser) {
                 return (
                   <MessageResponse key={stableKey}>{part.text}</MessageResponse>
+                )
+              }
+
+              // For assistant messages, check for task list pattern first
+              const taskItems = extractTaskItems(part.text)
+              if (taskItems.length > 0) {
+                return (
+                  <div key={stableKey} className="my-2">
+                    <Task>
+                      <TaskTrigger title="Tasks" />
+                      <TaskContent>
+                        {taskItems.map((item, idx) => (
+                          <TaskItem key={idx}>{item}</TaskItem>
+                        ))}
+                      </TaskContent>
+                    </Task>
+                  </div>
                 )
               }
 
@@ -621,6 +692,20 @@ function ChatMessage({
                     {part.text}
                   </ReactMarkdown>
                 </div>
+              )
+            }
+
+            // Reasoning part — display with the Reasoning collapsible component
+            if (part.type === 'reasoning') {
+              // AI SDK v6: ReasoningUIPart has { type: 'reasoning', text: string }
+              const reasoningText = (
+                part as unknown as { type: 'reasoning'; text: string }
+              ).text
+              return (
+                <Reasoning key={stableKey} isStreaming={false}>
+                  <ReasoningTrigger />
+                  <ReasoningContent>{reasoningText}</ReasoningContent>
+                </Reasoning>
               )
             }
 
@@ -679,6 +764,27 @@ function ChatMessage({
       </MessageContent>
     </Message>
   )
+}
+
+// ============================================================================
+// Task List Extraction
+// ============================================================================
+
+/**
+ * Extract task items from markdown-style task lists.
+ * Returns non-empty array only when the text is *primarily* a task list
+ * (3+ items, >50% of non-empty lines are task list entries).
+ */
+function extractTaskItems(text: string): string[] {
+  const taskPattern = /^[\s]*-\s+\[[ xX]\]\s+(.+)$/gm
+  const matches = [...text.matchAll(taskPattern)]
+  if (matches.length < 3) return []
+
+  // Require majority of content to be task items
+  const nonEmptyLines = text.split('\n').filter((l) => l.trim().length > 0)
+  if (matches.length < nonEmptyLines.length * 0.5) return []
+
+  return matches.map((m) => m[1].trim())
 }
 
 // ============================================================================
@@ -816,10 +922,13 @@ export const AgentsChatArea = forwardRef<
   // Get the selected model from localStorage
   const model = useMemo(() => getSavedModel(), [])
 
+  // Get disabled tools so the API can filter them out
+  const { disabledTools } = useToolConfig()
+
   const { messages, sendMessage, setMessages, status, error, stop } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/v1/agent',
-      body: { hostId, model },
+      body: { hostId, model, disabledTools },
     }),
   })
 

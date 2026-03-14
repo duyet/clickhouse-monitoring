@@ -30,6 +30,7 @@ export async function POST(request: Request) {
     >
     hostId?: number
     model?: string // Allow client to specify model
+    disabledTools?: string[] // Tools the user has disabled in the sidebar
   }
 
   // Debug logging
@@ -92,6 +93,9 @@ export async function POST(request: Request) {
   const hostId = typeof body.hostId === 'number' ? body.hostId : 0
   const model =
     body.model || process.env.LLM_MODEL || 'stepfun/step-3.5-flash:free'
+  const disabledTools = Array.isArray(body.disabledTools)
+    ? body.disabledTools.filter((t) => typeof t === 'string')
+    : []
 
   // Create agent with specified model and host
   const agent = createClickHouseAgent({
@@ -99,6 +103,7 @@ export async function POST(request: Request) {
     model,
     apiKey: process.env.LLM_API_KEY,
     baseURL: process.env.LLM_API_BASE,
+    disabledTools,
   })
 
   // Build UI messages in the correct format for AI SDK v6

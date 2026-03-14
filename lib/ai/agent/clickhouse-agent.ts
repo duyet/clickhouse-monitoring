@@ -12,6 +12,21 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { stepCountIs, ToolLoopAgent } from 'ai'
 
 /**
+ * Filter a tools record to exclude disabled tool names.
+ */
+function filterTools<T extends Record<string, unknown>>(
+  tools: T,
+  disabledTools: string[]
+): T {
+  if (disabledTools.length === 0) return tools
+  const filtered = { ...tools }
+  for (const name of disabledTools) {
+    delete filtered[name as keyof T]
+  }
+  return filtered
+}
+
+/**
  * Default model configuration
  * Falls back to stepfun/step-3.5-flash:free if LLM_MODEL env var is not set
  */
@@ -46,6 +61,12 @@ export function createClickHouseAgent(options: {
    * ClickHouse host ID to query
    */
   hostId: number
+
+  /**
+   * Tool names that the user has disabled in the UI.
+   * These tools will be excluded from the agent's tool set.
+   */
+  disabledTools?: string[]
 }) {
   const {
     model = DEFAULT_MODEL,
@@ -53,6 +74,7 @@ export function createClickHouseAgent(options: {
     baseURL,
     maxSteps = DEFAULT_MAX_STEPS,
     hostId,
+    disabledTools = [],
   } = options
 
   // Detect if using OpenRouter by checking the baseURL or model name
@@ -86,8 +108,9 @@ export function createClickHouseAgent(options: {
       : model
     const modelInstance = openrouter.chat(modelId)
 
-    // Get tools for this host
-    const tools = createMcpTools(hostId)
+    // Get tools for this host, filtering out disabled tools
+    const allTools = createMcpTools(hostId)
+    const tools = filterTools(allTools, disabledTools)
 
     // Create the agent
     const agent = new ToolLoopAgent({
@@ -108,8 +131,9 @@ export function createClickHouseAgent(options: {
   })
   const modelInstance = openai.chat(model)
 
-  // Get tools for this host
-  const tools = createMcpTools(hostId)
+  // Get tools for this host, filtering out disabled tools
+  const allTools = createMcpTools(hostId)
+  const tools = filterTools(allTools, disabledTools)
 
   // Create the agent
   const agent = new ToolLoopAgent({
