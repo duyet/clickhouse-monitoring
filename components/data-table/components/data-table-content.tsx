@@ -23,6 +23,7 @@ import {
   TableHeader as TableHeaderRenderer,
 } from '@/components/data-table/renderers'
 import { Table, TableBody, TableHeader } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 
 /**
  * Props for the DataTableContent component
@@ -177,19 +178,15 @@ export const DataTableContent = memo(function DataTableContent<
       )}
       <div
         ref={tableContainerRef}
-        className={
-          compact
-            ? `min-h-0 min-w-0 ${
-                isVirtualized
-                  ? 'flex-1 overflow-auto'
-                  : 'w-full overflow-auto max-h-[50vh]'
-              }`
-            : `mb-5 min-h-0 min-w-0 rounded-lg border border-border/50 bg-card/30 ${
-                isVirtualized
-                  ? 'flex-1 overflow-auto'
-                  : 'w-full overflow-auto max-h-[70vh]'
-              }`
-        }
+        className={cn(
+          'min-h-0 min-w-0',
+          isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-auto',
+          {
+            'max-h-[50vh]': compact && !isVirtualized,
+            'mb-5 rounded-lg border border-border/50 bg-card/30': !compact,
+            'max-h-[70vh]': !compact && !isVirtualized,
+          }
+        )}
         role="region"
         aria-label={`${title || 'Data'} table`}
         style={isVirtualized ? { height: '60vh' } : undefined}

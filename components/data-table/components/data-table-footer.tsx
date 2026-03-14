@@ -50,7 +50,7 @@ export const DataTableFooter = memo(function DataTableFooter<
   const handleNext = useCallback(() => table.nextPage(), [table])
 
   if (compact) {
-    const totalRows = table.getRowModel().rows.length
+    const totalRows = table.getPrePaginationRowModel().rows.length
     const canPrev = table.getCanPreviousPage()
     const canNext = table.getCanNextPage()
     const hasMultiplePages = canPrev || canNext
