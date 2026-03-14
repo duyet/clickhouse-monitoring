@@ -109,6 +109,8 @@ interface DataTableProps<TData extends RowData> {
   enableColumnReordering?: boolean
   /** Storage key for persisting column order to localStorage */
   columnOrderStorageKey?: string
+  /** Compact mode: hides header/toolbar, removes borders, forces dense density (default: false) */
+  compact?: boolean
 }
 
 /**
@@ -160,6 +162,7 @@ export function DataTable<
   metadata,
   enableColumnReordering = true,
   columnOrderStorageKey,
+  compact = false,
 }: DataTableProps<TData>) {
   // Support both old and new prop names for backward compatibility
   const queryParams = apiParams ?? deprecatedQueryParams
@@ -239,7 +242,9 @@ export function DataTable<
   })
 
   // Density mode with localStorage persistence
-  const { density, setDensity, cellClassName } = useTableDensity()
+  const { density, setDensity, cellClassName } = useTableDensity(
+    compact ? 'dense' : undefined
+  )
 
   // Sorting
   const [sorting, setSorting] = useState<SortingState>([])
@@ -476,26 +481,28 @@ export function DataTable<
       <div
         className={`flex min-w-0 flex-col overflow-hidden ${className || ''}`}
       >
-        <DataTableHeader
-          title={title}
-          description={description}
-          queryConfig={queryConfig}
-          toolbarExtras={toolbarExtras}
-          topRightToolbarExtras={topRightToolbarExtras}
-          showSQL={showSQL}
-          table={table}
-          queryParams={queryParams}
-          isRefreshing={isRefreshing}
-          enableColumnFilters={enableColumnFilters}
-          activeFilterCount={activeFilterCount}
-          clearAllColumnFilters={clearAllColumnFilters}
-          executedSql={executedSql}
-          metadata={metadata}
-          enableColumnReordering={enableColumnReordering}
-          onResetColumnOrder={handleResetColumnOrder}
-          density={density}
-          onDensityChange={setDensity}
-        />
+        {!compact && (
+          <DataTableHeader
+            title={title}
+            description={description}
+            queryConfig={queryConfig}
+            toolbarExtras={toolbarExtras}
+            topRightToolbarExtras={topRightToolbarExtras}
+            showSQL={showSQL}
+            table={table}
+            queryParams={queryParams}
+            isRefreshing={isRefreshing}
+            enableColumnFilters={enableColumnFilters}
+            activeFilterCount={activeFilterCount}
+            clearAllColumnFilters={clearAllColumnFilters}
+            executedSql={executedSql}
+            metadata={metadata}
+            enableColumnReordering={enableColumnReordering}
+            onResetColumnOrder={handleResetColumnOrder}
+            density={density}
+            onDensityChange={setDensity}
+          />
+        )}
 
         <DataTableContent
           title={title}
@@ -511,9 +518,10 @@ export function DataTable<
           enableColumnReordering={enableColumnReordering}
           onColumnOrderChange={handleDragEndColumnReorder}
           onResetColumnOrder={handleResetColumnOrder}
+          compact={compact}
         />
 
-        <DataTableFooter table={table} footnote={footnote} />
+        <DataTableFooter table={table} footnote={footnote} compact={compact} />
       </div>
     </TableDensityProvider>
   )

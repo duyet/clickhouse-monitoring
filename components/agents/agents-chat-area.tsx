@@ -142,18 +142,19 @@ function ResultTable({
   }
 
   return (
-    <div className="border rounded-md">
+    <div>
       <DataTable
         data={displayRows}
         queryConfig={queryConfig}
         context={{}}
-        defaultPageSize={rows.length > 50 ? 25 : 10}
+        defaultPageSize={10}
         showSQL={false}
-        enableColumnFilters={true}
-        enableColumnReordering={true}
+        enableColumnFilters={false}
+        enableColumnReordering={false}
+        compact
       />
       {rows.length > maxRows && (
-        <div className="text-center text-xs text-muted-foreground py-2 px-3 border-t bg-muted/30">
+        <div className="text-center text-xs text-muted-foreground py-1 px-3">
           Showing {maxRows} of {rows.length} rows
         </div>
       )}
@@ -222,11 +223,11 @@ function ToolCallPart({
   }, [toolName])
 
   return (
-    <div className="my-3 rounded-lg border bg-muted/30 overflow-hidden">
+    <div className="my-2 rounded-lg border bg-muted/30 overflow-hidden">
       {/* Tool header - clickable to toggle */}
       <button
         onClick={toggleExpanded}
-        className="w-full flex items-center gap-2 px-3 py-3 hover:bg-muted/50 transition-colors text-left"
+        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-muted/50 transition-colors text-left"
       >
         {/* Expand/collapse icon */}
         <span className="shrink-0 text-muted-foreground">
@@ -304,13 +305,8 @@ function ToolCallPart({
 
           {/* Tool output */}
           {hasOutput && part.output != null ? (
-            <div className="max-h-96 overflow-auto">
-              <div className="px-3 py-2">
-                <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
-                  Output
-                </div>
-                {renderToolOutput(part.output)}
-              </div>
+            <div className="max-h-72 overflow-auto">
+              <div className="px-2 py-1.5">{renderToolOutput(part.output)}</div>
             </div>
           ) : null}
 
@@ -378,7 +374,7 @@ function renderToolOutput(output: unknown) {
     if (typeof firstItem === 'object' && firstItem !== null) {
       return (
         <div>
-          <div className="text-xs text-muted-foreground mb-2">
+          <div className="text-xs text-muted-foreground mb-1">
             {output.length} {output.length === 1 ? 'row' : 'rows'}
           </div>
           <ResultTable rows={output as unknown[]} maxRows={100} />
