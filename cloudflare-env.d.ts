@@ -17,6 +17,7 @@ declare namespace Cloudflare {
     >
     NEXT_INC_CACHE_R2_BUCKET: R2Bucket
     NEXT_TAG_CACHE_D1: D1Database
+    CONVERSATIONS_D1: D1Database
     WORKER_SELF_REFERENCE: Service<typeof import('./.open-next/worker').default>
     ASSETS: Fetcher
   }
