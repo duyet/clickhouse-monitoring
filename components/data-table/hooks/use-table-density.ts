@@ -29,7 +29,7 @@ function readStoredDensity(): TableDensity {
   return 'comfortable'
 }
 
-export function useTableDensity() {
+export function useTableDensity(override?: TableDensity) {
   const [density, setDensityState] = useState<TableDensity>('comfortable')
 
   // Hydrate from localStorage on mount
@@ -46,9 +46,11 @@ export function useTableDensity() {
     }
   }, [])
 
+  const effectiveDensity = override ?? density
+
   return {
-    density,
+    density: effectiveDensity,
     setDensity,
-    cellClassName: DENSITY_CLASSES[density],
+    cellClassName: DENSITY_CLASSES[effectiveDensity],
   }
 }

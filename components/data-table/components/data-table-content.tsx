@@ -23,6 +23,7 @@ import {
   TableHeader as TableHeaderRenderer,
 } from '@/components/data-table/renderers'
 import { Table, TableBody, TableHeader } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 
 /**
  * Props for the DataTableContent component
@@ -73,6 +74,8 @@ export interface DataTableContentProps<
   onColumnOrderChange?: (activeId: string, overId: string) => void
   /** Callback to reset column order to default */
   onResetColumnOrder?: () => void
+  /** Compact mode: removes borders, background, and margin */
+  compact?: boolean
 }
 
 /**
@@ -108,6 +111,7 @@ export const DataTableContent = memo(function DataTableContent<
   enableColumnReordering = true,
   onColumnOrderChange,
   onResetColumnOrder: _onResetColumnOrder,
+  compact = false,
 }: DataTableContentProps<TData, TValue>) {
   // Configure drag-and-drop sensors
   const sensors = useSensors(
@@ -166,17 +170,23 @@ export const DataTableContent = memo(function DataTableContent<
   return (
     <div className="relative">
       {/* Right-edge gradient hint for horizontal scroll on mobile */}
-      <div
-        className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent z-10 rounded-r-lg sm:hidden"
-        aria-hidden="true"
-      />
+      {!compact && (
+        <div
+          className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent z-10 rounded-r-lg sm:hidden"
+          aria-hidden="true"
+        />
+      )}
       <div
         ref={tableContainerRef}
-        className={`mb-5 min-h-0 min-w-0 rounded-lg border border-border/50 bg-card/30 ${
-          isVirtualized
-            ? 'flex-1 overflow-auto'
-            : 'w-full overflow-auto max-h-[70vh]'
-        }`}
+        className={cn(
+          'min-h-0 min-w-0',
+          isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-auto',
+          {
+            'max-h-[50vh]': compact && !isVirtualized,
+            'mb-5 rounded-lg border border-border/50 bg-card/30': !compact,
+            'max-h-[70vh]': !compact && !isVirtualized,
+          }
+        )}
         role="region"
         aria-label={`${title || 'Data'} table`}
         style={isVirtualized ? { height: '60vh' } : undefined}
