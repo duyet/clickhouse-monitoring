@@ -3,7 +3,7 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons'
 import type { RowData, Table } from '@tanstack/react-table'
 
-import { memo, useCallback } from 'react'
+import { memo } from 'react'
 import { Footnote, type FootnoteProps } from '@/components/data-table/footnote'
 import { DataTablePagination } from '@/components/data-table/pagination'
 import { Button } from '@/components/ui/button'
@@ -46,9 +46,6 @@ export interface DataTableFooterProps<TData extends RowData> {
 export const DataTableFooter = memo(function DataTableFooter<
   TData extends RowData,
 >({ table, footnote, compact = false }: DataTableFooterProps<TData>) {
-  const handlePrev = useCallback(() => table.previousPage(), [table])
-  const handleNext = useCallback(() => table.nextPage(), [table])
-
   if (compact) {
     const totalRows = table.getPrePaginationRowModel().rows.length
     const canPrev = table.getCanPreviousPage()
@@ -64,7 +61,7 @@ export const DataTableFooter = memo(function DataTableFooter<
               variant="ghost"
               size="icon"
               className="h-6 w-6"
-              onClick={handlePrev}
+              onClick={() => table.previousPage()}
               disabled={!canPrev}
             >
               <ChevronLeftIcon className="h-3 w-3" />
@@ -73,7 +70,7 @@ export const DataTableFooter = memo(function DataTableFooter<
               variant="ghost"
               size="icon"
               className="h-6 w-6"
-              onClick={handleNext}
+              onClick={() => table.nextPage()}
               disabled={!canNext}
             >
               <ChevronRightIcon className="h-3 w-3" />

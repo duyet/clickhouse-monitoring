@@ -142,7 +142,7 @@ function ResultTable({
   }
 
   return (
-    <div>
+    <>
       <DataTable
         data={displayRows}
         queryConfig={queryConfig}
@@ -158,7 +158,7 @@ function ResultTable({
           Showing {maxRows} of {rows.length} rows
         </div>
       )}
-    </div>
+    </>
   )
 }
 
