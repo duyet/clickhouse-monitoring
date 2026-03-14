@@ -32,10 +32,11 @@ function readStoredDensity(): TableDensity {
 export function useTableDensity(override?: TableDensity) {
   const [density, setDensityState] = useState<TableDensity>('comfortable')
 
-  // Hydrate from localStorage on mount
+  // Hydrate from localStorage on mount (skip when override is provided)
   useEffect(() => {
+    if (override !== undefined) return
     setDensityState(readStoredDensity())
-  }, [])
+  }, [override])
 
   const setDensity = useCallback((next: TableDensity) => {
     setDensityState(next)
