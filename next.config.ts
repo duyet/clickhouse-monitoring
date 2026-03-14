@@ -21,7 +21,16 @@ const nextConfig: NextConfig = {
   },
 
   // https://nextjs.org/docs/app/api-reference/next-config-js/webpack
-  webpack: (config, { isServer: _isServer }) => {
+  webpack: (config, { isServer }) => {
+    // Exclude @clickhouse/client from client bundles (uses node:os, node:stream, etc.)
+    if (!isServer) {
+      config.resolve = config.resolve || {}
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@clickhouse/client': false,
+      }
+    }
+
     // Exclude @vercel/og WASM files from bundle (not compatible with Cloudflare Workers)
     config.externals = config.externals || []
     config.externals.push({
