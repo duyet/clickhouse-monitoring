@@ -10,7 +10,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod/v3'
 
 describe('registerAllTools', () => {
-  test('registers all 8 tools without errors', () => {
+  test('registers all 9 tools without errors', () => {
     const server = new McpServer({ name: 'test', version: '0.0.1' })
     expect(() => registerAllTools(server)).not.toThrow()
   })
