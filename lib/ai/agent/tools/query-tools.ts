@@ -1,5 +1,3 @@
-'use client'
-
 import { readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
