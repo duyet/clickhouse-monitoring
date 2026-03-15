@@ -127,7 +127,7 @@ jobs:
           CLICKHOUSE_SKIP_USER_SETUP: 1
 
       keeper:
-        image: clickhouse/clickhouse-keeper:25.6
+        image: clickhouse/clickhouse-keeper:26.2
         options: >-
           --health-cmd "clickhouse-keeper client -h 127.0.0.1 -p 9181 -q 'ruok' 2>/dev/null | grep -q imok || exit 1"
           --health-interval 5s
