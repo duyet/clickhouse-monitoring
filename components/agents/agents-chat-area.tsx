@@ -13,6 +13,7 @@ import {
   SparklesIcon,
   SquareIcon,
   TrashIcon,
+  XIcon,
 } from 'lucide-react'
 
 import type { UIMessage } from 'ai'
@@ -37,6 +38,7 @@ import type { Conversation } from '@/lib/ai/agent/conversation-utils'
 import type { QueryConfig } from '@/types/query-config'
 
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
+import { AgentInsightCards } from '@/components/agents/agent-insight-cards'
 import {
   ConversationContent,
   ConversationEmptyState,
@@ -66,6 +68,7 @@ import {
 } from '@/components/ai-elements/task'
 import { DataTable } from '@/components/data-table/data-table'
 import { getToolMetadata } from '@/components/mcp/mcp-tools-data'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -1160,19 +1163,26 @@ export const AgentsChatArea = forwardRef<
                 <SparklesIcon className="h-8 w-8 sm:h-12 sm:w-12 text-purple-500" />
               }
             >
-              <div className="pt-6 px-4 sm:px-4 max-w-xl mx-auto w-full">
-                <ul className="space-y-1">
-                  {DEFAULT_SUGGESTIONS.map((suggestion) => (
-                    <li key={suggestion}>
-                      <button
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        className="w-full text-left text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md px-3 py-2 transition-colors"
-                      >
-                        {suggestion}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+              <div className="pt-6 px-4 sm:px-4 max-w-xl mx-auto w-full space-y-4">
+                <AgentInsightCards onQuestionClick={handleSuggestionClick} />
+                <details className="group">
+                  <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors list-none flex items-center gap-1">
+                    <ChevronRightIcon className="h-3 w-3 transition-transform group-open:rotate-90" />
+                    More suggestions
+                  </summary>
+                  <ul className="space-y-1 mt-2">
+                    {DEFAULT_SUGGESTIONS.map((suggestion) => (
+                      <li key={suggestion}>
+                        <button
+                          onClick={() => handleSuggestionClick(suggestion)}
+                          className="w-full text-left text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md px-3 py-2 transition-colors"
+                        >
+                          {suggestion}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
               </div>
             </ConversationEmptyState>
           ) : (
@@ -1206,8 +1216,32 @@ export const AgentsChatArea = forwardRef<
 
       {/* Error display */}
       {error && (
-        <div className="px-3 sm:px-4 py-2 text-sm text-destructive border-t shrink-0">
-          Error: {error.message}
+        <div className="px-3 sm:px-4 py-2 border-t shrink-0">
+          <Alert variant="destructive">
+            <AlertDescription className="flex items-center justify-between gap-2">
+              <span className="text-sm">{error.message}</span>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRegenerate}
+                  className="h-7 text-xs"
+                >
+                  <RefreshCwIcon className="h-3 w-3 mr-1" />
+                  Retry
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleClear}
+                  className="h-7 w-7"
+                  title="Dismiss"
+                >
+                  <XIcon className="h-3 w-3" />
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
         </div>
       )}
 
