@@ -26,6 +26,10 @@ export const overviewCharts: Record<string, ChartQueryBuilder> = {
     `,
   }),
 
+  'merge-active-count': () => ({
+    query: `SELECT COUNT() as count FROM system.merges`,
+  }),
+
   'disk-size-single': () => ({
     query: `
       SELECT name,
