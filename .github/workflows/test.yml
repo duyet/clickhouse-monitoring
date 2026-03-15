@@ -59,7 +59,7 @@ jobs:
 
     services:
       clickhouse:
-        image: clickhouse/clickhouse-server:25.6
+        image: clickhouse/clickhouse-server:26.2
         ports:
           - 8123:8123
         options: >-
@@ -114,7 +114,7 @@ jobs:
 
     services:
       clickhouse:
-        image: clickhouse/clickhouse-server:25.6
+        image: clickhouse/clickhouse-server:26.2
         ports:
           - 8123:8123
         options: >-
