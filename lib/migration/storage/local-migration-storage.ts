@@ -61,9 +61,7 @@ export class LocalMigrationStorage implements MigrationStorage {
   ): Promise<void> {
     const records = await this.readState()
     const platformInfo = getPlatformInfo(this.platformType)
-    const checksum = calculateChecksum(
-      migration.sql || migration.scriptPath || ''
-    )
+    const checksum = calculateChecksum(migration.sql || '')
 
     const record: MigrationRecord = {
       id: migration.id,

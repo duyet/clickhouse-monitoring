@@ -2,7 +2,7 @@
  * PostgreSQL-based migration storage.
  *
  * Tracks applied migrations in a PostgreSQL table.
- * Used when DATABASE_URL is configured.
+ * Uses dynamic import for `postgres` to avoid bundling in CF Workers.
  */
 
 import type {
@@ -13,7 +13,6 @@ import type {
 } from '../migration-runner'
 
 import { calculateChecksum, getPlatformInfo } from '../utils'
-import postgres from 'postgres'
 
 const MIGRATIONS_TABLE = `
 CREATE TABLE IF NOT EXISTS _migrations (
@@ -30,7 +29,7 @@ CREATE TABLE IF NOT EXISTS _migrations (
 `
 
 export class PostgresMigrationStorage implements MigrationStorage {
-  private sql: ReturnType<typeof postgres> | null = null
+  private sql: any | null = null
   private readonly connectionString: string
   private readonly platformType = 'node-server'
 
@@ -46,12 +45,11 @@ export class PostgresMigrationStorage implements MigrationStorage {
     }
   }
 
-  /**
-   * Get PostgreSQL client
-   */
-  private getSql() {
+  /** Get PostgreSQL client (lazy, dynamic import) */
+  private async getSql() {
     if (!this.sql) {
-      this.sql = postgres(this.connectionString, {
+      const postgresModule = await import('postgres')
+      this.sql = postgresModule.default(this.connectionString, {
         max: 1,
         prepare: false,
       })
@@ -59,11 +57,8 @@ export class PostgresMigrationStorage implements MigrationStorage {
     return this.sql
   }
 
-  /**
-   * Initialize storage (create migrations table if needed)
-   */
   async initialize(): Promise<void> {
-    const sql = this.getSql()
+    const sql = await this.getSql()
 
     try {
       await sql.unsafe(MIGRATIONS_TABLE)
@@ -72,11 +67,8 @@ export class PostgresMigrationStorage implements MigrationStorage {
     }
   }
 
-  /**
-   * Get all applied migrations
-   */
   async getAppliedMigrations(): Promise<MigrationRecord[]> {
-    const sql = this.getSql()
+    const sql = await this.getSql()
 
     try {
       const rows = (await sql`
@@ -95,24 +87,18 @@ export class PostgresMigrationStorage implements MigrationStorage {
         environment: row.environment,
       }))
     } catch {
-      // Table might not exist yet
       return []
     }
   }
 
-  /**
-   * Record a migration as applied
-   */
   async recordMigration(
     migration: Migration,
     status: MigrationStatus,
     executionTime: number
   ): Promise<void> {
-    const sql = this.getSql()
+    const sql = await this.getSql()
     const platformInfo = getPlatformInfo(this.platformType)
-    const checksum = calculateChecksum(
-      migration.sql || migration.scriptPath || ''
-    )
+    const checksum = calculateChecksum(migration.sql || '')
 
     await sql`
       INSERT INTO _migrations (id, name, type, status, applied_at, checksum, execution_time, platform, environment)
@@ -130,14 +116,11 @@ export class PostgresMigrationStorage implements MigrationStorage {
     `
   }
 
-  /**
-   * Update migration status
-   */
   async updateStatus(
     migrationId: string,
     status: MigrationStatus
   ): Promise<void> {
-    const sql = this.getSql()
+    const sql = await this.getSql()
 
     await sql`
       UPDATE _migrations
@@ -146,11 +129,8 @@ export class PostgresMigrationStorage implements MigrationStorage {
     `
   }
 
-  /**
-   * Check if a migration has been applied
-   */
   async isApplied(migrationId: string): Promise<boolean> {
-    const sql = this.getSql()
+    const sql = await this.getSql()
 
     const result = await sql`
       SELECT 1 FROM _migrations
@@ -161,9 +141,6 @@ export class PostgresMigrationStorage implements MigrationStorage {
     return result.length > 0
   }
 
-  /**
-   * Close the connection
-   */
   async close(): Promise<void> {
     if (this.sql) {
       await this.sql.end()

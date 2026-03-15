@@ -1,0 +1,329 @@
+/**
+ * Conversations API endpoint
+ * GET /api/v1/conversations - List conversations (meta only, no messages)
+ * POST /api/v1/conversations - Create new conversation
+ */
+
+import type { UIMessage } from 'ai'
+import type {
+  ConversationMeta,
+  StoredConversation,
+} from '@/lib/conversation-store/types'
+
+import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
+import {
+  CacheControl,
+  createSuccessResponse,
+} from '@/lib/api/shared/response-builder'
+import { ApiErrorType } from '@/lib/api/types'
+import { resolveUserId } from '@/lib/conversation-store/auth'
+import { resolveStore } from '@/lib/conversation-store/resolve-store'
+import { ConversationStoreError } from '@/lib/conversation-store/types'
+import { debug, error, generateRequestId } from '@/lib/logger'
+import { autoMigrate } from '@/lib/migration/auto-migrate'
+
+// This route is dynamic and should not be statically exported
+export const dynamic = 'force-dynamic'
+
+const ROUTE_CONTEXT_GET = { route: '/api/v1/conversations', method: 'GET' }
+const ROUTE_CONTEXT_POST = { route: '/api/v1/conversations', method: 'POST' }
+
+const DEFAULT_LIMIT = 20
+
+/**
+ * Conversation creation request payload
+ */
+export interface CreateConversationRequest {
+  /** Optional conversation title (auto-generated from first message if not provided) */
+  title?: string
+  /** Initial messages for the conversation */
+  messages?: UIMessage[]
+}
+
+/**
+ * Conversation creation response
+ */
+export interface CreateConversationResponse {
+  /** Created conversation ID */
+  id: string
+  /** User ID who owns this conversation */
+  userId: string
+  /** Conversation title */
+  title: string
+  /** Creation timestamp (Unix ms) */
+  createdAt: number
+  /** Last update timestamp (Unix ms) */
+  updatedAt: number
+}
+
+/**
+ * Handle GET requests for conversations list
+ */
+export async function GET(request: Request): Promise<Response> {
+  const requestId = generateRequestId()
+  debug('[GET /api/v1/conversations] Fetching conversations', { requestId })
+
+  try {
+    // Run pending migrations on first request
+    await autoMigrate()
+
+    // Resolve authenticated user (or guest)
+    const userId = await resolveUserId()
+    debug('[GET /api/v1/conversations] User resolved', { userId, requestId })
+
+    // Get limit from query params
+    const url = new URL(request.url)
+    const limitParam = url.searchParams.get('limit')
+    const limit = limitParam ? Math.min(Number(limitParam), 100) : DEFAULT_LIMIT
+
+    // Resolve store and fetch conversations
+    const store = await resolveStore()
+    const conversations = await store.list(userId, limit)
+
+    // Transform response to exclude internal fields
+    const responseMeta: ConversationMeta[] = conversations.map((conv) => ({
+      id: conv.id,
+      userId: conv.userId,
+      title: conv.title,
+      createdAt: conv.createdAt,
+      updatedAt: conv.updatedAt,
+      messageCount: conv.messageCount,
+    }))
+
+    // Create response with standardized builder
+    const response = createSuccessResponse(
+      { conversations: responseMeta },
+      {
+        queryId: 'conversations-list',
+        rows: responseMeta.length,
+      }
+    )
+
+    // Add request ID header
+    const newHeaders = new Headers(response.headers)
+    newHeaders.set('X-Request-ID', requestId)
+    newHeaders.set('Cache-Control', CacheControl.NONE)
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders,
+    })
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : 'Unknown error occurred'
+
+    error('[GET /api/v1/conversations] Error:', err, { requestId })
+
+    // Handle conversation store errors
+    if (err instanceof ConversationStoreError) {
+      const errorType =
+        err.code === 'UNAUTHORIZED'
+          ? ApiErrorType.PermissionError
+          : ApiErrorType.QueryError
+
+      return createApiErrorResponse(
+        {
+          type: errorType,
+          message: err.message,
+          details: { timestamp: new Date().toISOString() },
+        },
+        err.code === 'UNAUTHORIZED' ? 403 : 500,
+        ROUTE_CONTEXT_GET
+      )
+    }
+
+    const errorResponse = createApiErrorResponse(
+      {
+        type: ApiErrorType.QueryError,
+        message: errorMessage,
+        details: {
+          timestamp: new Date().toISOString(),
+        },
+      },
+      500,
+      ROUTE_CONTEXT_GET
+    )
+
+    // Add request ID header to error response
+    const errorHeaders = new Headers(errorResponse.headers)
+    errorHeaders.set('X-Request-ID', requestId)
+
+    return new Response(errorResponse.body, {
+      status: errorResponse.status,
+      statusText: errorResponse.statusText,
+      headers: errorHeaders,
+    })
+  }
+}
+
+/**
+ * Handle POST requests to create new conversation
+ */
+export async function POST(request: Request): Promise<Response> {
+  const requestId = generateRequestId()
+  debug('[POST /api/v1/conversations] Creating conversation', { requestId })
+
+  try {
+    // Run pending migrations on first request
+    await autoMigrate()
+
+    // Resolve authenticated user (or guest)
+    const userId = await resolveUserId()
+    debug('[POST /api/v1/conversations] User resolved', { userId, requestId })
+
+    // Parse request body
+    const body = (await request.json()) as CreateConversationRequest
+    const { title, messages = [] } = body
+
+    // Validate messages array if provided
+    if (!Array.isArray(messages)) {
+      return createApiErrorResponse(
+        {
+          type: ApiErrorType.ValidationError,
+          message: 'Invalid field: messages must be an array',
+          details: { timestamp: new Date().toISOString() },
+        },
+        400,
+        ROUTE_CONTEXT_POST
+      )
+    }
+
+    // Generate conversation ID and timestamp
+    const conversationId = crypto.randomUUID()
+    const now = Date.now()
+
+    // Auto-generate title from first user message if not provided
+    let conversationTitle = title || 'New Conversation'
+    if (!title && messages.length > 0) {
+      const firstUserMessage = messages.find((m) => m.role === 'user')
+      if (firstUserMessage?.parts && firstUserMessage.parts.length > 0) {
+        // Find the first text part
+        const textPart = firstUserMessage.parts.find(
+          (part) => part.type === 'text'
+        )
+        if (textPart && 'text' in textPart) {
+          const content = textPart.text
+
+          // Truncate to 50 characters
+          conversationTitle = content.substring(0, 50).trim()
+          if (content.length > 50) {
+            conversationTitle += '...'
+          }
+        }
+      }
+    }
+
+    // Build stored conversation
+    const storedConversation: StoredConversation = {
+      id: conversationId,
+      userId,
+      title: conversationTitle,
+      createdAt: now,
+      updatedAt: now,
+      messageCount: messages.length,
+      messages,
+    }
+
+    // Save to store
+    const store = await resolveStore()
+    await store.upsert(storedConversation)
+
+    // Build response
+    const responseData: CreateConversationResponse = {
+      id: storedConversation.id,
+      userId: storedConversation.userId,
+      title: storedConversation.title,
+      createdAt: storedConversation.createdAt,
+      updatedAt: storedConversation.updatedAt,
+    }
+
+    // Create response with standardized builder (201 Created)
+    const response = createSuccessResponse(
+      responseData,
+      {
+        queryId: 'conversation-create',
+        rows: 1,
+      },
+      201
+    )
+
+    // Add request ID header
+    const newHeaders = new Headers(response.headers)
+    newHeaders.set('X-Request-ID', requestId)
+    newHeaders.set('Cache-Control', CacheControl.NONE)
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders,
+    })
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : 'Unknown error occurred'
+
+    error('[POST /api/v1/conversations] Error:', err, { requestId })
+
+    // Handle conversation store errors
+    if (err instanceof ConversationStoreError) {
+      const errorType =
+        err.code === 'VALIDATION_ERROR'
+          ? ApiErrorType.ValidationError
+          : err.code === 'UNAUTHORIZED'
+            ? ApiErrorType.PermissionError
+            : ApiErrorType.QueryError
+
+      const statusCode =
+        err.code === 'VALIDATION_ERROR'
+          ? 400
+          : err.code === 'UNAUTHORIZED'
+            ? 403
+            : 500
+
+      return createApiErrorResponse(
+        {
+          type: errorType,
+          message: err.message,
+          details: { timestamp: new Date().toISOString() },
+        },
+        statusCode,
+        ROUTE_CONTEXT_POST
+      )
+    }
+
+    // Handle JSON parsing errors
+    if (err instanceof SyntaxError && errorMessage.includes('JSON')) {
+      return createApiErrorResponse(
+        {
+          type: ApiErrorType.ValidationError,
+          message: 'Invalid JSON in request body',
+          details: { timestamp: new Date().toISOString() },
+        },
+        400,
+        ROUTE_CONTEXT_POST
+      )
+    }
+
+    const errorResponse = createApiErrorResponse(
+      {
+        type: ApiErrorType.QueryError,
+        message: errorMessage,
+        details: {
+          timestamp: new Date().toISOString(),
+        },
+      },
+      500,
+      ROUTE_CONTEXT_POST
+    )
+
+    // Add request ID header to error response
+    const errorHeaders = new Headers(errorResponse.headers)
+    errorHeaders.set('X-Request-ID', requestId)
+
+    return new Response(errorResponse.body, {
+      status: errorResponse.status,
+      statusText: errorResponse.statusText,
+      headers: errorHeaders,
+    })
+  }
+}

@@ -2,7 +2,7 @@
  * D1-based migration storage.
  *
  * Tracks applied migrations in a D1 database table.
- * Compatible with Cloudflare Workers and wrangler dev.
+ * Accepts D1Database as constructor parameter or auto-detects from Cloudflare context.
  */
 
 import type {
@@ -29,21 +29,21 @@ CREATE TABLE IF NOT EXISTS _migrations (
 `
 
 export class D1MigrationStorage implements MigrationStorage {
-  private db: D1Database | null = null
+  private db: D1Database | null
   private readonly platformType = 'cloudflare-workers'
 
-  /**
-   * Get D1 database binding
-   */
+  constructor(db?: D1Database) {
+    this.db = db || null
+  }
+
+  /** Get D1 database binding */
   private async getDb(): Promise<D1Database> {
     if (this.db) return this.db
 
-    // Try Cloudflare context
     try {
       const { getCloudflareContext } = await import('@opennextjs/cloudflare')
       const ctx = await getCloudflareContext()
 
-      // Try conversations D1 first, then tag cache D1
       if (ctx?.env?.CONVERSATIONS_D1) {
         this.db = ctx.env.CONVERSATIONS_D1 as D1Database
       } else if (ctx?.env?.NEXT_TAG_CACHE_D1) {
@@ -58,23 +58,16 @@ export class D1MigrationStorage implements MigrationStorage {
     return this.db
   }
 
-  /**
-   * Initialize storage (create migrations table if needed)
-   */
   async initialize(): Promise<void> {
     const db = await this.getDb()
 
     try {
-      const stmts = db.exec(MIGRATIONS_TABLE)
-      await stmts
+      await db.exec(MIGRATIONS_TABLE)
     } catch (error) {
       throw new Error(`Failed to create migrations table: ${error}`)
     }
   }
 
-  /**
-   * Get all applied migrations
-   */
   async getAppliedMigrations(): Promise<MigrationRecord[]> {
     const db = await this.getDb()
 
@@ -95,15 +88,11 @@ export class D1MigrationStorage implements MigrationStorage {
         platform: row.platform,
         environment: row.environment,
       }))
-    } catch (_error) {
-      // Table might not exist yet
+    } catch {
       return []
     }
   }
 
-  /**
-   * Record a migration as applied
-   */
   async recordMigration(
     migration: Migration,
     status: MigrationStatus,
@@ -111,9 +100,7 @@ export class D1MigrationStorage implements MigrationStorage {
   ): Promise<void> {
     const db = await this.getDb()
     const platformInfo = getPlatformInfo(this.platformType)
-    const checksum = calculateChecksum(
-      migration.sql || migration.scriptPath || ''
-    )
+    const checksum = calculateChecksum(migration.sql || '')
 
     const stmt = db.prepare(
       `INSERT INTO _migrations (id, name, type, status, applied_at, checksum, execution_time, platform, environment)
@@ -135,33 +122,28 @@ export class D1MigrationStorage implements MigrationStorage {
       .run()
   }
 
-  /**
-   * Update migration status
-   */
   async updateStatus(
     migrationId: string,
     status: MigrationStatus
   ): Promise<void> {
     const db = await this.getDb()
-
     const stmt = db.prepare('UPDATE _migrations SET status = ?1 WHERE id = ?2')
-
     await stmt.bind(status, migrationId).run()
   }
 
-  /**
-   * Check if a migration has been applied
-   */
   async isApplied(migrationId: string): Promise<boolean> {
     const db = await this.getDb()
 
     try {
       const stmt = db.prepare('SELECT 1 FROM _migrations WHERE id = ?1 LIMIT 1')
       const result = await stmt.bind(migrationId).first()
-
       return !!result
     } catch {
       return false
     }
+  }
+
+  async close(): Promise<void> {
+    this.db = null
   }
 }
