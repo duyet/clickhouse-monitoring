@@ -44,6 +44,11 @@ USER app
 
 EXPOSE 3000
 
+# Copy migration files for auto-migration at startup
+COPY --from=builder --chown=app:app /app/lib/migration ./lib/migration
+COPY --from=builder --chown=app:app /app/lib/conversation-store/pg-migrations ./lib/conversation-store/pg-migrations
+
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
+# Auto-migration runs on first API request via autoMigrate() singleton
 CMD ["node", "server.js"]

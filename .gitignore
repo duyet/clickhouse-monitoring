@@ -6,6 +6,9 @@
 .pnp.js
 .yarn/install-state.gz
 
+# migration state
+.migrations/
+
 # testing
 /coverage
 .nyc_output
