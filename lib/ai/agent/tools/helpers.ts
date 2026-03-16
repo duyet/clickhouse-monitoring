@@ -5,6 +5,8 @@
  * across tool category files.
  */
 
+import 'server-only'
+
 import type { DataFormat } from '@clickhouse/client'
 
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
