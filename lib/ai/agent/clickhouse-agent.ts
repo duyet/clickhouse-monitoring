@@ -5,6 +5,8 @@
  * Replaces the LangGraph-based agent with simpler, more efficient architecture.
  */
 
+import 'server-only'
+
 import { createMcpTools } from './mcp-tool-adapter'
 import { CLICKHOUSE_AGENT_INSTRUCTIONS } from './prompts/clickhouse-instructions'
 import { createOpenAI } from '@ai-sdk/openai'

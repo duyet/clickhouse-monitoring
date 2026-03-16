@@ -5,6 +5,8 @@
  * Each category file exports a factory function returning tools for that domain.
  */
 
+import 'server-only'
+
 import { createAllTools } from './tools'
 
 /**

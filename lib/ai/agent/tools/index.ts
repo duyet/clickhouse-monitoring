@@ -5,6 +5,8 @@
  * Each category file exports a factory function that returns tools for that domain.
  */
 
+import 'server-only'
+
 import { createClusterTools } from './cluster-tools'
 import { createControlTools } from './control-tools'
 import { createDashboardTools } from './dashboard-tools'
