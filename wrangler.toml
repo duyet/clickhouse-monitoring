@@ -63,12 +63,12 @@ database_name = "clickhouse-monitor"
 database_id = "f289f509-c33b-4218-8602-7a19d5d567bc"
 migrations_dir = "src/db/migrations"
 
-# D1 database for AI agent conversations
-[[d1_databases]]
-binding = "CONVERSATIONS_D1"
-database_name = "clickhouse-monitor-conversations"
-database_id = "09480999-5abb-4813-a8b5-f5e1948eaba6"
-migrations_dir = "src/db/conversations-migrations"
+# TODO: D1 database for AI agent conversations (create first: wrangler d1 create clickhouse-monitor-conversations)
+# [[d1_databases]]
+# binding = "CONVERSATIONS_D1"
+# database_name = "clickhouse-monitor-conversations"
+# database_id = ""
+# migrations_dir = "src/db/conversations-migrations"
 
 # KV namespace for incremental cache
 [[kv_namespaces]]
@@ -187,11 +187,11 @@ database_name = "clickhouse-monitor"
 database_id = "f289f509-c33b-4218-8602-7a19d5d567bc"
 migrations_dir = "src/db/migrations"
 
-# Reuse the same D1 database for AI agent conversations
-[[env.preview.d1_databases]]
-binding = "CONVERSATIONS_D1"
-database_name = "clickhouse-monitor-conversations"
-migrations_dir = "src/db/conversations-migrations"
+# TODO: D1 database for AI agent conversations (pending creation)
+# [[env.preview.d1_databases]]
+# binding = "CONVERSATIONS_D1"
+# database_name = "clickhouse-monitor-conversations"
+# migrations_dir = "src/db/conversations-migrations"
 
 # Reuse the same KV namespace for incremental cache
 [[env.preview.kv_namespaces]]

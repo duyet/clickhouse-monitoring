@@ -38,11 +38,12 @@ const mockValidateTableExistence = mock(() =>
   Promise.resolve({ shouldProceed: true, missingTables: [] })
 )
 
-mock.module('../clickhouse-client', () => ({
+// Use alias paths for consistent module resolution across platforms (Linux CI + macOS)
+mock.module('@/lib/clickhouse/clickhouse-client', () => ({
   getClient: mockGetClient,
 }))
 
-mock.module('../clickhouse-config', () => ({
+mock.module('@/lib/clickhouse/clickhouse-config', () => ({
   getClickHouseConfigs: mockGetClickHouseConfigs,
 }))
 
