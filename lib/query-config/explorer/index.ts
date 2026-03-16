@@ -11,4 +11,5 @@ export {
 } from './dependencies'
 export { explorerIndexesConfig } from './indexes'
 export { explorerProjectionsConfig } from './projections'
+export { explorerSkipIndexesConfig } from './skip-indexes'
 export { explorerTablesConfig } from './tables'

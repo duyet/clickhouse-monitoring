@@ -7,6 +7,7 @@ import {
   explorerDatabasesConfig,
   explorerDdlConfig,
   explorerIndexesConfig,
+  explorerSkipIndexesConfig,
   explorerTablesConfig,
 } from './explorer'
 import { crashLogConfig } from './logs/crashes'
@@ -77,6 +78,7 @@ export const queries: Array<QueryConfig> = [
   explorerColumnsConfig,
   explorerDdlConfig,
   explorerIndexesConfig,
+  explorerSkipIndexesConfig,
 
   // Tables
   tablesOverviewConfig,

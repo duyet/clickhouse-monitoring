@@ -1,6 +1,6 @@
 'use client'
 
-import { Database, Key, Layers, Settings } from 'lucide-react'
+import { Database, Filter, Key, Layers, Settings } from 'lucide-react'
 import useSWR from 'swr'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
@@ -25,6 +25,17 @@ interface IndexesData {
   engine_full: string
 }
 
+interface SkipIndexData {
+  name: string
+  type: string
+  type_full: string
+  expr: string
+  granularity: number
+  compressed_size: string
+  uncompressed_size: string
+  compression_ratio: number
+}
+
 interface ProjectionData {
   name: string
   compressed_size: string
@@ -42,6 +53,12 @@ interface ApiResponse<T> {
 const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
   fetch(url).then((res) => res.json())
 
+const ENGINE_FULL_KEYWORDS = /\b(PARTITION BY|PRIMARY KEY|ORDER BY|TTL|SETTINGS|SAMPLE BY)\b/g
+
+function formatEngineFull(engineFull: string): string {
+  return engineFull.replace(ENGINE_FULL_KEYWORDS, '\n$1')
+}
+
 export function IndexesTab() {
   const hostId = useHostId()
   const { database, table } = useExplorerState()
@@ -58,6 +75,18 @@ export function IndexesTab() {
     fetcher<IndexesData[]>
   )
 
+  // Fetch skip indexes data
+  const {
+    data: skipIndexesResponse,
+    error: skipIndexesError,
+    isLoading: skipIndexesLoading,
+  } = useSWR<ApiResponse<SkipIndexData[]>>(
+    database && table
+      ? `/api/v1/explorer/skip-indexes?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
+      : null,
+    fetcher<SkipIndexData[]>
+  )
+
   // Fetch projections data
   const {
     data: projectionsResponse,
@@ -71,6 +100,7 @@ export function IndexesTab() {
   )
 
   const indexData = indexesResponse?.data?.[0]
+  const skipIndexes = skipIndexesResponse?.data || []
   const projections = projectionsResponse?.data || []
 
   if (!database || !table) {
@@ -159,7 +189,7 @@ export function IndexesTab() {
               {indexData.engine_full &&
                 indexData.engine_full !== indexData.engine && (
                   <pre className="overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 font-mono text-sm">
-                    <code>{indexData.engine_full}</code>
+                    <code>{formatEngineFull(indexData.engine_full)}</code>
                   </pre>
                 )}
             </div>
@@ -189,6 +219,62 @@ export function IndexesTab() {
           </Card>
         ))}
       </div>
+
+      {/* Skip Indexes */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Filter className="size-4" />
+            Skip Indexes
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {skipIndexesLoading ? (
+            <Skeleton className="h-16 w-full" />
+          ) : skipIndexesError ? (
+            <p className="text-sm text-muted-foreground">
+              Skip indexes data unavailable
+            </p>
+          ) : skipIndexes.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Expression</TableHead>
+                  <TableHead>Granularity</TableHead>
+                  <TableHead>Compressed</TableHead>
+                  <TableHead>Uncompressed</TableHead>
+                  <TableHead>Ratio</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {skipIndexes.map((idx) => (
+                  <TableRow key={`${idx.name}-${idx.type}-${idx.expr}`}>
+                    <TableCell className="font-medium">{idx.name}</TableCell>
+                    <TableCell>
+                      <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                        {idx.type_full}
+                      </code>
+                    </TableCell>
+                    <TableCell>
+                      <code className="text-xs">{idx.expr}</code>
+                    </TableCell>
+                    <TableCell>{idx.granularity}</TableCell>
+                    <TableCell>{idx.compressed_size}</TableCell>
+                    <TableCell>{idx.uncompressed_size}</TableCell>
+                    <TableCell>{idx.compression_ratio}x</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No skip indexes defined for this table
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Projections */}
       <Card>
