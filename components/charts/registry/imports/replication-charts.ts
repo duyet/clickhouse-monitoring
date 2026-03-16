@@ -29,7 +29,7 @@ export const replicationChartImports: ChartRegistryMap = {
     }))
   ),
   'replication-lag': lazy(() =>
-    import('@/components/charts/system/replication-lag').then((m) => ({
+    import('@/components/charts/replication/replication-lag').then((m) => ({
       default: m.ChartReplicationLag,
     }))
   ),

@@ -67,6 +67,7 @@ migrations_dir = "src/db/migrations"
 [[d1_databases]]
 binding = "CONVERSATIONS_D1"
 database_name = "clickhouse-monitor-conversations"
+database_id = "09480999-5abb-4813-a8b5-f5e1948eaba6"
 migrations_dir = "src/db/conversations-migrations"
 
 # KV namespace for incremental cache

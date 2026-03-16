@@ -34,7 +34,7 @@ export const queryPerfCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
-  'top-query-fingerprints': ({ lastHours = 24 }) => {
+  'top-query-fingerprints-perf': ({ lastHours = 24 }) => {
     const timeFilter = buildTimeFilter(lastHours)
     return {
       query: `

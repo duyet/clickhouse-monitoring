@@ -23,7 +23,7 @@ type DataRow = {
 export const ChartTopQueryFingerprints = memo(
   function ChartTopQueryFingerprints({ title, className, hostId }: ChartProps) {
     const swr = useChartData<DataRow>({
-      chartName: 'top-query-fingerprints',
+      chartName: 'top-query-fingerprints-perf',
       hostId,
       refreshInterval: 60000,
     })
