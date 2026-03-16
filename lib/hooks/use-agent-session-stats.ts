@@ -105,6 +105,51 @@ export function useAgentSessionStats(
 }
 
 /**
+ * Per-message statistics
+ */
+export interface MessageStats {
+  /** Number of tool calls in this message */
+  toolCallCount: number
+  /** Sum of all tool execution durations in ms (from tool output) */
+  totalToolDurationMs: number
+}
+
+/**
+ * Extract per-message stats from a single UIMessage.
+ * Counts tool calls and sums tool durations from output parts.
+ */
+export function getMessageStats(message: UIMessage): MessageStats {
+  let toolCallCount = 0
+  let totalToolDurationMs = 0
+
+  for (const part of message.parts) {
+    if (typeof part !== 'object' || part === null || !('type' in part)) continue
+
+    const partType = (part as { type: string }).type
+
+    // Count tool calls
+    if (
+      partType === 'tool-call' ||
+      partType === 'dynamic-tool' ||
+      partType.startsWith('tool-')
+    ) {
+      toolCallCount++
+
+      // Extract duration from tool output if available
+      const output = (part as { output?: unknown }).output
+      if (output && typeof output === 'object' && !Array.isArray(output)) {
+        const duration = (output as Record<string, unknown>).duration
+        if (typeof duration === 'number' && duration > 0) {
+          totalToolDurationMs += duration
+        }
+      }
+    }
+  }
+
+  return { toolCallCount, totalToolDurationMs }
+}
+
+/**
  * Format duration for display
  */
 export function formatDuration(ms: number): string {

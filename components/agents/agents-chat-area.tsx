@@ -80,6 +80,10 @@ import {
 } from '@/components/ui/dialog'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
+import {
+  formatDuration,
+  getMessageStats,
+} from '@/lib/hooks/use-agent-session-stats'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
@@ -582,6 +586,47 @@ function getStablePartKey(
 }
 
 /**
+ * Displays per-message statistics (tool calls, durations) at the bottom of assistant messages.
+ * Only shown for completed assistant messages (not during streaming).
+ */
+function MessageStatsFooter({
+  message,
+  responseDurationMs,
+}: {
+  readonly message: UIMessage
+  readonly responseDurationMs?: number
+}) {
+  const stats = useMemo(() => getMessageStats(message), [message])
+
+  // Only show if there's something to display
+  if (stats.toolCallCount === 0 && !responseDurationMs) return null
+
+  const parts: string[] = []
+
+  if (responseDurationMs && responseDurationMs > 0) {
+    parts.push(formatDuration(responseDurationMs))
+  }
+
+  if (stats.toolCallCount > 0) {
+    parts.push(
+      `${stats.toolCallCount} tool ${stats.toolCallCount === 1 ? 'call' : 'calls'}`
+    )
+  }
+
+  if (stats.totalToolDurationMs > 0) {
+    parts.push(`${formatDuration(stats.totalToolDurationMs)} in tools`)
+  }
+
+  if (parts.length === 0) return null
+
+  return (
+    <div className="mt-2 pt-1.5 text-[11px] text-muted-foreground/60 select-none">
+      {parts.join(' · ')}
+    </div>
+  )
+}
+
+/**
  * Renders a single UIMessage with its parts (text, tool calls, etc.)
  * Includes follow-up suggestions for assistant messages
  */
@@ -589,12 +634,16 @@ function ChatMessage({
   message,
   allMessages,
   isLastUserMessage,
+  isStreaming,
+  responseDurationMs,
   onRegenerate,
   onSuggestionClick,
 }: {
   readonly message: UIMessage
   readonly allMessages: readonly UIMessage[]
   readonly isLastUserMessage?: boolean
+  readonly isStreaming?: boolean
+  readonly responseDurationMs?: number
   readonly onRegenerate?: () => void
   readonly onSuggestionClick?: (suggestion: string) => void
 }) {
@@ -749,6 +798,14 @@ function ChatMessage({
             </button>
           )}
         </div>
+
+        {/* Per-message stats footer for completed assistant messages */}
+        {isAssistant && !isStreaming && (
+          <MessageStatsFooter
+            message={message}
+            responseDurationMs={responseDurationMs}
+          />
+        )}
 
         {/* Follow-up suggestions for assistant messages */}
         {isAssistant && followUpSuggestions.length > 0 && (
@@ -934,6 +991,39 @@ export const AgentsChatArea = forwardRef<
       body: { hostId, model, disabledTools },
     }),
   })
+
+  // Response timing: track when user sends a message and compute duration when streaming ends
+  const sendTimestampRef = useRef<number>(0)
+  const responseDurationsRef = useRef<Map<string, number>>(new Map())
+  const prevStatusRef = useRef<string>(status)
+
+  // Capture send timestamp when status transitions to streaming
+  useEffect(() => {
+    const prev = prevStatusRef.current
+    prevStatusRef.current = status
+
+    // User just sent a message → mark start time
+    if (
+      prev === 'ready' &&
+      (status === 'submitted' || status === 'streaming')
+    ) {
+      sendTimestampRef.current = Date.now()
+    }
+
+    // Streaming finished → compute duration for last assistant message
+    if ((prev === 'streaming' || prev === 'submitted') && status === 'ready') {
+      if (sendTimestampRef.current > 0 && messages.length > 0) {
+        const lastAssistant = [...messages]
+          .reverse()
+          .find((m) => m.role === 'assistant')
+        if (lastAssistant) {
+          const duration = Date.now() - sendTimestampRef.current
+          responseDurationsRef.current.set(lastAssistant.id, duration)
+          sendTimestampRef.current = 0
+        }
+      }
+    }
+  }, [status, messages])
 
   // Ref to track last saved messages to avoid infinite loops
   const lastSavedMessagesRef = useRef<UIMessage[]>([])
@@ -1194,12 +1284,23 @@ export const AgentsChatArea = forwardRef<
                 )
                 const isLastUserMessage = index === lastUserMessageIndex
 
+                // Check if this specific message is currently streaming
+                // (last assistant message while status is streaming)
+                const isMessageStreaming =
+                  isLoading &&
+                  message.role === 'assistant' &&
+                  index === messages.length - 1
+
                 return (
                   <ChatMessage
                     key={message.id}
                     message={message}
                     allMessages={messages}
                     isLastUserMessage={isLastUserMessage}
+                    isStreaming={isMessageStreaming}
+                    responseDurationMs={responseDurationsRef.current.get(
+                      message.id
+                    )}
                     onRegenerate={
                       isLastUserMessage ? handleRegenerate : undefined
                     }
