@@ -169,51 +169,22 @@ function ResultTable({
 
   return (
     <>
-      <div className="flex items-center justify-end mb-1">
-        <Dialog>
-          <DialogTrigger asChild>
-            <button
-              className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
-              title="Expand table"
-            >
-              <Maximize2Icon className="h-3.5 w-3.5" />
-            </button>
-          </DialogTrigger>
-          <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
-            <DialogHeader>
-              <DialogTitle>
-                Query Results ({displayRows.length} rows)
-              </DialogTitle>
-            </DialogHeader>
-            <div className="flex-1 overflow-auto min-h-0">
-              <DataTable
-                data={displayRows}
-                queryConfig={queryConfig}
-                context={{}}
-                defaultPageSize={50}
-                showSQL={false}
-                enableColumnFilters={true}
-                enableColumnReordering={false}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
       <DataTable
         data={displayRows}
         queryConfig={queryConfig}
         context={{}}
-        defaultPageSize={25}
+        defaultPageSize={displayRows.length}
         showSQL={false}
         enableColumnFilters={false}
         enableColumnReordering={false}
         compact
       />
-      {rows.length > maxRows && (
-        <div className="text-center text-xs text-muted-foreground py-1 px-3">
-          Showing {maxRows} of {rows.length} rows
-        </div>
-      )}
+      {/* Footer: row count */}
+      <div className="px-2 py-1.5 border-t border-muted/30 text-[11px] text-muted-foreground">
+        {rows.length > maxRows
+          ? `Showing ${maxRows} of ${rows.length} rows`
+          : `${displayRows.length} ${displayRows.length === 1 ? 'row' : 'rows'}`}
+      </div>
     </>
   )
 }
@@ -278,6 +249,46 @@ function ToolCallPart({
     return tool?.params || []
   }, [toolName])
 
+  // Extract rows from output for the expand button in the header
+  const { outputRows, outputQueryConfig } = useMemo(() => {
+    if (!hasOutput || !part.output)
+      return {
+        outputRows: [] as Record<string, unknown>[],
+        outputQueryConfig: null,
+      }
+
+    let rows: Record<string, unknown>[] = []
+
+    // Direct array output
+    if (Array.isArray(part.output) && part.output.length > 0) {
+      const first = part.output[0]
+      if (typeof first === 'object' && first !== null) {
+        rows = part.output as Record<string, unknown>[]
+      }
+    }
+
+    // Object with rows property
+    const obj = part.output as Record<string, unknown>
+    if (Array.isArray(obj.rows) && obj.rows.length > 0) {
+      rows = obj.rows as Record<string, unknown>[]
+    }
+
+    if (rows.length === 0)
+      return {
+        outputRows: [] as Record<string, unknown>[],
+        outputQueryConfig: null,
+      }
+
+    const columns = Object.keys(rows[0])
+    const qc: QueryConfig<string[]> = {
+      name: 'agent-query-result',
+      description: 'Query results from AI agent',
+      sql: 'SELECT * FROM agent_result',
+      columns,
+    }
+    return { outputRows: rows, outputQueryConfig: qc }
+  }, [hasOutput, part.output])
+
   return (
     <div className="my-2 rounded-lg border bg-muted/30 overflow-hidden">
       {/* Tool header - clickable to toggle */}
@@ -315,8 +326,8 @@ function ToolCallPart({
           )}
         </div>
 
-        {/* Status badge */}
-        <div className="ml-auto flex items-center gap-2">
+        {/* Status badge + expand button */}
+        <div className="ml-auto flex items-center gap-1.5">
           {isStreaming && (
             <Badge
               variant="outline"
@@ -341,6 +352,12 @@ function ToolCallPart({
               ✗ Failed
             </Badge>
           )}
+          {hasOutput && outputRows.length > 0 && outputQueryConfig && (
+            <ExpandTableButton
+              rows={outputRows}
+              queryConfig={outputQueryConfig}
+            />
+          )}
         </div>
       </button>
 
@@ -361,9 +378,7 @@ function ToolCallPart({
 
           {/* Tool output */}
           {hasOutput && part.output != null ? (
-            <div className="max-h-96 overflow-auto">
-              <div className="px-1 py-1">{renderToolOutput(part.output)}</div>
-            </div>
+            <div className="px-1 py-1">{renderToolOutput(part.output)}</div>
           ) : null}
 
           {/* Tool error */}
@@ -421,6 +436,47 @@ function ToolCallPart({
   )
 }
 
+/**
+ * Expand button for result tables — opens a full-screen dialog with the data
+ */
+function ExpandTableButton({
+  rows,
+  queryConfig,
+}: {
+  readonly rows: Record<string, unknown>[]
+  readonly queryConfig: QueryConfig<string[]>
+}) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          className="p-0.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
+          title="Expand table"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Maximize2Icon className="h-3 w-3" />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Query Results ({rows.length} rows)</DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto min-h-0">
+          <DataTable
+            data={rows}
+            queryConfig={queryConfig}
+            context={{}}
+            defaultPageSize={50}
+            showSQL={false}
+            enableColumnFilters={true}
+            enableColumnReordering={false}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function renderToolOutput(output: unknown) {
   if (output == null) return null
 
@@ -428,14 +484,7 @@ function renderToolOutput(output: unknown) {
   if (Array.isArray(output) && output.length > 0) {
     const firstItem = output[0] as Record<string, unknown>
     if (typeof firstItem === 'object' && firstItem !== null) {
-      return (
-        <div>
-          <div className="text-xs text-muted-foreground mb-1">
-            {output.length} {output.length === 1 ? 'row' : 'rows'}
-          </div>
-          <ResultTable rows={output as unknown[]} maxRows={100} />
-        </div>
-      )
+      return <ResultTable rows={output as unknown[]} maxRows={100} />
     }
   }
 
@@ -471,17 +520,7 @@ function renderToolOutput(output: unknown) {
 
   // Check if output has rows (query result)
   if (Array.isArray(outputObj.rows) && outputObj.rows.length > 0) {
-    return (
-      <div>
-        <div className="text-xs text-muted-foreground mb-2">
-          {String(outputObj.rowCount ?? '')} rows
-          {Boolean(outputObj.duration) && (
-            <span> · {String(outputObj.duration)}ms</span>
-          )}
-        </div>
-        <ResultTable rows={outputObj.rows as unknown[]} maxRows={100} />
-      </div>
-    )
+    return <ResultTable rows={outputObj.rows as unknown[]} maxRows={100} />
   }
 
   // Default: render as JSON
