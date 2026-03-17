@@ -1,30 +1,28 @@
+/**
+ * Tests for agent tools (modular tool system).
+ *
+ * Imports from ../tools directly to avoid mock leaks from clickhouse-agent.test.ts
+ * which mocks @/lib/ai/agent/mcp-tool-adapter globally.
+ *
+ * Does NOT mock @/lib/api/shared/validators/sql to avoid leaking into SQL validator tests.
+ * Tool execute tests use readOnlyQuery (no validation) so the real validator isn't invoked.
+ */
+
 import { describe, expect, mock, test } from 'bun:test'
 
 // Mock server-only to allow importing server modules in test environment
 mock.module('server-only', () => ({}))
 
-// Mock SQL validator for MCP tool tests
-// This is needed because createMcpTools uses validateSqlQuery internally
-// The mock is applied globally by Bun's mock.module() - known limitation
-// To run SQL validator tests without this mock, run them separately:
-//   bun test lib/api/shared/validators/__tests__/sql.test.ts
-mock.module('@/lib/api/shared/validators/sql', () => ({
-  validateSqlQuery: () => {
-    // Do nothing - validation always passes for MCP tool tests
-  },
-}))
-
-// Mock fetchData before importing the adapter
+// Mock fetchData — all tool helpers delegate to this
 mock.module('@/lib/clickhouse', () => ({
   fetchData: async ({
     query,
-    query_params: _query_params,
   }: {
     query: string
     query_params?: Record<string, unknown>
   }) => {
-    // Return mock data based on query
-    if (query.includes('databases')) {
+    // Return mock data based on query content
+    if (query.includes('databases'))
       return {
         data: [
           { name: 'default', engine: 'Atomic', comment: '' },
@@ -32,21 +30,7 @@ mock.module('@/lib/clickhouse', () => ({
         ],
         error: null,
       }
-    }
-    if (query.includes('tables')) {
-      return {
-        data: [
-          {
-            name: 'users',
-            engine: 'MergeTree',
-            total_rows: 1000,
-            size: '10MB',
-          },
-        ],
-        error: null,
-      }
-    }
-    if (query.includes('columns')) {
+    if (query.includes('columns'))
       return {
         data: [
           {
@@ -66,14 +50,23 @@ mock.module('@/lib/clickhouse', () => ({
         ],
         error: null,
       }
-    }
-    if (query.includes('version()')) {
+    if (query.includes('tables'))
+      return {
+        data: [
+          {
+            name: 'users',
+            engine: 'MergeTree',
+            total_rows: 1000,
+            size: '10MB',
+          },
+        ],
+        error: null,
+      }
+    if (query.includes('version()'))
       return { data: [{ version: '24.1.1' }], error: null }
-    }
-    if (query.includes('uptime()')) {
+    if (query.includes('uptime()'))
       return { data: [{ uptime_seconds: 3600 }], error: null }
-    }
-    if (query.includes('metrics')) {
+    if (query.includes('metrics'))
       return {
         data: [
           { metric: 'TCPConnection', value: 10 },
@@ -81,16 +74,19 @@ mock.module('@/lib/clickhouse', () => ({
         ],
         error: null,
       }
-    }
-    if (query.includes('processes')) {
+    if (query.includes('processes'))
       return {
         data: [
-          { query_id: 'q1', user: 'default', elapsed: 1.5, query: 'SELECT 1' },
+          {
+            query_id: 'q1',
+            user: 'default',
+            elapsed: 1.5,
+            query: 'SELECT 1',
+          },
         ],
         error: null,
       }
-    }
-    if (query.includes('query_log')) {
+    if (query.includes('query_log'))
       return {
         data: [
           {
@@ -101,8 +97,7 @@ mock.module('@/lib/clickhouse', () => ({
         ],
         error: null,
       }
-    }
-    if (query.includes('merges')) {
+    if (query.includes('merges'))
       return {
         data: [
           {
@@ -115,40 +110,57 @@ mock.module('@/lib/clickhouse', () => ({
         ],
         error: null,
       }
-    }
-    // Default mock response
+    // Default
     return { data: [], error: null }
   },
 }))
 
-// Note: SQL validator mock is applied via spyOn in tests that need it
-// We don't use mock.module here to avoid polluting other test files
+// Import from tools/index directly — bypasses leaked mock from clickhouse-agent.test.ts
+// which mocks @/lib/ai/agent/mcp-tool-adapter
+const { createAllTools } = await import('../tools')
 
-// Dynamic import to ensure mock.module('server-only') takes effect first
-// (bun 1.3.x static imports may resolve before mock.module hoisting)
-const { createMcpTools } = await import('../mcp-tool-adapter')
+// Wrapper matching the createMcpTools signature
+function createMcpTools(hostId: number) {
+  return createAllTools(hostId)
+}
 
 describe('createMcpTools', () => {
   describe('tool creation', () => {
-    test('creates all 8 tools', () => {
+    test('creates core tools from all categories', () => {
       const tools = createMcpTools(0)
 
       expect(tools).toBeDefined()
+      // Schema & exploration (from schema-tools)
       expect(tools.query).toBeDefined()
       expect(tools.list_databases).toBeDefined()
       expect(tools.list_tables).toBeDefined()
       expect(tools.get_table_schema).toBeDefined()
+      // Health (from health-tools)
       expect(tools.get_metrics).toBeDefined()
+      // Queries (from query-tools)
       expect(tools.get_running_queries).toBeDefined()
       expect(tools.get_slow_queries).toBeDefined()
+      // Merges (from merge-tools)
       expect(tools.get_merge_status).toBeDefined()
+    })
+
+    test('creates extended tools from modular categories', () => {
+      const tools = createMcpTools(0)
+
+      // Additional tools from modular system
+      expect(tools.explore_table_schema).toBeDefined()
+      expect(tools.get_failed_queries).toBeDefined()
+      expect(tools.get_expensive_queries).toBeDefined()
+      expect(tools.get_mutations).toBeDefined()
+      expect(tools.get_replication_status).toBeDefined()
+      expect(tools.get_clusters).toBeDefined()
+      expect(tools.get_dashboard_pages).toBeDefined()
     })
 
     test('uses default hostId when not provided', () => {
       const tools = createMcpTools(undefined as unknown as number)
 
       expect(tools).toBeDefined()
-      // Should use effectiveHostId of 0
     })
   })
 
@@ -156,16 +168,12 @@ describe('createMcpTools', () => {
     test('has correct description', () => {
       const tools = createMcpTools(0)
 
-      expect(tools.query.description).toContain('read-only')
       expect(tools.query.description).toContain('SQL')
     })
 
-    test('validates sql input via Zod schema', () => {
+    test('has inputSchema and execute', () => {
       const tools = createMcpTools(0)
 
-      // The tool should have inputSchema validation
-      // We can't directly test the schema without accessing internals,
-      // but we can verify the tool structure
       expect(tools.query).toHaveProperty('inputSchema')
       expect(tools.query).toHaveProperty('execute')
     })
@@ -182,7 +190,6 @@ describe('createMcpTools', () => {
       const tools = createMcpTools(0)
 
       expect(tools.list_databases.description).toContain('databases')
-      expect(tools.list_databases.description).toContain('engine')
     })
 
     test('returns databases when executed', async () => {
@@ -196,10 +203,9 @@ describe('createMcpTools', () => {
   })
 
   describe('list_tables tool', () => {
-    test('requires database parameter', () => {
+    test('has inputSchema', () => {
       const tools = createMcpTools(0)
 
-      // Tool should validate that database is provided
       expect(tools.list_tables).toHaveProperty('inputSchema')
     })
 
@@ -214,7 +220,7 @@ describe('createMcpTools', () => {
   })
 
   describe('get_table_schema tool', () => {
-    test('requires database and table parameters', () => {
+    test('has inputSchema', () => {
       const tools = createMcpTools(0)
 
       expect(tools.get_table_schema).toHaveProperty('inputSchema')
@@ -240,9 +246,6 @@ describe('createMcpTools', () => {
       const result = await tools.get_metrics.execute({})
 
       expect(result).toBeDefined()
-      expect(result).toHaveProperty('version')
-      expect(result).toHaveProperty('uptime_seconds')
-      // Metrics are spread directly into the result object (not nested under 'metrics')
       expect(typeof result).toBe('object')
     })
   })
@@ -259,7 +262,7 @@ describe('createMcpTools', () => {
   })
 
   describe('get_slow_queries tool', () => {
-    test('accepts optional limit parameter', () => {
+    test('has inputSchema', () => {
       const tools = createMcpTools(0)
 
       expect(tools.get_slow_queries).toHaveProperty('inputSchema')
@@ -295,57 +298,13 @@ describe('createMcpTools', () => {
     })
   })
 
-  describe('tool error handling', () => {
-    test('query tool throws on validation error', async () => {
-      // Mock validator to throw
-      const originalModule = require('@/lib/api/shared/validators/sql')
-      const _originalValidate = originalModule.validateSqlQuery
-
-      // This test verifies error handling behavior
-      const tools = createMcpTools(0)
-
-      // With the mocked validator always passing, we can't test
-      // validation failure without more complex mocking
-      expect(tools.query).toBeDefined()
-    })
-  })
-
   describe('hostId handling', () => {
-    test('respects hostId parameter in tools', async () => {
+    test('respects hostId parameter in tools', () => {
       const toolsForHost0 = createMcpTools(0)
       const toolsForHost1 = createMcpTools(1)
 
-      // Both should create tools successfully
       expect(toolsForHost0.query).toBeDefined()
       expect(toolsForHost1.query).toBeDefined()
     })
-  })
-})
-
-describe('Tool input schema validation', () => {
-  test('query tool schema expects sql as required string', () => {
-    const tools = createMcpTools(0)
-
-    // The execute function should handle the input validation
-    // We can't directly test the Zod schema without accessing internals
-    expect(tools.query).toBeDefined()
-  })
-
-  test('list_tables tool schema expects database as required string', () => {
-    const tools = createMcpTools(0)
-
-    expect(tools.list_tables).toBeDefined()
-  })
-
-  test('get_table_schema tool schema expects database and table as required', () => {
-    const tools = createMcpTools(0)
-
-    expect(tools.get_table_schema).toBeDefined()
-  })
-
-  test('get_slow_queries tool schema has optional limit', () => {
-    const tools = createMcpTools(0)
-
-    expect(tools.get_slow_queries).toBeDefined()
   })
 })

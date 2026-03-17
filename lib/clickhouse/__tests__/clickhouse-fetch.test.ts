@@ -7,7 +7,6 @@ import type { QueryConfig } from '@/types/query-config'
 import {
   afterAll,
   afterEach,
-  beforeAll,
   beforeEach,
   describe,
   expect,
@@ -15,13 +14,10 @@ import {
   mock,
 } from 'bun:test'
 
-// IMPORTANT: Restore any existing mocks from other test files before setting up our own.
-// This prevents mock pollution from files like clickhouse-helpers.test.ts that mock @/lib/clickhouse.
-beforeAll(() => {
-  mock.restore()
-})
-
-// Mock dependencies
+// Mock dependencies — all mock.module calls are hoisted by bun before imports.
+// We use dynamic import (await import) instead of static import to guarantee
+// the import resolves AFTER mock.module takes effect. Static imports are also
+// hoisted by ESM and can race with mock.module on Linux CI.
 const mockDebug = mock(() => {})
 const mockError = mock(() => {})
 const mockWarn = mock(() => {})
@@ -38,7 +34,8 @@ const mockValidateTableExistence = mock(() =>
   Promise.resolve({ shouldProceed: true, missingTables: [] })
 )
 
-// Use alias paths for consistent module resolution across platforms (Linux CI + macOS)
+// Mock specifiers MUST match the import specifiers in clickhouse-fetch.ts.
+// On Linux CI, bun's mock.module only intercepts imports with matching specifiers.
 mock.module('@/lib/clickhouse/clickhouse-client', () => ({
   getClient: mockGetClient,
 }))
@@ -56,8 +53,8 @@ afterAll(() => {
   mock.restore()
 })
 
-// Import the actual code to test AFTER all mocks are set up
-import { fetchData, query } from '../clickhouse-fetch'
+// Dynamic import ensures mocks are in place before the module loads
+const { fetchData, query } = await import('../clickhouse-fetch')
 
 describe('clickhouse-fetch', () => {
   const mockClientQuery = mock(() => Promise.resolve({}))

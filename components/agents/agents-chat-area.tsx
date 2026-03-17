@@ -10,7 +10,6 @@ import {
   ClockIcon,
   DatabaseIcon,
   HardDriveIcon,
-  LayersIcon,
   Loader2Icon,
   Maximize2Icon,
   MergeIcon,
@@ -90,13 +89,10 @@ import {
 } from '@/components/ui/dialog'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
-import {
-  formatDuration,
-  getMessageStats,
-} from '@/lib/hooks/use-agent-session-stats'
+import { getMessageStats } from '@/lib/hooks/use-agent-session-stats'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useHostId } from '@/lib/swr'
-import { cn } from '@/lib/utils'
+import { cn, formatDuration } from '@/lib/utils'
 
 // ============================================================================
 // Types
@@ -183,7 +179,7 @@ function ResultTable({
         data={displayRows}
         queryConfig={queryConfig}
         context={{}}
-        defaultPageSize={displayRows.length}
+        defaultPageSize={Math.min(displayRows.length, 25)}
         showSQL={false}
         enableColumnFilters={false}
         enableColumnReordering={false}
@@ -656,11 +652,9 @@ function MessageStatsFooter({
     parts.push(formatDuration(responseDurationMs))
   }
 
-  if (stats.toolCallCount > 0) {
-    parts.push(
-      `${stats.toolCallCount} tool ${stats.toolCallCount === 1 ? 'call' : 'calls'}`
-    )
-  }
+  parts.push(
+    `${stats.toolCallCount} tool ${stats.toolCallCount === 1 ? 'call' : 'calls'}`
+  )
 
   if (stats.totalToolDurationMs > 0) {
     parts.push(`${formatDuration(stats.totalToolDurationMs)} in tools`)
@@ -990,50 +984,48 @@ function generateFollowUpSuggestions(
 // Default suggestions
 // ============================================================================
 
-const DEFAULT_SUGGESTIONS = [
-  'What databases are available and which ones have the most tables?',
-  'Show me the 10 largest tables and their disk usage',
-  'Which queries are running right now and how long have they been executing?',
-  'What are the slowest queries from the past 24 hours?',
-  'How is the merge queue performing? Are there any large merges stuck?',
-  'What is the current CPU, memory, and disk usage of this server?',
-  'Show me replication lag across all replica tables',
-  'Which users are consuming the most resources?',
-  'Are there any long-running queries that should be killed?',
-  'What are the most frequently accessed tables recently?',
+const DEFAULT_SUGGESTIONS: { text: string; icon: React.ReactNode }[] = [
+  {
+    text: 'What databases are available and which ones have the most tables?',
+    icon: <DatabaseIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'Show me the 10 largest tables and their disk usage',
+    icon: <HardDriveIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'Which queries are running right now and how long have they been executing?',
+    icon: <ActivityIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'What are the slowest queries from the past 24 hours?',
+    icon: <ClockIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'How is the merge queue performing? Are there any large merges stuck?',
+    icon: <MergeIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'What is the current CPU, memory, and disk usage of this server?',
+    icon: <ZapIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'Show me replication lag across all replica tables',
+    icon: <AlertCircleIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'Which users are consuming the most resources?',
+    icon: <UserIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'Are there any long-running queries that should be killed?',
+    icon: <SquareIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'What are the most frequently accessed tables recently?',
+    icon: <TableIcon className="h-3.5 w-3.5" />,
+  },
 ]
-
-const SUGGESTION_ICONS: Record<string, React.ReactNode> = {
-  'What databases are available and which ones have the most tables?': (
-    <DatabaseIcon className="h-3.5 w-3.5" />
-  ),
-  'Show me the 10 largest tables and their disk usage': (
-    <HardDriveIcon className="h-3.5 w-3.5" />
-  ),
-  'Which queries are running right now and how long have they been executing?':
-    <ActivityIcon className="h-3.5 w-3.5" />,
-  'What are the slowest queries from the past 24 hours?': (
-    <ClockIcon className="h-3.5 w-3.5" />
-  ),
-  'How is the merge queue performing? Are there any large merges stuck?': (
-    <MergeIcon className="h-3.5 w-3.5" />
-  ),
-  'What is the current CPU, memory, and disk usage of this server?': (
-    <ZapIcon className="h-3.5 w-3.5" />
-  ),
-  'Show me replication lag across all replica tables': (
-    <AlertCircleIcon className="h-3.5 w-3.5" />
-  ),
-  'Which users are consuming the most resources?': (
-    <UserIcon className="h-3.5 w-3.5" />
-  ),
-  'Are there any long-running queries that should be killed?': (
-    <SquareIcon className="h-3.5 w-3.5" />
-  ),
-  'What are the most frequently accessed tables recently?': (
-    <TableIcon className="h-3.5 w-3.5" />
-  ),
-}
 
 // ============================================================================
 // Main Component
@@ -1131,6 +1123,7 @@ export const AgentsChatArea = forwardRef<
       const storedMsgs = conversation.messages
       // Load messages from storage when switching conversations
       setMessages(storedMsgs)
+      setResponseDurations({})
       lastSavedMessagesRef.current = storedMsgs
     }
 
@@ -1191,6 +1184,7 @@ export const AgentsChatArea = forwardRef<
 
     // Clear messages state
     setMessages([])
+    setResponseDurations({})
 
     // Clear messages in current conversation too
     if (currentConversationId) {
@@ -1352,15 +1346,15 @@ export const AgentsChatArea = forwardRef<
                   </summary>
                   <ul className="space-y-1.5 mt-3">
                     {DEFAULT_SUGGESTIONS.map((suggestion) => (
-                      <li key={suggestion}>
+                      <li key={suggestion.text}>
                         <button
-                          onClick={() => handleSuggestionClick(suggestion)}
+                          onClick={() => handleSuggestionClick(suggestion.text)}
                           className="w-full text-left text-sm border border-emerald-200 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-md px-3 py-2 transition-all flex items-start gap-2"
                         >
                           <span className="mt-0.5 shrink-0">
-                            {SUGGESTION_ICONS[suggestion]}
+                            {suggestion.icon}
                           </span>
-                          <span>{suggestion}</span>
+                          <span>{suggestion.text}</span>
                         </button>
                       </li>
                     ))}

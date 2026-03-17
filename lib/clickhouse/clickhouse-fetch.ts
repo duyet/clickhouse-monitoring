@@ -8,9 +8,9 @@ import type { DataFormat, QueryParams } from '@clickhouse/client'
 import type { QueryConfig } from '@/types/query-config'
 import type { FetchDataErrorType, FetchDataResult } from './types'
 
-import { getClient } from './clickhouse-client'
-import { getClickHouseConfigs } from './clickhouse-config'
-import { QUERY_COMMENT } from './constants'
+import { getClient } from '@/lib/clickhouse/clickhouse-client'
+import { getClickHouseConfigs } from '@/lib/clickhouse/clickhouse-config'
+import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import {
   getClickHouseVersion,
   selectQueryVariantSemver,
