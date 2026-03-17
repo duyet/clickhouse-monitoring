@@ -15,11 +15,8 @@ import {
   mock,
 } from 'bun:test'
 
-// IMPORTANT: Restore any existing mocks from other test files before setting up our own.
-// This prevents mock pollution from files like clickhouse-helpers.test.ts that mock @/lib/clickhouse.
-beforeAll(() => {
-  mock.restore()
-})
+// NOTE: Do NOT call mock.restore() in beforeAll — it would undo our own hoisted mock.module() calls.
+// Bun's mock.module() hoists before imports, so our mocks override any leaked mocks from other files.
 
 // Mock dependencies
 const mockDebug = mock(() => {})
