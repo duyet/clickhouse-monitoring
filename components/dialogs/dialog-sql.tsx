@@ -22,7 +22,7 @@ import {
 } from '@/components/dialogs/dialog-content'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { dedent } from '@/lib/utils'
+import { dedent, formatDuration } from '@/lib/utils'
 
 interface ShowSQLButtonProps extends Omit<DialogContentProps, 'content'> {
   sql?: string
@@ -68,12 +68,6 @@ function formatSQL(sql: string): string {
     // If formatting fails, return dedented original
     return dedent(sql)
   }
-}
-
-/** Format duration for display */
-function formatDuration(ms: number) {
-  if (ms < 1000) return `${ms}ms`
-  return `${(ms / 1000).toFixed(2)}s`
 }
 
 /** Copyable value component */

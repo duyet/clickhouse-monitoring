@@ -35,6 +35,21 @@ const EMPTY_STATS: SessionStats = {
 }
 
 /**
+ * Check if a message part represents a tool call.
+ * Used by both session-level and per-message stats for consistent counting.
+ */
+function isToolCallPart(part: unknown): boolean {
+  if (typeof part !== 'object' || part === null || !('type' in part))
+    return false
+  const partType = (part as { type: string }).type
+  return (
+    partType === 'tool-call' ||
+    partType === 'dynamic-tool' ||
+    partType.startsWith('tool-')
+  )
+}
+
+/**
  * Extract stats from AI SDK messages
  */
 function extractStats(messages: readonly UIMessage[]): SessionStats {
@@ -43,20 +58,13 @@ function extractStats(messages: readonly UIMessage[]): SessionStats {
   let toolCallCount = 0
 
   for (const msg of messages) {
-    // Count user and assistant messages
     if (msg.role === 'user') {
       requestCount++
     } else if (msg.role === 'assistant') {
       responseCount++
-      // Count tool calls from parts
       if (msg.parts) {
         for (const part of msg.parts) {
-          if (
-            typeof part === 'object' &&
-            part !== null &&
-            'type' in part &&
-            part.type === 'tool-call'
-          ) {
+          if (isToolCallPart(part)) {
             toolCallCount++
           }
         }
@@ -123,37 +131,19 @@ export function getMessageStats(message: UIMessage): MessageStats {
   let totalToolDurationMs = 0
 
   for (const part of message.parts) {
-    if (typeof part !== 'object' || part === null || !('type' in part)) continue
+    if (!isToolCallPart(part)) continue
 
-    const partType = (part as { type: string }).type
+    toolCallCount++
 
-    // Count tool calls
-    if (
-      partType === 'tool-call' ||
-      partType === 'dynamic-tool' ||
-      partType.startsWith('tool-')
-    ) {
-      toolCallCount++
-
-      // Extract duration from tool output if available
-      const output = (part as { output?: unknown }).output
-      if (output && typeof output === 'object' && !Array.isArray(output)) {
-        const duration = (output as Record<string, unknown>).duration
-        if (typeof duration === 'number' && duration > 0) {
-          totalToolDurationMs += duration
-        }
+    // Extract duration from tool output if available
+    const output = (part as { output?: unknown }).output
+    if (output && typeof output === 'object' && !Array.isArray(output)) {
+      const duration = (output as Record<string, unknown>).duration
+      if (typeof duration === 'number' && duration > 0) {
+        totalToolDurationMs += duration
       }
     }
   }
 
   return { toolCallCount, totalToolDurationMs }
-}
-
-/**
- * Format duration for display
- */
-export function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
-  return `${(ms / 60000).toFixed(1)}m`
 }

@@ -5,10 +5,7 @@
  */
 
 export { getSavedModel, useAgentModel } from './use-agent-model'
-export {
-  formatDuration,
-  useAgentSessionStats,
-} from './use-agent-session-stats'
+export { useAgentSessionStats } from './use-agent-session-stats'
 export {
   DEBOUNCE_DELAY,
   useDebounce,
