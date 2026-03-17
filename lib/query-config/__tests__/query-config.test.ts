@@ -245,9 +245,8 @@ describe('Query Config Validation', () => {
                 errorMessage.includes('Not enough privileges')
 
               const isZookeeperError =
-                errorMessage.includes('zookeeper') ||
-                errorMessage.includes('ZooKeeper') ||
-                errorMessage.includes('Keeper')
+                errorMessage.toLowerCase().includes('zookeeper') ||
+                errorMessage.toLowerCase().includes('keeper')
 
               if (isTableNotFound || isAccessDenied || isZookeeperError) {
                 console.log(
