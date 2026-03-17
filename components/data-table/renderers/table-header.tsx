@@ -80,6 +80,7 @@ interface DraggableTableHeaderProps {
   enableResize?: boolean
   onAutoFit?: (columnId: string) => void
   isSelectColumn?: boolean
+  compact?: boolean
 }
 
 /**
@@ -93,6 +94,7 @@ function DraggableTableHeader({
   enableResize,
   onAutoFit,
   isSelectColumn,
+  compact,
 }: DraggableTableHeaderProps) {
   const { attributes, isDragging, listeners, setNodeRef, transform } =
     useSortable({
@@ -111,14 +113,18 @@ function DraggableTableHeader({
     minWidth: 0,
   }
 
+  const headerPy = compact ? 'py-0.5' : 'py-1.5'
+  const headerPx = isSelectColumn ? 'px-2' : compact ? 'px-1' : 'px-4'
+
   return (
     <TableHead
       ref={setNodeRef}
       key={header.id}
       scope="col"
       className={cn(
-        'relative py-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground',
-        isSelectColumn ? 'px-2' : 'px-4',
+        'relative text-xs font-medium uppercase tracking-wider text-muted-foreground',
+        headerPy,
+        headerPx,
         // Visual feedback during drag
         isDragging && 'opacity-50'
       )}
@@ -224,6 +230,7 @@ export const TableHeaderRow = memo(function TableHeaderRow({
               enableResize={enableResize}
               onAutoFit={onAutoFit}
               isSelectColumn={isSelectColumn}
+              compact={compact}
             />
           )
         }
