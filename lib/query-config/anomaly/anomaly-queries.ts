@@ -309,13 +309,13 @@ export const anomalySummaryConfig: QueryConfig = {
       )
     SELECT
       'query_spike' as anomaly_type,
-      current_queries.cnt as current_value,
-      baseline_queries.cnt as baseline_value,
-      ((current_queries.cnt - baseline_queries.cnt) / baseline_queries.cnt * 100) as deviation_percent,
+      toFloat64(current_queries.cnt) as current_value,
+      toFloat64(baseline_queries.cnt) as baseline_value,
+      ((toFloat64(current_queries.cnt) - toFloat64(baseline_queries.cnt)) / toFloat64(baseline_queries.cnt) * 100) as deviation_percent,
       CASE
-        WHEN baseline_queries.cnt > 0 AND ((current_queries.cnt - baseline_queries.cnt) / baseline_queries.cnt) > 1 THEN 'critical'
-        WHEN baseline_queries.cnt > 0 AND ((current_queries.cnt - baseline_queries.cnt) / baseline_queries.cnt) > 0.5 THEN 'high'
-        WHEN baseline_queries.cnt > 0 AND ((current_queries.cnt - baseline_queries.cnt) / baseline_queries.cnt) > 0.25 THEN 'medium'
+        WHEN baseline_queries.cnt > 0 AND ((toFloat64(current_queries.cnt) - toFloat64(baseline_queries.cnt)) / toFloat64(baseline_queries.cnt)) > 1 THEN 'critical'
+        WHEN baseline_queries.cnt > 0 AND ((toFloat64(current_queries.cnt) - toFloat64(baseline_queries.cnt)) / toFloat64(baseline_queries.cnt)) > 0.5 THEN 'high'
+        WHEN baseline_queries.cnt > 0 AND ((toFloat64(current_queries.cnt) - toFloat64(baseline_queries.cnt)) / toFloat64(baseline_queries.cnt)) > 0.25 THEN 'medium'
         ELSE 'normal'
       END as severity
     FROM current_queries, baseline_queries

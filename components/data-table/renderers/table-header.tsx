@@ -21,6 +21,8 @@ export interface TableHeaderRowProps {
   onAutoFit?: (columnId: string) => void
   /** Enable column reordering with drag-and-drop */
   enableColumnReordering?: boolean
+  /** Compact mode — reduces header padding to match dense body cells */
+  compact?: boolean
 }
 
 /**
@@ -78,6 +80,7 @@ interface DraggableTableHeaderProps {
   enableResize?: boolean
   onAutoFit?: (columnId: string) => void
   isSelectColumn?: boolean
+  compact?: boolean
 }
 
 /**
@@ -91,6 +94,7 @@ function DraggableTableHeader({
   enableResize,
   onAutoFit,
   isSelectColumn,
+  compact,
 }: DraggableTableHeaderProps) {
   const { attributes, isDragging, listeners, setNodeRef, transform } =
     useSortable({
@@ -109,14 +113,18 @@ function DraggableTableHeader({
     minWidth: 0,
   }
 
+  const headerPy = compact ? 'py-0.5' : 'py-1.5'
+  const headerPx = isSelectColumn ? 'px-2' : compact ? 'px-1' : 'px-4'
+
   return (
     <TableHead
       ref={setNodeRef}
       key={header.id}
       scope="col"
       className={cn(
-        'relative py-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground',
-        isSelectColumn ? 'px-2' : 'px-4',
+        'relative text-xs font-medium uppercase tracking-wider text-muted-foreground',
+        headerPy,
+        headerPx,
         // Visual feedback during drag
         isDragging && 'opacity-50'
       )}
@@ -179,9 +187,11 @@ export const TableHeaderRow = memo(function TableHeaderRow({
   enableResize = true,
   onAutoFit,
   enableColumnReordering = false,
+  compact = false,
 }: TableHeaderRowProps) {
-  // Extract column IDs for SortableContext (when reordering is enabled)
-  const _columnIds = headers.map((header) => header.column.id)
+  // Header padding matches body cell density
+  const headerPx = compact ? 'px-1' : 'px-4'
+  const headerPy = compact ? 'py-0.5' : 'py-1.5'
 
   return (
     <TableRow className="border-b border-border/70 hover:bg-transparent">
@@ -197,7 +207,8 @@ export const TableHeaderRow = memo(function TableHeaderRow({
               key={header.id}
               scope="col"
               className={cn(
-                'relative py-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground',
+                'relative text-xs font-medium uppercase tracking-wider text-muted-foreground',
+                headerPy,
                 'px-2'
               )}
               style={{
@@ -219,6 +230,7 @@ export const TableHeaderRow = memo(function TableHeaderRow({
               enableResize={enableResize}
               onAutoFit={onAutoFit}
               isSelectColumn={isSelectColumn}
+              compact={compact}
             />
           )
         }
@@ -230,8 +242,9 @@ export const TableHeaderRow = memo(function TableHeaderRow({
             key={header.id}
             scope="col"
             className={cn(
-              'relative py-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground',
-              isSelectColumn ? 'px-2' : 'px-4',
+              'relative text-xs font-medium uppercase tracking-wider text-muted-foreground',
+              headerPy,
+              isSelectColumn ? 'px-2' : headerPx,
               // Show pointer cursor for sortable columns
               canSort && 'cursor-pointer hover:text-foreground'
             )}
@@ -310,6 +323,8 @@ export interface TableHeaderProps {
   onAutoFit?: (columnId: string) => void
   /** Enable column reordering with drag-and-drop */
   enableColumnReordering?: boolean
+  /** Compact mode — reduces header padding to match dense body cells */
+  compact?: boolean
 }
 
 /**
@@ -326,6 +341,7 @@ export const TableHeader = memo(function TableHeader({
   headerGroups,
   onAutoFit,
   enableColumnReordering = false,
+  compact = false,
 }: TableHeaderProps) {
   return (
     <>
@@ -335,6 +351,7 @@ export const TableHeader = memo(function TableHeader({
           headers={headerGroup.headers}
           onAutoFit={onAutoFit}
           enableColumnReordering={enableColumnReordering}
+          compact={compact}
         />
       ))}
     </>

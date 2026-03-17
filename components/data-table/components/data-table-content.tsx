@@ -151,6 +151,7 @@ export const DataTableContent = memo(function DataTableContent<
           headerGroups={table.getHeaderGroups()}
           onAutoFit={onAutoFit}
           enableColumnReordering={enableColumnReordering}
+          compact={compact}
         />
       </TableHeader>
       <TableBody>

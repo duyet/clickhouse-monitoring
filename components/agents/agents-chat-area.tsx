@@ -3,17 +3,27 @@
 'use no memo'
 
 import {
+  ActivityIcon,
+  AlertCircleIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  ClockIcon,
+  DatabaseIcon,
+  HardDriveIcon,
+  LayersIcon,
   Loader2Icon,
   Maximize2Icon,
+  MergeIcon,
   PanelRightClose,
   PanelRightOpen,
   RefreshCwIcon,
   SparklesIcon,
   SquareIcon,
+  TableIcon,
   TrashIcon,
+  UserIcon,
   XIcon,
+  ZapIcon,
 } from 'lucide-react'
 
 import type { UIMessage } from 'ai'
@@ -80,6 +90,10 @@ import {
 } from '@/components/ui/dialog'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
+import {
+  formatDuration,
+  getMessageStats,
+} from '@/lib/hooks/use-agent-session-stats'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
@@ -165,51 +179,22 @@ function ResultTable({
 
   return (
     <>
-      <div className="flex items-center justify-end mb-1">
-        <Dialog>
-          <DialogTrigger asChild>
-            <button
-              className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
-              title="Expand table"
-            >
-              <Maximize2Icon className="h-3.5 w-3.5" />
-            </button>
-          </DialogTrigger>
-          <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
-            <DialogHeader>
-              <DialogTitle>
-                Query Results ({displayRows.length} rows)
-              </DialogTitle>
-            </DialogHeader>
-            <div className="flex-1 overflow-auto min-h-0">
-              <DataTable
-                data={displayRows}
-                queryConfig={queryConfig}
-                context={{}}
-                defaultPageSize={50}
-                showSQL={false}
-                enableColumnFilters={true}
-                enableColumnReordering={false}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
       <DataTable
         data={displayRows}
         queryConfig={queryConfig}
         context={{}}
-        defaultPageSize={25}
+        defaultPageSize={displayRows.length}
         showSQL={false}
         enableColumnFilters={false}
         enableColumnReordering={false}
         compact
       />
-      {rows.length > maxRows && (
-        <div className="text-center text-xs text-muted-foreground py-1 px-3">
-          Showing {maxRows} of {rows.length} rows
-        </div>
-      )}
+      {/* Footer: row count */}
+      <div className="px-2 py-1.5 border-t border-muted/30 text-[11px] text-muted-foreground">
+        {rows.length > maxRows
+          ? `Showing ${maxRows} of ${rows.length} rows`
+          : `${displayRows.length} ${displayRows.length === 1 ? 'row' : 'rows'}`}
+      </div>
     </>
   )
 }
@@ -274,6 +259,46 @@ function ToolCallPart({
     return tool?.params || []
   }, [toolName])
 
+  // Extract rows from output for the expand button in the header
+  const { outputRows, outputQueryConfig } = useMemo(() => {
+    if (!hasOutput || !part.output)
+      return {
+        outputRows: [] as Record<string, unknown>[],
+        outputQueryConfig: null,
+      }
+
+    let rows: Record<string, unknown>[] = []
+
+    // Direct array output
+    if (Array.isArray(part.output) && part.output.length > 0) {
+      const first = part.output[0]
+      if (typeof first === 'object' && first !== null) {
+        rows = part.output as Record<string, unknown>[]
+      }
+    }
+
+    // Object with rows property
+    const obj = part.output as Record<string, unknown>
+    if (Array.isArray(obj.rows) && obj.rows.length > 0) {
+      rows = obj.rows as Record<string, unknown>[]
+    }
+
+    if (rows.length === 0)
+      return {
+        outputRows: [] as Record<string, unknown>[],
+        outputQueryConfig: null,
+      }
+
+    const columns = Object.keys(rows[0])
+    const qc: QueryConfig<string[]> = {
+      name: 'agent-query-result',
+      description: 'Query results from AI agent',
+      sql: 'SELECT * FROM agent_result',
+      columns,
+    }
+    return { outputRows: rows, outputQueryConfig: qc }
+  }, [hasOutput, part.output])
+
   return (
     <div className="my-2 rounded-lg border bg-muted/30 overflow-hidden">
       {/* Tool header - clickable to toggle */}
@@ -311,8 +336,8 @@ function ToolCallPart({
           )}
         </div>
 
-        {/* Status badge */}
-        <div className="ml-auto flex items-center gap-2">
+        {/* Status badge + expand button */}
+        <div className="ml-auto flex items-center gap-1.5">
           {isStreaming && (
             <Badge
               variant="outline"
@@ -337,6 +362,12 @@ function ToolCallPart({
               ✗ Failed
             </Badge>
           )}
+          {hasOutput && outputRows.length > 0 && outputQueryConfig && (
+            <ExpandTableButton
+              rows={outputRows}
+              queryConfig={outputQueryConfig}
+            />
+          )}
         </div>
       </button>
 
@@ -357,9 +388,7 @@ function ToolCallPart({
 
           {/* Tool output */}
           {hasOutput && part.output != null ? (
-            <div className="max-h-96 overflow-auto">
-              <div className="px-1 py-1">{renderToolOutput(part.output)}</div>
-            </div>
+            <div className="px-1 py-1">{renderToolOutput(part.output)}</div>
           ) : null}
 
           {/* Tool error */}
@@ -417,6 +446,47 @@ function ToolCallPart({
   )
 }
 
+/**
+ * Expand button for result tables — opens a full-screen dialog with the data
+ */
+function ExpandTableButton({
+  rows,
+  queryConfig,
+}: {
+  readonly rows: Record<string, unknown>[]
+  readonly queryConfig: QueryConfig<string[]>
+}) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          className="p-0.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
+          title="Expand table"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Maximize2Icon className="h-3 w-3" />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Query Results ({rows.length} rows)</DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto min-h-0">
+          <DataTable
+            data={rows}
+            queryConfig={queryConfig}
+            context={{}}
+            defaultPageSize={50}
+            showSQL={false}
+            enableColumnFilters={true}
+            enableColumnReordering={false}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function renderToolOutput(output: unknown) {
   if (output == null) return null
 
@@ -424,14 +494,7 @@ function renderToolOutput(output: unknown) {
   if (Array.isArray(output) && output.length > 0) {
     const firstItem = output[0] as Record<string, unknown>
     if (typeof firstItem === 'object' && firstItem !== null) {
-      return (
-        <div>
-          <div className="text-xs text-muted-foreground mb-1">
-            {output.length} {output.length === 1 ? 'row' : 'rows'}
-          </div>
-          <ResultTable rows={output as unknown[]} maxRows={100} />
-        </div>
-      )
+      return <ResultTable rows={output as unknown[]} maxRows={100} />
     }
   }
 
@@ -467,17 +530,7 @@ function renderToolOutput(output: unknown) {
 
   // Check if output has rows (query result)
   if (Array.isArray(outputObj.rows) && outputObj.rows.length > 0) {
-    return (
-      <div>
-        <div className="text-xs text-muted-foreground mb-2">
-          {String(outputObj.rowCount ?? '')} rows
-          {Boolean(outputObj.duration) && (
-            <span> · {String(outputObj.duration)}ms</span>
-          )}
-        </div>
-        <ResultTable rows={outputObj.rows as unknown[]} maxRows={100} />
-      </div>
-    )
+    return <ResultTable rows={outputObj.rows as unknown[]} maxRows={100} />
   }
 
   // Default: render as JSON
@@ -582,6 +635,45 @@ function getStablePartKey(
 }
 
 /**
+ * Displays per-message statistics (tool calls, durations) at the bottom of assistant messages.
+ * Only shown for completed assistant messages (not during streaming).
+ */
+function MessageStatsFooter({
+  message,
+  responseDurationMs,
+}: {
+  readonly message: UIMessage
+  readonly responseDurationMs?: number
+}) {
+  const stats = useMemo(() => getMessageStats(message), [message])
+
+  // Only show footer when there were actual tool calls
+  if (stats.toolCallCount === 0) return null
+
+  const parts: string[] = []
+
+  if (responseDurationMs && responseDurationMs > 0) {
+    parts.push(formatDuration(responseDurationMs))
+  }
+
+  if (stats.toolCallCount > 0) {
+    parts.push(
+      `${stats.toolCallCount} tool ${stats.toolCallCount === 1 ? 'call' : 'calls'}`
+    )
+  }
+
+  if (stats.totalToolDurationMs > 0) {
+    parts.push(`${formatDuration(stats.totalToolDurationMs)} in tools`)
+  }
+
+  return (
+    <div className="mt-2 pt-1.5 text-[11px] text-muted-foreground/60 select-none">
+      {parts.join(' · ')}
+    </div>
+  )
+}
+
+/**
  * Renders a single UIMessage with its parts (text, tool calls, etc.)
  * Includes follow-up suggestions for assistant messages
  */
@@ -589,12 +681,16 @@ function ChatMessage({
   message,
   allMessages,
   isLastUserMessage,
+  isStreaming,
+  responseDurationMs,
   onRegenerate,
   onSuggestionClick,
 }: {
   readonly message: UIMessage
   readonly allMessages: readonly UIMessage[]
   readonly isLastUserMessage?: boolean
+  readonly isStreaming?: boolean
+  readonly responseDurationMs?: number
   readonly onRegenerate?: () => void
   readonly onSuggestionClick?: (suggestion: string) => void
 }) {
@@ -750,6 +846,14 @@ function ChatMessage({
           )}
         </div>
 
+        {/* Per-message stats footer for completed assistant messages */}
+        {isAssistant && !isStreaming && (
+          <MessageStatsFooter
+            message={message}
+            responseDurationMs={responseDurationMs}
+          />
+        )}
+
         {/* Follow-up suggestions for assistant messages */}
         {isAssistant && followUpSuggestions.length > 0 && (
           <div className="mt-3 pt-3 border-t border-muted/30">
@@ -899,6 +1003,38 @@ const DEFAULT_SUGGESTIONS = [
   'What are the most frequently accessed tables recently?',
 ]
 
+const SUGGESTION_ICONS: Record<string, React.ReactNode> = {
+  'What databases are available and which ones have the most tables?': (
+    <DatabaseIcon className="h-3.5 w-3.5" />
+  ),
+  'Show me the 10 largest tables and their disk usage': (
+    <HardDriveIcon className="h-3.5 w-3.5" />
+  ),
+  'Which queries are running right now and how long have they been executing?':
+    <ActivityIcon className="h-3.5 w-3.5" />,
+  'What are the slowest queries from the past 24 hours?': (
+    <ClockIcon className="h-3.5 w-3.5" />
+  ),
+  'How is the merge queue performing? Are there any large merges stuck?': (
+    <MergeIcon className="h-3.5 w-3.5" />
+  ),
+  'What is the current CPU, memory, and disk usage of this server?': (
+    <ZapIcon className="h-3.5 w-3.5" />
+  ),
+  'Show me replication lag across all replica tables': (
+    <AlertCircleIcon className="h-3.5 w-3.5" />
+  ),
+  'Which users are consuming the most resources?': (
+    <UserIcon className="h-3.5 w-3.5" />
+  ),
+  'Are there any long-running queries that should be killed?': (
+    <SquareIcon className="h-3.5 w-3.5" />
+  ),
+  'What are the most frequently accessed tables recently?': (
+    <TableIcon className="h-3.5 w-3.5" />
+  ),
+}
+
 // ============================================================================
 // Main Component
 // ============================================================================
@@ -934,6 +1070,46 @@ export const AgentsChatArea = forwardRef<
       body: { hostId, model, disabledTools },
     }),
   })
+
+  // Response timing: track when user sends a message and compute duration when streaming ends
+  const sendTimestampRef = useRef<number>(0)
+  const [responseDurations, setResponseDurations] = useState<
+    Record<string, number>
+  >({})
+  const prevStatusRef = useRef<string>(status)
+
+  // Capture send timestamp when status transitions to streaming
+  useEffect(() => {
+    const prev = prevStatusRef.current
+    prevStatusRef.current = status
+
+    // User just sent a message → mark start time
+    if (
+      prev === 'ready' &&
+      (status === 'submitted' || status === 'streaming')
+    ) {
+      sendTimestampRef.current = Date.now()
+    }
+
+    // Streaming finished → compute duration for last assistant message
+    if ((prev === 'streaming' || prev === 'submitted') && status === 'ready') {
+      if (sendTimestampRef.current > 0 && messages.length > 0) {
+        let lastAssistant: UIMessage | undefined
+        for (let i = messages.length - 1; i >= 0; i--) {
+          if (messages[i].role === 'assistant') {
+            lastAssistant = messages[i]
+            break
+          }
+        }
+        if (lastAssistant) {
+          const duration = Date.now() - sendTimestampRef.current
+          const id = lastAssistant.id
+          setResponseDurations((prev) => ({ ...prev, [id]: duration }))
+          sendTimestampRef.current = 0
+        }
+      }
+    }
+  }, [status, messages])
 
   // Ref to track last saved messages to avoid infinite loops
   const lastSavedMessagesRef = useRef<UIMessage[]>([])
@@ -1037,10 +1213,14 @@ export const AgentsChatArea = forwardRef<
     // Stop current generation
     stop()
 
-    // Find the last user message
-    const lastUserMessage = [...messages]
-      .reverse()
-      .find((m) => m.role === 'user')
+    // Find the last user message using a backward loop (avoids copying the array)
+    let lastUserMessage: UIMessage | undefined
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        lastUserMessage = messages[i]
+        break
+      }
+    }
 
     if (lastUserMessage) {
       // Get text from the last user message
@@ -1166,18 +1346,21 @@ export const AgentsChatArea = forwardRef<
               <div className="pt-6 px-4 sm:px-4 max-w-xl mx-auto w-full space-y-4">
                 <AgentInsightCards onQuestionClick={handleSuggestionClick} />
                 <details className="group">
-                  <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors list-none flex items-center gap-1">
+                  <summary className="text-xs text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors list-none flex items-center gap-1">
                     <ChevronRightIcon className="h-3 w-3 transition-transform group-open:rotate-90" />
                     More suggestions
                   </summary>
-                  <ul className="space-y-1 mt-2">
+                  <ul className="space-y-1.5 mt-3">
                     {DEFAULT_SUGGESTIONS.map((suggestion) => (
                       <li key={suggestion}>
                         <button
                           onClick={() => handleSuggestionClick(suggestion)}
-                          className="w-full text-left text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md px-3 py-2 transition-colors"
+                          className="w-full text-left text-sm border border-emerald-200 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-md px-3 py-2 transition-all flex items-start gap-2"
                         >
-                          {suggestion}
+                          <span className="mt-0.5 shrink-0">
+                            {SUGGESTION_ICONS[suggestion]}
+                          </span>
+                          <span>{suggestion}</span>
                         </button>
                       </li>
                     ))}
@@ -1194,12 +1377,21 @@ export const AgentsChatArea = forwardRef<
                 )
                 const isLastUserMessage = index === lastUserMessageIndex
 
+                // Check if this specific message is currently streaming
+                // (last assistant message while status is streaming)
+                const isMessageStreaming =
+                  isLoading &&
+                  message.role === 'assistant' &&
+                  index === messages.length - 1
+
                 return (
                   <ChatMessage
                     key={message.id}
                     message={message}
                     allMessages={messages}
                     isLastUserMessage={isLastUserMessage}
+                    isStreaming={isMessageStreaming}
+                    responseDurationMs={responseDurations[message.id]}
                     onRegenerate={
                       isLastUserMessage ? handleRegenerate : undefined
                     }

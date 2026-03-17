@@ -1,5 +1,8 @@
 import { describe, expect, mock, test } from 'bun:test'
 
+// Mock server-only to allow importing server modules in test environment
+mock.module('server-only', () => ({}))
+
 // Mock the MCP tool adapter before importing the agent
 mock.module('@/lib/ai/agent/mcp-tool-adapter', () => ({
   createMcpTools: () => ({
@@ -14,7 +17,9 @@ mock.module('@/lib/ai/agent/mcp-tool-adapter', () => ({
   }),
 }))
 
-import { createClickHouseAgent } from '../clickhouse-agent'
+// Dynamic import to ensure mock.module('server-only') takes effect first
+// (bun 1.3.x static imports may resolve before mock.module hoisting)
+const { createClickHouseAgent } = await import('../clickhouse-agent')
 
 describe('createClickHouseAgent', () => {
   test('creates agent with required hostId parameter', () => {
