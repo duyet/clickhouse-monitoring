@@ -34,14 +34,13 @@ const mockValidateTableExistence = mock(() =>
   Promise.resolve({ shouldProceed: true, missingTables: [] })
 )
 
-// Use RELATIVE paths that match how clickhouse-fetch.ts imports these modules.
-// On Linux CI, bun's mock.module with @/ aliases does NOT intercept relative
-// imports (./clickhouse-client) — they resolve to different module IDs.
-mock.module('../clickhouse-client', () => ({
+// Mock specifiers MUST match the import specifiers in clickhouse-fetch.ts.
+// On Linux CI, bun's mock.module only intercepts imports with matching specifiers.
+mock.module('@/lib/clickhouse/clickhouse-client', () => ({
   getClient: mockGetClient,
 }))
 
-mock.module('../clickhouse-config', () => ({
+mock.module('@/lib/clickhouse/clickhouse-config', () => ({
   getClickHouseConfigs: mockGetClickHouseConfigs,
 }))
 
