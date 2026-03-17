@@ -3,17 +3,27 @@
 'use no memo'
 
 import {
+  ActivityIcon,
+  AlertCircleIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  ClockIcon,
+  DatabaseIcon,
+  HardDriveIcon,
+  LayersIcon,
   Loader2Icon,
   Maximize2Icon,
+  MergeIcon,
   PanelRightClose,
   PanelRightOpen,
   RefreshCwIcon,
   SparklesIcon,
   SquareIcon,
+  TableIcon,
   TrashIcon,
+  UserIcon,
   XIcon,
+  ZapIcon,
 } from 'lucide-react'
 
 import type { UIMessage } from 'ai'
@@ -637,8 +647,8 @@ function MessageStatsFooter({
 }) {
   const stats = useMemo(() => getMessageStats(message), [message])
 
-  // Only show if there's something to display
-  if (stats.toolCallCount === 0 && !responseDurationMs) return null
+  // Only show footer when there were actual tool calls
+  if (stats.toolCallCount === 0) return null
 
   const parts: string[] = []
 
@@ -655,8 +665,6 @@ function MessageStatsFooter({
   if (stats.totalToolDurationMs > 0) {
     parts.push(`${formatDuration(stats.totalToolDurationMs)} in tools`)
   }
-
-  if (parts.length === 0) return null
 
   return (
     <div className="mt-2 pt-1.5 text-[11px] text-muted-foreground/60 select-none">
@@ -995,6 +1003,38 @@ const DEFAULT_SUGGESTIONS = [
   'What are the most frequently accessed tables recently?',
 ]
 
+const SUGGESTION_ICONS: Record<string, React.ReactNode> = {
+  'What databases are available and which ones have the most tables?': (
+    <DatabaseIcon className="h-3.5 w-3.5" />
+  ),
+  'Show me the 10 largest tables and their disk usage': (
+    <HardDriveIcon className="h-3.5 w-3.5" />
+  ),
+  'Which queries are running right now and how long have they been executing?':
+    <ActivityIcon className="h-3.5 w-3.5" />,
+  'What are the slowest queries from the past 24 hours?': (
+    <ClockIcon className="h-3.5 w-3.5" />
+  ),
+  'How is the merge queue performing? Are there any large merges stuck?': (
+    <MergeIcon className="h-3.5 w-3.5" />
+  ),
+  'What is the current CPU, memory, and disk usage of this server?': (
+    <ZapIcon className="h-3.5 w-3.5" />
+  ),
+  'Show me replication lag across all replica tables': (
+    <AlertCircleIcon className="h-3.5 w-3.5" />
+  ),
+  'Which users are consuming the most resources?': (
+    <UserIcon className="h-3.5 w-3.5" />
+  ),
+  'Are there any long-running queries that should be killed?': (
+    <SquareIcon className="h-3.5 w-3.5" />
+  ),
+  'What are the most frequently accessed tables recently?': (
+    <TableIcon className="h-3.5 w-3.5" />
+  ),
+}
+
 // ============================================================================
 // Main Component
 // ============================================================================
@@ -1033,7 +1073,9 @@ export const AgentsChatArea = forwardRef<
 
   // Response timing: track when user sends a message and compute duration when streaming ends
   const sendTimestampRef = useRef<number>(0)
-  const responseDurationsRef = useRef<Map<string, number>>(new Map())
+  const [responseDurations, setResponseDurations] = useState<
+    Record<string, number>
+  >({})
   const prevStatusRef = useRef<string>(status)
 
   // Capture send timestamp when status transitions to streaming
@@ -1052,12 +1094,17 @@ export const AgentsChatArea = forwardRef<
     // Streaming finished → compute duration for last assistant message
     if ((prev === 'streaming' || prev === 'submitted') && status === 'ready') {
       if (sendTimestampRef.current > 0 && messages.length > 0) {
-        const lastAssistant = [...messages]
-          .reverse()
-          .find((m) => m.role === 'assistant')
+        let lastAssistant: UIMessage | undefined
+        for (let i = messages.length - 1; i >= 0; i--) {
+          if (messages[i].role === 'assistant') {
+            lastAssistant = messages[i]
+            break
+          }
+        }
         if (lastAssistant) {
           const duration = Date.now() - sendTimestampRef.current
-          responseDurationsRef.current.set(lastAssistant.id, duration)
+          const id = lastAssistant.id
+          setResponseDurations((prev) => ({ ...prev, [id]: duration }))
           sendTimestampRef.current = 0
         }
       }
@@ -1166,10 +1213,14 @@ export const AgentsChatArea = forwardRef<
     // Stop current generation
     stop()
 
-    // Find the last user message
-    const lastUserMessage = [...messages]
-      .reverse()
-      .find((m) => m.role === 'user')
+    // Find the last user message using a backward loop (avoids copying the array)
+    let lastUserMessage: UIMessage | undefined
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        lastUserMessage = messages[i]
+        break
+      }
+    }
 
     if (lastUserMessage) {
       // Get text from the last user message
@@ -1295,18 +1346,21 @@ export const AgentsChatArea = forwardRef<
               <div className="pt-6 px-4 sm:px-4 max-w-xl mx-auto w-full space-y-4">
                 <AgentInsightCards onQuestionClick={handleSuggestionClick} />
                 <details className="group">
-                  <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors list-none flex items-center gap-1">
+                  <summary className="text-xs text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors list-none flex items-center gap-1">
                     <ChevronRightIcon className="h-3 w-3 transition-transform group-open:rotate-90" />
                     More suggestions
                   </summary>
-                  <ul className="space-y-1 mt-2">
+                  <ul className="space-y-1.5 mt-3">
                     {DEFAULT_SUGGESTIONS.map((suggestion) => (
                       <li key={suggestion}>
                         <button
                           onClick={() => handleSuggestionClick(suggestion)}
-                          className="w-full text-left text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md px-3 py-2 transition-colors"
+                          className="w-full text-left text-sm border border-emerald-200 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-md px-3 py-2 transition-all flex items-start gap-2"
                         >
-                          {suggestion}
+                          <span className="mt-0.5 shrink-0">
+                            {SUGGESTION_ICONS[suggestion]}
+                          </span>
+                          <span>{suggestion}</span>
                         </button>
                       </li>
                     ))}
@@ -1337,9 +1391,7 @@ export const AgentsChatArea = forwardRef<
                     allMessages={messages}
                     isLastUserMessage={isLastUserMessage}
                     isStreaming={isMessageStreaming}
-                    responseDurationMs={responseDurationsRef.current.get(
-                      message.id
-                    )}
+                    responseDurationMs={responseDurations[message.id]}
                     onRegenerate={
                       isLastUserMessage ? handleRegenerate : undefined
                     }
