@@ -6,6 +6,7 @@ export const distributedDdlQueueConfig: QueryConfig = {
   name: 'distributed-ddl-queue',
   description:
     'Distributed ddl queries (ON CLUSTER clause) that were executed on a cluster',
+  optional: true,
   suggestion: `To use Distributed DDL Queue:
 
 1. Set up cluster with replicas:

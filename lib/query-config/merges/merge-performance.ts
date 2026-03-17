@@ -7,6 +7,8 @@ export const mergePerformanceConfig: QueryConfig = {
   name: 'merge-performance',
   description: 'Merge performance over day, avg duration, avg rows read',
   docs: PART_LOG,
+  tableCheck: 'system.part_log',
+  optional: true,
   sql: `
       SELECT
           event_date,
