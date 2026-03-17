@@ -10,7 +10,6 @@ import {
   ClockIcon,
   DatabaseIcon,
   HardDriveIcon,
-  LayersIcon,
   Loader2Icon,
   Maximize2Icon,
   MergeIcon,

@@ -7,7 +7,6 @@ import type { QueryConfig } from '@/types/query-config'
 import {
   afterAll,
   afterEach,
-  beforeAll,
   beforeEach,
   describe,
   expect,
