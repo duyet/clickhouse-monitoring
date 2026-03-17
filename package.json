@@ -112,7 +112,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.18",
     "@uiw/react-heat-map": "^2.3.3",
-    "@vercel/analytics": "^1.6.1",
+    "@vercel/analytics": "^2.0.0",
     "@vercel/functions": "^3.4.1",
     "@xyflow/react": "^12.10.1",
     "ai": "^6.0.116",
