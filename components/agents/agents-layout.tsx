@@ -77,7 +77,7 @@ export function AgentsLayout() {
             onSelect={switchConversation}
             onDelete={deleteConversation}
           />
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -88,13 +88,13 @@ export function AgentsLayout() {
               <TrashIcon className="h-4 w-4" />
             </Button>
             <Button
-              variant="ghost"
-              size="icon"
+              variant="secondary"
+              size="sm"
               onClick={() => {
                 userToggledRef.current = true
                 setIsSidebarOpen(!isSidebarOpen)
               }}
-              className="h-8 w-8 shrink-0"
+              className="h-9 gap-2 rounded-full px-3 shadow-sm"
               title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
             >
               {isSidebarOpen ? (
@@ -102,6 +102,9 @@ export function AgentsLayout() {
               ) : (
                 <PanelRightOpen className="h-4 w-4" />
               )}
+              <span className="hidden sm:inline">
+                {isSidebarOpen ? 'Hide sidebar' : 'Open sidebar'}
+              </span>
             </Button>
           </div>
         </div>

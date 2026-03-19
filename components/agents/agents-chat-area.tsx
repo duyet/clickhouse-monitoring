@@ -81,6 +81,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -984,45 +991,59 @@ function generateFollowUpSuggestions(
 // Default suggestions
 // ============================================================================
 
-const DEFAULT_SUGGESTIONS: { text: string; icon: React.ReactNode }[] = [
+const DEFAULT_SUGGESTIONS: {
+  text: string
+  category: string
+  icon: React.ReactNode
+}[] = [
   {
     text: 'What databases are available and which ones have the most tables?',
+    category: 'Schema',
     icon: <DatabaseIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'Show me the 10 largest tables and their disk usage',
+    category: 'Storage',
     icon: <HardDriveIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'Which queries are running right now and how long have they been executing?',
+    category: 'Querying',
     icon: <ActivityIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'What are the slowest queries from the past 24 hours?',
+    category: 'Performance',
     icon: <ClockIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'How is the merge queue performing? Are there any large merges stuck?',
+    category: 'Merges',
     icon: <MergeIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'What is the current CPU, memory, and disk usage of this server?',
+    category: 'System',
     icon: <ZapIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'Show me replication lag across all replica tables',
+    category: 'Replication',
     icon: <AlertCircleIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'Which users are consuming the most resources?',
+    category: 'Access',
     icon: <UserIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'Are there any long-running queries that should be killed?',
+    category: 'Operations',
     icon: <SquareIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'What are the most frequently accessed tables recently?',
+    category: 'Usage',
     icon: <TableIcon className="h-3.5 w-3.5" />,
   },
 ]
@@ -1266,7 +1287,7 @@ export const AgentsChatArea = forwardRef<
 
           {/* Center: AI Agent title */}
           <div className="flex items-center gap-2 min-w-0">
-            <SparklesIcon className="h-5 w-5 text-purple-500 shrink-0" />
+            <SparklesIcon className="h-5 w-5 text-primary shrink-0" />
             <h2 className="font-semibold truncate text-sm sm:text-base">
               AI Agent
             </h2>
@@ -1330,36 +1351,118 @@ export const AgentsChatArea = forwardRef<
       <ConversationUI>
         <ConversationContent className="gap-4">
           {isEmpty ? (
-            <ConversationEmptyState
-              title="AI Agent"
-              description="Ask questions about your data using natural language"
-              icon={
-                <SparklesIcon className="h-8 w-8 sm:h-12 sm:w-12 text-purple-500" />
-              }
-            >
-              <div className="pt-6 px-4 sm:px-4 max-w-xl mx-auto w-full space-y-4">
-                <AgentInsightCards onQuestionClick={handleSuggestionClick} />
-                <details className="group">
-                  <summary className="text-xs text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors list-none flex items-center gap-1">
-                    <ChevronRightIcon className="h-3 w-3 transition-transform group-open:rotate-90" />
-                    More suggestions
-                  </summary>
-                  <ul className="space-y-1.5 mt-3">
-                    {DEFAULT_SUGGESTIONS.map((suggestion) => (
-                      <li key={suggestion.text}>
-                        <button
-                          onClick={() => handleSuggestionClick(suggestion.text)}
-                          className="w-full text-left text-sm border border-emerald-200 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-md px-3 py-2 transition-all flex items-start gap-2"
+            <ConversationEmptyState className="justify-start px-0 py-6 text-left sm:py-8">
+              <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 sm:px-6">
+                <Card className="overflow-hidden border-border/60 bg-gradient-to-br from-background via-background to-muted/40 shadow-sm">
+                  <CardContent className="p-5 sm:p-6">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                      <div className="space-y-4">
+                        <Badge
+                          variant="outline"
+                          className="rounded-full border-border/70 bg-background/80 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground"
                         >
-                          <span className="mt-0.5 shrink-0">
-                            {suggestion.icon}
-                          </span>
-                          <span>{suggestion.text}</span>
+                          Agent workspace
+                        </Badge>
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-card shadow-sm">
+                            <SparklesIcon className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="space-y-2">
+                            <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                              Inspect your ClickHouse cluster in plain English
+                            </h2>
+                            <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                              Start with a live health signal or launch one of
+                              the ready-made prompts below. Every card and
+                              question sends directly to the agent.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:w-[320px]">
+                        {[
+                          'Live metrics',
+                          'Read-only analysis',
+                          'One-click prompts',
+                        ].map((item) => (
+                          <div
+                            key={item}
+                            className="rounded-xl border border-border/60 bg-background/80 px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm"
+                          >
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <section className="space-y-3">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <h3 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                        Live cluster snapshot
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        These values are fetched from the current host and open
+                        the matching investigation when clicked.
+                      </p>
+                    </div>
+                  </div>
+                  <AgentInsightCards onQuestionClick={handleSuggestionClick} />
+                </section>
+
+                <Card className="border-border/60 bg-muted/20 shadow-sm">
+                  <CardHeader className="space-y-2 p-5">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-base tracking-tight sm:text-lg">
+                          Suggested questions
+                        </CardTitle>
+                        <CardDescription className="max-w-2xl text-sm leading-6">
+                          Use a starter prompt for schemas, storage, query
+                          performance, and system health. You can keep iterating
+                          from there.
+                        </CardDescription>
+                      </div>
+                      <Badge
+                        variant="secondary"
+                        className="rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em]"
+                      >
+                        {DEFAULT_SUGGESTIONS.length} ready prompts
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-5 pt-0">
+                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                      {DEFAULT_SUGGESTIONS.map((suggestion) => (
+                        <button
+                          key={suggestion.text}
+                          onClick={() => handleSuggestionClick(suggestion.text)}
+                          className="group flex h-full flex-col items-start rounded-2xl border border-border/70 bg-background/90 p-4 text-left shadow-sm transition-all hover:border-border hover:bg-accent/30"
+                        >
+                          <div className="flex w-full items-start gap-3">
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/50 text-foreground/80">
+                              {suggestion.icon}
+                            </span>
+                            <div className="min-w-0 space-y-1">
+                              <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                                {suggestion.category}
+                              </div>
+                              <div className="text-sm font-medium leading-6 text-foreground">
+                                {suggestion.text}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
+                            <span>Run this prompt</span>
+                            <ChevronRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                          </div>
                         </button>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </ConversationEmptyState>
           ) : (

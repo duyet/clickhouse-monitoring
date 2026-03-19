@@ -1,7 +1,7 @@
 /**
  * useAgentModel Hook
  *
- * Client-side hook for managing OpenAI model selection for the agent.
+ * Client-side hook for managing agent model selection.
  * Persists selection to localStorage and provides model metadata.
  */
 
@@ -13,27 +13,50 @@ import { useMemo } from 'react'
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
 /**
- * Available OpenAI models (free tier via OpenRouter)
+ * Available agent models.
+ *
+ * Keep `name` identical to the model code so the UI always shows
+ * the exact provider/model identifier chosen by the user.
  */
 export const OPENAI_MODELS = {
   'nvidia/nemotron-3-super-120b-a12b:free': {
-    name: 'Nemotron 3 Super 120B',
-    description: 'NVIDIA 120B parameter model (recommended)',
+    name: 'nvidia/nemotron-3-super-120b-a12b:free',
+    description: 'NVIDIA model available by default',
     contextLength: 128000,
   },
   'stepfun/step-3.5-flash:free': {
-    name: 'Step 3.5 Flash',
-    description: 'StepFun fast model',
+    name: 'stepfun/step-3.5-flash:free',
+    description: 'StepFun model available by default',
+    contextLength: 128000,
+  },
+  'z-ai/glm-4.5-air:free': {
+    name: 'z-ai/glm-4.5-air:free',
+    description: 'Z.AI model available by default',
+    contextLength: 128000,
+  },
+  'nvidia/nemotron-3-nano-30b-a3b:free': {
+    name: 'nvidia/nemotron-3-nano-30b-a3b:free',
+    description: 'Compact NVIDIA model available by default',
+    contextLength: 128000,
+  },
+  'minimax/minimax-m2.7': {
+    name: 'minimax/minimax-m2.7',
+    description: 'MiniMax production model',
+    contextLength: 128000,
+  },
+  'openai/gpt-5.4-nano': {
+    name: 'openai/gpt-5.4-nano',
+    description: 'OpenAI nano model',
     contextLength: 128000,
   },
   'google/gemma-3-27b-it:free': {
-    name: 'Gemma 3 27B',
-    description: 'Google 27B parameter model',
+    name: 'google/gemma-3-27b-it:free',
+    description: 'Google, free tier, Gemma instruct model',
     contextLength: 128000,
   },
   'meta-llama/llama-3.1-8b-instruct:free': {
-    name: 'Llama 3.1 8B',
-    description: 'Meta 8B parameter model',
+    name: 'meta-llama/llama-3.1-8b-instruct:free',
+    description: 'Meta, free tier, compact instruct model',
     contextLength: 128000,
   },
 } as const
@@ -49,8 +72,8 @@ function getDefaultModel(): OpenAIModel {
   if (envModel && envModel in OPENAI_MODELS) {
     return envModel as OpenAIModel
   }
-  // Fallback to stepfun model for better agent compatibility
-  return 'stepfun/step-3.5-flash:free'
+  // Fallback to the nano OpenAI model.
+  return 'openai/gpt-5.4-nano'
 }
 
 /**

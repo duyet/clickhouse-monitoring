@@ -6,10 +6,11 @@ import {
   ChevronRightIcon,
   DatabaseIcon,
   MonitorIcon,
+  PanelRightClose,
   RefreshCwIcon,
-  XIcon,
 } from 'lucide-react'
 
+import type { ReactNode } from 'react'
 import type {
   McpResource,
   McpToolCategory,
@@ -18,6 +19,7 @@ import type { ApiMcpTool } from '@/lib/swr/use-mcp-server-info'
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { SkillsTreeDialog } from '@/components/agents/skills-tree-dialog'
 import {
   ModelSelector,
   ModelSelectorContent,
@@ -30,6 +32,7 @@ import {
   ModelSelectorTrigger,
 } from '@/components/ai-elements/model-selector'
 import { MCP_TOOL_CATEGORIES } from '@/components/mcp/mcp-tools-data'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -43,7 +46,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -53,8 +55,11 @@ import {
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { SUGGESTED_PROMPTS } from '@/lib/ai/agent/metadata'
-import { getSkillsMetadata } from '@/lib/ai/agent/skills/registry'
-import { OPENAI_MODELS, useAgentModel } from '@/lib/hooks/use-agent-model'
+import {
+  getSkillsMetadata,
+  loadSkillContent,
+} from '@/lib/ai/agent/skills/registry'
+import { useAgentModel } from '@/lib/hooks/use-agent-model'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useMcpServerInfo } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
@@ -66,43 +71,88 @@ interface AgentsSidebarProps {
   onOpenChange?: (open: boolean) => void
 }
 
+function cleanQuotedText(value: string): string {
+  return value.replace(/^"|"$/g, '')
+}
+
+function SidebarSection({
+  title,
+  description,
+  action,
+  children,
+}: {
+  title: string
+  description?: string
+  action?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <section className="rounded-2xl border border-border/70 bg-card/70 shadow-sm">
+      <div className="flex items-start justify-between gap-3 border-b border-border/60 px-4 py-3">
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-foreground">{title}</div>
+          {description ? (
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        {action}
+      </div>
+      <div className="p-4">{children}</div>
+    </section>
+  )
+}
+
+function TreeTriggerIcon({ open }: { open: boolean }) {
+  return (
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border bg-background text-muted-foreground">
+      {open ? (
+        <ChevronDownIcon className="h-3.5 w-3.5" />
+      ) : (
+        <ChevronRightIcon className="h-3.5 w-3.5" />
+      )}
+    </span>
+  )
+}
+
 function HostSelector({ hostId }: { readonly hostId: number }) {
   const router = useRouter()
   const { hosts } = useHosts()
 
   const handleHostChange = (newHostId: string) => {
-    // Update URL query parameter to switch hosts
     const url = new URL(window.location.href)
     url.searchParams.set('host', newHostId)
     router.push(url.toString())
   }
 
   return (
-    <div className="mb-4">
-      <label className="text-xs text-muted-foreground mb-1.5 block">Host</label>
+    <SidebarSection
+      title="Host"
+      description="Route the agent to the ClickHouse server you want to inspect."
+    >
       <Select value={String(hostId)} onValueChange={handleHostChange}>
-        <SelectTrigger className="h-8 text-xs">
+        <SelectTrigger className="h-11 rounded-xl border-border/70 bg-background/80 text-sm">
           <SelectValue placeholder="Select host" />
         </SelectTrigger>
         <SelectContent>
           {hosts.map((host, index) => (
-            <SelectItem key={index} value={String(index)} className="text-xs">
+            <SelectItem key={index} value={String(index)} className="text-sm">
               <div className="flex items-center gap-2">
-                <MonitorIcon className="h-3 w-3" />
+                <MonitorIcon className="h-3.5 w-3.5" />
                 <span>{host.name || `Host ${index}`}</span>
               </div>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-    </div>
+    </SidebarSection>
   )
 }
 
-/** Maps a model ID prefix to its provider key for ModelSelectorLogo */
 function getProviderFromModelId(modelId: string): string {
   if (modelId.startsWith('nvidia/')) return 'nvidia'
-  if (modelId.startsWith('stepfun/')) return 'openai' // no stepfun logo, fallback
+  if (modelId.startsWith('z-ai/')) return 'zai'
   if (modelId.startsWith('google/') || modelId.startsWith('google-'))
     return 'google'
   if (modelId.startsWith('meta-llama/')) return 'llama'
@@ -117,60 +167,90 @@ function ModelSelectorComponent() {
   const { model, models, setModel } = useAgentModel()
   const [open, setOpen] = useState(false)
 
-  const currentModelInfo = OPENAI_MODELS[model as keyof typeof OPENAI_MODELS]
+  const currentModel = models.find((item) => item.id === model)
   const currentProvider = getProviderFromModelId(model)
 
   return (
-    <div className="mb-4">
-      <label className="text-xs text-muted-foreground mb-1.5 block">
-        Model
-      </label>
+    <SidebarSection
+      title="Model"
+      description="Choose the default model the agent should use for this session."
+    >
       <ModelSelector open={open} onOpenChange={setOpen}>
         <ModelSelectorTrigger asChild>
           <Button
             variant="outline"
-            className="h-8 w-full justify-start gap-2 px-2 text-xs font-normal"
+            className="h-auto w-full justify-between rounded-xl border-border/70 bg-background/80 px-3 py-3"
             aria-label="Select model"
           >
-            <ModelSelectorLogo
-              provider={currentProvider}
-              className="shrink-0"
-            />
-            <span className="truncate">{currentModelInfo?.name ?? model}</span>
+            <div className="flex min-w-0 items-start gap-3 text-left">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border bg-muted/40">
+                <ModelSelectorLogo
+                  provider={currentProvider}
+                  className="size-4 shrink-0 dark:invert-0"
+                />
+              </span>
+              <div className="min-w-0">
+                <div className="truncate font-mono text-[13px] font-medium text-foreground">
+                  {currentModel?.name ?? model}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {currentModel?.description ?? 'Custom model'}
+                </div>
+              </div>
+            </div>
+            <Badge variant="secondary" className="ml-3 shrink-0 rounded-full">
+              {(currentModel?.contextLength ?? 0).toLocaleString()} ctx
+            </Badge>
           </Button>
         </ModelSelectorTrigger>
-        <ModelSelectorContent title="Select Model">
+
+        <ModelSelectorContent
+          title="Select Model"
+          className="max-w-[min(92vw,44rem)] border-border/80 bg-background/95"
+        >
           <ModelSelectorInput placeholder="Search models..." />
-          <ModelSelectorList>
+          <ModelSelectorList className="max-h-[24rem]">
             <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
             <ModelSelectorGroup heading="Available Models">
-              {models.map((m) => {
-                const provider = getProviderFromModelId(m.id)
+              {models.map((item) => {
+                const provider = getProviderFromModelId(item.id)
+                const selected = item.id === model
+
                 return (
                   <ModelSelectorItem
-                    key={m.id}
-                    value={m.id}
+                    key={item.id}
+                    value={item.id}
                     onSelect={() => {
-                      setModel(m.id)
+                      setModel(item.id)
                       setOpen(false)
                     }}
-                    className="flex items-center gap-2 py-2"
-                  >
-                    <ModelSelectorLogo
-                      provider={provider}
-                      className="shrink-0"
-                    />
-                    <div className="flex flex-col min-w-0">
-                      <span className="font-medium text-sm">{m.name}</span>
-                      <span className="text-xs text-muted-foreground truncate">
-                        {m.description}
-                      </span>
-                    </div>
-                    {m.id === model && (
-                      <span className="ml-auto text-xs text-primary shrink-0">
-                        ✓
-                      </span>
+                    className={cn(
+                      'mx-2 my-1 flex items-start gap-3 rounded-xl border px-3 py-3',
+                      selected && 'border-primary/40 bg-muted/70'
                     )}
+                  >
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border bg-muted/50">
+                      <ModelSelectorLogo
+                        provider={provider}
+                        className="size-4 shrink-0 dark:invert-0"
+                      />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-mono text-[13px] font-medium text-foreground">
+                        {item.id}
+                      </div>
+                      <div className="mt-1 text-xs leading-5 text-muted-foreground">
+                        {item.description}
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                      <Badge variant="outline" className="rounded-full">
+                        {item.contextLength.toLocaleString()} ctx
+                      </Badge>
+                      {selected ? (
+                        <Badge className="rounded-full">Selected</Badge>
+                      ) : null}
+                    </div>
                   </ModelSelectorItem>
                 )
               })}
@@ -178,6 +258,66 @@ function ModelSelectorComponent() {
           </ModelSelectorList>
         </ModelSelectorContent>
       </ModelSelector>
+    </SidebarSection>
+  )
+}
+
+function McpToolRow({
+  tool,
+  enabled,
+  onToggle,
+}: {
+  tool: ApiMcpTool
+  enabled: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div
+      className={cn(
+        'rounded-xl border border-border/70 bg-background/80 p-3 transition-colors',
+        !enabled && 'opacity-80'
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="rounded-md bg-muted px-2 py-1 text-[11px] font-medium text-foreground">
+              {tool.name}
+            </code>
+            <Badge
+              variant={enabled ? 'default' : 'secondary'}
+              className="rounded-full"
+            >
+              {enabled ? 'Enabled' : 'Disabled'}
+            </Badge>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">
+            {tool.description}
+          </p>
+          {tool.params.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {tool.params.map((param) => (
+                <Badge
+                  key={param.name}
+                  variant="outline"
+                  className="rounded-full px-2 py-0.5 text-[10px]"
+                >
+                  {param.name}:{param.type}
+                  {!param.required ? ' optional' : ''}
+                </Badge>
+              ))}
+            </div>
+          ) : null}
+        </div>
+        <div className="rounded-full border bg-muted/30 p-1">
+          <Switch
+            checked={enabled}
+            onCheckedChange={onToggle}
+            className="h-5 w-9 border border-border/70 bg-muted-foreground/15 shadow-none data-[state=checked]:bg-primary [&>span]:bg-background"
+            aria-label={`${enabled ? 'Disable' : 'Enable'} ${tool.name}`}
+          />
+        </div>
+      </div>
     </div>
   )
 }
@@ -202,338 +342,296 @@ function McpToolsSection() {
   }
 
   const expandAll = () => {
-    const allSections = [
-      'server',
-      'Resources',
-      ...Object.keys(MCP_TOOL_CATEGORIES),
-    ]
-    setOpenSections(new Set(allSections))
+    setOpenSections(
+      new Set(['server', 'Resources', ...Object.keys(MCP_TOOL_CATEGORIES)])
+    )
   }
 
   const collapseAll = () => {
     setOpenSections(new Set())
   }
 
+  const action = (
+    <div className="flex items-center gap-1">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 rounded-full px-3 text-xs"
+        onClick={expandAll}
+        title="Expand all"
+      >
+        Expand
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 rounded-full px-3 text-xs"
+        onClick={collapseAll}
+        title="Collapse all"
+      >
+        Collapse
+      </Button>
+    </div>
+  )
+
   if (isLoading) {
     return (
-      <div className="mb-4">
-        <label className="text-xs text-muted-foreground mb-1.5 block">
-          MCP Server
-        </label>
-        <p className="text-xs text-muted-foreground">Loading tools...</p>
-      </div>
+      <SidebarSection
+        title="MCP Server"
+        description="Loading available tools and resources."
+      >
+        <p className="text-sm text-muted-foreground">Loading tools...</p>
+      </SidebarSection>
     )
   }
 
   if (error) {
     return (
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-1.5">
-          <label className="text-xs text-muted-foreground">MCP Server</label>
+      <SidebarSection
+        title="MCP Server"
+        description="We could not load the server metadata right now."
+        action={
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={retry}
-                className="h-5 w-5"
+                className="h-8 w-8 rounded-full"
                 title="Retry loading tools"
               >
-                <RefreshCwIcon className="h-3 w-3" />
+                <RefreshCwIcon className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Retry loading tools</TooltipContent>
           </Tooltip>
-        </div>
-        <p className="text-xs text-destructive">Failed to load tools</p>
-      </div>
+        }
+      >
+        <p className="text-sm text-destructive">Failed to load tools.</p>
+      </SidebarSection>
     )
   }
 
   if (!mcpInfo) {
     return (
-      <div className="mb-4">
-        <label className="text-xs text-muted-foreground mb-1.5 block">
-          MCP Server
-        </label>
-        <p className="text-xs text-muted-foreground">Unable to load tools</p>
-      </div>
+      <SidebarSection
+        title="MCP Server"
+        description="No MCP server metadata is available."
+      >
+        <p className="text-sm text-muted-foreground">Unable to load tools.</p>
+      </SidebarSection>
     )
   }
 
-  // Group tools by category from the API response
   const toolCategories = Object.keys(MCP_TOOL_CATEGORIES) as McpToolCategory[]
 
   return (
-    <div className="mb-4">
-      <div className="flex items-center justify-between mb-1.5">
-        <label className="text-xs text-muted-foreground">MCP Server</label>
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-5 px-1.5 text-xs"
-            onClick={expandAll}
-            title="Expand all"
-          >
-            <ChevronDownIcon className="h-3 w-3" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-5 px-1.5 text-xs"
-            onClick={collapseAll}
-            title="Collapse all"
-          >
-            <ChevronRightIcon className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Tree structure with server name as root */}
-      <div className="relative">
-        {/* Vertical line for tree */}
-        <div className="absolute left-[7px] top-0 bottom-0 w-px bg-border" />
-
-        <div className="space-y-0.5">
-          {/* Server node (root) */}
-          <Collapsible
-            open={openSections.has('server')}
-            onOpenChange={() => toggleSection('server')}
-          >
-            <CollapsibleTrigger className="flex items-center gap-1.5 w-full py-1.5 px-2 hover:bg-muted rounded-md transition-colors text-left">
-              <span className="relative z-10 flex items-center justify-center w-4 h-4 bg-background">
-                {openSections.has('server') ? (
-                  <ChevronDownIcon className="h-3 w-3" />
-                ) : (
-                  <ChevronRightIcon className="h-3 w-3" />
-                )}
+    <SidebarSection
+      title="MCP Server"
+      description="Review available resources and enable the tools the agent can call."
+      action={action}
+    >
+      <div className="space-y-3">
+        <Collapsible
+          open={openSections.has('server')}
+          onOpenChange={() => toggleSection('server')}
+        >
+          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-xl border border-border/70 bg-background/80 px-3 py-3 text-left transition-colors hover:bg-muted/40">
+            <TreeTriggerIcon open={openSections.has('server')} />
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <DatabaseIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="truncate text-sm font-medium">
+                {mcpInfo.name}
               </span>
-              <DatabaseIcon className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-sm font-medium">{mcpInfo.name}</span>
-              <span className="text-xs text-muted-foreground">
+              <Badge variant="outline" className="rounded-full">
                 v{mcpInfo.version}
-              </span>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              {/* Child items with connecting lines */}
-              <div className="ml-5 py-0.5 space-y-0.5">
-                {/* Resources Section */}
-                {mcpInfo.resources.length > 0 && (
-                  <Collapsible
-                    open={openSections.has('Resources')}
-                    onOpenChange={() => toggleSection('Resources')}
-                  >
-                    <CollapsibleTrigger className="flex items-center gap-1.5 w-full py-1 px-2 hover:bg-muted rounded-md transition-colors text-left">
-                      <span className="relative z-10 flex items-center justify-center w-4 h-4 bg-background">
-                        {openSections.has('Resources') ? (
-                          <ChevronDownIcon className="h-3 w-3" />
-                        ) : (
-                          <ChevronRightIcon className="h-3 w-3" />
-                        )}
-                      </span>
-                      <span className="text-sm">Resources</span>
-                      <span className="text-xs text-muted-foreground">
-                        ({mcpInfo.resources.length})
-                      </span>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      {mcpInfo.resources.map((resource: McpResource) => (
-                        <div key={resource.name} className="relative pl-8">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">
-                                <span className="font-medium text-foreground">
-                                  {resource.name}
-                                </span>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent side="right" className="max-w-xs">
-                              <p>{resource.description}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                      ))}
-                    </CollapsibleContent>
-                  </Collapsible>
-                )}
+              </Badge>
+            </div>
+          </CollapsibleTrigger>
 
-                {/* Tools by Category */}
-                {toolCategories.map((categoryKey) => {
-                  const categoryInfo = MCP_TOOL_CATEGORIES[categoryKey]
-                  const tools = mcpInfo.tools.filter(
-                    (t: ApiMcpTool) => t.category === categoryKey
-                  )
-
-                  if (tools.length === 0) return null
-
-                  return (
-                    <Collapsible
-                      key={categoryKey}
-                      open={openSections.has(categoryKey)}
-                      onOpenChange={() => toggleSection(categoryKey)}
+          <CollapsibleContent className="space-y-3 pt-3">
+            {mcpInfo.resources.length > 0 ? (
+              <Collapsible
+                open={openSections.has('Resources')}
+                onOpenChange={() => toggleSection('Resources')}
+              >
+                <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-3 text-left transition-colors hover:bg-muted/40">
+                  <TreeTriggerIcon open={openSections.has('Resources')} />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium">Resources</div>
+                    <div className="text-xs text-muted-foreground">
+                      {mcpInfo.resources.length} resource
+                      {mcpInfo.resources.length === 1 ? '' : 's'}
+                    </div>
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 pt-3">
+                  {mcpInfo.resources.map((resource: McpResource) => (
+                    <div
+                      key={resource.name}
+                      className="rounded-xl border border-border/70 bg-background/80 p-3"
                     >
-                      <CollapsibleTrigger className="flex items-center gap-1.5 w-full py-1 px-2 hover:bg-muted rounded-md transition-colors text-left">
-                        <span className="relative z-10 flex items-center justify-center w-4 h-4 bg-background">
-                          {openSections.has(categoryKey) ? (
-                            <ChevronDownIcon className="h-3 w-3" />
-                          ) : (
-                            <ChevronRightIcon className="h-3 w-3" />
-                          )}
-                        </span>
-                        <span className="text-sm">
-                          {categoryInfo.icon} {categoryInfo.name}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          ({tools.length})
-                        </span>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        {tools.map((tool: ApiMcpTool) => {
-                          const enabled = isToolEnabled(tool.name)
-                          return (
-                            <div
-                              key={tool.name}
-                              className="relative pl-8 flex items-center gap-2"
-                            >
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div
-                                    className={cn(
-                                      'flex-1 text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help',
-                                      !enabled && 'opacity-50'
-                                    )}
-                                  >
-                                    <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                                      {tool.name}
-                                    </code>
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent
-                                  side="right"
-                                  className="max-w-xs"
-                                >
-                                  <div className="space-y-1">
-                                    <p className="font-medium">
-                                      {tool.description}
-                                    </p>
-                                    {tool.params.length > 0 && (
-                                      <div className="text-xs text-muted-foreground space-y-0.5">
-                                        <div className="font-medium mt-2">
-                                          Parameters:
-                                        </div>
-                                        {tool.params.map((param) => (
-                                          <div
-                                            key={param.name}
-                                            className="flex items-center gap-1"
-                                          >
-                                            <span
-                                              className={cn(
-                                                param.required
-                                                  ? 'text-foreground'
-                                                  : 'text-muted-foreground opacity-70'
-                                              )}
-                                            >
-                                              {param.name}
-                                            </span>
-                                            <span className="text-muted-foreground">
-                                              :{param.type}
-                                            </span>
-                                            {!param.required && (
-                                              <span className="text-muted-foreground/60 text-[10px]">
-                                                optional
-                                              </span>
-                                            )}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
-                              {/* Tool toggle switch */}
-                              <Switch
-                                checked={enabled}
-                                onCheckedChange={() => toggleTool(tool.name)}
-                                className="h-4 w-7 shrink-0 mr-2"
-                                aria-label={`${enabled ? 'Disable' : 'Enable'} ${tool.name}`}
-                              />
-                            </div>
-                          )
-                        })}
-                      </CollapsibleContent>
-                    </Collapsible>
-                  )
-                })}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
+                      <div className="text-sm font-medium text-foreground">
+                        {resource.name}
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        {resource.description}
+                      </p>
+                    </div>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            ) : null}
+
+            {toolCategories.map((categoryKey) => {
+              const categoryInfo = MCP_TOOL_CATEGORIES[categoryKey]
+              const tools = mcpInfo.tools.filter(
+                (tool: ApiMcpTool) => tool.category === categoryKey
+              )
+
+              if (tools.length === 0) return null
+
+              return (
+                <Collapsible
+                  key={categoryKey}
+                  open={openSections.has(categoryKey)}
+                  onOpenChange={() => toggleSection(categoryKey)}
+                >
+                  <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-3 text-left transition-colors hover:bg-muted/40">
+                    <TreeTriggerIcon open={openSections.has(categoryKey)} />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-foreground">
+                        {categoryInfo.icon} {categoryInfo.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {tools.length} tool{tools.length === 1 ? '' : 's'}
+                      </div>
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-2 pt-3">
+                    {tools.map((tool: ApiMcpTool) => (
+                      <McpToolRow
+                        key={tool.name}
+                        tool={tool}
+                        enabled={isToolEnabled(tool.name)}
+                        onToggle={() => toggleTool(tool.name)}
+                      />
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              )
+            })}
+          </CollapsibleContent>
+        </Collapsible>
       </div>
-    </div>
+    </SidebarSection>
   )
 }
 
 function SkillsSection() {
   const skills = getSkillsMetadata()
   const [isOpen, setIsOpen] = useState(true)
+  const [showTree, setShowTree] = useState(false)
+  const skillDetails = skills
+    .map((skill) => {
+      const content = loadSkillContent(skill.name)
+      return content
+        ? {
+            name: content.name,
+            description: content.description,
+            content: content.content,
+          }
+        : null
+    })
+    .filter((skill): skill is NonNullable<typeof skill> => skill !== null)
 
-  if (skills.length === 0) return null
+  if (skillDetails.length === 0) return null
 
   return (
-    <div className="mb-4">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger className="flex items-center gap-1.5 w-full py-1.5 px-2 hover:bg-muted rounded-md transition-colors text-left">
-          <span className="relative z-10 flex items-center justify-center w-4 h-4 bg-background">
-            {isOpen ? (
-              <ChevronDownIcon className="h-3 w-3" />
-            ) : (
-              <ChevronRightIcon className="h-3 w-3" />
-            )}
-          </span>
-          <BookOpenIcon className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">Skills</span>
-          <span className="text-xs text-muted-foreground">
-            ({skills.length})
-          </span>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="ml-5 py-0.5 space-y-0.5">
-            {skills.map((skill) => (
-              <Tooltip key={skill.name}>
-                <TooltipTrigger asChild>
-                  <div className="text-xs text-muted-foreground py-1 px-2 hover:bg-muted/50 rounded cursor-help">
-                    <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                      {skill.name}
-                    </code>
+    <>
+      <SidebarSection
+        title="Skills"
+        description="Browse the bundled expert guides the agent can load on demand."
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowTree(true)}
+            className="h-8 rounded-full px-3 text-xs"
+          >
+            Open tree
+          </Button>
+        }
+      >
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-xl border border-border/70 bg-background/80 px-3 py-3 text-left transition-colors hover:bg-muted/40">
+            <TreeTriggerIcon open={isOpen} />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <BookOpenIcon className="h-4 w-4 text-muted-foreground" />
+                Skill library
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {skills.length} available skill
+                {skills.length === 1 ? '' : 's'}
+              </div>
+            </div>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent className="space-y-2 pt-3">
+            {skillDetails.map((skill) => (
+              <button
+                key={skill.name}
+                type="button"
+                onClick={() => setShowTree(true)}
+                className="flex w-full items-start gap-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-3 text-left transition-colors hover:bg-muted/40"
+              >
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border bg-background text-muted-foreground">
+                  <BookOpenIcon className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-mono text-[13px] font-medium text-foreground">
+                    {skill.name}
                   </div>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="max-w-xs">
-                  <p>{skill.description}</p>
-                </TooltipContent>
-              </Tooltip>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {cleanQuotedText(skill.description)}
+                  </p>
+                </div>
+                <Badge variant="outline" className="shrink-0 rounded-full">
+                  Open tree
+                </Badge>
+              </button>
             ))}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </SidebarSection>
+
+      <SkillsTreeDialog
+        skills={skillDetails}
+        open={showTree}
+        onOpenChange={setShowTree}
+      />
+    </>
   )
 }
 
 function SuggestedPromptsSection() {
   return (
-    <div>
-      <ul className="space-y-1">
-        {SUGGESTED_PROMPTS.map((prompt, i) => (
+    <SidebarSection
+      title="Suggested prompts"
+      description="A few starter questions you can paste into the conversation."
+    >
+      <ul className="space-y-2">
+        {SUGGESTED_PROMPTS.map((prompt) => (
           <li
-            key={i}
-            className="text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer rounded px-2 py-1.5"
+            key={prompt}
+            className="rounded-xl border border-border/70 bg-muted/20 px-3 py-3 text-xs leading-5 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
           >
             {prompt}
           </li>
         ))}
       </ul>
-    </div>
+    </SidebarSection>
   )
 }
 
@@ -545,28 +643,38 @@ export function AgentsSidebar({
   const isMobile = useIsMobile()
 
   const content = (
-    <div className="h-full overflow-auto">
-      <div className="p-5 space-y-4">
-        {/* Host Selector */}
-        <HostSelector hostId={hostId} />
+    <div className="flex h-full flex-col overflow-hidden bg-sidebar/20">
+      <div className="border-b border-border/70 bg-background/80 px-4 py-3 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">
+              Agent settings
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Model, tools, and skill controls for the current workspace.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenChange?.(false)}
+            className="h-9 rounded-full px-3"
+            aria-label="Hide settings sidebar"
+          >
+            <PanelRightClose className="mr-1 h-4 w-4" />
+            Hide
+          </Button>
+        </div>
+      </div>
 
-        {/* Model Selector */}
-        <ModelSelectorComponent />
-
-        <Separator />
-
-        {/* MCP Tools Section */}
-        <McpToolsSection />
-
-        <Separator />
-
-        {/* Skills Section */}
-        <SkillsSection />
-
-        <Separator />
-
-        {/* Suggested Prompts */}
-        <SuggestedPromptsSection />
+      <div className="flex-1 overflow-auto">
+        <div className="space-y-4 p-4">
+          <HostSelector hostId={hostId} />
+          <ModelSelectorComponent />
+          <McpToolsSection />
+          <SkillsSection />
+          <SuggestedPromptsSection />
+        </div>
       </div>
     </div>
   )
@@ -574,39 +682,19 @@ export function AgentsSidebar({
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-[min(340px,90vw)] p-0">
-          <div className="flex h-full flex-col">{content}</div>
+        <SheetContent
+          side="right"
+          className="w-[min(380px,92vw)] border-l border-border/70 p-0"
+        >
+          {content}
         </SheetContent>
       </Sheet>
     )
   }
 
-  return (
-    <>
-      {isOpen ? (
-        <div className="w-80 lg:w-96 border-l h-full shrink-0 hidden md:flex flex-col">
-          {/* Header - clickable title to close */}
-          <div
-            className="flex items-center justify-between border-b px-4 py-2.5 shrink-0 cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={() => onOpenChange?.(false)}
-          >
-            <h3 className="font-semibold text-sm">Agent Settings</h3>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation()
-                onOpenChange?.(false)
-              }}
-              className="h-7 w-7"
-              aria-label="Close"
-            >
-              <XIcon className="h-4 w-4" />
-            </Button>
-          </div>
-          {content}
-        </div>
-      ) : null}
-    </>
-  )
+  return isOpen ? (
+    <aside className="hidden h-full w-80 shrink-0 border-l border-border/70 md:flex lg:w-[26rem]">
+      {content}
+    </aside>
+  ) : null
 }
