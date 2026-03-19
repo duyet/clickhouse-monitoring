@@ -4,7 +4,13 @@
  */
 
 import { beforeAll, describe, expect, it } from 'bun:test'
-import { getClickHouseConfigs } from '@/lib/clickhouse/clickhouse-config'
+
+const { getClickHouseConfigs } = await import(
+  new URL(
+    '../clickhouse/clickhouse-config.ts?test=integration',
+    import.meta.url
+  ).href
+)
 
 // Helper function to check if ClickHouse is available
 async function isClickHouseAvailable(): Promise<boolean> {
@@ -19,7 +25,12 @@ async function isClickHouseAvailable(): Promise<boolean> {
   }
 
   try {
-    const { fetchData } = await import('@/lib/clickhouse/clickhouse-fetch')
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
 
     // Use a very short timeout to prevent hanging
     const timeoutPromise = new Promise<never>((_, reject) =>
@@ -73,7 +84,12 @@ describe('ClickHouse Integration Tests (Optional)', () => {
       return // Skip test
     }
 
-    const { fetchData } = await import('@/lib/clickhouse/clickhouse-fetch')
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
 
     const result = await fetchData({
       query: 'SELECT version() as version',
@@ -90,7 +106,12 @@ describe('ClickHouse Integration Tests (Optional)', () => {
       return // Skip test
     }
 
-    const { fetchData } = await import('@/lib/clickhouse/clickhouse-fetch')
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
 
     const configs = getClickHouseConfigs()
 
@@ -116,7 +137,12 @@ describe('ClickHouse Integration Tests (Optional)', () => {
       return // Skip test
     }
 
-    const { fetchData } = await import('@/lib/clickhouse/clickhouse-fetch')
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
 
     // Test a few essential system tables
     const essentialTables = [

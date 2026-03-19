@@ -94,7 +94,7 @@ export function AgentsLayout() {
                 userToggledRef.current = true
                 setIsSidebarOpen(!isSidebarOpen)
               }}
-              className="h-9 gap-2 rounded-full px-3 shadow-sm"
+              className="h-9 gap-2 rounded-full px-3"
               title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
             >
               {isSidebarOpen ? (
@@ -111,7 +111,7 @@ export function AgentsLayout() {
 
         {/* Config guidance (when missing and not dismissed) */}
         {!isConfigLoading && !isConfigured && !isConfigGuidanceDismissed && (
-          <div className="border-b p-4 shrink-0">
+          <div className="border-b px-3 py-3 shrink-0">
             <AgentConfigGuidance
               missingKeys={missingKeys}
               onDismiss={() => setIsConfigGuidanceDismissed(true)}

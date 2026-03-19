@@ -271,14 +271,14 @@ function SkillTreeNodeView({
           <div className="absolute left-3 top-6 h-px w-4 bg-border/80" />
         )}
 
-        <div className="rounded-2xl border bg-card/80 shadow-sm">
+        <div className="rounded-xl border border-border/60 bg-card/50">
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
             aria-expanded={hasChildren ? open : undefined}
-            className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/40"
+            className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted/30"
           >
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-background text-muted-foreground">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background text-muted-foreground">
               {hasChildren || hasBody ? (
                 open ? (
                   <ChevronDownIcon className="h-4 w-4" />
@@ -304,7 +304,7 @@ function SkillTreeNodeView({
           </button>
 
           {open && (hasBody || hasChildren) ? (
-            <div className="space-y-4 border-t px-4 py-4">
+            <div className="space-y-3 border-t border-border/60 px-3 py-3">
               {hasBody ? <SkillBody lines={node.body} /> : null}
               {hasChildren ? (
                 <div className="space-y-3" role="group">
@@ -337,11 +337,11 @@ export function SkillsTreeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-[min(96vw,64rem)] overflow-hidden border-border/80 p-0">
-        <DialogHeader className="border-b bg-muted/30 px-6 py-5 text-left">
+      <DialogContent className="max-h-[90vh] max-w-[min(96vw,64rem)] overflow-hidden border-border/70 p-0">
+        <DialogHeader className="border-b border-border/60 bg-muted/20 px-5 py-4 text-left">
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border bg-background">
-              <BookOpenIcon className="h-5 w-5 text-foreground" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-background">
+              <BookOpenIcon className="h-4.5 w-4.5 text-foreground" />
             </div>
             <div className="min-w-0 space-y-1">
               <DialogTitle className="truncate text-left text-xl">
@@ -353,28 +353,28 @@ export function SkillsTreeDialog({
               </DialogDescription>
             </div>
           </div>
-          <div className="flex items-center gap-2 pt-3 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1 rounded-full border bg-background px-2.5 py-1">
+          <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background px-2.5 py-1">
               <ListTreeIcon className="h-3.5 w-3.5" />
               Tree view
             </span>
-            <span className="inline-flex items-center rounded-full border bg-background px-2.5 py-1">
+            <span className="inline-flex items-center rounded-full border border-border/60 bg-background px-2.5 py-1">
               {trees.length} skill{trees.length === 1 ? '' : 's'}
             </span>
           </div>
         </DialogHeader>
 
         <ScrollArea className="max-h-[calc(90vh-8rem)]">
-          <div className="space-y-4 p-6">
+          <div className="space-y-3 p-4">
             {trees.map((tree, index) => {
               const skill = skills[index]
 
               return (
                 <div
                   key={skill.name}
-                  className="rounded-2xl border bg-card/80 p-5 shadow-sm"
+                  className="rounded-xl border border-border/60 bg-card/50 p-4"
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3">
+                  <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="min-w-0 space-y-1">
                       <div className="truncate text-base font-semibold">
                         {skill.name}
@@ -383,15 +383,15 @@ export function SkillsTreeDialog({
                         {cleanQuotedText(skill.description)}
                       </p>
                     </div>
-                    <span className="inline-flex items-center rounded-full border bg-background px-2.5 py-1 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border/60 bg-background px-2.5 py-1 text-xs text-muted-foreground">
                       {tree.children.length} section
                       {tree.children.length === 1 ? '' : 's'}
                     </span>
                   </div>
 
                   {tree.body.length > 0 ? (
-                    <div className="mb-4 rounded-2xl border bg-muted/20 p-4">
-                      <div className="mb-3 text-sm font-medium">Overview</div>
+                    <div className="mb-3 rounded-lg border border-border/60 bg-muted/10 p-3">
+                      <div className="mb-2 text-sm font-medium">Overview</div>
                       <SkillBody lines={tree.body} />
                     </div>
                   ) : null}

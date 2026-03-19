@@ -83,8 +83,8 @@ function SidebarSection({
   children: ReactNode
 }) {
   return (
-    <section className="rounded-2xl border border-border/70 bg-card/70 shadow-sm">
-      <div className="flex items-start justify-between gap-3 border-b border-border/60 px-4 py-3">
+    <section className="rounded-xl border border-border/60 bg-card/50">
+      <div className="flex items-start justify-between gap-3 border-b border-border/60 px-3 py-2.5">
         <div className="min-w-0">
           <div className="text-sm font-medium text-foreground">{title}</div>
           {description ? (
@@ -95,7 +95,7 @@ function SidebarSection({
         </div>
         {action}
       </div>
-      <div className="p-4">{children}</div>
+      <div className="p-3">{children}</div>
     </section>
   )
 }
@@ -128,7 +128,7 @@ function HostSelector({ hostId }: { readonly hostId: number }) {
       description="Route the agent to the ClickHouse server you want to inspect."
     >
       <Select value={String(hostId)} onValueChange={handleHostChange}>
-        <SelectTrigger className="h-11 rounded-xl border-border/70 bg-background/80 text-sm">
+        <SelectTrigger className="h-10 rounded-lg border-border/60 bg-background/70 text-sm">
           <SelectValue placeholder="Select host" />
         </SelectTrigger>
         <SelectContent>
@@ -176,14 +176,14 @@ function ModelSelectorComponent() {
         <ModelSelectorTrigger asChild>
           <Button
             variant="outline"
-            className="h-auto w-full justify-between rounded-xl border-border/70 bg-background/80 px-3 py-3"
+            className="h-auto w-full justify-between rounded-lg border-border/60 bg-background/70 px-3 py-2.5"
             aria-label="Select model"
           >
             <div className="flex min-w-0 items-start gap-3 text-left">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border bg-muted/40">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-muted/30">
                 <ModelSelectorLogo
                   provider={currentProvider}
-                  className="size-4 shrink-0 dark:invert-0"
+                  className="size-3.5 shrink-0 dark:invert-0"
                 />
               </span>
               <div className="min-w-0">
@@ -205,7 +205,7 @@ function ModelSelectorComponent() {
 
         <ModelSelectorContent
           title="Select Model"
-          className="max-w-[min(92vw,44rem)] border-border/80 bg-background/95"
+          className="max-w-[min(92vw,44rem)] border-border/70 bg-background/95"
         >
           <ModelSelectorInput placeholder="Search models..." />
           <ModelSelectorList className="max-h-[24rem]">
@@ -224,14 +224,16 @@ function ModelSelectorComponent() {
                       setOpen(false)
                     }}
                     className={cn(
-                      'mx-2 my-1 flex items-start gap-3 rounded-xl border px-3 py-3',
-                      selected && 'border-primary/40 bg-muted/70'
+                      'mx-2 my-1 flex items-start gap-3 rounded-lg px-3 py-2.5',
+                      selected
+                        ? 'bg-muted/60'
+                        : 'border border-transparent hover:bg-muted/35'
                     )}
                   >
-                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border bg-muted/50">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-muted/40">
                       <ModelSelectorLogo
                         provider={provider}
-                        className="size-4 shrink-0 dark:invert-0"
+                        className="size-3.5 shrink-0 dark:invert-0"
                       />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -273,7 +275,7 @@ function McpToolRow({
   return (
     <div
       className={cn(
-        'rounded-xl border border-border/70 bg-background/80 p-3 transition-colors',
+        'rounded-lg border border-border/60 bg-background/70 p-2.5 transition-colors',
         !enabled && 'opacity-80'
       )}
     >
@@ -308,11 +310,11 @@ function McpToolRow({
             </div>
           ) : null}
         </div>
-        <div className="rounded-full border bg-muted/30 p-1">
+        <div className="rounded-full border border-border/60 bg-muted/20 p-0.5">
           <Switch
             checked={enabled}
             onCheckedChange={onToggle}
-            className="h-5 w-9 border border-border/70 bg-muted-foreground/15 shadow-none data-[state=checked]:bg-primary [&>span]:bg-background"
+            className="h-5 w-9 border border-border/60 bg-muted-foreground/15 shadow-none data-[state=checked]:bg-primary [&>span]:bg-background"
             aria-label={`${enabled ? 'Disable' : 'Enable'} ${tool.name}`}
           />
         </div>
@@ -435,7 +437,7 @@ function McpToolsSection() {
           open={openSections.has('server')}
           onOpenChange={() => toggleSection('server')}
         >
-          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-xl border border-border/70 bg-background/80 px-3 py-3 text-left transition-colors hover:bg-muted/40">
+          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg border border-border/60 bg-background/70 px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
             <TreeTriggerIcon open={openSections.has('server')} />
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <DatabaseIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -454,7 +456,7 @@ function McpToolsSection() {
                 open={openSections.has('Resources')}
                 onOpenChange={() => toggleSection('Resources')}
               >
-                <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-3 text-left transition-colors hover:bg-muted/40">
+                <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg border border-border/60 bg-muted/10 px-3 py-2.5 text-left transition-colors hover:bg-muted/25">
                   <TreeTriggerIcon open={openSections.has('Resources')} />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">Resources</div>
@@ -468,7 +470,7 @@ function McpToolsSection() {
                   {mcpInfo.resources.map((resource: McpResource) => (
                     <div
                       key={resource.name}
-                      className="rounded-xl border border-border/70 bg-background/80 p-3"
+                      className="rounded-lg border border-border/60 bg-background/70 p-2.5"
                     >
                       <div className="text-sm font-medium text-foreground">
                         {resource.name}
@@ -496,7 +498,7 @@ function McpToolsSection() {
                   open={openSections.has(categoryKey)}
                   onOpenChange={() => toggleSection(categoryKey)}
                 >
-                  <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-3 text-left transition-colors hover:bg-muted/40">
+                  <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg border border-border/60 bg-muted/10 px-3 py-2.5 text-left transition-colors hover:bg-muted/25">
                     <TreeTriggerIcon open={openSections.has(categoryKey)} />
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-medium text-foreground">
@@ -567,7 +569,7 @@ function SkillsSection() {
         }
       >
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-xl border border-border/70 bg-background/80 px-3 py-3 text-left transition-colors hover:bg-muted/40">
+          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg border border-border/60 bg-background/70 px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
             <TreeTriggerIcon open={isOpen} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -587,9 +589,9 @@ function SkillsSection() {
                 key={skill.name}
                 type="button"
                 onClick={() => setShowTree(true)}
-                className="flex w-full items-start gap-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-3 text-left transition-colors hover:bg-muted/40"
+                className="flex w-full items-start gap-3 rounded-lg border border-border/60 bg-muted/10 px-3 py-2.5 text-left transition-colors hover:bg-muted/25"
               >
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border bg-background text-muted-foreground">
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-background text-muted-foreground">
                   <BookOpenIcon className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -628,7 +630,7 @@ function SuggestedPromptsSection() {
         {SUGGESTED_PROMPTS.map((prompt) => (
           <li
             key={prompt}
-            className="rounded-xl border border-border/70 bg-muted/20 px-3 py-3 text-xs leading-5 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+            className="rounded-lg border border-border/60 bg-muted/10 px-3 py-2.5 text-xs leading-5 text-muted-foreground transition-colors hover:bg-muted/25 hover:text-foreground"
           >
             {prompt}
           </li>
@@ -647,7 +649,7 @@ export function AgentsSidebar({
 
   const content = (
     <div className="flex h-full flex-col overflow-hidden bg-sidebar/20">
-      <div className="border-b border-border/70 bg-background/80 px-4 py-3 backdrop-blur">
+      <div className="border-b border-border/60 bg-background/70 px-3 py-2.5 backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-foreground">
@@ -671,7 +673,7 @@ export function AgentsSidebar({
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="space-y-4 p-4">
+        <div className="space-y-3 p-3">
           <HostSelector hostId={hostId} />
           <ModelSelectorComponent />
           <McpToolsSection />
@@ -687,7 +689,7 @@ export function AgentsSidebar({
       <Sheet open={isOpen} onOpenChange={onOpenChange}>
         <SheetContent
           side="right"
-          className="w-[min(380px,92vw)] border-l border-border/70 p-0"
+          className="w-[min(380px,92vw)] border-l border-border/60 p-0"
         >
           {content}
         </SheetContent>
@@ -696,7 +698,7 @@ export function AgentsSidebar({
   }
 
   return isOpen ? (
-    <aside className="hidden h-full w-80 shrink-0 border-l border-border/70 md:flex lg:w-[26rem]">
+    <aside className="hidden h-full w-80 shrink-0 border-l border-border/60 md:flex lg:w-[26rem]">
       {content}
     </aside>
   ) : null

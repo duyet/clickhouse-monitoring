@@ -100,7 +100,7 @@ function InsightCard({
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm">
+      <div className="rounded-xl border border-border/60 bg-card/50 p-3">
         <div className="space-y-3">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-9 w-20" />
@@ -114,7 +114,7 @@ function InsightCard({
     return (
       <button
         onClick={() => onClick(config.question)}
-        className="group w-full rounded-2xl border border-dashed border-border/70 bg-card/60 p-4 text-left transition-colors hover:border-border hover:bg-accent/30"
+        className="group w-full rounded-xl border border-dashed border-border/60 bg-card/40 p-3 text-left transition-colors hover:border-border hover:bg-accent/20"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-3">
@@ -143,7 +143,7 @@ function InsightCard({
     <button
       onClick={() => onClick(config.question)}
       className={cn(
-        'group w-full rounded-2xl border border-border/70 bg-card/80 p-4 text-left shadow-sm transition-all hover:border-border hover:bg-accent/25'
+        'group w-full rounded-xl border border-border/60 bg-card/50 p-3 text-left transition-all hover:border-border hover:bg-accent/20'
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -167,10 +167,10 @@ function InsightCard({
           {severityMeta.label}
         </Badge>
       </div>
-      <div className="mt-5 text-3xl font-semibold tracking-tight tabular-nums text-foreground">
+      <div className="mt-4 text-3xl font-semibold tracking-tight tabular-nums text-foreground">
         {value.toLocaleString()}
       </div>
-      <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+      <div className="mt-2.5 flex items-center justify-between gap-3 text-xs text-muted-foreground">
         <span className="line-clamp-2">{config.question}</span>
         <ArrowRightIcon className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
       </div>

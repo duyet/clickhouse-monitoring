@@ -12,6 +12,8 @@ import { useMemo } from 'react'
  */
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
+const DEFAULT_MODEL: OpenAIModel = 'nvidia/nemotron-3-super-120b-a12b:free'
+
 /**
  * Available agent models.
  *
@@ -72,8 +74,8 @@ function getDefaultModel(): OpenAIModel {
   if (envModel && envModel in AGENT_MODELS) {
     return envModel as OpenAIModel
   }
-  // Fallback to the nano OpenAI model.
-  return 'openai/gpt-5.4-nano'
+  // Fallback to the default free OpenRouter-backed model.
+  return DEFAULT_MODEL
 }
 
 /**
