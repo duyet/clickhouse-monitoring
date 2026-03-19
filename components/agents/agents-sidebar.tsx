@@ -18,7 +18,7 @@ import type {
 import type { ApiMcpTool } from '@/lib/swr/use-mcp-server-info'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { SkillsTreeDialog } from '@/components/agents/skills-tree-dialog'
 import {
   ModelSelector,
@@ -529,21 +529,24 @@ function McpToolsSection() {
 }
 
 function SkillsSection() {
-  const skills = getSkillsMetadata()
   const [isOpen, setIsOpen] = useState(true)
   const [showTree, setShowTree] = useState(false)
-  const skillDetails = skills
-    .map((skill) => {
-      const content = loadSkillContent(skill.name)
-      return content
-        ? {
-            name: content.name,
-            description: content.description,
-            content: content.content,
-          }
-        : null
-    })
-    .filter((skill): skill is NonNullable<typeof skill> => skill !== null)
+  const skillDetails = useMemo(
+    () =>
+      getSkillsMetadata()
+        .map((skill) => {
+          const content = loadSkillContent(skill.name)
+          return content
+            ? {
+                name: content.name,
+                description: content.description,
+                content: content.content,
+              }
+            : null
+        })
+        .filter((skill): skill is NonNullable<typeof skill> => skill !== null),
+    []
+  )
 
   if (skillDetails.length === 0) return null
 
@@ -572,8 +575,8 @@ function SkillsSection() {
                 Skill library
               </div>
               <div className="text-xs text-muted-foreground">
-                {skills.length} available skill
-                {skills.length === 1 ? '' : 's'}
+                {skillDetails.length} available skill
+                {skillDetails.length === 1 ? '' : 's'}
               </div>
             </div>
           </CollapsibleTrigger>

@@ -18,7 +18,7 @@ const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
  * Keep `name` identical to the model code so the UI always shows
  * the exact provider/model identifier chosen by the user.
  */
-export const OPENAI_MODELS = {
+export const AGENT_MODELS = {
   'nvidia/nemotron-3-super-120b-a12b:free': {
     name: 'nvidia/nemotron-3-super-120b-a12b:free',
     description: 'NVIDIA model available by default',
@@ -61,7 +61,7 @@ export const OPENAI_MODELS = {
   },
 } as const
 
-export type OpenAIModel = keyof typeof OPENAI_MODELS
+export type OpenAIModel = keyof typeof AGENT_MODELS
 
 /**
  * Get default model from environment or fallback
@@ -69,7 +69,7 @@ export type OpenAIModel = keyof typeof OPENAI_MODELS
 function getDefaultModel(): OpenAIModel {
   // Check if LLM_MODEL env var is set and valid
   const envModel = process.env.LLM_MODEL
-  if (envModel && envModel in OPENAI_MODELS) {
+  if (envModel && envModel in AGENT_MODELS) {
     return envModel as OpenAIModel
   }
   // Fallback to the nano OpenAI model.
@@ -84,7 +84,7 @@ export function getSavedModel(): OpenAIModel {
 
   try {
     const saved = localStorage.getItem(MODEL_STORAGE_KEY)
-    if (saved && saved in OPENAI_MODELS) {
+    if (saved && saved in AGENT_MODELS) {
       return saved as OpenAIModel
     }
   } catch {
@@ -160,7 +160,7 @@ export function useAgentModel(): UseAgentModelResult {
 
   // Get all available models
   const models = useMemo(() => {
-    return Object.entries(OPENAI_MODELS).map(
+    return Object.entries(AGENT_MODELS).map(
       ([id, info]): ModelDisplayInfo => ({
         id: id as OpenAIModel,
         name: info.name,

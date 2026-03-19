@@ -223,8 +223,11 @@ function SkillBody({ lines }: { lines: string[] }) {
               key={`${block.type}-${index}`}
               className="space-y-2 text-sm text-muted-foreground"
             >
-              {block.items.map((item) => (
-                <li key={item} className="flex gap-2 leading-6">
+              {block.items.map((item, itemIndex) => (
+                <li
+                  key={`${item}-${itemIndex}`}
+                  className="flex gap-2 leading-6"
+                >
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
                   <span>{item}</span>
                 </li>
@@ -258,7 +261,7 @@ function SkillTreeNodeView({
   const [open, setOpen] = useState(depth < 2)
 
   return (
-    <div className="relative">
+    <div className="relative" role="treeitem">
       {depth > 0 && (
         <div className="absolute bottom-0 left-3 top-0 w-px bg-border/80" />
       )}
@@ -272,6 +275,7 @@ function SkillTreeNodeView({
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
+            aria-expanded={hasChildren ? open : undefined}
             className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/40"
           >
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-background text-muted-foreground">
@@ -303,7 +307,7 @@ function SkillTreeNodeView({
             <div className="space-y-4 border-t px-4 py-4">
               {hasBody ? <SkillBody lines={node.body} /> : null}
               {hasChildren ? (
-                <div className="space-y-3">
+                <div className="space-y-3" role="group">
                   {node.children.map((child) => (
                     <SkillTreeNodeView
                       key={child.id}

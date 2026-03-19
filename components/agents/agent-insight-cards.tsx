@@ -81,6 +81,9 @@ const SEVERITY_META = {
   },
 } as const
 
+const ICON_CONTAINER_CLASS =
+  'flex h-9 w-9 items-center justify-center rounded-xl border border-border/60 bg-muted/50 text-foreground/80'
+
 function InsightCard({
   config,
   hostId,
@@ -116,9 +119,7 @@ function InsightCard({
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/60 bg-muted/50 text-foreground/80">
-                {config.icon}
-              </span>
+              <span className={ICON_CONTAINER_CLASS}>{config.icon}</span>
               <span>{config.label}</span>
             </div>
             <div className="text-sm font-medium text-foreground">
@@ -147,9 +148,7 @@ function InsightCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/60 bg-muted/50 text-foreground/80">
-            {config.icon}
-          </span>
+          <span className={ICON_CONTAINER_CLASS}>{config.icon}</span>
           <span>{config.label}</span>
         </div>
         <Badge

@@ -991,11 +991,13 @@ function generateFollowUpSuggestions(
 // Default suggestions
 // ============================================================================
 
-const DEFAULT_SUGGESTIONS: {
+interface DefaultSuggestion {
   text: string
   category: string
   icon: React.ReactNode
-}[] = [
+}
+
+const DEFAULT_SUGGESTIONS: DefaultSuggestion[] = [
   {
     text: 'What databases are available and which ones have the most tables?',
     category: 'Schema',
@@ -1047,6 +1049,12 @@ const DEFAULT_SUGGESTIONS: {
     icon: <TableIcon className="h-3.5 w-3.5" />,
   },
 ]
+
+const GETTING_STARTED_FEATURES = [
+  'Live metrics',
+  'Read-only analysis',
+  'One-click prompts',
+] as const
 
 // ============================================================================
 // Main Component
@@ -1380,11 +1388,7 @@ export const AgentsChatArea = forwardRef<
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:w-[320px]">
-                        {[
-                          'Live metrics',
-                          'Read-only analysis',
-                          'One-click prompts',
-                        ].map((item) => (
+                        {GETTING_STARTED_FEATURES.map((item) => (
                           <div
                             key={item}
                             className="rounded-xl border border-border/60 bg-background/80 px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm"
