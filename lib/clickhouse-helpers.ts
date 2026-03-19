@@ -1,11 +1,14 @@
 import type { DataFormat, QueryParams } from '@clickhouse/client'
 
 import type { QueryConfig } from '@/types/query-config'
+import type { FetchDataResult } from './clickhouse/types'
 
-import { type FetchDataResult, fetchData } from '@/lib/clickhouse'
+import { fetchData } from '@/lib/clickhouse/clickhouse-fetch'
 import { ErrorLogger } from '@/lib/logger'
 
-export { type FetchDataResult, fetchData } from '@/lib/clickhouse'
+export type { FetchDataResult } from './clickhouse/types'
+
+export { fetchData } from '@/lib/clickhouse/clickhouse-fetch'
 
 type QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{
