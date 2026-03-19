@@ -53,8 +53,12 @@ afterAll(() => {
   mock.restore()
 })
 
-// Dynamic import ensures mocks are in place before the module loads
-const { fetchData, query } = await import('../clickhouse-fetch')
+// Dynamic import ensures mocks are in place before the module loads.
+// The cache-busting query keeps this test isolated from earlier module loads
+// in Bun's shared test process.
+const { fetchData, query } = await import(
+  new URL('../clickhouse-fetch.ts?test=clickhouse-fetch', import.meta.url).href
+)
 
 describe('clickhouse-fetch', () => {
   const mockClientQuery = mock(() => Promise.resolve({}))
