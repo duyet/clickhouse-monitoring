@@ -12,6 +12,8 @@
  * - constants: Shared constants like query comments and timeouts
  */
 
+import type { FetchDataResult } from './clickhouse/types'
+
 // Re-export connection pool utilities (if needed externally)
 export type { PooledClient } from './clickhouse/connection-pool'
 // Re-export all types
@@ -21,6 +23,18 @@ export type {
   FetchDataErrorType,
   FetchDataResult,
 } from './clickhouse/types'
+
+type ClickHouseFetchModule = typeof import('./clickhouse/clickhouse-fetch')
+
+let clickhouseFetchModulePromise: Promise<ClickHouseFetchModule> | null = null
+
+async function loadClickhouseFetchModule(): Promise<ClickHouseFetchModule> {
+  if (!clickhouseFetchModulePromise) {
+    clickhouseFetchModulePromise = import('./clickhouse/clickhouse-fetch')
+  }
+
+  return clickhouseFetchModulePromise
+}
 
 // Re-export client factory
 export {
@@ -33,11 +47,27 @@ export {
   getClickHouseConfigs,
   getClickHouseHosts,
 } from './clickhouse/clickhouse-config'
-// Re-export data fetching functions
-export {
-  fetchData,
-  query,
-} from './clickhouse/clickhouse-fetch'
+// Re-export data fetching functions without eagerly loading the module.
+export async function fetchData<
+  T extends
+    | unknown[]
+    | object[]
+    | Record<string, unknown>
+    | { length: number; rows: number; statistics: Record<string, unknown> },
+>(
+  ...args: Parameters<ClickHouseFetchModule['fetchData']>
+): Promise<FetchDataResult<T>> {
+  const { fetchData } = await loadClickhouseFetchModule()
+  return fetchData<T>(...args)
+}
+
+export async function query(
+  ...args: Parameters<ClickHouseFetchModule['query']>
+): ReturnType<ClickHouseFetchModule['query']> {
+  const { query } = await loadClickhouseFetchModule()
+  return query(...args)
+}
+
 export {
   cleanupStaleClients,
   getPooledClient,
