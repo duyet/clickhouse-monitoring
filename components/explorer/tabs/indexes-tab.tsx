@@ -53,7 +53,8 @@ interface ApiResponse<T> {
 const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
   fetch(url).then((res) => res.json())
 
-const ENGINE_FULL_KEYWORDS = /\b(PARTITION BY|PRIMARY KEY|ORDER BY|TTL|SETTINGS|SAMPLE BY)\b/g
+const ENGINE_FULL_KEYWORDS =
+  /\b(PARTITION BY|PRIMARY KEY|ORDER BY|TTL|SETTINGS|SAMPLE BY)\b/g
 
 function formatEngineFull(engineFull: string): string {
   return engineFull.replace(ENGINE_FULL_KEYWORDS, '\n$1')
