@@ -3,18 +3,27 @@ import type { DataFormat, QueryParams } from '@clickhouse/client'
 import type { QueryConfig } from '@/types/query-config'
 import type { FetchDataResult } from './clickhouse/types'
 
-import { fetchData } from '@/lib/clickhouse/clickhouse-fetch'
 import { ErrorLogger } from '@/lib/logger'
-
-export type { FetchDataResult } from './clickhouse/types'
-
-export { fetchData } from '@/lib/clickhouse/clickhouse-fetch'
 
 type QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{
     query_cache_system_table_handling: 'throw' | 'save' | 'ignore'
     query_cache_nondeterministic_function_handling: 'throw' | 'save' | 'ignore'
   }>
+
+type FetchDataFn = typeof import('@/lib/clickhouse/clickhouse-fetch').fetchData
+
+async function loadFetchDataModule() {
+  const moduleUrl =
+    process.env.NODE_ENV === 'test'
+      ? new URL(
+          './clickhouse/clickhouse-fetch.ts?test=clickhouse-helpers',
+          import.meta.url
+        ).href
+      : new URL('./clickhouse/clickhouse-fetch.ts', import.meta.url).href
+
+  return import(moduleUrl)
+}
 
 export async function fetchDataWithHost<
   T extends
@@ -37,6 +46,9 @@ export async function fetchDataWithHost<
 }): Promise<FetchDataResult<T>> {
   try {
     const finalHostId = validateHostId(hostId)
+    const { fetchData } = (await loadFetchDataModule()) as {
+      fetchData: FetchDataFn
+    }
 
     return await fetchData<T>({
       query,
