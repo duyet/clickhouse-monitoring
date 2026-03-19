@@ -4,7 +4,7 @@
  */
 
 import { beforeAll, describe, expect, it } from 'bun:test'
-import { fetchData, getClickHouseConfigs } from '@/lib/clickhouse'
+import { getClickHouseConfigs } from '@/lib/clickhouse/clickhouse-config'
 
 // Helper function to check if ClickHouse is available
 async function isClickHouseAvailable(): Promise<boolean> {
@@ -19,6 +19,8 @@ async function isClickHouseAvailable(): Promise<boolean> {
   }
 
   try {
+    const { fetchData } = await import('@/lib/clickhouse/clickhouse-fetch')
+
     // Use a very short timeout to prevent hanging
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('Connection timeout')), 2000)
@@ -71,6 +73,8 @@ describe('ClickHouse Integration Tests (Optional)', () => {
       return // Skip test
     }
 
+    const { fetchData } = await import('@/lib/clickhouse/clickhouse-fetch')
+
     const result = await fetchData({
       query: 'SELECT version() as version',
       hostId: 0,
@@ -85,6 +89,8 @@ describe('ClickHouse Integration Tests (Optional)', () => {
     if (!clickHouseAvailable) {
       return // Skip test
     }
+
+    const { fetchData } = await import('@/lib/clickhouse/clickhouse-fetch')
 
     const configs = getClickHouseConfigs()
 
@@ -109,6 +115,8 @@ describe('ClickHouse Integration Tests (Optional)', () => {
     if (!clickHouseAvailable) {
       return // Skip test
     }
+
+    const { fetchData } = await import('@/lib/clickhouse/clickhouse-fetch')
 
     // Test a few essential system tables
     const essentialTables = [

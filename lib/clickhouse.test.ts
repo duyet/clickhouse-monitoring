@@ -1,4 +1,5 @@
-import { getClickHouseHosts, getClient } from './clickhouse'
+import { getClient } from './clickhouse/clickhouse-client'
+import { getClickHouseHosts } from './clickhouse/clickhouse-config'
 import { _resetEnvCache } from './clickhouse/env-schema'
 import {
   afterAll,
