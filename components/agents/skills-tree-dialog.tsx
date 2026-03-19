@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn } from '@/lib/utils'
+import { cleanQuotedText, cn } from '@/lib/utils'
 
 export interface SkillDialogSkill {
   name: string
@@ -380,7 +380,7 @@ export function SkillsTreeDialog({
                         {skill.name}
                       </div>
                       <p className="text-sm leading-6 text-muted-foreground">
-                        {skill.description.replace(/^"|"$/g, '')}
+                        {cleanQuotedText(skill.description)}
                       </p>
                     </div>
                     <span className="inline-flex items-center rounded-full border bg-background px-2.5 py-1 text-xs text-muted-foreground">

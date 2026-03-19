@@ -63,16 +63,12 @@ import { useAgentModel } from '@/lib/hooks/use-agent-model'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useMcpServerInfo } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
-import { cn } from '@/lib/utils'
+import { cleanQuotedText, cn } from '@/lib/utils'
 
 interface AgentsSidebarProps {
   hostId: number
   isOpen?: boolean
   onOpenChange?: (open: boolean) => void
-}
-
-function cleanQuotedText(value: string): string {
-  return value.replace(/^"|"$/g, '')
 }
 
 function SidebarSection({
@@ -152,6 +148,7 @@ function HostSelector({ hostId }: { readonly hostId: number }) {
 
 function getProviderFromModelId(modelId: string): string {
   if (modelId.startsWith('nvidia/')) return 'nvidia'
+  if (modelId.startsWith('stepfun/')) return 'openai'
   if (modelId.startsWith('z-ai/')) return 'zai'
   if (modelId.startsWith('google/') || modelId.startsWith('google-'))
     return 'google'
@@ -199,7 +196,9 @@ function ModelSelectorComponent() {
               </div>
             </div>
             <Badge variant="secondary" className="ml-3 shrink-0 rounded-full">
-              {(currentModel?.contextLength ?? 0).toLocaleString()} ctx
+              {currentModel?.contextLength != null
+                ? `${currentModel.contextLength.toLocaleString()} ctx`
+                : 'ctx unknown'}
             </Badge>
           </Button>
         </ModelSelectorTrigger>
@@ -531,24 +530,25 @@ function McpToolsSection() {
 function SkillsSection() {
   const [isOpen, setIsOpen] = useState(true)
   const [showTree, setShowTree] = useState(false)
-  const skillDetails = useMemo(
-    () =>
-      getSkillsMetadata()
-        .map((skill) => {
-          const content = loadSkillContent(skill.name)
-          return content
-            ? {
-                name: content.name,
-                description: content.description,
-                content: content.content,
-              }
-            : null
-        })
-        .filter((skill): skill is NonNullable<typeof skill> => skill !== null),
-    []
-  )
+  const skills = useMemo(() => getSkillsMetadata(), [])
+  const skillDetails = useMemo(() => {
+    if (!showTree) return []
 
-  if (skillDetails.length === 0) return null
+    return skills
+      .map((skill) => {
+        const content = loadSkillContent(skill.name)
+        return content
+          ? {
+              name: content.name,
+              description: content.description,
+              content: content.content,
+            }
+          : null
+      })
+      .filter((skill): skill is NonNullable<typeof skill> => skill !== null)
+  }, [skills, showTree])
+
+  if (skills.length === 0) return null
 
   return (
     <>
@@ -575,8 +575,8 @@ function SkillsSection() {
                 Skill library
               </div>
               <div className="text-xs text-muted-foreground">
-                {skillDetails.length} available skill
-                {skillDetails.length === 1 ? '' : 's'}
+                {skills.length} available skill
+                {skills.length === 1 ? '' : 's'}
               </div>
             </div>
           </CollapsibleTrigger>
