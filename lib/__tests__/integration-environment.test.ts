@@ -25,6 +25,11 @@ async function isClickHouseAvailable(): Promise<boolean> {
   }
 
   try {
+    // Mock the fetchData call in test environment to prevent hanging
+    if (process.env.NODE_ENV === 'test') {
+      return false
+    }
+
     const { fetchData } = await import(
       new URL(
         '../clickhouse/clickhouse-fetch.ts?test=integration',
@@ -36,11 +41,6 @@ async function isClickHouseAvailable(): Promise<boolean> {
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('Connection timeout')), 2000)
     )
-
-    // Mock the fetchData call in test environment to prevent hanging
-    if (process.env.NODE_ENV === 'test') {
-      return false
-    }
 
     const fetchPromise = fetchData({
       query: 'SELECT 1 as ping',
@@ -165,7 +165,7 @@ describe('ClickHouse Integration Tests (Optional)', () => {
 
 // Separate describe block for tests that should always run
 describe('Integration Test Configuration', () => {
-  it('should have valid ClickHouse configuration when CLICKHOUSE_HOST is set', () => {
+  it('should have valid ClickHouse configuration when CLICKHOUSE_HOST is set', async () => {
     if (!process.env.CLICKHOUSE_HOST) {
       console.log(
         'ℹ️  CLICKHOUSE_HOST not set - integration tests will be skipped'

@@ -88,6 +88,7 @@ export function createAreaChart(
 
     // Create smart date formatter based on time range
     // Only apply if no custom tickFormatter is provided
+    // biome-ignore lint/correctness/useExhaustiveDependencies: config is fixed for the factory instance.
     const tickFormatter = useMemo(() => {
       if (config.areaChartProps?.tickFormatter) {
         return config.areaChartProps.tickFormatter
@@ -95,13 +96,14 @@ export function createAreaChart(
       return effectiveLastHours
         ? createDateTickFormatter(effectiveLastHours, userTimezone)
         : undefined
-    }, [effectiveLastHours, userTimezone])
+    }, [effectiveLastHours, userTimezone, config.areaChartProps?.tickFormatter])
 
     // Check if data has all zero values - show empty state with message
+    // biome-ignore lint/correctness/useExhaustiveDependencies: config is fixed for the factory instance.
     const allZeros = useMemo(() => {
       if (!swr.data || swr.data.length === 0) return false
       return hasOnlyZeroValues(swr.data, config.categories)
-    }, [swr.data])
+    }, [swr.data, config.categories])
 
     // If data exists but all values are zero, show informative empty state
     if (allZeros && !swr.isLoading && !swr.error) {

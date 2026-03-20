@@ -85,12 +85,13 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     })
 
     // Get categories (resolve if function)
+    // biome-ignore lint/correctness/useExhaustiveDependencies: config is fixed for the factory instance.
     const categories = useMemo(() => {
       if (typeof config.categories === 'function') {
         return swr.data ? config.categories(swr.data) : []
       }
       return config.categories
-    }, [swr.data])
+    }, [swr.data, config.categories])
 
     // Check if data has all zero values - show empty state with message
     const allZeros = useMemo(() => {
@@ -99,10 +100,11 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     }, [swr.data, categories])
 
     // Create x-axis date formatter if enabled
+    // biome-ignore lint/correctness/useExhaustiveDependencies: config is fixed for the factory instance.
     const xAxisTickFormatter = useMemo(() => {
       if (!config.xAxisDateFormat) return undefined
       return createDateTickFormatter(effectiveLastHours ?? 24, userTimezone)
-    }, [effectiveLastHours, userTimezone])
+    }, [effectiveLastHours, userTimezone, config.xAxisDateFormat])
 
     // If data exists but all values are zero, show informative empty state
     if (allZeros && !swr.isLoading && !swr.error) {
