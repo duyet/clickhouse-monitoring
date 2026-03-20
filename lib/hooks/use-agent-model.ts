@@ -1,7 +1,7 @@
 /**
  * useAgentModel Hook
  *
- * Client-side hook for managing OpenAI model selection for the agent.
+ * Client-side hook for managing agent model selection.
  * Persists selection to localStorage and provides model metadata.
  */
 
@@ -12,33 +12,58 @@ import { useMemo } from 'react'
  */
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
+const DEFAULT_MODEL: OpenAIModel = 'nvidia/nemotron-3-super-120b-a12b:free'
+
 /**
- * Available OpenAI models (free tier via OpenRouter)
+ * Available agent models.
+ *
+ * Keep `name` identical to the model code so the UI always shows
+ * the exact provider/model identifier chosen by the user.
  */
-export const OPENAI_MODELS = {
+export const AGENT_MODELS = {
   'nvidia/nemotron-3-super-120b-a12b:free': {
-    name: 'Nemotron 3 Super 120B',
-    description: 'NVIDIA 120B parameter model (recommended)',
+    name: 'nvidia/nemotron-3-super-120b-a12b:free',
+    description: 'NVIDIA model available by default',
     contextLength: 128000,
   },
   'stepfun/step-3.5-flash:free': {
-    name: 'Step 3.5 Flash',
-    description: 'StepFun fast model',
+    name: 'stepfun/step-3.5-flash:free',
+    description: 'StepFun model available by default',
+    contextLength: 128000,
+  },
+  'z-ai/glm-4.5-air:free': {
+    name: 'z-ai/glm-4.5-air:free',
+    description: 'Z.AI model available by default',
+    contextLength: 128000,
+  },
+  'nvidia/nemotron-3-nano-30b-a3b:free': {
+    name: 'nvidia/nemotron-3-nano-30b-a3b:free',
+    description: 'Compact NVIDIA model available by default',
+    contextLength: 128000,
+  },
+  'minimax/minimax-m2.7': {
+    name: 'minimax/minimax-m2.7',
+    description: 'MiniMax production model',
+    contextLength: 128000,
+  },
+  'openai/gpt-5.4-nano': {
+    name: 'openai/gpt-5.4-nano',
+    description: 'OpenAI nano model',
     contextLength: 128000,
   },
   'google/gemma-3-27b-it:free': {
-    name: 'Gemma 3 27B',
-    description: 'Google 27B parameter model',
+    name: 'google/gemma-3-27b-it:free',
+    description: 'Google, free tier, Gemma instruct model',
     contextLength: 128000,
   },
   'meta-llama/llama-3.1-8b-instruct:free': {
-    name: 'Llama 3.1 8B',
-    description: 'Meta 8B parameter model',
+    name: 'meta-llama/llama-3.1-8b-instruct:free',
+    description: 'Meta, free tier, compact instruct model',
     contextLength: 128000,
   },
 } as const
 
-export type OpenAIModel = keyof typeof OPENAI_MODELS
+export type OpenAIModel = keyof typeof AGENT_MODELS
 
 /**
  * Get default model from environment or fallback
@@ -46,11 +71,11 @@ export type OpenAIModel = keyof typeof OPENAI_MODELS
 function getDefaultModel(): OpenAIModel {
   // Check if LLM_MODEL env var is set and valid
   const envModel = process.env.LLM_MODEL
-  if (envModel && envModel in OPENAI_MODELS) {
+  if (envModel && envModel in AGENT_MODELS) {
     return envModel as OpenAIModel
   }
-  // Fallback to stepfun model for better agent compatibility
-  return 'stepfun/step-3.5-flash:free'
+  // Fallback to the default free OpenRouter-backed model.
+  return DEFAULT_MODEL
 }
 
 /**
@@ -61,7 +86,7 @@ export function getSavedModel(): OpenAIModel {
 
   try {
     const saved = localStorage.getItem(MODEL_STORAGE_KEY)
-    if (saved && saved in OPENAI_MODELS) {
+    if (saved && saved in AGENT_MODELS) {
       return saved as OpenAIModel
     }
   } catch {
@@ -137,7 +162,7 @@ export function useAgentModel(): UseAgentModelResult {
 
   // Get all available models
   const models = useMemo(() => {
-    return Object.entries(OPENAI_MODELS).map(
+    return Object.entries(AGENT_MODELS).map(
       ([id, info]): ModelDisplayInfo => ({
         id: id as OpenAIModel,
         name: info.name,

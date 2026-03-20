@@ -5,8 +5,12 @@
 
 import { beforeAll, describe, expect, it } from 'bun:test'
 
-let fetchData: typeof import('@/lib/clickhouse').fetchData
-let getClickHouseConfigs: typeof import('@/lib/clickhouse').getClickHouseConfigs
+const { getClickHouseConfigs } = await import(
+  new URL(
+    '../clickhouse/clickhouse-config.ts?test=integration',
+    import.meta.url
+  ).href
+)
 
 // Helper function to check if ClickHouse is available
 async function isClickHouseAvailable(): Promise<boolean> {
@@ -21,21 +25,22 @@ async function isClickHouseAvailable(): Promise<boolean> {
   }
 
   try {
-    // Use a very short timeout to prevent hanging
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Connection timeout')), 2000)
-    )
-
     // Mock the fetchData call in test environment to prevent hanging
     if (process.env.NODE_ENV === 'test') {
       return false
     }
 
-    if (!fetchData) {
-      const clickhouse = await import('@/lib/clickhouse')
-      fetchData = clickhouse.fetchData
-      getClickHouseConfigs = clickhouse.getClickHouseConfigs
-    }
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
+
+    // Use a very short timeout to prevent hanging
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Connection timeout')), 2000)
+    )
 
     const fetchPromise = fetchData({
       query: 'SELECT 1 as ping',
@@ -79,11 +84,12 @@ describe('ClickHouse Integration Tests (Optional)', () => {
       return // Skip test
     }
 
-    if (!fetchData) {
-      const clickhouse = await import('@/lib/clickhouse')
-      fetchData = clickhouse.fetchData
-      getClickHouseConfigs = clickhouse.getClickHouseConfigs
-    }
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
 
     const result = await fetchData({
       query: 'SELECT version() as version',
@@ -100,11 +106,12 @@ describe('ClickHouse Integration Tests (Optional)', () => {
       return // Skip test
     }
 
-    if (!getClickHouseConfigs) {
-      const clickhouse = await import('@/lib/clickhouse')
-      fetchData = clickhouse.fetchData
-      getClickHouseConfigs = clickhouse.getClickHouseConfigs
-    }
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
 
     const configs = getClickHouseConfigs()
 
@@ -130,6 +137,13 @@ describe('ClickHouse Integration Tests (Optional)', () => {
       return // Skip test
     }
 
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
+
     // Test a few essential system tables
     const essentialTables = [
       'system.query_log',
@@ -138,12 +152,6 @@ describe('ClickHouse Integration Tests (Optional)', () => {
     ]
 
     for (const table of essentialTables) {
-      if (!fetchData) {
-        const clickhouse = await import('@/lib/clickhouse')
-        fetchData = clickhouse.fetchData
-        getClickHouseConfigs = clickhouse.getClickHouseConfigs
-      }
-
       const result = await fetchData({
         query: `SELECT count() as count FROM ${table} LIMIT 1`,
         hostId: 0,
@@ -163,12 +171,6 @@ describe('Integration Test Configuration', () => {
         'ℹ️  CLICKHOUSE_HOST not set - integration tests will be skipped'
       )
       return
-    }
-
-    if (!getClickHouseConfigs) {
-      const clickhouse = await import('@/lib/clickhouse')
-      fetchData = clickhouse.fetchData
-      getClickHouseConfigs = clickhouse.getClickHouseConfigs
     }
 
     const configs = getClickHouseConfigs()
