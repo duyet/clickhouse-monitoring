@@ -4,7 +4,13 @@
  */
 
 import { beforeAll, describe, expect, it } from 'bun:test'
-import { fetchData, getClickHouseConfigs } from '@/lib/clickhouse'
+
+const { getClickHouseConfigs } = await import(
+  new URL(
+    '../clickhouse/clickhouse-config.ts?test=integration',
+    import.meta.url
+  ).href
+)
 
 // Helper function to check if ClickHouse is available
 async function isClickHouseAvailable(): Promise<boolean> {
@@ -19,6 +25,13 @@ async function isClickHouseAvailable(): Promise<boolean> {
   }
 
   try {
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
+
     // Use a very short timeout to prevent hanging
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('Connection timeout')), 2000)
@@ -71,6 +84,13 @@ describe('ClickHouse Integration Tests (Optional)', () => {
       return // Skip test
     }
 
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
+
     const result = await fetchData({
       query: 'SELECT version() as version',
       hostId: 0,
@@ -85,6 +105,13 @@ describe('ClickHouse Integration Tests (Optional)', () => {
     if (!clickHouseAvailable) {
       return // Skip test
     }
+
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
 
     const configs = getClickHouseConfigs()
 
@@ -109,6 +136,13 @@ describe('ClickHouse Integration Tests (Optional)', () => {
     if (!clickHouseAvailable) {
       return // Skip test
     }
+
+    const { fetchData } = await import(
+      new URL(
+        '../clickhouse/clickhouse-fetch.ts?test=integration',
+        import.meta.url
+      ).href
+    )
 
     // Test a few essential system tables
     const essentialTables = [

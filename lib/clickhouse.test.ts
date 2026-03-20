@@ -1,4 +1,3 @@
-import { getClickHouseHosts, getClient } from './clickhouse'
 import { _resetEnvCache } from './clickhouse/env-schema'
 import {
   afterAll,
@@ -8,6 +7,15 @@ import {
   it,
   mock,
 } from 'bun:test'
+
+const { getClient } = await import(
+  new URL('./clickhouse/clickhouse-client.ts?test=clickhouse', import.meta.url)
+    .href
+)
+const { getClickHouseHosts } = await import(
+  new URL('./clickhouse/clickhouse-config.ts?test=clickhouse', import.meta.url)
+    .href
+)
 
 const mockCreateClient = mock(() => ({}))
 const mockCreateClientWeb = mock(() => ({}))

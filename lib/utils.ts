@@ -47,6 +47,10 @@ export function removeHostPrefix(pathname: string) {
   return pathname.split('/').filter(Boolean).slice(1).join('/')
 }
 
+export function cleanQuotedText(value: string) {
+  return value.replace(/^"|"$/g, '')
+}
+
 // Chart utility functions
 
 /**
