@@ -181,9 +181,7 @@ function ResultTable({
   }
 
   const footnote =
-    rows.length > maxRows
-      ? `Showing ${maxRows} of ${rows.length} rows`
-      : undefined
+    rows.length > maxRows ? `Showing ${maxRows} of ${rows.length} rows` : ' '
 
   return (
     <DataTable
