@@ -4,7 +4,9 @@
  */
 
 import { beforeAll, describe, expect, it } from 'bun:test'
-import { fetchData, getClickHouseConfigs } from '@/lib/clickhouse'
+
+let fetchData: typeof import('@/lib/clickhouse').fetchData
+let getClickHouseConfigs: typeof import('@/lib/clickhouse').getClickHouseConfigs
 
 // Helper function to check if ClickHouse is available
 async function isClickHouseAvailable(): Promise<boolean> {
@@ -27,6 +29,12 @@ async function isClickHouseAvailable(): Promise<boolean> {
     // Mock the fetchData call in test environment to prevent hanging
     if (process.env.NODE_ENV === 'test') {
       return false
+    }
+
+    if (!fetchData) {
+      const clickhouse = await import('@/lib/clickhouse')
+      fetchData = clickhouse.fetchData
+      getClickHouseConfigs = clickhouse.getClickHouseConfigs
     }
 
     const fetchPromise = fetchData({
@@ -71,6 +79,12 @@ describe('ClickHouse Integration Tests (Optional)', () => {
       return // Skip test
     }
 
+    if (!fetchData) {
+      const clickhouse = await import('@/lib/clickhouse')
+      fetchData = clickhouse.fetchData
+      getClickHouseConfigs = clickhouse.getClickHouseConfigs
+    }
+
     const result = await fetchData({
       query: 'SELECT version() as version',
       hostId: 0,
@@ -84,6 +98,12 @@ describe('ClickHouse Integration Tests (Optional)', () => {
   it('should handle multiple hosts when configured', async () => {
     if (!clickHouseAvailable) {
       return // Skip test
+    }
+
+    if (!getClickHouseConfigs) {
+      const clickhouse = await import('@/lib/clickhouse')
+      fetchData = clickhouse.fetchData
+      getClickHouseConfigs = clickhouse.getClickHouseConfigs
     }
 
     const configs = getClickHouseConfigs()
@@ -118,6 +138,12 @@ describe('ClickHouse Integration Tests (Optional)', () => {
     ]
 
     for (const table of essentialTables) {
+      if (!fetchData) {
+        const clickhouse = await import('@/lib/clickhouse')
+        fetchData = clickhouse.fetchData
+        getClickHouseConfigs = clickhouse.getClickHouseConfigs
+      }
+
       const result = await fetchData({
         query: `SELECT count() as count FROM ${table} LIMIT 1`,
         hostId: 0,
@@ -131,12 +157,18 @@ describe('ClickHouse Integration Tests (Optional)', () => {
 
 // Separate describe block for tests that should always run
 describe('Integration Test Configuration', () => {
-  it('should have valid ClickHouse configuration when CLICKHOUSE_HOST is set', () => {
+  it('should have valid ClickHouse configuration when CLICKHOUSE_HOST is set', async () => {
     if (!process.env.CLICKHOUSE_HOST) {
       console.log(
         'ℹ️  CLICKHOUSE_HOST not set - integration tests will be skipped'
       )
       return
+    }
+
+    if (!getClickHouseConfigs) {
+      const clickhouse = await import('@/lib/clickhouse')
+      fetchData = clickhouse.fetchData
+      getClickHouseConfigs = clickhouse.getClickHouseConfigs
     }
 
     const configs = getClickHouseConfigs()
