@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 
-import { Analytics } from '@vercel/analytics/react'
+import dynamic from 'next/dynamic'
 import Script from 'next/script'
 import { ThemeProvider } from 'next-themes'
 import { Suspense } from 'react'
@@ -29,6 +29,13 @@ const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
 const VERCEL_ANALYTICS_ENABLED =
   process.env.NEXT_PUBLIC_VERCEL_ANALYTICS_ENABLED === 'true'
+
+const VercelAnalytics = VERCEL_ANALYTICS_ENABLED
+  ? dynamic(
+      () => import('@vercel/analytics/react').then((mod) => mod.Analytics),
+      { ssr: false }
+    )
+  : () => null
 
 export const metadata: Metadata = {
   title: 'ClickHouse Monitoring',
@@ -72,7 +79,7 @@ function Providers({ children }: { children: React.ReactNode }) {
 function AnalyticsScripts() {
   return (
     <>
-      {VERCEL_ANALYTICS_ENABLED && <Analytics />}
+      <VercelAnalytics />
       {SELINE_ENABLED && <Script src="https://cdn.seline.so/seline.js" async />}
       {GA_ANALYTICS_ENABLED && (
         <>
