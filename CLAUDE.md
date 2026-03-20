@@ -116,6 +116,27 @@ Both deployment methods provide:
 2. Run `bun run cf:deploy` (this runs cf:config → cf:build → wrangler deploy)
 3. If build lock error occurs, remove `.next/lock` and retry
 
+### Additional Workflows
+
+- `bun run analyze` - Build with bundle analysis enabled
+- `bun run check` / `bun run check:fix` - Run Biome's full check suite, with optional write mode
+- `bun run lint:fix` - Apply Biome lint fixes
+- `bun run type-check` - Run standalone TypeScript verification
+- `bun run test:unit`, `bun run test:query-config`, `bun run test:coverage`, `bun run test:watch` - Narrow test runs for common workflows
+- `bun run build:skills` - Regenerate the AI skills registry from `.agents/skills/`
+- `bun run cf:typegen` - Regenerate Cloudflare environment typings
+- `bun run cf:setup-conversations` - Provision the D1 database and update `wrangler.toml`
+- `bun run cf:migrate-conversations` / `bun run cf:migrate-conversations:local` - Apply conversation DB migrations remotely or locally
+- `bun run migrate`, `bun run migrate:status`, `bun run migrate:dry-run` - Use the local migration runner for non-Cloudflare targets
+- `bun run docker:health` / `bun run cf:health` - Check Docker or deployed health endpoints
+
+**Docs workspace**: The `docs/` app uses `pnpm` instead of `bun`.
+
+- `cd docs && pnpm dev` - Start the docs site
+- `cd docs && pnpm build` - Build docs and generate the Pagefind search index
+- `cd docs && pnpm start` - Serve the built docs site
+- `cd docs && pnpm lint` - Run Next.js linting
+
 ## Architecture
 
 ### Core Technologies
