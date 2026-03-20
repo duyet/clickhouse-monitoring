@@ -49,7 +49,7 @@ jobs:
         run: bun install
 
       - name: Run unit tests
-        run: bun test
+        run: bun test --max-concurrency=1
 
   # E2E tests - single browser, latest ClickHouse
   e2e-test:
