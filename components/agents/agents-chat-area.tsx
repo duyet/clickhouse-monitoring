@@ -180,25 +180,23 @@ function ResultTable({
     )
   }
 
+  const footnote =
+    rows.length > maxRows
+      ? `Showing ${maxRows} of ${rows.length} rows`
+      : undefined
+
   return (
-    <>
-      <DataTable
-        data={displayRows}
-        queryConfig={queryConfig}
-        context={{}}
-        defaultPageSize={Math.min(displayRows.length, 25)}
-        showSQL={false}
-        enableColumnFilters={false}
-        enableColumnReordering={false}
-        compact
-      />
-      {/* Footer: row count */}
-      <div className="px-2 py-1.5 border-t border-muted/30 text-[11px] text-muted-foreground">
-        {rows.length > maxRows
-          ? `Showing ${maxRows} of ${rows.length} rows`
-          : `${displayRows.length} ${displayRows.length === 1 ? 'row' : 'rows'}`}
-      </div>
-    </>
+    <DataTable
+      data={displayRows}
+      queryConfig={queryConfig}
+      context={{}}
+      defaultPageSize={Math.min(displayRows.length, 25)}
+      showSQL={false}
+      enableColumnFilters={false}
+      enableColumnReordering={false}
+      compact
+      footnote={footnote}
+    />
   )
 }
 

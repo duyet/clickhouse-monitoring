@@ -243,7 +243,7 @@ export function DataTable<
 
   // Density mode with localStorage persistence
   const { density, setDensity, cellClassName } = useTableDensity(
-    compact ? 'dense' : undefined
+    compact ? 'compact' : undefined
   )
 
   // Sorting

@@ -450,13 +450,13 @@ function McpToolsSection() {
             </div>
           </CollapsibleTrigger>
 
-          <CollapsibleContent className="space-y-3 pt-3">
+          <CollapsibleContent className="ml-3 space-y-2 border-l border-border/40 pl-3 pt-2">
             {mcpInfo.resources.length > 0 ? (
               <Collapsible
                 open={openSections.has('Resources')}
                 onOpenChange={() => toggleSection('Resources')}
               >
-                <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg border border-border/60 bg-muted/10 px-3 py-2.5 text-left transition-colors hover:bg-muted/25">
+                <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/25">
                   <TreeTriggerIcon open={openSections.has('Resources')} />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">Resources</div>
@@ -466,11 +466,11 @@ function McpToolsSection() {
                     </div>
                   </div>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-2 pt-3">
+                <CollapsibleContent className="ml-3 space-y-1.5 border-l border-border/30 pl-3 pt-1.5">
                   {mcpInfo.resources.map((resource: McpResource) => (
                     <div
                       key={resource.name}
-                      className="rounded-lg border border-border/60 bg-background/70 p-2.5"
+                      className="rounded-lg bg-muted/15 p-2.5"
                     >
                       <div className="text-sm font-medium text-foreground">
                         {resource.name}
@@ -498,7 +498,7 @@ function McpToolsSection() {
                   open={openSections.has(categoryKey)}
                   onOpenChange={() => toggleSection(categoryKey)}
                 >
-                  <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg border border-border/60 bg-muted/10 px-3 py-2.5 text-left transition-colors hover:bg-muted/25">
+                  <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/25">
                     <TreeTriggerIcon open={openSections.has(categoryKey)} />
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-medium text-foreground">
@@ -509,7 +509,7 @@ function McpToolsSection() {
                       </div>
                     </div>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-2 pt-3">
+                  <CollapsibleContent className="ml-3 space-y-2 border-l border-border/30 pl-3 pt-1.5">
                     {tools.map((tool: ApiMcpTool) => (
                       <McpToolRow
                         key={tool.name}
