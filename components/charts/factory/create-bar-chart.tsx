@@ -85,6 +85,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     })
 
     // Get categories (resolve if function)
+    // biome-ignore lint/correctness/useExhaustiveDependencies: config is fixed for the factory instance.
     const categories = useMemo(() => {
       if (typeof config.categories === 'function') {
         return swr.data ? config.categories(swr.data) : []
@@ -99,6 +100,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     }, [swr.data, categories])
 
     // Create x-axis date formatter if enabled
+    // biome-ignore lint/correctness/useExhaustiveDependencies: config is fixed for the factory instance.
     const xAxisTickFormatter = useMemo(() => {
       if (!config.xAxisDateFormat) return undefined
       return createDateTickFormatter(effectiveLastHours ?? 24, userTimezone)
