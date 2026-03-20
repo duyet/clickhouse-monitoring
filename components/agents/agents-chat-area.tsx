@@ -1375,7 +1375,7 @@ export const AgentsChatArea = forwardRef<
                           </div>
                           <div className="space-y-2">
                             <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                              Inspect your ClickHouse cluster in plain English
+                              Inspect your ClickHouse cluster
                             </h2>
                             <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
                               Start with a live health signal or launch one of
@@ -1427,39 +1427,23 @@ export const AgentsChatArea = forwardRef<
                           from there.
                         </CardDescription>
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className="rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em]"
-                      >
-                        {DEFAULT_SUGGESTIONS.length} ready prompts
-                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
-                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
                       {DEFAULT_SUGGESTIONS.map((suggestion) => (
                         <button
                           key={suggestion.text}
                           onClick={() => handleSuggestionClick(suggestion.text)}
-                          className="group flex h-full flex-col items-start rounded-xl border border-border/60 bg-background/80 p-3.5 text-left transition-all hover:border-border hover:bg-accent/20"
+                          className="group flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/80 px-3 py-2 text-left transition-all hover:border-border hover:bg-accent/20"
                         >
-                          <div className="flex w-full items-start gap-3">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/40 text-foreground/80">
-                              {suggestion.icon}
-                            </span>
-                            <div className="min-w-0 space-y-1">
-                              <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                                {suggestion.category}
-                              </div>
-                              <div className="text-sm font-medium leading-6 text-foreground">
-                                {suggestion.text}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
-                            <span>Run this prompt</span>
-                            <ChevronRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                          </div>
+                          <span className="shrink-0 text-muted-foreground">
+                            {suggestion.icon}
+                          </span>
+                          <span className="min-w-0 flex-1 text-sm text-foreground">
+                            {suggestion.text}
+                          </span>
+                          <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5" />
                         </button>
                       ))}
                     </div>
