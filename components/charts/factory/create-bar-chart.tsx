@@ -90,7 +90,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
         return swr.data ? config.categories(swr.data) : []
       }
       return config.categories
-    }, [swr.data])
+    }, [swr.data, config.categories])
 
     // Check if data has all zero values - show empty state with message
     const allZeros = useMemo(() => {
@@ -102,7 +102,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     const xAxisTickFormatter = useMemo(() => {
       if (!config.xAxisDateFormat) return undefined
       return createDateTickFormatter(effectiveLastHours ?? 24, userTimezone)
-    }, [effectiveLastHours, userTimezone])
+    }, [effectiveLastHours, userTimezone, config.xAxisDateFormat])
 
     // If data exists but all values are zero, show informative empty state
     if (allZeros && !swr.isLoading && !swr.error) {

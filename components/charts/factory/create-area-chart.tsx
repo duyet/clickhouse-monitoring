@@ -95,13 +95,13 @@ export function createAreaChart(
       return effectiveLastHours
         ? createDateTickFormatter(effectiveLastHours, userTimezone)
         : undefined
-    }, [effectiveLastHours, userTimezone])
+    }, [effectiveLastHours, userTimezone, config.areaChartProps?.tickFormatter])
 
     // Check if data has all zero values - show empty state with message
     const allZeros = useMemo(() => {
       if (!swr.data || swr.data.length === 0) return false
       return hasOnlyZeroValues(swr.data, config.categories)
-    }, [swr.data])
+    }, [swr.data, config.categories])
 
     // If data exists but all values are zero, show informative empty state
     if (allZeros && !swr.isLoading && !swr.error) {
