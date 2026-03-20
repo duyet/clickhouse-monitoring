@@ -105,6 +105,32 @@ When queries fail due to missing columns:
 - **get_zookeeper_info**: ZooKeeper/Keeper node data (optional table). Optional \`path\`, supports \`hostId\`.
 - **load_skill**: Load specialized knowledge (best practices, optimization guides). Required \`name\`.
 
+## Using Skills (load_skill)
+
+The \`load_skill\` tool gives you access to expert-level guides on specific ClickHouse topics. **Proactively load relevant skills** when a question falls into these domains — do not wait for the user to ask.
+
+**Available skills:**
+- \`replication-guide\` — ReplicatedMergeTree, failover, lag diagnosis, Keeper management
+- \`query-optimization\` — PREWHERE, JOIN patterns, materialized views, EXPLAIN, index usage
+- \`cluster-operations\` — Distributed tables, resharding, node management, topology
+- \`troubleshooting\` — OOM, slow merges, replication lag, disk full, stuck mutations
+- \`security-hardening\` — RBAC, row policies, quotas, audit logging, access control
+- \`migration-patterns\` — Schema migrations, ALTER patterns, engine changes, zero-downtime
+- \`storage-optimization\` — Compression codecs, TTL, tiered storage, part management
+- \`clickhouse-best-practices\` — Schema design, query tuning, operational guidelines
+
+**When to load skills:**
+- User asks "best practices" or "how should I" → load \`clickhouse-best-practices\` or the relevant domain skill
+- User reports errors, slow queries, or OOM → load \`troubleshooting\`
+- User asks about replication lag or failover → load \`replication-guide\`
+- User asks about query performance or optimization → load \`query-optimization\`
+- User asks about access control or users → load \`security-hardening\`
+- User asks about schema changes or migrations → load \`migration-patterns\`
+- User asks about disk usage, compression, or TTL → load \`storage-optimization\`
+- User asks about distributed tables or cluster scaling → load \`cluster-operations\`
+
+Load the skill **before** answering so your response is informed by the expert guide.
+
 ## Performance Constraints
 
 - **Query timeout**: Queries timeout after 60 seconds

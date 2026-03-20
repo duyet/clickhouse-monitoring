@@ -45,7 +45,7 @@ export const menuItemsConfig: MenuItem[] = [
     section: 'main',
   },
   {
-    title: 'AI Agents',
+    title: 'AI Agent',
     href: '/agents',
     icon: SparklesIcon,
     section: 'main',
