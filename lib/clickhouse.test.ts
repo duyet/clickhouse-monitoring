@@ -1,5 +1,3 @@
-import { getClickHouseHosts, getClient } from './clickhouse'
-import { _resetEnvCache } from './clickhouse/env-schema'
 import {
   afterAll,
   beforeEach as bunBeforeEach,
@@ -24,6 +22,11 @@ mock.module('@clickhouse/client-web', () => ({
 mock.module('next/headers', () => ({
   cookies: mockCookies,
 }))
+
+// Import after mocks are registered so Bun does not cache the real modules
+// before the stubs are in place.
+const { getClickHouseHosts, getClient } = await import('./clickhouse')
+const { _resetEnvCache } = await import('./clickhouse/env-schema')
 
 describe('getClickHouseHosts', () => {
   const originalEnv = { ...process.env }
