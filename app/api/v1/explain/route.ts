@@ -290,12 +290,14 @@ export async function GET(request: NextRequest): Promise<Response> {
 
     if ('error' in textResult) {
       logError('[GET /api/v1/explain] Query error:', textResult.error)
+      const errorType =
+        (textResult.error.type as ApiErrorType) ?? ApiErrorType.QueryError
       return createErrorResponse(
         {
-          type: ApiErrorType.QueryError,
+          type: errorType,
           message: textResult.error.message,
         },
-        mapErrorTypeToStatusCode(ApiErrorType.QueryError),
+        mapErrorTypeToStatusCode(errorType),
         { ...ROUTE_CONTEXT, hostId }
       )
     }
