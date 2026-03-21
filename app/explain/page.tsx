@@ -218,7 +218,7 @@ function PlanSettingsPanel({
   )
 }
 
-const VALID_MODE_VALUES = new Set(EXPLAIN_MODES.map((m) => m.value))
+const VALID_MODE_VALUES: Set<string> = new Set(EXPLAIN_MODES.map((m) => m.value))
 
 function modeFromParam(param: string | null): string {
   const upper = (param || '').toUpperCase()
