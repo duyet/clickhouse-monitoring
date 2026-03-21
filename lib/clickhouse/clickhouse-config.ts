@@ -15,6 +15,9 @@ import { debug, error } from '@/lib/logger'
  */
 export function getAndValidateClientConfig(hostId: number): ClickHouseConfig {
   const configs = getClickHouseConfigs()
+  if (configs.length === 0) {
+    throw new Error('No ClickHouse hosts configured')
+  }
   const config = configs[hostId]
   if (!config) {
     throw new Error(
