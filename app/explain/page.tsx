@@ -8,7 +8,7 @@ import {
 } from '@radix-ui/react-icons'
 import useSWR from 'swr'
 
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useMemo, useState } from 'react'
 import { ErrorAlert } from '@/components/feedback'
 import { ChartSkeleton } from '@/components/skeletons'
@@ -218,16 +218,39 @@ function PlanSettingsPanel({
   )
 }
 
+const VALID_MODE_VALUES = new Set(EXPLAIN_MODES.map((m) => m.value))
+
+function modeFromParam(param: string | null): string {
+  const upper = (param || '').toUpperCase()
+  return VALID_MODE_VALUES.has(upper) ? upper : ''
+}
+
 function ExplainContent() {
   const hostId = useHostId()
+  const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const queryFromUrl = searchParams.get('query') || ''
 
   const [queryInput, setQueryInput] = useState(queryFromUrl)
   const [queryToExplain, setQueryToExplain] = useState(queryFromUrl)
-  const [mode, setMode] = useState('')
+  const [mode, setModeState] = useState(() => modeFromParam(searchParams.get('mode')))
   const [planSettings, setPlanSettings] =
     useState<Record<string, number>>(buildDefaultSettings)
+
+  const setMode = useCallback(
+    (newMode: string) => {
+      setModeState(newMode)
+      const params = new URLSearchParams(searchParams.toString())
+      if (newMode) {
+        params.set('mode', newMode.toLowerCase())
+      } else {
+        params.delete('mode')
+      }
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+    },
+    [searchParams, router, pathname]
+  )
 
   const toggleSetting = useCallback((key: string) => {
     setPlanSettings((prev) => ({
