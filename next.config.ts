@@ -20,6 +20,14 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  turbopack: {
+    resolveAlias: {
+      '@vercel/og': { browser: './lib/stubs/empty.js', default: '@vercel/og' },
+      'next/dist/compiled/@vercel/og/resvg.wasm': './lib/stubs/empty.js',
+      'next/dist/compiled/@vercel/og/yoga.wasm': './lib/stubs/empty.js',
+    },
+  },
+
   // https://nextjs.org/docs/app/api-reference/next-config-js/webpack
   webpack: (config, { isServer }) => {
     // Exclude @clickhouse/client from client bundles (uses node:os, node:stream, etc.)
