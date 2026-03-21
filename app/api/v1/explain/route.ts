@@ -27,7 +27,11 @@ import { mapErrorTypeToStatusCode } from '@/lib/api/shared/status-code-mapper'
 import { getAndValidateHostId } from '@/lib/api/shared/validators'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchData, getClient, getClickHouseConfigs } from '@/lib/clickhouse'
+import {
+  fetchData,
+  getAndValidateClientConfig,
+  getClient,
+} from '@/lib/clickhouse'
 import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { debug, error as logError } from '@/lib/logger'
 
@@ -121,13 +125,14 @@ async function fetchExplainAsText(
   | { data: { explain: string }[]; metadata: Record<string, string | number> }
   | { error: { type: string; message: string } }
 > {
-  const configs = getClickHouseConfigs()
-  const clientConfig = configs[hostId]
-  if (!clientConfig) {
+  let clientConfig
+  try {
+    clientConfig = getAndValidateClientConfig(hostId)
+  } catch (err) {
     return {
       error: {
         type: 'validation_error',
-        message: `Invalid hostId: ${hostId}`,
+        message: err instanceof Error ? err.message : String(err),
       },
     }
   }

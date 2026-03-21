@@ -8,6 +8,22 @@ import type { ClickHouseConfig } from './types'
 import { validateClickHouseEnv } from './env-schema'
 import { debug, error } from '@/lib/logger'
 
+/**
+ * Retrieve a single ClickHouseConfig by hostId, throwing if the id is out of
+ * range.  Centralises the "lookup + validate" logic so callers like getClient
+ * and fetchExplainAsText don't duplicate it.
+ */
+export function getAndValidateClientConfig(hostId: number): ClickHouseConfig {
+  const configs = getClickHouseConfigs()
+  const config = configs[hostId]
+  if (!config) {
+    throw new Error(
+      `Invalid hostId: ${hostId}. Available hosts: 0-${configs.length - 1}`
+    )
+  }
+  return config
+}
+
 export const getClickHouseHosts = () => {
   const { CLICKHOUSE_HOST } = validateClickHouseEnv()
   return CLICKHOUSE_HOST.split(',')
