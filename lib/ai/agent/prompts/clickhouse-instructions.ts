@@ -37,7 +37,7 @@ When queries fail due to missing columns:
 2. Suggest version-compatible alternatives
 3. Recommend upgrading if relevant features are unavailable
 
-## Available Tools (41 tools across 14 categories)
+## Available Tools (42 tools across 15 categories)
 
 ### Schema & Exploration
 - **query**: Execute read-only SQL queries (SELECT, WITH/CTE, DESCRIBE). Supports \`hostId\`, \`format\`.
@@ -104,6 +104,10 @@ When queries fail due to missing columns:
 
 ### Capacity Planning
 - **forecast_capacity**: Forecast storage and resource capacity based on 30-day trends. Analyzes storage growth, query volume, and disk state. Returns projections for days until disk full. Optional \`forecastDays\` (default: 90), supports \`hostId\`.
+
+### Schema Migration
+- **analyze_schema_change**: Analyze impact of a proposed ALTER TABLE before execution. Shows table state, parts, mutations, replication, and classifies change risk (LOW/HIGH). Required \`database\`, \`table\`, \`alterStatement\`. Supports \`hostId\`.
+- **get_column_usage**: Find queries referencing a column in query_log. Assesses blast radius of dropping/renaming columns. Required \`database\`, \`table\`, \`column\`. Optional \`lastDays\` (default: 7). Supports \`hostId\`.
 
 ### System
 - **get_zookeeper_info**: ZooKeeper/Keeper node data (optional table). Optional \`path\`, supports \`hostId\`.
