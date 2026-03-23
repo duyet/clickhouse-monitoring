@@ -114,6 +114,7 @@ interface AgentsChatAreaProps {
   readonly onMenuClick: () => void
   readonly hideHeader?: boolean
   readonly hideCompactControls?: boolean
+  readonly initialQuery?: string | null
 }
 
 // Note: Chat state is managed internally by useChat when props are not provided.
@@ -1065,6 +1066,7 @@ export const AgentsChatArea = forwardRef<
     onMenuClick,
     hideHeader = false,
     hideCompactControls = false,
+    initialQuery,
   }: AgentsChatAreaProps,
   ref
 ) {
@@ -1227,6 +1229,22 @@ export const AgentsChatArea = forwardRef<
     },
     [handleSubmit]
   )
+
+  // Auto-send initial query from URL param (e.g., /agents?query=SELECT...)
+  const initialQuerySentRef = useRef(false)
+  useEffect(() => {
+    if (initialQuery && !initialQuerySentRef.current && status === 'ready') {
+      initialQuerySentRef.current = true
+      sendMessage({
+        parts: [
+          {
+            type: 'text',
+            text: `Analyze this ClickHouse query:\n\n\`\`\`sql\n${initialQuery}\n\`\`\``,
+          },
+        ],
+      })
+    }
+  }, [initialQuery, status, sendMessage])
 
   const handleRegenerate = useCallback(() => {
     // Stop current generation
