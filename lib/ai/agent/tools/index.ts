@@ -15,6 +15,7 @@ import { createDashboardTools } from './dashboard-tools'
 import { createHealthTools } from './health-tools'
 import { createLogTools } from './log-tools'
 import { createMergeTools } from './merge-tools'
+import { createOptimizerTools } from './optimizer-tools'
 import { createQueryTools } from './query-tools'
 import { createReplicationTools } from './replication-tools'
 import { createReportTools } from './report-tools'
@@ -81,5 +82,8 @@ export function createAllTools(hostId: number) {
 
     // Reports
     ...createReportTools(hostId),
+
+    // Query optimization
+    ...createOptimizerTools(hostId),
   }
 }
