@@ -19,6 +19,7 @@
 import type { NextRequest } from 'next/server'
 
 import {
+  classifyError,
   createErrorResponse,
   createValidationError,
 } from '@/lib/api/error-handler'
@@ -154,43 +155,20 @@ async function fetchExplainAsText(
       },
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    const msgLower = msg.toLowerCase()
+    // Use the shared classifyError to normalize error type and message,
+    // matching the same categorization used in the fetchData path.
+    const { type, message } = classifyError(err)
 
-    // Categorize the error type using the same patterns as fetchData
-    let errorType = 'query_error'
-    if (
-      msgLower.includes('table') &&
-      msgLower.includes('not') &&
-      msgLower.includes('exist')
-    ) {
-      errorType = 'table_not_found'
-    } else if (msgLower.includes('permission') || msgLower.includes('access')) {
-      errorType = 'permission_error'
-    } else if (
-      msgLower.includes('network') ||
-      msgLower.includes('connection') ||
-      msg.includes('fetch failed') ||
-      msg.includes('ECONNREFUSED') ||
-      msg.includes('ETIMEDOUT') ||
-      msg.includes('ENOTFOUND') ||
-      msg.includes('getaddrinfo') ||
-      msg.includes('socket hang up') ||
-      msg.includes('UND_ERR')
-    ) {
-      errorType = 'network_error'
-    }
-
-    // Log the full error and host server-side for diagnostics; do not expose host in response
+    // Log the full error and host server-side for diagnostics; do not expose host in response.
     logError(
       `[fetchExplainAsText] Query failed (host: ${clientConfig.host}):`,
-      msg
+      message
     )
 
     return {
       error: {
-        type: errorType,
-        message: msg,
+        type,
+        message,
       },
     }
   }
@@ -368,10 +346,14 @@ export async function GET(request: NextRequest): Promise<Response> {
     const apiErrorType =
       errorTypeMap[result.error.type] ?? ApiErrorType.QueryError
 
+    // Strip the " (host: ...)" suffix that fetchData appends to the message —
+    // host info is already logged server-side above and must not reach the client.
+    const clientMessage = result.error.message.replace(/ \(host: [^)]+\)$/, '')
+
     return createErrorResponse(
       {
         type: apiErrorType,
-        message: result.error.message,
+        message: clientMessage,
         details: result.error.details as Record<
           string,
           string | number | boolean | undefined
