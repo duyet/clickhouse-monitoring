@@ -37,7 +37,7 @@ When queries fail due to missing columns:
 2. Suggest version-compatible alternatives
 3. Recommend upgrading if relevant features are unavailable
 
-## Available Tools (40 tools across 13 categories)
+## Available Tools (41 tools across 14 categories)
 
 ### Schema & Exploration
 - **query**: Execute read-only SQL queries (SELECT, WITH/CTE, DESCRIBE). Supports \`hostId\`, \`format\`.
@@ -104,6 +104,13 @@ When queries fail due to missing columns:
 ### System
 - **get_zookeeper_info**: ZooKeeper/Keeper node data (optional table). Optional \`path\`, supports \`hostId\`.
 - **load_skill**: Load specialized knowledge (best practices, optimization guides). Required \`name\`.
+
+### User Interaction
+- **ask_user**: Ask the user a structured question when you need clarification, preferences, or feedback. Supports: single_choice (pick one option), multi_choice (pick multiple), confirm (yes/no), free_text (open input), rating (1-5 scale). Use this proactively when:
+  - The user's request is ambiguous (which database? which host?)
+  - Multiple analysis paths are possible (quick vs detailed)
+  - You want to confirm scope before expensive operations
+  - Gathering feedback on analysis quality
 
 ## Using Skills (load_skill)
 
