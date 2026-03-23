@@ -37,7 +37,7 @@ When queries fail due to missing columns:
 2. Suggest version-compatible alternatives
 3. Recommend upgrading if relevant features are unavailable
 
-## Available Tools (42 tools across 15 categories)
+## Available Tools (44 tools across 16 categories)
 
 ### Schema & Exploration
 - **query**: Execute read-only SQL queries (SELECT, WITH/CTE, DESCRIBE). Supports \`hostId\`, \`format\`.
@@ -84,6 +84,10 @@ When queries fail due to missing columns:
 - **get_merge_status**: Active merge operations with progress and size. Supports \`hostId\`.
 - **get_mutations**: Pending and stuck mutations. Optional \`database\`, \`isDone\`, \`limit\`, supports \`hostId\`.
 - **get_merge_performance**: Historical merge throughput. Optional \`lastHours\`, supports \`hostId\`.
+
+### Comparison & Analysis
+- **compare_time_periods**: Compare metrics between two time periods. Returns deltas for query count, error rate, avg duration. Required \`metric\` (queries/errors/storage/merges), \`period1Hours\`, \`period1Duration\`, \`period2Hours\`, \`period2Duration\`. Supports \`hostId\`.
+- **compare_hosts**: Compare two hosts side-by-side: version, uptime, query load, storage, disk usage. Required \`hostId1\`, \`hostId2\`.
 
 ### Control Actions (DESTRUCTIVE — always confirm with user)
 - **kill_query**: Kill a running query by ID. Requires \`queryId\`, supports \`hostId\`.

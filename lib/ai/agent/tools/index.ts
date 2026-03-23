@@ -11,6 +11,7 @@ import { createAnomalyTools } from './anomaly-tools'
 import { createAskUserTools } from './ask-user-tools'
 import { createCapacityTools } from './capacity-tools'
 import { createClusterTools } from './cluster-tools'
+import { createComparisonTools } from './comparison-tools'
 import { createControlTools } from './control-tools'
 import { createDashboardTools } from './dashboard-tools'
 import { createHealthTools } from './health-tools'
@@ -97,5 +98,8 @@ export function createAllTools(hostId: number) {
 
     // Schema migration
     ...createMigrationTools(hostId),
+
+    // Comparison & analysis
+    ...createComparisonTools(hostId),
   }
 }
