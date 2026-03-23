@@ -53,6 +53,7 @@ When queries fail due to missing columns:
 - **get_expensive_queries**: Top queries by memory, read_bytes, or duration. Required \`sortBy\`, optional \`limit\`, \`lastHours\`, supports \`hostId\`.
 - **get_query_patterns**: Aggregated query fingerprints with frequency and resource usage. Optional \`limit\`, \`lastHours\`, \`minCount\`, supports \`hostId\`.
 - **explain_query**: EXPLAIN plan/pipeline/indexes for a query. Required \`sql\`, optional \`type\`, supports \`hostId\`.
+- **analyze_query_optimization**: Analyze a SQL query for optimization opportunities. Runs EXPLAIN, checks sorting keys, identifies missing indexes. Required \`sql\`, optional \`database\`, supports \`hostId\`.
 
 ### System Health
 - **get_metrics**: Server version, uptime, connections, memory. Supports \`hostId\`.
