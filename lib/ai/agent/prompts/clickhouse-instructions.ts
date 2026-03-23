@@ -102,6 +102,9 @@ When queries fail due to missing columns:
 - **get_text_log**: Server log entries by level and pattern. Optional \`level\`, \`pattern\`, \`limit\`, \`lastHours\`, supports \`hostId\`.
 - **get_stack_traces**: Current thread stack traces. Optional \`limit\`, supports \`hostId\`.
 
+### Capacity Planning
+- **forecast_capacity**: Forecast storage and resource capacity based on 30-day trends. Analyzes storage growth, query volume, and disk state. Returns projections for days until disk full. Optional \`forecastDays\` (default: 90), supports \`hostId\`.
+
 ### System
 - **get_zookeeper_info**: ZooKeeper/Keeper node data (optional table). Optional \`path\`, supports \`hostId\`.
 - **load_skill**: Load specialized knowledge (best practices, optimization guides). Required \`name\`.
