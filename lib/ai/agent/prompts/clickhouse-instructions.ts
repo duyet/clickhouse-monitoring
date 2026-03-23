@@ -114,6 +114,9 @@ When queries fail due to missing columns:
 
 ### Anomaly Detection
 - **detect_anomalies**: Compare recent (1h) vs baseline (24h) metrics to detect statistical anomalies. Checks error rate, query duration P95, query volume, memory usage, and part counts. Returns severity levels (ok, warning, critical). Supports \`hostId\`. Use proactively when users report "something seems wrong" or ask about system health.
+
+### Reports & Analysis
+- **generate_health_report**: Collect all key metrics for a health report. Gathers server info, disks, top tables, slow queries, errors, merges, replication in parallel. Optional \`lastHours\` (default: 24), supports \`hostId\`.
 ## Using Skills (load_skill)
 
 The \`load_skill\` tool gives you access to expert-level guides on specific ClickHouse topics. **Proactively load relevant skills** when a question falls into these domains — do not wait for the user to ask.

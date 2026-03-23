@@ -7,6 +7,7 @@
 
 import 'server-only'
 
+import { createAnomalyTools } from './anomaly-tools'
 import { createAskUserTools } from './ask-user-tools'
 import { createClusterTools } from './cluster-tools'
 import { createControlTools } from './control-tools'
@@ -16,12 +17,12 @@ import { createLogTools } from './log-tools'
 import { createMergeTools } from './merge-tools'
 import { createQueryTools } from './query-tools'
 import { createReplicationTools } from './replication-tools'
+import { createReportTools } from './report-tools'
 import { createSchemaTools } from './schema-tools'
 import { createSecurityTools } from './security-tools'
 import { createSettingsTools } from './settings-tools'
 import { createSkillTools } from './skill-tools'
 import { createStorageTools } from './storage-tools'
-import { createAnomalyTools } from './anomaly-tools'
 import { createZookeeperTools } from './zookeeper-tools'
 
 /**
@@ -77,5 +78,8 @@ export function createAllTools(hostId: number) {
 
     // Anomaly detection
     ...createAnomalyTools(hostId),
+
+    // Reports
+    ...createReportTools(hostId),
   }
 }
