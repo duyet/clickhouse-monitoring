@@ -1,16 +1,14 @@
 import { describe, expect, mock, test } from 'bun:test'
 
 // Mock fetchData before importing the tool
-const mockFetchData = mock(() =>
-  Promise.resolve({ data: [], error: null })
-)
+const mockFetchData = mock(() => Promise.resolve({ data: [], error: null }))
 
 mock.module('@/lib/clickhouse', () => ({
   fetchData: mockFetchData,
 }))
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { registerPerformanceTool } from '../tools/performance'
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 
 /** Helper to get the registered tool handler */
 function getToolHandler(server: McpServer, name: string) {

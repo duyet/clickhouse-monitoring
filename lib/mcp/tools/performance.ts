@@ -38,18 +38,14 @@ function classifyPartCountSeverity(
 ): Severity {
   if (!Array.isArray(rows) || rows.length === 0) return 'OK'
 
-  const maxParts = Math.max(
-    ...rows.map((r) => Number(r.part_count ?? 0))
-  )
+  const maxParts = Math.max(...rows.map((r) => Number(r.part_count ?? 0)))
 
   if (maxParts > 10_000) return 'CRITICAL'
   if (maxParts > 3_000) return 'WARNING'
   return 'OK'
 }
 
-function classifyMergeSeverity(
-  rows: Array<Record<string, unknown>>
-): Severity {
+function classifyMergeSeverity(rows: Array<Record<string, unknown>>): Severity {
   if (!Array.isArray(rows) || rows.length === 0) return 'OK'
 
   const activeMerges = Number(rows[0]?.active_merges ?? 0)
@@ -70,14 +66,10 @@ function classifyMemorySeverity(
   return 'OK'
 }
 
-function classifyDiskSeverity(
-  rows: Array<Record<string, unknown>>
-): Severity {
+function classifyDiskSeverity(rows: Array<Record<string, unknown>>): Severity {
   if (!Array.isArray(rows) || rows.length === 0) return 'OK'
 
-  const minFreePct = Math.min(
-    ...rows.map((r) => Number(r.free_pct ?? 100))
-  )
+  const minFreePct = Math.min(...rows.map((r) => Number(r.free_pct ?? 100)))
 
   if (minFreePct < 10) return 'CRITICAL'
   if (minFreePct < 20) return 'WARNING'
@@ -172,9 +164,7 @@ export function registerPerformanceTool(server: McpServer) {
         ])
 
       const results = [slowQueries, partCounts, merges, memory, disks]
-      const errors = results
-        .filter((r) => r.error)
-        .map((r) => r.error!.message)
+      const errors = results.filter((r) => r.error).map((r) => r.error!.message)
 
       if (errors.length === 5) {
         return {
@@ -189,7 +179,11 @@ export function registerPerformanceTool(server: McpServer) {
       }
 
       const asArray = (data: unknown): Array<Record<string, unknown>> =>
-        Array.isArray(data) ? data : data ? [data as Record<string, unknown>] : []
+        Array.isArray(data)
+          ? data
+          : data
+            ? [data as Record<string, unknown>]
+            : []
 
       const slowQueryRows = asArray(slowQueries.data)
       const partCountRows = asArray(partCounts.data)
