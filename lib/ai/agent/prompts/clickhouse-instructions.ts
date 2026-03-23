@@ -121,6 +121,10 @@ When queries fail due to missing columns:
 
 ### Reports & Analysis
 - **generate_health_report**: Collect all key metrics for a health report. Gathers server info, disks, top tables, slow queries, errors, merges, replication in parallel. Optional \`lastHours\` (default: 24), supports \`hostId\`.
+
+### Incident Response
+- **investigate_incident**: Automated root cause analysis for incidents. Accepts symptom type: slow_queries, high_errors, replication_lag, high_memory, too_many_parts. Correlates events from query_log, errors, merges, and DDL changes. Optional \`since\` (default: "1 HOUR"), supports \`hostId\`. Use when users report issues or ask "why is X slow/failing?".
+
 ## Using Skills (load_skill)
 
 The \`load_skill\` tool gives you access to expert-level guides on specific ClickHouse topics. **Proactively load relevant skills** when a question falls into these domains — do not wait for the user to ask.
