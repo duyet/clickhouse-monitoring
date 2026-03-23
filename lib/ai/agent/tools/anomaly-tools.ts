@@ -71,11 +71,7 @@ export function createAnomalyTools(hostId: number) {
               const recent = extractValue(recentResult)
               const baseline = extractValue(baselineResult)
 
-              if (
-                baseline === 0 ||
-                baseline === null ||
-                recent === null
-              ) {
+              if (baseline === 0 || baseline === null || recent === null) {
                 return {
                   metric: check.name,
                   status: 'insufficient_data',
