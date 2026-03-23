@@ -27,6 +27,7 @@ import { createSecurityTools } from './security-tools'
 import { createSettingsTools } from './settings-tools'
 import { createSkillTools } from './skill-tools'
 import { createStorageTools } from './storage-tools'
+import { createComparisonTools } from './comparison-tools'
 import { createZookeeperTools } from './zookeeper-tools'
 
 /**
@@ -97,5 +98,8 @@ export function createAllTools(hostId: number) {
 
     // Schema migration
     ...createMigrationTools(hostId),
+
+    // Comparison & analysis
+    ...createComparisonTools(hostId),
   }
 }
