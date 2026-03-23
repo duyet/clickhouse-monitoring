@@ -16,6 +16,7 @@ import { createLogTools } from './log-tools'
 import { createMergeTools } from './merge-tools'
 import { createQueryTools } from './query-tools'
 import { createReplicationTools } from './replication-tools'
+import { createReportTools } from './report-tools'
 import { createSchemaTools } from './schema-tools'
 import { createSecurityTools } from './security-tools'
 import { createSettingsTools } from './settings-tools'
@@ -77,5 +78,8 @@ export function createAllTools(hostId: number) {
 
     // Anomaly detection
     ...createAnomalyTools(hostId),
+
+    // Reports
+    ...createReportTools(hostId),
   }
 }
