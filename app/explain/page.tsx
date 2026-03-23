@@ -218,7 +218,9 @@ function PlanSettingsPanel({
   )
 }
 
-const VALID_MODE_VALUES: Set<string> = new Set(EXPLAIN_MODES.map((m) => m.value))
+const VALID_MODE_VALUES: Set<string> = new Set(
+  EXPLAIN_MODES.map((m) => m.value)
+)
 
 function modeFromParam(param: string | null): string {
   const upper = (param || '').toUpperCase()
@@ -234,7 +236,9 @@ function ExplainContent() {
 
   const [queryInput, setQueryInput] = useState(queryFromUrl)
   const [queryToExplain, setQueryToExplain] = useState(queryFromUrl)
-  const [mode, setModeState] = useState(() => modeFromParam(searchParams.get('mode')))
+  const [mode, setModeState] = useState(() =>
+    modeFromParam(searchParams.get('mode'))
+  )
   const [planSettings, setPlanSettings] =
     useState<Record<string, number>>(buildDefaultSettings)
 
