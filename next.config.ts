@@ -1,5 +1,14 @@
 import type { NextConfig } from 'next'
 
+// Check if optional @vercel/analytics is available
+let hasVercelAnalytics = false
+try {
+  require.resolve('@vercel/analytics/react')
+  hasVercelAnalytics = true
+} catch {
+  // Optional dependency not installed
+}
+
 const nextConfig: NextConfig = {
   // Use standalone output for hybrid static pages + dynamic API routes
   output: 'standalone',
@@ -25,6 +34,9 @@ const nextConfig: NextConfig = {
       '@vercel/og': { browser: './lib/stubs/empty.js', default: '@vercel/og' },
       'next/dist/compiled/@vercel/og/resvg.wasm': './lib/stubs/empty.js',
       'next/dist/compiled/@vercel/og/yoga.wasm': './lib/stubs/empty.js',
+      ...(!hasVercelAnalytics && {
+        '@vercel/analytics/react': './lib/stubs/vercel-analytics.js',
+      }),
     },
   },
 
@@ -53,6 +65,12 @@ const nextConfig: NextConfig = {
       ...config.resolve.alias,
       'next/dist/compiled/@vercel/og/resvg.wasm': false,
       'next/dist/compiled/@vercel/og/yoga.wasm': false,
+      // Stub @vercel/analytics when not installed (optional dependency)
+      ...(!hasVercelAnalytics && {
+        '@vercel/analytics/react': require.resolve(
+          './lib/stubs/vercel-analytics.js'
+        ),
+      }),
     }
 
     // Exclude Cypress test files (.cy.tsx, .cy.ts) from webpack bundling

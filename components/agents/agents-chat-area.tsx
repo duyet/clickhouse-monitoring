@@ -29,6 +29,7 @@ import type { UIMessage } from 'ai'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
+import { useRouter } from 'next/navigation'
 import {
   forwardRef,
   useCallback,
@@ -114,6 +115,7 @@ interface AgentsChatAreaProps {
   readonly onMenuClick: () => void
   readonly hideHeader?: boolean
   readonly hideCompactControls?: boolean
+  readonly initialQuery?: string | null
 }
 
 // Note: Chat state is managed internally by useChat when props are not provided.
@@ -1065,11 +1067,13 @@ export const AgentsChatArea = forwardRef<
     onMenuClick,
     hideHeader = false,
     hideCompactControls = false,
+    initialQuery,
   }: AgentsChatAreaProps,
   ref
 ) {
   // Get hostId from URL query params
   const hostId = useHostId()
+  const router = useRouter()
 
   // Get conversation context for loading/saving messages
   const { conversations, currentConversationId, updateMessages } =
@@ -1227,6 +1231,27 @@ export const AgentsChatArea = forwardRef<
     },
     [handleSubmit]
   )
+
+  // Auto-send initial query from URL param (e.g., /agents?query=SELECT...)
+  const initialQuerySentRef = useRef(false)
+  useEffect(() => {
+    const cleaned = initialQuery?.trim()
+    if (cleaned && !initialQuerySentRef.current && status === 'ready') {
+      initialQuerySentRef.current = true
+      sendMessage({
+        parts: [
+          {
+            type: 'text',
+            text: `Analyze this ClickHouse query:\n\n\`\`\`sql\n${cleaned}\n\`\`\``,
+          },
+        ],
+      })
+      // Clear query param to prevent re-send on refresh, preserve host param
+      const url = new URL(window.location.href)
+      url.searchParams.delete('query')
+      router.replace(url.pathname + url.search, { scroll: false })
+    }
+  }, [initialQuery, status, sendMessage, router])
 
   const handleRegenerate = useCallback(() => {
     // Stop current generation

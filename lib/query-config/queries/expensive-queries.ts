@@ -168,7 +168,10 @@ export const expensiveQueriesConfig: QueryConfig = {
     'selected_bytes',
   ],
   columnFormats: {
-    action: [ColumnFormat.Action, ['explain-query', 'open-in-explorer']],
+    action: [
+      ColumnFormat.Action,
+      ['explain-query', 'analyze-with-ai', 'open-in-explorer'],
+    ],
     query: [
       ColumnFormat.CodeDialog,
       { max_truncate: 100, hide_query_comment: true },

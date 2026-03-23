@@ -67,6 +67,18 @@ export function ActionItem<TData extends RowData, TValue>({
         }
       },
     },
+    'analyze-with-ai': {
+      label: 'Analyze with AI',
+      handler: async () => {
+        const query = String(
+          row.getValue('query') || row.getValue('normalized_query') || ''
+        )
+        return {
+          success: true,
+          message: `/agents?query=${encodeURIComponent(query)}&host=${hostId}`,
+        }
+      },
+    },
     optimize: {
       label: 'Optimize Table',
       handler: () => optimizeTable(String(value)),
@@ -90,7 +102,9 @@ export function ActionItem<TData extends RowData, TValue>({
       const result = await handler()
 
       if (
-        (action === 'explain-query' || action === 'open-in-explorer') &&
+        (action === 'explain-query' ||
+          action === 'open-in-explorer' ||
+          action === 'analyze-with-ai') &&
         result.success
       ) {
         router.push(result.message)

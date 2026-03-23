@@ -1,6 +1,12 @@
 'use client'
 
-import { ExternalLinkIcon, Lightbulb, Loader2, Skull } from 'lucide-react'
+import {
+  BotMessageSquare,
+  CircleX,
+  ExternalLinkIcon,
+  Lightbulb,
+  Loader2,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import type { Row, RowData } from '@tanstack/react-table'
 
@@ -29,9 +35,10 @@ const ACTION_CONFIG: Record<
   string,
   { label: string; icon: React.ElementType }
 > = {
-  'kill-query': { label: 'Kill Query', icon: Skull },
+  'kill-query': { label: 'Kill Query', icon: CircleX },
   'open-in-explorer': { label: 'Open in Explorer', icon: ExternalLinkIcon },
   'explain-query': { label: 'Explain Query', icon: Lightbulb },
+  'analyze-with-ai': { label: 'Analyze with AI', icon: BotMessageSquare },
 }
 
 export function InlineActions<TData extends RowData>({
@@ -102,6 +109,8 @@ export function InlineActions<TData extends RowData>({
             href = buildExplorerQueryUrl(getQuery(), hostId)
           } else if (action === 'explain-query') {
             href = `/explain?query=${encodeURIComponent(getQuery())}`
+          } else if (action === 'analyze-with-ai') {
+            href = `/agents?query=${encodeURIComponent(getQuery())}&host=${hostId}`
           }
 
           return (
