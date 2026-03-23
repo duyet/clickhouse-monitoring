@@ -20,6 +20,7 @@ import { createSecurityTools } from './security-tools'
 import { createSettingsTools } from './settings-tools'
 import { createSkillTools } from './skill-tools'
 import { createStorageTools } from './storage-tools'
+import { createAskUserTools } from './ask-user-tools'
 import { createZookeeperTools } from './zookeeper-tools'
 
 /**
@@ -69,5 +70,8 @@ export function createAllTools(hostId: number) {
 
     // Skills
     ...createSkillTools(),
+
+    // User interaction
+    ...createAskUserTools(),
   }
 }
