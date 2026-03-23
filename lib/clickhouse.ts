@@ -44,6 +44,7 @@ export {
 } from './clickhouse/clickhouse-client'
 // Re-export configuration functions
 export {
+  getAndValidateClientConfig,
   getClickHouseConfigs,
   getClickHouseHosts,
 } from './clickhouse/clickhouse-config'

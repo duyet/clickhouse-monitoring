@@ -11,7 +11,7 @@ import { createClient as createClientWeb } from '@clickhouse/client-web'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 import type { ClickHouseConfig } from './types'
 
-import { getClickHouseConfigs } from './clickhouse-config'
+import { getAndValidateClientConfig } from './clickhouse-config'
 import {
   clientPool,
   getConnectionPoolStats,
@@ -59,21 +59,9 @@ export const getClient = async ({
   const isWeb = web === true || (web === undefined && isCloudflareWorkers())
   const clientFactory = isWeb ? createClientWeb : createClient
 
-  let config: ClickHouseConfig
-  if (clientConfig) {
-    config = clientConfig
-  } else {
-    const configs = getClickHouseConfigs()
-    // hostId is now required for API usage; clientConfig should be provided for server-side
-    const targetHostId = hostId ?? 0
-    config = configs[targetHostId]
-
-    if (!config) {
-      throw new Error(
-        `Invalid hostId: ${targetHostId}. Available hosts: 0-${configs.length - 1}`
-      )
-    }
-  }
+  const config: ClickHouseConfig = clientConfig
+    ? clientConfig
+    : getAndValidateClientConfig(hostId ?? 0)
 
   // Check if client exists in pool
   const poolKey = getPoolKey(config, isWeb)

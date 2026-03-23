@@ -27,7 +27,12 @@ import { mapErrorTypeToStatusCode } from '@/lib/api/shared/status-code-mapper'
 import { getAndValidateHostId } from '@/lib/api/shared/validators'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchData } from '@/lib/clickhouse'
+import {
+  fetchData,
+  getAndValidateClientConfig,
+  getClient,
+} from '@/lib/clickhouse'
+import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { debug, error as logError } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
@@ -106,6 +111,57 @@ function parsePlanSettings(
 
   if (validated.length === 0) return { clause: '' }
   return { clause: `${validated.join(', ')} ` }
+}
+
+/**
+ * EXPLAIN AST and EXPLAIN SYNTAX return raw tree-like text that ClickHouse
+ * does not wrap in JSONEachRow format. Fetch the response as plain text and
+ * convert each line into the {explain: string} shape the frontend expects.
+ */
+async function fetchExplainAsText(
+  explainQuery: string,
+  hostId: number
+): Promise<
+  | { data: { explain: string }[]; metadata: Record<string, string | number> }
+  | { error: { type: string; message: string } }
+> {
+  let clientConfig
+  try {
+    clientConfig = getAndValidateClientConfig(hostId)
+  } catch (err) {
+    return {
+      error: {
+        type: 'validation_error',
+        message: err instanceof Error ? err.message : String(err),
+      },
+    }
+  }
+
+  try {
+    const client = await getClient({ clientConfig })
+    const resultSet = await client.query({
+      query: QUERY_COMMENT + explainQuery,
+      format: 'TabSeparatedRaw',
+    })
+    const text = await resultSet.text()
+    const lines = text.split('\n').filter((line) => line.length > 0)
+    return {
+      data: lines.map((line) => ({ explain: line })),
+      metadata: {
+        queryId: resultSet.query_id,
+        sql: explainQuery,
+        host: clientConfig.host,
+      },
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return {
+      error: {
+        type: 'query_error',
+        message: `${msg} (host: ${clientConfig.host})`,
+      },
+    }
+  }
 }
 
 /**
@@ -225,7 +281,39 @@ export async function GET(request: NextRequest): Promise<Response> {
     explainQuery = `EXPLAIN ${query}`
   }
 
-  // Execute the query
+  // AST and SYNTAX modes return raw text that is not valid JSONEachRow.
+  // Fetch as plain text and convert to the expected shape.
+  const isTextMode = modeParam === 'AST' || modeParam === 'SYNTAX'
+
+  if (isTextMode) {
+    const textResult = await fetchExplainAsText(explainQuery, hostId)
+
+    if ('error' in textResult) {
+      logError('[GET /api/v1/explain] Query error:', textResult.error)
+      const errorType =
+        (textResult.error.type as ApiErrorType) ?? ApiErrorType.QueryError
+      return createErrorResponse(
+        {
+          type: errorType,
+          message: textResult.error.message,
+        },
+        mapErrorTypeToStatusCode(errorType),
+        { ...ROUTE_CONTEXT, hostId }
+      )
+    }
+
+    return createCachedResponse(
+      textResult.data,
+      'no-store, no-cache, must-revalidate',
+      {
+        sql: explainQuery,
+        rows: textResult.data.length,
+        queryId: String(textResult.metadata.queryId || ''),
+      }
+    )
+  }
+
+  // PLAN, PIPELINE, ESTIMATE modes return valid JSONEachRow
   const result = await fetchData({
     query: explainQuery,
     hostId,
