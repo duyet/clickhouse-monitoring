@@ -1,6 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js'
 
+import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { fetchData } from '@/lib/clickhouse'
 
 const SYSTEM_TABLES_TEXT = `Key ClickHouse System Tables for Monitoring:
@@ -100,7 +100,10 @@ export function registerResources(server: McpServer) {
   server.resource(
     'databases',
     'clickhouse://databases',
-    { description: 'List all ClickHouse databases', mimeType: 'application/json' },
+    {
+      description: 'List all ClickHouse databases',
+      mimeType: 'application/json',
+    },
     async () => {
       const data = await queryClickHouse(
         'SELECT name, engine, comment FROM system.databases ORDER BY name'
@@ -111,7 +114,9 @@ export function registerResources(server: McpServer) {
 
   server.resource(
     'database-tables',
-    new ResourceTemplate('clickhouse://databases/{database}/tables', { list: undefined }),
+    new ResourceTemplate('clickhouse://databases/{database}/tables', {
+      list: undefined,
+    }),
     {
       description: 'List tables in a ClickHouse database',
       mimeType: 'application/json',
@@ -128,7 +133,10 @@ export function registerResources(server: McpServer) {
 
   server.resource(
     'table-schema',
-    new ResourceTemplate('clickhouse://databases/{database}/tables/{table}/schema', { list: undefined }),
+    new ResourceTemplate(
+      'clickhouse://databases/{database}/tables/{table}/schema',
+      { list: undefined }
+    ),
     {
       description: 'Get column schema for a ClickHouse table',
       mimeType: 'application/json',
@@ -146,7 +154,10 @@ export function registerResources(server: McpServer) {
 
   server.resource(
     'table-parts',
-    new ResourceTemplate('clickhouse://databases/{database}/tables/{table}/parts', { list: undefined }),
+    new ResourceTemplate(
+      'clickhouse://databases/{database}/tables/{table}/parts',
+      { list: undefined }
+    ),
     {
       description: 'Get active parts info for a ClickHouse table',
       mimeType: 'application/json',
@@ -165,11 +176,13 @@ export function registerResources(server: McpServer) {
 
 function jsonResource(uri: string, data: unknown[]) {
   return {
-    contents: [{
-      uri,
-      mimeType: 'application/json' as const,
-      text: JSON.stringify(data, null, 2),
-    }],
+    contents: [
+      {
+        uri,
+        mimeType: 'application/json' as const,
+        text: JSON.stringify(data, null, 2),
+      },
+    ],
   }
 }
 
