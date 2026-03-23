@@ -17,6 +17,7 @@ import { createHealthTools } from './health-tools'
 import { createIncidentTools } from './incident-tools'
 import { createLogTools } from './log-tools'
 import { createMergeTools } from './merge-tools'
+import { createMigrationTools } from './migration-tools'
 import { createOptimizerTools } from './optimizer-tools'
 import { createQueryTools } from './query-tools'
 import { createReplicationTools } from './replication-tools'
@@ -93,5 +94,8 @@ export function createAllTools(hostId: number) {
 
     // Incident response
     ...createIncidentTools(hostId),
+
+    // Schema migration
+    ...createMigrationTools(hostId),
   }
 }
