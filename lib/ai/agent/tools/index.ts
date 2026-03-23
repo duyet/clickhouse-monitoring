@@ -9,6 +9,7 @@ import 'server-only'
 
 import { createAnomalyTools } from './anomaly-tools'
 import { createAskUserTools } from './ask-user-tools'
+import { createCapacityTools } from './capacity-tools'
 import { createClusterTools } from './cluster-tools'
 import { createControlTools } from './control-tools'
 import { createDashboardTools } from './dashboard-tools'
@@ -85,5 +86,8 @@ export function createAllTools(hostId: number) {
 
     // Query optimization
     ...createOptimizerTools(hostId),
+
+    // Capacity planning
+    ...createCapacityTools(hostId),
   }
 }
