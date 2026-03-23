@@ -155,10 +155,42 @@ async function fetchExplainAsText(
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
+    const msgLower = msg.toLowerCase()
+
+    // Categorize the error type using the same patterns as fetchData
+    let errorType = 'query_error'
+    if (
+      msgLower.includes('table') &&
+      msgLower.includes('not') &&
+      msgLower.includes('exist')
+    ) {
+      errorType = 'table_not_found'
+    } else if (msgLower.includes('permission') || msgLower.includes('access')) {
+      errorType = 'permission_error'
+    } else if (
+      msgLower.includes('network') ||
+      msgLower.includes('connection') ||
+      msg.includes('fetch failed') ||
+      msg.includes('ECONNREFUSED') ||
+      msg.includes('ETIMEDOUT') ||
+      msg.includes('ENOTFOUND') ||
+      msg.includes('getaddrinfo') ||
+      msg.includes('socket hang up') ||
+      msg.includes('UND_ERR')
+    ) {
+      errorType = 'network_error'
+    }
+
+    // Log the full error and host server-side for diagnostics; do not expose host in response
+    logError(
+      `[fetchExplainAsText] Query failed (host: ${clientConfig.host}):`,
+      msg
+    )
+
     return {
       error: {
-        type: 'query_error',
-        message: `${msg} (host: ${clientConfig.host})`,
+        type: errorType,
+        message: msg,
       },
     }
   }
