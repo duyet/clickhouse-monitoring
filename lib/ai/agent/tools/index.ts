@@ -21,6 +21,7 @@ import { createSecurityTools } from './security-tools'
 import { createSettingsTools } from './settings-tools'
 import { createSkillTools } from './skill-tools'
 import { createStorageTools } from './storage-tools'
+import { createAnomalyTools } from './anomaly-tools'
 import { createZookeeperTools } from './zookeeper-tools'
 
 /**
@@ -73,5 +74,8 @@ export function createAllTools(hostId: number) {
 
     // User interaction
     ...createAskUserTools(),
+
+    // Anomaly detection
+    ...createAnomalyTools(hostId),
   }
 }
