@@ -1,4 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js'
+
+import { fetchData } from '@/lib/clickhouse'
 
 const SYSTEM_TABLES_TEXT = `Key ClickHouse System Tables for Monitoring:
 
@@ -93,4 +96,93 @@ export function registerResources(server: McpServer) {
       ],
     })
   )
+
+  server.resource(
+    'databases',
+    'clickhouse://databases',
+    { description: 'List all ClickHouse databases', mimeType: 'application/json' },
+    async () => {
+      const data = await queryClickHouse(
+        'SELECT name, engine, comment FROM system.databases ORDER BY name'
+      )
+      return jsonResource('clickhouse://databases', data)
+    }
+  )
+
+  server.resource(
+    'database-tables',
+    new ResourceTemplate('clickhouse://databases/{database}/tables', { list: undefined }),
+    {
+      description: 'List tables in a ClickHouse database',
+      mimeType: 'application/json',
+    },
+    async (uri, variables) => {
+      const database = String(variables.database)
+      const data = await queryClickHouse(
+        'SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {db:String} ORDER BY total_bytes DESC',
+        { db: database }
+      )
+      return jsonResource(uri.href, data)
+    }
+  )
+
+  server.resource(
+    'table-schema',
+    new ResourceTemplate('clickhouse://databases/{database}/tables/{table}/schema', { list: undefined }),
+    {
+      description: 'Get column schema for a ClickHouse table',
+      mimeType: 'application/json',
+    },
+    async (uri, variables) => {
+      const database = String(variables.database)
+      const table = String(variables.table)
+      const data = await queryClickHouse(
+        'SELECT name, type, default_kind, default_expression, comment FROM system.columns WHERE database = {db:String} AND table = {tbl:String} ORDER BY position',
+        { db: database, tbl: table }
+      )
+      return jsonResource(uri.href, data)
+    }
+  )
+
+  server.resource(
+    'table-parts',
+    new ResourceTemplate('clickhouse://databases/{database}/tables/{table}/parts', { list: undefined }),
+    {
+      description: 'Get active parts info for a ClickHouse table',
+      mimeType: 'application/json',
+    },
+    async (uri, variables) => {
+      const database = String(variables.database)
+      const table = String(variables.table)
+      const data = await queryClickHouse(
+        'SELECT partition, name, rows, formatReadableSize(bytes_on_disk) AS size, modification_time FROM system.parts WHERE database = {db:String} AND table = {tbl:String} AND active ORDER BY modification_time DESC LIMIT 50',
+        { db: database, tbl: table }
+      )
+      return jsonResource(uri.href, data)
+    }
+  )
+}
+
+function jsonResource(uri: string, data: unknown[]) {
+  return {
+    contents: [{
+      uri,
+      mimeType: 'application/json' as const,
+      text: JSON.stringify(data, null, 2),
+    }],
+  }
+}
+
+async function queryClickHouse(
+  query: string,
+  query_params?: Record<string, string>
+): Promise<unknown[]> {
+  const { data } = await fetchData<unknown[]>({
+    query,
+    query_params,
+    format: 'JSONEachRow',
+    clickhouse_settings: { readonly: '1' },
+    hostId: 0,
+  })
+  return data ?? []
 }
