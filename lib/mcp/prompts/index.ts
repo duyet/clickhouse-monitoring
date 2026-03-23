@@ -60,8 +60,7 @@ Summarize findings with severity levels (OK/WARNING/CRITICAL).`,
     'Analyze slow queries and suggest optimizations',
     {
       hostId: z.number().optional().describe('Host index (default: 0)'),
-      lastHours: z
-        .coerce
+      lastHours: z.coerce
         .number()
         .int()
         .positive()
@@ -144,8 +143,7 @@ Summarize replication health with severity levels (OK/WARNING/CRITICAL).`,
     'Analyze capacity trends and project future needs',
     {
       hostId: z.number().optional().describe('Host index (default: 0)'),
-      lastDays: z
-        .coerce
+      lastDays: z.coerce
         .number()
         .int()
         .positive()

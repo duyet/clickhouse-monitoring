@@ -1,8 +1,7 @@
-import { formatBytes } from '@/lib/utils'
-
 import { readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
+import { formatBytes } from '@/lib/utils'
 
 export function createCapacityTools(hostId: number) {
   return {
@@ -94,8 +93,8 @@ export function createCapacityTools(hostId: number) {
 
         let projections = null
         if (Array.isArray(storageGrowth) && storageGrowth.length >= 7) {
-          const dailyBytes = storageGrowth.map(
-            (row: Record<string, unknown>) => Number(row.daily_bytes || 0)
+          const dailyBytes = storageGrowth.map((row: Record<string, unknown>) =>
+            Number(row.daily_bytes || 0)
           )
           const avgDailyGrowth =
             dailyBytes.reduce((a: number, b: number) => a + b, 0) /

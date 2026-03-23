@@ -14,6 +14,7 @@ import { createClusterTools } from './cluster-tools'
 import { createControlTools } from './control-tools'
 import { createDashboardTools } from './dashboard-tools'
 import { createHealthTools } from './health-tools'
+import { createIncidentTools } from './incident-tools'
 import { createLogTools } from './log-tools'
 import { createMergeTools } from './merge-tools'
 import { createOptimizerTools } from './optimizer-tools'
@@ -89,5 +90,8 @@ export function createAllTools(hostId: number) {
 
     // Capacity planning
     ...createCapacityTools(hostId),
+
+    // Incident response
+    ...createIncidentTools(hostId),
   }
 }
