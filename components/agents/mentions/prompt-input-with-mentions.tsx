@@ -50,8 +50,7 @@ export function PromptInputTextareaWithMentions({
   )
 
   const autocomplete = useAutocomplete()
-  const { tables, resources, skills, commands, isLoading } =
-    useAutocompleteData()
+  const { tables, resources, skills, commands } = useAutocompleteData()
 
   // Build filterable items based on current trigger
   const allItems = useMemo<AutocompleteItem[]>(() => {
@@ -82,7 +81,7 @@ export function PromptInputTextareaWithMentions({
         )
       : allItems
     autocomplete.setFilteredItems(filtered.slice(0, 50))
-  }, [autocomplete.state.query, allItems, autocomplete.setFilteredItems])
+  }, [autocomplete.state.query, allItems, autocomplete])
 
   // Compute anchor position for popover
   const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(
@@ -107,11 +106,7 @@ export function PromptInputTextareaWithMentions({
     } else {
       setAnchor(null)
     }
-  }, [
-    autocomplete.state.isOpen,
-    autocomplete.state.triggerIndex,
-    autocomplete.state.query,
-  ])
+  }, [autocomplete.state.isOpen, autocomplete.state.triggerIndex])
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -119,8 +114,25 @@ export function PromptInputTextareaWithMentions({
       setValue(newValue)
       autocomplete.handleTextChange(newValue, e.currentTarget.selectionStart)
     },
-    [setValue, autocomplete.handleTextChange]
+    [setValue, autocomplete]
   )
+
+  const handleSubmit = useCallback(async () => {
+    if (!value.trim() || disabled) return
+
+    const resolved = await resolveMentionContext(
+      autocomplete.mentions,
+      autocomplete.slashCommand,
+      value,
+      { hostId }
+    )
+
+    onResolvedSubmit?.(resolved)
+
+    // Clear state
+    setValue('')
+    autocomplete.clear()
+  }, [value, disabled, autocomplete, hostId, onResolvedSubmit, setValue])
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -146,41 +158,15 @@ export function PromptInputTextareaWithMentions({
         handleSubmit()
       }
     },
-    [autocomplete, setValue]
+    [autocomplete, setValue, handleSubmit]
   )
 
   const handleSelect = useCallback(
     (item: AutocompleteItem) => {
       autocomplete.handleSelect(item, textareaRef, setValue)
     },
-    [autocomplete.handleSelect, setValue]
+    [autocomplete, setValue]
   )
-
-  const handleSubmit = useCallback(async () => {
-    if (!value.trim() || disabled) return
-
-    const resolved = await resolveMentionContext(
-      autocomplete.mentions,
-      autocomplete.slashCommand,
-      value,
-      { hostId }
-    )
-
-    onResolvedSubmit?.(resolved)
-
-    // Clear state
-    setValue('')
-    autocomplete.clear()
-  }, [
-    value,
-    disabled,
-    autocomplete.mentions,
-    autocomplete.slashCommand,
-    hostId,
-    onResolvedSubmit,
-    setValue,
-    autocomplete.clear,
-  ])
 
   const hasMentions =
     autocomplete.mentions.length > 0 || autocomplete.slashCommand !== null

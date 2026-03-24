@@ -71,9 +71,9 @@ export async function resolveMentionContext(
 
   // Build full message
   const contextBlock =
-    contextSections.length > 0 ? contextSections.join('\n\n') + '\n\n' : ''
+    contextSections.length > 0 ? `${contextSections.join('\n\n')}\n\n` : ''
 
-  const messageBody = contextBlock + userText
+  const messageBody = `${contextBlock}${userText}`
 
   // Apply slash command template if present
   if (slashCommand?.promptTemplate) {

@@ -61,11 +61,6 @@ import {
   MessageResponse,
 } from '@/components/ai-elements/message'
 import {
-  PromptInput,
-  PromptInputSubmit,
-  PromptInputTextarea,
-} from '@/components/ai-elements/prompt-input'
-import {
   Reasoning,
   ReasoningContent,
   ReasoningTrigger,

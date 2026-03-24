@@ -63,10 +63,17 @@ export function getCaretCoordinates(
   div.appendChild(span)
 
   const coordinates = {
-    top: span.offsetTop + parseInt(computed.borderTopWidth) - element.scrollTop,
+    top:
+      span.offsetTop +
+      Number.parseInt(computed.borderTopWidth, 10) -
+      element.scrollTop,
     left:
-      span.offsetLeft + parseInt(computed.borderLeftWidth) - element.scrollLeft,
-    height: parseInt(computed.lineHeight) || parseInt(computed.fontSize) * 1.2,
+      span.offsetLeft +
+      Number.parseInt(computed.borderLeftWidth, 10) -
+      element.scrollLeft,
+    height:
+      Number.parseInt(computed.lineHeight, 10) ||
+      Number.parseInt(computed.fontSize, 10) * 1.2,
   }
 
   document.body.removeChild(div)
