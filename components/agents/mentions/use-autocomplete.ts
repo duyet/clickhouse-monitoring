@@ -4,10 +4,12 @@ import type { AutocompleteItem, Mention, SlashCommand } from './types'
 
 import { useCallback, useRef, useState } from 'react'
 
-// Generate simple unique IDs
-let idCounter = 0
+// Generate unique IDs using crypto.randomUUID when available (avoids HMR state issues)
 function uniqueId() {
-  return `mention-${++idCounter}-${Date.now()}`
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return `mention-${crypto.randomUUID()}`
+  }
+  return `mention-${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
 interface AutocompleteState {
@@ -38,6 +40,7 @@ export interface UseAutocompleteReturn {
     setText: (v: string) => void
   ) => void
   removeMention: (id: string) => void
+  setSlashCommand: (command: SlashCommand | null) => void
   close: () => void
   clear: () => void
   filteredItems: AutocompleteItem[]
@@ -211,7 +214,7 @@ export function useAutocomplete(): UseAutocompleteReturn {
       // Track the selection
       if (item.type === 'command') {
         setSlashCommand({
-          name: item.value,
+          name: item.label,
           label: `/${item.label}`,
           description: item.description ?? '',
           promptTemplate: item.value,
@@ -220,6 +223,7 @@ export function useAutocomplete(): UseAutocompleteReturn {
         setMentions((prev) => {
           // Avoid duplicate mentions
           if (prev.some((m) => m.value === item.value)) return prev
+          const parts = item.value.split('.')
           return [
             ...prev,
             {
@@ -227,10 +231,9 @@ export function useAutocomplete(): UseAutocompleteReturn {
               type: item.type as Mention['type'],
               label: item.label,
               value: item.value,
-              database:
-                item.type === 'table' ? item.value.split('.')[0] : undefined,
+              database: item.type === 'table' ? parts[0] : undefined,
               table:
-                item.type === 'table' ? item.value.split('.')[1] : undefined,
+                item.type === 'table' ? parts.slice(1).join('.') : undefined,
             },
           ]
         })
@@ -253,6 +256,7 @@ export function useAutocomplete(): UseAutocompleteReturn {
     handleKeyDown,
     handleSelect,
     removeMention,
+    setSlashCommand,
     close,
     clear,
     filteredItems,

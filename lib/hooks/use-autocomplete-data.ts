@@ -19,7 +19,8 @@ interface TableRow {
 
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url)
-  if (!res.ok) throw new Error('Failed to fetch')
+  if (!res.ok)
+    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`)
   return res.json() as Promise<T>
 }
 
@@ -30,7 +31,9 @@ export function useAutocompleteData() {
   const { data: tablesData, isLoading: tablesLoading } = useSWR<{
     data: TableRow[]
   }>(
-    `/api/v1/data?query=${encodeURIComponent("SELECT database, name, engine, toString(total_rows) as total_rows FROM system.tables WHERE database != 'INFORMATION_SCHEMA' AND database != 'information_schema' ORDER BY database, name LIMIT 500")}&hostId=${hostId}`,
+    hostId != null
+      ? `/api/v1/data?query=${encodeURIComponent("SELECT database, name, engine, toString(total_rows) as total_rows FROM system.tables WHERE database != 'INFORMATION_SCHEMA' AND database != 'information_schema' ORDER BY database, name LIMIT 500")}&hostId=${hostId}`
+      : null,
     (url: string) => fetchJson<{ data: TableRow[] }>(url),
     { revalidateOnFocus: false, dedupingInterval: 60000 }
   )

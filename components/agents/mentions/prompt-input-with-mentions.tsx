@@ -179,7 +179,7 @@ export function PromptInputTextareaWithMentions({
           {autocomplete.slashCommand && (
             <SlashCommandBadge
               command={autocomplete.slashCommand}
-              onRemove={() => autocomplete.clear()}
+              onRemove={() => autocomplete.setSlashCommand(null)}
             />
           )}
           {autocomplete.mentions.map((mention) => (

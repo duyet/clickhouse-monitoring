@@ -43,39 +43,40 @@ export function getCaretCoordinates(
   div.id = 'caret-position-mirror'
   document.body.appendChild(div)
 
-  const style = div.style
-  const computed = window.getComputedStyle(element)
+  try {
+    const style = div.style
+    const computed = window.getComputedStyle(element)
 
-  style.whiteSpace = 'pre-wrap'
-  style.wordWrap = 'break-word'
-  style.position = 'absolute'
-  style.visibility = 'hidden'
-  style.overflow = 'hidden'
+    style.whiteSpace = 'pre-wrap'
+    style.wordWrap = 'break-word'
+    style.position = 'absolute'
+    style.visibility = 'hidden'
+    style.overflow = 'hidden'
 
-  for (const prop of MIRROR_PROPERTIES) {
-    style.setProperty(prop, computed.getPropertyValue(prop))
+    for (const prop of MIRROR_PROPERTIES) {
+      style.setProperty(prop, computed.getPropertyValue(prop))
+    }
+
+    div.textContent = element.value.substring(0, position)
+
+    const span = document.createElement('span')
+    span.textContent = element.value.substring(position) || '.'
+    div.appendChild(span)
+
+    return {
+      top:
+        span.offsetTop +
+        Number.parseInt(computed.borderTopWidth, 10) -
+        element.scrollTop,
+      left:
+        span.offsetLeft +
+        Number.parseInt(computed.borderLeftWidth, 10) -
+        element.scrollLeft,
+      height:
+        Number.parseInt(computed.lineHeight, 10) ||
+        Number.parseInt(computed.fontSize, 10) * 1.2,
+    }
+  } finally {
+    if (div.parentNode) div.parentNode.removeChild(div)
   }
-
-  div.textContent = element.value.substring(0, position)
-
-  const span = document.createElement('span')
-  span.textContent = element.value.substring(position) || '.'
-  div.appendChild(span)
-
-  const coordinates = {
-    top:
-      span.offsetTop +
-      Number.parseInt(computed.borderTopWidth, 10) -
-      element.scrollTop,
-    left:
-      span.offsetLeft +
-      Number.parseInt(computed.borderLeftWidth, 10) -
-      element.scrollLeft,
-    height:
-      Number.parseInt(computed.lineHeight, 10) ||
-      Number.parseInt(computed.fontSize, 10) * 1.2,
-  }
-
-  document.body.removeChild(div)
-  return coordinates
 }
