@@ -3,8 +3,8 @@ import type { ClickHouseClient } from '@clickhouse/client'
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 
 import { type NextRequest, NextResponse } from 'next/server'
-import { EVENTS_TABLE } from '@/lib/app-tables'
 import { getHostIdFromParams } from '@/lib/api/error-handler'
+import { EVENTS_TABLE } from '@/lib/app-tables'
 import { getClient } from '@/lib/clickhouse'
 import { ErrorLogger } from '@/lib/logger'
 
