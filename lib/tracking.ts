@@ -2,9 +2,8 @@ import type { ClickHouseClient } from '@clickhouse/client'
 
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 
+import { EVENTS_TABLE } from '@/lib/app-tables'
 import { ErrorLogger } from '@/lib/logger'
-
-const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 
 const log = (...args: string[]) =>
   ErrorLogger.logDebug(`[/api/init] ${args.join(' ')}`, {

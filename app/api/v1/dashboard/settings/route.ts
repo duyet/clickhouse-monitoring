@@ -7,13 +7,16 @@
 import type { ApiResponse } from '@/lib/api/types'
 
 import { TABLE_SETTINGS } from '@/lib/api/dashboard-api'
+import { APP_DATABASE, DASHBOARD_SETTINGS_TABLE_SHORT } from '@/lib/app-tables'
 import {
   createErrorResponse as createApiErrorResponse,
   createValidationError,
 } from '@/lib/api/error-handler'
 import { ApiErrorType } from '@/lib/api/types'
 import { getClient } from '@/lib/clickhouse'
+import { checkTableExists } from '@/lib/clickhouse-version'
 import { debug, error } from '@/lib/logger'
+
 
 const ROUTE_CONTEXT_GET = { route: '/api/v1/dashboard/settings', method: 'GET' }
 const ROUTE_CONTEXT_POST = {
@@ -21,14 +24,40 @@ const ROUTE_CONTEXT_POST = {
   method: 'POST',
 }
 
+const EMPTY_SETTINGS_RESPONSE = (
+  hostId: number
+): ApiResponse<{ params: Record<string, string> }> => ({
+  success: true,
+  data: { params: {} },
+  metadata: {
+    queryId: 'dashboard-settings-get',
+    duration: 0,
+    rows: 0,
+    host: String(hostId),
+  },
+})
+
 export async function GET(request: Request): Promise<Response> {
   debug('[GET /api/v1/dashboard/settings] Fetching settings')
 
+  const { searchParams } = new URL(request.url)
+  const hostId = Number(searchParams.get('hostId') ?? '0')
+
   try {
-    const { searchParams } = new URL(request.url)
-    const hostId = Number(searchParams.get('hostId') ?? '0')
 
     debug('[GET /api/v1/dashboard/settings]', { hostId })
+
+    const exists = await checkTableExists(
+      hostId,
+      APP_DATABASE,
+      DASHBOARD_SETTINGS_TABLE_SHORT
+    )
+    if (!exists) {
+      debug('[GET /api/v1/dashboard/settings] Table does not exist yet', {
+        table: TABLE_SETTINGS,
+      })
+      return Response.json(EMPTY_SETTINGS_RESPONSE(hostId), { status: 200 })
+    }
 
     const query = `
       SELECT key, value
@@ -45,7 +74,6 @@ export async function GET(request: Request): Promise<Response> {
       value: string
     }[]
 
-    // Convert rows to a key-value object
     const params = rows.reduce(
       (acc, row) => {
         acc[row.key] = row.value
@@ -77,28 +105,8 @@ export async function GET(request: Request): Promise<Response> {
 
     error('[GET /api/v1/dashboard/settings] Error:', errorMessage)
 
-    // If table doesn't exist yet, return empty params
-    if (
-      errorMessage.includes('Table') &&
-      errorMessage.includes("doesn't exist")
-    ) {
-      const response: ApiResponse<{ params: Record<string, string> }> = {
-        success: true,
-        data: { params: {} },
-        metadata: {
-          queryId: 'dashboard-settings-get',
-          duration: 0,
-          rows: 0,
-          host: '0',
-        },
-      }
-
-      return Response.json(response, {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+    if (errorMessage.includes('UNKNOWN_TABLE')) {
+      return Response.json(EMPTY_SETTINGS_RESPONSE(hostId), { status: 200 })
     }
 
     return createApiErrorResponse(

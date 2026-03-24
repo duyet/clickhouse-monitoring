@@ -1,16 +1,16 @@
 import type { QueryConfig } from '@/types/query-config'
 
+import { EVENTS_TABLE } from '@/lib/app-tables'
 import { ColumnFormat } from '@/types/column-format'
 
 export const pageViewsConfig: QueryConfig = {
   name: 'page-views',
-  description: 'Self analytics: Page views from system.monitoring_events',
-  // system.monitoring_events may not exist if the monitoring app hasn't created it yet
+  description: `Self analytics: Page views from ${EVENTS_TABLE}`,
   optional: true,
-  tableCheck: 'system.monitoring_events',
+  tableCheck: EVENTS_TABLE,
   sql: `
     SELECT kind, actor, data, extra, event_time, event_date
-    FROM system.monitoring_events
+    FROM ${EVENTS_TABLE}
     WHERE kind = 'PageView'
       AND (if({event_date: String} != '', event_date = {event_date: String}, true))
     ORDER BY event_time DESC
