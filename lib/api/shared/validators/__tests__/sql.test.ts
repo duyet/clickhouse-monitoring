@@ -114,6 +114,20 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
       ).not.toThrow()
     })
 
+    test('should accept EXPLAIN queries', () => {
+      expect(() =>
+        validateSqlQuery('EXPLAIN SELECT * FROM system.tables')
+      ).not.toThrow()
+      expect(() =>
+        validateSqlQuery('EXPLAIN PIPELINE SELECT * FROM system.processes')
+      ).not.toThrow()
+      expect(() => validateSqlQuery('EXPLAIN AST SELECT 1')).not.toThrow()
+      expect(() => validateSqlQuery('EXPLAIN SYNTAX SELECT 1')).not.toThrow()
+      expect(() =>
+        validateSqlQuery('EXPLAIN PLAN SELECT count() FROM system.query_log')
+      ).not.toThrow()
+    })
+
     test('should accept complex SELECT queries', () => {
       expect(() =>
         validateSqlQuery(`
@@ -258,7 +272,7 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
 
     test('should reject SHOW queries', () => {
       expect(() => validateSqlQuery('SHOW TABLES')).toThrow(
-        'Only SELECT, WITH (CTE), and DESCRIBE queries are allowed'
+        'Only SELECT, WITH (CTE), DESCRIBE, and EXPLAIN queries are allowed'
       )
     })
   })

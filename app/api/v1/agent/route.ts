@@ -107,21 +107,46 @@ export async function POST(request: Request) {
   })
 
   // Build UI messages in the correct format for AI SDK v6
-  // If client sent proper UIMessage format, preserve it; otherwise create new
-  const uiMessages =
-    lastUserMessage &&
-    typeof lastUserMessage === 'object' &&
-    'id' in lastUserMessage &&
-    'parts' in lastUserMessage &&
-    Array.isArray(lastUserMessage.parts)
-      ? [lastUserMessage as { id: string; role: 'user'; parts: Array<unknown> }]
-      : [
-          {
-            id: crypto.randomUUID(),
-            role: 'user' as const,
-            parts: [{ type: 'text' as const, text: userMessage }],
-          },
-        ]
+  // Forward full conversation history so the LLM has multi-turn context
+  const uiMessages: Array<{
+    id: string
+    role: string
+    parts: Array<unknown>
+  }> = []
+
+  if (body.messages && body.messages.length > 0) {
+    for (const msg of body.messages) {
+      // Messages already in UIMessage format (have id + parts)
+      if (
+        'id' in msg &&
+        typeof msg.id === 'string' &&
+        'parts' in msg &&
+        Array.isArray(msg.parts)
+      ) {
+        uiMessages.push({
+          id: msg.id,
+          role: msg.role,
+          parts: msg.parts,
+        })
+      } else if ('content' in msg && typeof msg.content === 'string') {
+        // Legacy format: convert to UIMessage
+        uiMessages.push({
+          id: crypto.randomUUID(),
+          role: msg.role,
+          parts: [{ type: 'text' as const, text: msg.content }],
+        })
+      }
+    }
+  }
+
+  // Fallback: if no messages were parsed, create one from the extracted text
+  if (uiMessages.length === 0 && userMessage) {
+    uiMessages.push({
+      id: crypto.randomUUID(),
+      role: 'user' as const,
+      parts: [{ type: 'text' as const, text: userMessage }],
+    })
+  }
 
   // Debug logging
   console.log(

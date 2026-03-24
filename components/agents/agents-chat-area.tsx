@@ -49,6 +49,10 @@ import type { QueryConfig } from '@/types/query-config'
 
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
 import { AgentInsightCards } from '@/components/agents/agent-insight-cards'
+import {
+  AskUserWidget,
+  isAskUserOutput,
+} from '@/components/agents/ask-user-widget'
 import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
 import {
   ConversationContent,
@@ -202,6 +206,7 @@ function ResultTable({
  */
 function ToolCallPart({
   part,
+  onToolResult,
 }: {
   readonly part: {
     type: string
@@ -213,6 +218,7 @@ function ToolCallPart({
     errorText?: string
     title?: string
   }
+  readonly onToolResult?: (toolCallId: string, result: string) => void
 }) {
   const toolName = part.toolName || part.type.replace('tool-', '')
 
@@ -383,9 +389,19 @@ function ToolCallPart({
             </div>
           ) : null}
 
-          {/* Tool output */}
+          {/* Tool output — ask_user gets interactive widget */}
           {hasOutput && part.output != null ? (
-            <div className="px-1 py-1">{renderToolOutput(part.output)}</div>
+            <div className="px-1 py-1">
+              {isAskUserOutput(part.output) && onToolResult ? (
+                <AskUserWidget
+                  output={part.output}
+                  toolCallId={part.toolCallId}
+                  onSubmit={onToolResult}
+                />
+              ) : (
+                renderToolOutput(part.output)
+              )}
+            </div>
           ) : null}
 
           {/* Tool error */}
@@ -680,6 +696,7 @@ function ChatMessage({
   responseDurationMs,
   onRegenerate,
   onSuggestionClick,
+  onToolResult,
 }: {
   readonly message: UIMessage
   readonly allMessages: readonly UIMessage[]
@@ -688,6 +705,7 @@ function ChatMessage({
   readonly responseDurationMs?: number
   readonly onRegenerate?: () => void
   readonly onSuggestionClick?: (suggestion: string) => void
+  readonly onToolResult?: (toolCallId: string, result: string) => void
 }) {
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
@@ -805,7 +823,13 @@ function ChatMessage({
 
             // Tool call part (dynamic tool - from our custom agent)
             if (part.type === 'dynamic-tool') {
-              return <ToolCallPart key={stableKey} part={part as any} />
+              return (
+                <ToolCallPart
+                  key={stableKey}
+                  part={part as any}
+                  onToolResult={onToolResult}
+                />
+              )
             }
 
             // Static typed tool call part (type starts with 'tool-')
@@ -813,7 +837,13 @@ function ChatMessage({
               typeof part.type === 'string' &&
               part.type.startsWith('tool-')
             ) {
-              return <ToolCallPart key={stableKey} part={part as any} />
+              return (
+                <ToolCallPart
+                  key={stableKey}
+                  part={part as any}
+                  onToolResult={onToolResult}
+                />
+              )
             }
 
             // Step start part
@@ -1081,7 +1111,15 @@ export const AgentsChatArea = forwardRef<
   // Get disabled tools so the API can filter them out
   const { disabledTools } = useToolConfig()
 
-  const { messages, sendMessage, setMessages, status, error, stop } = useChat({
+  const {
+    messages,
+    sendMessage,
+    setMessages,
+    status,
+    error,
+    stop,
+    addToolResult,
+  } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/v1/agent',
       body: { hostId, model, disabledTools },
@@ -1208,6 +1246,14 @@ export const AgentsChatArea = forwardRef<
     [isLoading, sendMessage]
   )
 
+  // Handle ask_user tool results — submit user response back to the agent
+  const handleToolResult = useCallback(
+    (toolCallId: string, result: string) => {
+      addToolResult({ toolCallId, tool: 'ask_user', output: result })
+    },
+    [addToolResult]
+  )
+
   const handleClear = useCallback(() => {
     // Stop any active streaming first
     stop()
@@ -1240,11 +1286,16 @@ export const AgentsChatArea = forwardRef<
   )
 
   // Auto-send initial query from URL param (e.g., /agents?query=SELECT...)
-  const initialQuerySentRef = useRef(false)
+  // Track which query was sent (not just boolean) so re-navigation works
+  const initialQuerySentRef = useRef<string | null>(null)
   useEffect(() => {
     const cleaned = initialQuery?.trim()
-    if (cleaned && !initialQuerySentRef.current && status === 'ready') {
-      initialQuerySentRef.current = true
+    if (
+      cleaned &&
+      cleaned !== initialQuerySentRef.current &&
+      status === 'ready'
+    ) {
+      initialQuerySentRef.current = cleaned
       sendMessage({
         parts: [
           {
@@ -1509,6 +1560,7 @@ export const AgentsChatArea = forwardRef<
                       isLastUserMessage ? handleRegenerate : undefined
                     }
                     onSuggestionClick={handleSuggestionClick}
+                    onToolResult={handleToolResult}
                   />
                 )
               })}
