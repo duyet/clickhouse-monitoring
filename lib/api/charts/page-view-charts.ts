@@ -5,8 +5,8 @@
 
 import type { ChartQueryBuilder } from './types'
 
-import { EVENTS_TABLE } from '@/lib/app-tables'
 import { applyInterval, fillStep, nowOrToday } from './types'
+import { EVENTS_TABLE } from '@/lib/app-tables'
 
 export const pageViewCharts: Record<string, ChartQueryBuilder> = {
   'page-view': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => {

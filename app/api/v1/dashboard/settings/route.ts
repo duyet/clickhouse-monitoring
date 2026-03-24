@@ -7,16 +7,15 @@
 import type { ApiResponse } from '@/lib/api/types'
 
 import { TABLE_SETTINGS } from '@/lib/api/dashboard-api'
-import { APP_DATABASE, DASHBOARD_SETTINGS_TABLE_SHORT } from '@/lib/app-tables'
 import {
   createErrorResponse as createApiErrorResponse,
   createValidationError,
 } from '@/lib/api/error-handler'
 import { ApiErrorType } from '@/lib/api/types'
+import { APP_DATABASE, DASHBOARD_SETTINGS_TABLE_SHORT } from '@/lib/app-tables'
 import { getClient } from '@/lib/clickhouse'
 import { checkTableExists } from '@/lib/clickhouse-version'
 import { debug, error } from '@/lib/logger'
-
 
 const ROUTE_CONTEXT_GET = { route: '/api/v1/dashboard/settings', method: 'GET' }
 const ROUTE_CONTEXT_POST = {
@@ -44,7 +43,6 @@ export async function GET(request: Request): Promise<Response> {
   const hostId = Number(searchParams.get('hostId') ?? '0')
 
   try {
-
     debug('[GET /api/v1/dashboard/settings]', { hostId })
 
     const exists = await checkTableExists(
