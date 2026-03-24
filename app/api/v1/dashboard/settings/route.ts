@@ -7,16 +7,15 @@
 import type { ApiResponse } from '@/lib/api/types'
 
 import { TABLE_SETTINGS } from '@/lib/api/dashboard-api'
-import { APP_DATABASE, DASHBOARD_SETTINGS_TABLE_SHORT } from '@/lib/app-tables'
 import {
   createErrorResponse as createApiErrorResponse,
   createValidationError,
 } from '@/lib/api/error-handler'
 import { ApiErrorType } from '@/lib/api/types'
+import { APP_DATABASE, DASHBOARD_SETTINGS_TABLE_SHORT } from '@/lib/app-tables'
 import { getClient } from '@/lib/clickhouse'
 import { checkTableExists } from '@/lib/clickhouse-version'
 import { debug, error } from '@/lib/logger'
-
 
 const ROUTE_CONTEXT_GET = { route: '/api/v1/dashboard/settings', method: 'GET' }
 const ROUTE_CONTEXT_POST = {
@@ -41,10 +40,10 @@ export async function GET(request: Request): Promise<Response> {
   debug('[GET /api/v1/dashboard/settings] Fetching settings')
 
   const { searchParams } = new URL(request.url)
-  const hostId = Number(searchParams.get('hostId') ?? '0')
+  const hostIdRaw = Number(searchParams.get('hostId') ?? '0')
+  const hostId = Number.isInteger(hostIdRaw) && hostIdRaw >= 0 ? hostIdRaw : 0
 
   try {
-
     debug('[GET /api/v1/dashboard/settings]', { hostId })
 
     const exists = await checkTableExists(
@@ -144,6 +143,18 @@ export async function POST(request: Request): Promise<Response> {
       hostId,
       paramsKeys: Object.keys(params),
     })
+
+    const tableExists = await checkTableExists(
+      Number(hostId),
+      APP_DATABASE,
+      DASHBOARD_SETTINGS_TABLE_SHORT
+    )
+    if (!tableExists) {
+      return createValidationError(
+        'Settings table does not exist. Initialize the dashboard first.',
+        ROUTE_CONTEXT_POST
+      )
+    }
 
     const query = `
       ALTER TABLE ${TABLE_SETTINGS}

@@ -13,7 +13,21 @@
  *   EVENTS_TABLE_NAME    - full override for the events table
  */
 
-export const APP_DATABASE = process.env.CLICKHOUSE_DATABASE || 'system'
+/** Validates that a value is a safe SQL identifier (letters, digits, underscores). */
+const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/
+
+function assertIdentifier(value: string, name: string): string {
+  const trimmed = value.trim()
+  if (!IDENTIFIER_RE.test(trimmed)) {
+    throw new Error(`Invalid SQL identifier for ${name}: "${value}"`)
+  }
+  return trimmed
+}
+
+export const APP_DATABASE = assertIdentifier(
+  process.env.CLICKHOUSE_DATABASE || 'system',
+  'CLICKHOUSE_DATABASE'
+)
 
 // Bare table identifiers (without database prefix).
 export const EVENTS_TABLE_SHORT = 'monitoring_events'
@@ -24,11 +38,8 @@ export const DASHBOARD_SETTINGS_TABLE_SHORT =
 
 // Fully-qualified "database.table" names used in SQL.
 export const EVENTS_TABLE =
-  process.env.EVENTS_TABLE_NAME ||
-  `${APP_DATABASE}.${EVENTS_TABLE_SHORT}`
+  process.env.EVENTS_TABLE_NAME || `${APP_DATABASE}.${EVENTS_TABLE_SHORT}`
 
-export const DASHBOARD_CHARTS_TABLE =
-  `${APP_DATABASE}.${DASHBOARD_CHARTS_TABLE_SHORT}`
+export const DASHBOARD_CHARTS_TABLE = `${APP_DATABASE}.${DASHBOARD_CHARTS_TABLE_SHORT}`
 
-export const DASHBOARD_SETTINGS_TABLE =
-  `${APP_DATABASE}.${DASHBOARD_SETTINGS_TABLE_SHORT}`
+export const DASHBOARD_SETTINGS_TABLE = `${APP_DATABASE}.${DASHBOARD_SETTINGS_TABLE_SHORT}`

@@ -4,7 +4,7 @@
  * Validates that queries exist in the dashboard tables before execution.
  * This prevents arbitrary SQL execution from clients.
  *
- * Only queries stored in the clickhouse_monitoring_custom_dashboard table
+ * Only queries stored in the dashboard queries table
  * are allowed to be executed without a queryConfig.
  *
  * @module app/api/v1/data/validators/dashboard-query-validator

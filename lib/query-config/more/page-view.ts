@@ -8,6 +8,7 @@ export const pageViewConfig: QueryConfig = {
   description: `Self analytics: Page views from ${EVENTS_TABLE}`,
   // Disable e2e test for this query
   disableSqlValidation: true,
+  optional: true,
   tableCheck: EVENTS_TABLE,
   sql: `
     SELECT kind, actor, data, extra, event_time, event_date
