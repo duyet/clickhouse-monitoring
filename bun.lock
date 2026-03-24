@@ -161,9 +161,9 @@
     "@types/react-dom": "^19.0.0",
     "csstype": ">=3.0.0",
     "express-rate-limit": "^8.2.2",
-    "fast-xml-parser": "^5.5.7",
+    "fast-xml-parser": "^5.5.9",
     "hono": "^4.12.7",
-    "undici": "^7.24.0",
+    "undici": "^7.24.5",
   },
   "packages": {
     "@actions/core": ["@actions/core@1.11.1", "", { "dependencies": { "@actions/exec": "^1.1.1", "@actions/http-client": "^2.0.1" } }, "sha512-hXJCSrkwfA46Vd9Z3q4cpEpHB1rL5NG04+/rbqW9d3+CSvtB1tYe8UTpAlixa1vj0m/ULglfEK2UKxMGxCxv5A=="],
