@@ -49,6 +49,7 @@ import type { QueryConfig } from '@/types/query-config'
 
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
 import { AgentInsightCards } from '@/components/agents/agent-insight-cards'
+import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
 import {
   ConversationContent,
   ConversationEmptyState,
@@ -59,11 +60,6 @@ import {
   MessageContent,
   MessageResponse,
 } from '@/components/ai-elements/message'
-import {
-  PromptInput,
-  PromptInputSubmit,
-  PromptInputTextarea,
-} from '@/components/ai-elements/prompt-input'
 import {
   Reasoning,
   ReasoningContent,
@@ -1201,6 +1197,17 @@ export const AgentsChatArea = forwardRef<
     [isLoading, sendMessage]
   )
 
+  // Handler for mentions-enabled textarea (receives pre-resolved text with context)
+  const handleMentionSubmit = useCallback(
+    (resolvedText: string) => {
+      if (!resolvedText.trim() || isLoading) return
+      sendMessage({
+        parts: [{ type: 'text', text: resolvedText.trim() }],
+      })
+    },
+    [isLoading, sendMessage]
+  )
+
   const handleClear = useCallback(() => {
     // Stop any active streaming first
     stop()
@@ -1545,17 +1552,10 @@ export const AgentsChatArea = forwardRef<
 
       {/* Input Area */}
       <div className="border-t p-3 sm:p-4 shrink-0">
-        <PromptInput onSubmit={handleSubmit} className="max-w-none">
-          <PromptInputTextarea
-            placeholder="Ask about your ClickHouse data... (Press Enter to send, Shift+Enter for new line)"
-            disabled={isLoading}
-          />
-          <PromptInputSubmit disabled={isLoading}>
-            {isLoading ? (
-              <Loader2Icon className="h-4 w-4 animate-spin" />
-            ) : null}
-          </PromptInputSubmit>
-        </PromptInput>
+        <PromptInputTextareaWithMentions
+          disabled={isLoading}
+          onResolvedSubmit={handleMentionSubmit}
+        />
         {/* Regenerate button during streaming */}
         {isLoading && messages.length > 0 && (
           <div className="flex items-center gap-2 mt-2">
