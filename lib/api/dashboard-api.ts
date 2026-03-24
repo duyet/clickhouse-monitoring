@@ -3,7 +3,13 @@
  * Provides table names and DDL for Chart Builder
  */
 
-export const DATABASE = 'system'
+import {
+  APP_DATABASE,
+  DASHBOARD_CHARTS_TABLE,
+  DASHBOARD_SETTINGS_TABLE,
+} from '@/lib/app-tables'
+
+export const DATABASE = APP_DATABASE
 
 export type TableChartsRow = {
   kind: 'area' | 'bar' | 'calendar'
@@ -20,7 +26,7 @@ export type TableSettingsRow = {
   updated_at: string
 }
 
-export const TABLE_CHARTS = `${DATABASE}.clickhouse_monitoring_custom_dashboard`
+export const TABLE_CHARTS = DASHBOARD_CHARTS_TABLE
 export const TABLE_CHARTS_DDL = `
   CREATE TABLE IF NOT EXISTS ${TABLE_CHARTS} (
     kind Enum('area' = 1, 'bar' = 2, 'calendar' = 3),
@@ -34,7 +40,7 @@ export const TABLE_CHARTS_DDL = `
   SETTINGS clean_deleted_rows = 'Always'
 `
 
-export const TABLE_SETTINGS = `${DATABASE}.clickhouse_monitoring_custom_dashboard_settings`
+export const TABLE_SETTINGS = DASHBOARD_SETTINGS_TABLE
 export const TABLE_SETTINGS_DDL = `
   CREATE TABLE IF NOT EXISTS ${TABLE_SETTINGS} (
     key String,

@@ -5,21 +5,26 @@
 
 import type { ChartQueryBuilder } from './types'
 
+import {
+  DASHBOARD_CHARTS_TABLE,
+  DASHBOARD_SETTINGS_TABLE,
+} from '@/lib/app-tables'
+
 export const dashboardCharts: Record<string, ChartQueryBuilder> = {
   'dashboard-charts': () => ({
     query: `
-      SELECT * FROM system.clickhouse_monitoring_custom_dashboard FINAL
+      SELECT * FROM ${DASHBOARD_CHARTS_TABLE} FINAL
       ORDER BY ordering ASC
     `,
     optional: true,
-    tableCheck: 'system.clickhouse_monitoring_custom_dashboard',
+    tableCheck: DASHBOARD_CHARTS_TABLE,
   }),
 
   'dashboard-settings': () => ({
     query: `
-      SELECT * FROM system.clickhouse_monitoring_custom_dashboard_settings FINAL
+      SELECT * FROM ${DASHBOARD_SETTINGS_TABLE} FINAL
     `,
     optional: true,
-    tableCheck: 'system.clickhouse_monitoring_custom_dashboard_settings',
+    tableCheck: DASHBOARD_SETTINGS_TABLE,
   }),
 }

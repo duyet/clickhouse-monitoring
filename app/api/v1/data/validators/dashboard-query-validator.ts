@@ -4,19 +4,19 @@
  * Validates that queries exist in the dashboard tables before execution.
  * This prevents arbitrary SQL execution from clients.
  *
- * Only queries stored in the system.clickhouse_monitoring_custom_dashboard table
+ * Only queries stored in the clickhouse_monitoring_custom_dashboard table
  * are allowed to be executed without a queryConfig.
  *
  * @module app/api/v1/data/validators/dashboard-query-validator
  */
 
 import { getCachedDashboardQueries } from '../utils/cache-manager'
+import { DASHBOARD_CHARTS_TABLE } from '@/lib/app-tables'
 import { fetchData } from '@/lib/clickhouse'
 import { error } from '@/lib/logger'
 
 /** Dashboard table name for query validation */
-export const DASHBOARD_QUERIES_TABLE =
-  'system.clickhouse_monitoring_custom_dashboard'
+export const DASHBOARD_QUERIES_TABLE = DASHBOARD_CHARTS_TABLE
 
 /**
  * Validation result for dashboard queries

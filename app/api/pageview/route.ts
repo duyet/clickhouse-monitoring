@@ -2,13 +2,12 @@ import type { NextRequest } from 'next/server'
 
 import { geolocation } from '@vercel/functions'
 import { NextResponse, userAgent } from 'next/server'
+import { EVENTS_TABLE } from '@/lib/app-tables'
 import { getClient } from '@/lib/clickhouse'
 import { ErrorLogger } from '@/lib/logger'
 import { normalizeUrl } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
-
-const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams

@@ -1,8 +1,7 @@
 import type { QueryConfig } from '@/types/query-config'
 
+import { EVENTS_TABLE } from '@/lib/app-tables'
 import { ColumnFormat } from '@/types/column-format'
-
-const EVENTS_TABLE = process.env.EVENTS_TABLE_NAME || 'system.monitoring_events'
 
 export const pageViewConfig: QueryConfig = {
   name: 'page-view',

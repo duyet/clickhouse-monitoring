@@ -7,6 +7,7 @@
  * Clients send a countKey, not raw SQL.
  */
 
+import { EVENTS_TABLE } from '@/lib/app-tables'
 import { QUERY_COMMENT } from '@/lib/clickhouse'
 
 export interface MenuCountQuery {
@@ -77,9 +78,9 @@ export const menuCountRegistry: Record<string, MenuCountQuery> = {
     tableCheck: 'system.backup_log',
   },
   'page-views': {
-    query: `SELECT COUNT() as count FROM system.monitoring_events WHERE kind = 'PageView'`,
+    query: `SELECT COUNT() as count FROM ${EVENTS_TABLE} WHERE kind = 'PageView'`,
     optional: true,
-    tableCheck: 'system.monitoring_events',
+    tableCheck: EVENTS_TABLE,
   },
   dictionaries: {
     query: `SELECT COUNT() as count FROM system.dictionaries`,

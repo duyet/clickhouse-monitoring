@@ -5,6 +5,8 @@
  * Used to provide helpful guidance when optional tables are not available.
  */
 
+import { EVENTS_TABLE } from '@/lib/app-tables'
+
 export interface TableGuidance {
   /** How to enable this table in ClickHouse */
   enableInstructions: string
@@ -12,6 +14,12 @@ export interface TableGuidance {
   docsUrl?: string
   /** Short description of what this table provides */
   description?: string
+}
+
+const EVENTS_TABLE_GUIDANCE: TableGuidance = {
+  description: 'Custom monitoring events table',
+  enableInstructions:
+    'This is a custom table created by the monitoring application. It will be available after the first page view is tracked.',
 }
 
 /**
@@ -74,11 +82,10 @@ export const TABLE_GUIDANCE: Record<string, TableGuidance> = {
     docsUrl:
       'https://clickhouse.com/docs/en/operations/system-tables/crash_log',
   },
-  'system.monitoring_events': {
-    description: 'Custom monitoring events table',
-    enableInstructions:
-      'This is a custom table created by the monitoring application. It will be available after the first page view is tracked.',
-  },
+  [EVENTS_TABLE]: EVENTS_TABLE_GUIDANCE,
+  ...(EVENTS_TABLE !== 'system.monitoring_events'
+    ? { 'system.monitoring_events': EVENTS_TABLE_GUIDANCE }
+    : {}),
   'system.opentelemetry_span_log': {
     description: 'OpenTelemetry tracing data',
     enableInstructions:
