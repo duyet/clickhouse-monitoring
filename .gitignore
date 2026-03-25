@@ -25,6 +25,10 @@ next.config.compiled.js
 # production
 /build
 
+# external tool artifacts
+.entire/
+logs/
+
 # misc
 .DS_Store
 *.pem

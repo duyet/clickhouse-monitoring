@@ -42,7 +42,7 @@ import {
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
-import '@/styles/markdown-code.css'
+import './markdown-code.css'
 
 import type { Conversation } from '@/lib/ai/agent/conversation-utils'
 import type { QueryConfig } from '@/types/query-config'

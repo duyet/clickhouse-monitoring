@@ -1,3 +1,0 @@
-The working tree is clean — all changes were already committed in `2ea24c40`. The `.entire/` directory is an untracked tooling artifact (not part of the project).
-
-The branch is 1 commit ahead of origin, ready to push. Would you like me to push and create the PR?
