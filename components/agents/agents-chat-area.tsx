@@ -44,12 +44,16 @@ import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
 import './markdown-code.css'
 
+import type { AgentDataSourcesProps } from '@/components/agents/agent-data-sources'
+import type { AgentVisualizationProps } from '@/components/agents/agent-visualization'
 import type { Conversation } from '@/lib/ai/agent/conversation-utils'
 import type { QueryConfig } from '@/types/query-config'
 
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
+import { AgentDataSources } from '@/components/agents/agent-data-sources'
 import { AgentErrorDisplay } from '@/components/agents/agent-error-display'
 import { AgentInsightCards } from '@/components/agents/agent-insight-cards'
+import { AgentVisualization } from '@/components/agents/agent-visualization'
 import {
   AskUserWidget,
   isAskUserOutput,
@@ -503,6 +507,32 @@ function ExpandTableButton({
 function renderToolOutput(output: unknown) {
   if (output == null) return null
 
+  const outputObj = output as Record<string, unknown>
+
+  // Visualization tool output (query_and_visualize)
+  if (outputObj.type === 'visualization' && Array.isArray(outputObj.rows)) {
+    return (
+      <AgentVisualization
+        title={outputObj.title as string | undefined}
+        sql={outputObj.sql as string}
+        rows={outputObj.rows as Record<string, unknown>[]}
+        columns={outputObj.columns as string[]}
+        rowCount={outputObj.rowCount as number}
+        viz={outputObj.viz as AgentVisualizationProps['viz']}
+      />
+    )
+  }
+
+  // Data source discovery output (discover_data_sources)
+  if (outputObj.type === 'data_sources' && Array.isArray(outputObj.sources)) {
+    return (
+      <AgentDataSources
+        searchTerm={outputObj.searchTerm as string}
+        sources={outputObj.sources as AgentDataSourcesProps['sources']}
+      />
+    )
+  }
+
   // Handle direct array output (e.g., list_databases, list_tables, get_table_schema)
   if (Array.isArray(output) && output.length > 0) {
     const firstItem = output[0] as Record<string, unknown>
@@ -510,8 +540,6 @@ function renderToolOutput(output: unknown) {
       return <ResultTable rows={output as unknown[]} maxRows={100} />
     }
   }
-
-  const outputObj = output as Record<string, unknown>
 
   // Check if output has chart data
   if (
