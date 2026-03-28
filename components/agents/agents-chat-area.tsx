@@ -48,6 +48,7 @@ import type { Conversation } from '@/lib/ai/agent/conversation-utils'
 import type { QueryConfig } from '@/types/query-config'
 
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
+import { AgentErrorDisplay } from '@/components/agents/agent-error-display'
 import { AgentInsightCards } from '@/components/agents/agent-insight-cards'
 import {
   AskUserWidget,
@@ -78,7 +79,6 @@ import {
 } from '@/components/ai-elements/task'
 import { DataTable } from '@/components/data-table/data-table'
 import { getToolMetadata } from '@/components/mcp/mcp-tools-data'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -1573,33 +1573,11 @@ export const AgentsChatArea = forwardRef<
 
       {/* Error display */}
       {error && (
-        <div className="px-3 sm:px-4 py-2 border-t shrink-0">
-          <Alert variant="destructive">
-            <AlertDescription className="flex items-center justify-between gap-2">
-              <span className="text-sm">{error.message}</span>
-              <div className="flex items-center gap-1 shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRegenerate}
-                  className="h-7 text-xs"
-                >
-                  <RefreshCwIcon className="h-3 w-3 mr-1" />
-                  Retry
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleClear}
-                  className="h-7 w-7"
-                  title="Dismiss"
-                >
-                  <XIcon className="h-3 w-3" />
-                </Button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
+        <AgentErrorDisplay
+          error={error}
+          onRetry={handleRegenerate}
+          onDismiss={handleClear}
+        />
       )}
 
       {/* Input Area */}

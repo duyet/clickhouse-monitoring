@@ -13,6 +13,7 @@
 
 import { createAgentUIStreamResponse } from 'ai'
 import { createClickHouseAgent } from '@/lib/ai/agent'
+import { classifyError } from '@/lib/ai/agent/errors'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -176,15 +177,10 @@ export async function POST(request: Request) {
       }
     },
     onError: (error) => {
-      console.error('[Agent API] Stream error:', error)
-      console.error('[Agent API] Error details:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      })
-      return error instanceof Error
-        ? error.message
-        : 'An unknown error occurred'
+      const classified = classifyError(error)
+      classified.model = model
+      console.error('[Agent API] Classified error:', classified)
+      return JSON.stringify(classified)
     },
   })
 }
