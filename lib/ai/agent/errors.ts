@@ -111,7 +111,10 @@ export function classifyError(error: unknown): AgentError {
       lower.includes('overloaded'))
   ) {
     type = 'model_error'
-  } else if (lower.includes('tool') && (lower.includes('error') || lower.includes('failed'))) {
+  } else if (
+    lower.includes('tool') &&
+    (lower.includes('error') || lower.includes('failed'))
+  ) {
     type = 'tool_error'
   }
 

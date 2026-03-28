@@ -30,7 +30,10 @@ export async function POST(request: Request) {
     typeof b.content !== 'string'
   ) {
     return Response.json(
-      { error: 'Request body must include: name (string), description (string), content (string)' },
+      {
+        error:
+          'Request body must include: name (string), description (string), content (string)',
+      },
       { status: 400 }
     )
   }
@@ -43,5 +46,8 @@ export async function POST(request: Request) {
 
   registerSkill({ name, description, content, source: 'remote' })
 
-  return Response.json({ data: { name, description, source: 'remote' } }, { status: 201 })
+  return Response.json(
+    { data: { name, description, source: 'remote' } },
+    { status: 201 }
+  )
 }
