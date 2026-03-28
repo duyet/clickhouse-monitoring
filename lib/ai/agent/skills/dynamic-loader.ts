@@ -13,7 +13,7 @@ import 'server-only'
 
 import type { Skill } from './types'
 
-import { BUILTIN_SKILLS } from './registry'
+import { SKILLS } from './registry'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -101,7 +101,7 @@ export function registerSkill(skill: Skill): void {
  */
 export function getAllSkills(): Skill[] {
   const merged = new Map<string, Skill>(
-    BUILTIN_SKILLS.map((s) => [s.name, { ...s, source: 'builtin' as const }])
+    SKILLS.map((s: Skill) => [s.name, { ...s, source: 'builtin' as const }])
   )
 
   for (const skill of loadDynamicSkills()) {
