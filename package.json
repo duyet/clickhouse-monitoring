@@ -126,7 +126,7 @@
     "diff": "^8.0.3",
     "embla-carousel-react": "^8.6.0",
     "express": "^5.2.1",
-    "fast-xml-parser": "^5.5.9",
+    "fast-xml-parser": "^5.3.4",
     "highlight.js": "^11.11.1",
     "js-yaml": "^4.1.1",
     "lodash": "^4.17.23",
@@ -212,7 +212,7 @@
   "pnpm": {
     "overrides": {
       "qs": "^6.14.1",
-      "fast-xml-parser": "^5.5.9",
+      "fast-xml-parser": "^5.3.4",
       "@isaacs/brace-expansion": "^5.0.1",
       "hono": "^4.12.7",
       "@hono/node-server": "^1.19.10",
@@ -231,6 +231,6 @@
     "@hono/node-server": "^1.19.10",
     "express-rate-limit": "^8.2.2",
     "undici": "^7.24.5",
-    "fast-xml-parser": "^5.5.9"
+    "fast-xml-parser": "^5.3.4"
   }
 }
