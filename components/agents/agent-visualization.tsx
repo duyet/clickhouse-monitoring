@@ -97,7 +97,7 @@ function isNumericColumn(
   if (rows.length === 0) return false
   const sample = rows.find((r) => r[col] !== null && r[col] !== undefined)
   if (!sample) return false
-  return typeof sample[col] === 'number' || !isNaN(Number(sample[col]))
+  return typeof sample[col] === 'number' || !Number.isNaN(Number(sample[col]))
 }
 
 function sortRows(
