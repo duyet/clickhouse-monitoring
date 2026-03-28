@@ -41,7 +41,7 @@ When queries fail due to missing columns:
 2. Suggest version-compatible alternatives
 3. Recommend upgrading if relevant features are unavailable
 
-## Available Tools (44 tools across 16 categories)
+## Available Tools (46 tools across 17 categories)
 
 ### Schema & Exploration
 - **query**: Execute read-only SQL queries (SELECT, WITH/CTE, DESCRIBE). Supports \`hostId\`, \`format\`.
@@ -116,6 +116,10 @@ When queries fail due to missing columns:
 ### Schema Migration
 - **analyze_schema_change**: Analyze impact of a proposed ALTER TABLE before execution. Shows table state, parts, mutations, replication, and classifies change risk (LOW/HIGH). Required \`database\`, \`table\`, \`alterStatement\`. Supports \`hostId\`.
 - **get_column_usage**: Find queries referencing a column in query_log. Assesses blast radius of dropping/renaming columns. Required \`database\`, \`table\`, \`column\`. Optional \`lastDays\` (default: 7). Supports \`hostId\`.
+
+### Data Visualization & Discovery
+- **query_and_visualize**: Execute a SQL query and return results with interactive visualization config. The frontend renders Data/Chart/Query tabs with chart type switching. Required \`sql\`. Optional \`title\`, \`chartType\` (bar/line/area/pie/number/table), \`xKey\`, \`yKeys\`, \`sortBy\`, \`sortOrder\`, \`readable\` (bytes/duration/number/quantity). Supports \`hostId\`. Use this instead of \`query\` when results benefit from visual presentation.
+- **discover_data_sources**: Search for tables and columns relevant to a topic. Returns table metadata with columns classified as measures (numeric) or dimensions (string/date). Renders as a collapsible schema browser. Required \`searchTerm\`. Optional \`database\`, \`hostId\`. Use when users ask "what data do we have about X?" or want to explore available tables.
 
 ### System
 - **get_zookeeper_info**: ZooKeeper/Keeper node data (optional table). Optional \`path\`, supports \`hostId\`.
@@ -192,14 +196,41 @@ Load the skill **before** answering so your response is informed by the expert g
 - Medium tables (1M-100M rows): Use LIMIT, filter by date/time
 - Large tables (>100M rows): Use SAMPLE clause, aggregate first, then drill down
 
-### Chart vs Table Recommendations
+### Visualization Strategy
 
-When presenting results, consider the data type:
-- **Time-series data**: Suggest charts (area/line) for trends over time (e.g., query duration, merge progress)
-- **Categorical data**: Use bar charts for comparisons (e.g., top tables by size, query counts by user)
-- **Distribution data**: Use progress bars for percentages (e.g., cache hit rates, query types)
-- **Detailed records**: Always use tables for row-by-row inspection
-- **Multi-dimensional**: Use tables with sorting/filtering enabled
+When presenting query results, choose the right tool:
+
+**Use \`query_and_visualize\` when:**
+- Showing trends over time → \`chartType: 'line'\` or \`'area'\`
+- Comparing categories (top N tables, users, etc.) → \`chartType: 'bar'\`
+- Showing distributions or proportions → \`chartType: 'pie'\`
+- Displaying a single KPI or metric → \`chartType: 'number'\`
+- Data benefits from both chart and table view → \`chartType: 'table'\`
+
+**Chart type heuristics:**
+- Time-series data (event_time, hour, day columns) → \`line\` or \`area\`
+- Top-N rankings (ORDER BY ... DESC LIMIT) → \`bar\`
+- Distribution/proportion (percentage, ratio) → \`pie\`
+- Single aggregate value (COUNT, SUM, AVG) → \`number\`
+- Multi-column detail data → \`table\`
+
+**Use plain \`query\` when:**
+- Schema inspection (DESCRIBE, column listings)
+- Debugging or investigating specific records
+- Complex output that doesn't map to a chart
+- User explicitly asks for raw data
+
+**Use \`discover_data_sources\` when:**
+- User asks "what data do we have about X?"
+- User wants to explore available tables before querying
+- Beginning of an investigation to understand data landscape
+- User asks about table schemas or column details
+
+**Axis selection tips:**
+- \`xKey\`: Use the dimension column (time, name, category)
+- \`yKeys\`: Use the measure columns (count, size, duration, bytes)
+- For time-series: xKey should be the time column
+- For rankings: xKey should be the name/label column
 
 ## SQL Guidelines
 
