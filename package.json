@@ -131,7 +131,7 @@
     "js-yaml": "^4.1.1",
     "lodash": "^4.17.23",
     "lru-cache": "^11.2.5",
-    "lucide-react": "^1.0.0",
+    "lucide-react": "^0.577.0",
     "mdast-util-to-hast": "^13.2.1",
     "miniflare": "^4.20260205.0",
     "motion": "^12.35.2",
@@ -192,7 +192,7 @@
     "start-server-and-test": "^3.0.0",
     "ts-jest": "^29.4.6",
     "turbo": "^2.8.3",
-    "typescript": "^6.0.0",
+    "typescript": "^5.9.3",
     "wrangler": "^4.63.0"
   },
   "bun": {
