@@ -6,13 +6,22 @@
  */
 
 import { useMemo } from 'react'
+import { formatCompactNumber } from '@/lib/format-number'
 
 /**
  * LocalStorage key for model selection
  */
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
-const DEFAULT_MODEL: OpenAIModel = 'nvidia/nemotron-3-super-120b-a12b:free'
+const DEFAULT_MODEL = 'nvidia/nemotron-3-super-120b-a12b:free'
+
+/**
+ * Format a token count to a compact human-readable string.
+ * Examples: 128000 → "128K", 1000000 → "1M", 32768 → "32.8K"
+ */
+export function formatTokenCount(count: number): string {
+  return formatCompactNumber(count)
+}
 
 /**
  * Available agent models.
@@ -45,11 +54,19 @@ export const AGENT_MODELS = {
     name: 'minimax/minimax-m2.7',
     description: 'MiniMax production model',
     contextLength: 128000,
+    pricing: {
+      inputPerMillion: 0.5,
+      outputPerMillion: 1.5,
+    },
   },
   'openai/gpt-5.4-nano': {
     name: 'openai/gpt-5.4-nano',
     description: 'OpenAI nano model',
     contextLength: 128000,
+    pricing: {
+      inputPerMillion: 0.15,
+      outputPerMillion: 0.6,
+    },
   },
   'google/gemma-3-27b-it:free': {
     name: 'google/gemma-3-27b-it:free',
@@ -63,31 +80,42 @@ export const AGENT_MODELS = {
   },
 } as const
 
-export type OpenAIModel = keyof typeof AGENT_MODELS
+/** OpenAI-compatible model identifier — any string is valid (custom models supported) */
+export type OpenAIModel = string
+
+/**
+ * Check whether a model ID is in the known AGENT_MODELS list
+ */
+export function isKnownModel(
+  model: string
+): model is keyof typeof AGENT_MODELS {
+  return model in AGENT_MODELS
+}
 
 /**
  * Get default model from environment or fallback
  */
 function getDefaultModel(): OpenAIModel {
-  // Check if LLM_MODEL env var is set and valid
+  // Check if LLM_MODEL env var is set
   const envModel = process.env.LLM_MODEL
-  if (envModel && envModel in AGENT_MODELS) {
-    return envModel as OpenAIModel
+  if (envModel) {
+    return envModel
   }
   // Fallback to the default free OpenRouter-backed model.
   return DEFAULT_MODEL
 }
 
 /**
- * Get saved model from localStorage or return default
+ * Get saved model from localStorage or return default.
+ * Accepts any string, including custom model IDs.
  */
 export function getSavedModel(): OpenAIModel {
   if (typeof window === 'undefined') return getDefaultModel()
 
   try {
     const saved = localStorage.getItem(MODEL_STORAGE_KEY)
-    if (saved && saved in AGENT_MODELS) {
-      return saved as OpenAIModel
+    if (saved && saved.trim().length > 0) {
+      return saved
     }
   } catch {
     // localStorage may be disabled
@@ -110,6 +138,14 @@ function saveModel(model: OpenAIModel): void {
 }
 
 /**
+ * Pricing information for a model (USD per 1M tokens)
+ */
+export interface ModelPricing {
+  inputPerMillion: number
+  outputPerMillion: number
+}
+
+/**
  * Model display metadata
  */
 export interface ModelDisplayInfo {
@@ -121,6 +157,12 @@ export interface ModelDisplayInfo {
   description: string
   /** Context length in tokens */
   contextLength: number
+  /** Compact formatted context length, e.g. "128K" */
+  formattedContextLength: string
+  /** Whether this is a free model (no pricing) */
+  isFree: boolean
+  /** Pricing info for paid models */
+  pricing?: ModelPricing
 }
 
 /**
@@ -149,7 +191,7 @@ export interface UseAgentModelResult {
  * ```tsx
  * const { model, models, setModel } = useAgentModel()
  *
- * <select value={model} onChange={(e) => setModel(e.target.value as OpenAIModel)}>
+ * <select value={model} onChange={(e) => setModel(e.target.value)}>
  *   {models.map((m) => (
  *     <option key={m.id} value={m.id}>{m.name}</option>
  *   ))}
@@ -162,14 +204,21 @@ export function useAgentModel(): UseAgentModelResult {
 
   // Get all available models
   const models = useMemo(() => {
-    return Object.entries(AGENT_MODELS).map(
-      ([id, info]): ModelDisplayInfo => ({
-        id: id as OpenAIModel,
+    return Object.entries(AGENT_MODELS).map(([id, info]): ModelDisplayInfo => {
+      const isFree = id.endsWith(':free') || !('pricing' in info)
+      const pricing =
+        'pricing' in info ? (info.pricing as ModelPricing) : undefined
+
+      return {
+        id,
         name: info.name,
         description: info.description,
         contextLength: info.contextLength,
-      })
-    )
+        formattedContextLength: formatTokenCount(info.contextLength),
+        isFree,
+        pricing,
+      }
+    })
   }, [])
 
   // Update model selection
