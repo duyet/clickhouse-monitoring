@@ -29,6 +29,7 @@ import {
   ModelSelectorItem,
   ModelSelectorList,
   ModelSelectorLogo,
+  ModelSelectorSeparator,
   ModelSelectorTrigger,
 } from '@/components/ai-elements/model-selector'
 import { MCP_TOOL_CATEGORIES } from '@/components/mcp/mcp-tools-data'
@@ -163,9 +164,17 @@ function getProviderFromModelId(modelId: string): string {
 function ModelSelectorComponent() {
   const { model, models, setModel } = useAgentModel()
   const [open, setOpen] = useState(false)
+  const [customInput, setCustomInput] = useState('')
 
   const currentModel = models.find((item) => item.id === model)
   const currentProvider = getProviderFromModelId(model)
+  const trimmedCustomInput = customInput.trim()
+
+  const handleCustomModelSubmit = () => {
+    if (!trimmedCustomInput) return
+    setModel(trimmedCustomInput)
+    setOpen(false)
+  }
 
   return (
     <SidebarSection
@@ -195,11 +204,25 @@ function ModelSelectorComponent() {
                 </div>
               </div>
             </div>
-            <Badge variant="secondary" className="ml-3 shrink-0 rounded-full">
-              {currentModel?.contextLength != null
-                ? `${currentModel.contextLength.toLocaleString()} ctx`
-                : 'ctx unknown'}
-            </Badge>
+            <div className="ml-3 flex shrink-0 flex-col items-end gap-1">
+              <Badge variant="secondary" className="rounded-full">
+                {currentModel?.formattedContextLength != null
+                  ? `${currentModel.formattedContextLength} ctx`
+                  : 'ctx unknown'}
+              </Badge>
+              {currentModel?.isFree ? (
+                <Badge
+                  className="rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                  variant="outline"
+                >
+                  Free
+                </Badge>
+              ) : currentModel?.pricing != null ? (
+                <span className="text-[10px] text-muted-foreground">
+                  ${currentModel.pricing.inputPerMillion}/M in
+                </span>
+              ) : null}
+            </div>
           </Button>
         </ModelSelectorTrigger>
 
@@ -244,10 +267,23 @@ function ModelSelectorComponent() {
                         {item.description}
                       </div>
                     </div>
-                    <div className="flex shrink-0 flex-col items-end gap-2">
+                    <div className="flex shrink-0 flex-col items-end gap-1.5">
                       <Badge variant="outline" className="rounded-full">
-                        {item.contextLength.toLocaleString()} ctx
+                        {item.formattedContextLength} ctx
                       </Badge>
+                      {item.isFree ? (
+                        <Badge
+                          className="rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                          variant="outline"
+                        >
+                          Free
+                        </Badge>
+                      ) : item.pricing != null ? (
+                        <span className="text-right text-[10px] leading-4 text-muted-foreground">
+                          ${item.pricing.inputPerMillion}/M in
+                          <br />${item.pricing.outputPerMillion}/M out
+                        </span>
+                      ) : null}
                       {selected ? (
                         <Badge className="rounded-full">Selected</Badge>
                       ) : null}
@@ -255,6 +291,31 @@ function ModelSelectorComponent() {
                   </ModelSelectorItem>
                 )
               })}
+            </ModelSelectorGroup>
+            <ModelSelectorSeparator />
+            <ModelSelectorGroup heading="Custom Model">
+              <div className="mx-2 my-1 flex items-center gap-2 px-1 py-1.5">
+                <input
+                  type="text"
+                  value={customInput}
+                  onChange={(e) => setCustomInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCustomModelSubmit()
+                  }}
+                  placeholder="Enter custom model ID..."
+                  className="h-8 min-w-0 flex-1 rounded-md border border-border/60 bg-background px-3 font-mono text-[13px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 shrink-0 rounded-md px-3 text-xs"
+                  onClick={handleCustomModelSubmit}
+                  disabled={!trimmedCustomInput}
+                >
+                  Use
+                </Button>
+              </div>
             </ModelSelectorGroup>
           </ModelSelectorList>
         </ModelSelectorContent>

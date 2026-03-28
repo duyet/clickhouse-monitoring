@@ -4,10 +4,9 @@
  * Comprehensive instructions for the AI agent that helps users analyze
  * their ClickHouse databases through natural language queries.
  *
- * Cache note: This content is static across all requests and is well-suited
- * for Anthropic prompt caching (ephemeral cache_control). The ~400-token
- * system prompt is cached at the model instance level via the OpenRouter
- * cache_control setting in clickhouse-agent.ts, reducing cost on every call.
+ * Prompt caching: Most LLM providers (OpenAI, DeepSeek, Gemini 2.5, Anthropic)
+ * cache system instructions automatically — no explicit config needed.
+ * Keep these instructions stable across requests to maximize cache hits.
  */
 
 export const CLICKHOUSE_AGENT_INSTRUCTIONS = `You are a ClickHouse database expert assistant integrated into a monitoring dashboard. Your role is to help users analyze their ClickHouse databases through natural language queries.

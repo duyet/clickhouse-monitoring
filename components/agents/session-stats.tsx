@@ -1,9 +1,15 @@
 'use client'
 
-import { ActivityIcon, MessageSquareIcon } from 'lucide-react'
+import {
+  ActivityIcon,
+  CoinsIcon,
+  MessageSquareIcon,
+  ZapIcon,
+} from 'lucide-react'
 
 import type { UIMessage } from 'ai'
 
+import { formatReadableQuantity } from '@/lib/format-readable'
 import { useAgentSessionStats } from '@/lib/hooks/use-agent-session-stats'
 
 export interface SessionStatsProps {
@@ -33,12 +39,32 @@ function StatItem({
 }
 
 /**
+ * Format a token count compactly (e.g. 1234 → "1.2K", 500 → "500")
+ */
+function formatTokens(count: number): string {
+  return formatReadableQuantity(count)
+}
+
+/**
+ * Format an estimated cost in USD.
+ * Returns "Free" for $0, "$0.000X" for very small amounts, "$X.XX" otherwise.
+ */
+function formatCost(usd: number | null): string {
+  if (usd === null) return '—'
+  if (usd === 0) return 'Free'
+  if (usd < 0.001) return `$${usd.toFixed(6)}`
+  if (usd < 0.01) return `$${usd.toFixed(4)}`
+  return `$${usd.toFixed(3)}`
+}
+
+/**
  * Session Stats Display Component
  *
  * Shows aggregated statistics from the agent conversation:
- * - Total messages
- * - Request count
+ * - Total messages and requests
  * - Tool call count
+ * - Token usage (input + output, compact format)
+ * - Estimated cost in USD
  *
  * @example
  * ```tsx
@@ -78,6 +104,24 @@ export function SessionStats({ messages }: SessionStatsProps) {
         icon={ActivityIcon}
         label="Tool Calls"
         value={stats.toolCallCount}
+      />
+
+      {/* Token usage */}
+      <StatItem
+        icon={ZapIcon}
+        label="Tokens"
+        value={
+          stats.totalTokens > 0
+            ? `${formatTokens(stats.totalInputTokens)} in / ${formatTokens(stats.totalOutputTokens)} out`
+            : '—'
+        }
+      />
+
+      {/* Estimated cost */}
+      <StatItem
+        icon={CoinsIcon}
+        label="Est. Cost"
+        value={formatCost(stats.estimatedCostUsd)}
       />
     </div>
   )

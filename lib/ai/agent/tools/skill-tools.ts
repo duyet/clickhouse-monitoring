@@ -1,11 +1,11 @@
-import { getSkillsMetadata, loadSkillContent } from '../skills/registry'
+import { getAllSkills } from '../skills/dynamic-loader'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
 export function createSkillTools() {
   return {
     load_skill: dynamicTool({
-      description: `Load specialized knowledge to provide expert-level guidance on specific topics.\n\nAvailable skills:\n${getSkillsMetadata()
+      description: `Load specialized knowledge to provide expert-level guidance on specific topics.\n\nAvailable skills:\n${getAllSkills()
         .map((s) => `- ${s.name}: ${s.description}`)
         .join(
           '\n'
@@ -15,16 +15,15 @@ export function createSkillTools() {
       }),
       execute: async (input: unknown) => {
         const { name } = input as { name: string }
-        const content = await loadSkillContent(name)
-        if (!content) {
-          const available = getSkillsMetadata()
-            .map((s) => s.name)
-            .join(', ')
+        const skills = getAllSkills()
+        const skill = skills.find((s) => s.name === name)
+        if (!skill) {
+          const available = skills.map((s) => s.name).join(', ')
           throw new Error(
             `Skill "${name}" not found. Available skills: ${available}`
           )
         }
-        return content
+        return skill
       },
     }),
   }

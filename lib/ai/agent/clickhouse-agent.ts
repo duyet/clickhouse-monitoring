@@ -39,7 +39,9 @@ const DEFAULT_MODEL = process.env.LLM_MODEL || 'stepfun/step-3.5-flash:free'
  * Matches both the 'anthropic/' provider prefix and bare 'claude-*' names.
  */
 function isAnthropicModel(model: string): boolean {
-  return model.startsWith('anthropic/') || model.toLowerCase().includes('claude')
+  return (
+    model.startsWith('anthropic/') || model.toLowerCase().includes('claude')
+  )
 }
 
 const DEFAULT_MAX_STEPS = 30
@@ -122,7 +124,9 @@ export function createClickHouseAgent(options: {
     // candidates. Only Anthropic models support this via OpenRouter's cache_control.
     const usePromptCache = isAnthropicModel(modelId)
     if (usePromptCache) {
-      console.log(`[Agent] Prompt caching enabled for Anthropic model: ${modelId}`)
+      console.log(
+        `[Agent] Prompt caching enabled for Anthropic model: ${modelId}`
+      )
     }
     const modelInstance = openrouter.chat(
       modelId,
