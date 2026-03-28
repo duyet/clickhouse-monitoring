@@ -11,8 +11,11 @@
  * Replaces the LangGraph-based agent with native AI SDK ToolLoopAgent.
  */
 
+import type { LanguageModelUsage } from 'ai'
+
 import { createAgentUIStreamResponse } from 'ai'
 import { createClickHouseAgent } from '@/lib/ai/agent'
+import { aggregateUsageWithCost } from '@/lib/ai/agent/analytics'
 import { classifyError } from '@/lib/ai/agent/errors'
 
 // This route is dynamic and should not be statically exported
@@ -157,12 +160,18 @@ export async function POST(request: Request) {
   console.log('[Agent API] Model being used:', model)
   console.log('[Agent API] OpenAI baseURL:', process.env.LLM_API_BASE)
 
+  // Collect usage from each step for analytics aggregation
+  const usageSteps: LanguageModelUsage[] = []
+
   // Create streaming response using AI SDK
   return createAgentUIStreamResponse({
     agent,
     uiMessages,
     onStepFinish: (step) => {
-      // Log cache token stats when available (Anthropic models via OpenRouter)
+      // Accumulate usage from each LLM step
+      usageSteps.push(step.usage)
+
+      // Log cache token stats when available
       const { inputTokenDetails } = step.usage
       if (
         inputTokenDetails &&
@@ -182,6 +191,13 @@ export async function POST(request: Request) {
       classified.model = model
       console.error('[Agent API] Classified error:', classified)
       return JSON.stringify(classified)
+    },
+    onFinish: () => {
+      // Aggregate and log full usage stats at the end of the conversation turn
+      if (usageSteps.length > 0) {
+        const stats = aggregateUsageWithCost(usageSteps, model)
+        console.log('[Agent API] Session usage:', stats)
+      }
     },
   })
 }
