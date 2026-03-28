@@ -12,9 +12,7 @@ import {
   createValidationError,
 } from '@/lib/api/error-handler'
 import { ApiErrorType } from '@/lib/api/types'
-import { APP_DATABASE, DASHBOARD_SETTINGS_TABLE_SHORT } from '@/lib/app-tables'
 import { getClient } from '@/lib/clickhouse'
-import { checkTableExists } from '@/lib/clickhouse-version'
 import { debug, error } from '@/lib/logger'
 
 const ROUTE_CONTEXT_GET = { route: '/api/v1/dashboard/settings', method: 'GET' }
@@ -23,18 +21,34 @@ const ROUTE_CONTEXT_POST = {
   method: 'POST',
 }
 
-const EMPTY_SETTINGS_RESPONSE = (
+function emptySettingsResponse(
   hostId: number
-): ApiResponse<{ params: Record<string, string> }> => ({
-  success: true,
-  data: { params: {} },
-  metadata: {
-    queryId: 'dashboard-settings-get',
-    duration: 0,
-    rows: 0,
-    host: String(hostId),
-  },
-})
+): ApiResponse<{ params: Record<string, string> }> {
+  return {
+    success: true,
+    data: { params: {} },
+    metadata: {
+      queryId: 'dashboard-settings-get',
+      duration: 0,
+      rows: 0,
+      host: String(hostId),
+    },
+  }
+}
+
+/**
+ * ClickHouse reports missing tables differently depending on version and client:
+ *  - "UNKNOWN_TABLE" error code (CH >=22.x native protocol errors)
+ *  - "Unknown table expression" (CH HTTP interface / older versions)
+ *  - "Table ... doesn't exist" (clickhouse-js client wrapper messages)
+ */
+function isTableMissingError(msg: string): boolean {
+  return (
+    msg.includes('UNKNOWN_TABLE') ||
+    msg.includes('Unknown table expression') ||
+    (msg.includes('Table') && msg.includes("doesn't exist"))
+  )
+}
 
 export async function GET(request: Request): Promise<Response> {
   debug('[GET /api/v1/dashboard/settings] Fetching settings')
@@ -44,18 +58,6 @@ export async function GET(request: Request): Promise<Response> {
 
   try {
     debug('[GET /api/v1/dashboard/settings]', { hostId })
-
-    const exists = await checkTableExists(
-      hostId,
-      APP_DATABASE,
-      DASHBOARD_SETTINGS_TABLE_SHORT
-    )
-    if (!exists) {
-      debug('[GET /api/v1/dashboard/settings] Table does not exist yet', {
-        table: TABLE_SETTINGS,
-      })
-      return Response.json(EMPTY_SETTINGS_RESPONSE(hostId), { status: 200 })
-    }
 
     const query = `
       SELECT key, value
@@ -101,11 +103,15 @@ export async function GET(request: Request): Promise<Response> {
     const errorMessage =
       err instanceof Error ? err.message : 'Unknown error occurred'
 
-    error('[GET /api/v1/dashboard/settings] Error:', errorMessage)
-
-    if (errorMessage.includes('UNKNOWN_TABLE')) {
-      return Response.json(EMPTY_SETTINGS_RESPONSE(hostId), { status: 200 })
+    if (isTableMissingError(errorMessage)) {
+      debug(
+        '[GET /api/v1/dashboard/settings] Settings table missing; returning empty response',
+        { hostId }
+      )
+      return Response.json(emptySettingsResponse(hostId), { status: 200 })
     }
+
+    error('[GET /api/v1/dashboard/settings] Error:', errorMessage)
 
     return createApiErrorResponse(
       {

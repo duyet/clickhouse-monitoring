@@ -33,6 +33,15 @@ function filterTools<T extends Record<string, unknown>>(
  * Falls back to stepfun/step-3.5-flash:free if LLM_MODEL env var is not set
  */
 const DEFAULT_MODEL = process.env.LLM_MODEL || 'stepfun/step-3.5-flash:free'
+
+/**
+ * Returns true for Anthropic/Claude models routed via OpenRouter.
+ * Matches both the 'anthropic/' provider prefix and bare 'claude-*' names.
+ */
+function isAnthropicModel(model: string): boolean {
+  return model.startsWith('anthropic/') || model.toLowerCase().includes('claude')
+}
+
 const DEFAULT_MAX_STEPS = 30
 
 /**
@@ -108,7 +117,17 @@ export function createClickHouseAgent(options: {
     const modelId = model.startsWith('openrouter/')
       ? model.replace('openrouter/', '')
       : model
-    const modelInstance = openrouter.chat(modelId)
+
+    // Prompt caching: static system instructions (~400 tokens) are ideal cache
+    // candidates. Only Anthropic models support this via OpenRouter's cache_control.
+    const usePromptCache = isAnthropicModel(modelId)
+    if (usePromptCache) {
+      console.log(`[Agent] Prompt caching enabled for Anthropic model: ${modelId}`)
+    }
+    const modelInstance = openrouter.chat(
+      modelId,
+      usePromptCache ? { cache_control: { type: 'ephemeral' } } : undefined
+    )
 
     // Get tools for this host, filtering out disabled tools
     const allTools = createMcpTools(hostId)

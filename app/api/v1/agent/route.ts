@@ -160,6 +160,21 @@ export async function POST(request: Request) {
   return createAgentUIStreamResponse({
     agent,
     uiMessages,
+    onStepFinish: (step) => {
+      // Log cache token stats when available (Anthropic models via OpenRouter)
+      const { inputTokenDetails } = step.usage
+      if (
+        inputTokenDetails &&
+        (inputTokenDetails.cacheReadTokens || inputTokenDetails.cacheWriteTokens)
+      ) {
+        console.log('[Agent API] Cache token stats:', {
+          cacheReadTokens: inputTokenDetails.cacheReadTokens,
+          cacheWriteTokens: inputTokenDetails.cacheWriteTokens,
+          inputTokens: step.usage.inputTokens,
+          outputTokens: step.usage.outputTokens,
+        })
+      }
+    },
     onError: (error) => {
       console.error('[Agent API] Stream error:', error)
       console.error('[Agent API] Error details:', {
