@@ -11,11 +11,11 @@
 
 import 'server-only'
 
-import fs from 'node:fs'
-import path from 'node:path'
+import type { Skill } from './types'
 
 import { BUILTIN_SKILLS } from './registry'
-import type { Skill } from './types'
+import fs from 'node:fs'
+import path from 'node:path'
 
 /** In-memory store for skills registered at runtime (e.g. via POST /api/v1/agent/skills) */
 const runtimeSkills: Map<string, Skill> = new Map()

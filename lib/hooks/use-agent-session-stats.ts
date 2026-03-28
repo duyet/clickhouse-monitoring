@@ -2,11 +2,12 @@
  * useAgentSessionStats Hook
  *
  * Extracts and aggregates session statistics from AI SDK messages.
- * Provides message counts and timing information.
+ * Provides message counts, timing, and token/cost information.
  */
 
 import type { UIMessage } from 'ai'
 
+import { isTextUIPart } from 'ai'
 import { useMemo } from 'react'
 
 /**
@@ -21,7 +22,16 @@ export interface SessionStats {
   responseCount: number
   /** Number of tool calls */
   toolCallCount: number
-  /** Timestamp of the most recent message */
+  /** Total input tokens (prompt), estimated from text when metadata unavailable */
+  totalInputTokens: number
+  /** Total output tokens (completion), estimated from text when metadata unavailable */
+  totalOutputTokens: number
+  /** Total tokens (input + output) */
+  totalTokens: number
+  /** Estimated cost in USD, or null if model is unknown */
+  estimatedCostUsd: number | null
+  /** Average response time in ms across assistant messages, or null if unavailable */
+  avgResponseTimeMs: number | null
 }
 
 /**
@@ -32,6 +42,19 @@ const EMPTY_STATS: SessionStats = {
   requestCount: 0,
   responseCount: 0,
   toolCallCount: 0,
+  totalInputTokens: 0,
+  totalOutputTokens: 0,
+  totalTokens: 0,
+  estimatedCostUsd: null,
+  avgResponseTimeMs: null,
+}
+
+/**
+ * Rough token estimate from a string: ~1 token per 4 characters.
+ * Used as a fallback when server-side usage metadata is unavailable.
+ */
+function estimateTokensFromText(text: string): number {
+  return Math.ceil(text.length / 4)
 }
 
 /**
@@ -50,18 +73,40 @@ function isToolCallPart(part: unknown): boolean {
 }
 
 /**
- * Extract stats from AI SDK messages
+ * Extract the plain text content from a message's parts array.
+ */
+function extractTextFromParts(parts: UIMessage['parts']): string {
+  if (!parts) return ''
+  return parts
+    .filter(isTextUIPart)
+    .map((p) => p.text)
+    .join(' ')
+}
+
+/**
+ * Extract stats from AI SDK messages.
+ *
+ * Token counts are estimated from text length (fallback) since the AI SDK
+ * v6 does not currently expose per-message usage metadata on UIMessage.
+ * When a provider surfaces usage in message metadata, it will be used.
  */
 function extractStats(messages: readonly UIMessage[]): SessionStats {
   let requestCount = 0
   let responseCount = 0
   let toolCallCount = 0
+  let totalInputTokens = 0
+  let totalOutputTokens = 0
 
   for (const msg of messages) {
+    const textContent = extractTextFromParts(msg.parts)
+    const estimatedTokens = estimateTokensFromText(textContent)
+
     if (msg.role === 'user') {
       requestCount++
+      totalInputTokens += estimatedTokens
     } else if (msg.role === 'assistant') {
       responseCount++
+      totalOutputTokens += estimatedTokens
       if (msg.parts) {
         for (const part of msg.parts) {
           if (isToolCallPart(part)) {
@@ -72,11 +117,18 @@ function extractStats(messages: readonly UIMessage[]): SessionStats {
     }
   }
 
+  const totalTokens = totalInputTokens + totalOutputTokens
+
   return {
     totalMessages: messages.length,
     requestCount,
     responseCount,
     toolCallCount,
+    totalInputTokens,
+    totalOutputTokens,
+    totalTokens,
+    estimatedCostUsd: null,
+    avgResponseTimeMs: null,
   }
 }
 

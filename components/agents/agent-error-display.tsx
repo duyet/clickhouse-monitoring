@@ -7,10 +7,10 @@ import {
   RefreshCwIcon,
   XIcon,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
 
 import type { AgentError, AgentErrorType } from '@/lib/ai/agent/errors'
 
+import { useEffect, useRef, useState } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -79,7 +79,11 @@ export function AgentErrorDisplay({
   let classified: AgentError | null = null
   try {
     const parsed = JSON.parse(error.message) as AgentError
-    if (parsed && typeof parsed.type === 'string' && typeof parsed.message === 'string') {
+    if (
+      parsed &&
+      typeof parsed.type === 'string' &&
+      typeof parsed.message === 'string'
+    ) {
       classified = parsed
     }
   } catch {
@@ -117,7 +121,12 @@ export function AgentErrorDisplay({
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge className={cn('text-xs shrink-0', ERROR_TYPE_CLASSES[errorType])}>
+                <Badge
+                  className={cn(
+                    'text-xs shrink-0',
+                    ERROR_TYPE_CLASSES[errorType]
+                  )}
+                >
                   {ERROR_TYPE_LABELS[errorType]}
                 </Badge>
                 <span className="text-sm break-words">{displayMessage}</span>

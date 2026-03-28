@@ -11,8 +11,11 @@
  * Replaces the LangGraph-based agent with native AI SDK ToolLoopAgent.
  */
 
+import type { LanguageModelUsage } from 'ai'
+
 import { createAgentUIStreamResponse } from 'ai'
 import { createClickHouseAgent } from '@/lib/ai/agent'
+import { aggregateUsageWithCost } from '@/lib/ai/agent/analytics'
 import { classifyError } from '@/lib/ai/agent/errors'
 
 // This route is dynamic and should not be statically exported
@@ -157,27 +160,26 @@ export async function POST(request: Request) {
   console.log('[Agent API] Model being used:', model)
   console.log('[Agent API] OpenAI baseURL:', process.env.LLM_API_BASE)
 
+  // Collect per-step usage for analytics
+  const usageSteps: LanguageModelUsage[] = []
+
   // Create streaming response using AI SDK
   return createAgentUIStreamResponse({
     agent,
     uiMessages,
     onStepFinish: (step) => {
-      // Log cache token stats when available (Anthropic models via OpenRouter)
-      const { inputTokenDetails } = step.usage
-      if (
-        inputTokenDetails &&
-        (inputTokenDetails.cacheReadTokens ||
-          inputTokenDetails.cacheWriteTokens)
-      ) {
-        console.log('[Agent API] Cache token stats:', {
-          cacheReadTokens: inputTokenDetails.cacheReadTokens,
-          cacheWriteTokens: inputTokenDetails.cacheWriteTokens,
-          inputTokens: step.usage.inputTokens,
-          outputTokens: step.usage.outputTokens,
-        })
+      if (step.usage) {
+        usageSteps.push(step.usage)
+        console.log('[Agent API] Step usage:', JSON.stringify(step.usage))
       }
     },
     onError: (error) => {
+      // Log aggregated usage on error
+      if (usageSteps.length > 0) {
+        const summary = aggregateUsageWithCost(usageSteps, model)
+        console.log('[Agent API] Usage on error:', JSON.stringify(summary))
+      }
+
       const classified = classifyError(error)
       classified.model = model
       console.error('[Agent API] Classified error:', classified)
