@@ -28,6 +28,7 @@ import { createSecurityTools } from './security-tools'
 import { createSettingsTools } from './settings-tools'
 import { createSkillTools } from './skill-tools'
 import { createStorageTools } from './storage-tools'
+import { createVisualizationTools } from './visualization-tools'
 import { createZookeeperTools } from './zookeeper-tools'
 
 /**
@@ -101,5 +102,8 @@ export function createAllTools(hostId: number) {
 
     // Comparison & analysis
     ...createComparisonTools(hostId),
+
+    // Visualization & data source discovery
+    ...createVisualizationTools(hostId),
   }
 }
