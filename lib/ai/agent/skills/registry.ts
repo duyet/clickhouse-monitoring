@@ -2,7 +2,10 @@
  * Auto-generated skills registry.
  * Run `bun run build:skills` to regenerate from .agents/skills/
  *
- * DO NOT EDIT MANUALLY
+ * DO NOT EDIT the SKILLS array below — it is auto-generated.
+ *
+ * This file is safe to import from both client and server components.
+ * For server-only dynamic loading (filesystem + runtime registration), see dynamic-loader.ts.
  */
 
 import type { Skill } from './types'
@@ -482,18 +485,25 @@ Load this skill when users ask about:
   },
 ]
 
-/** Get all available skills metadata (without content) */
+// ---------------------------------------------------------------------------
+// Builtin registry helpers — safe for both client and server
+// ---------------------------------------------------------------------------
+
+/** Get builtin skills metadata (without content) */
 export function getSkillsMetadata(): ReadonlyArray<{
   name: string
   description: string
 }> {
-  return SKILLS.map(({ name, description }) => ({
-    name,
-    description,
-  }))
+  return SKILLS.map(({ name, description }) => ({ name, description }))
 }
 
-/** Load a skill by name, returns null if not found */
+/** Load a builtin skill by name, returns null if not found */
 export function loadSkillContent(name: string): Skill | null {
   return SKILLS.find((s) => s.name === name) ?? null
 }
+
+/**
+ * Expose the raw builtin array for use by the server-only dynamic loader.
+ * Do not import this in client components.
+ */
+export { SKILLS as BUILTIN_SKILLS }
