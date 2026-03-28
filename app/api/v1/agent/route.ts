@@ -166,7 +166,8 @@ export async function POST(request: Request) {
       const { inputTokenDetails } = step.usage
       if (
         inputTokenDetails &&
-        (inputTokenDetails.cacheReadTokens || inputTokenDetails.cacheWriteTokens)
+        (inputTokenDetails.cacheReadTokens ||
+          inputTokenDetails.cacheWriteTokens)
       ) {
         console.log('[Agent API] Cache token stats:', {
           cacheReadTokens: inputTokenDetails.cacheReadTokens,

@@ -70,7 +70,9 @@ function Providers({ children }: { children: React.ReactNode }) {
 function AnalyticsScripts() {
   return (
     <>
-      {process.env.NEXT_PUBLIC_VERCEL_ANALYTICS === 'true' && <VercelAnalytics />}
+      {process.env.NEXT_PUBLIC_VERCEL_ANALYTICS === 'true' && (
+        <VercelAnalytics />
+      )}
       {SELINE_ENABLED && <Script src="https://cdn.seline.so/seline.js" async />}
       {GA_ANALYTICS_ENABLED && (
         <>
