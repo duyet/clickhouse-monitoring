@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import type { OverviewChartConfig } from './charts-config'
 
 import { OVERVIEW_TABS } from './charts-config'

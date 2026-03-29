@@ -1,7 +1,14 @@
 'use client'
 
-import { AgentsLayout } from '@/components/agents/agents-layout'
+import dynamicModule from 'next/dynamic'
 import { ConversationProvider } from '@/lib/ai/agent/conversation-context'
+
+export const dynamic = 'force-static'
+
+const AgentsLayout = dynamicModule(
+  () => import('@/components/agents/agents-layout').then((m) => m.AgentsLayout),
+  { ssr: false }
+)
 
 export default function AgentsPage() {
   return (

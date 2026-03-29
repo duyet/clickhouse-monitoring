@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { createPage } from '@/lib/create-page'
 import { asynchronousMetricsConfig } from '@/lib/query-config/more/asynchronous-metrics'
 

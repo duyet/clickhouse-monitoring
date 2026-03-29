@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { Suspense } from 'react'
 import { ChartSummaryUsedByRunningQueries } from '@/components/charts/summary-used-by-running-queries'
 import { ChartCPUUsage } from '@/components/charts/system/cpu-usage'

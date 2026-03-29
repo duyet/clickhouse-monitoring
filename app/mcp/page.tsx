@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { Globe, Lock, Zap } from 'lucide-react'
 
 import { McpEndpointUrl } from '@/components/mcp/mcp-endpoint-url'

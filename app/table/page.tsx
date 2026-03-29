@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'

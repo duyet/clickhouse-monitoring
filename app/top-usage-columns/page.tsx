@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { createPage } from '@/lib/create-page'
 import { topUsageColumnsConfig } from '@/lib/query-config/more/top-usage-columns'
 

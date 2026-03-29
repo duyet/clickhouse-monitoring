@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { notFound, useSearchParams } from 'next/navigation'
 import { Suspense, useMemo } from 'react'
 import { getChartComponent, hasChart } from '@/components/charts/chart-registry'

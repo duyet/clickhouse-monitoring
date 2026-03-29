@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { BookOpen, Github, Server, Shield, Zap } from 'lucide-react'
 import packageInfo from '@/package.json'
 

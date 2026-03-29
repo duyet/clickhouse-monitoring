@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { Suspense } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { useChartData, useHostId } from '@/lib/swr'

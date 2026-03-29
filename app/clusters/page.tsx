@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { TableClient } from '@/components/tables/table-client'
 import { queryConfig } from '@/lib/api/clusters-api'
 

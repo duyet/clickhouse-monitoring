@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { Suspense } from 'react'
 import { QueryPageLayout } from '@/components/layout/query-page'
 import { ChartSkeleton } from '@/components/skeletons'

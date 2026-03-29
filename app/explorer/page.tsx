@@ -1,8 +1,10 @@
 'use client'
 
+import dynamicModule from 'next/dynamic'
 import { Suspense } from 'react'
-import { ExplorerLayout } from '@/components/explorer/explorer-layout'
 import { Skeleton } from '@/components/ui/skeleton'
+
+export const dynamic = 'force-static'
 
 function ExplorerSkeleton() {
   return (
@@ -16,6 +18,14 @@ function ExplorerSkeleton() {
     </div>
   )
 }
+
+const ExplorerLayout = dynamicModule(
+  () =>
+    import('@/components/explorer/explorer-layout').then(
+      (m) => m.ExplorerLayout
+    ),
+  { ssr: false, loading: () => <ExplorerSkeleton /> }
+)
 
 export default function ExplorerPage() {
   return (

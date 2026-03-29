@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'

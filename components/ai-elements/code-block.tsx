@@ -2,6 +2,15 @@
 
 import { CheckIcon, CopyIcon } from 'lucide-react'
 
+import hljs from 'highlight.js/lib/core'
+import bash from 'highlight.js/lib/languages/bash'
+import json from 'highlight.js/lib/languages/json'
+import markdown from 'highlight.js/lib/languages/markdown'
+import python from 'highlight.js/lib/languages/python'
+import sql from 'highlight.js/lib/languages/sql'
+import typescript from 'highlight.js/lib/languages/typescript'
+import xml from 'highlight.js/lib/languages/xml'
+import yaml from 'highlight.js/lib/languages/yaml'
 import {
   type ComponentProps,
   createContext,
@@ -11,13 +20,25 @@ import {
   useRef,
   useState,
 } from 'react'
-import { type BundledLanguage, codeToHtml, type ShikiTransformer } from 'shiki'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+// Register only needed languages (keeps bundle small)
+hljs.registerLanguage('sql', sql)
+hljs.registerLanguage('json', json)
+hljs.registerLanguage('typescript', typescript)
+hljs.registerLanguage('javascript', typescript) // TS grammar covers JS
+hljs.registerLanguage('xml', xml)
+hljs.registerLanguage('html', xml)
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('shell', bash)
+hljs.registerLanguage('python', python)
+hljs.registerLanguage('yaml', yaml)
+hljs.registerLanguage('markdown', markdown)
+
 type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
   code: string
-  language: BundledLanguage
+  language: string
   showLineNumbers?: boolean
 }
 
@@ -29,48 +50,42 @@ const CodeBlockContext = createContext<CodeBlockContextType>({
   code: '',
 })
 
-const lineNumberTransformer: ShikiTransformer = {
-  name: 'line-numbers',
-  line(node, line) {
-    node.children.unshift({
-      type: 'element',
-      tagName: 'span',
-      properties: {
-        className: [
-          'inline-block',
-          'min-w-10',
-          'mr-4',
-          'text-right',
-          'select-none',
-          'text-muted-foreground',
-        ],
-      },
-      children: [{ type: 'text', value: String(line) }],
-    })
-  },
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
-export async function highlightCode(
+export function highlightCode(
   code: string,
-  language: BundledLanguage,
+  language: string,
   showLineNumbers = false
-) {
-  const transformers: ShikiTransformer[] = showLineNumbers
-    ? [lineNumberTransformer]
-    : []
+): string {
+  let highlighted: string
+  try {
+    const result = hljs.highlight(code, {
+      language,
+      ignoreIllegals: true,
+    })
+    highlighted = result.value
+  } catch {
+    // Fallback for unregistered languages
+    highlighted = escapeHtml(code)
+  }
 
-  return await Promise.all([
-    codeToHtml(code, {
-      lang: language,
-      theme: 'one-light',
-      transformers,
-    }),
-    codeToHtml(code, {
-      lang: language,
-      theme: 'one-dark-pro',
-      transformers,
-    }),
-  ])
+  if (showLineNumbers) {
+    const lines = highlighted.split('\n')
+    highlighted = lines
+      .map(
+        (line, i) =>
+          `<span class="inline-block min-w-10 mr-4 text-right select-none text-muted-foreground">${i + 1}</span>${line}`
+      )
+      .join('\n')
+  }
+
+  return `<pre class="m-0 bg-background! p-4 text-foreground! text-sm"><code class="font-mono text-sm hljs">${highlighted}</code></pre>`
 }
 
 export const CodeBlock = ({
@@ -82,17 +97,14 @@ export const CodeBlock = ({
   ...props
 }: CodeBlockProps) => {
   const [html, setHtml] = useState<string>('')
-  const [darkHtml, setDarkHtml] = useState<string>('')
   const mounted = useRef(false)
 
   useEffect(() => {
-    highlightCode(code, language, showLineNumbers).then(([light, dark]) => {
-      if (!mounted.current) {
-        setHtml(light)
-        setDarkHtml(dark)
-        mounted.current = true
-      }
-    })
+    const result = highlightCode(code, language, showLineNumbers)
+    if (!mounted.current) {
+      setHtml(result)
+      mounted.current = true
+    }
 
     return () => {
       mounted.current = false
@@ -110,12 +122,8 @@ export const CodeBlock = ({
       >
         <div className="relative">
           <div
-            className="overflow-auto dark:hidden [&>pre]:m-0 [&>pre]:bg-background! [&>pre]:p-4 [&>pre]:text-foreground! [&>pre]:text-sm [&_code]:font-mono [&_code]:text-sm"
+            className="overflow-auto [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400"
             dangerouslySetInnerHTML={{ __html: html }}
-          />
-          <div
-            className="hidden overflow-auto dark:block [&>pre]:m-0 [&>pre]:bg-background! [&>pre]:p-4 [&>pre]:text-foreground! [&>pre]:text-sm [&_code]:font-mono [&_code]:text-sm"
-            dangerouslySetInnerHTML={{ __html: darkHtml }}
           />
           {children && (
             <div className="absolute top-2 right-2 flex items-center gap-2">

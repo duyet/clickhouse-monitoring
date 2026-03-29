@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-static'
+
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { getChartComponent, hasChart } from '@/components/charts/registry'
