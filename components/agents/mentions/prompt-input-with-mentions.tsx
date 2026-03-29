@@ -100,7 +100,7 @@ export function PromptInputTextareaWithMentions({
         autocomplete.state.triggerIndex
       )
       setAnchor({
-        top: rect.top + coords.top + coords.height + 4,
+        top: rect.top + coords.top,
         left: rect.left + coords.left,
       })
     } else {

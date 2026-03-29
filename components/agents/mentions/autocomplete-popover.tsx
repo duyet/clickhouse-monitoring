@@ -82,7 +82,10 @@ export function AutocompletePopover({
     <div
       style={{
         position: 'fixed',
-        top: anchor.top,
+        bottom:
+          typeof window !== 'undefined'
+            ? window.innerHeight - anchor.top + 4
+            : 0,
         left: anchor.left,
         zIndex: 9999,
       }}
