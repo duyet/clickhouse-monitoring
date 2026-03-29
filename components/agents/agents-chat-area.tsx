@@ -306,158 +306,179 @@ function ToolCallPart({
     return { outputRows: rows, outputQueryConfig: qc }
   }, [hasOutput, part.output])
 
+  // Check if the tool output is a "promoted" type (visualization or data sources)
+  // that should render outside the collapsible, always visible
+  const promotedOutput = useMemo(() => {
+    if (!hasOutput || part.output == null) return null
+    const outputObj = part.output as Record<string, unknown>
+    if (outputObj.type === 'visualization' && Array.isArray(outputObj.rows)) {
+      return 'visualization' as const
+    }
+    if (outputObj.type === 'data_sources' && Array.isArray(outputObj.sources)) {
+      return 'data_sources' as const
+    }
+    return null
+  }, [hasOutput, part.output])
+
   return (
-    <div className="my-2 overflow-hidden rounded-md border border-border/60 bg-muted/20">
-      {/* Tool header - clickable to toggle */}
-      <button
-        onClick={toggleExpanded}
-        className="flex w-full items-center gap-2 px-2.5 py-2 text-left transition-colors hover:bg-muted/30"
-      >
-        {/* Expand/collapse icon */}
-        <span className="shrink-0 text-muted-foreground">
-          {isExpanded ? (
-            <ChevronDownIcon className="h-3.5 w-3.5" />
-          ) : (
-            <ChevronRightIcon className="h-3.5 w-3.5" />
-          )}
-        </span>
+    <div className="my-2">
+      <div className="overflow-hidden rounded-md border border-border/60 bg-muted/20">
+        {/* Tool header - clickable to toggle */}
+        <button
+          onClick={toggleExpanded}
+          className="flex w-full items-center gap-2 px-2.5 py-2 text-left transition-colors hover:bg-muted/30"
+        >
+          {/* Expand/collapse icon */}
+          <span className="shrink-0 text-muted-foreground">
+            {isExpanded ? (
+              <ChevronDownIcon className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronRightIcon className="h-3.5 w-3.5" />
+            )}
+          </span>
 
-        {/* Status indicator */}
-        <div
-          className={cn(
-            'h-2 w-2 rounded-full shrink-0',
-            isStarting && 'bg-yellow-500 animate-pulse',
-            isStreaming && 'bg-yellow-400 animate-ping',
-            hasOutput && 'bg-green-500',
-            hasError && 'bg-red-500'
-          )}
-        />
+          {/* Status indicator */}
+          <div
+            className={cn(
+              'h-2 w-2 rounded-full shrink-0',
+              isStarting && 'bg-yellow-500 animate-pulse',
+              isStreaming && 'bg-yellow-400 animate-ping',
+              hasOutput && 'bg-green-500',
+              hasError && 'bg-red-500'
+            )}
+          />
 
-        {/* Tool name with muted input params */}
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-xs font-medium font-mono">{toolName}</span>
-          {inputParams && (
-            <span className="text-xs text-muted-foreground/70 font-mono truncate">
-              {inputParams}
-            </span>
-          )}
-        </div>
+          {/* Tool name with muted input params */}
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs font-medium font-mono">{toolName}</span>
+            {inputParams && (
+              <span className="text-xs text-muted-foreground/70 font-mono truncate">
+                {inputParams}
+              </span>
+            )}
+          </div>
 
-        {/* Status badge + expand button */}
-        <div className="ml-auto flex items-center gap-1.5">
-          {isStreaming && (
-            <Badge
-              variant="outline"
-              className="text-[10px] text-yellow-600 shrink-0"
-            >
-              Executing...
-            </Badge>
-          )}
-          {hasOutput && (
-            <Badge
-              variant="outline"
-              className="text-[10px] text-green-600 shrink-0"
-            >
-              ✓ Done
-            </Badge>
-          )}
-          {hasError && (
-            <Badge
-              variant="outline"
-              className="text-[10px] text-red-600 shrink-0"
-            >
-              ✗ Failed
-            </Badge>
-          )}
-          {hasOutput && outputRows.length > 0 && outputQueryConfig && (
-            <ExpandTableButton
-              rows={outputRows}
-              queryConfig={outputQueryConfig}
-            />
-          )}
-        </div>
-      </button>
+          {/* Status badge + expand button */}
+          <div className="ml-auto flex items-center gap-1.5">
+            {isStreaming && (
+              <Badge
+                variant="outline"
+                className="text-[10px] text-yellow-600 shrink-0"
+              >
+                Executing...
+              </Badge>
+            )}
+            {hasOutput && (
+              <Badge
+                variant="outline"
+                className="text-[10px] text-green-600 shrink-0"
+              >
+                ✓ Done
+              </Badge>
+            )}
+            {hasError && (
+              <Badge
+                variant="outline"
+                className="text-[10px] text-red-600 shrink-0"
+              >
+                ✗ Failed
+              </Badge>
+            )}
+            {hasOutput && outputRows.length > 0 && outputQueryConfig && (
+              <ExpandTableButton
+                rows={outputRows}
+                queryConfig={outputQueryConfig}
+              />
+            )}
+          </div>
+        </button>
 
-      {/* Collapsible content */}
-      {isExpanded ? (
-        <div className="bg-background/50">
-          {/* Streaming state */}
-          {isStreaming ? (
-            <div className="px-2.5 py-2.5">
-              <div className="flex items-center gap-2">
-                <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
-                <span className="text-xs text-muted-foreground">
-                  Executing {toolName}...
-                </span>
+        {/* Collapsible content */}
+        {isExpanded ? (
+          <div className="bg-background/50">
+            {/* Streaming state */}
+            {isStreaming ? (
+              <div className="px-2.5 py-2.5">
+                <div className="flex items-center gap-2">
+                  <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
+                  <span className="text-xs text-muted-foreground">
+                    Executing {toolName}...
+                  </span>
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          {/* Tool output — ask_user gets interactive widget */}
-          {hasOutput && part.output != null ? (
-            <div className="px-1 py-1">
-              {isAskUserOutput(part.output) && onToolResult ? (
-                <AskUserWidget
-                  output={part.output}
-                  toolCallId={part.toolCallId}
-                  onSubmit={onToolResult}
-                />
-              ) : (
-                renderToolOutput(part.output)
-              )}
-            </div>
-          ) : null}
-
-          {/* Tool error */}
-          {hasError && Boolean(part.errorText) ? (
-            <div className="px-3 py-2 text-sm text-destructive">
-              {String(part.errorText)}
-            </div>
-          ) : null}
-
-          {/* Input parameters with optional indicators */}
-          {part.input && typeof part.input === 'object' ? (
-            <div className="border-t border-border/60 bg-muted/10 px-2.5 py-2">
-              <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
-                Parameters
-              </div>
-              <div className="space-y-1">
-                {Object.entries(part.input as Record<string, unknown>).map(
-                  ([key, value]) => {
-                    const paramDef = toolParams.find((p) => p.name === key)
-                    const isOptional = paramDef?.required === false
-                    return (
-                      <div
-                        key={key}
-                        className="flex items-center gap-2 text-xs"
-                      >
-                        <span
-                          className={cn(
-                            'font-mono',
-                            isOptional
-                              ? 'text-muted-foreground'
-                              : 'text-foreground font-medium'
-                          )}
-                        >
-                          {key}
-                        </span>
-                        <span className="text-muted-foreground">:</span>
-                        <span className="font-mono text-muted-foreground">
-                          {JSON.stringify(value)}
-                        </span>
-                        {isOptional ? (
-                          <span className="text-[10px] text-muted-foreground/60">
-                            (optional)
-                          </span>
-                        ) : null}
-                      </div>
-                    )
-                  }
+            {/* Tool output — ask_user gets interactive widget; promoted types render below */}
+            {hasOutput && part.output != null && !promotedOutput ? (
+              <div className="px-1 py-1">
+                {isAskUserOutput(part.output) && onToolResult ? (
+                  <AskUserWidget
+                    output={part.output}
+                    toolCallId={part.toolCallId}
+                    onSubmit={onToolResult}
+                  />
+                ) : (
+                  renderToolOutput(part.output)
                 )}
               </div>
-            </div>
-          ) : null}
-        </div>
+            ) : null}
+
+            {/* Tool error */}
+            {hasError && Boolean(part.errorText) ? (
+              <div className="px-3 py-2 text-sm text-destructive">
+                {String(part.errorText)}
+              </div>
+            ) : null}
+
+            {/* Input parameters with optional indicators */}
+            {part.input && typeof part.input === 'object' ? (
+              <div className="border-t border-border/60 bg-muted/10 px-2.5 py-2">
+                <div className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+                  Parameters
+                </div>
+                <div className="space-y-1">
+                  {Object.entries(part.input as Record<string, unknown>).map(
+                    ([key, value]) => {
+                      const paramDef = toolParams.find((p) => p.name === key)
+                      const isOptional = paramDef?.required === false
+                      return (
+                        <div
+                          key={key}
+                          className="flex items-center gap-2 text-xs"
+                        >
+                          <span
+                            className={cn(
+                              'font-mono',
+                              isOptional
+                                ? 'text-muted-foreground'
+                                : 'text-foreground font-medium'
+                            )}
+                          >
+                            {key}
+                          </span>
+                          <span className="text-muted-foreground">:</span>
+                          <span className="font-mono text-muted-foreground">
+                            {JSON.stringify(value)}
+                          </span>
+                          {isOptional ? (
+                            <span className="text-[10px] text-muted-foreground/60">
+                              (optional)
+                            </span>
+                          ) : null}
+                        </div>
+                      )
+                    }
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      {/* Promoted output — rendered outside the collapsible, always visible */}
+      {hasOutput && promotedOutput && part.output != null ? (
+        <div className="mt-2">{renderToolOutput(part.output)}</div>
       ) : null}
     </div>
   )
