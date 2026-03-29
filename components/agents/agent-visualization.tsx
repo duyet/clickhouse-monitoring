@@ -1,7 +1,16 @@
 'use client'
 
 import { BarChart3Icon, DownloadIcon, Loader2Icon } from 'lucide-react'
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import {
+  Area,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
 import type { QueryConfig } from '@/types/query-config'
 
@@ -57,7 +66,7 @@ const NumberChart = lazy(() =>
 // ============================================================================
 
 export interface VizConfig {
-  chartType: 'bar' | 'line' | 'area' | 'pie' | 'number' | 'table'
+  chartType: 'bar' | 'line' | 'area' | 'pie' | 'number' | 'table' | 'combo'
   xKey: string
   yKeys: string[]
   sortBy?: string
@@ -81,6 +90,7 @@ const CHART_TYPE_LABELS: Record<ChartType, string> = {
   bar: 'Bar',
   line: 'Line',
   area: 'Area',
+  combo: 'Combo',
   pie: 'Pie',
   number: 'Number',
   table: 'Table',
@@ -151,9 +161,18 @@ interface ChartControlsProps {
   sortBy: string | undefined
   sortOrder: 'asc' | 'desc' | undefined
   chartType: ChartType
+  rowCount: number
+  numberRowIndex: number
+  stacked: boolean
+  logScale: boolean
+  rightAxisKeys: Set<string>
   onXKeyChange: (val: string) => void
   onYKeyChange: (val: string) => void
   onSortChange: (val: string) => void
+  onNumberRowIndexChange: (val: number) => void
+  onStackedChange: (val: boolean) => void
+  onLogScaleChange: (val: boolean) => void
+  onRightAxisKeysChange: (val: Set<string>) => void
 }
 
 function ChartControls({
@@ -164,84 +183,228 @@ function ChartControls({
   sortBy,
   sortOrder,
   chartType,
+  rowCount,
+  numberRowIndex,
+  stacked,
+  logScale,
+  rightAxisKeys,
   onXKeyChange,
   onYKeyChange,
   onSortChange,
+  onNumberRowIndexChange,
+  onStackedChange,
+  onLogScaleChange,
+  onRightAxisKeysChange,
 }: ChartControlsProps) {
-  // Number and table chart types don't need axis controls
-  if (chartType === 'number' || chartType === 'table') return null
+  // Table chart type doesn't need controls
+  if (chartType === 'table') return null
+
+  // Number chart type: show column and row selectors
+  if (chartType === 'number') {
+    return (
+      <div className="flex flex-wrap gap-2 pb-2">
+        {/* Column selector */}
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="text-muted-foreground whitespace-nowrap">
+            Column
+          </span>
+          <Select value={yKeys[0] ?? ''} onValueChange={onYKeyChange}>
+            <SelectTrigger className="h-7 text-xs w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {columns.map((col) => (
+                <SelectItem key={col} value={col} className="text-xs">
+                  {col}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Row selector */}
+        {rowCount > 1 && (
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-muted-foreground whitespace-nowrap">Row</span>
+            <Select
+              value={String(numberRowIndex)}
+              onValueChange={(v) => onNumberRowIndexChange(Number(v))}
+            >
+              <SelectTrigger className="h-7 text-xs w-[80px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: Math.min(rowCount, 50) }, (_, i) => (
+                  <SelectItem key={i} value={String(i)} className="text-xs">
+                    {i + 1}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Label column selector */}
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="text-muted-foreground whitespace-nowrap">Label</span>
+          <Select value={xKey} onValueChange={onXKeyChange}>
+            <SelectTrigger className="h-7 text-xs w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {columns.map((col) => (
+                <SelectItem key={col} value={col} className="text-xs">
+                  {col}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    )
+  }
 
   const sortValue = sortBy && sortOrder ? `${sortBy}:${sortOrder}` : '__none__'
 
   return (
-    <div className="flex flex-wrap gap-2 pb-2">
-      {/* X axis */}
-      <div className="flex items-center gap-1.5 text-xs">
-        <span className="text-muted-foreground whitespace-nowrap">X axis</span>
-        <Select value={xKey} onValueChange={onXKeyChange}>
-          <SelectTrigger className="h-7 text-xs w-[120px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {columns.map((col) => (
-              <SelectItem key={col} value={col} className="text-xs">
-                {col}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Y axis */}
-      <div className="flex items-center gap-1.5 text-xs">
-        <span className="text-muted-foreground whitespace-nowrap">Y axis</span>
-        <Select value={yKeys[0] ?? ''} onValueChange={onYKeyChange}>
-          <SelectTrigger className="h-7 text-xs w-[120px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {(numericColumns.length > 0 ? numericColumns : columns).map(
-              (col) => (
+    <>
+      <div className="flex flex-wrap gap-2 pb-2">
+        {/* X axis */}
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="text-muted-foreground whitespace-nowrap">
+            X axis
+          </span>
+          <Select value={xKey} onValueChange={onXKeyChange}>
+            <SelectTrigger className="h-7 text-xs w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {columns.map((col) => (
                 <SelectItem key={col} value={col} className="text-xs">
                   {col}
                 </SelectItem>
-              )
-            )}
-          </SelectContent>
-        </Select>
-      </div>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      {/* Sort */}
-      <div className="flex items-center gap-1.5 text-xs">
-        <span className="text-muted-foreground whitespace-nowrap">Sort</span>
-        <Select value={sortValue} onValueChange={onSortChange}>
-          <SelectTrigger className="h-7 text-xs w-[140px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__" className="text-xs">
-              No sort
-            </SelectItem>
-            {columns.flatMap((col) => [
-              <SelectItem
-                key={`${col}:asc`}
-                value={`${col}:asc`}
-                className="text-xs"
-              >
-                {col} asc
-              </SelectItem>,
-              <SelectItem
-                key={`${col}:desc`}
-                value={`${col}:desc`}
-                className="text-xs"
-              >
-                {col} desc
-              </SelectItem>,
-            ])}
-          </SelectContent>
-        </Select>
+        {/* Y axis */}
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="text-muted-foreground whitespace-nowrap">
+            Y axis
+          </span>
+          <Select value={yKeys[0] ?? ''} onValueChange={onYKeyChange}>
+            <SelectTrigger className="h-7 text-xs w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(numericColumns.length > 0 ? numericColumns : columns).map(
+                (col) => (
+                  <SelectItem key={col} value={col} className="text-xs">
+                    {col}
+                  </SelectItem>
+                )
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Sort */}
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="text-muted-foreground whitespace-nowrap">Sort</span>
+          <Select value={sortValue} onValueChange={onSortChange}>
+            <SelectTrigger className="h-7 text-xs w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__" className="text-xs">
+                No sort
+              </SelectItem>
+              {columns.flatMap((col) => [
+                <SelectItem
+                  key={`${col}:asc`}
+                  value={`${col}:asc`}
+                  className="text-xs"
+                >
+                  {col} asc
+                </SelectItem>,
+                <SelectItem
+                  key={`${col}:desc`}
+                  value={`${col}:desc`}
+                  className="text-xs"
+                >
+                  {col} desc
+                </SelectItem>,
+              ])}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Stacked toggle (bar and area) */}
+        {(chartType === 'bar' || chartType === 'area') && yKeys.length > 1 && (
+          <button
+            onClick={() => onStackedChange(!stacked)}
+            className={cn(
+              'h-7 px-2 rounded-md border text-xs transition-colors',
+              stacked
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-background text-muted-foreground border-input hover:bg-muted'
+            )}
+          >
+            Stacked
+          </button>
+        )}
+
+        {/* Log scale toggle */}
+        {chartType !== 'pie' && (
+          <button
+            onClick={() => onLogScaleChange(!logScale)}
+            className={cn(
+              'h-7 px-2 rounded-md border text-xs transition-colors',
+              logScale
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-background text-muted-foreground border-input hover:bg-muted'
+            )}
+          >
+            Log
+          </button>
+        )}
       </div>
-    </div>
+      {/* Combo chart: axis assignment per Y key */}
+      {chartType === 'combo' && numericColumns.length > 1 && (
+        <div className="flex flex-wrap gap-1.5 pb-2">
+          {numericColumns
+            .filter((col) => col !== xKey)
+            .map((col) => {
+              const isRight = rightAxisKeys.has(col)
+              return (
+                <button
+                  key={col}
+                  onClick={() => {
+                    const next = new Set(rightAxisKeys)
+                    if (isRight) next.delete(col)
+                    else next.add(col)
+                    onRightAxisKeysChange(next)
+                  }}
+                  className={cn(
+                    'h-6 px-2 rounded border text-[11px] transition-colors',
+                    isRight
+                      ? 'bg-blue-500/15 text-blue-600 border-blue-300 dark:text-blue-400 dark:border-blue-700'
+                      : 'bg-muted/50 text-muted-foreground border-input hover:bg-muted'
+                  )}
+                  title={
+                    isRight
+                      ? `${col}: right axis (line)`
+                      : `${col}: left axis (bar)`
+                  }
+                >
+                  {col} {isRight ? '(R)' : '(L)'}
+                </button>
+              )
+            })}
+        </div>
+      )}
+    </>
   )
 }
 
@@ -249,15 +412,23 @@ interface BarChartViewProps {
   data: Record<string, unknown>[]
   xKey: string
   yKeys: string[]
+  stacked?: boolean
+  logScale?: boolean
 }
 
-function BarChartView({ data, xKey, yKeys }: BarChartViewProps) {
+function BarChartView({
+  data,
+  xKey,
+  yKeys,
+  stacked,
+  logScale,
+}: BarChartViewProps) {
   const chartConfig: ChartConfig = useMemo(
     () =>
       Object.fromEntries(
         yKeys.map((key, i) => [
           key,
-          { label: key, color: `hsl(var(--chart-${(i % 5) + 1}))` },
+          { label: key, color: `var(--chart-${(i % 5) + 1})` },
         ])
       ),
     [yKeys]
@@ -277,7 +448,14 @@ function BarChartView({ data, xKey, yKeys }: BarChartViewProps) {
             return s.length > 12 ? `${s.slice(0, 12)}…` : s
           }}
         />
-        <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+        <YAxis
+          tick={{ fontSize: 11 }}
+          tickLine={false}
+          axisLine={false}
+          scale={logScale ? 'log' : 'auto'}
+          domain={logScale ? ['auto', 'auto'] : undefined}
+          allowDataOverflow={logScale}
+        />
         <ChartTooltip content={<ChartTooltipContent />} />
         {yKeys.map((key) => (
           <Bar
@@ -285,9 +463,99 @@ function BarChartView({ data, xKey, yKeys }: BarChartViewProps) {
             dataKey={key}
             fill={`var(--color-${key})`}
             radius={[2, 2, 0, 0]}
+            stackId={stacked ? 'stack' : undefined}
           />
         ))}
       </BarChart>
+    </ChartContainer>
+  )
+}
+
+interface ComboChartViewProps {
+  data: Record<string, unknown>[]
+  xKey: string
+  yKeys: string[]
+  rightAxisKeys: Set<string>
+  logScale?: boolean
+}
+
+function ComboChartView({
+  data,
+  xKey,
+  yKeys,
+  rightAxisKeys,
+  logScale,
+}: ComboChartViewProps) {
+  const chartConfig: ChartConfig = useMemo(
+    () =>
+      Object.fromEntries(
+        yKeys.map((key, i) => [
+          key,
+          { label: key, color: `var(--chart-${(i % 5) + 1})` },
+        ])
+      ),
+    [yKeys]
+  )
+
+  const leftKeys = yKeys.filter((k) => !rightAxisKeys.has(k))
+  const rightKeys = yKeys.filter((k) => rightAxisKeys.has(k))
+
+  return (
+    <ChartContainer config={chartConfig} className="h-48 w-full">
+      <ComposedChart
+        data={data}
+        margin={{ top: 4, right: 8, bottom: 4, left: 8 }}
+      >
+        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+        <XAxis
+          dataKey={xKey}
+          tick={{ fontSize: 11 }}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(v) => {
+            const s = String(v)
+            return s.length > 12 ? `${s.slice(0, 12)}…` : s
+          }}
+        />
+        <YAxis
+          yAxisId="left"
+          tick={{ fontSize: 11 }}
+          tickLine={false}
+          axisLine={false}
+          scale={logScale ? 'log' : 'auto'}
+          domain={logScale ? ['auto', 'auto'] : undefined}
+        />
+        {rightKeys.length > 0 && (
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            tick={{ fontSize: 11 }}
+            tickLine={false}
+            axisLine={false}
+          />
+        )}
+        <ChartTooltip content={<ChartTooltipContent />} />
+        {leftKeys.map((key) => (
+          <Bar
+            key={key}
+            yAxisId="left"
+            dataKey={key}
+            fill={`var(--color-${key})`}
+            radius={[2, 2, 0, 0]}
+          />
+        ))}
+        {rightKeys.map((key) => (
+          <Line
+            key={key}
+            yAxisId="right"
+            type="monotone"
+            dataKey={key}
+            stroke={`var(--color-${key})`}
+            strokeWidth={2}
+            dot={false}
+          />
+        ))}
+      </ComposedChart>
     </ChartContainer>
   )
 }
@@ -319,6 +587,10 @@ export function AgentVisualization({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(
     viz.sortOrder
   )
+  const [numberRowIndex, setNumberRowIndex] = useState(0)
+  const [stacked, setStacked] = useState(false)
+  const [logScale, setLogScale] = useState(false)
+  const [rightAxisKeys, setRightAxisKeys] = useState<Set<string>>(new Set())
 
   // Derive numeric columns from rows sample
   const numericColumns = useMemo(
@@ -387,27 +659,40 @@ export function AgentVisualization({
       }
 
       if (chartType === 'number') {
+        const safeIndex = Math.min(numberRowIndex, sortedRows.length - 1)
+        const numberData = [sortedRows[safeIndex]].filter(Boolean)
         return (
           <Suspense fallback={<ChartLoadingSkeleton />}>
             <NumberChart
-              data={sortedRows as Record<string, string | number>[]}
+              data={numberData as Record<string, string | number>[]}
               nameKey={xKey}
               dataKey={yKeys[0] ?? columns[0] ?? ''}
               title={title}
+              showLabel
             />
           </Suspense>
         )
       }
 
       if (chartType === 'pie') {
+        // Limit pie chart to top 10 slices for readability
+        const pieValueKey = yKeys[0] ?? columns[0] ?? ''
+        const pieSorted = [...sortedRows].sort(
+          (a, b) =>
+            (Number(b[pieValueKey]) || 0) - (Number(a[pieValueKey]) || 0)
+        )
+        const pieData = pieSorted.slice(0, 10)
+        const showPieLegend = pieData.length <= 10
+
         return (
           <Suspense fallback={<ChartLoadingSkeleton />}>
             <DonutChart
-              data={sortedRows}
+              data={pieData}
               index={xKey}
-              category={yKeys[0] ?? columns[0] ?? ''}
+              category={pieValueKey}
               readable={viz.readable}
-              showLegend
+              showLegend={showPieLegend}
+              showLabel
               innerRadius={50}
               outerRadius={75}
             />
@@ -421,6 +706,26 @@ export function AgentVisualization({
             data={sortedRows}
             xKey={xKey}
             yKeys={yKeys.length > 0 ? yKeys : [columns[1] ?? columns[0] ?? '']}
+            stacked={stacked}
+            logScale={logScale}
+          />
+        )
+      }
+
+      if (chartType === 'combo') {
+        const comboYKeys =
+          numericColumns.length > 1
+            ? numericColumns.filter((col) => col !== xKey)
+            : yKeys.length > 0
+              ? yKeys
+              : [columns[1] ?? columns[0] ?? '']
+        return (
+          <ComboChartView
+            data={sortedRows}
+            xKey={xKey}
+            yKeys={comboYKeys}
+            rightAxisKeys={rightAxisKeys}
+            logScale={logScale}
           />
         )
       }
@@ -437,7 +742,7 @@ export function AgentVisualization({
             showXAxis
             showYAxis
             showCartesianGrid
-            stack={false}
+            stack={stacked}
             opacity={chartType === 'line' ? 0 : 0.5}
             className="h-48"
           />
@@ -534,9 +839,18 @@ export function AgentVisualization({
             sortBy={sortBy}
             sortOrder={sortOrder}
             chartType={chartType}
+            rowCount={rows.length}
+            numberRowIndex={numberRowIndex}
+            stacked={stacked}
+            logScale={logScale}
+            rightAxisKeys={rightAxisKeys}
             onXKeyChange={setXKey}
             onYKeyChange={handleYKeyChange}
             onSortChange={handleSortChange}
+            onNumberRowIndexChange={setNumberRowIndex}
+            onStackedChange={setStacked}
+            onLogScaleChange={setLogScale}
+            onRightAxisKeysChange={setRightAxisKeys}
           />
           {renderChart()}
         </TabsContent>
