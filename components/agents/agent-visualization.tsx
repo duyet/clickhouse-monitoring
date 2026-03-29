@@ -2,7 +2,6 @@
 
 import { BarChart3Icon, DownloadIcon, Loader2Icon } from 'lucide-react'
 import {
-  Area,
   Bar,
   BarChart,
   CartesianGrid,
