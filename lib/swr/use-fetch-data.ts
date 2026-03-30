@@ -2,6 +2,8 @@
 
 import useSWR, { type SWRConfiguration } from 'swr'
 
+import { throwIfNotOk } from './fetch-error'
+
 /**
  * Generic data response structure from the API
  */
@@ -62,27 +64,7 @@ export function useFetchData<T = unknown>(
       }),
     })
 
-    if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as {
-        error?: {
-          message?: string
-          type?: string
-          details?: Record<string, unknown>
-        }
-      }
-      const error = new Error(
-        errorData.error?.message ||
-          `Failed to fetch data: ${response.statusText}`
-      ) as Error & { type?: string; details?: Record<string, unknown> }
-
-      // Attach error metadata if available
-      if (errorData.error) {
-        error.type = errorData.error.type
-        error.details = errorData.error.details
-      }
-
-      throw error
-    }
+    await throwIfNotOk(response, 'Failed to fetch data')
 
     return response.json() as Promise<DataResponse<T>>
   }

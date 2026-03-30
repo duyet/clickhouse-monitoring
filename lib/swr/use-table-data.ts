@@ -7,6 +7,7 @@ import type { StaleError } from './use-chart-data'
 
 import { fetchViaBrowserProxy } from './browser-proxy-fetcher'
 import { visibilityAwareInterval } from './config'
+import { throwIfNotOk } from './fetch-error'
 import { useCallback, useMemo, useRef } from 'react'
 import { useBrowserConnectionsContext } from '@/lib/context/browser-connections-context'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
@@ -167,33 +168,7 @@ export function useTableData<T = unknown>(
   const normalFetcher = useCallback(async () => {
     const response = await fetch(url)
 
-    if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as {
-        error?: {
-          message?: string
-          type?: string
-          details?: {
-            missingTables?: readonly string[]
-            [key: string]: unknown
-          }
-        }
-      }
-      const error = new Error(
-        errorData.error?.message ||
-          `Failed to fetch table data: ${response.statusText}`
-      ) as Error & {
-        type?: string
-        details?: { missingTables?: readonly string[]; [key: string]: unknown }
-      }
-
-      // Attach error metadata if available
-      if (errorData.error) {
-        error.type = errorData.error.type
-        error.details = errorData.error.details
-      }
-
-      throw error
-    }
+    await throwIfNotOk(response, 'Failed to fetch table data')
 
     return response.json() as Promise<TableDataResponse<T>>
   }, [url])
