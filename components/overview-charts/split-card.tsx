@@ -3,7 +3,7 @@
 import { cardStyles } from './card-styles'
 import Link from 'next/link'
 import { memo } from 'react'
-import { AnimatedNumber } from '@/components/cards/metric/animated-number'
+import { AnimatedNumber } from '@/components/cards/animated-number'
 import { cn } from '@/lib/utils'
 
 export interface SplitValueProps {
