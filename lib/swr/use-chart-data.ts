@@ -15,6 +15,7 @@ import {
   type RefreshInterval,
   visibilityAwareInterval,
 } from './config'
+import { throwIfNotOk } from './fetch-error'
 import { useCallback, useMemo, useRef } from 'react'
 import { useBrowserConnectionsContext } from '@/lib/context/browser-connections-context'
 import { useTimeRange } from '@/lib/context/time-range-context'
@@ -235,37 +236,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   const normalFetcher = useCallback(async () => {
     const response = await fetch(url)
 
-    if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as {
-        error?: {
-          message?: string
-          type?: string
-          details?: {
-            missingTables?: readonly string[]
-            [key: string]: unknown
-          }
-        }
-      }
-      const error = new Error(
-        errorData.error?.message ||
-          `Failed to fetch chart data: ${response.statusText}`
-      ) as Error & {
-        status?: number
-        type?: string
-        details?: { missingTables?: readonly string[]; [key: string]: unknown }
-      }
-
-      // Attach HTTP status so onErrorRetry can skip retrying 4xx errors
-      error.status = response.status
-
-      // Attach error metadata if available
-      if (errorData.error) {
-        error.type = errorData.error.type
-        error.details = errorData.error.details
-      }
-
-      throw error
-    }
+    await throwIfNotOk(response, 'Failed to fetch chart data')
 
     return response.json() as Promise<ChartDataResponse<T>>
   }, [url])

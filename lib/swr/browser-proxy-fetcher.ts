@@ -1,13 +1,6 @@
 import type { BrowserConnection } from '@/lib/types/browser-connection'
 
-/**
- * Shared error type for proxy responses
- */
-export interface ProxyError extends Error {
-  status?: number
-  type?: string
-  details?: { missingTables?: readonly string[]; [key: string]: unknown }
-}
+import { throwIfNotOk } from './fetch-error'
 
 /**
  * Parameters for the browser proxy fetch
@@ -56,27 +49,7 @@ export async function fetchViaBrowserProxy<T = unknown>({
     }),
   })
 
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as {
-      error?: {
-        message?: string
-        type?: string
-        details?: {
-          missingTables?: readonly string[]
-          [key: string]: unknown
-        }
-      }
-    }
-    const error = new Error(
-      errorData.error?.message || `Proxy request failed: ${response.statusText}`
-    ) as ProxyError
-    error.status = response.status
-    if (errorData.error) {
-      error.type = errorData.error.type
-      error.details = errorData.error.details
-    }
-    throw error
-  }
+  await throwIfNotOk(response, 'Proxy request failed')
 
   const json = (await response.json()) as ProxyResponse<T>
   return { data: json.data, metadata: json.metadata }
