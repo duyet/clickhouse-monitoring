@@ -12,17 +12,11 @@ import type { MenuItem } from './types'
 
 import { MenuHasChildren } from './components/menu-has-children'
 import { MenuSingleItem } from './components/menu-single-item'
-import { lazy, memo, Suspense } from 'react'
+import { memo } from 'react'
 import {
   NavigationMenu,
   NavigationMenuList,
 } from '@/components/ui/navigation-menu'
-
-const CountBadge = lazy(() =>
-  import('@/components/menu/count-badge').then((mod) => ({
-    default: mod.CountBadge,
-  }))
-)
 
 export interface MenuProps {
   items?: MenuItem[]
