@@ -122,7 +122,6 @@ Both deployment methods provide:
 - `bun run check` / `bun run check:fix` - Run Biome's full check suite, with optional write mode
 - `bun run lint:fix` - Apply Biome lint fixes
 - `bun run type-check` - Run standalone TypeScript verification
-- `bun run start:coverage` - Start the app with coverage instrumentation via `nyc`
 - `bun run cy:open` - Start the dev server and open Cypress against `http://localhost:3000`
 - `bun run test:unit`, `bun run test:query-config`, `bun run test:coverage`, `bun run test:watch` - Narrow test runs for common workflows
 - `bun run build:skills` - Regenerate the AI skills registry from `.agents/skills/`
