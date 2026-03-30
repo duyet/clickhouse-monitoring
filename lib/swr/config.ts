@@ -98,11 +98,6 @@ export function visibilityAwareInterval(ms: number): () => number {
 }
 
 /**
- * Maximum number of retry attempts for failed requests
- */
-const MAX_RETRY_COUNT = 5
-
-/**
  * Maximum backoff delay in milliseconds (30 seconds)
  */
 const MAX_BACKOFF_MS = 30_000
@@ -110,36 +105,31 @@ const MAX_BACKOFF_MS = 30_000
 /**
  * SWR error retry handler with exponential backoff
  *
- * - Retries network/5xx errors with exponential backoff (1s, 2s, 4s, 8s, 16s, capped at 30s)
- * - Does NOT retry 4xx client errors (bad request, not found, etc.)
- * - Stops after MAX_RETRY_COUNT attempts
+ * - Retries network/5xx errors with exponential backoff (1s, 2s, 4s, 8s, capped at 30s)
+ * - Retries 429 (rate limit) errors
+ * - Does NOT retry other 4xx client errors (bad request, not found, etc.)
+ * - Respects `config.errorRetryCount` (defaults to 3)
  */
 export const onErrorRetry: SWRConfiguration['onErrorRetry'] = (
   error,
   _key,
-  _config,
+  config,
   revalidate,
   { retryCount }
 ) => {
-  // Don't retry on client errors (4xx)
-  if (
-    error &&
-    typeof error === 'object' &&
-    'status' in error &&
-    typeof error.status === 'number' &&
-    error.status >= 400 &&
-    error.status < 500
-  ) {
-    return
+  // Don't retry on 4xx client errors (except 429)
+  if ('status' in error && typeof error.status === 'number') {
+    const status = error.status
+    if (status >= 400 && status < 500 && status !== 429) {
+      return
+    }
   }
 
-  // Don't retry beyond max attempts
-  if (retryCount >= MAX_RETRY_COUNT) return
+  // Don't retry if we've exceeded the max retry count
+  if (retryCount >= (config.errorRetryCount || 3)) return
 
-  // Exponential backoff: 1s, 2s, 4s, 8s, 16s (capped at 30s)
+  // Exponential backoff: 1s, 2s, 4s, 8s (capped at 30s)
   const backoff = Math.min(MAX_BACKOFF_MS, 1000 * 2 ** retryCount)
 
-  setTimeout(() => {
-    revalidate({ retryCount })
-  }, backoff)
+  setTimeout(() => revalidate({ retryCount }), backoff)
 }
