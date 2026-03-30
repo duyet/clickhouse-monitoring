@@ -40,7 +40,7 @@ export class NextCacheAdapter implements QueryCacheAdapter {
     const ttl = options.ttlSeconds ?? 3600
     const cached = cacheFn(
       fn as (...args: unknown[]) => Promise<T>,
-      undefined,
+      options.key,
       { tags: options.tags, revalidate: ttl }
     )
     return cached()

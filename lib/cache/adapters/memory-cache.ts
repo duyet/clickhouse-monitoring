@@ -5,14 +5,15 @@ import { debug } from '@/lib/logger'
 export class MemoryCacheAdapter implements QueryCacheAdapter {
   private cache = new Map<string, { value: unknown; expires: number }>()
 
-  private makeKey(fn: () => Promise<unknown>, options: CacheOptions): string {
+  private makeKey(options: CacheOptions): string {
+    const keyParts = options.key?.join(':') ?? ''
     const tags = options.tags?.join(',') ?? ''
-    return `mem:${tags}`
+    return `mem:${keyParts}:${tags}`
   }
 
   async wrap<T>(fn: () => Promise<T>, options: CacheOptions): Promise<T> {
     const ttl = options.ttlSeconds ?? 3600
-    const key = this.makeKey(fn, options)
+    const key = this.makeKey(options)
 
     const entry = this.cache.get(key)
     if (entry && Date.now() < entry.expires) {

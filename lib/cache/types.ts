@@ -1,4 +1,5 @@
 export interface CacheOptions {
+  key?: string[]
   tags?: string[]
   ttlSeconds?: number
 }
