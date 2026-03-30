@@ -9,6 +9,7 @@ export const CLICKHOUSE_CACHE_TAG = 'clickhouse_results'
 export type { CacheOptions, QueryCacheAdapter } from './types'
 
 let cacheInstance: QueryCacheAdapter | null = null
+let memoryCacheInstance: MemoryCacheAdapter | null = null
 
 export function getQueryCache(): QueryCacheAdapter {
   if (cacheInstance) return cacheInstance
@@ -19,7 +20,9 @@ export function getQueryCache(): QueryCacheAdapter {
 }
 
 export function getMemoryCache(): QueryCacheAdapter {
-  return new MemoryCacheAdapter()
+  if (memoryCacheInstance) return memoryCacheInstance
+  memoryCacheInstance = new MemoryCacheAdapter()
+  return memoryCacheInstance
 }
 
 export function resetQueryCacheInstance(): void {

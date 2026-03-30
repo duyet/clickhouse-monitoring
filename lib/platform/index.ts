@@ -42,7 +42,7 @@ export function getPlatformBindings(): PlatformBindings {
   if (instance) return instance
 
   const isCloudflare =
-    process.env.CLOUDFLARE_WORKERS === '1' || process.env.MINIFLARE
+    process.env.CLOUDFLARE_WORKERS === '1' || process.env.MINIFLARE === '1'
 
   if (isCloudflare) {
     instance = new CloudflarePlatformBindings()

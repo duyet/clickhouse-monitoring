@@ -9,24 +9,27 @@ type UnstableCacheFn = <T extends (...args: unknown[]) => Promise<unknown>>(
 ) => T
 
 let unstableCache: UnstableCacheFn | null = null
-let initAttempted = false
+let initPromise: Promise<UnstableCacheFn | null> | null = null
 
 async function tryLoadUnstableCache(): Promise<UnstableCacheFn | null> {
   if (unstableCache) return unstableCache
-  if (initAttempted) return null
+  if (initPromise) return initPromise
 
-  initAttempted = true
-  try {
-    const nextCache = await import('next/cache')
-    unstableCache = (nextCache.unstable_cache ?? null) as UnstableCacheFn | null
-    if (unstableCache) {
-      debug('[query-cache] Using Next.js unstable_cache adapter')
+  initPromise = (async () => {
+    try {
+      const nextCache = await import('next/cache')
+      unstableCache = (nextCache.unstable_cache ??
+        null) as UnstableCacheFn | null
+      if (unstableCache) {
+        debug('[query-cache] Using Next.js unstable_cache adapter')
+      }
+    } catch {
+      debug('[query-cache] next/cache unavailable, NextCacheAdapter disabled')
     }
-  } catch {
-    debug('[query-cache] next/cache unavailable, NextCacheAdapter disabled')
-  }
+    return unstableCache
+  })()
 
-  return unstableCache
+  return initPromise
 }
 
 export class NextCacheAdapter implements QueryCacheAdapter {

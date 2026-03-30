@@ -154,11 +154,9 @@ export const queries: Array<QueryConfig> = [
   ...anomalyQueries,
 ]
 
-export const getQueryConfigByName = (
-  name: string
-): QueryConfig | undefined | null => {
+export const getQueryConfigByName = (name: string): QueryConfig | undefined => {
   if (!name) {
-    return null
+    return undefined
   }
 
   return queries.find((q) => q.name === name)
