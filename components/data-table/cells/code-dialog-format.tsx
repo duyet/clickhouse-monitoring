@@ -3,8 +3,8 @@ import { SizeIcon } from '@radix-ui/react-icons'
 import { ExternalLinkIcon } from 'lucide-react'
 
 import dedent from 'dedent'
-import Link from 'next/link'
 import { memo, useMemo } from 'react'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,

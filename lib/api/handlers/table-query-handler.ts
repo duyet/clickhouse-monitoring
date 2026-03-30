@@ -7,8 +7,6 @@
  * @module lib/api/handlers/table-query-handler
  */
 
-import type { NextRequest } from 'next/server'
-
 import {
   createErrorResponse,
   getHostIdFromParams,
@@ -32,7 +30,7 @@ export function createTableQueryHandler(
 ) {
   const { route, queryConfigName } = options
 
-  return async function handler(request: NextRequest): Promise<Response> {
+  return async function handler(request: Request): Promise<Response> {
     const { searchParams } = new URL(request.url)
     const routeContext: RouteContext = {
       route,

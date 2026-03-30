@@ -1,6 +1,5 @@
 'use client'
 
-import { useParams, useSearchParams } from 'next/navigation'
 import { createContext, type ReactNode, useContext, useMemo } from 'react'
 
 interface HostContextValue {
@@ -10,9 +9,9 @@ interface HostContextValue {
 const HostContext = createContext<HostContextValue | null>(null)
 
 /**
- * HostProvider - Provides hostId from URL query/route params via context
+ * HostProvider - Provides hostId via context
  *
- * This component reads search params once and provides the value via context.
+ * Accept hostId as a prop. If not provided, falls back to 0.
  * Must be wrapped in Suspense for static page generation.
  *
  * @example
@@ -25,36 +24,13 @@ const HostContext = createContext<HostContextValue | null>(null)
  * </Suspense>
  * ```
  */
-export function HostProvider({ children }: { children: ReactNode }) {
-  const searchParams = useSearchParams()
-  const params = useParams()
-
-  // Calculate hostId directly (no memo) - cheap operation that ensures
-  // we always get the current value from URL params.
-  // useMemo with searchParams dependency was causing stale values because
-  // Next.js may return the same searchParams object reference even when
-  // the URL changes, preventing recalculation.
-  let hostId = 0
-
-  // First try query param (for static routes)
-  const hostParam = searchParams.get('host')
-  if (hostParam !== null) {
-    const parsed = Number(hostParam)
-    if (!Number.isNaN(parsed)) {
-      hostId = parsed
-    }
-  } else {
-    // Fallback to route param (for dynamic routes, legacy support)
-    if (params.host) {
-      const host = params.host
-      const hostString = Array.isArray(host) ? host[0] : host
-      const hostNum = Number(hostString)
-      if (!Number.isNaN(hostNum)) {
-        hostId = hostNum
-      }
-    }
-  }
-
+export function HostProvider({
+  hostId = 0,
+  children,
+}: {
+  hostId?: number
+  children: ReactNode
+}) {
   // Memoize the context value to prevent unnecessary re-renders
   // when hostId hasn't actually changed
   const value = useMemo(() => ({ hostId }), [hostId])

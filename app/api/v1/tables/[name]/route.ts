@@ -5,7 +5,6 @@
  * Returns table data for a specific query configuration with optional filtering
  */
 
-import type { NextRequest } from 'next/server'
 import type { ApiResponse } from '@/lib/api/types'
 
 import {
@@ -32,7 +31,7 @@ const ROUTE_CONTEXT_BASE = { route: '/api/v1/tables/[name]' }
  * Handle GET requests for table data
  */
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ name: string }> }
 ): Promise<Response> {
   const { name } = await params

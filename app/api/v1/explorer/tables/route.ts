@@ -5,7 +5,6 @@
  * Returns list of tables in a database
  */
 
-import type { NextRequest } from 'next/server'
 import type { ApiResponse } from '@/lib/api/types'
 
 import {
@@ -25,7 +24,7 @@ const ROUTE_CONTEXT_BASE = { route: '/api/v1/explorer/tables' }
 /**
  * Handle GET requests for tables list
  */
-export async function GET(request: NextRequest): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url)
   const routeContext: RouteContext = {
     ...ROUTE_CONTEXT_BASE,

@@ -442,16 +442,16 @@ export class MigrationRunner {
 
   /**
    * Execute SQL on D1 database.
-   * Uses Cloudflare D1 binding when available.
+   * Uses platform bindings to get the D1 database.
    */
   private async executeD1Sql(sql: string): Promise<void> {
     try {
-      const { getCloudflareContext } = await import('@opennextjs/cloudflare')
-      const ctx = await getCloudflareContext()
+      const { getPlatformBindings } = await import('@/lib/platform')
+      const bindings = getPlatformBindings()
 
       const db =
-        (ctx?.env?.CONVERSATIONS_D1 as D1Database) ||
-        (ctx?.env?.NEXT_TAG_CACHE_D1 as D1Database)
+        bindings.getD1Database('CONVERSATIONS_D1') ||
+        bindings.getD1Database('NEXT_TAG_CACHE_D1')
 
       if (!db) {
         throw new Error('No D1 binding found')

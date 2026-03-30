@@ -1,12 +1,28 @@
 'use client'
 
-import dynamic from 'next/dynamic'
+import { lazy, Suspense, useEffect, useState } from 'react'
 
-const Analytics = dynamic(
-  () => import('@vercel/analytics/react').then((mod) => mod.Analytics),
-  { ssr: false }
+const Analytics = lazy(() =>
+  import('@vercel/analytics/react').then((mod) => ({
+    default: mod.Analytics,
+  }))
 )
 
+function NoSsr({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  if (!mounted) return null
+  return <>{children}</>
+}
+
 export function VercelAnalytics() {
-  return <Analytics />
+  return (
+    <NoSsr>
+      <Suspense fallback={null}>
+        <Analytics />
+      </Suspense>
+    </NoSsr>
+  )
 }

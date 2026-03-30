@@ -12,17 +12,18 @@ import { useMenuActiveState } from '../hooks/use-menu-active-state'
 import { HostPrefixedLink } from '../link-with-context'
 import { ActiveIndicator } from './active-indicator'
 import { MenuIcon } from './menu-icon'
-import dynamic from 'next/dynamic'
-import { memo } from 'react'
+import { lazy, memo, Suspense } from 'react'
 import { NavigationMenuLink } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
 
-const CountBadge = dynamic(() =>
-  import('@/components/menu/count-badge').then((mod) => mod.CountBadge)
+const CountBadge = lazy(() =>
+  import('@/components/menu/count-badge').then((mod) => ({
+    default: mod.CountBadge,
+  }))
 )
 
-const NewBadge = dynamic(() =>
-  import('./new-badge').then((mod) => mod.NewBadge)
+const NewBadge = lazy(() =>
+  import('./new-badge').then((mod) => ({ default: mod.NewBadge }))
 )
 
 interface MenuListItemProps {
@@ -39,9 +40,13 @@ export const MenuListItem = memo(function MenuListItem({
       <MenuIcon icon={item.icon} isActive={isActive} />
       <span>{item.title}</span>
       {item.countKey ? (
-        <CountBadge countKey={item.countKey} variant={item.countVariant} />
+        <Suspense fallback={null}>
+          <CountBadge countKey={item.countKey} variant={item.countVariant} />
+        </Suspense>
       ) : null}
-      <NewBadge href={item.href} isNew={item.isNew} />
+      <Suspense fallback={null}>
+        <NewBadge href={item.href} isNew={item.isNew} />
+      </Suspense>
     </span>
   )
 

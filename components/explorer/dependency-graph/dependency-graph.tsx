@@ -17,8 +17,8 @@ import {
 import '@xyflow/react/dist/style.css'
 
 import dagre from '@dagrejs/dagre'
-import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { getEngineIconConfig } from '@/lib/clickhouse-engine-icons'
 import { cn } from '@/lib/utils'
 

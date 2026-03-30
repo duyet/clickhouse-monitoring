@@ -2,9 +2,9 @@
 
 import { Activity, Database, RefreshCw, Search } from 'lucide-react'
 
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { memo } from 'react'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { cn } from '@/lib/utils'
 
 const navigation = [

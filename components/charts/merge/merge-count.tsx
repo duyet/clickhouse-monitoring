@@ -4,9 +4,9 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import Link from 'next/link'
 import { createCustomChart } from '@/components/charts/factory'
 import { BarChart } from '@/components/charts/primitives/bar/bar'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { buildUrl } from '@/lib/url/url-builder'
 
 export const ChartMergeCount = createCustomChart({

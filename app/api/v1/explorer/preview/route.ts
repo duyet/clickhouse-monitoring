@@ -5,7 +5,6 @@
  * Returns preview data (SELECT *) from a table with pagination
  */
 
-import type { NextRequest } from 'next/server'
 import type { ApiResponse } from '@/lib/api/types'
 
 import {
@@ -27,7 +26,7 @@ const VALID_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_]*$/
 /**
  * Handle GET requests for table preview
  */
-export async function GET(request: NextRequest): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url)
   const routeContext: RouteContext = {
     ...ROUTE_CONTEXT_BASE,

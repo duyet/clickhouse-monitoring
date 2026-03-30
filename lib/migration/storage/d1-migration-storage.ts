@@ -13,6 +13,7 @@ import type {
 } from '../migration-runner'
 
 import { calculateChecksum, getPlatformInfo } from '../utils'
+import { getPlatformBindings } from '@/lib/platform'
 
 const MIGRATIONS_TABLE = `
 CREATE TABLE IF NOT EXISTS _migrations (
@@ -40,19 +41,14 @@ export class D1MigrationStorage implements MigrationStorage {
   private async getDb(): Promise<D1Database> {
     if (this.db) return this.db
 
-    try {
-      const { getCloudflareContext } = await import('@opennextjs/cloudflare')
-      const ctx = await getCloudflareContext()
+    const bindings = getPlatformBindings()
 
-      if (ctx?.env?.CONVERSATIONS_D1) {
-        this.db = ctx.env.CONVERSATIONS_D1 as D1Database
-      } else if (ctx?.env?.NEXT_TAG_CACHE_D1) {
-        this.db = ctx.env.NEXT_TAG_CACHE_D1 as D1Database
-      } else {
-        throw new Error('No D1 binding found')
-      }
-    } catch (error) {
-      throw new Error(`Failed to get D1 binding: ${error}`)
+    this.db =
+      bindings.getD1Database('CONVERSATIONS_D1') ||
+      bindings.getD1Database('NEXT_TAG_CACHE_D1')
+
+    if (!this.db) {
+      throw new Error('No D1 binding found')
     }
 
     return this.db

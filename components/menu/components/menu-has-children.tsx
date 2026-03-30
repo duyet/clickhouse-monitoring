@@ -12,8 +12,7 @@ import { useMenuActiveState } from '../hooks/use-menu-active-state'
 import { ActiveIndicator } from './active-indicator'
 import { MenuIcon } from './menu-icon'
 import { MenuListItem } from './menu-list-item'
-import dynamic from 'next/dynamic'
-import { memo } from 'react'
+import { lazy, memo, Suspense } from 'react'
 import {
   NavigationMenuContent,
   NavigationMenuItem,
@@ -21,8 +20,10 @@ import {
 } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
 
-const CountBadge = dynamic(() =>
-  import('@/components/menu/count-badge').then((mod) => mod.CountBadge)
+const CountBadge = lazy(() =>
+  import('@/components/menu/count-badge').then((mod) => ({
+    default: mod.CountBadge,
+  }))
 )
 
 interface MenuHasChildrenProps {
@@ -48,7 +49,12 @@ export const MenuHasChildren = memo(function MenuHasChildren({
           <MenuIcon icon={item.icon} isActive={hasActiveChild} />
           <span>{item.title}</span>
           {item.countKey ? (
-            <CountBadge countKey={item.countKey} variant={item.countVariant} />
+            <Suspense fallback={null}>
+              <CountBadge
+                countKey={item.countKey}
+                variant={item.countVariant}
+              />
+            </Suspense>
           ) : null}
         </div>
         <ActiveIndicator position="bottom" active={hasActiveChild} />

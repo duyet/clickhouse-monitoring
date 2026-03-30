@@ -2,9 +2,9 @@
 
 import { HomeIcon } from 'lucide-react'
 
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { LegacyUrlRedirect } from '@/components/legacy-url-redirect'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 
 export default function NotFound() {

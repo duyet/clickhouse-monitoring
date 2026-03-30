@@ -1,8 +1,8 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback } from 'react'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 import { useHostId } from '@/lib/swr'
 import { prefetchRoute } from '@/lib/swr/prefetch'

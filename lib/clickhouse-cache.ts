@@ -1,18 +1,19 @@
+import { CLICKHOUSE_CACHE_TAG, getQueryCache } from './cache'
 import { fetchData } from './clickhouse'
-import { unstable_cache as cache } from 'next/cache'
 
-export const CLICKHOUSE_CACHE_TAG = 'clickhouse_results'
+export { CLICKHOUSE_CACHE_TAG }
 
 const NEXT_QUERY_CACHE_TTL = parseInt(
   process.env.NEXT_QUERY_CACHE_TTL || '3600',
-  10 // Specify radix parameter
-) // 60 minutes by default
-
-export const fetchDataWithCache = cache(
-  (param: (typeof fetchData.arguments)[0]) => fetchData(param),
-  undefined,
-  {
-    tags: [CLICKHOUSE_CACHE_TAG],
-    revalidate: NEXT_QUERY_CACHE_TTL,
-  }
+  10
 )
+
+export async function fetchDataWithCache(
+  param: Parameters<typeof fetchData>[0]
+) {
+  const cache = getQueryCache()
+  return cache.wrap(() => fetchData(param), {
+    tags: [CLICKHOUSE_CACHE_TAG],
+    ttlSeconds: NEXT_QUERY_CACHE_TTL,
+  })
+}

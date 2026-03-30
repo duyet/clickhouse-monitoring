@@ -5,7 +5,6 @@
  * Returns time-series data for a specific chart
  */
 
-import type { NextRequest } from 'next/server'
 import type {
   ApiResponse as ApiResponseType,
   DataStatus,
@@ -175,7 +174,7 @@ async function handleMultiQueryChart(
  * Handle GET requests for chart data
  */
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ name: string }> }
 ): Promise<Response> {
   const { name } = await params

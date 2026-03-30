@@ -16,8 +16,6 @@
  * GET /api/v1/explain?hostId=0&query=SELECT+1&planSettings=indexes%3D1%2Cactions%3D1
  */
 
-import type { NextRequest } from 'next/server'
-
 import {
   createErrorResponse,
   createValidationError,
@@ -172,7 +170,7 @@ async function fetchExplainAsText(
  * GET /api/v1/explain?hostId=0&query=SELECT%20count()%20FROM%20system.tables
  * GET /api/v1/explain?hostId=0&query=SELECT%201&planSettings=indexes%3D1
  */
-export async function GET(request: NextRequest): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url)
 
   // Validate required parameters

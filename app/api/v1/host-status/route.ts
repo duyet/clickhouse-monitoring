@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { fetchData } from '@/lib/clickhouse'
 import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { debug } from '@/lib/logger'
@@ -12,8 +12,8 @@ export const dynamic = 'force-dynamic'
  * Returns host status information (version, uptime, hostname) in a single request.
  * This endpoint consolidates three separate chart calls into one for efficiency.
  */
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
+export async function GET(request: Request) {
+  const searchParams = new URL(request.url).searchParams
   const hostIdParam = searchParams.get('hostId')
   const hostId = hostIdParam ? parseInt(hostIdParam, 10) : 0
 
