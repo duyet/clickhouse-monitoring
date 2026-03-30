@@ -14,7 +14,7 @@ import {
 
 describe('logger', () => {
   describe('formatErrorForDisplay', () => {
-    // Note: NODE_ENV is set to 'test' in jest.setup.js at module load time
+    // Note: NODE_ENV is set to 'test' in bun.setup.ts at module load time
     // The logger checks NODE_ENV at import time, so we can't change it per test
     // Tests are written for the 'test' environment (production-like behavior)
 
