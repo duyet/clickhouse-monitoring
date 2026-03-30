@@ -1,5 +1,5 @@
 // Bun test setup file for global configuration
-// Next.js modules are mocked via moduleNameMapper in jest.config.js
+// Next.js modules are mocked via bun's module resolution
 // Bun respects TypeScript path aliases natively, so @/ imports work automatically
 import { jest } from 'bun:test'
 

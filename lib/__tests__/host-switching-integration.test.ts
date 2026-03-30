@@ -10,7 +10,7 @@ const {
   mockGetHostIdCookie,
   mockFetchData,
   testUtils,
-} = require('../../jest.setup')
+} = require('../../bun.setup')
 
 describe('Host Switching Integration Tests', () => {
   beforeEach(() => {
