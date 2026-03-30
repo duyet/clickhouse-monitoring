@@ -28,3 +28,7 @@ export function getMemoryCache(): QueryCacheAdapter {
 export function resetQueryCacheInstance(): void {
   cacheInstance = null
 }
+
+export function resetMemoryCacheInstance(): void {
+  memoryCacheInstance = null
+}
