@@ -15,8 +15,8 @@
 
 import { AlertTriangle, ExternalLink, RefreshCw } from 'lucide-react'
 
-import Link from 'next/link'
 import { memo, useState } from 'react'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import {
   Popover,

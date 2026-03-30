@@ -69,8 +69,6 @@ import { replicasConfig } from './tables/replicas'
 import { replicationQueueConfig } from './tables/replication-queue'
 import { tablesOverviewConfig } from './tables/tables-overview'
 import { viewRefreshesConfig } from './tables/view-refreshes'
-import { cache } from 'react'
-
 export const queries: Array<QueryConfig> = [
   // Explorer
   explorerDatabasesConfig,
@@ -156,12 +154,10 @@ export const queries: Array<QueryConfig> = [
   ...anomalyQueries,
 ]
 
-export const getQueryConfigByName = cache(
-  (name: string): QueryConfig | undefined | null => {
-    if (!name) {
-      return null
-    }
-
-    return queries.find((q) => q.name === name)
+export const getQueryConfigByName = (name: string): QueryConfig | undefined => {
+  if (!name) {
+    return undefined
   }
-)
+
+  return queries.find((q) => q.name === name)
+}

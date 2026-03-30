@@ -3,7 +3,7 @@
 import type { LucideIcon } from 'lucide-react'
 import { ExternalLinkIcon } from 'lucide-react'
 
-import Link from 'next/link'
+import { AppLink as Link } from '@/components/ui/app-link'
 import {
   SidebarGroup,
   SidebarGroupContent,

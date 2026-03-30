@@ -8,9 +8,9 @@ import {
   progressTrackStyles,
   variantStyles,
 } from './card-styles'
-import Link from 'next/link'
 import { memo } from 'react'
 import { AnimatedNumber } from '@/components/cards/animated-number'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { cn } from '@/lib/utils'
 
 export interface ProgressCardProps {

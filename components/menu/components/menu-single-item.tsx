@@ -12,13 +12,14 @@ import { useMenuActiveState } from '../hooks/use-menu-active-state'
 import { HostPrefixedLink } from '../link-with-context'
 import { ActiveIndicator } from './active-indicator'
 import { MenuIcon } from './menu-icon'
-import dynamic from 'next/dynamic'
-import { memo } from 'react'
+import { lazy, memo, Suspense } from 'react'
 import { NavigationMenuItem } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
 
-const CountBadge = dynamic(() =>
-  import('@/components/menu/count-badge').then((mod) => mod.CountBadge)
+const CountBadge = lazy(() =>
+  import('@/components/menu/count-badge').then((mod) => ({
+    default: mod.CountBadge,
+  }))
 )
 
 interface MenuSingleItemProps {
@@ -55,7 +56,12 @@ export const MenuSingleItem = memo(function MenuSingleItem({
           <MenuIcon icon={item.icon} isActive={isActive} />
           <span>{item.title}</span>
           {item.countKey ? (
-            <CountBadge countKey={item.countKey} variant={item.countVariant} />
+            <Suspense fallback={null}>
+              <CountBadge
+                countKey={item.countKey}
+                variant={item.countVariant}
+              />
+            </Suspense>
           ) : null}
         </div>
         <ActiveIndicator position="bottom" />

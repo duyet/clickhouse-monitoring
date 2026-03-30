@@ -27,8 +27,16 @@ import type {
 } from '@/lib/api/types'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
-import dynamic from 'next/dynamic'
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  lazy,
+  memo,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { format } from 'sql-formatter'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -44,15 +52,22 @@ import {
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
-const SqlEditor = dynamic(
-  () => import('../sql-editor').then((mod) => mod.SqlEditor),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="min-h-[120px] rounded-md border border-input bg-muted/30 animate-pulse" />
-    ),
-  }
+const SqlEditor = lazy(() =>
+  import('../sql-editor').then((mod) => ({ default: mod.SqlEditor }))
 )
+
+function SqlEditorWrapper({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  if (!mounted) {
+    return (
+      <div className="min-h-[120px] rounded-md border border-input bg-muted/30 animate-pulse" />
+    )
+  }
+  return <>{children}</>
+}
 
 const MAX_CELL_LENGTH = 100
 const DEFAULT_LIMIT = 1000
@@ -415,17 +430,25 @@ export function QueryTab() {
             Ctrl+Enter to run
           </span>
         </div>
-        <SqlEditor
-          value={editorValue}
-          onChange={handleEditorChange}
-          onRun={handleRun}
-          placeholder={
-            database && tableName
-              ? `SELECT * FROM \`${database}\`.\`${tableName}\` LIMIT 100`
-              : 'SELECT * FROM system.tables LIMIT 100'
-          }
-          schema={schema}
-        />
+        <SqlEditorWrapper>
+          <Suspense
+            fallback={
+              <div className="min-h-[120px] rounded-md border border-input bg-muted/30 animate-pulse" />
+            }
+          >
+            <SqlEditor
+              value={editorValue}
+              onChange={handleEditorChange}
+              onRun={handleRun}
+              placeholder={
+                database && tableName
+                  ? `SELECT * FROM \`${database}\`.\`${tableName}\` LIMIT 100`
+                  : 'SELECT * FROM system.tables LIMIT 100'
+              }
+              schema={schema}
+            />
+          </Suspense>
+        </SqlEditorWrapper>
         {validationError && (
           <p className="text-sm text-destructive">{validationError}</p>
         )}

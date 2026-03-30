@@ -14,17 +14,7 @@ import type {
 } from './types'
 
 import { ConversationStoreError } from './types'
-import { getCloudflareContext } from '@opennextjs/cloudflare'
-
-/**
- * Extend CloudflareEnv interface to include CONVERSATIONS_D1 binding.
- * This is needed for type safety when accessing the D1 database via getCloudflareContext().
- */
-declare global {
-  interface CloudflareEnv {
-    CONVERSATIONS_D1: D1Database
-  }
-}
+import { getPlatformBindings } from '@/lib/platform'
 
 /**
  * D1 database schema row shape.
@@ -61,8 +51,7 @@ interface D1ConversationRow {
  */
 export class D1Store implements ConversationStore {
   private getDb(): D1Database {
-    const ctx = getCloudflareContext()
-    const db = ctx?.env.CONVERSATIONS_D1
+    const db = getPlatformBindings().getD1Database('CONVERSATIONS_D1')
 
     if (!db) {
       throw new ConversationStoreError(

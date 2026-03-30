@@ -4,13 +4,13 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import Link from 'next/link'
 import { memo, useMemo } from 'react'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/skeletons'
+import { AppLink as Link } from '@/components/ui/app-link'
 import {
   extractNestedData,
   transformRunningQueriesSummaryData,

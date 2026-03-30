@@ -2,19 +2,20 @@
 
 import type { MenuItem as MenuItemType } from '@/components/menu/types'
 
-import dynamic from 'next/dynamic'
-import { memo, useState } from 'react'
+import { lazy, memo, Suspense, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
 
-const NewBadge = dynamic(() =>
-  import('@/components/menu/components/new-badge').then((mod) => mod.NewBadge)
+const NewBadge = lazy(() =>
+  import('@/components/menu/components/new-badge').then((mod) => ({
+    default: mod.NewBadge,
+  }))
 )
 
-const CountBadge = dynamic(() =>
-  import('@/components/menu/components/count-badge').then(
-    (mod) => mod.CountBadge
-  )
+const CountBadge = lazy(() =>
+  import('@/components/menu/components/count-badge').then((mod) => ({
+    default: mod.CountBadge,
+  }))
 )
 
 import {
@@ -96,13 +97,17 @@ export const CollapsedSubmenu = memo(function CollapsedSubmenu({
                   >
                     <span className="truncate">{subItem.title}</span>
                     <span className="flex shrink-0 items-center gap-1.5">
-                      <NewBadge href={subItem.href} isNew={subItem.isNew} />
+                      <Suspense fallback={null}>
+                        <NewBadge href={subItem.href} isNew={subItem.isNew} />
+                      </Suspense>
                       {subItem.countKey && (
-                        <CountBadge
-                          countKey={subItem.countKey}
-                          countLabel={subItem.countLabel}
-                          countVariant={subItem.countVariant}
-                        />
+                        <Suspense fallback={null}>
+                          <CountBadge
+                            countKey={subItem.countKey}
+                            countLabel={subItem.countLabel}
+                            countVariant={subItem.countVariant}
+                          />
+                        </Suspense>
                       )}
                     </span>
                   </div>

@@ -7,6 +7,7 @@ import { Suspense } from 'react'
 import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
+import { HostProviderFromUrl } from '@/app/host-provider-from-url'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { VercelAnalytics } from '@/components/analytics/vercel-analytics'
 import { AppSidebar } from '@/components/app-sidebar'
@@ -23,7 +24,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { BrowserConnectionsProvider } from '@/lib/context/browser-connections-context'
 import { TimeRangeProvider } from '@/lib/context/time-range-context'
 import { TimezoneProvider } from '@/lib/context/timezone-context'
-import { HostProvider, SWRProvider } from '@/lib/swr'
+import { SWRProvider } from '@/lib/swr'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
@@ -52,11 +53,11 @@ function Providers({ children }: { children: React.ReactNode }) {
             <SWRProvider>
               <BrowserConnectionsProvider>
                 <Suspense fallback={null}>
-                  <HostProvider>
+                  <HostProviderFromUrl>
                     <AppProvider reloadIntervalSecond={120}>
                       {children}
                     </AppProvider>
-                  </HostProvider>
+                  </HostProviderFromUrl>
                 </Suspense>
               </BrowserConnectionsProvider>
             </SWRProvider>

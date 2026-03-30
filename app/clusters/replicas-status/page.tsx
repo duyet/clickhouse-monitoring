@@ -2,12 +2,12 @@
 
 export const dynamic = 'force-static'
 
-import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { ReadonlyTablesWarning } from '@/components/clusters/readonly-tables-warning'
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { clustersReplicasStatusConfig } from '@/lib/query-config/system/replicas-status'
 import { useHostId } from '@/lib/swr'
 

@@ -12,8 +12,8 @@ import type { Row, RowData } from '@tanstack/react-table'
 
 import type { Action } from './types'
 
-import Link from 'next/link'
 import { useState } from 'react'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,

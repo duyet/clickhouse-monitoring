@@ -7,7 +7,6 @@
  * Returns dependency information for a table (upstream or downstream) or entire database
  */
 
-import type { NextRequest } from 'next/server'
 import type { ApiResponse } from '@/lib/api/types'
 
 import {
@@ -27,7 +26,7 @@ const ROUTE_CONTEXT_BASE = { route: '/api/v1/explorer/dependencies' }
 /**
  * Handle GET requests for dependencies
  */
-export async function GET(request: NextRequest): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url)
   const routeContext: RouteContext = {
     ...ROUTE_CONTEXT_BASE,

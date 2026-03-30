@@ -2,7 +2,7 @@ import type { ClickHouseClient } from '@clickhouse/client'
 
 import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 
-import { type NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getHostIdFromParams } from '@/lib/api/error-handler'
 import { EVENTS_TABLE } from '@/lib/app-tables'
 import { getClient } from '@/lib/clickhouse'
@@ -14,8 +14,8 @@ const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
+export async function GET(request: Request) {
+  const searchParams = new URL(request.url).searchParams
   let hostId: number
 
   try {

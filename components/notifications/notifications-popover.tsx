@@ -23,8 +23,8 @@ import {
   X,
 } from 'lucide-react'
 
-import Link from 'next/link'
 import { memo, useState } from 'react'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'

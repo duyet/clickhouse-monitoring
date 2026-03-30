@@ -1,5 +1,3 @@
-import type { NextRequest } from 'next/server'
-
 import { geolocation } from '@vercel/functions'
 import { NextResponse, userAgent } from 'next/server'
 import { EVENTS_TABLE } from '@/lib/app-tables'
@@ -9,8 +7,8 @@ import { normalizeUrl } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
+export async function GET(request: Request) {
+  const searchParams = new URL(request.url).searchParams
   const rawUrl = searchParams.get('url') || request.headers.get('referer')
   const hostId = parseInt(searchParams.get('hostId') || '0', 10)
 

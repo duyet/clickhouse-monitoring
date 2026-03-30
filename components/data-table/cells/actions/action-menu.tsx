@@ -5,8 +5,7 @@ import type { Row, RowData } from '@tanstack/react-table'
 
 import type { Action } from './types'
 
-import dynamic from 'next/dynamic'
-import { memo } from 'react'
+import { lazy, memo, Suspense, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -16,14 +15,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-// Dynamic import moved outside component to prevent re-import on every render
-const ActionItem = dynamic(
-  () => import('./action-item').then((res) => res.ActionItem),
-  {
-    ssr: false,
-    loading: () => null,
-  }
+// Lazy import moved outside component to prevent re-import on every render
+const ActionItem = lazy(() =>
+  import('./action-item').then((res) => ({ default: res.ActionItem }))
 )
+
+// NoSsr wrapper for client-only components
+function NoSsr({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  if (!mounted) return null
+  return <>{children}</>
+}
 
 export interface ActionMenuProps<TData extends RowData, TValue> {
   row: Row<TData>
@@ -47,14 +52,18 @@ function ActionMenuComponent<TData extends RowData, TValue>({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {actions.map((action) => (
-          <ActionItem
-            key={action}
-            value={value}
-            row={row as Row<RowData>}
-            action={action}
-          />
-        ))}
+        <NoSsr>
+          <Suspense fallback={null}>
+            {actions.map((action) => (
+              <ActionItem
+                key={action}
+                value={value}
+                row={row as Row<RowData>}
+                action={action}
+              />
+            ))}
+          </Suspense>
+        </NoSsr>
       </DropdownMenuContent>
     </DropdownMenu>
   )

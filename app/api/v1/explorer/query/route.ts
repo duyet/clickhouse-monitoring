@@ -10,7 +10,6 @@
  * POST is for large queries that exceed URL length limits.
  */
 
-import type { NextRequest } from 'next/server'
 import type { ApiResponse } from '@/lib/api/types'
 
 import {
@@ -172,7 +171,7 @@ async function executeQuery(params: {
 /**
  * Handle GET requests for short, shareable SQL queries
  */
-export async function GET(request: NextRequest): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url)
   const routeContext: RouteContext = {
     ...ROUTE_CONTEXT_BASE,
@@ -213,7 +212,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 /**
  * Handle POST requests for large SQL queries
  */
-export async function POST(request: NextRequest): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
   const routeContext: RouteContext = {
     ...ROUTE_CONTEXT_BASE,
     method: 'POST',

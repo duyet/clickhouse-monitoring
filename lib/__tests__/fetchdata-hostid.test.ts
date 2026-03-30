@@ -268,31 +268,17 @@ describe('fetchData hostId parameter validation', () => {
 })
 
 describe('Host switching regression tests', () => {
-  it('should have getHostIdCookie function available', () => {
-    const scopedLinkPath = path.join(__dirname, '../scoped-link.ts')
-
-    if (fs.existsSync(scopedLinkPath)) {
-      const content = fs.readFileSync(scopedLinkPath, 'utf-8')
-      expect(content).toMatch(/export.*getHostIdCookie/)
-    } else {
-      // Alternative locations for getHostIdCookie
-      const serverContextPath = path.join(__dirname, '../server-context.ts')
-      if (fs.existsSync(serverContextPath)) {
-        const content = fs.readFileSync(serverContextPath, 'utf-8')
-        expect(content).toMatch(/getHostIdCookie|getHostId/)
-      }
-    }
+  it('should have host context provider available', () => {
+    const hostContextPath = path.join(__dirname, '../swr/host-context.tsx')
+    expect(fs.existsSync(hostContextPath)).toBe(true)
   })
 
   it('should have multi-host configuration support', () => {
-    // Static site architecture: hostId is managed through cookies and server context
-    const serverContextPath = path.join(__dirname, '../server-context.ts')
-
-    if (fs.existsSync(serverContextPath)) {
-      const content = fs.readFileSync(serverContextPath, 'utf-8')
-
-      // Should have hostId management functions
-      expect(content).toMatch(/getHostIdCookie|setHostId|getHostId/)
+    // Static site architecture: hostId is managed through URL params and React context
+    const hostContextPath = path.join(__dirname, '../swr/host-context.tsx')
+    if (fs.existsSync(hostContextPath)) {
+      const content = fs.readFileSync(hostContextPath, 'utf-8')
+      expect(content).toMatch(/HostProvider|useHostIdFromContext/)
     }
   })
 })

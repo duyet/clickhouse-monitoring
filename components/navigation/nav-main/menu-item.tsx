@@ -6,18 +6,19 @@ import type { MenuItem as MenuItemType } from '@/components/menu/types'
 import type { MenuItemActiveState, MenuItemProps } from './types'
 
 import { CollapsedSubmenu } from './collapsed-submenu'
-import dynamic from 'next/dynamic'
-import { memo } from 'react'
+import { lazy, memo, Suspense } from 'react'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
 
-const NewBadge = dynamic(() =>
-  import('@/components/menu/components/new-badge').then((mod) => mod.NewBadge)
+const NewBadge = lazy(() =>
+  import('@/components/menu/components/new-badge').then((mod) => ({
+    default: mod.NewBadge,
+  }))
 )
 
-const CountBadge = dynamic(() =>
-  import('@/components/menu/components/count-badge').then(
-    (mod) => mod.CountBadge
-  )
+const CountBadge = lazy(() =>
+  import('@/components/menu/components/count-badge').then((mod) => ({
+    default: mod.CountBadge,
+  }))
 )
 
 import {
@@ -78,16 +79,20 @@ const SingleMenuItem = memo(function SingleMenuItem({
       </SidebarMenuButton>
       {item.isNew && (
         <SidebarMenuBadge>
-          <NewBadge href={item.href} isNew={item.isNew} />
+          <Suspense fallback={null}>
+            <NewBadge href={item.href} isNew={item.isNew} />
+          </Suspense>
         </SidebarMenuBadge>
       )}
       {item.countKey && (
         <SidebarMenuBadge>
-          <CountBadge
-            countKey={item.countKey}
-            countLabel={item.countLabel}
-            countVariant={item.countVariant}
-          />
+          <Suspense fallback={null}>
+            <CountBadge
+              countKey={item.countKey}
+              countLabel={item.countLabel}
+              countVariant={item.countVariant}
+            />
+          </Suspense>
         </SidebarMenuBadge>
       )}
     </SidebarMenuItem>
@@ -121,11 +126,13 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
         </span>
         {item.countKey && (
           <span className="ml-auto group-data-[state=collapsed]/sidebar:hidden">
-            <CountBadge
-              countKey={item.countKey}
-              countLabel={item.countLabel}
-              countVariant={item.countVariant}
-            />
+            <Suspense fallback={null}>
+              <CountBadge
+                countKey={item.countKey}
+                countLabel={item.countLabel}
+                countVariant={item.countVariant}
+              />
+            </Suspense>
           </span>
         )}
         <ChevronRight className="ml-auto transition-all duration-200 group-data-[state=collapsed]/sidebar:hidden" />
@@ -161,11 +168,13 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
         </CollapsibleTrigger>
         {item.countKey && (
           <SidebarMenuBadge>
-            <CountBadge
-              countKey={item.countKey}
-              countLabel={item.countLabel}
-              countVariant={item.countVariant}
-            />
+            <Suspense fallback={null}>
+              <CountBadge
+                countKey={item.countKey}
+                countLabel={item.countLabel}
+                countVariant={item.countVariant}
+              />
+            </Suspense>
           </SidebarMenuBadge>
         )}
         <CollapsibleContent>
@@ -185,16 +194,20 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
                     </span>
                     {subItem.isNew && (
                       <span className="ml-auto flex shrink-0">
-                        <NewBadge href={subItem.href} isNew={subItem.isNew} />
+                        <Suspense fallback={null}>
+                          <NewBadge href={subItem.href} isNew={subItem.isNew} />
+                        </Suspense>
                       </span>
                     )}
                     {subItem.countKey && (
                       <span className="ml-auto flex shrink-0">
-                        <CountBadge
-                          countKey={subItem.countKey}
-                          countLabel={subItem.countLabel}
-                          countVariant={subItem.countVariant}
-                        />
+                        <Suspense fallback={null}>
+                          <CountBadge
+                            countKey={subItem.countKey}
+                            countLabel={subItem.countLabel}
+                            countVariant={subItem.countVariant}
+                          />
+                        </Suspense>
                       </span>
                     )}
                   </HostPrefixedLink>

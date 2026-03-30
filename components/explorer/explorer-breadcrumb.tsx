@@ -3,7 +3,7 @@
 import { Database, Server, Table as TableIcon } from 'lucide-react'
 
 import { useExplorerState } from './hooks/use-explorer-state'
-import Link from 'next/link'
+import { AppLink as Link } from '@/components/ui/app-link'
 import {
   Breadcrumb,
   BreadcrumbItem,

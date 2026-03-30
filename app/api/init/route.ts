@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getHostIdFromParams } from '@/lib/api/error-handler'
 import { getClient } from '@/lib/clickhouse'
 import { ErrorLogger } from '@/lib/logger'
@@ -6,8 +6,8 @@ import { initTrackingTable } from '@/lib/tracking'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
+export async function GET(request: Request) {
+  const searchParams = new URL(request.url).searchParams
   let hostId: number
 
   try {

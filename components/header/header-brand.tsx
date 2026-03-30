@@ -2,10 +2,10 @@
 
 import type { MergedHostInfo } from '@/lib/swr/use-merged-hosts'
 
-import Link from 'next/link'
 import { memo } from 'react'
 import { ClickHouseHostSelector } from '@/components/host/clickhouse-host-selector'
 import { ClickHouseLogo } from '@/components/icons/clickhouse-logo'
+import { AppLink as Link } from '@/components/ui/app-link'
 
 const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'ClickHouse'
 

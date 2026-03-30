@@ -11,8 +11,8 @@ import { BrowserStore } from './browser-store'
 import { D1Store } from './d1-store'
 import { MemoryStore } from './memory-store'
 import { PostgresStore } from './postgres-store'
-import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { featureFlags } from '@/lib/feature-flags'
+import { getPlatformBindings } from '@/lib/platform'
 
 /**
  * Environment variable names for database configuration.
@@ -45,9 +45,9 @@ export async function resolveStore(): Promise<ConversationStore> {
 
   // 2. Check for Cloudflare D1 binding (highest priority for serverless)
   try {
-    const ctx = await getCloudflareContext()
-    if (ctx?.env && D1_BINDING_NAME in ctx.env) {
-      // D1Store gets the binding internally via getCloudflareContext()
+    const db = getPlatformBindings().getD1Database(D1_BINDING_NAME)
+    if (db) {
+      // D1Store gets the binding internally via getPlatformBindings()
       return new D1Store()
     }
   } catch {

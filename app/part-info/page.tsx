@@ -2,12 +2,12 @@
 
 export const dynamic = 'force-static'
 
-import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { DatabaseTableSelector } from '@/components/controls/database-table-selector'
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
+import { AppLink as Link } from '@/components/ui/app-link'
 import { partInfoConfig } from '@/lib/query-config/tables/part-info'
 import { useHostId } from '@/lib/swr'
 
