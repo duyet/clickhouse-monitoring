@@ -13,7 +13,7 @@ import { formatCompactNumber } from '@/lib/format-number'
  */
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
-const DEFAULT_MODEL = 'nvidia/nemotron-3-super-120b-a12b:free'
+const DEFAULT_MODEL = 'qwen/qwen3.6-plus:free'
 
 /**
  * Format a token count to a compact human-readable string.
@@ -30,9 +30,9 @@ export function formatTokenCount(count: number): string {
  * the exact provider/model identifier chosen by the user.
  */
 export const AGENT_MODELS = {
-  'nvidia/nemotron-3-super-120b-a12b:free': {
-    name: 'nvidia/nemotron-3-super-120b-a12b:free',
-    description: 'NVIDIA model available by default',
+  'qwen/qwen3.6-plus:free': {
+    name: 'qwen/qwen3.6-plus:free',
+    description: 'Qwen model available by default',
     contextLength: 128000,
   },
   'stepfun/step-3.5-flash:free': {
@@ -48,6 +48,11 @@ export const AGENT_MODELS = {
   'nvidia/nemotron-3-nano-30b-a3b:free': {
     name: 'nvidia/nemotron-3-nano-30b-a3b:free',
     description: 'Compact NVIDIA model available by default',
+    contextLength: 128000,
+  },
+  'minimax/minimax-m2.5:free': {
+    name: 'minimax/minimax-m2.5:free',
+    description: 'MiniMax free tier model',
     contextLength: 128000,
   },
   'minimax/minimax-m2.7': {
