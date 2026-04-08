@@ -57,7 +57,7 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 ### Setup
 
-- `bun install` - Install all dependencies (required before dev/build)
+- `bun install` - Install all dependencies (required before dev/build). Bun is enforced by the `preinstall` hook, and `prepare` installs Husky hooks.
 
 ### Development
 
@@ -126,6 +126,7 @@ Both deployment methods provide:
 - `bun run test:unit`, `bun run test:query-config`, `bun run test:coverage`, `bun run test:watch` - Narrow test runs for common workflows
 - `bun run build:skills` - Regenerate the AI skills registry from `.agents/skills/`
 - `bun run scripts/build-ch-schema-docs.ts` - Regenerate ClickHouse schema docs (`--version`, `--table`, `--verbose`)
+- `./scripts/dev-monitor.sh` - Continuously monitor the local dev server and TypeScript logs
 - `bun run cf:typegen` - Regenerate Cloudflare environment typings
 - `bun run cf:setup-conversations` - Provision the D1 database and update `wrangler.toml`
 - `bun run cf:migrate-conversations` / `bun run cf:migrate-conversations:local` - Apply conversation DB migrations remotely or locally
