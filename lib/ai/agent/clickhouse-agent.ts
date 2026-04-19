@@ -129,10 +129,15 @@ export function createClickHouseAgent(options: {
         `[Agent] Prompt caching enabled for Anthropic model: ${modelId}`
       )
     }
-    const modelInstance = openrouter.chat(
-      modelId,
-      usePromptCache ? { cache_control: { type: 'ephemeral' } } : undefined
-    )
+    // require_parameters: true forces OpenRouter to only route to endpoints
+    // that support every parameter in the request — including `tools`. This
+    // keeps meta-routers like `openrouter/free` from picking a free model
+    // without tool-calling support, which otherwise fails with
+    // "No endpoints found that support tool use".
+    const modelInstance = openrouter.chat(modelId, {
+      provider: { require_parameters: true },
+      ...(usePromptCache && { cache_control: { type: 'ephemeral' } }),
+    })
 
     // Get tools for this host, filtering out disabled tools
     const allTools = createMcpTools(hostId)
