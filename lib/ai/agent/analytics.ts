@@ -42,12 +42,17 @@ export interface AgentUsageStats {
  * Prices are approximate — update as providers change rates.
  */
 export const MODEL_PRICING: Record<string, [number, number]> = {
-  // Free tier models
-  'stepfun/step-3.5-flash:free': [0, 0],
+  // OpenRouter meta-routers
+  'openrouter/free': [0, 0],
+  // Free tier models (OpenRouter, tool-use capable)
+  'z-ai/glm-4.5-air:free': [0, 0],
+  'openai/gpt-oss-120b:free': [0, 0],
+  'openai/gpt-oss-20b:free': [0, 0],
+  'qwen/qwen3-coder:free': [0, 0],
+  'qwen/qwen3-next-80b-a3b-instruct:free': [0, 0],
   'meta-llama/llama-3.3-70b-instruct:free': [0, 0],
-  'mistralai/mistral-7b-instruct:free': [0, 0],
-  'google/gemma-2-9b-it:free': [0, 0],
-  'qwen/qwen-2.5-7b-instruct:free': [0, 0],
+  'google/gemma-4-31b-it:free': [0, 0],
+  'arcee-ai/trinity-large-preview:free': [0, 0],
 
   // OpenAI models (via OpenRouter)
   'openai/gpt-4o': [2.5, 10],

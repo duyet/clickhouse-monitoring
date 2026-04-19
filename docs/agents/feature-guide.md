@@ -19,14 +19,14 @@ Add the following environment variables to your `.env.local`:
 # LangGraph Agent Configuration - OpenRouter (Free Model)
 LLM_API_KEY=your-openrouter-api-key
 LLM_API_BASE=https://openrouter.ai/api/v1
-LLM_MODEL=stepfun/step-3.5-flash:free
+LLM_MODEL=openrouter/free
 ```
 
 **Supported Providers:**
 
 | Provider | Base URL | Models |
 |----------|----------|--------|
-| **OpenRouter** (Free tier) | `https://openrouter.ai/api/v1` | `stepfun/step-3.5-flash:free`, `nvidia/nemotron-3-super-120b-a12b:free`, `anthropic/claude-3.5-sonnet`, `openai/gpt-4` |
+| **OpenRouter** (Free tier) | `https://openrouter.ai/api/v1` | `openrouter/free` (auto-router), `z-ai/glm-4.5-air:free`, `qwen/qwen3-coder:free`, `meta-llama/llama-3.3-70b-instruct:free` |
 | Anthropic | `https://api.anthropic.com` | `claude-3-5-sonnet-20241022`, `claude-3-opus-20240229` |
 | OpenAI | `https://api.openai.com` | `gpt-4`, `gpt-4-turbo`, `gpt-3.5-turbo` |
 | Azure OpenAI | `https://your-resource.openai.azure.com` | `gpt-4` |

@@ -30,9 +30,9 @@ function filterTools<T extends Record<string, unknown>>(
 
 /**
  * Default model configuration
- * Falls back to stepfun/step-3.5-flash:free if LLM_MODEL env var is not set
+ * Falls back to openrouter/free if LLM_MODEL env var is not set
  */
-const DEFAULT_MODEL = process.env.LLM_MODEL || 'stepfun/step-3.5-flash:free'
+const DEFAULT_MODEL = process.env.LLM_MODEL || 'openrouter/free'
 
 /**
  * Returns true for Anthropic/Claude models routed via OpenRouter.
@@ -51,7 +51,8 @@ const DEFAULT_MAX_STEPS = 30
  */
 export function createClickHouseAgent(options: {
   /**
-   * The model to use for the agent (e.g., 'stepfun/step-3.5-flash:free')
+   * The model to use for the agent (e.g., 'openrouter/free')
+   * Defaults to 'openrouter/free' which auto-routes to a working free tool-capable model.
    */
   model?: string
 

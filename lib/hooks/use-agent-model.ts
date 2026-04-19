@@ -13,7 +13,7 @@ import { formatCompactNumber } from '@/lib/format-number'
  */
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
-const DEFAULT_MODEL = 'qwen/qwen3.6-plus:free'
+const DEFAULT_MODEL = 'openrouter/free'
 
 /**
  * Format a token count to a compact human-readable string.
@@ -30,58 +30,65 @@ export function formatTokenCount(count: number): string {
  * the exact provider/model identifier chosen by the user.
  */
 export const AGENT_MODELS = {
-  'qwen/qwen3.6-plus:free': {
-    name: 'qwen/qwen3.6-plus:free',
-    description: 'Qwen model available by default',
-    contextLength: 128000,
+  'openrouter/free': {
+    name: 'openrouter/free',
+    description:
+      'OpenRouter auto-router: picks a working free tool-capable model (default)',
+    contextLength: 200000,
   },
-  'stepfun/step-3.5-flash:free': {
-    name: 'stepfun/step-3.5-flash:free',
-    description: 'StepFun model available by default',
-    contextLength: 128000,
+  'openrouter/auto': {
+    name: 'openrouter/auto',
+    description: 'OpenRouter auto-router: picks the best model (paid)',
+    contextLength: 2000000,
   },
   'z-ai/glm-4.5-air:free': {
     name: 'z-ai/glm-4.5-air:free',
-    description: 'Z.AI model available by default',
-    contextLength: 128000,
+    description: 'Z.AI GLM 4.5 Air, free tier',
+    contextLength: 131072,
   },
-  'nvidia/nemotron-3-nano-30b-a3b:free': {
-    name: 'nvidia/nemotron-3-nano-30b-a3b:free',
-    description: 'Compact NVIDIA model available by default',
-    contextLength: 128000,
+  'arcee-ai/trinity-large-preview:free': {
+    name: 'arcee-ai/trinity-large-preview:free',
+    description: 'Arcee Trinity Large Preview, free tier',
+    contextLength: 131000,
   },
-  'minimax/minimax-m2.5:free': {
-    name: 'minimax/minimax-m2.5:free',
-    description: 'MiniMax free tier model',
-    contextLength: 128000,
+  'qwen/qwen3-coder:free': {
+    name: 'qwen/qwen3-coder:free',
+    description: 'Qwen3 Coder, free tier, 1M context',
+    contextLength: 1048576,
+  },
+  'qwen/qwen3-next-80b-a3b-instruct:free': {
+    name: 'qwen/qwen3-next-80b-a3b-instruct:free',
+    description: 'Qwen3 Next 80B Instruct, free tier',
+    contextLength: 262144,
+  },
+  'openai/gpt-oss-120b:free': {
+    name: 'openai/gpt-oss-120b:free',
+    description: 'OpenAI GPT-OSS 120B, free tier',
+    contextLength: 131072,
+  },
+  'openai/gpt-oss-20b:free': {
+    name: 'openai/gpt-oss-20b:free',
+    description: 'OpenAI GPT-OSS 20B, free tier',
+    contextLength: 131072,
+  },
+  'meta-llama/llama-3.3-70b-instruct:free': {
+    name: 'meta-llama/llama-3.3-70b-instruct:free',
+    description: 'Meta Llama 3.3 70B Instruct, free tier',
+    contextLength: 131072,
+  },
+  'google/gemma-4-31b-it:free': {
+    name: 'google/gemma-4-31b-it:free',
+    description: 'Google Gemma 4 31B Instruct, free tier',
+    contextLength: 262144,
   },
   'minimax/minimax-m2.7': {
     name: 'minimax/minimax-m2.7',
-    description: 'MiniMax production model',
-    contextLength: 128000,
+    description: 'MiniMax production model (paid)',
+    contextLength: 200000,
     pricing: {
       inputPerMillion: 0.5,
       outputPerMillion: 1.5,
     },
-  },
-  'openai/gpt-5.4-nano': {
-    name: 'openai/gpt-5.4-nano',
-    description: 'OpenAI nano model',
-    contextLength: 128000,
-    pricing: {
-      inputPerMillion: 0.15,
-      outputPerMillion: 0.6,
-    },
-  },
-  'google/gemma-3-27b-it:free': {
-    name: 'google/gemma-3-27b-it:free',
-    description: 'Google, free tier, Gemma instruct model',
-    contextLength: 128000,
-  },
-  'meta-llama/llama-3.1-8b-instruct:free': {
-    name: 'meta-llama/llama-3.1-8b-instruct:free',
-    description: 'Meta, free tier, compact instruct model',
-    contextLength: 128000,
   },
 } as const
 
