@@ -75,7 +75,7 @@ describe('createClickHouseAgent', () => {
   test('creates agent with all custom options', () => {
     const agent = createClickHouseAgent({
       hostId: 1,
-      model: 'stepfun/step-3.5-flash:free',
+      model: 'openrouter/free',
       apiKey: 'custom-key',
       baseURL: 'https://openrouter.ai/api/v1',
       maxSteps: 20,

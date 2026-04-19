@@ -148,8 +148,8 @@ function HostSelector({ hostId }: { readonly hostId: number }) {
 }
 
 function getProviderFromModelId(modelId: string): string {
+  if (modelId.startsWith('openrouter/')) return 'openrouter'
   if (modelId.startsWith('nvidia/')) return 'nvidia'
-  if (modelId.startsWith('stepfun/')) return 'openai'
   if (modelId.startsWith('z-ai/')) return 'zai'
   if (modelId.startsWith('google/') || modelId.startsWith('google-'))
     return 'google'
@@ -157,6 +157,9 @@ function getProviderFromModelId(modelId: string): string {
   if (modelId.startsWith('anthropic/')) return 'anthropic'
   if (modelId.startsWith('mistral/')) return 'mistral'
   if (modelId.startsWith('deepseek/')) return 'deepseek'
+  if (modelId.startsWith('qwen/')) return 'qwen'
+  if (modelId.startsWith('minimax/')) return 'minimax'
+  if (modelId.startsWith('arcee-ai/')) return 'arcee'
   if (modelId.startsWith('openai/')) return 'openai'
   return 'openrouter'
 }
@@ -336,7 +339,7 @@ function McpToolRow({
   return (
     <div
       className={cn(
-        'rounded-lg border border-border/60 bg-background/70 p-2.5 transition-colors',
+        'rounded-lg bg-muted/20 p-2.5 transition-colors',
         !enabled && 'opacity-80'
       )}
     >
@@ -371,14 +374,12 @@ function McpToolRow({
             </div>
           ) : null}
         </div>
-        <div className="rounded-full border border-border/60 bg-muted/20 p-0.5">
-          <Switch
-            checked={enabled}
-            onCheckedChange={onToggle}
-            className="h-5 w-9 border border-border/60 bg-muted-foreground/15 shadow-none data-[state=checked]:bg-primary [&>span]:bg-background"
-            aria-label={`${enabled ? 'Disable' : 'Enable'} ${tool.name}`}
-          />
-        </div>
+        <Switch
+          checked={enabled}
+          onCheckedChange={onToggle}
+          className="h-5 w-9 bg-muted-foreground/20 shadow-none data-[state=checked]:bg-primary [&>span]:bg-background"
+          aria-label={`${enabled ? 'Disable' : 'Enable'} ${tool.name}`}
+        />
       </div>
     </div>
   )
@@ -498,7 +499,7 @@ function McpToolsSection() {
           open={openSections.has('server')}
           onOpenChange={() => toggleSection('server')}
         >
-          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg border border-border/60 bg-background/70 px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
+          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
             <TreeTriggerIcon open={openSections.has('server')} />
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <DatabaseIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -630,7 +631,7 @@ function SkillsSection() {
         }
       >
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg border border-border/60 bg-background/70 px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
+          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
             <TreeTriggerIcon open={isOpen} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -650,9 +651,9 @@ function SkillsSection() {
                 key={skill.name}
                 type="button"
                 onClick={() => setShowTree(true)}
-                className="flex w-full items-start gap-3 rounded-lg border border-border/60 bg-muted/10 px-3 py-2.5 text-left transition-colors hover:bg-muted/25"
+                className="flex w-full items-start gap-3 rounded-lg bg-muted/15 px-3 py-2.5 text-left transition-colors hover:bg-muted/30"
               >
-                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-background text-muted-foreground">
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground">
                   <BookOpenIcon className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -691,7 +692,7 @@ function SuggestedPromptsSection() {
         {SUGGESTED_PROMPTS.map((prompt) => (
           <li
             key={prompt}
-            className="rounded-lg border border-border/60 bg-muted/10 px-3 py-2.5 text-xs leading-5 text-muted-foreground transition-colors hover:bg-muted/25 hover:text-foreground"
+            className="rounded-lg bg-muted/15 px-3 py-2.5 text-xs leading-5 text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground"
           >
             {prompt}
           </li>
