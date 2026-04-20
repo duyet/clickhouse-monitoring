@@ -161,7 +161,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.14",
-    "@codecov/webpack-plugin": "^1.9.1",
+    "@codecov/webpack-plugin": "^2.0.0",
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
     "@cypress/code-coverage": "^4.0.0",
