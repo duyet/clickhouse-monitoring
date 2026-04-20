@@ -5,7 +5,7 @@
  * Persists selection to localStorage and provides model metadata.
  */
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { formatCompactNumber } from '@/lib/format-number'
 
 /**
@@ -158,7 +158,7 @@ export interface ModelPricing {
 }
 
 /**
- * Model display metadata
+ * Model display metadata with capability indicators
  */
 export interface ModelDisplayInfo {
   /** Model ID */
@@ -175,6 +175,12 @@ export interface ModelDisplayInfo {
   isFree: boolean
   /** Pricing info for paid models */
   pricing?: ModelPricing
+  /** Whether the model supports tool/function calling */
+  supportsTools?: boolean
+  /** Whether the model supports streaming responses */
+  supportsStreaming?: boolean
+  /** Whether the model supports vision/image input */
+  supportsVision?: boolean
 }
 
 /**
@@ -192,10 +198,42 @@ export interface UseAgentModelResult {
 }
 
 /**
+ * Fetch models with capability indicators from the API
+ */
+async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
+  try {
+    const response = await fetch('/api/v1/agents/models')
+    if (!response.ok) {
+      throw new Error('Failed to fetch models')
+    }
+    const data = (await response.json()) as { models: ModelDisplayInfo[] }
+    return data.models
+  } catch {
+    // Fallback to static models without capabilities
+    return Object.entries(AGENT_MODELS).map(([id, info]): ModelDisplayInfo => {
+      const isFree = id.endsWith(':free') || !('pricing' in info)
+      const pricing =
+        'pricing' in info ? (info.pricing as ModelPricing) : undefined
+
+      return {
+        id,
+        name: info.name,
+        description: info.description,
+        contextLength: info.contextLength,
+        formattedContextLength: formatTokenCount(info.contextLength),
+        isFree,
+        pricing,
+      }
+    })
+  }
+}
+
+/**
  * Hook for managing agent model selection
  *
  * Provides model selection state with localStorage persistence
- * and model metadata for UI rendering.
+ * and model metadata for UI rendering. Fetches capability indicators
+ * from OpenRouter via the API.
  *
  * @returns Model selection state and actions
  *
@@ -214,23 +252,12 @@ export function useAgentModel(): UseAgentModelResult {
   // Get current model (uses saved value or default)
   const model = useMemo(() => getSavedModel(), [])
 
-  // Get all available models
-  const models = useMemo(() => {
-    return Object.entries(AGENT_MODELS).map(([id, info]): ModelDisplayInfo => {
-      const isFree = id.endsWith(':free') || !('pricing' in info)
-      const pricing =
-        'pricing' in info ? (info.pricing as ModelPricing) : undefined
+  // Get all available models with capabilities
+  const [models, setModels] = useState<ModelDisplayInfo[]>([])
 
-      return {
-        id,
-        name: info.name,
-        description: info.description,
-        contextLength: info.contextLength,
-        formattedContextLength: formatTokenCount(info.contextLength),
-        isFree,
-        pricing,
-      }
-    })
+  // Fetch models on mount
+  useEffect(() => {
+    fetchModelsWithCapabilities().then(setModels)
   }, [])
 
   // Update model selection
