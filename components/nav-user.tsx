@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronsUpDown, Github, Info, Settings } from 'lucide-react'
+import { ChevronsUpDown, ExternalLink, Info, Settings } from 'lucide-react'
 
 import { useEffect, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
@@ -126,7 +126,7 @@ export function NavUser({
                       className="flex items-center gap-2"
                       data-testid="nav-user-github"
                     >
-                      <Github className="h-4 w-4" />
+                      <ExternalLink className="h-4 w-4" />
                       <span>GitHub Repo</span>
                     </a>
                   </DropdownMenuItem>
