@@ -1,10 +1,16 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
-    "target": "es5",
-    "lib": ["es5", "dom"],
+    "target": "ES2017",
+    "lib": ["ES2017", "dom"],
     "types": ["cypress", "node"],
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "ignoreDeprecations": "6.0"
   },
   "include": [
     "**/*.ts",
