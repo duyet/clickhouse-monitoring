@@ -180,7 +180,7 @@
     "shadcn": "^4.0.0",
     "start-server-and-test": "^3.0.0",
     "turbo": "^2.8.3",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.0",
     "wrangler": "^4.63.0"
   },
   "bun": {
