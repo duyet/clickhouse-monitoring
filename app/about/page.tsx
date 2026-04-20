@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-static'
 
-import { BookOpen, Github, Server, Shield, Zap } from 'lucide-react'
+import { BookOpen, ExternalLink, Server, Shield, Zap } from 'lucide-react'
 import packageInfo from '@/package.json'
 
 import { Badge } from '@/components/ui/badge'
@@ -115,7 +115,7 @@ export default function AboutPage() {
           <Card className="group transition-shadow shadow-none">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Github className="size-5" />
+                <ExternalLink className="size-5" />
                 Source Code
               </CardTitle>
               <CardDescription>
@@ -129,7 +129,7 @@ export default function AboutPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Github className="mr-2 size-4" />
+                  <ExternalLink className="mr-2 size-4" />
                   View Repository
                 </a>
               </Button>
@@ -188,7 +188,7 @@ export default function AboutPage() {
                         className="text-muted-foreground hover:text-foreground text-sm"
                         aria-label="View commit on GitHub"
                       >
-                        <Github className="size-4" />
+                        <ExternalLink className="size-4" />
                       </a>
                     )}
                   </div>

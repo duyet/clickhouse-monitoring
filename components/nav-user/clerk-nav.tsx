@@ -2,7 +2,7 @@
 
 import {
   ChevronsUpDown,
-  Github,
+  ExternalLink,
   Info,
   LogOut,
   Settings,
@@ -177,7 +177,7 @@ export function ClerkNavWrapper() {
                       className="flex items-center gap-2"
                       data-testid="nav-user-github"
                     >
-                      <Github className="h-4 w-4" />
+                      <ExternalLink className="h-4 w-4" />
                       <span>GitHub Repo</span>
                     </a>
                   </DropdownMenuItem>
