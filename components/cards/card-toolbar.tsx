@@ -207,6 +207,7 @@ export const CardToolbar = memo(function CardToolbar({
             size="icon"
             className={cn(
               'size-6 transition-opacity rounded-full',
+              'relative before:content-[""] before:absolute before:-inset-4',
               alwaysVisible
                 ? 'opacity-40 hover:opacity-100'
                 : 'opacity-0 group-hover:opacity-40 hover:!opacity-100'

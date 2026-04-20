@@ -87,6 +87,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
             'h-6 gap-1 px-1.5 text-xs font-medium text-muted-foreground transition-opacity',
             'hover:bg-muted hover:text-foreground rounded-md',
             'focus-visible:ring-1 focus-visible:ring-ring',
+            'relative before:content-[""] before:absolute before:-inset-4',
             disabled && 'opacity-50 cursor-not-allowed',
             alwaysVisible || isOpen
               ? 'opacity-40 hover:opacity-100'

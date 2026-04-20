@@ -53,6 +53,7 @@ export const ChartStaleIndicator = memo(function ChartStaleIndicator({
             'size-6 transition-opacity rounded-full',
             'text-amber-500 dark:text-amber-400',
             'hover:bg-amber-500/10 dark:hover:bg-amber-400/10',
+            'relative before:content-[""] before:absolute before:-inset-4',
             alwaysVisible || isOpen
               ? 'opacity-60 hover:opacity-100'
               : 'opacity-0 group-hover:opacity-60 hover:!opacity-100'

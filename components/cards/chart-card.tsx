@@ -46,6 +46,7 @@ function ScaleToggle() {
           onClick={toggleScale}
           className={cn(
             'size-6 rounded-full transition-opacity',
+            'relative before:content-[""] before:absolute before:-inset-4',
             'opacity-0 group-hover:opacity-40 hover:!opacity-100',
             isLogScale && 'text-amber-500 group-hover:opacity-70'
           )}

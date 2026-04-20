@@ -186,7 +186,7 @@ export default function AboutPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-muted-foreground hover:text-foreground text-sm"
-                        aria-label="View commit on GitHub"
+                        aria-label="View commit on ExternalLink"
                       >
                         <ExternalLink className="size-4" />
                       </a>

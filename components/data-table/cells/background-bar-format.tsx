@@ -55,7 +55,7 @@ export const BackgroundBarFormat = memo(function BackgroundBarFormat({
     >
       {/* Background bar - uses inline styles for dynamic color */}
       <div
-        className="absolute inset-y-0 left-0 rounded transition-all"
+        className="absolute inset-y-0 left-0 rounded transition-[width]"
         style={{ width: `${pct}%`, ...barStyle }}
         aria-hidden="true"
       />

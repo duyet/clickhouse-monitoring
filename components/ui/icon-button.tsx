@@ -52,7 +52,12 @@ export const IconButton = memo(function IconButton({
         <Button
           variant="ghost"
           size="icon"
-          className={cn(sizeClasses[size], 'text-muted-foreground', className)}
+          className={cn(
+            sizeClasses[size],
+            'text-muted-foreground',
+            'relative before:content-[""] before:absolute before:-inset-4',
+            className
+          )}
           aria-label={tooltip}
           suppressHydrationWarning={suppressHydrationWarning}
           {...props}
