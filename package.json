@@ -116,7 +116,7 @@
     "cosmiconfig": "^9.0.0",
     "dayjs": "^1.11.19",
     "dedent": "^1.7.1",
-    "diff": "^8.0.3",
+    "diff": "^9.0.0",
     "embla-carousel-react": "^8.6.0",
     "express": "^5.2.1",
     "fast-xml-parser": "^5.3.4",
@@ -161,7 +161,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.14",
-    "@codecov/webpack-plugin": "^1.9.1",
+    "@codecov/webpack-plugin": "^2.0.0",
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
     "@cypress/code-coverage": "^4.0.0",
