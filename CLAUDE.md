@@ -69,9 +69,11 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 ### Testing
 
-- `bun run test` - Run Jest unit tests with coverage
-- `bun run jest` - Run Jest tests (excludes query-config tests)
-- `bun run test-queries-config` - Run query config specific tests
+- `bun run test` - Run the full Bun test suite
+- `bun run test:unit` - Run targeted unit tests for core app/component suites
+- `bun run test:query-config` - Run query configuration tests
+- `bun run test:coverage` - Run tests with coverage output
+- `bun run test:watch` - Run tests in watch mode
 - `bun run component` - Open Cypress component tests
 - `bun run component:headless` - Run Cypress component tests headless
 - `bun run e2e` - Open Cypress e2e tests
@@ -79,8 +81,8 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 ### Code Quality
 
-- `bun run lint` - Run Next.js ESLint
-- `bun run fmt` - Format code with Prettier
+- `bun run lint` - Run Biome linting
+- `bun run fmt` - Format code with Biome
 
 ### Deployment
 
@@ -477,12 +479,7 @@ export const backupsConfig: QueryConfig = {
 
 #### Testing Strategy
 
-- **Jest** for unit tests and utilities
-  - **Known Issue**: Jest hangs indefinitely in current environment, even with minimal configuration
-  - Issue persists with default settings, no ts-jest, no coverage, and bare minimum config
-  - Alternative test files (test-without-jest.js) work fine, indicating Node.js environment is functional
-  - **CI Workaround**: Jest tests temporarily disabled in GitHub Actions with 5-minute timeout
-  - Temporary workaround: Use Cypress for testing until Jest hanging issue is resolved
+- **Bun test** for unit and query-config tests (`bun run test`, `bun run test:unit`, `bun run test:query-config`)
 - **Cypress** for component and e2e tests
 - Component tests include visual regression testing
 - Test files are co-located with components (`.cy.tsx` files)
@@ -631,7 +628,7 @@ export function YourChart({ hostId, interval }: YourChartProps) {
 
 ### Deployment
 - Build mode: `output: 'standalone'` (hybrid static + API)
-- Deploy to Cloudflare Workers: `npx wrangler login` then `bun run deploy`
+- Deploy to Cloudflare Workers: `npx wrangler login` then `bun run cf:deploy`
 
 ## AI Agents (LangGraph)
 
