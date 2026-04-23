@@ -87,7 +87,7 @@ export function OptionalTableInfo({
                       return (
                         <pre
                           key={`code-${index}`}
-                          className="mt-2 mb-2 p-3 bg-black/50 dark:bg-black/70 text-white dark:text-white text-xs rounded border border-blue-900/50 overflow-x-auto"
+                          className="mt-2 mb-2 overflow-x-auto rounded border border-blue-300/60 bg-slate-900 p-3 text-xs text-slate-50 dark:border-blue-800/60 dark:bg-slate-950 dark:text-slate-100"
                         >
                           <code>{codeContent}</code>
                         </pre>
