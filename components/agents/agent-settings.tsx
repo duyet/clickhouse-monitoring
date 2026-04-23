@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -22,7 +23,7 @@ export interface AgentSettingsProps {
  *
  * Features:
  * - Model selection dropdown with free tier models
- * - Capability badges (Streaming, Tools, Context, Fast)
+ * - Capability badges (Tools, Streaming, Vision)
  * - Human-readable model names
  * - Auto-saves to localStorage
  *
@@ -55,18 +56,57 @@ export function AgentSettings({ onModelChange }: AgentSettingsProps) {
         <SelectContent>
           {models.map((m) => (
             <SelectItem key={m.id} value={m.id} className="text-xs">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span>{m.name}</span>
+                {m.supportsTools && (
+                  <Badge variant="outline" className="text-[10px] px-1">
+                    Tools
+                  </Badge>
+                )}
+                {m.supportsStreaming && (
+                  <Badge variant="outline" className="text-[10px] px-1">
+                    Stream
+                  </Badge>
+                )}
+                {m.supportsVision && (
+                  <Badge variant="outline" className="text-[10px] px-1">
+                    Vision
+                  </Badge>
+                )}
+                {m.isFree && (
+                  <Badge variant="secondary" className="text-[10px] px-1">
+                    Free
+                  </Badge>
+                )}
               </div>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      {/* Model info */}
+      {/* Model info with capabilities */}
       {currentModelData && (
-        <div className="text-xs text-muted-foreground">
-          {currentModelData.description}
+        <div className="flex flex-col gap-1">
+          <div className="text-xs text-muted-foreground">
+            {currentModelData.description}
+          </div>
+          <div className="flex items-center gap-1 flex-wrap">
+            {currentModelData.supportsTools && (
+              <Badge variant="default" className="text-[10px]">
+                ✓ Tools
+              </Badge>
+            )}
+            {currentModelData.supportsStreaming && (
+              <Badge variant="default" className="text-[10px]">
+                ✓ Streaming
+              </Badge>
+            )}
+            {currentModelData.supportsVision && (
+              <Badge variant="default" className="text-[10px]">
+                ✓ Vision
+              </Badge>
+            )}
+          </div>
         </div>
       )}
     </div>
