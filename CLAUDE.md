@@ -69,9 +69,11 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 ### Testing
 
-- `bun run test` - Run Jest unit tests with coverage
-- `bun run jest` - Run Jest tests (excludes query-config tests)
-- `bun run test-queries-config` - Run query config specific tests
+- `bun run test` - Run Bun unit tests (single concurrency)
+- `bun run test:unit` - Run focused unit test suites
+- `bun run test:query-config` - Run query config specific tests
+- `bun run test:coverage` - Run tests with coverage
+- `bun run test:watch` - Run tests in watch mode
 - `bun run component` - Open Cypress component tests
 - `bun run component:headless` - Run Cypress component tests headless
 - `bun run e2e` - Open Cypress e2e tests
@@ -477,13 +479,9 @@ export const backupsConfig: QueryConfig = {
 
 #### Testing Strategy
 
-- **Jest** for unit tests and utilities
-  - **Known Issue**: Jest hangs indefinitely in current environment, even with minimal configuration
-  - Issue persists with default settings, no ts-jest, no coverage, and bare minimum config
-  - Alternative test files (test-without-jest.js) work fine, indicating Node.js environment is functional
-  - **CI Workaround**: Jest tests temporarily disabled in GitHub Actions with 5-minute timeout
-  - Temporary workaround: Use Cypress for testing until Jest hanging issue is resolved
+- **Bun test** for unit tests and utilities (`bun test --max-concurrency=1` in CI)
 - **Cypress** for component and e2e tests
+- **Query-config tests** run with `bun run test:query-config` against ClickHouse service containers in CI
 - Component tests include visual regression testing
 - Test files are co-located with components (`.cy.tsx` files)
 
