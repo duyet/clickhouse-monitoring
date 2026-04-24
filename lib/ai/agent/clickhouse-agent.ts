@@ -33,8 +33,10 @@ function filterTools<T extends Record<string, unknown>>(
  * Falls back to openrouter/free if LLM_MODEL env var is not set
  */
 const DEFAULT_MODEL = process.env.LLM_MODEL || 'openrouter/free'
-const OPENROUTER_FREE_FALLBACK_MODEL =
-  process.env.OPENROUTER_FREE_FALLBACK_MODEL || 'qwen/qwen3-coder:free'
+
+function getOpenRouterFreeFallbackModel(): string {
+  return process.env.OPENROUTER_FREE_FALLBACK_MODEL || 'qwen/qwen3-coder:free'
+}
 
 /**
  * Returns true for Anthropic/Claude models routed via OpenRouter.
@@ -128,7 +130,7 @@ export function createClickHouseAgent(options: {
       : model
     const modelId =
       normalizedModelId === 'free'
-        ? OPENROUTER_FREE_FALLBACK_MODEL
+        ? getOpenRouterFreeFallbackModel()
         : normalizedModelId
     if (normalizedModelId === 'free') {
       console.warn(
