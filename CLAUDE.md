@@ -132,7 +132,7 @@ Both deployment methods provide:
 - `bun run cf:typegen` - Regenerate Cloudflare environment typings
 - `bun run cf:setup-conversations` - Provision the D1 database and update `wrangler.toml`
 - `bun run cf:migrate-conversations` / `bun run cf:migrate-conversations:local` - Apply conversation DB migrations remotely or locally
-- `bun run migrate`, `bun run migrate:status`, `bun run migrate:dry-run`, `bun run migrate up`, `bun run migrate rollback` - Use the local migration runner for non-Cloudflare targets
+- `bun run migrate`, `bun run migrate:status`, `bun run migrate:dry-run` - Use the local migration runner for non-Cloudflare targets
 - `bun run docker:health` / `bun run cf:health` - Check Docker or deployed health endpoints
 
 **Docs workspace**: The `docs/` app uses `pnpm` instead of `bun`.
