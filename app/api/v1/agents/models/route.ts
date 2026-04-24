@@ -10,7 +10,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { AGENT_MODELS, type OpenAIModel } from '@/lib/hooks/use-agent-model'
+import { AGENT_MODELS, type OpenAIModel } from '@/lib/ai/agent-models'
 
 const OPENROUTER_MODELS_API = 'https://openrouter.ai/api/v1/models'
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
