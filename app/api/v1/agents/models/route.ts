@@ -19,10 +19,8 @@ import {
 const OPENROUTER_MODELS_API =
   process.env.OPENROUTER_MODELS_API || 'https://openrouter.ai/api/v1/models'
 const CACHE_TTL_SECONDS = 5 * 60
-const OPENROUTER_REFERER =
-  process.env.OPENROUTER_REFERER || 'https://clickhouse.duyet.net'
-const OPENROUTER_APP_NAME =
-  process.env.OPENROUTER_APP_NAME || 'ClickHouse Monitor'
+const OPENROUTER_REFERER = process.env.OPENROUTER_REFERER
+const OPENROUTER_APP_NAME = process.env.OPENROUTER_APP_NAME
 
 interface ModelCapability {
   id: OpenAIModel
@@ -46,8 +44,8 @@ interface ModelCapability {
 async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
   const response = await fetch(OPENROUTER_MODELS_API, {
     headers: {
-      'HTTP-Referer': OPENROUTER_REFERER,
-      'X-OpenRouter-Title': OPENROUTER_APP_NAME,
+      ...(OPENROUTER_REFERER && { 'HTTP-Referer': OPENROUTER_REFERER }),
+      ...(OPENROUTER_APP_NAME && { 'X-OpenRouter-Title': OPENROUTER_APP_NAME }),
     },
     next: { revalidate: CACHE_TTL_SECONDS },
   })
@@ -93,7 +91,7 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
   // Merge our static model list with OpenRouter's capability data
   return Object.entries(AGENT_MODELS).map(([id, info]): ModelCapability => {
     const orData = orModels.get(id)
-    const isFree = id.endsWith(':free') || !('pricing' in info)
+    const isFree = id.endsWith(':free')
 
     const inputModalities = [
       ...(orData?.architecture?.input_modalities ?? []),

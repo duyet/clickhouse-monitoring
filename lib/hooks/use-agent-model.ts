@@ -114,7 +114,7 @@ export interface UseAgentModelResult {
  */
 function getStaticModels(): ModelDisplayInfo[] {
   return Object.entries(AGENT_MODELS).map(([id, info]): ModelDisplayInfo => {
-    const isFree = id.endsWith(':free') || !('pricing' in info)
+    const isFree = id.endsWith(':free')
     const pricing =
       'pricing' in info ? (info.pricing as ModelPricing) : undefined
 
@@ -175,7 +175,20 @@ export function useAgentModel(): UseAgentModelResult {
 
   // Fetch models on mount
   useEffect(() => {
-    fetchModelsWithCapabilities().then(setModels)
+    let cancelled = false
+
+    async function loadModels() {
+      const nextModels = await fetchModelsWithCapabilities()
+      if (!cancelled && nextModels.length > 0) {
+        setModels(nextModels)
+      }
+    }
+
+    loadModels()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   // Update model selection
