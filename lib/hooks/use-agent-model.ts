@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * useAgentModel Hook
  *
@@ -6,7 +8,14 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { formatCompactNumber } from '@/lib/format-number'
+import {
+  AGENT_MODELS,
+  formatTokenCount,
+  type ModelPricing,
+  type OpenAIModel,
+} from '@/lib/ai/agent-models'
+
+export type { OpenAIModel } from '@/lib/ai/agent-models'
 
 /**
  * LocalStorage key for model selection
@@ -14,95 +23,6 @@ import { formatCompactNumber } from '@/lib/format-number'
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
 const DEFAULT_MODEL = 'openrouter/free'
-
-/**
- * Format a token count to a compact human-readable string.
- * Examples: 128000 → "128K", 1000000 → "1M", 32768 → "32.8K"
- */
-export function formatTokenCount(count: number): string {
-  return formatCompactNumber(count)
-}
-
-/**
- * Available agent models.
- *
- * Keep `name` identical to the model code so the UI always shows
- * the exact provider/model identifier chosen by the user.
- */
-export const AGENT_MODELS = {
-  'openrouter/free': {
-    name: 'openrouter/free',
-    description:
-      'OpenRouter auto-router: picks a working free tool-capable model (default)',
-    contextLength: 200000,
-  },
-  'openrouter/auto': {
-    name: 'openrouter/auto',
-    description: 'OpenRouter auto-router: picks the best model (paid)',
-    contextLength: 2000000,
-  },
-  'z-ai/glm-4.5-air:free': {
-    name: 'z-ai/glm-4.5-air:free',
-    description: 'Z.AI GLM 4.5 Air, free tier',
-    contextLength: 131072,
-  },
-  'arcee-ai/trinity-large-preview:free': {
-    name: 'arcee-ai/trinity-large-preview:free',
-    description: 'Arcee Trinity Large Preview, free tier',
-    contextLength: 131000,
-  },
-  'qwen/qwen3-coder:free': {
-    name: 'qwen/qwen3-coder:free',
-    description: 'Qwen3 Coder, free tier, 1M context',
-    contextLength: 1048576,
-  },
-  'qwen/qwen3-next-80b-a3b-instruct:free': {
-    name: 'qwen/qwen3-next-80b-a3b-instruct:free',
-    description: 'Qwen3 Next 80B Instruct, free tier',
-    contextLength: 262144,
-  },
-  'openai/gpt-oss-120b:free': {
-    name: 'openai/gpt-oss-120b:free',
-    description: 'OpenAI GPT-OSS 120B, free tier',
-    contextLength: 131072,
-  },
-  'openai/gpt-oss-20b:free': {
-    name: 'openai/gpt-oss-20b:free',
-    description: 'OpenAI GPT-OSS 20B, free tier',
-    contextLength: 131072,
-  },
-  'meta-llama/llama-3.3-70b-instruct:free': {
-    name: 'meta-llama/llama-3.3-70b-instruct:free',
-    description: 'Meta Llama 3.3 70B Instruct, free tier',
-    contextLength: 131072,
-  },
-  'google/gemma-4-31b-it:free': {
-    name: 'google/gemma-4-31b-it:free',
-    description: 'Google Gemma 4 31B Instruct, free tier',
-    contextLength: 262144,
-  },
-  'minimax/minimax-m2.7': {
-    name: 'minimax/minimax-m2.7',
-    description: 'MiniMax production model (paid)',
-    contextLength: 200000,
-    pricing: {
-      inputPerMillion: 0.5,
-      outputPerMillion: 1.5,
-    },
-  },
-} as const
-
-/** OpenAI-compatible model identifier — any string is valid (custom models supported) */
-export type OpenAIModel = string
-
-/**
- * Check whether a model ID is in the known AGENT_MODELS list
- */
-export function isKnownModel(
-  model: string
-): model is keyof typeof AGENT_MODELS {
-  return model in AGENT_MODELS
-}
 
 /**
  * Get default model from environment or fallback
@@ -150,14 +70,6 @@ function saveModel(model: OpenAIModel): void {
 }
 
 /**
- * Pricing information for a model (USD per 1M tokens)
- */
-export interface ModelPricing {
-  inputPerMillion: number
-  outputPerMillion: number
-}
-
-/**
  * Model display metadata with capability indicators
  */
 export interface ModelDisplayInfo {
@@ -198,6 +110,27 @@ export interface UseAgentModelResult {
 }
 
 /**
+ * Build static model display metadata used before capability data loads.
+ */
+function getStaticModels(): ModelDisplayInfo[] {
+  return Object.entries(AGENT_MODELS).map(([id, info]): ModelDisplayInfo => {
+    const isFree = id.endsWith(':free') || !('pricing' in info)
+    const pricing =
+      'pricing' in info ? (info.pricing as ModelPricing) : undefined
+
+    return {
+      id,
+      name: info.name,
+      description: info.description,
+      contextLength: info.contextLength,
+      formattedContextLength: formatTokenCount(info.contextLength),
+      isFree,
+      pricing,
+    }
+  })
+}
+
+/**
  * Fetch models with capability indicators from the API
  */
 async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
@@ -209,22 +142,7 @@ async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
     const data = (await response.json()) as { models: ModelDisplayInfo[] }
     return data.models
   } catch {
-    // Fallback to static models without capabilities
-    return Object.entries(AGENT_MODELS).map(([id, info]): ModelDisplayInfo => {
-      const isFree = id.endsWith(':free') || !('pricing' in info)
-      const pricing =
-        'pricing' in info ? (info.pricing as ModelPricing) : undefined
-
-      return {
-        id,
-        name: info.name,
-        description: info.description,
-        contextLength: info.contextLength,
-        formattedContextLength: formatTokenCount(info.contextLength),
-        isFree,
-        pricing,
-      }
-    })
+    return getStaticModels()
   }
 }
 
@@ -253,7 +171,7 @@ export function useAgentModel(): UseAgentModelResult {
   const model = useMemo(() => getSavedModel(), [])
 
   // Get all available models with capabilities
-  const [models, setModels] = useState<ModelDisplayInfo[]>([])
+  const [models, setModels] = useState<ModelDisplayInfo[]>(getStaticModels)
 
   // Fetch models on mount
   useEffect(() => {
