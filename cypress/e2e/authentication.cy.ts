@@ -136,8 +136,9 @@ describe('Authentication', () => {
       cy.get('[data-testid="nav-user-trigger"]').click()
       cy.get('[data-testid="nav-user-about"]').should('be.visible')
 
-      // Click outside the menu (on the main content area)
-      cy.get('main').click()
+      // Click outside the menu at a stable viewport coordinate. Clicking the
+      // center of <main> is brittle because chart content can cover that point.
+      cy.get('body').click(10, 10)
 
       // Menu should close (DropdownMenu handles this automatically via Radix)
       cy.get('[data-testid="nav-user-about"]').should('not.exist')

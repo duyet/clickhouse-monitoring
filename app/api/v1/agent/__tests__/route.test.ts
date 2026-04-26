@@ -18,6 +18,7 @@ mock.module('@/lib/ai/agent', () => ({
 
 // Mock createAgentUIStreamResponse
 mock.module('ai', () => ({
+  dynamicTool: (config: unknown) => config,
   createAgentUIStreamResponse: ({
     uiMessages: _uiMessages,
     onError: _onError,

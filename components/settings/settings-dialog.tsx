@@ -46,7 +46,7 @@ export function SettingsDialog({
           )}
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" data-testid="settings-dialog">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>

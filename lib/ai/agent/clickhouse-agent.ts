@@ -34,6 +34,10 @@ function filterTools<T extends Record<string, unknown>>(
  */
 const DEFAULT_MODEL = process.env.LLM_MODEL || 'openrouter/free'
 
+function getOpenRouterFreeFallbackModel(): string {
+  return process.env.OPENROUTER_FREE_FALLBACK_MODEL || 'qwen/qwen3-coder:free'
+}
+
 /**
  * Returns true for Anthropic/Claude models routed via OpenRouter.
  * Matches both the 'anthropic/' provider prefix and bare 'claude-*' names.
@@ -116,10 +120,23 @@ export function createClickHouseAgent(options: {
       },
     })
 
-    // For OpenRouter, use .chat() method and strip 'openrouter/' prefix if present
-    const modelId = model.startsWith('openrouter/')
+    // For OpenRouter, use .chat() method and strip 'openrouter/' prefix if present.
+    // The `openrouter/free` meta-router can intermittently return:
+    // "No endpoints found that support tool use".
+    // To keep the agent reliable, map `openrouter/free` to a concrete free
+    // model that supports tool calling by default.
+    const normalizedModelId = model.startsWith('openrouter/')
       ? model.replace('openrouter/', '')
       : model
+    const modelId =
+      normalizedModelId === 'free'
+        ? getOpenRouterFreeFallbackModel()
+        : normalizedModelId
+    if (normalizedModelId === 'free') {
+      console.warn(
+        `[Agent] openrouter/free resolved to fallback tool model: ${modelId}`
+      )
+    }
 
     // Prompt caching: static system instructions (~400 tokens) are ideal cache
     // candidates. Only Anthropic models support this via OpenRouter's cache_control.
