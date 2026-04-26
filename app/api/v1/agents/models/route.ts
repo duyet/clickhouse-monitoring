@@ -6,14 +6,22 @@
  * Returns available models with capability indicators fetched from OpenRouter.
  * Used by the frontend to show which models support tools, streaming, etc.
  *
- * Caches the OpenRouter response for 5 minutes to avoid rate limiting.
+ * Uses Next.js fetch revalidation to avoid refetching OpenRouter too often.
  */
 
 import { NextResponse } from 'next/server'
-import { AGENT_MODELS, type OpenAIModel } from '@/lib/ai/agent-models'
+import {
+  AGENT_MODELS,
+  formatTokenCount,
+  isFreeAgentModel,
+  type OpenAIModel,
+} from '@/lib/ai/agent-models'
 
-const OPENROUTER_MODELS_API = 'https://openrouter.ai/api/v1/models'
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+const OPENROUTER_MODELS_API =
+  process.env.OPENROUTER_MODELS_API || 'https://openrouter.ai/api/v1/models'
+const CACHE_TTL_SECONDS = 5 * 60
+const OPENROUTER_REFERER = process.env.OPENROUTER_REFERER
+const OPENROUTER_APP_NAME = process.env.OPENROUTER_APP_NAME
 
 interface ModelCapability {
   id: OpenAIModel
@@ -31,20 +39,16 @@ interface ModelCapability {
   }
 }
 
-let cachedModels: ModelCapability[] | null = null
-let cacheTime = 0
-
 /**
  * Fetch models from OpenRouter and merge with our static AGENT_MODELS metadata.
  */
 async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
   const response = await fetch(OPENROUTER_MODELS_API, {
     headers: {
-      // OpenRouter requires identification
-      'HTTP-Referer': 'https://clickhouse.duyet.net',
-      'X-OpenRouter-Title': 'ClickHouse Monitor',
+      ...(OPENROUTER_REFERER && { 'HTTP-Referer': OPENROUTER_REFERER }),
+      ...(OPENROUTER_APP_NAME && { 'X-OpenRouter-Title': OPENROUTER_APP_NAME }),
     },
-    next: { revalidate: CACHE_TTL / 1000 },
+    next: { revalidate: CACHE_TTL_SECONDS },
   })
 
   if (!response.ok) {
@@ -61,8 +65,11 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
         prompt: string
         completion: string
       }
+      supported_parameters?: string[]
       architecture?: {
-        modality: string[]
+        input_modalities?: string[]
+        output_modalities?: string[]
+        modality?: string | string[]
       }
     }>
   }
@@ -77,6 +84,7 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
         contextLength: m.context_length,
         pricing: m.pricing,
         architecture: m.architecture,
+        supportedParameters: m.supported_parameters,
       },
     ])
   )
@@ -84,23 +92,34 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
   // Merge our static model list with OpenRouter's capability data
   return Object.entries(AGENT_MODELS).map(([id, info]): ModelCapability => {
     const orData = orModels.get(id)
-    const isFree = id.endsWith(':free') || !('pricing' in info)
-
-    // Determine capabilities from OpenRouter data or defaults
-    // Most modern models support streaming; tools support is more selective
-    const supportsStreaming =
-      orData?.architecture?.modality?.includes('text') ?? true
+    const isFree = isFreeAgentModel(id)
+    const rawModality = orData?.architecture?.modality
+    const modalityList = Array.isArray(rawModality)
+      ? rawModality
+      : rawModality
+        ? [rawModality]
+        : []
+    const inputModalities = [
+      ...(orData?.architecture?.input_modalities ?? []),
+      ...modalityList.map((modality) => modality.split('->')[0] ?? ''),
+    ].map((modality) => modality.trim().toLowerCase())
+    const supportedParameters = orData?.supportedParameters ?? []
     const supportsTools =
-      orData?.architecture?.modality?.includes('text+tool_calling') ?? false
-    const supportsVision =
-      orData?.architecture?.modality?.includes('image') ?? false
+      supportedParameters.includes('tools') ||
+      supportedParameters.includes('tool_choice')
+    const supportsStreaming =
+      orData?.architecture?.output_modalities?.includes('text') ?? false
+    const supportsVision = inputModalities.some((modality) =>
+      modality.includes('image')
+    )
+    const contextLength = orData?.contextLength ?? info.contextLength
 
     const result: ModelCapability = {
       id: id as OpenAIModel,
       name: info.name,
       description: info.description,
-      contextLength: info.contextLength,
-      formattedContextLength: info.contextLength.toLocaleString(),
+      contextLength,
+      formattedContextLength: formatTokenCount(contextLength),
       isFree,
       supportsTools,
       supportsStreaming,
@@ -121,18 +140,7 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
  */
 export async function GET() {
   try {
-    // Check cache
-    const now = Date.now()
-    if (cachedModels && now - cacheTime < CACHE_TTL) {
-      return NextResponse.json({ models: cachedModels })
-    }
-
-    // Fetch from OpenRouter
     const models = await fetchOpenRouterModels()
-
-    // Update cache
-    cachedModels = models
-    cacheTime = now
 
     return NextResponse.json({ models })
   } catch (error) {

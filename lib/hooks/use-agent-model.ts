@@ -10,11 +10,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   AGENT_MODELS,
-  isKnownModel,
+  formatTokenCount,
+  isFreeAgentModel,
   type ModelPricing,
   type OpenAIModel,
 } from '@/lib/ai/agent-models'
-import { formatCompactNumber } from '@/lib/format-number'
 
 export type { OpenAIModel } from '@/lib/ai/agent-models'
 
@@ -24,14 +24,6 @@ export type { OpenAIModel } from '@/lib/ai/agent-models'
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
 const DEFAULT_MODEL = 'openrouter/free'
-
-/**
- * Format a token count to a compact human-readable string.
- * Examples: 128000 → "128K", 1000000 → "1M", 32768 → "32.8K"
- */
-export function formatTokenCount(count: number): string {
-  return formatCompactNumber(count)
-}
 
 /**
  * Get default model from environment or fallback
@@ -119,6 +111,27 @@ export interface UseAgentModelResult {
 }
 
 /**
+ * Build static model display metadata used before capability data loads.
+ */
+function getStaticModels(): ModelDisplayInfo[] {
+  return Object.entries(AGENT_MODELS).map(([id, info]): ModelDisplayInfo => {
+    const isFree = isFreeAgentModel(id)
+    const pricing =
+      'pricing' in info ? (info.pricing as ModelPricing) : undefined
+
+    return {
+      id,
+      name: info.name,
+      description: info.description,
+      contextLength: info.contextLength,
+      formattedContextLength: formatTokenCount(info.contextLength),
+      isFree,
+      pricing,
+    }
+  })
+}
+
+/**
  * Fetch models with capability indicators from the API
  */
 async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
@@ -130,22 +143,7 @@ async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
     const data = (await response.json()) as { models: ModelDisplayInfo[] }
     return data.models
   } catch {
-    // Fallback to static models without capabilities
-    return Object.entries(AGENT_MODELS).map(([id, info]): ModelDisplayInfo => {
-      const isFree = id.endsWith(':free') || !('pricing' in info)
-      const pricing =
-        'pricing' in info ? (info.pricing as ModelPricing) : undefined
-
-      return {
-        id,
-        name: info.name,
-        description: info.description,
-        contextLength: info.contextLength,
-        formattedContextLength: formatTokenCount(info.contextLength),
-        isFree,
-        pricing,
-      }
-    })
+    return getStaticModels()
   }
 }
 
@@ -174,11 +172,24 @@ export function useAgentModel(): UseAgentModelResult {
   const model = useMemo(() => getSavedModel(), [])
 
   // Get all available models with capabilities
-  const [models, setModels] = useState<ModelDisplayInfo[]>([])
+  const [models, setModels] = useState<ModelDisplayInfo[]>(getStaticModels)
 
   // Fetch models on mount
   useEffect(() => {
-    fetchModelsWithCapabilities().then(setModels)
+    let cancelled = false
+
+    async function loadModels() {
+      const nextModels = await fetchModelsWithCapabilities()
+      if (!cancelled && nextModels.length > 0) {
+        setModels(nextModels)
+      }
+    }
+
+    loadModels()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   // Update model selection

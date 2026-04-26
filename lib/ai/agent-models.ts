@@ -2,6 +2,8 @@
  * Shared agent model metadata for both client and server code.
  */
 
+import { formatCompactNumber } from '@/lib/format-number'
+
 export const AGENT_MODELS = {
   'openrouter/free': {
     name: 'openrouter/free',
@@ -71,6 +73,25 @@ export type OpenAIModel = string
 export interface ModelPricing {
   inputPerMillion: number
   outputPerMillion: number
+}
+
+/**
+ * Format a token count to a compact human-readable string.
+ * Examples: 128000 -> "128K", 1000000 -> "1M", 32768 -> "32.8K"
+ */
+export function formatTokenCount(count: number): string {
+  return formatCompactNumber(count)
+}
+
+/**
+ * Returns true for OpenRouter free-tier model IDs.
+ *
+ * Matches the free auto-router (`openrouter/free`) and explicit `:free`
+ * suffixes. `openrouter/free` needs the exact match because it does not use the
+ * suffix convention.
+ */
+export function isFreeAgentModel(model: string): boolean {
+  return model === 'openrouter/free' || model.endsWith(':free')
 }
 
 export function isKnownModel(

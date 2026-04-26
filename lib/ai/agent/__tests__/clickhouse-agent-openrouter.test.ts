@@ -19,6 +19,8 @@ mock.module('@ai-sdk/openai', () => ({
   }),
 }))
 mock.module('ai', () => ({
+  createAgentUIStreamResponse: () => new Response(null),
+  dynamicTool: (config: unknown) => config,
   ToolLoopAgent: class ToolLoopAgent {
     id: string
     model: unknown

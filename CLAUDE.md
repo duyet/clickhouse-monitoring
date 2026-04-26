@@ -73,7 +73,7 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 - `bun run test` - Run the full Bun test suite
 - `bun run test:unit` - Run targeted unit tests for core app/component suites
-- `bun run test:query-config` - Run query configuration tests
+- `bun run test:query-config` - Run query-config-specific tests
 - `bun run test:coverage` - Run tests with coverage output
 - `bun run test:watch` - Run tests in watch mode
 - `bun run component` - Open Cypress component tests
@@ -483,6 +483,7 @@ export const backupsConfig: QueryConfig = {
 
 - **Bun test** for unit and query-config tests (`bun run test`, `bun run test:unit`, `bun run test:query-config`)
 - **Cypress** for component and e2e tests
+- **Query-config tests** run with `bun run test:query-config` against ClickHouse service containers in CI
 - Component tests include visual regression testing
 - Test files are co-located with components (`.cy.tsx` files)
 
