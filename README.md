@@ -3,7 +3,7 @@
 [![Build and Test](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml/badge.svg)](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml)
 [![All-time uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fduyet%2Fuptime%2FHEAD%2Fapi%2Fclickhouse-monitoring-vercel-app%2Fuptime.json)](https://duyet.github.io/uptime/history/clickhouse-monitoring-vercel-app)
 
-A modern Next.js 16 dashboard that provides real-time insights into ClickHouse clusters through system tables. Features static site generation with client-side data fetching for optimal performance and CDN caching.
+A modern Next.js 15 dashboard that provides real-time insights into ClickHouse clusters through system tables. Features static site generation with client-side data fetching for optimal performance and CDN caching.
 
 **Features:**
 
@@ -61,7 +61,7 @@ bun run cf:deploy
 
 **Important Notes:**
 - Build uses **Webpack** (not Turbopack) due to Cloudflare Workers compatibility
-- Next.js version pinned to **16.0.7** (React 19) for stability
+- Next.js version pinned to **15.5.x** (React 19) for stability
 - Static pages are pre-rendered at edge for optimal performance
 - API routes run on Workers using Fetch API
 - Supports multi-host monitoring with query parameter routing (`?host=0`)
