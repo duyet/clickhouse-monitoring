@@ -83,6 +83,10 @@ export function formatTokenCount(count: number): string {
   return formatCompactNumber(count)
 }
 
+export function isFreeAgentModel(model: string): boolean {
+  return model === 'openrouter/free' || model.endsWith(':free')
+}
+
 export function isKnownModel(
   model: string
 ): model is keyof typeof AGENT_MODELS {

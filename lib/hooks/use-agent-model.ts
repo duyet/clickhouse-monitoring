@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   AGENT_MODELS,
   formatTokenCount,
+  isFreeAgentModel,
   type ModelPricing,
   type OpenAIModel,
 } from '@/lib/ai/agent-models'
@@ -114,7 +115,7 @@ export interface UseAgentModelResult {
  */
 function getStaticModels(): ModelDisplayInfo[] {
   return Object.entries(AGENT_MODELS).map(([id, info]): ModelDisplayInfo => {
-    const isFree = id.endsWith(':free')
+    const isFree = isFreeAgentModel(id)
     const pricing =
       'pricing' in info ? (info.pricing as ModelPricing) : undefined
 

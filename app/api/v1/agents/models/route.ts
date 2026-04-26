@@ -13,6 +13,7 @@ import { NextResponse } from 'next/server'
 import {
   AGENT_MODELS,
   formatTokenCount,
+  isFreeAgentModel,
   type OpenAIModel,
 } from '@/lib/ai/agent-models'
 
@@ -91,7 +92,7 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
   // Merge our static model list with OpenRouter's capability data
   return Object.entries(AGENT_MODELS).map(([id, info]): ModelCapability => {
     const orData = orModels.get(id)
-    const isFree = id.endsWith(':free')
+    const isFree = isFreeAgentModel(id)
 
     const inputModalities = [
       ...(orData?.architecture?.input_modalities ?? []),
