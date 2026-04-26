@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'bun:test'
 import { isFreeAgentModel } from './agent-models'
+import { describe, expect, test } from 'bun:test'
 
 describe('isFreeAgentModel', () => {
   test('recognizes OpenRouter free router and explicit free suffixes', () => {
