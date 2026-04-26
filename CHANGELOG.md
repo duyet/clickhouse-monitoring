@@ -21,7 +21,7 @@ All notable changes to this project are documented in this file.
   - Enables independent data refresh on host switching without full page reload
 
 #### Framework & Build Updates
-- **Next.js 16 with React 19** and Turbopack
+- **Next.js 15 with React 19** and Turbopack
 - **Migrated to Bun** as the primary package manager
   - Better performance and compatibility with modern JavaScript ecosystem
   - Replaced PNPM with Bun (`bun install`, `bun run dev`, etc.)

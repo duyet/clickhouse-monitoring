@@ -13,7 +13,7 @@ Use semantic commit format with consistent scope for commit messages and PR titl
 
 ## Project Overview
 
-This is a Next.js 16 (React 19) ClickHouse monitoring dashboard that provides real-time insights into ClickHouse clusters through system tables. The application connects to ClickHouse instances and displays metrics, query performance, table information, and cluster health.
+This is a Next.js 15 (React 19) ClickHouse monitoring dashboard that provides real-time insights into ClickHouse clusters through system tables. The application connects to ClickHouse instances and displays metrics, query performance, table information, and cluster health.
 
 ## Claude Skills
 
@@ -148,7 +148,7 @@ Both deployment methods provide:
 
 ### Core Technologies
 
-- **Next.js 16** with App Router and Turbopack
+- **Next.js 15** with App Router and Turbopack
 - **React 19** with TypeScript
 - **SWR** for client-side data fetching with caching
 - **ClickHouse clients** (@clickhouse/client and @clickhouse/client-web)
