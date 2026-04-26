@@ -71,7 +71,7 @@ export function ClerkNavWrapper() {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 data-testid="nav-user-trigger"
               >
-                <Avatar className="h-8 w-8 rounded-lg">
+                <Avatar className="avatar h-8 w-8 rounded-lg">
                   <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
                     <UserIcon className="h-4 w-4" />
                   </AvatarFallback>
@@ -88,14 +88,14 @@ export function ClerkNavWrapper() {
 
           {/* Signed in - show user menu with avatar */}
           {isSignedIn && (
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                   data-testid="nav-user-trigger"
                 >
-                  <Avatar className="h-8 w-8 rounded-lg">
+                  <Avatar className="avatar h-8 w-8 rounded-lg">
                     <AvatarImage
                       src={user?.imageUrl}
                       alt={user?.fullName ?? 'User'}
@@ -129,7 +129,7 @@ export function ClerkNavWrapper() {
               >
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
+                    <Avatar className="avatar h-8 w-8 rounded-lg">
                       <AvatarImage
                         src={user?.imageUrl}
                         alt={user?.fullName ?? 'User'}
@@ -183,8 +183,7 @@ export function ClerkNavWrapper() {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="flex items-center gap-2"
-                    onSelect={(e) => {
-                      e.preventDefault()
+                    onSelect={() => {
                       setSettingsOpen(true)
                     }}
                     data-testid="nav-user-settings"
