@@ -30,9 +30,9 @@ interface ModelCapability {
   contextLength: number
   formattedContextLength: string
   isFree: boolean
-  supportsTools: boolean
-  supportsStreaming: boolean
-  supportsVision: boolean
+  supportsTools?: boolean
+  supportsStreaming?: boolean
+  supportsVision?: boolean
   pricing?: {
     inputPerMillion: number
     outputPerMillion: number
@@ -93,6 +93,27 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
   return Object.entries(AGENT_MODELS).map(([id, info]): ModelCapability => {
     const orData = orModels.get(id)
     const isFree = isFreeAgentModel(id)
+    const contextLength = orData?.contextLength ?? info.contextLength
+
+    const result: ModelCapability = {
+      id: id as OpenAIModel,
+      name: info.name,
+      description: info.description,
+      contextLength,
+      formattedContextLength: formatTokenCount(contextLength),
+      isFree,
+    }
+
+    // If OpenRouter omits a curated model, keep capabilities unknown rather
+    // than reporting false support from absent metadata.
+    if (!orData) {
+      if ('pricing' in info && info.pricing) {
+        result.pricing = info.pricing
+      }
+
+      return result
+    }
+
     const rawModality = orData?.architecture?.modality
     const modalityList = Array.isArray(rawModality)
       ? rawModality
@@ -112,19 +133,10 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
     const supportsVision = inputModalities.some((modality) =>
       modality.includes('image')
     )
-    const contextLength = orData?.contextLength ?? info.contextLength
 
-    const result: ModelCapability = {
-      id: id as OpenAIModel,
-      name: info.name,
-      description: info.description,
-      contextLength,
-      formattedContextLength: formatTokenCount(contextLength),
-      isFree,
-      supportsTools,
-      supportsStreaming,
-      supportsVision,
-    }
+    result.supportsTools = supportsTools
+    result.supportsStreaming = supportsStreaming
+    result.supportsVision = supportsVision
 
     // Only include pricing if defined
     if ('pricing' in info && info.pricing) {
