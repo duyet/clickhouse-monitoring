@@ -93,30 +93,33 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
   return Object.entries(AGENT_MODELS).map(([id, info]): ModelCapability => {
     const orData = orModels.get(id)
     const isFree = isFreeAgentModel(id)
-
+    const rawModality = orData?.architecture?.modality
+    const modalityList = Array.isArray(rawModality)
+      ? rawModality
+      : rawModality
+        ? [rawModality]
+        : []
     const inputModalities = [
       ...(orData?.architecture?.input_modalities ?? []),
-      ...(Array.isArray(orData?.architecture?.modality)
-        ? (orData?.architecture?.modality ?? [])
-        : orData?.architecture?.modality
-          ? [orData.architecture.modality]
-          : []),
-    ]
+      ...modalityList.map((modality) => modality.split('->')[0] ?? ''),
+    ].map((modality) => modality.trim().toLowerCase())
     const supportedParameters = orData?.supportedParameters ?? []
     const supportsTools =
       supportedParameters.includes('tools') ||
       supportedParameters.includes('tool_choice')
-    const supportsStreaming = true
+    const supportsStreaming =
+      orData?.architecture?.output_modalities?.includes('text') ?? false
     const supportsVision = inputModalities.some((modality) =>
-      modality.toLowerCase().includes('image')
+      modality.includes('image')
     )
+    const contextLength = orData?.contextLength ?? info.contextLength
 
     const result: ModelCapability = {
       id: id as OpenAIModel,
       name: info.name,
       description: info.description,
-      contextLength: info.contextLength,
-      formattedContextLength: formatTokenCount(info.contextLength),
+      contextLength,
+      formattedContextLength: formatTokenCount(contextLength),
       isFree,
       supportsTools,
       supportsStreaming,

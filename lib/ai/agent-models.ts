@@ -83,6 +83,13 @@ export function formatTokenCount(count: number): string {
   return formatCompactNumber(count)
 }
 
+/**
+ * Returns true for OpenRouter free-tier model IDs.
+ *
+ * Matches the free auto-router (`openrouter/free`) and explicit `:free`
+ * suffixes. `openrouter/free` needs the exact match because it does not use the
+ * suffix convention.
+ */
 export function isFreeAgentModel(model: string): boolean {
   return model === 'openrouter/free' || model.endsWith(':free')
 }
