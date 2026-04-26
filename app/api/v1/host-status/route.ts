@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server'
+import { createValidationError } from '@/lib/api/error-handler'
+import { getAndValidateHostId } from '@/lib/api/shared/validators'
 import { fetchData } from '@/lib/clickhouse'
 import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { debug } from '@/lib/logger'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+const ROUTE_CONTEXT = {
+  route: '/api/v1/host-status',
+  method: 'GET',
+} as const
 
 /**
  * GET /api/v1/host-status?hostId=0
@@ -14,8 +21,13 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(request: Request) {
   const searchParams = new URL(request.url).searchParams
-  const hostIdParam = searchParams.get('hostId')
-  const hostId = hostIdParam ? parseInt(hostIdParam, 10) : 0
+  const hostIdResult = getAndValidateHostId(searchParams)
+
+  if (typeof hostIdResult !== 'number') {
+    return createValidationError(hostIdResult.message, ROUTE_CONTEXT)
+  }
+
+  const hostId = hostIdResult
 
   try {
     // Single query to fetch all values
