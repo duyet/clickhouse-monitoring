@@ -1,6 +1,7 @@
 'use client'
 
-import { SWRConfig, type SWRConfiguration, useSWRConfig } from 'swr'
+import type { SWRConfiguration } from 'swr'
+import { SWRConfig, useSWRConfig } from 'swr'
 
 import type React from 'react'
 

@@ -11,8 +11,7 @@ Scope: recent changes since the previous automation timestamp
 - Evidence:
   - The linked automation worktree reported a local schema/CLI drift, but the
     canonical checkout used for commits resolved Biome `2.3.14`.
-  - `bun run lint` in `/Users/duet/project/clickhouse-monitor` completed with
-    no diagnostics.
+  - `bun run lint` in the project root completed with no diagnostics.
 - Action: no code change. Updating the schema would create drift in the
   canonical checkout.
 

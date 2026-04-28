@@ -2,7 +2,49 @@
  * Tests for the overview page charts configuration
  */
 
-import {
+import type React from 'react'
+
+import { describe, expect, it, mock } from 'bun:test'
+
+type OverviewChartConfig = {
+  id: string
+  component: unknown
+  className?: string
+  type?: string
+  lastHours?: number
+  interval?: string
+  chartClassName?: string
+}
+
+type OverviewTabConfig = {
+  value: string
+  label: string
+  gridClassName: string
+  charts: OverviewChartConfig[]
+}
+
+mock.module('swr', () => ({
+  default: mock(() => ({})),
+  mutate: mock(() => Promise.resolve()),
+  preload: mock(() => Promise.resolve()),
+  SWRConfig: ({ children }: { children: React.ReactNode }) => children,
+  useSWRConfig: mock(() => ({ mutate: mock(() => Promise.resolve()) })),
+  unstable_serialize: mock((key: unknown) => JSON.stringify(key)),
+}))
+
+mock.module('@/lib/swr', () => ({
+  useChartData: mock(() => ({
+    data: [],
+    error: undefined,
+    hasData: false,
+    isLoading: false,
+    mutate: mock(() => Promise.resolve()),
+    staleError: undefined,
+  })),
+  useHostId: mock(() => 0),
+}))
+
+const {
   getAllChartIds,
   getChartsForTab,
   getTabConfig,
@@ -10,12 +52,9 @@ import {
   OPERATIONS_TAB_CHARTS,
   OVERVIEW_TAB_CHARTS,
   OVERVIEW_TABS,
-  type OverviewChartConfig,
-  type OverviewTabConfig,
   QUERIES_TAB_CHARTS,
   STORAGE_TAB_CHARTS,
-} from '../charts-config'
-import { describe, expect, it } from 'bun:test'
+} = await import('../charts-config')
 
 describe('charts-config', () => {
   describe('Configuration Structure', () => {
