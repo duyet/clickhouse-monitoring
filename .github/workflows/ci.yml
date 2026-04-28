@@ -80,7 +80,7 @@ jobs:
       packages: write
     steps:
       - name: Login to Container registry
-        uses: docker/login-action@v7
+        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
