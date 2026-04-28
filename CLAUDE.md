@@ -136,6 +136,7 @@ Both deployment methods provide:
 - `bun run cf:migrate-conversations` / `bun run cf:migrate-conversations:local` - Apply conversation DB migrations remotely or locally
 - `bun run migrate`, `bun run migrate:status`, `bun run migrate:dry-run` - Use the local migration runner for non-Cloudflare targets
 - `bun run docker:health` / `bun run cf:health` - Check Docker or deployed health endpoints
+- `bun run lint && bun run build` - Quick local CI parity check (matches core lint/build workflow jobs)
 
 **Docs workspace**: The `docs/` app uses `pnpm` instead of `bun`.
 
