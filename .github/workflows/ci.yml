@@ -1,0 +1,64 @@
+name: Image build and Push
+
+on:
+  push:
+    branches:
+      - main
+  release:
+  pull_request:
+  workflow_dispatch:
+
+# Cancel in-progress runs for same workflow and branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write
+  packages: write
+
+jobs:
+  build:
+    name: build
+    uses: ./.github/workflows/base.yml
+    with:
+      job-type: build
+
+  lint:
+    name: lint
+    uses: ./.github/workflows/base.yml
+    with:
+      job-type: lint
+
+  # Fast amd64-only build for PRs
+  build-docker:
+    name: build-docker
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/base.yml
+    with:
+      job-type: docker
+      clickhouse-versions: '["25.1"]'
+      platforms: linux/amd64
+      push-image: true
+
+  # Multi-arch build only for main branch and releases (slower but complete)
+  build-docker-multiarch:
+    name: build-docker-multiarch
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/base.yml
+    with:
+      job-type: docker
+      clickhouse-versions: '["25.1"]'
+      platforms: linux/amd64,linux/arm64
+      push-image: true
+
+  validate-docker:
+    name: validate-docker
+    uses: ./.github/workflows/base.yml
+    with:
+      job-type: docker
+      clickhouse-versions: '["24.5"]'
+      platforms: linux/amd64
+      load-image: true
+      test-container: true
