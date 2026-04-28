@@ -44,7 +44,6 @@ export function getErrorSuggestion(type: AgentErrorType): string {
       return 'Check your internet connection and LLM_API_BASE URL'
     case 'tool_error':
       return 'The tool encountered an issue. Try rephrasing your question'
-    case 'unknown':
     default:
       return 'An unexpected error occurred. Try again or switch models'
   }

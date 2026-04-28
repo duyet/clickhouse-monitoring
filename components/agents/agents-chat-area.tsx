@@ -21,7 +21,6 @@ import {
   TableIcon,
   TrashIcon,
   UserIcon,
-  XIcon,
   ZapIcon,
 } from 'lucide-react'
 
