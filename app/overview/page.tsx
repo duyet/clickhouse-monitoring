@@ -122,7 +122,7 @@ function OverviewPageContent() {
           onValueChange={handleTabChange}
           className="space-y-2"
         >
-          <div className="overflow-x-auto pb-1 -mx-1 px-1 sm:mx-0 sm:px-0">
+          <div className="overflow-x-auto pb-1">
             <TabsList className="h-11 gap-1 w-full md:w-fit inline-flex min-w-max backdrop-blur-sm border border-border/40 p-1">
               {OVERVIEW_TABS.map((tab) => (
                 <TabsTrigger
