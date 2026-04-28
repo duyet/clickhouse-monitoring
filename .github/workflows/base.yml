@@ -49,6 +49,7 @@ jobs:
   job:
     name: ${{ inputs.job-type }}
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       first_tag: ${{ steps.first_tag.outputs.tag }}

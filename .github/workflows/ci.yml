@@ -73,6 +73,7 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: [build-docker-amd64, build-docker-arm64]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write
