@@ -44,6 +44,11 @@ export const historyQueriesConfig: QueryConfig = {
             AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
             AND if ({user: String} != '', user = {user: String}, true)
             AND if ({excluded_users: String} != '', not(has(splitByChar(',', {excluded_users: String}), user)), true)
+            AND if ({query_text: String} != '', positionCaseInsensitiveUTF8(query, {query_text: String}) > 0, true)
+            AND if ({query_id: String} != '', query_id = {query_id: String}, true)
+            AND if ({min_memory_mb: String} != '', memory_usage > {min_memory_mb:UInt64} * 1024 * 1024, true)
+            AND if ({min_read_rows: String} != '', read_rows > {min_read_rows:UInt64}, true)
+            AND if ({query_kind: String} != '', query_kind = {query_kind: String}, true)
           ORDER BY event_time DESC
           LIMIT 100
       `,
@@ -83,6 +88,11 @@ export const historyQueriesConfig: QueryConfig = {
             AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
             AND if ({user: String} != '', user = {user: String}, true)
             AND if ({excluded_users: String} != '', not(has(splitByChar(',', {excluded_users: String}), user)), true)
+            AND if ({query_text: String} != '', positionCaseInsensitiveUTF8(query, {query_text: String}) > 0, true)
+            AND if ({query_id: String} != '', query_id = {query_id: String}, true)
+            AND if ({min_memory_mb: String} != '', memory_usage > {min_memory_mb:UInt64} * 1024 * 1024, true)
+            AND if ({min_read_rows: String} != '', read_rows > {min_read_rows:UInt64}, true)
+            AND if ({query_kind: String} != '', query_kind = {query_kind: String}, true)
           ORDER BY event_time DESC
           LIMIT 100
       `,
@@ -154,34 +164,43 @@ export const historyQueriesConfig: QueryConfig = {
     table: '',
     user: '',
     excluded_users: process.env.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '',
+    query_text: '',
+    query_id: '',
+    min_memory_mb: '',
+    min_read_rows: '',
+    query_kind: '',
   },
 
   filterParamPresets: [
-    {
-      name: 'type = QueryStart',
-      key: 'type',
-      value: 'QueryStart',
-    },
-    {
-      name: 'type = QueryFinish',
-      key: 'type',
-      value: 'QueryFinish',
-    },
-    {
-      name: 'type = ExceptionBeforeStart',
-      key: 'type',
-      value: 'ExceptionBeforeStart',
-    },
-    {
-      name: 'type = ExceptionWhileProcessing',
-      key: 'type',
-      value: 'ExceptionWhileProcessing',
-    },
-    {
-      name: 'query_duration > 1m',
-      key: 'duration_1m',
-      value: '1',
-    },
+    // Time-based
+    { name: 'Last 1 hour', key: 'last_hours', value: '1' },
+    { name: 'Last 6 hours', key: 'last_hours', value: '6' },
+    { name: 'Last 24 hours', key: 'last_hours', value: '24' },
+    { name: 'Last 7 days', key: 'last_hours', value: '168' },
+
+    // Query Kind (user-friendly names)
+    { name: 'Select Queries', key: 'query_kind', value: 'Select' },
+    { name: 'Insert Queries', key: 'query_kind', value: 'Insert' },
+    { name: 'System Queries', key: 'type', value: 'QueryFinish' },
+    { name: 'Failed Queries', key: 'type', value: 'ExceptionBeforeStart' },
+
+    // Duration
+    { name: '> 1 second', key: 'min_duration_s', value: '1' },
+    { name: '> 10 seconds', key: 'min_duration_s', value: '10' },
+    { name: '> 1 minute', key: 'min_duration_s', value: '60' },
+
+    // Memory
+    { name: 'Memory > 100MB', key: 'min_memory_mb', value: '100' },
+    { name: 'Memory > 500MB', key: 'min_memory_mb', value: '500' },
+    { name: 'Memory > 1GB', key: 'min_memory_mb', value: '1024' },
+
+    // Read Rows
+    { name: 'Read > 1M rows', key: 'min_read_rows', value: '1000000' },
+    { name: 'Read > 10M rows', key: 'min_read_rows', value: '10000000' },
+    { name: 'Read > 100M rows', key: 'min_read_rows', value: '100000000' },
+
+    // Legacy (kept for compatibility)
+    { name: 'type = QueryStart', key: 'type', value: 'QueryStart' },
     {
       name: `user != ${process.env.CLICKHOUSE_EXCLUDE_USER_DEFAULT || ''}`,
       key: 'excluded_users',
