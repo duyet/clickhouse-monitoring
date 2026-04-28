@@ -1,26 +1,13 @@
 'use client'
 
-import {
-  ColumnsIcon,
-  FilterIcon,
-  LayoutListIcon,
-  SearchIcon,
-  XIcon,
-} from 'lucide-react'
+import { FilterIcon, SearchIcon, XIcon } from 'lucide-react'
 
 import type { QueryConfig } from '@/types/query-config'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   InputGroup,
   InputGroupAddon,
@@ -42,10 +29,9 @@ import { cn } from '@/lib/utils'
 
 interface QueryFiltersBarProps {
   queryConfig: QueryConfig
-  hostId: number
 }
 
-export function QueryFiltersBar({ queryConfig, hostId }: QueryFiltersBarProps) {
+export function QueryFiltersBar({ queryConfig }: QueryFiltersBarProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
 
