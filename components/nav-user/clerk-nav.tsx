@@ -10,7 +10,8 @@ import {
 } from 'lucide-react'
 
 import { SignInButton, SignOutButton, useUser } from '@clerk/nextjs'
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { useSettingsShortcut } from '@/components/nav-user/use-settings-shortcut'
 import { SettingsDialog } from '@/components/settings'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -40,19 +41,8 @@ export function ClerkNavWrapper() {
   const { user, isLoaded, isSignedIn } = useUser()
   const { isMobile } = useSidebar()
   const [settingsOpen, setSettingsOpen] = useState(false)
-
-  // Keyboard shortcut for settings (Cmd/Ctrl + ,)
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === ',') {
-        event.preventDefault()
-        setSettingsOpen(true)
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  const openSettings = useCallback(() => setSettingsOpen(true), [])
+  useSettingsShortcut(openSettings)
 
   // Loading state - show skeleton
   if (!isLoaded) {
