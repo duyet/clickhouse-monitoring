@@ -3,6 +3,24 @@ import type { QueryConfig } from '@/types/query-config'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 
+const historyQueryFilters = `
+          WHERE
+            if ({type: String} != '', type = {type: String}, type != 'QueryStart')
+            AND if ({duration_1m: String} = '1', query_duration >= 60, true)
+            AND if ({min_duration_s: String} != '', query_duration >= toUInt64OrZero({min_duration_s: String}), true)
+            AND if ({last_hours: String} != '', event_time > now() - toIntervalHour(toUInt64OrZero({last_hours: String})), true)
+            AND if (notEmpty({event_time: String}), toDate(event_time) = {event_time: String}, true)
+            AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
+            AND if ({user: String} != '', user = {user: String}, true)
+            AND if ({excluded_users: String} != '', not(has(splitByChar(',', {excluded_users: String}), user)), true)
+            AND if ({query_text: String} != '', positionCaseInsensitiveUTF8(query, {query_text: String}) > 0, true)
+            AND if ({query_id: String} != '', query_id = {query_id: String}, true)
+            AND if ({min_memory_mb: String} != '', memory_usage > toUInt64OrZero({min_memory_mb: String}) * 1024 * 1024, true)
+            AND if ({min_read_rows: String} != '', read_rows > toUInt64OrZero({min_read_rows: String}), true)
+            AND if ({query_kind: String} != '', query_kind = {query_kind: String}, true)
+          ORDER BY event_time DESC
+          LIMIT 100`
+
 export const historyQueriesConfig: QueryConfig = {
   name: 'history-queries',
   description:
@@ -37,22 +55,7 @@ export const historyQueriesConfig: QueryConfig = {
               query_kind,
               client_name
           FROM system.query_log
-          WHERE
-            if ({type: String} != '', type = {type: String}, type != 'QueryStart')
-            AND if ({duration_1m: String} = '1', query_duration >= 60, true)
-            AND if ({min_duration_s: String} != '', query_duration >= toUInt64OrZero({min_duration_s: String}), true)
-            AND if ({last_hours: String} != '', event_time > now() - toIntervalHour(toUInt64OrZero({last_hours: String})), true)
-            AND if (notEmpty({event_time: String}), toDate(event_time) = {event_time: String}, true)
-            AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
-            AND if ({user: String} != '', user = {user: String}, true)
-            AND if ({excluded_users: String} != '', not(has(splitByChar(',', {excluded_users: String}), user)), true)
-            AND if ({query_text: String} != '', positionCaseInsensitiveUTF8(query, {query_text: String}) > 0, true)
-            AND if ({query_id: String} != '', query_id = {query_id: String}, true)
-            AND if ({min_memory_mb: String} != '', memory_usage > toUInt64OrZero({min_memory_mb: String}) * 1024 * 1024, true)
-            AND if ({min_read_rows: String} != '', read_rows > toUInt64OrZero({min_read_rows: String}), true)
-            AND if ({query_kind: String} != '', query_kind = {query_kind: String}, true)
-          ORDER BY event_time DESC
-          LIMIT 100
+${historyQueryFilters}
       `,
     },
     {
@@ -83,22 +86,7 @@ export const historyQueriesConfig: QueryConfig = {
               query_cache_usage,
               client_name
           FROM system.query_log
-          WHERE
-            if ({type: String} != '', type = {type: String}, type != 'QueryStart')
-            AND if ({duration_1m: String} = '1', query_duration >= 60, true)
-            AND if ({min_duration_s: String} != '', query_duration >= toUInt64OrZero({min_duration_s: String}), true)
-            AND if ({last_hours: String} != '', event_time > now() - toIntervalHour(toUInt64OrZero({last_hours: String})), true)
-            AND if (notEmpty({event_time: String}), toDate(event_time) = {event_time: String}, true)
-            AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
-            AND if ({user: String} != '', user = {user: String}, true)
-            AND if ({excluded_users: String} != '', not(has(splitByChar(',', {excluded_users: String}), user)), true)
-            AND if ({query_text: String} != '', positionCaseInsensitiveUTF8(query, {query_text: String}) > 0, true)
-            AND if ({query_id: String} != '', query_id = {query_id: String}, true)
-            AND if ({min_memory_mb: String} != '', memory_usage > toUInt64OrZero({min_memory_mb: String}) * 1024 * 1024, true)
-            AND if ({min_read_rows: String} != '', read_rows > toUInt64OrZero({min_read_rows: String}), true)
-            AND if ({query_kind: String} != '', query_kind = {query_kind: String}, true)
-          ORDER BY event_time DESC
-          LIMIT 100
+${historyQueryFilters}
       `,
     },
   ],
