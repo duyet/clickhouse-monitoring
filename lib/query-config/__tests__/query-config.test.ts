@@ -378,9 +378,13 @@ describe('Query Config Validation', () => {
 
       sqlVariants.forEach((sql) => {
         expect(sql).toContain('{min_duration_s: String}')
-        expect(sql).toContain('{min_duration_s:UInt64}')
+        expect(sql).toContain('toUInt64OrZero({min_duration_s: String})')
         expect(sql).toContain('{last_hours: String}')
-        expect(sql).toContain('{last_hours:UInt64}')
+        expect(sql).toContain(
+          'toIntervalHour(toUInt64OrZero({last_hours: String}))'
+        )
+        expect(sql).not.toContain('{min_duration_s:UInt64}')
+        expect(sql).not.toContain('{last_hours:UInt64}')
       })
     })
   })
