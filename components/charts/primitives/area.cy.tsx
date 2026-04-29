@@ -281,7 +281,7 @@ describe('<AreaChart />', () => {
     )
     cy.get('[data-role="breakdown"] [role="row"]').should(
       'have.length',
-      dataWithBreakdown2[0].breakdown.length
+      dataWithBreakdown[0].breakdown.length
     )
   })
 
@@ -313,7 +313,7 @@ describe('<AreaChart />', () => {
     )
     cy.get('[data-role="breakdown"] [role="row"]').should(
       'have.length',
-      dataWithBreakdown[0].breakdown.length
+      dataWithBreakdown2[0].breakdown.length
     )
   })
 
