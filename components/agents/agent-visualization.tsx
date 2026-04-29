@@ -533,7 +533,7 @@ function ComboChartView({
             axisLine={false}
           />
         )}
-        <ChartTooltip axisId="left" content={<ChartTooltipContent />} />
+        <ChartTooltip content={<ChartTooltipContent />} />
         {leftKeys.map((key) => (
           <Bar
             key={key}
