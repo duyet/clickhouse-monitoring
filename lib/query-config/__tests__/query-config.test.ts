@@ -350,4 +350,38 @@ describe('Query Config Validation', () => {
       })
     })
   })
+
+  describe('History query filter params', () => {
+    const historyQueriesConfig = queries.find(
+      (config) => config.name === 'history-queries'
+    )
+
+    it('should define defaults for every history query preset key', () => {
+      expect(historyQueriesConfig).toBeDefined()
+
+      const defaultParams = historyQueriesConfig?.defaultParams || {}
+      const presetKeys =
+        historyQueriesConfig?.filterParamPresets?.map((preset) => preset.key) ||
+        []
+
+      presetKeys.forEach((key) => {
+        expect(defaultParams).toHaveProperty(key)
+      })
+    })
+
+    it('should apply visible time and duration filter params in SQL', () => {
+      expect(historyQueriesConfig).toBeDefined()
+
+      const sqlVariants = Array.isArray(historyQueriesConfig?.sql)
+        ? historyQueriesConfig.sql.map((variant) => variant.sql)
+        : [historyQueriesConfig?.sql || '']
+
+      sqlVariants.forEach((sql) => {
+        expect(sql).toContain('{min_duration_s: String}')
+        expect(sql).toContain('{min_duration_s:UInt64}')
+        expect(sql).toContain('{last_hours: String}')
+        expect(sql).toContain('{last_hours:UInt64}')
+      })
+    })
+  })
 })

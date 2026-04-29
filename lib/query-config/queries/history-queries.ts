@@ -40,6 +40,8 @@ export const historyQueriesConfig: QueryConfig = {
           WHERE
             if ({type: String} != '', type = {type: String}, type != 'QueryStart')
             AND if ({duration_1m: String} = '1', query_duration >= 60, true)
+            AND if ({min_duration_s: String} != '', query_duration >= {min_duration_s:UInt64}, true)
+            AND if ({last_hours: String} != '', event_time > now() - interval {last_hours:UInt64} hour, true)
             AND if (notEmpty({event_time: String}), toDate(event_time) = {event_time: String}, true)
             AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
             AND if ({user: String} != '', user = {user: String}, true)
@@ -84,6 +86,8 @@ export const historyQueriesConfig: QueryConfig = {
           WHERE
             if ({type: String} != '', type = {type: String}, type != 'QueryStart')
             AND if ({duration_1m: String} = '1', query_duration >= 60, true)
+            AND if ({min_duration_s: String} != '', query_duration >= {min_duration_s:UInt64}, true)
+            AND if ({last_hours: String} != '', event_time > now() - interval {last_hours:UInt64} hour, true)
             AND if (notEmpty({event_time: String}), toDate(event_time) = {event_time: String}, true)
             AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
             AND if ({user: String} != '', user = {user: String}, true)
@@ -159,6 +163,8 @@ export const historyQueriesConfig: QueryConfig = {
   defaultParams: {
     type: '',
     duration_1m: '',
+    min_duration_s: '',
+    last_hours: '',
     event_time: '',
     database: '',
     table: '',
