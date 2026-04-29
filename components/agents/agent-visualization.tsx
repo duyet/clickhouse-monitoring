@@ -436,7 +436,7 @@ function BarChartView({
   return (
     <ChartContainer config={chartConfig} className="h-48 w-full">
       <BarChart data={data} margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
-        <CartesianGrid vertical={false} strokeDasharray="3 3" yAxisId="left" />
+        <CartesianGrid vertical={false} strokeDasharray="3 3" />
         <XAxis
           dataKey={xKey}
           tick={{ fontSize: 11 }}
@@ -455,7 +455,7 @@ function BarChartView({
           domain={logScale ? ['auto', 'auto'] : undefined}
           allowDataOverflow={logScale}
         />
-        <ChartTooltip axisId="left" content={<ChartTooltipContent />} />
+        <ChartTooltip content={<ChartTooltipContent />} />
         {yKeys.map((key) => (
           <Bar
             key={key}
@@ -505,7 +505,7 @@ function ComboChartView({
         data={data}
         margin={{ top: 4, right: 8, bottom: 4, left: 8 }}
       >
-        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+        <CartesianGrid vertical={false} strokeDasharray="3 3" yAxisId="left" />
         <XAxis
           dataKey={xKey}
           tick={{ fontSize: 11 }}
@@ -533,7 +533,7 @@ function ComboChartView({
             axisLine={false}
           />
         )}
-        <ChartTooltip content={<ChartTooltipContent />} />
+        <ChartTooltip axisId="left" content={<ChartTooltipContent />} />
         {leftKeys.map((key) => (
           <Bar
             key={key}
