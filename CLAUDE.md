@@ -137,6 +137,8 @@ Both deployment methods provide:
 - `bun run migrate`, `bun run migrate:status`, `bun run migrate:dry-run` - Use the local migration runner for non-Cloudflare targets
 - `bun run docker:health` / `bun run cf:health` - Check Docker or deployed health endpoints
 - `bun run lint && bun run build` - Quick local CI parity check (matches core lint/build workflow jobs)
+- Code-smell/dead-code maintenance notes are tracked in `docs/reviews/code-smell-dead-code-YYYY-MM-DD.md`
+- TODO: Add a dedicated command for the code-smell scan workflow (currently run manually)
 
 **Docs workspace**: The `docs/` app uses `pnpm` instead of `bun`.
 
