@@ -1,6 +1,10 @@
 'use client'
 
-import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import {
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartTooltipContentProps,
+} from '@/components/ui/chart'
 import { formatCompactNumber } from '@/lib/format-number'
 
 interface RenderBarTooltipOptions {
@@ -13,9 +17,7 @@ interface RenderBarTooltipOptions {
  * This is needed because Recharts itemSorter only works with DefaultTooltipContent,
  * not custom content components like ChartTooltipContent.
  */
-function SortedTooltipContent(
-  props: React.ComponentProps<typeof ChartTooltipContent>
-) {
+function SortedTooltipContent(props: ChartTooltipContentProps) {
   const { payload, ...rest } = props
 
   // Sort payload by value descending (largest first = top of visual stack)

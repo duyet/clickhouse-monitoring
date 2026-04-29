@@ -66,7 +66,7 @@ export const RadialChart = memo(function RadialChart({
           content={<ChartTooltipContent hideLabel nameKey={nameKey} />}
         />
 
-        <RadialBar dataKey={dataKey} onClick={onClick} background>
+        <RadialBar dataKey={dataKey} onClick={onClick as never} background>
           {showLabel && (
             <LabelList
               position="insideStart"

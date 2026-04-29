@@ -10,7 +10,10 @@ import {
 
 import type { AreaChartProps } from '@/types/charts'
 
-import { renderChartTooltip } from './area-chart-tooltip'
+import {
+  PinnedBreakdownTooltip,
+  renderChartTooltip,
+} from './area-chart-tooltip'
 import { memo, useMemo } from 'react'
 import { useChartScaleValue } from '@/components/charts/chart-scale-context'
 import {
@@ -122,10 +125,10 @@ export const AreaChart = memo(function AreaChart({
     ]
   )
 
-  return (
+  const chart = (
     <ChartContainer
       config={chartConfig}
-      className={cn('!aspect-auto h-full w-full min-w-0', className)}
+      className={cn('!aspect-auto h-[200px] w-full min-w-0', className)}
     >
       <RechartAreaChart
         accessibilityLayer
@@ -144,7 +147,6 @@ export const AreaChart = memo(function AreaChart({
             axisLine={false}
             tickMargin={8}
             tickFormatter={tickFormatter}
-            domain={['auto', 'auto']}
             interval={'equidistantPreserveStart'}
             label={
               xAxisLabel
@@ -189,4 +191,23 @@ export const AreaChart = memo(function AreaChart({
       </RechartAreaChart>
     </ChartContainer>
   )
+
+  if (breakdown && tooltipActive && categories[0] && data[0]) {
+    return (
+      <div className={cn('relative h-[200px] w-full min-w-0', className)}>
+        {chart}
+        <PinnedBreakdownTooltip
+          data={data[0] as Record<string, unknown>}
+          category={categories[0]}
+          breakdown={breakdown}
+          breakdownLabel={breakdownLabel}
+          breakdownValue={breakdownValue}
+          breakdownHeading={breakdownHeading}
+          chartConfig={chartConfig}
+        />
+      </div>
+    )
+  }
+
+  return chart
 })

@@ -90,7 +90,7 @@ export const CollapsedSubmenu = memo(function CollapsedSubmenu({
                   <div
                     className={cn(
                       'flex items-center justify-between gap-2',
-                      'text-muted-hover:bg-accent hover:text-accent-foreground rounded-sm px-2 py-1.5 text-sm outline-hidden transition-colors',
+                      'rounded-sm px-2 py-1.5 text-sm outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground',
                       'focus-visible:bg-accent focus-visible:text-accent-foreground',
                       isActive && 'bg-accent text-accent-foreground'
                     )}

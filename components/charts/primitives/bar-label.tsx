@@ -6,12 +6,6 @@ import type { BarChartProps } from '@/types/charts'
 
 import { memo } from 'react'
 
-interface Data {
-  value?: number | string | Array<number | string>
-  payload?: any
-  parentViewBox?: any
-}
-
 interface BarLabelProps
   extends Pick<
       BarChartProps,
@@ -24,7 +18,7 @@ interface BarLabelProps
       | 'readableColumn'
       | 'horizontal'
     >,
-    Pick<LabelListProps<Data>, 'dataKey'> {}
+    Pick<LabelListProps, 'dataKey'> {}
 
 /**
  * BarLabel - Label rendering component for BarChart
@@ -45,9 +39,11 @@ export const BarLabel = memo(function BarLabel({
 }: BarLabelProps) {
   if (!showLabel) return null
 
-  const labelFormatter = (value: string) => {
+  const labelFormatter = (value: unknown) => {
+    const valueString = String(value ?? '')
+
     if (!readableColumn) {
-      return value
+      return valueString
     }
 
     for (const category of categories) {
@@ -56,11 +52,11 @@ export const BarLabel = memo(function BarLabel({
       ]
 
       if (formatted) {
-        return formatted
+        return String(formatted)
       }
     }
 
-    return value
+    return valueString
   }
 
   const position =

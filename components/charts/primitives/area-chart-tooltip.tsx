@@ -6,11 +6,8 @@
 
 'use client'
 
-import type {
-  NameType,
-  Payload,
-  ValueType,
-} from 'recharts/types/component/DefaultTooltipContent'
+import type { TooltipPayload } from 'recharts'
+
 import type { ChartConfig } from '@/components/ui/chart'
 
 import { BreakdownSection } from './tooltip-breakdown-section'
@@ -71,13 +68,7 @@ function renderStandardTooltip(chartConfig: ChartConfig) {
       content={
         <ChartTooltipContent
           className="max-w-[300px] [font-variant-numeric:tabular-nums]"
-          formatter={(
-            value,
-            name,
-            item,
-            index,
-            _payload: Array<Payload<ValueType, NameType>>
-          ) => {
+          formatter={(value, name, item, index, _payload: TooltipPayload) => {
             return (
               <StandardTooltipRow
                 key={`${name}${index}`}
@@ -114,7 +105,7 @@ function renderBreakdownTooltip({
 }) {
   return (
     <ChartTooltip
-      active={tooltipActive}
+      defaultIndex={tooltipActive ? '0' : undefined}
       content={
         <ChartTooltipContent
           className="max-w-[320px] [font-variant-numeric:tabular-nums]"
@@ -182,6 +173,40 @@ function BreakdownTooltipContent({
           breakdownLabel={breakdownLabel}
         />
       )}
+    </div>
+  )
+}
+
+export function PinnedBreakdownTooltip({
+  data,
+  category,
+  breakdown,
+  breakdownLabel,
+  breakdownValue,
+  breakdownHeading,
+  chartConfig,
+}: {
+  data: Record<string, unknown>
+  category: string
+  breakdown?: string
+  breakdownLabel?: string
+  breakdownValue?: string
+  breakdownHeading?: string
+  chartConfig: ChartConfig
+}) {
+  return (
+    <div className="recharts-tooltip-wrapper">
+      <BreakdownTooltipContent
+        name={category}
+        value={data[category]}
+        item={{ payload: data }}
+        payload={data}
+        breakdown={breakdown}
+        breakdownLabel={breakdownLabel}
+        breakdownValue={breakdownValue}
+        breakdownHeading={breakdownHeading}
+        chartConfig={chartConfig}
+      />
     </div>
   )
 }
