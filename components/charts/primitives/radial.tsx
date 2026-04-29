@@ -1,6 +1,11 @@
 'use client'
 
-import { LabelList, RadialBar, RadialBarChart } from 'recharts'
+import {
+  LabelList,
+  RadialBar,
+  RadialBarChart,
+  type RadialBarDataItem,
+} from 'recharts'
 
 import type { RadialChartProps } from '@/types/charts'
 
@@ -49,6 +54,16 @@ export const RadialChart = memo(function RadialChart({
       )
   }, [data, nameKey, colors, colorLabel])
 
+  const handleClick = onClick
+    ? (
+        item: RadialBarDataItem,
+        index: number,
+        event: React.MouseEvent<SVGGraphicsElement>
+      ) => {
+        onClick(item, index, event)
+      }
+    : undefined
+
   return (
     <ChartContainer
       config={chartConfig}
@@ -66,7 +81,7 @@ export const RadialChart = memo(function RadialChart({
           content={<ChartTooltipContent hideLabel nameKey={nameKey} />}
         />
 
-        <RadialBar dataKey={dataKey} onClick={onClick as never} background>
+        <RadialBar dataKey={dataKey} onClick={handleClick} background>
           {showLabel && (
             <LabelList
               position="insideStart"

@@ -203,7 +203,9 @@ const ChartTooltipContent = React.forwardRef<
                   : undefined
               const indicatorColor =
                 color ||
-                (itemPayload && 'fill' in itemPayload
+                (itemPayload &&
+                'fill' in itemPayload &&
+                itemPayload.fill != null
                   ? String(itemPayload.fill)
                   : undefined) ||
                 item.color
@@ -305,13 +307,13 @@ const ChartLegendContent = React.forwardRef<
       >
         {(payload as TooltipPayload)
           .filter((item) => item.type !== 'none')
-          .map((item) => {
+          .map((item, index) => {
             const key = `${nameKey || item.dataKey || 'value'}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
             return (
               <div
-                key={String(item.value)}
+                key={`${String(item.dataKey ?? item.value ?? 'item')}-${index}`}
                 className={cn(
                   'flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground'
                 )}

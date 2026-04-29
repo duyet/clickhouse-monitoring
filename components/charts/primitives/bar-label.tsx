@@ -51,7 +51,7 @@ export const BarLabel = memo(function BarLabel({
         readableColumn
       ]
 
-      if (formatted) {
+      if (formatted !== undefined && formatted !== null) {
         return String(formatted)
       }
     }

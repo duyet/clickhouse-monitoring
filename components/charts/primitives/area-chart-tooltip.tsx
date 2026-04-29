@@ -105,7 +105,7 @@ function renderBreakdownTooltip({
 }) {
   return (
     <ChartTooltip
-      defaultIndex={tooltipActive ? '0' : undefined}
+      defaultIndex={tooltipActive ? 0 : undefined}
       content={
         <ChartTooltipContent
           className="max-w-[320px] [font-variant-numeric:tabular-nums]"
@@ -177,6 +177,9 @@ function BreakdownTooltipContent({
   )
 }
 
+/**
+ * Renders a pinned breakdown tooltip for deterministic non-hover states.
+ */
 export function PinnedBreakdownTooltip({
   data,
   category,
