@@ -1,12 +1,16 @@
 export function getHistoryQuerySearchParams(
   searchParams: Pick<URLSearchParams, 'get'>,
-  defaultParams: Record<string, unknown> | undefined
-) {
+  defaultParams: Record<string, string | number | boolean> | undefined
+): Record<string, string> {
   const params: Record<string, string> = {}
 
-  Object.keys(defaultParams || {}).forEach((key) => {
+  if (!defaultParams) {
+    return params
+  }
+
+  Object.keys(defaultParams).forEach((key) => {
     const value = searchParams.get(key)
-    if (value !== null) {
+    if (value !== null && value !== '') {
       params[key] = value
     }
   })

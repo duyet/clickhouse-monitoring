@@ -27,4 +27,16 @@ describe('getHistoryQuerySearchParams', () => {
       })
     ).toEqual({})
   })
+
+  it('omits empty-string params', () => {
+    const searchParams = new URLSearchParams({
+      last_hours: '',
+    })
+
+    expect(
+      getHistoryQuerySearchParams(searchParams, {
+        last_hours: '',
+      })
+    ).toEqual({})
+  })
 })
