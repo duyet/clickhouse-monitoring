@@ -102,15 +102,32 @@ export function docsHref(slug: string) {
 }
 
 function normalizeMdx(source: string) {
-  return source
-    .replace(/^import .+$/gm, '')
-    .replace(/<Cards>[\s\S]*?<\/Cards>/g, cardsToMarkdown)
-    .replace(/<Tabs items=\{\[([\s\S]*?)\]\}>[\s\S]*?<\/Tabs>/g, tabsToMarkdown)
-    .replace(/<\/?Steps>/g, '')
-    .replace(/<\/?Tabs\.Tab>/g, '')
-    .replace(/```(\w+)\s+([^`\n]+?)\s+```/g, '```$1\n$2\n```')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  return demoteNestedTitles(
+    source
+      .replace(/^import .+$/gm, '')
+      .replace(/<Cards>[\s\S]*?<\/Cards>/g, cardsToMarkdown)
+      .replace(
+        /<Tabs items=\{\[([\s\S]*?)\]\}>[\s\S]*?<\/Tabs>/g,
+        tabsToMarkdown
+      )
+      .replace(/<\/?Steps>/g, '')
+      .replace(/<\/?Tabs\.Tab>/g, '')
+      .replace(/```(\w+)\s+([^`\n]+?)\s+```/g, '```$1\n$2\n```')
+      .replace(/\n{3,}/g, '\n\n')
+  ).trim()
+}
+
+function demoteNestedTitles(markdown: string) {
+  let seenTitle = false
+
+  return markdown.replace(/^#\s+(.+)$/gm, (match) => {
+    if (!seenTitle) {
+      seenTitle = true
+      return match
+    }
+
+    return `#${match}`
+  })
 }
 
 function cardsToMarkdown(block: string) {
@@ -160,11 +177,16 @@ function extractTitle(markdown: string, slug: string) {
 }
 
 function extractHeadings(markdown: string): DocsHeading[] {
+  const seenIds = new Map<string, number>()
+
   return [...markdown.matchAll(/^(#{2,3})\s+(.+)$/gm)].map((match) => {
     const text = match[2].replace(/\s+#$/, '')
+    const baseId = slugify(text)
+    const count = seenIds.get(baseId) ?? 0
+    seenIds.set(baseId, count + 1)
 
     return {
-      id: slugify(text),
+      id: count === 0 ? baseId : `${baseId}-${count + 1}`,
       text,
       level: match[1].length,
     }

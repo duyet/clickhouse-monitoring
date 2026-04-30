@@ -18,6 +18,16 @@ type DocsMarkdownProps = {
 }
 
 export function DocsMarkdown({ markdown }: DocsMarkdownProps) {
+  const seenHeadingIds = new Map<string, number>()
+  const headingId = (children: ReactNode) => {
+    const baseId = slugify(nodeText(children))
+    const count = seenHeadingIds.get(baseId) ?? 0
+
+    seenHeadingIds.set(baseId, count + 1)
+
+    return count === 0 ? baseId : `${baseId}-${count + 1}`
+  }
+
   return (
     <div className="markdown-content docs-markdown">
       <ReactMarkdown
@@ -44,11 +54,9 @@ export function DocsMarkdown({ markdown }: DocsMarkdownProps) {
             </h1>
           ),
           h2: ({ children }) => {
-            const text = nodeText(children)
-
             return (
               <h2
-                id={slugify(text)}
+                id={headingId(children)}
                 className="scroll-m-20 border-border border-b pb-2 text-2xl font-semibold tracking-normal"
               >
                 {children}
@@ -56,11 +64,9 @@ export function DocsMarkdown({ markdown }: DocsMarkdownProps) {
             )
           },
           h3: ({ children }) => {
-            const text = nodeText(children)
-
             return (
               <h3
-                id={slugify(text)}
+                id={headingId(children)}
                 className="scroll-m-20 text-xl font-semibold tracking-normal"
               >
                 {children}
