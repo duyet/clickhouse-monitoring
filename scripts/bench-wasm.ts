@@ -3,14 +3,9 @@ import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { transformClickHouseData } from '@/lib/api/transform-data'
-import { transformUserEventCounts } from '@/lib/chart-data-transforms'
-import { parseTableFromSQL } from '@/lib/table-validator'
 import {
-  parseTablesFromSqlWasm,
-  transformClickHouseDataWasm,
   transformClickHouseJsonEachRowWasm,
   transformClickHouseJsonEachRowWasmJson,
-  transformUserEventCountsWasm,
 } from '@/lib/wasm/monitor-core'
 
 const PROMOTION_THRESHOLD = 1.2
@@ -63,39 +58,6 @@ function makeClickHouseJsonEachRow(size: number) {
     .join('\n')
 }
 
-function makeUserEvents(size: number) {
-  const users = ['alice', 'bob', 'carol', 'dave', '']
-  return Array.from({ length: size }, (_, index) => ({
-    event_time: `2026-01-${String((index % 28) + 1).padStart(2, '0')} ${String(
-      index % 24
-    ).padStart(2, '0')}:00:00`,
-    user: users[index % users.length],
-    count: String((index % 100) + 1),
-  }))
-}
-
-function makeSql(repetitions: number) {
-  const ctes = Array.from(
-    { length: repetitions },
-    (_, index) => `q_${index} AS (
-      SELECT * FROM system.query_log WHERE type = 'QueryFinish'
-    )`
-  )
-
-  const selects = Array.from(
-    { length: repetitions },
-    (_, index) => `
-      SELECT *
-      FROM system.tables t
-      LEFT JOIN system.parts p ON p.database = t.database AND p.table = t.name
-      WHERE EXISTS (SELECT 1 FROM q_${index} q)
-        AND EXISTS (SELECT 1 FROM system.backup_log b WHERE b.name = t.name)
-    `
-  )
-
-  return `WITH ${ctes.join(',\n')}\n${selects.join('\nUNION ALL\n')}`
-}
-
 function parseAndTransformClickHouseJsonEachRow(input: string) {
   return transformClickHouseData(
     input
@@ -119,22 +81,6 @@ function transformClickHouseJsonEachRowRustCli(inputPath: string) {
   }
 
   return result.stdout.toString()
-}
-
-async function benchClickHouseTransform(
-  sizeLabel: string,
-  size: number,
-  iterations: number
-): Promise<BenchResult> {
-  const data = makeClickHouseRows(size)
-  const tsMs = timeSync(iterations, () => {
-    transformClickHouseData(data)
-  })
-  const wasmMs = await timeAsync(iterations, async () => {
-    await transformClickHouseDataWasm(data)
-  })
-
-  return result('clickhouse-data-transform', sizeLabel, tsMs, wasmMs)
 }
 
 async function benchClickHouseJsonEachRowTransform(
@@ -169,6 +115,36 @@ async function benchClickHouseJsonEachRowCliTransform(
   return result('clickhouse-jsoneachrow-to-json', sizeLabel, tsMs, wasmMs)
 }
 
+async function benchChartApiResponseEnvelope(
+  sizeLabel: string,
+  size: number,
+  iterations: number
+): Promise<BenchResult> {
+  const data = makeClickHouseJsonEachRow(size)
+  const metadata = {
+    queryId: 'bench-query',
+    duration: 0.01,
+    rows: size,
+    host: 'bench',
+    status: 'ok',
+  }
+  const metadataJson = JSON.stringify(metadata)
+  const tsMs = timeSync(iterations, () => {
+    JSON.stringify({
+      success: true,
+      data: parseAndTransformClickHouseJsonEachRow(data),
+      metadata,
+    })
+  })
+  const wasmMs = await timeAsync(iterations, async () => {
+    const normalizedJson = await transformClickHouseJsonEachRowWasmJson(data)
+    const body = `{"success":true,"data":${normalizedJson},"metadata":${metadataJson}}`
+    void body
+  })
+
+  return result('chart-api-response-envelope', sizeLabel, tsMs, wasmMs)
+}
+
 function benchClickHouseJsonEachRowNativeCliTransform(
   sizeLabel: string,
   size: number,
@@ -198,38 +174,6 @@ function benchClickHouseJsonEachRowNativeCliTransform(
   }
 }
 
-async function benchUserEvents(
-  sizeLabel: string,
-  size: number,
-  iterations: number
-): Promise<BenchResult> {
-  const data = makeUserEvents(size)
-  const tsMs = timeSync(iterations, () => {
-    transformUserEventCounts(data)
-  })
-  const wasmMs = await timeAsync(iterations, async () => {
-    await transformUserEventCountsWasm(data)
-  })
-
-  return result('user-event-transform', sizeLabel, tsMs, wasmMs)
-}
-
-async function benchSqlParser(
-  sizeLabel: string,
-  repetitions: number,
-  iterations: number
-): Promise<BenchResult> {
-  const sql = makeSql(repetitions)
-  const tsMs = timeSync(iterations, () => {
-    parseTableFromSQL(sql)
-  })
-  const wasmMs = await timeAsync(iterations, async () => {
-    await parseTablesFromSqlWasm(sql)
-  })
-
-  return result('sql-table-extraction', sizeLabel, tsMs, wasmMs)
-}
-
 function result(
   name: string,
   size: string,
@@ -245,31 +189,22 @@ function result(
   }
 }
 
-await transformClickHouseDataWasm(makeClickHouseRows(1))
 await transformClickHouseJsonEachRowWasm(makeClickHouseJsonEachRow(1))
 await transformClickHouseJsonEachRowWasmJson(makeClickHouseJsonEachRow(1))
-await transformUserEventCountsWasm(makeUserEvents(1))
-await parseTablesFromSqlWasm(makeSql(1))
 
 const results = [
-  await benchClickHouseTransform('small', 100, 100),
-  await benchClickHouseTransform('medium', 2_500, 25),
-  await benchClickHouseTransform('large', 25_000, 5),
   await benchClickHouseJsonEachRowTransform('small', 100, 100),
   await benchClickHouseJsonEachRowTransform('medium', 2_500, 25),
   await benchClickHouseJsonEachRowTransform('large', 25_000, 5),
   await benchClickHouseJsonEachRowCliTransform('small', 100, 100),
   await benchClickHouseJsonEachRowCliTransform('medium', 2_500, 25),
   await benchClickHouseJsonEachRowCliTransform('large', 25_000, 5),
+  await benchChartApiResponseEnvelope('small', 100, 100),
+  await benchChartApiResponseEnvelope('medium', 2_500, 25),
+  await benchChartApiResponseEnvelope('large', 25_000, 5),
   benchClickHouseJsonEachRowNativeCliTransform('small', 100, 100),
   benchClickHouseJsonEachRowNativeCliTransform('medium', 2_500, 25),
   benchClickHouseJsonEachRowNativeCliTransform('large', 25_000, 5),
-  await benchUserEvents('small', 100, 100),
-  await benchUserEvents('medium', 2_500, 25),
-  await benchUserEvents('large', 25_000, 5),
-  await benchSqlParser('small', 5, 250),
-  await benchSqlParser('medium', 50, 100),
-  await benchSqlParser('large', 500, 10),
 ]
 
 console.table(

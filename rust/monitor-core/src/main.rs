@@ -21,7 +21,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         io::stdin().read_to_string(&mut input)?;
         input
     };
-    let output = monitor_core::transform_clickhouse_json_each_row(&input)?;
+    let output = monitor_core::transform_clickhouse_json_each_row(&input);
     println!("{output}");
 
     Ok(())

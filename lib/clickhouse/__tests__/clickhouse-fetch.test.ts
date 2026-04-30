@@ -33,6 +33,29 @@ const mockGetClickHouseConfigs = mock(() => [])
 const mockValidateTableExistence = mock(() =>
   Promise.resolve({ shouldProceed: true, missingTables: [] })
 )
+const mockTransformClickHouseJsonEachRowWasmJson = mock((input: string) => {
+  const rows = input
+    .split('\n')
+    .filter((line) => line.trim().length > 0)
+    .map((line) => JSON.parse(line))
+
+  for (const row of rows) {
+    for (const [key, value] of Object.entries(row)) {
+      if (
+        typeof value === 'string' &&
+        /^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(value)
+      ) {
+        const number = Number(value)
+        row[key] =
+          Number.isInteger(number) && Math.abs(number) > Number.MAX_SAFE_INTEGER
+            ? value
+            : number
+      }
+    }
+  }
+
+  return Promise.resolve(JSON.stringify(rows))
+})
 
 // Mock specifiers MUST match the import specifiers in clickhouse-fetch.ts.
 // On Linux CI, bun's mock.module only intercepts imports with matching specifiers.
@@ -48,6 +71,11 @@ mock.module('@/lib/table-validator', () => ({
   validateTableExistence: mockValidateTableExistence,
 }))
 
+mock.module('@/lib/wasm/monitor-core', () => ({
+  transformClickHouseJsonEachRowWasmJson:
+    mockTransformClickHouseJsonEachRowWasmJson,
+}))
+
 // Clean up all module mocks after tests complete
 afterAll(() => {
   mock.restore()
@@ -56,13 +84,21 @@ afterAll(() => {
 // Dynamic import ensures mocks are in place before the module loads.
 // The cache-busting query keeps this test isolated from earlier module loads
 // in Bun's shared test process.
-const { fetchData, query } = await import(
+const {
+  __testCountJsonEachRowRows,
+  fetchData,
+  fetchJsonEachRowAsNormalizedJson,
+  query,
+} = await import(
   new URL('../clickhouse-fetch.ts?test=clickhouse-fetch', import.meta.url).href
 )
 
 describe('clickhouse-fetch', () => {
   const mockClientQuery = mock(() => Promise.resolve({}))
   const mockResultSetJson = mock(() => Promise.resolve([{ result: 'data' }]))
+  const mockResultSetText = mock(() =>
+    Promise.resolve('{"result":"1"}\n{"result":"2"}\n')
+  )
 
   const mockClient = {
     query: mockClientQuery,
@@ -71,6 +107,7 @@ describe('clickhouse-fetch', () => {
   const mockResultSet = {
     query_id: 'test-query-id',
     json: mockResultSetJson,
+    text: mockResultSetText,
   }
 
   const mockConfig = {
@@ -91,13 +128,16 @@ describe('clickhouse-fetch', () => {
     mockValidateTableExistence.mockReset()
     mockClientQuery.mockReset()
     mockResultSetJson.mockReset()
+    mockResultSetText.mockReset()
     mockDebug.mockReset()
     mockError.mockReset()
     mockWarn.mockReset()
+    mockTransformClickHouseJsonEachRowWasmJson.mockClear()
 
     mockGetClient.mockResolvedValue(mockClient as never)
     mockGetClickHouseConfigs.mockReturnValue([mockConfig])
     mockResultSetJson.mockResolvedValue([{ result: 'data' }])
+    mockResultSetText.mockResolvedValue('{"result":"1"}\n{"result":"2"}\n')
     mockClientQuery.mockResolvedValue(mockResultSet as never)
   })
 
@@ -512,6 +552,36 @@ describe('clickhouse-fetch', () => {
 
         expect(result.data).toBeNull()
       })
+    })
+  })
+
+  describe('fetchJsonEachRowAsNormalizedJson', () => {
+    it('returns normalized JSON without parsing rows into JS objects', async () => {
+      mockResultSetText.mockResolvedValue(
+        '{"result":"001","max":"9007199254740992"}\n{"result":"2"}\n'
+      )
+
+      const result = await fetchJsonEachRowAsNormalizedJson(defaultParams)
+
+      expect(mockClientQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          format: 'JSONEachRow',
+        })
+      )
+      expect(mockResultSetJson).not.toHaveBeenCalled()
+      expect(result.data).toBeNull()
+      expect(result.dataJson).toBe(
+        '[{"result":1,"max":"9007199254740992"},{"result":2}]'
+      )
+      expect(result.metadata.rows).toBe(2)
+      expect(result.metadata.rawResponseLength).toBeGreaterThan(0)
+    })
+
+    it('counts JSONEachRow rows without allocating line arrays', () => {
+      expect(__testCountJsonEachRowRows('')).toBe(0)
+      expect(__testCountJsonEachRowRows('\n  \n\t\n')).toBe(0)
+      expect(__testCountJsonEachRowRows('{"a":1}\n{"a":2}\n')).toBe(2)
+      expect(__testCountJsonEachRowRows('{"a":1}\n\n{"a":2}')).toBe(2)
     })
   })
 
