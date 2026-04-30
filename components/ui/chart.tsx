@@ -1,6 +1,9 @@
 'use client'
 
-import type { DefaultLegendContentProps, TooltipProps } from 'recharts'
+import type {
+  DefaultLegendContentProps,
+  DefaultTooltipContentProps,
+} from 'recharts'
 import * as RechartsPrimitive from 'recharts'
 
 import * as React from 'react'
@@ -103,8 +106,12 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
-export type ChartTooltipContentProps = Partial<TooltipProps<any, any>> &
+export type ChartTooltipContentProps = Partial<
+  DefaultTooltipContentProps<any, any>
+> &
   React.ComponentProps<'div'> & {
+    active?: boolean
+    color?: string
     hideLabel?: boolean
     hideIndicator?: boolean
     indicator?: 'line' | 'dot' | 'dashed'
