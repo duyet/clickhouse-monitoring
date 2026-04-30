@@ -221,14 +221,18 @@ export function SqlEditor({
     const currentDoc = view.state.doc.toString()
     if (currentDoc !== value) {
       isProgrammaticChange.current = true
-      view.dispatch({
-        changes: {
-          from: 0,
-          to: currentDoc.length,
-          insert: value,
-        },
-        annotations: Transaction.userEvent.of('input.programmatic'),
-      })
+      try {
+        view.dispatch({
+          changes: {
+            from: 0,
+            to: currentDoc.length,
+            insert: value,
+          },
+          annotations: Transaction.userEvent.of('input.programmatic'),
+        })
+      } finally {
+        isProgrammaticChange.current = false
+      }
     }
   }, [value])
 
