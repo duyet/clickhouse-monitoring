@@ -66,6 +66,14 @@ cypress/screenshots
 .wrangler
 .dev.vars
 
+# Generated Rust/WASM bindings
+/lib/wasm/generated/*
+!/lib/wasm/generated/monitor_core.d.ts
+!/lib/wasm/generated/monitor_core.js
+!/lib/wasm/generated/monitor_core_bg.wasm
+!/lib/wasm/generated/monitor_core_bg.wasm.d.ts
+/rust/monitor-core/target/
+
 .claude/*.local.md
 .claude/*.local.json
 .claude/worktrees/

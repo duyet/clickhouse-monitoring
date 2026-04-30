@@ -41,6 +41,7 @@
     "scripts",
     "**/*.cy.ts",
     "**/*.cy.tsx",
+    "**/*.wasm.ts",
     "**/*.test.ts",
     "**/*.test.tsx",
     "__mocks__/**/*.ts",

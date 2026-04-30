@@ -62,6 +62,13 @@ export async function fetchData<
   return fetchData<T>(...args)
 }
 
+export async function fetchJsonEachRowAsNormalizedJson(
+  ...args: Parameters<ClickHouseFetchModule['fetchJsonEachRowAsNormalizedJson']>
+): ReturnType<ClickHouseFetchModule['fetchJsonEachRowAsNormalizedJson']> {
+  const { fetchJsonEachRowAsNormalizedJson } = await loadClickhouseFetchModule()
+  return fetchJsonEachRowAsNormalizedJson(...args)
+}
+
 export async function query(
   ...args: Parameters<ClickHouseFetchModule['query']>
 ): ReturnType<ClickHouseFetchModule['query']> {

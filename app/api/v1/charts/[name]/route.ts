@@ -24,7 +24,7 @@ import {
 } from '@/lib/api/error-handler'
 import { transformClickHouseData } from '@/lib/api/transform-data'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchData } from '@/lib/clickhouse'
+import { fetchJsonEachRowAsNormalizedJson } from '@/lib/clickhouse'
 import {
   checkTableAvailability,
   getClickHouseVersion,
@@ -64,10 +64,9 @@ async function handleMultiQueryChart(
     const results = await Promise.all(
       queryDef.queries.map(async (q) => {
         try {
-          const result = await fetchData({
+          const result = await fetchJsonEachRowAsNormalizedJson({
             query: q.query,
             hostId,
-            format: 'JSONEachRow',
             // Pass timezone to ClickHouse for session-level time conversion
             clickhouse_settings: timezone
               ? { session_timezone: timezone }
@@ -75,25 +74,25 @@ async function handleMultiQueryChart(
           })
           return {
             key: q.key,
-            data: result.data || null,
+            dataJson: result.dataJson ?? 'null',
             error: result.error,
           }
         } catch (err) {
           // For optional queries, return null instead of failing
           return {
             key: q.key,
-            data: null,
+            dataJson: null,
             error: {
               type: ApiErrorType.QueryError,
               message: err instanceof Error ? err.message : 'Unknown error',
+              details: undefined,
             },
           }
         }
       })
     )
 
-    // Combine results into a single object with data keyed by query key
-    const combinedData: Record<string, unknown> = {}
+    const combinedDataEntries: string[] = []
     let hasError = false
     let firstError:
       | {
@@ -106,10 +105,9 @@ async function handleMultiQueryChart(
       | undefined
 
     for (const result of results) {
-      // Transform data to convert numeric strings to numbers
-      combinedData[result.key] = Array.isArray(result.data)
-        ? transformClickHouseData(result.data as Record<string, unknown>[])
-        : result.data
+      combinedDataEntries.push(
+        `${JSON.stringify(result.key)}:${result.dataJson ?? 'null'}`
+      )
       if (result.error && !hasError) {
         hasError = true
         // Convert FetchDataError to ApiError format
@@ -132,23 +130,21 @@ async function handleMultiQueryChart(
       error(`[GET /api/v1/charts/${chartName}] Multi-query error:`, firstError)
     }
 
-    // Return combined response
-    const response: ApiResponseType<Record<string, unknown>> = {
-      success: !hasError,
-      data: combinedData,
-      metadata: {
-        queryId: '',
-        duration: 0,
-        rows: 0,
-        host: String(hostId),
-        sql: combinedSql,
-        api,
-        timezone,
-      },
-      error: hasError ? firstError : undefined,
+    const metadata = {
+      queryId: '',
+      duration: 0,
+      rows: 0,
+      host: String(hostId),
+      sql: combinedSql,
+      api,
+      timezone,
     }
+    const errorJson = hasError ? `,"error":${JSON.stringify(firstError)}` : ''
+    const body = `{"success":${String(!hasError)},"data":{${combinedDataEntries.join(
+      ','
+    )}},"metadata":${JSON.stringify(metadata)}${errorJson}}`
 
-    return Response.json(response, {
+    return new Response(body, {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -393,11 +389,10 @@ export async function GET(
   }
 
   // Execute the query (using version-selected query if variants exist)
-  const result = await fetchData({
+  const result = await fetchJsonEachRowAsNormalizedJson({
     query: selectedQuery,
     query_params: queryDef.queryParams,
     hostId,
-    format: 'JSONEachRow',
     // Pass timezone to ClickHouse for session-level time conversion
     clickhouse_settings: timezone ? { session_timezone: timezone } : undefined,
     // Use the query definition to validate optional tables if needed
@@ -435,10 +430,7 @@ export async function GET(
   }
 
   // Update status if data is empty but we didn't already set a status
-  if (
-    !statusInfo &&
-    (!result.data || (Array.isArray(result.data) && result.data.length === 0))
-  ) {
+  if (!statusInfo && Number(result.metadata.rows || 0) === 0) {
     // Normalize tableCheck to string[] for status info
     const checkedTables = queryDef.tableCheck
       ? Array.isArray(queryDef.tableCheck)
@@ -454,8 +446,8 @@ export async function GET(
   }
 
   // Create successful response with SQL from query definition
-  return createSuccessResponse(
-    result.data,
+  return createJsonSuccessResponse(
+    result.dataJson ?? '[]',
     timezone ? { ...result.metadata, timezone } : result.metadata,
     selectedQuery.trim(),
     statusInfo
@@ -469,6 +461,62 @@ export async function GET(
     api,
     queryDef.cachePolicy
   )
+}
+
+function createJsonSuccessResponse(
+  dataJson: string,
+  metadata: Record<string, string | number>,
+  sql?: string,
+  statusInfo?: {
+    status: DataStatus
+    statusMessage?: string
+    checkedTables?: string[]
+    missingTables?: string[]
+    clickhouseVersion?: string
+  },
+  api?: string,
+  cachePolicy?: CachePolicy
+): Response {
+  const rowCount = Number(metadata.rows || 0)
+  const defaultStatus: DataStatus = rowCount > 0 ? 'ok' : 'empty'
+  const normalizedSql = metadata.sql
+    ? String(metadata.sql)
+    : sql?.replace(/\s+/g, ' ').trim()
+
+  const responseMetadata: ChartResponseMetadata = {
+    queryId: String(metadata.queryId || ''),
+    duration: Number(metadata.duration || 0),
+    rows: rowCount,
+    host: String(metadata.host || ''),
+    sql: normalizedSql,
+    status: statusInfo?.status ?? defaultStatus,
+    statusMessage: statusInfo?.statusMessage,
+    checkedTables: statusInfo?.checkedTables,
+    missingTables: statusInfo?.missingTables,
+    clickhouseVersion: statusInfo?.clickhouseVersion,
+    rawResponseLength:
+      'rawResponseLength' in metadata
+        ? Number(metadata.rawResponseLength)
+        : undefined,
+    rawResponsePreview:
+      'rawResponsePreview' in metadata
+        ? String(metadata.rawResponsePreview)
+        : undefined,
+    api,
+    timezone: metadata.timezone as string | undefined,
+  }
+
+  const body = `{"success":true,"data":${dataJson},"metadata":${JSON.stringify(
+    responseMetadata
+  )}}`
+
+  return new Response(body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': getCacheHeaders(cachePolicy),
+    },
+  })
 }
 
 /**
