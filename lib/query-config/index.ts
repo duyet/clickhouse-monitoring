@@ -39,6 +39,7 @@ import { parallelizationConfig } from './queries/parallelization'
 import { profilerConfig } from './queries/profiler'
 import { queryCacheConfig } from './queries/query-cache'
 import { queryDetailConfig } from './queries/query-detail'
+import { queryViewsLogConfig } from './queries/query-views-log'
 import { runningQueriesConfig } from './queries/running-queries'
 import { slowQueriesConfig } from './queries/slow-queries'
 // Thread Analysis
@@ -91,6 +92,7 @@ export const queries: Array<QueryConfig> = [
 
   // Queries
   queryCacheConfig,
+  queryViewsLogConfig,
   queryDetailConfig,
   runningQueriesConfig,
   historyQueriesConfig,
