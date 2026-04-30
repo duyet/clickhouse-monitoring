@@ -25,7 +25,10 @@ export function BreakdownSection({
   breakdownLabel,
 }: BreakdownSectionProps) {
   return (
-    <div className="text-foreground flex basis-full flex-col border-t pt-2 text-xs font-medium">
+    <div
+      className="text-foreground flex basis-full flex-col border-t pt-2 text-xs font-medium"
+      data-role="breakdown"
+    >
       <div className="mb-1.5">{heading}</div>
       <div className="flex flex-col gap-1.5">
         {breakdownData.map(([name, value], index) => (

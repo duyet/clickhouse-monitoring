@@ -182,7 +182,15 @@ export const DonutChart = memo(function DonutChart({
           innerRadius={`${innerRadius}%`}
           outerRadius={`${outerRadius}%`}
           strokeWidth={2}
-          onClick={onClick ? (data) => onClick(data.originalData) : undefined}
+          onClick={
+            onClick
+              ? (data) =>
+                  onClick(
+                    ((data as { originalData?: unknown }).originalData ??
+                      data.payload) as unknown
+                  )
+              : undefined
+          }
         >
           {chartData.map((_entry, index) => (
             <Cell

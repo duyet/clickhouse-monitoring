@@ -1,30 +1,25 @@
 'use client'
 
-import { LabelList, type LabelListProps } from 'recharts'
+import { LabelList } from 'recharts'
 
 import type { BarChartProps } from '@/types/charts'
 
 import { memo } from 'react'
 
-interface Data {
-  value?: number | string | Array<number | string>
-  payload?: any
-  parentViewBox?: any
-}
-
 interface BarLabelProps
   extends Pick<
-      BarChartProps,
-      | 'showLabel'
-      | 'labelPosition'
-      | 'labelAngle'
-      | 'data'
-      | 'stack'
-      | 'categories'
-      | 'readableColumn'
-      | 'horizontal'
-    >,
-    Pick<LabelListProps<Data>, 'dataKey'> {}
+    BarChartProps,
+    | 'showLabel'
+    | 'labelPosition'
+    | 'labelAngle'
+    | 'data'
+    | 'stack'
+    | 'categories'
+    | 'readableColumn'
+    | 'horizontal'
+  > {
+  dataKey?: string | number
+}
 
 /**
  * BarLabel - Label rendering component for BarChart
@@ -39,28 +34,30 @@ export const BarLabel = memo(function BarLabel({
   labelAngle,
   data,
   stack,
-  categories,
   readableColumn,
   horizontal,
 }: BarLabelProps) {
   if (!showLabel) return null
 
-  const labelFormatter = (value: string) => {
+  const labelFormatter = (value: unknown) => {
+    const valueString = String(value ?? '')
+
     if (!readableColumn) {
-      return value
+      return valueString
     }
 
-    for (const category of categories) {
-      const formatted = data.find((row) => row[category] === value)?.[
+    const seriesKey = typeof dataKey === 'string' ? dataKey : undefined
+    if (seriesKey) {
+      const formatted = data.find((row) => row[seriesKey] === value)?.[
         readableColumn
       ]
 
-      if (formatted) {
-        return formatted
+      if (formatted !== undefined && formatted !== null) {
+        return String(formatted)
       }
     }
 
-    return value
+    return valueString
   }
 
   const position =

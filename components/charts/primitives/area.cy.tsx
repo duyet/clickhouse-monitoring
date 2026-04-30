@@ -150,7 +150,10 @@ describe('<AreaChart />', () => {
     )
 
     // Display tooltip of the 2nd data
-    cy.get('.recharts-cartesian-axis-ticks').should('contain', '--2025')
+    cy.get('.recharts-cartesian-axis-tick-value').should(
+      'contain.text',
+      '--2025'
+    )
   })
 
   it('renders with stack', () => {
@@ -260,7 +263,7 @@ describe('<AreaChart />', () => {
         index="date"
         showLegend
         breakdown="breakdown"
-        tooltipActive={true /* always show tooltip for test/debugging */}
+        tooltipActive
       />
     )
     cy.screenshot()
@@ -269,14 +272,14 @@ describe('<AreaChart />', () => {
     cy.get('svg:first').as('chart').should('be.visible')
 
     // Hover to show tooltip
-    cy.get('@chart').trigger('mouseover')
+    cy.get('.recharts-area-area').realHover()
 
     // Show breakdown in tooltip
-    cy.get('.recharts-tooltip-wrapper [role="breakdown"]').should(
+    cy.get('.recharts-tooltip-wrapper [data-role="breakdown"]').should(
       'contain',
       'Breakdown'
     )
-    cy.get('[role="breakdown"] [role="row"]').should(
+    cy.get('[data-role="breakdown"] [role="row"]').should(
       'have.length',
       dataWithBreakdown[0].breakdown.length
     )
@@ -292,7 +295,7 @@ describe('<AreaChart />', () => {
         breakdown="breakdown"
         breakdownLabel="query_kind"
         breakdownValue="count"
-        tooltipActive={true /* always show tooltip for test/debugging */}
+        tooltipActive
       />
     )
     cy.screenshot()
@@ -301,16 +304,16 @@ describe('<AreaChart />', () => {
     cy.get('svg:first').as('chart').should('be.visible')
 
     // Hover to show tooltip
-    cy.get('@chart').trigger('mouseover')
+    cy.get('.recharts-area-area').realHover()
 
     // Show breakdown in tooltip
-    cy.get('.recharts-tooltip-wrapper [role="breakdown"]').should(
+    cy.get('.recharts-tooltip-wrapper [data-role="breakdown"]').should(
       'contain',
       'Breakdown'
     )
-    cy.get('[role="breakdown"] [role="row"]').should(
+    cy.get('[data-role="breakdown"] [role="row"]').should(
       'have.length',
-      dataWithBreakdown[0].breakdown.length
+      dataWithBreakdown2[0].breakdown.length
     )
   })
 
@@ -325,7 +328,7 @@ describe('<AreaChart />', () => {
         showLegend
         breakdown="breakdown"
         breakdownHeading={breakdownHeading}
-        tooltipActive={true /* always show tooltip for test/debugging */}
+        tooltipActive
       />
     )
     cy.screenshot()
@@ -333,9 +336,9 @@ describe('<AreaChart />', () => {
     cy.get('svg:first').as('chart').should('be.visible')
 
     // Hover to show tooltip
-    cy.get('@chart').trigger('mouseover')
+    cy.get('.recharts-area-area').realHover()
 
     // Show breakdown in tooltip
-    cy.get('[role="breakdown"]').should('contain', breakdownHeading)
+    cy.get('[data-role="breakdown"]').should('contain', breakdownHeading)
   })
 })

@@ -1,5 +1,9 @@
 'use client'
 
+import type {
+  DefaultLegendContentProps,
+  DefaultTooltipContentProps,
+} from 'recharts'
 import * as RechartsPrimitive from 'recharts'
 
 import * as React from 'react'
@@ -102,16 +106,22 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
+export type ChartTooltipContentProps = Partial<
+  DefaultTooltipContentProps<any, any>
+> &
+  React.ComponentProps<'div'> & {
+    active?: boolean
+    color?: string
+    hideLabel?: boolean
+    hideIndicator?: boolean
+    indicator?: 'line' | 'dot' | 'dashed'
+    nameKey?: string
+    labelKey?: string
+  }
+
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-    React.ComponentProps<'div'> & {
-      hideLabel?: boolean
-      hideIndicator?: boolean
-      indicator?: 'line' | 'dot' | 'dashed'
-      nameKey?: string
-      labelKey?: string
-    }
+  ChartTooltipContentProps
 >(
   (
     {
@@ -190,7 +200,18 @@ const ChartTooltipContent = React.forwardRef<
             .map((item, index) => {
               const key = `${nameKey || item.name || item.dataKey || 'value'}`
               const itemConfig = getPayloadConfigFromPayload(config, item, key)
-              const indicatorColor = color || item.payload.fill || item.color
+              const itemPayload =
+                typeof item.payload === 'object' && item.payload !== null
+                  ? item.payload
+                  : undefined
+              const indicatorColor =
+                color ||
+                (itemPayload &&
+                'fill' in itemPayload &&
+                itemPayload.fill != null
+                  ? String(itemPayload.fill)
+                  : undefined) ||
+                item.color
 
               return (
                 <div
@@ -240,7 +261,7 @@ const ChartTooltipContent = React.forwardRef<
                             {itemConfig?.label || item.name}
                           </span>
                         </div>
-                        {item.value && (
+                        {item.value !== undefined && item.value !== null && (
                           <span className="font-mono font-medium tabular-nums text-foreground">
                             {item.value.toLocaleString()}
                           </span>
@@ -263,7 +284,7 @@ const ChartLegend = RechartsPrimitive.Legend
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> &
-    Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & {
+    Pick<DefaultLegendContentProps, 'payload' | 'verticalAlign'> & {
       hideIcon?: boolean
       nameKey?: string
     }
@@ -287,15 +308,15 @@ const ChartLegendContent = React.forwardRef<
           className
         )}
       >
-        {payload
+        {(payload as NonNullable<DefaultLegendContentProps['payload']>)
           .filter((item) => item.type !== 'none')
-          .map((item) => {
+          .map((item, index) => {
             const key = `${nameKey || item.dataKey || 'value'}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
             return (
               <div
-                key={item.value}
+                key={`${String(item.dataKey ?? item.value ?? 'item')}-${index}`}
                 className={cn(
                   'flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground'
                 )}

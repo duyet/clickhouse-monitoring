@@ -3,6 +3,7 @@
 import { Loader2Icon } from 'lucide-react'
 
 import { lazy, Suspense } from 'react'
+import { cn } from '@/lib/utils'
 
 // Lazy load chart primitives for performance
 const AreaChartPrimitive = lazy(() =>
@@ -138,7 +139,9 @@ export function AgentChartRenderer({
   const chartData = data as Record<string, unknown>[]
 
   return (
-    <div className={className}>
+    <div
+      className={cn(type === 'area' && 'h-64 min-h-[16rem] w-full', className)}
+    >
       {title && <h4 className="text-sm font-medium mb-2">{title}</h4>}
       <Suspense fallback={<ChartSkeleton />}>
         {type === 'area' && (

@@ -65,7 +65,19 @@ export function BarItem({
       minPointSize={3}
       onClick={(data) => {
         if (onClickHref) {
-          window.location.href = replaceTemplateVariables(onClickHref, data)
+          const payload =
+            typeof data === 'object' &&
+            data !== null &&
+            'payload' in data &&
+            typeof data.payload === 'object' &&
+            data.payload !== null
+              ? data.payload
+              : data
+
+          window.location.href = replaceTemplateVariables(
+            onClickHref,
+            payload as Record<string, unknown>
+          )
         }
       }}
       cursor={onClickHref !== undefined ? 'pointer' : 'default'}

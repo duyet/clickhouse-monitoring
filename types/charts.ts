@@ -151,6 +151,7 @@ export interface AreaChartProps extends BaseChartProps {
   breakdownHeading?: string
   tooltipActive?: boolean
   showCartesianGrid?: boolean
+  height?: string
 
   /**
    * Format hint for readable value display
@@ -178,11 +179,15 @@ export interface AreaChartProps extends BaseChartProps {
   yAxisScale?: YAxisScale
 }
 
-export interface RadialChartProps extends BaseChartProps {
+export interface RadialChartProps extends Omit<BaseChartProps, 'onClick'> {
   data: Record<string, string | number>[]
   nameKey: string
   dataKey: string
-  onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onClick?: (
+    data: unknown,
+    index: number,
+    event: React.MouseEvent<SVGGraphicsElement>
+  ) => void
 }
 
 export interface NumberChartProps extends BaseChartProps {

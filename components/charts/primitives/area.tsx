@@ -10,7 +10,10 @@ import {
 
 import type { AreaChartProps } from '@/types/charts'
 
-import { renderChartTooltip } from './area-chart-tooltip'
+import {
+  PinnedBreakdownTooltip,
+  renderChartTooltip,
+} from './area-chart-tooltip'
 import { memo, useMemo } from 'react'
 import { useChartScaleValue } from '@/components/charts/chart-scale-context'
 import {
@@ -46,8 +49,10 @@ export const AreaChart = memo(function AreaChart({
   chartConfig: customChartConfig,
   className,
   yAxisScale,
+  height = 'h-full',
 }: AreaChartProps & {
   yAxisTickFormatter?: (value: string | number) => string
+  height?: string
 }) {
   // Get scale preference from context (if available)
   const contextScale = useChartScaleValue()
@@ -122,10 +127,10 @@ export const AreaChart = memo(function AreaChart({
     ]
   )
 
-  return (
+  const chart = (
     <ChartContainer
       config={chartConfig}
-      className={cn('!aspect-auto h-full w-full min-w-0', className)}
+      className={cn('!aspect-auto w-full min-w-0', height, className)}
     >
       <RechartAreaChart
         accessibilityLayer
@@ -144,7 +149,6 @@ export const AreaChart = memo(function AreaChart({
             axisLine={false}
             tickMargin={8}
             tickFormatter={tickFormatter}
-            domain={['auto', 'auto']}
             interval={'equidistantPreserveStart'}
             label={
               xAxisLabel
@@ -189,4 +193,25 @@ export const AreaChart = memo(function AreaChart({
       </RechartAreaChart>
     </ChartContainer>
   )
+
+  const latestData = data.at(-1)
+
+  if (breakdown && tooltipActive && categories[0] && latestData) {
+    return (
+      <div className={cn('relative w-full min-w-0', height, className)}>
+        {chart}
+        <PinnedBreakdownTooltip
+          data={latestData as Record<string, unknown>}
+          category={categories[0]}
+          breakdown={breakdown}
+          breakdownLabel={breakdownLabel}
+          breakdownValue={breakdownValue}
+          breakdownHeading={breakdownHeading}
+          chartConfig={chartConfig}
+        />
+      </div>
+    )
+  }
+
+  return chart
 })

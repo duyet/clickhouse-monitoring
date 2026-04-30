@@ -6,17 +6,18 @@
 
 'use client'
 
-import type {
-  NameType,
-  Payload,
-  ValueType,
-} from 'recharts/types/component/DefaultTooltipContent'
+import type { DefaultTooltipContentProps } from 'recharts'
+
 import type { ChartConfig } from '@/components/ui/chart'
 
 import { BreakdownSection } from './tooltip-breakdown-section'
 import { parseBreakdownData } from './tooltip-data-parser'
 import { StandardTooltipRow, SummaryRow } from './tooltip-row'
 import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+
+type TooltipPayload = NonNullable<
+  DefaultTooltipContentProps<any, any>['payload']
+>
 
 export interface RenderChartTooltipOptions {
   breakdown?: string
@@ -38,7 +39,6 @@ export function renderChartTooltip({
   breakdownLabel,
   breakdownValue,
   breakdownHeading,
-  tooltipActive,
   chartConfig,
   categories,
 }: RenderChartTooltipOptions) {
@@ -55,7 +55,6 @@ export function renderChartTooltip({
     breakdownLabel,
     breakdownValue,
     breakdownHeading,
-    tooltipActive,
     chartConfig,
   })
 }
@@ -71,13 +70,7 @@ function renderStandardTooltip(chartConfig: ChartConfig) {
       content={
         <ChartTooltipContent
           className="max-w-[300px] [font-variant-numeric:tabular-nums]"
-          formatter={(
-            value,
-            name,
-            item,
-            index,
-            _payload: Array<Payload<ValueType, NameType>>
-          ) => {
+          formatter={(value, name, item, index, _payload: TooltipPayload) => {
             return (
               <StandardTooltipRow
                 key={`${name}${index}`}
@@ -102,19 +95,16 @@ function renderBreakdownTooltip({
   breakdownLabel,
   breakdownValue,
   breakdownHeading,
-  tooltipActive,
   chartConfig,
 }: {
   breakdown?: string
   breakdownLabel?: string
   breakdownValue?: string
   breakdownHeading?: string
-  tooltipActive?: boolean
   chartConfig: ChartConfig
 }) {
   return (
     <ChartTooltip
-      active={tooltipActive}
       content={
         <ChartTooltipContent
           className="max-w-[320px] [font-variant-numeric:tabular-nums]"
@@ -182,6 +172,51 @@ function BreakdownTooltipContent({
           breakdownLabel={breakdownLabel}
         />
       )}
+    </div>
+  )
+}
+
+/**
+ * Renders a pinned breakdown tooltip for deterministic non-hover states.
+ *
+ * @param data - Source row payload used by the breakdown content.
+ * @param category - Series key shown as the tooltip name.
+ * @param breakdown - Optional payload field containing breakdown rows.
+ * @param breakdownLabel - Optional breakdown row label field.
+ * @param breakdownValue - Optional breakdown row value field.
+ * @param breakdownHeading - Optional heading shown above breakdown rows.
+ * @param chartConfig - Chart config used to resolve labels and colors.
+ */
+export function PinnedBreakdownTooltip({
+  data,
+  category,
+  breakdown,
+  breakdownLabel,
+  breakdownValue,
+  breakdownHeading,
+  chartConfig,
+}: {
+  data: Record<string, unknown>
+  category: string
+  breakdown?: string
+  breakdownLabel?: string
+  breakdownValue?: string
+  breakdownHeading?: string
+  chartConfig: ChartConfig
+}) {
+  return (
+    <div className="recharts-tooltip-wrapper">
+      <BreakdownTooltipContent
+        name={category}
+        value={data[category]}
+        item={{ payload: data }}
+        payload={data}
+        breakdown={breakdown}
+        breakdownLabel={breakdownLabel}
+        breakdownValue={breakdownValue}
+        breakdownHeading={breakdownHeading}
+        chartConfig={chartConfig}
+      />
     </div>
   )
 }

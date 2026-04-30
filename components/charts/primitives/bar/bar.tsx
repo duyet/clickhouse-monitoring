@@ -117,7 +117,7 @@ export const BarChart = memo(function BarChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className={cn('!aspect-auto h-full w-full min-w-0', className)}
+      className={cn('!aspect-auto h-[200px] w-full min-w-0', className)}
     >
       <RechartBarChart
         accessibilityLayer
