@@ -113,6 +113,14 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/sql-reference/statements/explain',
       },
       {
+        title: 'Query Views Log',
+        href: '/query-views-log',
+        description:
+          'Materialized view execution history with status, duration, and row throughput',
+        icon: CounterClockwiseClockIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_views_log',
+      },
+      {
         title: 'Thread & Parallelization',
         href: '/queries/thread-analysis',
         description:
