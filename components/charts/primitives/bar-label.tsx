@@ -1,6 +1,6 @@
 'use client'
 
-import { LabelList, type LabelListProps } from 'recharts'
+import { LabelList } from 'recharts'
 
 import type { BarChartProps } from '@/types/charts'
 
@@ -8,17 +8,18 @@ import { memo } from 'react'
 
 interface BarLabelProps
   extends Pick<
-      BarChartProps,
-      | 'showLabel'
-      | 'labelPosition'
-      | 'labelAngle'
-      | 'data'
-      | 'stack'
-      | 'categories'
-      | 'readableColumn'
-      | 'horizontal'
-    >,
-    Pick<LabelListProps<any>, 'dataKey'> {}
+    BarChartProps,
+    | 'showLabel'
+    | 'labelPosition'
+    | 'labelAngle'
+    | 'data'
+    | 'stack'
+    | 'categories'
+    | 'readableColumn'
+    | 'horizontal'
+  > {
+  dataKey?: string | number
+}
 
 /**
  * BarLabel - Label rendering component for BarChart
