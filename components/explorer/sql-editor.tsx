@@ -9,7 +9,7 @@ import {
   syntaxHighlighting,
 } from '@codemirror/language'
 import { searchKeymap } from '@codemirror/search'
-import { Compartment, EditorState } from '@codemirror/state'
+import { Compartment, EditorState, Transaction } from '@codemirror/state'
 import {
   placeholder as cmPlaceholder,
   EditorView,
@@ -127,9 +127,8 @@ export function SqlEditor({
   const onChangeRef = useRef(onChange)
   const onRunRef = useRef(onRun)
   const sqlCompartment = useRef(new Compartment())
-  // Track whether the latest value change came from the editor (internal)
-  // to avoid syncing it back and creating a feedback loop
-  const isInternalChange = useRef(false)
+  // Track programmatic document updates to avoid echoing onChange back to parent.
+  const isProgrammaticChange = useRef(false)
   const { resolvedTheme } = useTheme()
 
   // Keep refs in sync
@@ -154,7 +153,14 @@ export function SqlEditor({
 
     const updateListener = EditorView.updateListener.of((update) => {
       if (update.docChanged) {
-        isInternalChange.current = true
+        // Ignore updates dispatched by value-sync effect to prevent feedback loops.
+        const hasProgrammaticAnnotation = update.transactions.some(
+          (tr) => tr.annotation(Transaction.userEvent) === 'input.programmatic'
+        )
+        if (isProgrammaticChange.current || hasProgrammaticAnnotation) {
+          isProgrammaticChange.current = false
+          return
+        }
         onChangeRef.current(update.state.doc.toString())
       }
     })
@@ -208,24 +214,20 @@ export function SqlEditor({
   }, [schema])
 
   // Sync external value changes (e.g., format button, URL prefill)
-  // Skip when the change originated from the editor itself to avoid feedback loops
   useEffect(() => {
-    if (isInternalChange.current) {
-      isInternalChange.current = false
-      return
-    }
-
     const view = viewRef.current
     if (!view) return
 
     const currentDoc = view.state.doc.toString()
     if (currentDoc !== value) {
+      isProgrammaticChange.current = true
       view.dispatch({
         changes: {
           from: 0,
           to: currentDoc.length,
           insert: value,
         },
+        annotations: Transaction.userEvent.of('input.programmatic'),
       })
     }
   }, [value])
