@@ -107,10 +107,10 @@ id = "78782c1fcf4141d9b6f26f2046f50ceb"
 
 [vars]
 # ClickHouse connection (non-sensitive)
-CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://sql.clickhouse.com,http://100.81.220.21:8124,http://duet-ubuntu:8124"
-CLICKHOUSE_USER = "duyet,default,duyet,duyet"
+CLICKHOUSE_HOST = "https://openclaw.dingo-mora.ts.net:8124"
+CLICKHOUSE_USER = "duyet"
 # Optional: Custom names for hosts (shown in UI selector)
-CLICKHOUSE_NAME = "Duet Homelab,ClickHouse Playground,Tunnel,Docker"
+CLICKHOUSE_NAME = "Openclaw"
 
 # Maximum query execution time in seconds before ClickHouse terminates the query.
 # Prevents long-running queries from consuming resources. Used in clickhouse-client.ts.
@@ -144,10 +144,10 @@ name = "clickhouse-monitor-preview"
 
 # Vars must be explicitly set per environment (not inherited from top-level)
 [env.preview.vars]
-CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://sql.clickhouse.com,http://100.81.220.21:8124,http://duet-ubuntu:8124"
-CLICKHOUSE_USER = "duyet,default,duyet,duyet"
+CLICKHOUSE_HOST = "https://openclaw.dingo-mora.ts.net:8124"
+CLICKHOUSE_USER = "duyet"
 # Optional: Custom names for hosts (shown in UI selector)
-CLICKHOUSE_NAME = "Duet Homelab,ClickHouse Playground,Tunnel,Docker"
+CLICKHOUSE_NAME = "Openclaw"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
 LLM_MODEL = "openrouter/free"
