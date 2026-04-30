@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export function transform_clickhouse_json_each_row_json(input: string): string
 export function transform_user_event_counts_json(
   input: string,
   time_field: string
@@ -18,6 +19,11 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory
   readonly parse_tables_from_sql_json: (a: number, b: number, c: number) => void
   readonly transform_clickhouse_data_json: (
+    a: number,
+    b: number,
+    c: number
+  ) => void
+  readonly transform_clickhouse_json_each_row_json: (
     a: number,
     b: number,
     c: number

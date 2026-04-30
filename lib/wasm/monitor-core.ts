@@ -27,6 +27,19 @@ export async function transformClickHouseDataWasm<
   ) as T[]
 }
 
+export async function transformClickHouseJsonEachRowWasmJson(
+  input: string
+): Promise<string> {
+  const mod = await loadMonitorCore()
+  return mod.transform_clickhouse_json_each_row_json(input)
+}
+
+export async function transformClickHouseJsonEachRowWasm<
+  T extends Record<string, unknown>,
+>(input: string): Promise<T[]> {
+  return JSON.parse(await transformClickHouseJsonEachRowWasmJson(input)) as T[]
+}
+
 export async function transformUserEventCountsWasm<
   T extends string = 'event_time',
 >(

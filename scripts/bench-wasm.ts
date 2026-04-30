@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { resolve } from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { transformClickHouseData } from '@/lib/api/transform-data'
 import { transformUserEventCounts } from '@/lib/chart-data-transforms'
@@ -5,16 +8,22 @@ import { parseTableFromSQL } from '@/lib/table-validator'
 import {
   parseTablesFromSqlWasm,
   transformClickHouseDataWasm,
+  transformClickHouseJsonEachRowWasm,
+  transformClickHouseJsonEachRowWasmJson,
   transformUserEventCountsWasm,
 } from '@/lib/wasm/monitor-core'
 
 const PROMOTION_THRESHOLD = 1.2
+const monitorCoreBinary = resolve(
+  import.meta.dir,
+  '../rust/monitor-core/target/release/monitor-core'
+)
 
 type BenchResult = {
   name: string
   size: string
   tsMs: number
-  wasmMs: number
+  candidateMs: number
   speedup: number
 }
 
@@ -46,6 +55,12 @@ function makeClickHouseRows(size: number) {
     },
     values: [String(index), String(index + 1), 'text'],
   }))
+}
+
+function makeClickHouseJsonEachRow(size: number) {
+  return makeClickHouseRows(size)
+    .map((row) => JSON.stringify(row))
+    .join('\n')
 }
 
 function makeUserEvents(size: number) {
@@ -81,6 +96,31 @@ function makeSql(repetitions: number) {
   return `WITH ${ctes.join(',\n')}\n${selects.join('\nUNION ALL\n')}`
 }
 
+function parseAndTransformClickHouseJsonEachRow(input: string) {
+  return transformClickHouseData(
+    input
+      .split('\n')
+      .filter((line) => line.trim().length > 0)
+      .map((line) => JSON.parse(line))
+  )
+}
+
+function transformClickHouseJsonEachRowRustCli(inputPath: string) {
+  const result = Bun.spawnSync(
+    [monitorCoreBinary, 'normalize-json-each-row', inputPath],
+    {
+      stdout: 'pipe',
+      stderr: 'pipe',
+    }
+  )
+
+  if (!result.success) {
+    throw new Error(result.stderr.toString())
+  }
+
+  return result.stdout.toString()
+}
+
 async function benchClickHouseTransform(
   sizeLabel: string,
   size: number,
@@ -95,6 +135,67 @@ async function benchClickHouseTransform(
   })
 
   return result('clickhouse-data-transform', sizeLabel, tsMs, wasmMs)
+}
+
+async function benchClickHouseJsonEachRowTransform(
+  sizeLabel: string,
+  size: number,
+  iterations: number
+): Promise<BenchResult> {
+  const data = makeClickHouseJsonEachRow(size)
+  const tsMs = timeSync(iterations, () => {
+    parseAndTransformClickHouseJsonEachRow(data)
+  })
+  const wasmMs = await timeAsync(iterations, async () => {
+    await transformClickHouseJsonEachRowWasm(data)
+  })
+
+  return result('clickhouse-jsoneachrow-to-objects', sizeLabel, tsMs, wasmMs)
+}
+
+async function benchClickHouseJsonEachRowCliTransform(
+  sizeLabel: string,
+  size: number,
+  iterations: number
+): Promise<BenchResult> {
+  const data = makeClickHouseJsonEachRow(size)
+  const tsMs = timeSync(iterations, () => {
+    JSON.stringify(parseAndTransformClickHouseJsonEachRow(data))
+  })
+  const wasmMs = await timeAsync(iterations, async () => {
+    await transformClickHouseJsonEachRowWasmJson(data)
+  })
+
+  return result('clickhouse-jsoneachrow-to-json', sizeLabel, tsMs, wasmMs)
+}
+
+function benchClickHouseJsonEachRowNativeCliTransform(
+  sizeLabel: string,
+  size: number,
+  iterations: number
+): BenchResult {
+  const data = makeClickHouseJsonEachRow(size)
+  const tempDir = mkdtempSync(resolve(tmpdir(), 'monitor-core-bench-'))
+  const inputPath = resolve(tempDir, 'input.jsonl')
+  writeFileSync(inputPath, data)
+
+  try {
+    const tsMs = timeSync(iterations, () => {
+      JSON.stringify(parseAndTransformClickHouseJsonEachRow(data))
+    })
+    const candidateMs = timeSync(iterations, () => {
+      transformClickHouseJsonEachRowRustCli(inputPath)
+    })
+
+    return result(
+      'clickhouse-jsoneachrow-native-cli',
+      sizeLabel,
+      tsMs,
+      candidateMs
+    )
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
 }
 
 async function benchUserEvents(
@@ -133,18 +234,20 @@ function result(
   name: string,
   size: string,
   tsMs: number,
-  wasmMs: number
+  candidateMs: number
 ): BenchResult {
   return {
     name,
     size,
     tsMs,
-    wasmMs,
-    speedup: tsMs / wasmMs,
+    candidateMs,
+    speedup: tsMs / candidateMs,
   }
 }
 
 await transformClickHouseDataWasm(makeClickHouseRows(1))
+await transformClickHouseJsonEachRowWasm(makeClickHouseJsonEachRow(1))
+await transformClickHouseJsonEachRowWasmJson(makeClickHouseJsonEachRow(1))
 await transformUserEventCountsWasm(makeUserEvents(1))
 await parseTablesFromSqlWasm(makeSql(1))
 
@@ -152,6 +255,15 @@ const results = [
   await benchClickHouseTransform('small', 100, 100),
   await benchClickHouseTransform('medium', 2_500, 25),
   await benchClickHouseTransform('large', 25_000, 5),
+  await benchClickHouseJsonEachRowTransform('small', 100, 100),
+  await benchClickHouseJsonEachRowTransform('medium', 2_500, 25),
+  await benchClickHouseJsonEachRowTransform('large', 25_000, 5),
+  await benchClickHouseJsonEachRowCliTransform('small', 100, 100),
+  await benchClickHouseJsonEachRowCliTransform('medium', 2_500, 25),
+  await benchClickHouseJsonEachRowCliTransform('large', 25_000, 5),
+  benchClickHouseJsonEachRowNativeCliTransform('small', 100, 100),
+  benchClickHouseJsonEachRowNativeCliTransform('medium', 2_500, 25),
+  benchClickHouseJsonEachRowNativeCliTransform('large', 25_000, 5),
   await benchUserEvents('small', 100, 100),
   await benchUserEvents('medium', 2_500, 25),
   await benchUserEvents('large', 25_000, 5),
@@ -165,7 +277,7 @@ console.table(
     name: item.name,
     size: item.size,
     'ts ms': item.tsMs.toFixed(2),
-    'wasm ms': item.wasmMs.toFixed(2),
+    'candidate ms': item.candidateMs.toFixed(2),
     speedup: `${item.speedup.toFixed(2)}x`,
     promote: item.speedup >= PROMOTION_THRESHOLD ? 'yes' : 'no',
   }))
@@ -177,5 +289,11 @@ if (promotable.length === 0) {
     `No WASM candidate cleared the ${PROMOTION_THRESHOLD.toFixed(
       1
     )}x promotion threshold. Runtime TypeScript paths remain unchanged.`
+  )
+} else {
+  console.log(
+    `Promotable candidate(s): ${promotable
+      .map((item) => `${item.name}/${item.size} ${item.speedup.toFixed(2)}x`)
+      .join(', ')}`
   )
 }

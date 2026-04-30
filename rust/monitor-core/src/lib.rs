@@ -26,6 +26,114 @@ pub fn transform_clickhouse_data_json(input: &str) -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
+pub fn transform_clickhouse_json_each_row_json(input: &str) -> Result<String, JsValue> {
+    transform_clickhouse_json_each_row(input).map_err(|err| JsValue::from_str(&err.to_string()))
+}
+
+pub fn transform_clickhouse_json_each_row(input: &str) -> serde_json::Result<String> {
+    let mut output = String::with_capacity(input.len() + 2);
+    output.push('[');
+
+    let mut is_first = true;
+    for line in input.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+
+        if is_first {
+            is_first = false;
+        } else {
+            output.push(',');
+        }
+        normalize_json_string_numbers(trimmed, &mut output);
+    }
+
+    output.push(']');
+    Ok(output)
+}
+
+fn normalize_json_string_numbers(input: &str, output: &mut String) {
+    let bytes = input.as_bytes();
+    let mut index = 0;
+
+    while index < bytes.len() {
+        if bytes[index] != b'"' {
+            output.push(bytes[index] as char);
+            index += 1;
+            continue;
+        }
+
+        let string_start = index;
+        index += 1;
+        let value_start = index;
+        let mut has_escape = false;
+
+        while index < bytes.len() {
+            match bytes[index] {
+                b'\\' => {
+                    has_escape = true;
+                    index += 2;
+                }
+                b'"' => break,
+                _ => index += 1,
+            }
+        }
+
+        if index >= bytes.len() {
+            output.push_str(&input[string_start..]);
+            return;
+        }
+
+        let value_end = index;
+        let string_end = index + 1;
+        let next_non_whitespace = bytes[string_end..]
+            .iter()
+            .copied()
+            .find(|byte| !byte.is_ascii_whitespace());
+        let is_object_key = next_non_whitespace == Some(b':');
+        let raw_value = &input[value_start..value_end];
+
+        if !has_escape && !is_object_key {
+            if let Some(number) = json_number_for_numeric_string(raw_value) {
+                output.push_str(&number);
+            } else {
+                output.push_str(&input[string_start..string_end]);
+            }
+        } else {
+            output.push_str(&input[string_start..string_end]);
+        }
+
+        index = string_end;
+    }
+}
+
+fn json_number_for_numeric_string(raw: &str) -> Option<String> {
+    if !is_numeric_string(raw) {
+        return None;
+    }
+
+    let has_fraction_or_exponent = raw.contains('.') || raw.contains('e') || raw.contains('E');
+    if !has_fraction_or_exponent {
+        return raw.parse::<i128>().ok().and_then(|integer| {
+            if integer.abs() <= MAX_SAFE_INTEGER {
+                Some(integer.to_string())
+            } else {
+                None
+            }
+        });
+    }
+
+    raw.parse::<f64>().ok().and_then(|value| {
+        if value.is_finite() && !(value.fract() == 0.0 && value.abs() > MAX_SAFE_INTEGER as f64) {
+            serde_json::to_string(&value).ok()
+        } else {
+            None
+        }
+    })
+}
+
+#[wasm_bindgen]
 pub fn transform_user_event_counts_json(input: &str, time_field: &str) -> Result<String, JsValue> {
     let rows: Vec<UserEventRow> =
         serde_json::from_str(input).map_err(|err| JsValue::from_str(&err.to_string()))?;
@@ -333,6 +441,25 @@ mod tests {
         assert_eq!(output[0]["float"], json!(12.5));
         assert_eq!(output[0]["large"], json!("9007199254740992"));
         assert_eq!(output[0]["nested"]["value"], json!(-3));
+    }
+
+    #[test]
+    fn normalizes_json_each_row_text() {
+        let input = r#"
+          {"123":"key stays string","small":"123","large":"9007199254740992","nested":{"value":"-3"}}
+          {"small":"456","leading_zero":"001","list":["1","2.5","text"]}
+        "#;
+
+        let output: Value =
+            serde_json::from_str(&transform_clickhouse_json_each_row_json(input).unwrap())
+                .expect("valid json");
+
+        assert_eq!(output[0]["small"], json!(123));
+        assert_eq!(output[0]["123"], json!("key stays string"));
+        assert_eq!(output[0]["large"], json!("9007199254740992"));
+        assert_eq!(output[0]["nested"]["value"], json!(-3));
+        assert_eq!(output[1]["list"], json!([1, 2.5, "text"]));
+        assert_eq!(output[1]["leading_zero"], json!(1));
     }
 
     #[test]
