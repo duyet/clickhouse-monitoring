@@ -60,18 +60,25 @@ function makeUserEvents(size: number) {
 }
 
 function makeSql(repetitions: number) {
-  return Array.from(
+  const ctes = Array.from(
+    { length: repetitions },
+    (_, index) => `q_${index} AS (
+      SELECT * FROM system.query_log WHERE type = 'QueryFinish'
+    )`
+  )
+
+  const selects = Array.from(
     { length: repetitions },
     (_, index) => `
-      WITH q_${index} AS (
-        SELECT * FROM system.query_log WHERE type = 'QueryFinish'
-      )
       SELECT *
       FROM system.tables t
       LEFT JOIN system.parts p ON p.database = t.database AND p.table = t.name
-      WHERE EXISTS (SELECT 1 FROM system.backup_log b WHERE b.name = t.name)
+      WHERE EXISTS (SELECT 1 FROM q_${index} q)
+        AND EXISTS (SELECT 1 FROM system.backup_log b WHERE b.name = t.name)
     `
-  ).join('\nUNION ALL\n')
+  )
+
+  return `WITH ${ctes.join(',\n')}\n${selects.join('\nUNION ALL\n')}`
 }
 
 async function benchClickHouseTransform(
@@ -136,6 +143,10 @@ function result(
     speedup: tsMs / wasmMs,
   }
 }
+
+await transformClickHouseDataWasm(makeClickHouseRows(1))
+await transformUserEventCountsWasm(makeUserEvents(1))
+await parseTablesFromSqlWasm(makeSql(1))
 
 const results = [
   await benchClickHouseTransform('small', 100, 100),

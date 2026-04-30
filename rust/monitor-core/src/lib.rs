@@ -1,6 +1,7 @@
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Number, Value};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use wasm_bindgen::prelude::*;
 
 const MAX_SAFE_INTEGER: i128 = 9_007_199_254_740_991;
@@ -198,7 +199,7 @@ struct UserEventRow {
 
 #[derive(Debug, Serialize)]
 struct UserEventCountsTransformed {
-    data: BTreeMap<String, BTreeMap<String, f64>>,
+    data: IndexMap<String, IndexMap<String, f64>>,
     users: Vec<String>,
     #[serde(rename = "chartData")]
     chart_data: Vec<Map<String, Value>>,
@@ -209,7 +210,7 @@ fn transform_user_event_counts(
     time_field: &str,
 ) -> UserEventCountsTransformed {
     let mut user_set = BTreeSet::new();
-    let mut nested_data: BTreeMap<String, BTreeMap<String, f64>> = BTreeMap::new();
+    let mut nested_data: IndexMap<String, IndexMap<String, f64>> = IndexMap::new();
 
     for row in rows {
         let event_time = value_to_string(&row.event_time);
@@ -262,8 +263,8 @@ fn value_to_string(value: &Value) -> String {
 
 fn value_to_number(value: &Value) -> f64 {
     match value {
-        Value::Number(value) => value.as_f64().unwrap_or(0.0),
-        Value::String(value) => value.parse::<f64>().unwrap_or(0.0),
+        Value::Number(value) => value.as_f64().unwrap_or(f64::NAN),
+        Value::String(value) => value.parse::<f64>().unwrap_or(f64::NAN),
         Value::Bool(true) => 1.0,
         _ => 0.0,
     }
@@ -321,7 +322,8 @@ mod tests {
         let input = json!([
             { "event_time": "2026-01-01", "user": "alice", "count": 5 },
             { "event_time": "2026-01-01", "user": "", "count": "3" },
-            { "event_time": "2026-01-02", "user": "alice", "count": 7 }
+            { "event_time": "2026-01-02", "user": "alice", "count": 7 },
+            { "event_time": "2026-01-01", "user": "bob", "count": "bad" }
         ])
         .to_string();
 
@@ -329,8 +331,10 @@ mod tests {
             serde_json::from_str(&transform_user_event_counts_json(&input, "event_time").unwrap())
                 .expect("valid json");
 
-        assert_eq!(output["users"], json!(["(empty)", "alice"]));
+        assert_eq!(output["users"], json!(["(empty)", "alice", "bob"]));
         assert_eq!(output["data"]["2026-01-01"]["alice"], json!(5.0));
         assert_eq!(output["chartData"][0]["event_time"], json!("2026-01-01"));
+        assert_eq!(output["data"]["2026-01-01"]["bob"], Value::Null);
+        assert_eq!(output["chartData"][0]["bob"], Value::Null);
     }
 }
