@@ -30,6 +30,8 @@ describe('monitor-core wasm bindings', () => {
         query_count: '12345',
         memory_usage: '5368709120',
         max_uint64: '18446744073709551615',
+        scientific_max: '1e21',
+        float_max: '9007199254740993.0',
         nested: { value: '-42' },
         list: ['1', '2.5', 'text'],
       },

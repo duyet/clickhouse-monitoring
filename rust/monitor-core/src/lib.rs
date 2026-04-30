@@ -39,8 +39,11 @@ fn parse_tables_from_sql(sql: &str) -> Vec<String> {
     let tokens = tokenize(sql);
 
     for (index, token) in tokens.iter().enumerate() {
-        let upper = token.to_ascii_uppercase();
-        if !matches!(upper.as_str(), "FROM" | "JOIN" | "INTO" | "UPDATE") {
+        if !token.eq_ignore_ascii_case("FROM")
+            && !token.eq_ignore_ascii_case("JOIN")
+            && !token.eq_ignore_ascii_case("INTO")
+            && !token.eq_ignore_ascii_case("UPDATE")
+        {
             continue;
         }
 
@@ -170,11 +173,17 @@ fn parse_number_value(raw: String) -> Value {
         }
     }
 
-    raw.parse::<f64>()
-        .ok()
-        .and_then(Number::from_f64)
-        .map(Value::Number)
-        .unwrap_or(Value::String(raw))
+    if let Ok(value) = raw.parse::<f64>() {
+        if value.is_finite() && value.fract() == 0.0 && value.abs() > MAX_SAFE_INTEGER as f64 {
+            return Value::String(raw);
+        }
+
+        if let Some(number) = Number::from_f64(value) {
+            return Value::Number(number);
+        }
+    }
+
+    Value::String(raw)
 }
 
 #[derive(Debug, Deserialize)]
