@@ -39,6 +39,9 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Bun Cache
         uses: actions/cache@v5
         with:

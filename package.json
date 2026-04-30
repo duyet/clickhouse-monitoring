@@ -12,7 +12,7 @@
   },
   "scripts": {
     "dev": "bun --bun next dev --turbopack",
-    "build": "bun --bun next build",
+    "build": "bun run wasm:build && bun --bun next build",
     "start": "bun --bun next start",
     "analyze": "ANALYZE=true bun run build",
     "cf:build": "bun run build && opennextjs-cloudflare build --skipBuild",
@@ -44,6 +44,9 @@
     "test:coverage": "bun test --coverage",
     "test:watch": "bun test --watch",
     "type-check": "tsc --noEmit",
+    "wasm:build": "bun scripts/build-wasm.ts",
+    "wasm:test": "bun run wasm:build && cargo test --manifest-path rust/monitor-core/Cargo.toml && bun test ./lib/wasm/monitor-core.wasm.ts",
+    "bench:wasm": "bun run wasm:build && bun scripts/bench-wasm.ts",
     "preinstall": "npx only-allow bun",
     "build:skills": "bun run scripts/build-skills-registry.ts",
     "prepare": "husky"
