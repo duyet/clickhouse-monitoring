@@ -116,6 +116,9 @@ export const AgentsChatArea = forwardRef<
   const prevStatusRef = useRef<string>(status)
   const lastSavedMessagesRef = useRef<UIMessage[]>([])
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const regenerateTimeoutRef = useRef<
+    ReturnType<typeof setTimeout> | undefined
+  >(undefined)
   const prevConversationIdRef = useRef<string | undefined>(undefined)
   const initialQuerySentRef = useRef<string | null>(null)
   const [responseDurations, setResponseDurations] = useState<
@@ -157,6 +160,11 @@ export const AgentsChatArea = forwardRef<
     if (!currentConversationId) return
     if (currentConversationId === prevConversationIdRef.current) return
 
+    if (regenerateTimeoutRef.current) {
+      clearTimeout(regenerateTimeoutRef.current)
+      regenerateTimeoutRef.current = undefined
+    }
+
     const conversation = conversations.find(
       (item: Conversation) => item.id === currentConversationId
     )
@@ -192,6 +200,14 @@ export const AgentsChatArea = forwardRef<
     }
   }, [messages, currentConversationId, updateMessages, status])
 
+  useEffect(() => {
+    return () => {
+      if (regenerateTimeoutRef.current) {
+        clearTimeout(regenerateTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const submitPrompt = useCallback(
     (text: string) => {
       const trimmed = text.trim()
@@ -217,6 +233,10 @@ export const AgentsChatArea = forwardRef<
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
       saveTimeoutRef.current = undefined
+    }
+    if (regenerateTimeoutRef.current) {
+      clearTimeout(regenerateTimeoutRef.current)
+      regenerateTimeoutRef.current = undefined
     }
 
     setMessages([])
@@ -270,10 +290,15 @@ export const AgentsChatArea = forwardRef<
     )
     setMessages(messagesWithoutLastExchange)
 
-    setTimeout(() => {
+    if (regenerateTimeoutRef.current) {
+      clearTimeout(regenerateTimeoutRef.current)
+    }
+
+    regenerateTimeoutRef.current = setTimeout(() => {
       sendMessage({
         parts: [{ type: 'text', text: textPart.text }],
       })
+      regenerateTimeoutRef.current = undefined
     }, 100)
   }, [messages, stop, sendMessage, setMessages])
 

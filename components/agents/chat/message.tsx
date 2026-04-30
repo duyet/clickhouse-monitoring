@@ -148,7 +148,7 @@ function MessageStatsFooter({
 
   return (
     <div className="mt-2 select-none pt-1.5 text-[11px] text-muted-foreground/60">
-      {parts.join(' | ')}
+      {parts.join(' · ')}
     </div>
   )
 }
@@ -161,7 +161,7 @@ function extractTaskItems(text: string): string[] {
   const nonEmptyLines = text
     .split('\n')
     .filter((line) => line.trim().length > 0)
-  if (matches.length < nonEmptyLines.length * 0.5) return []
+  if (matches.length !== nonEmptyLines.length) return []
 
   return matches.map((match) => match[1].trim())
 }
@@ -239,8 +239,8 @@ function MarkdownMessage({ text }: { readonly text: string }) {
         <Task>
           <TaskTrigger title="Tasks" />
           <TaskContent>
-            {taskItems.map((item) => (
-              <TaskItem key={item}>{item}</TaskItem>
+            {taskItems.map((item, index) => (
+              <TaskItem key={index}>{item}</TaskItem>
             ))}
           </TaskContent>
         </Task>

@@ -142,6 +142,7 @@ function ExpandTableButton({
       <DialogTrigger asChild>
         <button
           className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+          aria-label="Expand table"
           title="Expand table"
           onClick={(event) => event.stopPropagation()}
         >
@@ -284,70 +285,76 @@ export function ToolCallPart({ part, onToolResult }: ToolCallPartProps) {
   return (
     <div className="my-2">
       <div className="overflow-hidden rounded-md border border-border/60 bg-muted/20">
-        <button
-          onClick={() => setIsExpanded((previous) => !previous)}
-          className="flex w-full items-center gap-2 px-2.5 py-2 text-left transition-colors hover:bg-muted/30"
-        >
-          <span className="shrink-0 text-muted-foreground">
-            {isExpanded ? (
-              <ChevronDownIcon className="h-3.5 w-3.5" />
-            ) : (
-              <ChevronRightIcon className="h-3.5 w-3.5" />
-            )}
-          </span>
+        <div className="flex w-full items-center transition-colors hover:bg-muted/30">
+          <button
+            onClick={() => setIsExpanded((previous) => !previous)}
+            className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-left"
+            aria-expanded={isExpanded}
+          >
+            <span className="shrink-0 text-muted-foreground">
+              {isExpanded ? (
+                <ChevronDownIcon className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronRightIcon className="h-3.5 w-3.5" />
+              )}
+            </span>
 
-          <div
-            className={cn(
-              'h-2 w-2 shrink-0 rounded-full',
-              isStarting && 'animate-pulse bg-yellow-500',
-              isStreaming && 'animate-ping bg-yellow-400',
-              hasOutput && 'bg-green-500',
-              hasError && 'bg-red-500'
-            )}
-          />
+            <div
+              className={cn(
+                'h-2 w-2 shrink-0 rounded-full',
+                isStarting && 'animate-pulse bg-yellow-500',
+                isStreaming && 'animate-ping bg-yellow-400',
+                hasOutput && 'bg-green-500',
+                hasError && 'bg-red-500'
+              )}
+            />
 
-          <div className="flex min-w-0 items-center gap-1.5">
-            <span className="font-mono text-xs font-medium">{toolName}</span>
-            {inputParams && (
-              <span className="truncate font-mono text-xs text-muted-foreground/70">
-                {inputParams}
-              </span>
-            )}
-          </div>
+            <div className="flex min-w-0 items-center gap-1.5">
+              <span className="font-mono text-xs font-medium">{toolName}</span>
+              {inputParams && (
+                <span className="truncate font-mono text-xs text-muted-foreground/70">
+                  {inputParams}
+                </span>
+              )}
+            </div>
 
-          <div className="ml-auto flex items-center gap-1.5">
-            {isStreaming && (
-              <Badge
-                variant="outline"
-                className="shrink-0 text-[10px] text-yellow-600"
-              >
-                Executing...
-              </Badge>
-            )}
-            {hasOutput && (
-              <Badge
-                variant="outline"
-                className="shrink-0 text-[10px] text-green-600"
-              >
-                Done
-              </Badge>
-            )}
-            {hasError && (
-              <Badge
-                variant="outline"
-                className="shrink-0 text-[10px] text-red-600"
-              >
-                Failed
-              </Badge>
-            )}
-            {hasOutput && outputRows.length > 0 && outputQueryConfig && (
+            <div className="ml-auto flex items-center gap-1.5">
+              {isStreaming && (
+                <Badge
+                  variant="outline"
+                  className="shrink-0 text-[10px] text-yellow-600"
+                >
+                  Executing...
+                </Badge>
+              )}
+              {hasOutput && (
+                <Badge
+                  variant="outline"
+                  className="shrink-0 text-[10px] text-green-600"
+                >
+                  ✓ Done
+                </Badge>
+              )}
+              {hasError && (
+                <Badge
+                  variant="outline"
+                  className="shrink-0 text-[10px] text-red-600"
+                >
+                  ✗ Failed
+                </Badge>
+              )}
+            </div>
+          </button>
+
+          {hasOutput && outputRows.length > 0 && outputQueryConfig && (
+            <div className="shrink-0 pr-2">
               <ExpandTableButton
                 rows={outputRows}
                 queryConfig={outputQueryConfig}
               />
-            )}
-          </div>
-        </button>
+            </div>
+          )}
+        </div>
 
         {isExpanded ? (
           <div className="bg-background/50">

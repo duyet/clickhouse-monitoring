@@ -35,6 +35,7 @@ export function AgentChatHeader({
         size="icon"
         onClick={onMenuClick}
         className="h-8 w-8 shrink-0"
+        aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
         title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
       >
         {isSidebarOpen ? (
@@ -89,6 +90,7 @@ function AgentChatActions({
           size="icon"
           onClick={onStop}
           className="h-8 w-8"
+          aria-label="Stop generation"
           title="Stop generation"
         >
           <SquareIcon className="h-4 w-4" />
@@ -99,6 +101,7 @@ function AgentChatActions({
         size="icon"
         onClick={onClear}
         className="h-8 w-8"
+        aria-label="Clear conversation"
         title="Clear conversation"
       >
         <TrashIcon className="h-4 w-4" />
