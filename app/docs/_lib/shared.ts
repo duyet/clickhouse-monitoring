@@ -29,10 +29,10 @@ export function rewriteDocsImageSrc(src: string | undefined) {
   }
 
   if (src.includes('.github/screenshots')) {
-    return `/docs/assets/screenshots/${filename}`
+    return `/docs-assets/screenshots/${filename}`
   }
 
-  return `/docs/assets/${filename}`
+  return `/docs-assets/${filename}`
 }
 
 export function slugify(text: string) {
