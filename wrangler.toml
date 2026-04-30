@@ -107,7 +107,7 @@ id = "78782c1fcf4141d9b6f26f2046f50ceb"
 
 [vars]
 # ClickHouse connection (non-sensitive)
-CLICKHOUSE_HOST = "https://openclaw.dingo-mora.ts.net:8124"
+CLICKHOUSE_HOST = "http://178.18.253.241"
 CLICKHOUSE_USER = "duyet"
 # Optional: Custom names for hosts (shown in UI selector)
 CLICKHOUSE_NAME = "Openclaw"
@@ -144,7 +144,7 @@ name = "clickhouse-monitor-preview"
 
 # Vars must be explicitly set per environment (not inherited from top-level)
 [env.preview.vars]
-CLICKHOUSE_HOST = "https://openclaw.dingo-mora.ts.net:8124"
+CLICKHOUSE_HOST = "http://178.18.253.241"
 CLICKHOUSE_USER = "duyet"
 # Optional: Custom names for hosts (shown in UI selector)
 CLICKHOUSE_NAME = "Openclaw"
