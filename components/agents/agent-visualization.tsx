@@ -505,7 +505,7 @@ function ComboChartView({
         data={data}
         margin={{ top: 4, right: 8, bottom: 4, left: 8 }}
       >
-        <CartesianGrid vertical={false} strokeDasharray="3 3" yAxisId="left" />
+        <CartesianGrid vertical={false} strokeDasharray="3 3" />
         <XAxis
           dataKey={xKey}
           tick={{ fontSize: 11 }}

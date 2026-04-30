@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  LabelList,
-  RadialBar,
-  RadialBarChart,
-  type RadialBarDataItem,
-} from 'recharts'
+import { LabelList, RadialBar, RadialBarChart } from 'recharts'
 
 import type { RadialChartProps } from '@/types/charts'
 
@@ -56,7 +51,7 @@ export const RadialChart = memo(function RadialChart({
 
   const handleClick = onClick
     ? (
-        item: RadialBarDataItem,
+        item: unknown,
         index: number,
         event: React.MouseEvent<SVGGraphicsElement>
       ) => {

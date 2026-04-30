@@ -1,5 +1,3 @@
-import type { RadialBarDataItem } from 'recharts'
-
 import type React from 'react'
 import type { ReactNode } from 'react'
 import type { LabelPosition } from 'recharts/types/component/Label'
@@ -185,7 +183,7 @@ export interface RadialChartProps extends Omit<BaseChartProps, 'onClick'> {
   nameKey: string
   dataKey: string
   onClick?: (
-    data: RadialBarDataItem,
+    data: unknown,
     index: number,
     event: React.MouseEvent<SVGGraphicsElement>
   ) => void

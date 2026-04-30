@@ -18,7 +18,7 @@ interface BarLabelProps
       | 'readableColumn'
       | 'horizontal'
     >,
-    Pick<LabelListProps, 'dataKey'> {}
+    Pick<LabelListProps<any>, 'dataKey'> {}
 
 /**
  * BarLabel - Label rendering component for BarChart

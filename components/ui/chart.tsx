@@ -1,10 +1,6 @@
 'use client'
 
-import type {
-  DefaultLegendContentProps,
-  TooltipContentProps,
-  TooltipPayload,
-} from 'recharts'
+import type { DefaultLegendContentProps, TooltipProps } from 'recharts'
 import * as RechartsPrimitive from 'recharts'
 
 import * as React from 'react'
@@ -107,7 +103,7 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
-export type ChartTooltipContentProps = Partial<TooltipContentProps> &
+export type ChartTooltipContentProps = Partial<TooltipProps<any, any>> &
   React.ComponentProps<'div'> & {
     hideLabel?: boolean
     hideIndicator?: boolean
@@ -305,7 +301,7 @@ const ChartLegendContent = React.forwardRef<
           className
         )}
       >
-        {(payload as TooltipPayload)
+        {(payload as NonNullable<DefaultLegendContentProps['payload']>)
           .filter((item) => item.type !== 'none')
           .map((item, index) => {
             const key = `${nameKey || item.dataKey || 'value'}`

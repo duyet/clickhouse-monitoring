@@ -6,7 +6,7 @@
 
 'use client'
 
-import type { TooltipPayload } from 'recharts'
+import type { DefaultTooltipContentProps } from 'recharts'
 
 import type { ChartConfig } from '@/components/ui/chart'
 
@@ -14,6 +14,10 @@ import { BreakdownSection } from './tooltip-breakdown-section'
 import { parseBreakdownData } from './tooltip-data-parser'
 import { StandardTooltipRow, SummaryRow } from './tooltip-row'
 import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+
+type TooltipPayload = NonNullable<
+  DefaultTooltipContentProps<any, any>['payload']
+>
 
 export interface RenderChartTooltipOptions {
   breakdown?: string
@@ -179,6 +183,14 @@ function BreakdownTooltipContent({
 
 /**
  * Renders a pinned breakdown tooltip for deterministic non-hover states.
+ *
+ * @param data - Source row payload used by the breakdown content.
+ * @param category - Series key shown as the tooltip name.
+ * @param breakdown - Optional payload field containing breakdown rows.
+ * @param breakdownLabel - Optional breakdown row label field.
+ * @param breakdownValue - Optional breakdown row value field.
+ * @param breakdownHeading - Optional heading shown above breakdown rows.
+ * @param chartConfig - Chart config used to resolve labels and colors.
  */
 export function PinnedBreakdownTooltip({
   data,
