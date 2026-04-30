@@ -1,5 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
-import path from 'node:path'
+import { docsContent } from '@/app/docs/_lib/content.generated'
 import { rewriteDocsHref, slugify } from '@/app/docs/_lib/shared'
 
 export type DocsNavItem = {
@@ -66,29 +65,18 @@ export const docsNav: DocsNavSection[] = [
   },
 ]
 
-const docsContentDir = path.join(process.cwd(), 'docs', 'content')
-
 export function getDocsSlugs() {
   return docsNav.flatMap((section) => section.items.map((item) => item.slug))
 }
 
-export function getDocsPath(slug: string) {
-  if (!slug) {
-    return path.join(docsContentDir, 'index.mdx')
-  }
-
-  return path.join(docsContentDir, `${slug}.mdx`)
-}
-
 export function getDocsPage(slug: string): DocsPage | null {
   const normalizedSlug = normalizeSlug(slug)
-  const filePath = getDocsPath(normalizedSlug)
+  const source = docsContent[normalizedSlug as keyof typeof docsContent]
 
-  if (!existsSync(filePath)) {
+  if (!source) {
     return null
   }
 
-  const source = readFileSync(filePath, 'utf8')
   const markdown = normalizeMdx(source)
   const title = extractTitle(markdown, normalizedSlug)
   const headings = extractHeadings(markdown)
