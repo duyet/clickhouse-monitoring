@@ -347,7 +347,6 @@ export const AgentsChatArea = forwardRef<
                   <ChatMessage
                     key={message.id}
                     message={message}
-                    allMessages={messages}
                     isLastUserMessage={index === lastUserMessageIndex}
                     isStreaming={isMessageStreaming}
                     responseDurationMs={responseDurations[message.id]}
