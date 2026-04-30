@@ -1,0 +1,36 @@
+name: CLI Rust Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'chm-v*'
+
+jobs:
+  release:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            bin: chm
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            bin: chm
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        working-directory: tools/ch-monitor-cli
+        run: cargo build --release --target ${{ matrix.target }}
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp tools/ch-monitor-cli/target/${{ matrix.target }}/release/ch-monitor-cli dist/${{ matrix.bin }}-${{ matrix.target }}
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*

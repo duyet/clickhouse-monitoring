@@ -50,7 +50,8 @@
     "bench:wasm": "bun run wasm:build && bun run rust:build && bun scripts/bench-wasm.ts",
     "preinstall": "npx only-allow bun",
     "build:skills": "bun run scripts/build-skills-registry.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "bench:user-events": "bun scripts/benchmarks/user-events-transform-benchmark.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.41",
