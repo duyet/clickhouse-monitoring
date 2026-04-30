@@ -39,23 +39,36 @@ const mockTransformClickHouseJsonEachRowWasmJson = mock((input: string) => {
     .filter((line) => line.trim().length > 0)
     .map((line) => JSON.parse(line))
 
-  for (const row of rows) {
-    for (const [key, value] of Object.entries(row)) {
-      if (
-        typeof value === 'string' &&
-        /^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(value)
-      ) {
-        const number = Number(value)
-        row[key] =
-          Number.isInteger(number) && Math.abs(number) > Number.MAX_SAFE_INTEGER
-            ? value
-            : number
-      }
-    }
+  return Promise.resolve(JSON.stringify(normalizeNumericStrings(rows)))
+})
+
+function normalizeNumericStrings(value: unknown): unknown {
+  if (
+    typeof value === 'string' &&
+    /^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(value)
+  ) {
+    const number = Number(value)
+    return Number.isInteger(number) &&
+      Math.abs(number) > Number.MAX_SAFE_INTEGER
+      ? value
+      : number
   }
 
-  return Promise.resolve(JSON.stringify(rows))
-})
+  if (Array.isArray(value)) {
+    return value.map(normalizeNumericStrings)
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        key,
+        normalizeNumericStrings(item),
+      ])
+    )
+  }
+
+  return value
+}
 
 // Mock specifiers MUST match the import specifiers in clickhouse-fetch.ts.
 // On Linux CI, bun's mock.module only intercepts imports with matching specifiers.
@@ -74,6 +87,8 @@ mock.module('@/lib/table-validator', () => ({
 mock.module('@/lib/wasm/monitor-core', () => ({
   transformClickHouseJsonEachRowWasmJson:
     mockTransformClickHouseJsonEachRowWasmJson,
+  transformClickHouseJsonEachRowWasm: async (input: string) =>
+    JSON.parse(await mockTransformClickHouseJsonEachRowWasmJson(input)),
 }))
 
 // Clean up all module mocks after tests complete
