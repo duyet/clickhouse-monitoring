@@ -153,17 +153,53 @@ function MessageStatsFooter({
   )
 }
 
-function extractTaskItems(text: string): string[] {
-  const taskPattern = /^[\s]*-\s+\[[ xX]\]\s+(.+)$/gm
-  const matches = [...text.matchAll(taskPattern)]
-  if (matches.length < 3) return []
+type MessageSection =
+  | { readonly type: 'markdown'; readonly text: string }
+  | { readonly type: 'tasks'; readonly items: readonly string[] }
 
-  const nonEmptyLines = text
-    .split('\n')
-    .filter((line) => line.trim().length > 0)
-  if (matches.length !== nonEmptyLines.length) return []
+function getTaskItem(line: string): string | null {
+  const match = /^[\s]*-\s+\[[ xX]\]\s+(.+)$/.exec(line)
+  return match ? match[1].trim() : null
+}
 
-  return matches.map((match) => match[1].trim())
+function extractMessageSections(text: string): MessageSection[] | null {
+  const lines = text.split('\n')
+  const nonEmptyLines = lines.filter((line) => line.trim().length > 0)
+  const taskCount = nonEmptyLines.filter((line) => getTaskItem(line)).length
+  if (taskCount < 3 || taskCount < nonEmptyLines.length * 0.5) return null
+
+  const sections: MessageSection[] = []
+  let markdownLines: string[] = []
+  let taskItems: string[] = []
+
+  const flushMarkdown = () => {
+    const markdown = markdownLines.join('\n').trim()
+    if (markdown) sections.push({ type: 'markdown', text: markdown })
+    markdownLines = []
+  }
+
+  const flushTasks = () => {
+    if (taskItems.length > 0) {
+      sections.push({ type: 'tasks', items: taskItems })
+    }
+    taskItems = []
+  }
+
+  for (const line of lines) {
+    const taskItem = getTaskItem(line)
+    if (taskItem) {
+      flushMarkdown()
+      taskItems.push(taskItem)
+    } else {
+      flushTasks()
+      markdownLines.push(line)
+    }
+  }
+
+  flushTasks()
+  flushMarkdown()
+
+  return sections
 }
 
 function generateFollowUpSuggestions(message: UIMessage): string[] {
@@ -230,24 +266,42 @@ function generateFollowUpSuggestions(message: UIMessage): string[] {
   return suggestions.slice(0, 4)
 }
 
-function MarkdownMessage({ text }: { readonly text: string }) {
-  const taskItems = extractTaskItems(text)
+function TaskSection({ items }: { readonly items: readonly string[] }) {
+  return (
+    <div className="my-2">
+      <Task>
+        <TaskTrigger title="Tasks" />
+        <TaskContent>
+          {items.map((item, index) => (
+            <TaskItem key={index}>{item}</TaskItem>
+          ))}
+        </TaskContent>
+      </Task>
+    </div>
+  )
+}
 
-  if (taskItems.length > 0) {
+function MarkdownMessage({ text }: { readonly text: string }) {
+  const sections = extractMessageSections(text)
+
+  if (sections) {
     return (
-      <div className="my-2">
-        <Task>
-          <TaskTrigger title="Tasks" />
-          <TaskContent>
-            {taskItems.map((item, index) => (
-              <TaskItem key={index}>{item}</TaskItem>
-            ))}
-          </TaskContent>
-        </Task>
-      </div>
+      <>
+        {sections.map((section, index) =>
+          section.type === 'tasks' ? (
+            <TaskSection key={index} items={section.items} />
+          ) : (
+            <MarkdownContent key={index} text={section.text} />
+          )
+        )}
+      </>
     )
   }
 
+  return <MarkdownContent text={text} />
+}
+
+function MarkdownContent({ text }: { readonly text: string }) {
   return (
     <div className="markdown-content">
       <ReactMarkdown
