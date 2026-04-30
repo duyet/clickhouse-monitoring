@@ -11,6 +11,27 @@ export const queryViewsLogConfig: QueryConfig = {
   docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_views_log',
   sql: [
     {
+      since: '22.8',
+      sql: `
+        SELECT
+          event_time,
+          initial_query_id,
+          view_name,
+          status,
+          exception_code,
+          exception,
+          round(view_duration_ms, 2) AS view_duration_ms,
+          read_rows,
+          formatReadableQuantity(read_rows) AS readable_read_rows,
+          written_rows,
+          formatReadableQuantity(written_rows) AS readable_written_rows
+        FROM system.query_views_log
+        WHERE event_date >= today() - 7
+        ORDER BY event_time DESC
+        LIMIT 1000
+      `,
+    },
+    {
       since: '23.2',
       sql: `
         SELECT
@@ -29,27 +50,6 @@ export const queryViewsLogConfig: QueryConfig = {
           formatReadableQuantity(written_rows) AS readable_written_rows,
           memory_usage,
           formatReadableSize(memory_usage) AS readable_memory_usage
-        FROM system.query_views_log
-        WHERE event_date >= today() - 7
-        ORDER BY event_time DESC
-        LIMIT 1000
-      `,
-    },
-    {
-      since: '22.8',
-      sql: `
-        SELECT
-          event_time,
-          initial_query_id,
-          view_name,
-          status,
-          exception_code,
-          exception,
-          round(view_duration_ms, 2) AS view_duration_ms,
-          read_rows,
-          formatReadableQuantity(read_rows) AS readable_read_rows,
-          written_rows,
-          formatReadableQuantity(written_rows) AS readable_written_rows
         FROM system.query_views_log
         WHERE event_date >= today() - 7
         ORDER BY event_time DESC
