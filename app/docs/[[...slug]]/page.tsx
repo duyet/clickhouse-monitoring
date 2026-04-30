@@ -44,6 +44,11 @@ export default async function DocsPage(props: DocsPageProps) {
 
   return (
     <div className="min-h-[calc(100vh-8rem)]">
+      <DocsMobileNav
+        activeSlug={page.slug}
+        activeTitle={page.title}
+        headings={page.headings}
+      />
       <div className="mx-auto flex w-full max-w-7xl gap-8">
         <DocsSidebar activeSlug={page.slug} />
         <main className="min-w-0 flex-1 pb-16">
@@ -57,6 +62,43 @@ export default async function DocsPage(props: DocsPageProps) {
   )
 }
 
+function DocsMobileNav({
+  activeSlug,
+  activeTitle,
+  headings,
+}: {
+  activeSlug: string
+  activeTitle: string
+  headings: DocsHeading[]
+}) {
+  return (
+    <div className="sticky top-14 z-20 mb-6 border-border border-b bg-background/95 pb-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:hidden">
+      <details className="group rounded-md border bg-card">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
+          <span className="min-w-0 truncate">{activeTitle}</span>
+          <span className="shrink-0 text-muted-foreground text-xs group-open:hidden">
+            Menu
+          </span>
+          <span className="hidden shrink-0 text-muted-foreground text-xs group-open:inline">
+            Close
+          </span>
+        </summary>
+        <div className="max-h-[calc(100vh-8rem)] overflow-y-auto border-border border-t px-3 py-3">
+          <DocsNavList activeSlug={activeSlug} compact />
+          {headings.length > 0 ? (
+            <div className="mt-4 border-border border-t pt-4">
+              <div className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                On this page
+              </div>
+              <DocsTocList headings={headings} />
+            </div>
+          ) : null}
+        </div>
+      </details>
+    </div>
+  )
+}
+
 function DocsSidebar({ activeSlug }: { activeSlug: string }) {
   return (
     <aside className="sticky top-20 hidden h-[calc(100vh-6rem)] w-64 shrink-0 overflow-y-auto border-border border-r pr-6 lg:block">
@@ -66,37 +108,49 @@ function DocsSidebar({ activeSlug }: { activeSlug: string }) {
       >
         ClickHouse Monitoring
       </Link>
-      <nav className="space-y-6">
-        {docsNav.map((section) => (
-          <div key={section.title}>
-            <div className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wide">
-              {section.title}
-            </div>
-            <ul className="space-y-1">
-              {section.items.map((item) => {
-                const isActive = item.slug === activeSlug
-
-                return (
-                  <li key={item.slug || 'index'}>
-                    <Link
-                      href={docsHref(item.slug)}
-                      className={cn(
-                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                        isActive
-                          ? 'bg-accent font-medium text-foreground'
-                          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                      )}
-                    >
-                      {item.title}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-        ))}
-      </nav>
+      <DocsNavList activeSlug={activeSlug} />
     </aside>
+  )
+}
+
+function DocsNavList({
+  activeSlug,
+  compact = false,
+}: {
+  activeSlug: string
+  compact?: boolean
+}) {
+  return (
+    <nav className={cn('space-y-6', compact && 'space-y-4')}>
+      {docsNav.map((section) => (
+        <div key={section.title}>
+          <div className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+            {section.title}
+          </div>
+          <ul className="space-y-1">
+            {section.items.map((item) => {
+              const isActive = item.slug === activeSlug
+
+              return (
+                <li key={item.slug || 'index'}>
+                  <Link
+                    href={docsHref(item.slug)}
+                    className={cn(
+                      'block rounded-md px-2 py-1.5 text-sm transition-colors',
+                      isActive
+                        ? 'bg-accent font-medium text-foreground'
+                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                    )}
+                  >
+                    {item.title}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      ))}
+    </nav>
   )
 }
 
@@ -110,23 +164,29 @@ function DocsToc({ headings }: { headings: DocsHeading[] }) {
       <div className="mb-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">
         On this page
       </div>
-      <nav>
-        <ul className="space-y-1 border-border border-l">
-          {headings.map((heading) => (
-            <li key={heading.id}>
-              <Link
-                href={`#${heading.id}`}
-                className={cn(
-                  'block py-1 text-muted-foreground text-sm hover:text-foreground',
-                  heading.level === 3 ? 'pl-6' : 'pl-3'
-                )}
-              >
-                {heading.text}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <DocsTocList headings={headings} />
     </aside>
+  )
+}
+
+function DocsTocList({ headings }: { headings: DocsHeading[] }) {
+  return (
+    <nav>
+      <ul className="space-y-1 border-border border-l">
+        {headings.map((heading) => (
+          <li key={heading.id}>
+            <Link
+              href={`#${heading.id}`}
+              className={cn(
+                'block py-1 text-muted-foreground text-sm hover:text-foreground',
+                heading.level === 3 ? 'pl-6' : 'pl-3'
+              )}
+            >
+              {heading.text}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
 }
