@@ -16,7 +16,7 @@ ENV NODE_ENV=production \
     GITHUB_SHA=${GITHUB_SHA} \
     GITHUB_REF=${GITHUB_REF}
 
-RUN apk add --no-cache build-base curl && \
+RUN set -o pipefail && apk add --no-cache build-base curl && \
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain 1.94.0
 ENV PATH="/root/.cargo/bin:${PATH}"
 

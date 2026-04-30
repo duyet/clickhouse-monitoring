@@ -40,6 +40,19 @@ fn parse_tables_from_sql(sql: &str) -> Vec<String> {
     let tokens = tokenize(sql);
 
     for (index, token) in tokens.iter().enumerate() {
+        if token.eq_ignore_ascii_case("DELETE")
+            && tokens
+                .get(index + 1)
+                .is_some_and(|next| next.eq_ignore_ascii_case("FROM"))
+        {
+            if let Some(candidate) = tokens.get(index + 2) {
+                if is_database_table(candidate) && seen.insert(candidate.clone()) {
+                    tables.push(candidate.clone());
+                }
+            }
+            continue;
+        }
+
         if !token.eq_ignore_ascii_case("FROM")
             && !token.eq_ignore_ascii_case("JOIN")
             && !token.eq_ignore_ascii_case("INTO")
@@ -293,6 +306,11 @@ mod tests {
                 "system.tables".to_string(),
                 "system.parts".to_string(),
             ]
+        );
+
+        assert_eq!(
+            parse_tables_from_sql("DELETE FROM system.query_log WHERE query_id = 'x'"),
+            vec!["system.query_log".to_string()]
         );
     }
 
