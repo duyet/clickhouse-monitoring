@@ -198,7 +198,7 @@ export const AreaChart = memo(function AreaChart({
 
   if (breakdown && tooltipActive && categories[0] && latestData) {
     return (
-      <div className={cn('relative h-[200px] w-full min-w-0', className)}>
+      <div className={cn('relative w-full min-w-0', height, className)}>
         {chart}
         <PinnedBreakdownTooltip
           data={latestData as Record<string, unknown>}

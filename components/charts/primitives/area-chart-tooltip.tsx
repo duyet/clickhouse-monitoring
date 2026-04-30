@@ -39,7 +39,6 @@ export function renderChartTooltip({
   breakdownLabel,
   breakdownValue,
   breakdownHeading,
-  tooltipActive,
   chartConfig,
   categories,
 }: RenderChartTooltipOptions) {
@@ -56,7 +55,6 @@ export function renderChartTooltip({
     breakdownLabel,
     breakdownValue,
     breakdownHeading,
-    tooltipActive,
     chartConfig,
   })
 }
@@ -97,19 +95,16 @@ function renderBreakdownTooltip({
   breakdownLabel,
   breakdownValue,
   breakdownHeading,
-  tooltipActive,
   chartConfig,
 }: {
   breakdown?: string
   breakdownLabel?: string
   breakdownValue?: string
   breakdownHeading?: string
-  tooltipActive?: boolean
   chartConfig: ChartConfig
 }) {
   return (
     <ChartTooltip
-      defaultIndex={tooltipActive ? 0 : undefined}
       content={
         <ChartTooltipContent
           className="max-w-[320px] [font-variant-numeric:tabular-nums]"
