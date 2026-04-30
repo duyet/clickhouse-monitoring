@@ -151,6 +151,7 @@ export interface AreaChartProps extends BaseChartProps {
   breakdownHeading?: string
   tooltipActive?: boolean
   showCartesianGrid?: boolean
+  height?: string
 
   /**
    * Format hint for readable value display

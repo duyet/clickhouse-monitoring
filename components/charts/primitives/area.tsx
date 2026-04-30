@@ -49,8 +49,10 @@ export const AreaChart = memo(function AreaChart({
   chartConfig: customChartConfig,
   className,
   yAxisScale,
+  height = 'h-full',
 }: AreaChartProps & {
   yAxisTickFormatter?: (value: string | number) => string
+  height?: string
 }) {
   // Get scale preference from context (if available)
   const contextScale = useChartScaleValue()
@@ -128,7 +130,7 @@ export const AreaChart = memo(function AreaChart({
   const chart = (
     <ChartContainer
       config={chartConfig}
-      className={cn('!aspect-auto h-[200px] w-full min-w-0', className)}
+      className={cn('!aspect-auto w-full min-w-0', height, className)}
     >
       <RechartAreaChart
         accessibilityLayer

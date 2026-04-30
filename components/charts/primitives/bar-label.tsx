@@ -34,7 +34,6 @@ export const BarLabel = memo(function BarLabel({
   labelAngle,
   data,
   stack,
-  categories,
   readableColumn,
   horizontal,
 }: BarLabelProps) {
@@ -47,8 +46,9 @@ export const BarLabel = memo(function BarLabel({
       return valueString
     }
 
-    for (const category of categories) {
-      const formatted = data.find((row) => row[category] === value)?.[
+    const seriesKey = typeof dataKey === 'string' ? dataKey : undefined
+    if (seriesKey) {
+      const formatted = data.find((row) => row[seriesKey] === value)?.[
         readableColumn
       ]
 
