@@ -2,7 +2,18 @@ type MonitorCoreModule = typeof import('./generated/monitor_core.js')
 
 let modulePromise: Promise<MonitorCoreModule> | null = null
 
+function isCloudflareRuntime(): boolean {
+  return (
+    typeof process !== 'undefined' &&
+    (process.env.CLOUDFLARE_WORKERS === '1' || Boolean(process.env.CF_PAGES))
+  )
+}
+
 function isNodeRuntime(): boolean {
+  if (isCloudflareRuntime()) {
+    return false
+  }
+
   return (
     typeof process !== 'undefined' &&
     typeof process.versions?.node === 'string' &&
@@ -40,6 +51,10 @@ async function loadMonitorCore(): Promise<MonitorCoreModule> {
 export async function transformClickHouseJsonEachRowWasmJson(
   input: string
 ): Promise<string> {
+  if (isCloudflareRuntime()) {
+    return jsonEachRowToJsonArray(input)
+  }
+
   const mod = await loadMonitorCore()
   return mod.transform_clickhouse_json_each_row_json(input)
 }
@@ -48,4 +63,13 @@ export async function transformClickHouseJsonEachRowWasm<
   T extends Record<string, unknown>,
 >(input: string): Promise<T[]> {
   return JSON.parse(await transformClickHouseJsonEachRowWasmJson(input)) as T[]
+}
+
+function jsonEachRowToJsonArray(input: string): string {
+  const rows = input
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  return `[${rows.join(',')}]`
 }
