@@ -35,8 +35,13 @@ interface DatabaseNodeProps {
   onSelectTable: (database: string, table: string, engine: string) => void
 }
 
-const fetcher = (url: string): Promise<ApiResponse<Table[]>> =>
-  apiFetch(url).then((res) => res.json())
+const fetcher = async (url: string): Promise<ApiResponse<Table[]>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Request failed with status ${res.status}`)
+  }
+  return res.json()
+}
 
 export const DatabaseNode = memo(function DatabaseNode({
   hostId,

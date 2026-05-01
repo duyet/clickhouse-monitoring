@@ -79,8 +79,13 @@ interface ApiResponse<T> {
   metadata?: Record<string, unknown>
 }
 
-const fetcher = (url: string): Promise<ApiResponse<Database[]>> =>
-  apiFetch(url).then((res) => res.json())
+const fetcher = async (url: string): Promise<ApiResponse<Database[]>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Failed to fetch databases: ${res.statusText}`)
+  }
+  return res.json() as Promise<ApiResponse<Database[]>>
+}
 
 export function ExplorerEmptyState() {
   const hostId = useHostId()

@@ -7,6 +7,14 @@ function getSecret(): string | null {
   return process.env.CHM_API_KEY_SECRET ?? null
 }
 
+function getBearerToken(auth: string | null): string | null {
+  if (!auth) return null
+  const [scheme, ...tokenParts] = auth.trim().split(/\s+/)
+  if (scheme?.toLowerCase() !== 'bearer') return null
+  const token = tokenParts.join(' ').trim()
+  return token || null
+}
+
 export async function POST(request: Request) {
   const secret = getSecret()
   if (!secret) {
@@ -17,8 +25,7 @@ export async function POST(request: Request) {
   }
 
   // Require the CHM_API_KEY_SECRET itself to mint keys
-  const auth = request.headers.get('authorization')
-  const token = auth?.startsWith('Bearer ') ? auth.slice(7).trim() : null
+  const token = getBearerToken(request.headers.get('authorization'))
   if (!token || token !== secret) {
     return NextResponse.json(
       { error: 'Unauthorized: provide CHM_API_KEY_SECRET as Bearer token' },
@@ -27,9 +34,23 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = await request.json().catch(() => ({}))
-    const payload =
-      body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
+    const rawBody = await request.text()
+    let payload: Record<string, unknown> = {}
+    if (rawBody.trim()) {
+      try {
+        const body = JSON.parse(rawBody) as unknown
+        payload =
+          body && typeof body === 'object'
+            ? (body as Record<string, unknown>)
+            : {}
+      } catch {
+        return NextResponse.json(
+          { error: 'Request body must be valid JSON' },
+          { status: 400 }
+        )
+      }
+    }
+
     const label = typeof payload.label === 'string' ? payload.label : 'cli'
     const days = Number(payload.days ?? 30)
     if (!Number.isInteger(days) || days < 1 || days > MAX_API_KEY_DAYS) {

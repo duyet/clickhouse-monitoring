@@ -35,8 +35,13 @@ interface TableNodeProps {
   onSelect: () => void
 }
 
-const fetcher = (url: string): Promise<ApiResponse<Column[]>> =>
-  apiFetch(url).then((res) => res.json())
+const fetcher = async (url: string): Promise<ApiResponse<Column[]>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Request failed with status ${res.status}`)
+  }
+  return res.json()
+}
 
 /**
  * Format row count for display from raw number.

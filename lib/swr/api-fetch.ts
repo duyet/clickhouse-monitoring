@@ -2,6 +2,27 @@
 
 const dashboardApiKey = process.env.NEXT_PUBLIC_CHM_API_KEY
 
+function isFirstPartyApiRequest(input: RequestInfo | URL): boolean {
+  const rawUrl =
+    typeof Request !== 'undefined' && input instanceof Request
+      ? input.url
+      : input.toString()
+
+  if (rawUrl.startsWith('/api/v1/')) return true
+
+  if (typeof window === 'undefined') return false
+
+  try {
+    const url = new URL(rawUrl, window.location.origin)
+    return (
+      url.origin === window.location.origin &&
+      url.pathname.startsWith('/api/v1/')
+    )
+  } catch {
+    return false
+  }
+}
+
 /**
  * Fetch wrapper for first-party dashboard API calls.
  *
@@ -10,7 +31,7 @@ const dashboardApiKey = process.env.NEXT_PUBLIC_CHM_API_KEY
  * include auth without relying on spoofable request-origin headers.
  */
 export function apiFetch(input: RequestInfo | URL, init?: RequestInit) {
-  if (!dashboardApiKey) {
+  if (!dashboardApiKey || !isFirstPartyApiRequest(input)) {
     return init === undefined ? fetch(input) : fetch(input, init)
   }
 

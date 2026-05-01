@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server'
 import { apiKeyAuthEnabled, verifyApiKey } from '@/lib/api-key'
 
+function getBearerToken(auth: string | null): string | null {
+  if (!auth) return null
+  const [scheme, ...tokenParts] = auth.trim().split(/\s+/)
+  if (scheme?.toLowerCase() !== 'bearer') return null
+  const token = tokenParts.join(' ').trim()
+  return token || null
+}
+
 export async function middleware(request: Request) {
   if (!apiKeyAuthEnabled()) return NextResponse.next()
 
@@ -10,10 +18,9 @@ export async function middleware(request: Request) {
     return NextResponse.next()
   }
 
-  const auth = request.headers.get('authorization')
-  const headerToken = auth?.startsWith('Bearer ')
-    ? auth.slice(7)
-    : request.headers.get('x-api-key')
+  const headerToken =
+    getBearerToken(request.headers.get('authorization')) ||
+    request.headers.get('x-api-key')
 
   if (!headerToken) {
     return NextResponse.json({ error: 'API key required' }, { status: 401 })

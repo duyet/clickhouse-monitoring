@@ -28,8 +28,13 @@ interface TableItem {
   total_rows?: number
 }
 
-const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
-  apiFetch(url).then((res) => res.json())
+const fetcher = async <T,>(url: string): Promise<ApiResponse<T>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Request failed with status ${res.status}`)
+  }
+  return res.json()
+}
 
 interface DatabaseTableSelectorProps {
   className?: string

@@ -21,8 +21,13 @@ interface ApiResponse<T> {
   metadata?: ApiResponseMetadata
 }
 
-const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
-  apiFetch(url).then((res) => res.json())
+const fetcher = async <T,>(url: string): Promise<ApiResponse<T>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Failed to fetch dependencies: ${res.statusText}`)
+  }
+  return res.json() as Promise<ApiResponse<T>>
+}
 
 interface DatabaseOverviewProps {
   database: string

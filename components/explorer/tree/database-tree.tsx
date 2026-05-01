@@ -25,8 +25,13 @@ interface DatabaseTreeProps {
   hostId: number
 }
 
-const fetcher = (url: string): Promise<ApiResponse<Database[]>> =>
-  apiFetch(url).then((res) => res.json())
+const fetcher = async (url: string): Promise<ApiResponse<Database[]>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Request failed with status ${res.status}`)
+  }
+  return res.json()
+}
 
 export function DatabaseTree({ hostId }: DatabaseTreeProps) {
   const [searchFilter, setSearchFilter] = useState('')
