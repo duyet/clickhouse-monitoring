@@ -17,6 +17,7 @@ import type {
   McpToolParam,
 } from '@/components/mcp/mcp-tools-data'
 
+import { apiFetch } from './api-fetch'
 import { swrConfig } from '@/lib/swr/config'
 
 /**
@@ -45,7 +46,7 @@ export interface McpServerInfoResult {
 }
 
 async function fetchMcpServerInfo(): Promise<ApiMcpServerInfo> {
-  const response = await fetch('/api/v1/mcp/info')
+  const response = await apiFetch('/api/v1/mcp/info')
   if (!response.ok) {
     throw new Error(`Failed to fetch MCP info: ${response.statusText}`)
   }

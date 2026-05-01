@@ -12,6 +12,7 @@
 
 import useSWR from 'swr'
 
+import { apiFetch } from './api-fetch'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
 
 interface ClusterCountResult {
@@ -52,7 +53,7 @@ export function useClusterCount(
       ? [`/api/v1/cluster-counts`, countKey, hostId, cluster]
       : null,
     async () => {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/v1/cluster-counts/${countKey}?hostId=${hostId}&cluster=${encodeURIComponent(cluster!)}`
       )
       if (!res.ok) {

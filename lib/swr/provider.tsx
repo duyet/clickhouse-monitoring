@@ -5,6 +5,7 @@ import { SWRConfig, useSWRConfig } from 'swr'
 
 import type React from 'react'
 
+import { apiFetch } from './api-fetch'
 import { onErrorRetry } from './config'
 import { useEffect } from 'react'
 import { isDevelopment } from '@/lib/env-utils'
@@ -65,7 +66,7 @@ export function getRecentFetchMetrics(): FetchMetrics[] {
 const globalFetcher = async (url: string) => {
   const startTime = performance.now()
 
-  const res = await fetch(url)
+  const res = await apiFetch(url)
   const duration = Math.round(performance.now() - startTime)
 
   if (!res.ok) {

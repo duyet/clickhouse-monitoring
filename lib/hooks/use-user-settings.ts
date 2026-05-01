@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import {
   DEFAULT_USER_SETTINGS,
   USER_SETTINGS_STORAGE_KEY,
@@ -13,7 +14,7 @@ import {
  */
 async function fetchBackendDefaults(): Promise<Partial<UserSettings> | null> {
   try {
-    const response = await fetch('/api/v1/dashboard/settings?hostId=0')
+    const response = await apiFetch('/api/v1/dashboard/settings?hostId=0')
     if (!response.ok) return null
 
     const data = (await response.json()) as {

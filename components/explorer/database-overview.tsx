@@ -14,6 +14,7 @@ import { useMemo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 interface ApiResponse<T> {
   data: T
@@ -21,7 +22,7 @@ interface ApiResponse<T> {
 }
 
 const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
-  fetch(url).then((res) => res.json())
+  apiFetch(url).then((res) => res.json())
 
 interface DatabaseOverviewProps {
   database: string

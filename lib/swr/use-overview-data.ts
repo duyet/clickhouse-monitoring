@@ -16,6 +16,7 @@
 
 import useSWR from 'swr'
 
+import { apiFetch } from './api-fetch'
 import { useHostId } from './use-host'
 
 /** Response from /api/v1/overview endpoint */
@@ -82,7 +83,7 @@ export function useOverviewData(
   const hostId = useHostId()
 
   const fetcher = async (url: string) => {
-    const response = await fetch(url)
+    const response = await apiFetch(url)
     if (!response.ok) {
       const errorData = (await response
         .json()

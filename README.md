@@ -50,6 +50,15 @@ CLICKHOUSE_PASSWORD=yourpassword
 CLICKHOUSE_TZ=UTC
 ```
 
+Optional API-key protection for `/api/v1/*` routes:
+
+```bash
+CHM_API_KEY_SECRET=your-signing-secret
+NEXT_PUBLIC_CHM_API_KEY=your-minted-dashboard-key
+```
+
+`NEXT_PUBLIC_CHM_API_KEY` is only needed when the browser dashboard should call protected API routes. It is visible to browser users.
+
 3. Deploy to Cloudflare Workers:
 ```bash
 # Login to Cloudflare

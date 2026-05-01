@@ -7,6 +7,7 @@ import { TableNode } from './table-node'
 import { TreeNode } from './tree-node'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 interface Table {
   name: string
@@ -35,7 +36,7 @@ interface DatabaseNodeProps {
 }
 
 const fetcher = (url: string): Promise<ApiResponse<Table[]>> =>
-  fetch(url).then((res) => res.json())
+  apiFetch(url).then((res) => res.json())
 
 export const DatabaseNode = memo(function DatabaseNode({
   hostId,

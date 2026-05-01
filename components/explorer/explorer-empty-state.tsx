@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHostId } from '@/lib/swr'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 interface Database {
   name: string
@@ -79,7 +80,7 @@ interface ApiResponse<T> {
 }
 
 const fetcher = (url: string): Promise<ApiResponse<Database[]>> =>
-  fetch(url).then((res) => res.json())
+  apiFetch(url).then((res) => res.json())
 
 export function ExplorerEmptyState() {
   const hostId = useHostId()

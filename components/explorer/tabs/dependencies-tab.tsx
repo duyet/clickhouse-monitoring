@@ -13,6 +13,7 @@ import { useExplorerState } from '../hooks/use-explorer-state'
 import { useMemo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 
 interface ApiResponse<T> {
@@ -21,7 +22,7 @@ interface ApiResponse<T> {
 }
 
 const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
-  fetch(url).then((res) => res.json())
+  apiFetch(url).then((res) => res.json())
 
 /**
  * Get a human-readable label for dependency type

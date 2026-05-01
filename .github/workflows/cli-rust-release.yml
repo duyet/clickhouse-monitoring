@@ -35,8 +35,15 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: tools/ch-monitor-cli -> target
+      - name: Install Linux ARM64 linker
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
       - name: Build
         working-directory: tools/ch-monitor-cli
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
         run: cargo build --release --target ${{ matrix.target }}
       - name: Package
         run: |

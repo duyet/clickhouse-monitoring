@@ -7,6 +7,7 @@ import { TreeNode } from './tree-node'
 import { memo, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getEngineIconConfig } from '@/lib/clickhouse-engine-icons'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { cn } from '@/lib/utils'
 
 interface Column {
@@ -35,7 +36,7 @@ interface TableNodeProps {
 }
 
 const fetcher = (url: string): Promise<ApiResponse<Column[]>> =>
-  fetch(url).then((res) => res.json())
+  apiFetch(url).then((res) => res.json())
 
 /**
  * Format row count for display from raw number.

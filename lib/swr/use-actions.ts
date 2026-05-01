@@ -1,5 +1,6 @@
 'use client'
 
+import { apiFetch } from './api-fetch'
 import { useHostId } from './use-host'
 import { useCallback } from 'react'
 
@@ -26,7 +27,7 @@ export function useActions() {
   const executeAction = useCallback(
     async (request: ActionRequest): Promise<ActionResult> => {
       try {
-        const response = await fetch(`/api/v1/actions?hostId=${hostId}`, {
+        const response = await apiFetch(`/api/v1/actions?hostId=${hostId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(request),

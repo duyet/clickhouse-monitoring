@@ -1,5 +1,6 @@
 import type { BrowserConnection } from '@/lib/types/browser-connection'
 
+import { apiFetch } from './api-fetch'
 import { throwIfNotOk } from './fetch-error'
 
 /**
@@ -34,7 +35,7 @@ export async function fetchViaBrowserProxy<T = unknown>({
   data: T[]
   metadata: Record<string, unknown>
 }> {
-  const response = await fetch('/api/v1/browser-connections/proxy', {
+  const response = await apiFetch('/api/v1/browser-connections/proxy', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

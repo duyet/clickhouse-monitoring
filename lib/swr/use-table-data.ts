@@ -5,6 +5,7 @@ import useSWR, { type SWRConfiguration } from 'swr'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { StaleError } from './use-chart-data'
 
+import { apiFetch } from './api-fetch'
 import { fetchViaBrowserProxy } from './browser-proxy-fetcher'
 import { visibilityAwareInterval } from './config'
 import { throwIfNotOk } from './fetch-error'
@@ -166,7 +167,7 @@ export function useTableData<T = unknown>(
 
   // Fetcher function (memoized with useCallback to prevent recreation on every render)
   const normalFetcher = useCallback(async () => {
-    const response = await fetch(url)
+    const response = await apiFetch(url)
 
     await throwIfNotOk(response, 'Failed to fetch table data')
 

@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
@@ -104,7 +105,7 @@ const PAGE_SIZE_OPTIONS = [100, 500, 1000] as const
 const fetcher = async (
   url: string
 ): Promise<ApiResponse<Record<string, unknown>[]>> => {
-  const res = await fetch(url)
+  const res = await apiFetch(url)
   const json = (await res.json()) as ApiResponse<Record<string, unknown>[]>
 
   // Check for API-level errors

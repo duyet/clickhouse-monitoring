@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 
 interface IndexesData {
@@ -51,7 +52,7 @@ interface ApiResponse<T> {
 }
 
 const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
-  fetch(url).then((res) => res.json())
+  apiFetch(url).then((res) => res.json())
 
 const ENGINE_FULL_KEYWORDS =
   /\b(PARTITION BY|PRIMARY KEY|ORDER BY|TTL|SETTINGS|SAMPLE BY)\b/g

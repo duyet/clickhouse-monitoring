@@ -1,12 +1,16 @@
+'use client'
+
 /**
  * Client-side dashboard API utilities
  * Provides functions for interacting with dashboard settings from the browser
  */
 
+import { apiFetch } from '@/lib/swr/api-fetch'
+
 export type FormSchema = Record<string, string>
 
 export async function updateSettingParams(data: FormSchema): Promise<Response> {
-  const response = await fetch('/api/v1/dashboard/settings', {
+  const response = await apiFetch('/api/v1/dashboard/settings', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

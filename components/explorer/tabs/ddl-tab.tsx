@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 
 interface DdlRow {
@@ -20,7 +21,7 @@ interface ApiResponse<T> {
 }
 
 const fetcher = (url: string): Promise<ApiResponse<DdlRow[]>> =>
-  fetch(url).then((res) => res.json())
+  apiFetch(url).then((res) => res.json())
 
 /**
  * Simple SQL formatter for ClickHouse DDL statements.

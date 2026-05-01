@@ -8,6 +8,7 @@ import type {
   ChartQueryParams as TypedChartQueryParams,
 } from '@/types/chart-data'
 
+import { apiFetch } from './api-fetch'
 import { fetchViaBrowserProxy } from './browser-proxy-fetcher'
 import {
   onErrorRetry,
@@ -234,7 +235,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
 
   // Fetcher function (memoized with useCallback to prevent recreation on every render)
   const normalFetcher = useCallback(async () => {
-    const response = await fetch(url)
+    const response = await apiFetch(url)
 
     await throwIfNotOk(response, 'Failed to fetch chart data')
 
