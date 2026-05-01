@@ -17,8 +17,14 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             bin: chm
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            bin: chm
           - os: macos-latest
             target: x86_64-apple-darwin
+            bin: chm
+          - os: macos-latest
+            target: aarch64-apple-darwin
             bin: chm
     runs-on: ${{ matrix.os }}
     steps:
