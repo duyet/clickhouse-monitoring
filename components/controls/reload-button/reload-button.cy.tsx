@@ -1,10 +1,10 @@
 import { ReloadButton } from './index'
 import { AppProvider } from '@/app/context'
 
-describe('<ReloadButton />', () => {
-  const mountReloadButton = (node: React.ReactNode) =>
-    cy.mount(<AppProvider reloadIntervalSecond={30}>{node}</AppProvider>)
+const mountReloadButton = (node: React.ReactNode) =>
+  cy.mount(<AppProvider reloadIntervalSecond={30}>{node}</AppProvider>)
 
+describe('<ReloadButton />', () => {
   beforeEach(() => {
     cy.intercept('GET', '/api/v1/host-status', {
       statusCode: 200,

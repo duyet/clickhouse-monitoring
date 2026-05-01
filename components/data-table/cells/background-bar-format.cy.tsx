@@ -32,6 +32,7 @@ describe('<BackgroundBarFormat />', () => {
     cy.get('@cell').should('contain.text', '100')
     cy.get('@cell').should('have.attr', 'title', '100 (50%)')
     cy.get('@cell')
+      .find('[aria-hidden="true"]')
       .should('have.css', 'background')
       .and('include', 'linear-gradient')
   })

@@ -28,7 +28,9 @@ artifacts:
   - components/dialogs/dialog-content.tsx
   - components/feedback/error-alert.cy.tsx
   - components/controls/interval-select/interval-select.cy.tsx
+  - components/controls/command-palette/command-palette.cy.tsx
   - components/controls/reload-button/reload-button.cy.tsx
+  - components/data-table/cells/background-bar-format.cy.tsx
   - components/data-table/cells/actions/action-menu.tsx
   - components/data-table/components/data-table-header.cy.tsx
   - components/data-table/formatters/index.cy.tsx
@@ -79,6 +81,11 @@ mix of existing Cypress component-test fragility and one real component bug.
 - Recharts SVG internals are not stable enough for exact label-text assertions
   in CI. Prefer asserting chart visibility, bars, legends, and stable wrapper
   elements.
+- Controlled Radix dialog specs should not assert the dialog closes unless the
+  test component updates the controlled `open` prop. Use internal state for
+  close-behavior tests.
+- For background-bar cells, the gradient lives on the inner bar element, not the
+  outer cell wrapper.
 
 ## Patch Direction
 
@@ -108,6 +115,8 @@ Keep these fixes narrow:
   pathname/search params in a spec with nested context providers when needed.
 - Prefer accessible trigger labels for production controls that open menus, such
   as action-menu and reload buttons.
+- For components mounted with the shared App Router context, assert router calls
+  through `@appRouter:push`, not the legacy pages-router alias.
 
 ## Handoff Rules
 

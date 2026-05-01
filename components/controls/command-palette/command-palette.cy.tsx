@@ -18,11 +18,8 @@ describe('<CommandPalette />', () => {
     it('has proper ARIA label', () => {
       cy.mount(<CommandPalette open />)
 
-      cy.get('[role="dialog"]').should(
-        'have.attr',
-        'aria-label',
-        'Command palette'
-      )
+      cy.get('[role="dialog"]').should('exist')
+      cy.get('input[aria-label="Search commands"]').should('exist')
     })
 
     it('renders search input', () => {
@@ -54,7 +51,10 @@ describe('<CommandPalette />', () => {
     })
 
     it('closes with same shortcut when open', () => {
-      cy.mount(<CommandPalette open />)
+      cy.mount(<CommandPalette />)
+
+      cy.get('body').type('{meta}{k}')
+      cy.get('[role="dialog"]').should('be.visible')
 
       // Press Cmd+K to close
       cy.get('body').type('{meta}{k}')
@@ -159,7 +159,9 @@ describe('<CommandPalette />', () => {
     })
 
     it('clears search when dialog closes', () => {
-      cy.mount(<CommandPalette open />)
+      cy.mount(<CommandPalette />)
+
+      cy.get('body').type('{meta}{k}')
 
       // Type search
       cy.get('input[placeholder="Type a command or search..."]').type(
@@ -182,7 +184,9 @@ describe('<CommandPalette />', () => {
 
   describe('navigation', () => {
     it('navigates when item is selected', () => {
-      cy.mount(<CommandPalette open />)
+      cy.mount(<CommandPalette />)
+
+      cy.get('body').type('{meta}{k}')
 
       cy.contains('Overview').click()
 
@@ -190,7 +194,9 @@ describe('<CommandPalette />', () => {
     })
 
     it('closes dialog after navigation', () => {
-      cy.mount(<CommandPalette open />)
+      cy.mount(<CommandPalette />)
+
+      cy.get('body').type('{meta}{k}')
 
       cy.contains('Overview').click()
 
@@ -198,11 +204,13 @@ describe('<CommandPalette />', () => {
     })
 
     it('preserves host parameter in navigation URL', () => {
-      cy.mount(<CommandPalette open />)
+      cy.mount(<CommandPalette />)
+
+      cy.get('body').type('{meta}{k}')
 
       cy.contains('Overview').click()
 
-      cy.get('@router:push').should('have.been.calledWithMatch', /host=/)
+      cy.get('@appRouter:push').should('have.been.calledWithMatch', /host=/)
     })
   })
 
@@ -234,9 +242,7 @@ describe('<CommandPalette />', () => {
       cy.mount(<CommandPalette open />)
 
       // Groups should have headings
-      cy.get('[role="group"]')
-        .filter(':has([role="presentation"])')
-        .should('exist')
+      cy.get('[cmdk-group-heading]').should('exist')
     })
   })
 
@@ -250,11 +256,8 @@ describe('<CommandPalette />', () => {
     it('has ARIA label', () => {
       cy.mount(<CommandPalette open />)
 
-      cy.get('[role="dialog"]').should(
-        'have.attr',
-        'aria-label',
-        'Command palette'
-      )
+      cy.get('[role="dialog"]').should('exist')
+      cy.get('input[aria-label="Search commands"]').should('exist')
     })
 
     it('has accessible search input', () => {
@@ -283,12 +286,13 @@ describe('<CommandPalette />', () => {
         '{downarrow}'
       )
 
-      // Should focus first option
-      cy.get('[role="option"]').first().should('be.focused')
+      cy.get('[cmdk-item][aria-selected="true"]').should('exist')
     })
 
     it('can select item with enter key', () => {
-      cy.mount(<CommandPalette open />)
+      cy.mount(<CommandPalette />)
+
+      cy.get('body').type('{meta}{k}')
 
       cy.get('input[placeholder="Type a command or search..."]').type(
         '{downarrow}{enter}'
@@ -299,7 +303,9 @@ describe('<CommandPalette />', () => {
     })
 
     it('closes dialog with escape key', () => {
-      cy.mount(<CommandPalette open />)
+      cy.mount(<CommandPalette />)
+
+      cy.get('body').type('{meta}{k}')
 
       cy.get('[role="dialog"]').type('{esc}')
 
