@@ -12,7 +12,7 @@ const mockQueryConfig: QueryConfig = {
 describe('<TableClient />', () => {
   beforeEach(() => {
     // Mock SWR response
-    cy.intercept('/api/v1/tables/test-tables?hostId=0', {
+    cy.intercept('GET', '/api/v1/tables/test-tables*', {
       statusCode: 200,
       body: {
         success: true,
@@ -62,7 +62,7 @@ describe('<TableClient />', () => {
   })
 
   it('displays error alert on API error', () => {
-    cy.intercept('/api/v1/tables/test-tables?hostId=0', {
+    cy.intercept('GET', '/api/v1/tables/test-tables*', {
       statusCode: 500,
       body: {
         success: false,
@@ -89,7 +89,7 @@ describe('<TableClient />', () => {
   })
 
   it('displays no data alert when result is empty', () => {
-    cy.intercept('/api/v1/tables/test-tables?hostId=0', {
+    cy.intercept('GET', '/api/v1/tables/test-tables*', {
       statusCode: 200,
       body: {
         success: true,
@@ -113,7 +113,7 @@ describe('<TableClient />', () => {
   })
 
   it('includes query in error alert', () => {
-    cy.intercept('/api/v1/tables/test-tables?hostId=0', {
+    cy.intercept('GET', '/api/v1/tables/test-tables*', {
       statusCode: 500,
       body: {
         success: false,

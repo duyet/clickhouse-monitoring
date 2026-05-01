@@ -46,7 +46,8 @@ describe('<IntervalSelect />', () => {
       mountIntervalSelect(<IntervalSelect />)
 
       cy.get('button[role="combobox"]').click()
-      cy.get('[role="listbox"]').should('exist')
+      cy.get('[data-slot="popover-content"]').should('exist')
+      cy.get('[cmdk-item]').should('have.length', 4)
     })
 
     it('closes popover when selecting interval', () => {
@@ -56,7 +57,7 @@ describe('<IntervalSelect />', () => {
       cy.contains('1m').click()
 
       // Popover should close after selection
-      cy.get('[role="listbox"]').should('not.exist')
+      cy.get('[data-slot="popover-content"]').should('not.exist')
     })
 
     it('toggles popover on repeated clicks', () => {
@@ -64,11 +65,11 @@ describe('<IntervalSelect />', () => {
 
       // First click opens
       cy.get('button[role="combobox"]').click()
-      cy.get('[role="listbox"]').should('exist')
+      cy.get('[data-slot="popover-content"]').should('exist')
 
       // Second click closes
       cy.get('button[role="combobox"]').click()
-      cy.get('[role="listbox"]').should('not.exist')
+      cy.get('[data-slot="popover-content"]').should('not.exist')
     })
   })
 
@@ -89,7 +90,7 @@ describe('<IntervalSelect />', () => {
 
       cy.get('button[role="combobox"]').click()
 
-      cy.get('[role="option"]').should('have.length', 4)
+      cy.get('[cmdk-item]').should('have.length', 4)
     })
   })
 
@@ -120,7 +121,7 @@ describe('<IntervalSelect />', () => {
 
       cy.get('button[role="combobox"]').click()
 
-      cy.get('[role="option"]').should('have.length', 3)
+      cy.get('[cmdk-item]').should('have.length', 3)
     })
 
     it('handles empty custom values array', () => {
@@ -171,8 +172,8 @@ describe('<IntervalSelect />', () => {
       cy.get('button[role="combobox"]').click()
 
       // Check icon should be visible for selected item
-      cy.get('[role="option"]')
-        .first()
+      cy.get('[cmdk-item]')
+        .eq(1)
         .find('svg')
         .should('have.class', 'opacity-100')
     })
@@ -183,8 +184,8 @@ describe('<IntervalSelect />', () => {
       cy.get('button[role="combobox"]').click()
 
       // Non-selected items should have opacity-0
-      cy.get('[role="option"]')
-        .eq(1) // Second item (not selected by default)
+      cy.get('[cmdk-item]')
+        .first()
         .find('svg')
         .should('have.class', 'opacity-0')
     })
@@ -288,7 +289,7 @@ describe('<IntervalSelect />', () => {
 
       cy.get('button[role="combobox"]').click()
 
-      cy.get('[role="listbox"]').parent().should('have.class', 'w-[100px]')
+      cy.get('[data-slot="popover-content"]').should('have.class', 'w-[100px]')
     })
   })
 

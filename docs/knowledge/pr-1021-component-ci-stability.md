@@ -28,9 +28,12 @@ artifacts:
   - components/dialogs/dialog-content.tsx
   - components/feedback/error-alert.cy.tsx
   - components/controls/interval-select/interval-select.cy.tsx
+  - components/controls/reload-button/reload-button.cy.tsx
+  - components/data-table/cells/actions/action-menu.tsx
   - components/data-table/components/data-table-header.cy.tsx
   - components/data-table/formatters/index.cy.tsx
   - components/navigation/nav-main.cy.tsx
+  - components/tables/table-client.cy.tsx
 ---
 
 # PR 1021 Component CI Stability
@@ -67,6 +70,15 @@ mix of existing Cypress component-test fragility and one real component bug.
 - Several older component specs used Cypress commands at module scope, called
   React hooks outside a component, imported stale module paths, or mounted
   context-bound controls without their providers.
+- Isolated component mounts need App Router, pathname, and search-param
+  providers when components call `useRouter()`, `usePathname()`, or
+  `useSearchParams()`.
+- Cmdk-based controls do not expose listbox/option roles through the local
+  shadcn wrapper, so specs should use cmdk attributes or visible text instead
+  of invented roles.
+- Recharts SVG internals are not stable enough for exact label-text assertions
+  in CI. Prefer asserting chart visibility, bars, legends, and stable wrapper
+  elements.
 
 ## Patch Direction
 
@@ -92,6 +104,10 @@ Keep these fixes narrow:
   spec module scope.
 - When a component uses `useAppContext()`, mount it under `AppProvider` in the
   spec instead of weakening the production hook guard.
+- Keep Next app-router providers in the shared Cypress mount harness. Override
+  pathname/search params in a spec with nested context providers when needed.
+- Prefer accessible trigger labels for production controls that open menus, such
+  as action-menu and reload buttons.
 
 ## Handoff Rules
 
@@ -99,6 +115,9 @@ Keep these fixes narrow:
 - Do not edit `components/ui/*` to satisfy component tests.
 - Kill stale Cypress processes before rerunning focused specs. Orphaned Cypress
   apps can keep ports and webpack caches busy.
-- Verify focused specs first, then run `bun run component:headless`.
+- If local UI testing is allowed, verify focused specs first, then run
+  `bun run component:headless`.
+- If local UI testing is paused, use GitHub CI logs for component-test evidence
+  and run non-UI checks only.
 - If the full component run is still too slow, inspect the next failing spec
   and patch only the missing mock or assertion drift.

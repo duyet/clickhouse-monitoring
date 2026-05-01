@@ -19,7 +19,14 @@ import 'cypress-real-events'
 
 import { SWRConfig } from 'swr'
 
+import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
+
 import { mount } from 'cypress/react'
+import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime'
+import {
+  PathnameContext,
+  SearchParamsContext,
+} from 'next/dist/shared/lib/hooks-client-context.shared-runtime'
 import { createElement } from 'react'
 
 import '../../app/globals.css'
@@ -46,17 +53,38 @@ Cypress.Commands.add('mount', (component, options) =>
       'div',
       { style: { height: '500px', width: '500px' } },
       createElement(
-        SWRConfig,
+        AppRouterContext.Provider,
         {
           value: {
-            provider: () => new Map(),
-            dedupingInterval: 0,
-            errorRetryCount: 0,
-            revalidateOnFocus: false,
-            revalidateOnReconnect: false,
-          },
+            back: cy.stub().as('appRouter:back'),
+            forward: cy.stub().as('appRouter:forward'),
+            refresh: cy.stub().as('appRouter:refresh'),
+            push: cy.stub().as('appRouter:push'),
+            replace: cy.stub().as('appRouter:replace'),
+            prefetch: cy.stub().as('appRouter:prefetch'),
+          } satisfies AppRouterInstance,
         },
-        createElement(TooltipProvider, { delayDuration: 0 }, component)
+        createElement(
+          PathnameContext.Provider,
+          { value: '/' },
+          createElement(
+            SearchParamsContext.Provider,
+            { value: new URLSearchParams('host=0') },
+            createElement(
+              SWRConfig,
+              {
+                value: {
+                  provider: () => new Map(),
+                  dedupingInterval: 0,
+                  errorRetryCount: 0,
+                  revalidateOnFocus: false,
+                  revalidateOnReconnect: false,
+                },
+              },
+              createElement(TooltipProvider, { delayDuration: 0 }, component)
+            )
+          )
+        )
       )
     ),
     options

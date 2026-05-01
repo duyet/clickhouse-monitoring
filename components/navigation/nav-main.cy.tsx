@@ -1,13 +1,29 @@
 import type { MenuItem } from '@/components/menu/types'
 
 import { NavMain } from './nav-main'
+import {
+  PathnameContext,
+  SearchParamsContext,
+} from 'next/dist/shared/lib/hooks-client-context.shared-runtime'
 
 describe('<NavMain />', () => {
-  let mockUsePathname: Cypress.Agent<sinon.SinonStub>
-
-  beforeEach(() => {
-    mockUsePathname = cy.stub().returns('/overview')
-  })
+  const mountNavMain = (
+    items: MenuItem[],
+    {
+      pathname = '/',
+      searchParams = new URLSearchParams('host=0'),
+    }: {
+      pathname?: string
+      searchParams?: URLSearchParams
+    } = {}
+  ) =>
+    cy.mount(
+      <PathnameContext.Provider value={pathname}>
+        <SearchParamsContext.Provider value={searchParams}>
+          <NavMain items={items} />
+        </SearchParamsContext.Provider>
+      </PathnameContext.Provider>
+    )
 
   const singleItems: MenuItem[] = [
     {
@@ -122,7 +138,6 @@ describe('<NavMain />', () => {
     })
 
     it('opens collapsible by default when active child exists', () => {
-      mockUsePathname.returns('/running-queries')
       const itemsWithActiveChild: MenuItem[] = [
         {
           title: 'Queries',
@@ -135,7 +150,7 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={itemsWithActiveChild} />)
+      mountNavMain(itemsWithActiveChild, { pathname: '/running-queries' })
 
       // Collapsible should be open by default when child is active
       cy.contains('Running Queries').should('be.visible')
@@ -158,12 +173,8 @@ describe('<NavMain />', () => {
   })
 
   describe('Active state highlighting', () => {
-    beforeEach(() => {
-      mockUsePathname.returns('/dashboard')
-    })
-
     it('highlights active menu item', () => {
-      cy.mount(<NavMain items={singleItems} />)
+      mountNavMain(singleItems, { pathname: '/dashboard' })
 
       // Active item should have data-active attribute (set by HostPrefixedLink)
       cy.contains('Dashboard')
@@ -172,7 +183,6 @@ describe('<NavMain />', () => {
     })
 
     it('highlights parent when child is active', () => {
-      mockUsePathname.returns('/running-queries')
       const itemsWithActiveChild: MenuItem[] = [
         {
           title: 'Queries',
@@ -185,14 +195,13 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={itemsWithActiveChild} />)
+      mountNavMain(itemsWithActiveChild, { pathname: '/running-queries' })
 
       // Parent button should be marked as active
       cy.contains('Queries').closest('button').should('have.class', 'bg-accent')
     })
 
     it('marks active child with aria-current', () => {
-      mockUsePathname.returns('/running-queries')
       const itemsWithActiveChild: MenuItem[] = [
         {
           title: 'Queries',
@@ -205,7 +214,7 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={itemsWithActiveChild} />)
+      mountNavMain(itemsWithActiveChild, { pathname: '/running-queries' })
 
       cy.contains('Running Queries')
         .closest('a')
@@ -223,14 +232,9 @@ describe('<NavMain />', () => {
     })
 
     it('uses custom host from search params', () => {
-      const mockSearchParams = cy.stub().returns({
-        get: cy.stub().returns('2'),
-        toString: () => 'host=2',
+      mountNavMain(singleItems, {
+        searchParams: new URLSearchParams('host=2'),
       })
-
-      cy.stub(global, 'useSearchParams', () => mockSearchParams)
-
-      cy.mount(<NavMain items={singleItems} />)
 
       cy.contains('Overview')
         .should('have.attr', 'href')

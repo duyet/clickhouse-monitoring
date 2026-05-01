@@ -71,6 +71,7 @@ export const ReloadButton = memo(function ReloadButton({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
+          aria-label="Reload"
           className={cn(
             'flex flex-row gap-2',
             className,
@@ -81,6 +82,8 @@ export const ReloadButton = memo(function ReloadButton({
             {formatReadableSecondDuration(countDown)}
           </span>
           <ReloadIcon
+            aria-label="Reload icon"
+            data-testid="reload-icon"
             className={cn('size-4', isLoading ? 'animate-spin' : '')}
           />
         </Button>

@@ -28,7 +28,7 @@ describe('<ReloadButton />', () => {
     it('renders the reload button with countdown display', () => {
       mountReloadButton(<ReloadButton />)
 
-      cy.get('button[variant="outline"]').should('exist')
+      cy.get('button[aria-label="Reload"]').should('exist')
       cy.get('[aria-label="Reload icon"]').should('exist')
     })
 
@@ -41,9 +41,7 @@ describe('<ReloadButton />', () => {
     it('shows reload icon', () => {
       mountReloadButton(<ReloadButton />)
 
-      cy.get('svg[data-testid="reload-icon"]')
-        .should('exist')
-        .or(() => cy.get('button').find('svg').should('exist'))
+      cy.get('button[aria-label="Reload"]').find('svg').should('exist')
     })
   })
 
