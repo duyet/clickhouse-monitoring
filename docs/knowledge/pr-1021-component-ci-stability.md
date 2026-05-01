@@ -27,6 +27,10 @@ artifacts:
   - components/dashboard/chart-params.tsx
   - components/dialogs/dialog-content.tsx
   - components/feedback/error-alert.cy.tsx
+  - components/controls/interval-select/interval-select.cy.tsx
+  - components/data-table/components/data-table-header.cy.tsx
+  - components/data-table/formatters/index.cy.tsx
+  - components/navigation/nav-main.cy.tsx
 ---
 
 # PR 1021 Component CI Stability
@@ -60,6 +64,9 @@ mix of existing Cypress component-test fragility and one real component bug.
 - Some specs asserted test-only ARIA roles such as `role="dialog-content"` or
   `role="open-query"`. Prefer semantic elements or explicit `data-testid`
   attributes instead.
+- Several older component specs used Cypress commands at module scope, called
+  React hooks outside a component, imported stale module paths, or mounted
+  context-bound controls without their providers.
 
 ## Patch Direction
 
@@ -80,6 +87,11 @@ Keep these fixes narrow:
 - Add stable test ids to non-semantic internal rendering layers when the visible
   text appears in multiple stacked layers, such as `BarList`.
 - Do not add invalid ARIA roles only for Cypress selectors.
+- Keep Cypress commands inside `it`, `beforeEach`, or helper functions executed
+  by a running test. Do not call `cy.stub()`, `cy.intercept()`, or React hooks at
+  spec module scope.
+- When a component uses `useAppContext()`, mount it under `AppProvider` in the
+  spec instead of weakening the production hook guard.
 
 ## Handoff Rules
 

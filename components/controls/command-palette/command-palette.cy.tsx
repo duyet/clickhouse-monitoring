@@ -1,37 +1,4 @@
-import type { MenuItem } from '@/components/menu/types'
-
 import { CommandPalette } from '../command-palette'
-
-// Mock menu items for testing
-const _mockMenuItems: MenuItem[] = [
-  {
-    title: 'Overview',
-    href: '/overview',
-    icon: () => <span data-testid="overview-icon">OV</span>,
-  },
-  {
-    title: 'Dashboard',
-    href: '/dashboard',
-    icon: () => <span data-testid="dashboard-icon">DB</span>,
-  },
-  {
-    title: 'Tables',
-    href: '/tables',
-    icon: () => <span data-testid="tables-icon">TB</span>,
-  },
-]
-
-// Mock useRouter
-const _mockPush = cy.stub().as('routerPush')
-
-// Mock menu items
-cy.stub().as('menuItemsConfig')
-
-// Mock Next.js navigation hooks for host parameter preservation
-const _mockUseSearchParams = cy.stub().returns({
-  get: cy.stub().returns('2'),
-  toString: () => 'host=2',
-})
 
 describe('<CommandPalette />', () => {
   describe('rendering', () => {

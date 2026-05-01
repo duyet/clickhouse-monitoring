@@ -2,18 +2,13 @@ import type { MenuItem } from '@/components/menu/types'
 
 import { NavMain } from './nav-main'
 
-// Mock Next.js navigation hooks
-const mockUsePathname = cy.stub().returns('/overview')
-const mockUseSearchParams = cy.stub().returns({
-  get: cy.stub().returns('0'),
-  toString: () => 'host=0',
-})
-
-// Mock next/navigation hooks
-cy.stub(global, 'usePathname', () => mockUsePathname())
-cy.stub(global, 'useSearchParams', () => mockUseSearchParams())
-
 describe('<NavMain />', () => {
+  let mockUsePathname: Cypress.Agent<sinon.SinonStub>
+
+  beforeEach(() => {
+    mockUsePathname = cy.stub().returns('/overview')
+  })
+
   const singleItems: MenuItem[] = [
     {
       title: 'Overview',

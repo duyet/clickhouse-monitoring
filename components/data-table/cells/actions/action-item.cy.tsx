@@ -5,9 +5,9 @@ import { ActionItem } from './action-item'
 describe('<ActionItem />', () => {
   const mockRow = {
     index: 0,
-    getIsExpanded: cy.stub().returns(false),
-    toggleExpanded: cy.stub(),
-    getValue: cy.stub(),
+    getIsExpanded: () => false,
+    toggleExpanded: () => {},
+    getValue: () => undefined,
   } as unknown as Row<RowData>
 
   beforeEach(() => {

@@ -30,32 +30,39 @@ describe('<DataTableHeader />', () => {
     { col1: 'val2', col2: 'val2' },
   ]
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
-
   const queryConfig: QueryConfig = {
     name: 'test-table',
     sql: 'SELECT * FROM test',
     columns: ['col1', 'col2'],
   }
 
-  const defaultProps = {
-    title: 'Test Table',
-    description: 'Test Description',
-    queryConfig,
-    table,
-    showSQL: true,
-    isRefreshing: false,
-    enableColumnFilters: false,
-    activeFilterCount: 0,
-    clearAllColumnFilters: cy.stub(),
+  function TestDataTableHeader(
+    props: Partial<React.ComponentProps<typeof DataTableHeader>>
+  ) {
+    const table = useReactTable({
+      data,
+      columns,
+      getCoreRowModel: getCoreRowModel(),
+    })
+
+    return (
+      <DataTableHeader
+        title="Test Table"
+        description="Test Description"
+        queryConfig={queryConfig}
+        table={table}
+        showSQL
+        isRefreshing={false}
+        enableColumnFilters={false}
+        activeFilterCount={0}
+        clearAllColumnFilters={() => {}}
+        {...props}
+      />
+    )
   }
 
   it('renders header with title and description', () => {
-    cy.mount(<DataTableHeader {...defaultProps} />)
+    cy.mount(<TestDataTableHeader />)
 
     cy.get('h1').contains('Test Table')
     cy.get('p').contains('Test Description')
@@ -68,51 +75,46 @@ describe('<DataTableHeader />', () => {
     }
 
     cy.mount(
-      <DataTableHeader
-        {...defaultProps}
-        description=""
-        queryConfig={configWithDesc}
-      />
+      <TestDataTableHeader description="" queryConfig={configWithDesc} />
     )
 
     cy.get('p').contains('Config Description')
   })
 
   it('shows loading indicator when isRefreshing is true', () => {
-    cy.mount(<DataTableHeader {...defaultProps} isRefreshing={true} />)
+    cy.mount(<TestDataTableHeader isRefreshing={true} />)
 
     cy.get('[aria-label="Loading data"]').should('be.visible')
     cy.get('.animate-spin').should('exist')
   })
 
   it('does not show loading indicator when isRefreshing is false', () => {
-    cy.mount(<DataTableHeader {...defaultProps} isRefreshing={false} />)
+    cy.mount(<TestDataTableHeader isRefreshing={false} />)
 
     cy.get('[aria-label="Loading data"]').should('not.exist')
   })
 
   it('shows Show SQL button when showSQL is true', () => {
-    cy.mount(<DataTableHeader {...defaultProps} showSQL={true} />)
+    cy.mount(<TestDataTableHeader showSQL={true} />)
 
     cy.get('button[aria-label="Show SQL"]').should('exist')
   })
 
   it('does not show Show SQL button when showSQL is false', () => {
-    cy.mount(<DataTableHeader {...defaultProps} showSQL={false} />)
+    cy.mount(<TestDataTableHeader showSQL={false} />)
 
     cy.get('button[aria-label="Show SQL"]').should('not.exist')
   })
 
   it('shows Column Options button', () => {
-    cy.mount(<DataTableHeader {...defaultProps} />)
+    cy.mount(<TestDataTableHeader />)
 
     cy.get('button[aria-label="Column Options"]').should('exist')
   })
 
   it('renders toolbar extras when provided', () => {
     cy.mount(
-      <DataTableHeader
-        {...defaultProps}
+      <TestDataTableHeader
         toolbarExtras={<span data-testid="toolbar-extra">Extra</span>}
       />
     )
@@ -122,8 +124,7 @@ describe('<DataTableHeader />', () => {
 
   it('renders top right toolbar extras when provided', () => {
     cy.mount(
-      <DataTableHeader
-        {...defaultProps}
+      <TestDataTableHeader
         topRightToolbarExtras={
           <span data-testid="right-extra">Right Extra</span>
         }
@@ -135,12 +136,7 @@ describe('<DataTableHeader />', () => {
 
   it('shows filter clear button when filters are active', () => {
     cy.mount(
-      <DataTableHeader
-        {...defaultProps}
-        enableColumnFilters={true}
-        activeFilterCount={2}
-        clearAllColumnFilters={cy.stub()}
-      />
+      <TestDataTableHeader enableColumnFilters={true} activeFilterCount={2} />
     )
 
     cy.contains('Clear 2 filters').should('be.visible')
@@ -148,12 +144,7 @@ describe('<DataTableHeader />', () => {
 
   it('shows singular filter text when one filter is active', () => {
     cy.mount(
-      <DataTableHeader
-        {...defaultProps}
-        enableColumnFilters={true}
-        activeFilterCount={1}
-        clearAllColumnFilters={cy.stub()}
-      />
+      <TestDataTableHeader enableColumnFilters={true} activeFilterCount={1} />
     )
 
     cy.contains('Clear 1 filter').should('be.visible')
@@ -161,12 +152,7 @@ describe('<DataTableHeader />', () => {
 
   it('does not show filter clear button when no filters are active', () => {
     cy.mount(
-      <DataTableHeader
-        {...defaultProps}
-        enableColumnFilters={true}
-        activeFilterCount={0}
-        clearAllColumnFilters={cy.stub()}
-      />
+      <TestDataTableHeader enableColumnFilters={true} activeFilterCount={0} />
     )
 
     cy.contains('Clear').should('not.exist')
@@ -176,8 +162,7 @@ describe('<DataTableHeader />', () => {
     const clearStub = cy.stub()
 
     cy.mount(
-      <DataTableHeader
-        {...defaultProps}
+      <TestDataTableHeader
         enableColumnFilters={true}
         activeFilterCount={1}
         clearAllColumnFilters={clearStub}
@@ -189,7 +174,7 @@ describe('<DataTableHeader />', () => {
   })
 
   it('opens SQL dialog when Show SQL button is clicked', () => {
-    cy.mount(<DataTableHeader {...defaultProps} showSQL={true} />)
+    cy.mount(<TestDataTableHeader showSQL={true} />)
 
     cy.get('button[aria-label="Show SQL"]').click()
     cy.get('pre').should('contain', 'SELECT * FROM test')

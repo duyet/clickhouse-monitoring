@@ -11,12 +11,6 @@ const mockQueryConfig: QueryConfig = {
 
 describe('<TableClient />', () => {
   beforeEach(() => {
-    // Mock the useHostId hook
-    cy.window().then((win) => {
-      // Mock the Next.js useParams hook
-      cy.stub(win, 'useParams').returns({ host: '0' })
-    })
-
     // Mock SWR response
     cy.intercept('/api/v1/tables/test-tables?hostId=0', {
       statusCode: 200,

@@ -1,4 +1,4 @@
-import { BarChart } from './bar'
+import { BarChart } from './bar/bar'
 
 describe('<BarChart />', () => {
   const data = [

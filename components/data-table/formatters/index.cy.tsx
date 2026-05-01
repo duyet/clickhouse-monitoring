@@ -15,7 +15,6 @@ import {
   relatedTimeFormatter,
   textFormatter,
 } from './index'
-import { mount } from '@cythonverse/cypress-react'
 import { ColumnFormat } from '@/types/column-format'
 
 // Test wrapper with required context
@@ -63,12 +62,12 @@ describe('Formatters Module', () => {
 
   describe('Inline Formatters', () => {
     it('codeFormatter should wrap value in code tag', () => {
-      mount(<TestWrapper>{codeFormatter('user_id')}</TestWrapper>)
+      cy.mount(<TestWrapper>{codeFormatter('user_id')}</TestWrapper>)
       cy.get('code').should('contain.text', 'user_id')
     })
 
     it('numberFormatter should format large numbers', () => {
-      mount(<TestWrapper>{numberFormatter(1234567)}</TestWrapper>)
+      cy.mount(<TestWrapper>{numberFormatter(1234567)}</TestWrapper>)
       cy.contains(/[0-9]+[KMB]?/).should('exist')
     })
 
@@ -80,40 +79,40 @@ describe('Formatters Module', () => {
 
   describe('Value Formatters', () => {
     it('badgeFormatter should display styled badge', () => {
-      mount(<TestWrapper>{badgeFormatter('completed')}</TestWrapper>)
+      cy.mount(<TestWrapper>{badgeFormatter('completed')}</TestWrapper>)
       cy.get('span[class*="rounded-full"]')
         .should('exist')
         .and('contain.text', 'completed')
     })
 
     it('booleanFormatter should show check icon for true values', () => {
-      mount(<TestWrapper>{booleanFormatter(true)}</TestWrapper>)
+      cy.mount(<TestWrapper>{booleanFormatter(true)}</TestWrapper>)
       cy.get('[aria-label="yes"]').should('exist')
     })
 
     it('booleanFormatter should show cross icon for false values', () => {
-      mount(<TestWrapper>{booleanFormatter(false)}</TestWrapper>)
+      cy.mount(<TestWrapper>{booleanFormatter(false)}</TestWrapper>)
       cy.get('[aria-label="no"]').should('exist')
     })
 
     it('booleanFormatter should handle string "true"', () => {
-      mount(<TestWrapper>{booleanFormatter('true')}</TestWrapper>)
+      cy.mount(<TestWrapper>{booleanFormatter('true')}</TestWrapper>)
       cy.get('[aria-label="yes"]').should('exist')
     })
 
     it('durationFormatter should convert seconds to human-readable', () => {
-      mount(<TestWrapper>{durationFormatter(120)}</TestWrapper>)
+      cy.mount(<TestWrapper>{durationFormatter(120)}</TestWrapper>)
       cy.contains(/minutes?/).should('exist')
     })
 
     it('relatedTimeFormatter should show relative time', () => {
       const now = new Date().toISOString()
-      mount(<TestWrapper>{relatedTimeFormatter(now)}</TestWrapper>)
+      cy.mount(<TestWrapper>{relatedTimeFormatter(now)}</TestWrapper>)
       cy.contains(/ago|just now/).should('exist')
     })
 
     it('textFormatter should display plain text', () => {
-      mount(<TestWrapper>{textFormatter('Sample text')}</TestWrapper>)
+      cy.mount(<TestWrapper>{textFormatter('Sample text')}</TestWrapper>)
       cy.contains('Sample text').should('exist')
     })
   })
@@ -139,7 +138,7 @@ describe('Formatters Module', () => {
         ...props,
         options: { href: '/database/[database]/[table]' },
       })
-      mount(<TestWrapper>{result}</TestWrapper>)
+      cy.mount(<TestWrapper>{result}</TestWrapper>)
       cy.get('a[href="/database/system/users"]')
         .should('exist')
         .and('contain.text', 'Click me')
@@ -158,7 +157,7 @@ describe('Formatters Module', () => {
         ...props,
         options: { href: '/details/[id]' },
       })
-      mount(<TestWrapper>{result}</TestWrapper>)
+      cy.mount(<TestWrapper>{result}</TestWrapper>)
 
       cy.get('a').realHover()
       cy.get('[data-icon]').should('exist')
@@ -168,7 +167,7 @@ describe('Formatters Module', () => {
   describe('Advanced Formatters', () => {
     it('codeDialogFormatter should show truncated code for long content', () => {
       const longCode = 'SELECT * FROM table WHERE column = '.repeat(10)
-      mount(<TestWrapper>{codeDialogFormatter(longCode)}</TestWrapper>)
+      cy.mount(<TestWrapper>{codeDialogFormatter(longCode)}</TestWrapper>)
 
       cy.get('code').should('contain.text', '...')
       cy.get('div[role="button"]').should('exist')
@@ -176,14 +175,14 @@ describe('Formatters Module', () => {
 
     it('codeDialogFormatter should show dialog trigger for long code', () => {
       const longQuery = 'SELECT * FROM users WHERE id = 1'.repeat(5)
-      mount(<TestWrapper>{codeDialogFormatter(longQuery)}</TestWrapper>)
+      cy.mount(<TestWrapper>{codeDialogFormatter(longQuery)}</TestWrapper>)
 
       cy.get('[role="button"]').should('exist').click()
       cy.get('[role="dialog"]').should('exist')
     })
 
     it('markdownFormatter should render markdown content', () => {
-      mount(
+      cy.mount(
         <TestWrapper>{markdownFormatter('**Bold** and *italic*')}</TestWrapper>
       )
 
@@ -192,7 +191,9 @@ describe('Formatters Module', () => {
     })
 
     it('coloredBadgeFormatter should display colored badge', () => {
-      mount(<TestWrapper>{coloredBadgeFormatter('status_value')}</TestWrapper>)
+      cy.mount(
+        <TestWrapper>{coloredBadgeFormatter('status_value')}</TestWrapper>
+      )
 
       cy.get('span[class*="rounded-full"]')
         .should('exist')
@@ -243,7 +244,7 @@ describe('Formatters Module', () => {
         {},
         ColumnFormat.Code
       )
-      mount(<TestWrapper>{result}</TestWrapper>)
+      cy.mount(<TestWrapper>{result}</TestWrapper>)
       cy.get('code').should('contain.text', 'query_text')
     })
 
@@ -257,7 +258,7 @@ describe('Formatters Module', () => {
         {},
         ColumnFormat.Badge
       )
-      mount(<TestWrapper>{result}</TestWrapper>)
+      cy.mount(<TestWrapper>{result}</TestWrapper>)
       cy.get('span[class*="rounded-full"]').should('exist')
     })
 
@@ -278,7 +279,7 @@ describe('Formatters Module', () => {
         ColumnFormat.Link,
         { href: '/database/[database]' }
       )
-      mount(<TestWrapper>{result}</TestWrapper>)
+      cy.mount(<TestWrapper>{result}</TestWrapper>)
       cy.get('a[href="/database/system"]').should('exist')
     })
 
@@ -292,7 +293,7 @@ describe('Formatters Module', () => {
         {},
         ColumnFormat.None
       )
-      mount(<TestWrapper>{result}</TestWrapper>)
+      cy.mount(<TestWrapper>{result}</TestWrapper>)
       cy.contains('plain value').should('exist')
     })
   })
@@ -323,7 +324,7 @@ describe('Formatters Module', () => {
 
   describe('Edge Cases', () => {
     it('badgeFormatter should handle empty values', () => {
-      mount(<TestWrapper>{badgeFormatter('')}</TestWrapper>)
+      cy.mount(<TestWrapper>{badgeFormatter('')}</TestWrapper>)
       cy.get('span[class*="rounded-full"]').should('exist')
     })
 
@@ -331,13 +332,13 @@ describe('Formatters Module', () => {
       const truthyValues = ['yes', 'Y', '1', 't', true, 1]
 
       truthyValues.forEach((value) => {
-        mount(<TestWrapper>{booleanFormatter(value as any)}</TestWrapper>)
+        cy.mount(<TestWrapper>{booleanFormatter(value as any)}</TestWrapper>)
         cy.get('[aria-label="yes"]').should('exist')
       })
     })
 
     it('durationFormatter should handle NaN gracefully', () => {
-      mount(<TestWrapper>{durationFormatter('invalid' as any)}</TestWrapper>)
+      cy.mount(<TestWrapper>{durationFormatter('invalid' as any)}</TestWrapper>)
       cy.contains('invalid').should('exist')
     })
 
@@ -348,7 +349,7 @@ describe('Formatters Module', () => {
 
     it('codeDialogFormatter should not show dialog for short code', () => {
       const shortCode = 'SELECT 1'
-      mount(<TestWrapper>{codeDialogFormatter(shortCode)}</TestWrapper>)
+      cy.mount(<TestWrapper>{codeDialogFormatter(shortCode)}</TestWrapper>)
 
       cy.get('code').should('exist')
       cy.get('[role="dialog"]').should('not.exist')

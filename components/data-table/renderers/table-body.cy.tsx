@@ -7,7 +7,6 @@ import {
   TableBodyRows,
   VirtualizedTableRow,
 } from './table-body'
-import { mount } from 'cypress/react18'
 
 describe('TableBody Components', () => {
   const queryClient = new QueryClient({
@@ -64,7 +63,7 @@ describe('TableBody Components', () => {
 
   describe('StandardTableRow', () => {
     it('renders a standard table row with cells', () => {
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
@@ -81,7 +80,7 @@ describe('TableBody Components', () => {
     })
 
     it('applies odd row styling for odd indices', () => {
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
@@ -100,7 +99,7 @@ describe('TableBody Components', () => {
         getIsSelected: () => true,
       }
 
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
@@ -118,7 +117,7 @@ describe('TableBody Components', () => {
     it('renders a virtualized table row with positioning', () => {
       const virtualRow = { index: 0, size: 50, start: 0 }
 
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
@@ -141,7 +140,7 @@ describe('TableBody Components', () => {
     it('applies odd row styling for odd virtual row indices', () => {
       const virtualRow = { index: 1, size: 50, start: 50 }
 
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
@@ -160,7 +159,7 @@ describe('TableBody Components', () => {
 
   describe('TableBodyEmptyState', () => {
     it('renders empty state with no filters message', () => {
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
@@ -180,7 +179,7 @@ describe('TableBody Components', () => {
     })
 
     it('renders empty state with active filters message', () => {
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
@@ -201,7 +200,7 @@ describe('TableBody Components', () => {
 
   describe('TableBodyRows', () => {
     it('renders standard rows when not virtualized', () => {
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
@@ -222,7 +221,7 @@ describe('TableBody Components', () => {
         ],
       }
 
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <tbody>
@@ -244,7 +243,7 @@ describe('TableBody Components', () => {
 
   describe('TableBody', () => {
     it('renders rows when data is available', () => {
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <TableBody
@@ -267,7 +266,7 @@ describe('TableBody Components', () => {
         getRowModel: () => ({ rows: [] }),
       }
 
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <TableBody
@@ -289,7 +288,7 @@ describe('TableBody Components', () => {
         getVirtualItems: () => [{ index: 0, size: 50, start: 0 }],
       }
 
-      mount(
+      cy.mount(
         <QueryClientProvider client={queryClient}>
           <table>
             <TableBody

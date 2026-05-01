@@ -5,8 +5,8 @@ import { CodeToggleFormat } from './code-toggle-format'
 describe('<CodeToggleFormat />', () => {
   const mockRow = {
     index: 0,
-    getIsExpanded: cy.stub().returns(false),
-    toggleExpanded: cy.stub(),
+    getIsExpanded: () => false,
+    toggleExpanded: () => {},
   } as unknown as Row<any>
 
   it('renders short code without accordion', () => {
