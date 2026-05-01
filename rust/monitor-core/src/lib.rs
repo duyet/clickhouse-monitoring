@@ -168,7 +168,7 @@ struct UserEventRow {
 }
 
 #[derive(Serialize)]
-struct UserEventOutput {
+pub struct UserEventOutput {
     data: BTreeMap<String, BTreeMap<String, f64>>,
     users: Vec<String>,
     chart_data: Vec<serde_json::Map<String, serde_json::Value>>,
@@ -190,12 +190,22 @@ fn to_count(v: Option<serde_json::Value>) -> f64 {
     }
 }
 
-pub fn transform_user_event_counts(input: &str, time_field: &str) -> String {
+pub fn transform_user_event_counts(input: &str, time_field: &str) -> UserEventOutput {
     let rows: Vec<UserEventRow> = match serde_json::from_str(input) {
         Ok(r) => r,
-        Err(_) => return r#"{"data":{},"users":[],"chart_data":[]}"#.to_string(),
+        Err(_) => {
+            return UserEventOutput {
+                data: BTreeMap::new(),
+                users: Vec::new(),
+                chart_data: Vec::new(),
+            }
+        }
     };
 
+    transform_user_event_rows(rows, time_field)
+}
+
+fn transform_user_event_rows(rows: Vec<UserEventRow>, time_field: &str) -> UserEventOutput {
     let mut user_set = BTreeSet::new();
     let mut nested: BTreeMap<String, BTreeMap<String, f64>> = BTreeMap::new();
 
@@ -225,18 +235,40 @@ pub fn transform_user_event_counts(input: &str, time_field: &str) -> String {
         chart_data.push(entry);
     }
 
-    let out = UserEventOutput {
+    UserEventOutput {
         data: nested,
         users,
         chart_data,
-    };
-
-    serde_json::to_string(&out).unwrap_or_default()
+    }
 }
 
+/// WASM export returning JsValue directly — avoids JSON string intermediate.
+#[wasm_bindgen(js_name = transform_user_event_counts_v2)]
+pub fn transform_user_event_counts_v2(input: &str, time_field: &str) -> Result<JsValue, JsValue> {
+    let result = transform_user_event_counts(input, time_field);
+    serde_wasm_bindgen::to_value(&result)
+        .map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// WASM export accepting JsValue input and returning JsValue output — zero JSON string overhead.
+/// JS side: pass pre-parsed array directly, get result object directly.
+#[wasm_bindgen(js_name = transform_user_event_counts_v3)]
+pub fn transform_user_event_counts_v3(
+    input: JsValue,
+    time_field: &str,
+) -> Result<JsValue, JsValue> {
+    let rows: Vec<UserEventRow> = serde_wasm_bindgen::from_value(input)
+        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let result = transform_user_event_rows(rows, time_field);
+    serde_wasm_bindgen::to_value(&result)
+        .map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// Legacy export returning JSON string (kept for backward compat).
 #[wasm_bindgen]
 pub fn transform_user_event_counts_json(input: &str, time_field: &str) -> String {
-    transform_user_event_counts(input, time_field)
+    let result = transform_user_event_counts(input, time_field);
+    serde_json::to_string(&result).unwrap_or_default()
 }
 
 #[cfg(test)]
@@ -283,9 +315,9 @@ mod tests {
         ])
         .to_string();
 
+        let result = transform_user_event_counts(&input, "event_time");
         let output: Value =
-            serde_json::from_str(&transform_user_event_counts(&input, "event_time"))
-                .expect("valid json");
+            serde_json::from_str(&serde_json::to_string(&result).unwrap()).expect("valid json");
 
         assert_eq!(output["users"], json!(["(empty)", "alice", "bob"]));
         assert_eq!(output["data"]["2026-01-01 00:00:00"]["alice"], json!(5.0));
