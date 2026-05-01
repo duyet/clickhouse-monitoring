@@ -4,15 +4,7 @@
 
 import type { QueryConfig } from '@/types/query-config'
 
-import {
-  afterAll,
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-} from 'bun:test'
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // Mock dependencies — all mock.module calls are hoisted by bun before imports.
 // We use dynamic import (await import) instead of static import to guarantee
@@ -154,10 +146,6 @@ describe('clickhouse-fetch', () => {
     mockResultSetJson.mockResolvedValue([{ result: 'data' }])
     mockResultSetText.mockResolvedValue('{"result":"1"}\n{"result":"2"}\n')
     mockClientQuery.mockResolvedValue(mockResultSet as never)
-  })
-
-  afterEach(() => {
-    // Cleanup happens automatically with mockReset in beforeEach
   })
 
   describe('fetchData', () => {
