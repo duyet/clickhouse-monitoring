@@ -45,7 +45,7 @@
     "test:watch": "bun test --watch",
     "type-check": "tsc --noEmit",
     "wasm:build": "bun scripts/build-wasm.ts",
-    "wasm:test": "bun run wasm:build && cargo test --manifest-path rust/monitor-core/Cargo.toml && bun test ./lib/wasm/monitor-core.wasm.ts",
+    "wasm:test": "bun run wasm:build && cargo test --manifest-path rust/monitor-core/Cargo.toml && bun test ./lib/wasm/monitor-core.wasm.test.ts",
     "rust:build": "cargo build --manifest-path rust/monitor-core/Cargo.toml --release",
     "bench:wasm": "bun run wasm:build && bun run rust:build && bun scripts/bench-wasm.ts",
     "preinstall": "npx only-allow bun",
