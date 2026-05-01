@@ -126,8 +126,12 @@ Both deployment methods provide:
 - `bun run check` / `bun run check:fix` - Run Biome's full check suite, with optional write mode
 - `bun run lint:fix` - Apply Biome lint fixes
 - `bun run type-check` - Run standalone TypeScript verification
+- `bun run release:notes` - Generate release notes from recent changes
 - `bun run cy:open` - Start the dev server and open Cypress against `http://localhost:3000`
 - `bun run test:unit`, `bun run test:query-config`, `bun run test:coverage`, `bun run test:watch` - Narrow test runs for common workflows
+- `bun run wasm:test` - Rebuild WASM module, run Rust tests, then run WASM integration test
+- `bun run rust:build` - Build the Rust monitor core in release mode
+- `bun run bench:wasm` - Build JS + Rust artifacts and run WASM benchmark script
 - `bun run build:skills` - Regenerate the AI skills registry from `.agents/skills/`
 - `bun run scripts/build-ch-schema-docs.ts` - Regenerate ClickHouse schema docs (`--version`, `--table`, `--verbose`)
 - `bun scripts/set-secrets.ts` - Set Cloudflare Worker secrets directly (same operation as `bun run cf:config`)
