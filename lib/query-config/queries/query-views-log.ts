@@ -48,8 +48,8 @@ export const queryViewsLogConfig: QueryConfig = {
           formatReadableQuantity(read_rows) AS readable_read_rows,
           written_rows,
           formatReadableQuantity(written_rows) AS readable_written_rows,
-          memory_usage,
-          formatReadableSize(memory_usage) AS readable_memory_usage
+          peak_memory_usage,
+          formatReadableSize(peak_memory_usage) AS readable_peak_memory_usage
         FROM system.query_views_log
         WHERE event_date >= today() - 7
         ORDER BY event_time DESC

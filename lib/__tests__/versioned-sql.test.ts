@@ -8,6 +8,7 @@
 import { describe, expect, it } from 'bun:test'
 import { parseVersion, selectVersionedSql } from '@/lib/clickhouse-version'
 import { queries } from '@/lib/query-config'
+import { queryViewsLogConfig } from '@/lib/query-config/queries/query-views-log'
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
 
 describe('Running Queries Version Selection', () => {
@@ -174,6 +175,18 @@ describe('All Versioned Query Configs', () => {
         })
       })
     })
+  })
+})
+
+describe('Query Views Log Version Selection', () => {
+  it('uses the documented peak memory column for modern ClickHouse versions', () => {
+    const sql = selectVersionedSql(
+      queryViewsLogConfig.sql,
+      parseVersion('24.1.0.0')
+    )
+
+    expect(sql).toContain('peak_memory_usage')
+    expect(sql).not.toContain('formatReadableSize(memory_usage)')
   })
 })
 
