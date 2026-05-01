@@ -86,10 +86,10 @@ describe('<DataTablePagination />', () => {
 
     cy.mount(<TestTable data={data} pageSize={1} />)
     cy.get('[aria-label="Pagination"]').should('is.visible')
-    cy.contains('Page 1 of 10')
+    cy.contains('1–1 of 10 rows')
 
-    cy.contains('button', 'Go to next page').click()
-    cy.contains('Page 2 of 10')
+    cy.get('button[aria-label="Go to next page"]').click()
+    cy.contains('2–2 of 10 rows')
   })
 
   it('renders table with 10 row, pageSize=2', () => {
@@ -100,10 +100,10 @@ describe('<DataTablePagination />', () => {
 
     cy.mount(<TestTable data={data} pageSize={2} />)
     cy.get('[aria-label="Pagination"]').should('is.visible')
-    cy.contains('Page 1 of 5')
+    cy.contains('1–2 of 10 rows')
 
-    cy.contains('button', 'Go to next page').click()
-    cy.contains('Page 2 of 5')
+    cy.get('button[aria-label="Go to next page"]').click()
+    cy.contains('3–4 of 10 rows')
   })
 
   it('renders table with 10 row, pageSize=10', () => {

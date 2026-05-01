@@ -9,7 +9,7 @@ describe('<Error />', () => {
     cy.mount(<ErrorPage error={err} reset={reset} />)
 
     // Should show error title (environment-dependent)
-    cy.get('[data-testid="error-message"]').should('be.visible')
+    cy.get('[data-testid="error-message-full"]').should('be.visible')
 
     // Should show the error message
     cy.contains('Test error message').should('be.visible')

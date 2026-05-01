@@ -44,6 +44,7 @@ function ScaleToggle() {
           variant="ghost"
           size="icon"
           onClick={toggleScale}
+          aria-label={isLogScale ? 'Disable log scale' : 'Enable log scale'}
           className={cn(
             'size-6 rounded-full transition-opacity',
             'relative before:content-[""] before:absolute before:-inset-4',

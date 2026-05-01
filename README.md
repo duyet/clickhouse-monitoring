@@ -89,6 +89,17 @@ docker run -d \
   ghcr.io/duyet/clickhouse-monitoring:latest
 ```
 
+### Releases
+
+Tagged releases are built by GitHub Actions from tags matching `v*`. The release page includes:
+
+- Docker images published to `ghcr.io/duyet/clickhouse-monitoring` with the release version tag
+- a Next.js standalone archive for Node.js deployments
+- a Cloudflare Workers/OpenNext archive for manual inspection or deployment
+- generated release notes with CLI command usage, Docker tags, deployment steps, and checksums
+
+For repeatable Docker deploys, prefer the versioned image tag from the release page instead of `latest`.
+
 ## Documentation
 
 - **llms.txt** - AI agent discovery file for automated code understanding
@@ -142,4 +153,3 @@ See [LICENSE](LICENSE).
 ---
 
 ![Alt](https://repobeats.axiom.co/api/embed/830f9ce7ba9e7a42f93630e2581506ca34c84067.svg 'Repobeats analytics image')
-

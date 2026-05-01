@@ -37,8 +37,21 @@ export const FORMATTER_REGISTRY = {
 } as const
 
 // Re-export all formatters for direct access if needed
-export * from './advanced-formatters'
-export * from './context-formatters'
+export {
+  ADVANCED_FORMATTERS,
+  codeDialogFormatter,
+  codeToggleFormatter,
+  coloredBadgeFormatter,
+  markdownFormatter,
+} from './advanced-formatters'
+export {
+  actionFormatter,
+  backgroundBarFormatter,
+  CONTEXT_FORMATTERS,
+  hoverCardFormatter,
+  inlineActionFormatter,
+  linkFormatter,
+} from './context-formatters'
 // Export core formatting function
 export { formatCell } from './format-cell'
 // Export formatter utilities
@@ -56,5 +69,17 @@ export {
   hasInlineFormatter,
   hasValueFormatter,
 } from './formatter-selector'
-export * from './inline-formatters'
-export * from './value-formatters'
+export {
+  codeFormatter,
+  INLINE_FORMATTERS,
+  numberFormatter,
+  numberShortFormatter,
+} from './inline-formatters'
+export {
+  badgeFormatter,
+  booleanFormatter,
+  durationFormatter,
+  relatedTimeFormatter,
+  textFormatter,
+  VALUE_FORMATTERS,
+} from './value-formatters'
