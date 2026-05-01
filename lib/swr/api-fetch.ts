@@ -11,7 +11,7 @@ const dashboardApiKey = process.env.NEXT_PUBLIC_CHM_API_KEY
  */
 export function apiFetch(input: RequestInfo | URL, init?: RequestInit) {
   if (!dashboardApiKey) {
-    return fetch(input, init)
+    return init === undefined ? fetch(input) : fetch(input, init)
   }
 
   const headers = new Headers(init?.headers)
