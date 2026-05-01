@@ -84,8 +84,8 @@ mix of existing Cypress component-test fragility and one real component bug.
 - Controlled Radix dialog specs should not assert the dialog closes unless the
   test component updates the controlled `open` prop. Use internal state for
   close-behavior tests.
-- For background-bar cells, the gradient lives on the inner bar element, not the
-  outer cell wrapper.
+- For background-bar cells, the dynamic width and background color live on the
+  inner bar element. The style is a solid `background-color`, not a gradient.
 
 ## Patch Direction
 
@@ -117,6 +117,9 @@ Keep these fixes narrow:
   as action-menu and reload buttons.
 - For components mounted with the shared App Router context, assert router calls
   through `@appRouter:push`, not the legacy pages-router alias.
+- Keep command-palette component coverage focused on stable cmdk behavior:
+  visible search input, filtering, empty state, keyboard open, navigation, and
+  controlled close callback. Avoid broad Radix dialog visibility assertions.
 
 ## Handoff Rules
 

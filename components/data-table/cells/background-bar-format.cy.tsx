@@ -33,8 +33,9 @@ describe('<BackgroundBarFormat />', () => {
     cy.get('@cell').should('have.attr', 'title', '100 (50%)')
     cy.get('@cell')
       .find('[aria-hidden="true"]')
-      .should('have.css', 'background')
-      .and('include', 'linear-gradient')
+      .should('have.attr', 'style')
+      .and('include', 'width: 50%')
+      .and('include', 'background-color')
   })
 
   it('renders with numberFormat option', () => {
