@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}))
     const label = typeof body.label === 'string' ? body.label : 'cli'
     const days = Number(body.days ?? 30)
-    const apiKey = issueApiKey(label, Number.isFinite(days) ? days : 30)
+    const apiKey = await issueApiKey(label, Number.isFinite(days) ? days : 30)
     return NextResponse.json({ data: { apiKey } })
   } catch (error) {
     return NextResponse.json(

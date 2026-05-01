@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { apiKeyAuthEnabled, verifyApiKey } from '@/lib/api-key'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   if (!apiKeyAuthEnabled()) return NextResponse.next()
+  if (request.nextUrl.pathname === '/api/v1/auth/api-key') return NextResponse.next()
 
   const auth = request.headers.get('authorization')
   const headerToken = auth?.startsWith('Bearer ') ? auth.slice(7) : request.headers.get('x-api-key')
@@ -12,7 +13,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.json({ error: 'API key required' }, { status: 401 })
   }
 
-  const status = verifyApiKey(headerToken)
+  const status = await verifyApiKey(headerToken)
   if (!status.valid) {
     return NextResponse.json({ error: `Invalid API key: ${status.reason}` }, { status: 401 })
   }

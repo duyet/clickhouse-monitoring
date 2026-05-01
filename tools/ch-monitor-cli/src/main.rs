@@ -42,9 +42,19 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     Hosts,
-    Chart { name: String, #[arg(long, default_value_t = 20)] limit: usize },
-    Table { name: String, #[arg(long, default_value_t = 20)] limit: usize },
-    Tui { chart: Option<String> },
+    Chart {
+        name: String,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+    },
+    Table {
+        name: String,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+    },
+    Tui {
+        chart: Option<String>,
+    },
 }
 
 #[derive(Debug, Deserialize)]
@@ -85,7 +95,9 @@ fn resolve_config(cli: &Cli) -> AppConfig {
             .unwrap_or_else(|| "http://localhost:3000".to_string()),
         host_id: cli.host_id.or(file.host_id).unwrap_or(0),
         api_key: cli.api_key.clone().or(file.api_key),
-        default_chart: file.default_chart.unwrap_or_else(|| "query-count".to_string()),
+        default_chart: file
+            .default_chart
+            .unwrap_or_else(|| "query-count".to_string()),
     }
 }
 
@@ -124,7 +136,10 @@ async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
 
     loop {
-        let url = format!("{}/api/v1/charts/{}?hostId={}", cfg.base_url, chart, cfg.host_id);
+        let url = format!(
+            "{}/api/v1/charts/{}?hostId={}",
+            cfg.base_url, chart, cfg.host_id
+        );
         let data = fetch(client, url, cfg.api_key.as_deref())
             .await
             .unwrap_or(Value::Array(vec![]));
@@ -206,7 +221,10 @@ async fn main() -> Result<()> {
             print_records(&hosts, 100);
         }
         Commands::Chart { name, limit } => {
-            let url = format!("{}/api/v1/charts/{}?hostId={}", cfg.base_url, name, cfg.host_id);
+            let url = format!(
+                "{}/api/v1/charts/{}?hostId={}",
+                cfg.base_url, name, cfg.host_id
+            );
             let data = fetch(&client, url, cfg.api_key.as_deref()).await?;
             let rows: Vec<HashMap<String, Value>> =
                 serde_json::from_value(data).context("chart payload parse failed")?;
