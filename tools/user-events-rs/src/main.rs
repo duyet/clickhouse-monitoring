@@ -1,6 +1,7 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::io::{self, Read};
 
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
@@ -13,7 +14,7 @@ struct Row {
 
 #[derive(Debug, Serialize)]
 struct Output {
-    data: BTreeMap<String, BTreeMap<String, f64>>,
+    data: IndexMap<String, IndexMap<String, f64>>,
     users: Vec<String>,
     chart_data: Vec<Map<String, Value>>,
 }
@@ -36,7 +37,7 @@ fn to_count(v: Option<Value>) -> f64 {
 
 fn transform(rows: Vec<Row>, time_field: &str) -> Output {
     let mut user_set = BTreeSet::new();
-    let mut nested: BTreeMap<String, BTreeMap<String, f64>> = BTreeMap::new();
+    let mut nested: IndexMap<String, IndexMap<String, f64>> = IndexMap::new();
 
     for row in rows {
         let event_time = stringify(row.event_time);
@@ -74,9 +75,10 @@ fn transform(rows: Vec<Row>, time_field: &str) -> Output {
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
-    let payload: Value = serde_json::from_str(&input).expect("invalid json payload");
+    let mut payload: Value = serde_json::from_str(&input).expect("invalid json payload");
 
-    let rows: Vec<Row> = serde_json::from_value(payload.get("data").cloned().unwrap_or(Value::Array(vec![])))
+    let data_val = payload.get_mut("data").map(|v| v.take());
+    let rows: Vec<Row> = serde_json::from_value(data_val.unwrap_or(Value::Array(vec![])))
         .expect("data must be array");
     let time_field = payload
         .get("timeField")

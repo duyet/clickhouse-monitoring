@@ -78,8 +78,13 @@ fn load_file_config(path: Option<PathBuf>) -> FileConfig {
     let p = path.or_else(default_config_path);
     if let Some(path) = p {
         if path.exists() {
-            let content = fs::read_to_string(path).unwrap_or_default();
-            return toml::from_str(&content).unwrap_or_default();
+            match fs::read_to_string(&path) {
+                Ok(content) => match toml::from_str(&content) {
+                    Ok(cfg) => return cfg,
+                    Err(e) => eprintln!("warning: failed to parse {}: {e}", path.display()),
+                },
+                Err(e) => eprintln!("warning: failed to read {}: {e}", path.display()),
+            }
         }
     }
     FileConfig::default()
@@ -128,10 +133,21 @@ fn print_records(data: &[HashMap<String, Value>], limit: usize) {
     println!("{table}");
 }
 
+struct TuiGuard;
+
+impl Drop for TuiGuard {
+    fn drop(&mut self) {
+        let _ = disable_raw_mode();
+        let _ = execute!(io::stdout(), LeaveAlternateScreen);
+    }
+}
+
 async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen)?;
+    let _guard = TuiGuard;
+
     let backend = ratatui::backend::CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
@@ -201,8 +217,6 @@ async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
         }
     }
 
-    disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
     Ok(())
 }
 
