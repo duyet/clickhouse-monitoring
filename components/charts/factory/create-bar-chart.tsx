@@ -62,9 +62,11 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     lastHours = config.defaultLastHours,
     className,
     chartClassName,
+    hostId: hostIdProp,
     ...props
   }: ChartProps) {
-    const hostId = useHostId()
+    const routeHostId = useHostId()
+    const hostId = hostIdProp ?? routeHostId
     const userTimezone = useTimezone()
 
     // Date range state (only used when dateRangeConfig is provided)

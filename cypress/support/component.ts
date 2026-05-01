@@ -17,6 +17,8 @@
 import '@cypress/code-coverage/support'
 import 'cypress-real-events'
 
+import { SWRConfig } from 'swr'
+
 import { mount } from 'cypress/react'
 import { createElement } from 'react'
 
@@ -43,7 +45,19 @@ Cypress.Commands.add('mount', (component, options) =>
     createElement(
       'div',
       { style: { height: '500px', width: '500px' } },
-      createElement(TooltipProvider, { delayDuration: 0 }, component)
+      createElement(
+        SWRConfig,
+        {
+          value: {
+            provider: () => new Map(),
+            dedupingInterval: 0,
+            errorRetryCount: 0,
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false,
+          },
+        },
+        createElement(TooltipProvider, { delayDuration: 0 }, component)
+      )
     ),
     options
   )

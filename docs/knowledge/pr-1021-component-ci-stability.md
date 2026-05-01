@@ -17,10 +17,16 @@ related:
   - pr-1021-rust-wasm-performance
 artifacts:
   - cypress/support/component.ts
+  - components/charts/factory/create-area-chart.tsx
+  - components/charts/factory/create-bar-chart.tsx
+  - components/charts/factory/create-custom-chart.tsx
+  - components/charts/primitives/bar-list.tsx
   - components/charts/primitives/area.cy.tsx
   - components/charts/merge/summary-used-by-merges.cy.tsx
   - components/dashboard/render-chart.tsx
   - components/dashboard/chart-params.tsx
+  - components/dialogs/dialog-content.tsx
+  - components/feedback/error-alert.cy.tsx
 ---
 
 # PR 1021 Component CI Stability
@@ -46,6 +52,14 @@ mix of existing Cypress component-test fragility and one real component bug.
   Next/SWC rejects that pattern in component compilation.
 - `components/dashboard/chart-params.tsx` mixes `useRouter()` with the form
   behavior, which makes isolated component tests harder to mount.
+- Factory charts accepted `hostId` in `ChartProps` but ignored it in favor of
+  `useHostId()`. Component specs that passed a host override then waited for the
+  wrong mocked URL.
+- Shared SWR cache state can leak between component mounts and make loading or
+  error-state specs depend on previous specs.
+- Some specs asserted test-only ARIA roles such as `role="dialog-content"` or
+  `role="open-query"`. Prefer semantic elements or explicit `data-testid`
+  attributes instead.
 
 ## Patch Direction
 
@@ -60,6 +74,12 @@ Keep these fixes narrow:
 - Replace `export *` in `RenderChart` with explicit type exports.
 - Extract a hook-free `ChartParamsForm` and keep `ChartParams` as the router
   wrapper.
+- Keep per-mount SWR state isolated in `cypress/support/component.ts`.
+- In chart factories, prefer an explicit `hostId` prop when provided and fall
+  back to `useHostId()` for routed pages.
+- Add stable test ids to non-semantic internal rendering layers when the visible
+  text appears in multiple stacked layers, such as `BarList`.
+- Do not add invalid ARIA roles only for Cypress selectors.
 
 ## Handoff Rules
 

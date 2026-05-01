@@ -9,10 +9,10 @@ describe('<DialogContent />', () => {
   it('renders with string content', () => {
     cy.mount(<DialogContent content="SELECT 1000" />)
     cy.get('button').should('be.visible')
-    cy.get('[role="dialog-content"]').should('not.exist')
+    cy.get('[data-testid="dialog-content"]').should('not.exist')
 
     cy.get('button').click()
-    cy.get('[role="dialog-content"]')
+    cy.get('[data-testid="dialog-content"]')
       .should('be.visible')
       .contains('SELECT 1000')
   })
@@ -51,11 +51,11 @@ describe('<DialogContent />', () => {
   it('dialog opens and closes correctly', () => {
     cy.mount(<DialogContent content="SELECT 1000" />)
     cy.get('button').click()
-    cy.get('[role="dialog-content"]').should('be.visible')
+    cy.get('[data-testid="dialog-content"]').should('be.visible')
 
     // Click outside modal
     cy.get('[role="dialog"] button').click()
-    cy.get('[role="dialog-content"]').should('not.exist')
+    cy.get('[data-testid="dialog-content"]').should('not.exist')
   })
 
   // Ensure the SQL content is displayed correctly within the dialog
@@ -63,6 +63,6 @@ describe('<DialogContent />', () => {
     const sqlContent = 'SELECT * FROM table WHERE id > 1000'
     cy.mount(<DialogContent content={sqlContent} />)
     cy.get('button').click()
-    cy.get('[role="dialog-content"]').should('contain', sqlContent)
+    cy.get('[data-testid="dialog-content"]').should('contain', sqlContent)
   })
 })

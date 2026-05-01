@@ -54,7 +54,7 @@ describe('<NumberChart />', () => {
         className="max-w-[300px] rounded border"
       />
     )
-    cy.get('[role="title"]').should('be.visible')
+    cy.contains('h3', 'Walking Distance').should('be.visible')
   })
 
   it('renders with title and description', () => {
@@ -69,7 +69,10 @@ describe('<NumberChart />', () => {
         className="max-w-[300px] rounded border"
       />
     )
-    cy.get('[role="title"]').should('be.visible')
-    cy.get('[role="description"]').should('be.visible')
+    cy.contains('h3', 'Walking Distance').should('be.visible')
+    cy.contains(
+      'p',
+      'Over the last 7 days, your distance walked and run was 12.5 miles per day.'
+    ).should('be.visible')
   })
 })
