@@ -82,7 +82,7 @@ jobs:
 
       - name: Setup Rust
         if: ${{ inputs.job-type == 'build' }}
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Next.js Cache
         uses: actions/cache@v5

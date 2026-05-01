@@ -65,7 +65,13 @@ function formatGeneratedTypes() {
     return
   }
 
-  run([biomePath, 'format', '--write', resolve(outDir, 'monitor_core.d.ts')])
+  run([
+    biomePath,
+    'format',
+    '--write',
+    '--no-errors-on-unmatched',
+    resolve(outDir, 'monitor_core.d.ts'),
+  ])
 }
 
 ensureWasmTarget()

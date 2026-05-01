@@ -2,10 +2,34 @@ type MonitorCoreModule = typeof import('./generated/monitor_core.js')
 
 let modulePromise: Promise<MonitorCoreModule> | null = null
 
+function isNodeRuntime(): boolean {
+  return (
+    typeof process !== 'undefined' &&
+    typeof process.versions?.node === 'string' &&
+    typeof process.versions?.bun === 'undefined'
+  )
+}
+
+async function initMonitorCore(mod: MonitorCoreModule): Promise<void> {
+  if (!isNodeRuntime()) {
+    await mod.default()
+    return
+  }
+
+  const [{ readFile }, { fileURLToPath }] = await Promise.all([
+    import('node:fs/promises'),
+    import('node:url'),
+  ])
+  const wasmUrl = new URL('./generated/monitor_core_bg.wasm', import.meta.url)
+  const wasmBytes = await readFile(fileURLToPath(wasmUrl))
+
+  await mod.default({ module_or_path: wasmBytes })
+}
+
 async function loadMonitorCore(): Promise<MonitorCoreModule> {
   if (!modulePromise) {
     modulePromise = import('./generated/monitor_core.js').then(async (mod) => {
-      await mod.default()
+      await initMonitorCore(mod)
       return mod
     })
   }
@@ -13,36 +37,15 @@ async function loadMonitorCore(): Promise<MonitorCoreModule> {
   return modulePromise
 }
 
-export async function parseTablesFromSqlWasm(sql: string): Promise<string[]> {
+export async function transformClickHouseJsonEachRowWasmJson(
+  input: string
+): Promise<string> {
   const mod = await loadMonitorCore()
-  return JSON.parse(mod.parse_tables_from_sql_json(sql)) as string[]
+  return mod.transform_clickhouse_json_each_row_json(input)
 }
 
-export async function transformClickHouseDataWasm<
+export async function transformClickHouseJsonEachRowWasm<
   T extends Record<string, unknown>,
->(data: T[]): Promise<T[]> {
-  const mod = await loadMonitorCore()
-  return JSON.parse(
-    mod.transform_clickhouse_data_json(JSON.stringify(data))
-  ) as T[]
-}
-
-export async function transformUserEventCountsWasm<
-  T extends string = 'event_time',
->(
-  data: readonly Record<string, unknown>[],
-  timeField: T = 'event_time' as T
-): Promise<{
-  data: Record<T, Record<string, number>>
-  users: string[]
-  chartData: Array<Record<T, string> & Record<string, number>>
-}> {
-  const mod = await loadMonitorCore()
-  return JSON.parse(
-    mod.transform_user_event_counts_json(JSON.stringify(data), timeField)
-  ) as {
-    data: Record<T, Record<string, number>>
-    users: string[]
-    chartData: Array<Record<T, string> & Record<string, number>>
-  }
+>(input: string): Promise<T[]> {
+  return JSON.parse(await transformClickHouseJsonEachRowWasmJson(input)) as T[]
 }

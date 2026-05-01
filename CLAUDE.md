@@ -130,6 +130,8 @@ Both deployment methods provide:
 - `bun run test:unit`, `bun run test:query-config`, `bun run test:coverage`, `bun run test:watch` - Narrow test runs for common workflows
 - `bun run build:skills` - Regenerate the AI skills registry from `.agents/skills/`
 - `bun run scripts/build-ch-schema-docs.ts` - Regenerate ClickHouse schema docs (`--version`, `--table`, `--verbose`)
+- `bun scripts/set-secrets.ts` - Set Cloudflare Worker secrets directly (same operation as `bun run cf:config`)
+- `bun scripts/setup-conversations-db.ts` - Create/update conversation D1 binding config directly (same operation as `bun run cf:setup-conversations`)
 - `./scripts/dev-monitor.sh` - Continuously monitor the local dev server and TypeScript logs
 - `bun run cf:typegen` - Regenerate Cloudflare environment typings
 - `bun run cf:setup-conversations` - Provision the D1 database and update `wrangler.toml`
