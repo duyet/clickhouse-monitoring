@@ -1,12 +1,14 @@
 /* tslint:disable */
 /* eslint-disable */
 export function transform_clickhouse_json_each_row_json(input: string): string;
+export function transform_user_event_counts_json(input: string, time_field: string): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly transform_clickhouse_json_each_row_json: (a: number, b: number, c: number) => void;
+  readonly transform_user_event_counts_json: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_export: (a: number, b: number) => number;
   readonly __wbindgen_export2: (a: number, b: number, c: number, d: number) => number;

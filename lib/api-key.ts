@@ -34,7 +34,11 @@ async function sign(payloadEnc: string, secret: string): Promise<Uint8Array> {
     false,
     ['sign']
   )
-  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payloadEnc))
+  const signature = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    new TextEncoder().encode(payloadEnc)
+  )
   return new Uint8Array(signature)
 }
 
@@ -65,23 +69,31 @@ export async function verifyApiKey(
 ): Promise<{ valid: boolean; reason?: string; sub?: string }> {
   const secret = getSecret()
   if (!secret) return { valid: true }
-  if (!token.startsWith('chm_')) return { valid: false, reason: 'invalid prefix' }
+  if (!token.startsWith('chm_'))
+    return { valid: false, reason: 'invalid prefix' }
 
-  const raw = token.slice(4)
-  const [payloadEnc, sigEnc] = raw.split('.')
-  if (!payloadEnc || !sigEnc) return { valid: false, reason: 'malformed token' }
+  try {
+    const raw = token.slice(4)
+    const [payloadEnc, sigEnc] = raw.split('.')
+    if (!payloadEnc || !sigEnc)
+      return { valid: false, reason: 'malformed token' }
 
-  const expected = await sign(payloadEnc, secret)
-  const provided = unb64url(sigEnc)
-  if (!constantTimeEqual(expected, provided)) {
-    return { valid: false, reason: 'bad signature' }
+    const expected = await sign(payloadEnc, secret)
+    const provided = unb64url(sigEnc)
+    if (!constantTimeEqual(expected, provided)) {
+      return { valid: false, reason: 'bad signature' }
+    }
+
+    const payload = JSON.parse(
+      new TextDecoder().decode(unb64url(payloadEnc))
+    ) as Payload
+    const now = Math.floor(Date.now() / 1000)
+    if (payload.exp < now) return { valid: false, reason: 'expired' }
+
+    return { valid: true, sub: payload.sub }
+  } catch {
+    return { valid: false, reason: 'malformed token' }
   }
-
-  const payload = JSON.parse(new TextDecoder().decode(unb64url(payloadEnc))) as Payload
-  const now = Math.floor(Date.now() / 1000)
-  if (payload.exp < now) return { valid: false, reason: 'expired' }
-
-  return { valid: true, sub: payload.sub }
 }
 
 export function apiKeyAuthEnabled() {

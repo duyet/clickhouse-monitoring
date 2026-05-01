@@ -6,6 +6,9 @@ on:
     tags:
       - 'chm-v*'
 
+permissions:
+  contents: write
+
 jobs:
   release:
     strategy:
@@ -24,6 +27,8 @@ jobs:
         with:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tools/ch-monitor-cli -> target
       - name: Build
         working-directory: tools/ch-monitor-cli
         run: cargo build --release --target ${{ matrix.target }}

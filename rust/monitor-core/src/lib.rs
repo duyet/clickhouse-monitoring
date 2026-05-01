@@ -1,4 +1,6 @@
 use wasm_bindgen::prelude::*;
+use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, BTreeSet};
 
 const MAX_SAFE_INTEGER: i128 = 9_007_199_254_740_991;
 
@@ -158,6 +160,85 @@ fn is_numeric_string(value: &str) -> bool {
     index == bytes.len()
 }
 
+#[derive(Deserialize)]
+struct UserEventRow {
+    event_time: Option<serde_json::Value>,
+    user: Option<serde_json::Value>,
+    count: Option<serde_json::Value>,
+}
+
+#[derive(Serialize)]
+struct UserEventOutput {
+    data: BTreeMap<String, BTreeMap<String, f64>>,
+    users: Vec<String>,
+    chart_data: Vec<serde_json::Map<String, serde_json::Value>>,
+}
+
+fn stringify_val(v: Option<serde_json::Value>) -> String {
+    match v {
+        Some(serde_json::Value::String(s)) => s,
+        Some(other) => other.to_string(),
+        None => String::new(),
+    }
+}
+
+fn to_count(v: Option<serde_json::Value>) -> f64 {
+    match v {
+        Some(serde_json::Value::Number(n)) => n.as_f64().unwrap_or(0.0),
+        Some(serde_json::Value::String(s)) => s.parse::<f64>().unwrap_or(0.0),
+        _ => 0.0,
+    }
+}
+
+pub fn transform_user_event_counts(input: &str, time_field: &str) -> String {
+    let rows: Vec<UserEventRow> = match serde_json::from_str(input) {
+        Ok(r) => r,
+        Err(_) => return r#"{"data":{},"users":[],"chart_data":[]}"#.to_string(),
+    };
+
+    let mut user_set = BTreeSet::new();
+    let mut nested: BTreeMap<String, BTreeMap<String, f64>> = BTreeMap::new();
+
+    for row in rows {
+        let event_time = stringify_val(row.event_time);
+        let raw_user = stringify_val(row.user);
+        let user = if raw_user.trim().is_empty() {
+            "(empty)".to_string()
+        } else {
+            raw_user
+        };
+        let count = to_count(row.count);
+
+        user_set.insert(user.clone());
+        nested.entry(event_time).or_default().insert(user, count);
+    }
+
+    let users: Vec<String> = user_set.into_iter().collect();
+
+    let mut chart_data = Vec::with_capacity(nested.len());
+    for (time, counts) in &nested {
+        let mut entry = serde_json::Map::new();
+        entry.insert(time_field.to_string(), serde_json::Value::String(time.clone()));
+        for (u, c) in counts {
+            entry.insert(u.clone(), serde_json::Value::from(*c));
+        }
+        chart_data.push(entry);
+    }
+
+    let out = UserEventOutput {
+        data: nested,
+        users,
+        chart_data,
+    };
+
+    serde_json::to_string(&out).unwrap_or_default()
+}
+
+#[wasm_bindgen]
+pub fn transform_user_event_counts_json(input: &str, time_field: &str) -> String {
+    transform_user_event_counts(input, time_field)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -190,5 +271,25 @@ mod tests {
         assert_eq!(output[0]["escaped"], json!("1\n2"));
         assert_eq!(output[0]["float_max"], json!("9007199254740993.0"));
         assert_eq!(output[0]["exp"], json!(100));
+    }
+
+    #[test]
+    fn transforms_user_event_counts() {
+        let input = serde_json::json!([
+            {"event_time": "2026-01-01 00:00:00", "user": "alice", "count": 5},
+            {"event_time": "2026-01-01 00:00:00", "user": "", "count": 3},
+            {"event_time": "2026-01-01 01:00:00", "user": "alice", "count": 7},
+            {"event_time": "2026-01-01 01:00:00", "user": "bob", "count": "2"},
+        ])
+        .to_string();
+
+        let output: Value =
+            serde_json::from_str(&transform_user_event_counts(&input, "event_time"))
+                .expect("valid json");
+
+        assert_eq!(output["users"], json!(["(empty)", "alice", "bob"]));
+        assert_eq!(output["data"]["2026-01-01 00:00:00"]["alice"], json!(5.0));
+        assert_eq!(output["data"]["2026-01-01 00:00:00"]["(empty)"], json!(3.0));
+        assert_eq!(output["chart_data"][0]["event_time"], json!("2026-01-01 00:00:00"));
     }
 }
