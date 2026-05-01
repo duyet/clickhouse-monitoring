@@ -36,7 +36,6 @@ import { type AgentToolPart, ToolCallPart } from './tool-output'
 
 interface ChatMessageProps {
   readonly message: UIMessage
-  readonly allMessages: readonly UIMessage[]
   readonly isLastUserMessage?: boolean
   readonly isStreaming?: boolean
   readonly responseDurationMs?: number
@@ -353,7 +352,6 @@ function MarkdownContent({ text }: { readonly text: string }) {
 
 export function ChatMessage({
   message,
-  allMessages: _allMessages,
   isLastUserMessage,
   isStreaming,
   responseDurationMs,
