@@ -4,7 +4,7 @@ describe('<ChartEmpty />', () => {
   it('renders empty state with title', () => {
     cy.mount(<ChartEmpty title="Test Chart" />)
 
-    cy.contains('No results').should('exist')
+    cy.contains('No data').should('exist')
     cy.contains('Test Chart').should('exist')
   })
 
@@ -17,7 +17,7 @@ describe('<ChartEmpty />', () => {
   it('renders empty state without title', () => {
     cy.mount(<ChartEmpty />)
 
-    cy.contains('No results').should('exist')
+    cy.contains('No data').should('exist')
   })
 
   it('has proper accessibility attributes', () => {

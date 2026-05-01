@@ -1,0 +1,195 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to build, for example v0.2.0
+        required: true
+        type: string
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  docker:
+    name: docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Extract release metadata
+        id: release_meta
+        run: |
+          TAG="${{ github.event.release.tag_name || inputs.tag || github.ref_name }}"
+          VERSION="${TAG#v}"
+          MAJOR="${VERSION%%.*}"
+          MINOR="$(echo "$VERSION" | cut -d. -f1,2)"
+          if [[ "$VERSION" == *-* ]]; then
+            echo "stable=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "stable=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "major=$MAJOR" >> "$GITHUB_OUTPUT"
+          echo "minor=$MINOR" >> "$GITHUB_OUTPUT"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          driver-opts: |
+            network=host
+            image=moby/buildkit:latest
+
+      - name: Login to Container registry
+        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@85e876bd3a78bcc6b9925c818c482e365cf13b71
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ steps.release_meta.outputs.version }}
+            type=raw,value=${{ steps.release_meta.outputs.minor }},enable=${{ steps.release_meta.outputs.stable == 'true' }}
+            type=raw,value=${{ steps.release_meta.outputs.major }},enable=${{ steps.release_meta.outputs.stable == 'true' }}
+            type=raw,value=latest,enable=${{ steps.release_meta.outputs.stable == 'true' }}
+            type=sha,prefix=sha-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        env:
+          TMPDIR: /home/runner/work/_temp
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GITHUB_SHA=${{ github.sha }}
+            GITHUB_REF=${{ github.ref }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  assets:
+    name: assets
+    needs: docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-v1-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-v1-
+
+      - name: Extract release metadata
+        id: meta
+        run: |
+          TAG="${{ github.event.release.tag_name || inputs.tag || github.ref_name }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_TAG=$TAG" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Cloudflare output
+        env:
+          NEXT_PUBLIC_GIT_SHA: ${{ github.sha }}
+          NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.tag }}
+          NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ github.event.repository.updated_at }}
+          NEXT_PUBLIC_CI: "true"
+        run: bun run cf:build
+
+      - name: Package release archives
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+          tar -czf "clickhouse-monitor-${TAG}-standalone.tar.gz" \
+            .next/standalone \
+            .next/static \
+            public \
+            package.json \
+            bun.lock
+          tar -czf "clickhouse-monitor-${TAG}-cloudflare.tar.gz" \
+            .open-next \
+            wrangler.toml \
+            package.json \
+            bun.lock
+          shasum -a 256 "clickhouse-monitor-${TAG}-standalone.tar.gz" "clickhouse-monitor-${TAG}-cloudflare.tar.gz" > SHA256SUMS
+
+      - name: Generate release notes
+        run: bun run --silent release:notes > release-notes.md
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets-${{ steps.meta.outputs.tag }}
+          path: |
+            clickhouse-monitor-${{ steps.meta.outputs.tag }}-standalone.tar.gz
+            clickhouse-monitor-${{ steps.meta.outputs.tag }}-cloudflare.tar.gz
+            SHA256SUMS
+            release-notes.md
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" \
+              --title "clickhouse-monitor $TAG" \
+              --notes-file release-notes.md
+          else
+            gh release create "$TAG" \
+              --title "clickhouse-monitor $TAG" \
+              --notes-file release-notes.md
+          fi
+
+          gh release upload "$TAG" \
+            "clickhouse-monitor-${TAG}-standalone.tar.gz" \
+            "clickhouse-monitor-${TAG}-cloudflare.tar.gz" \
+            SHA256SUMS \
+            release-notes.md \
+            --clobber

@@ -18,7 +18,7 @@ describe('<ChartQueryDuration />', () => {
     }).as('chartError')
     cy.mount(<ChartQueryDuration {...defaultProps} />)
     cy.wait('@chartError')
-    cy.contains('Error').should('exist')
+    cy.get('[role="alert"]').should('exist')
   })
 
   it('renders chart with data', () => {

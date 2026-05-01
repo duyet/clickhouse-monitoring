@@ -27,7 +27,10 @@ const DottedLineProgress = memo(function DottedLineProgress({
   const clampedPercent = Math.min(100, Math.max(0, percent))
 
   return (
-    <div className={cn('relative flex-1 h-3 min-w-8', className)}>
+    <div
+      className={cn('relative flex-1 h-3 min-w-8', className)}
+      data-testid="metric-progress"
+    >
       {/* Background dotted line */}
       <div className="absolute inset-0 flex items-center">
         <div className="w-full border-t border-dotted border-muted-foreground/20" />
@@ -46,8 +49,12 @@ const DottedLineProgress = memo(function DottedLineProgress({
 export const CardMultiMetrics = memo(function CardMultiMetrics({
   primary,
   items = [],
+  currentLabel,
+  targetLabel,
   className,
 }: CardMultiMetricsProps) {
+  const showLabels = items.length > 0 && (currentLabel || targetLabel)
+
   return (
     <div
       className={cn('flex flex-col gap-3', className)}
@@ -58,6 +65,16 @@ export const CardMultiMetrics = memo(function CardMultiMetrics({
       )}
 
       <div className="flex flex-col gap-2.5 overflow-hidden">
+        {showLabels && (
+          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+            <span className="truncate flex-1 min-w-0">{currentLabel}</span>
+            <span className="shrink-0 min-w-8 flex-1" />
+            <span className="truncate flex-1 min-w-0 text-right">
+              {targetLabel}
+            </span>
+          </div>
+        )}
+
         {items.map((item, i) => {
           const percent =
             item.target > 0 ? (item.current / item.target) * 100 : 0

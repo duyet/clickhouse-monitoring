@@ -108,15 +108,9 @@ describe('<GithubHeatmapChart />', () => {
     cy.get('svg').as('root').should('be.visible')
 
     // Last 3 items of data - trigger hover and verify tooltip appears
-    // Radix UI tooltips render in portals, so we check for the tooltip content wrapper
     data.slice(-3).forEach((item) => {
-      cy.get(`[data-date="${item.date}"]`).trigger('pointerenter', {
-        pointerType: 'mouse',
-      })
-      // Radix tooltip content renders in a portal with data-radix-popper-content-wrapper
-      cy.get('[data-radix-popper-content-wrapper]')
-        .should('exist')
-        .and('contain', item.count.toString())
+      cy.get(`[data-date="${item.date}"]`).realHover()
+      cy.contains(item.count.toString()).should('be.visible')
     })
   })
 })

@@ -96,7 +96,7 @@ export const ChartSummaryUsedByRunningQueries = memo(
     }
 
     if (error) {
-      return <ChartError error={error} title={title} />
+      return <ChartError error={error} title={title} className={className} />
     }
 
     // Show empty state if no data or transformation failed
@@ -109,7 +109,7 @@ export const ChartSummaryUsedByRunningQueries = memo(
     const totalMemory = transformedData.raw.totalMem.readable_total
 
     return (
-      <ChartCard title={title} sql={sql}>
+      <ChartCard title={title} sql={sql} className={className}>
         <CardMultiMetrics
           primary={
             <Link

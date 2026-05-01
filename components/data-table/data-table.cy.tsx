@@ -55,11 +55,9 @@ describe('<DataTable />', () => {
     )
 
     // "Go to previous page" button should be disabled
-    cy.get('button')
-      .contains('button', 'Go to previous page')
-      .should('be.disabled')
+    cy.get('button[aria-label="Go to previous page"]').should('be.disabled')
     // "Go to next page" button should be enabled
-    cy.get('button').contains('button', 'Go to next page').should('be.enabled')
+    cy.get('button[aria-label="Go to next page"]').should('be.enabled')
 
     // Contains 100 rows
     cy.get('div').contains(`${data.length} row`, { matchCase: false })
@@ -71,8 +69,7 @@ describe('<DataTable />', () => {
       .get('button')
       .contains('50')
 
-    // Page 1 of 2
-    cy.get('div').contains('Page 1 of 2')
+    cy.get('div').contains('1–50 of 100 rows')
   })
 
   it('render paging, click on next page', () => {
@@ -92,17 +89,10 @@ describe('<DataTable />', () => {
       />
     )
 
-    // Page 1 of 2
-    cy.get('div').contains('Page 1 of 5')
+    cy.get('div').contains('1–2 of 10 rows')
 
     // "Go to next page" button should be enabled
-    cy.get('button')
-      .contains('button', 'Go to next page')
-      .should('be.enabled')
-      .click()
-
-    // Page 2 of 2
-    cy.get('div').contains('Page 2 of 5')
+    cy.get('button[aria-label="Go to next page"]').should('be.enabled')
   })
 
   it('should adjust column visibility, hide col1', () => {
@@ -222,7 +212,7 @@ describe('<DataTable />', () => {
       />
     )
 
-    cy.get('button[aria-label="Show SQL"]').should('exist')
+    cy.get('button[aria-label="Open chart actions"]').should('exist')
   })
 
   it('should not have "Show Code" button when showSQL={false}', () => {
@@ -236,7 +226,7 @@ describe('<DataTable />', () => {
       />
     )
 
-    cy.get('button[aria-label="Show SQL"]').should('not.exist')
+    cy.get('button[aria-label="Open chart actions"]').should('not.exist')
   })
 
   it('should show dialog when click on "Show Code" button', () => {
@@ -257,8 +247,8 @@ describe('<DataTable />', () => {
       />
     )
 
-    // Click on "Show SQL" button
-    cy.get('button[aria-label="Show SQL"]').click()
+    cy.get('button[aria-label="Open chart actions"]').click()
+    cy.contains('[role="menuitem"]', 'Request Info').click()
 
     // Showing dialog contains the current SQL code
     cy.get('pre').contains(queryConfig.sql)

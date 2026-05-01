@@ -15,7 +15,7 @@ describe('<ChartMergeAvgDuration />', () => {
     }).as('chartError')
     cy.mount(<ChartMergeAvgDuration {...defaultProps} />)
     cy.wait('@chartError')
-    cy.contains('Error').should('exist')
+    cy.get('[role="alert"]').should('exist')
   })
 
   it('renders chart with data', () => {
