@@ -165,7 +165,11 @@ async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
             .take(80)
             .map(|r| {
                 r.as_object()
-                    .and_then(|o| o.values().find_map(|v| v.as_u64()))
+                    .and_then(|o| {
+                        o.get("count")
+                            .and_then(|v| v.as_u64())
+                            .or_else(|| o.values().find_map(|v| v.as_u64()))
+                    })
                     .unwrap_or(0)
             })
             .collect();
