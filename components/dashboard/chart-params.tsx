@@ -23,12 +23,18 @@ interface ChartParamsProps {
   params: Record<string, string>
 }
 
+interface ChartParamsFormProps extends ChartParamsProps {
+  onRefresh: () => void
+}
+
 export const formSchema = z.record(z.string(), z.string())
 
 export type FormSchema = z.infer<typeof formSchema>
 
-export const ChartParams = ({ params }: ChartParamsProps) => {
-  const router = useRouter()
+export const ChartParamsForm = ({
+  params,
+  onRefresh,
+}: ChartParamsFormProps) => {
   const [error, setError] = useState<string | null>(null)
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -39,9 +45,10 @@ export const ChartParams = ({ params }: ChartParamsProps) => {
 
   async function onSubmit(values: FormSchema) {
     try {
+      setError(null)
       const resp = await updateSettingParams(values)
       ErrorLogger.logDebug('Chart params updated', { response: resp })
-      router.refresh()
+      onRefresh()
     } catch (e) {
       ErrorLogger.logError(e as Error, {
         component: 'ChartParams',
@@ -72,7 +79,11 @@ export const ChartParams = ({ params }: ChartParamsProps) => {
             )}
           />
         ))}
-        <Button type="submit" variant={!error ? 'outline' : 'destructive'}>
+        <Button
+          type="submit"
+          variant={!error ? 'outline' : 'destructive'}
+          disabled={form.formState.isSubmitting}
+        >
           {form.formState.isSubmitting ? (
             <span className="flex-rows flex gap-2">
               <UpdateIcon className="mr-2 size-3 animate-spin" />
@@ -86,4 +97,10 @@ export const ChartParams = ({ params }: ChartParamsProps) => {
       </form>
     </Form>
   )
+}
+
+export const ChartParams = ({ params }: ChartParamsProps) => {
+  const router = useRouter()
+
+  return <ChartParamsForm params={params} onRefresh={() => router.refresh()} />
 }

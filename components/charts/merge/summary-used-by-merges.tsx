@@ -87,7 +87,7 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
   }
 
   return (
-    <ChartCard title={title} sql={sql}>
+    <ChartCard title={title} sql={sql} className={className}>
       <CardMultiMetrics
         primary={
           <Link

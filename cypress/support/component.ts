@@ -40,11 +40,27 @@ declare global {
 
 Cypress.Commands.add('mount', (component, options) =>
   mount(
-    createElement(TooltipProvider, { delayDuration: 0 }, component),
+    createElement(
+      'div',
+      { style: { height: '500px', width: '500px' } },
+      createElement(TooltipProvider, { delayDuration: 0 }, component)
+    ),
     options
   )
 )
 Cypress.Commands.add('nextMount', nextMount)
+
+beforeEach(() => {
+  cy.intercept('GET', '/api/v1/dashboard/settings*', {
+    statusCode: 200,
+    body: { success: true, data: { params: {} } },
+  })
+  cy.intercept('GET', '/api/v1/charts/*', {
+    statusCode: 200,
+    delay: 25,
+    body: { data: [], metadata: {} },
+  })
+})
 
 // Example use:
 // cy.mount(<MyComponent />)

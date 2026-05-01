@@ -77,7 +77,7 @@ describe('<ChartSummaryUsedByMerges />', () => {
 
     cy.wait('@chartData')
     cy.contains('rows read').should('exist')
-    cy.contains('Total memory used by merges estimated').should('exist')
+    cy.contains('1 MB memory used').should('exist')
   })
 
   it('applies custom className', () => {
