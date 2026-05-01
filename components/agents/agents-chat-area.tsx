@@ -40,6 +40,7 @@ import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useHostId } from '@/lib/swr'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 export interface AgentsChatAreaRef {
   handleClear: () => void
@@ -108,6 +109,7 @@ export const AgentsChatArea = forwardRef<
   } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/v1/agent',
+      fetch: apiFetch,
       body: { hostId, model, disabledTools },
     }),
   })

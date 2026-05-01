@@ -12,6 +12,7 @@ import { browserStore } from './browser-store'
 import { ConversationStoreError } from './types'
 import { useMemo } from 'react'
 import { featureFlags } from '@/lib/feature-flags'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 /**
  * Default user ID for unauthenticated/guest users.
@@ -44,7 +45,7 @@ function buildConversationKey(userId: string, conversationId: string): string {
  * Fetcher wrapper for API calls.
  */
 async function fetcher<T>(url: string): Promise<T> {
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -277,7 +278,7 @@ export function useConversationStore(): UseConversationStoreReturn {
     }
 
     // API mode: POST to API and mutate cache
-    const response = await fetch(`${CACHE_KEY_PREFIX}`, {
+    const response = await apiFetch(`${CACHE_KEY_PREFIX}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -314,7 +315,7 @@ export function useConversationStore(): UseConversationStoreReturn {
     }
 
     // API mode: DELETE and mutate cache
-    const response = await fetch(
+    const response = await apiFetch(
       `${CACHE_KEY_PREFIX}/${conversationId}?userId=${GUEST_USER_ID}`,
       {
         method: 'DELETE',
@@ -352,7 +353,7 @@ export function useConversationStore(): UseConversationStoreReturn {
     }
 
     // API mode: DELETE all and mutate cache
-    const response = await fetch(
+    const response = await apiFetch(
       `${CACHE_KEY_PREFIX}?userId=${GUEST_USER_ID}`,
       {
         method: 'DELETE',
@@ -433,7 +434,7 @@ class ApiStore implements ConversationStore {
   }
 
   async upsert(conversation: StoredConversation): Promise<void> {
-    const response = await fetch(CACHE_KEY_PREFIX, {
+    const response = await apiFetch(CACHE_KEY_PREFIX, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -453,7 +454,7 @@ class ApiStore implements ConversationStore {
   }
 
   async delete(userId: string, conversationId: string): Promise<void> {
-    const response = await fetch(
+    const response = await apiFetch(
       `${CACHE_KEY_PREFIX}/${conversationId}?userId=${userId}`,
       {
         method: 'DELETE',
@@ -472,7 +473,7 @@ class ApiStore implements ConversationStore {
   }
 
   async deleteAll(userId: string): Promise<void> {
-    const response = await fetch(`${CACHE_KEY_PREFIX}?userId=${userId}`, {
+    const response = await apiFetch(`${CACHE_KEY_PREFIX}?userId=${userId}`, {
       method: 'DELETE',
     })
 

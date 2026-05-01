@@ -8,6 +8,7 @@ import {
   SLASH_COMMANDS,
   SYSTEM_RESOURCES,
 } from '@/components/agents/mentions/constants'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 
 interface TableRow {
@@ -18,7 +19,7 @@ interface TableRow {
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(url)
+  const res = await apiFetch(url)
   if (!res.ok)
     throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`)
   return res.json() as Promise<T>
