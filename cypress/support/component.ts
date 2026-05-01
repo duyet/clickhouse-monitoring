@@ -55,11 +55,6 @@ beforeEach(() => {
     statusCode: 200,
     body: { success: true, data: { params: {} } },
   })
-  cy.intercept('GET', '/api/v1/charts/*', {
-    statusCode: 200,
-    delay: 25,
-    body: { data: [], metadata: {} },
-  })
 })
 
 // Example use:

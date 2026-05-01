@@ -52,8 +52,10 @@ mix of existing Cypress component-test fragility and one real component bug.
 Keep these fixes narrow:
 
 - Add a stable component mount surface in `cypress/support/component.ts`.
-- Add default component-test intercepts only for common first-party dashboard
-  reads that should not hit the network in isolated component tests.
+- Add default component-test intercepts only for common dashboard settings reads
+  that should not hit the network in isolated component tests.
+- Keep chart endpoint mocks spec-local. A global `/api/v1/charts/*` fallback can
+  steal requests from explicit `@chartData` aliases and cause slow retries.
 - Pass `className` through in `ChartSummaryUsedByMerges`.
 - Replace `export *` in `RenderChart` with explicit type exports.
 - Extract a hook-free `ChartParamsForm` and keep `ChartParams` as the router

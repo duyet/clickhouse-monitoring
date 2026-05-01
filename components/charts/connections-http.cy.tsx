@@ -6,6 +6,13 @@ describe('<ChartConnectionsHttp />', () => {
     title: 'HTTP Connections',
   }
 
+  beforeEach(() => {
+    cy.intercept('GET', '/api/v1/charts/connections-http*', {
+      statusCode: 200,
+      body: { data: [], metadata: {} },
+    }).as('connectionsHttp')
+  })
+
   it('renders chart skeleton when loading', () => {
     cy.mount(<ChartConnectionsHttp {...defaultProps} />)
 
@@ -15,6 +22,7 @@ describe('<ChartConnectionsHttp />', () => {
 
   it('renders chart with data', () => {
     cy.mount(<ChartConnectionsHttp {...defaultProps} />)
+    cy.wait('@connectionsHttp')
 
     // Component should render without throwing
     cy.contains('HTTP Connections').should('exist')

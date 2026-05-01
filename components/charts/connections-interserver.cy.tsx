@@ -6,6 +6,13 @@ describe('<ChartConnectionsInterserver />', () => {
     title: 'Interserver Connections',
   }
 
+  beforeEach(() => {
+    cy.intercept('GET', '/api/v1/charts/connections-interserver*', {
+      statusCode: 200,
+      body: { data: [], metadata: {} },
+    }).as('connectionsInterserver')
+  })
+
   it('renders chart skeleton when loading', () => {
     cy.mount(<ChartConnectionsInterserver {...defaultProps} />)
 
@@ -15,6 +22,7 @@ describe('<ChartConnectionsInterserver />', () => {
 
   it('renders chart with data', () => {
     cy.mount(<ChartConnectionsInterserver {...defaultProps} />)
+    cy.wait('@connectionsInterserver')
 
     // Component should render without throwing
     cy.contains('Interserver Connections').should('exist')
