@@ -21,9 +21,7 @@ describe('<BarList />', () => {
     cy.mount(<BarList data={mockData} />)
 
     // First item should be the largest
-    cy.get('[class*="flex items-center gap-3"]')
-      .first()
-      .should('contain', 'table_a')
+    cy.get('[data-testid="bar-list-item"]').first().should('contain', 'table_a')
   })
 
   it('uses compact format for large numbers without formatedColumn', () => {

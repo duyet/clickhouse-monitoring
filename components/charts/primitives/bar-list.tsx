@@ -67,7 +67,11 @@ export const BarList = memo(function BarList({
         const bgColor = `color-mix(in oklch, var(--chart-1) ${opacity}%, transparent)`
 
         return (
-          <div key={item.name} className="relative h-7 overflow-hidden rounded">
+          <div
+            key={item.name}
+            className="relative h-7 overflow-hidden rounded"
+            data-testid="bar-list-item"
+          >
             {/* Colored bar background */}
             <div
               className="absolute inset-y-0 left-0 rounded"
