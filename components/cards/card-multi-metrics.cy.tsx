@@ -56,8 +56,11 @@ describe('<CardMultiMetrics />', () => {
     cy.contains('50 sessions').should('be.visible')
     cy.contains('150 sessions').should('be.visible')
 
-    // Check for dotted separators
-    cy.get('hr.border-dotted').should('have.length', mockItems.length)
+    // Check for metric progress lines
+    cy.get('[data-testid="metric-progress"]').should(
+      'have.length',
+      mockItems.length
+    )
   })
 
   it('renders with custom className', () => {
@@ -87,7 +90,7 @@ describe('<CardMultiMetrics />', () => {
     cy.contains('Current').should('not.exist')
     cy.contains('Total').should('not.exist')
 
-    // Should not render any separators
-    cy.get('hr.border-dotted').should('not.exist')
+    // Should not render any metric progress lines
+    cy.get('[data-testid="metric-progress"]').should('not.exist')
   })
 })

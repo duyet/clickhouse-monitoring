@@ -205,6 +205,7 @@ export const CardToolbar = memo(function CardToolbar({
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Open chart actions"
             className={cn(
               'size-6 transition-opacity rounded-full',
               'relative before:content-[""] before:absolute before:-inset-4',

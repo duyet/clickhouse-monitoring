@@ -26,7 +26,13 @@ import {
   parseColumnFormat,
 } from './utils'
 
-export * from './types'
+export type {
+  ColumnFilterContext,
+  ColumnFormatInfo,
+  ColumnType,
+  GetColumnDefsOptions,
+} from './types'
+
 export { normalizeColumnName } from './utils'
 
 /**

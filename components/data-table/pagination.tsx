@@ -6,7 +6,7 @@ import {
 } from '@radix-ui/react-icons'
 import type { Table } from '@tanstack/react-table'
 
-import { memo, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -29,11 +29,9 @@ const pageSizeOptions = [10, 25, 50, 100, 200, 500, 1000]
  * Memoized pagination info displaying row range (desktop) or page number (mobile).
  * Uses cached Intl.NumberFormat from @/lib/format-number.
  */
-const PaginationInfo = memo(function PaginationInfo({
-  table,
-}: DataTablePaginationProps) {
+function PaginationInfo({ table }: DataTablePaginationProps) {
   const { pageIndex, pageSize } = table.getState().pagination
-  const totalRows = table.getRowModel().rows.length
+  const totalRows = table.getPrePaginationRowModel().rows.length
   const pageCount = table.getPageCount()
 
   const info = useMemo(() => {
@@ -51,11 +49,9 @@ const PaginationInfo = memo(function PaginationInfo({
       <span className="sm:hidden">{info.page}</span>
     </div>
   )
-})
+}
 
-export const DataTablePagination = memo(function DataTablePagination({
-  table,
-}: DataTablePaginationProps) {
+export function DataTablePagination({ table }: DataTablePaginationProps) {
   // Memoized pagination handlers to prevent recreation on every render
   const handleFirstPage = useCallback(() => {
     table.setPageIndex(0)
@@ -116,6 +112,7 @@ export const DataTablePagination = memo(function DataTablePagination({
           className="hidden size-10 sm:size-8 p-0 lg:flex"
           onClick={handleFirstPage}
           disabled={!table.getCanPreviousPage()}
+          aria-label="Go to first page"
         >
           <span className="sr-only">Go to first page</span>
           <DoubleArrowLeftIcon className="size-4" />
@@ -125,6 +122,7 @@ export const DataTablePagination = memo(function DataTablePagination({
           className="size-10 sm:size-8 p-0"
           onClick={handlePreviousPage}
           disabled={!table.getCanPreviousPage()}
+          aria-label="Go to previous page"
         >
           <span className="sr-only">Go to previous page</span>
           <ChevronLeftIcon className="size-4" />
@@ -134,6 +132,7 @@ export const DataTablePagination = memo(function DataTablePagination({
           className="size-10 sm:size-8 p-0"
           onClick={handleNextPage}
           disabled={!table.getCanNextPage()}
+          aria-label="Go to next page"
         >
           <span className="sr-only">Go to next page</span>
           <ChevronRightIcon className="size-4" />
@@ -143,6 +142,7 @@ export const DataTablePagination = memo(function DataTablePagination({
           className="hidden size-10 sm:size-8 p-0 lg:flex"
           onClick={handleLastPage}
           disabled={!table.getCanNextPage()}
+          aria-label="Go to last page"
         >
           <span className="sr-only">Go to last page</span>
           <DoubleArrowRightIcon className="size-4" />
@@ -150,4 +150,4 @@ export const DataTablePagination = memo(function DataTablePagination({
       </div>
     </div>
   )
-})
+}

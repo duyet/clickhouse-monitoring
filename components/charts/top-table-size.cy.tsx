@@ -22,7 +22,7 @@ describe('<ChartTopTableSize />', () => {
     cy.mount(<ChartTopTableSize {...defaultProps} />)
 
     cy.wait('@chartError')
-    cy.contains('Error').should('exist')
+    cy.get('[role="alert"]').should('exist')
   })
 
   it('renders empty state when no data', () => {
@@ -34,7 +34,7 @@ describe('<ChartTopTableSize />', () => {
     cy.mount(<ChartTopTableSize {...defaultProps} />)
 
     cy.wait('@chartEmpty')
-    cy.contains('No results').should('exist')
+    cy.contains('No data').should('exist')
   })
 
   it('renders chart with tabs for by-size and by-count', () => {

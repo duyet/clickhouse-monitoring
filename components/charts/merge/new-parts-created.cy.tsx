@@ -15,7 +15,7 @@ describe('<ChartNewPartsCreated />', () => {
     }).as('chartError')
     cy.mount(<ChartNewPartsCreated {...defaultProps} />)
     cy.wait('@chartError')
-    cy.contains('Error').should('exist')
+    cy.get('[role="alert"]').should('exist')
   })
 
   it('renders chart with data - single table', () => {

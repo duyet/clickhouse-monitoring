@@ -18,9 +18,11 @@ import '@cypress/code-coverage/support'
 import 'cypress-real-events'
 
 import { mount } from 'cypress/react'
+import { createElement } from 'react'
 
 import '../../app/globals.css'
 
+import { TooltipProvider } from '../../components/ui/tooltip'
 import { nextMount } from './nextMount'
 
 // Augment the Cypress namespace to include type definitions for
@@ -36,7 +38,12 @@ declare global {
   }
 }
 
-Cypress.Commands.add('mount', mount)
+Cypress.Commands.add('mount', (component, options) =>
+  mount(
+    createElement(TooltipProvider, { delayDuration: 0 }, component),
+    options
+  )
+)
 Cypress.Commands.add('nextMount', nextMount)
 
 // Example use:

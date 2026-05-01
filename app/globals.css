@@ -146,6 +146,51 @@
   margin: 1.5em 0;
 }
 
+.docs-markdown {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+}
+
+.docs-markdown h1 {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.docs-markdown h2 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  margin-top: 2.5rem;
+}
+
+.docs-markdown h3 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  margin-top: 2rem;
+}
+
+.docs-markdown h4 {
+  margin-top: 1.5rem;
+}
+
+.docs-markdown p,
+.docs-markdown ul,
+.docs-markdown ol {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.docs-markdown img {
+  margin: 1.25rem 0;
+  width: 100%;
+}
+
+.docs-markdown pre {
+  border: 1px solid oklch(from var(--border) l c h);
+  background-color: oklch(from var(--muted) l c h / 0.6);
+}
+
 /* Dark mode adjustments */
 .dark .markdown-content {
   color: oklch(from var(--foreground) l c h);

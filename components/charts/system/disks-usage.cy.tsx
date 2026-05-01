@@ -23,7 +23,7 @@ describe('<ChartDisksUsage />', () => {
 
     cy.wait('@chartError')
 
-    cy.contains('Error').should('exist')
+    cy.get('[role="alert"]').should('exist')
     cy.contains('Disks Usage').should('exist')
   })
 
@@ -37,7 +37,7 @@ describe('<ChartDisksUsage />', () => {
 
     cy.wait('@chartEmpty')
 
-    cy.contains('No results').should('exist')
+    cy.contains('No data').should('exist')
   })
 
   it('renders chart with data - shows both available and used disk space', () => {

@@ -15,7 +15,7 @@ describe('<ChartFailedQueryCount />', () => {
     }).as('chartError')
     cy.mount(<ChartFailedQueryCount {...defaultProps} />)
     cy.wait('@chartError')
-    cy.contains('Error').should('exist')
+    cy.get('[role="alert"]').should('exist')
   })
 
   it('renders chart with data', () => {

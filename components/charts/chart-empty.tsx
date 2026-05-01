@@ -78,6 +78,7 @@ export const ChartEmpty = memo(function ChartEmpty({
   return (
     <Card
       className={cn(chartCard.base, chartCard.variants.default, className)}
+      role="status"
       aria-label={title ? `${title} - no data` : 'No data available'}
     >
       {/* Header with title and toolbar */}

@@ -29,6 +29,9 @@ next.config.compiled.js
 .entire/
 logs/
 
+# rust build artifacts
+rust/
+
 # misc
 .DS_Store
 *.pem
