@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, io, path::PathBuf, time::Duration};
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand};
 use comfy_table::{presets::UTF8_FULL, Table};
 use crossterm::{
@@ -114,6 +114,39 @@ async fn fetch(client: &Client, url: String, api_key: Option<&str>) -> Result<Va
     Ok(parsed.data)
 }
 
+fn rows_from_chart_data(data: Value) -> Result<Vec<Value>> {
+    match data {
+        Value::Array(rows) => Ok(rows),
+        Value::Object(mut queries) => {
+            if let Some(Value::Array(rows)) = queries.remove("main") {
+                return Ok(rows);
+            }
+
+            let rows = queries
+                .into_values()
+                .filter_map(|value| match value {
+                    Value::Array(rows) => Some(rows),
+                    _ => None,
+                })
+                .flatten()
+                .collect();
+            Ok(rows)
+        }
+        other => bail!("chart payload data must be an array or object, got {other}"),
+    }
+}
+
+fn row_metric(row: &Value) -> u64 {
+    row.as_object()
+        .and_then(|o| {
+            o.get("count")
+                .and_then(|v| v.as_u64())
+                .or_else(|| o.get("query_count").and_then(|v| v.as_u64()))
+                .or_else(|| o.values().find_map(|v| v.as_u64()))
+        })
+        .unwrap_or(0)
+}
+
 fn print_records(data: &[HashMap<String, Value>], limit: usize) {
     let mut table = Table::new();
     table.load_preset(UTF8_FULL);
@@ -154,25 +187,12 @@ async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
             "{}/api/v1/charts/{}?hostId={}",
             cfg.base_url, chart, cfg.host_id
         );
-        let fetched = fetch(client, url, cfg.api_key.as_deref()).await;
-        let error_message = fetched.as_ref().err().map(ToString::to_string);
-        let rows = fetched
-            .ok()
-            .and_then(|data| data.as_array().cloned())
-            .unwrap_or_default();
-        let points: Vec<u64> = rows
-            .iter()
-            .take(80)
-            .map(|r| {
-                r.as_object()
-                    .and_then(|o| {
-                        o.get("count")
-                            .and_then(|v| v.as_u64())
-                            .or_else(|| o.values().find_map(|v| v.as_u64()))
-                    })
-                    .unwrap_or(0)
-            })
-            .collect();
+        let rows_result = fetch(client, url, cfg.api_key.as_deref())
+            .await
+            .and_then(rows_from_chart_data);
+        let error_message = rows_result.as_ref().err().map(ToString::to_string);
+        let rows = rows_result.unwrap_or_default();
+        let points: Vec<u64> = rows.iter().take(80).map(row_metric).collect();
 
         terminal.draw(|f| {
             let chunks = Layout::default()
@@ -248,6 +268,7 @@ async fn main() -> Result<()> {
                 cfg.base_url, name, cfg.host_id
             );
             let data = fetch(&client, url, cfg.api_key.as_deref()).await?;
+            let data = Value::Array(rows_from_chart_data(data)?);
             let rows: Vec<HashMap<String, Value>> =
                 serde_json::from_value(data).context("chart payload parse failed")?;
             print_records(&rows, limit);

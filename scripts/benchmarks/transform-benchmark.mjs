@@ -141,4 +141,7 @@ async function main() {
   console.log(`  Speedup: ${(tsNorm.avg / wasmNorm.avg).toFixed(2)}x`)
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error)
+  process.exitCode = 1
+})

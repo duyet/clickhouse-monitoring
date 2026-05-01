@@ -167,7 +167,7 @@ struct UserEventRow {
     count: Option<serde_json::Value>,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct UserEventOutput {
     data: serde_json::Map<String, serde_json::Value>,
     users: Vec<String>,
@@ -191,19 +191,12 @@ fn to_count(v: Option<serde_json::Value>) -> f64 {
     }
 }
 
-pub fn transform_user_event_counts(input: &str, time_field: &str) -> UserEventOutput {
-    let rows: Vec<UserEventRow> = match serde_json::from_str(input) {
-        Ok(r) => r,
-        Err(_) => {
-            return UserEventOutput {
-                data: serde_json::Map::new(),
-                users: Vec::new(),
-                chart_data: Vec::new(),
-            }
-        }
-    };
-
-    transform_user_event_rows(rows, time_field)
+pub fn transform_user_event_counts(
+    input: &str,
+    time_field: &str,
+) -> serde_json::Result<UserEventOutput> {
+    let rows: Vec<UserEventRow> = serde_json::from_str(input)?;
+    Ok(transform_user_event_rows(rows, time_field))
 }
 
 fn transform_user_event_rows(rows: Vec<UserEventRow>, time_field: &str) -> UserEventOutput {
@@ -225,7 +218,8 @@ fn transform_user_event_rows(rows: Vec<UserEventRow>, time_field: &str) -> UserE
         if !nested.contains_key(&event_time) {
             time_order.push(event_time.clone());
         }
-        nested.entry(event_time).or_default().insert(user, count);
+        let counts = nested.entry(event_time).or_default();
+        *counts.entry(user).or_insert(0.0) += count;
     }
 
     let users: Vec<String> = user_set.into_iter().collect();
@@ -266,7 +260,8 @@ fn transform_user_event_rows(rows: Vec<UserEventRow>, time_field: &str) -> UserE
 /// WASM export returning JsValue directly — avoids JSON string intermediate.
 #[wasm_bindgen(js_name = transform_user_event_counts_v2)]
 pub fn transform_user_event_counts_v2(input: &str, time_field: &str) -> Result<JsValue, JsValue> {
-    let result = transform_user_event_counts(input, time_field);
+    let result = transform_user_event_counts(input, time_field)
+        .map_err(|e| JsValue::from_str(&e.to_string()))?;
     serde_wasm_bindgen::to_value(&result).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
@@ -286,8 +281,9 @@ pub fn transform_user_event_counts_v3(
 /// Legacy export returning JSON string (kept for backward compat).
 #[wasm_bindgen]
 pub fn transform_user_event_counts_json(input: &str, time_field: &str) -> String {
-    let result = transform_user_event_counts(input, time_field);
-    serde_json::to_string(&result).unwrap_or_default()
+    transform_user_event_counts(input, time_field)
+        .and_then(|result| serde_json::to_string(&result))
+        .unwrap_or_default()
 }
 
 #[cfg(test)]
@@ -328,22 +324,30 @@ mod tests {
     fn transforms_user_event_counts() {
         let input = serde_json::json!([
             {"event_time": "2026-01-01 00:00:00", "user": "alice", "count": 5},
+            {"event_time": "2026-01-01 00:00:00", "user": "alice", "count": 2},
             {"event_time": "2026-01-01 00:00:00", "user": "", "count": 3},
             {"event_time": "2026-01-01 01:00:00", "user": "alice", "count": 7},
             {"event_time": "2026-01-01 01:00:00", "user": "bob", "count": "2"},
         ])
         .to_string();
 
-        let result = transform_user_event_counts(&input, "event_time");
+        let result = transform_user_event_counts(&input, "event_time").expect("valid rows");
         let output: Value =
             serde_json::from_str(&serde_json::to_string(&result).unwrap()).expect("valid json");
 
         assert_eq!(output["users"], json!(["(empty)", "alice", "bob"]));
-        assert_eq!(output["data"]["2026-01-01 00:00:00"]["alice"], json!(5.0));
+        assert_eq!(output["data"]["2026-01-01 00:00:00"]["alice"], json!(7.0));
         assert_eq!(output["data"]["2026-01-01 00:00:00"]["(empty)"], json!(3.0));
         assert_eq!(
             output["chartData"][0]["event_time"],
             json!("2026-01-01 00:00:00")
         );
+    }
+
+    #[test]
+    fn rejects_malformed_user_event_json() {
+        let err = transform_user_event_counts("not json", "event_time")
+            .expect_err("malformed JSON should fail");
+        assert!(err.is_syntax());
     }
 }

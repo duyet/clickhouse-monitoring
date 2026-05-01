@@ -50,7 +50,8 @@ fn transform(rows: Vec<Row>, time_field: &str) -> Output {
         let count = to_count(row.count);
 
         user_set.insert(user.clone());
-        nested.entry(event_time).or_default().insert(user, count);
+        let counts = nested.entry(event_time).or_default();
+        *counts.entry(user).or_insert(0.0) += count;
     }
 
     let users: Vec<String> = user_set.into_iter().collect();
@@ -87,4 +88,35 @@ fn main() {
 
     let out = transform(rows, time_field);
     println!("{}", serde_json::to_string(&out).unwrap());
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn accumulates_duplicate_user_buckets() {
+        let rows = vec![
+            Row {
+                event_time: Some(Value::String("2026-01-01 00:00:00".to_string())),
+                user: Some(Value::String("alice".to_string())),
+                count: Some(Value::from(2)),
+            },
+            Row {
+                event_time: Some(Value::String("2026-01-01 00:00:00".to_string())),
+                user: Some(Value::String("alice".to_string())),
+                count: Some(Value::from(3)),
+            },
+        ];
+
+        let out = transform(rows, "event_time");
+
+        assert_eq!(
+            out.data
+                .get("2026-01-01 00:00:00")
+                .and_then(|counts| counts.get("alice")),
+            Some(&5.0)
+        );
+        assert_eq!(out.chart_data[0].get("alice"), Some(&Value::from(5.0)));
+    }
 }
