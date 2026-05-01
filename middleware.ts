@@ -1,13 +1,6 @@
 import { NextResponse } from 'next/server'
 import { apiKeyAuthEnabled, verifyApiKey } from '@/lib/api-key'
-
-function getBearerToken(auth: string | null): string | null {
-  if (!auth) return null
-  const [scheme, ...tokenParts] = auth.trim().split(/\s+/)
-  if (scheme?.toLowerCase() !== 'bearer') return null
-  const token = tokenParts.join(' ').trim()
-  return token || null
-}
+import { getBearerToken } from '@/lib/auth/bearer-token'
 
 export async function middleware(request: Request) {
   if (!apiKeyAuthEnabled()) return NextResponse.next()

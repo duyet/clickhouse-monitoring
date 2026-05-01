@@ -27,7 +27,7 @@ function transformUserEventCounts(data, timeField = 'event_time') {
     const count = Number(item.count ?? 0)
     userSet.add(user)
     if (acc[event_time] === undefined) acc[event_time] = {}
-    acc[event_time][user] = count
+    acc[event_time][user] = (acc[event_time][user] ?? 0) + count
     return acc
   }, {})
   const users = Array.from(userSet).sort()

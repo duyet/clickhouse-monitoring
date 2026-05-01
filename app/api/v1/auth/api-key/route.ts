@@ -1,18 +1,11 @@
 import { NextResponse } from 'next/server'
 import { issueApiKey } from '@/lib/api-key'
+import { getBearerToken } from '@/lib/auth/bearer-token'
 
 const MAX_API_KEY_DAYS = 365
 
 function getSecret(): string | null {
   return process.env.CHM_API_KEY_SECRET ?? null
-}
-
-function getBearerToken(auth: string | null): string | null {
-  if (!auth) return null
-  const [scheme, ...tokenParts] = auth.trim().split(/\s+/)
-  if (scheme?.toLowerCase() !== 'bearer') return null
-  const token = tokenParts.join(' ').trim()
-  return token || null
 }
 
 export async function POST(request: Request) {

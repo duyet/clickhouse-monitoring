@@ -31,6 +31,13 @@ export const formSchema = z.record(z.string(), z.string())
 
 export type FormSchema = z.infer<typeof formSchema>
 
+/**
+ * Renders editable chart query parameters and submits updates.
+ *
+ * @param params - Current chart parameter values.
+ * @param onRefresh - Callback invoked after a successful update.
+ * @returns Chart parameter form.
+ */
 export const ChartParamsForm = ({
   params,
   onRefresh,
@@ -99,6 +106,12 @@ export const ChartParamsForm = ({
   )
 }
 
+/**
+ * Connects chart parameter updates to the Next.js router refresh flow.
+ *
+ * @param params - Current chart parameter values.
+ * @returns Chart parameter form wired to refresh route data.
+ */
 export const ChartParams = ({ params }: ChartParamsProps) => {
   const router = useRouter()
 

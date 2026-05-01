@@ -51,6 +51,7 @@ describe('monitor-core wasm bindings', () => {
     const input = [
       { event_time: '2026-01-01 01:00:00', user: 'alice', count: 7 },
       { event_time: '2026-01-01 00:00:00', user: 'alice', count: 5 },
+      { event_time: '2026-01-01 00:00:00', user: 'alice', count: 4 },
       { event_time: '2026-01-01 00:00:00', user: '', count: 3 },
       { event_time: '2026-01-01 01:00:00', user: 'bob', count: '2' },
     ]

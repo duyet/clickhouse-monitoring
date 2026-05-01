@@ -53,7 +53,7 @@ Cypress.Commands.add('nextMount', nextMount)
 beforeEach(() => {
   cy.intercept('GET', '/api/v1/dashboard/settings*', {
     statusCode: 200,
-    body: { success: true, data: { params: {} } },
+    body: { success: true, data: { params: {} }, metadata: {} },
   })
 })
 

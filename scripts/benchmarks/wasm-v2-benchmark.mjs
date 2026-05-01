@@ -22,7 +22,8 @@ function transformUserEventCountsTS(rows, timeField) {
 
     userSet.add(user)
     if (!nested.has(eventTime)) nested.set(eventTime, new Map())
-    nested.get(eventTime).set(user, count)
+    const counts = nested.get(eventTime)
+    counts.set(user, (counts.get(user) ?? 0) + count)
   }
 
   const users = [...userSet].sort()
