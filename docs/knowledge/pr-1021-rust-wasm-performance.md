@@ -22,6 +22,7 @@ artifacts:
   - lib/wasm/monitor-core.ts
   - lib/wasm/generated/monitor_core_bg.wasm
   - tools/user-events-rs
+  - tools/ch-monitor-cli/src/main.rs
 ---
 
 # PR 1021 Rust and WASM Performance
@@ -89,3 +90,8 @@ Earlier benchmark comments on PR #1021 showed:
   different threshold.
 - Preserve lazy loading for the WASM bundle. Do not add it to default dashboard
   or client bundles.
+- For `tools/ch-monitor-cli`, keep TUI refresh cadence bounded. The current
+  target is one chart fetch every five seconds, with `r` for manual refresh.
+- TUI sparkline values should accept integers, floats, and numeric strings, and
+  should prefer explicit metric keys before falling back to the first numeric
+  field.

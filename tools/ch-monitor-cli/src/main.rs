@@ -1,4 +1,9 @@
-use std::{collections::HashMap, fs, io, path::PathBuf, time::Duration};
+use std::{
+    collections::HashMap,
+    fs, io,
+    path::PathBuf,
+    time::{Duration, Instant},
+};
 
 use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand};
@@ -136,15 +141,70 @@ fn rows_from_chart_data(data: Value) -> Result<Vec<Value>> {
     }
 }
 
+const TUI_REFRESH_INTERVAL: Duration = Duration::from_secs(5);
+const TUI_EVENT_POLL_INTERVAL: Duration = Duration::from_millis(250);
+const PREFERRED_METRIC_KEYS: &[&str] = &["count", "query_count", "value", "total"];
+
+fn metric_from_float(value: f64) -> Option<u64> {
+    if value.is_finite() && value >= 0.0 && value <= u64::MAX as f64 {
+        Some(value.round() as u64)
+    } else {
+        None
+    }
+}
+
+fn value_metric(value: &Value) -> Option<u64> {
+    match value {
+        Value::Number(number) => number
+            .as_u64()
+            .or_else(|| number.as_i64().and_then(|n| u64::try_from(n).ok()))
+            .or_else(|| number.as_f64().and_then(metric_from_float)),
+        Value::String(text) => text
+            .trim()
+            .parse::<u64>()
+            .ok()
+            .or_else(|| text.trim().parse::<f64>().ok().and_then(metric_from_float)),
+        _ => None,
+    }
+}
+
 fn row_metric(row: &Value) -> u64 {
     row.as_object()
         .and_then(|o| {
-            o.get("count")
-                .and_then(|v| v.as_u64())
-                .or_else(|| o.get("query_count").and_then(|v| v.as_u64()))
-                .or_else(|| o.values().find_map(|v| v.as_u64()))
+            PREFERRED_METRIC_KEYS
+                .iter()
+                .find_map(|key| o.get(*key).and_then(value_metric))
+                .or_else(|| o.values().find_map(value_metric))
         })
         .unwrap_or(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn row_metric_prefers_known_metric_keys() {
+        let row = json!({
+            "duration_ms": 9000,
+            "query_count": 42,
+        });
+
+        assert_eq!(row_metric(&row), 42);
+    }
+
+    #[test]
+    fn row_metric_handles_float_and_string_values() {
+        assert_eq!(row_metric(&json!({ "value": 12.6 })), 13);
+        assert_eq!(row_metric(&json!({ "value": "7.4" })), 7);
+    }
+
+    #[test]
+    fn row_metric_ignores_negative_or_invalid_values() {
+        assert_eq!(row_metric(&json!({ "value": -1 })), 0);
+        assert_eq!(row_metric(&json!({ "value": "not-a-number" })), 0);
+    }
 }
 
 fn print_records(data: &[HashMap<String, Value>], limit: usize) {
@@ -181,18 +241,26 @@ async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
 
     let backend = ratatui::backend::CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
+    let mut rows = Vec::new();
+    let mut points = Vec::new();
+    let mut error_message = None;
+    let mut next_refresh_at = Instant::now();
 
     loop {
-        let url = format!(
-            "{}/api/v1/charts/{}?hostId={}",
-            cfg.base_url, chart, cfg.host_id
-        );
-        let rows_result = fetch(client, url, cfg.api_key.as_deref())
-            .await
-            .and_then(rows_from_chart_data);
-        let error_message = rows_result.as_ref().err().map(ToString::to_string);
-        let rows = rows_result.unwrap_or_default();
-        let points: Vec<u64> = rows.iter().take(80).map(row_metric).collect();
+        let now = Instant::now();
+        if now >= next_refresh_at {
+            let url = format!(
+                "{}/api/v1/charts/{}?hostId={}",
+                cfg.base_url, chart, cfg.host_id
+            );
+            let rows_result = fetch(client, url, cfg.api_key.as_deref())
+                .await
+                .and_then(rows_from_chart_data);
+            error_message = rows_result.as_ref().err().map(ToString::to_string);
+            rows = rows_result.unwrap_or_default();
+            points = rows.iter().take(80).map(row_metric).collect();
+            next_refresh_at = Instant::now() + TUI_REFRESH_INTERVAL;
+        }
 
         terminal.draw(|f| {
             let chunks = Layout::default()
@@ -201,7 +269,7 @@ async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
                 .split(f.area());
             f.render_widget(
                 Paragraph::new(format!(
-                    "chm tui | chart={chart} | q=quit | host={}{}",
+                    "chm tui | chart={chart} | q=quit | r=refresh | host={}{}",
                     cfg.host_id,
                     error_message
                         .as_ref()
@@ -236,9 +304,15 @@ async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
             f.render_widget(table, inner[1]);
         })?;
 
-        if event::poll(Duration::from_millis(250))? {
+        let poll_timeout = next_refresh_at
+            .saturating_duration_since(Instant::now())
+            .min(TUI_EVENT_POLL_INTERVAL);
+        if event::poll(poll_timeout)? {
             match event::read()? {
                 event::Event::Key(k) if matches!(k.code, event::KeyCode::Char('q')) => break,
+                event::Event::Key(k) if matches!(k.code, event::KeyCode::Char('r')) => {
+                    next_refresh_at = Instant::now()
+                }
                 event::Event::Resize(_, _) => continue,
                 _ => {}
             }
