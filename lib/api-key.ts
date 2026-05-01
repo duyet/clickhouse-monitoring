@@ -20,10 +20,14 @@ function textToB64url(input: string): string {
   return bytesToB64url(new TextEncoder().encode(input))
 }
 
-function unb64url(input: string): Uint8Array {
+function unb64url(input: string): Uint8Array | null {
   const base64 = input.replace(/-/g, '+').replace(/_/g, '/')
   const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
-  return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0))
+  try {
+    return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0))
+  } catch {
+    return null
+  }
 }
 
 async function sign(payloadEnc: string, secret: string): Promise<Uint8Array> {
@@ -64,9 +68,19 @@ export async function issueApiKey(sub: string, days = 30): Promise<string> {
   return `chm_${payloadEnc}.${bytesToB64url(sig)}`
 }
 
+export type ApiKeyVerificationResult = {
+  valid: boolean
+  reason?: string
+  sub?: string
+}
+
+/**
+ * verifyApiKey intentionally accepts any token when getSecret returns null.
+ * That means CHM_API_KEY_SECRET is unset and API-key auth is disabled.
+ */
 export async function verifyApiKey(
   token: string
-): Promise<{ valid: boolean; reason?: string; sub?: string }> {
+): Promise<ApiKeyVerificationResult> {
   const secret = getSecret()
   if (!secret) return { valid: true }
   if (!token.startsWith('chm_'))
@@ -80,12 +94,16 @@ export async function verifyApiKey(
 
     const expected = await sign(payloadEnc, secret)
     const provided = unb64url(sigEnc)
+    if (!provided) return { valid: false, reason: 'malformed signature' }
     if (!constantTimeEqual(expected, provided)) {
       return { valid: false, reason: 'bad signature' }
     }
 
+    const payloadBytes = unb64url(payloadEnc)
+    if (!payloadBytes) return { valid: false, reason: 'malformed payload' }
+
     const payload = JSON.parse(
-      new TextDecoder().decode(unb64url(payloadEnc))
+      new TextDecoder().decode(payloadBytes)
     ) as Payload
     const now = Math.floor(Date.now() / 1000)
     if (payload.exp < now) return { valid: false, reason: 'expired' }

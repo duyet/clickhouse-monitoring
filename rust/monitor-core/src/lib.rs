@@ -1,6 +1,6 @@
-use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeSet, HashMap};
+use wasm_bindgen::prelude::*;
 
 const MAX_SAFE_INTEGER: i128 = 9_007_199_254_740_991;
 
@@ -169,8 +169,9 @@ struct UserEventRow {
 
 #[derive(Serialize)]
 pub struct UserEventOutput {
-    data: BTreeMap<String, BTreeMap<String, f64>>,
+    data: serde_json::Map<String, serde_json::Value>,
     users: Vec<String>,
+    #[serde(rename = "chartData")]
     chart_data: Vec<serde_json::Map<String, serde_json::Value>>,
 }
 
@@ -195,7 +196,7 @@ pub fn transform_user_event_counts(input: &str, time_field: &str) -> UserEventOu
         Ok(r) => r,
         Err(_) => {
             return UserEventOutput {
-                data: BTreeMap::new(),
+                data: serde_json::Map::new(),
                 users: Vec::new(),
                 chart_data: Vec::new(),
             }
@@ -207,7 +208,8 @@ pub fn transform_user_event_counts(input: &str, time_field: &str) -> UserEventOu
 
 fn transform_user_event_rows(rows: Vec<UserEventRow>, time_field: &str) -> UserEventOutput {
     let mut user_set = BTreeSet::new();
-    let mut nested: BTreeMap<String, BTreeMap<String, f64>> = BTreeMap::new();
+    let mut time_order = Vec::new();
+    let mut nested: HashMap<String, HashMap<String, f64>> = HashMap::new();
 
     for row in rows {
         let event_time = stringify_val(row.event_time);
@@ -220,23 +222,42 @@ fn transform_user_event_rows(rows: Vec<UserEventRow>, time_field: &str) -> UserE
         let count = to_count(row.count);
 
         user_set.insert(user.clone());
+        if !nested.contains_key(&event_time) {
+            time_order.push(event_time.clone());
+        }
         nested.entry(event_time).or_default().insert(user, count);
     }
 
     let users: Vec<String> = user_set.into_iter().collect();
 
+    let mut data = serde_json::Map::new();
     let mut chart_data = Vec::with_capacity(nested.len());
-    for (time, counts) in &nested {
+    for time in time_order {
+        let Some(counts) = nested.get(&time) else {
+            continue;
+        };
+
+        let mut data_counts = serde_json::Map::new();
         let mut entry = serde_json::Map::new();
-        entry.insert(time_field.to_string(), serde_json::Value::String(time.clone()));
-        for (u, c) in counts {
-            entry.insert(u.clone(), serde_json::Value::from(*c));
+        entry.insert(
+            time_field.to_string(),
+            serde_json::Value::String(time.clone()),
+        );
+
+        for user in &users {
+            if let Some(count) = counts.get(user) {
+                let value = serde_json::Value::from(*count);
+                data_counts.insert(user.clone(), value.clone());
+                entry.insert(user.clone(), value);
+            }
         }
+
+        data.insert(time, serde_json::Value::Object(data_counts));
         chart_data.push(entry);
     }
 
     UserEventOutput {
-        data: nested,
+        data,
         users,
         chart_data,
     }
@@ -246,8 +267,7 @@ fn transform_user_event_rows(rows: Vec<UserEventRow>, time_field: &str) -> UserE
 #[wasm_bindgen(js_name = transform_user_event_counts_v2)]
 pub fn transform_user_event_counts_v2(input: &str, time_field: &str) -> Result<JsValue, JsValue> {
     let result = transform_user_event_counts(input, time_field);
-    serde_wasm_bindgen::to_value(&result)
-        .map_err(|e| JsValue::from_str(&e.to_string()))
+    serde_wasm_bindgen::to_value(&result).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 /// WASM export accepting JsValue input and returning JsValue output — zero JSON string overhead.
@@ -257,11 +277,10 @@ pub fn transform_user_event_counts_v3(
     input: JsValue,
     time_field: &str,
 ) -> Result<JsValue, JsValue> {
-    let rows: Vec<UserEventRow> = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let rows: Vec<UserEventRow> =
+        serde_wasm_bindgen::from_value(input).map_err(|e| JsValue::from_str(&e.to_string()))?;
     let result = transform_user_event_rows(rows, time_field);
-    serde_wasm_bindgen::to_value(&result)
-        .map_err(|e| JsValue::from_str(&e.to_string()))
+    serde_wasm_bindgen::to_value(&result).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 /// Legacy export returning JSON string (kept for backward compat).
@@ -322,6 +341,9 @@ mod tests {
         assert_eq!(output["users"], json!(["(empty)", "alice", "bob"]));
         assert_eq!(output["data"]["2026-01-01 00:00:00"]["alice"], json!(5.0));
         assert_eq!(output["data"]["2026-01-01 00:00:00"]["(empty)"], json!(3.0));
-        assert_eq!(output["chart_data"][0]["event_time"], json!("2026-01-01 00:00:00"));
+        assert_eq!(
+            output["chartData"][0]["event_time"],
+            json!("2026-01-01 00:00:00")
+        );
     }
 }

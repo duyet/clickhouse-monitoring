@@ -74,25 +74,23 @@ fn default_config_path() -> Option<PathBuf> {
     dirs::home_dir().map(|h| h.join(".config/chm/config.toml"))
 }
 
-fn load_file_config(path: Option<PathBuf>) -> FileConfig {
+fn load_file_config(path: Option<PathBuf>) -> Result<FileConfig> {
     let p = path.or_else(default_config_path);
     if let Some(path) = p {
         if path.exists() {
-            match fs::read_to_string(&path) {
-                Ok(content) => match toml::from_str(&content) {
-                    Ok(cfg) => return cfg,
-                    Err(e) => eprintln!("warning: failed to parse {}: {e}", path.display()),
-                },
-                Err(e) => eprintln!("warning: failed to read {}: {e}", path.display()),
-            }
+            let content = fs::read_to_string(&path)
+                .with_context(|| format!("failed to read config at {}", path.display()))?;
+            let cfg = toml::from_str(&content)
+                .with_context(|| format!("failed to parse config at {}", path.display()))?;
+            return Ok(cfg);
         }
     }
-    FileConfig::default()
+    Ok(FileConfig::default())
 }
 
-fn resolve_config(cli: &Cli) -> AppConfig {
-    let file = load_file_config(cli.config.clone());
-    AppConfig {
+fn resolve_config(cli: &Cli) -> Result<AppConfig> {
+    let file = load_file_config(cli.config.clone())?;
+    Ok(AppConfig {
         base_url: cli
             .base_url
             .clone()
@@ -103,7 +101,7 @@ fn resolve_config(cli: &Cli) -> AppConfig {
         default_chart: file
             .default_chart
             .unwrap_or_else(|| "query-count".to_string()),
-    }
+    })
 }
 
 async fn fetch(client: &Client, url: String, api_key: Option<&str>) -> Result<Value> {
@@ -156,10 +154,12 @@ async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
             "{}/api/v1/charts/{}?hostId={}",
             cfg.base_url, chart, cfg.host_id
         );
-        let data = fetch(client, url, cfg.api_key.as_deref())
-            .await
-            .unwrap_or(Value::Array(vec![]));
-        let rows = data.as_array().cloned().unwrap_or_default();
+        let fetched = fetch(client, url, cfg.api_key.as_deref()).await;
+        let error_message = fetched.as_ref().err().map(ToString::to_string);
+        let rows = fetched
+            .ok()
+            .and_then(|data| data.as_array().cloned())
+            .unwrap_or_default();
         let points: Vec<u64> = rows
             .iter()
             .take(80)
@@ -181,8 +181,12 @@ async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
                 .split(f.area());
             f.render_widget(
                 Paragraph::new(format!(
-                    "chm tui | chart={chart} | q=quit | host={} | resize supported",
-                    cfg.host_id
+                    "chm tui | chart={chart} | q=quit | host={}{}",
+                    cfg.host_id,
+                    error_message
+                        .as_ref()
+                        .map(|message| format!(" | error={message}"))
+                        .unwrap_or_default()
                 )),
                 chunks[0],
             );
@@ -227,7 +231,7 @@ async fn run_tui(client: &Client, cfg: &AppConfig, chart: &str) -> Result<()> {
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
-    let cfg = resolve_config(&cli);
+    let cfg = resolve_config(&cli)?;
     let client = Client::builder().timeout(Duration::from_secs(20)).build()?;
 
     match cli.command {

@@ -39,6 +39,7 @@ cargo run --manifest-path tools/ch-monitor-cli/Cargo.toml -- tui query-count
 ```bash
 curl -X POST http://localhost:3000/api/v1/auth/api-key \
   -H 'content-type: application/json' \
+  -H "authorization: Bearer $CHM_API_KEY_SECRET" \
   -d '{"label":"cli","days":30}'
 ```
 
