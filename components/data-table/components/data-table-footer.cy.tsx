@@ -24,9 +24,17 @@ describe('<DataTableFooter />', () => {
     }),
   ]
 
-  const createTable = (data: Row[], pageSize: number = 10) => {
-    return useReactTable({
-      data,
+  function TestDataTableFooter({
+    rows = data,
+    pageSize = 10,
+    footnote,
+  }: {
+    rows?: Row[]
+    pageSize?: number
+    footnote?: React.ComponentProps<typeof DataTableFooter<Row>>['footnote']
+  }) {
+    const table = useReactTable({
+      data: rows,
       columns,
       getCoreRowModel: getCoreRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
@@ -36,6 +44,8 @@ describe('<DataTableFooter />', () => {
         },
       },
     })
+
+    return <DataTableFooter table={table} footnote={footnote} />
   }
 
   const data: Row[] = [
@@ -45,28 +55,21 @@ describe('<DataTableFooter />', () => {
   ]
 
   it('renders footer with default footnote', () => {
-    const table = createTable(data)
-
-    cy.mount(<DataTableFooter table={table} />)
+    cy.mount(<TestDataTableFooter />)
 
     cy.contains('0 of 3 row(s) selected').should('be.visible')
   })
 
   it('renders footer with custom text footnote', () => {
-    const table = createTable(data)
-
-    cy.mount(<DataTableFooter table={table} footnote="Custom footnote text" />)
+    cy.mount(<TestDataTableFooter footnote="Custom footnote text" />)
 
     cy.contains('Custom footnote text').should('be.visible')
     cy.contains('selected').should('not.exist')
   })
 
   it('renders footer with custom element footnote', () => {
-    const table = createTable(data)
-
     cy.mount(
-      <DataTableFooter
-        table={table}
+      <TestDataTableFooter
         footnote={<div data-testid="custom-footnote">Custom Element</div>}
       />
     )
@@ -78,9 +81,7 @@ describe('<DataTableFooter />', () => {
   })
 
   it('hides pagination when all rows fit on one page', () => {
-    const table = createTable(data, 10)
-
-    cy.mount(<DataTableFooter table={table} />)
+    cy.mount(<TestDataTableFooter pageSize={10} />)
 
     cy.get('[aria-label="Pagination"]').should('not.exist')
   })
@@ -90,18 +91,14 @@ describe('<DataTableFooter />', () => {
       col1: `val${i}`,
       col2: `val${i}`,
     }))
-    const table = createTable(largeData, 10)
-
-    cy.mount(<DataTableFooter table={table} />)
+    cy.mount(<TestDataTableFooter rows={largeData} pageSize={10} />)
 
     cy.get('[aria-label="Pagination"]').should('be.visible')
     cy.contains('Page 1 of 3').should('be.visible')
   })
 
   it('shows row count in footnote', () => {
-    const table = createTable(data)
-
-    cy.mount(<DataTableFooter table={table} />)
+    cy.mount(<TestDataTableFooter />)
 
     cy.contains('0 of 3 row(s) selected').should('be.visible')
   })
@@ -111,9 +108,7 @@ describe('<DataTableFooter />', () => {
       col1: `val${i}`,
       col2: `val${i}`,
     }))
-    const table = createTable(largeData, 10)
-
-    cy.mount(<DataTableFooter table={table} />)
+    cy.mount(<TestDataTableFooter rows={largeData} pageSize={10} />)
 
     // Check that both elements exist and are in the same container
     cy.get('.flex.items-center.justify-between').should('be.visible')
@@ -122,9 +117,7 @@ describe('<DataTableFooter />', () => {
   })
 
   it('applies correct styling classes', () => {
-    const table = createTable(data)
-
-    cy.mount(<DataTableFooter table={table} />)
+    cy.mount(<TestDataTableFooter />)
 
     cy.get('.flex.shrink-0.items-center.justify-between').should('be.visible')
   })
@@ -134,9 +127,7 @@ describe('<DataTableFooter />', () => {
       col1: `val${i}`,
       col2: `val${i}`,
     }))
-    const table = createTable(largeData, 10)
-
-    cy.mount(<DataTableFooter table={table} />)
+    cy.mount(<TestDataTableFooter rows={largeData} pageSize={10} />)
 
     cy.contains('Page 1 of 5').should('be.visible')
     cy.contains('Rows per page').should('be.visible')
@@ -147,9 +138,7 @@ describe('<DataTableFooter />', () => {
       col1: `val${i}`,
       col2: `val${i}`,
     }))
-    const table = createTable(largeData, 10)
-
-    cy.mount(<DataTableFooter table={table} />)
+    cy.mount(<TestDataTableFooter rows={largeData} pageSize={10} />)
 
     cy.get('button[aria-label="Go to next page"]').should('be.enabled')
   })
@@ -159,9 +148,7 @@ describe('<DataTableFooter />', () => {
       col1: `val${i}`,
       col2: `val${i}`,
     }))
-    const table = createTable(largeData, 10)
-
-    cy.mount(<DataTableFooter table={table} />)
+    cy.mount(<TestDataTableFooter rows={largeData} pageSize={10} />)
 
     cy.get('button[aria-label="Go to previous page"]').should('be.disabled')
   })
