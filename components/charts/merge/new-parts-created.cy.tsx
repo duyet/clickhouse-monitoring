@@ -4,6 +4,10 @@ describe('<ChartNewPartsCreated />', () => {
   const defaultProps = { hostId: 0, title: 'New Parts Created' }
 
   it('renders chart skeleton when loading', () => {
+    cy.intercept('GET', '/api/v1/charts/new-parts-created*', {
+      statusCode: 200,
+      body: { data: [], metadata: {} },
+    })
     cy.mount(<ChartNewPartsCreated {...defaultProps} />)
     cy.get('[role="status"][aria-label*="Loading"]').should('exist')
   })
