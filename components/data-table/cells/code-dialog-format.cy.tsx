@@ -5,7 +5,7 @@ describe('<CodeDialogFormat />', () => {
     const shortCode = 'SELECT * FROM table'
     cy.mount(<CodeDialogFormat value={shortCode} />)
     cy.get('code').should('contain.text', shortCode)
-    cy.get('svg[role="open-dialog"]').should('not.exist')
+    cy.get('code.truncated').should('not.exist')
   })
 
   it('renders long code with dialog', () => {
@@ -13,14 +13,14 @@ describe('<CodeDialogFormat />', () => {
       'SELECT * FROM table WHERE column1 = "value" AND column2 > 100 ORDER BY column3 DESC LIMIT 10'
     cy.mount(<CodeDialogFormat value={longCode} />)
     cy.get('code').should('exist')
-    cy.get('svg[role="open-dialog"]').should('exist')
+    cy.get('code.truncated').should('exist')
   })
 
   it('opens dialog on button click', () => {
     const longCode =
       'SELECT * FROM table WHERE column1 = "value" AND column2 > 100 ORDER BY column3 DESC LIMIT 10'
     cy.mount(<CodeDialogFormat value={longCode} />)
-    cy.get('svg[role="open-dialog"]').click()
+    cy.get('code.truncated').parent().click()
     cy.get('div[role="dialog"]').should('be.visible')
     cy.get('div[role="dialog"] code').should('contain.text', longCode)
   })
@@ -35,7 +35,7 @@ describe('<CodeDialogFormat />', () => {
       hide_query_comment: true,
     }
     cy.mount(<CodeDialogFormat value={longCode} options={options} />)
-    cy.get('svg[role="open-dialog"]').click()
+    cy.get('code.truncated').parent().click()
     cy.get('div[role="dialog"]').within(() => {
       cy.contains('Custom Title').should('be.visible')
       cy.contains('Custom Description').should('be.visible')

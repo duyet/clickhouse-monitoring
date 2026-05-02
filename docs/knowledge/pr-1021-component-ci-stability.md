@@ -31,6 +31,8 @@ artifacts:
   - components/controls/command-palette/command-palette.cy.tsx
   - components/controls/reload-button/reload-button.cy.tsx
   - components/data-table/cells/background-bar-format.cy.tsx
+  - components/data-table/cells/code-dialog-format.cy.tsx
+  - components/data-table/cells/code-toggle-format.cy.tsx
   - components/data-table/cells/actions/action-menu.tsx
   - components/data-table/components/data-table-header.cy.tsx
   - components/data-table/formatters/index.cy.tsx
@@ -86,6 +88,10 @@ mix of existing Cypress component-test fragility and one real component bug.
   close-behavior tests.
 - For background-bar cells, the dynamic width and background color live on the
   inner bar element. The style is a solid `background-color`, not a gradient.
+- Code dialog/toggle specs should use component-owned selectors/classes such as
+  `code.truncated` and `data-slot="accordion-trigger"`. Do not invent SVG roles
+  for dialog triggers or use Radix internal selector names that the local UI
+  wrapper does not expose.
 
 ## Patch Direction
 
@@ -120,6 +126,9 @@ Keep these fixes narrow:
 - Keep command-palette component coverage focused on stable cmdk behavior:
   visible search input, filtering, empty state, keyboard open, navigation, and
   controlled close callback. Avoid broad Radix dialog visibility assertions.
+- In table-client specs, install exactly one table API intercept per test with
+  `times: 1` so success/error/empty cases cannot be masked by a default
+  `beforeEach` intercept.
 
 ## Handoff Rules
 
