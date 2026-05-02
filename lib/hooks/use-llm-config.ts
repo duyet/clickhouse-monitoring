@@ -8,6 +8,7 @@
 
 import useSWR from 'swr'
 
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { swrConfig } from '@/lib/swr/config'
 
 interface ConfigStatus {
@@ -33,7 +34,7 @@ interface LLMConfigResult {
  * Fetches LLM config status from the API
  */
 async function fetchConfigStatus(): Promise<ConfigStatus> {
-  const response = await fetch('/api/v1/agents/config-check')
+  const response = await apiFetch('/api/v1/agents/config-check')
   if (!response.ok) {
     throw new Error(`Failed to check config: ${response.statusText}`)
   }

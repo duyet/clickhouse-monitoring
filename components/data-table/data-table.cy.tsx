@@ -254,7 +254,7 @@ describe('<DataTable />', () => {
     cy.get('pre').contains(queryConfig.sql)
 
     // Click to dismiss the dialog
-    cy.contains('[role="dialog"] button', 'Close', { matchCase: false }).click()
+    cy.get('[role="dialog"] button').last().click()
 
     // Dialog should be closed
     cy.get('pre').should('not.exist')

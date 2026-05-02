@@ -21,9 +21,7 @@ describe('<BarList />', () => {
     cy.mount(<BarList data={mockData} />)
 
     // First item should be the largest
-    cy.get('[class*="flex items-center gap-3"]')
-      .first()
-      .should('contain', 'table_a')
+    cy.get('[data-testid="bar-list-item"]').first().should('contain', 'table_a')
   })
 
   it('uses compact format for large numbers without formatedColumn', () => {
@@ -80,7 +78,8 @@ describe('<BarList />', () => {
     cy.mount(<BarList data={wideBarData} />)
 
     // The largest bar should have name inside (white text)
-    cy.contains('largest_table')
+    cy.get('[data-testid="bar-list-label-contrast"]')
+      .contains('largest_table')
       .should('exist')
       .and('have.css', 'color', 'rgb(255, 255, 255)')
   })
@@ -95,7 +94,7 @@ describe('<BarList />', () => {
     cy.mount(<BarList data={mockData} />)
 
     // All bars should have background color set via color-mix
-    cy.get('[class*="rounded"]').each(($bar) => {
+    cy.get('[data-testid="bar-list-fill"]').each(($bar) => {
       const bgColor = $bar.css('background-color')
       // Should have some color (not transparent/black)
       expect(bgColor).to.not.equal('rgba(0, 0, 0, 0)')

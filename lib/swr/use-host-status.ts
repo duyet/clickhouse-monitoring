@@ -2,6 +2,8 @@
 
 import useSWR from 'swr'
 
+import { apiFetch } from './api-fetch'
+
 /** API response format for host status */
 type HostStatusApiResponse = {
   success: boolean
@@ -62,7 +64,7 @@ export function useHostStatus(
       ? `/api/v1/host-status?hostId=${hostId}`
       : null,
     async (url: string) => {
-      const res = await fetch(url)
+      const res = await apiFetch(url)
       if (!res.ok) {
         throw new Error(`Failed to fetch host status: ${res.statusText}`)
       }

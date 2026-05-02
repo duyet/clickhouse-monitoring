@@ -69,9 +69,8 @@ describe('transformUserEventCounts', () => {
 
     const result = transformUserEventCounts(input)
 
-    // Note: Current implementation overwrites; if aggregation is needed,
-    // this documents expected behavior
-    expect(result.data['2024-01-01'].alice).toBe(2)
+    expect(result.data['2024-01-01'].alice).toBe(5)
+    expect(result.chartData).toEqual([{ event_time: '2024-01-01', alice: 5 }])
   })
 
   it('should handle zero counts', () => {

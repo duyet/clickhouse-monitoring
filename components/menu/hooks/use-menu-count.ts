@@ -9,6 +9,7 @@
 
 import useSWR from 'swr'
 
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
 
 interface MenuCountResult {
@@ -43,7 +44,7 @@ export function useMenuCount(
     // Only fetch if countKey is provided
     countKey ? [`/api/v1/menu-counts`, countKey, hostId] : null,
     async () => {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/v1/menu-counts/${countKey}?hostId=${hostId}`
       )
       if (!res.ok) {

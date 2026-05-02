@@ -30,7 +30,12 @@ import {
 } from './render-chart/loading-states'
 import { useChartData } from './render-chart/use-chart-data'
 
-export * from './render-chart/types'
+export type {
+  ChartKind,
+  ChartParams,
+  RenderChartProps,
+  TimeSeriesDataPoint,
+} from './render-chart/types'
 
 export const RenderChart = ({
   kind,

@@ -2,6 +2,7 @@
 
 import useSWR, { type SWRConfiguration } from 'swr'
 
+import { apiFetch } from './api-fetch'
 import { throwIfNotOk } from './fetch-error'
 
 /**
@@ -52,7 +53,7 @@ export function useFetchData<T = unknown>(
 
   // Fetcher function that sends POST request
   const fetcher = async () => {
-    const response = await fetch('/api/v1/data', {
+    const response = await apiFetch('/api/v1/data', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

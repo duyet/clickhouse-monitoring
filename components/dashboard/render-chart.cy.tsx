@@ -238,7 +238,7 @@ describe('<RenderChart />', () => {
       cy.wait('@fetchDataError')
 
       // Should show error state
-      cy.contains('error', { matchCase: false }).should('exist')
+      cy.get('[role="alert"]').should('exist')
     })
 
     it('provides retry button on error', () => {

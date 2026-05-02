@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHostId } from '@/lib/swr'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 interface Database {
   name: string
@@ -78,8 +79,13 @@ interface ApiResponse<T> {
   metadata?: Record<string, unknown>
 }
 
-const fetcher = (url: string): Promise<ApiResponse<Database[]>> =>
-  fetch(url).then((res) => res.json())
+const fetcher = async (url: string): Promise<ApiResponse<Database[]>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Failed to fetch databases: ${res.statusText}`)
+  }
+  return res.json() as Promise<ApiResponse<Database[]>>
+}
 
 export function ExplorerEmptyState() {
   const hostId = useHostId()

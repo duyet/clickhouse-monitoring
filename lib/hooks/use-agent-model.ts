@@ -15,6 +15,7 @@ import {
   type ModelPricing,
   type OpenAIModel,
 } from '@/lib/ai/agent-models'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 export type { OpenAIModel } from '@/lib/ai/agent-models'
 
@@ -136,7 +137,7 @@ function getStaticModels(): ModelDisplayInfo[] {
  */
 async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
   try {
-    const response = await fetch('/api/v1/agents/models')
+    const response = await apiFetch('/api/v1/agents/models')
     if (!response.ok) {
       throw new Error('Failed to fetch models')
     }

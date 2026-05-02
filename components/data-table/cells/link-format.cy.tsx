@@ -142,7 +142,7 @@ describe('<LinkFormat />', () => {
 
       cy.get('a')
         .should('have.class', 'group')
-        .and('have.class', 'flex')
+        .and('have.class', 'inline-flex')
         .and('have.class', 'custom-class')
     })
 

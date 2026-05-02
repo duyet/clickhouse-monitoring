@@ -13,6 +13,7 @@ import { useExplorerState } from '../hooks/use-explorer-state'
 import { useMemo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 
 interface ApiResponse<T> {
@@ -20,8 +21,13 @@ interface ApiResponse<T> {
   metadata?: ApiResponseMetadata
 }
 
-const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
-  fetch(url).then((res) => res.json())
+const fetcher = async <T,>(url: string): Promise<ApiResponse<T>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Request failed with status ${res.status}`)
+  }
+  return res.json()
+}
 
 /**
  * Get a human-readable label for dependency type

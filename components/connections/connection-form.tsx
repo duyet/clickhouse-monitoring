@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 export type { BrowserConnection }
 
@@ -71,7 +72,7 @@ export function ConnectionForm({
   const handleTest = async () => {
     setTestStatus({ state: 'loading' })
     try {
-      const response = await fetch('/api/v1/browser-connections/test', {
+      const response = await apiFetch('/api/v1/browser-connections/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

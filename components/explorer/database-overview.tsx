@@ -14,14 +14,20 @@ import { useMemo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 interface ApiResponse<T> {
   data: T
   metadata?: ApiResponseMetadata
 }
 
-const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
-  fetch(url).then((res) => res.json())
+const fetcher = async <T,>(url: string): Promise<ApiResponse<T>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Failed to fetch dependencies: ${res.statusText}`)
+  }
+  return res.json() as Promise<ApiResponse<T>>
+}
 
 interface DatabaseOverviewProps {
   database: string

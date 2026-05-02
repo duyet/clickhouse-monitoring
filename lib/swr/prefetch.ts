@@ -4,6 +4,7 @@ import { mutate } from 'swr'
 
 import type { PrefetchConfig } from './route-prefetch-map'
 
+import { apiFetch } from './api-fetch'
 import { routePrefetchMap } from './route-prefetch-map'
 
 /**
@@ -26,7 +27,7 @@ function prefetchChart(chartName: string, hostId: number): void {
     null, // timezone (null = no timezone preference)
   ]
 
-  fetch(url)
+  apiFetch(url)
     .then((res) => {
       if (!res.ok) return
       return res.json()
@@ -55,7 +56,7 @@ function prefetchTable(tableName: string, hostId: number): void {
     null, // timezone (null = no timezone preference)
   ]
 
-  fetch(url)
+  apiFetch(url)
     .then((res) => {
       if (!res.ok) return
       return res.json()

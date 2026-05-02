@@ -17,6 +17,7 @@ import type { StoredConversation } from './types'
 import { loadConversations } from '@/lib/ai/agent/conversation-utils'
 import { featureFlags } from '@/lib/feature-flags'
 import { debug, error, warn } from '@/lib/logger'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 /**
  * localStorage key for migration completion flag.
@@ -91,16 +92,19 @@ async function uploadConversation(
   try {
     debug('[migration] Uploading conversation', { id, title })
 
-    const response = await fetch(`${CONVERSATIONS_API_BASE}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title: conversation.title,
-        messages: conversation.messages,
-      }),
-    })
+    const response = await apiFetch(
+      `${CONVERSATIONS_API_BASE}/${encodeURIComponent(id)}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: conversation.title,
+          messages: conversation.messages,
+        }),
+      }
+    )
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error')

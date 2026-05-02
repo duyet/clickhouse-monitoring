@@ -10,6 +10,7 @@ import { TreeSkeleton } from './tree-skeleton'
 import { useCallback, useState } from 'react'
 import { SidebarMenu } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { apiFetch } from '@/lib/swr/api-fetch'
 
 interface Database {
   name: string
@@ -24,8 +25,13 @@ interface DatabaseTreeProps {
   hostId: number
 }
 
-const fetcher = (url: string): Promise<ApiResponse<Database[]>> =>
-  fetch(url).then((res) => res.json())
+const fetcher = async (url: string): Promise<ApiResponse<Database[]>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Request failed with status ${res.status}`)
+  }
+  return res.json()
+}
 
 export function DatabaseTree({ hostId }: DatabaseTreeProps) {
   const [searchFilter, setSearchFilter] = useState('')

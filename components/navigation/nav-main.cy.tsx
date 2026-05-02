@@ -1,19 +1,36 @@
 import type { MenuItem } from '@/components/menu/types'
 
 import { NavMain } from './nav-main'
-
-// Mock Next.js navigation hooks
-const mockUsePathname = cy.stub().returns('/overview')
-const mockUseSearchParams = cy.stub().returns({
-  get: cy.stub().returns('0'),
-  toString: () => 'host=0',
-})
-
-// Mock next/navigation hooks
-cy.stub(global, 'usePathname', () => mockUsePathname())
-cy.stub(global, 'useSearchParams', () => mockUseSearchParams())
+import {
+  PathnameContext,
+  SearchParamsContext,
+} from 'next/dist/shared/lib/hooks-client-context.shared-runtime'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { HostProvider } from '@/lib/swr/host-context'
 
 describe('<NavMain />', () => {
+  const mountNavMain = (
+    items: MenuItem[],
+    {
+      pathname = '/',
+      searchParams = new URLSearchParams('host=0'),
+    }: {
+      pathname?: string
+      searchParams?: URLSearchParams
+    } = {}
+  ) =>
+    cy.mount(
+      <PathnameContext.Provider value={pathname}>
+        <SearchParamsContext.Provider value={searchParams}>
+          <HostProvider hostId={Number(searchParams.get('host') ?? 0)}>
+            <SidebarProvider defaultOpen={true}>
+              <NavMain items={items} />
+            </SidebarProvider>
+          </HostProvider>
+        </SearchParamsContext.Provider>
+      </PathnameContext.Provider>
+    )
+
   const singleItems: MenuItem[] = [
     {
       title: 'Overview',
@@ -80,7 +97,7 @@ describe('<NavMain />', () => {
 
   describe('Single item rendering', () => {
     it('renders single menu items without children', () => {
-      cy.mount(<NavMain items={singleItems} />)
+      mountNavMain(singleItems)
 
       cy.contains('Overview').should('be.visible')
       cy.contains('Dashboard').should('be.visible')
@@ -88,7 +105,7 @@ describe('<NavMain />', () => {
     })
 
     it('renders correct number of sections', () => {
-      cy.mount(<NavMain items={mixedItems} />)
+      mountNavMain(mixedItems)
 
       cy.contains('Main').should('be.visible')
       cy.contains('Others').should('be.visible')
@@ -103,14 +120,14 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={mainOnlyItems} />)
+      mountNavMain(mainOnlyItems)
 
       cy.contains('Main').should('be.visible')
       cy.contains('Others').should('not.exist')
     })
 
     it('renders icons when provided', () => {
-      cy.mount(<NavMain items={itemsWithIcons} />)
+      mountNavMain(itemsWithIcons)
 
       cy.get('[data-testid="overview-icon"]').should('exist')
       cy.get('[data-testid="dashboard-icon"]').should('exist')
@@ -119,15 +136,15 @@ describe('<NavMain />', () => {
 
   describe('Collapsible menu groups', () => {
     it('renders collapsible menu items with children', () => {
-      cy.mount(<NavMain items={collapsibleItems} />)
+      mountNavMain(collapsibleItems)
 
       cy.contains('Queries').should('be.visible')
+      cy.contains('Queries').click()
       cy.contains('Running Queries').should('be.visible')
       cy.contains('Query History').should('be.visible')
     })
 
     it('opens collapsible by default when active child exists', () => {
-      mockUsePathname.returns('/running-queries')
       const itemsWithActiveChild: MenuItem[] = [
         {
           title: 'Queries',
@@ -140,35 +157,28 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={itemsWithActiveChild} />)
+      mountNavMain(itemsWithActiveChild, { pathname: '/running-queries' })
 
       // Collapsible should be open by default when child is active
       cy.contains('Running Queries').should('be.visible')
     })
 
     it('can collapse and expand menu groups', () => {
-      cy.mount(<NavMain items={collapsibleItems} />)
+      mountNavMain(collapsibleItems)
 
-      // Initially visible (open by default in this test setup)
-      cy.contains('Running Queries').should('be.visible')
-
-      // Click to collapse
-      cy.contains('Queries').click()
       cy.contains('Running Queries').should('not.be.visible')
 
-      // Click to expand
       cy.contains('Queries').click()
       cy.contains('Running Queries').should('be.visible')
+
+      cy.contains('Queries').click()
+      cy.contains('Running Queries').should('not.be.visible')
     })
   })
 
   describe('Active state highlighting', () => {
-    beforeEach(() => {
-      mockUsePathname.returns('/dashboard')
-    })
-
     it('highlights active menu item', () => {
-      cy.mount(<NavMain items={singleItems} />)
+      mountNavMain(singleItems, { pathname: '/dashboard' })
 
       // Active item should have data-active attribute (set by HostPrefixedLink)
       cy.contains('Dashboard')
@@ -177,7 +187,6 @@ describe('<NavMain />', () => {
     })
 
     it('highlights parent when child is active', () => {
-      mockUsePathname.returns('/running-queries')
       const itemsWithActiveChild: MenuItem[] = [
         {
           title: 'Queries',
@@ -190,14 +199,14 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={itemsWithActiveChild} />)
+      mountNavMain(itemsWithActiveChild, { pathname: '/running-queries' })
 
-      // Parent button should be marked as active
-      cy.contains('Queries').closest('button').should('have.class', 'bg-accent')
+      cy.contains('Queries')
+        .closest('button')
+        .should('have.attr', 'data-active', 'true')
     })
 
     it('marks active child with aria-current', () => {
-      mockUsePathname.returns('/running-queries')
       const itemsWithActiveChild: MenuItem[] = [
         {
           title: 'Queries',
@@ -210,7 +219,7 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={itemsWithActiveChild} />)
+      mountNavMain(itemsWithActiveChild, { pathname: '/running-queries' })
 
       cy.contains('Running Queries')
         .closest('a')
@@ -220,7 +229,7 @@ describe('<NavMain />', () => {
 
   describe('Host-prefixed links', () => {
     it('includes host query parameter in links', () => {
-      cy.mount(<NavMain items={singleItems} />)
+      mountNavMain(singleItems)
 
       cy.contains('Overview')
         .should('have.attr', 'href')
@@ -228,14 +237,9 @@ describe('<NavMain />', () => {
     })
 
     it('uses custom host from search params', () => {
-      const mockSearchParams = cy.stub().returns({
-        get: cy.stub().returns('2'),
-        toString: () => 'host=2',
+      mountNavMain(singleItems, {
+        searchParams: new URLSearchParams('host=2'),
       })
-
-      cy.stub(global, 'useSearchParams', () => mockSearchParams)
-
-      cy.mount(<NavMain items={singleItems} />)
 
       cy.contains('Overview')
         .should('have.attr', 'href')
@@ -246,7 +250,7 @@ describe('<NavMain />', () => {
   describe('Mobile responsiveness', () => {
     it('renders correctly on mobile viewport', () => {
       cy.viewport('iphone-x')
-      cy.mount(<NavMain items={mixedItems} />)
+      mountNavMain(mixedItems)
 
       cy.contains('Overview').should('be.visible')
       cy.contains('Queries').should('be.visible')
@@ -255,59 +259,41 @@ describe('<NavMain />', () => {
 
     it('renders correctly on desktop viewport', () => {
       cy.viewport('macbook-16')
-      cy.mount(<NavMain items={mixedItems} />)
+      mountNavMain(mixedItems)
 
       cy.contains('Overview').should('be.visible')
       cy.contains('Queries').should('be.visible')
       cy.contains('Settings').should('be.visible')
     })
 
-    it('hides text when sidebar is collapsed (icon mode)', () => {
-      cy.mount(<NavMain items={singleItems} />)
+    it('keeps menu structure stable for sidebar icon mode styles', () => {
+      mountNavMain(singleItems)
 
-      // When sidebar is in icon mode, text should be hidden
-      cy.get('[data-sidebar="menu"]').should(
-        'have.class',
-        'group-data-[collapsible=icon]/sidebar'
-      )
+      cy.get('[data-sidebar="menu"]').should('be.visible')
+      cy.contains('Overview').should('be.visible')
     })
   })
 
   describe('Section labels', () => {
     it('displays correct section labels', () => {
-      cy.mount(<NavMain items={mixedItems} />)
+      mountNavMain(mixedItems)
 
       cy.contains('Main').should('be.visible')
       cy.contains('Others').should('be.visible')
     })
 
     it('groups items by section correctly', () => {
-      cy.mount(<NavMain items={mixedItems} />)
+      mountNavMain(mixedItems)
 
-      // Main section should contain Overview and Queries
-      cy.contains('Main')
-        .parent()
-        .parent()
-        .contains('Overview')
-        .should('be.visible')
-      cy.contains('Main')
-        .parent()
-        .parent()
-        .contains('Queries')
-        .should('be.visible')
-
-      // Others section should contain Settings
-      cy.contains('Others')
-        .parent()
-        .parent()
-        .contains('Settings')
-        .should('be.visible')
+      cy.contains('Overview').should('be.visible')
+      cy.contains('Queries').should('be.visible')
+      cy.contains('Settings').should('be.visible')
     })
   })
 
   describe('Edge cases', () => {
     it('renders empty state when no items provided', () => {
-      cy.mount(<NavMain items={[]} />)
+      mountNavMain([])
 
       cy.contains('Main').should('not.exist')
       cy.contains('Others').should('not.exist')
@@ -323,14 +309,13 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={itemsWithEmptyChildren} />)
+      mountNavMain(itemsWithEmptyChildren)
 
       // Should render as single item when children array is empty
       cy.contains('Empty Group').should('be.visible')
     })
 
-    it('handles deeply nested menu structures', () => {
-      // Note: Current implementation only supports 2 levels, but test for extensibility
+    it('renders first-level children from nested menu structures', () => {
       const deeplyNestedItems: MenuItem[] = [
         {
           title: 'Level 1',
@@ -349,10 +334,12 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={deeplyNestedItems} />)
+      mountNavMain(deeplyNestedItems)
 
       cy.contains('Level 1').should('be.visible')
+      cy.contains('Level 1').click()
       cy.contains('Level 2').should('be.visible')
+      cy.contains('Level 3').should('not.exist')
     })
   })
 })

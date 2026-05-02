@@ -7,6 +7,7 @@ import { type FC, memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { useChartData, useHostId } from '@/lib/swr'
+import { cn } from '@/lib/utils'
 
 /**
  * Factory function to create a custom chart component with consistent patterns
@@ -32,8 +33,10 @@ export function createCustomChart(
     interval = config.defaultInterval,
     lastHours = config.defaultLastHours,
     className,
+    hostId: hostIdProp,
   }: ChartProps) {
-    const hostId = useHostId()
+    const routeHostId = useHostId()
+    const hostId = hostIdProp ?? routeHostId
     const swr = useChartData({
       chartName: config.chartName,
       hostId,
@@ -47,7 +50,7 @@ export function createCustomChart(
         {(dataArray, sql, metadata) => (
           <ChartCard
             title={title}
-            className={className}
+            className={cn(config.chartCardClassName, className)}
             contentClassName={config.contentClassName}
             sql={sql}
             data={dataArray}

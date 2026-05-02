@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHostId } from '@/lib/swr'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { cn } from '@/lib/utils'
 
 interface DatabaseItem {
@@ -27,8 +28,13 @@ interface TableItem {
   total_rows?: number
 }
 
-const fetcher = <T,>(url: string): Promise<ApiResponse<T>> =>
-  fetch(url).then((res) => res.json())
+const fetcher = async <T,>(url: string): Promise<ApiResponse<T>> => {
+  const res = await apiFetch(url)
+  if (!res.ok) {
+    throw new Error(`Request failed with status ${res.status}`)
+  }
+  return res.json()
+}
 
 interface DatabaseTableSelectorProps {
   className?: string

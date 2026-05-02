@@ -4,6 +4,7 @@ import useSWR from 'swr'
 
 import type { HostInfo } from '@/app/api/v1/hosts/route'
 
+import { apiFetch } from './api-fetch'
 import { useCallback } from 'react'
 import { ErrorLogger } from '@/lib/logger'
 
@@ -26,7 +27,7 @@ interface HostsResponse {
 export function useHosts() {
   const fetcher = useCallback(async () => {
     try {
-      const response = await fetch('/api/v1/hosts')
+      const response = await apiFetch('/api/v1/hosts')
       if (!response.ok) {
         ErrorLogger.logWarning(
           `Failed to fetch hosts: ${response.status} ${response.statusText}`,

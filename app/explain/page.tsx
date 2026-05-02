@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useHostId } from '@/lib/swr'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { cn } from '@/lib/utils'
 
 const EXPLAIN_MODES = [
@@ -141,7 +142,7 @@ interface ApiResponse {
 }
 
 const fetcher = async (url: string): Promise<ApiResponse> => {
-  const res = await fetch(url)
+  const res = await apiFetch(url)
   if (!res.ok) {
     const errorData = (await res.json()) as { error?: { message?: string } }
     throw new Error(errorData.error?.message || 'Failed to explain query')

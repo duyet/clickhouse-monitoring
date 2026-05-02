@@ -1,5 +1,7 @@
 import type { Mention, SlashCommand } from './types'
 
+import { apiFetch } from '@/lib/swr/api-fetch'
+
 interface ResolveOptions {
   hostId: number
 }
@@ -21,7 +23,7 @@ async function fetchTableSchema(
     const safeTable = table.replace(/'/g, "''")
     const query = `SELECT name, type, default_kind, comment FROM system.columns WHERE database='${safeDatabase}' AND table='${safeTable}' ORDER BY position`
     const url = `/api/v1/data?query=${encodeURIComponent(query)}&hostId=${hostId}`
-    const res = await fetch(url)
+    const res = await apiFetch(url)
     if (!res.ok) return ''
 
     const json = (await res.json()) as { data?: ColumnRow[] }

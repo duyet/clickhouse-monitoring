@@ -19,6 +19,7 @@ import useSWR from 'swr'
 
 import type { Notification } from '@/lib/notifications/dismissed-notifications'
 
+import { apiFetch } from './api-fetch'
 import { useCallback, useMemo } from 'react'
 import {
   dismissNotification as dismissNotificationUtil,
@@ -70,7 +71,7 @@ export function useNotifications(hostId: number): NotificationsResult {
   const { data, error, isLoading, mutate } = useSWR<NotificationsResponse>(
     `/api/v1/notifications?hostId=${hostId}`,
     async (url) => {
-      const res = await fetch(url)
+      const res = await apiFetch(url)
       if (!res.ok) {
         throw new Error('Failed to fetch notifications')
       }

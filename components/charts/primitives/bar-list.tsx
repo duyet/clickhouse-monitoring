@@ -67,10 +67,15 @@ export const BarList = memo(function BarList({
         const bgColor = `color-mix(in oklch, var(--chart-1) ${opacity}%, transparent)`
 
         return (
-          <div key={item.name} className="relative h-7 overflow-hidden rounded">
+          <div
+            key={item.name}
+            className="relative h-7 overflow-hidden rounded"
+            data-testid="bar-list-item"
+          >
             {/* Colored bar background */}
             <div
               className="absolute inset-y-0 left-0 rounded"
+              data-testid="bar-list-fill"
               style={{
                 width: `${percentage}%`,
                 backgroundColor: bgColor,
@@ -92,6 +97,7 @@ export const BarList = memo(function BarList({
             >
               <span
                 className="truncate px-2.5 text-sm font-medium text-white"
+                data-testid="bar-list-label-contrast"
                 style={{ textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}
               >
                 {item.name}

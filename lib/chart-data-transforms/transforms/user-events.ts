@@ -53,7 +53,7 @@ export function transformUserEventCounts<T extends string = 'event_time'>(
         acc[event_time] = {}
       }
 
-      acc[event_time][user] = count
+      acc[event_time][user] = (acc[event_time][user] ?? 0) + count
       return acc
     },
     {}

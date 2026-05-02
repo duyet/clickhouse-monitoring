@@ -2,6 +2,7 @@
 
 import { ScalingIcon } from 'lucide-react'
 
+import type { ComponentPropsWithoutRef } from 'react'
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { DateRangeConfig, DateRangeValue } from '@/components/date-range'
 import type { StaleError } from '@/lib/swr'
@@ -64,9 +65,9 @@ function ScaleToggle() {
   )
 }
 
-interface ChartCardProps {
+interface ChartCardProps
+  extends Omit<ComponentPropsWithoutRef<typeof Card>, 'children' | 'title'> {
   title?: string | React.ReactNode
-  className?: string
   contentClassName?: string
   sql?: string
   data?: ChartDataPoint[]
@@ -103,9 +104,13 @@ function ChartCardContentWithScale({
   onRangeChange,
   staleError,
   onRetry,
+  ...cardProps
 }: Omit<ChartCardProps, 'enableScaleToggle'>) {
   return (
-    <Card className={cn(chartCard.base, chartCard.variants.normal, className)}>
+    <Card
+      className={cn(chartCard.base, chartCard.variants.normal, className)}
+      {...cardProps}
+    >
       {title ? (
         <CardHeader className={chartCard.header}>
           <header className="flex flex-row items-center justify-between gap-2">
@@ -159,9 +164,13 @@ function ChartCardContentWithoutScale({
   onRangeChange,
   staleError,
   onRetry,
+  ...cardProps
 }: Omit<ChartCardProps, 'enableScaleToggle'>) {
   return (
-    <Card className={cn(chartCard.base, chartCard.variants.normal, className)}>
+    <Card
+      className={cn(chartCard.base, chartCard.variants.normal, className)}
+      {...cardProps}
+    >
       {title ? (
         <CardHeader className={chartCard.header}>
           <header className="flex flex-row items-center justify-between gap-2">

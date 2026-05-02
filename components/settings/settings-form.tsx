@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { TIMEZONE_GROUPS } from '@/lib/constants/timezones'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { cn } from '@/lib/utils'
 
 interface SettingsFormProps {
@@ -50,7 +51,7 @@ export function SettingsForm({
   useEffect(() => {
     async function fetchDefaultTimezone() {
       try {
-        const response = await fetch('/api/v1/dashboard/settings?hostId=0')
+        const response = await apiFetch('/api/v1/dashboard/settings?hostId=0')
         if (response.ok) {
           const data = (await response.json()) as {
             success?: boolean

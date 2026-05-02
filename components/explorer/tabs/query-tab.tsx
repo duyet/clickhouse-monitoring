@@ -49,6 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
@@ -185,7 +186,7 @@ const fetcher = async (
       const hostId = parsed.searchParams.get('hostId') || '0'
       const format = parsed.searchParams.get('format') || 'JSONEachRow'
 
-      res = await fetch('/api/v1/explorer/query', {
+      res = await apiFetch('/api/v1/explorer/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -196,7 +197,7 @@ const fetcher = async (
         signal: combinedSignal,
       })
     } else {
-      res = await fetch(url, { signal: combinedSignal })
+      res = await apiFetch(url, { signal: combinedSignal })
     }
 
     const json = (await res.json()) as ApiResponse<Record<string, unknown>[]>
@@ -246,7 +247,7 @@ function useAutoCompleteSchema(hostId: number) {
   const { data: dbResponse } = useSWR<ApiResponse<{ name: string }[]>>(
     `/api/v1/explorer/databases?hostId=${hostId}`,
     async (url: string) => {
-      const res = await fetch(url)
+      const res = await apiFetch(url)
       return res.json() as Promise<ApiResponse<{ name: string }[]>>
     },
     { revalidateOnFocus: false }

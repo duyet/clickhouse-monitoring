@@ -31,12 +31,6 @@ describe('<DataTableContent />', () => {
     { col1: 'val3', col2: 'val3' },
   ]
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
-
   const queryConfig: QueryConfig = {
     name: 'test-table',
     sql: 'SELECT * FROM test',
@@ -49,7 +43,6 @@ describe('<DataTableContent />', () => {
     title: 'Test Table',
     description: 'Test Description',
     queryConfig,
-    table,
     columnDefs: columns,
     tableContainerRef,
     isVirtualized: false,
@@ -57,8 +50,39 @@ describe('<DataTableContent />', () => {
     activeFilterCount: 0,
   }
 
+  function TestDataTableContent({
+    rows = data,
+    activeFilterCount = defaultProps.activeFilterCount,
+    isVirtualized = defaultProps.isVirtualized,
+    description = defaultProps.description,
+    queryConfig: config = defaultProps.queryConfig,
+  }: {
+    rows?: Row[]
+    activeFilterCount?: number
+    isVirtualized?: boolean
+    description?: string
+    queryConfig?: QueryConfig
+  }) {
+    const table = useReactTable({
+      data: rows,
+      columns,
+      getCoreRowModel: getCoreRowModel(),
+    })
+
+    return (
+      <DataTableContent
+        {...defaultProps}
+        activeFilterCount={activeFilterCount}
+        description={description}
+        isVirtualized={isVirtualized}
+        queryConfig={config}
+        table={table}
+      />
+    )
+  }
+
   it('renders table container with proper accessibility', () => {
-    cy.mount(<DataTableContent {...defaultProps} />)
+    cy.mount(<TestDataTableContent />)
 
     cy.get('[role="region"]').should(
       'have.attr',
@@ -68,75 +92,45 @@ describe('<DataTableContent />', () => {
   })
 
   it('renders table with caption for accessibility', () => {
-    cy.mount(<DataTableContent {...defaultProps} />)
+    cy.mount(<TestDataTableContent />)
 
     cy.get('#table-description.sr-only').should('contain', 'Test Description')
   })
 
   it('renders table with headers', () => {
-    cy.mount(<DataTableContent {...defaultProps} />)
+    cy.mount(<TestDataTableContent />)
 
     cy.get('thead').should('exist')
     cy.get('th').should('have.length', 2)
   })
 
   it('renders table body with rows', () => {
-    cy.mount(<DataTableContent {...defaultProps} />)
+    cy.mount(<TestDataTableContent />)
 
     cy.get('tbody').should('exist')
     cy.get('tbody tr').should('have.length', 3)
   })
 
   it('renders empty state when no data', () => {
-    const emptyTable = useReactTable({
-      data: [],
-      columns,
-      getCoreRowModel: getCoreRowModel(),
-    })
-
-    cy.mount(<DataTableContent {...defaultProps} table={emptyTable} />)
+    cy.mount(<TestDataTableContent rows={[]} />)
 
     cy.contains('No results').should('be.visible')
   })
 
   it('shows filter-related empty state message when filters are active', () => {
-    const emptyTable = useReactTable({
-      data: [],
-      columns,
-      getCoreRowModel: getCoreRowModel(),
-    })
-
-    cy.mount(
-      <DataTableContent
-        {...defaultProps}
-        table={emptyTable}
-        activeFilterCount={2}
-      />
-    )
+    cy.mount(<TestDataTableContent rows={[]} activeFilterCount={2} />)
 
     cy.contains('match your filters').should('be.visible')
   })
 
   it('shows standard empty state message when no filters active', () => {
-    const emptyTable = useReactTable({
-      data: [],
-      columns,
-      getCoreRowModel: getCoreRowModel(),
-    })
-
-    cy.mount(
-      <DataTableContent
-        {...defaultProps}
-        table={emptyTable}
-        activeFilterCount={0}
-      />
-    )
+    cy.mount(<TestDataTableContent rows={[]} activeFilterCount={0} />)
 
     cy.contains('adjusting your query').should('be.visible')
   })
 
   it('applies virtualization style when isVirtualized is true', () => {
-    cy.mount(<DataTableContent {...defaultProps} isVirtualized={true} />)
+    cy.mount(<TestDataTableContent isVirtualized={true} />)
 
     cy.get('[role="region"]')
       .should('have.css', 'height')
@@ -144,14 +138,14 @@ describe('<DataTableContent />', () => {
   })
 
   it('does not apply fixed height when not virtualized', () => {
-    cy.mount(<DataTableContent {...defaultProps} isVirtualized={false} />)
+    cy.mount(<TestDataTableContent isVirtualized={false} />)
 
     // Height should be auto or not explicitly set to 600px
     cy.get('[role="region"]').should('not.have.css', 'height', '600px')
   })
 
   it('renders table with border and background styles', () => {
-    cy.mount(<DataTableContent {...defaultProps} />)
+    cy.mount(<TestDataTableContent />)
 
     cy.get('[role="region"]')
       .should('have.class', 'border-border\\/50')
@@ -160,7 +154,7 @@ describe('<DataTableContent />', () => {
   })
 
   it('renders proper cell content', () => {
-    cy.mount(<DataTableContent {...defaultProps} />)
+    cy.mount(<TestDataTableContent />)
 
     cy.get('tbody tr').eq(0).find('td').eq(0).should('contain', 'val1')
     cy.get('tbody tr').eq(0).find('td').eq(1).should('contain', 'val1')
@@ -174,11 +168,7 @@ describe('<DataTableContent />', () => {
     }
 
     cy.mount(
-      <DataTableContent
-        {...defaultProps}
-        description=""
-        queryConfig={configWithDesc}
-      />
+      <TestDataTableContent description="" queryConfig={configWithDesc} />
     )
 
     cy.get('#table-description').should('contain', 'Config Description')
@@ -186,8 +176,7 @@ describe('<DataTableContent />', () => {
 
   it('uses title as fallback for caption', () => {
     cy.mount(
-      <DataTableContent
-        {...defaultProps}
+      <TestDataTableContent
         description=""
         queryConfig={{ ...queryConfig, description: undefined }}
       />

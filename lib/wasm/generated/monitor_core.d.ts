@@ -1,16 +1,33 @@
 /* tslint:disable */
 /* eslint-disable */
+/**
+ * Legacy export returning JSON string (kept for backward compat).
+ */
+export function transform_user_event_counts_json(input: string, time_field: string): string;
 export function transform_clickhouse_json_each_row_json(input: string): string;
+/**
+ * WASM export accepting JsValue input and returning JsValue output — zero JSON string overhead.
+ * JS side: pass pre-parsed array directly, get result object directly.
+ */
+export function transform_user_event_counts_v3(input: any, time_field: string): any;
+/**
+ * WASM export returning JsValue directly — avoids JSON string intermediate.
+ */
+export function transform_user_event_counts_v2(input: string, time_field: string): any;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly transform_clickhouse_json_each_row_json: (a: number, b: number, c: number) => void;
-  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+  readonly transform_user_event_counts_json: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly transform_user_event_counts_v2: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly transform_user_event_counts_v3: (a: number, b: number, c: number, d: number) => void;
   readonly __wbindgen_export: (a: number, b: number) => number;
   readonly __wbindgen_export2: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_export3: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_export3: (a: number) => void;
+  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+  readonly __wbindgen_export4: (a: number, b: number, c: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;
