@@ -89,7 +89,7 @@ Cypress.Commands.add('mount', (component, options) =>
     ),
     options
   )
-)
+})
 Cypress.Commands.add('nextMount', nextMount)
 
 beforeEach(() => {
