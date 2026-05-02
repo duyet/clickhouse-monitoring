@@ -94,16 +94,16 @@ describe('<DataTableHeader />', () => {
     cy.get('[aria-label="Loading data"]').should('not.exist')
   })
 
-  it('shows Show SQL button when showSQL is true', () => {
+  it('shows request info menu when showSQL is true', () => {
     cy.mount(<TestDataTableHeader showSQL={true} />)
 
-    cy.get('button[aria-label="Show SQL"]').should('exist')
+    cy.get('button[aria-label="Open chart actions"]').should('exist')
   })
 
-  it('does not show Show SQL button when showSQL is false', () => {
+  it('does not show request info menu when showSQL is false', () => {
     cy.mount(<TestDataTableHeader showSQL={false} />)
 
-    cy.get('button[aria-label="Show SQL"]').should('not.exist')
+    cy.get('button[aria-label="Open chart actions"]').should('not.exist')
   })
 
   it('shows Column Options button', () => {
@@ -173,10 +173,11 @@ describe('<DataTableHeader />', () => {
     cy.wrap(clearStub).should('have.been.calledOnce')
   })
 
-  it('opens SQL dialog when Show SQL button is clicked', () => {
+  it('opens SQL dialog from request info menu', () => {
     cy.mount(<TestDataTableHeader showSQL={true} />)
 
-    cy.get('button[aria-label="Show SQL"]').click()
+    cy.get('button[aria-label="Open chart actions"]').click()
+    cy.contains('[role="menuitem"]', 'Request Info').click()
     cy.get('pre').should('contain', 'SELECT * FROM test')
   })
 })

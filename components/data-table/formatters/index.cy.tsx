@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { Row, RowData, Table } from '@tanstack/react-table'
 
 import {
@@ -19,19 +18,7 @@ import { ColumnFormat } from '@/types/column-format'
 
 // Test wrapper with required context
 function TestWrapper({ children }: { children: React.ReactNode }) {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-      },
-    },
-  })
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <div className="p-4">{children}</div>
-    </QueryClientProvider>
-  )
+  return <div className="p-4">{children}</div>
 }
 
 describe('Formatters Module', () => {

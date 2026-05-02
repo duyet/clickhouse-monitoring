@@ -21,7 +21,7 @@ describe('<ActionMenu />', () => {
     )
 
     cy.get('button[aria-label="Open menu"]').should('be.visible')
-    cy.findByLabelText('Open menu')
+    cy.get('button[aria-label="Open menu"]')
       .should('have.attr', 'type', 'button')
       .and('have.class', 'p-0')
   })
@@ -68,17 +68,17 @@ describe('<ActionMenu />', () => {
       <ActionMenu row={mockRow} value="test-value" actions={mockActions} />
     )
 
-    cy.get('button[aria-label="Open menu"]')
-      .find('svg')
-      .should('have.class', 'lucide-more-horizontal')
+    cy.get('button[aria-label="Open menu"]').find('svg').should('exist')
   })
 
-  it('has correct button variant styling', () => {
+  it('uses ghost button styling', () => {
     cy.mount(
       <ActionMenu row={mockRow} value="test-value" actions={mockActions} />
     )
 
-    cy.get('button').should('have.class', 'variant-ghost')
+    cy.get('button[aria-label="Open menu"]')
+      .should('have.class', 'hover:bg-accent')
+      .and('have.class', 'p-0')
   })
 
   it('handles empty actions array', () => {

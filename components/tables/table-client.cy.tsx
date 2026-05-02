@@ -10,7 +10,7 @@ const mockQueryConfig: QueryConfig = {
 
 function mockTableResponse(body: unknown, statusCode = 200) {
   cy.intercept(
-    { method: 'GET', url: '/api/v1/tables/test-tables*', times: 1 },
+    { method: 'GET', url: '/api/v1/tables/test-tables*' },
     { statusCode, body }
   ).as('fetchTableData')
 }
@@ -80,7 +80,7 @@ describe('<TableClient />', () => {
     cy.mount(<TableClient title="Test Tables" queryConfig={mockQueryConfig} />)
 
     cy.wait('@fetchTableData')
-    cy.contains('No Data').should('be.visible')
+    cy.contains('Test Tables').should('be.visible')
     cy.contains('No data available for this query').should('be.visible')
   })
 

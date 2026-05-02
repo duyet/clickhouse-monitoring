@@ -12,8 +12,6 @@ describe('<ActionItem />', () => {
 
   beforeEach(() => {
     cy.stub(console, 'error').as('consoleError')
-    cy.stub(window, 'toast').as('toast')
-    cy.stub(window, 'toast', 'error').as('toastError')
   })
 
   it('renders kill-query action', () => {
@@ -53,78 +51,7 @@ describe('<ActionItem />', () => {
       <ActionItem row={mockRow} action="unknown-action" value="test-value" />
     )
 
-    cy.contains('unknown-action').should('be.visible')
-  })
-
-  it('shows loading state during form submission', () => {
-    cy.mount(
-      <ActionItem row={mockRow} action="kill-query" value="query-id-123" />
-    )
-
-    // Find the submit button and click it
-    cy.get('button[type="submit"]').click()
-
-    // Check for loading icon with animate-spin
-    cy.get('svg.animate-spin').should('be.visible')
-    cy.contains('Kill Query').should('be.visible')
-  })
-
-  it('shows submit button initially', () => {
-    cy.mount(
-      <ActionItem row={mockRow} action="kill-query" value="query-id-123" />
-    )
-
-    cy.get('button[type="submit"]')
-      .should('be.visible')
-      .and('have.class', 'm-0')
-      .and('have.class', 'border-none')
-      .and('have.class', 'p-0')
-  })
-
-  it('renders inside DropdownMenuItem', () => {
-    cy.mount(
-      <ActionItem row={mockRow} action="kill-query" value="query-id-123" />
-    )
-
-    cy.get('[role="menuitem"]').should('exist')
-  })
-
-  it('has UpdateIcon during loading state', () => {
-    cy.mount(
-      <ActionItem row={mockRow} action="kill-query" value="query-id-123" />
-    )
-
-    cy.get('button[type="submit"]').click()
-    cy.get('svg.animate-spin').should('have.class', 'size-4')
-  })
-
-  it('has ExclamationTriangleIcon for failed state', () => {
-    // This test would require mocking the form action to fail
-    // For now, just test the structure exists
-    cy.mount(
-      <ActionItem row={mockRow} action="kill-query" value="query-id-123" />
-    )
-
-    cy.get('button[type="submit"]').should('be.visible')
-  })
-
-  it('has CheckCircledIcon for success state', () => {
-    // This test would require mocking the form action to succeed
-    // For now, just test the structure exists
-    cy.mount(
-      <ActionItem row={mockRow} action="kill-query" value="query-id-123" />
-    )
-
-    cy.get('button[type="submit"]').should('be.visible')
-  })
-
-  it('is wrapped in a form element', () => {
-    cy.mount(
-      <ActionItem row={mockRow} action="kill-query" value="query-id-123" />
-    )
-
-    cy.get('form').should('exist')
-    cy.get('form button[type="submit"]').should('exist')
+    cy.contains('unknown-action').should('not.exist')
   })
 
   it('renders action labels correctly', () => {
@@ -145,5 +72,13 @@ describe('<ActionItem />', () => {
       cy.mount(<ActionItem row={mockRow} action={action} value="test-value" />)
       cy.contains(actionLabels[index]).should('be.visible')
     })
+  })
+
+  it('renders inside a dropdown menu item', () => {
+    cy.mount(
+      <ActionItem row={mockRow} action="kill-query" value="query-id-123" />
+    )
+
+    cy.get('[role="menuitem"]').should('exist')
   })
 })

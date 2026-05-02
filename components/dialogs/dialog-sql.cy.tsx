@@ -36,8 +36,7 @@ describe('<DialogSQL />', () => {
     cy.get('button').click()
     cy.get('pre').should('be.visible')
 
-    // Click outside modal
-    cy.get('[role="dialog"] button').click()
+    cy.get('[role="dialog"] button[aria-label="Close"]').click()
     cy.get('pre').should('not.exist')
   })
 

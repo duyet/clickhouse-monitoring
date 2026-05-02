@@ -5,6 +5,7 @@ import {
   PathnameContext,
   SearchParamsContext,
 } from 'next/dist/shared/lib/hooks-client-context.shared-runtime'
+import { SidebarProvider } from '@/components/ui/sidebar'
 
 describe('<NavMain />', () => {
   const mountNavMain = (
@@ -20,7 +21,9 @@ describe('<NavMain />', () => {
     cy.mount(
       <PathnameContext.Provider value={pathname}>
         <SearchParamsContext.Provider value={searchParams}>
-          <NavMain items={items} />
+          <SidebarProvider defaultOpen={true}>
+            <NavMain items={items} />
+          </SidebarProvider>
         </SearchParamsContext.Provider>
       </PathnameContext.Provider>
     )
@@ -91,7 +94,7 @@ describe('<NavMain />', () => {
 
   describe('Single item rendering', () => {
     it('renders single menu items without children', () => {
-      cy.mount(<NavMain items={singleItems} />)
+      mountNavMain(singleItems)
 
       cy.contains('Overview').should('be.visible')
       cy.contains('Dashboard').should('be.visible')
@@ -99,7 +102,7 @@ describe('<NavMain />', () => {
     })
 
     it('renders correct number of sections', () => {
-      cy.mount(<NavMain items={mixedItems} />)
+      mountNavMain(mixedItems)
 
       cy.contains('Main').should('be.visible')
       cy.contains('Others').should('be.visible')
@@ -114,14 +117,14 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={mainOnlyItems} />)
+      mountNavMain(mainOnlyItems)
 
       cy.contains('Main').should('be.visible')
       cy.contains('Others').should('not.exist')
     })
 
     it('renders icons when provided', () => {
-      cy.mount(<NavMain items={itemsWithIcons} />)
+      mountNavMain(itemsWithIcons)
 
       cy.get('[data-testid="overview-icon"]').should('exist')
       cy.get('[data-testid="dashboard-icon"]').should('exist')
@@ -130,7 +133,7 @@ describe('<NavMain />', () => {
 
   describe('Collapsible menu groups', () => {
     it('renders collapsible menu items with children', () => {
-      cy.mount(<NavMain items={collapsibleItems} />)
+      mountNavMain(collapsibleItems)
 
       cy.contains('Queries').should('be.visible')
       cy.contains('Running Queries').should('be.visible')
@@ -157,7 +160,7 @@ describe('<NavMain />', () => {
     })
 
     it('can collapse and expand menu groups', () => {
-      cy.mount(<NavMain items={collapsibleItems} />)
+      mountNavMain(collapsibleItems)
 
       // Initially visible (open by default in this test setup)
       cy.contains('Running Queries').should('be.visible')
@@ -224,7 +227,7 @@ describe('<NavMain />', () => {
 
   describe('Host-prefixed links', () => {
     it('includes host query parameter in links', () => {
-      cy.mount(<NavMain items={singleItems} />)
+      mountNavMain(singleItems)
 
       cy.contains('Overview')
         .should('have.attr', 'href')
@@ -245,7 +248,7 @@ describe('<NavMain />', () => {
   describe('Mobile responsiveness', () => {
     it('renders correctly on mobile viewport', () => {
       cy.viewport('iphone-x')
-      cy.mount(<NavMain items={mixedItems} />)
+      mountNavMain(mixedItems)
 
       cy.contains('Overview').should('be.visible')
       cy.contains('Queries').should('be.visible')
@@ -254,7 +257,7 @@ describe('<NavMain />', () => {
 
     it('renders correctly on desktop viewport', () => {
       cy.viewport('macbook-16')
-      cy.mount(<NavMain items={mixedItems} />)
+      mountNavMain(mixedItems)
 
       cy.contains('Overview').should('be.visible')
       cy.contains('Queries').should('be.visible')
@@ -262,7 +265,7 @@ describe('<NavMain />', () => {
     })
 
     it('hides text when sidebar is collapsed (icon mode)', () => {
-      cy.mount(<NavMain items={singleItems} />)
+      mountNavMain(singleItems)
 
       // When sidebar is in icon mode, text should be hidden
       cy.get('[data-sidebar="menu"]').should(
@@ -274,14 +277,14 @@ describe('<NavMain />', () => {
 
   describe('Section labels', () => {
     it('displays correct section labels', () => {
-      cy.mount(<NavMain items={mixedItems} />)
+      mountNavMain(mixedItems)
 
       cy.contains('Main').should('be.visible')
       cy.contains('Others').should('be.visible')
     })
 
     it('groups items by section correctly', () => {
-      cy.mount(<NavMain items={mixedItems} />)
+      mountNavMain(mixedItems)
 
       // Main section should contain Overview and Queries
       cy.contains('Main')
@@ -306,7 +309,7 @@ describe('<NavMain />', () => {
 
   describe('Edge cases', () => {
     it('renders empty state when no items provided', () => {
-      cy.mount(<NavMain items={[]} />)
+      mountNavMain([])
 
       cy.contains('Main').should('not.exist')
       cy.contains('Others').should('not.exist')
@@ -322,7 +325,7 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={itemsWithEmptyChildren} />)
+      mountNavMain(itemsWithEmptyChildren)
 
       // Should render as single item when children array is empty
       cy.contains('Empty Group').should('be.visible')
@@ -348,7 +351,7 @@ describe('<NavMain />', () => {
         },
       ]
 
-      cy.mount(<NavMain items={deeplyNestedItems} />)
+      mountNavMain(deeplyNestedItems)
 
       cy.contains('Level 1').should('be.visible')
       cy.contains('Level 2').should('be.visible')
