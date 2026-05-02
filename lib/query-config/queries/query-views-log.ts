@@ -1,5 +1,6 @@
 import type { QueryConfig } from '@/types/query-config'
 
+import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { ColumnFormat } from '@/types/column-format'
 
 export const queryViewsLogConfig: QueryConfig = {
@@ -13,6 +14,7 @@ export const queryViewsLogConfig: QueryConfig = {
     {
       since: '22.8',
       sql: `
+        ${QUERY_COMMENT}
         SELECT
           event_time,
           initial_query_id,
@@ -39,6 +41,7 @@ export const queryViewsLogConfig: QueryConfig = {
     {
       since: '23.2',
       sql: `
+        ${QUERY_COMMENT}
         SELECT
           event_time,
           initial_query_id,
