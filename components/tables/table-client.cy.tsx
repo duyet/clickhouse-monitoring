@@ -63,7 +63,7 @@ describe('<TableClient />', () => {
       'aria-label',
       'Test Tables error'
     )
-    cy.contains('Failed to execute query').should('exist')
+    cy.contains('Failed to Load Data').should('be.visible')
   })
 
   it('displays no data alert when result is empty', () => {

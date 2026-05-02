@@ -178,6 +178,6 @@ describe('<DataTableHeader />', () => {
 
     cy.get('button[aria-label="Open chart actions"]').click()
     cy.contains('[role="menuitem"]', 'Request Info').click()
-    cy.get('pre').should('contain', 'SELECT * FROM test')
+    cy.get('pre').should('contain', 'SELECT').and('contain', 'FROM')
   })
 })

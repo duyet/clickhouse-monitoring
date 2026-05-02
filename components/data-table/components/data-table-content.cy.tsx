@@ -43,7 +43,6 @@ describe('<DataTableContent />', () => {
     title: 'Test Table',
     description: 'Test Description',
     queryConfig,
-    table,
     columnDefs: columns,
     tableContainerRef,
     isVirtualized: false,

@@ -3,7 +3,7 @@ id: pr-1021-component-ci-stability
 title: PR 1021 Component CI Stability
 type: incident
 status: draft
-updated: 2026-05-01
+updated: 2026-05-02
 source_pr: 1021
 source_branch: codex/implement-data-logic-in-rust-and-update-pr
 tags:
@@ -107,8 +107,13 @@ mix of existing Cypress component-test fragility and one real component bug.
   missing-module failures.
 - Navigation specs that render `NavMain` must include `SidebarProvider` because
   collapsible menu items call `useSidebar()`.
+- Navigation link specs that assert host-aware URLs need `HostProvider` too.
+  `SearchParamsContext` alone does not drive `useHostId()`.
 - Radix/dropdown specs should assert stable accessibility labels and visible
   menu text. Avoid exact Lucide class names and non-DOM variant classes.
+- Radix dialog close buttons in `components/ui/dialog.tsx` expose visible
+  screen-reader text, not `aria-label="Close"`. Use Escape or visible close
+  behavior instead of a non-existent label selector.
 
 ## Patch Direction
 
@@ -145,6 +150,9 @@ Keep these fixes narrow:
   controlled close callback. Avoid broad Radix dialog visibility assertions.
 - In table-client specs, keep endpoint intercepts test-local. Avoid one-shot
   intercepts for states that may revalidate while the assertion is pending.
+- Data-table pagination renders row ranges on desktop, not `Page 1 of N`.
+- Do not stub `window.process` in browser component specs for timezone tests.
+  Use the timezone context default or a real provider.
 
 ## Handoff Rules
 

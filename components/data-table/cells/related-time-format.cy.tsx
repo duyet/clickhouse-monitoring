@@ -1,16 +1,6 @@
 import { RelatedTimeFormat } from './related-time-format'
 
 describe('<RelatedTimeFormat />', () => {
-  beforeEach(() => {
-    // Set timezone for consistent testing
-    cy.stub(window, 'process').value({
-      env: {
-        NEXT_PUBLIC_CLICKHOUSE_TZ: 'UTC',
-        CLICKHOUSE_TZ: 'UTC',
-      },
-    })
-  })
-
   it('renders relative time for valid timestamp', () => {
     const pastDate = new Date(Date.now() - 1000 * 60 * 5) // 5 minutes ago
     const timestamp = pastDate.toISOString()

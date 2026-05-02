@@ -59,8 +59,8 @@ describe('Formatters Module', () => {
     })
 
     it('numberFormatter should use short format for display', () => {
-      const result = numberFormatter(1500000)
-      cy.wrap(result).should('contain.html')
+      cy.mount(<TestWrapper>{numberFormatter(1_500_000)}</TestWrapper>)
+      cy.get('span').should('contain.text', 'million')
     })
   })
 
@@ -118,6 +118,7 @@ describe('Formatters Module', () => {
             return data[key]
           },
         } as unknown as Row<any>,
+        data: [{ database: 'system', table: 'users' }],
         context: {},
       })
 
@@ -131,13 +132,14 @@ describe('Formatters Module', () => {
         .and('contain.text', 'Click me')
     })
 
-    it('linkFormatter should show arrow icon on hover', () => {
+    it('linkFormatter should render a navigable anchor', () => {
       const props = createMockProps('Navigate', {
         row: {
           original: { id: '123' },
           index: 0,
           getValue: () => '123',
         } as unknown as Row<any>,
+        data: [{ id: '123' }],
       })
 
       const result = linkFormatter({
@@ -146,8 +148,7 @@ describe('Formatters Module', () => {
       })
       cy.mount(<TestWrapper>{result}</TestWrapper>)
 
-      cy.get('a').realHover()
-      cy.get('[data-icon]').should('exist')
+      cy.get('a[href="/details/123"]').should('contain.text', 'Navigate')
     })
   })
 
@@ -157,14 +158,14 @@ describe('Formatters Module', () => {
       cy.mount(<TestWrapper>{codeDialogFormatter(longCode)}</TestWrapper>)
 
       cy.get('code').should('contain.text', '...')
-      cy.get('div[role="button"]').should('exist')
+      cy.get('code.truncated').parent().should('have.class', 'cursor-pointer')
     })
 
     it('codeDialogFormatter should show dialog trigger for long code', () => {
       const longQuery = 'SELECT * FROM users WHERE id = 1'.repeat(5)
       cy.mount(<TestWrapper>{codeDialogFormatter(longQuery)}</TestWrapper>)
 
-      cy.get('[role="button"]').should('exist').click()
+      cy.get('code.truncated').parent().click()
       cy.get('[role="dialog"]').should('exist')
     })
 
@@ -258,7 +259,7 @@ describe('Formatters Module', () => {
 
       const result = formatCell(
         mockTable,
-        mockData,
+        [{ database: 'system' }],
         rowWithData,
         'View',
         'name',
