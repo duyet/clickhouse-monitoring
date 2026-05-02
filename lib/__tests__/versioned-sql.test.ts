@@ -179,6 +179,27 @@ describe('All Versioned Query Configs', () => {
 })
 
 describe('Query Views Log Version Selection', () => {
+  it('uses placeholder peak memory fields before ClickHouse 23.2', () => {
+    const sql = selectVersionedSql(
+      queryViewsLogConfig.sql,
+      parseVersion('22.8.0.0')
+    )
+
+    expect(sql).not.toContain('formatReadableSize(peak_memory_usage)')
+    expect(sql).toContain("'-' AS readable_peak_memory_usage")
+    expect(sql).toContain('NULL AS pct_peak_memory_usage')
+  })
+
+  it('uses peak memory at the ClickHouse 23.2 boundary', () => {
+    const sql = selectVersionedSql(
+      queryViewsLogConfig.sql,
+      parseVersion('23.2.0.0')
+    )
+
+    expect(sql).toContain('peak_memory_usage')
+    expect(sql).toContain('readable_peak_memory_usage')
+  })
+
   it('uses the documented peak memory column for modern ClickHouse versions', () => {
     const sql = selectVersionedSql(
       queryViewsLogConfig.sql,

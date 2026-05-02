@@ -23,8 +23,13 @@ export const queryViewsLogConfig: QueryConfig = {
           round(view_duration_ms, 2) AS view_duration_ms,
           read_rows,
           formatReadableQuantity(read_rows) AS readable_read_rows,
+          round(read_rows * 100.0 / nullIf(max(read_rows) OVER (), 0), 2) AS pct_read_rows,
           written_rows,
-          formatReadableQuantity(written_rows) AS readable_written_rows
+          formatReadableQuantity(written_rows) AS readable_written_rows,
+          round(written_rows * 100.0 / nullIf(max(written_rows) OVER (), 0), 2) AS pct_written_rows,
+          NULL AS peak_memory_usage,
+          '-' AS readable_peak_memory_usage,
+          NULL AS pct_peak_memory_usage
         FROM system.query_views_log
         WHERE event_date >= today() - 7
         ORDER BY event_time DESC
@@ -46,10 +51,13 @@ export const queryViewsLogConfig: QueryConfig = {
           round(view_duration_ms, 2) AS view_duration_ms,
           read_rows,
           formatReadableQuantity(read_rows) AS readable_read_rows,
+          round(read_rows * 100.0 / nullIf(max(read_rows) OVER (), 0), 2) AS pct_read_rows,
           written_rows,
           formatReadableQuantity(written_rows) AS readable_written_rows,
+          round(written_rows * 100.0 / nullIf(max(written_rows) OVER (), 0), 2) AS pct_written_rows,
           peak_memory_usage,
-          formatReadableSize(peak_memory_usage) AS readable_peak_memory_usage
+          formatReadableSize(peak_memory_usage) AS readable_peak_memory_usage,
+          round(peak_memory_usage * 100.0 / nullIf(max(peak_memory_usage) OVER (), 0), 2) AS pct_peak_memory_usage
         FROM system.query_views_log
         WHERE event_date >= today() - 7
         ORDER BY event_time DESC
@@ -65,6 +73,7 @@ export const queryViewsLogConfig: QueryConfig = {
     'view_duration_ms',
     'readable_read_rows',
     'readable_written_rows',
+    'readable_peak_memory_usage',
     'exception_code',
     'exception',
   ],
@@ -79,6 +88,7 @@ export const queryViewsLogConfig: QueryConfig = {
     view_duration_ms: ColumnFormat.Number,
     readable_read_rows: ColumnFormat.BackgroundBar,
     readable_written_rows: ColumnFormat.BackgroundBar,
+    readable_peak_memory_usage: ColumnFormat.BackgroundBar,
     exception_code: ColumnFormat.Number,
     exception: ColumnFormat.Text,
   },
