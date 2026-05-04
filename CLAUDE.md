@@ -129,6 +129,7 @@ Both deployment methods provide:
 - `bun run release:notes` - Generate release notes from recent changes
 - `bun run cy:open` - Start the dev server and open Cypress against `http://localhost:3000`
 - `bun run test:unit`, `bun run test:query-config`, `bun run test:coverage`, `bun run test:watch` - Narrow test runs for common workflows
+- `bun run wasm:build` - Build the Rust monitor core WebAssembly bundle
 - `bun run wasm:test` - Rebuild WASM module, run Rust tests, then run WASM integration test
 - `bun run rust:build` - Build the Rust monitor core in release mode
 - `bun run bench:wasm` - Build JS + Rust artifacts and run WASM benchmark script
