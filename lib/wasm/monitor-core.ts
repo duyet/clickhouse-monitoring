@@ -84,7 +84,7 @@ export async function transformClickHouseJsonEachRowWasmJson(
   try {
     const mod = await loadMonitorCore()
     return mod.transform_clickhouse_json_each_row_json(input)
-  } catch (err) {
+  } catch {
     // WASM unavailable (e.g. Cloudflare Workers where import.meta.url resolves
     // to a path without origin). Fall back to pure JS parsing.
     return transformJsonEachRowFallback(input)

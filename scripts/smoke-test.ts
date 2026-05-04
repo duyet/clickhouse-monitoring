@@ -178,7 +178,7 @@ async function main() {
       }
     }
 
-    console.log('\n' + '─'.repeat(60))
+    console.log(`\n${'─'.repeat(60)}`)
     console.log(
       `Total: ${results.length} | ✅ Pass: ${passed.length} | ❌ Fail: ${failed.length} | ⚠️  Known: ${knownFailures.length}`
     )
