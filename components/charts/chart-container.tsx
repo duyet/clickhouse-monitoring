@@ -5,6 +5,7 @@ import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { StaleError, UseChartResult } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 
+import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
@@ -83,9 +84,17 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
     return <ChartError error={error} title={title} onRetry={() => mutate()} />
   }
 
-  // Empty state - hide the chart card when no data
+  // Empty state - show empty state message instead of hiding
   if (!data || data.length === 0) {
-    return null
+    return (
+      <ChartEmpty
+        title={title}
+        className={className}
+        compact={_compact}
+        sql={sql}
+        metadata={metadata}
+      />
+    )
   }
 
   // Pass all metadata fields dynamically

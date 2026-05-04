@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { isCloudflareWorkers } from '@/lib/clickhouse/clickhouse-client'
 import { cn } from '@/lib/utils'
 
 export interface AgentToolPart {
@@ -174,7 +175,32 @@ export function renderToolOutput(output: unknown) {
 
   const outputObj = output as Record<string, unknown>
 
+  // Skip heavy chart rendering on Cloudflare Workers to avoid resource limits
+  // Fall back to simple data table instead
   if (outputObj.type === 'visualization' && Array.isArray(outputObj.rows)) {
+    if (isCloudflareWorkers()) {
+      return (
+        <div className="space-y-3">
+          <div className="rounded-md bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            <p className="font-medium">
+              Interactive charts disabled on Workers
+            </p>
+            <p className="mt-1">
+              Charts are disabled in this deployment to avoid resource limits.{' '}
+              <a
+                href="https://github.com/duyet/clickhouse-monitoring/blob/main/docs/deployment.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Use Docker deployment for full chart support.
+              </a>
+            </p>
+          </div>
+          <ResultTable rows={outputObj.rows as unknown[]} maxRows={100} />
+        </div>
+      )
+    }
     return (
       <AgentVisualization
         title={outputObj.title as string | undefined}
