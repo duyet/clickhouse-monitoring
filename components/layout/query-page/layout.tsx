@@ -79,9 +79,6 @@ export const QueryPageLayout = memo(function QueryPageLayout({
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-4 w-full max-w-full">
-      {/* Optional Header Content */}
-      {headerContent}
-
       {/* Charts Section with Collapse Toggle */}
       {hasCharts && (
         <div className="flex flex-col gap-2">
@@ -99,6 +96,9 @@ export const QueryPageLayout = memo(function QueryPageLayout({
           )}
         </div>
       )}
+
+      {/* Filter bar above the table */}
+      {headerContent}
 
       {/* Data Table - flex-1 to fill remaining space */}
       {!hideTable && (

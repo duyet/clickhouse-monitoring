@@ -24,7 +24,6 @@ function HistoryQueriesPageContent() {
       queryConfig={historyQueriesConfig}
       title="History Queries"
       defaultPageSize={100}
-      maxTableHeight="calc(100vh - 320px)"
       searchParams={tableSearchParams}
       headerContent={<QueryFiltersBar queryConfig={historyQueriesConfig} />}
     />
