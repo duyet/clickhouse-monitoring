@@ -21,6 +21,8 @@ import { classifyError } from '@/lib/ai/agent/errors'
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
 
+const AGENT_DEBUG_LOGS = process.env.NODE_ENV !== 'production'
+
 /**
  * Handle POST requests for agent processing with streaming
  */
@@ -37,25 +39,10 @@ export async function POST(request: Request) {
     disabledTools?: string[] // Tools the user has disabled in the sidebar
   }
 
-  // Debug logging
-  console.log('[Agent API] Request body keys:', Object.keys(body))
-  console.log('[Agent API] Messages count:', body.messages?.length)
-  console.log(
-    '[Agent API] Messages sample:',
-    body.messages?.slice(-2).map((m) => ({
-      role: m.role,
-      hasParts: 'parts' in m,
-      partsCount: 'parts' in m ? m.parts?.length : 0,
-      hasContent: 'content' in m,
-      id: 'id' in m ? m.id : undefined,
-    }))
-  )
-  // Log full first message structure for deep debugging
-  if (body.messages && body.messages.length > 0) {
-    console.log(
-      '[Agent API] First message structure:',
-      JSON.stringify(body.messages[0], null, 2)
-    )
+  // Debug logging (disabled in production to avoid sensitive prompt leakage)
+  if (AGENT_DEBUG_LOGS) {
+    console.log('[Agent API] Request body keys:', Object.keys(body))
+    console.log('[Agent API] Messages count:', body.messages?.length)
   }
 
   // Support both direct `message` and AI SDK's UIMessage format with parts array
@@ -151,13 +138,11 @@ export async function POST(request: Request) {
     })
   }
 
-  // Debug logging
-  console.log(
-    '[Agent API] uiMessages being sent:',
-    JSON.stringify(uiMessages, null, 2)
-  )
-  console.log('[Agent API] Model being used:', model)
-  console.log('[Agent API] OpenAI baseURL:', process.env.LLM_API_BASE)
+  if (AGENT_DEBUG_LOGS) {
+    // Keep logs minimal: avoid logging full message contents
+    console.log('[Agent API] uiMessages count:', uiMessages.length)
+    console.log('[Agent API] Model being used:', model)
+  }
 
   // Collect usage from each step for analytics aggregation
   const usageSteps: LanguageModelUsage[] = []

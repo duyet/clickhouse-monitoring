@@ -8,6 +8,19 @@ function getSecret(): string | null {
   return process.env.CHM_API_KEY_SECRET ?? null
 }
 
+function timingSafeEqualString(a: string, b: string): boolean {
+  const aBytes = new TextEncoder().encode(a)
+  const bBytes = new TextEncoder().encode(b)
+  if (aBytes.length !== bBytes.length) return false
+
+  let diff = 0
+  for (let index = 0; index < aBytes.length; index += 1) {
+    diff |= aBytes[index] ^ bBytes[index]
+  }
+
+  return diff === 0
+}
+
 export async function POST(request: Request) {
   const secret = getSecret()
   if (!secret) {
@@ -19,7 +32,7 @@ export async function POST(request: Request) {
 
   // Require the CHM_API_KEY_SECRET itself to mint keys
   const token = getBearerToken(request.headers.get('authorization'))
-  if (!token || token !== secret) {
+  if (!token || !timingSafeEqualString(token, secret)) {
     return NextResponse.json(
       { error: 'Unauthorized: provide CHM_API_KEY_SECRET as Bearer token' },
       { status: 401 }
