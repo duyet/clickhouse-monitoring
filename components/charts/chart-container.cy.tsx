@@ -11,6 +11,7 @@ describe('<ChartContainer />', () => {
   ) => <div data-testid="chart-content">Chart Content</div>
 
   it('renders skeleton when loading', () => {
+    const children = cy.stub().as('children')
     const swr = {
       data: undefined,
       isLoading: true,
@@ -21,15 +22,17 @@ describe('<ChartContainer />', () => {
 
     cy.mount(
       <ChartContainer swr={swr} title="Test Chart">
-        {mockChildren}
+        {children}
       </ChartContainer>
     )
 
     cy.contains('Test Chart').should('exist')
     cy.get('[role="status"][aria-label*="Loading"]').should('exist')
+    cy.get('@children').should('not.have.been.called')
   })
 
   it('renders error state when error exists', () => {
+    const children = cy.stub().as('children')
     const swr = {
       data: undefined,
       isLoading: false,
@@ -40,7 +43,7 @@ describe('<ChartContainer />', () => {
 
     cy.mount(
       <ChartContainer swr={swr} title="Test Chart">
-        {mockChildren}
+        {children}
       </ChartContainer>
     )
 
@@ -48,9 +51,11 @@ describe('<ChartContainer />', () => {
     cy.get('[data-testid="chart-content"]').should('not.exist')
     // Title is shown in error state
     cy.contains('Test Chart').should('exist')
+    cy.get('@children').should('not.have.been.called')
   })
 
   it('renders empty state when no data', () => {
+    const children = cy.stub().as('children')
     const swr = {
       data: [],
       isLoading: false,
@@ -61,13 +66,14 @@ describe('<ChartContainer />', () => {
 
     cy.mount(
       <ChartContainer swr={swr} title="Test Chart">
-        {mockChildren}
+        {children}
       </ChartContainer>
     )
 
     // EmptyState with no-data variant shows "No data available"
     cy.contains('No data available').should('exist')
     cy.contains('Test Chart').should('exist')
+    cy.get('@children').should('not.have.been.called')
   })
 
   it('renders children when data exists', () => {
