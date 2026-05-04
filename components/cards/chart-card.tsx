@@ -86,6 +86,8 @@ interface ChartCardProps
   onRetry?: () => void
   /** Enable log scale toggle (default: true for numeric charts) */
   enableScaleToggle?: boolean
+  /** Optional zoom button to render in header */
+  zoomButton?: React.ReactNode
 }
 
 /**
@@ -104,8 +106,9 @@ function ChartCardContentWithScale({
   onRangeChange,
   staleError,
   onRetry,
+  zoomButton,
   ...cardProps
-}: Omit<ChartCardProps, 'enableScaleToggle'>) {
+}: ChartCardProps) {
   return (
     <Card
       className={cn(chartCard.base, chartCard.variants.normal, className)}
@@ -126,6 +129,7 @@ function ChartCardContentWithScale({
                 <ChartStaleIndicator error={staleError} onRetry={onRetry} />
               )}
               <ScaleToggle />
+              {zoomButton}
               {dateRangeConfig && onRangeChange && (
                 <DateRangeSelector
                   config={dateRangeConfig}
@@ -164,8 +168,9 @@ function ChartCardContentWithoutScale({
   onRangeChange,
   staleError,
   onRetry,
+  zoomButton,
   ...cardProps
-}: Omit<ChartCardProps, 'enableScaleToggle'>) {
+}: ChartCardProps) {
   return (
     <Card
       className={cn(chartCard.base, chartCard.variants.normal, className)}
@@ -185,6 +190,7 @@ function ChartCardContentWithoutScale({
               {staleError && onRetry && (
                 <ChartStaleIndicator error={staleError} onRetry={onRetry} />
               )}
+              {zoomButton}
               {dateRangeConfig && onRangeChange && (
                 <DateRangeSelector
                   config={dateRangeConfig}

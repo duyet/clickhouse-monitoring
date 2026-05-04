@@ -2,11 +2,14 @@
 
 import type { ReactNode } from 'react'
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
+import type { DateRangeConfig, DateRangeValue } from '@/components/date-range'
 import type { StaleError, UseChartResult } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
+import { ChartZoomButton, ChartZoomDialog } from './chart-zoom-dialog'
+import { cloneElement, isValidElement, useState } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
 import { cn } from '@/lib/utils'
@@ -35,6 +38,14 @@ export interface ChartContainerProps<
   ) => ReactNode
   /** Use compact layout for smaller charts */
   compact?: boolean
+  /** Enable zoom dialog (default: true) */
+  enableZoom?: boolean
+  /** Date range configuration for zoom dialog */
+  dateRangeConfig?: DateRangeConfig
+  /** Current selected range value */
+  currentRange?: string
+  /** Callback when date range changes */
+  onRangeChange?: (range: DateRangeValue) => void
 }
 
 /**
@@ -69,9 +80,14 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
   chartClassName: _chartClassName,
   children,
   compact: _compact = false,
+  enableZoom = true,
+  dateRangeConfig,
+  currentRange,
+  onRangeChange,
 }: ChartContainerProps<TData>) {
   const { data, isLoading, error, mutate, sql, metadata, hasData, staleError } =
     swr
+  const [zoomOpen, setZoomOpen] = useState(false)
 
   // Loading state
   if (isLoading) {
@@ -102,16 +118,50 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
     ? { ...metadata }
     : undefined
 
-  // Render chart with data (and staleError if revalidation failed)
+  // Zoom button
+  const zoomButton = enableZoom ? (
+    <ChartZoomButton onClick={() => setZoomOpen(true)} />
+  ) : null
+
+  // Render chart content
+  const chartContent = children(data, sql, toolbarMetadata, staleError, mutate)
+
+  // If children returns a valid element, inject zoomButton prop if it's a ChartCard
+  const enhancedContent =
+    isValidElement(chartContent) &&
+    (chartContent.props as Record<string, unknown>).zoomButton === undefined
+      ? cloneElement(chartContent, { zoomButton } as Record<string, unknown>)
+      : chartContent
+
   return (
-    <FadeIn className="h-full w-full min-w-0">
-      <div
-        className={cn('h-full w-full min-w-0 overflow-hidden', className)}
-        aria-label={title ? `${title} chart` : 'Chart'}
-        role="region"
-      >
-        {children(data, sql, toolbarMetadata, staleError, mutate)}
-      </div>
-    </FadeIn>
+    <>
+      <FadeIn className="h-full w-full min-w-0">
+        <div
+          className={cn('h-full w-full min-w-0 overflow-hidden', className)}
+          aria-label={title ? `${title} chart` : 'Chart'}
+          role="region"
+        >
+          {enhancedContent}
+        </div>
+      </FadeIn>
+      {enableZoom && (
+        <ChartZoomDialog
+          open={zoomOpen}
+          onOpenChange={setZoomOpen}
+          title={title}
+          sql={sql}
+          data={data}
+          metadata={toolbarMetadata}
+          dateRangeConfig={dateRangeConfig}
+          currentRange={currentRange}
+          onRangeChange={onRangeChange}
+          staleError={staleError}
+          onRetry={staleError ? mutate : undefined}
+          className={_chartClassName}
+        >
+          {enhancedContent}
+        </ChartZoomDialog>
+      )}
+    </>
   )
 }
