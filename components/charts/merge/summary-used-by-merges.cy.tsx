@@ -7,6 +7,10 @@ describe('<ChartSummaryUsedByMerges />', () => {
   }
 
   it('renders chart skeleton when loading', () => {
+    cy.intercept('GET', '/api/v1/charts/summary-used-by-merges*', {
+      statusCode: 200,
+      body: { data: [], metadata: {} },
+    })
     cy.mount(<ChartSummaryUsedByMerges {...defaultProps} />)
 
     cy.get('[role="status"][aria-label*="Loading"]').should('exist')
@@ -81,6 +85,11 @@ describe('<ChartSummaryUsedByMerges />', () => {
   })
 
   it('applies custom className', () => {
+    cy.intercept('GET', '/api/v1/charts/summary-used-by-merges*', {
+      statusCode: 200,
+      body: { data: [], metadata: {} },
+    })
+
     cy.mount(
       <ChartSummaryUsedByMerges
         {...defaultProps}
