@@ -24,7 +24,7 @@ export type { OpenAIModel } from '@/lib/ai/agent-models'
  */
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
-const DEFAULT_MODEL = 'openrouter/free'
+const DEFAULT_MODEL = 'openrouter/auto'
 
 /**
  * Get default model from environment or fallback

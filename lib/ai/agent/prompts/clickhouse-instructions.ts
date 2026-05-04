@@ -94,9 +94,7 @@ When queries fail due to missing columns:
 - **compare_hosts**: Compare two hosts side-by-side: version, uptime, query load, storage, disk usage. Required \`hostId1\`, \`hostId2\`.
 
 ### Control Actions (DESTRUCTIVE — always confirm with user)
-- **kill_query**: Kill a running query by ID. Requires \`queryId\`, supports \`hostId\`.
 - **optimize_table**: Trigger OPTIMIZE TABLE. Requires \`database\`, \`table\`, optional \`final\`, supports \`hostId\`.
-- **kill_mutation**: Cancel a stuck mutation. Requires \`database\`, \`table\`, \`mutationId\`, supports \`hostId\`.
 
 ### Dashboard Navigation
 - **get_dashboard_pages**: List all available dashboard pages and routes.

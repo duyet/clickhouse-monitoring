@@ -38,6 +38,7 @@ interface ChatMessageProps {
   readonly message: UIMessage
   readonly isLastUserMessage?: boolean
   readonly isStreaming?: boolean
+  readonly showFollowUps?: boolean
   readonly responseDurationMs?: number
   readonly onRegenerate?: () => void
   readonly onSuggestionClick?: (suggestion: string) => void
@@ -239,7 +240,7 @@ function generateFollowUpSuggestions(message: UIMessage): string[] {
   }
   if (toolNames.includes('get_running_queries')) {
     suggestions.push('Which queries are using the most memory?')
-    suggestions.push('Kill a specific long-running query')
+
     suggestions.push('Show query execution progress')
   }
   if (toolNames.includes('get_table_schema')) {
@@ -354,6 +355,7 @@ export function ChatMessage({
   message,
   isLastUserMessage,
   isStreaming,
+  showFollowUps,
   responseDurationMs,
   onRegenerate,
   onSuggestionClick,
@@ -444,7 +446,7 @@ export function ChatMessage({
           />
         )}
 
-        {isAssistant && followUpSuggestions.length > 0 && (
+        {isAssistant && showFollowUps && followUpSuggestions.length > 0 && (
           <div className="mt-3 border-t border-muted/30 pt-3">
             <Suggestions>
               {followUpSuggestions.map((suggestion) => (

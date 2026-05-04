@@ -258,7 +258,7 @@ function SkillTreeNodeView({
 }) {
   const hasChildren = node.children.length > 0
   const hasBody = node.body.some((line) => line.trim().length > 0)
-  const [open, setOpen] = useState(depth < 2)
+  const [open, setOpen] = useState(false)
 
   return (
     <div className="relative" role="treeitem">

@@ -345,12 +345,20 @@ export const AgentsChatArea = forwardRef<
                   message.role === 'assistant' &&
                   index === messages.length - 1
 
+                const latestAssistantMessage =
+                  findLastAssistantMessage(messages)
+                const showFollowUps =
+                  message.role === 'assistant' &&
+                  latestAssistantMessage?.id === message.id &&
+                  !isLoading
+
                 return (
                   <ChatMessage
                     key={message.id}
                     message={message}
                     isLastUserMessage={index === lastUserMessageIndex}
                     isStreaming={isMessageStreaming}
+                    showFollowUps={showFollowUps}
                     responseDurationMs={responseDurations[message.id]}
                     onRegenerate={
                       index === lastUserMessageIndex

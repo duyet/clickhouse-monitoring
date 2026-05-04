@@ -449,7 +449,6 @@ Optional system tables are validated before querying:
 ### Developer Tools
 - ZooKeeper explorer
 - Query EXPLAIN analyzer
-- Query kill functionality
 
 ## Conventions
 

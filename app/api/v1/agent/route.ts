@@ -82,7 +82,7 @@ export async function POST(request: Request) {
   }
 
   const hostId = typeof body.hostId === 'number' ? body.hostId : 0
-  const model = body.model || process.env.LLM_MODEL || 'openrouter/free'
+  const model = body.model || process.env.LLM_MODEL || 'openrouter/auto'
   const disabledTools = Array.isArray(body.disabledTools)
     ? body.disabledTools.filter((t) => typeof t === 'string')
     : []

@@ -32,7 +32,7 @@ function filterTools<T extends Record<string, unknown>>(
  * Default model configuration
  * Falls back to openrouter/free if LLM_MODEL env var is not set
  */
-const DEFAULT_MODEL = process.env.LLM_MODEL || 'openrouter/free'
+const DEFAULT_MODEL = process.env.LLM_MODEL || 'openrouter/auto'
 
 function getOpenRouterFreeFallbackModel(): string {
   return process.env.OPENROUTER_FREE_FALLBACK_MODEL || 'qwen/qwen3-coder:free'

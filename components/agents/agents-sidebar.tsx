@@ -84,19 +84,19 @@ function SidebarSection({
   children: ReactNode
 }) {
   return (
-    <section className="rounded-xl border border-border/60 bg-card/50">
-      <div className="flex items-start justify-between gap-3 border-b border-border/60 px-3 py-2.5">
+    <section>
+      <div className="flex items-start justify-between gap-3 border-b border-border/60 px-3 py-2">
         <div className="min-w-0">
           <div className="text-sm font-medium text-foreground">{title}</div>
           {description ? (
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
               {description}
             </p>
           ) : null}
         </div>
         {action}
       </div>
-      <div className="p-3">{children}</div>
+      <div className="pt-2 pb-3">{children}</div>
     </section>
   )
 }
@@ -388,9 +388,7 @@ function McpToolRow({
 function McpToolsSection() {
   const { data: mcpInfo, isLoading, error, retry } = useMcpServerInfo()
   const { isToolEnabled, toggleTool } = useToolConfig()
-  const [openSections, setOpenSections] = useState<Set<string>>(
-    new Set(['server', 'Resources', 'schema', 'system'])
-  )
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set())
 
   const toggleSection = (sectionName: string) => {
     setOpenSections((prev) => {
