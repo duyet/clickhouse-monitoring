@@ -5,11 +5,9 @@ import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { StaleError, UseChartResult } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 
-import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
-import { getGuidanceForMissingTables } from '@/lib/table-guidance'
 import { cn } from '@/lib/utils'
 
 export interface ChartContainerProps<
@@ -69,7 +67,7 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
   className,
   chartClassName: _chartClassName,
   children,
-  compact = false,
+  compact: _compact = false,
 }: ChartContainerProps<TData>) {
   const { data, isLoading, error, mutate, sql, metadata, hasData, staleError } =
     swr
@@ -85,31 +83,9 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
     return <ChartError error={error} title={title} onRetry={() => mutate()} />
   }
 
-  // Empty state - now passes SQL, data, metadata, and guidance for missing tables
+  // Empty state - hide the chart card when no data
   if (!data || data.length === 0) {
-    // Get guidance for missing tables (if any)
-    const missingTables = metadata?.missingTables
-    const guidance = missingTables
-      ? getGuidanceForMissingTables(missingTables)
-      : undefined
-
-    // Build suggestion message from guidance
-    const suggestion = guidance
-      ? `${guidance.description ? `${guidance.description}\n\n` : ''}${guidance.enableInstructions}${guidance.docsUrl ? `\n\nDocumentation: ${guidance.docsUrl}` : ''}`
-      : undefined
-
-    return (
-      <ChartEmpty
-        title={title}
-        className={className}
-        sql={sql}
-        data={data}
-        metadata={metadata}
-        suggestion={suggestion}
-        onRetry={() => mutate()}
-        compact={compact}
-      />
-    )
+    return null
   }
 
   // Pass all metadata fields dynamically

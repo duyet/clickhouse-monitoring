@@ -5,10 +5,13 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   DatabaseIcon,
+  HelpCircleIcon,
   MonitorIcon,
   PanelRightClose,
   RefreshCwIcon,
 } from 'lucide-react'
+
+// ChevronDownIcon already imported above
 
 import type { ReactNode } from 'react'
 import type {
@@ -85,18 +88,23 @@ function SidebarSection({
 }) {
   return (
     <section>
-      <div className="flex items-start justify-between gap-3 border-b border-border/60 px-3 py-2">
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-foreground">{title}</div>
-          {description ? (
-            <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-              {description}
-            </p>
-          ) : null}
+      <div className="flex items-center justify-between gap-3 px-3 py-2">
+        <div className="flex min-w-0 items-center gap-1.5 truncate text-sm font-medium text-foreground">
+          {title}
+          {description && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircleIcon className="h-3.5 w-3.5 shrink-0 cursor-help text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-[220px] text-xs">
+                {description}
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
         {action}
       </div>
-      <div className="pt-2 pb-3">{children}</div>
+      <div className="pt-1 pb-3">{children}</div>
     </section>
   )
 }
@@ -124,10 +132,7 @@ function HostSelector({ hostId }: { readonly hostId: number }) {
   }
 
   return (
-    <SidebarSection
-      title="Host"
-      description="Route the agent to the ClickHouse server you want to inspect."
-    >
+    <SidebarSection title="Host">
       <Select value={String(hostId)} onValueChange={handleHostChange}>
         <SelectTrigger className="h-10 rounded-lg border-border/60 bg-background/70 text-sm">
           <SelectValue placeholder="Select host" />
@@ -180,10 +185,7 @@ function ModelSelectorComponent() {
   }
 
   return (
-    <SidebarSection
-      title="Model"
-      description="Choose the default model the agent should use for this session."
-    >
+    <SidebarSection title="Model">
       <ModelSelector open={open} onOpenChange={setOpen}>
         <ModelSelectorTrigger asChild>
           <Button
@@ -191,41 +193,16 @@ function ModelSelectorComponent() {
             className="h-auto w-full justify-between rounded-lg border-border/60 bg-background/70 px-3 py-2.5"
             aria-label="Select model"
           >
-            <div className="flex min-w-0 items-start gap-3 text-left">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-muted/30">
-                <ModelSelectorLogo
-                  provider={currentProvider}
-                  className="size-3.5 shrink-0 dark:invert-0"
-                />
+            <div className="flex min-w-0 items-center gap-3 text-left">
+              <ModelSelectorLogo
+                provider={currentProvider}
+                className="size-3.5 shrink-0 dark:invert-0"
+              />
+              <span className="min-w-0 truncate font-mono text-[13px] font-medium text-foreground">
+                {currentModel?.name ?? model}
               </span>
-              <div className="min-w-0">
-                <div className="truncate font-mono text-[13px] font-medium text-foreground">
-                  {currentModel?.name ?? model}
-                </div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {currentModel?.description ?? 'Custom model'}
-                </div>
-              </div>
             </div>
-            <div className="ml-3 flex shrink-0 flex-col items-end gap-1">
-              <Badge variant="secondary" className="rounded-full">
-                {currentModel?.formattedContextLength != null
-                  ? `${currentModel.formattedContextLength} ctx`
-                  : 'ctx unknown'}
-              </Badge>
-              {currentModel?.isFree ? (
-                <Badge
-                  className="rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                  variant="outline"
-                >
-                  Free
-                </Badge>
-              ) : currentModel?.pricing != null ? (
-                <span className="text-[10px] text-muted-foreground">
-                  ${currentModel.pricing.inputPerMillion}/M in
-                </span>
-              ) : null}
-            </div>
+            <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
           </Button>
         </ModelSelectorTrigger>
 
@@ -256,20 +233,13 @@ function ModelSelectorComponent() {
                         : 'border border-transparent hover:bg-muted/35'
                     )}
                   >
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-muted/40">
-                      <ModelSelectorLogo
-                        provider={provider}
-                        className="size-3.5 shrink-0 dark:invert-0"
-                      />
+                    <ModelSelectorLogo
+                      provider={provider}
+                      className="size-3.5 shrink-0 dark:invert-0"
+                    />
+                    <span className="min-w-0 flex-1 truncate font-mono text-[13px] font-medium text-foreground">
+                      {item.id}
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-mono text-[13px] font-medium text-foreground">
-                        {item.id}
-                      </div>
-                      <div className="mt-1 text-xs leading-5 text-muted-foreground">
-                        {item.description}
-                      </div>
-                    </div>
                     <div className="flex shrink-0 flex-col items-end gap-1.5">
                       <Badge variant="outline" className="rounded-full">
                         {item.formattedContextLength} ctx
@@ -438,8 +408,8 @@ function McpToolsSection() {
   if (isLoading) {
     return (
       <SidebarSection
-        title="MCP Server"
-        description="Loading available tools and resources."
+        title="Model"
+        description="Choose the default model the agent should use for this session."
       >
         <p className="text-sm text-muted-foreground">Loading tools...</p>
       </SidebarSection>

@@ -1,5 +1,7 @@
 'use client'
 
+import { Inbox, RefreshCw } from 'lucide-react'
+
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartDataPoint } from '@/types/chart-data'
@@ -7,6 +9,7 @@ import type { ChartDataPoint } from '@/types/chart-data'
 import { memo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { chartCard } from '@/components/charts/chart-card-styles'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -35,14 +38,6 @@ interface ChartEmptyProps {
   metadata?: Partial<ApiResponseMetadata>
 }
 
-/**
- * ChartEmpty - Enhanced empty state for charts
- *
- * Displays empty state message while still providing access to:
- * - SQL query via toolbar dropdown menu
- * - Query execution metadata via toolbar dropdown menu
- * - Retry option for refreshing data
- */
 export const ChartEmpty = memo(function ChartEmpty({
   title,
   className,
@@ -106,20 +101,43 @@ export const ChartEmpty = memo(function ChartEmpty({
 
       {/* Empty state content */}
       <CardContent
-        className={cn(compact ? chartCard.contentCompact : chartCard.content)}
+        className={cn(
+          compact ? chartCard.contentCompact : chartCard.content,
+          'flex flex-col items-center justify-center py-8'
+        )}
       >
-        <EmptyState
-          variant={variant}
-          title={title ? undefined : 'No data'}
-          description={
-            description ||
-            'There is no data to display. This could be due to no activity in the selected time period.'
-          }
-          compact={compact}
-          onRefresh={onRetry}
-        />
+        <div className="mb-4 rounded-full bg-muted/30 p-3">
+          <Inbox
+            className="h-6 w-6 text-muted-foreground/50"
+            strokeWidth={1.5}
+          />
+        </div>
+
+        <p className="text-sm font-medium text-muted-foreground">
+          {title ? `${title} - No data` : 'No data available'}
+        </p>
+
+        {(description || !title) && (
+          <p className="mt-1.5 text-xs text-muted-foreground/60 max-w-sm text-center leading-relaxed">
+            {description ||
+              'There is no data to display. This could be due to no activity in the selected time period.'}
+          </p>
+        )}
+
+        {onRetry && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRetry}
+            className="mt-4 gap-1.5 text-xs"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Refresh data
+          </Button>
+        )}
+
         {suggestion && (
-          <div className="mt-4">
+          <div className="mt-6 w-full max-w-sm">
             <SuggestionCard suggestion={suggestion} />
           </div>
         )}
