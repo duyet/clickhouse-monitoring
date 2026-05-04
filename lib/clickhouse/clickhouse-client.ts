@@ -70,7 +70,7 @@ export const getClient = async ({
   // If not in pool, create new client
   if (!pooled) {
     const newClient = clientFactory({
-      host: config.host,
+      url: config.host,
       username: config.user ?? 'default',
       password: config.password ?? '',
       clickhouse_settings: {

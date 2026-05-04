@@ -56,7 +56,7 @@ export const connectionCharts: Record<string, ChartQueryBuilder> = {
     return {
       query: `
       SELECT
-        ${applyInterval(interval, 'event_time')} AS event_time,
+        ${applyInterval(interval, 'event_time')},
         SUM(CurrentMetric_TCPConnection) AS TCPConnection,
         SUM(CurrentMetric_HTTPConnection) AS HTTPConnection,
         SUM(CurrentMetric_InterserverConnection) AS InterserverConnection
