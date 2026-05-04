@@ -181,11 +181,10 @@ export const DataTableContent = memo(function DataTableContent<
         ref={tableContainerRef}
         className={cn(
           'min-h-0 min-w-0',
-          isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-auto',
+          isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto',
           {
             'max-h-[50vh]': compact && !isVirtualized,
             'mb-5 rounded-lg border border-border/50 bg-card/30': !compact,
-            'max-h-[70vh]': !compact && !isVirtualized,
           }
         )}
         role="region"
