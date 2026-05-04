@@ -109,7 +109,7 @@ describe('getClient', () => {
     const client = await getClient({ web: false })
 
     expect(mockCreateClient).toHaveBeenCalledWith({
-      host: 'localhost',
+      url: 'localhost',
       username: 'default',
       password: '',
       clickhouse_settings: {
@@ -129,7 +129,7 @@ describe('getClient', () => {
     const client = await getClient({ web: true })
 
     expect(mockCreateClientWeb).toHaveBeenCalledWith({
-      host: 'localhost',
+      url: 'localhost',
       username: 'default',
       password: '',
       clickhouse_settings: {
@@ -151,7 +151,7 @@ describe('getClient', () => {
     const client = await getClient({ web: false })
 
     expect(mockCreateClient).toHaveBeenCalledWith({
-      host: 'localhost',
+      url: 'localhost',
       username: 'testuser',
       password: 'testpassword',
       clickhouse_settings: {
