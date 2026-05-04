@@ -17,7 +17,7 @@ const BASE_URL =
     : undefined) ||
   'https://clickhouse.duyet.net'
 const JSON_OUTPUT = args.includes('--json')
-const VERBOSE = args.includes('--verbose')
+const _VERBOSE = args.includes('--verbose')
 
 // ── Types ──────────────────────────────────────────────
 
@@ -258,7 +258,7 @@ const CATEGORY_META: Record<ErrorCategory, { label: string; icon: string }> = {
 function renderReport(
   hosts: HostInfo[],
   results: TestResult[],
-  charts: string[]
+  _charts: string[]
 ) {
   const W = 70
 
@@ -413,7 +413,7 @@ function renderBar(pct: number, width: number): string {
 
 function wrapList(items: string, maxLen: number): string {
   if (items.length <= maxLen) return items
-  return items.slice(0, maxLen - 3) + '...'
+  return `${items.slice(0, maxLen - 3)}...`
 }
 
 // ── Main ───────────────────────────────────────────────
