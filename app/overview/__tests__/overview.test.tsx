@@ -42,6 +42,12 @@ mock.module('@/lib/swr', () => ({
     staleError: undefined,
   })),
   useHostId: mock(() => 0),
+  useActions: mock(() => ({
+    killQuery: mock(() => Promise.resolve({ success: true, message: '' })),
+    optimizeTable: mock(() => Promise.resolve({ success: true, message: '' })),
+    querySettings: mock(() => Promise.resolve({ success: true, message: '' })),
+    executeAction: mock(() => Promise.resolve({ success: true, message: '' })),
+  })),
 }))
 
 const {
