@@ -8,7 +8,7 @@ import type { StaleError } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   CodeBlock,
   CodeBlockCopyButton,
@@ -66,37 +66,41 @@ export function ChartZoomDialog({
     'chart'
   )
 
-  // Create QueryConfig for DataTable
-  const queryConfig: QueryConfig<string[]> | undefined =
-    data && data.length > 0
-      ? {
-          name: 'chart-data',
-          description: title ?? 'Chart data',
-          sql: sql ?? 'SELECT * FROM chart_data',
-          columns: Object.keys(data[0]) as string[],
-        }
-      : undefined
+  // Memoize QueryConfig for DataTable
+  const queryConfig = useMemo<QueryConfig<string[]> | undefined>(() => {
+    if (!data || data.length === 0) return undefined
+    return {
+      name: 'chart-data',
+      description: title ?? 'Chart data',
+      sql: sql ?? 'SELECT * FROM chart_data',
+      columns: Object.keys(data[0]) as string[],
+    }
+  }, [data, sql, title])
 
-  // Format metadata for display
-  const metadataItems = metadata
-    ? [
-        metadata.api && { label: 'API', value: metadata.api },
-        metadata.duration !== undefined && {
-          label: 'Duration',
-          value: `${metadata.duration}ms`,
-        },
-        metadata.rows !== undefined && {
-          label: 'Rows',
-          value: String(metadata.rows),
-        },
-        metadata.clickhouseVersion && {
-          label: 'Version',
-          value: metadata.clickhouseVersion,
-        },
-        metadata.host && { label: 'Host', value: metadata.host },
-        metadata.queryId && { label: 'Query ID', value: metadata.queryId },
-      ].filter(Boolean)
-    : []
+  // Memoize formatted metadata for display
+  const metadataItems = useMemo(
+    () =>
+      metadata
+        ? [
+            metadata.api && { label: 'API', value: metadata.api },
+            metadata.duration !== undefined && {
+              label: 'Duration',
+              value: `${metadata.duration}ms`,
+            },
+            metadata.rows !== undefined && {
+              label: 'Rows',
+              value: String(metadata.rows),
+            },
+            metadata.clickhouseVersion && {
+              label: 'Version',
+              value: metadata.clickhouseVersion,
+            },
+            metadata.host && { label: 'Host', value: metadata.host },
+            metadata.queryId && { label: 'Query ID', value: metadata.queryId },
+          ].filter(Boolean)
+        : [],
+    [metadata]
+  )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

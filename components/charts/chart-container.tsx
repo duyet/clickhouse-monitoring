@@ -9,7 +9,7 @@ import type { ChartDataPoint } from '@/types/chart-data'
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { ChartZoomButton, ChartZoomDialog } from './chart-zoom-dialog'
-import { cloneElement, isValidElement, useState } from 'react'
+import { cloneElement, isValidElement, useMemo, useState } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
 import { cn } from '@/lib/utils'
@@ -89,6 +89,17 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
     swr
   const [zoomOpen, setZoomOpen] = useState(false)
 
+  // Pass all metadata fields dynamically
+  const toolbarMetadata: CardToolbarMetadata | undefined = metadata
+    ? { ...metadata }
+    : undefined
+
+  // Render chart content memoize callback to avoid cloneElement on every render
+  const chartContent = useMemo(
+    () => children(data ?? [], sql, toolbarMetadata, staleError, mutate),
+    [data, sql, toolbarMetadata, staleError, mutate, children]
+  )
+
   // Loading state
   if (isLoading) {
     return <ChartSkeleton title={title} className={className} />
@@ -113,24 +124,14 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
     )
   }
 
-  // Pass all metadata fields dynamically
-  const toolbarMetadata: CardToolbarMetadata | undefined = metadata
-    ? { ...metadata }
-    : undefined
-
-  // Zoom button
-  const zoomButton = enableZoom ? (
-    <ChartZoomButton onClick={() => setZoomOpen(true)} />
-  ) : null
-
-  // Render chart content
-  const chartContent = children(data, sql, toolbarMetadata, staleError, mutate)
-
   // If children returns a valid element, inject zoomButton prop if it's a ChartCard
   const enhancedContent =
+    enableZoom &&
     isValidElement(chartContent) &&
     (chartContent.props as Record<string, unknown>).zoomButton === undefined
-      ? cloneElement(chartContent, { zoomButton } as Record<string, unknown>)
+      ? cloneElement(chartContent, {
+          zoomButton: <ChartZoomButton onClick={() => setZoomOpen(true)} />,
+        } as Record<string, unknown>)
       : chartContent
 
   return (
@@ -144,7 +145,7 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
           {enhancedContent}
         </div>
       </FadeIn>
-      {enableZoom && (
+      {enableZoom && zoomOpen && (
         <ChartZoomDialog
           open={zoomOpen}
           onOpenChange={setZoomOpen}
