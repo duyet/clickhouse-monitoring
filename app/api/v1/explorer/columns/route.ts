@@ -101,6 +101,8 @@ function mapErrorTypeToStatusCode(errorType: ApiErrorType): number {
     [ApiErrorType.TableNotFound]: 404,
     [ApiErrorType.NetworkError]: 503,
     [ApiErrorType.QueryError]: 500,
+    [ApiErrorType.SslError]: 503,
+    [ApiErrorType.TimeoutError]: 504,
   }
 
   return statusMap[errorType] || 500

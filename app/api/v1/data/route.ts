@@ -237,6 +237,8 @@ function handleQueryError(
     query_error: ApiErrorType.QueryError,
     network_error: ApiErrorType.NetworkError,
     permission_error: ApiErrorType.PermissionError,
+    ssl_error: ApiErrorType.SslError,
+    timeout_error: ApiErrorType.TimeoutError,
   }
 
   const apiErrorType = errorTypeMap[queryError.type] ?? ApiErrorType.QueryError

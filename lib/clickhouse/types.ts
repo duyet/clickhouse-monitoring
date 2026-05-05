@@ -27,6 +27,8 @@ export type FetchDataErrorType =
   | 'query_error'
   | 'network_error'
   | 'permission_error'
+  | 'ssl_error'
+  | 'timeout_error'
 
 export interface FetchDataError {
   readonly type: FetchDataErrorType
@@ -36,6 +38,7 @@ export interface FetchDataError {
     readonly queryId?: string
     readonly originalError?: Error
     readonly host?: string
+    readonly httpStatusCode?: number
   }
 }
 

@@ -41,6 +41,10 @@ export enum ApiErrorType {
   NetworkError = 'network_error',
   /** Permission or authentication error */
   PermissionError = 'permission_error',
+  /** SSL/TLS handshake error (e.g., Cloudflare 525) */
+  SslError = 'ssl_error',
+  /** Query timeout error */
+  TimeoutError = 'timeout_error',
 }
 
 /**

@@ -281,23 +281,53 @@ export const fetchData = async <
     // Categorize error types based on error message patterns
     let errorType: FetchDataErrorType = 'query_error'
 
+    // Extract HTTP status code from fetch errors
+    let httpStatusCode: number | undefined
+    const statusMatch = errorMessage.match(/(\d{3})/)
+    if (statusMatch) {
+      httpStatusCode = parseInt(statusMatch[1], 10)
+    }
+
+    // SSL/TLS errors (Cloudflare 525, 526, etc.)
     if (
+      errorMessage.includes('525') ||
+      errorMessage.includes('526') ||
+      errorMessage.toLowerCase().includes('ssl') ||
+      errorMessage.toLowerCase().includes('tls') ||
+      errorMessage.toLowerCase().includes('certificate') ||
+      errorMessage.toLowerCase().includes('handshake')
+    ) {
+      errorType = 'ssl_error'
+    }
+    // Timeout errors
+    else if (
+      errorMessage.toLowerCase().includes('timeout') ||
+      errorMessage.includes('ETIMEDOUT') ||
+      errorMessage.includes('socket timeout')
+    ) {
+      errorType = 'timeout_error'
+    }
+    // Table not found errors
+    else if (
       errorMessage.toLowerCase().includes('table') &&
       errorMessage.toLowerCase().includes('not') &&
       errorMessage.toLowerCase().includes('exist')
     ) {
       errorType = 'table_not_found'
-    } else if (
+    }
+    // Permission errors
+    else if (
       errorMessage.toLowerCase().includes('permission') ||
       errorMessage.toLowerCase().includes('access')
     ) {
       errorType = 'permission_error'
-    } else if (
+    }
+    // Network errors
+    else if (
       errorMessage.toLowerCase().includes('network') ||
       errorMessage.toLowerCase().includes('connection') ||
       errorMessage.includes('fetch failed') ||
       errorMessage.includes('ECONNREFUSED') ||
-      errorMessage.includes('ETIMEDOUT') ||
       errorMessage.includes('ENOTFOUND') ||
       errorMessage.includes('getaddrinfo') ||
       errorMessage.includes('socket hang up') ||
@@ -307,7 +337,28 @@ export const fetchData = async <
     }
 
     const enrichedMessage = `${errorMessage} (host: ${clientConfig.host})`
+
+    // Enhanced error logging with full details
     error(`Query failed (host: ${clientConfig.host}):`, errorMessage)
+    error(`[Error Details]`, {
+      errorType,
+      httpStatusCode,
+      host: clientConfig.host,
+      stack: originalError instanceof Error ? originalError.stack : undefined,
+      fullMessage: errorMessage,
+    })
+
+    // Log specific guidance for SSL errors
+    if (errorType === 'ssl_error') {
+      error(
+        `[SSL Error Help] SSL/TLS handshake failed with ${clientConfig.host}. ` +
+          `This usually means: ` +
+          `1) The origin uses HTTP but you configured HTTPS, ` +
+          `2) The origin has an invalid SSL certificate, ` +
+          `3) The origin is behind Cloudflare Tunnel without proper SSL configuration. ` +
+          `Try changing CLICKHOUSE_HOST to use HTTP (http://) instead of HTTPS (https://).`
+      )
+    }
 
     return {
       data: null,
@@ -324,6 +375,7 @@ export const fetchData = async <
           originalError:
             originalError instanceof Error ? originalError : undefined,
           host: clientConfig.host,
+          httpStatusCode,
         },
       },
     }
@@ -493,23 +545,53 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
 
     let errorType: FetchDataErrorType = 'query_error'
 
+    // Extract HTTP status code from fetch errors
+    let httpStatusCode: number | undefined
+    const statusMatch = errorMessage.match(/(\d{3})/)
+    if (statusMatch) {
+      httpStatusCode = parseInt(statusMatch[1], 10)
+    }
+
+    // SSL/TLS errors (Cloudflare 525, 526, etc.)
     if (
+      errorMessage.includes('525') ||
+      errorMessage.includes('526') ||
+      errorMessage.toLowerCase().includes('ssl') ||
+      errorMessage.toLowerCase().includes('tls') ||
+      errorMessage.toLowerCase().includes('certificate') ||
+      errorMessage.toLowerCase().includes('handshake')
+    ) {
+      errorType = 'ssl_error'
+    }
+    // Timeout errors
+    else if (
+      errorMessage.toLowerCase().includes('timeout') ||
+      errorMessage.includes('ETIMEDOUT') ||
+      errorMessage.includes('socket timeout')
+    ) {
+      errorType = 'timeout_error'
+    }
+    // Table not found errors
+    else if (
       errorMessage.toLowerCase().includes('table') &&
       errorMessage.toLowerCase().includes('not') &&
       errorMessage.toLowerCase().includes('exist')
     ) {
       errorType = 'table_not_found'
-    } else if (
+    }
+    // Permission errors
+    else if (
       errorMessage.toLowerCase().includes('permission') ||
       errorMessage.toLowerCase().includes('access')
     ) {
       errorType = 'permission_error'
-    } else if (
+    }
+    // Network errors
+    else if (
       errorMessage.toLowerCase().includes('network') ||
       errorMessage.toLowerCase().includes('connection') ||
       errorMessage.includes('fetch failed') ||
       errorMessage.includes('ECONNREFUSED') ||
-      errorMessage.includes('ETIMEDOUT') ||
       errorMessage.includes('ENOTFOUND') ||
       errorMessage.includes('getaddrinfo') ||
       errorMessage.includes('socket hang up') ||
@@ -519,7 +601,28 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
     }
 
     const enrichedMessage = `${errorMessage} (host: ${clientConfig.host})`
+
+    // Enhanced error logging with full details
     error(`Query failed (host: ${clientConfig.host}):`, errorMessage)
+    error(`[Error Details]`, {
+      errorType,
+      httpStatusCode,
+      host: clientConfig.host,
+      stack: originalError instanceof Error ? originalError.stack : undefined,
+      fullMessage: errorMessage,
+    })
+
+    // Log specific guidance for SSL errors
+    if (errorType === 'ssl_error') {
+      error(
+        `[SSL Error Help] SSL/TLS handshake failed with ${clientConfig.host}. ` +
+          `This usually means: ` +
+          `1) The origin uses HTTP but you configured HTTPS, ` +
+          `2) The origin has an invalid SSL certificate, ` +
+          `3) The origin is behind Cloudflare Tunnel without proper SSL configuration. ` +
+          `Try changing CLICKHOUSE_HOST to use HTTP (http://) instead of HTTPS (https://).`
+      )
+    }
 
     return {
       data: null,
@@ -537,6 +640,7 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
           originalError:
             originalError instanceof Error ? originalError : undefined,
           host: clientConfig.host,
+          httpStatusCode,
         },
       },
     }

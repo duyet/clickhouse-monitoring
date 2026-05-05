@@ -37,11 +37,18 @@ const CLASSIFICATION_PATTERNS: ReadonlyArray<{
     keywords: [
       'network',
       'connection',
-      'timeout',
       'econnrefused',
-      'etimedout',
+      'enotfound',
       'connect failed',
     ],
+  },
+  {
+    type: ApiErrorType.TimeoutError,
+    keywords: ['timeout', 'etimedout', 'socket timeout'],
+  },
+  {
+    type: ApiErrorType.SslError,
+    keywords: ['ssl', 'tls', 'certificate', 'handshake', '525', '526'],
   },
   {
     type: ApiErrorType.ValidationError,

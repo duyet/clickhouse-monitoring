@@ -9,7 +9,9 @@ import {
   DatabaseIcon,
   type LucideIcon,
   NetworkIcon,
+  ShieldAlertIcon,
   ShieldXIcon,
+  TimerIcon,
   XCircleIcon,
 } from 'lucide-react'
 
@@ -21,6 +23,8 @@ export type ErrorIconType =
   | 'network_error'
   | 'validation_error'
   | 'query_error'
+  | 'ssl_error'
+  | 'timeout_error'
   | 'default'
 
 const ICON_CLASS_NAME = 'text-muted-foreground h-5 w-5'
@@ -31,6 +35,8 @@ const ERROR_ICONS: Record<ErrorIconType, LucideIcon> = {
   network_error: NetworkIcon,
   validation_error: AlertTriangleIcon,
   query_error: XCircleIcon,
+  ssl_error: ShieldAlertIcon,
+  timeout_error: TimerIcon,
   default: AlertTriangleIcon,
 }
 

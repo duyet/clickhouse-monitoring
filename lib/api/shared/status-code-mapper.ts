@@ -27,6 +27,8 @@ const ERROR_TYPE_STATUS_MAP: Readonly<Record<ApiErrorType, number>> = {
   [ApiErrorType.TableNotFound]: 404,
   [ApiErrorType.NetworkError]: 503,
   [ApiErrorType.QueryError]: 500,
+  [ApiErrorType.SslError]: 503,
+  [ApiErrorType.TimeoutError]: 504,
 } as const
 
 /**
@@ -235,6 +237,9 @@ export function getErrorDescription(errorType: ApiErrorType): string {
     [ApiErrorType.NetworkError]:
       'Network connection error or service unavailable',
     [ApiErrorType.QueryError]: 'Error executing the database query',
+    [ApiErrorType.SslError]:
+      'SSL/TLS handshake failed with the database server',
+    [ApiErrorType.TimeoutError]: 'Database query execution timed out',
   } as const
 
   return descriptions[errorType] ?? 'Unknown error'

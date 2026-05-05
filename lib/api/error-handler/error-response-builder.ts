@@ -20,6 +20,8 @@ const STATUS_CODE_MAP: StatusCodeMap = {
   [ApiErrorType.TableNotFound]: 404,
   [ApiErrorType.NetworkError]: 503,
   [ApiErrorType.QueryError]: 500,
+  [ApiErrorType.SslError]: 503,
+  [ApiErrorType.TimeoutError]: 504,
 } as const
 
 /**
