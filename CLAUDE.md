@@ -85,6 +85,7 @@ See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
 - `bun run lint` - Run Biome linting
 - `bun run fmt` - Format code with Biome
+- If Biome CLI and `biome.json` schema versions drift, run `biome migrate` before linting changes.
 
 ### Deployment
 

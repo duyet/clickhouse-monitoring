@@ -3,7 +3,6 @@
 import {
   AlertCircle,
   BotMessageSquare,
-  ChevronDown,
   Copy,
   ExternalLink,
   Info,
