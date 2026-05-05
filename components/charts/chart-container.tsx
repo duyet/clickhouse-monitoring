@@ -9,7 +9,7 @@ import type { ChartDataPoint } from '@/types/chart-data'
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { ChartZoomButton, ChartZoomDialog } from './chart-zoom-dialog'
-import { cloneElement, isValidElement, useMemo, useState } from 'react'
+import { cloneElement, isValidElement, useState } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
 import { cn } from '@/lib/utils'
@@ -94,12 +94,6 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
     ? { ...metadata }
     : undefined
 
-  // Render chart content memoize callback to avoid cloneElement on every render
-  const chartContent = useMemo(
-    () => children(data ?? [], sql, toolbarMetadata, staleError, mutate),
-    [data, sql, toolbarMetadata, staleError, mutate, children]
-  )
-
   // Loading state
   if (isLoading) {
     return <ChartSkeleton title={title} className={className} />
@@ -123,6 +117,8 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
       />
     )
   }
+
+  const chartContent = children(data, sql, toolbarMetadata, staleError, mutate)
 
   // If children returns a valid element, inject zoomButton prop if it's a ChartCard
   const enhancedContent =
