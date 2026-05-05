@@ -107,9 +107,9 @@ id = "78782c1fcf4141d9b6f26f2046f50ceb"
 
 [vars]
 # ClickHouse connection (non-sensitive)
-# Using HTTP (not HTTPS) because origin ClickHouse HTTP interface uses HTTP
-# Cloudflare Tunnel can handle HTTP traffic and terminate at the origin
-CLICKHOUSE_HOST = "http://duet-ubuntu.dingo-mora.ts.net,http://openclaw.dingo-mora.ts.net"
+# Using HTTPS with port 8443 (ClickHouse HTTPS interface)
+# Origin has self-signed certificates - cloudflared uses noTLSVerify
+CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net:8443,https://openclaw.dingo-mora.ts.net:8443"
 CLICKHOUSE_USER = "duyet,monitoring"
 # Optional: Custom names for hosts (shown in UI selector)
 CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
@@ -146,8 +146,8 @@ name = "clickhouse-monitor-preview"
 
 # Vars must be explicitly set per environment (not inherited from top-level)
 [env.preview.vars]
-# Using HTTP (not HTTPS) because origin ClickHouse HTTP interface uses HTTP
-CLICKHOUSE_HOST = "http://duet-ubuntu.dingo-mora.ts.net,http://openclaw.dingo-mora.ts.net"
+# Using HTTPS with port 8443 (ClickHouse HTTPS interface)
+CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net:8443,https://openclaw.dingo-mora.ts.net:8443"
 CLICKHOUSE_USER = "duyet,monitoring"
 # Optional: Custom names for hosts (shown in UI selector)
 CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"

@@ -162,17 +162,40 @@ ${error.stack}
                   {error.message}
                   {(() => {
                     const details = (
-                      error as { details?: { originalError?: Error } }
+                      error as {
+                        details?: {
+                          originalError?: Error
+                          httpStatusCode?: number
+                          host?: string
+                        }
+                      }
                     ).details
-                    if (!details?.originalError) return null
-                    return (
+
+                    // Show additional details if available
+                    if (!details) return null
+
+                    const parts: string[] = []
+
+                    if (details.httpStatusCode) {
+                      parts.push(`Status Code: ${details.httpStatusCode}`)
+                    }
+
+                    if (details.originalError instanceof Error) {
+                      if (details.originalError.message !== error.message) {
+                        parts.push(
+                          `Caused by: ${details.originalError.message}`
+                        )
+                      }
+                      if (details.originalError.stack) {
+                        parts.push(`Stack: ${details.originalError.stack}`)
+                      }
+                    }
+
+                    return parts.length > 0 ? (
                       <span className="text-muted-foreground/70 mt-2 block">
-                        {'Caused by: '}
-                        {details.originalError instanceof Error
-                          ? details.originalError.message
-                          : String(details.originalError)}
+                        {parts.join('\n')}
                       </span>
-                    )
+                    ) : null
                   })()}
                 </pre>
               </div>
