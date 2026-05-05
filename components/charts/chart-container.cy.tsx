@@ -1,7 +1,6 @@
 import { ChartContainer } from './chart-container'
 
 describe('<ChartContainer />', () => {
-  // Regular function (not cy.stub) since tests don't need to spy on children calls
   const mockChildren = (
     _data: unknown[],
     _sql: string | undefined,
@@ -9,6 +8,10 @@ describe('<ChartContainer />', () => {
     _staleError: unknown,
     _mutate: unknown
   ) => <div data-testid="chart-content">Chart Content</div>
+
+  const guardedChildren = () => {
+    throw new Error('ChartContainer should not render children for this state')
+  }
 
   it('renders skeleton when loading', () => {
     const swr = {
@@ -21,7 +24,7 @@ describe('<ChartContainer />', () => {
 
     cy.mount(
       <ChartContainer swr={swr} title="Test Chart">
-        {mockChildren}
+        {guardedChildren}
       </ChartContainer>
     )
 
@@ -40,7 +43,7 @@ describe('<ChartContainer />', () => {
 
     cy.mount(
       <ChartContainer swr={swr} title="Test Chart">
-        {mockChildren}
+        {guardedChildren}
       </ChartContainer>
     )
 
@@ -61,12 +64,12 @@ describe('<ChartContainer />', () => {
 
     cy.mount(
       <ChartContainer swr={swr} title="Test Chart">
-        {mockChildren}
+        {guardedChildren}
       </ChartContainer>
     )
 
-    // EmptyState with no-data variant shows "No data available"
-    cy.contains('No data available').should('exist')
+    // Titled empty states include the chart title in the visible message.
+    cy.contains('Test Chart - No data').should('exist')
     cy.contains('Test Chart').should('exist')
   })
 
