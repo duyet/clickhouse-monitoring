@@ -22,6 +22,7 @@ import type { ChartDataPoint, ChartQueryBuilder } from './charts/types'
 import { connectionCharts } from './charts/connection-charts'
 import { dashboardCharts } from './charts/dashboard-charts'
 import { dictionaryCharts } from './charts/dictionary-charts'
+import { insightCharts } from './charts/insight-charts'
 import { logsCharts } from './charts/logs-charts'
 import { mergeCharts } from './charts/merge-charts'
 import { overviewCharts } from './charts/overview-charts'
@@ -95,6 +96,9 @@ export const chartRegistry: Record<
 
   // Query performance charts (insert throughput, top inserters)
   ...queryPerfCharts,
+
+  // Insight charts
+  ...insightCharts,
 }
 
 /**

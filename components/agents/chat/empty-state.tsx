@@ -2,14 +2,11 @@
 
 import {
   ActivityIcon,
-  AlertCircleIcon,
   ChevronRightIcon,
   ClockIcon,
   DatabaseIcon,
   HardDriveIcon,
-  MergeIcon,
   SparklesIcon,
-  SquareIcon,
   TableIcon,
   UserIcon,
   ZapIcon,
@@ -35,19 +32,29 @@ interface DefaultSuggestion {
 
 const DEFAULT_SUGGESTIONS: DefaultSuggestion[] = [
   {
-    text: 'What databases are available and which ones have the most tables?',
-    category: 'Schema',
-    icon: <DatabaseIcon className="h-3.5 w-3.5" />,
+    text: "What's the largest data scan ever performed on this cluster?",
+    category: 'Insights',
+    icon: <ZapIcon className="h-3.5 w-3.5" />,
   },
   {
-    text: 'Show me the 10 largest tables and their disk usage',
+    text: 'Show me the fastest query scans — how fast can this cluster read data?',
+    category: 'Performance',
+    icon: <ActivityIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'What are the biggest tables by disk usage?',
     category: 'Storage',
     icon: <HardDriveIcon className="h-3.5 w-3.5" />,
   },
   {
-    text: 'Which queries are running right now and how long have they been executing?',
-    category: 'Querying',
-    icon: <ActivityIcon className="h-3.5 w-3.5" />,
+    text: 'Which table has the most rows?',
+    category: 'Storage',
+    icon: <TableIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'What databases are available and which ones have the most tables?',
+    category: 'Schema',
+    icon: <DatabaseIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'What are the slowest queries from the past 24 hours?',
@@ -55,34 +62,24 @@ const DEFAULT_SUGGESTIONS: DefaultSuggestion[] = [
     icon: <ClockIcon className="h-3.5 w-3.5" />,
   },
   {
-    text: 'How is the merge queue performing? Are there any large merges stuck?',
-    category: 'Merges',
-    icon: <MergeIcon className="h-3.5 w-3.5" />,
+    text: 'Show me column-level size breakdown for the largest table',
+    category: 'Storage',
+    icon: <HardDriveIcon className="h-3.5 w-3.5" />,
   },
   {
-    text: 'What is the current CPU, memory, and disk usage of this server?',
+    text: 'Which tables have the best and worst compression ratios?',
+    category: 'Compression',
+    icon: <DatabaseIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'What is the current CPU, memory, and disk usage?',
     category: 'System',
     icon: <ZapIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'Show me replication lag across all replica tables',
-    category: 'Replication',
-    icon: <AlertCircleIcon className="h-3.5 w-3.5" />,
   },
   {
     text: 'Which users are consuming the most resources?',
     category: 'Access',
     icon: <UserIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'Are there any long-running queries that should be killed?',
-    category: 'Operations',
-    icon: <SquareIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'What are the most frequently accessed tables recently?',
-    category: 'Usage',
-    icon: <TableIcon className="h-3.5 w-3.5" />,
   },
 ]
 

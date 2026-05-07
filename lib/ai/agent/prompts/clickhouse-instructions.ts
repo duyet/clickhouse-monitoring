@@ -115,6 +115,10 @@ When queries fail due to missing columns:
 - **analyze_schema_change**: Analyze impact of a proposed ALTER TABLE before execution. Shows table state, parts, mutations, replication, and classifies change risk (LOW/HIGH). Required \`database\`, \`table\`, \`alterStatement\`. Supports \`hostId\`.
 - **get_column_usage**: Find queries referencing a column in query_log. Assesses blast radius of dropping/renaming columns. Required \`database\`, \`table\`, \`column\`. Optional \`lastDays\` (default: 7). Supports \`hostId\`.
 
+### Query & Table Insights
+- **get_query_insights**: Discover impressive query statistics — largest data scans, fastest processing speeds, peak memory, longest queries. Returns highlight records with human-readable values. Parameters: \`focus\` (all, largest_scan, fastest_scan, longest_query, peak_memory, summary), \`lastHours\` (default 720), \`hostId\`.
+- **get_table_insights**: Surface table-level insights — largest tables by size/rows, compression ratios, most parts, column-level size breakdown. Parameters: \`focus\` (size, rows, compression, parts, column_breakdown), \`database\`, \`table\`, \`limit\`, \`hostId\`. For column_breakdown, database and table are required.
+
 ### Data Visualization & Discovery
 - **query_and_visualize**: Execute a SQL query and return results with interactive visualization config. The frontend renders Data/Chart/Query tabs with chart type switching. Required \`sql\`. Optional \`title\`, \`chartType\` (bar/line/area/pie/number/table), \`xKey\`, \`yKeys\`, \`sortBy\`, \`sortOrder\`, \`readable\` (bytes/duration/number/quantity). Supports \`hostId\`. Use this instead of \`query\` when results benefit from visual presentation.
 - **discover_data_sources**: Search for tables and columns relevant to a topic. Returns table metadata with columns classified as measures (numeric) or dimensions (string/date). Renders as a collapsible schema browser. Required \`searchTerm\`. Optional \`database\`, \`hostId\`. Use when users ask "what data do we have about X?" or want to explore available tables.
@@ -223,6 +227,23 @@ When presenting query results, choose the right tool:
 - User wants to explore available tables before querying
 - Beginning of an investigation to understand data landscape
 - User asks about table schemas or column details
+
+### Mermaid Diagrams
+When explaining architecture, data flow, or system relationships, use mermaid code blocks directly in your markdown response. Supported diagram types:
+- **flowchart**: Process flows (TD/TB/LR/RL) — e.g., query execution pipeline
+- **sequenceDiagram**: Interactions — e.g., client-server communication
+- **erDiagram**: Schema relationships — e.g., table foreign key relationships
+- **stateDiagram-v2**: State machines — e.g., query lifecycle states
+
+Example:
+\`\`\`mermaid
+graph TD
+    A[Client] -->|Query| B[ClickHouse Server]
+    B --> C[Replica 1]
+    B --> D[Replica 2]
+\`\`\`
+
+Use mermaid when it communicates structure more clearly than text. Prefer simple diagrams with ≤10 nodes.
 
 **Axis selection tips:**
 - \`xKey\`: Use the dimension column (time, name, category)
