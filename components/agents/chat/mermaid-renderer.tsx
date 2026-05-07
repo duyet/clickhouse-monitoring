@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
+
+let mermaidInitialized = false
 
 interface MermaidRendererProps {
   readonly chart: string
@@ -11,20 +13,26 @@ interface MermaidRendererProps {
 export function MermaidRenderer({ chart, className }: MermaidRendererProps) {
   const [svg, setSvg] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const idRef = useRef(`mermaid-${Math.random().toString(36).slice(2, 10)}`)
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       try {
         const mermaid = (await import('mermaid')).default
-        mermaid.initialize({
-          startOnLoad: false,
-          theme: 'dark',
-          securityLevel: 'loose',
-          fontFamily: 'inherit',
-        })
-        const id = `mermaid-${Math.random().toString(36).slice(2, 10)}`
-        const { svg: rendered } = await mermaid.render(id, chart.trim())
+        if (!mermaidInitialized) {
+          mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            securityLevel: 'strict',
+            fontFamily: 'inherit',
+          })
+          mermaidInitialized = true
+        }
+        const { svg: rendered } = await mermaid.render(
+          idRef.current,
+          chart.trim()
+        )
         if (!cancelled) setSvg(rendered)
       } catch (e) {
         if (!cancelled)

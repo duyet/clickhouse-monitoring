@@ -80,6 +80,12 @@ function getPromotedOutputType(output: unknown) {
   if (typeof output !== 'object' || output === null) return null
 
   const outputObj = output as Record<string, unknown>
+  if (
+    outputObj.type === 'query_insights' &&
+    Array.isArray(outputObj.highlights)
+  ) {
+    return 'query_insights' as const
+  }
   if (outputObj.type === 'visualization' && Array.isArray(outputObj.rows)) {
     return 'visualization' as const
   }

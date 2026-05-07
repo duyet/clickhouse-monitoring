@@ -6,6 +6,7 @@ import { createBarChart } from '@/components/charts/factory'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
+import { formatDuration } from '@/lib/utils'
 
 // Create bar chart components for insights
 const TopTablesBySizeChart = createBarChart({
@@ -78,13 +79,6 @@ function StatEmpty({ title }: { readonly title: string }) {
       <div className="mt-1 text-sm text-muted-foreground/60">No data</div>
     </div>
   )
-}
-
-function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
-  if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`
-  return `${(ms / 3600000).toFixed(1)}h`
 }
 
 function LargestScanStat({ hostId }: { readonly hostId: number }) {

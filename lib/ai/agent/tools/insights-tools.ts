@@ -1,6 +1,7 @@
 import { readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
+import { formatDuration } from '@/lib/utils'
 
 const QUERY_BASE = `SELECT
   formatReadableSize(read_bytes) as readable_bytes,
@@ -16,13 +17,6 @@ const QUERY_BASE = `SELECT
   event_time
 FROM system.query_log
 WHERE type = 'QueryFinish' AND is_initial_query = 1 AND event_time > now() - INTERVAL {lastHours:UInt32} HOUR`
-
-function formatDuration(ms: number): string {
-  if (ms < 1000) return `${Math.round(ms)}ms`
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
-  if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`
-  return `${(ms / 3600000).toFixed(1)}h`
-}
 
 function buildHighlight(
   metric: string,
@@ -96,26 +90,6 @@ export function createInsightsTools(hostId: number) {
             )
             .catch(() => null)
 
-        const summaryQuery = readOnlyQuery({
-          query: `SELECT
-  count() as total_queries,
-  formatReadableSize(sum(read_bytes)) as total_scanned,
-  sum(read_rows) as total_rows_scanned,
-  avg(query_duration_ms) as avg_duration_ms
-FROM system.query_log
-WHERE type = 'QueryFinish' AND event_time > now() - INTERVAL {lastHours:UInt32} HOUR`,
-          query_params: { lastHours: h },
-          hostId: resolved,
-        })
-          .then(
-            (r) =>
-              (Array.isArray(r) && r.length > 0 ? r[0] : null) as Record<
-                string,
-                unknown
-              > | null
-          )
-          .catch(() => null)
-
         const queries: Record<
           string,
           Promise<Record<string, unknown> | null>
@@ -143,11 +117,20 @@ WHERE type = 'QueryFinish' AND event_time > now() - INTERVAL {lastHours:UInt32} 
         }
 
         const needSummary = focus === 'all' || focus === 'summary'
+        const summaryPromise = needSummary
+          ? runQuery(`SELECT
+  count() as total_queries,
+  formatReadableSize(sum(read_bytes)) as total_scanned,
+  sum(read_rows) as total_rows_scanned,
+  avg(query_duration_ms) as avg_duration_ms
+FROM system.query_log
+WHERE type = 'QueryFinish' AND event_time > now() - INTERVAL {lastHours:UInt32} HOUR`)
+          : Promise.resolve(null)
 
         const entries = Object.entries(queries)
         const results = await Promise.all([
           ...entries.map(([, p]) => p),
-          needSummary ? summaryQuery : Promise.resolve(null),
+          summaryPromise,
         ])
 
         const resultMap: Record<string, Record<string, unknown> | null> = {}
@@ -167,46 +150,42 @@ WHERE type = 'QueryFinish' AND event_time > now() - INTERVAL {lastHours:UInt32} 
 
         const largestScan = resultMap.largest_scan
         if (largestScan) {
-          highlights.push(
-            buildHighlight('Largest Data Scan', largestScan, {
-              valueKey: 'readable_bytes',
-              detailFn: (r) =>
-                `scanned ${r.readable_rows} rows in ${formatDuration(Number(r.query_duration_ms || 0))}`,
-            })!
-          )
+          const h = buildHighlight('Largest Data Scan', largestScan, {
+            valueKey: 'readable_bytes',
+            detailFn: (r) =>
+              `scanned ${r.readable_rows} rows in ${formatDuration(Number(r.query_duration_ms || 0))}`,
+          })
+          if (h) highlights.push(h)
         }
 
         const fastestScan = resultMap.fastest_scan
         if (fastestScan) {
-          highlights.push(
-            buildHighlight('Fastest Scan Speed', fastestScan, {
-              valueKey: 'readable_speed',
-              detailFn: (r) =>
-                `processed ${r.readable_bytes} in ${formatDuration(Number(r.query_duration_ms || 0))}`,
-            })!
-          )
+          const h = buildHighlight('Fastest Scan Speed', fastestScan, {
+            valueKey: 'readable_speed',
+            detailFn: (r) =>
+              `processed ${r.readable_bytes} in ${formatDuration(Number(r.query_duration_ms || 0))}`,
+          })
+          if (h) highlights.push(h)
         }
 
         const longestQuery = resultMap.longest_query
         if (longestQuery) {
-          highlights.push(
-            buildHighlight('Longest Query', longestQuery, {
-              valueKey: 'query_duration_ms',
-              detailFn: (r) =>
-                `duration ${formatDuration(Number(r.query_duration_ms || 0))}, scanned ${r.readable_bytes}`,
-            })!
-          )
+          const h = buildHighlight('Longest Query', longestQuery, {
+            valueKey: 'query_duration_ms',
+            detailFn: (r) =>
+              `duration ${formatDuration(Number(r.query_duration_ms || 0))}, scanned ${r.readable_bytes}`,
+          })
+          if (h) highlights.push(h)
         }
 
         const peakMemory = resultMap.peak_memory
         if (peakMemory) {
-          highlights.push(
-            buildHighlight('Peak Memory', peakMemory, {
-              valueKey: 'readable_memory',
-              detailFn: (r) =>
-                `used ${r.readable_memory}, scanned ${r.readable_rows} rows`,
-            })!
-          )
+          const h = buildHighlight('Peak Memory', peakMemory, {
+            valueKey: 'readable_memory',
+            detailFn: (r) =>
+              `used ${r.readable_memory}, scanned ${r.readable_rows} rows`,
+          })
+          if (h) highlights.push(h)
         }
 
         return {
@@ -302,6 +281,16 @@ ORDER BY sum(bytes_on_disk) DESC`
           }
         }
 
+        const tableSizeSql = (orderBy: string) => `SELECT database, table,
+  formatReadableSize(sum(bytes_on_disk)) as size,
+  sum(rows) as total_rows,
+  formatReadableQuantity(sum(rows)) as readable_rows,
+  count() as part_count
+FROM system.parts WHERE active
+GROUP BY database, table
+ORDER BY ${orderBy} DESC
+LIMIT {limit:UInt32}`
+
         const configs: Record<
           string,
           {
@@ -313,30 +302,14 @@ ORDER BY sum(bytes_on_disk) DESC`
           }
         > = {
           size: {
-            sql: `SELECT database, table,
-  formatReadableSize(sum(bytes_on_disk)) as size,
-  sum(rows) as total_rows,
-  formatReadableQuantity(sum(rows)) as readable_rows,
-  count() as part_count
-FROM system.parts WHERE active
-GROUP BY database, table
-ORDER BY sum(bytes_on_disk) DESC
-LIMIT {limit:UInt32}`,
+            sql: tableSizeSql('sum(bytes_on_disk)'),
             title: 'Top Tables by Size',
             yKeys: ['total_rows'],
             readable: 'bytes',
             sortBy: 'size',
           },
           rows: {
-            sql: `SELECT database, table,
-  formatReadableSize(sum(bytes_on_disk)) as size,
-  sum(rows) as total_rows,
-  formatReadableQuantity(sum(rows)) as readable_rows,
-  count() as part_count
-FROM system.parts WHERE active
-GROUP BY database, table
-ORDER BY sum(rows) DESC
-LIMIT {limit:UInt32}`,
+            sql: tableSizeSql('sum(rows)'),
             title: 'Top Tables by Rows',
             yKeys: ['total_rows'],
             readable: 'quantity',
