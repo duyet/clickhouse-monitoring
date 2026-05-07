@@ -252,7 +252,7 @@ WHERE type = 'QueryFinish' AND event_time > now() - INTERVAL {lastHours:UInt32} 
           hostId?: number
         }
         const resolved = resolveHostId(params.hostId, hostId)
-        const focus = params.focus
+        const focus = params.focus ?? 'size'
         const limit = params.limit ?? 10
 
         if (focus === 'column_breakdown') {
