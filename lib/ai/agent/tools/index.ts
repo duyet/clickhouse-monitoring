@@ -16,6 +16,7 @@ import { createControlTools } from './control-tools'
 import { createDashboardTools } from './dashboard-tools'
 import { createHealthTools } from './health-tools'
 import { createIncidentTools } from './incident-tools'
+import { createInsightsTools } from './insights-tools'
 import { createLogTools } from './log-tools'
 import { createMergeTools } from './merge-tools'
 import { createMigrationTools } from './migration-tools'
@@ -102,6 +103,9 @@ export function createAllTools(hostId: number) {
 
     // Comparison & analysis
     ...createComparisonTools(hostId),
+
+    // Query & table insights
+    ...createInsightsTools(hostId),
 
     // Visualization & data source discovery
     ...createVisualizationTools(hostId),

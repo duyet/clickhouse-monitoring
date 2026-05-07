@@ -32,6 +32,7 @@ import { cn, formatDuration } from '@/lib/utils'
 
 import '../markdown-code.css'
 
+import { MermaidRenderer } from './mermaid-renderer'
 import { type AgentToolPart, ToolCallPart } from './tool-output'
 
 interface ChatMessageProps {
@@ -335,6 +336,11 @@ function MarkdownContent({ text }: { readonly text: string }) {
           ),
           code: ({ className, children }) => {
             const isInline = !className || className === 'language-'
+            if (className === 'language-mermaid') {
+              return (
+                <MermaidRenderer chart={String(children).replace(/\n$/, '')} />
+              )
+            }
             return isInline ? (
               <code className="rounded bg-muted px-1 py-0.5 text-sm">
                 {children}

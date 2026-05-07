@@ -11,7 +11,8 @@ import type { AgentDataSourcesProps } from '@/components/agents/agent-data-sourc
 import type { AgentVisualizationProps } from '@/components/agents/agent-visualization'
 import type { QueryConfig } from '@/types/query-config'
 
-import { useEffect, useMemo, useState } from 'react'
+import { QueryInsightsCard } from './query-insights-card'
+import { type ComponentProps, useEffect, useMemo, useState } from 'react'
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
 import { AgentDataSources } from '@/components/agents/agent-data-sources'
 import { AgentVisualization } from '@/components/agents/agent-visualization'
@@ -174,6 +175,20 @@ export function renderToolOutput(output: unknown) {
   if (output == null) return null
 
   const outputObj = output as Record<string, unknown>
+
+  // Query insights - rendered as stat cards
+  if (
+    outputObj.type === 'query_insights' &&
+    Array.isArray(outputObj.highlights)
+  ) {
+    return (
+      <QueryInsightsCard
+        insights={
+          output as ComponentProps<typeof QueryInsightsCard>['insights']
+        }
+      />
+    )
+  }
 
   // Skip heavy chart rendering on Cloudflare Workers to avoid resource limits
   // Fall back to simple data table instead
