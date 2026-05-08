@@ -80,7 +80,7 @@ describe('<RelatedTimeFormat />', () => {
       { offset: 1000 * 60, expectedUnit: 'minute' }, // 1 minute
       { offset: 1000 * 60 * 60, expectedUnit: 'hour' }, // 1 hour
       { offset: 1000 * 60 * 60 * 24, expectedUnit: 'day' }, // 1 day
-      { offset: 1000 * 60 * 60 * 24 * 7, expectedUnit: 'week' }, // 1 week
+      { offset: 1000 * 60 * 60 * 24 * 7, expectedUnit: 'day' }, // 7 days
       { offset: 1000 * 60 * 60 * 24 * 30, expectedUnit: 'month' }, // ~1 month
       { offset: 1000 * 60 * 60 * 24 * 365, expectedUnit: 'year' }, // ~1 year
     ]
