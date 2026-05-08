@@ -8,12 +8,14 @@ import { useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { formatDuration } from '@/lib/utils'
 
-// Create bar chart components for insights
+// Create bar chart components for insights with date range support
 const TopTablesBySizeChart = createBarChart({
   chartName: 'insight-top-tables-by-size',
   index: 'table',
   categories: ['bytes'],
   defaultTitle: 'Top 10 Tables by Size',
+  dateRangeConfig: 'insights',
+  defaultLastHours: undefined, // All time by default
 })
 
 const CompressionRatiosChart = createBarChart({
@@ -21,6 +23,8 @@ const CompressionRatiosChart = createBarChart({
   index: 'table',
   categories: ['compression_ratio'],
   defaultTitle: 'Best Compression Ratios',
+  dateRangeConfig: 'insights',
+  defaultLastHours: undefined, // All time by default
 })
 
 export default function InsightsPage() {
@@ -85,6 +89,7 @@ function LargestScanStat({ hostId }: { readonly hostId: number }) {
   const { data, isLoading, error } = useChartData({
     chartName: 'insight-largest-scan',
     hostId,
+    lastHours: undefined, // All time by default
   })
   if (isLoading) return <StatSkeleton />
   if (error || !data?.length) return <StatEmpty title="Largest Scan" />
@@ -102,13 +107,14 @@ function FastestScanStat({ hostId }: { readonly hostId: number }) {
   const { data, isLoading, error } = useChartData({
     chartName: 'insight-fastest-scan',
     hostId,
+    lastHours: undefined, // All time by default
   })
   if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Fastest Scan" />
+  if (error || !data?.length) return <StatEmpty title="Fastest Scan Speed" />
   return (
     <StatCardView
       title="Fastest Scan Speed"
-      value={String(data[0].readable_speed)}
+      value={`${String(data[0].readable_speed)}/s`}
     />
   )
 }
@@ -117,6 +123,7 @@ function LongestQueryStat({ hostId }: { readonly hostId: number }) {
   const { data, isLoading, error } = useChartData({
     chartName: 'insight-longest-query',
     hostId,
+    lastHours: undefined, // All time by default
   })
   if (isLoading) return <StatSkeleton />
   if (error || !data?.length) return <StatEmpty title="Longest Query" />
@@ -145,26 +152,162 @@ function TotalStorageStat({ hostId }: { readonly hostId: number }) {
   )
 }
 
+function BusiestDayQueriesStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error } = useChartData({
+    chartName: 'insight-busiest-day-queries',
+    hostId,
+    lastHours: undefined, // All time by default
+  })
+  if (isLoading) return <StatSkeleton />
+  if (error || !data?.length) return <StatEmpty title="Busiest Day by Queries" />
+  const d = data[0] as { day: string | Date; readable_count: string }
+  const dayStr = new Date(d.day).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  return (
+    <StatCardView
+      title="Busiest Day by Queries"
+      value={String(d.readable_count)}
+      subtitle={`${dayStr}`}
+    />
+  )
+}
+
+function BusiestDayBytesStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error } = useChartData({
+    chartName: 'insight-busiest-day-bytes',
+    hostId,
+    lastHours: undefined, // All time by default
+  })
+  if (isLoading) return <StatSkeleton />
+  if (error || !data?.length) return <StatEmpty title="Busiest Day by Data Scan" />
+  const d = data[0] as { day: string | Date; readable_bytes: string; query_count: number }
+  const dayStr = new Date(d.day).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  return (
+    <StatCardView
+      title="Busiest Day by Data Scan"
+      value={String(d.readable_bytes)}
+      subtitle={`${dayStr} • ${d.query_count} queries`}
+    />
+  )
+}
+
+function PeakConcurrentStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error } = useChartData({
+    chartName: 'insight-peak-concurrent',
+    hostId,
+    lastHours: undefined, // All time by default
+  })
+  if (isLoading) return <StatSkeleton />
+  if (error || !data?.length) return <StatEmpty title="Peak Concurrent Queries" />
+  return (
+    <StatCardView
+      title="Peak Concurrent Queries"
+      value={String((data[0] as { readable_count: string }).readable_count)}
+    />
+  )
+}
+
+function AvgDurationStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error } = useChartData({
+    chartName: 'insight-avg-duration',
+    hostId,
+    lastHours: undefined, // All time by default
+  })
+  if (isLoading) return <StatSkeleton />
+  if (error || !data?.length) return <StatEmpty title="Average Query Duration" />
+  const d = data[0] as { avg_duration_ms: number; query_count: number }
+  return (
+    <StatCardView
+      title="Average Query Duration"
+      value={formatDuration(Number(d.avg_duration_ms))}
+      subtitle={`${Number(d.query_count).toLocaleString()} queries`}
+    />
+  )
+}
+
+function ErrorRateStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error } = useChartData({
+    chartName: 'insight-error-rate',
+    hostId,
+    lastHours: undefined, // All time by default
+  })
+  if (isLoading) return <StatSkeleton />
+  if (error || !data?.length) return <StatEmpty title="Query Error Rate" />
+  const d = data[0] as { error_rate: number; error_count: number; total_count: number }
+  return (
+    <StatCardView
+      title="Query Error Rate"
+      value={`${d.error_rate}%`}
+      subtitle={`${d.error_count} of ${d.total_count.toLocaleString()} queries`}
+    />
+  )
+}
+
 function StatsGrid({ hostId }: { readonly hostId: number }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-      <LargestScanStat hostId={hostId} />
-      <FastestScanStat hostId={hostId} />
-      <LongestQueryStat hostId={hostId} />
-      <TotalStorageStat hostId={hostId} />
+    <div className="flex flex-col gap-4">
+      {/* Primary stats - original 4 */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <LargestScanStat hostId={hostId} />
+        <FastestScanStat hostId={hostId} />
+        <LongestQueryStat hostId={hostId} />
+        <TotalStorageStat hostId={hostId} />
+      </div>
+      {/* Additional stats - new insights */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <BusiestDayQueriesStat hostId={hostId} />
+        <BusiestDayBytesStat hostId={hostId} />
+        <PeakConcurrentStat hostId={hostId} />
+        <AvgDurationStat hostId={hostId} />
+      </div>
+      {/* Error rate stat */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <ErrorRateStat hostId={hostId} />
+      </div>
     </div>
   )
 }
 
 function ChartsSection({ hostId }: { readonly hostId: number }) {
+  // Fetch data for charts to check if they have data
+  const { data: topTablesData } = useChartData({
+    chartName: 'insight-top-tables-by-size',
+    hostId,
+    lastHours: undefined,
+  })
+  const { data: compressionData } = useChartData({
+    chartName: 'insight-compression-ratios',
+    hostId,
+    lastHours: undefined,
+  })
+
+  const hasTopTablesData = topTablesData && topTablesData.length > 0
+  const hasCompressionData = compressionData && compressionData.length > 0
+
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <LazyChartWrapper>
-        <TopTablesBySizeChart hostId={hostId} />
-      </LazyChartWrapper>
-      <LazyChartWrapper>
-        <CompressionRatiosChart hostId={hostId} />
-      </LazyChartWrapper>
+      {hasTopTablesData && (
+        <LazyChartWrapper>
+          <TopTablesBySizeChart hostId={hostId} />
+        </LazyChartWrapper>
+      )}
+      {hasCompressionData && (
+        <LazyChartWrapper>
+          <CompressionRatiosChart hostId={hostId} />
+        </LazyChartWrapper>
+      )}
+      {!hasTopTablesData && !hasCompressionData && (
+        <div className="col-span-1 lg:col-span-2 text-center text-muted-foreground/60 py-8">
+          No table data available
+        </div>
+      )}
     </div>
   )
 }
