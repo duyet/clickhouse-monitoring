@@ -3,6 +3,7 @@ import type { Row, RowData } from '@tanstack/react-table'
 import { ActionItem } from './action-item'
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { HostProvider } from '@/lib/swr/host-context'
@@ -15,7 +16,7 @@ function MountWrapper({ children }: { children: React.ReactNode }) {
         <DropdownMenuTrigger asChild>
           <button>Open</button>
         </DropdownMenuTrigger>
-        {children}
+        <DropdownMenuContent>{children}</DropdownMenuContent>
       </DropdownMenu>
     </HostProvider>
   )

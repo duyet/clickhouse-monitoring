@@ -61,7 +61,7 @@ describe('TableBody Components', () => {
         </table>
       )
 
-      cy.get('tr').should('have.attr', 'data-state').should('not.exist')
+      cy.get('tr').should('not.have.attr', 'data-state')
       cy.get('td').should('have.length', 2)
       cy.get('td').first().should('contain', 'Cell Value 1')
       cy.get('td').last().should('contain', 'Cell Value 2')
