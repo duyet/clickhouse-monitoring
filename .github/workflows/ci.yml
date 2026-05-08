@@ -68,6 +68,7 @@ jobs:
       clickhouse-versions: '["25.1"]'
       platforms: linux/arm64
       push-image: true
+      timeout-minutes: 120
 
   # Merge multi-arch manifests
   docker-manifest:

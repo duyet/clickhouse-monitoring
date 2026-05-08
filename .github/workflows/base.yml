@@ -26,6 +26,10 @@ on:
       image-tag:
         type: string
         description: 'Custom Docker image tag override'
+      timeout-minutes:
+        type: number
+        description: 'Job timeout in minutes'
+        default: 60
 
     outputs:
       tags:
@@ -49,7 +53,7 @@ jobs:
   job:
     name: ${{ inputs.job-type }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: ${{ inputs.timeout-minutes }}
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       first_tag: ${{ steps.first_tag.outputs.tag }}
