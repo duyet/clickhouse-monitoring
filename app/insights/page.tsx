@@ -8,6 +8,15 @@ import { useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { formatDuration } from '@/lib/utils'
 
+// Helper: format date for subtitle display
+function formatDay(day: string | Date): string {
+  return new Date(day).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 // Create bar chart components for insights with date range support
 const TopTablesBySizeChart = createBarChart({
   chartName: 'insight-top-tables-by-size',
@@ -161,16 +170,11 @@ function BusiestDayQueriesStat({ hostId }: { readonly hostId: number }) {
   if (isLoading) return <StatSkeleton />
   if (error || !data?.length) return <StatEmpty title="Busiest Day by Queries" />
   const d = data[0] as { day: string | Date; readable_count: string }
-  const dayStr = new Date(d.day).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
   return (
     <StatCardView
       title="Busiest Day by Queries"
       value={String(d.readable_count)}
-      subtitle={`${dayStr}`}
+      subtitle={formatDay(d.day)}
     />
   )
 }
@@ -184,31 +188,26 @@ function BusiestDayBytesStat({ hostId }: { readonly hostId: number }) {
   if (isLoading) return <StatSkeleton />
   if (error || !data?.length) return <StatEmpty title="Busiest Day by Data Scan" />
   const d = data[0] as { day: string | Date; readable_bytes: string; query_count: number }
-  const dayStr = new Date(d.day).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
   return (
     <StatCardView
       title="Busiest Day by Data Scan"
       value={String(d.readable_bytes)}
-      subtitle={`${dayStr} • ${d.query_count} queries`}
+      subtitle={`${formatDay(d.day)} • ${d.query_count} queries`}
     />
   )
 }
 
-function PeakConcurrentStat({ hostId }: { readonly hostId: number }) {
+function BusiestSecondStat({ hostId }: { readonly hostId: number }) {
   const { data, isLoading, error } = useChartData({
-    chartName: 'insight-peak-concurrent',
+    chartName: 'insight-busiest-second',
     hostId,
     lastHours: undefined, // All time by default
   })
   if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Peak Concurrent Queries" />
+  if (error || !data?.length) return <StatEmpty title="Busiest Second by Query Starts" />
   return (
     <StatCardView
-      title="Peak Concurrent Queries"
+      title="Busiest Second by Query Starts"
       value={String((data[0] as { readable_count: string }).readable_count)}
     />
   )
@@ -264,7 +263,7 @@ function StatsGrid({ hostId }: { readonly hostId: number }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <BusiestDayQueriesStat hostId={hostId} />
         <BusiestDayBytesStat hostId={hostId} />
-        <PeakConcurrentStat hostId={hostId} />
+        <BusiestSecondStat hostId={hostId} />
         <AvgDurationStat hostId={hostId} />
       </div>
       {/* Error rate stat */}

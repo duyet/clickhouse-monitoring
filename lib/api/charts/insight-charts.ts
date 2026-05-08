@@ -6,18 +6,9 @@
 import { buildTimeFilter } from '@/lib/clickhouse-query'
 import type { ChartQueryBuilder, ChartQueryParams } from './types'
 
-// Helper to build time filter condition for insight queries
-function buildInsightTimeFilter(params: ChartQueryParams): string {
-  const { lastHours } = params
-  if (lastHours === undefined) return '' // No filter for "all" range
-  const safe = Math.floor(lastHours)
-  if (!Number.isFinite(safe) || safe <= 0) return ''
-  return `AND event_time >= (now() - INTERVAL ${safe} HOUR)`
-}
-
 export const insightCharts: Record<string, ChartQueryBuilder> = {
   'insight-largest-scan': (params) => {
-    const timeFilter = buildInsightTimeFilter(params)
+    const timeFilter = buildTimeFilter(params.lastHours)
     return {
       query: `
         SELECT
@@ -30,7 +21,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
           user,
           event_time
         FROM system.query_log
-        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter}
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
         ORDER BY read_bytes DESC
         LIMIT 1
       `,
@@ -38,7 +29,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
   },
 
   'insight-fastest-scan': (params) => {
-    const timeFilter = buildInsightTimeFilter(params)
+    const timeFilter = buildTimeFilter(params.lastHours)
     return {
       query: `
         SELECT
@@ -50,7 +41,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
           user,
           event_time
         FROM system.query_log
-        WHERE type = 'QueryFinish' AND is_initial_query = 1 AND query_duration_ms > 0 ${timeFilter}
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 AND query_duration_ms > 0 ${timeFilter ? `AND ${timeFilter}` : ''}
         ORDER BY bytes_per_second DESC
         LIMIT 1
       `,
@@ -58,7 +49,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
   },
 
   'insight-longest-query': (params) => {
-    const timeFilter = buildInsightTimeFilter(params)
+    const timeFilter = buildTimeFilter(params.lastHours)
     return {
       query: `
         SELECT
@@ -69,7 +60,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
           user,
           event_time
         FROM system.query_log
-        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter}
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
         ORDER BY query_duration_ms DESC
         LIMIT 1
       `,
@@ -143,7 +134,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
 
   // Busiest day by query count
   'insight-busiest-day-queries': (params) => {
-    const timeFilter = buildInsightTimeFilter(params)
+    const timeFilter = buildTimeFilter(params.lastHours)
     return {
       query: `
         SELECT
@@ -151,7 +142,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
           count() as query_count,
           formatReadableQuantity(count()) as readable_count
         FROM system.query_log
-        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter}
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
         GROUP BY day
         ORDER BY query_count DESC
         LIMIT 1
@@ -161,7 +152,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
 
   // Busiest day by data scanned
   'insight-busiest-day-bytes': (params) => {
-    const timeFilter = buildInsightTimeFilter(params)
+    const timeFilter = buildTimeFilter(params.lastHours)
     return {
       query: `
         SELECT
@@ -170,7 +161,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
           formatReadableSize(sum(read_bytes)) as readable_bytes,
           count() as query_count
         FROM system.query_log
-        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter}
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
         GROUP BY day
         ORDER BY total_bytes DESC
         LIMIT 1
@@ -178,9 +169,9 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
-  // Peak concurrent queries
-  'insight-peak-concurrent': (params) => {
-    const timeFilter = buildInsightTimeFilter(params)
+  // Busiest second by query starts (renamed from "peak concurrent" for accuracy)
+  'insight-busiest-second': (params) => {
+    const timeFilter = buildTimeFilter(params.lastHours)
     return {
       query: `
         SELECT
@@ -190,7 +181,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
           SELECT
             count() as concurrent
           FROM system.query_log
-          WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter}
+          WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
           GROUP BY event_time
         )
       `,
@@ -199,21 +190,21 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
 
   // Average query duration
   'insight-avg-duration': (params) => {
-    const timeFilter = buildInsightTimeFilter(params)
+    const timeFilter = buildTimeFilter(params.lastHours)
     return {
       query: `
         SELECT
           avg(query_duration_ms) as avg_duration_ms,
           count() as query_count
         FROM system.query_log
-        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter}
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
       `,
     }
   },
 
   // Query error rate
   'insight-error-rate': (params) => {
-    const timeFilter = buildInsightTimeFilter(params)
+    const timeFilter = buildTimeFilter(params.lastHours)
     return {
       query: `
         SELECT
@@ -221,7 +212,7 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
           countIf(type = 'ExceptionBeforeStart' OR type = 'ExceptionWhileProcessing') as error_count,
           count() as total_count
         FROM system.query_log
-        WHERE is_initial_query = 1 ${timeFilter}
+        WHERE is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
       `,
     }
   },
