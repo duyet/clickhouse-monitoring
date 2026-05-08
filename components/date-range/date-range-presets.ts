@@ -188,13 +188,16 @@ export const DATE_RANGE_PRESETS = {
     ],
     defaultValue: '30d',
   },
-  /** Insights: 7d, 30d, 12m, all (default: all for all-time data) */
+  /** Insights: All, 12M, 6M, 90d, 30d, 7d, 24h */
   insights: {
     options: [
-      RANGE_OPTIONS['7d'],
-      RANGE_OPTIONS['30d'],
-      RANGE_OPTIONS['12m'],
       RANGE_OPTIONS.all,
+      RANGE_OPTIONS['12m'],
+      RANGE_OPTIONS['6m'],
+      RANGE_OPTIONS['90d'],
+      RANGE_OPTIONS['30d'],
+      RANGE_OPTIONS['7d'],
+      RANGE_OPTIONS['24h'],
     ],
     defaultValue: 'all',
   },

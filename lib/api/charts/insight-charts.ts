@@ -117,21 +117,24 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
     `,
   }),
 
-  'insight-query-summary': () => ({
-    query: `
-      SELECT
-        count() as total_queries,
-        formatReadableSize(sum(read_bytes)) as total_scanned,
-        sum(read_rows) as total_rows_scanned,
-        formatReadableQuantity(sum(read_rows)) as readable_rows,
-        avg(query_duration_ms) as avg_duration_ms,
-        max(query_duration_ms) as max_duration_ms,
-        formatReadableSize(max(read_bytes)) as largest_scan,
-        formatReadableSize(max(memory_usage)) as peak_memory
-      FROM system.query_log
-      WHERE type = 'QueryFinish' AND is_initial_query = 1
-    `,
-  }),
+  'insight-query-summary': (params) => {
+    const timeFilter = buildTimeFilter(params.lastHours)
+    return {
+      query: `
+        SELECT
+          count() as total_queries,
+          formatReadableSize(sum(read_bytes)) as total_scanned,
+          sum(read_rows) as total_rows_scanned,
+          formatReadableQuantity(sum(read_rows)) as readable_rows,
+          avg(query_duration_ms) as avg_duration_ms,
+          max(query_duration_ms) as max_duration_ms,
+          formatReadableSize(max(read_bytes)) as largest_scan,
+          formatReadableSize(max(memory_usage)) as peak_memory
+        FROM system.query_log
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
+      `,
+    }
+  },
 
   // Busiest day by query count
   'insight-busiest-day-queries': (params) => {

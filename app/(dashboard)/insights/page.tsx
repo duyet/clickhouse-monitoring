@@ -1,12 +1,23 @@
 'use client'
 
+import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
+import type { ChartDataPoint } from '@/types/chart-data'
+
+import { ChartCard } from '@/components/cards/chart-card'
+import { ChartEmpty } from '@/components/charts/chart-empty'
 import { createBarChart } from '@/components/charts/factory'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
+import {
+  DATE_RANGE_PRESETS,
+  DateRangeSelector,
+  RANGE_OPTIONS,
+  useDateRange,
+} from '@/components/date-range'
+import { ChartSkeleton } from '@/components/skeletons/chart'
 import { useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { formatDuration } from '@/lib/utils'
 
-// Helper: format date for subtitle display
 function formatDay(day: string | Date): string {
   return new Date(day).toLocaleDateString('en-US', {
     month: 'short',
@@ -15,14 +26,13 @@ function formatDay(day: string | Date): string {
   })
 }
 
-// Create bar chart components for insights with date range support
 const TopTablesBySizeChart = createBarChart({
   chartName: 'insight-top-tables-by-size',
   index: 'table',
   categories: ['bytes'],
   defaultTitle: 'Top 10 Tables by Size',
   dateRangeConfig: 'insights',
-  defaultLastHours: undefined, // All time by default
+  defaultLastHours: undefined,
 })
 
 const CompressionRatiosChart = createBarChart({
@@ -31,261 +41,394 @@ const CompressionRatiosChart = createBarChart({
   categories: ['compression_ratio'],
   defaultTitle: 'Best Compression Ratios',
   dateRangeConfig: 'insights',
-  defaultLastHours: undefined, // All time by default
+  defaultLastHours: undefined,
 })
 
 export default function InsightsPage() {
   const hostId = useHostId()
+  const { lastHours, range, setRange } = useDateRange({
+    config: DATE_RANGE_PRESETS.insights,
+  })
+
+  const rangeLabel = (
+    RANGE_OPTIONS[range.value as keyof typeof RANGE_OPTIONS]?.description ??
+    'All available data'
+  ).toLowerCase()
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Cluster Insights</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Record-breaking queries, storage statistics, and performance
-          highlights
-        </p>
+      <div className="flex flex-row items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Cluster Insights
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Record-breaking queries, storage statistics, and performance
+            highlights (showing {rangeLabel})
+          </p>
+        </div>
+        <DateRangeSelector
+          config={DATE_RANGE_PRESETS.insights}
+          value={range.value}
+          onChange={setRange}
+          alwaysVisible
+        />
       </div>
-      <StatsGrid hostId={hostId} />
+      <StatsGrid hostId={hostId} lastHours={lastHours} />
       <ChartsSection hostId={hostId} />
     </div>
   )
 }
 
-function StatCardView({
-  title,
-  value,
-  subtitle,
+function statLoading(title: string) {
+  return <ChartSkeleton title={title} />
+}
+
+function statEmpty(
+  title: string,
+  sql: string | undefined,
+  data: ChartDataPoint[] | undefined,
+  metadata: CardToolbarMetadata | undefined
+) {
+  return (
+    <ChartEmpty
+      title={title}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      compact
+    />
+  )
+}
+
+function LargestScanStat({
+  hostId,
+  lastHours,
 }: {
-  readonly title: string
-  readonly value: string
-  readonly subtitle?: string
+  readonly hostId: number
+  readonly lastHours?: number
 }) {
-  return (
-    <div className="rounded-lg border border-border/60 bg-card p-4">
-      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        {title}
-      </div>
-      <div className="mt-1 text-xl font-bold tracking-tight">{value}</div>
-      {subtitle && (
-        <div className="mt-0.5 text-xs text-muted-foreground">{subtitle}</div>
-      )}
-    </div>
-  )
-}
-
-function StatSkeleton() {
-  return (
-    <div className="rounded-lg border border-border/60 bg-card p-4">
-      <div className="h-3 w-20 animate-pulse rounded bg-muted" />
-      <div className="mt-2 h-6 w-28 animate-pulse rounded bg-muted" />
-    </div>
-  )
-}
-
-function StatEmpty({ title }: { readonly title: string }) {
-  return (
-    <div className="rounded-lg border border-border/60 bg-card p-4">
-      <div className="text-xs text-muted-foreground">{title}</div>
-      <div className="mt-1 text-sm text-muted-foreground/60">No data</div>
-    </div>
-  )
-}
-
-function LargestScanStat({ hostId }: { readonly hostId: number }) {
-  const { data, isLoading, error } = useChartData({
+  const { data, isLoading, error, sql, metadata } = useChartData({
     chartName: 'insight-largest-scan',
     hostId,
-    lastHours: undefined, // All time by default
+    lastHours,
   })
-  if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Largest Scan" />
-  const d = data[0]
+  if (isLoading) return statLoading('Largest Scan')
+  if (error || !data?.length)
+    return statEmpty('Largest Scan', sql, data, metadata)
+  const d = data[0] as Record<string, unknown>
   return (
-    <StatCardView
+    <ChartCard
       title="Largest Scan"
-      value={String(d.readable_bytes)}
-      subtitle={`${d.readable_rows} in ${Number(d.query_duration_ms).toLocaleString()}ms`}
-    />
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_bytes)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        {String(d.readable_rows)} in{' '}
+        {formatDuration(Number(d.query_duration_ms))}
+      </div>
+    </ChartCard>
   )
 }
 
-function FastestScanStat({ hostId }: { readonly hostId: number }) {
-  const { data, isLoading, error } = useChartData({
+function FastestScanStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
     chartName: 'insight-fastest-scan',
     hostId,
-    lastHours: undefined, // All time by default
+    lastHours,
   })
-  if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Fastest Scan Speed" />
+  if (isLoading) return statLoading('Fastest Scan Speed')
+  if (error || !data?.length)
+    return statEmpty('Fastest Scan Speed', sql, data, metadata)
+  const d = data[0] as Record<string, unknown>
   return (
-    <StatCardView
+    <ChartCard
       title="Fastest Scan Speed"
-      value={`${String(data[0].readable_speed)}/s`}
-    />
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_speed)}/s
+      </div>
+    </ChartCard>
   )
 }
 
-function LongestQueryStat({ hostId }: { readonly hostId: number }) {
-  const { data, isLoading, error } = useChartData({
+function LongestQueryStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
     chartName: 'insight-longest-query',
     hostId,
-    lastHours: undefined, // All time by default
+    lastHours,
   })
-  if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Longest Query" />
+  if (isLoading) return statLoading('Longest Query')
+  if (error || !data?.length)
+    return statEmpty('Longest Query', sql, data, metadata)
+  const d = data[0] as Record<string, unknown>
   return (
-    <StatCardView
+    <ChartCard
       title="Longest Query"
-      value={formatDuration(Number(data[0].query_duration_ms))}
-    />
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {formatDuration(Number(d.query_duration_ms))}
+      </div>
+    </ChartCard>
   )
 }
 
 function TotalStorageStat({ hostId }: { readonly hostId: number }) {
-  const { data, isLoading, error } = useChartData({
+  const { data, isLoading, error, sql, metadata } = useChartData({
     chartName: 'insight-total-storage',
     hostId,
   })
-  if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Total Storage" />
-  const d = data[0]
+  if (isLoading) return statLoading('Total Storage')
+  if (error || !data?.length)
+    return statEmpty('Total Storage', sql, data, metadata)
+  const d = data[0] as Record<string, unknown>
   return (
-    <StatCardView
+    <ChartCard
       title="Total Storage"
-      value={String(d.total_compressed)}
-      subtitle={`${d.total_tables} tables, ${d.readable_rows} rows`}
-    />
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.total_compressed)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        {String(d.total_tables)} tables, {String(d.readable_rows)} rows
+      </div>
+    </ChartCard>
   )
 }
 
-function BusiestDayQueriesStat({ hostId }: { readonly hostId: number }) {
-  const { data, isLoading, error } = useChartData({
+function BusiestDayQueriesStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
     chartName: 'insight-busiest-day-queries',
     hostId,
-    lastHours: undefined, // All time by default
+    lastHours,
   })
-  if (isLoading) return <StatSkeleton />
+  if (isLoading) return statLoading('Busiest Day by Queries')
   if (error || !data?.length)
-    return <StatEmpty title="Busiest Day by Queries" />
+    return statEmpty('Busiest Day by Queries', sql, data, metadata)
   const d = data[0] as { day: string | Date; readable_count: string }
   return (
-    <StatCardView
+    <ChartCard
       title="Busiest Day by Queries"
-      value={String(d.readable_count)}
-      subtitle={formatDay(d.day)}
-    />
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_count)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        {formatDay(d.day)}
+      </div>
+    </ChartCard>
   )
 }
 
-function BusiestDayBytesStat({ hostId }: { readonly hostId: number }) {
-  const { data, isLoading, error } = useChartData({
+function BusiestDayBytesStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
     chartName: 'insight-busiest-day-bytes',
     hostId,
-    lastHours: undefined, // All time by default
+    lastHours,
   })
-  if (isLoading) return <StatSkeleton />
+  if (isLoading) return statLoading('Busiest Day by Data Scan')
   if (error || !data?.length)
-    return <StatEmpty title="Busiest Day by Data Scan" />
+    return statEmpty('Busiest Day by Data Scan', sql, data, metadata)
   const d = data[0] as {
     day: string | Date
     readable_bytes: string
     query_count: number
   }
   return (
-    <StatCardView
+    <ChartCard
       title="Busiest Day by Data Scan"
-      value={String(d.readable_bytes)}
-      subtitle={`${formatDay(d.day)} • ${d.query_count} queries`}
-    />
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_bytes)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        {formatDay(d.day)} &middot; {d.query_count} queries
+      </div>
+    </ChartCard>
   )
 }
 
-function BusiestSecondStat({ hostId }: { readonly hostId: number }) {
-  const { data, isLoading, error } = useChartData({
+function BusiestSecondStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
     chartName: 'insight-busiest-second',
     hostId,
-    lastHours: undefined, // All time by default
+    lastHours,
   })
-  if (isLoading) return <StatSkeleton />
+  if (isLoading) return statLoading('Busiest Second by Query Starts')
   if (error || !data?.length)
-    return <StatEmpty title="Busiest Second by Query Starts" />
+    return statEmpty('Busiest Second by Query Starts', sql, data, metadata)
+  const d = data[0] as { readable_count: string }
   return (
-    <StatCardView
+    <ChartCard
       title="Busiest Second by Query Starts"
-      value={String((data[0] as { readable_count: string }).readable_count)}
-    />
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_count)}
+      </div>
+    </ChartCard>
   )
 }
 
-function AvgDurationStat({ hostId }: { readonly hostId: number }) {
-  const { data, isLoading, error } = useChartData({
+function AvgDurationStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
     chartName: 'insight-avg-duration',
     hostId,
-    lastHours: undefined, // All time by default
+    lastHours,
   })
-  if (isLoading) return <StatSkeleton />
+  if (isLoading) return statLoading('Average Query Duration')
   if (error || !data?.length)
-    return <StatEmpty title="Average Query Duration" />
+    return statEmpty('Average Query Duration', sql, data, metadata)
   const d = data[0] as { avg_duration_ms: number; query_count: number }
   return (
-    <StatCardView
+    <ChartCard
       title="Average Query Duration"
-      value={formatDuration(Number(d.avg_duration_ms))}
-      subtitle={`${Number(d.query_count).toLocaleString()} queries`}
-    />
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {formatDuration(Number(d.avg_duration_ms))}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        {d.query_count.toLocaleString()} queries
+      </div>
+    </ChartCard>
   )
 }
 
-function ErrorRateStat({ hostId }: { readonly hostId: number }) {
-  const { data, isLoading, error } = useChartData({
+function ErrorRateStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
     chartName: 'insight-error-rate',
     hostId,
-    lastHours: undefined, // All time by default
+    lastHours,
   })
-  if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Query Error Rate" />
+  if (isLoading) return statLoading('Query Error Rate')
+  if (error || !data?.length)
+    return statEmpty('Query Error Rate', sql, data, metadata)
   const d = data[0] as {
     error_rate: number
     error_count: number
     total_count: number
   }
   return (
-    <StatCardView
+    <ChartCard
       title="Query Error Rate"
-      value={`${d.error_rate}%`}
-      subtitle={`${d.error_count} of ${d.total_count.toLocaleString()} queries`}
-    />
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {d.error_rate}%
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        {d.error_count} of {d.total_count.toLocaleString()} queries
+      </div>
+    </ChartCard>
   )
 }
 
-function StatsGrid({ hostId }: { readonly hostId: number }) {
+function StatsGrid({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
   return (
     <div className="flex flex-col gap-4">
-      {/* Primary stats - original 4 */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <LargestScanStat hostId={hostId} />
-        <FastestScanStat hostId={hostId} />
-        <LongestQueryStat hostId={hostId} />
+        <LargestScanStat hostId={hostId} lastHours={lastHours} />
+        <FastestScanStat hostId={hostId} lastHours={lastHours} />
+        <LongestQueryStat hostId={hostId} lastHours={lastHours} />
         <TotalStorageStat hostId={hostId} />
       </div>
-      {/* Additional stats - new insights */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <BusiestDayQueriesStat hostId={hostId} />
-        <BusiestDayBytesStat hostId={hostId} />
-        <BusiestSecondStat hostId={hostId} />
-        <AvgDurationStat hostId={hostId} />
+        <BusiestDayQueriesStat hostId={hostId} lastHours={lastHours} />
+        <BusiestDayBytesStat hostId={hostId} lastHours={lastHours} />
+        <BusiestSecondStat hostId={hostId} lastHours={lastHours} />
+        <AvgDurationStat hostId={hostId} lastHours={lastHours} />
       </div>
-      {/* Error rate stat */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <ErrorRateStat hostId={hostId} />
+        <ErrorRateStat hostId={hostId} lastHours={lastHours} />
       </div>
     </div>
   )
 }
 
 function ChartsSection({ hostId }: { readonly hostId: number }) {
-  // Fetch data for charts to check if they have data
   const { data: topTablesData } = useChartData({
     chartName: 'insight-top-tables-by-size',
     hostId,
@@ -313,7 +456,7 @@ function ChartsSection({ hostId }: { readonly hostId: number }) {
         </LazyChartWrapper>
       )}
       {!hasTopTablesData && !hasCompressionData && (
-        <div className="col-span-1 lg:col-span-2 text-center text-muted-foreground/60 py-8">
+        <div className="col-span-1 text-center text-muted-foreground/60 py-8 lg:col-span-2">
           No table data available
         </div>
       )}
