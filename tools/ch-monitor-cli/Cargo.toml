@@ -15,5 +15,5 @@ serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 toml = "0.8"
 dirs = "5"
-ratatui = "0.28"
+ratatui = "0.30"
 crossterm = "0.28"
