@@ -1,28 +1,15 @@
 import { DocsMarkdown } from '../_components/docs-markdown'
-import {
-  type DocsHeading,
-  docsHref,
-  docsNav,
-  getDocsPage,
-  getDocsSlugs,
-} from '../_lib/docs'
+import { type DocsHeading, docsHref, docsNav, getDocsPage } from '../_lib/docs'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
-export const dynamic = 'force-static'
-export const dynamicParams = false
+export const dynamic = 'force-dynamic'
 
 type DocsPageProps = {
   params: Promise<{
     slug?: string[]
   }>
-}
-
-export function generateStaticParams() {
-  return getDocsSlugs().map((slug) => ({
-    slug: slug ? slug.split('/') : [],
-  }))
 }
 
 export async function generateMetadata(props: DocsPageProps) {
