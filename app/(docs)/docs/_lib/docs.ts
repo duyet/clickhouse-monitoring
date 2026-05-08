@@ -186,7 +186,7 @@ function extractHeadings(markdown: string): DocsHeading[] {
     seenIds.set(baseId, count + 1)
 
     return {
-      id: count === 0 ? baseId : `${baseId}-${count + 1}`,
+      id: count === 0 ? baseId : `${baseId}-${count}`,
       text,
       level: match[1].length,
     }
