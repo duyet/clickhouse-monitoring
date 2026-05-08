@@ -188,6 +188,16 @@ export const DATE_RANGE_PRESETS = {
     ],
     defaultValue: '30d',
   },
+  /** Insights: 7d, 30d, 12m, all (default: all for all-time data) */
+  insights: {
+    options: [
+      RANGE_OPTIONS['7d'],
+      RANGE_OPTIONS['30d'],
+      RANGE_OPTIONS['12m'],
+      RANGE_OPTIONS.all,
+    ],
+    defaultValue: 'all',
+  },
 } as const satisfies Record<string, DateRangeConfig>
 
 /**
