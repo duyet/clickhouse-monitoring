@@ -55,7 +55,7 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
   return (
     <TableRow
       key={row.id}
-      data-state={row.getIsSelected() && 'selected'}
+      data-state={row.getIsSelected() ? 'selected' : undefined}
       data-index={virtualRow.index}
       className={cn(
         'border-b border-border/50 transition-colors hover:bg-accent/50 dark:hover:bg-accent/20',
@@ -116,7 +116,7 @@ export const StandardTableRow = memo(function StandardTableRow<
   return (
     <TableRow
       key={row.id}
-      data-state={row.getIsSelected() && 'selected'}
+      data-state={row.getIsSelected() ? 'selected' : undefined}
       className={cn(
         'border-b border-border/50 transition-colors hover:bg-accent/50 dark:hover:bg-accent/20',
         index % 2 === 1 && 'odd:bg-muted/30',

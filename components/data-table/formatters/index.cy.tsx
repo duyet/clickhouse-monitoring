@@ -186,7 +186,8 @@ describe('Formatters Module', () => {
       cy.get('span[class*="rounded-full"]')
         .should('exist')
         .and('contain.text', 'status_value')
-        .and('have.class', /bg-\w+-100/)
+        .invoke('attr', 'class')
+        .should('match', /bg-\w+-100/)
     })
 
     it('coloredBadgeFormatter should use consistent color for same value', () => {
@@ -194,22 +195,11 @@ describe('Formatters Module', () => {
       const badge1 = coloredBadgeFormatter(value)
       const badge2 = coloredBadgeFormatter(value)
 
-      // Extract className from both badges (they should match)
-      cy.wrap(badge1)
-        .invoke('props', 'className')
-        .then((className1) => {
-          cy.wrap(badge2)
-            .invoke('props', 'className')
-            .then((className2) => {
-              const colorClass1 = (className1 as string).match(
-                /bg-\w+-100/
-              )?.[0]
-              const colorClass2 = (className2 as string).match(
-                /bg-\w+-100/
-              )?.[0]
-              expect(colorClass1).to.equal(colorClass2)
-            })
-        })
+      const className1 = (badge1 as React.ReactElement).props?.className ?? ''
+      const className2 = (badge2 as React.ReactElement).props?.className ?? ''
+      const colorClass1 = className1.match(/bg-\w+-100/)?.[0]
+      const colorClass2 = className2.match(/bg-\w+-100/)?.[0]
+      expect(colorClass1).to.equal(colorClass2)
     })
   })
 
@@ -288,7 +278,7 @@ describe('Formatters Module', () => {
 
   describe('Formatter Registry', () => {
     it('should export FORMATTER_REGISTRY with all categories', () => {
-      cy.wrap(() => import('./index')).then((module) => {
+      import('./index').then((module) => {
         expect(module.FORMATTER_REGISTRY).to.have.property('inline')
         expect(module.FORMATTER_REGISTRY).to.have.property('value')
         expect(module.FORMATTER_REGISTRY).to.have.property('context')
@@ -297,7 +287,7 @@ describe('Formatters Module', () => {
     })
 
     it('should provide helper functions for formatter lookup', () => {
-      cy.wrap(() => import('./index')).then((module) => {
+      import('./index').then((module) => {
         expect(module.getInlineFormatter).to.be.a('function')
         expect(module.getValueFormatter).to.be.a('function')
         expect(module.getContextFormatter).to.be.a('function')

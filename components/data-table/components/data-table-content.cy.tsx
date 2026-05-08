@@ -48,6 +48,7 @@ describe('<DataTableContent />', () => {
     isVirtualized: false,
     virtualizer: undefined,
     activeFilterCount: 0,
+    enableColumnReordering: false,
   }
 
   function TestDataTableContent({

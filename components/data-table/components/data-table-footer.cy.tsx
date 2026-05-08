@@ -1,7 +1,9 @@
 import {
   createColumnHelper,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 
@@ -37,7 +39,10 @@ describe('<DataTableFooter />', () => {
       data: rows,
       columns,
       getCoreRowModel: getCoreRowModel(),
+      getFilteredRowModel: getFilteredRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+      enableRowSelection: true,
       initialState: {
         pagination: {
           pageSize,
