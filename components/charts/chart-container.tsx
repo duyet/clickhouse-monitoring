@@ -9,7 +9,7 @@ import type { ChartDataPoint } from '@/types/chart-data'
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { ChartZoomButton, ChartZoomDialog } from './chart-zoom-dialog'
-import { cloneElement, isValidElement, useState } from 'react'
+import { cloneElement, isValidElement, useMemo, useState } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
 import { cn } from '@/lib/utils'
@@ -94,6 +94,20 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
     ? { ...metadata }
     : undefined
 
+  // Render chart content (called once, before early returns to satisfy hook rules)
+  const chartContent =
+    data && data.length > 0
+      ? children(data, sql, toolbarMetadata, staleError, mutate)
+      : null
+
+  // Extract raw chart content (without ChartCard wrapper) for zoom dialog
+  const dialogContent = useMemo(() => {
+    if (!isValidElement(chartContent)) return chartContent
+    return (
+      (chartContent.props as { children?: ReactNode }).children ?? chartContent
+    )
+  }, [chartContent])
+
   // Loading state
   if (isLoading) {
     return <ChartSkeleton title={title} className={className} />
@@ -117,8 +131,6 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
       />
     )
   }
-
-  const chartContent = children(data, sql, toolbarMetadata, staleError, mutate)
 
   // If children returns a valid element, inject zoomButton prop if it's a ChartCard
   const enhancedContent =
@@ -156,7 +168,7 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
           onRetry={staleError ? mutate : undefined}
           className={_chartClassName}
         >
-          {enhancedContent}
+          {dialogContent}
         </ChartZoomDialog>
       )}
     </>
