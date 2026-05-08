@@ -133,6 +133,41 @@
   text-decoration: none;
 }
 
+.docs-markdown a {
+  color: oklch(from var(--primary) l c h);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.docs-markdown a:hover {
+  color: oklch(from var(--primary) calc(l * 0.85) c h);
+  text-decoration-thickness: 2px;
+}
+
+.dark .docs-markdown a:hover {
+  color: oklch(from var(--primary) calc(l * 1.08) c h);
+}
+
+.docs-markdown a:visited {
+  color: oklch(from var(--primary) calc(l * 0.8) c h);
+}
+
+.docs-markdown a:active {
+  color: oklch(from var(--primary) calc(l * 0.75) c h);
+}
+
+.docs-markdown a:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid oklch(from var(--primary) l c h);
+  outline-offset: 2px;
+  text-decoration-thickness: 2px;
+}
+
+.dark .docs-markdown a:focus-visible {
+  outline-color: oklch(from var(--primary) calc(l * 1.08) c h);
+}
+
 .markdown-content blockquote {
   border-left: 2px solid oklch(from var(--border) l c h);
   padding-left: 1em;
@@ -184,6 +219,8 @@
 .docs-markdown img {
   margin: 1.25rem 0;
   width: 100%;
+  border: 0;
+  box-shadow: none;
 }
 
 .docs-markdown pre {

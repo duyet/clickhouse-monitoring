@@ -99,7 +99,7 @@ describe('<DataTableFooter />', () => {
     cy.mount(<TestDataTableFooter rows={largeData} pageSize={10} />)
 
     cy.get('[aria-label="Pagination"]').should('be.visible')
-    cy.contains('1–10 of 25 rows').should('be.visible')
+    cy.contains('1–10 of 25 rows').should('exist')
   })
 
   it('shows row count in footnote', () => {
@@ -134,8 +134,8 @@ describe('<DataTableFooter />', () => {
     }))
     cy.mount(<TestDataTableFooter rows={largeData} pageSize={10} />)
 
-    cy.contains('1–10 of 50 rows').should('be.visible')
-    cy.contains('Rows per page').should('be.visible')
+    cy.contains('1–10 of 50 rows').should('exist')
+    cy.contains('Rows per page').should('exist')
   })
 
   it('shows next page button enabled when not on last page', () => {

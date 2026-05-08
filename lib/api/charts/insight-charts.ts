@@ -3,8 +3,9 @@
  * Charts for the insights page displaying record-breaking query and storage statistics
  */
 
+import type { ChartQueryBuilder } from './types'
+
 import { buildTimeFilter } from '@/lib/clickhouse-query'
-import type { ChartQueryBuilder, ChartQueryParams } from './types'
 
 export const insightCharts: Record<string, ChartQueryBuilder> = {
   'insight-largest-scan': (params) => {

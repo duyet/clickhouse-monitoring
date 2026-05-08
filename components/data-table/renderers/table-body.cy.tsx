@@ -164,7 +164,7 @@ describe('TableBody Components', () => {
       )
 
       cy.contains(/no test data match your filters/i).should('be.visible')
-      cy.contains(/clear filters/i).should('be.visible')
+      cy.contains(/clearing filters/i).should('be.visible')
     })
   })
 

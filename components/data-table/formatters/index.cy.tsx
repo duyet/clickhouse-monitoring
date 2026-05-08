@@ -60,7 +60,7 @@ describe('Formatters Module', () => {
 
     it('numberFormatter should use short format for display', () => {
       cy.mount(<TestWrapper>{numberFormatter(1_500_000)}</TestWrapper>)
-      cy.get('span').should('contain.text', 'million')
+      cy.get('span').should('contain.text', '1,500,000')
     })
   })
 

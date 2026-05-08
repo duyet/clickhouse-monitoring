@@ -166,13 +166,13 @@ describe('<NavMain />', () => {
     it('can collapse and expand menu groups', () => {
       mountNavMain(collapsibleItems)
 
-      cy.contains('Running Queries').should('not.be.visible')
+      cy.contains('Running Queries').should('not.exist')
 
       cy.contains('Queries').click()
       cy.contains('Running Queries').should('be.visible')
 
       cy.contains('Queries').click()
-      cy.contains('Running Queries').should('not.be.visible')
+      cy.contains('Running Queries').should('not.exist')
     })
   })
 
