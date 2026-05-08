@@ -88,6 +88,10 @@ interface ChartCardProps
   enableScaleToggle?: boolean
   /** Optional zoom button to render in header */
   zoomButton?: React.ReactNode
+  /** Optional icon rendered before the title */
+  icon?: React.ReactNode
+  /** Optional className override for the header */
+  headerClassName?: string
 }
 
 /**
@@ -95,6 +99,8 @@ interface ChartCardProps
  */
 function ChartCardContentWithScale({
   title,
+  icon,
+  headerClassName,
   sql,
   data,
   metadata,
@@ -115,15 +121,18 @@ function ChartCardContentWithScale({
       {...cardProps}
     >
       {title ? (
-        <CardHeader className={chartCard.header}>
+        <CardHeader className={cn(chartCard.header, headerClassName)}>
           <header className="flex flex-row items-center justify-between gap-2">
-            <ExpandableText
-              variant="popover"
-              maxLines={1}
-              className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1"
-            >
-              {title}
-            </ExpandableText>
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              {icon && <span className="shrink-0">{icon}</span>}
+              <ExpandableText
+                variant="popover"
+                maxLines={1}
+                className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1"
+              >
+                {title}
+              </ExpandableText>
+            </div>
             <div className="flex items-center gap-1 shrink-0">
               {staleError && onRetry && (
                 <ChartStaleIndicator error={staleError} onRetry={onRetry} />
@@ -157,6 +166,8 @@ function ChartCardContentWithScale({
  */
 function ChartCardContentWithoutScale({
   title,
+  icon,
+  headerClassName,
   sql,
   data,
   metadata,
@@ -177,15 +188,18 @@ function ChartCardContentWithoutScale({
       {...cardProps}
     >
       {title ? (
-        <CardHeader className={chartCard.header}>
+        <CardHeader className={cn(chartCard.header, headerClassName)}>
           <header className="flex flex-row items-center justify-between gap-2">
-            <ExpandableText
-              variant="popover"
-              maxLines={1}
-              className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1"
-            >
-              {title}
-            </ExpandableText>
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              {icon && <span className="shrink-0">{icon}</span>}
+              <ExpandableText
+                variant="popover"
+                maxLines={1}
+                className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1"
+              >
+                {title}
+              </ExpandableText>
+            </div>
             <div className="flex items-center gap-1 shrink-0">
               {staleError && onRetry && (
                 <ChartStaleIndicator error={staleError} onRetry={onRetry} />

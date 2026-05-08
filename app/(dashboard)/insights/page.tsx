@@ -1,5 +1,17 @@
 'use client'
 
+import {
+  ActivityIcon,
+  AlertTriangleIcon,
+  ArrowUpDownIcon,
+  BarChart3Icon,
+  ClockIcon,
+  DatabaseIcon,
+  HardDriveIcon,
+  TimerIcon,
+  ZapIcon,
+} from 'lucide-react'
+
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { ChartDataPoint } from '@/types/chart-data'
 
@@ -120,10 +132,12 @@ function LargestScanStat({
   return (
     <ChartCard
       title="Largest Scan"
+      icon={<HardDriveIcon className="size-3.5 text-blue-500" />}
       sql={sql}
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      headerClassName="py-1"
       contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
@@ -156,10 +170,12 @@ function FastestScanStat({
   return (
     <ChartCard
       title="Fastest Scan Speed"
+      icon={<ZapIcon className="size-3.5 text-yellow-500" />}
       sql={sql}
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      headerClassName="py-1"
       contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
@@ -188,10 +204,12 @@ function LongestQueryStat({
   return (
     <ChartCard
       title="Longest Query"
+      icon={<ClockIcon className="size-3.5 text-red-500" />}
       sql={sql}
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      headerClassName="py-1"
       contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
@@ -213,10 +231,12 @@ function TotalStorageStat({ hostId }: { readonly hostId: number }) {
   return (
     <ChartCard
       title="Total Storage"
+      icon={<DatabaseIcon className="size-3.5 text-emerald-500" />}
       sql={sql}
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      headerClassName="py-1"
       contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
@@ -248,10 +268,12 @@ function BusiestDayQueriesStat({
   return (
     <ChartCard
       title="Busiest Day by Queries"
+      icon={<BarChart3Icon className="size-3.5 text-purple-500" />}
       sql={sql}
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      headerClassName="py-1"
       contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
@@ -287,10 +309,12 @@ function BusiestDayBytesStat({
   return (
     <ChartCard
       title="Busiest Day by Data Scan"
+      icon={<ArrowUpDownIcon className="size-3.5 text-orange-500" />}
       sql={sql}
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      headerClassName="py-1"
       contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
@@ -322,10 +346,12 @@ function BusiestSecondStat({
   return (
     <ChartCard
       title="Busiest Second by Query Starts"
+      icon={<ActivityIcon className="size-3.5 text-cyan-500" />}
       sql={sql}
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      headerClassName="py-1"
       contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
@@ -354,10 +380,12 @@ function AvgDurationStat({
   return (
     <ChartCard
       title="Average Query Duration"
+      icon={<TimerIcon className="size-3.5 text-indigo-500" />}
       sql={sql}
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      headerClassName="py-1"
       contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
@@ -393,10 +421,12 @@ function ErrorRateStat({
   return (
     <ChartCard
       title="Query Error Rate"
+      icon={<AlertTriangleIcon className="size-3.5 text-rose-500" />}
       sql={sql}
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      headerClassName="py-1"
       contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
