@@ -378,7 +378,7 @@ describe('charts-config', () => {
 
     it('should have optional chartClassName for some charts', () => {
       const backupChart = STORAGE_TAB_CHARTS.find((c) => c.id === 'backup-size')
-      expect(backupChart?.chartClassName).toBe('h-full h-[140px] sm:h-[160px]')
+      expect(backupChart?.chartClassName).toBe('h-[140px] sm:h-[160px]')
     })
   })
 })
