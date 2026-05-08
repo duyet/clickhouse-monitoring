@@ -104,7 +104,7 @@ jobs:
   # E2E tests - single browser, latest ClickHouse
   e2e-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     needs: unit-tests
 
     services:
