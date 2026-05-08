@@ -99,12 +99,13 @@ export const markdownFormatter: ValueOnlyFormatter = (value, options) => (
  * />
  * ```
  */
-export const coloredBadgeFormatter: ValueOnlyFormatter = (value, options) => (
-  <ColoredBadgeFormat
-    value={value as React.ReactNode}
-    options={options as ColoredBadgeOptions}
-  />
-)
+export const coloredBadgeFormatter: ValueOnlyFormatter = (value, options) =>
+  value ? (
+    <ColoredBadgeFormat
+      value={value as React.ReactNode}
+      options={options as ColoredBadgeOptions}
+    />
+  ) : null
 
 /**
  * Registry of advanced formatters

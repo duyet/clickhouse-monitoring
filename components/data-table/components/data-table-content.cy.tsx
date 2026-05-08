@@ -149,8 +149,8 @@ describe('<DataTableContent />', () => {
     cy.mount(<TestDataTableContent />)
 
     cy.get('[role="region"]')
-      .should('have.class', 'border-border\\/50')
-      .and('have.class', 'bg-card\\/30')
+      .should('have.class', 'border-border/50')
+      .and('have.class', 'bg-card/30')
       .and('have.class', 'rounded-lg')
   })
 
