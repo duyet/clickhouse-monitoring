@@ -124,6 +124,7 @@ function LargestScanStat({
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
         {String(d.readable_bytes)}
@@ -159,6 +160,7 @@ function FastestScanStat({
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
         {String(d.readable_speed)}/s
@@ -190,6 +192,7 @@ function LongestQueryStat({
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
         {formatDuration(Number(d.query_duration_ms))}
@@ -214,6 +217,7 @@ function TotalStorageStat({ hostId }: { readonly hostId: number }) {
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
         {String(d.total_compressed)}
@@ -248,6 +252,7 @@ function BusiestDayQueriesStat({
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
         {String(d.readable_count)}
@@ -286,6 +291,7 @@ function BusiestDayBytesStat({
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
         {String(d.readable_bytes)}
@@ -320,6 +326,7 @@ function BusiestSecondStat({
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
         {String(d.readable_count)}
@@ -351,6 +358,7 @@ function AvgDurationStat({
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
         {formatDuration(Number(d.avg_duration_ms))}
@@ -389,6 +397,7 @@ function ErrorRateStat({
       data={data}
       metadata={metadata}
       enableScaleToggle={false}
+      contentClassName="min-h-[60px]"
     >
       <div className="text-xl font-bold tracking-tight truncate">
         {d.error_rate}%
