@@ -166,7 +166,8 @@ function BusiestDayQueriesStat({ hostId }: { readonly hostId: number }) {
     lastHours: undefined, // All time by default
   })
   if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Busiest Day by Queries" />
+  if (error || !data?.length)
+    return <StatEmpty title="Busiest Day by Queries" />
   const d = data[0] as { day: string | Date; readable_count: string }
   return (
     <StatCardView
@@ -184,8 +185,13 @@ function BusiestDayBytesStat({ hostId }: { readonly hostId: number }) {
     lastHours: undefined, // All time by default
   })
   if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Busiest Day by Data Scan" />
-  const d = data[0] as { day: string | Date; readable_bytes: string; query_count: number }
+  if (error || !data?.length)
+    return <StatEmpty title="Busiest Day by Data Scan" />
+  const d = data[0] as {
+    day: string | Date
+    readable_bytes: string
+    query_count: number
+  }
   return (
     <StatCardView
       title="Busiest Day by Data Scan"
@@ -202,7 +208,8 @@ function BusiestSecondStat({ hostId }: { readonly hostId: number }) {
     lastHours: undefined, // All time by default
   })
   if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Busiest Second by Query Starts" />
+  if (error || !data?.length)
+    return <StatEmpty title="Busiest Second by Query Starts" />
   return (
     <StatCardView
       title="Busiest Second by Query Starts"
@@ -218,7 +225,8 @@ function AvgDurationStat({ hostId }: { readonly hostId: number }) {
     lastHours: undefined, // All time by default
   })
   if (isLoading) return <StatSkeleton />
-  if (error || !data?.length) return <StatEmpty title="Average Query Duration" />
+  if (error || !data?.length)
+    return <StatEmpty title="Average Query Duration" />
   const d = data[0] as { avg_duration_ms: number; query_count: number }
   return (
     <StatCardView
@@ -237,7 +245,11 @@ function ErrorRateStat({ hostId }: { readonly hostId: number }) {
   })
   if (isLoading) return <StatSkeleton />
   if (error || !data?.length) return <StatEmpty title="Query Error Rate" />
-  const d = data[0] as { error_rate: number; error_count: number; total_count: number }
+  const d = data[0] as {
+    error_rate: number
+    error_count: number
+    total_count: number
+  }
   return (
     <StatCardView
       title="Query Error Rate"
