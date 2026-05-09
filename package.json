@@ -172,7 +172,7 @@
     "@commitlint/cli": "^21.0.0",
     "@commitlint/config-conventional": "^21.0.0",
     "@cypress/code-coverage": "^4.0.0",
-    "@cypress/request": "^3.0.10",
+    "@cypress/request": "^4.0.0",
     "@cypress/webpack-preprocessor": "^7.0.2",
     "@opennextjs/cloudflare": "^1.17.1",
     "@types/node": "^25.2.2",
