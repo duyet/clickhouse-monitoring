@@ -28,7 +28,7 @@
     "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "release:notes": "bun scripts/generate-release-notes.ts",
     "docker:health": "docker compose exec app wget -q -O /dev/null http://localhost:3000/api/healthz || exit 1",
-    "cf:health": "curl -sSf https://clickhouse-monitor.duyet.workers.dev/api/healthz | jq .",
+    "cf:health": "curl -sSf https://chmonitor.dev/api/healthz | jq .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "cy:open": "start-server-and-test dev http://localhost:3000 \"cypress open\"",

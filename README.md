@@ -19,8 +19,9 @@ A modern Next.js 15 dashboard that provides real-time insights into ClickHouse c
 
 _The ClickHouse server running on my homelab so can be slow sometimes_:
 
+- [chmonitor.dev](https://chmonitor.dev) (Cloudflare Workers)
 - [clickhouse-monitoring.duyet.net](https://clickhouse-monitoring.duyet.net)
-- [clickhouse-monitor.duyet.workers.dev](https://clickhouse-monitor.duyet.workers.dev) (Cloudflare Workers)
+- [clickhouse-monitor.duyet.workers.dev](https://clickhouse-monitor.duyet.workers.dev) (Cloudflare Workers legacy)
 
 ## Deployment
 
