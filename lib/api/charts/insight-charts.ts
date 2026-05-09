@@ -220,4 +220,150 @@ export const insightCharts: Record<string, ChartQueryBuilder> = {
       `,
     }
   },
+
+  // -----------------------------------------------------------------------
+  // Query Insights (volume metrics)
+  // -----------------------------------------------------------------------
+
+  // Total queries executed in the period
+  'insight-total-queries': (params) => {
+    const timeFilter = buildTimeFilter(params.lastHours)
+    return {
+      query: `
+        SELECT
+          count() as total_queries,
+          formatReadableQuantity(count()) as readable_count
+        FROM system.query_log
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
+      `,
+    }
+  },
+
+  // Total data scanned across all queries
+  'insight-total-scanned': (params) => {
+    const timeFilter = buildTimeFilter(params.lastHours)
+    return {
+      query: `
+        SELECT
+          sum(read_bytes) as total_bytes,
+          formatReadableSize(sum(read_bytes)) as readable_total
+        FROM system.query_log
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
+      `,
+    }
+  },
+
+  // Total rows read across all queries
+  'insight-total-rows-read': (params) => {
+    const timeFilter = buildTimeFilter(params.lastHours)
+    return {
+      query: `
+        SELECT
+          sum(read_rows) as total_rows,
+          formatReadableQuantity(sum(read_rows)) as readable_total
+        FROM system.query_log
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
+      `,
+    }
+  },
+
+  // Peak memory usage across all completed queries
+  'insight-peak-memory': (params) => {
+    const timeFilter = buildTimeFilter(params.lastHours)
+    return {
+      query: `
+        SELECT
+          max(memory_usage) as peak_memory,
+          formatReadableSize(max(memory_usage)) as readable_peak
+        FROM system.query_log
+        WHERE type = 'QueryFinish' AND is_initial_query = 1 ${timeFilter ? `AND ${timeFilter}` : ''}
+      `,
+    }
+  },
+
+  // -----------------------------------------------------------------------
+  // Cluster Activity (live metrics from system.processes / system.metrics)
+  // -----------------------------------------------------------------------
+
+  // Currently executing queries
+  'insight-active-queries': () => ({
+    query: `
+      SELECT
+        count() as active_queries,
+        formatReadableQuantity(count()) as readable_count
+      FROM system.processes
+    `,
+  }),
+
+  // Current memory tracking from system.metrics
+  'insight-current-memory': () => ({
+    query: `
+      SELECT
+        value as memory_bytes,
+        formatReadableSize(value) as readable_memory
+      FROM system.metrics
+      WHERE metric = 'MemoryTracking'
+    `,
+  }),
+
+  // HTTP connections from system.metrics
+  'insight-http-connections': () => ({
+    query: `
+      SELECT
+        value as connections,
+        formatReadableQuantity(value) as readable_connections
+      FROM system.metrics
+      WHERE metric = 'HTTPConnection'
+    `,
+  }),
+
+  // Active merge operations
+  'insight-active-merges': () => ({
+    query: `
+      SELECT
+        count() as active_merges,
+        formatReadableQuantity(count()) as readable_count
+      FROM system.merges
+    `,
+  }),
+
+  // -----------------------------------------------------------------------
+  // Storage & Operations
+  // -----------------------------------------------------------------------
+
+  // Total active parts across all tables
+  'insight-active-parts': () => ({
+    query: `
+      SELECT
+        count() as active_parts,
+        formatReadableQuantity(count()) as readable_parts,
+        sum(rows) as total_rows,
+        formatReadableQuantity(sum(rows)) as readable_rows
+      FROM system.parts
+      WHERE active
+    `,
+  }),
+
+  // Detached parts count (optional — table may not exist)
+  'insight-detached-parts': () => ({
+    query: `
+      SELECT
+        count() as detached_parts,
+        formatReadableQuantity(count()) as readable_parts
+      FROM system.detached_parts
+    `,
+    optional: true,
+    tableCheck: 'system.detached_parts',
+  }),
+
+  // Active (in-progress) mutations
+  'insight-active-mutations': () => ({
+    query: `
+      SELECT
+        count() as active_mutations,
+        formatReadableQuantity(count()) as readable_count
+      FROM system.mutations
+      WHERE is_done = 0
+    `,
+  }),
 }
