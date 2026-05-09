@@ -3,13 +3,13 @@ id: knowledge-index
 title: Internal Knowledge Index
 type: index
 status: active
-updated: 2026-05-01
+updated: 2026-05-09
 tags:
   - ai-agent
   - knowledge-graph
 related:
-  - pr-1021-rust-wasm-performance
-  - pr-1021-component-ci-stability
+  - rust-wasm-performance
+  - component-ci-stability
 source_pr: 1021
 ---
 
@@ -21,8 +21,8 @@ context that should survive a compacted chat or a handoff.
 
 ## Notes
 
-- [PR 1021 Rust and WASM Performance](./pr-1021-rust-wasm-performance.md)
-- [PR 1021 Component CI Stability](./pr-1021-component-ci-stability.md)
+- [Rust and WASM Performance](./rust-wasm-performance.md)
+- [Component CI Stability](./component-ci-stability.md)
 
 ## Graph Convention
 

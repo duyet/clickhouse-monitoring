@@ -1,9 +1,9 @@
 ---
-id: pr-1021-component-ci-stability
-title: PR 1021 Component CI Stability
+id: component-ci-stability
+title: Component CI Stability
 type: incident
 status: draft
-updated: 2026-05-02
+updated: 2026-05-09
 source_pr: 1021
 source_branch: codex/implement-data-logic-in-rust-and-update-pr
 tags:
@@ -14,7 +14,7 @@ tags:
   - nextjs
 related:
   - knowledge-index
-  - pr-1021-rust-wasm-performance
+  - rust-wasm-performance
 artifacts:
   - cypress/support/component.ts
   - components/charts/factory/create-area-chart.tsx
@@ -47,11 +47,11 @@ artifacts:
   - components/tables/table-client.cy.tsx
 ---
 
-# PR 1021 Component CI Stability
+# Component CI Stability
 
 This note captures the component-test investigation from PR #1021. It is linked
 from the [knowledge index](./README.md) and complements the
-[Rust/WASM performance note](./pr-1021-rust-wasm-performance.md).
+[Rust/WASM performance note](./rust-wasm-performance.md).
 
 ## Current State
 
