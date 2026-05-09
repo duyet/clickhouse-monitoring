@@ -85,7 +85,7 @@
     "@langchain/langgraph": "^1.2.1",
     "@langchain/openai": "^1.2.12",
     "@modelcontextprotocol/sdk": "^1.27.1",
-    "@opennextjs/aws": "^3.9.15",
+    "@opennextjs/aws": "^4.0.0",
     "@openrouter/ai-sdk-provider": "^2.3.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",
