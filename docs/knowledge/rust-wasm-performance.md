@@ -1,9 +1,9 @@
 ---
-id: pr-1021-rust-wasm-performance
-title: PR 1021 Rust and WASM Performance
+id: rust-wasm-performance
+title: Rust and WASM Performance (PR 1021)
 type: decision
 status: active
-updated: 2026-05-01
+updated: 2026-05-09
 source_pr: 1021
 source_branch: codex/implement-data-logic-in-rust-and-update-pr
 tags:
@@ -14,7 +14,7 @@ tags:
   - clickhouse-jsoneachrow
 related:
   - knowledge-index
-  - pr-1021-component-ci-stability
+  - component-ci-stability
 artifacts:
   - scripts/bench-wasm.ts
   - scripts/build-wasm.ts
@@ -25,11 +25,11 @@ artifacts:
   - tools/ch-monitor-cli/src/main.rs
 ---
 
-# PR 1021 Rust and WASM Performance
+# Rust and WASM Performance
 
 This note records the benchmark decision for PR #1021. See the
 [knowledge index](./README.md) and the related
-[component CI stability note](./pr-1021-component-ci-stability.md).
+[component CI stability note](./component-ci-stability.md).
 
 ## Decision
 

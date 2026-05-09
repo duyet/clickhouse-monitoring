@@ -80,7 +80,7 @@ Comprehensive test suite for the table registry.
 - Cache header information
 - Optional table explanations
 
-**EXAMPLES.md** - Practical usage examples:
+**examples.md** - Practical usage examples:
 - Basic queries (clusters, disks, running queries)
 - Parameterized queries (columns, replicas)
 - Error handling scenarios
@@ -88,7 +88,7 @@ Comprehensive test suite for the table registry.
 - React hooks and server components
 - Advanced usage patterns (pagination, combining queries)
 
-**IMPLEMENTATION.md** - This file documenting the implementation
+**implementation.md** - This file documenting the implementation
 
 ## Architecture
 
