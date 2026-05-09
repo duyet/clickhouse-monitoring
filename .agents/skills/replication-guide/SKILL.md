@@ -5,9 +5,6 @@ description: "ReplicatedMergeTree operations, failover procedures, lag diagnosis
 
 # Replication Guide
 
-## When to use this skill
-Load when users ask about replication setup, lag, failover, or Keeper/ZooKeeper.
-
 ## ReplicatedMergeTree Basics
 - Engine: `ReplicatedMergeTree('/clickhouse/tables/{shard}/{database}/{table}', '{replica}')`
 - Requires ZooKeeper or ClickHouse Keeper
@@ -28,6 +25,7 @@ Load when users ask about replication setup, lag, failover, or Keeper/ZooKeeper.
 2. Verify Keeper connectivity: `SELECT * FROM system.zookeeper WHERE path = '/'`
 3. If replica is readonly due to Keeper disconnect, it auto-recovers when connection restores
 4. For permanent failures: `SYSTEM DROP REPLICA 'replica_name' FROM TABLE db.table`
+5. Corrupted metadata: `SYSTEM RESTORE REPLICA db.table`
 
 ## Quorum Writes
 - `SET insert_quorum = 2` — wait for N replicas to confirm
@@ -46,3 +44,4 @@ Load when users ask about replication setup, lag, failover, or Keeper/ZooKeeper.
 - **Readonly replica**: Lost Keeper session — check network, Keeper logs
 - **Queue buildup**: Slow fetches — check network bandwidth, disk I/O
 - **Diverged replicas**: `SYSTEM SYNC REPLICA db.table` to force sync
+- Load the `troubleshooting` skill for OOM-related replica failures and disk-full scenarios.
