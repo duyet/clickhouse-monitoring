@@ -162,7 +162,7 @@ jobs:
         run: bun run --silent release:notes > release-notes.md
 
       - name: Upload workflow artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-assets-${{ steps.meta.outputs.tag }}
           path: |
