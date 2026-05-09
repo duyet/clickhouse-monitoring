@@ -85,21 +85,31 @@ function CopyableValue({
   }
 
   return (
-    <button
-      onClick={handleCopy}
-      className={`font-mono font-medium text-right truncate min-w-0 hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1 group/copy ${className}`}
-      title={`Click to copy: ${value}`}
-    >
-      <span className="truncate">{value}</span>
-      {copied ? (
-        <Check className="size-3 text-green-500 shrink-0" strokeWidth={2} />
-      ) : (
-        <Copy
-          className="size-3 opacity-0 group-hover/copy:opacity-50 shrink-0 transition-opacity"
-          strokeWidth={1.5}
-        />
-      )}
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={handleCopy}
+          className={`font-mono font-medium text-right truncate min-w-0 hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1 group/copy ${className}`}
+        >
+          <span className="truncate">{value}</span>
+          {copied ? (
+            <Check className="size-3 text-green-500 shrink-0" strokeWidth={2} />
+          ) : (
+            <Copy
+              className="size-3 opacity-30 group-hover/copy:opacity-100 shrink-0 transition-opacity"
+              strokeWidth={1.5}
+            />
+          )}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent
+        side="bottom"
+        align="end"
+        className="max-w-[95vw] break-all font-mono text-xs"
+      >
+        {value}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -324,8 +334,11 @@ export const ChartZoomDialog = memo(function ChartZoomDialog({
             )}
           </div>
 
-          <TabsContent value="chart" className="flex-1 min-h-0 overflow-auto">
-            <div className="p-6 w-full">{children}</div>
+          <TabsContent
+            value="chart"
+            className="flex-1 min-h-0 overflow-auto p-6"
+          >
+            <div className="w-full h-full min-h-0">{children}</div>
           </TabsContent>
 
           {queryConfig && (
@@ -350,7 +363,11 @@ export const ChartZoomDialog = memo(function ChartZoomDialog({
               value="query"
               className="flex-1 min-h-0 p-6 overflow-auto"
             >
-              <CodeBlock code={displaySQL} language="sql">
+              <CodeBlock
+                code={displaySQL}
+                language="sql"
+                className="[&_pre]:whitespace-pre-wrap [&_pre]:break-words"
+              >
                 <CodeBlockCopyButton />
               </CodeBlock>
               <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-2">

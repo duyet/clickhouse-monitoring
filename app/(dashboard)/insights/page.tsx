@@ -6,9 +6,18 @@ import {
   ArrowUpDownIcon,
   BarChart3Icon,
   ClockIcon,
+  CombineIcon,
   DatabaseIcon,
   HardDriveIcon,
+  LayersIcon,
+  ListTodoIcon,
+  MemoryStickIcon,
+  MonitorIcon,
+  ScrollTextIcon,
+  SearchIcon,
+  ServerIcon,
   TimerIcon,
+  UnplugIcon,
   ZapIcon,
 } from 'lucide-react'
 
@@ -439,6 +448,395 @@ function ErrorRateStat({
   )
 }
 
+// -----------------------------------------------------------------------
+// Query Insights — volume metrics
+// -----------------------------------------------------------------------
+
+function TotalQueriesStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-total-queries',
+    hostId,
+    lastHours,
+  })
+  if (isLoading) return statLoading('Total Queries')
+  if (error || !data?.length)
+    return statEmpty('Total Queries', sql, data, metadata)
+  const d = data[0] as { total_queries: number; readable_count: string }
+  return (
+    <ChartCard
+      title="Total Queries"
+      icon={<SearchIcon className="size-3.5 text-sky-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_count)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        Completed queries
+      </div>
+    </ChartCard>
+  )
+}
+
+function TotalScannedStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-total-scanned',
+    hostId,
+    lastHours,
+  })
+  if (isLoading) return statLoading('Total Data Scanned')
+  if (error || !data?.length)
+    return statEmpty('Total Data Scanned', sql, data, metadata)
+  const d = data[0] as { total_bytes: number; readable_total: string }
+  return (
+    <ChartCard
+      title="Total Data Scanned"
+      icon={<HardDriveIcon className="size-3.5 text-violet-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_total)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        Read across all queries
+      </div>
+    </ChartCard>
+  )
+}
+
+function TotalRowsReadStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-total-rows-read',
+    hostId,
+    lastHours,
+  })
+  if (isLoading) return statLoading('Total Rows Read')
+  if (error || !data?.length)
+    return statEmpty('Total Rows Read', sql, data, metadata)
+  const d = data[0] as { total_rows: number; readable_total: string }
+  return (
+    <ChartCard
+      title="Total Rows Read"
+      icon={<ScrollTextIcon className="size-3.5 text-blue-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_total)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        Rows scanned by all queries
+      </div>
+    </ChartCard>
+  )
+}
+
+function PeakMemoryStat({
+  hostId,
+  lastHours,
+}: {
+  readonly hostId: number
+  readonly lastHours?: number
+}) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-peak-memory',
+    hostId,
+    lastHours,
+  })
+  if (isLoading) return statLoading('Peak Memory')
+  if (error || !data?.length)
+    return statEmpty('Peak Memory', sql, data, metadata)
+  const d = data[0] as { peak_memory: number; readable_peak: string }
+  return (
+    <ChartCard
+      title="Peak Memory"
+      icon={<MemoryStickIcon className="size-3.5 text-pink-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_peak)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        Highest query memory usage
+      </div>
+    </ChartCard>
+  )
+}
+
+// -----------------------------------------------------------------------
+// Cluster Activity (live metrics)
+// -----------------------------------------------------------------------
+
+function ActiveQueriesStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-active-queries',
+    hostId,
+  })
+  if (isLoading) return statLoading('Active Queries')
+  if (error || !data?.length)
+    return statEmpty('Active Queries', sql, data, metadata)
+  const d = data[0] as { active_queries: number; readable_count: string }
+  return (
+    <ChartCard
+      title="Active Queries"
+      icon={<ActivityIcon className="size-3.5 text-green-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_count)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        Currently executing
+      </div>
+    </ChartCard>
+  )
+}
+
+function CurrentMemoryStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-current-memory',
+    hostId,
+  })
+  if (isLoading) return statLoading('Current Memory')
+  if (error || !data?.length)
+    return statEmpty('Current Memory', sql, data, metadata)
+  const d = data[0] as { memory_bytes: number; readable_memory: string }
+  return (
+    <ChartCard
+      title="Current Memory"
+      icon={<MonitorIcon className="size-3.5 text-amber-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_memory)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        MemoryTracking metric
+      </div>
+    </ChartCard>
+  )
+}
+
+function HttpConnectionsStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-http-connections',
+    hostId,
+  })
+  if (isLoading) return statLoading('HTTP Connections')
+  if (error || !data?.length)
+    return statEmpty('HTTP Connections', sql, data, metadata)
+  const d = data[0] as {
+    connections: number
+    readable_connections: string
+  }
+  return (
+    <ChartCard
+      title="HTTP Connections"
+      icon={<UnplugIcon className="size-3.5 text-orange-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_connections)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        Current HTTP connections
+      </div>
+    </ChartCard>
+  )
+}
+
+function ActiveMergesStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-active-merges',
+    hostId,
+  })
+  if (isLoading) return statLoading('Active Merges')
+  if (error || !data?.length)
+    return statEmpty('Active Merges', sql, data, metadata)
+  const d = data[0] as { active_merges: number; readable_count: string }
+  return (
+    <ChartCard
+      title="Active Merges"
+      icon={<CombineIcon className="size-3.5 text-yellow-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_count)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        Currently merging
+      </div>
+    </ChartCard>
+  )
+}
+
+// -----------------------------------------------------------------------
+// Storage & Operations
+// -----------------------------------------------------------------------
+
+function ActivePartsStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-active-parts',
+    hostId,
+  })
+  if (isLoading) return statLoading('Active Parts')
+  if (error || !data?.length)
+    return statEmpty('Active Parts', sql, data, metadata)
+  const d = data[0] as {
+    active_parts: number
+    readable_parts: string
+    readable_rows: string
+  }
+  return (
+    <ChartCard
+      title="Active Parts"
+      icon={<LayersIcon className="size-3.5 text-indigo-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_parts)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        {String(d.readable_rows)} rows
+      </div>
+    </ChartCard>
+  )
+}
+
+function DetachedPartsStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-detached-parts',
+    hostId,
+  })
+  if (isLoading) return statLoading('Detached Parts')
+  if (error || !data?.length)
+    return statEmpty('Detached Parts', sql, data, metadata)
+  const d = data[0] as { detached_parts: number; readable_parts: string }
+  return (
+    <ChartCard
+      title="Detached Parts"
+      icon={<ServerIcon className="size-3.5 text-slate-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_parts)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        Detached data parts
+      </div>
+    </ChartCard>
+  )
+}
+
+function ActiveMutationsStat({ hostId }: { readonly hostId: number }) {
+  const { data, isLoading, error, sql, metadata } = useChartData({
+    chartName: 'insight-active-mutations',
+    hostId,
+  })
+  if (isLoading) return statLoading('Active Mutations')
+  if (error || !data?.length)
+    return statEmpty('Active Mutations', sql, data, metadata)
+  const d = data[0] as { active_mutations: number; readable_count: string }
+  return (
+    <ChartCard
+      title="Active Mutations"
+      icon={<ListTodoIcon className="size-3.5 text-rose-500" />}
+      sql={sql}
+      data={data}
+      metadata={metadata}
+      enableScaleToggle={false}
+      headerClassName="py-1"
+      contentClassName="min-h-[60px]"
+    >
+      <div className="text-xl font-bold tracking-tight truncate">
+        {String(d.readable_count)}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground truncate">
+        In-progress mutations
+      </div>
+    </ChartCard>
+  )
+}
+
+// -----------------------------------------------------------------------
+// Section label component
+// -----------------------------------------------------------------------
+
+function SectionLabel({ title }: { readonly title: string }) {
+  return (
+    <div className="col-span-full text-xs font-semibold text-muted-foreground tracking-wider uppercase">
+      {title}
+    </div>
+  )
+}
+
 function StatsGrid({
   hostId,
   lastHours,
@@ -448,18 +846,51 @@ function StatsGrid({
 }) {
   return (
     <div className="flex flex-col gap-4">
+      {/* Record Breakers */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <SectionLabel title="Record Breakers" />
         <LargestScanStat hostId={hostId} lastHours={lastHours} />
         <FastestScanStat hostId={hostId} lastHours={lastHours} />
         <LongestQueryStat hostId={hostId} lastHours={lastHours} />
         <TotalStorageStat hostId={hostId} />
       </div>
+
+      {/* Query Insights */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <SectionLabel title="Query Insights" />
+        <TotalQueriesStat hostId={hostId} lastHours={lastHours} />
+        <TotalScannedStat hostId={hostId} lastHours={lastHours} />
+        <TotalRowsReadStat hostId={hostId} lastHours={lastHours} />
+        <PeakMemoryStat hostId={hostId} lastHours={lastHours} />
+      </div>
+
+      {/* Cluster Activity */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <SectionLabel title="Cluster Activity" />
+        <ActiveQueriesStat hostId={hostId} />
+        <CurrentMemoryStat hostId={hostId} />
+        <HttpConnectionsStat hostId={hostId} />
+        <ActiveMergesStat hostId={hostId} />
+      </div>
+
+      {/* Storage & Operations */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <SectionLabel title="Storage &amp; Operations" />
+        <ActivePartsStat hostId={hostId} />
+        <DetachedPartsStat hostId={hostId} />
+        <ActiveMutationsStat hostId={hostId} />
+      </div>
+
+      {/* Traffic Patterns */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <SectionLabel title="Traffic Patterns" />
         <BusiestDayQueriesStat hostId={hostId} lastHours={lastHours} />
         <BusiestDayBytesStat hostId={hostId} lastHours={lastHours} />
         <BusiestSecondStat hostId={hostId} lastHours={lastHours} />
         <AvgDurationStat hostId={hostId} lastHours={lastHours} />
       </div>
+
+      {/* Error Rate */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <ErrorRateStat hostId={hostId} lastHours={lastHours} />
       </div>
