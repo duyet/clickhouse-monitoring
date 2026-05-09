@@ -35,7 +35,7 @@ function parseFrontmatter(raw: string): {
 
   return {
     name: nameMatch[1].trim(),
-    description: descMatch[1].trim(),
+    description: descMatch[1].trim().replace(/^["']|["']$/g, ''),
     body,
   }
 }
@@ -98,7 +98,7 @@ async function main() {
 
 import type { Skill } from './types'
 
-const SKILLS: readonly Skill[] = [
+export const SKILLS: readonly Skill[] = [
 ${skillEntries}
 ]
 

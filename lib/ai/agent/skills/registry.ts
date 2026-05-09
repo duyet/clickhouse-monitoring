@@ -11,7 +11,7 @@ export const SKILLS: readonly Skill[] = [
   {
     name: 'replication-guide',
     description:
-      '"ReplicatedMergeTree operations, failover procedures, lag diagnosis, quorum writes, and Keeper management."',
+      'ReplicatedMergeTree operations, failover procedures, lag diagnosis, quorum writes, and Keeper management.',
     content: `# Replication Guide
 
 ## When to use this skill
@@ -59,7 +59,7 @@ Load when users ask about replication setup, lag, failover, or Keeper/ZooKeeper.
   {
     name: 'query-optimization',
     description:
-      '"Query optimization strategies: PREWHERE, JOIN patterns, materialized views, EXPLAIN analysis, index usage, and query profiling."',
+      'Query optimization strategies: PREWHERE, JOIN patterns, materialized views, EXPLAIN analysis, index usage, and query profiling.',
     content: `# Query Optimization
 
 ## When to use this skill
@@ -118,7 +118,7 @@ Load when users ask about slow queries, optimization strategies, or query perfor
   {
     name: 'cluster-operations',
     description:
-      '"Distributed table management, resharding, node addition/removal, and cluster topology operations."',
+      'Distributed table management, resharding, node addition/removal, and cluster topology operations.',
     content: `# Cluster Operations
 
 ## When to use this skill
@@ -160,7 +160,7 @@ Load when users ask about cluster management, distributed tables, or scaling.
   {
     name: 'troubleshooting',
     description:
-      '"Diagnose and resolve common ClickHouse issues: OOM, slow merges, replication lag, disk full, stuck mutations, and query failures."',
+      'Diagnose and resolve common ClickHouse issues: OOM, slow merges, replication lag, disk full, stuck mutations, and query failures.',
     content: `# Troubleshooting Guide
 
 ## When to use this skill
@@ -246,7 +246,7 @@ Load when users report errors, performance issues, or system problems.
   {
     name: 'security-hardening',
     description:
-      '"RBAC configuration, row policies, quotas, network security, audit logging, and access control best practices."',
+      'RBAC configuration, row policies, quotas, network security, audit logging, and access control best practices.',
     content: `# Security Hardening
 
 ## When to use this skill
@@ -294,7 +294,7 @@ Load when users ask about access control, security, auditing, or user management
   {
     name: 'migration-patterns',
     description:
-      '"Schema migrations, ALTER patterns, engine changes, data backfill, and zero-downtime migration strategies."',
+      'Schema migrations, ALTER patterns, engine changes, data backfill, and zero-downtime migration strategies.',
     content: `# Migration Patterns
 
 ## When to use this skill
@@ -344,7 +344,7 @@ RENAME TABLE t_old TO t_backup, t_new TO t_old;
   {
     name: 'storage-optimization',
     description:
-      '"Compression codecs, TTL policies, tiered storage, part management, and disk space optimization."',
+      'Compression codecs, TTL policies, tiered storage, part management, and disk space optimization.',
     content: `# Storage Optimization
 
 ## When to use this skill
