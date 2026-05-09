@@ -1,6 +1,6 @@
 ---
 id: component-ci-stability
-title: Component CI Stability (PR 1021)
+title: Component CI Stability
 type: incident
 status: draft
 updated: 2026-05-09

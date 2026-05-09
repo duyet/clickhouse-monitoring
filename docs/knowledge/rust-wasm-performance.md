@@ -1,6 +1,6 @@
 ---
 id: rust-wasm-performance
-title: Rust and WASM Performance (PR 1021)
+title: Rust and WASM Performance
 type: decision
 status: active
 updated: 2026-05-09
