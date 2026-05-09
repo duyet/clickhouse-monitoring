@@ -181,7 +181,7 @@
     "cypress": "^15.10.0",
     "cypress-real-events": "^1.15.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
+    "lint-staged": "^17.0.0",
     "postcss": "^8.5.10",
     "react-is": "^19.2.4",
     "shadcn": "^4.0.0",
