@@ -5,15 +5,14 @@ description: "RBAC configuration, row policies, quotas, network security, audit 
 
 # Security Hardening
 
-## When to use this skill
-Load when users ask about access control, security, auditing, or user management.
-
 ## RBAC (Role-Based Access Control)
 - Create roles: `CREATE ROLE analyst`
 - Grant permissions: `GRANT SELECT ON db.* TO analyst`
 - Assign to users: `GRANT analyst TO user1`
 - Hierarchical: roles can inherit from other roles
 - Check grants: `SHOW GRANTS FOR user1`
+- Inspect user: `SHOW CREATE USER username`
+- Password rotation: `ALTER USER username IDENTIFIED BY 'new_password'`
 
 ## Row Policies
 - Restrict row access per user: `CREATE ROW POLICY p ON db.table FOR SELECT USING tenant_id = currentUser()`
