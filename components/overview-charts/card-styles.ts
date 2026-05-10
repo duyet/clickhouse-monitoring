@@ -8,8 +8,6 @@ export const cardStyles = {
     'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-foreground/10 before:to-transparent',
     'border border-border/50',
     'dark:border-border/30',
-    'shadow-sm shadow-black/[0.03]',
-    'dark:shadow-black/20',
     'backdrop-blur-xl',
     'transition-[border-color,box-shadow,background-color] duration-200 ease-out',
   ].join(' '),
@@ -54,19 +52,16 @@ export const variantStyles: Record<CardVariant, string> = {
     'border-emerald-500/30 dark:border-emerald-400/20',
     'bg-gradient-to-b from-emerald-50/50 to-emerald-50/20',
     'dark:from-emerald-950/40 dark:to-emerald-950/20',
-    'shadow-emerald-500/10 dark:shadow-emerald-400/5',
   ].join(' '),
   warning: [
     'border-amber-500/30 dark:border-amber-400/20',
     'bg-gradient-to-b from-amber-50/50 to-amber-50/20',
     'dark:from-amber-950/40 dark:to-amber-950/20',
-    'shadow-amber-500/10 dark:shadow-amber-400/5',
   ].join(' '),
   danger: [
     'border-rose-500/30 dark:border-rose-400/20',
     'bg-gradient-to-b from-rose-50/50 to-rose-50/20',
     'dark:from-rose-950/40 dark:to-rose-950/20',
-    'shadow-rose-500/10 dark:shadow-rose-400/5',
     'animate-pulse-subtle',
   ].join(' '),
 }
