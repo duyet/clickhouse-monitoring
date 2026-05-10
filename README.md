@@ -112,6 +112,7 @@ For repeatable Docker deploys, prefer the versioned image tag from the release p
 
 ## Documentation
 
+- **[/docs](/docs)** - Full documentation site (local/docs)
 - **llms.txt** - AI agent discovery file for automated code understanding
 - https://zread.ai/duyet/clickhouse-monitoring _(AI Generated)_
 - https://duyet.github.io/clickhouse-monitoring
