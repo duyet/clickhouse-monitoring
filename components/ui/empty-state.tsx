@@ -218,7 +218,7 @@ export const EmptyState = memo(function EmptyState({
               variant="outline"
               size="sm"
               onClick={action.onClick}
-              className="transition-all hover:shadow-sm"
+              className="transition-[box-shadow] hover:shadow-sm"
             >
               {action.icon}
               {action.label}

@@ -60,7 +60,7 @@ function InsightCard({ highlight }: { readonly highlight: InsightHighlight }) {
   return (
     <Card
       className={cn(
-        'cursor-pointer border-border/60 transition-all hover:border-border',
+        'cursor-pointer border-border/60 transition-[border-color] hover:border-border',
         expanded && 'col-span-full'
       )}
       onClick={() => setExpanded((prev) => !prev)}

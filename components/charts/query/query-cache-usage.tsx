@@ -47,7 +47,7 @@ export const ChartQueryCacheUsage = createCustomChart({
               <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
                 <div
                   className={cn(
-                    'h-full rounded-full transition-all',
+                    'h-full rounded-full transition-[width]',
                     cacheColors[item.query_cache_usage] || 'bg-chart-1'
                   )}
                   style={{ width: `${pct}%` }}

@@ -159,7 +159,7 @@ export function ExplorerEmptyState() {
               return (
                 <Card
                   key={db.name}
-                  className="group cursor-pointer p-4 transition-all hover:border-primary/50 hover:bg-muted/50"
+                  className="group cursor-pointer p-4 transition-[border-color,background-color] hover:border-primary/50 hover:bg-muted/50"
                   onClick={() => setDatabase(db.name)}
                 >
                   <div className="flex items-center gap-3">

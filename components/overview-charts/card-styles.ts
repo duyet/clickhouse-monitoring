@@ -11,7 +11,7 @@ export const cardStyles = {
     'shadow-sm shadow-black/[0.03]',
     'dark:shadow-black/20',
     'backdrop-blur-xl',
-    'transition-all duration-200 ease-out',
+    'transition-[border-color,box-shadow,background-color] duration-200 ease-out',
   ].join(' '),
 
   hover: [
