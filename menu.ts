@@ -463,6 +463,12 @@ export const menuItemsConfig: MenuItem[] = [
         isNew: true,
       },
       {
+        title: 'Docs',
+        href: '/docs',
+        description: 'Documentation and usage guides',
+        icon: BookOpenIcon,
+      },
+      {
         title: 'About',
         href: '/about',
         description: 'Dashboard and server version information',
