@@ -173,7 +173,7 @@ export function AgentChatEmptyState({
               <button
                 key={suggestion.text}
                 onClick={() => onSubmitPrompt(suggestion.text)}
-                className="group flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/80 px-3 py-2 text-left transition-all hover:border-border hover:bg-accent/20"
+                className="group flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/80 px-3 py-2 text-left transition-[border-color,background-color] hover:border-border hover:bg-accent/20"
               >
                 <span className="shrink-0 text-muted-foreground">
                   {suggestion.icon}

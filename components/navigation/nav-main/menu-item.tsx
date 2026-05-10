@@ -135,7 +135,7 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
             </Suspense>
           </span>
         )}
-        <ChevronRight className="ml-auto transition-all duration-200 group-data-[state=collapsed]/sidebar:hidden" />
+        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=collapsed]/sidebar:hidden" />
       </SidebarMenuButton>
     )
 
@@ -163,7 +163,7 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
           <SidebarMenuButton isActive={hasActiveChild} tooltip={item.title}>
             {item.icon && <item.icon className="h-4 w-4" />}
             <span>{item.title}</span>
-            <ChevronRight className="ml-auto transition-all duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
         {item.countKey && (

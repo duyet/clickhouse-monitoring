@@ -19,7 +19,7 @@ export const TruncatedList = memo(function TruncatedList({
   const length = Children.count(children)
 
   return (
-    <div className={cn('transition-all duration-300 ease-in-out', className)}>
+    <div className={cn('', className)}>
       {isExpanded ? children : Children.toArray(children).slice(0, items)}
 
       {isClamped && (

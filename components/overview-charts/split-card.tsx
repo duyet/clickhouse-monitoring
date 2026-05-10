@@ -22,7 +22,7 @@ export const SplitValue = memo(function SplitValue({
       className={cn(
         'group/value flex flex-1 flex-col items-center justify-center gap-1.5 w-full min-w-0 text-center',
         'py-2 px-1 rounded-lg',
-        'transition-all duration-150 ease-out',
+        'transition-[background-color] duration-150 ease-out',
         'hover:bg-foreground/[0.03] dark:hover:bg-foreground/[0.05]',
         href && 'cursor-pointer'
       )}

@@ -156,7 +156,7 @@ export function SettingsForm({
                 type="button"
                 onClick={() => handleThemeChange(option.value)}
                 className={cn(
-                  'relative flex flex-col items-center justify-center rounded-lg border-2 p-3 transition-all hover:opacity-80',
+                  'relative flex flex-col items-center justify-center rounded-lg border-2 p-3 transition-[opacity,border-color,background-color,box-shadow] hover:opacity-80',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
                   isSelected
                     ? 'border-primary bg-primary/5 ring-2 ring-primary/20'

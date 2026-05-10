@@ -44,7 +44,7 @@ export const TruncatedParagraph = memo(function TruncatedParagraph({
         className={cn(
           'text-sm leading-normal',
           isExpanded ? '' : `line-clamp-${lineClamp}`,
-          'transition-all duration-300 ease-in-out',
+          'transition-[opacity] duration-300 ease-in-out',
           className
         )}
         ref={contentRef}

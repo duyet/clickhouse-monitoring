@@ -70,7 +70,7 @@ function LinkFormatComponent<
     >
       <span className="truncate">{value}</span>
       <ArrowRightIcon
-        className="size-3 flex-none text-transparent transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-current"
+        className="size-3 flex-none text-transparent transition-[transform,color] duration-200 group-hover:translate-x-0.5 group-hover:text-current"
         aria-hidden="true"
       />
     </Link>

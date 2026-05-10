@@ -92,7 +92,7 @@ function RowCountBadge({ totalRows }: { totalRows: number }) {
         {formatted}
         <span
           className={cn(
-            'inline-block transition-all duration-200 ease-out',
+            'inline-block transition-[opacity,max-width] duration-200 ease-out',
             isHovered ? 'max-w-[40px] opacity-100' : 'max-w-0 opacity-0'
           )}
         >

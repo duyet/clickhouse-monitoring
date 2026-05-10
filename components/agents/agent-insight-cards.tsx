@@ -143,7 +143,7 @@ function InsightCard({
     <button
       onClick={() => onClick(config.question)}
       className={cn(
-        'group w-full rounded-xl border border-border/60 bg-card/50 p-3 text-left transition-all hover:border-border hover:bg-accent/20'
+        'group w-full rounded-xl border border-border/60 bg-card/50 p-3 text-left transition-[border-color,background-color] hover:border-border hover:bg-accent/20'
       )}
     >
       <div className="flex items-start justify-between gap-3">

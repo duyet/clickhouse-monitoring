@@ -40,7 +40,7 @@ export const ChartQueryType = createCustomChart({
               <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
                 <div
                   className={cn(
-                    'h-full rounded-full transition-all',
+                    'h-full rounded-full transition-[width]',
                     typeColors[item.type] || `bg-chart-${(index % 5) + 1}`
                   )}
                   style={{ width: `${pct}%` }}
