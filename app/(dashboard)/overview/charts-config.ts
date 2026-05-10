@@ -71,12 +71,18 @@ export interface OverviewTabConfig {
 // Chart Imports
 // ============================================================================
 
+// ============================================================================
+// Chart Imports
+// ============================================================================
+
 // Connection charts
 import { ChartConnectionsPool } from '@/components/charts/connections-pool'
 // Merge charts
 import { ChartMergeAvgDuration } from '@/components/charts/merge/merge-avg-duration'
 import { ChartMergeCount } from '@/components/charts/merge/merge-count'
 import { ChartNewPartsCreated } from '@/components/charts/merge/new-parts-created'
+// Query additional charts
+import { ChartCancelledQueries } from '@/components/charts/query/cancelled-queries'
 // Query charts
 import { ChartFailedQueryCount } from '@/components/charts/query/failed-query-count'
 import { ChartQueryCache } from '@/components/charts/query/query-cache'
@@ -94,10 +100,17 @@ import { ChartReplicationQueueCount } from '@/components/charts/replication/repl
 import { ChartReplicationSummaryTable } from '@/components/charts/replication/replication-summary-table'
 // System charts
 import { ChartBackupSize } from '@/components/charts/system/backup-size'
+import { ChartCompressionRatio } from '@/components/charts/system/compression-ratio'
 import { ChartCPUUsage } from '@/components/charts/system/cpu-usage'
+import { ChartDataFreshness } from '@/components/charts/system/data-freshness'
+import { ChartDiskIOThroughput } from '@/components/charts/system/disk-io-throughput'
 import { ChartDiskSize } from '@/components/charts/system/disk-size'
+import { ChartDiskUsageTrend } from '@/components/charts/system/disk-usage-trend'
 import { ChartDisksUsage } from '@/components/charts/system/disks-usage'
 import { ChartMemoryUsage } from '@/components/charts/system/memory-usage'
+import { ChartMutationProgress } from '@/components/charts/system/mutation-progress'
+import { ChartOomKilledQueries } from '@/components/charts/system/oom-killed-queries'
+import { ChartTopMemoryQueries } from '@/components/charts/system/top-memory-queries'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
 // ZooKeeper charts
 import { ChartKeeperException } from '@/components/charts/zookeeper/zookeeper-exception'
@@ -191,6 +204,22 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     className: 'w-full h-full min-h-[320px]',
     type: 'custom',
   },
+  {
+    id: 'top-memory-queries',
+    component: ChartTopMemoryQueries,
+    title: 'Top Memory Queries',
+    className: 'w-full h-full',
+    type: 'custom',
+  },
+  {
+    id: 'disk-io-throughput',
+    component: ChartDiskIOThroughput,
+    title: 'Disk I/O Throughput',
+    lastHours: 24,
+    interval: 'toStartOfFifteenMinutes',
+    className: 'w-full h-full min-h-[320px]',
+    type: 'area',
+  },
 ]
 
 /**
@@ -270,6 +299,31 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
     type: 'area',
   },
   {
+    id: 'disk-usage-trend',
+    component: ChartDiskUsageTrend,
+    className: 'w-full h-full min-h-[320px]',
+    title: 'Disk Usage Trend',
+    interval: 'toStartOfDay',
+    lastHours: 24 * 7,
+    type: 'area',
+  },
+  {
+    id: 'compression-ratio',
+    component: ChartCompressionRatio,
+    className: 'w-full h-full',
+    title: 'Compression Ratio',
+    type: 'metric',
+  },
+  {
+    id: 'data-freshness',
+    component: ChartDataFreshness,
+    className: 'w-full h-full min-h-[320px]',
+    title: 'Data Freshness',
+    interval: 'toStartOfDay',
+    lastHours: 24 * 7,
+    type: 'custom',
+  },
+  {
     id: 'top-table-size-storage',
     component: ChartTopTableSize,
     title: 'Top Tables by Size',
@@ -347,6 +401,13 @@ export const OPERATIONS_TAB_CHARTS: OverviewChartConfig[] = [
     className: 'w-full h-full',
     type: 'table',
   },
+  {
+    id: 'mutation-progress',
+    component: ChartMutationProgress,
+    title: 'Mutation Progress',
+    className: 'w-full h-full min-h-[320px]',
+    type: 'custom',
+  },
 ]
 
 /**
@@ -395,6 +456,24 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
     interval: 'toStartOfFiveMinutes',
     className: 'w-full h-full min-h-[320px]',
     type: 'area',
+  },
+  {
+    id: 'oom-killed-queries',
+    component: ChartOomKilledQueries,
+    title: 'OOM Killed Queries',
+    lastHours: 24 * 7,
+    interval: 'toStartOfHour',
+    className: 'w-full h-full min-h-[320px]',
+    type: 'area',
+  },
+  {
+    id: 'cancelled-queries',
+    component: ChartCancelledQueries,
+    title: 'Cancelled Queries',
+    lastHours: 24 * 7,
+    interval: 'toStartOfHour',
+    className: 'w-full h-full min-h-[320px]',
+    type: 'custom',
   },
 ]
 

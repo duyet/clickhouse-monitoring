@@ -6,6 +6,7 @@ import {
   Copy,
   Database,
   ExternalLink,
+  GripHorizontal,
   Hash,
   Maximize2Icon,
   Server,
@@ -19,7 +20,7 @@ import type { StaleError } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { format } from 'sql-formatter'
 import {
   CodeBlock,
@@ -149,6 +150,14 @@ export const ChartZoomDialog = memo(function ChartZoomDialog({
   )
   const [isBeautified, setIsBeautified] = useState(getInitialBeautifyState)
   const [queryCopied, setQueryCopied] = useState(false)
+  const [dialogHeight, setDialogHeight] = useState<string | undefined>(
+    undefined
+  )
+  const contentRef = useRef<HTMLDivElement>(null)
+  const resizeStartRef = useRef<{
+    startY: number
+    startHeight: number
+  } | null>(null)
 
   const handleBeautifyToggle = useCallback((checked: boolean) => {
     setIsBeautified(checked)
@@ -166,6 +175,37 @@ export const ChartZoomDialog = memo(function ChartZoomDialog({
     setQueryCopied(true)
     setTimeout(() => setQueryCopied(false), 2000)
   }, [sql, isBeautified])
+
+  // Handle dialog resize via mouse drag
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.preventDefault()
+      const el = contentRef.current
+      if (!el) return
+      resizeStartRef.current = {
+        startY: e.clientY,
+        startHeight: el.offsetHeight,
+      }
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        if (!resizeStartRef.current) return
+        const { startY, startHeight } = resizeStartRef.current
+        const delta = moveEvent.clientY - startY
+        const newHeight = Math.max(400, startHeight + delta)
+        setDialogHeight(`${newHeight}px`)
+      }
+
+      const handleMouseUp = () => {
+        resizeStartRef.current = null
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    },
+    []
+  )
 
   // Memoize QueryConfig for DataTable
   const queryConfig = useMemo<QueryConfig<string[]> | undefined>(() => {
@@ -201,8 +241,12 @@ export const ChartZoomDialog = memo(function ChartZoomDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+      <DialogContent
+        ref={contentRef}
+        className="max-w-[95vw] w-[95vw] flex flex-col p-0 pb-6"
+        style={{ height: dialogHeight, maxHeight: '90vh' }}
+      >
+        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <div className="flex items-center justify-between gap-4">
             <DialogTitle className="truncate flex-1">{title}</DialogTitle>
             <div className="flex items-center gap-2 shrink-0">
@@ -334,11 +378,8 @@ export const ChartZoomDialog = memo(function ChartZoomDialog({
             )}
           </div>
 
-          <TabsContent
-            value="chart"
-            className="flex-1 min-h-0 overflow-auto p-6"
-          >
-            <div className="w-full h-full min-h-0">{children}</div>
+          <TabsContent value="chart" className="flex-1 min-h-0 p-6">
+            <div className="w-full h-full min-h-[300px]">{children}</div>
           </TabsContent>
 
           {queryConfig && (
@@ -377,6 +418,13 @@ export const ChartZoomDialog = memo(function ChartZoomDialog({
             </TabsContent>
           )}
         </Tabs>
+        {/* Resize handle */}
+        <div
+          onMouseDown={handleResizeStart}
+          className="absolute bottom-0 left-0 right-0 h-5 cursor-s-resize flex items-center justify-center opacity-0 hover:opacity-60 transition-opacity group"
+        >
+          <GripHorizontal className="size-3.5 text-muted-foreground" />
+        </div>
       </DialogContent>
     </Dialog>
   )

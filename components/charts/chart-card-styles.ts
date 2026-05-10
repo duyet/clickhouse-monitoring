@@ -37,7 +37,6 @@ export const chartCard = {
       'overflow-hidden rounded-xl',
       'bg-gradient-to-b from-card/80 to-card/40 dark:from-card/60 dark:to-card/30',
       'border dark:border-border/30',
-      'shadow-sm shadow-black/[0.03] dark:shadow-black/20',
       'backdrop-blur-xl',
       'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-foreground/10 before:to-transparent',
       'pt-1 pb-2'
