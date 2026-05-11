@@ -1,6 +1,6 @@
 import { defineCatalog } from '@json-render/core'
 import { schema as reactSchema } from '@json-render/react'
-import { shadcnComponentDefinitions } from '@json-render/shadcn'
+import { shadcnComponentDefinitions } from '@json-render/shadcn/catalog'
 
 export {
   AGENT_JSON_RENDER_MAX_ELEMENT_COUNT,
@@ -8,6 +8,20 @@ export {
   AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES,
   AGENT_JSON_RENDER_MAX_SPEC_PARTS,
 } from './json-render-limits'
+
+export const AGENT_JSON_RENDER_COMPONENT_NAMES = [
+  'Card',
+  'Stack',
+  'Grid',
+  'Separator',
+  'Heading',
+  'Text',
+  'Alert',
+  'Badge',
+  'Progress',
+  'Skeleton',
+  'Spinner',
+] as const
 
 const AGENT_JSON_RENDER_COMPONENTS = {
   Card: shadcnComponentDefinitions.Card,

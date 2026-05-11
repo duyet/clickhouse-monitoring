@@ -3,6 +3,7 @@
 import { Inbox, RefreshCw } from 'lucide-react'
 
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
+import type { EmptyStateVariant } from '@/components/ui/empty-state'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartDataPoint } from '@/types/chart-data'
 
@@ -16,7 +17,6 @@ import {
   CardDescription,
   CardHeader,
 } from '@/components/ui/card'
-import { EmptyState, type EmptyStateVariant } from '@/components/ui/empty-state'
 import { SuggestionCard } from '@/components/ui/suggestion-card'
 import { cn } from '@/lib/utils'
 

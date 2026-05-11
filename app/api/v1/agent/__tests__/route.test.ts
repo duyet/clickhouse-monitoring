@@ -73,22 +73,19 @@ mock.module('ai', () => {
         pipeResultType: 'none',
         originalMessageCount: originalMessages?.length ?? 0,
       }
+      const record = activeRecord
 
       const writer = {
         merge: (value: unknown) => {
-          if (activeRecord) {
-            activeRecord.mergedChunk = value
-          }
+          record.mergedChunk = value
         },
       }
 
-      capturedAIArgs.push(activeRecord)
+      capturedAIArgs.push(record)
       await execute({ writer })
-      if (activeRecord) {
-        activeRecord.executeCalled = true
-      }
+      record.executeCalled = true
 
-      return { mergedChunk: activeRecord?.mergedChunk }
+      return { mergedChunk: record.mergedChunk }
     },
     createUIMessageStreamResponse: ({
       headers,
@@ -349,6 +346,21 @@ describe('POST /api/v1/agent', () => {
     expect(response.status).toBe(400)
   })
 
+  test('returns INVALID_JSON when request body is a JSON array', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: '[{"role":"user","parts":[{"type":"text","text":"bad"}]}]',
+      headers: {
+        'content-type': 'application/json',
+      },
+    })
+
+    const response = await POST(request)
+    expect(response.status).toBe(400)
+    const payload = await response.json()
+    expect(payload).toMatchObject({ error: { code: 'INVALID_JSON' } })
+  })
+
   test('returns JSON stream for valid input', async () => {
     const request = createAgentRequest({
       method: 'POST',
@@ -410,6 +422,36 @@ describe('POST /api/v1/agent', () => {
       originalMessageCount: 1,
     })
     expect(capturedAIArgs[0]?.mergedChunk).toBeDefined()
+  })
+
+  test('keeps non-user conversation messages in context', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [
+          {
+            id: 'assistant-msg',
+            role: 'assistant',
+            parts: [{ type: 'text', text: 'Previous result' }],
+          },
+          {
+            id: 'user-msg',
+            role: 'user',
+            parts: [{ type: 'text', text: 'Follow up question' }],
+          },
+        ],
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+    expect(capturedAIArgs[0]).toMatchObject({
+      originalMessageCount: 2,
+    })
   })
 
   test('forwards model override and disabled tools configuration', async () => {

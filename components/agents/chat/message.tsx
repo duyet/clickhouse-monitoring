@@ -259,7 +259,7 @@ function useSafeJsonRenderMessage(
         parseError: 'Unable to parse inline UI payload.',
       }
     }
-  }, [dataParts, parsed.hasSpec, parsed.spec, parsed.text])
+  }, [dataParts, parsed.hasSpec, parsed.spec, parsed.text, parsed])
 }
 
 function renderJsonSpec({

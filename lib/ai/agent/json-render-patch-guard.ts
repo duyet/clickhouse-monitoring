@@ -1,5 +1,6 @@
 import type { Spec } from '@json-render/core'
 
+import { AGENT_JSON_RENDER_COMPONENT_NAMES } from './json-render-catalog'
 import {
   AGENT_JSON_RENDER_MAX_ELEMENT_COUNT,
   AGENT_JSON_RENDER_MAX_SPEC_BYTES,
@@ -10,19 +11,9 @@ import { applySpecPatch } from '@json-render/core'
 
 const jsonRenderPatchTextEncoder = new TextEncoder()
 
-const AGENT_JSON_RENDER_ALLOWED_COMPONENTS = new Set([
-  'Card',
-  'Stack',
-  'Grid',
-  'Separator',
-  'Heading',
-  'Text',
-  'Alert',
-  'Badge',
-  'Progress',
-  'Skeleton',
-  'Spinner',
-])
+const AGENT_JSON_RENDER_ALLOWED_COMPONENTS = new Set<string>(
+  AGENT_JSON_RENDER_COMPONENT_NAMES
+)
 const DANGEROUS_POINTER_SEGMENTS = new Set([
   '__proto__',
   'prototype',
@@ -250,7 +241,7 @@ export function createJsonRenderPatchGuardStream<T>(
           }
 
           candidateSpec = applySpecPatch(
-            compiledSpec as Spec,
+            JSON.parse(JSON.stringify(compiledSpec)),
             specData.patch as never
           ) as Spec
         } else if (specData.type === 'flat' || specData.type === 'nested') {

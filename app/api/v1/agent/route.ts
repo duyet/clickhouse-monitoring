@@ -96,7 +96,11 @@ function clampText(value: string, maxBytes: number): string {
   }
 
   let end = maxBytes
-  while (end > 0 && (encoded[end - 1] & 0b1100_0000) === 0b1000_0000) {
+  while (
+    end > 0 &&
+    end < encoded.length &&
+    (encoded[end] & 0b1100_0000) === 0b1000_0000
+  ) {
     end -= 1
   }
 
@@ -317,7 +321,16 @@ export async function POST(request: Request) {
 
   let body: AgentRequestBody
   try {
-    body = JSON.parse(requestBodyResult.text) as AgentRequestBody
+    const parsedBody = JSON.parse(requestBodyResult.text)
+    if (
+      !isObject(parsedBody) ||
+      Array.isArray(parsedBody) ||
+      parsedBody === null
+    ) {
+      throw new Error('INVALID_PAYLOAD')
+    }
+
+    body = parsedBody
   } catch (_error) {
     return new Response(
       JSON.stringify({
@@ -433,20 +446,34 @@ export async function POST(request: Request) {
 
   if (safeIncomingMessages.length > 0) {
     for (const msg of safeIncomingMessages) {
-      if (msg.role !== 'user') {
+      if (msg.role === 'user') {
+        if (msg.parts.length > 0) {
+          uiMessages.push({
+            id: msg.id,
+            role: 'user',
+            parts: msg.parts,
+          })
+        } else if (msg.content) {
+          uiMessages.push({
+            id: msg.id,
+            role: 'user',
+            parts: [{ type: 'text' as const, text: msg.content }],
+          })
+        }
+
         continue
       }
 
       if (msg.parts.length > 0) {
         uiMessages.push({
           id: msg.id,
-          role: 'user',
+          role: msg.role,
           parts: msg.parts,
         })
       } else if (msg.content) {
         uiMessages.push({
           id: msg.id,
-          role: 'user',
+          role: msg.role,
           parts: [{ type: 'text' as const, text: msg.content }],
         })
       }

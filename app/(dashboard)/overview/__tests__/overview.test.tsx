@@ -2,8 +2,6 @@
  * Tests for the overview page charts configuration
  */
 
-import type React from 'react'
-
 import { describe, expect, it, mock } from 'bun:test'
 
 type OverviewChartConfig = {
