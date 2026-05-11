@@ -8,14 +8,16 @@ type AgentStreamResult = {
   consumeStream: () => Promise<void>
 }
 
-const capturedAgentArgs: Array<Record<string, unknown>> = []
-const capturedAIArgs: Array<{
+type CapturedAIArgs = {
   executeCalled: boolean
   pipeResultType: string
   mergedChunk?: unknown
   responseHeaders?: Headers
   originalMessageCount?: number
-}> = []
+}
+
+const capturedAgentArgs: Array<Record<string, unknown>> = []
+const capturedAIArgs: CapturedAIArgs[] = []
 
 mock.module('@/lib/ai/agent', () => ({
   createClickHouseAgent: (options: Record<string, unknown>) => {
@@ -46,26 +48,15 @@ mock.module('@/lib/ai/agent', () => ({
 }))
 
 mock.module('ai', () => {
-  let executeCalled = false
-  let pipeResultType = 'none'
-  let mergedChunk: unknown
-  let responseHeaders: Headers | undefined
-  let originalMessageCount = 0
-
-  const record = () => {
-    capturedAIArgs.push({
-      executeCalled,
-      pipeResultType,
-      mergedChunk,
-      responseHeaders,
-      originalMessageCount,
-    })
-  }
+  let activeRecord: CapturedAIArgs | null = null
 
   return {
     convertToModelMessages: async (messages: unknown[]) => messages,
     pipeJsonRender: (stream: unknown) => {
-      pipeResultType = typeof stream
+      if (activeRecord) {
+        activeRecord.pipeResultType = typeof stream
+      }
+
       return stream
     },
     createUIMessageStream: async ({
@@ -77,16 +68,27 @@ mock.module('ai', () => {
       }) => Promise<void> | void
       originalMessages?: unknown[]
     }) => {
-      executeCalled = true
-      originalMessageCount = originalMessages?.length ?? 0
+      activeRecord = {
+        executeCalled: false,
+        pipeResultType: 'none',
+        originalMessageCount: originalMessages?.length ?? 0,
+      }
+
       const writer = {
         merge: (value: unknown) => {
-          mergedChunk = value
+          if (activeRecord) {
+            activeRecord.mergedChunk = value
+          }
         },
       }
+
+      capturedAIArgs.push(activeRecord)
       await execute({ writer })
-      record()
-      return { mergedChunk }
+      if (activeRecord) {
+        activeRecord.executeCalled = true
+      }
+
+      return { mergedChunk: activeRecord?.mergedChunk }
     },
     createUIMessageStreamResponse: ({
       headers,
@@ -95,7 +97,11 @@ mock.module('ai', () => {
       headers?: HeadersInit
       stream?: unknown
     }) => {
-      responseHeaders = new Headers(headers)
+      const responseHeaders = new Headers(headers)
+      if (activeRecord) {
+        activeRecord.responseHeaders = responseHeaders
+      }
+
       return new Response(`mocked stream: ${typeof stream}`, {
         status: 200,
         headers: {
@@ -142,11 +148,56 @@ describe('POST /api/v1/agent', () => {
 
     const reader = (stream as ReadableStream).getReader()
     const values: unknown[] = []
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      values.push(value)
+    const maxChunks = 1000
+    const chunkTimeoutMs = 1500
+
+    try {
+      while (true) {
+        let timeoutId: ReturnType<typeof setTimeout> | undefined
+        const timeout = new Promise<ReadableStreamReadResult<unknown>>(
+          (_resolve, reject) => {
+            timeoutId = setTimeout(() => {
+              reject(
+                new Error(
+                  'Reading stream timed out while validating json-render guard.'
+                )
+              )
+            }, chunkTimeoutMs)
+          }
+        )
+
+        let result: ReadableStreamReadResult<unknown>
+        try {
+          result = (await Promise.race([reader.read(), timeout])) as ReadableStreamReadResult<unknown>
+        } catch (error) {
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+          }
+          try {
+            await reader.cancel('read timeout')
+          } catch (_cancelError) {
+            // Ignore cancellation errors while already closing/closed.
+          }
+          throw error
+        }
+
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+
+        if (result.done) {
+          break
+        }
+
+        values.push(result.value)
+        if (values.length > maxChunks) {
+          throw new Error('Stream produced too many chunks during validation.')
+        }
+      }
+    } finally {
+      reader.releaseLock()
     }
+
     return values
   }
 
@@ -352,6 +403,10 @@ describe('POST /api/v1/agent', () => {
     expect(response.status).toBe(200)
     expect(body).toBe('mocked stream: object')
     expect(response.headers.get('content-type')).toContain('text/event-stream')
+    expect(capturedAIArgs[0]).toMatchObject({
+      originalMessageCount: 1,
+    })
+    expect(capturedAIArgs[0]?.mergedChunk).toBeDefined()
   })
 
   test('forwards model override and disabled tools configuration', async () => {
@@ -571,6 +626,32 @@ describe('POST /api/v1/agent', () => {
     const sourceStream = new ReadableStream({
       start: (controller) => {
         controller.enqueue(oversizedChunk)
+        controller.close()
+      },
+    })
+
+    const guarded = createJsonRenderPatchGuardStream(sourceStream)
+    const values = await readJsonRenderStreamValues(guarded)
+
+    expect(values).toHaveLength(0)
+  })
+
+  test('drops patch chunks targeting dangerous JSON pointer segments', async () => {
+    const dangerousPatchChunk = {
+      type: 'data-spec',
+      data: {
+        type: 'patch',
+        patch: {
+          op: 'add',
+          path: '/elements/__proto__/polluted',
+          value: { enabled: true },
+        },
+      },
+    }
+
+    const sourceStream = new ReadableStream({
+      start: (controller) => {
+        controller.enqueue(dangerousPatchChunk)
         controller.close()
       },
     })

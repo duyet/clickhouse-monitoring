@@ -8,6 +8,8 @@ import {
 } from './json-render-limits'
 import { applySpecPatch } from '@json-render/core'
 
+const jsonRenderPatchTextEncoder = new TextEncoder()
+
 const AGENT_JSON_RENDER_ALLOWED_COMPONENTS = new Set([
   'Card',
   'Stack',
@@ -20,6 +22,15 @@ const AGENT_JSON_RENDER_ALLOWED_COMPONENTS = new Set([
   'Progress',
   'Skeleton',
   'Spinner',
+])
+const DANGEROUS_POINTER_SEGMENTS = new Set(['__proto__', 'prototype', 'constructor'])
+const ALLOWED_PATCH_OPS = new Set([
+  'add',
+  'remove',
+  'replace',
+  'move',
+  'copy',
+  'test',
 ])
 
 function hasAllowedComponents(spec: Record<string, unknown>): boolean {
@@ -56,11 +67,15 @@ type JsonRenderDataSpecChunk = SafeJsonRenderChunk & {
 
 function safeByteLength(value: unknown): number {
   try {
-    return new TextEncoder().encode(JSON.stringify(value)).length
+    return jsonRenderPatchTextEncoder.encode(JSON.stringify(value)).length
   } catch (_error) {
     return Number.POSITIVE_INFINITY
   }
 }
+
+const DEBUG_PATCH_GUARD =
+  process.env.NODE_ENV !== 'production' &&
+  process.env.AGENT_JSON_RENDER_PATCH_GUARD_DEBUG === '1'
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -91,6 +106,61 @@ function isDataSpecChunk(value: unknown): value is JsonRenderDataSpecChunk {
   )
 }
 
+function hasDangerousPointer(path: string): boolean {
+  return path
+    .split('/')
+    .slice(1)
+    .map((segment) => segment.replace(/~1/g, '/').replace(/~0/g, '~'))
+    .some((segment) => DANGEROUS_POINTER_SEGMENTS.has(segment))
+}
+
+function hasDangerousPatchPointer(value: unknown): boolean {
+  if (!isObject(value) || typeof value.path !== 'string') {
+    return true
+  }
+
+  if (hasDangerousPointer(value.path)) {
+    return true
+  }
+
+  if (
+    (value.op === 'move' || value.op === 'copy') &&
+    typeof value.from === 'string'
+  ) {
+    if (!value.from.startsWith('/')) {
+      return true
+    }
+
+    return hasDangerousPointer(value.from)
+  }
+
+  return false
+}
+
+function isSafeJsonPatch(value: unknown): boolean {
+  if (!isObject(value)) {
+    return false
+  }
+
+  if (typeof value.op !== 'string' || !ALLOWED_PATCH_OPS.has(value.op)) {
+    return false
+  }
+
+  if (typeof value.path !== 'string') {
+    return false
+  }
+
+  if (!value.path.startsWith('/')) {
+    return false
+  }
+
+  if (hasDangerousPatchPointer(value)) {
+    return false
+  }
+
+  return true
+}
+
 function validateJsonRenderSpecCandidate(candidateSpec: unknown): boolean {
   try {
     if (!isObject(candidateSpec)) return false
@@ -105,7 +175,6 @@ function validateJsonRenderSpecCandidate(candidateSpec: unknown): boolean {
       return false
     }
 
-    if (!isObject(candidateSpec)) return false
     if (!hasAllowedComponents(candidateSpec)) return false
 
     if (!('root' in candidateSpec) || !isObject(candidateSpec.elements)) {
@@ -118,68 +187,108 @@ function validateJsonRenderSpecCandidate(candidateSpec: unknown): boolean {
   }
 }
 
-export function createJsonRenderPatchGuardStream(
-  stream: ReadableStream<unknown>
-): ReadableStream<unknown> {
+export function createJsonRenderPatchGuardStream<T>(
+  stream: ReadableStream<T>
+): ReadableStream<T> {
   if (typeof stream.pipeThrough !== 'function') {
     return stream
   }
 
   let specPartCount = 0
   let specByteBudget = 0
-  let compiledSpec: unknown = {}
+  let compiledSpec: Spec = { root: '', elements: {} }
 
-  const transform = new TransformStream<
-    SafeJsonRenderChunk,
-    SafeJsonRenderChunk
-  >({
+  const transform = new TransformStream<T, T>({
     transform: (chunk, controller) => {
       if (!isDataSpecChunk(chunk)) {
         controller.enqueue(chunk)
         return
       }
 
-      const partBytes = safeByteLength(chunk.data)
+      const specChunk = chunk as JsonRenderDataSpecChunk
+      const partBytes = safeByteLength(specChunk.data)
       if (partBytes > AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES) {
+        if (DEBUG_PATCH_GUARD) {
+          console.debug('[json-render] Dropped spec chunk: part exceeds limit')
+        }
+
         return
       }
 
       if (specPartCount + 1 > AGENT_JSON_RENDER_MAX_SPEC_PARTS) {
+        if (DEBUG_PATCH_GUARD) {
+          console.debug('[json-render] Dropped spec chunk: too many chunks')
+        }
+
         return
       }
 
       const candidateBytes = specByteBudget + partBytes
       if (candidateBytes > AGENT_JSON_RENDER_MAX_SPEC_BYTES) {
+        if (DEBUG_PATCH_GUARD) {
+          console.debug('[json-render] Dropped spec chunk: total size exceeded')
+        }
+
         return
       }
 
       let candidateSpec = compiledSpec
-      const specData = chunk.data
+      const specData = specChunk.data
 
       try {
         if (specData.type === 'patch') {
-          if (!isObject(specData.patch)) {
+          if (!isSafeJsonPatch(specData.patch)) {
+            if (DEBUG_PATCH_GUARD) {
+              console.debug('[json-render] Dropped spec chunk: invalid patch')
+            }
+
             return
           }
 
           candidateSpec = applySpecPatch(
             compiledSpec as Spec,
             specData.patch as never
-          ) as unknown
+          ) as Spec
         } else if (specData.type === 'flat' || specData.type === 'nested') {
           if (!isObject(specData.spec)) {
+            if (DEBUG_PATCH_GUARD) {
+              console.debug(
+                '[json-render] Dropped spec chunk: non-object flat/nested spec'
+              )
+            }
+
             return
           }
 
-          candidateSpec = specData.spec
+          if (!hasAllowedComponents(specData.spec) || !('root' in specData.spec)) {
+            if (DEBUG_PATCH_GUARD) {
+              console.debug('[json-render] Dropped spec chunk: blocked component/root')
+            }
+
+            return
+          }
+
+          candidateSpec = specData.spec as unknown as Spec
         } else {
+          if (DEBUG_PATCH_GUARD) {
+            console.debug('[json-render] Dropped spec chunk: unknown spec type')
+          }
+
           return
         }
       } catch (_error) {
+        if (DEBUG_PATCH_GUARD) {
+          console.debug('[json-render] Dropped spec chunk: apply failed', _error)
+        }
+
         return
       }
 
       if (!validateJsonRenderSpecCandidate(candidateSpec)) {
+        if (DEBUG_PATCH_GUARD) {
+          console.debug('[json-render] Dropped spec chunk: validation failed')
+        }
+
         return
       }
 

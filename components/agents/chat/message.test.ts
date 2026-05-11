@@ -67,7 +67,9 @@ describe('validateAndSanitizeSpecFromParts', () => {
 
     expect(result.hasSpec).toBe(false)
     expect(result.spec).toBe(null)
-    expect(result.parseError).toContain('invalid')
+    expect(result.parseError).toBe(
+      'Generated UI spec is invalid. Skipping inline rendering for safety.'
+    )
   })
 
   test('rejects oversized patch payloads before rendering', () => {

@@ -19,7 +19,6 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
-  type InferUIMessageChunk,
   type ModelMessage,
   type UIDataTypes,
   type UIMessage,
@@ -46,6 +45,29 @@ const AGENT_MAX_MESSAGES = 64
 const AGENT_MAX_MESSAGE_PARTS = 64
 const AGENT_MAX_USER_MESSAGE_LENGTH = 8_192
 const AGENT_MAX_PART_TEXT_LENGTH = 2_048
+const textEncoder = new TextEncoder()
+const textDecoder = new TextDecoder()
+
+type AgentRequestBody = {
+  message?: string
+  messages?: Array<
+    | { id: string; role: string; parts: Array<unknown> }
+    | { role: string; content: string; parts?: unknown[] }
+  >
+  hostId?: number
+  model?: string
+  disabledTools?: string[]
+}
+
+type SanitizeIncomingMessagesResult =
+  | {
+      readonly ok: true
+      readonly messages: ReadonlyArray<SafeAgentMessage>
+    }
+  | {
+      readonly ok: false
+      readonly reason: 'too_many_messages'
+    }
 
 type SafeAgentMessage = {
   readonly id: string
@@ -57,18 +79,74 @@ type SafeAgentMessage = {
   readonly content?: string
 }
 
+/**
+ * Check whether a value is an object.
+ */
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
+/**
+ * Truncate text to a safe UTF-8 byte length.
+ */
 function clampText(value: string, maxBytes: number): string {
-  return new TextEncoder().encode(value).length > maxBytes
-    ? new TextDecoder().decode(
-        new TextEncoder().encode(value).slice(0, maxBytes)
-      )
-    : value
+  const encoded = textEncoder.encode(value)
+  if (encoded.length <= maxBytes) {
+    return value
+  }
+
+  let end = maxBytes
+  while (end > 0 && (encoded[end - 1] & 0b1100_0000) === 0b1000_0000) {
+    end -= 1
+  }
+
+  return textDecoder.decode(encoded.slice(0, end))
 }
 
+async function readRequestBodyTextWithLimit(
+  request: Request,
+  maxBytes: number
+): Promise<{ text: string; byteLength: number } | null> {
+  const bodyStream = request.body
+  if (!bodyStream) {
+    return { text: '', byteLength: 0 }
+  }
+
+  const reader = bodyStream.getReader()
+  const decoder = new TextDecoder()
+  const chunks: string[] = []
+  let byteLength = 0
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) {
+        break
+      }
+
+      byteLength += value.length
+      if (byteLength > maxBytes) {
+        try {
+          await reader.cancel()
+        } catch (_error) {
+          // Ignore cancellation errors if the stream is already closed.
+        }
+        return null
+      }
+
+      chunks.push(decoder.decode(value, { stream: true }))
+    }
+  } finally {
+    reader.releaseLock()
+  }
+
+  chunks.push(decoder.decode())
+  return { text: chunks.join(''), byteLength }
+}
+
+/**
+ * Sanitize one message part.
+ */
 function sanitizeMessagePart(part: unknown): {
   [key: string]: unknown
   type: string
@@ -89,20 +167,31 @@ function sanitizeMessagePart(part: unknown): {
   return safePart
 }
 
+/**
+ * Map model roles into the accepted role set.
+ */
 function normalizeRole(role: string): 'system' | 'user' | 'assistant' {
   if (role === 'assistant' || role === 'system') return role
   return 'user'
 }
 
+/**
+ * Sanitize raw user messages into the safe internal message shape.
+ *
+ * - Cap total messages at `AGENT_MAX_MESSAGES`.
+ * - Cap per-message parts at `AGENT_MAX_MESSAGE_PARTS`.
+ * - Clamp text fields to configured byte limits.
+ * - Drops malformed/empty messages.
+ */
 function sanitizeIncomingMessages(
   messages: unknown[] | undefined
-): SafeAgentMessage[] {
+): SanitizeIncomingMessagesResult {
   if (!Array.isArray(messages) || messages.length === 0) {
-    return []
+    return { ok: true, messages: [] }
   }
 
   if (messages.length > AGENT_MAX_MESSAGES) {
-    return []
+    return { ok: false, reason: 'too_many_messages' }
   }
 
   const sanitizedMessages = messages
@@ -141,7 +230,7 @@ function sanitizeIncomingMessages(
     })
     .filter((value): value is SafeAgentMessage => value !== null)
 
-  return sanitizedMessages
+  return { ok: true, messages: sanitizedMessages }
 }
 
 /**
@@ -210,11 +299,11 @@ export async function POST(request: Request) {
     }
   }
 
-  const requestPayloadBytes = new TextEncoder().encode(
-    await request.clone().text()
-  ).length
-
-  if (requestPayloadBytes > AGENT_MAX_REQUEST_SIZE_BYTES) {
+  const requestBodyResult = await readRequestBodyTextWithLimit(
+    request,
+    AGENT_MAX_REQUEST_SIZE_BYTES
+  )
+  if (requestBodyResult === null) {
     return new Response(
       JSON.stringify({
         error: {
@@ -226,28 +315,9 @@ export async function POST(request: Request) {
     )
   }
 
-  let body: {
-    message?: string
-    messages?: Array<
-      | { id: string; role: string; parts: Array<unknown> }
-      | { role: string; content: string; parts?: unknown[] }
-    >
-    hostId?: number
-    model?: string
-    disabledTools?: string[]
-  }
-
+  let body: AgentRequestBody
   try {
-    body = (await request.json()) as {
-      message?: string
-      messages?: Array<
-        | { id: string; role: string; parts: Array<unknown> }
-        | { role: string; content: string; parts?: unknown[] }
-      >
-      hostId?: number
-      model?: string
-      disabledTools?: string[]
-    }
+    body = JSON.parse(requestBodyResult.text) as AgentRequestBody
   } catch (_error) {
     return new Response(
       JSON.stringify({
@@ -265,12 +335,9 @@ export async function POST(request: Request) {
     console.log('[Agent API] Messages count:', body.messages?.length)
   }
 
-  const safeIncomingMessages = sanitizeIncomingMessages(body.messages)
+  const safeIncomingMessagesResult = sanitizeIncomingMessages(body.messages)
 
-  if (
-    Array.isArray(body.messages) &&
-    body.messages.length > AGENT_MAX_MESSAGES
-  ) {
+  if (!safeIncomingMessagesResult.ok) {
     return new Response(
       JSON.stringify({
         error: {
@@ -281,6 +348,8 @@ export async function POST(request: Request) {
       { status: 400, headers: { 'content-type': 'application/json' } }
     )
   }
+
+  const safeIncomingMessages = safeIncomingMessagesResult.messages
 
   if (
     Array.isArray(body.messages) &&
@@ -335,7 +404,10 @@ export async function POST(request: Request) {
     )
   }
 
-  const hostId = typeof body.hostId === 'number' ? Math.max(0, body.hostId) : 0
+  const hostId =
+    typeof body.hostId === 'number' && Number.isFinite(body.hostId)
+      ? Math.max(0, Math.trunc(body.hostId))
+      : 0
   const model =
     typeof body.model === 'string' && body.model.trim().length > 0
       ? body.model
@@ -450,9 +522,7 @@ export async function POST(request: Request) {
       writer.merge(
         createJsonRenderPatchGuardStream(
           pipeJsonRender(result.toUIMessageStream())
-        ) as unknown as ReadableStream<
-          InferUIMessageChunk<UIMessage<unknown, UIDataTypes, UITools>>
-        >
+        )
       )
       await result.consumeStream()
     },

@@ -6,6 +6,7 @@ import { RefreshCwIcon } from 'lucide-react'
 
 import type { Spec } from '@json-render/core'
 import type { UIMessage } from 'ai'
+import { ErrorBoundary } from 'react-error-boundary'
 
 import {
   type DataPart,
@@ -50,6 +51,8 @@ import {
 } from '@/lib/ai/agent/json-render-catalog'
 import { AGENT_JSON_RENDER_REGISTRY } from '@/lib/ai/agent/json-render-registry'
 
+const jsonRenderTextEncoder = new TextEncoder()
+
 interface ChatMessageProps {
   readonly message: UIMessage
   readonly isLastUserMessage?: boolean
@@ -68,6 +71,11 @@ type SafeJsonRenderResult = {
   parseError: string | null
 }
 
+type SafeByteLengthCache = {
+  readonly objectCache: WeakMap<object, number>
+  readonly primitiveCache: Map<string, number>
+}
+
 function getSafeJsonRenderMessageParts(parts: readonly unknown[]): DataPart[] {
   return parts.filter(
     (part): part is DataPart =>
@@ -80,10 +88,37 @@ function getSafeJsonRenderMessageParts(parts: readonly unknown[]): DataPart[] {
 
 function safeCalculateByteLength(value: unknown): number {
   try {
-    return new TextEncoder().encode(JSON.stringify(value)).length
+    return jsonRenderTextEncoder.encode(JSON.stringify(value)).length
   } catch (_error) {
     return Number.POSITIVE_INFINITY
   }
+}
+
+function safeCalculateByteLengthWithCache(
+  value: unknown,
+  cache: SafeByteLengthCache
+): number {
+  if (typeof value === 'object' && value !== null) {
+    const cached = cache.objectCache.get(value)
+    if (cached !== undefined) {
+      return cached
+    }
+
+    const next = safeCalculateByteLength(value)
+    cache.objectCache.set(value, next)
+    return next
+  }
+
+  const key =
+    typeof value === 'string' ? `string:${value}` : String(value)
+  const cached = cache.primitiveCache.get(key)
+  if (cached !== undefined) {
+    return cached
+  }
+
+  const next = safeCalculateByteLength(value)
+  cache.primitiveCache.set(key, next)
+  return next
 }
 
 function countSpecElements(spec: Spec | null): number {
@@ -96,11 +131,23 @@ function countSpecElements(spec: Spec | null): number {
 }
 
 function getDataSpecByteLength(parts: readonly DataPart[]): number {
+  const safeCache: SafeByteLengthCache = {
+    objectCache: new WeakMap(),
+    primitiveCache: new Map(),
+  }
+
   return parts
     .filter((part) => part.type === 'data-spec')
-    .reduce((total, part) => total + safeCalculateByteLength(part.data), 0)
+    .reduce(
+      (total, part) =>
+        total + safeCalculateByteLengthWithCache(part.data, safeCache),
+      0
+    )
 }
 
+/**
+ * Validate and sanitize parsed json-render inline UI specs.
+ */
 export function validateAndSanitizeSpecFromParts(
   parts: readonly DataPart[],
   parsed: { spec: Spec | null; text: string; hasSpec: boolean }
@@ -202,16 +249,18 @@ function useSafeJsonRenderMessage(
   const dataParts = useMemo(() => getSafeJsonRenderMessageParts(parts), [parts])
   const parsed = useJsonRenderMessage(dataParts)
 
-  try {
-    return validateAndSanitizeSpecFromParts(dataParts, parsed)
-  } catch (_error) {
-    return {
-      hasSpec: false,
-      spec: null,
-      text: getTextFromParts(dataParts),
-      parseError: 'Unable to parse inline UI payload.',
+  return useMemo(() => {
+    try {
+      return validateAndSanitizeSpecFromParts(dataParts, parsed)
+    } catch (_error) {
+      return {
+        hasSpec: false,
+        spec: null,
+        text: getTextFromParts(dataParts),
+        parseError: 'Unable to parse inline UI payload.',
+      }
     }
-  }
+  }, [dataParts, parsed.hasSpec, parsed.spec, parsed.text])
 }
 
 function renderJsonSpec({
@@ -221,17 +270,15 @@ function renderJsonSpec({
   readonly spec: Spec
   readonly isStreaming: boolean
 }) {
-  try {
-    return (
+  return (
+    <ErrorBoundary fallbackRender={() => null}>
       <Renderer
         spec={spec}
         registry={AGENT_JSON_RENDER_REGISTRY}
         loading={isStreaming}
       />
-    )
-  } catch (_error) {
-    return null
-  }
+    </ErrorBoundary>
+  )
 }
 
 export function hasMeaningfulContent(message: UIMessage): boolean {
@@ -559,14 +606,7 @@ export function ChatMessage({
   const isAssistant = message.role === 'assistant'
   const jsonRender = useSafeJsonRenderMessage(message.parts)
   const safeParts = useMemo(
-    () =>
-      message.parts.filter(
-        (part) =>
-          typeof part === 'object' &&
-          part !== null &&
-          'type' in part &&
-          typeof (part as { type: unknown }).type === 'string'
-      ),
+    () => getSafeJsonRenderMessageParts(message.parts),
     [message.parts]
   )
 
@@ -638,18 +678,18 @@ export function ChatMessage({
             return null
           })}
 
-          {isAssistant && jsonRender.hasSpec && jsonRender.spec && (
+          {isAssistant && (jsonRender.hasSpec || jsonRender.parseError) && (
             <div className="mt-2">
-              {renderJsonSpec({
-                spec: jsonRender.spec,
-                isStreaming: !!isStreaming,
-              })}
-            </div>
-          )}
-
-          {isAssistant && jsonRender.parseError && (
-            <div className="mt-2 rounded border border-yellow-200/40 bg-yellow-50/40 p-2 text-xs text-yellow-800 dark:border-yellow-900/50 dark:bg-yellow-950/30 dark:text-yellow-200">
-              {jsonRender.parseError}
+              {jsonRender.hasSpec && jsonRender.spec ? (
+                renderJsonSpec({
+                  spec: jsonRender.spec,
+                  isStreaming: !!isStreaming,
+                })
+              ) : (
+                <div className="rounded border border-yellow-200/40 bg-yellow-50/40 p-2 text-xs text-yellow-800 dark:border-yellow-900/50 dark:bg-yellow-950/30 dark:text-yellow-200">
+                  {jsonRender.parseError}
+                </div>
+              )}
             </div>
           )}
 
