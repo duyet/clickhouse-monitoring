@@ -12,6 +12,7 @@
  */
 
 import type { LanguageModelUsage } from 'ai'
+import { timingSafeEqual } from 'node:crypto'
 
 import { createAgentUIStreamResponse } from 'ai'
 import { createClickHouseAgent } from '@/lib/ai/agent'
@@ -23,10 +24,47 @@ export const dynamic = 'force-dynamic'
 
 const AGENT_DEBUG_LOGS = process.env.NODE_ENV !== 'production'
 
+function isAuthorized(request: Request): boolean {
+  const expectedToken = process.env.AGENT_API_TOKEN
+  if (!expectedToken) {
+    return false
+  }
+
+  const authHeader = request.headers.get('authorization')
+  if (!authHeader?.startsWith('Bearer ')) {
+    return false
+  }
+
+  const providedToken = authHeader.slice('Bearer '.length)
+  const expectedBuffer = Buffer.from(expectedToken, 'utf8')
+  const providedBuffer = Buffer.from(providedToken, 'utf8')
+
+  if (expectedBuffer.length !== providedBuffer.length) {
+    return false
+  }
+
+  return timingSafeEqual(expectedBuffer, providedBuffer)
+}
+
 /**
  * Handle POST requests for agent processing with streaming
  */
 export async function POST(request: Request) {
+  if (!isAuthorized(request)) {
+    return new Response(
+      JSON.stringify({
+        error: { message: 'Unauthorized' },
+      }),
+      {
+        status: 401,
+        headers: {
+          'content-type': 'application/json',
+          'www-authenticate': 'Bearer',
+        },
+      }
+    )
+  }
+
   // Parse request body
   const body = (await request.json()) as {
     message?: string
