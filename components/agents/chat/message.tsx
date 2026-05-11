@@ -3,10 +3,10 @@
 'use no memo'
 
 import { RefreshCwIcon } from 'lucide-react'
+import { ErrorBoundary } from 'react-error-boundary'
 
 import type { Spec } from '@json-render/core'
 import type { UIMessage } from 'ai'
-import { ErrorBoundary } from 'react-error-boundary'
 
 import {
   type DataPart,
@@ -109,8 +109,7 @@ function safeCalculateByteLengthWithCache(
     return next
   }
 
-  const key =
-    typeof value === 'string' ? `string:${value}` : String(value)
+  const key = typeof value === 'string' ? `string:${value}` : String(value)
   const cached = cache.primitiveCache.get(key)
   if (cached !== undefined) {
     return cached

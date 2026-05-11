@@ -168,7 +168,10 @@ describe('POST /api/v1/agent', () => {
 
         let result: ReadableStreamReadResult<unknown>
         try {
-          result = (await Promise.race([reader.read(), timeout])) as ReadableStreamReadResult<unknown>
+          result = (await Promise.race([
+            reader.read(),
+            timeout,
+          ])) as ReadableStreamReadResult<unknown>
         } catch (error) {
           if (timeoutId) {
             clearTimeout(timeoutId)

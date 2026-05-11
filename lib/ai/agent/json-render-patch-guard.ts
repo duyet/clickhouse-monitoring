@@ -23,7 +23,11 @@ const AGENT_JSON_RENDER_ALLOWED_COMPONENTS = new Set([
   'Skeleton',
   'Spinner',
 ])
-const DANGEROUS_POINTER_SEGMENTS = new Set(['__proto__', 'prototype', 'constructor'])
+const DANGEROUS_POINTER_SEGMENTS = new Set([
+  '__proto__',
+  'prototype',
+  'constructor',
+])
 const ALLOWED_PATCH_OPS = new Set([
   'add',
   'remove',
@@ -260,9 +264,14 @@ export function createJsonRenderPatchGuardStream<T>(
             return
           }
 
-          if (!hasAllowedComponents(specData.spec) || !('root' in specData.spec)) {
+          if (
+            !hasAllowedComponents(specData.spec) ||
+            !('root' in specData.spec)
+          ) {
             if (DEBUG_PATCH_GUARD) {
-              console.debug('[json-render] Dropped spec chunk: blocked component/root')
+              console.debug(
+                '[json-render] Dropped spec chunk: blocked component/root'
+              )
             }
 
             return
@@ -278,7 +287,10 @@ export function createJsonRenderPatchGuardStream<T>(
         }
       } catch (_error) {
         if (DEBUG_PATCH_GUARD) {
-          console.debug('[json-render] Dropped spec chunk: apply failed', _error)
+          console.debug(
+            '[json-render] Dropped spec chunk: apply failed',
+            _error
+          )
         }
 
         return
