@@ -19,7 +19,7 @@ concurrency:
 permissions:
   contents: read
   id-token: write
-  packages: read
+  packages: write
 
 env:
   REGISTRY: ghcr.io
@@ -53,9 +53,6 @@ jobs:
   build-docker-amd64:
     name: build-docker-amd64
     if: github.event_name != 'pull_request'
-    permissions:
-      contents: read
-      packages: write
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
@@ -66,9 +63,6 @@ jobs:
   build-docker-arm64:
     name: build-docker-arm64
     if: github.event_name != 'pull_request'
-    permissions:
-      contents: read
-      packages: write
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
