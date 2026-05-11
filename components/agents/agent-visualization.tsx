@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import {
   type ChartConfig,
   ChartContainer,
+  sanitizeChartConfigKey,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
@@ -460,7 +461,7 @@ function BarChartView({
           <Bar
             key={key}
             dataKey={key}
-            fill={`var(--color-${key})`}
+            fill={`var(--color-${sanitizeChartConfigKey(key)})`}
             radius={[2, 2, 0, 0]}
             stackId={stacked ? 'stack' : undefined}
           />
@@ -539,7 +540,7 @@ function ComboChartView({
             key={key}
             yAxisId="left"
             dataKey={key}
-            fill={`var(--color-${key})`}
+            fill={`var(--color-${sanitizeChartConfigKey(key)})`}
             radius={[2, 2, 0, 0]}
           />
         ))}
@@ -549,7 +550,7 @@ function ComboChartView({
             yAxisId="right"
             type="monotone"
             dataKey={key}
-            stroke={`var(--color-${key})`}
+            stroke={`var(--color-${sanitizeChartConfigKey(key)})`}
             strokeWidth={2}
             dot={false}
           />
