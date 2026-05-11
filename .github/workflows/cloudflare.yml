@@ -21,7 +21,8 @@ permissions:
 
 jobs:
   # ──────────────────────────────────────────────────────────────────────────
-  # Preview: deploy on every PR so reviewers can test changes live
+  # Preview: disabled for pull_request events to avoid exposing secrets
+  # in public preview environments.
   # ──────────────────────────────────────────────────────────────────────────
   preview:
     name: preview
