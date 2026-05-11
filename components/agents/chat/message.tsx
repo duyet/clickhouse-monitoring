@@ -42,13 +42,13 @@ import '../markdown-code.css'
 
 import { MermaidRenderer } from './mermaid-renderer'
 import { type AgentToolPart, ToolCallPart } from './tool-output'
-import { AGENT_JSON_RENDER_CATALOG } from '@/lib/ai/agent/json-render-catalog-with-schema'
 import {
   AGENT_JSON_RENDER_MAX_ELEMENT_COUNT,
   AGENT_JSON_RENDER_MAX_SPEC_BYTES,
   AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES,
   AGENT_JSON_RENDER_MAX_SPEC_PARTS,
 } from '@/lib/ai/agent/json-render-catalog'
+import { AGENT_JSON_RENDER_CATALOG } from '@/lib/ai/agent/json-render-catalog-with-schema'
 import { AGENT_JSON_RENDER_REGISTRY } from '@/lib/ai/agent/json-render-registry'
 
 const jsonRenderTextEncoder = new TextEncoder()
