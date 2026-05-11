@@ -40,8 +40,14 @@ jobs:
 
       - name: Extract release metadata
         id: release_meta
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
         run: |
-          TAG="${{ github.event.release.tag_name || inputs.tag || github.ref_name }}"
+          TAG="$RELEASE_TAG"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release tag: $TAG" >&2
+            exit 1
+          fi
           VERSION="${TAG#v}"
           MAJOR="${VERSION%%.*}"
           MINOR="$(echo "$VERSION" | cut -d. -f1,2)"
@@ -126,8 +132,14 @@ jobs:
 
       - name: Extract release metadata
         id: meta
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
         run: |
-          TAG="${{ github.event.release.tag_name || inputs.tag || github.ref_name }}"
+          TAG="$RELEASE_TAG"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release tag: $TAG" >&2
+            exit 1
+          fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "RELEASE_TAG=$TAG" >> "$GITHUB_ENV"
 
