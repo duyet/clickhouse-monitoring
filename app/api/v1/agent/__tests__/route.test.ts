@@ -146,6 +146,21 @@ describe('POST /api/v1/agent', () => {
       expect(response.headers.get('www-authenticate')).toBe('Bearer')
     })
 
+    test('accepts lowercase bearer token scheme', async () => {
+      const request = new Request('http://localhost:3000/api/v1/agent', {
+        method: 'POST',
+        headers: { authorization: 'bearer test-agent-token' },
+        body: JSON.stringify({
+          message: 'Show me all databases',
+          hostId: 0,
+        }),
+      })
+
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+    })
+
     test('returns 400 when message is missing', async () => {
       const request = createAgentRequest({
         method: 'POST',

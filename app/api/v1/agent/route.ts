@@ -24,6 +24,11 @@ export const dynamic = 'force-dynamic'
 
 const AGENT_DEBUG_LOGS = process.env.NODE_ENV !== 'production'
 
+/**
+ * Validate the request's Authorization header against `AGENT_API_TOKEN` using a
+ * constant-time comparison. Returns `false` when env token, scheme, or token
+ * format is missing or mismatched.
+ */
 function isAuthorized(request: Request): boolean {
   const expectedToken = process.env.AGENT_API_TOKEN
   if (!expectedToken) {
@@ -31,11 +36,16 @@ function isAuthorized(request: Request): boolean {
   }
 
   const authHeader = request.headers.get('authorization')
-  if (!authHeader?.startsWith('Bearer ')) {
+  const parts = authHeader?.split(/\s+/)
+  if (
+    !parts ||
+    parts.length < 2 ||
+    parts[0]?.toLowerCase() !== 'bearer'
+  ) {
     return false
   }
 
-  const providedToken = authHeader.slice('Bearer '.length)
+  const providedToken = parts.slice(1).join(' ')
   const expectedBuffer = Buffer.from(expectedToken, 'utf8')
   const providedBuffer = Buffer.from(providedToken, 'utf8')
 
