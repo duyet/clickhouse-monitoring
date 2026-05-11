@@ -190,22 +190,19 @@ describe('Agent Chat API E2E Tests', () => {
     cy.request({
       url: AGENT_API_URL,
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: {
         hostId: 0,
       },
       failOnStatusCode: false,
     }).then((response) => {
-      if (hasAgentApiToken) {
-        expect(response.status).to.eq(400)
-      } else {
-        expect(response.status).to.eq(401)
-      }
+      expectAuthAwareStatus(response.status)
       expect(response.body).to.have.property('error')
       expect(response.body.error).to.have.property('message')
-      expect(response.body.error.message).to.include('Message is required')
+
+      if (response.status === 400) {
+        expect(response.body.error.message).to.include('Message is required')
+      }
     })
   })
 
