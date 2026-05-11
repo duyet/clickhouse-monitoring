@@ -5,6 +5,30 @@
 
 describe('Agent Chat API E2E Tests', () => {
   const AGENT_API_URL = '/api/v1/agent'
+  const AGENT_API_TOKEN = Cypress.env('AGENT_API_TOKEN')
+  const hasAgentApiToken = Boolean(AGENT_API_TOKEN)
+
+  const getAuthHeaders = () => {
+    if (!hasAgentApiToken) {
+      return {
+        'Content-Type': 'application/json',
+      }
+    }
+
+    return {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${AGENT_API_TOKEN}`,
+    }
+  }
+
+  const expectAuthAwareStatus = (status: number) => {
+    if (hasAgentApiToken) {
+      expect(status).to.not.eq(400)
+      return
+    }
+
+    expect(status).to.eq(401)
+  }
 
   /**
    * Test: Basic message format validation
@@ -16,9 +40,7 @@ describe('Agent Chat API E2E Tests', () => {
     cy.request({
       url: AGENT_API_URL,
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: {
         message: testMessage,
         hostId: 0,
@@ -26,9 +48,7 @@ describe('Agent Chat API E2E Tests', () => {
       // Don't fail on 4xx/5xx - we want to assert on response
       failOnStatusCode: false,
     }).then((response) => {
-      // Response should be successful (or at least not a 400 format error)
-      // Note: If LLM is not configured, we might get a 500, but NOT a 400 format error
-      expect(response.status).to.not.eq(400)
+      expectAuthAwareStatus(response.status)
 
       // If we get a success response, validate headers
       if (response.status === 200) {
@@ -61,9 +81,7 @@ describe('Agent Chat API E2E Tests', () => {
     cy.request({
       url: AGENT_API_URL,
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: {
         messages: [
           {
@@ -82,7 +100,7 @@ describe('Agent Chat API E2E Tests', () => {
       failOnStatusCode: false,
     }).then((response) => {
       // Should not get 400 format error
-      expect(response.status).to.not.eq(400)
+      expectAuthAwareStatus(response.status)
 
       // Validate no format-specific errors
       if (response.body?.error) {
@@ -105,9 +123,7 @@ describe('Agent Chat API E2E Tests', () => {
     cy.request({
       url: AGENT_API_URL,
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: {
         messages: [
           {
@@ -131,7 +147,7 @@ describe('Agent Chat API E2E Tests', () => {
       failOnStatusCode: false,
     }).then((response) => {
       // Should not get 400 format error
-      expect(response.status).to.not.eq(400)
+      expectAuthAwareStatus(response.status)
 
       // Validate no format-specific errors
       if (response.body?.error) {
@@ -150,9 +166,7 @@ describe('Agent Chat API E2E Tests', () => {
     cy.request({
       url: AGENT_API_URL,
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: {
         messages: [
           {
@@ -165,7 +179,7 @@ describe('Agent Chat API E2E Tests', () => {
       failOnStatusCode: false,
     }).then((response) => {
       // Should not get 400 format error
-      expect(response.status).to.not.eq(400)
+      expectAuthAwareStatus(response.status)
     })
   })
 
@@ -184,7 +198,11 @@ describe('Agent Chat API E2E Tests', () => {
       },
       failOnStatusCode: false,
     }).then((response) => {
-      expect(response.status).to.eq(400)
+      if (hasAgentApiToken) {
+        expect(response.status).to.eq(400)
+      } else {
+        expect(response.status).to.eq(401)
+      }
       expect(response.body).to.have.property('error')
       expect(response.body.error).to.have.property('message')
       expect(response.body.error.message).to.include('Message is required')
@@ -206,12 +224,10 @@ describe('Agent Chat API E2E Tests', () => {
       cy.request({
         url: AGENT_API_URL,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: {
-          message: 'test',
-          hostId: 0,
+      headers: getAuthHeaders(),
+      body: {
+        message: 'test',
+        hostId: 0,
         },
         failOnStatusCode: false,
       }).then((response) => {

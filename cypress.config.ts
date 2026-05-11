@@ -33,6 +33,8 @@ export default defineConfig({
 
       // The config object must be returned for Cypress to pick up
       // any changed environment variables
+      config.env ??= {}
+      config.env.AGENT_API_TOKEN = process.env.AGENT_API_TOKEN ?? ''
       return config
     },
   },

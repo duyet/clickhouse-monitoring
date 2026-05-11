@@ -12,7 +12,7 @@
  */
 
 import type { LanguageModelUsage } from 'ai'
-import { timingSafeEqual } from 'node:crypto'
+import { createHash, timingSafeEqual } from 'node:crypto'
 
 import { createAgentUIStreamResponse } from 'ai'
 import { createClickHouseAgent } from '@/lib/ai/agent'
@@ -23,15 +23,23 @@ import { classifyError } from '@/lib/ai/agent/errors'
 export const dynamic = 'force-dynamic'
 
 const AGENT_DEBUG_LOGS = process.env.NODE_ENV !== 'production'
+const EXPECTED_TOKEN_HASH = process.env.AGENT_API_TOKEN
+  ? createHash('sha256').update(process.env.AGENT_API_TOKEN).digest()
+  : null
 
 /**
- * Validate the request's Authorization header against `AGENT_API_TOKEN` using a
- * constant-time comparison. Returns `false` when env token, scheme, or token
- * format is missing or mismatched.
+ * Validate the request's Authorization header against `AGENT_API_TOKEN`.
+ *
+ * @param request - Incoming HTTP request containing an Authorization header.
+ * @returns `true` when `request` contains a valid Bearer token matching
+ * `AGENT_API_TOKEN`, otherwise `false`.
+ *
+ * Uses SHA-256 + `timingSafeEqual` to keep response timing consistent for
+ * token comparisons and avoid leaking raw token length differences.
+ * Returns `false` when the token is missing, malformed, or mismatched.
  */
 function isAuthorized(request: Request): boolean {
-  const expectedToken = process.env.AGENT_API_TOKEN
-  if (!expectedToken) {
+  if (!EXPECTED_TOKEN_HASH) {
     return false
   }
 
@@ -46,14 +54,11 @@ function isAuthorized(request: Request): boolean {
   }
 
   const providedToken = parts.slice(1).join(' ')
-  const expectedBuffer = Buffer.from(expectedToken, 'utf8')
-  const providedBuffer = Buffer.from(providedToken, 'utf8')
+  const providedTokenHash = createHash('sha256')
+    .update(providedToken)
+    .digest()
 
-  if (expectedBuffer.length !== providedBuffer.length) {
-    return false
-  }
-
-  return timingSafeEqual(expectedBuffer, providedBuffer)
+  return timingSafeEqual(EXPECTED_TOKEN_HASH, providedTokenHash)
 }
 
 /**
