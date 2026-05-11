@@ -64,10 +64,11 @@ describe('POST /api/v1/agent', () => {
   let POST: (request: Request) => Promise<Response>
 
   beforeAll(async () => {
+    process.env.AGENT_API_TOKEN = AGENT_API_TOKEN
+
     // Import after mocks are set up
     const route = await import('../route')
     POST = route.POST
-    process.env.AGENT_API_TOKEN = AGENT_API_TOKEN
   })
 
   describe('UIMessage format handling', () => {
