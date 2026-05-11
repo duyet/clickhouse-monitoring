@@ -24,9 +24,9 @@ import { Button } from '@/components/ui/button'
 import {
   type ChartConfig,
   ChartContainer,
-  sanitizeChartConfigKey,
   ChartTooltip,
   ChartTooltipContent,
+  sanitizeChartConfigKey,
 } from '@/components/ui/chart'
 import {
   Select,

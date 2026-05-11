@@ -69,7 +69,10 @@ export function ActionItem<TData extends RowData, TValue>({
     },
     'analyze-with-ai': {
       label: 'Analyze with AI',
-      handler: async () => ({ success: true, message: `/agents?host=${hostId}` }),
+      handler: async () => ({
+        success: true,
+        message: `/agents?host=${hostId}`,
+      }),
     },
     optimize: {
       label: 'Optimize Table',

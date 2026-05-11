@@ -71,7 +71,6 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = 'Chart'
 
-
 export function sanitizeChartConfigKey(key: string): string {
   return (
     key

@@ -2,8 +2,6 @@
  * Tests for the overview page charts configuration
  */
 
-import type React from 'react'
-
 import { describe, expect, it, mock } from 'bun:test'
 
 type OverviewChartConfig = {
@@ -22,15 +20,6 @@ type OverviewTabConfig = {
   gridClassName: string
   charts: OverviewChartConfig[]
 }
-
-mock.module('swr', () => ({
-  default: mock(() => ({})),
-  mutate: mock(() => Promise.resolve()),
-  preload: mock(() => Promise.resolve()),
-  SWRConfig: ({ children }: { children: React.ReactNode }) => children,
-  useSWRConfig: mock(() => ({ mutate: mock(() => Promise.resolve()) })),
-  unstable_serialize: mock((key: unknown) => JSON.stringify(key)),
-}))
 
 mock.module('@/lib/swr', () => ({
   useChartData: mock(() => ({
