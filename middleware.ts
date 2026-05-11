@@ -11,9 +11,7 @@ export async function middleware(request: Request) {
     return NextResponse.next()
   }
 
-  const headerToken =
-    getBearerToken(request.headers.get('authorization')) ||
-    request.headers.get('x-api-key')
+  const headerToken = getBearerToken(request.headers.get('authorization'))
 
   if (!headerToken) {
     return NextResponse.json({ error: 'API key required' }, { status: 401 })
