@@ -107,6 +107,23 @@ export const GET = withApiHandler(async (request: Request) => {
     timezone,
   })
 
+  // SECURITY: Validate GET query against dashboard allowlist to prevent
+  // arbitrary SQL execution through query-string requests.
+  const validationResult = await validateDashboardQuery(query, hostId)
+  if (!validationResult.valid) {
+    error('[GET /api/v1/data] Security: Query not found in dashboard tables', {
+      queryPreview: query.substring(0, 100),
+    })
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.PermissionError,
+        message: validationResult.error?.message || 'Query validation failed',
+      },
+      403,
+      { ...ROUTE_CONTEXT, method: 'GET', hostId }
+    )
+  }
+
   // Execute the query
   const result = await fetchData({
     query,
