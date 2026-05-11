@@ -100,7 +100,6 @@ jobs:
           echo '${{ secrets.CLICKHOUSE_PASSWORD }}' | npx wrangler secret put CLICKHOUSE_PASSWORD --env preview
           echo '${{ secrets.LLM_API_KEY }}' | npx wrangler secret put LLM_API_KEY --env preview
           echo '${{ secrets.LLM_API_BASE }}' | npx wrangler secret put LLM_API_BASE --env preview
-          echo '${{ secrets.LLM_MODEL }}' | npx wrangler secret put LLM_MODEL --env preview
           echo '${{ secrets.CLERK_SECRET_KEY_TEST }}' | npx wrangler secret put CLERK_SECRET_KEY --env preview
           echo '${{ secrets.CLICKHOUSE_TZ || 'UTC' }}' | npx wrangler secret put CLICKHOUSE_TZ --env preview
           echo '${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}' | npx wrangler secret put CLICKHOUSE_EXCLUDE_USER_DEFAULT --env preview
