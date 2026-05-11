@@ -71,6 +71,17 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = 'Chart'
 
+
+export function sanitizeChartConfigKey(key: string): string {
+  return (
+    key
+      .replace(/[()[\]{}]/g, '')
+      .replace(/[^a-zA-Z0-9_-]/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .replace(/-+/g, '-') || 'unnamed'
+  )
+}
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([, config]) => config.theme || config.color
@@ -92,7 +103,8 @@ ${colorConfig
     const color =
       itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
       itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
+    const safeKey = sanitizeChartConfigKey(key)
+    return color ? `  --color-${safeKey}: ${color};` : null
   })
   .join('\n')}
 }
