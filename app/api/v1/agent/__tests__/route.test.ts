@@ -48,10 +48,24 @@ mock.module('ai', () => ({
 }))
 
 describe('POST /api/v1/agent', () => {
+  const AGENT_API_TOKEN = 'test-agent-token'
+
+  const createAgentRequest = (init: RequestInit) => {
+    const headers = new Headers(init.headers)
+    headers.set('authorization', `Bearer ${AGENT_API_TOKEN}`)
+
+    return new Request('http://localhost:3000/api/v1/agent', {
+      ...init,
+      headers,
+    })
+  }
+
   // We need to dynamically import the route handler after mocking
   let POST: (request: Request) => Promise<Response>
 
   beforeAll(async () => {
+    process.env.AGENT_API_TOKEN = AGENT_API_TOKEN
+
     // Import after mocks are set up
     const route = await import('../route')
     POST = route.POST
@@ -59,7 +73,7 @@ describe('POST /api/v1/agent', () => {
 
   describe('UIMessage format handling', () => {
     test('accepts UIMessage format with id and parts', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           messages: [
@@ -82,7 +96,7 @@ describe('POST /api/v1/agent', () => {
     })
 
     test('accepts backward compatible message format', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           message: 'Show me all databases',
@@ -96,7 +110,7 @@ describe('POST /api/v1/agent', () => {
     })
 
     test('handles both message and messages formats', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           message: 'Test',
@@ -118,8 +132,38 @@ describe('POST /api/v1/agent', () => {
   })
 
   describe('validation', () => {
-    test('returns 400 when message is missing', async () => {
+    test('returns 401 when Authorization header is missing', async () => {
       const request = new Request('http://localhost:3000/api/v1/agent', {
+        method: 'POST',
+        body: JSON.stringify({
+          message: 'Show me all databases',
+          hostId: 0,
+        }),
+      })
+
+      const response = await POST(request)
+
+      expect(response.status).toBe(401)
+      expect(response.headers.get('www-authenticate')).toBe('Bearer')
+    })
+
+    test('accepts lowercase bearer token scheme', async () => {
+      const request = new Request('http://localhost:3000/api/v1/agent', {
+        method: 'POST',
+        headers: { authorization: 'bearer test-agent-token' },
+        body: JSON.stringify({
+          message: 'Show me all databases',
+          hostId: 0,
+        }),
+      })
+
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+    })
+
+    test('returns 400 when message is missing', async () => {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           messages: [],
@@ -135,7 +179,7 @@ describe('POST /api/v1/agent', () => {
     })
 
     test('returns 400 when message is not a string', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           message: 123,
@@ -151,7 +195,7 @@ describe('POST /api/v1/agent', () => {
     })
 
     test('returns 400 when message is empty string', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           message: '   ',
@@ -167,7 +211,7 @@ describe('POST /api/v1/agent', () => {
 
   describe('hostId handling', () => {
     test('uses provided hostId', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           message: 'Test',
@@ -181,7 +225,7 @@ describe('POST /api/v1/agent', () => {
     })
 
     test('defaults to hostId 0 when not provided', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           message: 'Test',
@@ -194,7 +238,7 @@ describe('POST /api/v1/agent', () => {
     })
 
     test('handles non-number hostId by defaulting to 0', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           message: 'Test',
@@ -210,7 +254,7 @@ describe('POST /api/v1/agent', () => {
 
   describe('model configuration', () => {
     test('passes model to agent factory', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           message: 'Test',
@@ -227,7 +271,7 @@ describe('POST /api/v1/agent', () => {
 
   describe('response format', () => {
     test('returns SSE stream with correct headers', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           messages: [
@@ -251,7 +295,7 @@ describe('POST /api/v1/agent', () => {
     })
 
     test('returns JSON error response for validation failures', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           message: '',
@@ -267,7 +311,7 @@ describe('POST /api/v1/agent', () => {
 
   describe('error handling', () => {
     test('handles malformed JSON', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: 'invalid json',
       })
@@ -279,7 +323,7 @@ describe('POST /api/v1/agent', () => {
 
   describe('UIMessage parts extraction', () => {
     test('extracts text from parts array', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           messages: [
@@ -302,7 +346,7 @@ describe('POST /api/v1/agent', () => {
     })
 
     test('handles missing text part in parts array', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
+      const request = createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           messages: [
