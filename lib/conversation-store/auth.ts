@@ -1,10 +1,9 @@
 /**
  * Authentication utilities for conversation store.
- *
- * Handles user ID resolution with graceful fallback to guest mode.
  */
 
 import { auth } from '@clerk/nextjs/server'
+import { ConversationStoreError } from './types'
 
 /**
  * Guest user ID constant for unauthenticated users.
@@ -19,39 +18,43 @@ const CLERK_SECRET_KEY = 'CLERK_SECRET_KEY'
 /**
  * Resolves the current user ID from Clerk authentication.
  *
- * Falls back to guest mode if:
- * - Clerk is not configured (missing CLERK_SECRET_KEY)
- * - No authenticated user session
- * - Authentication service throws an error
- *
- * @returns Promise resolving to userId string or GUEST_USER_ID
- *
- * @example
- * ```ts
- * const userId = await resolveUserId()
- * if (userId === GUEST_USER_ID) {
- *   // Handle guest user
- * }
- * ```
+ * Conversation DB endpoints must be authenticated to guarantee user isolation.
+ * This function fails closed when Clerk is unavailable, missing a session,
+ * or returns an auth error.
  */
 export async function resolveUserId(): Promise<string> {
-  // Check if Clerk is configured
   if (!process.env[CLERK_SECRET_KEY]) {
-    return GUEST_USER_ID
+    throw new ConversationStoreError(
+      'Authentication is required for conversation storage.',
+      'UNAUTHORIZED'
+    )
   }
 
   try {
     const authResult = await auth()
     const userId = authResult?.userId
 
-    return userId || GUEST_USER_ID
+    if (!userId) {
+      throw new ConversationStoreError(
+        'Authentication is required for conversation storage.',
+        'UNAUTHORIZED'
+      )
+    }
+
+    return userId
   } catch (error) {
-    // Log error in development, but fail silently in production
+    if (error instanceof ConversationStoreError) {
+      throw error
+    }
+
     if (process.env.NODE_ENV === 'development') {
       console.error('Auth resolution failed:', error)
     }
 
-    // Fallback to guest mode on any auth error
-    return GUEST_USER_ID
+    throw new ConversationStoreError(
+      'Failed to validate authentication for conversation storage.',
+      'UNAUTHORIZED',
+      error
+    )
   }
 }
