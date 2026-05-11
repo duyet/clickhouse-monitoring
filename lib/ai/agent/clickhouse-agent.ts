@@ -85,6 +85,11 @@ export function createClickHouseAgent(options: {
    * These tools will be excluded from the agent's tool set.
    */
   disabledTools?: string[]
+
+  /**
+   * Optional system prompt override.
+   */
+  systemPrompt?: string
 }) {
   const {
     model = DEFAULT_MODEL,
@@ -93,6 +98,7 @@ export function createClickHouseAgent(options: {
     maxSteps = DEFAULT_MAX_STEPS,
     hostId,
     disabledTools = [],
+    systemPrompt = CLICKHOUSE_AGENT_INSTRUCTIONS,
   } = options
 
   // Detect if using OpenRouter by checking the baseURL or model name
@@ -168,7 +174,7 @@ export function createClickHouseAgent(options: {
       id: 'clickhouse-agent',
       model: modelInstance,
       tools,
-      instructions: CLICKHOUSE_AGENT_INSTRUCTIONS,
+      instructions: systemPrompt,
       stopWhen: stepCountIs(maxSteps),
     })
 
@@ -191,7 +197,7 @@ export function createClickHouseAgent(options: {
     id: 'clickhouse-agent',
     model: modelInstance,
     tools,
-    instructions: CLICKHOUSE_AGENT_INSTRUCTIONS,
+    instructions: systemPrompt,
     stopWhen: stepCountIs(maxSteps),
   })
 

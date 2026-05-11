@@ -4,8 +4,15 @@
 
 import { RefreshCwIcon } from 'lucide-react'
 
+import type { Spec } from '@json-render/core'
 import type { UIMessage } from 'ai'
 
+import {
+  type DataPart,
+  getTextFromParts,
+  Renderer,
+  useJsonRenderMessage,
+} from '@json-render/react'
 import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
@@ -34,6 +41,14 @@ import '../markdown-code.css'
 
 import { MermaidRenderer } from './mermaid-renderer'
 import { type AgentToolPart, ToolCallPart } from './tool-output'
+import {
+  AGENT_JSON_RENDER_CATALOG,
+  AGENT_JSON_RENDER_MAX_ELEMENT_COUNT,
+  AGENT_JSON_RENDER_MAX_SPEC_BYTES,
+  AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES,
+  AGENT_JSON_RENDER_MAX_SPEC_PARTS,
+} from '@/lib/ai/agent/json-render-catalog'
+import { AGENT_JSON_RENDER_REGISTRY } from '@/lib/ai/agent/json-render-registry'
 
 interface ChatMessageProps {
   readonly message: UIMessage
@@ -44,6 +59,179 @@ interface ChatMessageProps {
   readonly onRegenerate?: () => void
   readonly onSuggestionClick?: (suggestion: string) => void
   readonly onToolResult?: (toolCallId: string, result: string) => void
+}
+
+type SafeJsonRenderResult = {
+  hasSpec: boolean
+  spec: Spec | null
+  text: string
+  parseError: string | null
+}
+
+function getSafeJsonRenderMessageParts(parts: readonly unknown[]): DataPart[] {
+  return parts.filter(
+    (part): part is DataPart =>
+      typeof part === 'object' &&
+      part !== null &&
+      'type' in part &&
+      typeof (part as { type: unknown }).type === 'string'
+  )
+}
+
+function safeCalculateByteLength(value: unknown): number {
+  try {
+    return new TextEncoder().encode(JSON.stringify(value)).length
+  } catch (_error) {
+    return Number.POSITIVE_INFINITY
+  }
+}
+
+function countSpecElements(spec: Spec | null): number {
+  if (!spec || typeof spec !== 'object') return 0
+  if (!('elements' in spec) || spec.elements == null) return 0
+  if (typeof spec.elements !== 'object' || Array.isArray(spec.elements))
+    return 0
+
+  return Object.keys(spec.elements as Record<string, unknown>).length
+}
+
+function getDataSpecByteLength(parts: readonly DataPart[]): number {
+  return parts
+    .filter((part) => part.type === 'data-spec')
+    .reduce((total, part) => total + safeCalculateByteLength(part.data), 0)
+}
+
+export function validateAndSanitizeSpecFromParts(
+  parts: readonly DataPart[],
+  parsed: { spec: Spec | null; text: string; hasSpec: boolean }
+): SafeJsonRenderResult {
+  const text = parsed.text
+  if (!parsed.hasSpec || !parsed.spec) {
+    return { hasSpec: false, spec: null, text, parseError: null }
+  }
+
+  const jsonRenderParts = parts.filter((part) => part.type === 'data-spec')
+  const hasOversizeSpecPart = jsonRenderParts.some(
+    (part) =>
+      safeCalculateByteLength(part.data) > AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES
+  )
+
+  if (hasOversizeSpecPart) {
+    return {
+      hasSpec: false,
+      spec: null,
+      text,
+      parseError: `Inline UI patch data exceeded per-part limit (${AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES} bytes).`,
+    }
+  }
+
+  if (jsonRenderParts.length > AGENT_JSON_RENDER_MAX_SPEC_PARTS) {
+    return {
+      hasSpec: false,
+      spec: null,
+      text,
+      parseError: `Too many inline UI patches (${jsonRenderParts.length}).`,
+    }
+  }
+
+  const totalSpecPartBytes = getDataSpecByteLength(jsonRenderParts)
+  if (totalSpecPartBytes > AGENT_JSON_RENDER_MAX_SPEC_BYTES) {
+    return {
+      hasSpec: false,
+      spec: null,
+      text,
+      parseError: `Inline UI patch data exceeded limit (${totalSpecPartBytes} bytes).`,
+    }
+  }
+
+  const compiled = parsed.spec
+  const totalSpecBytes = safeCalculateByteLength(compiled)
+  const elementCount = countSpecElements(compiled)
+  if (totalSpecBytes > AGENT_JSON_RENDER_MAX_SPEC_BYTES) {
+    return {
+      hasSpec: false,
+      spec: null,
+      text,
+      parseError: `Generated UI spec is too large (${totalSpecBytes} bytes).`,
+    }
+  }
+
+  if (elementCount > AGENT_JSON_RENDER_MAX_ELEMENT_COUNT) {
+    return {
+      hasSpec: false,
+      spec: null,
+      text,
+      parseError: `Generated UI has too many elements (${elementCount}).`,
+    }
+  }
+
+  let validation: { success: boolean; data?: unknown }
+  try {
+    validation = AGENT_JSON_RENDER_CATALOG.validate(compiled)
+  } catch (_error) {
+    return {
+      hasSpec: false,
+      spec: null,
+      text,
+      parseError:
+        'Generated UI spec is invalid. Skipping inline rendering for safety.',
+    }
+  }
+
+  if (!validation.success) {
+    return {
+      hasSpec: false,
+      spec: null,
+      text,
+      parseError:
+        'Generated UI spec is invalid. Skipping inline rendering for safety.',
+    }
+  }
+
+  return {
+    hasSpec: true,
+    spec: (validation.data as Spec | null) ?? compiled,
+    text,
+    parseError: null,
+  }
+}
+
+function useSafeJsonRenderMessage(
+  parts: readonly unknown[]
+): SafeJsonRenderResult {
+  const dataParts = useMemo(() => getSafeJsonRenderMessageParts(parts), [parts])
+  const parsed = useJsonRenderMessage(dataParts)
+
+  try {
+    return validateAndSanitizeSpecFromParts(dataParts, parsed)
+  } catch (_error) {
+    return {
+      hasSpec: false,
+      spec: null,
+      text: getTextFromParts(dataParts),
+      parseError: 'Unable to parse inline UI payload.',
+    }
+  }
+}
+
+function renderJsonSpec({
+  spec,
+  isStreaming,
+}: {
+  readonly spec: Spec
+  readonly isStreaming: boolean
+}) {
+  try {
+    return (
+      <Renderer
+        spec={spec}
+        registry={AGENT_JSON_RENDER_REGISTRY}
+        loading={isStreaming}
+      />
+    )
+  } catch (_error) {
+    return null
+  }
 }
 
 export function hasMeaningfulContent(message: UIMessage): boolean {
@@ -369,6 +557,18 @@ export function ChatMessage({
 }: ChatMessageProps) {
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
+  const jsonRender = useSafeJsonRenderMessage(message.parts)
+  const safeParts = useMemo(
+    () =>
+      message.parts.filter(
+        (part) =>
+          typeof part === 'object' &&
+          part !== null &&
+          'type' in part &&
+          typeof (part as { type: unknown }).type === 'string'
+      ),
+    [message.parts]
+  )
 
   const followUpSuggestions = useMemo(() => {
     if (!isAssistant) return []
@@ -384,23 +584,27 @@ export function ChatMessage({
             isLastUserMessage && isUser && onRegenerate && 'pr-8'
           )}
         >
-          {message.parts.map((part, index) => {
+          {safeParts.map((part, index) => {
             const stableKey = getStablePartKey(message.id, part, index)
 
             if (part.type === 'text') {
+              const textPart = part as { type: 'text'; text?: unknown }
+              const text =
+                typeof textPart.text === 'string' ? textPart.text : ''
               if (isUser) {
-                return (
-                  <MessageResponse key={stableKey}>{part.text}</MessageResponse>
-                )
+                return <MessageResponse key={stableKey}>{text}</MessageResponse>
               }
 
-              return <MarkdownMessage key={stableKey} text={part.text} />
+              return <MarkdownMessage key={stableKey} text={text} />
             }
 
             if (part.type === 'reasoning') {
-              const reasoningText = (
-                part as unknown as { type: 'reasoning'; text: string }
-              ).text
+              const reasoningPart = part as {
+                type: 'reasoning'
+                text?: unknown
+              }
+              const reasoningText =
+                typeof reasoningPart.text === 'string' ? reasoningPart.text : ''
               return (
                 <Reasoning key={stableKey} isStreaming={false}>
                   <ReasoningTrigger />
@@ -433,6 +637,21 @@ export function ChatMessage({
 
             return null
           })}
+
+          {isAssistant && jsonRender.hasSpec && jsonRender.spec && (
+            <div className="mt-2">
+              {renderJsonSpec({
+                spec: jsonRender.spec,
+                isStreaming: !!isStreaming,
+              })}
+            </div>
+          )}
+
+          {isAssistant && jsonRender.parseError && (
+            <div className="mt-2 rounded border border-yellow-200/40 bg-yellow-50/40 p-2 text-xs text-yellow-800 dark:border-yellow-900/50 dark:bg-yellow-950/30 dark:text-yellow-200">
+              {jsonRender.parseError}
+            </div>
+          )}
 
           {isLastUserMessage && isUser && onRegenerate && (
             <button

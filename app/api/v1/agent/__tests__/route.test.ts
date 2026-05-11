@@ -1,51 +1,111 @@
-import { beforeAll, describe, expect, mock, test } from 'bun:test'
+import { beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES } from '@/lib/ai/agent/json-render-catalog'
+import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
+import { createJsonRenderPatchGuardStream } from '@/lib/ai/agent/json-render-patch-guard'
 
-// Mock the agent factory
+type AgentStreamResult = {
+  toUIMessageStream: () => unknown
+  consumeStream: () => Promise<void>
+}
+
+const capturedAgentArgs: Array<Record<string, unknown>> = []
+const capturedAIArgs: Array<{
+  executeCalled: boolean
+  pipeResultType: string
+  mergedChunk?: unknown
+  responseHeaders?: Headers
+  originalMessageCount?: number
+}> = []
+
 mock.module('@/lib/ai/agent', () => ({
-  createClickHouseAgent: () => ({
-    id: 'test-clickhouse-agent',
-    model: {},
-    tools: {
-      query: {
-        description: 'Mock query tool',
-      },
-      list_databases: {
-        description: 'Mock list_databases tool',
-      },
-    },
-  }),
-}))
+  createClickHouseAgent: (options: Record<string, unknown>) => {
+    capturedAgentArgs.push(options)
 
-// Mock createAgentUIStreamResponse
-mock.module('ai', () => ({
-  dynamicTool: (config: unknown) => config,
-  createAgentUIStreamResponse: ({
-    uiMessages: _uiMessages,
-    onError: _onError,
-  }: {
-    uiMessages: unknown[]
-    onError?: (error: unknown) => string
-  }) => {
-    return new Response(
-      new ReadableStream({
-        async start(controller) {
-          // Simulate streaming response
-          controller.enqueue(
-            `data: ${JSON.stringify({ type: 'text-delta', textDelta: 'Test response' })}\n\n`
-          )
-          controller.close()
-        },
-      }),
-      {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          Connection: 'keep-alive',
-        },
-      }
-    )
+    return {
+      stream: async (options: {
+        onStepFinish: (step: {
+          usage: { inputTokens: number; outputTokens: number }
+        }) => void
+      }) => {
+        options.onStepFinish({
+          usage: {
+            inputTokens: 3,
+            outputTokens: 4,
+          },
+        })
+
+        return {
+          toUIMessageStream: () => ({
+            pipeThrough: (_: unknown) => 'mocked-piped-stream',
+          }),
+          consumeStream: async () => {},
+        } as AgentStreamResult
+      },
+    }
   },
 }))
+
+mock.module('ai', () => {
+  let executeCalled = false
+  let pipeResultType = 'none'
+  let mergedChunk: unknown
+  let responseHeaders: Headers | undefined
+  let originalMessageCount = 0
+
+  const record = () => {
+    capturedAIArgs.push({
+      executeCalled,
+      pipeResultType,
+      mergedChunk,
+      responseHeaders,
+      originalMessageCount,
+    })
+  }
+
+  return {
+    convertToModelMessages: async (messages: unknown[]) => messages,
+    pipeJsonRender: (stream: unknown) => {
+      pipeResultType = typeof stream
+      return stream
+    },
+    createUIMessageStream: async ({
+      execute,
+      originalMessages,
+    }: {
+      execute: (params: {
+        writer: { merge: (value: unknown) => void }
+      }) => Promise<void> | void
+      originalMessages?: unknown[]
+    }) => {
+      executeCalled = true
+      originalMessageCount = originalMessages?.length ?? 0
+      const writer = {
+        merge: (value: unknown) => {
+          mergedChunk = value
+        },
+      }
+      await execute({ writer })
+      record()
+      return { mergedChunk }
+    },
+    createUIMessageStreamResponse: ({
+      headers,
+      stream,
+    }: {
+      headers?: HeadersInit
+      stream?: unknown
+    }) => {
+      responseHeaders = new Headers(headers)
+      return new Response(`mocked stream: ${typeof stream}`, {
+        status: 200,
+        headers: {
+          'content-type': 'text/event-stream',
+          ...Object.fromEntries(responseHeaders.entries()),
+        },
+      })
+    },
+  }
+})
 
 describe('POST /api/v1/agent', () => {
   const AGENT_API_TOKEN = 'test-agent-token'
@@ -60,309 +120,464 @@ describe('POST /api/v1/agent', () => {
     })
   }
 
-  // We need to dynamically import the route handler after mocking
   let POST: (request: Request) => Promise<Response>
 
   beforeAll(async () => {
     process.env.AGENT_API_TOKEN = AGENT_API_TOKEN
-
-    // Import after mocks are set up
     const route = await import('../route')
     POST = route.POST
   })
 
-  describe('UIMessage format handling', () => {
-    test('accepts UIMessage format with id and parts', async () => {
-      const request = createAgentRequest({
+  beforeEach(() => {
+    capturedAgentArgs.length = 0
+    capturedAIArgs.length = 0
+  })
+
+  async function readJsonRenderStreamValues(
+    stream: unknown
+  ): Promise<unknown[]> {
+    if (!stream || typeof stream !== 'object' || !('getReader' in stream)) {
+      return []
+    }
+
+    const reader = (stream as ReadableStream).getReader()
+    const values: unknown[] = []
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      values.push(value)
+    }
+    return values
+  }
+
+  test('returns 401 when Authorization header is missing', async () => {
+    const request = new Request('http://localhost:3000/api/v1/agent', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Show me all databases',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(401)
+    expect(response.headers.get('www-authenticate')).toBe('Bearer')
+  })
+
+  test('accepts lowercase bearer token scheme', async () => {
+    const request = new Request('http://localhost:3000/api/v1/agent', {
+      method: 'POST',
+      headers: { authorization: 'bearer test-agent-token' },
+      body: JSON.stringify({
+        message: 'Show me all databases',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(200)
+  })
+
+  test('accepts UIMessage format with id and parts', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [
+          {
+            id: 'msg-123',
+            role: 'user',
+            parts: [{ type: 'text', text: 'Show me all databases' }],
+          },
+        ],
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toContain('text/event-stream')
+  })
+
+  test('accepts backward compatible message format', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Show me all databases',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(200)
+  })
+
+  test('handles both message and messages formats', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Test',
+        messages: [
+          {
+            id: 'msg-1',
+            role: 'user',
+            parts: [{ type: 'text', text: 'Override message' }],
+          },
+        ],
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(200)
+  })
+
+  test('returns 400 when message is missing', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [],
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(400)
+    const body = await response.json()
+    expect(body).toHaveProperty('error')
+  })
+
+  test('returns 400 when message is not a string', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 123,
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(400)
+    const body = await response.json()
+    expect(body).toHaveProperty('error')
+  })
+
+  test('returns 400 when message is empty string', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: '   ',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(400)
+  })
+
+  test('returns 400 on malformed JSON', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: 'invalid json',
+      headers: {
+        'content-type': 'application/json',
+      },
+    })
+
+    const response = await POST(request)
+    expect(response.status).toBe(400)
+  })
+
+  test('returns JSON stream for valid input', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Check stream flow',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+  })
+
+  test('uses inline json-render system prompt', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Show the top tables',
+        hostId: 1,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toContain('text/event-stream')
+    expect(body).toBe('mocked stream: object')
+    expect(capturedAgentArgs[0]?.systemPrompt).toBe(
+      AGENT_JSON_RENDER_INLINE_PROMPT
+    )
+  })
+
+  test('forwards inline stream metadata into AI message flow', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [
+          {
+            id: 'msg-1',
+            role: 'user',
+            parts: [{ type: 'text', text: 'Show me metrics' }],
+          },
+        ],
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+    expect(response.headers.get('content-type')).toContain('text/event-stream')
+  })
+
+  test('forwards model override and disabled tools configuration', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Run quick diagnostics',
+        hostId: 0,
+        model: 'openrouter/auto',
+        disabledTools: ['query', 123, 'list_databases'],
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+    expect(capturedAgentArgs[0]?.model).toBe('openrouter/auto')
+    expect(capturedAgentArgs[0]?.disabledTools).toEqual([
+      'query',
+      'list_databases',
+    ])
+    expect(response.headers.get('cache-control')).toBe('no-cache')
+  })
+
+  test('forwards explicit hostId to agent factory', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Compare hosts',
+        hostId: 3,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+    expect(capturedAgentArgs[0]?.hostId).toBe(3)
+  })
+
+  test('defaults hostId to 0 when hostId is missing or invalid', async () => {
+    const response = await POST(
+      createAgentRequest({
+        method: 'POST',
+        body: JSON.stringify({
+          message: 'Check default host',
+          hostId: 'abc',
+        }),
+      })
+    )
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+    expect(capturedAgentArgs[0]?.hostId).toBe(0)
+  })
+
+  test('accepts malformed messages payload when message text is provided', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        messages: { id: 'not-array' } as unknown,
+        message: 'Use latest query',
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+  })
+
+  test('handles tool-only user messages without text part for streaming', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [
+          {
+            id: 'msg-tool-only',
+            role: 'user',
+            parts: [{ type: 'dynamic-tool', toolCallId: 'tool-1' }],
+          },
+        ],
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+  })
+
+  test('accepts legacy content-only messages', async () => {
+    const response = await POST(
+      createAgentRequest({
         method: 'POST',
         body: JSON.stringify({
           messages: [
-            {
-              id: 'msg-123',
-              role: 'user',
-              parts: [{ type: 'text', text: 'Show me all databases' }],
-            },
+            { role: 'user', content: 'Legacy message format still works' },
           ],
-          hostId: 0,
         }),
       })
+    )
 
-      const response = await POST(request)
+    const body = await response.text()
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+  })
 
-      expect(response.status).toBe(200)
-      expect(response.headers.get('content-type')).toContain(
-        'text/event-stream'
-      )
-    })
+  test('rejects malformed and oversized message arrays', async () => {
+    const messages = Array.from({ length: 65 }, (_, index) => ({
+      id: `msg-${index}`,
+      role: 'user',
+      parts: [{ type: 'text', text: `Message ${index}` }],
+    }))
 
-    test('accepts backward compatible message format', async () => {
-      const request = createAgentRequest({
+    const response = await POST(
+      createAgentRequest({
         method: 'POST',
-        body: JSON.stringify({
-          message: 'Show me all databases',
-          hostId: 0,
-        }),
+        body: JSON.stringify({ messages }),
       })
+    )
 
-      const response = await POST(request)
+    expect(response.status).toBe(400)
+  })
 
-      expect(response.status).toBe(200)
-    })
+  test('rejects oversized payloads before agent execution', async () => {
+    const largePayload = {
+      message: 'x'.repeat(1024 * 140),
+      hostId: 0,
+    }
 
-    test('handles both message and messages formats', async () => {
-      const request = createAgentRequest({
+    const response = await POST(
+      createAgentRequest({
         method: 'POST',
-        body: JSON.stringify({
-          message: 'Test',
-          messages: [
-            {
-              id: 'msg-1',
-              role: 'user',
-              parts: [{ type: 'text', text: 'Override message' }],
+        body: JSON.stringify(largePayload),
+      })
+    )
+
+    expect(response.status).toBe(413)
+    const payload = await response.json()
+    expect(payload).toHaveProperty('error')
+    expect(payload.error).toMatchObject({ limitBytes: 131072 })
+    expect(capturedAgentArgs).toHaveLength(0)
+  })
+
+  test('guards malformed and invalid spec chunks during server-side stream merge', async () => {
+    const validFlatSpec = {
+      type: 'data-spec',
+      data: {
+        type: 'flat',
+        spec: {
+          root: 'card-root',
+          elements: {
+            'card-root': {
+              type: 'Card',
+              props: {
+                title: 'Root',
+              },
+              children: [],
             },
-          ],
-          hostId: 0,
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(200)
-    })
-  })
-
-  describe('validation', () => {
-    test('returns 401 when Authorization header is missing', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
-        method: 'POST',
-        body: JSON.stringify({
-          message: 'Show me all databases',
-          hostId: 0,
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(401)
-      expect(response.headers.get('www-authenticate')).toBe('Bearer')
-    })
-
-    test('accepts lowercase bearer token scheme', async () => {
-      const request = new Request('http://localhost:3000/api/v1/agent', {
-        method: 'POST',
-        headers: { authorization: 'bearer test-agent-token' },
-        body: JSON.stringify({
-          message: 'Show me all databases',
-          hostId: 0,
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(200)
-    })
-
-    test('returns 400 when message is missing', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          messages: [],
-          hostId: 0,
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(400)
-      const body = await response.json()
-      expect(body).toHaveProperty('error')
-    })
-
-    test('returns 400 when message is not a string', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          message: 123,
-          hostId: 0,
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(400)
-      const body = await response.json()
-      expect(body).toHaveProperty('error')
-    })
-
-    test('returns 400 when message is empty string', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          message: '   ',
-          hostId: 0,
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(400)
-    })
-  })
-
-  describe('hostId handling', () => {
-    test('uses provided hostId', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          message: 'Test',
-          hostId: 1,
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(200)
-    })
-
-    test('defaults to hostId 0 when not provided', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          message: 'Test',
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(200)
-    })
-
-    test('handles non-number hostId by defaulting to 0', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          message: 'Test',
-          hostId: 'invalid' as unknown as number,
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(200)
-    })
-  })
-
-  describe('model configuration', () => {
-    test('passes model to agent factory', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          message: 'Test',
-          model: 'gpt-4o-mini',
-          hostId: 0,
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(200)
-    })
-  })
-
-  describe('response format', () => {
-    test('returns SSE stream with correct headers', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          messages: [
-            {
-              id: 'msg-1',
-              role: 'user',
-              parts: [{ type: 'text', text: 'Test' }],
+          },
+        },
+      },
+    }
+    const invalidFlatSpec = {
+      type: 'data-spec',
+      data: {
+        type: 'flat',
+        spec: {
+          root: 'forbidden-root',
+          elements: {
+            'forbidden-root': {
+              type: 'NotAllowed',
+              props: {},
+              children: [],
             },
-          ],
-          hostId: 0,
-        }),
-      })
+          },
+        },
+      },
+    }
 
-      const response = await POST(request)
-
-      expect(response.status).toBe(200)
-      expect(response.headers.get('content-type')).toContain(
-        'text/event-stream'
-      )
-      expect(response.headers.get('cache-control')).toBe('no-cache')
+    const sourceStream = new ReadableStream({
+      start: (controller) => {
+        controller.enqueue(validFlatSpec)
+        controller.enqueue(invalidFlatSpec)
+        controller.close()
+      },
     })
 
-    test('returns JSON error response for validation failures', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          message: '',
-        }),
-      })
+    const guarded = createJsonRenderPatchGuardStream(sourceStream)
+    const values = await readJsonRenderStreamValues(guarded)
 
-      const response = await POST(request)
-
-      expect(response.status).toBe(400)
-      expect(response.headers.get('content-type')).toBe('application/json')
-    })
+    expect(values).toHaveLength(1)
+    expect(values).toStrictEqual([validFlatSpec])
   })
 
-  describe('error handling', () => {
-    test('handles malformed JSON', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: 'invalid json',
-      })
+  test('drops oversize data-spec chunks to prevent stream abuse', async () => {
+    const oversizedChunk = {
+      type: 'data-spec',
+      data: {
+        type: 'patch',
+        patch: {
+          op: 'add',
+          path: '/root',
+          value: 'x'.repeat(AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES + 1),
+        },
+      },
+    }
 
-      // Should throw on JSON.parse
-      await expect(POST(request)).rejects.toThrow()
-    })
-  })
-
-  describe('UIMessage parts extraction', () => {
-    test('extracts text from parts array', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          messages: [
-            {
-              id: 'msg-1',
-              role: 'user',
-              parts: [
-                { type: 'text', text: 'Extract this text' },
-                { type: 'tool-call', toolCallId: 'tool-1' },
-              ],
-            },
-          ],
-          hostId: 0,
-        }),
-      })
-
-      const response = await POST(request)
-
-      expect(response.status).toBe(200)
+    const sourceStream = new ReadableStream({
+      start: (controller) => {
+        controller.enqueue(oversizedChunk)
+        controller.close()
+      },
     })
 
-    test('handles missing text part in parts array', async () => {
-      const request = createAgentRequest({
-        method: 'POST',
-        body: JSON.stringify({
-          messages: [
-            {
-              id: 'msg-1',
-              role: 'user',
-              parts: [{ type: 'tool-call', toolCallId: 'tool-1' }],
-            },
-          ],
-          hostId: 0,
-        }),
-      })
+    const guarded = createJsonRenderPatchGuardStream(sourceStream)
+    const values = await readJsonRenderStreamValues(guarded)
 
-      const response = await POST(request)
-
-      expect(response.status).toBe(200)
-    })
+    expect(values).toHaveLength(0)
   })
 })
