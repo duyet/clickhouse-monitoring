@@ -35,16 +35,16 @@ mock.module('react', () => ({
 }))
 
 // Mock SWR - must be before imports
-const mockUseSWR = mock(() => ({
-  data: undefined,
-  error: undefined,
-  isLoading: false,
-}))
-
-mock.module('swr', () => ({
-  default: mockUseSWR,
-  __esModule: true,
-}))
+// Uses the shared mock from .sisyphus/swr-mock-preload.ts (globalThis.__swrUseSWR)
+// Falls back to local mock if preload is not active.
+const mockUseSWR =
+  (globalThis as unknown as { __swrUseSWR?: ReturnType<typeof mock> })
+    .__swrUseSWR ??
+  mock(() => ({
+    data: undefined,
+    error: undefined,
+    isLoading: false,
+  }))
 
 describe('useHosts', () => {
   const mockHosts = [
