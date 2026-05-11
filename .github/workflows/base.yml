@@ -47,7 +47,7 @@ env:
 permissions:
   contents: read
   id-token: write
-  packages: write
+  packages: read
 
 jobs:
   job:
@@ -80,6 +80,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -125,7 +127,7 @@ jobs:
           TMPDIR: /home/runner/work/_temp
 
       - name: Login to Container registry
-        if: ${{ inputs.job-type == 'docker' }}
+        if: ${{ inputs.job-type == 'docker' && inputs.push-image }}
         uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
         with:
           registry: ${{ env.REGISTRY }}
@@ -172,13 +174,30 @@ jobs:
             const tags = JSON.parse('${{ steps.meta.outputs.json }}').tags;
             core.setOutput('tag', tags[0]);
 
-      - name: Build and push Docker image
-        if: ${{ inputs.job-type == 'docker' }}
+      - name: Build Docker image (PR validation)
+        if: ${{ inputs.job-type == 'docker' && !inputs.push-image }}
         uses: docker/build-push-action@v7
         env:
           TMPDIR: /home/runner/work/_temp
         with:
-          push: ${{ inputs.push-image }}
+          push: false
+          load: ${{ inputs.load-image }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GITHUB_SHA=${{ github.sha }}
+            GITHUB_REF=${{ github.ref }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: ${{ inputs.platforms }}
+
+      - name: Build and push Docker image
+        if: ${{ inputs.job-type == 'docker' && inputs.push-image }}
+        uses: docker/build-push-action@v7
+        env:
+          TMPDIR: /home/runner/work/_temp
+        with:
+          push: true
           load: ${{ inputs.load-image }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
