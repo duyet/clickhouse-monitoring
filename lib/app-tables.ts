@@ -24,7 +24,7 @@ export const DASHBOARD_SETTINGS_TABLE_SHORT =
 
 // Fully-qualified "database.table" names used in SQL.
 export const EVENTS_TABLE =
-  process.env.EVENTS_TABLE_NAME || `${APP_DATABASE}.${EVENTS_TABLE_SHORT}`
+  process.env.EVENTS_TABLE_NAME || `system.${EVENTS_TABLE_SHORT}`
 
 export const DASHBOARD_CHARTS_TABLE = `${APP_DATABASE}.${DASHBOARD_CHARTS_TABLE_SHORT}`
 
