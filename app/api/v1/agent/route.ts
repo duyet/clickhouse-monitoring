@@ -97,15 +97,20 @@ export async function POST(request: Request) {
   })
 
   // Build UI messages in the correct format for AI SDK v6
-  // Forward full conversation history so the LLM has multi-turn context
+  // Security: only trust user-authored text history from the client.
+  // Never accept client-provided assistant/system/developer/tool messages.
   const uiMessages: Array<{
     id: string
-    role: string
-    parts: Array<unknown>
+    role: 'user'
+    parts: Array<{ type: 'text'; text: string }>
   }> = []
 
   if (body.messages && body.messages.length > 0) {
     for (const msg of body.messages) {
+      if (msg.role !== 'user') {
+        continue
+      }
+
       // Messages already in UIMessage format (have id + parts)
       if (
         'id' in msg &&
@@ -113,16 +118,28 @@ export async function POST(request: Request) {
         'parts' in msg &&
         Array.isArray(msg.parts)
       ) {
-        uiMessages.push({
-          id: msg.id,
-          role: msg.role,
-          parts: msg.parts,
-        })
+        const textParts = msg.parts.filter(
+          (p): p is { type: 'text'; text: string } =>
+            typeof p === 'object' &&
+            p !== null &&
+            'type' in p &&
+            p.type === 'text' &&
+            'text' in p &&
+            typeof p.text === 'string'
+        )
+
+        if (textParts.length > 0) {
+          uiMessages.push({
+            id: msg.id,
+            role: 'user',
+            parts: textParts,
+          })
+        }
       } else if ('content' in msg && typeof msg.content === 'string') {
         // Legacy format: convert to UIMessage
         uiMessages.push({
           id: crypto.randomUUID(),
-          role: msg.role,
+          role: 'user',
           parts: [{ type: 'text' as const, text: msg.content }],
         })
       }
