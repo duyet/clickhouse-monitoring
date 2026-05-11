@@ -31,12 +31,6 @@ on:
         description: 'Job timeout in minutes'
         default: 60
 
-    outputs:
-      tags:
-        value: ${{ jobs.job.outputs.tags }}
-      first_tag:
-        value: ${{ jobs.job.outputs.first_tag }}
-
 env:
   CLICKHOUSE_HOST: http://localhost:8123
   CLICKHOUSE_USER: default
@@ -54,9 +48,6 @@ jobs:
     name: ${{ inputs.job-type }}
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.timeout-minutes }}
-    outputs:
-      tags: ${{ steps.meta.outputs.tags }}
-      first_tag: ${{ steps.first_tag.outputs.tag }}
 
     strategy:
       fail-fast: false
