@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react'
 
 import { ClerkProvider } from '@clerk/nextjs'
-
 import { isClerkEnabled } from '@/lib/clerk/clerk-client'
 
 interface ClerkAuthProviderProps {

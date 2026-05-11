@@ -11,6 +11,7 @@ mock.module('swr', () => ({
   useSWRConfig: mock(() => ({ mutate: mock(() => Promise.resolve()) })),
   unstable_serialize: mock((key: unknown) => JSON.stringify(key)),
 }))
+
 import { validateAndSanitizeSpecFromParts } from '@/components/agents/chat/message'
 import {
   AGENT_JSON_RENDER_MAX_ELEMENT_COUNT,

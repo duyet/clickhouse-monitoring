@@ -221,10 +221,10 @@ describe('Agent Chat API E2E Tests', () => {
       cy.request({
         url: AGENT_API_URL,
         method: 'POST',
-      headers: getAuthHeaders(),
-      body: {
-        message: 'test',
-        hostId: 0,
+        headers: getAuthHeaders(),
+        body: {
+          message: 'test',
+          hostId: 0,
         },
         failOnStatusCode: false,
       }).then((response) => {

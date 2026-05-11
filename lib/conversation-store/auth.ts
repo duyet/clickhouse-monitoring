@@ -2,8 +2,8 @@
  * Authentication utilities for conversation store.
  */
 
-import { auth } from '@clerk/nextjs/server'
 import { ConversationStoreError } from './types'
+import { auth } from '@clerk/nextjs/server'
 
 /**
  * Guest user ID constant for unauthenticated users.
