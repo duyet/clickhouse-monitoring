@@ -6,8 +6,6 @@ on:
       - main
     tags:
       - 'v*'
-  pull_request:
-    types: [opened, synchronize, reopened]
   release:
     types: [published]
   workflow_dispatch:
