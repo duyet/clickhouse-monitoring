@@ -1,4 +1,4 @@
-import { AGENT_JSON_RENDER_CATALOG } from './json-render-catalog'
+import { AGENT_JSON_RENDER_CATALOG } from './json-render-catalog-with-schema'
 import { defineRegistry } from '@json-render/react'
 import { shadcnComponents } from '@json-render/shadcn'
 
