@@ -9,7 +9,6 @@ import type { Conversation } from '@/lib/ai/agent/conversation-utils'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import { useRouter } from 'next/navigation'
 import {
   forwardRef,
   useCallback,
@@ -51,7 +50,6 @@ interface AgentsChatAreaProps {
   readonly onMenuClick: () => void
   readonly hideHeader?: boolean
   readonly hideCompactControls?: boolean
-  readonly initialQuery?: string | null
 }
 
 function findLastAssistantMessage(messages: readonly UIMessage[]) {
@@ -87,12 +85,10 @@ export const AgentsChatArea = forwardRef<
     onMenuClick,
     hideHeader = false,
     hideCompactControls = false,
-    initialQuery,
   }: AgentsChatAreaProps,
   ref
 ) {
   const hostId = useHostId()
-  const router = useRouter()
   const { conversations, currentConversationId, updateMessages } =
     useConversationContext()
   const model = useMemo(() => getSavedModel(), [])
@@ -122,7 +118,6 @@ export const AgentsChatArea = forwardRef<
     ReturnType<typeof setTimeout> | undefined
   >(undefined)
   const prevConversationIdRef = useRef<string | undefined>(undefined)
-  const initialQuerySentRef = useRef<string | null>(null)
   const [responseDurations, setResponseDurations] = useState<
     Record<string, number>
   >({})
@@ -251,31 +246,6 @@ export const AgentsChatArea = forwardRef<
   }, [stop, setMessages, currentConversationId, updateMessages])
 
   useImperativeHandle(ref, () => ({ handleClear }), [handleClear])
-
-  useEffect(() => {
-    const cleaned = initialQuery?.trim()
-    if (
-      !cleaned ||
-      cleaned === initialQuerySentRef.current ||
-      status !== 'ready'
-    ) {
-      return
-    }
-
-    initialQuerySentRef.current = cleaned
-    sendMessage({
-      parts: [
-        {
-          type: 'text',
-          text: `Analyze this ClickHouse query:\n\n\`\`\`sql\n${cleaned}\n\`\`\``,
-        },
-      ],
-    })
-
-    const url = new URL(window.location.href)
-    url.searchParams.delete('query')
-    router.replace(url.pathname + url.search, { scroll: false })
-  }, [initialQuery, status, sendMessage, router])
 
   const handleRegenerate = useCallback(() => {
     stop()
