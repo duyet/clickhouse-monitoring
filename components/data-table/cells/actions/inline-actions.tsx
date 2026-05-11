@@ -110,7 +110,7 @@ export function InlineActions<TData extends RowData>({
           } else if (action === 'explain-query') {
             href = `/explain?query=${encodeURIComponent(getQuery())}`
           } else if (action === 'analyze-with-ai') {
-            href = `/agents?query=${encodeURIComponent(getQuery())}&host=${hostId}`
+            href = `/agents?host=${hostId}`
           }
 
           return (

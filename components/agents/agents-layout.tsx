@@ -8,7 +8,6 @@ import { AgentConfigGuidance } from './agent-config-guidance'
 import { AgentsChatArea } from './agents-chat-area'
 import { AgentsSidebar } from './agents-sidebar'
 import { ConversationSwitcher } from './conversation-switcher'
-import { useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -19,8 +18,6 @@ import { useHostId } from '@/lib/swr'
 export function AgentsLayout() {
   const hostId = useHostId()
   const isMobile = useIsMobile()
-  const searchParams = useSearchParams()
-  const initialQuery = searchParams.get('query')
 
   // Track if user manually toggled sidebar (to prevent auto-closing on resize)
   const userToggledRef = useRef(false)
@@ -128,7 +125,6 @@ export function AgentsLayout() {
           onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
           hideHeader={true}
           hideCompactControls={true}
-          initialQuery={initialQuery}
         />
       </div>
 
