@@ -7,6 +7,7 @@ import { Suspense } from 'react'
 import '@/app/globals.css'
 
 import { AppProvider } from '@/app/context'
+import { ClerkAuthProvider } from '@/components/clerk/clerk-auth-provider'
 import { HostProviderFromUrl } from '@/app/host-provider-from-url'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { VercelAnalytics } from '@/components/analytics/vercel-analytics'
@@ -104,34 +105,36 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased bg-background">
-        <Providers>
-          <DynamicTitle />
-          <NetworkStatusBanner />
-          <Suspense fallback={null}>
-            <KeyboardShortcuts />
-          </Suspense>
-          <ResizableSidebarProvider defaultOpen={true}>
-            <AppSidebar />
-            <SidebarInset className="min-w-0 overflow-hidden">
-              <header className="relative z-10 flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-                <div className="flex items-center gap-2 px-4">
-                  <SidebarTrigger className="-ml-1" />
-                  <Separator orientation="vertical" className="mr-2 h-4" />
-                  <Suspense fallback={<Skeleton className="h-4 w-32" />}>
-                    <Breadcrumb />
-                  </Suspense>
+        <ClerkAuthProvider>
+          <Providers>
+            <DynamicTitle />
+            <NetworkStatusBanner />
+            <Suspense fallback={null}>
+              <KeyboardShortcuts />
+            </Suspense>
+            <ResizableSidebarProvider defaultOpen={true}>
+              <AppSidebar />
+              <SidebarInset className="min-w-0 overflow-hidden">
+                <header className="relative z-10 flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+                  <div className="flex items-center gap-2 px-4">
+                    <SidebarTrigger className="-ml-1" />
+                    <Separator orientation="vertical" className="mr-2 h-4" />
+                    <Suspense fallback={<Skeleton className="h-4 w-32" />}>
+                      <Breadcrumb />
+                    </Suspense>
+                  </div>
+                  <div className="ml-auto px-4">
+                    <HeaderActions />
+                  </div>
+                </header>
+                <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto pt-0 p-4">
+                  {children}
                 </div>
-                <div className="ml-auto px-4">
-                  <HeaderActions />
-                </div>
-              </header>
-              <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto pt-0 p-4">
-                {children}
-              </div>
-            </SidebarInset>
-          </ResizableSidebarProvider>
-          <Toaster />
-        </Providers>
+              </SidebarInset>
+            </ResizableSidebarProvider>
+            <Toaster />
+          </Providers>
+        </ClerkAuthProvider>
         <AnalyticsScripts />
       </body>
     </html>

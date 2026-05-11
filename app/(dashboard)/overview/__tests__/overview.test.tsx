@@ -23,15 +23,6 @@ type OverviewTabConfig = {
   charts: OverviewChartConfig[]
 }
 
-mock.module('swr', () => ({
-  default: mock(() => ({})),
-  mutate: mock(() => Promise.resolve()),
-  preload: mock(() => Promise.resolve()),
-  SWRConfig: ({ children }: { children: React.ReactNode }) => children,
-  useSWRConfig: mock(() => ({ mutate: mock(() => Promise.resolve()) })),
-  unstable_serialize: mock((key: unknown) => JSON.stringify(key)),
-}))
-
 mock.module('@/lib/swr', () => ({
   useChartData: mock(() => ({
     data: [],
