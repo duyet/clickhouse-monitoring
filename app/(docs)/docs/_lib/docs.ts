@@ -70,6 +70,11 @@ export function getDocsSlugs() {
   return docsNav.flatMap((section) => section.items.map((item) => item.slug))
 }
 
+/**
+ * Loads a docs page from docs/content by route slug.
+ *
+ * Returns null only when the source MDX file is missing.
+ */
 export async function getDocsPage(slug: string): Promise<DocsPage | null> {
   const normalizedSlug = normalizeSlug(slug)
   const source = await readDocsSource(normalizedSlug)
@@ -119,6 +124,12 @@ async function readDocsSource(slug: string) {
   }
 }
 
+/**
+ * Converts the Nextra-flavored MDX source into markdown that DocsMarkdown can render.
+ *
+ * Fenced code blocks are protected before component/import cleanup so examples are
+ * not modified by the regex transforms.
+ */
 function normalizeMdx(source: string) {
   const normalizedCodeFences = source.replace(
     /```(\w+)\s+([^`\n]+?)\s+```/g,
@@ -146,6 +157,11 @@ function normalizeMdx(source: string) {
     )
 }
 
+/**
+ * Replaces fenced code blocks with stable placeholders during MDX cleanup.
+ *
+ * This keeps imports, headings, Cards, and Tabs examples inside code fences intact.
+ */
 function protectFencedCodeBlocks(markdown: string) {
   const codeBlocks: string[] = []
 
