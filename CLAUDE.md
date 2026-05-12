@@ -146,6 +146,7 @@ Both deployment methods provide:
 - `bun run lint && bun run build` - Quick local CI parity check (matches core lint/build workflow jobs)
 - Code-smell/dead-code maintenance notes are tracked in `docs/reviews/code-smell-dead-code-YYYY-MM-DD.md`
 - Since-last-run scan scope command: `git log --since='<ISO_TIME>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+- Fallback scan scope when no new commits: `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Dead-code reference evidence command: `rg -n "\\b<SYMBOL>\\b" --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 
 **Docs workspace**: The `docs/` app uses `pnpm` instead of `bun`.
