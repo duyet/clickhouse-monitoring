@@ -5,7 +5,7 @@ import {
 } from '@/lib/api/error-handler'
 import { type Action, ActionSchema } from '@/lib/api/schemas'
 import { fetchData } from '@/lib/clickhouse'
-import { GUEST_USER_ID, resolveUserId } from '@/lib/conversation-store/auth'
+import { resolveUserId } from '@/lib/conversation-store/auth'
 import { ErrorLogger, generateRequestId, log } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
@@ -139,18 +139,7 @@ export const POST = withApiHandler(async (request: Request) => {
 
   // Enforce server-side authentication when Clerk is configured.
   if (process.env.CLERK_SECRET_KEY) {
-    const userId = await resolveUserId()
-    if (userId === GUEST_USER_ID) {
-      return Response.json(
-        { success: false, message: 'Unauthorized' },
-        {
-          status: 401,
-          headers: {
-            'X-Request-ID': requestId,
-          },
-        }
-      )
-    }
+    await resolveUserId()
   }
 
   const { searchParams } = new URL(request.url)

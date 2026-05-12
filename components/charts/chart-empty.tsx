@@ -3,7 +3,6 @@
 import { Inbox, RefreshCw } from 'lucide-react'
 
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
-import type { EmptyStateVariant } from '@/components/ui/empty-state'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartDataPoint } from '@/types/chart-data'
 
@@ -26,7 +25,6 @@ interface ChartEmptyProps {
   description?: string
   /** Helpful suggestion displayed below the empty state message */
   suggestion?: string
-  variant?: EmptyStateVariant
   onRetry?: () => void
   /** Use compact layout for smaller charts */
   compact?: boolean
@@ -43,7 +41,6 @@ export const ChartEmpty = memo(function ChartEmpty({
   className,
   description,
   suggestion,
-  variant = 'no-data',
   onRetry,
   compact = false,
   sql,

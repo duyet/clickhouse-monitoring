@@ -129,19 +129,33 @@ function countSpecElements(spec: Spec | null): number {
   return Object.keys(spec.elements as Record<string, unknown>).length
 }
 
-function getDataSpecByteLength(parts: readonly DataPart[]): number {
+function getDataSpecMetrics(parts: readonly DataPart[]): {
+  count: number
+  totalBytes: number
+  hasOversizePart: boolean
+} {
   const safeCache: SafeByteLengthCache = {
     objectCache: new WeakMap(),
     primitiveCache: new Map(),
   }
 
-  return parts
-    .filter((part) => part.type === 'data-spec')
-    .reduce(
-      (total, part) =>
-        total + safeCalculateByteLengthWithCache(part.data, safeCache),
-      0
-    )
+  let count = 0
+  let totalBytes = 0
+  let hasOversizePart = false
+
+  for (const part of parts) {
+    if (part.type !== 'data-spec') continue
+    count += 1
+
+    const partBytes = safeCalculateByteLengthWithCache(part.data, safeCache)
+    totalBytes += partBytes
+
+    if (partBytes > AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES) {
+      hasOversizePart = true
+    }
+  }
+
+  return { count, totalBytes, hasOversizePart }
 }
 
 /**
@@ -156,13 +170,9 @@ export function validateAndSanitizeSpecFromParts(
     return { hasSpec: false, spec: null, text, parseError: null }
   }
 
-  const jsonRenderParts = parts.filter((part) => part.type === 'data-spec')
-  const hasOversizeSpecPart = jsonRenderParts.some(
-    (part) =>
-      safeCalculateByteLength(part.data) > AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES
-  )
+  const specMetrics = getDataSpecMetrics(parts)
 
-  if (hasOversizeSpecPart) {
+  if (specMetrics.hasOversizePart) {
     return {
       hasSpec: false,
       spec: null,
@@ -171,22 +181,21 @@ export function validateAndSanitizeSpecFromParts(
     }
   }
 
-  if (jsonRenderParts.length > AGENT_JSON_RENDER_MAX_SPEC_PARTS) {
+  if (specMetrics.count > AGENT_JSON_RENDER_MAX_SPEC_PARTS) {
     return {
       hasSpec: false,
       spec: null,
       text,
-      parseError: `Too many inline UI patches (${jsonRenderParts.length}).`,
+      parseError: `Too many inline UI patches (${specMetrics.count}).`,
     }
   }
 
-  const totalSpecPartBytes = getDataSpecByteLength(jsonRenderParts)
-  if (totalSpecPartBytes > AGENT_JSON_RENDER_MAX_SPEC_BYTES) {
+  if (specMetrics.totalBytes > AGENT_JSON_RENDER_MAX_SPEC_BYTES) {
     return {
       hasSpec: false,
       spec: null,
       text,
-      parseError: `Inline UI patch data exceeded limit (${totalSpecPartBytes} bytes).`,
+      parseError: `Inline UI patch data exceeded limit (${specMetrics.totalBytes} bytes).`,
     }
   }
 
@@ -259,7 +268,7 @@ function useSafeJsonRenderMessage(
         parseError: 'Unable to parse inline UI payload.',
       }
     }
-  }, [dataParts, parsed.hasSpec, parsed.spec, parsed.text, parsed])
+  }, [dataParts, parsed.hasSpec, parsed.spec, parsed.text])
 }
 
 function renderJsonSpec({
