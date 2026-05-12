@@ -74,7 +74,7 @@ export async function getDocsPage(slug: string): Promise<DocsPage | null> {
   const normalizedSlug = normalizeSlug(slug)
   const source = await readDocsSource(normalizedSlug)
 
-  if (!source) {
+  if (source === null) {
     return null
   }
 
@@ -104,19 +104,28 @@ export function docsHref(slug: string) {
 
 async function readDocsSource(slug: string) {
   const relativePath = slug ? `${slug}.mdx` : 'index.mdx'
-  const fullPath = path.join(process.cwd(), 'docs/content', relativePath)
+  const docsContentRoot =
+    process.env.DOCS_CONTENT_ROOT?.trim() || 'docs/content'
+  const fullPath = path.join(process.cwd(), docsContentRoot, relativePath)
 
   try {
     return await readFile(fullPath, 'utf8')
-  } catch {
-    return null
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return null
+    }
+
+    throw error
   }
 }
 
 function normalizeMdx(source: string) {
+  const protectedSource = protectFencedCodeBlocks(source)
+
   return demoteNestedTitles(
-    source
-      .replace(/^import .+$/gm, '')
+    protectedSource.markdown
+      .replace(/^import\s+['"][^'"]+['"];?\s*$/gm, '')
+      .replace(/^import[\s\S]*?from\s+['"][^'"]+['"];?\s*$/gm, '')
       .replace(/<Cards>[\s\S]*?<\/Cards>/g, cardsToMarkdown)
       .replace(
         /<Tabs items=\{\[([\s\S]*?)\]\}>[\s\S]*?<\/Tabs>/g,
@@ -126,7 +135,25 @@ function normalizeMdx(source: string) {
       .replace(/<\/?Tabs\.Tab>/g, '')
       .replace(/```(\w+)\s+([^`\n]+?)\s+```/g, '```$1\n$2\n```')
       .replace(/\n{3,}/g, '\n\n')
-  ).trim()
+  )
+    .trim()
+    .replace(
+      /<!-- DOCS_CODE_BLOCK_(\d+) -->/g,
+      (_match, index) => protectedSource.codeBlocks[Number(index)] ?? ''
+    )
+}
+
+function protectFencedCodeBlocks(markdown: string) {
+  const codeBlocks: string[] = []
+
+  return {
+    markdown: markdown.replace(/```[\s\S]*?```/g, (match) => {
+      const index = codeBlocks.push(match) - 1
+
+      return `<!-- DOCS_CODE_BLOCK_${index} -->`
+    }),
+    codeBlocks,
+  }
 }
 
 function demoteNestedTitles(markdown: string) {
