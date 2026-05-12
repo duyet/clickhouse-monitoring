@@ -1,5 +1,3 @@
-import type { AGENT_JSON_RENDER_COMPONENT_NAMES } from './json-render-catalog'
-
 import { defineCatalog } from '@json-render/core'
 import { schema as reactSchema } from '@json-render/react'
 import { shadcnComponentDefinitions } from '@json-render/shadcn/catalog'
@@ -22,6 +20,3 @@ export const AGENT_JSON_RENDER_CATALOG = defineCatalog(reactSchema, {
   components: AGENT_JSON_RENDER_COMPONENTS,
   actions: {},
 })
-
-export type AgentJsonRenderComponentName =
-  (typeof AGENT_JSON_RENDER_COMPONENT_NAMES)[number]

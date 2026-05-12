@@ -10,8 +10,15 @@ async function handleMcpRequest(req: Request) {
   const bearerToken = getBearerToken(authHeader)
   const apiKeyHeader = req.headers.get('x-api-key')
   const token = bearerToken ?? apiKeyHeader
+  const apiKeySecret = process.env.CHM_API_KEY_SECRET
+  const authRequired =
+    process.env.NODE_ENV === 'production' || Boolean(apiKeySecret)
 
-  if (process.env.CHM_API_KEY_SECRET) {
+  if (authRequired && !apiKeySecret) {
+    return new Response('MCP API key auth is not configured', { status: 503 })
+  }
+
+  if (authRequired) {
     if (!token) {
       return new Response('Unauthorized', { status: 401 })
     }
