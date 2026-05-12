@@ -1,6 +1,7 @@
 import { rewriteDocsHref, slugify } from './shared'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { cache } from 'react'
 
 export type DocsNavItem = {
   title: string
@@ -66,16 +67,12 @@ export const docsNav: DocsNavSection[] = [
   },
 ]
 
-export function getDocsSlugs() {
-  return docsNav.flatMap((section) => section.items.map((item) => item.slug))
-}
-
 /**
  * Loads a docs page from docs/content by route slug.
  *
  * Returns null only when the source MDX file is missing.
  */
-export async function getDocsPage(slug: string): Promise<DocsPage | null> {
+export const getDocsPage = cache(async (slug: string): Promise<DocsPage | null> => {
   const normalizedSlug = normalizeSlug(slug)
   const source = await readDocsSource(normalizedSlug)
 
@@ -93,7 +90,7 @@ export async function getDocsPage(slug: string): Promise<DocsPage | null> {
     markdown,
     headings,
   }
-}
+})
 
 export function normalizeSlug(slug: string) {
   return slug
