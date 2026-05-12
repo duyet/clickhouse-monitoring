@@ -257,10 +257,15 @@ function useSafeJsonRenderMessage(
 ): SafeJsonRenderResult {
   const dataParts = useMemo(() => getSafeJsonRenderMessageParts(parts), [parts])
   const parsed = useJsonRenderMessage(dataParts)
+  const { hasSpec, spec, text } = parsed
 
   return useMemo(() => {
     try {
-      return validateAndSanitizeSpecFromParts(dataParts, parsed)
+      return validateAndSanitizeSpecFromParts(dataParts, {
+        hasSpec,
+        spec,
+        text,
+      })
     } catch (_error) {
       return {
         hasSpec: false,
@@ -269,7 +274,7 @@ function useSafeJsonRenderMessage(
         parseError: 'Unable to parse inline UI payload.',
       }
     }
-  }, [dataParts, parsed.hasSpec, parsed.spec, parsed.text])
+  }, [dataParts, hasSpec, spec, text])
 }
 
 function renderJsonSpec({
