@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
-export const dynamic = 'force-dynamic'
+export const dynamicParams = false
 
 type DocsPageProps = {
   params: Promise<{
@@ -12,10 +12,18 @@ type DocsPageProps = {
   }>
 }
 
+export function generateStaticParams() {
+  return docsNav
+    .flatMap((section) => section.items)
+    .map((item) => ({
+      slug: item.slug ? item.slug.split('/') : [],
+    }))
+}
+
 export async function generateMetadata(props: DocsPageProps) {
   const params = await props.params
   const slug = params.slug?.join('/') ?? ''
-  const page = getDocsPage(slug)
+  const page = await getDocsPage(slug)
 
   return {
     title: page ? `${page.title} - Docs` : 'Docs',
@@ -26,7 +34,7 @@ export async function generateMetadata(props: DocsPageProps) {
 export default async function DocsPage(props: DocsPageProps) {
   const params = await props.params
   const activeSlug = params.slug?.join('/') ?? ''
-  const page = getDocsPage(activeSlug)
+  const page = await getDocsPage(activeSlug)
 
   if (!page) {
     notFound()

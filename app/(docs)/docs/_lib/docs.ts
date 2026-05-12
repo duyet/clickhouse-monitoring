@@ -1,5 +1,6 @@
-import { docsContent } from './content.generated'
 import { rewriteDocsHref, slugify } from './shared'
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
 
 export type DocsNavItem = {
   title: string
@@ -69,9 +70,9 @@ export function getDocsSlugs() {
   return docsNav.flatMap((section) => section.items.map((item) => item.slug))
 }
 
-export function getDocsPage(slug: string): DocsPage | null {
+export async function getDocsPage(slug: string): Promise<DocsPage | null> {
   const normalizedSlug = normalizeSlug(slug)
-  const source = docsContent[normalizedSlug as keyof typeof docsContent]
+  const source = await readDocsSource(normalizedSlug)
 
   if (!source) {
     return null
@@ -99,6 +100,17 @@ export function normalizeSlug(slug: string) {
 
 export function docsHref(slug: string) {
   return slug ? `/docs/${slug}` : '/docs'
+}
+
+async function readDocsSource(slug: string) {
+  const relativePath = slug ? `${slug}.mdx` : 'index.mdx'
+  const fullPath = path.join(process.cwd(), 'docs/content', relativePath)
+
+  try {
+    return await readFile(fullPath, 'utf8')
+  } catch {
+    return null
+  }
 }
 
 function normalizeMdx(source: string) {
