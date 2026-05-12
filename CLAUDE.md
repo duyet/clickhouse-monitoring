@@ -144,17 +144,15 @@ Both deployment methods provide:
 - `bun run migrate`, `bun run migrate:status`, `bun run migrate:dry-run` - Use the local migration runner for non-Cloudflare targets
 - `bun run docker:health` / `bun run cf:health` - Check Docker or deployed health endpoints
 - `bun run lint && bun run build` - Quick local CI parity check (matches core lint/build workflow jobs)
-- Code-smell/dead-code maintenance notes are tracked in `docs/reviews/code-smell-dead-code-YYYY-MM-DD.md`
+- Code-smell/dead-code automation memory lives in `docs/knowledge/core-memory.md` (single durable note; do not create dated `docs/reviews/code-smell-dead-code-*.md` files)
 - Since-last-run scan scope command: `git log --since='<ISO_TIME>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Fallback scan scope when no new commits: `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Dead-code reference evidence command: `rg -n "\\b<SYMBOL>\\b" --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 
-**Docs workspace**: The `docs/` app uses `pnpm` instead of `bun`.
+**Docs content workflow**: `/docs` pages are rendered by the main app and read source files from `docs/content`.
 
-- `cd docs && pnpm dev` - Start the docs site
-- `cd docs && pnpm build` - Build docs and generate the Pagefind search index
-- `cd docs && pnpm start` - Serve the built docs site
-- `cd docs && pnpm lint` - Run Next.js linting
+- `bun run dev` then open `/docs` - Preview docs through the main app shell
+- `DOCS_CONTENT_ROOT=<path> bun run dev` - Override docs source root for local validation
 
 ## Architecture
 

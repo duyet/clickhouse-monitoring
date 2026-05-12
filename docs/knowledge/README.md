@@ -8,6 +8,7 @@ tags:
   - ai-agent
   - knowledge-graph
 related:
+  - automation-core-memory
   - rust-wasm-performance
   - component-ci-stability
 source_pr: 1021
@@ -23,6 +24,7 @@ context that should survive a compacted chat or a handoff.
 
 - [Rust and WASM Performance](./rust-wasm-performance.md)
 - [Component CI Stability](./component-ci-stability.md)
+- [Automation Core Memory](./core-memory.md)
 
 ## Graph Convention
 
