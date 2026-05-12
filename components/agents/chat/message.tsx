@@ -152,6 +152,7 @@ function getDataSpecMetrics(parts: readonly DataPart[]): {
 
     if (partBytes > AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES) {
       hasOversizePart = true
+      return { count, totalBytes, hasOversizePart }
     }
   }
 
