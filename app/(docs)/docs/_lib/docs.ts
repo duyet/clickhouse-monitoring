@@ -120,7 +120,11 @@ async function readDocsSource(slug: string) {
 }
 
 function normalizeMdx(source: string) {
-  const protectedSource = protectFencedCodeBlocks(source)
+  const normalizedCodeFences = source.replace(
+    /```(\w+)\s+([^`\n]+?)\s+```/g,
+    '```$1\n$2\n```'
+  )
+  const protectedSource = protectFencedCodeBlocks(normalizedCodeFences)
 
   return demoteNestedTitles(
     protectedSource.markdown
@@ -133,7 +137,6 @@ function normalizeMdx(source: string) {
       )
       .replace(/<\/?Steps>/g, '')
       .replace(/<\/?Tabs\.Tab>/g, '')
-      .replace(/```(\w+)\s+([^`\n]+?)\s+```/g, '```$1\n$2\n```')
       .replace(/\n{3,}/g, '\n\n')
   )
     .trim()
