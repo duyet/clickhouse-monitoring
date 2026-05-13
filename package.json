@@ -24,7 +24,7 @@
     "migrate": "bun lib/migration/migration-runner.ts",
     "migrate:status": "bun lib/migration/migration-runner.ts status",
     "migrate:dry-run": "bun lib/migration/migration-runner.ts migrate --dry-run",
-    "cf:deploy": "bun run cf:config && bun run cf:build && wrangler deploy",
+    "cf:deploy": "bun run cf:config && bun run cf:build && wrangler deploy && opennextjs-cloudflare populateCache remote",
     "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "release:notes": "bun scripts/generate-release-notes.ts",
     "docker:health": "docker compose exec app wget -q -O /dev/null http://localhost:3000/api/healthz || exit 1",

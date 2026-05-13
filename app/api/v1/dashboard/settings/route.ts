@@ -61,12 +61,13 @@ export async function GET(request: Request): Promise<Response> {
 
     const query = `
       SELECT key, value
-      FROM ${TABLE_SETTINGS}
+      FROM ${TABLE_SETTINGS} FINAL
     `
 
     const client = await getClient({ hostId })
     const resultSet = await client.query({
       query,
+      format: 'JSONEachRow',
     })
 
     const rows = (await resultSet.json()) as unknown as {
