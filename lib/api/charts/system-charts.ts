@@ -3,6 +3,7 @@
  * Charts for CPU, memory, disk, and other system-level metrics
  */
 
+import type { FeaturePermission } from '@/lib/feature-permissions/types'
 import type { ChartQueryBuilder } from './types'
 
 import {
@@ -11,6 +12,10 @@ import {
   buildTimeFilterInterval,
 } from './types'
 import { STUCK_THRESHOLD_SECONDS } from '@/lib/query-config/merges/mutations'
+
+const METRICS_PERMISSION = {
+  feature: 'metrics',
+} satisfies FeaturePermission
 
 export const systemCharts: Record<string, ChartQueryBuilder> = {
   'memory-usage': ({ interval = 'toStartOfTenMinutes', lastHours = 24 }) => {
@@ -26,6 +31,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     ORDER BY 1 ASC`,
       optional: true,
       tableCheck: 'system.metric_log',
+      permission: METRICS_PERMISSION,
     }
   },
 
@@ -42,6 +48,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     ORDER BY 1`,
       optional: true,
       tableCheck: 'system.metric_log',
+      permission: METRICS_PERMISSION,
     }
   },
 
@@ -61,6 +68,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     ${condition}
     ORDER BY name
   `,
+      permission: METRICS_PERMISSION,
     }
   },
 
@@ -82,6 +90,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   `,
       optional: true,
       tableCheck: 'system.asynchronous_metric_log',
+      permission: METRICS_PERMISSION,
     }
   },
 
@@ -222,6 +231,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   `,
       optional: true,
       tableCheck: 'system.asynchronous_metric_log',
+      permission: METRICS_PERMISSION,
     }
   },
 

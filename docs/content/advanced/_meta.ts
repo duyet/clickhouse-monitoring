@@ -3,6 +3,7 @@ export const meta = {
   'custom-name': 'Custom Host Name',
   'queries-history': 'Queries History',
   'self-tracking': 'Self-Tracking',
+  'feature-permissions': 'Feature Permissions',
 }
 
 export default meta

@@ -1,3 +1,4 @@
+import type { FeaturePermission } from '@/lib/feature-permissions/types'
 import type { ClickHouseInterval } from './clickhouse-interval'
 import type { VersionedSql } from './query-config'
 
@@ -78,6 +79,8 @@ export interface QueryVariant {
  * Contains SQL query and metadata for execution
  */
 export interface ChartQueryResult<_T extends ChartDataPoint = ChartDataPoint> {
+  /** Feature gate metadata for deployment-level permissions */
+  permission?: FeaturePermission
   /**
    * SQL query definition - either:
    * - A string (version-independent query, for backward compatibility also use `query`)
@@ -121,6 +124,8 @@ export interface ChartQueryResult<_T extends ChartDataPoint = ChartDataPoint> {
  */
 export interface MultiChartQueryResult {
   queries: Array<{ key: string; query: string; optional?: boolean }>
+  /** Feature gate metadata for deployment-level permissions */
+  permission?: FeaturePermission
   /** Cache policy for HTTP Cache-Control headers */
   cachePolicy?: CachePolicy
 }

@@ -19,29 +19,7 @@ import {
   getPoolKey,
 } from './connection-pool'
 import { validateClickHouseEnv } from './env-schema'
-
-/**
- * Detect if running in Cloudflare Workers environment
- * Cloudflare Workers don't support Node.js APIs like https.request
- *
- * Note: When using @opennextjs/cloudflare, the code is bundled for Node.js
- * environment and process is polyfilled. We use an environment variable to
- * detect Cloudflare Workers deployment.
- */
-export function isCloudflareWorkers(): boolean {
-  // Check environment variable first (most reliable for Workers deployment)
-  if (process.env.CF_PAGES || process.env.CLOUDFLARE_WORKERS === '1') {
-    return true
-  }
-
-  // Runtime detection as fallback
-  return (
-    (typeof caches !== 'undefined' ||
-      typeof (globalThis as any).WebSocketPair !== 'undefined' ||
-      typeof (globalThis as any).DurableObject !== 'undefined') &&
-    typeof process === 'undefined'
-  )
-}
+import { isCloudflareWorkers } from '@/lib/runtime/cloudflare-workers'
 
 export const getClient = async ({
   web,
@@ -92,3 +70,4 @@ export const getClient = async ({
 
 // Re-export connection pool stats
 export { getConnectionPoolStats }
+export { isCloudflareWorkers }

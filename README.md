@@ -62,6 +62,39 @@ Optional API-key protection for `/api/v1/*` routes:
 CHM_API_KEY_SECRET=your-signing-secret
 ```
 
+Optional Clerk UI/session support:
+
+```bash
+CHM_AUTH_PROVIDER=clerk
+NEXT_PUBLIC_AUTH_PROVIDER=clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_your_key
+CLERK_SECRET_KEY=sk_live_your_key
+```
+
+Feature permissions default to enabled and public. Add sparse overrides when a
+deployment should hide or protect a feature:
+
+```toml
+# /etc/clickhouse-monitor/config.toml
+[features.agent]
+access = "authenticated"
+
+[features.metrics]
+enabled = false
+```
+
+`access = "guest"` is accepted as an alias for `access = "public"`.
+
+```bash
+CHM_CONFIG_FILE=/etc/clickhouse-monitor/config.toml
+# or env-only:
+CHM_FEATURE_AGENT_ACCESS=authenticated
+CHM_DISABLED_FEATURES=settings,metrics
+```
+
+Leave auth provider env unset or set it to `none` for self-hosted deployments
+without auth.
+
 3. Deploy to Cloudflare Workers:
 ```bash
 # Login to Cloudflare

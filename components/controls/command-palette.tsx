@@ -5,7 +5,7 @@ import { menuItemsConfig } from '@/menu'
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
-import { memo, useCallback, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import {
   CommandDialog,
   CommandEmpty,
@@ -16,6 +16,8 @@ import {
   CommandSeparator,
 } from '@/components/ui/command'
 import { IconButton } from '@/components/ui/icon-button'
+import { useFeaturePermissions } from '@/lib/feature-permissions/context'
+import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
 import { buildUrl } from '@/lib/url/url-builder'
 
 const UUID_PATTERN =
@@ -38,6 +40,11 @@ export const CommandPalette = memo(function CommandPalette({
   const searchParams = useSearchParams()
   const [internalOpen, setInternalOpen] = React.useState(false)
   const [inputValue, setInputValue] = useState('')
+  const { config } = useFeaturePermissions()
+  const menuItems = useMemo(
+    () => filterMenuItemsByPermissions(menuItemsConfig, config),
+    [config]
+  )
 
   const open = controlledOpen ?? internalOpen
   const setOpen = onOpenChange ?? setInternalOpen
@@ -180,7 +187,7 @@ export const CommandPalette = memo(function CommandPalette({
             </>
           )}
 
-          {menuItemsConfig.map((group) => (
+          {menuItems.map((group) => (
             <CommandGroup key={group.title} heading={group.title}>
               {group.items ? (
                 group.items.map((item) => (

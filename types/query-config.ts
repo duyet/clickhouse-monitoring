@@ -2,6 +2,7 @@ import type { ClickHouseSettings } from '@clickhouse/client'
 
 import type { ChartProps } from '@/components/charts/chart-props'
 import type { CustomSortingFnNames } from '@/components/data-table/sorting-fns'
+import type { FeaturePermission } from '@/lib/feature-permissions/types'
 import type { ColumnFormat, ColumnFormatWithArgs } from '@/types/column-format'
 import type { PartialBy } from '@/types/generic'
 import type { Icon } from '@/types/icon'
@@ -118,6 +119,8 @@ export interface QueryConfigVariant {
 
 export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   name: string
+  /** Feature gate metadata for deployment-level permissions */
+  permission?: FeaturePermission
   description?: string
   /**
    * Helpful suggestion displayed in empty state when no data is available.

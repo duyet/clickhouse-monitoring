@@ -4,6 +4,7 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const mergeTreeSettingsConfig: QueryConfig = {
   name: 'mergetree-settings',
+  permission: { feature: 'settings' },
   tableCheck: 'system.merge_tree_settings',
   sql: `
       SELECT name, value, changed, description, readonly, min, max, type, is_obsolete

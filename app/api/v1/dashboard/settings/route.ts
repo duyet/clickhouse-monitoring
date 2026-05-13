@@ -13,6 +13,8 @@ import {
 } from '@/lib/api/error-handler'
 import { ApiErrorType } from '@/lib/api/types'
 import { getClient } from '@/lib/clickhouse'
+import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error } from '@/lib/logger'
 
 const ROUTE_CONTEXT_GET = { route: '/api/v1/dashboard/settings', method: 'GET' }
@@ -52,6 +54,12 @@ function isTableMissingError(msg: string): boolean {
 
 export async function GET(request: Request): Promise<Response> {
   debug('[GET /api/v1/dashboard/settings] Fetching settings')
+
+  const permissionResponse = await authorizeFeatureRequest(
+    SETTINGS_FEATURE_PERMISSION,
+    request
+  )
+  if (permissionResponse) return permissionResponse
 
   const { searchParams } = new URL(request.url)
   const hostId = Number(searchParams.get('hostId') ?? '0')
@@ -132,6 +140,12 @@ export async function POST(request: Request): Promise<Response> {
   debug('[POST /api/v1/dashboard/settings] Updating settings')
 
   try {
+    const permissionResponse = await authorizeFeatureRequest(
+      SETTINGS_FEATURE_PERMISSION,
+      request
+    )
+    if (permissionResponse) return permissionResponse
+
     const body = (await request.json()) as {
       params?: Record<string, string>
       hostId?: number

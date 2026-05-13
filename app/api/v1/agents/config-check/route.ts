@@ -9,6 +9,7 @@
  */
 
 import { NextResponse } from 'next/server'
+import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 
 interface ConfigStatus {
   configured: {
@@ -28,7 +29,10 @@ interface ConfigStatus {
  * Note: LLM_MODEL is not required as it has a default value and can be
  * selected via UI dropdown. Only LLM_API_KEY and LLM_API_BASE are required.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const authResponse = await authorizeAgentApiRequest(request)
+  if (authResponse) return authResponse
+
   const configured: ConfigStatus['configured'] = {
     apiKey: !!process.env.LLM_API_KEY,
     apiBase: !!process.env.LLM_API_BASE,

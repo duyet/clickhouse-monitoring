@@ -30,8 +30,10 @@ import {
   validateSearchParams,
   validateSqlQuery,
 } from '@/lib/api/shared/validators'
+import { getTableConfig } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error } from '@/lib/logger'
 
 // This route is dynamic and should not be statically exported
@@ -209,6 +211,26 @@ export const POST = withApiHandler(async (request: Request) => {
       )
     }
   }
+
+  const serverQueryConfig = queryConfig?.name
+    ? getTableConfig(queryConfig.name)
+    : undefined
+  if (queryConfig?.name && !serverQueryConfig) {
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.ValidationError,
+        message: `Unknown query config: ${queryConfig.name}`,
+      },
+      400,
+      { ...ROUTE_CONTEXT, method: 'POST', hostId }
+    )
+  }
+
+  const permissionResponse = await authorizeFeatureRequest(
+    serverQueryConfig?.permission ?? queryConfig?.permission,
+    request
+  )
+  if (permissionResponse) return permissionResponse
 
   // Convert format string to DataFormat if needed
   const dataFormat = (format || 'JSONEachRow') as DataFormat

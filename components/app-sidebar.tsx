@@ -2,6 +2,7 @@
 
 import { menuItemsConfig } from '@/menu'
 
+import { useMemo } from 'react'
 import { HostSwitcher } from '@/components/host/host-switcher'
 import { NavUser } from '@/components/nav-user'
 import { NavMain } from '@/components/navigation/nav-main'
@@ -12,8 +13,16 @@ import {
   SidebarHeader,
 } from '@/components/ui/sidebar'
 import { GUEST_USER } from '@/lib/clerk/guest-user'
+import { useFeaturePermissions } from '@/lib/feature-permissions/context'
+import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
 
 export function AppSidebar() {
+  const { config } = useFeaturePermissions()
+  const menuItems = useMemo(
+    () => filterMenuItemsByPermissions(menuItemsConfig, config),
+    [config]
+  )
+
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
@@ -21,7 +30,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavMain items={menuItemsConfig} />
+        <NavMain items={menuItems} />
       </SidebarContent>
 
       <SidebarFooter>

@@ -1,0 +1,183 @@
+# Feature Permissions
+
+Feature permissions let each deployment hide or protect specific surfaces without changing the application code.
+
+By default, every feature is enabled and public:
+
+```toml
+enabled = true
+access = "public"
+```
+
+Only configure features that need different behavior. Missing entries keep the default.
+
+## Access Values
+
+| Value | Behavior |
+| --- | --- |
+| `public` | Guests and signed-in users can see and use the feature. |
+| `guest` | Alias for `public`. |
+| `authenticated` | Requires a Clerk session. Agent APIs also accept a valid `AGENT_API_TOKEN`. |
+
+V1 only supports public, including the `guest` alias, and authenticated access.
+There are no roles.
+
+## Config File
+
+Set `CHM_CONFIG_FILE` to a TOML or YAML file path.
+
+```toml
+# /etc/clickhouse-monitor/config.toml
+[features.agent]
+enabled = true
+access = "authenticated"
+
+[features.metrics]
+enabled = true
+access = "guest"
+
+[features.settings]
+enabled = false
+```
+
+The same config in YAML:
+
+```yaml
+features:
+  agent:
+    enabled: true
+    access: authenticated
+  metrics:
+    enabled: true
+    access: guest
+  settings:
+    enabled: false
+```
+
+## Docker
+
+Mount the config file and point `CHM_CONFIG_FILE` at the mounted path:
+
+```bash
+docker run \
+  -e CLICKHOUSE_HOST='http://clickhouse:8123' \
+  -e CLICKHOUSE_USER='default' \
+  -e CLICKHOUSE_PASSWORD='' \
+  -e CHM_CONFIG_FILE='/etc/clickhouse-monitor/config.toml' \
+  -v "$PWD/config.toml:/etc/clickhouse-monitor/config.toml:ro" \
+  ghcr.io/duyet/clickhouse-monitoring:main
+```
+
+For env-only Docker config:
+
+```bash
+docker run \
+  -e CLICKHOUSE_HOST='http://clickhouse:8123' \
+  -e CLICKHOUSE_USER='default' \
+  -e CLICKHOUSE_PASSWORD='' \
+  -e CHM_FEATURE_AGENT_ACCESS='authenticated' \
+  -e CHM_FEATURE_SETTINGS_ENABLED='false' \
+  ghcr.io/duyet/clickhouse-monitoring:main
+```
+
+## Environment Overrides
+
+Environment variables override the config file.
+
+```bash
+# Disable many features at once
+CHM_DISABLED_FEATURES=settings,insights
+
+# Require auth for many features at once
+CHM_AUTH_REQUIRED_FEATURES=agent,settings
+
+# Override one feature
+CHM_FEATURE_METRICS_ENABLED=false
+CHM_FEATURE_AGENT_ACCESS=authenticated
+CHM_FEATURE_METRICS_ACCESS=guest
+```
+
+Feature names are case-insensitive in the config file. Env variable names use uppercase feature ids.
+
+## Authentication
+
+Authenticated feature access needs Clerk enabled:
+
+```bash
+CHM_AUTH_PROVIDER=clerk
+NEXT_PUBLIC_AUTH_PROVIDER=clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_your_key
+CLERK_SECRET_KEY=sk_live_your_key
+```
+
+For agent APIs, `access = "authenticated"` accepts either a signed-in Clerk browser session or:
+
+```bash
+AGENT_API_TOKEN=your-shared-token
+```
+
+Then call the agent API with:
+
+```bash
+Authorization: Bearer your-shared-token
+```
+
+## Common Policies
+
+Allow guests to use everything except the AI agent:
+
+```toml
+[features.agent]
+access = "authenticated"
+```
+
+Hide metrics completely:
+
+```toml
+[features.metrics]
+enabled = false
+```
+
+Make settings visible only after sign-in:
+
+```toml
+[features.settings]
+access = "authenticated"
+```
+
+## Supported Features
+
+Use these feature ids in TOML, YAML, or env names:
+
+```text
+overview
+agent
+insights
+health
+queries
+tables
+metrics
+dashboard
+security
+logs
+settings
+cluster
+operations
+actions
+mcp
+docs
+about
+```
+
+## Precedence
+
+When multiple sources set the same feature, later sources win:
+
+```text
+built-in allow-all defaults
+TypeScript config defaults
+CHM_CONFIG_FILE TOML/YAML
+environment variables
+```
+
+Disabled features are removed from navigation and command search. Direct page visits show a disabled screen. API routes return a blocked response before running ClickHouse queries or agent logic.

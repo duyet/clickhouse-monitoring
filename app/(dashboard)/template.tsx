@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { FeatureRouteGate } from '@/components/feature-permissions/feature-route-gate'
 import { PageSkeleton } from '@/components/skeletons'
 
 /**
@@ -11,5 +12,9 @@ import { PageSkeleton } from '@/components/skeletons'
  * @see https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts#templates
  */
 export default function Template({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <FeatureRouteGate>{children}</FeatureRouteGate>
+    </Suspense>
+  )
 }

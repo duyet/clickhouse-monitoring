@@ -187,6 +187,12 @@ execute: async (input: unknown) => {
 
 Processes natural language queries through the AI agent and streams results.
 
+Authentication depends on `NEXT_PUBLIC_AUTH_PROVIDER`:
+
+- unset / `none`: no auth required, useful for self-hosted private networks
+- `clerk`: requires a signed-in Clerk browser session or a valid Bearer token
+  matching `AGENT_API_TOKEN`
+
 **Request Body:**
 
 ```typescript
@@ -220,6 +226,7 @@ data: {"type":"text-delta","textDelta":"Here are your results..."}
 ```bash
 curl -X POST http://localhost:3000/api/v1/agent \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -d '{
     "message": "Show me all databases",
     "hostId": 0

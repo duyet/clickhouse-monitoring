@@ -5,6 +5,9 @@
  * All flags default to false (unset) for safety — features must be explicitly enabled.
  */
 
+import { isClerkAuthProvider } from '@/lib/auth/provider'
+import { error } from '@/lib/logger'
+
 /**
  * Feature flag definitions.
  *
@@ -16,13 +19,24 @@ export const featureFlags = {
    * Enable persistent database storage for AI agent conversations.
    *
    * When enabled, conversations are stored in D1 (Cloudflare Workers) or PostgreSQL
-   * instead of localStorage. Requires Clerk auth for user isolation.
+   * instead of localStorage. Requires NEXT_PUBLIC_AUTH_PROVIDER=clerk for user
+   * isolation.
    *
    * @default false (unset)
    * @env NEXT_PUBLIC_FEATURE_CONVERSATION_DB
    */
-  conversationDb: (): boolean =>
-    process.env.NEXT_PUBLIC_FEATURE_CONVERSATION_DB === 'true',
+  conversationDb: (): boolean => {
+    if (process.env.NEXT_PUBLIC_FEATURE_CONVERSATION_DB !== 'true') {
+      return false
+    }
+
+    try {
+      return isClerkAuthProvider()
+    } catch (err) {
+      error('[featureFlags.conversationDb] Auth provider check failed', err)
+      return false
+    }
+  },
 } as const
 
 /**

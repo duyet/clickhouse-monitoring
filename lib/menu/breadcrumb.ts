@@ -40,7 +40,10 @@ function buildFallbackPath(normalizedPath: string): BreadcrumbItem[] {
  *
  * Parent menu items with href: '' are included as non-navigable section labels.
  */
-export function getBreadcrumbPath(pathname: string): BreadcrumbItem[] {
+export function getBreadcrumbPath(
+  pathname: string,
+  items: MenuItem[] = menuItemsConfig
+): BreadcrumbItem[] {
   const result: BreadcrumbItem[] = []
   const normalizedPath = pathname.split('?')[0] // Remove query params
 
@@ -67,7 +70,7 @@ export function getBreadcrumbPath(pathname: string): BreadcrumbItem[] {
     return false
   }
 
-  const found = searchItems(menuItemsConfig, [])
+  const found = searchItems(items, [])
 
   if (!found) {
     // Fallback: derive breadcrumbs from URL path segments

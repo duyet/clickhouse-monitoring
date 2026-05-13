@@ -4,6 +4,7 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const metricsConfig: QueryConfig = {
   name: 'metrics',
+  permission: { feature: 'metrics' },
   description:
     'Contains metrics which can be calculated instantly, or have a current value',
   tableCheck: 'system.metrics',

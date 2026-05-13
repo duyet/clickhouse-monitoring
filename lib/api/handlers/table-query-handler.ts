@@ -12,9 +12,10 @@ import {
   getHostIdFromParams,
   type RouteContext,
 } from '@/lib/api/error-handler'
-import { getTableQuery } from '@/lib/api/table-registry'
+import { getTableConfig, getTableQuery } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error } from '@/lib/logger'
 
 export interface CreateTableQueryHandlerOptions {
@@ -67,6 +68,13 @@ export function createTableQueryHandler(
         routeContext
       )
     }
+
+    const config = getTableConfig(queryConfigName)
+    const permissionResponse = await authorizeFeatureRequest(
+      config?.permission,
+      request
+    )
+    if (permissionResponse) return permissionResponse
 
     // Execute the query
     const result = await fetchData({

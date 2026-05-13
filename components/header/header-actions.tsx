@@ -11,6 +11,9 @@ import { NotificationsPopover } from '@/components/notifications/notifications-p
 import { SettingsDialog } from '@/components/settings'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'
+import { useFeaturePermissions } from '@/lib/feature-permissions/context'
+import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
 
 interface HeaderActionsProps {
   menuComponent?: React.ReactNode
@@ -23,6 +26,8 @@ export const HeaderActions = memo(function HeaderActions({
   const [mounted, setMounted] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const { config } = useFeaturePermissions()
+  const canUseSettings = isFeatureAllowed(SETTINGS_FEATURE_PERMISSION, config)
 
   // Handle hydration - set mounted state after client-side render
   useEffect(() => {
@@ -42,7 +47,9 @@ export const HeaderActions = memo(function HeaderActions({
       <CommandPalette
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
-        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSettings={
+          canUseSettings ? () => setSettingsOpen(true) : undefined
+        }
       />
 
       {/* Theme toggle - visible on all viewports */}
@@ -68,10 +75,11 @@ export const HeaderActions = memo(function HeaderActions({
       <NotificationsPopover />
       {menuComponent}
 
-      {/* Settings Dialog */}
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <div />
-      </SettingsDialog>
+      {canUseSettings && (
+        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <div />
+        </SettingsDialog>
+      )}
     </div>
   )
 })

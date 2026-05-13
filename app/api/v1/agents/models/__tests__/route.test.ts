@@ -1,13 +1,81 @@
-import { GET } from '../route'
-import { afterEach, describe, expect, test } from 'bun:test'
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  mock,
+  test,
+} from 'bun:test'
 
 const originalFetch = globalThis.fetch
+const AGENT_API_TOKEN = 'test-agent-token'
+let mockClerkUserId: string | null = null
+let GET: (request: Request) => Promise<Response>
+
+mock.module('@clerk/nextjs/server', () => ({
+  auth: async () => ({
+    userId: mockClerkUserId,
+  }),
+}))
+
+beforeAll(async () => {
+  process.env.AGENT_API_TOKEN = AGENT_API_TOKEN
+  const route = await import('../route')
+  GET = route.GET
+})
+
+beforeEach(() => {
+  process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
+  delete process.env.CHM_FEATURE_AGENT_ACCESS
+  mockClerkUserId = null
+})
 
 afterEach(() => {
   globalThis.fetch = originalFetch
 })
 
 describe('GET /api/v1/agents/models', () => {
+  function modelsRequest(headers?: HeadersInit) {
+    return new Request('http://localhost:3000/api/v1/agents/models', {
+      headers,
+    })
+  }
+
+  test('returns 401 when Clerk auth is enabled and credentials are missing', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.CHM_FEATURE_AGENT_ACCESS = 'authenticated'
+
+    const response = await GET(modelsRequest())
+
+    expect(response.status).toBe(401)
+  })
+
+  test('accepts Bearer token when Clerk auth is enabled', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.CHM_FEATURE_AGENT_ACCESS = 'authenticated'
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ data: [] }), { status: 200 })
+
+    const response = await GET(
+      modelsRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+
+    expect(response.status).toBe(200)
+  })
+
+  test('accepts Clerk session when Clerk auth is enabled', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.CHM_FEATURE_AGENT_ACCESS = 'authenticated'
+    mockClerkUserId = 'user_123'
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ data: [] }), { status: 200 })
+
+    const response = await GET(modelsRequest())
+
+    expect(response.status).toBe(200)
+  })
+
   test('leaves capabilities unknown when OpenRouter omits a curated model', async () => {
     globalThis.fetch = async () =>
       new Response(
@@ -29,7 +97,7 @@ describe('GET /api/v1/agents/models', () => {
         { status: 200 }
       )
 
-    const response = await GET()
+    const response = await GET(modelsRequest())
     const body = await response.json()
     const omittedModel = body.models.find(
       (model: { id: string }) =>

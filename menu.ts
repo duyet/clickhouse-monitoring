@@ -44,6 +44,7 @@ export const menuItemsConfig: MenuItem[] = [
     href: '/overview',
     icon: HomeIcon,
     section: 'main',
+    permission: { feature: 'overview' },
   },
   {
     title: 'AI Agent',
@@ -51,6 +52,7 @@ export const menuItemsConfig: MenuItem[] = [
     icon: SparklesIcon,
     section: 'main',
     isNew: true,
+    permission: { feature: 'agent' },
   },
   {
     title: 'Insights',
@@ -58,12 +60,14 @@ export const menuItemsConfig: MenuItem[] = [
     icon: TrendingUpIcon,
     section: 'main',
     isNew: true,
+    permission: { feature: 'insights' },
   },
   {
     title: 'Health',
     href: '/health',
     icon: HeartPulseIcon,
     section: 'main',
+    permission: { feature: 'health' },
   },
   {
     title: 'Queries',
@@ -71,6 +75,7 @@ export const menuItemsConfig: MenuItem[] = [
     countKey: 'running-queries',
     icon: MixIcon,
     section: 'main',
+    permission: { feature: 'queries' },
     items: [
       {
         title: 'Running Queries',
@@ -144,6 +149,7 @@ export const menuItemsConfig: MenuItem[] = [
     href: '/tables',
     icon: TableIcon,
     section: 'main',
+    permission: { feature: 'tables' },
     items: [
       {
         title: 'Data Explorer',
@@ -220,6 +226,7 @@ export const menuItemsConfig: MenuItem[] = [
     countLabel: 'active',
     icon: CombineIcon,
     section: 'main',
+    permission: { feature: 'operations' },
     items: [
       {
         title: 'Merges',
@@ -259,6 +266,7 @@ export const menuItemsConfig: MenuItem[] = [
         countKey: 'metrics',
         countLabel: 'metrics',
         icon: BarChartIcon,
+        permission: { feature: 'metrics' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/metrics',
       },
       {
@@ -266,6 +274,7 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/asynchronous-metrics',
         description: 'Background-calculated metrics for resource monitoring',
         icon: BarChartIcon,
+        permission: { feature: 'metrics' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/asynchronous_metrics',
       },
       {
@@ -273,6 +282,7 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/dashboard',
         description: 'Build custom monitoring dashboards with charts',
         icon: DashboardIcon,
+        permission: { feature: 'dashboard' },
       },
       {
         title: 'Profiler',
@@ -280,6 +290,7 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'CPU profiling data for query performance analysis',
         icon: CpuIcon,
         isNew: true,
+        permission: { feature: 'metrics' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/processors_profile_log',
       },
     ],
@@ -290,6 +301,7 @@ export const menuItemsConfig: MenuItem[] = [
     icon: ShieldIcon,
     section: 'others',
     isNew: true,
+    permission: { feature: 'security' },
     items: [
       {
         title: 'Sessions',
@@ -323,6 +335,7 @@ export const menuItemsConfig: MenuItem[] = [
     icon: ScrollTextIcon,
     section: 'others',
     isNew: true,
+    permission: { feature: 'logs' },
     items: [
       {
         title: 'Text Log',
@@ -363,6 +376,7 @@ export const menuItemsConfig: MenuItem[] = [
         countKey: 'settings',
         countLabel: 'settings',
         icon: GearIcon,
+        permission: { feature: 'settings' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/settings',
       },
       {
@@ -372,6 +386,7 @@ export const menuItemsConfig: MenuItem[] = [
         countKey: 'mergetree-settings',
         countLabel: 'settings',
         icon: TableIcon,
+        permission: { feature: 'settings' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/merge_tree_settings',
       },
       {
@@ -390,6 +405,7 @@ export const menuItemsConfig: MenuItem[] = [
     href: '',
     icon: UngroupIcon,
     section: 'others',
+    permission: { feature: 'cluster' },
     items: [
       {
         title: 'Clusters',
@@ -430,6 +446,7 @@ export const menuItemsConfig: MenuItem[] = [
     href: '',
     icon: ArchiveIcon,
     section: 'others',
+    permission: { feature: 'operations' },
     items: [
       {
         title: 'Backups',
@@ -461,18 +478,21 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Connect AI assistants via Model Context Protocol',
         icon: UnplugIcon,
         isNew: true,
+        permission: { feature: 'mcp' },
       },
       {
         title: 'Docs',
         href: '/docs',
         description: 'Documentation and usage guides',
         icon: BookOpenIcon,
+        permission: { feature: 'docs' },
       },
       {
         title: 'About',
         href: '/about',
         description: 'Dashboard and server version information',
         icon: InfoCircledIcon,
+        permission: { feature: 'about' },
       },
     ],
   },

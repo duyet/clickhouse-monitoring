@@ -30,7 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { isCloudflareWorkers } from '@/lib/clickhouse/clickhouse-client'
+import { isCloudflareWorkers } from '@/lib/runtime/cloudflare-workers'
 import { cn } from '@/lib/utils'
 
 export interface AgentToolPart {
