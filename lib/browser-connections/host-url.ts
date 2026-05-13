@@ -3,11 +3,18 @@ import { Address4, Address6 } from 'ip-address'
 const INTERNAL_ADDRESS_ERROR =
   'Connections to internal addresses are not allowed.'
 
+export type ResolveHostAddresses = (
+  hostname: string
+) => Promise<readonly string[]>
+
 /**
  * Returns an error string if the ClickHouse host URL is invalid or internal.
  * Returns null when the host is safe to use.
  */
-export function validateHostUrl(host: string): string | null {
+export async function validateHostUrl(
+  host: string,
+  resolveHostAddresses: ResolveHostAddresses = resolveDnsAddresses
+): Promise<string | null> {
   let url: URL
   try {
     url = new URL(host)
@@ -29,7 +36,43 @@ export function validateHostUrl(host: string): string | null {
     return INTERNAL_ADDRESS_ERROR
   }
 
+  if (!isIpLiteral(hostname)) {
+    const addresses = await resolveHostAddresses(hostname)
+    if (addresses.some(isInternalIp)) {
+      return INTERNAL_ADDRESS_ERROR
+    }
+  }
+
   return null
+}
+
+async function resolveDnsAddresses(hostname: string) {
+  const { lookup } = await import('node:dns/promises')
+  const records = await lookup(hostname, { all: true, verbatim: true })
+
+  return records.map((record) => record.address)
+}
+
+function isIpLiteral(hostname: string) {
+  return isAddress4(hostname) || isAddress6(hostname)
+}
+
+function isAddress4(hostname: string) {
+  try {
+    new Address4(hostname)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function isAddress6(hostname: string) {
+  try {
+    new Address6(hostname)
+    return true
+  } catch {
+    return false
+  }
 }
 
 function isInternalIp(hostname: string) {

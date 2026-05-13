@@ -79,7 +79,7 @@ export const POST = withApiHandler(
     }
 
     // Validate host URL and block SSRF targets
-    const ssrfError = validateHostUrl(host)
+    const ssrfError = await validateHostUrl(host)
     if (ssrfError) {
       return createValidationError(ssrfError, ROUTE_CONTEXT)
     }
