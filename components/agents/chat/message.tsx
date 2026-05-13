@@ -16,7 +16,6 @@ import {
 } from '@json-render/react'
 import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
-import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
 import {
   Message,
@@ -40,7 +39,6 @@ import { cn, formatDuration } from '@/lib/utils'
 
 import '../markdown-code.css'
 
-import { MermaidRenderer } from './mermaid-renderer'
 import { type AgentToolPart, ToolCallPart } from './tool-output'
 import {
   AGENT_JSON_RENDER_MAX_ELEMENT_COUNT,
@@ -556,7 +554,6 @@ function MarkdownContent({ text }: { readonly text: string }) {
     <div className="markdown-content">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
         components={{
           table: ({ children }) => (
             <div className="my-2 overflow-x-auto">
@@ -585,11 +582,6 @@ function MarkdownContent({ text }: { readonly text: string }) {
           ),
           code: ({ className, children }) => {
             const isInline = !className || className === 'language-'
-            if (className === 'language-mermaid') {
-              return (
-                <MermaidRenderer chart={String(children).replace(/\n$/, '')} />
-              )
-            }
             return isInline ? (
               <code className="rounded bg-muted px-1 py-0.5 text-sm">
                 {children}

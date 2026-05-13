@@ -6,7 +6,6 @@ import { rewriteDocsHref, rewriteDocsImageSrc, slugify } from '../_lib/shared'
 import Image from 'next/image'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
-import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
 
 type DocsMarkdownProps = {
@@ -28,7 +27,6 @@ export function DocsMarkdown({ markdown }: DocsMarkdownProps) {
     <div className="markdown-content docs-markdown">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
         components={{
           a: ({ href, children }) => {
             const resolvedHref = rewriteDocsHref(href)
