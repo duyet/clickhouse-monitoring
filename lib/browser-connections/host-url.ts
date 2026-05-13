@@ -1,5 +1,6 @@
+import type { Dispatcher, Agent as UndiciAgent } from 'undici'
+
 import { Address4, Address6 } from 'ip-address'
-import { Agent, type Dispatcher } from 'undici'
 
 const INTERNAL_ADDRESS_ERROR =
   'Connections to internal addresses are not allowed.'
@@ -11,6 +12,10 @@ type ClosableDispatcher = Dispatcher & {
   close?: () => Promise<void> | void
   destroy?: () => void
 }
+type UndiciModule = {
+  Agent: typeof UndiciAgent
+}
+let undiciModulePromise: Promise<UndiciModule> | undefined
 
 export type ResolveHostAddresses = (
   hostname: string
@@ -104,7 +109,7 @@ async function fetchPinnedToValidatedAddresses(
     : addresses.slice(0, 1)
 
   for (const address of addressesToTry) {
-    const dispatcher = createPinnedDispatcher(address)
+    const dispatcher = await createPinnedDispatcher(address)
     const pinnedInit = { dispatcher } satisfies FetchInitWithDispatcher
     const undiciFetch = fetch as unknown as (
       input: Parameters<typeof fetch>[0],
@@ -184,7 +189,8 @@ function getFetchUrl(input: Parameters<typeof fetch>[0]) {
       : input.url
 }
 
-function createPinnedDispatcher(address: string) {
+async function createPinnedDispatcher(address: string) {
+  const { Agent } = await loadUndici()
   const family = isAddress6(address) ? 6 : 4
 
   return new Agent({
@@ -194,6 +200,27 @@ function createPinnedDispatcher(address: string) {
       },
     },
   })
+}
+
+async function loadUndici() {
+  undiciModulePromise ??= importUndici()
+
+  return undiciModulePromise
+}
+
+async function importUndici() {
+  const dynamicImport = new Function(
+    'specifier',
+    'return import(specifier)'
+  ) as (specifier: string) => Promise<UndiciModule>
+
+  try {
+    return await dynamicImport('undici')
+  } catch (error) {
+    throw new Error('Unable to load Node fetch dispatcher for DNS pinning.', {
+      cause: error,
+    })
+  }
 }
 
 async function resolveDnsAddresses(hostname: string) {
