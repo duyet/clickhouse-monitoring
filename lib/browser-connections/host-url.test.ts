@@ -53,6 +53,8 @@ describe('validateHostUrl', () => {
       'http://[fe80::1]:8123',
       'http://[::ffff:127.0.0.1]:8123',
       'http://[::ffff:192.168.1.1]:8123',
+      'http://[2002:0a00:0001::1]:8123',
+      'http://[2001:0000:4136:e378:8000:63bf:f5ff:fffe]:8123',
     ]) {
       await expect(validateHostUrl(host)).resolves.toContain(
         'internal addresses'
@@ -79,14 +81,15 @@ describe('validateHostUrl', () => {
       validateHostUrl('https://timeout.example:8443', async () => {
         throw new Error('DNS lookup timed out')
       })
-    ).resolves.toContain('internal addresses')
+    ).resolves.toContain('resolve host')
   })
 
   test('guards each fetch request target', async () => {
     const previousFetch = globalThis.fetch
     const fetchMock = mock(
-      async () => new Response('{}', { status: 200 })
-    ) as unknown as typeof fetch
+      async (_input: Parameters<typeof fetch>[0], _init?: RequestInit) =>
+        new Response('{}', { status: 200 })
+    )
     globalThis.fetch = fetchMock
 
     try {
@@ -97,9 +100,73 @@ describe('validateHostUrl', () => {
       const response = await guardedFetch('https://safe.example:8443')
       expect(response.status).toBe(200)
       expect(fetchMock).toHaveBeenCalledTimes(1)
+
+      const [calledUrl, calledInit] = fetchMock.mock.calls[0]
+      const url =
+        calledUrl instanceof Request ? calledUrl.url : calledUrl.toString()
+      expect(url).toBe('https://safe.example:8443')
+      expect(calledInit).toHaveProperty('dispatcher')
+
       await expect(
         guardedFetch('https://private.example:8443')
       ).rejects.toThrow('internal addresses')
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    } finally {
+      globalThis.fetch = previousFetch
+    }
+  })
+
+  test('tries each validated address until fetch connects', async () => {
+    const previousFetch = globalThis.fetch
+    const fetchMock = mock(
+      async (_input: Parameters<typeof fetch>[0], _init?: RequestInit) => {
+        if (fetchMock.mock.calls.length === 1) {
+          throw new Error('network unreachable')
+        }
+
+        return new Response('{}', { status: 200 })
+      }
+    )
+    globalThis.fetch = fetchMock
+
+    try {
+      const guardedFetch = createHostValidationFetch(async () => [
+        '203.0.113.10',
+        '203.0.113.11',
+      ])
+
+      const response = await guardedFetch('https://safe.example:8443')
+
+      expect(response.status).toBe(200)
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(fetchMock.mock.calls[0][1]).toHaveProperty('dispatcher')
+      expect(fetchMock.mock.calls[1][1]).toHaveProperty('dispatcher')
+    } finally {
+      globalThis.fetch = previousFetch
+    }
+  })
+
+  test('does not retry non-idempotent fetch requests', async () => {
+    const previousFetch = globalThis.fetch
+    const fetchMock = mock(
+      async (_input: Parameters<typeof fetch>[0], _init?: RequestInit) => {
+        throw new Error('connection reset')
+      }
+    )
+    globalThis.fetch = fetchMock
+
+    try {
+      const guardedFetch = createHostValidationFetch(async () => [
+        '203.0.113.10',
+        '203.0.113.11',
+      ])
+
+      await expect(
+        guardedFetch('https://safe.example:8443', {
+          method: 'POST',
+          body: 'SELECT 1',
+        })
+      ).rejects.toThrow('connection reset')
       expect(fetchMock).toHaveBeenCalledTimes(1)
     } finally {
       globalThis.fetch = previousFetch

@@ -1,5 +1,7 @@
 'use client'
 
+import type { JSX } from 'react'
+
 import dynamic from 'next/dynamic'
 
 const AgentsRuntime = dynamic(
@@ -13,6 +15,6 @@ const AgentsRuntime = dynamic(
   }
 )
 
-export function AgentsPageClient() {
+export function AgentsPageClient(): JSX.Element {
   return <AgentsRuntime />
 }

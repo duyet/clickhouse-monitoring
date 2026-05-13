@@ -6,7 +6,9 @@ For easy deployment, use the [Vercel Platform](https://vercel.com/new?utm_medium
 
 ### 2. Docker
 
-Using the latest image here: https://github.com/duyet/clickhouse-monitoring/pkgs/container/clickhouse-monitoring
+Use the published image from GitHub Container Registry and replace `vX.Y.Z`
+with the release tag you want to run:
+https://github.com/duyet/clickhouse-monitoring/pkgs/container/clickhouse-monitoring
 
 ```bash
 docker run -it \
@@ -17,7 +19,7 @@ docker run -it \
     -e CLICKHOUSE_MAX_EXECUTION_TIME='15' \
     -e NEXT_QUERY_CACHE_TTL='86400' \
     --name clickhouse-monitoring \
-    ghcr.io/duyet/clickhouse-monitoring:main
+    ghcr.io/duyet/clickhouse-monitoring:vX.Y.Z
 ```
 
 ### 3. Kubernetes Helm Chart

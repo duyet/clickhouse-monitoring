@@ -87,10 +87,10 @@ OpenNext Cloudflare adapter configuration:
 
 Configure these as Worker secrets or environment variables:
 
-- `CLICKHOUSE_HOST` - ClickHouse server URL(s)
-- `CLICKHOUSE_USER` - Authentication username(s)
-- `CLICKHOUSE_PASSWORD` - Authentication password(s)
-- `CLICKHOUSE_NAME` - Optional custom name(s) for instances
+- `CLICKHOUSE_HOST` - ClickHouse server URL(s), comma-separated for multi-host
+- `CLICKHOUSE_USER` - Authentication username(s), comma-separated for multi-host
+- `CLICKHOUSE_PASSWORD` - Authentication password(s), comma-separated for multi-host
+- `CLICKHOUSE_NAME` - Optional instance name(s), comma-separated for multi-host
 - `CLICKHOUSE_MAX_EXECUTION_TIME` - Query timeout in seconds
 
 ## Bindings
