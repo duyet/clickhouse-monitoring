@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
@@ -14,7 +15,10 @@ async function walk(dir: string): Promise<string[]> {
     entries.map(async (entry) => {
       const full = path.join(dir, entry.name)
       if (entry.isDirectory()) return walk(full)
-      return entry.isFile() && entry.name.endsWith('.mdx') ? [full] : []
+      return entry.isFile() &&
+        (entry.name.endsWith('.mdx') || entry.name.endsWith('.md'))
+        ? [full]
+        : []
     })
   )
   return files.flat()
@@ -22,8 +26,8 @@ async function walk(dir: string): Promise<string[]> {
 
 function toSlug(file: string) {
   const rel = path.relative(ROOT, file).replace(/\\/g, '/')
-  const noExt = rel.replace(/\.mdx$/, '')
-  return noExt === 'index' ? '' : noExt
+  const noExt = rel.replace(/\.(mdx|md)$/, '')
+  return noExt === 'index' ? '' : noExt.replace(/\/index$/, '')
 }
 
 const files = (await walk(ROOT)).sort()

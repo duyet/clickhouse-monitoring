@@ -17,15 +17,14 @@ related:
 
 ## Component Patterns
 
-- **Server Components** by default (no `"use client"` directive)
-- **Client Components** for interactivity (context, state, hooks)
+- **All pages use `'use client'`** — this is a fully static site with no server components
 - **Hooks at deepest consumer** — use hooks at the component that needs data, not parent. Example: `CountBadge` calls `useHostId()` internally rather than receiving `hostId` as a prop
 - **Compound components** for complex UI (data tables)
 
 ## File Organization
 
-- Server components: `.tsx` without `"use client"`
-- Client components: `.tsx` with `"use client"` directive
+- All pages: `.tsx` with `"use client"` directive
+- Layouts: `app/[route]/layout.tsx`
 - Pages: `app/[route]/page.tsx`
 - Layouts: `app/[route]/layout.tsx`
 - Configs: `config.ts` within route directories

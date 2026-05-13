@@ -106,6 +106,17 @@ export function docsHref(slug: string) {
 }
 
 async function readDocsSource(slug: string) {
+  const overrideRoot = process.env.DOCS_CONTENT_ROOT
+  if (overrideRoot) {
+    const { readFile } = await import('node:fs/promises')
+    const { existsSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    for (const ext of ['.mdx', '.md']) {
+      const file = join(overrideRoot, slug ? `${slug}${ext}` : `index${ext}`)
+      if (existsSync(file)) return readFile(file, 'utf8')
+    }
+    return null
+  }
   return Object.hasOwn(docsContent, slug) ? docsContent[slug] : null
 }
 
