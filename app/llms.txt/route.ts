@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 const CONTENT = `# ClickHouse Monitor
 
-A modern Next.js 16 dashboard for real-time ClickHouse cluster monitoring through system tables.
+A modern Next.js 15 dashboard for real-time ClickHouse cluster monitoring through system tables.
 
 ## Purpose
 
@@ -21,7 +21,7 @@ Provides real-time insights into ClickHouse clusters with:
 
 ### Deployment
 - docs/deployment.md - Docker and Cloudflare Workers deployment guides
-- .env.local.example - Environment variable reference
+- .env.example - Environment variable reference
 
 ### ClickHouse Compatibility
 - docs/clickhouse-schemas/ - System table schema documentation by version
@@ -477,15 +477,15 @@ Never customize \`components/ui/\` files directly:
 - \`bun install\` - Install dependencies
 - \`bun run dev\` - Start dev server with turbopack
 - \`bun run build\` - Build for production (includes type checking)
-- \`bun run test\` - Run Jest tests
+- \`bun run test\` - Run the Bun test suite
 
 ## Quality Verification
 
 After making changes:
 1. Run \`bun run build\` - TypeScript type checking included
 2. Fix any type errors before marking complete
-3. Use \`bun run lint\` for ESLint checks
-4. Use \`bun run fmt\` for Prettier formatting
+3. Use \`bun run lint\` for Biome lint checks
+4. Use \`bun run fmt\` for Biome formatting
 `
 
 export async function GET() {
