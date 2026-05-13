@@ -16,6 +16,8 @@ All these hosts will share the same `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD`.
 
 # Examples Docker
 
+Replace `vX.Y.Z` with the release tag you want to run.
+
 <Tabs items={['Docker (same user)', 'Docker (different user)']}>
   <Tabs.Tab>
     ```bash
@@ -25,7 +27,7 @@ All these hosts will share the same `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD`.
       -e CLICKHOUSE_USER='default' \
       -e CLICKHOUSE_PASSWORD='' \
       --name clickhouse-monitoring \
-    ghcr.io/duyet/clickhouse-monitoring:main
+    ghcr.io/duyet/clickhouse-monitoring:vX.Y.Z
     ```
   </Tabs.Tab>
   <Tabs.Tab>
@@ -36,7 +38,7 @@ All these hosts will share the same `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD`.
       -e CLICKHOUSE_USER='user1,user2' \
       -e CLICKHOUSE_PASSWORD='password1,password2' \
       --name clickhouse-monitoring \
-    ghcr.io/duyet/clickhouse-monitoring:main
+    ghcr.io/duyet/clickhouse-monitoring:vX.Y.Z
     ```
   </Tabs.Tab>
 </Tabs>

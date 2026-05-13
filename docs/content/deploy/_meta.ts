@@ -1,4 +1,6 @@
-export const meta = {
+import type { DeployMeta } from '@/types/docs'
+
+export const meta: DeployMeta = {
   vercel: 'Vercel',
   cloudflare: 'Cloudflare',
   docker: 'Docker',

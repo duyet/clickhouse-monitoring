@@ -1,7 +1,10 @@
 # Docker
 
-Use the published image from GitHub Container Registry:
+Use the published image from GitHub Container Registry. Pin a release tag in
+production; use `:main` only when you intentionally want the rolling image.
 https://github.com/duyet/clickhouse-monitoring/pkgs/container/clickhouse-monitoring
+
+Replace `vX.Y.Z` with the release tag you want to run.
 
 ```bash
 docker run --rm -it \
@@ -14,7 +17,7 @@ docker run --rm -it \
   -e CLICKHOUSE_MAX_EXECUTION_TIME='15' \
   -e NEXT_QUERY_CACHE_TTL='300' \
   --name clickhouse-monitoring \
-  ghcr.io/duyet/clickhouse-monitoring:main
+  ghcr.io/duyet/clickhouse-monitoring:vX.Y.Z
 ```
 
 Open `http://localhost:3000` after the container starts.
@@ -24,7 +27,7 @@ Open `http://localhost:3000` after the container starts.
 ```yaml
 services:
   clickhouse-monitoring:
-    image: ghcr.io/duyet/clickhouse-monitoring:main
+    image: ghcr.io/duyet/clickhouse-monitoring:vX.Y.Z
     ports:
       - '3000:3000'
     environment:
@@ -34,6 +37,12 @@ services:
       CLICKHOUSE_TZ: 'UTC'
       CLICKHOUSE_MAX_EXECUTION_TIME: '15'
       NEXT_QUERY_CACHE_TTL: '300'
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
 ```
 
 If ClickHouse runs in the same Compose project, use the service name in
@@ -44,7 +53,7 @@ address for your platform.
 
 ```bash
 docker compose exec clickhouse-monitoring \
-  wget -q -O /dev/null http://localhost:3000/api/healthz
+  wget -q -O /dev/null http://localhost:3000/api/health
 ```
 
 ## Common Problems

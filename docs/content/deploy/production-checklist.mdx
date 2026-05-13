@@ -36,6 +36,11 @@ bun run test
 
 For Cloudflare:
 
+Ensure `.env.local` contains `CLICKHOUSE_HOST`, `CLICKHOUSE_USER`, and
+`CLICKHOUSE_PASSWORD`. Add `CLICKHOUSE_NAME` when you want custom host names.
+For multi-host deployments, use comma-separated values in the same order across
+all four variables.
+
 ```bash
 bun run cf:build
 bun run cf:deploy
@@ -43,6 +48,11 @@ bun run cf:health
 ```
 
 For Docker:
+
+Ensure `.env.local` contains `CLICKHOUSE_HOST`, `CLICKHOUSE_USER`, and
+`CLICKHOUSE_PASSWORD`. Add `CLICKHOUSE_NAME` when you want custom host names.
+For multi-host deployments, use comma-separated values in the same order across
+all four variables.
 
 ```bash
 docker compose up -d
