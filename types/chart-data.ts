@@ -3,12 +3,6 @@ import type { ClickHouseInterval } from './clickhouse-interval'
 import type { VersionedSql } from './query-config'
 
 /**
- * Semver range string for version matching
- * Examples: ">=24.1", "<24.5", ">=24.1 <24.5", "^24.1"
- */
-export type SemverRange = string
-
-/**
  * Cache policy for HTTP Cache-Control headers.
  * - realtime: short TTL (10s/30s) for frequently changing data
  * - standard: moderate TTL (30s/60s) for typical dashboard data
