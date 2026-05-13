@@ -135,7 +135,6 @@
     "lru-cache": "^11.2.5",
     "lucide-react": "^1.0.0",
     "mdast-util-to-hast": "^13.2.1",
-    "mermaid": "^11.15.0",
     "miniflare": "^4.20260205.0",
     "motion": "^12.35.2",
     "nanoid": "^5.1.6",
@@ -152,7 +151,6 @@
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^4.6.2",
     "recharts": "3.8.1",
-    "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
     "smol-toml": "^1.6.1",
     "sonner": "^2.0.7",
@@ -179,7 +177,7 @@
     "@cypress/code-coverage": "^4.0.3",
     "@cypress/request": "^4.0.0",
     "@cypress/webpack-preprocessor": "^7.1.0",
-    "@opennextjs/cloudflare": "^1.19.9",
+    "@opennextjs/cloudflare": "1.17.1",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.2.2",
     "@types/react": "^19.0.0",
@@ -194,7 +192,7 @@
     "start-server-and-test": "^3.0.0",
     "turbo": "^2.8.3",
     "typescript": "^6.0.0",
-    "wrangler": "^4.90.0"
+    "wrangler": "4.65.0"
   },
   "bun": {
     "onlyBuiltDependencies": [

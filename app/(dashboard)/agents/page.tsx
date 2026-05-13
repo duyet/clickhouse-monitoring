@@ -1,14 +1,5 @@
-'use client'
-
-import { AgentsLayout } from '@/components/agents/agents-layout'
-import { ConversationProvider } from '@/lib/ai/agent/conversation-context'
+import { AgentsPageClient } from '@/components/agents/agents-page-client'
 
 export default function AgentsPage() {
-  return (
-    <ConversationProvider>
-      <div className="h-[calc(100dvh-4rem)] overflow-hidden">
-        <AgentsLayout />
-      </div>
-    </ConversationProvider>
-  )
+  return <AgentsPageClient />
 }
