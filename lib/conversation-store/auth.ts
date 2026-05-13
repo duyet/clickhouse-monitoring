@@ -4,6 +4,7 @@
 
 import { ConversationStoreError } from './types'
 import { auth } from '@clerk/nextjs/server'
+import { isClerkAuthProvider } from '@/lib/auth/provider'
 
 /**
  * Guest user ID constant for unauthenticated users.
@@ -23,7 +24,7 @@ const CLERK_SECRET_KEY = 'CLERK_SECRET_KEY'
  * or returns an auth error.
  */
 export async function resolveUserId(): Promise<string> {
-  if (!process.env[CLERK_SECRET_KEY]) {
+  if (!isClerkAuthProvider() || !process.env[CLERK_SECRET_KEY]) {
     throw new ConversationStoreError(
       'Authentication is required for conversation storage.',
       'UNAUTHORIZED'

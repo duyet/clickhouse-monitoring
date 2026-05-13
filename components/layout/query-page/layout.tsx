@@ -28,9 +28,12 @@ import { ChartsToggle } from './charts-toggle'
 import { RelatedCharts } from './related-charts'
 import { useChartsCollapsed } from './use-charts-collapsed'
 import { memo, type ReactNode, Suspense } from 'react'
+import { FeatureUnavailable } from '@/components/feature-permissions/feature-unavailable'
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
 import { FadeIn } from '@/components/ui/fade-in'
+import { useFeaturePermissions } from '@/lib/feature-permissions/context'
+import { resolveFeatureState } from '@/lib/feature-permissions/shared'
 import { useHostId } from '@/lib/swr'
 
 export interface QueryPageLayoutProps {
@@ -72,10 +75,36 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   maxTableHeight,
 }: QueryPageLayoutProps) {
   const hostId = useHostId()
+  const { config, isLoading } = useFeaturePermissions()
   const relatedCharts = queryConfig.relatedCharts || []
   const { isCollapsed, toggleCollapsed, collapsedRows, toggleRow } =
     useChartsCollapsed()
   const hasCharts = relatedCharts.length > 0
+  const featureState = resolveFeatureState(queryConfig.permission, config)
+
+  if (queryConfig.permission) {
+    if (!isLoading && !featureState.enabled) {
+      return (
+        <FeatureUnavailable
+          feature={queryConfig.permission.feature}
+          reason="disabled"
+        />
+      )
+    }
+
+    if (
+      !isLoading &&
+      featureState.access === 'authenticated' &&
+      config.principal !== 'authenticated'
+    ) {
+      return (
+        <FeatureUnavailable
+          feature={queryConfig.permission.feature}
+          reason="auth"
+        />
+      )
+    }
+  }
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-4 w-full max-w-full">

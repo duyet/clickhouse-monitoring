@@ -4,6 +4,7 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const settingsConfig: QueryConfig = {
   name: 'settings',
+  permission: { feature: 'settings' },
   tableCheck: 'system.settings',
   sql: `
       SELECT *

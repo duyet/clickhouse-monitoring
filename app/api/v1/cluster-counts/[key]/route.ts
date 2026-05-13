@@ -26,6 +26,8 @@ import {
 } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { CLUSTER_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error, generateRequestId } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
@@ -50,6 +52,11 @@ export async function GET(
     const { key: countKey } = await context.params
     const url = new URL(request.url)
     const searchParams = url.searchParams
+    const permissionResponse = await authorizeFeatureRequest(
+      CLUSTER_FEATURE_PERMISSION,
+      request
+    )
+    if (permissionResponse) return permissionResponse
 
     // Validate count key format
     const countKeyResult = MenuCountKeySchema.safeParse(countKey)

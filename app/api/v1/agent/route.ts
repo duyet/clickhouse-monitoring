@@ -13,7 +13,6 @@
 
 import type { LanguageModelUsage } from 'ai'
 
-import { createHash, timingSafeEqual } from 'node:crypto'
 import { pipeJsonRender } from '@json-render/core'
 import {
   convertToModelMessages,
@@ -29,14 +28,12 @@ import { aggregateUsageWithCost } from '@/lib/ai/agent/analytics'
 import { classifyError } from '@/lib/ai/agent/errors'
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
 import { createJsonRenderPatchGuardStream } from '@/lib/ai/agent/json-render-patch-guard'
+import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
 
 const AGENT_DEBUG_LOGS = process.env.NODE_ENV !== 'production'
-const EXPECTED_TOKEN_HASH = process.env.AGENT_API_TOKEN
-  ? createHash('sha256').update(process.env.AGENT_API_TOKEN).digest()
-  : null
 
 const AGENT_MAX_REQUEST_SIZE_BYTES = 128 * 1024
 const AGENT_STREAM_TIMEOUT_MS = 30_000
@@ -238,51 +235,11 @@ function sanitizeIncomingMessages(
 }
 
 /**
- * Validate the request's Authorization header against `AGENT_API_TOKEN`.
- *
- * @param request - Incoming HTTP request containing an Authorization header.
- * @returns `true` when `request` contains a valid Bearer token matching
- * `AGENT_API_TOKEN`, otherwise `false`.
- *
- * Uses SHA-256 + `timingSafeEqual` to keep response timing consistent for
- * token comparisons and avoid leaking raw token length differences.
- * Returns `false` when the token is missing, malformed, or mismatched.
- */
-function isAuthorized(request: Request): boolean {
-  if (!EXPECTED_TOKEN_HASH) {
-    return false
-  }
-
-  const authHeader = request.headers.get('authorization')
-  const parts = authHeader?.split(/\s+/)
-  if (!parts || parts.length < 2 || parts[0]?.toLowerCase() !== 'bearer') {
-    return false
-  }
-
-  const providedToken = parts.slice(1).join(' ')
-  const providedTokenHash = createHash('sha256').update(providedToken).digest()
-
-  return timingSafeEqual(EXPECTED_TOKEN_HASH, providedTokenHash)
-}
-
-/**
  * Handle POST requests for agent processing with streaming
  */
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
-    return new Response(
-      JSON.stringify({
-        error: { message: 'Unauthorized' },
-      }),
-      {
-        status: 401,
-        headers: {
-          'content-type': 'application/json',
-          'www-authenticate': 'Bearer',
-        },
-      }
-    )
-  }
+  const authResponse = await authorizeAgentApiRequest(request)
+  if (authResponse) return authResponse
 
   const contentLengthHeader = request.headers.get('content-length')
   if (contentLengthHeader) {

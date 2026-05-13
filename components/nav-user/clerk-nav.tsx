@@ -9,7 +9,7 @@ import {
   User as UserIcon,
 } from 'lucide-react'
 
-import { SignInButton, SignOutButton, useUser } from '@clerk/nextjs'
+import { SignInButton, SignOutButton, useClerk, useUser } from '@clerk/nextjs'
 import { useCallback, useState } from 'react'
 import { useSettingsShortcut } from '@/components/nav-user/use-settings-shortcut'
 import { SettingsDialog } from '@/components/settings'
@@ -29,6 +29,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { useFeaturePermissions } from '@/lib/feature-permissions/context'
+import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
 
 /**
  * Clerk-integrated navigation user menu.
@@ -39,10 +42,15 @@ import {
  */
 export function ClerkNavWrapper() {
   const { user, isLoaded, isSignedIn } = useUser()
+  const { openUserProfile } = useClerk()
   const { isMobile } = useSidebar()
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const openSettings = useCallback(() => setSettingsOpen(true), [])
-  useSettingsShortcut(openSettings)
+  const { config } = useFeaturePermissions()
+  const canUseSettings = isFeatureAllowed(SETTINGS_FEATURE_PERMISSION, config)
+  const openSettings = useCallback(() => {
+    if (canUseSettings) setSettingsOpen(true)
+  }, [canUseSettings])
+  useSettingsShortcut(openSettings, canUseSettings)
 
   // Loading state - show skeleton
   if (!isLoaded) {
@@ -140,16 +148,13 @@ export function ClerkNavWrapper() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem asChild>
-                    <a
-                      href="https://dashboard.clerk.com/apps"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2"
-                    >
-                      <UserIcon className="h-4 w-4" />
-                      <span>Account Settings</span>
-                    </a>
+                  <DropdownMenuItem
+                    className="flex items-center gap-2"
+                    onSelect={() => openUserProfile()}
+                    data-testid="nav-user-account"
+                  >
+                    <UserIcon className="h-4 w-4" />
+                    <span>Account Settings</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="flex items-center gap-2"
@@ -171,19 +176,21 @@ export function ClerkNavWrapper() {
                       <span>GitHub Repo</span>
                     </a>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="flex items-center gap-2"
-                    onSelect={() => {
-                      setSettingsOpen(true)
-                    }}
-                    data-testid="nav-user-settings"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      ⌘,
-                    </span>
-                  </DropdownMenuItem>
+                  {canUseSettings && (
+                    <DropdownMenuItem
+                      className="flex items-center gap-2"
+                      onSelect={() => {
+                        setSettingsOpen(true)
+                      }}
+                      data-testid="nav-user-settings"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Settings</span>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        ⌘,
+                      </span>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <SignOutButton>
@@ -197,9 +204,11 @@ export function ClerkNavWrapper() {
           )}
         </SidebarMenuItem>
       </SidebarMenu>
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <div />
-      </SettingsDialog>
+      {canUseSettings && (
+        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <div />
+        </SettingsDialog>
+      )}
     </>
   )
 }

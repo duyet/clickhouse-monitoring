@@ -25,6 +25,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { BrowserConnectionsProvider } from '@/lib/context/browser-connections-context'
 import { TimeRangeProvider } from '@/lib/context/time-range-context'
 import { TimezoneProvider } from '@/lib/context/timezone-context'
+import { FeaturePermissionsProvider } from '@/lib/feature-permissions/context'
 import { SWRProvider } from '@/lib/swr'
 
 const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
@@ -56,7 +57,9 @@ function Providers({ children }: { children: React.ReactNode }) {
                 <Suspense fallback={null}>
                   <HostProviderFromUrl>
                     <AppProvider reloadIntervalSecond={120}>
-                      {children}
+                      <FeaturePermissionsProvider>
+                        {children}
+                      </FeaturePermissionsProvider>
                     </AppProvider>
                   </HostProviderFromUrl>
                 </Suspense>

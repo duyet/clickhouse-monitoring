@@ -1,10 +1,13 @@
 'use client'
 
 import { ChevronRightIcon } from 'lucide-react'
+import { menuItemsConfig } from '@/menu'
 
 import { usePathname } from 'next/navigation'
 import { memo, useMemo } from 'react'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
+import { useFeaturePermissions } from '@/lib/feature-permissions/context'
+import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
 import { getBreadcrumbPath } from '@/lib/menu/breadcrumb'
 import { cn } from '@/lib/utils'
 
@@ -16,10 +19,15 @@ export const Breadcrumb = memo(function Breadcrumb({
   className,
 }: BreadcrumbProps) {
   const pathname = usePathname()
+  const { config } = useFeaturePermissions()
+  const menuItems = useMemo(
+    () => filterMenuItemsByPermissions(menuItemsConfig, config),
+    [config]
+  )
 
   const breadcrumbs = useMemo(() => {
-    return getBreadcrumbPath(pathname)
-  }, [pathname])
+    return getBreadcrumbPath(pathname, menuItems)
+  }, [pathname, menuItems])
 
   return (
     <nav

@@ -2,8 +2,10 @@
 
 import { useEffect } from 'react'
 
-export function useSettingsShortcut(openSettings: () => void) {
+export function useSettingsShortcut(openSettings: () => void, enabled = true) {
   useEffect(() => {
+    if (!enabled) return
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === ',') {
         event.preventDefault()
@@ -13,5 +15,5 @@ export function useSettingsShortcut(openSettings: () => void) {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [openSettings])
+  }, [enabled, openSettings])
 }

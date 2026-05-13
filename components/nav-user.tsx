@@ -23,6 +23,9 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { isClerkEnabled } from '@/lib/clerk/clerk-client'
+import { useFeaturePermissions } from '@/lib/feature-permissions/context'
+import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
 
 // Lazy load Clerk components to avoid hydration issues when Clerk is disabled
 const ClerkNavWrapper = isClerkEnabled()
@@ -40,8 +43,12 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const openSettings = useCallback(() => setSettingsOpen(true), [])
-  useSettingsShortcut(openSettings)
+  const { config } = useFeaturePermissions()
+  const canUseSettings = isFeatureAllowed(SETTINGS_FEATURE_PERMISSION, config)
+  const openSettings = useCallback(() => {
+    if (canUseSettings) setSettingsOpen(true)
+  }, [canUseSettings])
+  useSettingsShortcut(openSettings, canUseSettings)
 
   // If Clerk is enabled, use Clerk navigation
   if (isClerkEnabled() && ClerkNavWrapper) {
@@ -119,28 +126,32 @@ export function NavUser({
                       <span>GitHub Repo</span>
                     </a>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="flex items-center gap-2"
-                    onSelect={() => {
-                      setSettingsOpen(true)
-                    }}
-                    data-testid="nav-user-settings"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      ⌘,
-                    </span>
-                  </DropdownMenuItem>
+                  {canUseSettings && (
+                    <DropdownMenuItem
+                      className="flex items-center gap-2"
+                      onSelect={() => {
+                        setSettingsOpen(true)
+                      }}
+                      data-testid="nav-user-settings"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Settings</span>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        ⌘,
+                      </span>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           </ClientOnly>
         </SidebarMenuItem>
       </SidebarMenu>
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <div />
-      </SettingsDialog>
+      {canUseSettings && (
+        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <div />
+        </SettingsDialog>
+      )}
     </>
   )
 }

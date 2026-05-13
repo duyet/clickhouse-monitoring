@@ -1,3 +1,4 @@
+import type { FeaturePermission } from '@/lib/feature-permissions/types'
 import type { BadgeVariant } from '@/types/badge-variant'
 import type { Icon } from '@/types/icon'
 
@@ -20,4 +21,6 @@ export interface MenuItem {
   isNew?: boolean
   /** Link to ClickHouse documentation for this feature */
   docs?: string
+  /** Feature gate metadata for deployment-level permissions */
+  permission?: FeaturePermission
 }

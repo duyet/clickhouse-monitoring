@@ -20,6 +20,7 @@ import {
 } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error } from '@/lib/logger'
 
 // This route is dynamic and should not be statically exported
@@ -93,6 +94,11 @@ export async function GET(
 
   // Get the original config for optional table checks
   const config = getTableConfig(name)
+  const permissionResponse = await authorizeFeatureRequest(
+    config?.permission,
+    request
+  )
+  if (permissionResponse) return permissionResponse
 
   // Execute the query - always pass the full config for version selection
   const result = await fetchData({

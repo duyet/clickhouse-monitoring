@@ -258,10 +258,13 @@ async function main() {
     `║  1. Enable feature flag: NEXT_PUBLIC_FEATURE_CONVERSATION_DB=true ║`
   )
   console.log(
-    `║  2. Deploy: bun run cf:deploy                                ║`
+    `║  2. Set auth provider: NEXT_PUBLIC_AUTH_PROVIDER=clerk       ║`
   )
   console.log(
-    `║  3. Test the /agents page with conversation persistence        ║`
+    `║  3. Deploy: bun run cf:deploy                                ║`
+  )
+  console.log(
+    `║  4. Test the /agents page with conversation persistence        ║`
   )
   console.log(`╚════════════════════════════════════════════════════════════╝`)
 }

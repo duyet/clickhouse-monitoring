@@ -9,6 +9,8 @@
  * Only countKey identifiers are used to look up pre-defined queries.
  */
 
+import { menuItemsConfig } from '@/menu'
+
 import { createErrorResponse } from '@/lib/api/error-handler'
 import {
   getMenuCountQuery,
@@ -21,6 +23,8 @@ import {
 } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { findMenuPermissionForCountKey } from '@/lib/feature-permissions/menu'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error, generateRequestId } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
@@ -91,6 +95,13 @@ export async function GET(
         headers,
       })
     }
+
+    const permission = findMenuPermissionForCountKey(menuItemsConfig, countKey)
+    const permissionResponse = await authorizeFeatureRequest(
+      permission,
+      request
+    )
+    if (permissionResponse) return permissionResponse
 
     // Validate hostId parameter
     const hostIdResult = HostIdSchema.safeParse(

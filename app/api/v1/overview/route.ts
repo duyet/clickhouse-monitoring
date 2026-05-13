@@ -18,6 +18,8 @@
 import { getHostIdFromParams, withApiHandler } from '@/lib/api/error-handler'
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { fetchData } from '@/lib/clickhouse'
+import { OVERVIEW_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { error } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
@@ -25,6 +27,12 @@ export const dynamic = 'force-dynamic'
 const ROUTE_CONTEXT = { route: '/api/v1/overview' }
 
 export const GET = withApiHandler(async (request: Request) => {
+  const permissionResponse = await authorizeFeatureRequest(
+    OVERVIEW_FEATURE_PERMISSION,
+    request
+  )
+  if (permissionResponse) return permissionResponse
+
   const url = new URL(request.url)
   const hostId = getHostIdFromParams(url.searchParams, ROUTE_CONTEXT)
 

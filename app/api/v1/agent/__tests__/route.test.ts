@@ -18,6 +18,7 @@ type CapturedAIArgs = {
 
 const capturedAgentArgs: Array<Record<string, unknown>> = []
 const capturedAIArgs: CapturedAIArgs[] = []
+let mockClerkUserId: string | null = null
 
 mock.module('@/lib/ai/agent', () => ({
   createClickHouseAgent: (options: Record<string, unknown>) => {
@@ -110,6 +111,12 @@ mock.module('ai', () => {
   }
 })
 
+mock.module('@clerk/nextjs/server', () => ({
+  auth: async () => ({
+    userId: mockClerkUserId,
+  }),
+}))
+
 describe('POST /api/v1/agent', () => {
   const AGENT_API_TOKEN = 'test-agent-token'
 
@@ -134,6 +141,9 @@ describe('POST /api/v1/agent', () => {
   beforeEach(() => {
     capturedAgentArgs.length = 0
     capturedAIArgs.length = 0
+    mockClerkUserId = null
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    delete process.env.CHM_FEATURE_AGENT_ACCESS
   })
 
   async function readJsonRenderStreamValues(
@@ -201,7 +211,25 @@ describe('POST /api/v1/agent', () => {
     return values
   }
 
-  test('returns 401 when Authorization header is missing', async () => {
+  test('skips auth when auth provider is disabled', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
+
+    const request = new Request('http://localhost:3000/api/v1/agent', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Show me all databases',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(200)
+  })
+
+  test('returns 401 when Clerk auth is enabled and credentials are missing', async () => {
+    process.env.CHM_FEATURE_AGENT_ACCESS = 'authenticated'
+
     const request = new Request('http://localhost:3000/api/v1/agent', {
       method: 'POST',
       body: JSON.stringify({
@@ -216,7 +244,26 @@ describe('POST /api/v1/agent', () => {
     expect(response.headers.get('www-authenticate')).toBe('Bearer')
   })
 
+  test('accepts Clerk session without Bearer token', async () => {
+    process.env.CHM_FEATURE_AGENT_ACCESS = 'authenticated'
+    mockClerkUserId = 'user_123'
+
+    const request = new Request('http://localhost:3000/api/v1/agent', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Show me all databases',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(200)
+  })
+
   test('accepts lowercase bearer token scheme', async () => {
+    process.env.CHM_FEATURE_AGENT_ACCESS = 'authenticated'
+
     const request = new Request('http://localhost:3000/api/v1/agent', {
       method: 'POST',
       headers: { authorization: 'bearer test-agent-token' },

@@ -32,6 +32,7 @@ import {
   selectQueryVariant,
   selectVersionedSql,
 } from '@/lib/clickhouse-version'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error } from '@/lib/logger'
 import { isValidInterval } from '@/types/clickhouse-interval'
 
@@ -282,6 +283,12 @@ export async function GET(
       routeContext
     )
   }
+
+  const permissionResponse = await authorizeFeatureRequest(
+    queryDef.permission,
+    request
+  )
+  if (permissionResponse) return permissionResponse
 
   // Check if this is a multi-query chart (summary charts)
   if ('queries' in queryDef) {

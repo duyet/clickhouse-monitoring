@@ -16,6 +16,7 @@ import {
   isFreeAgentModel,
   type OpenAIModel,
 } from '@/lib/ai/agent-models'
+import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 
 const OPENROUTER_MODELS_API =
   process.env.OPENROUTER_MODELS_API || 'https://openrouter.ai/api/v1/models'
@@ -150,7 +151,10 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
 /**
  * Handle GET requests for models with capabilities
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const authResponse = await authorizeAgentApiRequest(request)
+  if (authResponse) return authResponse
+
   try {
     const models = await fetchOpenRouterModels()
 

@@ -3,19 +3,26 @@
 import { menuItemsConfig } from '@/menu'
 
 import { useSearchParams } from 'next/navigation'
-import { memo, Suspense } from 'react'
+import { memo, Suspense, useMemo } from 'react'
 import { HeaderActions } from '@/components/header/header-actions'
 import {
   HeaderBrand,
   HeaderBrandSkeleton,
 } from '@/components/header/header-brand'
 import { MenuNavigationStyle } from '@/components/menu/menu-navigation-style'
+import { useFeaturePermissions } from '@/lib/feature-permissions/context'
+import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
 import { useMergedHosts } from '@/lib/swr/use-merged-hosts'
 
 export const HeaderClient = memo(function HeaderClient() {
   const searchParams = useSearchParams()
   const hostId = searchParams.get('host') || '0'
   const { hosts } = useMergedHosts()
+  const { config } = useFeaturePermissions()
+  const menuItems = useMemo(
+    () => filterMenuItemsByPermissions(menuItemsConfig, config),
+    [config]
+  )
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60">
@@ -30,7 +37,7 @@ export const HeaderClient = memo(function HeaderClient() {
       {/* Navigation Row - centered menu */}
       <nav className="flex h-10 items-center justify-center border-t">
         <MenuNavigationStyle
-          items={menuItemsConfig}
+          items={menuItems}
           className="flex items-center gap-1"
         />
       </nav>
