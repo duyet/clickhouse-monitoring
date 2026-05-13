@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
+export const dynamic = 'force-static'
 export const dynamicParams = false
 
 type DocsPageProps = {

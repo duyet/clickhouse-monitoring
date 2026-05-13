@@ -7,13 +7,18 @@ A modern Next.js 15 dashboard that provides real-time insights into ClickHouse c
 
 **Features:**
 
-- **Query Monitoring**: Current queries, query history, resources (memory, parts read, file_open), expensive queries, most used tables/columns
-- **Cluster Overview**: Memory/CPU usage, distributed queue, global settings, MergeTree settings, metrics
-- **Data Explorer**: Interactive database tree browser with fast tab switching and column-level details
-- **Table Analytics**: Size, row count, compression, part sizes with column-level granularity
+- **Query Monitoring**: Running queries, query history, resources (memory, parts read, file_open), expensive queries, slow queries, failed queries, query profiler
+- **Cluster Overview**: Memory/CPU usage, distributed queue, global settings, MergeTree settings, metrics, asynchronous metrics
+- **Data Explorer**: Interactive database tree browser with fast tab switching and column-level details, projections, dictionaries
+- **Table Analytics**: Size, row count, compression, part sizes with column-level granularity, detached parts, readonly tables, view refreshes
 - **Visualization**: 30+ metric charts for queries, resources, merges, performance, and system health
-- **Developer Tools**: Zookeeper explorer, query EXPLAIN, query kill functionality
+- **Merge & Replication**: Merge operations, merge performance, replication queue, replicas
+- **Security & Access**: Users, roles, security settings
+- **Developer Tools**: Zookeeper explorer, query EXPLAIN, query kill, distributed DDL queue, mutations
 - **Multi-Host Support**: Monitor multiple ClickHouse instances from a single dashboard
+- **AI Agent**: Built-in AI chat for natural language queries against your ClickHouse cluster
+- **MCP Server**: Model Context Protocol endpoint for AI tool integration (Claude, Cursor, etc.)
+- **Rust CLI**: Standalone terminal and TUI monitoring tool
 
 ## Demo
 
@@ -123,19 +128,13 @@ For repeatable Docker deploys, prefer the versioned image tag from the release p
     - [Kubernetes Helm Chart](https://duyet.github.io/clickhouse-monitoring/deploy/k8s)
   - [Advanced](https://duyet.github.io/clickhouse-monitoring/advanced)
 
-### AI Agent Access (llms.txt)
+### AI Agent Access
 
-This project includes `llms.txt`, a standardized file that helps AI coding agents (like Claude Code, GitHub Copilot Workspace, etc.) discover and understand the codebase structure.
+**llms.txt** — standardized file that helps AI coding agents discover and understand the codebase structure. Access at `https://your-domain.com/llms.txt` or `/llms.txt` in local development.
 
-**What it contains:**
-- Project overview and features
-- Links to key documentation files
-- API structure and endpoints
-- Directory structure with purposes
-- Development patterns and conventions
+**MCP Server** — exposes a Model Context Protocol endpoint at `/api/mcp` for AI tools to query your ClickHouse cluster directly. See [docs/knowledge/mcp-server.md](docs/knowledge/mcp-server.md) for setup.
 
-**How to use:**
-Access at `https://your-domain.com/llms.txt` or `/llms.txt` in local development.
+**Knowledge Graph** — developer-facing notes in `docs/knowledge/` with decisions, conventions, and architecture docs. See [docs/knowledge/README.md](docs/knowledge/README.md) for the index.
 
 ## Screenshots
 

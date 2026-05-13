@@ -2,10 +2,9 @@
 id: component-ci-stability
 title: Component CI Stability
 type: incident
-status: draft
-updated: 2026-05-09
+status: active
+updated: 2026-05-13
 source_pr: 1021
-source_branch: codex/implement-data-logic-in-rust-and-update-pr
 tags:
   - cypress
   - component-test
@@ -13,8 +12,9 @@ tags:
   - recharts
   - nextjs
 related:
-  - knowledge-index
+  - conventions
   - rust-wasm-performance
+  - static-site-architecture
 artifacts:
   - cypress/support/component.ts
   - components/charts/factory/create-area-chart.tsx
@@ -49,9 +49,8 @@ artifacts:
 
 # Component CI Stability
 
-This note captures the component-test investigation from PR #1021. It is linked
-from the [knowledge index](./README.md) and complements the
-[Rust/WASM performance note](./rust-wasm-performance.md).
+This note captures the component-test investigation from PR #1021. See the
+[knowledge index](./README.md) for all related notes.
 
 ## Current State
 

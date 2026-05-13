@@ -1,40 +1,75 @@
 ---
 id: knowledge-index
-title: Internal Knowledge Index
+title: Knowledge Graph Index
 type: index
 status: active
-updated: 2026-05-09
+updated: 2026-05-13
 tags:
-  - ai-agent
   - knowledge-graph
-related:
-  - automation-core-memory
-  - rust-wasm-performance
-  - component-ci-stability
-source_pr: 1021
+  - index
 ---
 
-# Internal Knowledge Index
+# Knowledge Graph Index
 
-This folder stores internal notes for future AI agents. These notes are not
-user-facing product docs. They capture decisions, evidence, and follow-up
-context that should survive a compacted chat or a handoff.
+This directory stores developer-facing notes for AI agents and contributors. They capture decisions, evidence, constraints, and workflows that survive context compaction or team handoff. These are **not** user-facing product docs (those live in `docs/content/`).
 
-## Notes
+## Discovery
 
-- [Rust and WASM Performance](./rust-wasm-performance.md)
-- [Component CI Stability](./component-ci-stability.md)
-- [Automation Core Memory](./core-memory.md)
+Agents discover knowledge in this order:
+1. **`CLAUDE.md`** — session-critical rules and one-line callouts
+2. **This index** — category table below, links to all notes
+3. **Grep** — `grep -r "keyword" docs/knowledge/` for specific topics
+
+## Index
+
+| Category | Document | Type | Summary |
+|----------|----------|------|---------|
+| **Architecture** | [static-site-architecture.md](static-site-architecture.md) | decision | Fully static site, no SSR, client-side SWR, query-param routing |
+| **Architecture** | [rust-wasm-performance.md](rust-wasm-performance.md) | decision | Rust/WASM benchmark: keep object transforms in TS, WASM for byte paths |
+| **Architecture** | [memory-optimization.md](memory-optimization.md) | reference | Memory optimization: pooling, memoization, cache limits, monitoring |
+| **Operations** | [deployment.md](deployment.md) | reference | Docker and Cloudflare Workers dual deployment guide |
+| **Operations** | [core-memory.md](core-memory.md) | workflow | Automation core memory: code-smell scans, dead-code rules |
+| **Operations** | [secret-rotation.md](secret-rotation.md) | workflow | Cloudflare Workers secret rotation: redeploy after wrangler secret put |
+| **Specs** | [mcp-server.md](mcp-server.md) | reference | MCP server at /api/mcp: tools, setup, security |
+| **Specs** | [query-config-format.md](query-config-format.md) | spec | QueryConfig type format, versioned SQL, BackgroundBar columns |
+| **Development** | [component-ci-stability.md](component-ci-stability.md) | incident | Cypress component test fragility findings and fix direction |
+| **Development** | [conventions.md](conventions.md) | workflow | Coding conventions, file organization, component patterns |
+| **Tools** | [standalone-cli.md](standalone-cli.md) | reference | Rust CLI for monitoring via terminal and TUI |
 
 ## Graph Convention
 
-Use frontmatter for machine-readable edges:
+Each note uses frontmatter for machine-readable edges:
 
-- `id`: stable node id
-- `type`: `index`, `decision`, `incident`, `workflow`, or `reference`
-- `related`: other note ids
-- `source_pr`: GitHub PR number when the note came from a PR
+- `id`: stable node id (matches filename without extension)
+- `type`: `index`, `decision`, `incident`, `workflow`, `reference`, or `spec`
+- `status`: `active` or `draft`
+- `related`: other note ids (bidirectional links)
 - `tags`: search and grouping hints
 
-Also link related notes in the body so plain markdown readers can follow the
-same graph without special tooling.
+Body structure:
+
+1. **Rule/Decision** — what to do
+2. **Why** — constraint, past incident, or rationale
+3. **How to apply** — when this kicks in
+4. **Code references** — `file_path:line` where relevant
+
+## Writing Rules
+
+When adding a new note:
+
+1. Pick the right category (architecture, operations, specs, development, tools)
+2. Use the frontmatter convention above
+3. Add a row to the index table above
+4. Add `related` links to connected notes
+5. If the rule is session-critical, add a one-line callout in `CLAUDE.md`
+
+## Memory vs Knowledge
+
+| Use Memory for | Use Knowledge for |
+|----------------|-------------------|
+| User profile & preferences | Rules and "always do X" instructions |
+| Transient task state | Architecture decisions and rationale |
+| Ephemeral preferences | Past incidents and post-mortems |
+| Session-specific context | Conventions that every session needs |
+
+Memory is per-Claude-instance and invisible to teammates. Knowledge docs are versioned, discoverable via grep, and indexed from `CLAUDE.md`.
