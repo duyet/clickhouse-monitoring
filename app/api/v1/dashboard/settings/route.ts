@@ -61,7 +61,7 @@ export async function GET(request: Request): Promise<Response> {
 
     const query = `
       SELECT key, value
-      FROM ${TABLE_SETTINGS}
+      FROM ${TABLE_SETTINGS} FINAL
     `
 
     const client = await getClient({ hostId })
