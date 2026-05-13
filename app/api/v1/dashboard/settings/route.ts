@@ -23,6 +23,10 @@ const ROUTE_CONTEXT_POST = {
   method: 'POST',
 }
 
+function isValidHostId(hostId: number): boolean {
+  return Number.isInteger(hostId) && hostId >= 0
+}
+
 function emptySettingsResponse(
   hostId: number
 ): ApiResponse<{ params: Record<string, string> }> {
@@ -63,6 +67,12 @@ export async function GET(request: Request): Promise<Response> {
 
   const { searchParams } = new URL(request.url)
   const hostId = Number(searchParams.get('hostId') ?? '0')
+  if (!isValidHostId(hostId)) {
+    return createValidationError(
+      'Invalid hostId: expected a non-negative integer',
+      ROUTE_CONTEXT_GET
+    )
+  }
 
   try {
     debug('[GET /api/v1/dashboard/settings]', { hostId })
@@ -148,19 +158,26 @@ export async function POST(request: Request): Promise<Response> {
 
     const body = (await request.json()) as {
       params?: Record<string, string>
-      hostId?: number
+      hostId?: number | string
     }
     const { params, hostId = 0 } = body
+    const parsedHostId = Number(hostId)
 
-    if (!params || typeof params !== 'object') {
+    if (!params || typeof params !== 'object' || Array.isArray(params)) {
       return createValidationError(
         'Missing or invalid field: params',
         ROUTE_CONTEXT_POST
       )
     }
+    if (!isValidHostId(parsedHostId)) {
+      return createValidationError(
+        'Invalid hostId: expected a non-negative integer',
+        ROUTE_CONTEXT_POST
+      )
+    }
 
     debug('[POST /api/v1/dashboard/settings]', {
-      hostId,
+      hostId: parsedHostId,
       paramsKeys: Object.keys(params),
     })
 
@@ -176,7 +193,7 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // getClient will auto-detect and use web client for Cloudflare Workers
-    const client = await getClient({ hostId: Number(hostId) })
+    const client = await getClient({ hostId: parsedHostId })
     await client.command({
       query,
       query_params,
@@ -189,7 +206,7 @@ export async function POST(request: Request): Promise<Response> {
         queryId: 'dashboard-settings-update',
         duration: 0,
         rows: 0,
-        host: String(hostId),
+        host: String(parsedHostId),
       },
     }
 

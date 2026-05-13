@@ -21,8 +21,10 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 ## Commands
 
 - Since last run: `git log --since='<ISO_TIME>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
-- Fallback window: `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
-- Dead-code evidence: `rg -n "\b<SYMBOL>\b" --glob '!**/*.test.*' --glob '!**/*.spec.*'`
+- Fallback window (24h): `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+- Fallback window (7d): `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+- Dead-code evidence: `rg -n "\b<SYMBOL>\b" --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
+- Main CI status: `gh run list --branch main --limit 10 --json workflowName,status,conclusion,headSha,url`
 
 ## Repo Notes
 
@@ -32,4 +34,5 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 
 ## Latest Update
 
+- 2026-05-13: validate `hostId` for dashboard settings API and remove unused docs export type
 - 2026-05-13: removed unused `getDocsSlugs` and memoized `getDocsPage` with React `cache`

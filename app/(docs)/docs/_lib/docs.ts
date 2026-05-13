@@ -93,7 +93,7 @@ export const getDocsPage = cache(
   }
 )
 
-export function normalizeSlug(slug: string) {
+function normalizeSlug(slug: string) {
   return slug
     .split('/')
     .filter(Boolean)
