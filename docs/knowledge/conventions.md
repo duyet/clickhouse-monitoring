@@ -1,0 +1,61 @@
+---
+id: conventions
+title: Development Conventions
+type: workflow
+status: active
+updated: 2026-05-13
+tags:
+  - conventions
+  - patterns
+  - development
+related:
+  - static-site-architecture
+  - component-ci-stability
+---
+
+# Development Conventions
+
+## Component Patterns
+
+- **All pages use `'use client'`** — this is a fully static site with no server components
+- **Hooks at deepest consumer** — use hooks at the component that needs data, not parent. Example: `CountBadge` calls `useHostId()` internally rather than receiving `hostId` as a prop
+- **Compound components** for complex UI (data tables)
+
+## File Organization
+
+- All pages: `.tsx` with `"use client"` directive
+- Layouts: `app/[route]/layout.tsx`
+- Pages: `app/[route]/page.tsx`
+- Layouts: `app/[route]/layout.tsx`
+- Configs: `config.ts` within route directories
+- Test files co-located with components (`.cy.tsx`)
+
+## shadcn/ui Rules
+
+**Never customize `components/ui/` files directly.**
+
+- Allow easy updates via `npx shadcn@latest add <component>`
+- Pass custom classes via `className` prop at usage site
+- Create wrapper components in `components/` (not `components/ui/`) if needed
+- Use `cn()` utility to merge classes
+
+## Query Patterns
+
+- All queries include `QUERY_COMMENT` for identification (applied centrally in `fetchData()`)
+- Use `fetchData` function for consistent error handling and logging
+- **CRITICAL**: `fetchData` requires `hostId` parameter (not optional)
+- Client components use SWR hooks for data fetching
+
+## Chart Patterns
+
+- Use SWR `useChartData` hook with `hostId` prop
+- Handle loading, error, and empty states
+- Graceful error handling: initial errors show `ChartError`, revalidation errors keep showing data with amber indicator
+- Progress bars preferred over donut charts for percentage displays
+
+## Error Handling
+
+- `useChartData` returns `staleError` and `hasData`
+- `ChartContainer` shows `ChartError` only when `error && !hasData`
+- `ChartCard` renders `ChartStaleIndicator` when `staleError` exists
+- Icon order in header: `[Stale Indicator] [DateRangeSelector] [CardToolbar]`

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **IMPORTANT**: All commits should include the co-authorship:
 ```
-Co-Authored-By: duyetbot <duyetbot@users.noreply.github.com>
+Co-Authored-By: duyetbot <bot@duyet.net>
 ```
 
 Use semantic commit format with consistent scope for commit messages and PR titles. Keep wording simple.
@@ -52,6 +52,33 @@ round(rows * 100.0 / nullIf(max(rows) OVER (), 0), 2) AS pct_rows       -- perce
 ```
 
 See `.claude/skills/clickhouse-query-config.md` for full patterns.
+
+## Knowledge Graph
+
+Developer-facing docs live in `docs/knowledge/` as a linked knowledge graph. Each note has frontmatter (`id`, `type`, `related`, `tags`) and cross-links to connected notes.
+
+**Discovery order**: CLAUDE.md → [docs/knowledge/README.md](docs/knowledge/README.md) → `grep -r "keyword" docs/knowledge/`
+
+| Category | Document | Summary |
+|----------|----------|---------|
+| Architecture | [static-site-architecture.md](docs/knowledge/static-site-architecture.md) | Fully static site, no SSR, SWR, query-param routing |
+| Architecture | [rust-wasm-performance.md](docs/knowledge/rust-wasm-performance.md) | WASM benchmarks: keep object transforms in TS |
+| Architecture | [memory-optimization.md](docs/knowledge/memory-optimization.md) | Pooling, memoization, cache limits, monitoring |
+| Operations | [deployment.md](docs/knowledge/deployment.md) | Docker + Cloudflare Workers dual deployment |
+| Operations | [core-memory.md](docs/knowledge/core-memory.md) | Automation memory: code-smell scans, dead-code rules |
+| Operations | [secret-rotation.md](docs/knowledge/secret-rotation.md) | Redeploy after `wrangler secret put` |
+| Specs | [mcp-server.md](docs/knowledge/mcp-server.md) | MCP server at /api/mcp: tools, setup, security |
+| Specs | [query-config-format.md](docs/knowledge/query-config-format.md) | QueryConfig type, versioned SQL, BackgroundBar |
+| Development | [component-ci-stability.md](docs/knowledge/component-ci-stability.md) | Cypress component test fragility and fixes |
+| Development | [conventions.md](docs/knowledge/conventions.md) | Coding conventions, file org, component patterns |
+| Tools | [standalone-cli.md](docs/knowledge/standalone-cli.md) | Rust CLI for monitoring via terminal and TUI |
+
+### When to Write to Knowledge vs Memory
+
+- **Write to `docs/knowledge/`**: rules, conventions, architecture decisions, past incidents, "always do X" instructions, non-obvious workflows
+- **Write to session memory**: user profile, transient preferences, ephemeral task state
+
+When the user says **"remember"** something — write it to `docs/knowledge/`, not memory. Memory is per-instance and invisible to teammates. Knowledge docs are versioned, grep-able, and indexed here.
 
 ## Commands
 
@@ -144,10 +171,9 @@ Both deployment methods provide:
 - `bun run migrate`, `bun run migrate:status`, `bun run migrate:dry-run` - Use the local migration runner for non-Cloudflare targets
 - `bun run docker:health` / `bun run cf:health` - Check Docker or deployed health endpoints
 - `bun run lint && bun run build` - Quick local CI parity check (matches core lint/build workflow jobs)
-- Code-smell/dead-code automation memory lives in `docs/knowledge/core-memory.md` (single durable note; do not create dated `docs/reviews/code-smell-dead-code-*.md` files)
-- Since-last-run scan scope command: `git log --since='<ISO_TIME>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
-- Fallback scan scope when no new commits: `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
-- Dead-code reference evidence command: `rg -n "\\b<SYMBOL>\\b" --glob '!**/*.test.*' --glob '!**/*.spec.*'`
+- Code-smell/dead-code automation: see [docs/knowledge/core-memory.md](docs/knowledge/core-memory.md)
+- Since-last-run scan scope: `git log --since='<ISO_TIME>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+- Dead-code evidence: `rg -n "\b<SYMBOL>\b" --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 
 **Docs content workflow**: `/docs` pages are rendered by the main app and read source files from `docs/content`.
 

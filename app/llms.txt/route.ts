@@ -455,7 +455,7 @@ Optional system tables are validated before querying:
 ### Git Commits
 All commits include co-authorship:
 \`\`\`
-Co-Authored-By: duyetbot <duyetbot@users.noreply.github.com>
+Co-Authored-By: duyetbot <bot@duyet.net>
 \`\`\`
 
 ### shadcn/ui Components

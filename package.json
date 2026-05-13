@@ -12,7 +12,7 @@
   },
   "scripts": {
     "dev": "bun --bun next dev --turbopack",
-    "build": "bun run wasm:build && bun --bun next build",
+    "build": "bun scripts/build-docs-content.ts && bun run wasm:build && bun --bun next build",
     "start": "bun --bun next start",
     "analyze": "ANALYZE=true bun run build",
     "cf:build": "bun run build && opennextjs-cloudflare build --skipBuild",

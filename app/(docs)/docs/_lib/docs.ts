@@ -1,6 +1,5 @@
+import { docsContent } from './content.generated'
 import { rewriteDocsHref, slugify } from './shared'
-import { readFile } from 'node:fs/promises'
-import path from 'node:path'
 import { cache } from 'react'
 
 export type DocsNavItem = {
@@ -72,25 +71,27 @@ export const docsNav: DocsNavSection[] = [
  *
  * Returns null only when the source MDX file is missing.
  */
-export const getDocsPage = cache(async (slug: string): Promise<DocsPage | null> => {
-  const normalizedSlug = normalizeSlug(slug)
-  const source = await readDocsSource(normalizedSlug)
+export const getDocsPage = cache(
+  async (slug: string): Promise<DocsPage | null> => {
+    const normalizedSlug = normalizeSlug(slug)
+    const source = await readDocsSource(normalizedSlug)
 
-  if (source === null) {
-    return null
+    if (source === null) {
+      return null
+    }
+
+    const markdown = normalizeMdx(source)
+    const title = extractTitle(markdown, normalizedSlug)
+    const headings = extractHeadings(markdown)
+
+    return {
+      slug: normalizedSlug,
+      title,
+      markdown,
+      headings,
+    }
   }
-
-  const markdown = normalizeMdx(source)
-  const title = extractTitle(markdown, normalizedSlug)
-  const headings = extractHeadings(markdown)
-
-  return {
-    slug: normalizedSlug,
-    title,
-    markdown,
-    headings,
-  }
-})
+)
 
 export function normalizeSlug(slug: string) {
   return slug
@@ -105,20 +106,18 @@ export function docsHref(slug: string) {
 }
 
 async function readDocsSource(slug: string) {
-  const relativePath = slug ? `${slug}.mdx` : 'index.mdx'
-  const docsContentRoot =
-    process.env.DOCS_CONTENT_ROOT?.trim() || 'docs/content'
-  const fullPath = path.join(process.cwd(), docsContentRoot, relativePath)
-
-  try {
-    return await readFile(fullPath, 'utf8')
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return null
+  const overrideRoot = process.env.DOCS_CONTENT_ROOT
+  if (overrideRoot) {
+    const { readFile } = await import('node:fs/promises')
+    const { existsSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    for (const ext of ['.mdx', '.md']) {
+      const file = join(overrideRoot, slug ? `${slug}${ext}` : `index${ext}`)
+      if (existsSync(file)) return readFile(file, 'utf8')
     }
-
-    throw error
+    return null
   }
+  return Object.hasOwn(docsContent, slug) ? docsContent[slug] : null
 }
 
 /**
