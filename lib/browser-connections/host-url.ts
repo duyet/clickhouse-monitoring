@@ -2,6 +2,7 @@ import { Address4, Address6 } from 'ip-address'
 
 const INTERNAL_ADDRESS_ERROR =
   'Connections to internal addresses are not allowed.'
+const DNS_LOOKUP_TIMEOUT_MS = 3000
 
 export type ResolveHostAddresses = (
   hostname: string
@@ -37,7 +38,13 @@ export async function validateHostUrl(
   }
 
   if (!isIpLiteral(hostname)) {
-    const addresses = await resolveHostAddresses(hostname)
+    let addresses: readonly string[]
+    try {
+      addresses = await resolveHostAddresses(hostname)
+    } catch {
+      return INTERNAL_ADDRESS_ERROR
+    }
+
     if (addresses.some(isInternalIp)) {
       return INTERNAL_ADDRESS_ERROR
     }
@@ -46,11 +53,47 @@ export async function validateHostUrl(
   return null
 }
 
+export function createHostValidationFetch(
+  resolveHostAddresses: ResolveHostAddresses = resolveDnsAddresses
+): typeof fetch {
+  return async (input, init) => {
+    const url =
+      typeof input === 'string'
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url
+
+    const error = await validateHostUrl(url, resolveHostAddresses)
+    if (error) {
+      throw new Error(error)
+    }
+
+    return fetch(input, init)
+  }
+}
+
 async function resolveDnsAddresses(hostname: string) {
   const { lookup } = await import('node:dns/promises')
-  const records = await lookup(hostname, { all: true, verbatim: true })
+  const records = await withTimeout(
+    lookup(hostname, { all: true, verbatim: true })
+  )
 
   return records.map((record) => record.address)
+}
+
+function withTimeout<T>(promise: Promise<T>) {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeout = setTimeout(
+      () => reject(new Error('DNS lookup timed out')),
+      DNS_LOOKUP_TIMEOUT_MS
+    )
+  })
+
+  return Promise.race([promise, timeoutPromise]).finally(() =>
+    timeout ? clearTimeout(timeout) : undefined
+  )
 }
 
 function isIpLiteral(hostname: string) {
@@ -58,21 +101,11 @@ function isIpLiteral(hostname: string) {
 }
 
 function isAddress4(hostname: string) {
-  try {
-    new Address4(hostname)
-    return true
-  } catch {
-    return false
-  }
+  return Address4.isValid(hostname)
 }
 
 function isAddress6(hostname: string) {
-  try {
-    new Address6(hostname)
-    return true
-  } catch {
-    return false
-  }
+  return Address6.isValid(hostname)
 }
 
 function isInternalIp(hostname: string) {
@@ -84,7 +117,9 @@ function isInternalIp(hostname: string) {
       address.isPrivate() ||
       address.isLinkLocal() ||
       address.isUnspecified() ||
-      address.isMulticast()
+      address.isMulticast() ||
+      address.isCGNAT() ||
+      address.isBroadcast()
     )
   } catch {
     // Not IPv4.
@@ -105,7 +140,9 @@ function isInternalIp(hostname: string) {
           mapped4.isPrivate() ||
           mapped4.isLinkLocal() ||
           mapped4.isUnspecified() ||
-          mapped4.isMulticast()))
+          mapped4.isMulticast() ||
+          mapped4.isCGNAT() ||
+          mapped4.isBroadcast()))
     )
   } catch {
     // Not IPv6.

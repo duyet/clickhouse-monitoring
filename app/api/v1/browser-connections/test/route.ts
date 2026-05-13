@@ -9,7 +9,10 @@
 import { createClient } from '@clickhouse/client-web'
 
 import { createValidationError, withApiHandler } from '@/lib/api/error-handler'
-import { validateHostUrl } from '@/lib/browser-connections/host-url'
+import {
+  createHostValidationFetch,
+  validateHostUrl,
+} from '@/lib/browser-connections/host-url'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,6 +69,7 @@ export const POST = withApiHandler(
         host,
         username: user,
         password,
+        fetch: createHostValidationFetch(),
       })
 
       const result = await client.query({

@@ -6,6 +6,7 @@ https://github.com/duyet/clickhouse-monitoring/pkgs/container/clickhouse-monitor
 ```bash
 docker run --rm -it \
   -p 3000:3000 \
+  --add-host=host.docker.internal:host-gateway \
   -e CLICKHOUSE_HOST='http://host.docker.internal:8123' \
   -e CLICKHOUSE_USER='monitoring' \
   -e CLICKHOUSE_PASSWORD='change-me' \

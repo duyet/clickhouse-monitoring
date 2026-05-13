@@ -1,5 +1,5 @@
-import { validateHostUrl } from './host-url'
-import { describe, expect, test } from 'bun:test'
+import { createHostValidationFetch, validateHostUrl } from './host-url'
+import { describe, expect, mock, test } from 'bun:test'
 
 describe('validateHostUrl', () => {
   test('accepts public ClickHouse URLs', async () => {
@@ -35,6 +35,8 @@ describe('validateHostUrl', () => {
       'http://192.168.1.10:8123',
       'http://169.254.1.10:8123',
       'http://0.0.0.0:8123',
+      'http://100.64.0.1:8123',
+      'http://255.255.255.255:8123',
     ]) {
       await expect(validateHostUrl(host)).resolves.toContain(
         'internal addresses'
@@ -70,5 +72,37 @@ describe('validateHostUrl', () => {
         '10.0.0.10',
       ])
     ).resolves.toContain('internal addresses')
+  })
+
+  test('fails closed when DNS resolution fails', async () => {
+    await expect(
+      validateHostUrl('https://timeout.example:8443', async () => {
+        throw new Error('DNS lookup timed out')
+      })
+    ).resolves.toContain('internal addresses')
+  })
+
+  test('guards each fetch request target', async () => {
+    const previousFetch = globalThis.fetch
+    const fetchMock = mock(
+      async () => new Response('{}', { status: 200 })
+    ) as unknown as typeof fetch
+    globalThis.fetch = fetchMock
+
+    try {
+      const guardedFetch = createHostValidationFetch(async (hostname) =>
+        hostname === 'safe.example' ? ['203.0.113.10'] : ['10.0.0.10']
+      )
+
+      const response = await guardedFetch('https://safe.example:8443')
+      expect(response.status).toBe(200)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      await expect(
+        guardedFetch('https://private.example:8443')
+      ).rejects.toThrow('internal addresses')
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    } finally {
+      globalThis.fetch = previousFetch
+    }
   })
 })
