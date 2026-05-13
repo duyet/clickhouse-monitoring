@@ -7,6 +7,31 @@ describe('Agent Chat API E2E Tests', () => {
   const AGENT_API_URL = '/api/v1/agent'
   const AGENT_API_TOKEN = Cypress.env('AGENT_API_TOKEN')
   const hasAgentApiToken = Boolean(AGENT_API_TOKEN)
+  let agentFeatureState: {
+    enabled: boolean
+    access: 'public' | 'authenticated'
+  } = {
+    enabled: true,
+    access: 'public',
+  }
+
+  before(() => {
+    cy.request({
+      url: '/api/v1/config',
+      failOnStatusCode: false,
+    }).then((response) => {
+      if (response.status !== 200) {
+        return
+      }
+
+      const agentFeature = response.body?.features?.agent
+      agentFeatureState = {
+        enabled: agentFeature?.enabled !== false,
+        access:
+          agentFeature?.access === 'authenticated' ? 'authenticated' : 'public',
+      }
+    })
+  })
 
   const getAuthHeaders = () => {
     if (!hasAgentApiToken) {
@@ -21,13 +46,42 @@ describe('Agent Chat API E2E Tests', () => {
     }
   }
 
-  const expectAuthAwareStatus = (status: number) => {
-    if (hasAgentApiToken) {
-      expect(status).to.not.eq(400)
+  const isAgentAuthRequired = () =>
+    agentFeatureState.enabled &&
+    agentFeatureState.access === 'authenticated' &&
+    !hasAgentApiToken
+
+  const expectValidAgentRequestStatus = (status: number) => {
+    if (!agentFeatureState.enabled) {
+      expect(status).to.eq(404)
       return
     }
 
-    expect(status).to.eq(401)
+    if (isAgentAuthRequired()) {
+      expect(status).to.eq(401)
+      return
+    }
+
+    expect(status).to.not.eq(400)
+  }
+
+  const expectEmptyAgentRequestStatus = (
+    response: Cypress.Response<{ error?: { message?: string } }>
+  ) => {
+    if (!agentFeatureState.enabled) {
+      expect(response.status).to.eq(404)
+      return
+    }
+
+    if (isAgentAuthRequired()) {
+      expect(response.status).to.eq(401)
+      return
+    }
+
+    expect(response.status).to.eq(400)
+    expect(response.body).to.have.property('error')
+    expect(response.body.error).to.have.property('message')
+    expect(response.body.error.message).to.include('Message is required')
   }
 
   /**
@@ -48,7 +102,7 @@ describe('Agent Chat API E2E Tests', () => {
       // Don't fail on 4xx/5xx - we want to assert on response
       failOnStatusCode: false,
     }).then((response) => {
-      expectAuthAwareStatus(response.status)
+      expectValidAgentRequestStatus(response.status)
 
       // If we get a success response, validate headers
       if (response.status === 200) {
@@ -100,7 +154,7 @@ describe('Agent Chat API E2E Tests', () => {
       failOnStatusCode: false,
     }).then((response) => {
       // Should not get 400 format error
-      expectAuthAwareStatus(response.status)
+      expectValidAgentRequestStatus(response.status)
 
       // Validate no format-specific errors
       if (response.body?.error) {
@@ -147,7 +201,7 @@ describe('Agent Chat API E2E Tests', () => {
       failOnStatusCode: false,
     }).then((response) => {
       // Should not get 400 format error
-      expectAuthAwareStatus(response.status)
+      expectValidAgentRequestStatus(response.status)
 
       // Validate no format-specific errors
       if (response.body?.error) {
@@ -179,7 +233,7 @@ describe('Agent Chat API E2E Tests', () => {
       failOnStatusCode: false,
     }).then((response) => {
       // Should not get 400 format error
-      expectAuthAwareStatus(response.status)
+      expectValidAgentRequestStatus(response.status)
     })
   })
 
@@ -196,13 +250,7 @@ describe('Agent Chat API E2E Tests', () => {
       },
       failOnStatusCode: false,
     }).then((response) => {
-      expectAuthAwareStatus(response.status)
-      expect(response.body).to.have.property('error')
-      expect(response.body.error).to.have.property('message')
-
-      if (response.status === 400) {
-        expect(response.body.error.message).to.include('Message is required')
-      }
+      expectEmptyAgentRequestStatus(response)
     })
   })
 
