@@ -1,8 +1,26 @@
 import { Cards } from 'nextra/components'
-import { Triangle, Container, Blocks } from 'lucide-react'
+import { Triangle, Container, Blocks, CheckCircle2 } from 'lucide-react'
+
+# Deployments
+
+Choose the target that matches how you operate ClickHouse. Use Docker for a
+single self-hosted service, Cloudflare Workers for edge hosting, Kubernetes for
+cluster-managed deployments, and Vercel for quick hosted previews.
 
 <Cards>
   <Cards.Card icon={<Triangle />} title="Vercel" href="/deploy/vercel" arrow />
+  <Cards.Card
+    icon={<Triangle />}
+    title="Cloudflare"
+    href="/deploy/cloudflare"
+    arrow
+  />
   <Cards.Card icon={<Container />} title="Docker" href="/deploy/docker" arrow />
   <Cards.Card icon={<Blocks />} title="Kubernetes" href="/deploy/k8s" arrow />
+  <Cards.Card
+    icon={<CheckCircle2 />}
+    title="Production Checklist"
+    href="/deploy/production-checklist"
+    arrow
+  />
 </Cards>

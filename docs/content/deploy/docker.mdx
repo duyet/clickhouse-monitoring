@@ -1,18 +1,58 @@
 # Docker
 
-Using the latest image here: https://github.com/duyet/clickhouse-monitoring/pkgs/container/clickhouse-monitoring
+Use the published image from GitHub Container Registry:
+https://github.com/duyet/clickhouse-monitoring/pkgs/container/clickhouse-monitoring
 
 ```bash
-docker run -it \
-    -e CLICKHOUSE_HOST='http://localhost' \
-    -e CLICKHOUSE_USER='default' \
-    -e CLICKHOUSE_PASSWORD='' \
-    -e CLICKHOUSE_TZ='Asia/Ho_Chi_Minh' \
-    -e CLICKHOUSE_MAX_EXECUTION_TIME='15' \
-    -e NEXT_QUERY_CACHE_TTL='86400' \
-    --name clickhouse-monitoring \
-    ghcr.io/duyet/clickhouse-monitoring:main
+docker run --rm -it \
+  -p 3000:3000 \
+  --add-host=host.docker.internal:host-gateway \
+  -e CLICKHOUSE_HOST='http://host.docker.internal:8123' \
+  -e CLICKHOUSE_USER='monitoring' \
+  -e CLICKHOUSE_PASSWORD='change-me' \
+  -e CLICKHOUSE_TZ='UTC' \
+  -e CLICKHOUSE_MAX_EXECUTION_TIME='15' \
+  -e NEXT_QUERY_CACHE_TTL='300' \
+  --name clickhouse-monitoring \
+  ghcr.io/duyet/clickhouse-monitoring:main
 ```
+
+Open `http://localhost:3000` after the container starts.
+
+## Docker Compose
+
+```yaml
+services:
+  clickhouse-monitoring:
+    image: ghcr.io/duyet/clickhouse-monitoring:main
+    ports:
+      - '3000:3000'
+    environment:
+      CLICKHOUSE_HOST: 'http://clickhouse:8123'
+      CLICKHOUSE_USER: 'monitoring'
+      CLICKHOUSE_PASSWORD: 'change-me'
+      CLICKHOUSE_TZ: 'UTC'
+      CLICKHOUSE_MAX_EXECUTION_TIME: '15'
+      NEXT_QUERY_CACHE_TTL: '300'
+```
+
+If ClickHouse runs in the same Compose project, use the service name in
+`CLICKHOUSE_HOST`. If ClickHouse runs on the Docker host, use the host gateway
+address for your platform.
+
+## Health Check
+
+```bash
+docker compose exec clickhouse-monitoring \
+  wget -q -O /dev/null http://localhost:3000/api/healthz
+```
+
+## Common Problems
+
+- `localhost` inside the container points at the container, not your host.
+- Empty pages usually mean the monitoring user lacks system-table grants.
+- Public deployments should protect agent, MCP, settings, and action features
+  with authentication.
 
 import { Cards } from 'nextra/components'
 import { Triangle, Container, Blocks } from 'lucide-react'

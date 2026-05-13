@@ -1,0 +1,61 @@
+# Production Checklist
+
+Use this checklist before exposing ClickHouse Monitor to a team or the public
+internet.
+
+## ClickHouse Access
+
+- Use a dedicated monitoring user.
+- Grant only the actions you want available from the UI.
+- Set `CLICKHOUSE_MAX_EXECUTION_TIME` so runaway dashboard queries stop quickly.
+- Keep ClickHouse credentials in deployment secrets, not source code.
+
+## Application Access
+
+- Require authentication for agent, MCP, settings, and action features.
+- Keep `CHM_API_KEY_SECRET` set when exposing `/api/mcp`.
+- Avoid putting secrets in `NEXT_PUBLIC_` variables.
+- Disable features that your team does not operate yet.
+
+## Network
+
+- Prefer HTTPS for ClickHouse Cloud and public ClickHouse endpoints.
+- Keep private ClickHouse endpoints behind your own trusted network path.
+- Verify the app can reach ClickHouse from the deployment runtime, not just from
+  your laptop.
+
+## Deployment
+
+Run the same checks before shipping:
+
+```bash
+bun run lint
+bun run build
+bun run test
+```
+
+For Cloudflare:
+
+```bash
+bun run cf:build
+bun run cf:deploy
+bun run cf:health
+```
+
+For Docker:
+
+```bash
+docker compose up -d
+bun run docker:health
+```
+
+## Operations
+
+- Record where secrets are stored and who can rotate them.
+- Keep a rollback path for the previous image, Worker version, or deployment.
+- Watch app logs after deploy for ClickHouse connection errors.
+- Re-run the dependency audit after package updates:
+
+```bash
+bun audit
+```
