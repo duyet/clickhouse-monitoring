@@ -3,7 +3,7 @@ id: core-memory
 title: Automation Core Memory
 type: workflow
 status: active
-updated: 2026-05-13
+updated: 2026-05-14
 tags:
   - automation
   - code-smell
@@ -25,6 +25,7 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - Fallback window (7d): `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Dead-code evidence: `rg -n "\b<SYMBOL>\b" --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 - Main CI status: `gh run list --branch main --limit 10 --json workflowName,status,conclusion,headSha,url`
+- Cloudflare worker size dry-run: `bun wrangler deploy --minify --dry-run`
 
 ## Repo Notes
 
@@ -36,3 +37,4 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 
 - 2026-05-13: validate `hostId` for dashboard settings API and remove unused docs export type
 - 2026-05-13: removed unused `getDocsSlugs` and memoized `getDocsPage` with React `cache`
+- 2026-05-14: removed four zero-reference dead-code candidates from recent auth/deploy changes (`HeaderClient`, `getClerkPublishableKey`, `SemverRange`, `QueryConfigNoName`)

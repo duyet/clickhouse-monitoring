@@ -24,12 +24,3 @@ export function isClerkEnabled(): boolean {
   const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   return Boolean(key?.startsWith('pk_'))
 }
-
-/**
- * Get the Clerk publishable key from environment variables.
- *
- * @returns The publishable key or undefined if not set
- */
-export function getClerkPublishableKey(): string | undefined {
-  return process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-}
