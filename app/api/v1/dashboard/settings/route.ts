@@ -67,6 +67,7 @@ export async function GET(request: Request): Promise<Response> {
     const client = await getClient({ hostId })
     const resultSet = await client.query({
       query,
+      format: 'JSONEachRow',
     })
 
     const rows = (await resultSet.json()) as unknown as {
