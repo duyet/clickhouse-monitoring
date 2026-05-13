@@ -1,0 +1,55 @@
+# FAQ
+
+## Which ClickHouse user should I use?
+
+Create a dedicated monitoring user. Do not use an admin account for a shared
+dashboard. Start with read-only system-table access, then add grants for actions
+you intentionally enable, such as `KILL QUERY` or `OPTIMIZE`.
+
+## Why are some pages empty?
+
+The page may depend on a ClickHouse system table that is disabled, unavailable
+in your ClickHouse version, or empty on your cluster. Check the system table
+setup guide and confirm the monitoring user can query that table directly.
+
+## Why does the dashboard show stale data?
+
+The app uses SWR in the browser and server-side query caching. Lower
+`NEXT_QUERY_CACHE_TTL` if freshness matters more than ClickHouse load.
+
+## Can I monitor multiple clusters?
+
+Yes. Configure comma-separated `CLICKHOUSE_HOST`, `CLICKHOUSE_USER`,
+`CLICKHOUSE_PASSWORD`, and optional `CLICKHOUSE_NAME` values. The host selector
+uses the same index across all four variables.
+
+## Should I expose the AI agent publicly?
+
+Only if authentication is configured. The agent can query ClickHouse with the
+same grants as the configured monitoring user. Require authenticated access for
+agent, MCP, and action features on public deployments.
+
+## Does the app modify ClickHouse data?
+
+Most pages are read-only. Some actions can modify operational state when the
+ClickHouse user has grants, including kill query, optimize table, and
+self-tracking event writes. Disable or protect those features if you do not want
+operators to trigger them from the UI.
+
+## What deployment should I choose?
+
+Use Docker for the simplest self-hosted path. Use Cloudflare Workers when you
+want edge hosting and already operate Cloudflare. Use Kubernetes when you need
+the dashboard managed with the rest of your platform workloads.
+
+## Why does Docker not connect to localhost ClickHouse?
+
+Inside a container, `localhost` points at the container itself. Use the
+ClickHouse service name on a Docker network, or use the host gateway address
+for a ClickHouse server running on the Docker host.
+
+## How do I rotate ClickHouse credentials?
+
+Update the ClickHouse user password first, then update the deployment secret,
+then redeploy or restart the app. For Cloudflare, use `bun run cf:config` or
+update Worker secrets in the dashboard before redeploying.

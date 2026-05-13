@@ -1,0 +1,95 @@
+# Settings
+
+Settings are controlled with environment variables and, for feature access, an
+optional config file.
+
+## Required ClickHouse Settings
+
+```bash
+CLICKHOUSE_HOST=https://your-clickhouse-host:8443
+CLICKHOUSE_USER=monitoring
+CLICKHOUSE_PASSWORD=change-me
+```
+
+For multiple hosts, use comma-separated values in the same order:
+
+```bash
+CLICKHOUSE_HOST=https://prod-a:8443,https://prod-b:8443
+CLICKHOUSE_USER=monitoring,monitoring
+CLICKHOUSE_PASSWORD=secret-a,secret-b
+CLICKHOUSE_NAME=prod-a,prod-b
+```
+
+## Query Runtime
+
+```bash
+CLICKHOUSE_MAX_EXECUTION_TIME=60
+CLICKHOUSE_TZ=UTC
+NEXT_QUERY_CACHE_TTL=300
+```
+
+Use a shorter cache TTL when you need fresher operational data. Use a longer
+TTL for shared dashboards where lower ClickHouse load matters more than
+second-by-second freshness.
+
+## Authentication
+
+Clerk authentication is optional. Public dashboards can run without it, but
+authentication is recommended for agent, MCP, settings, and control actions.
+
+```bash
+CHM_AUTH_PROVIDER=clerk
+NEXT_PUBLIC_AUTH_PROVIDER=clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxx
+CLERK_SECRET_KEY=sk_live_xxx
+```
+
+## Feature Permissions
+
+Use feature permissions to hide or protect surfaces without changing code.
+
+```bash
+CHM_FEATURE_AGENT_ACCESS=authenticated
+CHM_FEATURE_MCP_ACCESS=authenticated
+CHM_FEATURE_ACTIONS_ACCESS=authenticated
+```
+
+You can also point the app at a TOML or YAML file:
+
+```bash
+CHM_CONFIG_FILE=/etc/clickhouse-monitor/config.toml
+```
+
+```toml
+[features.agent]
+access = "authenticated"
+
+[features.settings]
+access = "authenticated"
+
+[features.mcp]
+access = "authenticated"
+```
+
+## AI Provider
+
+The AI agent uses an OpenAI-compatible API.
+
+```bash
+LLM_API_KEY=your-provider-key
+LLM_API_BASE=https://your-provider-compatible-endpoint/v1
+LLM_MODEL=your-model
+```
+
+Keep server-side API keys out of `NEXT_PUBLIC_` variables.
+
+## Public Branding
+
+```bash
+NEXT_PUBLIC_LOGO=https://example.com/logo.svg
+NEXT_PUBLIC_VERCEL_ANALYTICS_ENABLED=false
+NEXT_PUBLIC_MEASUREMENT_ID=G-XXXXXXXXXX
+NEXT_PUBLIC_SELINE_ENABLED=false
+```
+
+Only use `NEXT_PUBLIC_` for values that are safe to expose to every browser.

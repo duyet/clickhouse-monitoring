@@ -1,0 +1,76 @@
+# Features
+
+ClickHouse Monitor is organized around the operational questions you answer
+while running a ClickHouse cluster.
+
+## Overview
+
+Use the overview page first when you want a fast health check. It groups
+connections, queries, merges, replication, and system metrics into tabs so you
+can spot the noisy area before drilling into a table.
+
+## Query Monitoring
+
+Use **Running Queries** for live work and **Query** pages for historical query
+log analysis.
+
+- Sort by elapsed time, memory, read rows, read bytes, and selected columns.
+- Open query text from table rows when you need the exact statement.
+- Use EXPLAIN tools to inspect plans and pipelines for a selected query.
+- Use the kill action only with a ClickHouse user that has `KILL QUERY`.
+
+## Tables and Storage
+
+Use **Tables**, **Top Usage Tables**, and the explorer views when you need to
+understand storage growth.
+
+- Compare rows, bytes, parts, compression, and per-column sizes.
+- Use database and table filters before exporting large views.
+- Use table actions such as optimize only for tables where the monitoring user
+  has the required ClickHouse grants.
+
+## Clusters and Replication
+
+Cluster pages focus on distributed operational state:
+
+- distributed queues
+- replica lag and replication health
+- background merges and mutations
+- host-level CPU, memory, disk, and network signals
+
+## Data Explorer
+
+The explorer is for ad-hoc read-only inspection. It can list databases, tables,
+columns, dependencies, and preview rows. Keep previews small when working with
+large production tables.
+
+## AI Agent
+
+The agent can help turn natural language into ClickHouse questions, explain
+query behavior, and summarize findings. It still uses the same configured
+ClickHouse host and user, so its visibility is limited by the grants you give
+that user.
+
+Required configuration:
+
+```bash
+LLM_API_KEY=your-provider-key
+LLM_API_BASE=https://your-provider-compatible-endpoint/v1
+LLM_MODEL=your-model
+```
+
+For deployments that expose the agent publicly, configure feature permissions
+so agent access requires authentication.
+
+## MCP Server
+
+The MCP endpoint lets external AI tools query the monitor through `/api/mcp`.
+Production deployments require API key authentication. See the MCP guide in the
+advanced docs before exposing this endpoint outside a trusted network.
+
+## Browser Connections
+
+Browser connections let users store additional ClickHouse connection details in
+their browser and query through the app proxy. Use this for temporary inspection
+or personal workflows. For team dashboards, prefer server-side
+`CLICKHOUSE_HOST`, `CLICKHOUSE_USER`, and `CLICKHOUSE_PASSWORD` configuration.

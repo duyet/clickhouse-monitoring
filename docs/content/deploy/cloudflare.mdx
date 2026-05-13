@@ -1,75 +1,73 @@
-# Cloudflare Pages
+# Cloudflare
 
-Deploy to Cloudflare Pages using OpenNext Cloudflare adapter.
+Deploy to Cloudflare Workers using the OpenNext Cloudflare adapter.
 
 ## Prerequisites
 
 - Cloudflare account
-- GitHub repository connected to Cloudflare Pages
-- Required secrets configured in GitHub:
-  - `CLOUDFLARE_API_TOKEN` - API token with Pages deploy permissions
+- Bun installed locally or in CI
+- Required Cloudflare credentials configured in CI when deploying from GitHub:
+  - `CLOUDFLARE_API_TOKEN` - API token with Workers deploy permissions
   - `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
 
 ## Architecture
 
-The application uses [@opennextjs/cloudflare](https://opennext.js.org/cloudflare) to adapt Next.js for Cloudflare Workers/Pages:
+The application uses [@opennextjs/cloudflare](https://opennext.js.org/cloudflare) to adapt Next.js for Cloudflare Workers:
 
-- **Build Process**: `pnpm cf:build` → generates `.open-next/` directory
+- **Build Process**: `bun run cf:build` generates the OpenNext output
 - **Entry Point**: `.open-next/worker.js` (Cloudflare Worker)
 - **Static Assets**: `.open-next/assets/` (served via Cloudflare CDN)
-- **Configuration**: `wrangler.jsonc` and `open-next.config.ts`
+- **Configuration**: `wrangler.toml` and `open-next.config.ts`
 
 ## Local Development
 
 ```bash
 # Install dependencies
-pnpm install
+bun install
 
 # Run development server
-pnpm dev
+bun run dev
 
 # Build for Cloudflare
-pnpm cf:build
+bun run cf:build
 
 # Preview locally with Cloudflare environment
-pnpm cf:preview
+bun run cf:preview
 ```
 
 ## Deployment Methods
 
 ### 1. Automated Deployment (Recommended)
 
-GitHub Actions workflow automatically deploys on push to `main` or `feat/cloudflare-pages-deployment` branches.
+GitHub Actions can deploy from the repository once Cloudflare credentials and
+ClickHouse secrets are configured.
 
-See: `.github/workflows/cloudflare-pages.yml`
+See: `.github/workflows/cloudflare.yml`
 
 ### 2. Manual Deployment via CLI
 
 ```bash
-# Build the application
-pnpm cf:build
+# Set Worker secrets from .env.local
+bun run cf:config
 
 # Deploy to Cloudflare
-pnpm cf:deploy
-
-# Or upload to Cloudflare Workers
-pnpm cf:upload
+bun run cf:deploy
 ```
 
-### 3. Cloudflare Dashboard
+### 3. Cloudflare Dashboard or CI
 
-If deploying via Cloudflare dashboard:
+If configuring a build command in Cloudflare or another CI runner:
 
-1. Connect your GitHub repository
-2. Configure build settings:
-   - **Build command**: `pnpm install && pnpm cf:build`
-   - **Build output directory**: `.open-next`
-   - **Root directory**: `/` (project root)
-   - **Node version**: 22
+```bash
+bun install --frozen-lockfile
+bun run cf:build
+```
+
+Use Node.js 20.18.1 or newer when a Node runtime is required by the runner.
 
 ## Configuration
 
-### wrangler.jsonc
+### wrangler.toml
 
 Main Cloudflare Workers configuration:
 - Entry point: `.open-next/worker.js`
@@ -87,13 +85,13 @@ OpenNext Cloudflare adapter configuration:
 
 ## Environment Variables
 
-Configure in Cloudflare dashboard under Pages → Settings → Environment variables:
+Configure these as Worker secrets or environment variables:
 
 - `CLICKHOUSE_HOST` - ClickHouse server URL(s)
 - `CLICKHOUSE_USER` - Authentication username(s)
 - `CLICKHOUSE_PASSWORD` - Authentication password(s)
 - `CLICKHOUSE_NAME` - Optional custom name(s) for instances
-- `CLICKHOUSE_MAX_EXECUTION_TIME` - Query timeout (default: 60)
+- `CLICKHOUSE_MAX_EXECUTION_TIME` - Query timeout in seconds
 
 ## Bindings
 
@@ -122,10 +120,10 @@ The application requires these Cloudflare resources:
 
 ### "The entry-point file at '.open-next/worker.js' was not found"
 
-**Cause**: The build command didn't run `pnpm cf:build` to generate the `.open-next/` directory.
+**Cause**: The build command did not run `bun run cf:build` to generate the `.open-next/` directory.
 
 **Solutions**:
-1. Ensure build command in Cloudflare dashboard is: `pnpm install && pnpm cf:build`
+1. Ensure the build command is `bun install --frozen-lockfile && bun run cf:build`
 2. Check that GitHub Actions workflow runs successfully
 3. Verify `.open-next/` is not in `.gitignore` (it should be, but Cloudflare builds it fresh)
 

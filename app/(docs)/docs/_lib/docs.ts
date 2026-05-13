@@ -28,7 +28,12 @@ export type DocsPage = {
 export const docsNav: DocsNavSection[] = [
   {
     title: 'ClickHouse Monitoring',
-    items: [{ title: 'Introduction', slug: '' }],
+    items: [
+      { title: 'Introduction', slug: '' },
+      { title: 'Features', slug: 'features' },
+      { title: 'Settings', slug: 'settings' },
+      { title: 'FAQ', slug: 'faq' },
+    ],
   },
   {
     title: 'Getting Started',
@@ -50,9 +55,13 @@ export const docsNav: DocsNavSection[] = [
     items: [
       { title: 'Deploy', slug: 'deploy' },
       { title: 'Vercel', slug: 'deploy/vercel' },
-      { title: 'Cloudflare Pages', slug: 'deploy/cloudflare' },
+      { title: 'Cloudflare', slug: 'deploy/cloudflare' },
       { title: 'Docker', slug: 'deploy/docker' },
       { title: 'Kubernetes', slug: 'deploy/k8s' },
+      {
+        title: 'Production Checklist',
+        slug: 'deploy/production-checklist',
+      },
     ],
   },
   {
@@ -62,6 +71,7 @@ export const docsNav: DocsNavSection[] = [
       { title: 'Custom Host Name', slug: 'advanced/custom-name' },
       { title: 'Queries History', slug: 'advanced/queries-history' },
       { title: 'Self-Tracking', slug: 'advanced/self-tracking' },
+      { title: 'Feature Permissions', slug: 'advanced/feature-permissions' },
     ],
   },
 ]
