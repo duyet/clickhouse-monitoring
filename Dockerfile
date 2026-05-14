@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Install dependencies only when needed
 FROM base AS deps
+ENV NODE_ENV=production
 RUN apk add --no-cache libc6-compat
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
