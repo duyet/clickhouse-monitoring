@@ -172,4 +172,61 @@ describe('validateHostUrl', () => {
       globalThis.fetch = previousFetch
     }
   })
+
+  test('rejects hostname fetches in Cloudflare Workers because DNS pinning is unavailable', async () => {
+    const previousFetch = globalThis.fetch
+    const previousFlag = process.env.CLOUDFLARE_WORKERS
+    const fetchMock = mock(
+      async (_input: Parameters<typeof fetch>[0], _init?: RequestInit) =>
+        new Response('{}', { status: 200 })
+    )
+    globalThis.fetch = fetchMock
+    process.env.CLOUDFLARE_WORKERS = '1'
+
+    try {
+      const guardedFetch = createHostValidationFetch(async () => [
+        '203.0.113.10',
+      ])
+
+      await expect(guardedFetch('https://safe.example:8443')).rejects.toThrow(
+        'Node.js DNS pinning'
+      )
+      expect(fetchMock).not.toHaveBeenCalled()
+    } finally {
+      globalThis.fetch = previousFetch
+      if (previousFlag === undefined) {
+        delete process.env.CLOUDFLARE_WORKERS
+      } else {
+        process.env.CLOUDFLARE_WORKERS = previousFlag
+      }
+    }
+  })
+
+  test('allows IP literal fetches in Cloudflare Workers after validation', async () => {
+    const previousFetch = globalThis.fetch
+    const previousFlag = process.env.CLOUDFLARE_WORKERS
+    const fetchMock = mock(
+      async (_input: Parameters<typeof fetch>[0], _init?: RequestInit) =>
+        new Response('{}', { status: 200 })
+    )
+    globalThis.fetch = fetchMock
+    process.env.CLOUDFLARE_WORKERS = '1'
+
+    try {
+      const guardedFetch = createHostValidationFetch()
+
+      const response = await guardedFetch('https://203.0.113.10:8443')
+
+      expect(response.status).toBe(200)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(fetchMock.mock.calls[0][1]).not.toHaveProperty('dispatcher')
+    } finally {
+      globalThis.fetch = previousFetch
+      if (previousFlag === undefined) {
+        delete process.env.CLOUDFLARE_WORKERS
+      } else {
+        process.env.CLOUDFLARE_WORKERS = previousFlag
+      }
+    }
+  })
 })

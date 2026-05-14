@@ -16,7 +16,10 @@ const nextConfig: NextConfig = {
   // Automatically bundle external packages in the Pages Router:
   bundlePagesRouterDependencies: true,
   // Opt specific packages out of bundling for both App and Pages Router:
-  // serverExternalPackages: [],
+  serverExternalPackages: ['undici'],
+  outputFileTracingIncludes: {
+    '/api/v1/browser-connections/*': ['node_modules/undici/**/*'],
+  },
 
   images: {
     unoptimized: true,
