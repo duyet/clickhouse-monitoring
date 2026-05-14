@@ -3,6 +3,7 @@
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  DownloadIcon,
   Loader2Icon,
   Maximize2Icon,
 } from 'lucide-react'
@@ -136,6 +137,32 @@ export function ResultTable({
       footnote={footnote}
     />
   )
+}
+
+function downloadCsv(rows: Record<string, unknown>[], filename: string) {
+  if (rows.length === 0) return
+  const headers = Object.keys(rows[0])
+  const csv = [
+    headers.join(','),
+    ...rows.map((row) =>
+      headers
+        .map((h) => {
+          const val = row[h]
+          const str = val === null || val === undefined ? '' : String(val)
+          return str.includes(',') || str.includes('"') || str.includes('\n')
+            ? `"${str.replace(/"/g, '""')}"`
+            : str
+        })
+        .join(',')
+    ),
+  ].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 function ExpandTableButton({
@@ -394,7 +421,18 @@ export function ToolCallPart({ part, onToolResult }: ToolCallPartProps) {
           </button>
 
           {hasOutput && outputRows.length > 0 && outputQueryConfig && (
-            <div className="shrink-0 pr-2">
+            <div className="shrink-0 flex items-center gap-1 pr-2">
+              <button
+                className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+                aria-label="Download CSV"
+                title="Download CSV"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  downloadCsv(outputRows, `${toolName}-results.csv`)
+                }}
+              >
+                <DownloadIcon className="h-3 w-3" />
+              </button>
               <ExpandTableButton
                 rows={outputRows}
                 queryConfig={outputQueryConfig}

@@ -1,5 +1,3 @@
-import type { DataFormat } from '@clickhouse/client'
-
 import { readOnlyQuery, resolveHostId, validatedReadOnlyQuery } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
@@ -15,25 +13,15 @@ export function createSchemaTools(hostId: number) {
           .number()
           .optional()
           .describe('The host ID (defaults to the session host)'),
-        format: z
-          .string()
-          .optional()
-          .describe('Response format (default: JSONEachRow)'),
       }),
       execute: async (input: unknown) => {
-        const {
-          sql,
-          hostId: paramHostId,
-          format = 'JSONEachRow',
-        } = input as {
+        const { sql, hostId: paramHostId } = input as {
           sql: string
           hostId?: number
-          format?: string
         }
         const result = await validatedReadOnlyQuery({
           sql,
           hostId: paramHostId ?? hostId,
-          format: format as DataFormat,
         })
         return result
       },
