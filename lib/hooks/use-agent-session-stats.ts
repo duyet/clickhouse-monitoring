@@ -6,6 +6,7 @@
  */
 
 import type { UIMessage } from 'ai'
+import type { AgentUsageStats } from '@/lib/ai/agent/analytics'
 
 import { isTextUIPart } from 'ai'
 import { useMemo } from 'react'
@@ -50,14 +51,6 @@ const EMPTY_STATS: SessionStats = {
 }
 
 /**
- * Rough token estimate from a string: ~1 token per 4 characters.
- * Used as a fallback when server-side usage metadata is unavailable.
- */
-function estimateTokensFromText(text: string): number {
-  return Math.ceil(text.length / 4)
-}
-
-/**
  * Check if a message part represents a tool call.
  * Used by both session-level and per-message stats for consistent counting.
  */
@@ -84,11 +77,44 @@ function extractTextFromParts(parts: UIMessage['parts']): string {
 }
 
 /**
+ * Find the most recent usage data part from assistant messages.
+ * The server sends a `{ type: 'data', data: { usage: AgentUsageStats } }` part.
+ */
+function extractUsageFromDataParts(
+  messages: readonly UIMessage[]
+): AgentUsageStats | null {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i]
+    if (msg.role !== 'assistant' || !msg.parts) continue
+    for (let j = msg.parts.length - 1; j >= 0; j--) {
+      const part = msg.parts[j]
+      if (
+        typeof part === 'object' &&
+        part !== null &&
+        'type' in part &&
+        (part as { type: string }).type === 'data-usage'
+      ) {
+        const data = (part as { data?: unknown[] }).data
+        if (
+          Array.isArray(data) &&
+          data.length > 0 &&
+          typeof data[0] === 'object' &&
+          data[0] !== null &&
+          'totalTokens' in (data[0] as Record<string, unknown>)
+        ) {
+          return data[0] as AgentUsageStats
+        }
+      }
+    }
+  }
+  return null
+}
+
+/**
  * Extract stats from AI SDK messages.
  *
- * Token counts are estimated from text length (fallback) since the AI SDK
- * v6 does not currently expose per-message usage metadata on UIMessage.
- * When a provider surfaces usage in message metadata, it will be used.
+ * Uses real usage data from the server when available (sent as data parts).
+ * Falls back to text-length estimation when no usage data is present.
  */
 function extractStats(messages: readonly UIMessage[]): SessionStats {
   let requestCount = 0
@@ -98,15 +124,14 @@ function extractStats(messages: readonly UIMessage[]): SessionStats {
   let totalOutputTokens = 0
 
   for (const msg of messages) {
-    const textContent = extractTextFromParts(msg.parts)
-    const estimatedTokens = estimateTokensFromText(textContent)
-
     if (msg.role === 'user') {
       requestCount++
-      totalInputTokens += estimatedTokens
+      const textContent = extractTextFromParts(msg.parts)
+      totalInputTokens += Math.ceil(textContent.length / 4)
     } else if (msg.role === 'assistant') {
       responseCount++
-      totalOutputTokens += estimatedTokens
+      const textContent = extractTextFromParts(msg.parts)
+      totalOutputTokens += Math.ceil(textContent.length / 4)
       if (msg.parts) {
         for (const part of msg.parts) {
           if (isToolCallPart(part)) {
@@ -117,7 +142,21 @@ function extractStats(messages: readonly UIMessage[]): SessionStats {
     }
   }
 
-  const totalTokens = totalInputTokens + totalOutputTokens
+  // Use real usage data from the server if available
+  const serverUsage = extractUsageFromDataParts(messages)
+  if (serverUsage) {
+    return {
+      totalMessages: messages.length,
+      requestCount,
+      responseCount,
+      toolCallCount,
+      totalInputTokens: serverUsage.totalInputTokens,
+      totalOutputTokens: serverUsage.totalOutputTokens,
+      totalTokens: serverUsage.totalTokens,
+      estimatedCostUsd: serverUsage.estimatedCostUsd,
+      avgResponseTimeMs: null,
+    }
+  }
 
   return {
     totalMessages: messages.length,
@@ -126,7 +165,7 @@ function extractStats(messages: readonly UIMessage[]): SessionStats {
     toolCallCount,
     totalInputTokens,
     totalOutputTokens,
-    totalTokens,
+    totalTokens: totalInputTokens + totalOutputTokens,
     estimatedCostUsd: null,
     avgResponseTimeMs: null,
   }

@@ -509,6 +509,15 @@ export async function POST(request: Request) {
         )
       )
       await result.consumeStream()
+
+      // Send aggregated usage/cost as a data part so the client can display it
+      if (usageSteps.length > 0) {
+        const stats = aggregateUsageWithCost(usageSteps, model)
+        writer.write({
+          type: 'data-usage',
+          data: [stats],
+        })
+      }
     },
     onError: (error) => {
       const classified = classifyError(error)

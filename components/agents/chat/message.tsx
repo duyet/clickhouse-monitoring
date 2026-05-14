@@ -15,8 +15,7 @@ import {
   useJsonRenderMessage,
 } from '@json-render/react'
 import { useMemo } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import { Streamdown } from 'streamdown'
 import {
   Message,
   MessageContent,
@@ -552,48 +551,13 @@ function MarkdownMessage({ text }: { readonly text: string }) {
 function MarkdownContent({ text }: { readonly text: string }) {
   return (
     <div className="markdown-content">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          table: ({ children }) => (
-            <div className="my-2 overflow-x-auto">
-              <table className="min-w-full border-collapse border border-border">
-                {children}
-              </table>
-            </div>
-          ),
-          thead: ({ children }) => (
-            <thead className="bg-muted">{children}</thead>
-          ),
-          th: ({ children }) => (
-            <th className="border border-border px-3 py-2 text-left text-sm font-medium">
-              {children}
-            </th>
-          ),
-          td: ({ children }) => (
-            <td className="border border-border px-3 py-2 text-sm">
-              {children}
-            </td>
-          ),
-          pre: ({ children }) => (
-            <pre className="my-2 overflow-x-auto rounded-md bg-muted p-3">
-              {children}
-            </pre>
-          ),
-          code: ({ className, children }) => {
-            const isInline = !className || className === 'language-'
-            return isInline ? (
-              <code className="rounded bg-muted px-1 py-0.5 text-sm">
-                {children}
-              </code>
-            ) : (
-              <code className={className}>{children}</code>
-            )
-          },
+      <Streamdown
+        mermaid={{
+          config: { theme: 'default' },
         }}
       >
         {text}
-      </ReactMarkdown>
+      </Streamdown>
     </div>
   )
 }
