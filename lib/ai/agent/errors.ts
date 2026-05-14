@@ -31,7 +31,7 @@ export interface AgentError {
 export function getErrorSuggestion(type: AgentErrorType): string {
   switch (type) {
     case 'auth_error':
-      return 'Check your LLM_API_KEY in .env.local'
+      return 'Check OPENROUTER_API_KEY, NVIDIA_API_KEY, or LLM_API_KEY in .env.local'
     case 'rate_limit':
       return 'Wait a moment and retry, or switch to a different model'
     case 'billing_error':

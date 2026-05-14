@@ -239,7 +239,13 @@ function ModelSelectorComponent() {
                       className="size-3.5 shrink-0 dark:invert-0"
                     />
                     <span className="min-w-0 flex-1 truncate font-mono text-[13px] font-medium text-foreground">
-                      {item.id}
+                      <Badge
+                        variant="outline"
+                        className="mr-1.5 rounded-full text-[10px] px-1.5 py-0"
+                      >
+                        {provider}
+                      </Badge>
+                      {item.name}
                     </span>
                     <div className="flex shrink-0 flex-col items-end gap-1.5">
                       <Badge variant="outline" className="rounded-full">
