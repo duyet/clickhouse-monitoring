@@ -184,14 +184,14 @@ describe('validateHostUrl', () => {
     process.env.CLOUDFLARE_WORKERS = '1'
 
     try {
-      const guardedFetch = createHostValidationFetch(async () => [
-        '203.0.113.10',
-      ])
+      const resolver = mock(async () => ['203.0.113.10'])
+      const guardedFetch = createHostValidationFetch(resolver)
 
       await expect(guardedFetch('https://safe.example:8443')).rejects.toThrow(
         'Node.js DNS pinning'
       )
       expect(fetchMock).not.toHaveBeenCalled()
+      expect(resolver).not.toHaveBeenCalled()
     } finally {
       globalThis.fetch = previousFetch
       if (previousFlag === undefined) {

@@ -90,20 +90,22 @@ export function createHostValidationFetch(
   resolveHostAddresses: ResolveHostAddresses = resolveDnsAddresses
 ): typeof fetch {
   return async (input, init) => {
-    const result = await resolveValidatedHostUrl(
-      getFetchUrl(input),
-      resolveHostAddresses
-    )
+    const fetchUrl = getFetchUrl(input)
+
+    if (isCloudflareWorkers()) {
+      const url = parseHttpUrl(fetchUrl)
+      if (url && !isIpLiteral(getNormalizedHostname(url))) {
+        throw new Error(WORKER_DNS_PINNING_ERROR)
+      }
+    }
+
+    const result = await resolveValidatedHostUrl(fetchUrl, resolveHostAddresses)
 
     if (typeof result === 'string') {
       throw new Error(result)
     }
 
     if (isCloudflareWorkers()) {
-      if (!isIpLiteral(getNormalizedHostname(result.url))) {
-        throw new Error(WORKER_DNS_PINNING_ERROR)
-      }
-
       return fetch(input, init)
     }
 
@@ -202,6 +204,15 @@ function getFetchUrl(input: Parameters<typeof fetch>[0]) {
     : input instanceof URL
       ? input.toString()
       : input.url
+}
+
+function parseHttpUrl(host: string) {
+  try {
+    const url = new URL(host)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url : null
+  } catch {
+    return null
+  }
 }
 
 async function createPinnedDispatcher(address: string) {
