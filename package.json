@@ -52,7 +52,8 @@
     "preinstall": "npx only-allow bun",
     "build:skills": "bun run scripts/build-skills-registry.ts",
     "prepare": "husky",
-    "bench:user-events": "bun scripts/benchmarks/user-events-transform-benchmark.mjs"
+    "bench:user-events": "bun scripts/benchmarks/user-events-transform-benchmark.mjs",
+    "test:agent-e2e": "start-server-and-test dev http://localhost:3000 \"promptfoo eval -c tests/agent/promptfooconfig.yaml\""
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.41",
@@ -187,6 +188,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.0.4",
     "postcss": "^8.5.14",
+    "promptfoo": "^0.121.11",
     "react-is": "^19.2.4",
     "shadcn": "^4.7.0",
     "start-server-and-test": "^3.0.0",

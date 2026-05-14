@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+
+description: 'ClickHouse Monitor Agent E2E Tests'
+
+# Target: Local dev server agent API
+# Requires AGENT_API_TOKEN in environment for bearer auth.
+# Set it in .env.local or export it before running:
+#   export AGENT_API_TOKEN=your-token
+#   bun run test:agent-e2e
+providers:
+  - id: 'https://localhost:3000/api/v1/agent'
+    config:
+      method: POST
+      headers:
+        Content-Type: 'application/json'
+        Authorization: 'Bearer {{env.AGENT_API_TOKEN}}'
+      body:
+        message: '{{prompt}}'
+        hostId: 0
+      # Parse AI SDK UIMessageStream SSE into plain text
+      transformResponse: |
+        (json, text) => {
+          let output = '';
+          const lines = String(text || '').split('\n');
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            // AI SDK text events: "0:<json-string>"
+            if (trimmed.startsWith('0:')) {
+              try {
+                const parsed = JSON.parse(trimmed.slice(2));
+                if (typeof parsed === 'string') output += parsed;
+              } catch {}
+            }
+            // AI SDK tool call events: "9:<json>" — extract tool name
+            if (trimmed.startsWith('9:')) {
+              try {
+                const parsed = JSON.parse(trimmed.slice(2));
+                if (parsed.toolCallId) {
+                  output += '\n[tool:' + parsed.toolName + ']';
+                }
+              } catch {}
+            }
+            // Data-usage events: "e:<json>" — extract cost
+            if (trimmed.startsWith('e:')) {
+              try {
+                const parsed = JSON.parse(trimmed.slice(2));
+                if (Array.isArray(parsed.data) && parsed.data[0]?.estimatedCostUsd !== undefined) {
+                  output += '\n[cost:$' + (parsed.data[0].estimatedCostUsd ?? 0).toFixed(6) + ']';
+                }
+              } catch {}
+            }
+          }
+          return output.trim() || text.slice(0, 500);
+        }
+
+defaultTest:
+  assert:
+    - type: latency
+      threshold: 45000
+
+tests:
+  - description: 'Basic greeting — should respond without tools'
+    vars:
+      prompt: 'Hello, what can you help me with?'
+    assert:
+      - type: not-contains
+        value: '[error]'
+      - type: latency
+        threshold: 30000
+
+  - description: 'Query tool — should list databases'
+    vars:
+      prompt: 'Show me all databases'
+    assert:
+      - type: contains
+        value: '[tool:'
+      - type: not-contains
+        value: '[error]'
+
+  - description: 'Query tool — should list tables in system database'
+    vars:
+      prompt: 'List all tables in the system database'
+    assert:
+      - type: contains
+        value: '[tool:'
+      - type: not-contains
+        value: '[error]'
+
+  - description: 'Query — should get table schema'
+    vars:
+      prompt: 'Show me the schema of system.query_log'
+    assert:
+      - type: contains
+        value: '[tool:'
+      - type: not-contains
+        value: '[error]'
+
+  - description: 'Cost tracking — should include usage data'
+    vars:
+      prompt: 'How many queries are currently running?'
+    assert:
+      - type: contains
+        value: '[cost:$'
+      - type: contains
+        value: '[tool:'
+
+evaluateOptions:
+  maxConcurrency: 1
+  cache: false
