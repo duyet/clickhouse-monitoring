@@ -85,6 +85,7 @@ jobs:
           NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.git_ref }}
           NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ steps.meta.outputs.build_timestamp }}
           NEXT_PUBLIC_CI: "true"
+          NEXT_PUBLIC_AUTH_PROVIDER: "clerk"
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_TEST }}
         run: |
           # Update wrangler.toml with the test public key for preview environment
@@ -295,6 +296,7 @@ jobs:
           NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.git_ref }}
           NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ steps.meta.outputs.build_timestamp }}
           NEXT_PUBLIC_CI: "true"
+          NEXT_PUBLIC_AUTH_PROVIDER: "clerk"
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
         run: |
           echo "Building with metadata:"
