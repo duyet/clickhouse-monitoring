@@ -1,5 +1,7 @@
 'use client'
 
+import { ArrowUpIcon } from 'lucide-react'
+
 import type { ChangeEvent, KeyboardEvent } from 'react'
 import type { AutocompleteItem } from './types'
 
@@ -9,7 +11,12 @@ import { MentionBadge, SlashCommandBadge } from './mention-badge'
 import { resolveMentionContext } from './resolve-mentions'
 import { useAutocomplete } from './use-autocomplete'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { InputGroupTextarea } from '@/components/ui/input-group'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from '@/components/ui/input-group'
 import { useAutocompleteData } from '@/lib/hooks/use-autocomplete-data'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
@@ -170,39 +177,58 @@ export function PromptInputTextareaWithMentions({
 
   const hasMentions =
     autocomplete.mentions.length > 0 || autocomplete.slashCommand !== null
+  const canSubmit = value.trim().length > 0 && !disabled
 
   return (
-    <div className="flex flex-col gap-1">
-      {/* Mention badges */}
-      {hasMentions && (
-        <div className="flex flex-wrap gap-1 px-1">
-          {autocomplete.slashCommand && (
-            <SlashCommandBadge
-              command={autocomplete.slashCommand}
-              onRemove={() => autocomplete.setSlashCommand(null)}
-            />
-          )}
-          {autocomplete.mentions.map((mention) => (
-            <MentionBadge
-              key={mention.id}
-              mention={mention}
-              onRemove={autocomplete.removeMention}
-            />
-          ))}
-        </div>
-      )}
+    <div className="relative">
+      <InputGroup className={cn('rounded-xl px-3 py-2', className)}>
+        {hasMentions && (
+          <InputGroupAddon align="block-start">
+            <div className="flex flex-wrap gap-1">
+              {autocomplete.slashCommand && (
+                <SlashCommandBadge
+                  command={autocomplete.slashCommand}
+                  onRemove={() => autocomplete.setSlashCommand(null)}
+                />
+              )}
+              {autocomplete.mentions.map((mention) => (
+                <MentionBadge
+                  key={mention.id}
+                  mention={mention}
+                  onRemove={autocomplete.removeMention}
+                />
+              ))}
+            </div>
+          </InputGroupAddon>
+        )}
 
-      {/* Textarea */}
-      <InputGroupTextarea
-        ref={textareaRef}
-        name="message"
-        className={cn('field-sizing-content max-h-48 min-h-16', className)}
-        placeholder={placeholder}
-        disabled={disabled}
-        value={value}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-      />
+        <InputGroupTextarea
+          ref={textareaRef}
+          name="message"
+          className="field-sizing-content max-h-48 min-h-10"
+          placeholder={placeholder}
+          disabled={disabled}
+          value={value}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+        />
+
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton
+            size="icon-sm"
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            className={cn(
+              'rounded-full transition-colors',
+              canSubmit
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                : 'bg-muted text-muted-foreground'
+            )}
+          >
+            <ArrowUpIcon className="size-4" />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
 
       {/* Autocomplete popover */}
       <AutocompletePopover

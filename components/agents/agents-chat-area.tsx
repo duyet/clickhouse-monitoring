@@ -354,13 +354,13 @@ export const AgentsChatArea = forwardRef<
         />
       )}
 
-      <div className="shrink-0 border-t p-3 sm:p-4">
+      <div className="shrink-0 px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
         <PromptInputTextareaWithMentions
           disabled={isLoading}
           onResolvedSubmit={submitPrompt}
         />
         {isLoading && messages.length > 0 && (
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex items-center justify-center gap-2">
             <Button
               variant="ghost"
               size="sm"
