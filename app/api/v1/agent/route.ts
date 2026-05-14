@@ -54,6 +54,7 @@ type AgentRequestBody = {
   hostId?: number
   model?: string
   disabledTools?: string[]
+  sessionId?: string
 }
 
 type SanitizeIncomingMessagesResult =
@@ -385,6 +386,25 @@ export async function POST(request: Request) {
   const disabledTools = Array.isArray(body.disabledTools)
     ? body.disabledTools.filter((t) => typeof t === 'string')
     : []
+  const sessionId =
+    typeof body.sessionId === 'string' && body.sessionId.length > 0
+      ? body.sessionId
+      : crypto.randomUUID()
+
+  // Resolve Clerk user ID for OpenRouter user tracking
+  let userId = 'guest'
+  try {
+    const { auth } = await import('@clerk/nextjs/server')
+    const authResult = await auth()
+    if (authResult?.userId) userId = authResult.userId
+  } catch {
+    // Bearer token auth or Clerk unavailable
+  }
+  const openRouterUser = `${userId}/${sessionId}`
+
+  if (AGENT_DEBUG_LOGS) {
+    console.log('[Agent API] OpenRouter user:', openRouterUser)
+  }
 
   const agent = createClickHouseAgent({
     hostId,
@@ -393,6 +413,7 @@ export async function POST(request: Request) {
     baseURL: process.env.LLM_API_BASE,
     disabledTools,
     systemPrompt: AGENT_JSON_RENDER_INLINE_PROMPT,
+    providerOptions: { openrouter: { user: openRouterUser } },
   })
 
   const uiMessages: Array<{

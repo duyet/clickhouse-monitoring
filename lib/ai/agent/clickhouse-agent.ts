@@ -7,6 +7,8 @@
 
 import 'server-only'
 
+import type { ProviderOptions } from '@ai-sdk/provider-utils'
+
 import { createMcpTools } from './mcp-tool-adapter'
 import { CLICKHOUSE_AGENT_INSTRUCTIONS } from './prompts/clickhouse-instructions'
 import { createOpenAI } from '@ai-sdk/openai'
@@ -90,6 +92,11 @@ export function createClickHouseAgent(options: {
    * Optional system prompt override.
    */
   systemPrompt?: string
+
+  /**
+   * Provider-specific options forwarded to the LLM (e.g. OpenRouter user tracking).
+   */
+  providerOptions?: ProviderOptions
 }) {
   const {
     model = DEFAULT_MODEL,
@@ -99,6 +106,7 @@ export function createClickHouseAgent(options: {
     hostId,
     disabledTools = [],
     systemPrompt = CLICKHOUSE_AGENT_INSTRUCTIONS,
+    providerOptions,
   } = options
 
   // Detect if using OpenRouter by checking the baseURL or model name
@@ -176,6 +184,7 @@ export function createClickHouseAgent(options: {
       tools,
       instructions: systemPrompt,
       stopWhen: stepCountIs(maxSteps),
+      ...(providerOptions && { providerOptions }),
     })
 
     return agent
@@ -199,6 +208,7 @@ export function createClickHouseAgent(options: {
     tools,
     instructions: systemPrompt,
     stopWhen: stepCountIs(maxSteps),
+    ...(providerOptions && { providerOptions }),
   })
 
   return agent
