@@ -43,8 +43,10 @@ function isAnthropicModel(model: string): boolean {
 
 const DEFAULT_MAX_STEPS = 30
 
-export const DEFAULT_OPENROUTER_REFERER = 'https://chmonitor.dev'
-export const DEFAULT_OPENROUTER_APP_NAME = 'ClickHouse Monitoring'
+export const DEFAULT_APP_REFERER = 'https://chmonitor.dev'
+export const DEFAULT_APP_NAME = 'ClickHouse Monitoring'
+export const DEFAULT_APP_CATEGORY = 'programming-app'
+export const DEFAULT_APP_VERSION = '0.2.0'
 
 export function createClickHouseAgent(options: {
   /** Model ID in `provider:model` format (e.g., `openrouter:openrouter/free`) */
@@ -93,10 +95,26 @@ export function createClickHouseAgent(options: {
     tools,
     systemPrompt,
     maxSteps,
+    referer,
   })
 }
 
 type ToolSet = ReturnType<typeof createMcpTools>
+
+function buildProviderHeaders(
+  providerId: string,
+  referer?: string
+): Record<string, string> | undefined {
+  if (providerId === 'anyrouter') {
+    return {
+      'X-AnyRouter-Title': process.env.APP_NAME || DEFAULT_APP_NAME,
+      'X-AnyRouter-Source': process.env.APP_CATEGORY || DEFAULT_APP_CATEGORY,
+      'X-AnyRouter-Version': process.env.APP_VERSION || DEFAULT_APP_VERSION,
+      'HTTP-Referer': referer || process.env.APP_REFERER || DEFAULT_APP_REFERER,
+    }
+  }
+  return undefined
+}
 
 function createOpenRouterAgent(opts: {
   resolved: ReturnType<typeof resolveProvider>
@@ -119,16 +137,16 @@ function createOpenRouterAgent(opts: {
     referer,
   } = opts
 
-  const openRouterReferer =
-    referer || process.env.OPENROUTER_REFERER || DEFAULT_OPENROUTER_REFERER
-  const openRouterAppName =
-    process.env.OPENROUTER_APP_NAME || DEFAULT_OPENROUTER_APP_NAME
+  const appReferer = referer || process.env.APP_REFERER || DEFAULT_APP_REFERER
+  const appName = process.env.APP_NAME || DEFAULT_APP_NAME
+  const appCategory = process.env.APP_CATEGORY || DEFAULT_APP_CATEGORY
 
   const openrouter = createOpenRouter({
     apiKey: resolved.apiKey,
     headers: {
-      'HTTP-Referer': openRouterReferer,
-      'X-OpenRouter-Title': openRouterAppName,
+      'HTTP-Referer': appReferer,
+      'X-OpenRouter-Title': appName,
+      ...(appCategory && { 'X-OpenRouter-Categories': appCategory }),
     },
   })
 
@@ -175,13 +193,17 @@ function createOpenAIAgent(opts: {
   tools: ToolSet
   systemPrompt: string
   maxSteps: number
+  referer?: string
 }) {
-  const { resolved, modelId, tools, systemPrompt, maxSteps } = opts
+  const { resolved, modelId, tools, systemPrompt, maxSteps, referer } = opts
+
+  const headers = buildProviderHeaders(resolved.providerId, referer)
 
   const openai = createOpenAI({
     apiKey: resolved.apiKey,
     baseURL: resolved.baseURL,
     name: resolved.providerId,
+    ...(headers && { headers }),
   })
 
   return new ToolLoopAgent({
