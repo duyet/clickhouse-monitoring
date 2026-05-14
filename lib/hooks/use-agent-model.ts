@@ -78,6 +78,8 @@ export interface ModelDisplayInfo {
   contextLength: number
   formattedContextLength: string
   isFree: boolean
+  /** True when the Worker has an API key for this provider. Defaults to true offline. */
+  available?: boolean
   pricing?: ModelPricing
   supportsTools?: boolean
   supportsStreaming?: boolean

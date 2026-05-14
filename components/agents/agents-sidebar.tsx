@@ -156,6 +156,7 @@ function ModelSelectorComponent() {
 
   const currentModel = models.find((item) => item.id === model)
   const currentProvider = getProviderFromModelId(model)
+  const currentUnavailable = currentModel?.available === false
   const trimmedCustomInput = customInput.trim()
 
   const handleCustomModelSubmit = () => {
@@ -188,6 +189,14 @@ function ModelSelectorComponent() {
                 <span className="min-w-0 truncate">
                   {currentModel?.name ?? model}
                 </span>
+                {currentUnavailable ? (
+                  <Badge
+                    variant="outline"
+                    className="shrink-0 rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                  >
+                    Not configured
+                  </Badge>
+                ) : null}
               </span>
             </div>
             <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -205,12 +214,15 @@ function ModelSelectorComponent() {
               {models.map((item) => {
                 const provider = getProviderFromModelId(item.id)
                 const selected = item.id === model
+                const unavailable = item.available === false
 
                 return (
                   <ModelSelectorItem
                     key={item.id}
                     value={item.id}
+                    disabled={unavailable}
                     onSelect={() => {
+                      if (unavailable) return
                       setModel(item.id)
                       setOpen(false)
                     }}
@@ -218,7 +230,8 @@ function ModelSelectorComponent() {
                       'mx-2 my-1 flex items-start gap-3 rounded-lg px-3 py-2.5',
                       selected
                         ? 'bg-muted/60'
-                        : 'border border-transparent hover:bg-muted/35'
+                        : 'border border-transparent hover:bg-muted/35',
+                      unavailable && 'cursor-not-allowed opacity-50'
                     )}
                   >
                     <ModelSelectorLogo
@@ -254,7 +267,14 @@ function ModelSelectorComponent() {
                           <br />${item.pricing.outputPerMillion}/M out
                         </span>
                       ) : null}
-                      {selected ? (
+                      {unavailable ? (
+                        <Badge
+                          variant="outline"
+                          className="rounded-full border-amber-400/60 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                        >
+                          Not configured
+                        </Badge>
+                      ) : selected ? (
                         <Badge className="rounded-full">Selected</Badge>
                       ) : null}
                     </div>

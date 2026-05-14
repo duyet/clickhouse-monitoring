@@ -43,6 +43,9 @@ function isAnthropicModel(model: string): boolean {
 
 const DEFAULT_MAX_STEPS = 30
 
+export const DEFAULT_OPENROUTER_REFERER = 'https://chmonitor.dev'
+export const DEFAULT_OPENROUTER_APP_NAME = 'ClickHouse Monitoring'
+
 export function createClickHouseAgent(options: {
   /** Model ID in `provider:model` format (e.g., `openrouter:openrouter/free`) */
   model?: string
@@ -51,6 +54,8 @@ export function createClickHouseAgent(options: {
   disabledTools?: string[]
   systemPrompt?: string
   providerOptions?: ProviderOptions
+  /** Origin of the calling request — passed as OpenRouter HTTP-Referer. */
+  referer?: string
 }) {
   const {
     model = DEFAULT_MODEL,
@@ -59,6 +64,7 @@ export function createClickHouseAgent(options: {
     disabledTools = [],
     systemPrompt = CLICKHOUSE_AGENT_INSTRUCTIONS,
     providerOptions,
+    referer,
   } = options
 
   const resolved = resolveProvider(model)
@@ -77,6 +83,7 @@ export function createClickHouseAgent(options: {
       systemPrompt,
       maxSteps,
       providerOptions,
+      referer,
     })
   }
 
@@ -99,6 +106,7 @@ function createOpenRouterAgent(opts: {
   systemPrompt: string
   maxSteps: number
   providerOptions?: ProviderOptions
+  referer?: string
 }) {
   const {
     resolved,
@@ -108,18 +116,19 @@ function createOpenRouterAgent(opts: {
     systemPrompt,
     maxSteps,
     providerOptions,
+    referer,
   } = opts
 
-  const openRouterReferer = process.env.OPENROUTER_REFERER
-  const openRouterAppName = process.env.OPENROUTER_APP_NAME
+  const openRouterReferer =
+    referer || process.env.OPENROUTER_REFERER || DEFAULT_OPENROUTER_REFERER
+  const openRouterAppName =
+    process.env.OPENROUTER_APP_NAME || DEFAULT_OPENROUTER_APP_NAME
 
   const openrouter = createOpenRouter({
     apiKey: resolved.apiKey,
     headers: {
-      ...(openRouterReferer && { 'HTTP-Referer': openRouterReferer }),
-      ...(openRouterAppName && {
-        'X-OpenRouter-Title': openRouterAppName,
-      }),
+      'HTTP-Referer': openRouterReferer,
+      'X-OpenRouter-Title': openRouterAppName,
     },
   })
 

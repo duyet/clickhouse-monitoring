@@ -28,6 +28,11 @@ import { aggregateUsageWithCost } from '@/lib/ai/agent/analytics'
 import { classifyError } from '@/lib/ai/agent/errors'
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
 import { createJsonRenderPatchGuardStream } from '@/lib/ai/agent/json-render-patch-guard'
+import {
+  getProviderName,
+  isProviderConfigured,
+  parseModelId,
+} from '@/lib/ai/providers'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 import { isClerkAuthProvider } from '@/lib/auth/provider'
 
@@ -384,6 +389,24 @@ export async function POST(request: Request) {
     typeof body.model === 'string' && body.model.trim().length > 0
       ? body.model
       : process.env.LLM_MODEL || 'openrouter:openrouter/auto'
+
+  // Preflight: refuse early if the selected provider has no API key on this
+  // deployment. Without this, the upstream provider returns a confusing
+  // "Missing Authorization header" error that looks like *our* auth failed.
+  const { provider: requestedProvider } = parseModelId(model)
+  if (!isProviderConfigured(requestedProvider)) {
+    return new Response(
+      JSON.stringify({
+        error: {
+          code: 'PROVIDER_NOT_CONFIGURED',
+          message: `Provider "${getProviderName(requestedProvider)}" is not configured on this deployment. Pick a model from a configured provider or ask the operator to set ${requestedProvider.toUpperCase()}_API_KEY.`,
+          provider: requestedProvider,
+        },
+      }),
+      { status: 503, headers: { 'content-type': 'application/json' } }
+    )
+  }
+
   const disabledTools = Array.isArray(body.disabledTools)
     ? body.disabledTools.filter((t) => typeof t === 'string')
     : []
@@ -409,12 +432,14 @@ export async function POST(request: Request) {
     console.log('[Agent API] OpenRouter user:', openRouterUser)
   }
 
+  const requestOrigin = request.headers.get('origin') ?? undefined
   const agent = createClickHouseAgent({
     hostId,
     model,
     disabledTools,
     systemPrompt: AGENT_JSON_RENDER_INLINE_PROMPT,
     providerOptions: { openrouter: { user: openRouterUser } },
+    referer: requestOrigin,
   })
 
   const uiMessages: Array<{

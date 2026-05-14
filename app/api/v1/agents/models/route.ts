@@ -10,6 +10,7 @@
 
 import { NextResponse } from 'next/server'
 import { isFreeAgentModel, MODEL_REGISTRY } from '@/lib/ai/agent-model-registry'
+import { isProviderConfigured } from '@/lib/ai/providers'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 import { formatCompactNumber } from '@/lib/format-number'
 
@@ -32,6 +33,8 @@ interface ModelCapability {
   contextLength: number
   formattedContextLength: string
   isFree: boolean
+  /** True when the Worker has an API key configured for this provider. */
+  available: boolean
   pricing?: {
     inputPerMillion: number
     outputPerMillion: number
@@ -149,6 +152,7 @@ function buildStaticModels(): ModelCapability[] {
         contextLength: entry.contextLength,
         formattedContextLength: formatCompactNumber(entry.contextLength),
         isFree,
+        available: isProviderConfigured(provider),
         pricing: entry.pricing,
       })
     }
@@ -189,6 +193,7 @@ async function buildModels(): Promise<ModelCapability[]> {
         contextLength,
         formattedContextLength: formatCompactNumber(contextLength),
         isFree,
+        available: isProviderConfigured(provider),
         pricing: entry.pricing,
         ...capabilities,
       })
