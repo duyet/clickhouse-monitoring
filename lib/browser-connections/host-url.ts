@@ -1,11 +1,16 @@
 import type { Dispatcher, Agent as UndiciAgent } from 'undici'
 
 import { Address4, Address6 } from 'ip-address'
+import { isCloudflareWorkers } from '@/lib/runtime/cloudflare-workers'
 
 const INTERNAL_ADDRESS_ERROR =
   'Connections to internal addresses are not allowed.'
 const DNS_RESOLUTION_ERROR = 'Unable to resolve host safely.'
+const WORKER_DNS_PINNING_ERROR =
+  'Browser connection hostnames require Node.js DNS pinning. Use an IP literal or run this endpoint in a Node.js runtime.'
 const DNS_LOOKUP_TIMEOUT_MS = 3000
+// Keep Undici out of the Cloudflare Worker bundle; Next tracing includes it for Node standalone.
+const UNDICI_PACKAGE = ['und', 'ici'].join('')
 
 type FetchInitWithDispatcher = RequestInit & { dispatcher: Dispatcher }
 type ClosableDispatcher = Dispatcher & {
@@ -85,13 +90,23 @@ export function createHostValidationFetch(
   resolveHostAddresses: ResolveHostAddresses = resolveDnsAddresses
 ): typeof fetch {
   return async (input, init) => {
-    const result = await resolveValidatedHostUrl(
-      getFetchUrl(input),
-      resolveHostAddresses
-    )
+    const fetchUrl = getFetchUrl(input)
+
+    if (isCloudflareWorkers()) {
+      const url = parseHttpUrl(fetchUrl)
+      if (url && !isIpLiteral(getNormalizedHostname(url))) {
+        throw new Error(WORKER_DNS_PINNING_ERROR)
+      }
+    }
+
+    const result = await resolveValidatedHostUrl(fetchUrl, resolveHostAddresses)
 
     if (typeof result === 'string') {
       throw new Error(result)
+    }
+
+    if (isCloudflareWorkers()) {
+      return fetch(input, init)
     }
 
     return fetchPinnedToValidatedAddresses(input, init, result.addresses)
@@ -109,14 +124,14 @@ async function fetchPinnedToValidatedAddresses(
     : addresses.slice(0, 1)
 
   for (const address of addressesToTry) {
-    const dispatcher = await createPinnedDispatcher(address)
-    const pinnedInit = { dispatcher } satisfies FetchInitWithDispatcher
-    const undiciFetch = fetch as unknown as (
-      input: Parameters<typeof fetch>[0],
-      init: FetchInitWithDispatcher
-    ) => Promise<Response>
-
+    let dispatcher: Dispatcher | undefined
     try {
+      dispatcher = await createPinnedDispatcher(address)
+      const pinnedInit = { dispatcher } satisfies FetchInitWithDispatcher
+      const undiciFetch = fetch as unknown as (
+        input: Parameters<typeof fetch>[0],
+        init: FetchInitWithDispatcher
+      ) => Promise<Response>
       const response =
         input instanceof Request
           ? await undiciFetch(new Request(input, init), pinnedInit)
@@ -127,7 +142,9 @@ async function fetchPinnedToValidatedAddresses(
 
       return wrapResponseWithDispatcherCleanup(response, dispatcher)
     } catch (error) {
-      closeDispatcher(dispatcher)
+      if (dispatcher) {
+        closeDispatcher(dispatcher)
+      }
       lastError = error
     }
   }
@@ -189,6 +206,15 @@ function getFetchUrl(input: Parameters<typeof fetch>[0]) {
       : input.url
 }
 
+function parseHttpUrl(host: string) {
+  try {
+    const url = new URL(host)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url : null
+  } catch {
+    return null
+  }
+}
+
 async function createPinnedDispatcher(address: string) {
   const { Agent } = await loadUndici()
   const family = isAddress6(address) ? 6 : 4
@@ -209,13 +235,8 @@ async function loadUndici() {
 }
 
 async function importUndici() {
-  const dynamicImport = new Function(
-    'specifier',
-    'return import(specifier)'
-  ) as (specifier: string) => Promise<UndiciModule>
-
   try {
-    return await dynamicImport('undici')
+    return (await import(UNDICI_PACKAGE)) as UndiciModule
   } catch (error) {
     throw new Error('Unable to load Node fetch dispatcher for DNS pinning.', {
       cause: error,
@@ -248,6 +269,10 @@ function withTimeout<T>(promise: Promise<T>) {
 
 function isIpLiteral(hostname: string) {
   return isAddress4(hostname) || isAddress6(hostname)
+}
+
+function getNormalizedHostname(url: URL) {
+  return url.hostname.toLowerCase().replace(/^\[|\]$/g, '')
 }
 
 function isAddress4(hostname: string) {
