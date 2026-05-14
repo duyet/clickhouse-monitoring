@@ -132,6 +132,17 @@ export const AgentsChatArea = forwardRef<
 
   const isLoading = status === 'streaming' || status === 'submitted'
   const isEmpty = messages.length === 0
+  const lastAssistantMessage = useMemo(
+    () => findLastAssistantMessage(messages),
+    [messages]
+  )
+  const followUpSuggestions = useMemo(
+    () =>
+      lastAssistantMessage
+        ? generateFollowUpSuggestions(lastAssistantMessage)
+        : [],
+    [lastAssistantMessage]
+  )
 
   useEffect(() => {
     const previousStatus = prevStatusRef.current
@@ -324,11 +335,9 @@ export const AgentsChatArea = forwardRef<
                   message.role === 'assistant' &&
                   index === messages.length - 1
 
-                const latestAssistantMessage =
-                  findLastAssistantMessage(messages)
                 const isLatestAssistant =
                   message.role === 'assistant' &&
-                  latestAssistantMessage?.id === message.id
+                  lastAssistantMessage?.id === message.id
 
                 return (
                   <ChatMessage
@@ -354,7 +363,7 @@ export const AgentsChatArea = forwardRef<
         </ConversationContent>
       </ConversationUI>
 
-      {error && !findLastAssistantMessage(messages) && (
+      {error && !lastAssistantMessage && (
         <AgentErrorDisplay
           error={error}
           onRetry={handleRegenerate}
@@ -363,26 +372,19 @@ export const AgentsChatArea = forwardRef<
       )}
 
       <div className="shrink-0 px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
-        {!isLoading &&
-          (() => {
-            const lastAssistant = findLastAssistantMessage(messages)
-            if (!lastAssistant) return null
-            const followUps = generateFollowUpSuggestions(lastAssistant)
-            if (followUps.length === 0) return null
-            return (
-              <div className="mb-2">
-                <Suggestions>
-                  {followUps.map((suggestion) => (
-                    <Suggestion
-                      key={suggestion}
-                      suggestion={suggestion}
-                      onClick={submitPrompt}
-                    />
-                  ))}
-                </Suggestions>
-              </div>
-            )
-          })()}
+        {!isLoading && followUpSuggestions.length > 0 && (
+          <div className="mb-2">
+            <Suggestions>
+              {followUpSuggestions.map((suggestion) => (
+                <Suggestion
+                  key={suggestion}
+                  suggestion={suggestion}
+                  onClick={submitPrompt}
+                />
+              ))}
+            </Suggestions>
+          </div>
+        )}
         <PromptInputTextareaWithMentions
           disabled={isLoading}
           onResolvedSubmit={submitPrompt}

@@ -156,7 +156,6 @@ function ModelSelectorComponent() {
 
   const currentModel = models.find((item) => item.id === model)
   const currentProvider = getProviderFromModelId(model)
-  const currentUnavailable = currentModel?.available === false
   const trimmedCustomInput = customInput.trim()
 
   const handleCustomModelSubmit = () => {
@@ -189,7 +188,7 @@ function ModelSelectorComponent() {
                 <span className="min-w-0 truncate">
                   {currentModel?.name ?? model}
                 </span>
-                {currentUnavailable ? (
+                {currentModel?.available === false ? (
                   <Badge
                     variant="outline"
                     className="shrink-0 rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"

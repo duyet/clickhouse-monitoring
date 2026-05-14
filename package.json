@@ -18,6 +18,7 @@
     "cf:build": "bun run build && opennextjs-cloudflare build --skipBuild",
     "cf:preview": "bun run cf:build && opennextjs-cloudflare preview",
     "cf:config": "bun scripts/set-secrets.ts",
+    "gh:sync-secrets": "bun scripts/sync-env-to-gh.ts",
     "cf:setup-conversations": "bun scripts/setup-conversations-db.ts",
     "cf:migrate-conversations": "wrangler d1 migrations apply clickhouse-monitor-conversations --remote --yes",
     "cf:migrate-conversations:local": "wrangler d1 migrations apply clickhouse-monitor-conversations --local --yes",
