@@ -9,11 +9,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import {
-  isFreeAgentModel,
-  MODEL_REGISTRY,
-  type ModelEntry,
-} from '@/lib/ai/agent-model-registry'
+import { isFreeAgentModel, MODEL_REGISTRY } from '@/lib/ai/agent-model-registry'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 import { formatCompactNumber } from '@/lib/format-number'
 
