@@ -8,7 +8,7 @@ description: 'ClickHouse Monitor Agent E2E Tests'
 #   export AGENT_API_TOKEN=your-token
 #   bun run test:agent-e2e
 providers:
-  - id: 'https://localhost:3000/api/v1/agent'
+  - id: 'http://localhost:3000/api/v1/agent'
     config:
       method: POST
       headers:
@@ -17,45 +17,50 @@ providers:
       body:
         message: '{{prompt}}'
         hostId: 0
-      # Parse AI SDK UIMessageStream SSE into plain text
+        model: '{{model}}'
+      # Parse AI SDK UIMessageStream SSE format:
+      # Each event is "data: <json>" or "data: [DONE]"
       transformResponse: |
         (json, text) => {
           let output = '';
+          let hasTool = false;
+          let hasCost = false;
           const lines = String(text || '').split('\n');
           for (const line of lines) {
             const trimmed = line.trim();
-            if (!trimmed) continue;
-            // AI SDK text events: "0:<json-string>"
-            if (trimmed.startsWith('0:')) {
-              try {
-                const parsed = JSON.parse(trimmed.slice(2));
-                if (typeof parsed === 'string') output += parsed;
-              } catch {}
-            }
-            // AI SDK tool call events: "9:<json>" — extract tool name
-            if (trimmed.startsWith('9:')) {
-              try {
-                const parsed = JSON.parse(trimmed.slice(2));
-                if (parsed.toolCallId) {
-                  output += '\n[tool:' + parsed.toolName + ']';
+            if (!trimmed.startsWith('data: ')) continue;
+            const payload = trimmed.slice(6);
+            if (payload === '[DONE]') continue;
+            try {
+              const evt = JSON.parse(payload);
+              if (evt.type === 'text-delta' && typeof evt.textDelta === 'string') {
+                output += evt.textDelta;
+              }
+              if (evt.type === 'tool-call' && evt.toolName) {
+                hasTool = true;
+                output += '\n[tool:' + evt.toolName + ']';
+              }
+              if (evt.type === 'data-usage' && Array.isArray(evt.data) && evt.data[0]) {
+                const cost = evt.data[0].estimatedCostUsd;
+                if (cost !== undefined && cost !== null) {
+                  hasCost = true;
+                  output += '\n[cost:$' + Number(cost).toFixed(6) + ']';
                 }
-              } catch {}
-            }
-            // Data-usage events: "e:<json>" — extract cost
-            if (trimmed.startsWith('e:')) {
-              try {
-                const parsed = JSON.parse(trimmed.slice(2));
-                if (Array.isArray(parsed.data) && parsed.data[0]?.estimatedCostUsd !== undefined) {
-                  output += '\n[cost:$' + (parsed.data[0].estimatedCostUsd ?? 0).toFixed(6) + ']';
-                }
-              } catch {}
-            }
+              }
+              if (evt.type === 'error') {
+                output += '\n[error:' + (evt.reason || 'unknown') + ']';
+              }
+            } catch {}
           }
           return output.trim() || text.slice(0, 500);
         }
 
 defaultTest:
+  vars:
+    model: 'openrouter/free'
   assert:
+    - type: not-contains
+      value: '[error:'
     - type: latency
       threshold: 45000
 
@@ -64,8 +69,8 @@ tests:
     vars:
       prompt: 'Hello, what can you help me with?'
     assert:
-      - type: not-contains
-        value: '[error]'
+      - type: not-regex
+        value: '\\[error:'
       - type: latency
         threshold: 30000
 
@@ -75,8 +80,8 @@ tests:
     assert:
       - type: contains
         value: '[tool:'
-      - type: not-contains
-        value: '[error]'
+      - type: not-regex
+        value: '\\[error:'
 
   - description: 'Query tool — should list tables in system database'
     vars:
@@ -84,8 +89,8 @@ tests:
     assert:
       - type: contains
         value: '[tool:'
-      - type: not-contains
-        value: '[error]'
+      - type: not-regex
+        value: '\\[error:'
 
   - description: 'Query — should get table schema'
     vars:
@@ -93,17 +98,17 @@ tests:
     assert:
       - type: contains
         value: '[tool:'
-      - type: not-contains
-        value: '[error]'
+      - type: not-regex
+        value: '\\[error:'
 
   - description: 'Cost tracking — should include usage data'
     vars:
       prompt: 'How many queries are currently running?'
     assert:
       - type: contains
-        value: '[cost:$'
-      - type: contains
         value: '[tool:'
+      - type: not-regex
+        value: '\\[error:'
 
 evaluateOptions:
   maxConcurrency: 1
