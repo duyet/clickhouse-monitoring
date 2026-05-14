@@ -23,8 +23,12 @@ const SECRET_KEYS = [
   // LLM API keys for AI Agent
   'LLM_API_KEY',
   'LLM_API_BASE',
+  'OPENROUTER_API_KEY',
+  'OPENROUTER_API_BASE',
   'NVIDIA_API_KEY',
+  'NVIDIA_API_BASE',
   'ANYROUTER_API_KEY',
+  'ANYROUTER_API_BASE',
   // Clerk authentication secret (never commit this)
   'CLERK_SECRET_KEY',
   // LLM_MODEL has a default value and is selected via UI dropdown

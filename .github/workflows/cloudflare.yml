@@ -103,6 +103,12 @@ jobs:
           CLICKHOUSE_PASSWORD: ${{ secrets.CLICKHOUSE_PASSWORD }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_API_BASE: ${{ secrets.OPENROUTER_API_BASE }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          NVIDIA_API_BASE: ${{ secrets.NVIDIA_API_BASE }}
+          ANYROUTER_API_KEY: ${{ secrets.ANYROUTER_API_KEY }}
+          ANYROUTER_API_BASE: ${{ secrets.ANYROUTER_API_BASE }}
           CLERK_SECRET_KEY_TEST: ${{ secrets.CLERK_SECRET_KEY_TEST }}
           CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
           CLICKHOUSE_EXCLUDE_USER_DEFAULT: ${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
@@ -113,6 +119,12 @@ jobs:
           printf '%s' "$CLICKHOUSE_PASSWORD" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_PASSWORD --env preview
           printf '%s' "$LLM_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put LLM_API_KEY --env preview
           printf '%s' "$LLM_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put LLM_API_BASE --env preview
+          printf '%s' "$OPENROUTER_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put OPENROUTER_API_KEY --env preview
+          printf '%s' "$OPENROUTER_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put OPENROUTER_API_BASE --env preview
+          printf '%s' "$NVIDIA_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put NVIDIA_API_KEY --env preview
+          printf '%s' "$NVIDIA_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put NVIDIA_API_BASE --env preview
+          printf '%s' "$ANYROUTER_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put ANYROUTER_API_KEY --env preview
+          printf '%s' "$ANYROUTER_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put ANYROUTER_API_BASE --env preview
           printf '%s' "$CLERK_SECRET_KEY_TEST" | npx --yes --package=wrangler@4 wrangler secret put CLERK_SECRET_KEY --env preview
           printf '%s' "$CLICKHOUSE_TZ" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_TZ --env preview
           printf '%s' "$CLICKHOUSE_EXCLUDE_USER_DEFAULT" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_EXCLUDE_USER_DEFAULT --env preview
@@ -317,6 +329,12 @@ jobs:
           CLICKHOUSE_PASSWORD: ${{ secrets.CLICKHOUSE_PASSWORD }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_API_BASE: ${{ secrets.OPENROUTER_API_BASE }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          NVIDIA_API_BASE: ${{ secrets.NVIDIA_API_BASE }}
+          ANYROUTER_API_KEY: ${{ secrets.ANYROUTER_API_KEY }}
+          ANYROUTER_API_BASE: ${{ secrets.ANYROUTER_API_BASE }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
           CLICKHOUSE_EXCLUDE_USER_DEFAULT: ${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
@@ -327,6 +345,12 @@ jobs:
           printf '%s' "$CLICKHOUSE_PASSWORD" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_PASSWORD
           printf '%s' "$LLM_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put LLM_API_KEY
           printf '%s' "$LLM_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put LLM_API_BASE
+          printf '%s' "$OPENROUTER_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put OPENROUTER_API_KEY
+          printf '%s' "$OPENROUTER_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put OPENROUTER_API_BASE
+          printf '%s' "$NVIDIA_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put NVIDIA_API_KEY
+          printf '%s' "$NVIDIA_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put NVIDIA_API_BASE
+          printf '%s' "$ANYROUTER_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put ANYROUTER_API_KEY
+          printf '%s' "$ANYROUTER_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put ANYROUTER_API_BASE
           printf '%s' "$CLERK_SECRET_KEY" | npx --yes --package=wrangler@4 wrangler secret put CLERK_SECRET_KEY
           printf '%s' "$CLICKHOUSE_TZ" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_TZ
           printf '%s' "$CLICKHOUSE_EXCLUDE_USER_DEFAULT" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_EXCLUDE_USER_DEFAULT
