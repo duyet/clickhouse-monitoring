@@ -1,5 +1,4 @@
 import type { UIMessage } from 'ai'
-import type { AgentUsageStats } from '@/lib/ai/agent/analytics'
 
 import { getMessageStats } from '../use-agent-session-stats'
 import { describe, expect, test } from 'bun:test'
