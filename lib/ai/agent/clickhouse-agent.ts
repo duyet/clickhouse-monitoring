@@ -101,16 +101,38 @@ export function createClickHouseAgent(options: {
 
 type ToolSet = ReturnType<typeof createMcpTools>
 
+/**
+ * Resolve app attribution metadata from env + defaults.
+ * `APP_*` is the canonical name; `OPENROUTER_*` is supported as a fallback
+ * so existing deployments that set the older vars keep working.
+ */
+function getAppMetadata(referer?: string) {
+  return {
+    referer:
+      referer ||
+      process.env.APP_REFERER ||
+      process.env.OPENROUTER_REFERER ||
+      DEFAULT_APP_REFERER,
+    name:
+      process.env.APP_NAME ||
+      process.env.OPENROUTER_APP_NAME ||
+      DEFAULT_APP_NAME,
+    category: process.env.APP_CATEGORY || DEFAULT_APP_CATEGORY,
+    version: process.env.APP_VERSION || DEFAULT_APP_VERSION,
+  }
+}
+
 function buildProviderHeaders(
   providerId: string,
   referer?: string
 ): Record<string, string> | undefined {
   if (providerId === 'anyrouter') {
+    const meta = getAppMetadata(referer)
     return {
-      'X-AnyRouter-Title': process.env.APP_NAME || DEFAULT_APP_NAME,
-      'X-AnyRouter-Source': process.env.APP_CATEGORY || DEFAULT_APP_CATEGORY,
-      'X-AnyRouter-Version': process.env.APP_VERSION || DEFAULT_APP_VERSION,
-      'HTTP-Referer': referer || process.env.APP_REFERER || DEFAULT_APP_REFERER,
+      'X-AnyRouter-Title': meta.name,
+      'X-AnyRouter-Source': meta.category,
+      'X-AnyRouter-Version': meta.version,
+      'HTTP-Referer': meta.referer,
     }
   }
   return undefined
@@ -137,16 +159,14 @@ function createOpenRouterAgent(opts: {
     referer,
   } = opts
 
-  const appReferer = referer || process.env.APP_REFERER || DEFAULT_APP_REFERER
-  const appName = process.env.APP_NAME || DEFAULT_APP_NAME
-  const appCategory = process.env.APP_CATEGORY || DEFAULT_APP_CATEGORY
+  const meta = getAppMetadata(referer)
 
   const openrouter = createOpenRouter({
     apiKey: resolved.apiKey,
     headers: {
-      'HTTP-Referer': appReferer,
-      'X-OpenRouter-Title': appName,
-      ...(appCategory && { 'X-OpenRouter-Categories': appCategory }),
+      'HTTP-Referer': meta.referer,
+      'X-OpenRouter-Title': meta.name,
+      'X-OpenRouter-Categories': meta.category,
     },
   })
 
