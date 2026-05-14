@@ -50,7 +50,7 @@ export function AgentSettings({ onModelChange }: AgentSettingsProps) {
     <div className="space-y-3">
       {/* Model selection */}
       <Select value={model} onValueChange={handleModelChange}>
-        <SelectTrigger className="h-8 text-xs max-w-[280px]">
+        <SelectTrigger className="h-8 text-xs w-full sm:w-auto sm:max-w-[280px]">
           {currentModelData ? (
             <div className="flex items-center gap-1.5 truncate">
               <Badge variant="outline" className="text-[10px] px-1 shrink-0">
