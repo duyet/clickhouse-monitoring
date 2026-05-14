@@ -383,7 +383,7 @@ export async function POST(request: Request) {
   const model =
     typeof body.model === 'string' && body.model.trim().length > 0
       ? body.model
-      : process.env.LLM_MODEL || 'openrouter/auto'
+      : process.env.LLM_MODEL || 'openrouter:openrouter/auto'
   const disabledTools = Array.isArray(body.disabledTools)
     ? body.disabledTools.filter((t) => typeof t === 'string')
     : []
@@ -412,8 +412,6 @@ export async function POST(request: Request) {
   const agent = createClickHouseAgent({
     hostId,
     model,
-    apiKey: process.env.LLM_API_KEY,
-    baseURL: process.env.LLM_API_BASE,
     disabledTools,
     systemPrompt: AGENT_JSON_RENDER_INLINE_PROMPT,
     providerOptions: { openrouter: { user: openRouterUser } },

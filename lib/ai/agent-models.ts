@@ -1,71 +1,46 @@
 /**
  * Shared agent model metadata for both client and server code.
+ *
+ * Re-exports types and helpers from the model registry.
+ * The static AGENT_MODELS object is kept for backward compatibility
+ * with code that hasn't migrated to MODEL_REGISTRY yet.
  */
 
+import {
+  isFreeAgentModel as isFreeAgentModelImpl,
+  MODEL_REGISTRY,
+  type ModelEntry,
+} from './agent-model-registry'
 import { formatCompactNumber } from '@/lib/format-number'
 
-export const AGENT_MODELS = {
-  'openrouter/free': {
-    name: 'openrouter/free',
-    description:
-      'OpenRouter auto-router: picks a working free tool-capable model (default)',
-    contextLength: 200000,
-  },
-  'openrouter/auto': {
-    name: 'openrouter/auto',
-    description: 'OpenRouter auto-router: picks the best model (paid)',
-    contextLength: 2000000,
-  },
-  'z-ai/glm-4.5-air:free': {
-    name: 'z-ai/glm-4.5-air:free',
-    description: 'Z.AI GLM 4.5 Air, free tier',
-    contextLength: 131072,
-  },
-  'arcee-ai/trinity-large-preview:free': {
-    name: 'arcee-ai/trinity-large-preview:free',
-    description: 'Arcee Trinity Large Preview, free tier',
-    contextLength: 131000,
-  },
-  'qwen/qwen3-coder:free': {
-    name: 'qwen/qwen3-coder:free',
-    description: 'Qwen3 Coder, free tier, 1M context',
-    contextLength: 1048576,
-  },
-  'qwen/qwen3-next-80b-a3b-instruct:free': {
-    name: 'qwen/qwen3-next-80b-a3b-instruct:free',
-    description: 'Qwen3 Next 80B Instruct, free tier',
-    contextLength: 262144,
-  },
-  'openai/gpt-oss-120b:free': {
-    name: 'openai/gpt-oss-120b:free',
-    description: 'OpenAI GPT-OSS 120B, free tier',
-    contextLength: 131072,
-  },
-  'openai/gpt-oss-20b:free': {
-    name: 'openai/gpt-oss-20b:free',
-    description: 'OpenAI GPT-OSS 20B, free tier',
-    contextLength: 131072,
-  },
-  'meta-llama/llama-3.3-70b-instruct:free': {
-    name: 'meta-llama/llama-3.3-70b-instruct:free',
-    description: 'Meta Llama 3.3 70B Instruct, free tier',
-    contextLength: 131072,
-  },
-  'google/gemma-4-31b-it:free': {
-    name: 'google/gemma-4-31b-it:free',
-    description: 'Google Gemma 4 31B Instruct, free tier',
-    contextLength: 262144,
-  },
-  'minimax/minimax-m2.7': {
-    name: 'minimax/minimax-m2.7',
-    description: 'MiniMax production model (paid)',
-    contextLength: 200000,
-    pricing: {
-      inputPerMillion: 0.5,
-      outputPerMillion: 1.5,
+// Re-export from registry
+export type { ModelEntry }
+
+/**
+ * Backward-compatible static model map.
+ * Derived from MODEL_REGISTRY. Use MODEL_REGISTRY directly for new code.
+ */
+export const AGENT_MODELS = Object.fromEntries(
+  MODEL_REGISTRY.map((entry) => [
+    entry.id,
+    {
+      name: entry.id,
+      description: entry.description,
+      contextLength: entry.contextLength,
+      ...('pricing' in entry && entry.pricing
+        ? { pricing: entry.pricing }
+        : {}),
     },
-  },
-} as const
+  ])
+) as Record<
+  string,
+  {
+    name: string
+    description: string
+    contextLength: number
+    pricing?: { inputPerMillion: number; outputPerMillion: number }
+  }
+>
 
 /** OpenAI-compatible model identifier. */
 export type OpenAIModel = string
@@ -75,21 +50,8 @@ export interface ModelPricing {
   outputPerMillion: number
 }
 
-/**
- * Format a token count to a compact human-readable string.
- * Examples: 128000 -> "128K", 1000000 -> "1M", 32768 -> "32.8K"
- */
 export function formatTokenCount(count: number): string {
   return formatCompactNumber(count)
 }
 
-/**
- * Returns true for OpenRouter free-tier model IDs.
- *
- * Matches the free auto-router (`openrouter/free`) and explicit `:free`
- * suffixes. `openrouter/free` needs the exact match because it does not use the
- * suffix convention.
- */
-export function isFreeAgentModel(model: string): boolean {
-  return model === 'openrouter/free' || model.endsWith(':free')
-}
+export const isFreeAgentModel = isFreeAgentModelImpl

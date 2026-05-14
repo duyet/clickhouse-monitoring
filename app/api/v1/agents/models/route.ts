@@ -3,20 +3,19 @@
  *
  * GET /api/v1/agents/models
  *
- * Returns available models with capability indicators fetched from OpenRouter.
- * Used by the frontend to show which models support tools, streaming, etc.
- *
- * Uses Next.js fetch revalidation to avoid refetching OpenRouter too often.
+ * Returns available models grouped by provider.
+ * Generates all valid `provider:model` combinations from MODEL_REGISTRY.
+ * Enriches OpenRouter models with capability data from their API.
  */
 
 import { NextResponse } from 'next/server'
 import {
-  AGENT_MODELS,
-  formatTokenCount,
   isFreeAgentModel,
-  type OpenAIModel,
-} from '@/lib/ai/agent-models'
+  MODEL_REGISTRY,
+  type ModelEntry,
+} from '@/lib/ai/agent-model-registry'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
+import { formatCompactNumber } from '@/lib/format-number'
 
 const OPENROUTER_MODELS_API =
   process.env.OPENROUTER_MODELS_API || 'https://openrouter.ai/api/v1/models'
@@ -25,29 +24,41 @@ const OPENROUTER_REFERER = process.env.OPENROUTER_REFERER
 const OPENROUTER_APP_NAME = process.env.OPENROUTER_APP_NAME
 
 interface ModelCapability {
-  id: OpenAIModel
+  /** Combined ID in `provider:model` format */
+  id: string
+  /** Provider-agnostic model ID */
+  modelId: string
+  /** Provider ID */
+  provider: string
+  /** Display name */
   name: string
   description: string
   contextLength: number
   formattedContextLength: string
   isFree: boolean
-  supportsTools?: boolean
-  supportsStreaming?: boolean
-  supportsVision?: boolean
   pricing?: {
     inputPerMillion: number
     outputPerMillion: number
   }
+  supportsTools?: boolean
+  supportsStreaming?: boolean
+  supportsVision?: boolean
 }
 
 /**
- * Fetch models from OpenRouter and merge with our static AGENT_MODELS metadata.
+ * Fetch OpenRouter model metadata for capability enrichment.
  */
-async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
+async function fetchOpenRouterCapabilities(): Promise<
+  Map<string, Record<string, unknown>>
+> {
   const response = await fetch(OPENROUTER_MODELS_API, {
     headers: {
-      ...(OPENROUTER_REFERER && { 'HTTP-Referer': OPENROUTER_REFERER }),
-      ...(OPENROUTER_APP_NAME && { 'X-OpenRouter-Title': OPENROUTER_APP_NAME }),
+      ...(OPENROUTER_REFERER && {
+        'HTTP-Referer': OPENROUTER_REFERER,
+      }),
+      ...(OPENROUTER_APP_NAME && {
+        'X-OpenRouter-Title': OPENROUTER_APP_NAME,
+      }),
     },
     next: { revalidate: CACHE_TTL_SECONDS },
   })
@@ -59,13 +70,7 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
   const data = (await response.json()) as {
     data: Array<{
       id: string
-      name: string
-      description?: string
-      context_length: number
-      pricing?: {
-        prompt: string
-        completion: string
-      }
+      context_length?: number
       supported_parameters?: string[]
       architecture?: {
         input_modalities?: string[]
@@ -75,94 +80,142 @@ async function fetchOpenRouterModels(): Promise<ModelCapability[]> {
     }>
   }
 
-  // Build a map of OpenRouter models by ID for quick lookup
-  const orModels = new Map(
+  return new Map(
     data.data.map((m) => [
       m.id,
       {
-        name: m.name,
-        description: m.description,
         contextLength: m.context_length,
-        pricing: m.pricing,
-        architecture: m.architecture,
         supportedParameters: m.supported_parameters,
+        architecture: m.architecture,
       },
     ])
   )
-
-  // Merge our static model list with OpenRouter's capability data
-  return Object.entries(AGENT_MODELS).map(([id, info]): ModelCapability => {
-    const orData = orModels.get(id)
-    const isFree = isFreeAgentModel(id)
-    const contextLength = orData?.contextLength ?? info.contextLength
-
-    const result: ModelCapability = {
-      id: id as OpenAIModel,
-      name: info.name,
-      description: info.description,
-      contextLength,
-      formattedContextLength: formatTokenCount(contextLength),
-      isFree,
-    }
-
-    // If OpenRouter omits a curated model, keep capabilities unknown rather
-    // than reporting false support from absent metadata.
-    if (!orData) {
-      if ('pricing' in info && info.pricing) {
-        result.pricing = info.pricing
-      }
-
-      return result
-    }
-
-    const rawModality = orData?.architecture?.modality
-    const modalityList = Array.isArray(rawModality)
-      ? rawModality
-      : rawModality
-        ? [rawModality]
-        : []
-    const inputModalities = [
-      ...(orData?.architecture?.input_modalities ?? []),
-      ...modalityList.map((modality) => modality.split('->')[0] ?? ''),
-    ].map((modality) => modality.trim().toLowerCase())
-    const supportedParameters = orData?.supportedParameters ?? []
-    const supportsTools =
-      supportedParameters.includes('tools') ||
-      supportedParameters.includes('tool_choice')
-    const supportsStreaming =
-      orData?.architecture?.output_modalities?.includes('text') ?? false
-    const supportsVision = inputModalities.some((modality) =>
-      modality.includes('image')
-    )
-
-    result.supportsTools = supportsTools
-    result.supportsStreaming = supportsStreaming
-    result.supportsVision = supportsVision
-
-    // Only include pricing if defined
-    if ('pricing' in info && info.pricing) {
-      result.pricing = info.pricing
-    }
-
-    return result
-  })
 }
 
-/**
- * Handle GET requests for models with capabilities
- */
+function extractCapabilities(
+  orData: Record<string, unknown> | undefined
+): Pick<
+  ModelCapability,
+  'supportsTools' | 'supportsStreaming' | 'supportsVision'
+> {
+  if (!orData) return {}
+
+  const architecture = orData.architecture as ModelCapability extends never
+    ? never
+    :
+        | {
+            input_modalities?: string[]
+            output_modalities?: string[]
+            modality?: string | string[]
+          }
+        | undefined
+  const supportedParameters = (orData as { supportedParameters?: string[] })
+    .supportedParameters
+
+  const supportsTools =
+    supportedParameters?.includes('tools') ||
+    supportedParameters?.includes('tool_choice')
+
+  const rawModality = architecture?.modality
+  const modalityList = Array.isArray(rawModality)
+    ? rawModality
+    : rawModality
+      ? [rawModality]
+      : []
+  const inputModalities = [
+    ...(architecture?.input_modalities ?? []),
+    ...modalityList.map((m: string) => m.split('->')[0] ?? ''),
+  ].map((m: string) => m.trim().toLowerCase())
+
+  const supportsStreaming =
+    architecture?.output_modalities?.includes('text') ?? false
+  const supportsVision = inputModalities.some((m: string) =>
+    m.includes('image')
+  )
+
+  return { supportsTools, supportsStreaming, supportsVision }
+}
+
+function buildStaticModels(): ModelCapability[] {
+  const result: ModelCapability[] = []
+
+  for (const entry of MODEL_REGISTRY) {
+    for (const provider of entry.providers) {
+      const id = `${provider}:${entry.id}`
+      const isFree = isFreeAgentModel(entry.id)
+
+      result.push({
+        id,
+        modelId: entry.id,
+        provider,
+        name: entry.id,
+        description: entry.description,
+        contextLength: entry.contextLength,
+        formattedContextLength: formatCompactNumber(entry.contextLength),
+        isFree,
+        pricing: entry.pricing,
+      })
+    }
+  }
+
+  return result
+}
+
+async function buildModels(): Promise<ModelCapability[]> {
+  let orCapabilities: Map<string, Record<string, unknown>> | undefined
+
+  try {
+    orCapabilities = await fetchOpenRouterCapabilities()
+  } catch {
+    // OpenRouter API unavailable — return static metadata only
+  }
+
+  const result: ModelCapability[] = []
+
+  for (const entry of MODEL_REGISTRY) {
+    for (const provider of entry.providers) {
+      const id = `${provider}:${entry.id}`
+      const isFree = isFreeAgentModel(entry.id)
+      const orData = orCapabilities?.get(entry.id)
+
+      // Enrich context length from OpenRouter if available
+      const contextLength =
+        (orData?.contextLength as number | undefined) ?? entry.contextLength
+
+      const capabilities = extractCapabilities(orData)
+
+      result.push({
+        id,
+        modelId: entry.id,
+        provider,
+        name: entry.id,
+        description: entry.description,
+        contextLength,
+        formattedContextLength: formatCompactNumber(contextLength),
+        isFree,
+        pricing: entry.pricing,
+        ...capabilities,
+      })
+    }
+  }
+
+  return result
+}
+
 export async function GET(request: Request) {
   const authResponse = await authorizeAgentApiRequest(request)
   if (authResponse) return authResponse
 
   try {
-    const models = await fetchOpenRouterModels()
-
+    const models = await buildModels()
     return NextResponse.json({ models })
   } catch (error) {
-    console.error('Failed to fetch models from OpenRouter:', error)
+    console.error('Failed to build models:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch model capabilities', models: [] },
+      {
+        error: 'Failed to fetch model capabilities',
+        models: buildStaticModels(),
+      },
       { status: 500 }
     )
   }

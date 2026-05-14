@@ -5,11 +5,17 @@
  *
  * Client-side hook for managing agent model selection.
  * Persists selection to localStorage and provides model metadata.
+ *
+ * Model IDs use `provider:model` format (e.g., `openrouter:qwen/qwen3-coder:free`).
+ * Legacy IDs without `:` are treated as `openrouter:{model}`.
  */
 
 import { useEffect, useMemo, useState } from 'react'
 import {
-  AGENT_MODELS,
+  getAllModelOptions,
+  MODEL_REGISTRY,
+} from '@/lib/ai/agent-model-registry'
+import {
   formatTokenCount,
   isFreeAgentModel,
   type ModelPricing,
@@ -19,37 +25,32 @@ import { apiFetch } from '@/lib/swr/api-fetch'
 
 export type { OpenAIModel } from '@/lib/ai/agent-models'
 
-/**
- * LocalStorage key for model selection
- */
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
-const DEFAULT_MODEL = 'openrouter/auto'
+const DEFAULT_MODEL = 'openrouter:openrouter/auto'
 
 /**
- * Get default model from environment or fallback
+ * Normalize a model ID to `provider:model` format.
+ * Legacy IDs without `:` get `openrouter:` prefix.
  */
+function normalizeModelId(id: string): string {
+  if (id.includes(':')) return id
+  return `openrouter:${id}`
+}
+
 function getDefaultModel(): OpenAIModel {
-  // Check if LLM_MODEL env var is set
   const envModel = process.env.LLM_MODEL
-  if (envModel) {
-    return envModel
-  }
-  // Fallback to the default free OpenRouter-backed model.
+  if (envModel) return normalizeModelId(envModel)
   return DEFAULT_MODEL
 }
 
-/**
- * Get saved model from localStorage or return default.
- * Accepts any string, including custom model IDs.
- */
 export function getSavedModel(): OpenAIModel {
   if (typeof window === 'undefined') return getDefaultModel()
 
   try {
     const saved = localStorage.getItem(MODEL_STORAGE_KEY)
     if (saved && saved.trim().length > 0) {
-      return saved
+      return normalizeModelId(saved)
     }
   } catch {
     // localStorage may be disabled
@@ -58,9 +59,6 @@ export function getSavedModel(): OpenAIModel {
   return getDefaultModel()
 }
 
-/**
- * Save model to localStorage
- */
 function saveModel(model: OpenAIModel): void {
   if (typeof window === 'undefined') return
 
@@ -71,70 +69,50 @@ function saveModel(model: OpenAIModel): void {
   }
 }
 
-/**
- * Model display metadata with capability indicators
- */
 export interface ModelDisplayInfo {
-  /** Model ID */
   id: OpenAIModel
-  /** Display name */
+  modelId: string
+  provider: string
   name: string
-  /** Description */
   description: string
-  /** Context length in tokens */
   contextLength: number
-  /** Compact formatted context length, e.g. "128K" */
   formattedContextLength: string
-  /** Whether this is a free model (no pricing) */
   isFree: boolean
-  /** Pricing info for paid models */
   pricing?: ModelPricing
-  /** Whether the model supports tool/function calling */
   supportsTools?: boolean
-  /** Whether the model supports streaming responses */
   supportsStreaming?: boolean
-  /** Whether the model supports vision/image input */
   supportsVision?: boolean
 }
 
-/**
- * Agent model hook result
- */
 export interface UseAgentModelResult {
-  /** Currently selected model */
   model: OpenAIModel
-  /** All available models with metadata */
   models: readonly ModelDisplayInfo[]
-  /** Update the selected model */
   setModel: (model: OpenAIModel) => void
-  /** Reset to default model */
   resetModel: () => void
 }
 
-/**
- * Build static model display metadata used before capability data loads.
- */
 function getStaticModels(): ModelDisplayInfo[] {
-  return Object.entries(AGENT_MODELS).map(([id, info]): ModelDisplayInfo => {
-    const isFree = isFreeAgentModel(id)
-    const pricing =
-      'pricing' in info ? (info.pricing as ModelPricing) : undefined
+  return getAllModelOptions().map((id): ModelDisplayInfo => {
+    const idx = id.indexOf(':')
+    const provider = id.slice(0, idx)
+    const modelId = id.slice(idx + 1)
+    const entry = MODEL_REGISTRY.find((m) => m.id === modelId)
+    const isFree = isFreeAgentModel(modelId)
 
     return {
       id,
-      name: info.name,
-      description: info.description,
-      contextLength: info.contextLength,
-      formattedContextLength: formatTokenCount(info.contextLength),
+      modelId,
+      provider,
+      name: modelId,
+      description: entry?.description ?? modelId,
+      contextLength: entry?.contextLength ?? 131_072,
+      formattedContextLength: formatTokenCount(entry?.contextLength ?? 131_072),
       isFree,
-      pricing,
+      pricing: entry?.pricing,
     }
   })
 }
 
-/**
- * Fetch models with capability indicators from the API
- */
 async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
   try {
     const response = await apiFetch('/api/v1/agents/models')
@@ -148,34 +126,11 @@ async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
   }
 }
 
-/**
- * Hook for managing agent model selection
- *
- * Provides model selection state with localStorage persistence
- * and model metadata for UI rendering. Fetches capability indicators
- * from OpenRouter via the API.
- *
- * @returns Model selection state and actions
- *
- * @example
- * ```tsx
- * const { model, models, setModel } = useAgentModel()
- *
- * <select value={model} onChange={(e) => setModel(e.target.value)}>
- *   {models.map((m) => (
- *     <option key={m.id} value={m.id}>{m.name}</option>
- *   ))}
- * </select>
- * ```
- */
 export function useAgentModel(): UseAgentModelResult {
-  // Get current model (uses saved value or default)
   const model = useMemo(() => getSavedModel(), [])
 
-  // Get all available models with capabilities
   const [models, setModels] = useState<ModelDisplayInfo[]>(getStaticModels)
 
-  // Fetch models on mount
   useEffect(() => {
     let cancelled = false
 
@@ -193,14 +148,11 @@ export function useAgentModel(): UseAgentModelResult {
     }
   }, [])
 
-  // Update model selection
   const setModel = (newModel: OpenAIModel): void => {
     saveModel(newModel)
-    // Force re-render by reloading the page (simplest approach)
     window.location.reload()
   }
 
-  // Reset to default
   const resetModel = (): void => {
     saveModel(getDefaultModel())
     window.location.reload()

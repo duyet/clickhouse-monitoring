@@ -84,6 +84,7 @@ export const MODEL_PRICING: Record<string, [number, number]> = {
 
   // Qwen models (via OpenRouter)
   'qwen/qwen-2.5-72b-instruct': [0.35, 0.4],
+  'qwen/qwen3.5-397b-a17b': [0.35, 0.4],
 }
 
 // ============================================================================
@@ -139,8 +140,17 @@ export function estimateCost(
   usage: AgentUsageStats,
   model: string
 ): number | null {
-  // Normalize the model string — strip provider prefix variants
-  const normalizedModel = model.trim().toLowerCase()
+  // Normalize the model string — strip `provider:` prefix from new format.
+  // Only strip recognized provider prefixes to avoid breaking model IDs
+  // that contain `:` (e.g., `qwen/qwen3-coder:free`).
+  const KNOWN_PREFIXES = ['openrouter:', 'nvidia:', 'anyrouter:']
+  let normalizedModel = model.trim().toLowerCase()
+  for (const prefix of KNOWN_PREFIXES) {
+    if (normalizedModel.startsWith(prefix)) {
+      normalizedModel = normalizedModel.slice(prefix.length)
+      break
+    }
+  }
 
   const pricing = MODEL_PRICING[normalizedModel]
 

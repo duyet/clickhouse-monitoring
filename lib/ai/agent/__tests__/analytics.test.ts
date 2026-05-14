@@ -88,6 +88,22 @@ describe('estimateCost', () => {
     expect(estimateCost(usage, 'unknown/model')).toBeNull()
   })
 
+  test('strips provider prefix from provider:model format', () => {
+    const usage = makeUsage({
+      totalInputTokens: 1_000_000,
+      totalOutputTokens: 1_000_000,
+    })
+    // openai/gpt-4o via OpenRouter: [2.5, 10]
+    const cost = estimateCost(usage, 'openrouter:openai/gpt-4o')
+    expect(cost).not.toBeNull()
+    expect(cost!).toBeCloseTo(2.5 + 10, 4)
+  })
+
+  test('handles nvidia: prefix with unknown model', () => {
+    const usage = makeUsage()
+    expect(estimateCost(usage, 'nvidia:nvidia/unknown-model')).toBeNull()
+  })
+
   test('calculates cost for paid models correctly', () => {
     const usage = makeUsage({
       totalInputTokens: 1_000_000,

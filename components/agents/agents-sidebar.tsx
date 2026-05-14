@@ -153,19 +153,20 @@ function HostSelector({ hostId }: { readonly hostId: number }) {
 }
 
 function getProviderFromModelId(modelId: string): string {
+  // New format: `provider:model` — extract provider prefix
+  const idx = modelId.indexOf(':')
+  if (idx !== -1) {
+    const provider = modelId.slice(0, idx)
+    if (
+      provider === 'openrouter' ||
+      provider === 'nvidia' ||
+      provider === 'anyrouter'
+    )
+      return provider
+  }
+  // Legacy: detect from model name prefix
   if (modelId.startsWith('openrouter/')) return 'openrouter'
   if (modelId.startsWith('nvidia/')) return 'nvidia'
-  if (modelId.startsWith('z-ai/')) return 'zai'
-  if (modelId.startsWith('google/') || modelId.startsWith('google-'))
-    return 'google'
-  if (modelId.startsWith('meta-llama/')) return 'llama'
-  if (modelId.startsWith('anthropic/')) return 'anthropic'
-  if (modelId.startsWith('mistral/')) return 'mistral'
-  if (modelId.startsWith('deepseek/')) return 'deepseek'
-  if (modelId.startsWith('qwen/')) return 'qwen'
-  if (modelId.startsWith('minimax/')) return 'minimax'
-  if (modelId.startsWith('arcee-ai/')) return 'arcee'
-  if (modelId.startsWith('openai/')) return 'openai'
   return 'openrouter'
 }
 
