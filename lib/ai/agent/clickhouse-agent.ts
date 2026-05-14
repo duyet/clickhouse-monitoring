@@ -208,7 +208,6 @@ export function createClickHouseAgent(options: {
     tools,
     instructions: systemPrompt,
     stopWhen: stepCountIs(maxSteps),
-    ...(providerOptions && { providerOptions }),
   })
 
   return agent

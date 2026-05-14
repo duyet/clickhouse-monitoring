@@ -94,8 +94,17 @@ export const AgentsChatArea = forwardRef<
   const model = useMemo(() => getSavedModel(), [])
   const { disabledTools } = useToolConfig()
 
-  // Session ID for OpenRouter user tracking — reset on clear
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID())
+
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: '/api/v1/agent',
+        fetch: apiFetch,
+        body: { hostId, model, disabledTools, sessionId },
+      }),
+    [hostId, model, disabledTools, sessionId]
+  )
 
   const {
     messages,
@@ -105,13 +114,7 @@ export const AgentsChatArea = forwardRef<
     error,
     stop,
     addToolResult,
-  } = useChat({
-    transport: new DefaultChatTransport({
-      api: '/api/v1/agent',
-      fetch: apiFetch,
-      body: { hostId, model, disabledTools, sessionId },
-    }),
-  })
+  } = useChat({ transport })
 
   const sendTimestampRef = useRef<number>(0)
   const prevStatusRef = useRef<string>(status)

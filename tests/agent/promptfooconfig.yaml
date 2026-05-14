@@ -23,8 +23,6 @@ providers:
       transformResponse: |
         (json, text) => {
           let output = '';
-          let hasTool = false;
-          let hasCost = false;
           const lines = String(text || '').split('\n');
           for (const line of lines) {
             const trimmed = line.trim();
@@ -37,13 +35,11 @@ providers:
                 output += evt.textDelta;
               }
               if (evt.type === 'tool-call' && evt.toolName) {
-                hasTool = true;
                 output += '\n[tool:' + evt.toolName + ']';
               }
               if (evt.type === 'data-usage' && Array.isArray(evt.data) && evt.data[0]) {
                 const cost = evt.data[0].estimatedCostUsd;
                 if (cost !== undefined && cost !== null) {
-                  hasCost = true;
                   output += '\n[cost:$' + Number(cost).toFixed(6) + ']';
                 }
               }
@@ -101,7 +97,7 @@ tests:
       - type: not-regex
         value: '\\[error:'
 
-  - description: 'Cost tracking — should include usage data'
+  - description: 'Tool usage — should call tools and not error'
     vars:
       prompt: 'How many queries are currently running?'
     assert:
