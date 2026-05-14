@@ -29,6 +29,7 @@ import { classifyError } from '@/lib/ai/agent/errors'
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
 import { createJsonRenderPatchGuardStream } from '@/lib/ai/agent/json-render-patch-guard'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
+import { isClerkAuthProvider } from '@/lib/auth/provider'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -391,14 +392,16 @@ export async function POST(request: Request) {
       ? body.sessionId
       : crypto.randomUUID()
 
-  // Resolve Clerk user ID for OpenRouter user tracking
+  // Resolve user ID for OpenRouter user tracking
   let userId = 'guest'
-  try {
-    const { auth } = await import('@clerk/nextjs/server')
-    const authResult = await auth()
-    if (authResult?.userId) userId = authResult.userId
-  } catch {
-    // Bearer token auth or Clerk unavailable
+  if (isClerkAuthProvider()) {
+    try {
+      const { auth } = await import('@clerk/nextjs/server')
+      const authResult = await auth()
+      if (authResult?.userId) userId = authResult.userId
+    } catch {
+      // Clerk session unavailable
+    }
   }
   const openRouterUser = `${userId}/${sessionId}`
 
