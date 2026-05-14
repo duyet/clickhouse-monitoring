@@ -48,6 +48,7 @@ export interface AgentToolPart {
 interface ToolCallPartProps {
   readonly part: AgentToolPart
   readonly onToolResult?: (toolCallId: string, result: string) => void
+  readonly isMessageStreaming?: boolean
 }
 
 function createResultQueryConfig(columns: string[]): QueryConfig<string[]> {
@@ -315,7 +316,11 @@ export function renderToolOutput(output: unknown) {
   )
 }
 
-export function ToolCallPart({ part, onToolResult }: ToolCallPartProps) {
+export function ToolCallPart({
+  part,
+  onToolResult,
+  isMessageStreaming,
+}: ToolCallPartProps) {
   const toolName = part.toolName || part.type.replace('tool-', '')
   const isStarting =
     part.state === 'input-streaming' || part.state === 'input-available'
@@ -328,6 +333,14 @@ export function ToolCallPart({ part, onToolResult }: ToolCallPartProps) {
   useEffect(() => {
     if (shouldAutoExpand) setIsExpanded(true)
   }, [shouldAutoExpand])
+
+  // Auto-collapse when the message finishes streaming and tool has output
+  useEffect(() => {
+    if (!isMessageStreaming && hasOutput && !hasError && isExpanded) {
+      const timer = setTimeout(() => setIsExpanded(false), 800)
+      return () => clearTimeout(timer)
+    }
+  }, [isMessageStreaming, hasOutput, hasError, isExpanded])
 
   const inputParams = useMemo(() => {
     if (!part.input || typeof part.input !== 'object') return null

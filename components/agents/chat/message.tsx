@@ -652,7 +652,7 @@ export function ChatMessage({
               const reasoningText =
                 typeof reasoningPart.text === 'string' ? reasoningPart.text : ''
               return (
-                <Reasoning key={stableKey} isStreaming={false}>
+                <Reasoning key={stableKey} isStreaming={!!isStreaming}>
                   <ReasoningTrigger />
                   <ReasoningContent>{reasoningText}</ReasoningContent>
                 </Reasoning>
@@ -668,6 +668,7 @@ export function ChatMessage({
                   key={stableKey}
                   part={part as AgentToolPart}
                   onToolResult={onToolResult}
+                  isMessageStreaming={!!isStreaming}
                 />
               )
             }
