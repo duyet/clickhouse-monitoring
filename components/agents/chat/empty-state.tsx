@@ -113,10 +113,10 @@ export function AgentChatEmptyState({
                   <SparklesIcon className="h-4.5 w-4.5 text-primary" />
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                  <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl [text-wrap:balance]">
                     Inspect your ClickHouse cluster
                   </h2>
-                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base [text-wrap:pretty]">
                     Start with a live health signal or launch one of the
                     ready-made prompts below. Every card and question sends
                     directly to the agent.
@@ -173,7 +173,7 @@ export function AgentChatEmptyState({
               <button
                 key={suggestion.text}
                 onClick={() => onSubmitPrompt(suggestion.text)}
-                className="group flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/80 px-3 py-2 text-left transition-[border-color,background-color] hover:border-border hover:bg-accent/20"
+                className="group flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/80 px-3 py-2 text-left transition-[transform,border-color,background-color] hover:border-border hover:bg-accent/20 active:scale-[0.98]"
               >
                 <span className="shrink-0 text-muted-foreground">
                   {suggestion.icon}

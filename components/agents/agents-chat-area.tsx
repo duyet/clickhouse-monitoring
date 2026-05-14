@@ -26,6 +26,7 @@ import {
 import { AgentChatEmptyState } from '@/components/agents/chat/empty-state'
 import {
   ChatMessage,
+  generateFollowUpSuggestions,
   StreamingTypingIndicator,
 } from '@/components/agents/chat/message'
 import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
@@ -34,6 +35,7 @@ import {
   ConversationEmptyState,
   Conversation as ConversationUI,
 } from '@/components/ai-elements/conversation'
+import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
 import { Button } from '@/components/ui/button'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
@@ -324,10 +326,9 @@ export const AgentsChatArea = forwardRef<
 
                 const latestAssistantMessage =
                   findLastAssistantMessage(messages)
-                const showFollowUps =
+                const isLatestAssistant =
                   message.role === 'assistant' &&
-                  latestAssistantMessage?.id === message.id &&
-                  !isLoading
+                  latestAssistantMessage?.id === message.id
 
                 return (
                   <ChatMessage
@@ -335,14 +336,14 @@ export const AgentsChatArea = forwardRef<
                     message={message}
                     isLastUserMessage={index === lastUserMessageIndex}
                     isStreaming={isMessageStreaming}
-                    showFollowUps={showFollowUps}
                     responseDurationMs={responseDurations[message.id]}
+                    error={isLatestAssistant && !isLoading ? error : null}
                     onRegenerate={
                       index === lastUserMessageIndex
                         ? handleRegenerate
                         : undefined
                     }
-                    onSuggestionClick={submitPrompt}
+                    onErrorDismiss={handleClear}
                     onToolResult={handleToolResult}
                   />
                 )
@@ -353,7 +354,7 @@ export const AgentsChatArea = forwardRef<
         </ConversationContent>
       </ConversationUI>
 
-      {error && (
+      {error && !findLastAssistantMessage(messages) && (
         <AgentErrorDisplay
           error={error}
           onRetry={handleRegenerate}
@@ -362,6 +363,26 @@ export const AgentsChatArea = forwardRef<
       )}
 
       <div className="shrink-0 px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
+        {!isLoading &&
+          (() => {
+            const lastAssistant = findLastAssistantMessage(messages)
+            if (!lastAssistant) return null
+            const followUps = generateFollowUpSuggestions(lastAssistant)
+            if (followUps.length === 0) return null
+            return (
+              <div className="mb-2">
+                <Suggestions>
+                  {followUps.map((suggestion) => (
+                    <Suggestion
+                      key={suggestion}
+                      suggestion={suggestion}
+                      onClick={submitPrompt}
+                    />
+                  ))}
+                </Suggestions>
+              </div>
+            )
+          })()}
         <PromptInputTextareaWithMentions
           disabled={isLoading}
           onResolvedSubmit={submitPrompt}
@@ -372,7 +393,7 @@ export const AgentsChatArea = forwardRef<
               variant="ghost"
               size="sm"
               onClick={handleRegenerate}
-              className="h-7 text-xs"
+              className="h-7 text-xs transition-[transform,background-color] active:scale-[0.96]"
             >
               <RefreshCwIcon className="mr-1 h-3 w-3" />
               Regenerate
@@ -382,7 +403,7 @@ export const AgentsChatArea = forwardRef<
               variant="ghost"
               size="sm"
               onClick={stop}
-              className="h-7 text-xs"
+              className="h-7 text-xs transition-[transform,background-color] active:scale-[0.96]"
             >
               <SquareIcon className="mr-1 h-3 w-3" />
               Stop
