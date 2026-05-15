@@ -80,6 +80,7 @@ mock.module('ai', () => {
         merge: (value: unknown) => {
           record.mergedChunk = value
         },
+        write: (_value: unknown) => {},
       }
 
       capturedAIArgs.push(record)
