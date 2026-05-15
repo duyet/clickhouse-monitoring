@@ -100,8 +100,7 @@ describe('GET /api/v1/agents/models', () => {
     const response = await GET(modelsRequest())
     const body = await response.json()
     const omittedModel = body.models.find(
-      (model: { id: string }) =>
-        model.id === 'arcee-ai/trinity-large-preview:free'
+      (model: { id: string }) => model.id === 'openrouter:qwen/qwen3-coder:free'
     )
 
     expect(omittedModel).toBeDefined()
