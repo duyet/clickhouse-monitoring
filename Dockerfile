@@ -9,7 +9,7 @@ FROM base AS deps
 ENV NODE_ENV=production
 RUN apk add --no-cache libc6-compat
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile --production --ignore-scripts
+RUN bun install --frozen-lockfile --ignore-scripts
 
 # Rebuild the source code only when needed
 FROM base AS builder

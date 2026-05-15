@@ -178,6 +178,7 @@ Both deployment methods provide:
 - Dead-code evidence: `rg -n "\b<SYMBOL>\b" --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 - Main CI status check: `gh run list --branch main --limit 10 --json workflowName,status,conclusion,headSha,url`
 - Failed-job logs in restricted cache environments: `XDG_CACHE_HOME=/private/tmp/gh-cache gh run view <RUN_ID> --job <JOB_ID> --log-failed`
+- Docker deps-stage parity check: `bun install --frozen-lockfile --ignore-scripts && bun run build` (`lib/platform/adapters/cloudflare.ts` imports `@opennextjs/cloudflare` during build)
 - Cloudflare worker size dry-run: `bun wrangler deploy --minify --dry-run`
 
 **Docs content workflow**: `/docs` pages are rendered by the main app and read source files from `docs/content`.
