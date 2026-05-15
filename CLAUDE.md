@@ -177,6 +177,7 @@ Both deployment methods provide:
 - Fallback scan (7d): `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Dead-code evidence: `rg -n "\b<SYMBOL>\b" --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 - Main CI status check: `gh run list --branch main --limit 10 --json workflowName,status,conclusion,headSha,url`
+- Failed-job logs in restricted cache environments: `XDG_CACHE_HOME=/private/tmp/gh-cache gh run view <RUN_ID> --job <JOB_ID> --log-failed`
 - Cloudflare worker size dry-run: `bun wrangler deploy --minify --dry-run`
 
 **Docs content workflow**: `/docs` pages are rendered by the main app and read source files from `docs/content`.

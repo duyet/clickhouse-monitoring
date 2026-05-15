@@ -144,6 +144,7 @@ describe('POST /api/v1/agent', () => {
     mockClerkUserId = null
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     delete process.env.CHM_FEATURE_AGENT_ACCESS
+    process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
   })
 
   async function readJsonRenderStreamValues(
