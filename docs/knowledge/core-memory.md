@@ -40,3 +40,4 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - 2026-05-13: removed unused `getDocsSlugs` and memoized `getDocsPage` with React `cache`
 - 2026-05-14: removed four zero-reference dead-code candidates from recent auth/deploy changes (`HeaderClient`, `getClerkPublishableKey`, `SemverRange`, `QueryConfigNoName`)
 - 2026-05-15: fixed Docker CI break by skipping Husky in production install (`HUSKY=0 bun install --production`) and removed global SQL validator mock from `helpers.test.ts` to avoid cross-suite pollution
+- 2026-05-15: follow-up Docker fix uses `bun install --production --ignore-scripts` because Bun still executes root `prepare`; agent route tests now set `LLM_API_KEY`/`LLM_MODEL` in `beforeEach` to avoid provider-preflight `503` from ambient CI env
