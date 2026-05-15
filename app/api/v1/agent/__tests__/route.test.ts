@@ -80,6 +80,7 @@ mock.module('ai', () => {
         merge: (value: unknown) => {
           record.mergedChunk = value
         },
+        write: (_value: unknown) => {},
       }
 
       capturedAIArgs.push(record)
@@ -144,6 +145,8 @@ describe('POST /api/v1/agent', () => {
     mockClerkUserId = null
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     delete process.env.CHM_FEATURE_AGENT_ACCESS
+    process.env.LLM_API_KEY = 'test-llm-key'
+    process.env.LLM_MODEL = 'openrouter:openrouter/auto'
     process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
   })
 
