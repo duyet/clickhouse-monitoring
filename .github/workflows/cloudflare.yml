@@ -40,7 +40,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: '22.22.1'
+          node-version: '24.15.0'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -252,7 +252,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: '22.22.1'
+          node-version: '24.15.0'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
