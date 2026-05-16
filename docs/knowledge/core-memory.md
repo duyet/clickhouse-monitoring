@@ -3,7 +3,7 @@ id: core-memory
 title: Automation Core Memory
 type: workflow
 status: active
-updated: 2026-05-16
+updated: 2026-05-17
 tags:
   - automation
   - code-smell
@@ -34,6 +34,7 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - `/docs` route reads source files from `docs/content` through `app/(docs)/docs/_lib/docs.ts`
 - Verify dead-code claims with zero non-test references before deleting symbols
 - Docker build must install full deps (`bun install --frozen-lockfile --ignore-scripts`) because `lib/platform/adapters/cloudflare.ts` imports `@opennextjs/cloudflare` during `bun run build`
+- If automation checkout is detached (`git status --short --branch` shows `HEAD (no branch)`) or `.git/worktrees/...` writes fail (`FETCH_HEAD`/`HEAD.lock`), move commit/PR operations to `/Users/duet/project/clickhouse-monitor`
 
 ## Latest Update
 
@@ -43,3 +44,4 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - 2026-05-15: fixed Docker CI break by skipping Husky in production install (`HUSKY=0 bun install --production`) and removed global SQL validator mock from `helpers.test.ts` to avoid cross-suite pollution
 - 2026-05-15: follow-up Docker fix uses `bun install --production --ignore-scripts` because Bun still executes root `prepare`; agent route tests now set `LLM_API_KEY`/`LLM_MODEL` in `beforeEach` to avoid provider-preflight `503` from ambient CI env
 - 2026-05-16: fixed `Image build and Push` failures on main (`Module not found: Can't resolve '@opennextjs/cloudflare'`) by removing Docker `--production` install in the deps stage while keeping `--ignore-scripts`
+- 2026-05-17: automation run started on detached worktree (`HEAD (no branch)`), so branch/PR work should pivot to `/Users/duet/project/clickhouse-monitor` when git metadata writes fail in `.git/worktrees/...`
