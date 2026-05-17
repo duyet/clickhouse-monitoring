@@ -3,6 +3,8 @@ import { AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES } from '@/lib/ai/agent/json-rende
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
 import { createJsonRenderPatchGuardStream } from '@/lib/ai/agent/json-render-patch-guard'
 
+mock.module('server-only', () => ({}))
+
 type AgentStreamResult = {
   toUIMessageStream: () => unknown
   consumeStream: () => Promise<void>
@@ -53,6 +55,11 @@ mock.module('ai', () => {
 
   return {
     convertToModelMessages: async (messages: unknown[]) => messages,
+    isTextUIPart: (part: unknown) =>
+      typeof part === 'object' &&
+      part !== null &&
+      'type' in part &&
+      part.type === 'text',
     pipeJsonRender: (stream: unknown) => {
       if (activeRecord) {
         activeRecord.pipeResultType = typeof stream
@@ -408,7 +415,9 @@ describe('POST /api/v1/agent', () => {
 
     const response = await POST(request)
     expect(response.status).toBe(400)
-    const payload = await response.json()
+    const payload = (await response.json()) as {
+      error: { limitBytes: number }
+    }
     expect(payload).toMatchObject({ error: { code: 'INVALID_JSON' } })
   })
 

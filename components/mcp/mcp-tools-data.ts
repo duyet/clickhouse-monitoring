@@ -295,6 +295,183 @@ export const MCP_TOOLS: McpTool[] = [
   "potential_foreign_keys": [{ "column": "user_id", "potential_table": "users" }]
 }`,
   },
+  {
+    name: 'spot_issues',
+    description:
+      'Scan recent ClickHouse metadata and query history for likely issues',
+    category: 'system',
+    params: [
+      {
+        name: 'lastHours',
+        type: 'number',
+        required: false,
+        default: 24,
+        description: 'Lookback window for query-log checks',
+      },
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host',
+      },
+    ],
+    exampleResponse: `{
+  "type": "agent_issues",
+  "issueCount": 2,
+  "issues": [
+    {
+      "severity": "warning",
+      "category": "query",
+      "title": "Expensive repeated query pattern",
+      "confidence": "confirmed"
+    }
+  ]
+}`,
+  },
+  {
+    name: 'repair_query',
+    description:
+      'Validate and self-fix a read-only ClickHouse query with EXPLAIN evidence',
+    category: 'query',
+    params: [
+      {
+        name: 'sql',
+        type: 'string',
+        required: true,
+        description: 'Read-only SQL query to repair',
+      },
+      {
+        name: 'error',
+        type: 'string',
+        required: false,
+        description: 'Optional ClickHouse error text',
+      },
+      {
+        name: 'database',
+        type: 'string',
+        required: false,
+        description: 'Default database for table metadata lookup',
+      },
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host',
+      },
+    ],
+    exampleResponse: `{
+  "type": "query_repair",
+  "status": "repaired",
+  "fixedSql": "SELECT count() FROM events",
+  "changes": ["Replaced count(*) with ClickHouse-preferred count()."]
+}`,
+  },
+  {
+    name: 'analyze_query_optimization',
+    description:
+      'Run EXPLAIN and inspect table metadata for query optimization advice',
+    category: 'query',
+    params: [
+      {
+        name: 'sql',
+        type: 'string',
+        required: true,
+        description: 'Read-only SQL query to analyze',
+      },
+      {
+        name: 'database',
+        type: 'string',
+        required: false,
+        description: 'Default database for unqualified tables',
+      },
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host',
+      },
+    ],
+    exampleResponse: `{
+  "type": "query_optimization",
+  "tables": [{ "table": "analytics.events", "skipIndexes": [] }],
+  "suggestions": ["Check if WHERE clause columns align with the sorting key"]
+}`,
+  },
+  {
+    name: 'recommend_table_design',
+    description:
+      'Suggest ORDER BY, type, skip-index, and materialized-view improvements',
+    category: 'schema',
+    params: [
+      {
+        name: 'database',
+        type: 'string',
+        required: true,
+        description: 'Database name',
+      },
+      {
+        name: 'table',
+        type: 'string',
+        required: true,
+        description: 'Table name',
+      },
+      {
+        name: 'lastDays',
+        type: 'number',
+        required: false,
+        default: 7,
+        description: 'Lookback window for query pattern analysis',
+      },
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host',
+      },
+    ],
+    exampleResponse: `{
+  "type": "table_design_recommendation",
+  "table": "analytics.events",
+  "suggestedOrderBy": ["tenant_id", "event_date", "user_id"],
+  "recommendations": [{ "rule": "schema-pk-prioritize-filters" }]
+}`,
+  },
+  {
+    name: 'discover_data_sources',
+    description:
+      'Find tables and columns relevant to a topic, classified as measures and dimensions',
+    category: 'schema',
+    params: [
+      {
+        name: 'searchTerm',
+        type: 'string',
+        required: true,
+        description: 'Topic to search for',
+      },
+      {
+        name: 'database',
+        type: 'string',
+        required: false,
+        description: 'Optional database filter',
+      },
+      {
+        name: 'hostId',
+        type: 'number',
+        required: false,
+        default: 0,
+        description: 'Index of the ClickHouse host',
+      },
+    ],
+    exampleResponse: `{
+  "type": "data_sources",
+  "searchTerm": "events",
+  "sources": [{ "database": "analytics", "table": "events" }]
+}`,
+  },
 ]
 
 export const EXAMPLE_PROMPTS = [

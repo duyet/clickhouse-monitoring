@@ -31,6 +31,7 @@ export interface DataSource {
   totalRows: number
   size: string
   comment: string
+  matchedColumns?: Array<{ name: string; type: string }>
   measures: Array<{ name: string; type: string }>
   dimensions: Array<{ name: string; type: string }>
 }
@@ -123,6 +124,13 @@ function DataSourceItem({
             <p className="text-xs text-muted-foreground leading-relaxed">
               {source.comment}
             </p>
+          )}
+
+          {source.matchedColumns && source.matchedColumns.length > 0 && (
+            <div>
+              <SectionHeading label="Matched Columns" />
+              <ColumnList columns={source.matchedColumns} />
+            </div>
           )}
 
           {source.measures.length > 0 && (
