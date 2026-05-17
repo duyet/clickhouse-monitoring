@@ -2,10 +2,12 @@ import type { FeaturePermission } from './types'
 
 export const AGENT_FEATURE_PERMISSION = {
   feature: 'agent',
+  defaultAccess: 'authenticated',
 } satisfies FeaturePermission
 
 export const ACTIONS_FEATURE_PERMISSION = {
   feature: 'actions',
+  defaultAccess: 'authenticated',
 } satisfies FeaturePermission
 
 export const OVERVIEW_FEATURE_PERMISSION = {
