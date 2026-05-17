@@ -2,6 +2,7 @@
 
 import {
   ActivityIcon,
+  AlertTriangleIcon,
   ChevronRightIcon,
   ClockIcon,
   DatabaseIcon,
@@ -31,6 +32,21 @@ interface DefaultSuggestion {
 }
 
 const DEFAULT_SUGGESTIONS: DefaultSuggestion[] = [
+  {
+    text: 'Spot the most important issues in this cluster from the last 24 hours',
+    category: 'Diagnostics',
+    icon: <AlertTriangleIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'Recommend table design improvements for the largest table',
+    category: 'Schema',
+    icon: <DatabaseIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'Find data sources related to query performance and suggest useful charts',
+    category: 'Discovery',
+    icon: <SparklesIcon className="h-3.5 w-3.5" />,
+  },
   {
     text: "What's the largest data scan ever performed on this cluster?",
     category: 'Insights',

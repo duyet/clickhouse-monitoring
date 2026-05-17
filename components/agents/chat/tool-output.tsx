@@ -16,6 +16,11 @@ import { QueryInsightsCard } from './query-insights-card'
 import { type ComponentProps, useEffect, useMemo, useState } from 'react'
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
 import { AgentDataSources } from '@/components/agents/agent-data-sources'
+import {
+  AgentIssuesPanel,
+  QueryRepairPanel,
+  TableDesignPanel,
+} from '@/components/agents/agent-diagnostics'
 import { AgentVisualization } from '@/components/agents/agent-visualization'
 import {
   AskUserWidget,
@@ -93,6 +98,18 @@ function getPromotedOutputType(output: unknown) {
   }
   if (outputObj.type === 'data_sources' && Array.isArray(outputObj.sources)) {
     return 'data_sources' as const
+  }
+  if (outputObj.type === 'agent_issues' && Array.isArray(outputObj.issues)) {
+    return 'agent_issues' as const
+  }
+  if (outputObj.type === 'query_repair') {
+    return 'query_repair' as const
+  }
+  if (
+    outputObj.type === 'table_design_recommendation' &&
+    Array.isArray(outputObj.recommendations)
+  ) {
+    return 'table_design_recommendation' as const
   }
 
   return null
@@ -267,6 +284,33 @@ export function renderToolOutput(output: unknown) {
       <AgentDataSources
         searchTerm={outputObj.searchTerm as string}
         sources={outputObj.sources as AgentDataSourcesProps['sources']}
+      />
+    )
+  }
+
+  if (outputObj.type === 'agent_issues' && Array.isArray(outputObj.issues)) {
+    return (
+      <AgentIssuesPanel
+        output={output as ComponentProps<typeof AgentIssuesPanel>['output']}
+      />
+    )
+  }
+
+  if (outputObj.type === 'query_repair') {
+    return (
+      <QueryRepairPanel
+        output={output as ComponentProps<typeof QueryRepairPanel>['output']}
+      />
+    )
+  }
+
+  if (
+    outputObj.type === 'table_design_recommendation' &&
+    Array.isArray(outputObj.recommendations)
+  ) {
+    return (
+      <TableDesignPanel
+        output={output as ComponentProps<typeof TableDesignPanel>['output']}
       />
     )
   }

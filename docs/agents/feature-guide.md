@@ -106,6 +106,17 @@ Analyzes query performance and provides:
 - Bottleneck identification
 - Optimization recommendations
 - Before/after comparison
+- Deterministic read-only query repair for common ClickHouse issues
+
+### Diagnostics Agent
+
+Scans recent system metadata and query history for:
+
+- Expensive repeated query patterns
+- Repeated query failures
+- High active part counts and pending mutations
+- Replication lag or readonly replicas
+- Table-design candidates such as ORDER BY, LowCardinality, skip indexes, and materialized views
 
 ### Anomaly Detection Agent
 
