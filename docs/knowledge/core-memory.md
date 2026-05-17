@@ -3,7 +3,7 @@ id: core-memory
 title: Automation Core Memory
 type: workflow
 status: active
-updated: 2026-05-17
+updated: 2026-05-18
 tags:
   - automation
   - code-smell
@@ -23,6 +23,7 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - Since last run: `git log --since='<ISO_TIME>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Fallback window (24h): `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Fallback window (7d): `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+- Empty-window rule: if since-last-run has zero commits, run 24h then 7d fallback and report no-op when both are empty
 - Dead-code evidence: `rg -n "\b<SYMBOL>\b" --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 - Main CI status: `gh run list --branch main --limit 10 --json workflowName,status,conclusion,headSha,url`
 - Failed-job logs (restricted cache env): `XDG_CACHE_HOME=/private/tmp/gh-cache gh run view <RUN_ID> --job <JOB_ID> --log-failed`
@@ -45,3 +46,4 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - 2026-05-15: follow-up Docker fix uses `bun install --production --ignore-scripts` because Bun still executes root `prepare`; agent route tests now set `LLM_API_KEY`/`LLM_MODEL` in `beforeEach` to avoid provider-preflight `503` from ambient CI env
 - 2026-05-16: fixed `Image build and Push` failures on main (`Module not found: Can't resolve '@opennextjs/cloudflare'`) by removing Docker `--production` install in the deps stage while keeping `--ignore-scripts`
 - 2026-05-17: automation run started on detached worktree (`HEAD (no branch)`), so branch/PR work should pivot to `/Users/duet/project/clickhouse-monitor` when git metadata writes fail in `.git/worktrees/...`
+- 2026-05-18: no commits since last run timestamp; 24h fallback was empty, 7d fallback used for evidence-only audit with no new actionable code-smell/dead-code/perf findings
