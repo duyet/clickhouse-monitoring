@@ -2,7 +2,9 @@ import { afterEach, describe, expect, mock, test } from 'bun:test'
 
 mock.module('server-only', () => ({}))
 
-const { parseModelId, resolveProvider } = await import('../providers')
+const { isProviderConfigured, parseModelId, resolveProvider } = await import(
+  '../providers'
+)
 
 describe('parseModelId', () => {
   test('parses provider:model format', () => {
@@ -113,5 +115,26 @@ describe('resolveProvider', () => {
     })
     const resolved = resolveProvider('nvidia:nvidia/test-model')
     expect(resolved.baseURL).toBe('http://custom-nvidia.local/v1')
+  })
+})
+
+describe('isProviderConfigured', () => {
+  const originalEnv = process.env
+
+  function setEnv(vars: Record<string, string | undefined>) {
+    process.env = { ...originalEnv, ...vars }
+  }
+
+  afterEach(() => {
+    process.env = originalEnv
+  })
+
+  test('recognizes provider-specific AnyRouter key without LLM_API_KEY', () => {
+    setEnv({
+      ANYROUTER_API_KEY: 'sk-ar-test',
+      LLM_API_KEY: undefined,
+    })
+
+    expect(isProviderConfigured('anyrouter')).toBe(true)
   })
 })

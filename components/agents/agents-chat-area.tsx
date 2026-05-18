@@ -6,6 +6,7 @@ import { RefreshCwIcon, SquareIcon } from 'lucide-react'
 
 import type { UIMessage } from 'ai'
 import type { Conversation } from '@/lib/ai/agent/conversation-utils'
+import type { AgentError } from '@/lib/ai/agent/errors'
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
@@ -26,7 +27,6 @@ import {
 import { AgentChatEmptyState } from '@/components/agents/chat/empty-state'
 import {
   ChatMessage,
-  generateFollowUpSuggestions,
   StreamingTypingIndicator,
 } from '@/components/agents/chat/message'
 import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
@@ -38,6 +38,7 @@ import {
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
 import { Button } from '@/components/ui/button'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
+import { isAgentError } from '@/lib/ai/agent/errors'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useHostId } from '@/lib/swr'
@@ -45,6 +46,7 @@ import { apiFetch } from '@/lib/swr/api-fetch'
 
 export interface AgentsChatAreaRef {
   handleClear: () => void
+  submitPrompt: (text: string) => void
 }
 
 interface AgentsChatAreaProps {
@@ -52,6 +54,7 @@ interface AgentsChatAreaProps {
   readonly onMenuClick: () => void
   readonly hideHeader?: boolean
   readonly hideCompactControls?: boolean
+  readonly onMessagesChange?: (messages: readonly UIMessage[]) => void
 }
 
 function findLastAssistantMessage(messages: readonly UIMessage[]) {
@@ -87,6 +90,7 @@ export const AgentsChatArea = forwardRef<
     onMenuClick,
     hideHeader = false,
     hideCompactControls = false,
+    onMessagesChange,
   }: AgentsChatAreaProps,
   ref
 ) {
@@ -121,14 +125,24 @@ export const AgentsChatArea = forwardRef<
   const sendTimestampRef = useRef<number>(0)
   const prevStatusRef = useRef<string>(status)
   const lastSavedMessagesRef = useRef<UIMessage[]>([])
+  const latestMessagesRef = useRef<readonly UIMessage[]>([])
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const regenerateTimeoutRef = useRef<
     ReturnType<typeof setTimeout> | undefined
   >(undefined)
+  const followUpRequestRef = useRef<string | undefined>(undefined)
   const prevConversationIdRef = useRef<string | undefined>(undefined)
   const [responseDurations, setResponseDurations] = useState<
     Record<string, number>
   >({})
+  const [generatedFollowUps, setGeneratedFollowUps] = useState<
+    Record<string, string[]>
+  >({})
+  const [followUpErrors, setFollowUpErrors] = useState<
+    Record<string, AgentError>
+  >({})
+  const generatedFollowUpsRef = useRef<Record<string, string[]>>({})
+  const followUpErrorsRef = useRef<Record<string, AgentError>>({})
 
   const isLoading = status === 'streaming' || status === 'submitted'
   const isEmpty = messages.length === 0
@@ -136,13 +150,16 @@ export const AgentsChatArea = forwardRef<
     () => findLastAssistantMessage(messages),
     [messages]
   )
-  const followUpSuggestions = useMemo(
-    () =>
-      lastAssistantMessage
-        ? generateFollowUpSuggestions(lastAssistantMessage)
-        : [],
-    [lastAssistantMessage]
-  )
+  const followUpSuggestions =
+    lastAssistantMessage != null
+      ? (generatedFollowUps[lastAssistantMessage.id] ?? [])
+      : []
+  const lastAssistantMessageId = lastAssistantMessage?.id
+
+  useEffect(() => {
+    latestMessagesRef.current = messages
+    onMessagesChange?.(messages)
+  }, [messages, onMessagesChange])
 
   useEffect(() => {
     const previousStatus = prevStatusRef.current
@@ -188,6 +205,10 @@ export const AgentsChatArea = forwardRef<
 
     setMessages(conversation.messages)
     setResponseDurations({})
+    generatedFollowUpsRef.current = {}
+    followUpErrorsRef.current = {}
+    setGeneratedFollowUps({})
+    setFollowUpErrors({})
     lastSavedMessagesRef.current = conversation.messages
     prevConversationIdRef.current = currentConversationId
   }, [currentConversationId, conversations, setMessages])
@@ -263,9 +284,16 @@ export const AgentsChatArea = forwardRef<
       updateMessages(currentConversationId, [])
       lastSavedMessagesRef.current = []
     }
+    generatedFollowUpsRef.current = {}
+    followUpErrorsRef.current = {}
+    setGeneratedFollowUps({})
+    setFollowUpErrors({})
   }, [stop, setMessages, currentConversationId, updateMessages])
 
-  useImperativeHandle(ref, () => ({ handleClear }), [handleClear])
+  useImperativeHandle(ref, () => ({ handleClear, submitPrompt }), [
+    handleClear,
+    submitPrompt,
+  ])
 
   const handleRegenerate = useCallback(() => {
     stop()
@@ -298,6 +326,123 @@ export const AgentsChatArea = forwardRef<
     () => messages.findLastIndex((message) => message.role === 'user'),
     [messages]
   )
+
+  useEffect(() => {
+    if (status !== 'ready' || isLoading || error || !lastAssistantMessageId) {
+      return
+    }
+
+    const messageId = lastAssistantMessageId
+    if (
+      followUpRequestRef.current === messageId ||
+      generatedFollowUpsRef.current[messageId] ||
+      followUpErrorsRef.current[messageId]
+    ) {
+      return
+    }
+
+    followUpRequestRef.current = messageId
+    const controller = new AbortController()
+
+    async function generateFollowUps(signal: AbortSignal) {
+      try {
+        const response = await apiFetch('/api/v1/agent/followups', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ messages: latestMessagesRef.current, model }),
+          signal,
+        })
+        const payload = (await response.json().catch(() => ({}))) as {
+          readonly error?: unknown
+          readonly suggestions?: unknown
+        }
+
+        if (signal.aborted) return
+
+        if (!response.ok) {
+          const nextError = isAgentError(payload?.error)
+            ? payload.error
+            : ({
+                type: 'unknown',
+                message: 'Follow-up generation failed.',
+                suggestion: 'The main answer is still available.',
+                timestamp: Date.now(),
+                model,
+              } satisfies AgentError)
+
+          setFollowUpErrors((previous) => {
+            const next = {
+              ...previous,
+              [messageId]: nextError,
+            }
+            followUpErrorsRef.current = next
+            return next
+          })
+          return
+        }
+
+        const suggestions = Array.isArray(payload?.suggestions)
+          ? payload.suggestions.filter(
+              (item: unknown): item is string =>
+                typeof item === 'string' && item.trim().length > 0
+            )
+          : []
+
+        if (suggestions.length > 0) {
+          if (signal.aborted) return
+          setGeneratedFollowUps((previous) => {
+            const next = {
+              ...previous,
+              [messageId]: suggestions.slice(0, 3),
+            }
+            generatedFollowUpsRef.current = next
+            return next
+          })
+        }
+      } catch (generationError) {
+        if (
+          signal.aborted ||
+          (generationError instanceof Error &&
+            generationError.name === 'AbortError')
+        ) {
+          return
+        }
+
+        const nextError: AgentError = {
+          type: 'unknown',
+          message:
+            generationError instanceof Error
+              ? generationError.message
+              : 'Follow-up generation failed.',
+          suggestion: 'The main answer is still available.',
+          timestamp: Date.now(),
+          model,
+        }
+
+        setFollowUpErrors((previous) => {
+          const next = {
+            ...previous,
+            [messageId]: nextError,
+          }
+          followUpErrorsRef.current = next
+          return next
+        })
+      } finally {
+        if (!signal.aborted && followUpRequestRef.current === messageId) {
+          followUpRequestRef.current = undefined
+        }
+      }
+    }
+
+    void generateFollowUps(controller.signal)
+
+    return () => {
+      controller.abort()
+      if (followUpRequestRef.current === messageId) {
+        followUpRequestRef.current = undefined
+      }
+    }
+  }, [status, isLoading, error, lastAssistantMessageId, model])
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -347,6 +492,7 @@ export const AgentsChatArea = forwardRef<
                     isStreaming={isMessageStreaming}
                     responseDurationMs={responseDurations[message.id]}
                     error={isLatestAssistant && !isLoading ? error : null}
+                    followUpError={followUpErrors[message.id] ?? null}
                     onRegenerate={
                       index === lastUserMessageIndex
                         ? handleRegenerate
@@ -389,6 +535,9 @@ export const AgentsChatArea = forwardRef<
           disabled={isLoading}
           onResolvedSubmit={submitPrompt}
         />
+        <p className="mt-2 px-1 text-[11px] leading-4 text-muted-foreground">
+          Messages are stored in this browser&apos;s localStorage.
+        </p>
         {isLoading && messages.length > 0 && (
           <div className="mt-2 flex items-center justify-center gap-2">
             <Button

@@ -218,8 +218,9 @@ export function PromptInputTextareaWithMentions({
             size="icon-sm"
             onClick={handleSubmit}
             disabled={!canSubmit}
+            aria-label="Send message"
             className={cn(
-              'rounded-full transition-colors',
+              'rounded-full transition-[transform,background-color,color] active:scale-[0.96]',
               canSubmit
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                 : 'bg-muted text-muted-foreground'

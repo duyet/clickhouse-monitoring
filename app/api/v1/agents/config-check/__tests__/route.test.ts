@@ -19,6 +19,11 @@ beforeAll(async () => {
 beforeEach(() => {
   process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
   delete process.env.CHM_FEATURE_AGENT_ACCESS
+  delete process.env.LLM_API_KEY
+  delete process.env.LLM_API_BASE
+  delete process.env.ANYROUTER_API_KEY
+  delete process.env.OPENROUTER_API_KEY
+  delete process.env.NVIDIA_API_KEY
   mockClerkUserId = null
 })
 
@@ -63,5 +68,25 @@ describe('GET /api/v1/agents/config-check', () => {
     const response = await GET(configRequest())
 
     expect(response.status).toBe(200)
+  })
+
+  test('treats ANYROUTER_API_KEY as sufficient provider configuration', async () => {
+    process.env.ANYROUTER_API_KEY = 'sk-ar-test'
+
+    const response = await GET(configRequest())
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.configured.apiKey).toBe(true)
+    expect(body.configured.apiBase).toBe(true)
+    expect(body.isFullyConfigured).toBe(true)
+    expect(
+      body.providers.find(
+        (provider: { id: string }) => provider.id === 'anyrouter'
+      )
+    ).toMatchObject({
+      configured: true,
+      baseURL: 'https://anyrouter.dev/api/v1',
+    })
   })
 })

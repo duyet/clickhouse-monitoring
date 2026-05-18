@@ -2,6 +2,8 @@
 
 import { PanelRightClose, PanelRightOpen, TrashIcon } from 'lucide-react'
 
+import type { UIMessage } from 'ai'
+import type { AgentsChatAreaRef } from './agents-chat-area'
 import type { ConversationListItem } from './conversation-switcher'
 
 import { AgentConfigGuidance } from './agent-config-guidance'
@@ -30,7 +32,8 @@ export function AgentsLayout() {
     useState(false)
 
   // Ref to access child component's handleClear function
-  const chatAreaRef = useRef<{ handleClear: () => void } | null>(null)
+  const chatAreaRef = useRef<AgentsChatAreaRef | null>(null)
+  const [agentMessages, setAgentMessages] = useState<readonly UIMessage[]>([])
 
   // Sync sidebar state with isMobile changes (only if user hasn't manually toggled)
   useEffect(() => {
@@ -125,6 +128,7 @@ export function AgentsLayout() {
           onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
           hideHeader={true}
           hideCompactControls={true}
+          onMessagesChange={setAgentMessages}
         />
       </div>
 
@@ -133,6 +137,8 @@ export function AgentsLayout() {
         hostId={hostId}
         isOpen={isSidebarOpen}
         onOpenChange={setIsSidebarOpen}
+        messages={agentMessages}
+        onSubmitPrompt={(prompt) => chatAreaRef.current?.submitPrompt(prompt)}
       />
     </div>
   )

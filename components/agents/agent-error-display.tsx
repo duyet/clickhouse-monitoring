@@ -8,18 +8,20 @@ import {
   XIcon,
 } from 'lucide-react'
 
-import type { AgentError, AgentErrorType } from '@/lib/ai/agent/errors'
+import type { AgentErrorType } from '@/lib/ai/agent/errors'
 
 import { useEffect, useRef, useState } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { parseAgentError } from '@/lib/ai/agent/errors'
 import { cn } from '@/lib/utils'
 
 const ERROR_TYPE_LABELS: Record<AgentErrorType, string> = {
   auth_error: 'Auth Error',
   rate_limit: 'Rate Limited',
   billing_error: 'Billing',
+  upstream_error: 'Upstream Error',
   model_error: 'Model Error',
   timeout: 'Timeout',
   network_error: 'Network Error',
@@ -34,6 +36,8 @@ const ERROR_TYPE_CLASSES: Record<AgentErrorType, string> = {
     'border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
   billing_error:
     'border-transparent bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+  upstream_error:
+    'border-transparent bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
   model_error:
     'border-transparent bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
   timeout:
@@ -75,20 +79,7 @@ export function AgentErrorDisplay({
     }
   }, [])
 
-  // Attempt to parse as structured AgentError
-  let classified: AgentError | null = null
-  try {
-    const parsed = JSON.parse(error.message) as AgentError
-    if (
-      parsed &&
-      typeof parsed.type === 'string' &&
-      typeof parsed.message === 'string'
-    ) {
-      classified = parsed
-    }
-  } catch {
-    // Not JSON — use plain message
-  }
+  const classified = parseAgentError(error)
 
   const errorType: AgentErrorType = classified?.type ?? 'unknown'
   const displayMessage = classified?.message ?? error.message
@@ -96,9 +87,26 @@ export function AgentErrorDisplay({
   const details = classified?.details
   const timestamp = classified?.timestamp
   const model = classified?.model
+  const provider = classified?.provider
+  const code = classified?.code
   const statusCode = classified?.statusCode
+  const upstreamBackend = classified?.upstreamBackend
+  const upstreamStatus = classified?.upstreamStatus
+  const upstreamMessage = classified?.upstreamMessage
+  const requestId = classified?.requestId
 
-  const hasDetails = Boolean(details || timestamp || model || statusCode)
+  const hasDetails = Boolean(
+    details ||
+      timestamp ||
+      model ||
+      provider ||
+      code ||
+      statusCode ||
+      upstreamBackend ||
+      upstreamStatus ||
+      upstreamMessage ||
+      requestId
+  )
 
   const handleCopy = async () => {
     const text = classified
@@ -118,7 +126,7 @@ export function AgentErrorDisplay({
       <Alert variant="destructive" className="gap-2">
         <AlertCircleIcon className="h-4 w-4 shrink-0 mt-0.5" />
         <AlertDescription className="flex flex-col gap-2 min-w-0">
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge
@@ -135,7 +143,7 @@ export function AgentErrorDisplay({
                 <p className="text-xs text-muted-foreground">{suggestion}</p>
               )}
             </div>
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex shrink-0 items-center gap-1 self-end sm:self-start">
               <Button
                 variant="ghost"
                 size="sm"
@@ -205,10 +213,54 @@ export function AgentErrorDisplay({
                       {model}
                     </div>
                   )}
+                  {provider && (
+                    <div>
+                      <span className="text-muted-foreground">Provider: </span>
+                      {provider}
+                    </div>
+                  )}
+                  {code && (
+                    <div>
+                      <span className="text-muted-foreground">Code: </span>
+                      {code}
+                    </div>
+                  )}
                   {statusCode && (
                     <div>
                       <span className="text-muted-foreground">Status: </span>
                       {statusCode}
+                    </div>
+                  )}
+                  {upstreamBackend && (
+                    <div>
+                      <span className="text-muted-foreground">
+                        Upstream backend:{' '}
+                      </span>
+                      {upstreamBackend}
+                    </div>
+                  )}
+                  {upstreamStatus && (
+                    <div>
+                      <span className="text-muted-foreground">
+                        Upstream status:{' '}
+                      </span>
+                      {upstreamStatus}
+                    </div>
+                  )}
+                  {upstreamMessage && (
+                    <div>
+                      <span className="text-muted-foreground">
+                        Upstream message:{' '}
+                      </span>
+                      {upstreamMessage}
+                    </div>
+                  )}
+                  {requestId && (
+                    <div>
+                      <span className="text-muted-foreground">
+                        Request ID:{' '}
+                      </span>
+                      {requestId}
                     </div>
                   )}
                 </div>

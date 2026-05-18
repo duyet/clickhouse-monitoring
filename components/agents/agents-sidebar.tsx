@@ -11,8 +11,7 @@ import {
   RefreshCwIcon,
 } from 'lucide-react'
 
-// ChevronDownIcon already imported above
-
+import type { UIMessage } from 'ai'
 import type { ReactNode } from 'react'
 import type {
   McpResource,
@@ -50,11 +49,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { SUGGESTED_PROMPTS } from '@/lib/ai/agent/metadata'
 import {
   getSkillsMetadata,
   loadSkillContent,
 } from '@/lib/ai/agent/skills/registry'
+import { getSuggestedPrompts } from '@/lib/ai/agent/suggested-prompts'
 import { useAgentModel } from '@/lib/hooks/use-agent-model'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useMcpServerInfo } from '@/lib/swr'
@@ -63,6 +62,8 @@ import { cn } from '@/lib/utils'
 
 interface AgentsSidebarProps {
   hostId: number
+  messages?: readonly UIMessage[]
+  onSubmitPrompt?: (prompt: string) => void
   isOpen?: boolean
   onOpenChange?: (open: boolean) => void
 }
@@ -389,9 +390,7 @@ function McpToolsSection() {
   }
 
   const expandAll = () => {
-    setOpenSections(
-      new Set(['server', 'Resources', ...Object.keys(MCP_TOOL_CATEGORIES)])
-    )
+    setOpenSections(new Set(['Resources', ...Object.keys(MCP_TOOL_CATEGORIES)]))
   }
 
   const collapseAll = () => {
@@ -423,10 +422,7 @@ function McpToolsSection() {
 
   if (isLoading) {
     return (
-      <SidebarSection
-        title="Model"
-        description="Choose the default model the agent should use for this session."
-      >
+      <SidebarSection title="MCP Server" description="Loading server metadata.">
         <p className="text-sm text-muted-foreground">Loading tools...</p>
       </SidebarSection>
     )
@@ -479,97 +475,92 @@ function McpToolsSection() {
       action={action}
     >
       <div className="space-y-3">
-        <Collapsible
-          open={openSections.has('server')}
-          onOpenChange={() => toggleSection('server')}
-        >
-          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
-            <TreeTriggerIcon open={openSections.has('server')} />
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <DatabaseIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span className="truncate text-sm font-medium">
-                {mcpInfo.name}
-              </span>
-              <Badge variant="outline" className="rounded-full">
-                v{mcpInfo.version}
-              </Badge>
+        <div className="flex items-center gap-3 rounded-lg bg-muted/15 px-3 py-2.5">
+          <DatabaseIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-medium text-foreground">
+              {mcpInfo.name}
             </div>
-          </CollapsibleTrigger>
+            <div className="mt-0.5 text-xs text-muted-foreground tabular-nums">
+              {mcpInfo.tools.length} tools, {mcpInfo.resources.length} resources
+            </div>
+          </div>
+          <Badge variant="outline" className="rounded-full">
+            v{mcpInfo.version}
+          </Badge>
+        </div>
 
-          <CollapsibleContent className="ml-3 space-y-2 border-l border-border/40 pl-3 pt-2">
-            {mcpInfo.resources.length > 0 ? (
-              <Collapsible
-                open={openSections.has('Resources')}
-                onOpenChange={() => toggleSection('Resources')}
-              >
-                <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/25">
-                  <TreeTriggerIcon open={openSections.has('Resources')} />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium">Resources</div>
-                    <div className="text-xs text-muted-foreground">
-                      {mcpInfo.resources.length} resource
-                      {mcpInfo.resources.length === 1 ? '' : 's'}
-                    </div>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="ml-3 space-y-1.5 border-l border-border/30 pl-3 pt-1.5">
-                  {mcpInfo.resources.map((resource: McpResource) => (
-                    <div
-                      key={resource.name}
-                      className="rounded-lg bg-muted/15 p-2.5"
-                    >
-                      <div className="text-sm font-medium text-foreground">
-                        {resource.name}
-                      </div>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        {resource.description}
-                      </p>
-                    </div>
-                  ))}
-                </CollapsibleContent>
-              </Collapsible>
-            ) : null}
-
-            {toolCategories.map((categoryKey) => {
-              const categoryInfo = MCP_TOOL_CATEGORIES[categoryKey]
-              const tools = mcpInfo.tools.filter(
-                (tool: ApiMcpTool) => tool.category === categoryKey
-              )
-
-              if (tools.length === 0) return null
-
-              return (
-                <Collapsible
-                  key={categoryKey}
-                  open={openSections.has(categoryKey)}
-                  onOpenChange={() => toggleSection(categoryKey)}
+        {mcpInfo.resources.length > 0 ? (
+          <Collapsible
+            open={openSections.has('Resources')}
+            onOpenChange={() => toggleSection('Resources')}
+          >
+            <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/25">
+              <TreeTriggerIcon open={openSections.has('Resources')} />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium">Resources</div>
+                <div className="text-xs text-muted-foreground">
+                  {mcpInfo.resources.length} resource
+                  {mcpInfo.resources.length === 1 ? '' : 's'}
+                </div>
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="ml-3 space-y-1.5 border-l border-border/30 pl-3 pt-1.5">
+              {mcpInfo.resources.map((resource: McpResource) => (
+                <div
+                  key={resource.name}
+                  className="rounded-lg bg-muted/15 p-2.5"
                 >
-                  <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/25">
-                    <TreeTriggerIcon open={openSections.has(categoryKey)} />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium text-foreground">
-                        {categoryInfo.icon} {categoryInfo.name}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {tools.length} tool{tools.length === 1 ? '' : 's'}
-                      </div>
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="ml-3 space-y-2 border-l border-border/30 pl-3 pt-1.5">
-                    {tools.map((tool: ApiMcpTool) => (
-                      <McpToolRow
-                        key={tool.name}
-                        tool={tool}
-                        enabled={isToolEnabled(tool.name)}
-                        onToggle={() => toggleTool(tool.name)}
-                      />
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
-              )
-            })}
-          </CollapsibleContent>
-        </Collapsible>
+                  <div className="text-sm font-medium text-foreground">
+                    {resource.name}
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {resource.description}
+                  </p>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        ) : null}
+
+        {toolCategories.map((categoryKey) => {
+          const categoryInfo = MCP_TOOL_CATEGORIES[categoryKey]
+          const tools = mcpInfo.tools.filter(
+            (tool: ApiMcpTool) => tool.category === categoryKey
+          )
+
+          if (tools.length === 0) return null
+
+          return (
+            <Collapsible
+              key={categoryKey}
+              open={openSections.has(categoryKey)}
+              onOpenChange={() => toggleSection(categoryKey)}
+            >
+              <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/25">
+                <TreeTriggerIcon open={openSections.has(categoryKey)} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-foreground">
+                    {categoryInfo.icon} {categoryInfo.name}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {tools.length} tool{tools.length === 1 ? '' : 's'}
+                  </div>
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="ml-3 space-y-2 border-l border-border/30 pl-3 pt-1.5">
+                {tools.map((tool: ApiMcpTool) => (
+                  <McpToolRow
+                    key={tool.name}
+                    tool={tool}
+                    enabled={isToolEnabled(tool.name)}
+                    onToggle={() => toggleTool(tool.name)}
+                  />
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )
+        })}
       </div>
     </SidebarSection>
   )
@@ -640,28 +631,58 @@ function SkillsSection() {
   )
 }
 
-function SuggestedPromptsSection() {
+function SuggestedPromptsSection({
+  messages = [],
+  onSubmitPrompt,
+}: {
+  readonly messages?: readonly UIMessage[]
+  readonly onSubmitPrompt?: (prompt: string) => void
+}) {
+  const [showMore, setShowMore] = useState(false)
+  const prompts = useMemo(
+    () => getSuggestedPrompts({ messages, limit: showMore ? 8 : 3 }),
+    [messages, showMore]
+  )
+
   return (
     <SidebarSection
       title="Suggested prompts"
-      description="A few starter questions you can paste into the conversation."
+      description="Context-aware starter questions for the current conversation."
+      action={
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowMore((value) => !value)}
+          className="h-8 rounded-full px-3 text-xs transition-[transform,background-color] active:scale-[0.96]"
+        >
+          {showMore ? 'Show less' : 'Show more'}
+        </Button>
+      }
     >
-      <ul className="space-y-2">
-        {SUGGESTED_PROMPTS.map((prompt) => (
-          <li
-            key={prompt}
-            className="rounded-lg bg-muted/15 px-3 py-2.5 text-xs leading-5 text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground"
+      <div className="space-y-1.5">
+        {prompts.map((prompt) => (
+          <button
+            type="button"
+            key={prompt.text}
+            className="group flex min-h-10 w-full items-start gap-2 rounded-lg px-3 py-2 text-left text-xs leading-5 text-muted-foreground transition-[transform,background-color,color] hover:bg-muted/30 hover:text-foreground active:scale-[0.96]"
+            onClick={() => onSubmitPrompt?.(prompt.text)}
           >
-            {prompt}
-          </li>
+            <span className="mt-0.5 inline-flex h-4 shrink-0 items-center rounded-full bg-muted px-1.5 text-[9px] font-medium uppercase leading-4 tracking-[0.08em] text-muted-foreground group-hover:text-foreground">
+              {prompt.category}
+            </span>
+            <span className="min-w-0 flex-1">{prompt.text}</span>
+          </button>
         ))}
-      </ul>
+      </div>
     </SidebarSection>
   )
 }
 
 export function AgentsSidebar({
   hostId,
+  messages,
+  onSubmitPrompt,
   isOpen,
   onOpenChange,
 }: AgentsSidebarProps) {
@@ -698,7 +719,10 @@ export function AgentsSidebar({
           <ModelSelectorComponent />
           <McpToolsSection />
           <SkillsSection />
-          <SuggestedPromptsSection />
+          <SuggestedPromptsSection
+            messages={messages}
+            onSubmitPrompt={onSubmitPrompt}
+          />
         </div>
       </div>
     </div>
@@ -718,7 +742,7 @@ export function AgentsSidebar({
   }
 
   return isOpen ? (
-    <aside className="hidden h-full w-80 shrink-0 border-l border-border/60 md:flex lg:w-[26rem]">
+    <aside className="hidden h-full w-80 shrink-0 border-l border-border/60 md:flex xl:w-[24rem]">
       {content}
     </aside>
   ) : null

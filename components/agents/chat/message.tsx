@@ -7,6 +7,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 
 import type { Spec } from '@json-render/core'
 import type { UIMessage } from 'ai'
+import type { AgentError } from '@/lib/ai/agent/errors'
 
 import {
   type DataPart,
@@ -38,7 +39,9 @@ import { cn, formatDuration } from '@/lib/utils'
 
 import '../markdown-code.css'
 
+import { MessageDetailsDialog } from './message-details-dialog'
 import { type AgentToolPart, ToolCallPart } from './tool-output'
+import { parseAgentError } from '@/lib/ai/agent/errors'
 import {
   AGENT_JSON_RENDER_MAX_ELEMENT_COUNT,
   AGENT_JSON_RENDER_MAX_SPEC_BYTES,
@@ -47,6 +50,7 @@ import {
 } from '@/lib/ai/agent/json-render-catalog'
 import { AGENT_JSON_RENDER_CATALOG } from '@/lib/ai/agent/json-render-catalog-with-schema'
 import { AGENT_JSON_RENDER_REGISTRY } from '@/lib/ai/agent/json-render-registry'
+import { extractMessageUsage } from '@/lib/ai/agent/message-metadata'
 
 const jsonRenderTextEncoder = new TextEncoder()
 
@@ -56,6 +60,7 @@ interface ChatMessageProps {
   readonly isStreaming?: boolean
   readonly responseDurationMs?: number
   readonly error?: Error | null
+  readonly followUpError?: AgentError | null
   readonly onRegenerate?: () => void
   readonly onToolResult?: (toolCallId: string, result: string) => void
   readonly onErrorDismiss?: () => void
@@ -374,28 +379,46 @@ function getStablePartKey(
 function MessageStatsFooter({
   message,
   responseDurationMs,
+  error,
+  followUpError,
 }: {
   readonly message: UIMessage
   readonly responseDurationMs?: number
+  readonly error?: AgentError | null
+  readonly followUpError?: AgentError | null
 }) {
   const stats = useMemo(() => getMessageStats(message), [message])
-
-  if (stats.toolCallCount === 0) return null
+  const usage = useMemo(() => extractMessageUsage(message), [message])
 
   const parts: string[] = []
   if (responseDurationMs && responseDurationMs > 0) {
     parts.push(formatDuration(responseDurationMs))
   }
-  parts.push(
-    `${stats.toolCallCount} tool ${stats.toolCallCount === 1 ? 'call' : 'calls'}`
-  )
+  if (usage?.totalTokens) {
+    parts.push(`${usage.totalTokens.toLocaleString()} tokens`)
+  }
+  if (stats.toolCallCount > 0) {
+    parts.push(
+      `${stats.toolCallCount} tool ${
+        stats.toolCallCount === 1 ? 'call' : 'calls'
+      }`
+    )
+  }
   if (stats.totalToolDurationMs > 0) {
     parts.push(`${formatDuration(stats.totalToolDurationMs)} in tools`)
   }
 
   return (
-    <div className="mt-2 select-none pt-1.5 text-[11px] text-muted-foreground/60">
-      {parts.join(' · ')}
+    <div className="mt-2 flex select-none items-center gap-2 pt-1.5 text-[11px] text-muted-foreground/60">
+      <span className="min-w-0 truncate">
+        {parts.length > 0 ? parts.join(' · ') : 'Response metadata'}
+      </span>
+      <MessageDetailsDialog
+        message={message}
+        responseDurationMs={responseDurationMs}
+        error={error}
+        followUpError={followUpError}
+      />
     </div>
   )
 }
@@ -568,6 +591,7 @@ export function ChatMessage({
   isStreaming,
   responseDurationMs,
   error,
+  followUpError,
   onRegenerate,
   onToolResult,
   onErrorDismiss,
@@ -578,6 +602,10 @@ export function ChatMessage({
   const safeParts = useMemo(
     () => getSafeJsonRenderMessageParts(message.parts),
     [message.parts]
+  )
+  const classifiedError = useMemo(
+    () => (error ? parseAgentError(error) : null),
+    [error]
   )
 
   return (
@@ -674,6 +702,8 @@ export function ChatMessage({
           <MessageStatsFooter
             message={message}
             responseDurationMs={responseDurationMs}
+            error={classifiedError}
+            followUpError={followUpError}
           />
         )}
 
