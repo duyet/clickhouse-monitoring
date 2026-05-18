@@ -20,7 +20,6 @@ import type {
 } from '@/components/mcp/mcp-tools-data'
 import type { ApiMcpTool } from '@/lib/swr/use-mcp-server-info'
 
-import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { SkillsTreeDialog } from '@/components/agents/skills-tree-dialog'
 import {
@@ -43,13 +42,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -67,7 +59,7 @@ import { useAgentModel } from '@/lib/hooks/use-agent-model'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useMcpServerInfo } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
-import { cleanQuotedText, cn } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 interface AgentsSidebarProps {
   hostId: number
@@ -89,7 +81,7 @@ function SidebarSection({
   return (
     <section>
       <div className="flex items-center justify-between gap-3 px-3 py-2">
-        <div className="flex min-w-0 items-center gap-1.5 truncate text-sm font-medium text-foreground">
+        <div className="flex min-w-0 items-center gap-1.5 truncate text-sm font-medium tracking-tight text-foreground">
           {title}
           {description && (
             <Tooltip>
@@ -122,32 +114,19 @@ function TreeTriggerIcon({ open }: { open: boolean }) {
 }
 
 function HostSelector({ hostId }: { readonly hostId: number }) {
-  const router = useRouter()
   const { hosts } = useHosts()
-
-  const handleHostChange = (newHostId: string) => {
-    const url = new URL(window.location.href)
-    url.searchParams.set('host', newHostId)
-    router.push(url.toString())
-  }
+  const current = hosts[hostId]
+  const label = current?.name || `Host ${hostId}`
 
   return (
-    <SidebarSection title="Host">
-      <Select value={String(hostId)} onValueChange={handleHostChange}>
-        <SelectTrigger className="h-10 rounded-lg border-border/60 bg-background/70 text-sm">
-          <SelectValue placeholder="Select host" />
-        </SelectTrigger>
-        <SelectContent>
-          {hosts.map((host, index) => (
-            <SelectItem key={index} value={String(index)} className="text-sm">
-              <div className="flex items-center gap-2">
-                <MonitorIcon className="h-3.5 w-3.5" />
-                <span>{host.name || `Host ${index}`}</span>
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <SidebarSection
+      title="Host"
+      description="Switch hosts from the page header."
+    >
+      <div className="flex h-10 items-center gap-2 rounded-lg border border-border/60 bg-background/70 px-3 text-sm shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+        <MonitorIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <span className="truncate text-foreground tabular-nums">{label}</span>
+      </div>
     </SidebarSection>
   )
 }
@@ -191,7 +170,7 @@ function ModelSelectorComponent() {
         <ModelSelectorTrigger asChild>
           <Button
             variant="outline"
-            className="h-auto w-full justify-between rounded-lg border-border/60 bg-background/70 px-3 py-2.5"
+            className="h-auto w-full justify-between rounded-lg border-border/60 bg-background/70 px-3 py-2.5 shadow-[0_1px_0_0_rgba(0,0,0,0.02)] transition-[transform,background-color,border-color] active:scale-[0.99]"
             aria-label="Select model"
           >
             <div className="flex min-w-0 items-center gap-3 text-left">
@@ -199,8 +178,24 @@ function ModelSelectorComponent() {
                 provider={currentProvider}
                 className="size-3.5 shrink-0 dark:invert-0"
               />
-              <span className="min-w-0 truncate font-mono text-[13px] font-medium text-foreground">
-                {currentModel?.name ?? model}
+              <span className="flex min-w-0 items-center gap-1.5 font-mono text-[13px] font-medium text-foreground">
+                <Badge
+                  variant="outline"
+                  className="shrink-0 rounded-full px-1.5 py-0 text-[10px]"
+                >
+                  {currentProvider}
+                </Badge>
+                <span className="min-w-0 truncate">
+                  {currentModel?.name ?? model}
+                </span>
+                {currentModel?.available === false ? (
+                  <Badge
+                    variant="outline"
+                    className="shrink-0 rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                  >
+                    Not configured
+                  </Badge>
+                ) : null}
               </span>
             </div>
             <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -218,12 +213,15 @@ function ModelSelectorComponent() {
               {models.map((item) => {
                 const provider = getProviderFromModelId(item.id)
                 const selected = item.id === model
+                const unavailable = item.available === false
 
                 return (
                   <ModelSelectorItem
                     key={item.id}
                     value={item.id}
+                    disabled={unavailable}
                     onSelect={() => {
+                      if (unavailable) return
                       setModel(item.id)
                       setOpen(false)
                     }}
@@ -231,7 +229,8 @@ function ModelSelectorComponent() {
                       'mx-2 my-1 flex items-start gap-3 rounded-lg px-3 py-2.5',
                       selected
                         ? 'bg-muted/60'
-                        : 'border border-transparent hover:bg-muted/35'
+                        : 'border border-transparent hover:bg-muted/35',
+                      unavailable && 'cursor-not-allowed opacity-50'
                     )}
                   >
                     <ModelSelectorLogo
@@ -239,10 +238,19 @@ function ModelSelectorComponent() {
                       className="size-3.5 shrink-0 dark:invert-0"
                     />
                     <span className="min-w-0 flex-1 truncate font-mono text-[13px] font-medium text-foreground">
-                      {item.id}
+                      <Badge
+                        variant="outline"
+                        className="mr-1.5 rounded-full text-[10px] px-1.5 py-0"
+                      >
+                        {provider}
+                      </Badge>
+                      {item.name}
                     </span>
                     <div className="flex shrink-0 flex-col items-end gap-1.5">
-                      <Badge variant="outline" className="rounded-full">
+                      <Badge
+                        variant="outline"
+                        className="rounded-full tabular-nums"
+                      >
                         {item.formattedContextLength} ctx
                       </Badge>
                       {item.isFree ? (
@@ -253,12 +261,19 @@ function ModelSelectorComponent() {
                           Free
                         </Badge>
                       ) : item.pricing != null ? (
-                        <span className="text-right text-[10px] leading-4 text-muted-foreground">
+                        <span className="text-right text-[10px] leading-4 text-muted-foreground tabular-nums">
                           ${item.pricing.inputPerMillion}/M in
                           <br />${item.pricing.outputPerMillion}/M out
                         </span>
                       ) : null}
-                      {selected ? (
+                      {unavailable ? (
+                        <Badge
+                          variant="outline"
+                          className="rounded-full border-amber-400/60 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                        >
+                          Not configured
+                        </Badge>
+                      ) : selected ? (
                         <Badge className="rounded-full">Selected</Badge>
                       ) : null}
                     </div>
@@ -561,7 +576,6 @@ function McpToolsSection() {
 }
 
 function SkillsSection() {
-  const [isOpen, setIsOpen] = useState(true)
   const [showTree, setShowTree] = useState(false)
   const skills = useMemo(() => getSkillsMetadata(), [])
   const skillDetails = useMemo(() => {
@@ -593,53 +607,28 @@ function SkillsSection() {
             variant="outline"
             size="sm"
             onClick={() => setShowTree(true)}
-            className="h-8 rounded-full px-3 text-xs"
+            className="h-8 rounded-full px-3 text-xs transition-[transform,background-color,border-color] active:scale-[0.96]"
           >
             Open tree
           </Button>
         }
       >
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
-            <TreeTriggerIcon open={isOpen} />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <BookOpenIcon className="h-4 w-4 text-muted-foreground" />
-                Skill library
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {skills.length} available skill
-                {skills.length === 1 ? '' : 's'}
-              </div>
+        <button
+          type="button"
+          onClick={() => setShowTree(true)}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-[transform,background-color] hover:bg-muted/30 active:scale-[0.99]"
+        >
+          <BookOpenIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium text-foreground">
+              Skill library
             </div>
-          </CollapsibleTrigger>
-
-          <CollapsibleContent className="space-y-2 pt-3">
-            {skillDetails.map((skill) => (
-              <button
-                key={skill.name}
-                type="button"
-                onClick={() => setShowTree(true)}
-                className="flex w-full items-start gap-3 rounded-lg bg-muted/15 px-3 py-2.5 text-left transition-colors hover:bg-muted/30"
-              >
-                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground">
-                  <BookOpenIcon className="h-4 w-4" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-mono text-[13px] font-medium text-foreground">
-                    {skill.name}
-                  </div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    {cleanQuotedText(skill.description)}
-                  </p>
-                </div>
-                <Badge variant="outline" className="shrink-0 rounded-full">
-                  Open tree
-                </Badge>
-              </button>
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
+            <div className="text-xs text-muted-foreground tabular-nums">
+              {skills.length} available skill
+              {skills.length === 1 ? '' : 's'}
+            </div>
+          </div>
+        </button>
       </SidebarSection>
 
       <SkillsTreeDialog
@@ -683,10 +672,10 @@ export function AgentsSidebar({
       <div className="border-b border-border/60 bg-background/70 px-3 py-2.5 backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-semibold text-foreground">
+            <h3 className="text-sm font-semibold tracking-tight text-foreground [text-wrap:balance]">
               Agent settings
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground [text-wrap:pretty]">
               Model, tools, and skill controls for the current workspace.
             </p>
           </div>
@@ -694,7 +683,7 @@ export function AgentsSidebar({
             variant="outline"
             size="sm"
             onClick={() => onOpenChange?.(false)}
-            className="h-9 rounded-full px-3"
+            className="h-9 rounded-full px-3 transition-[transform,background-color,border-color] active:scale-[0.96]"
             aria-label="Hide settings sidebar"
           >
             <PanelRightClose className="mr-1 h-4 w-4" />

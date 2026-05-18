@@ -16,6 +16,7 @@ import {
 } from '@json-render/react'
 import { useMemo } from 'react'
 import { Streamdown } from 'streamdown'
+import { AgentErrorDisplay } from '@/components/agents/agent-error-display'
 import {
   Message,
   MessageContent,
@@ -26,7 +27,6 @@ import {
   ReasoningContent,
   ReasoningTrigger,
 } from '@/components/ai-elements/reasoning'
-import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
 import {
   Task,
   TaskContent,
@@ -54,11 +54,11 @@ interface ChatMessageProps {
   readonly message: UIMessage
   readonly isLastUserMessage?: boolean
   readonly isStreaming?: boolean
-  readonly showFollowUps?: boolean
   readonly responseDurationMs?: number
+  readonly error?: Error | null
   readonly onRegenerate?: () => void
-  readonly onSuggestionClick?: (suggestion: string) => void
   readonly onToolResult?: (toolCallId: string, result: string) => void
+  readonly onErrorDismiss?: () => void
 }
 
 type SafeJsonRenderResult = {
@@ -449,7 +449,7 @@ function extractMessageSections(text: string): MessageSection[] | null {
   return sections
 }
 
-function generateFollowUpSuggestions(message: UIMessage): string[] {
+export function generateFollowUpSuggestions(message: UIMessage): string[] {
   const suggestions: string[] = []
   const toolNames: string[] = []
 
@@ -566,11 +566,11 @@ export function ChatMessage({
   message,
   isLastUserMessage,
   isStreaming,
-  showFollowUps,
   responseDurationMs,
+  error,
   onRegenerate,
-  onSuggestionClick,
   onToolResult,
+  onErrorDismiss,
 }: ChatMessageProps) {
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
@@ -579,11 +579,6 @@ export function ChatMessage({
     () => getSafeJsonRenderMessageParts(message.parts),
     [message.parts]
   )
-
-  const followUpSuggestions = useMemo(() => {
-    if (!isAssistant) return []
-    return generateFollowUpSuggestions(message)
-  }, [message, isAssistant])
 
   return (
     <Message from={isUser ? 'user' : 'assistant'}>
@@ -682,17 +677,13 @@ export function ChatMessage({
           />
         )}
 
-        {isAssistant && showFollowUps && followUpSuggestions.length > 0 && (
-          <div className="mt-3 border-t border-muted/30 pt-3">
-            <Suggestions>
-              {followUpSuggestions.map((suggestion) => (
-                <Suggestion
-                  key={suggestion}
-                  suggestion={suggestion}
-                  onClick={onSuggestionClick}
-                />
-              ))}
-            </Suggestions>
+        {isAssistant && error && (
+          <div className="mt-3">
+            <AgentErrorDisplay
+              error={error}
+              onRetry={onRegenerate}
+              onDismiss={onErrorDismiss}
+            />
           </div>
         )}
       </MessageContent>

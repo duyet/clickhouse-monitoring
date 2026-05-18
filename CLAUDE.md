@@ -175,8 +175,12 @@ Both deployment methods provide:
 - Since-last-run scan scope: `git log --since='<ISO_TIME>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Fallback scan (24h): `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Fallback scan (7d): `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+- Empty-window rule: if since-last-run has zero commits, run 24h then 7d fallback and report no-op when both are empty
 - Dead-code evidence: `rg -n "\b<SYMBOL>\b" --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 - Main CI status check: `gh run list --branch main --limit 10 --json workflowName,status,conclusion,headSha,url`
+- Failed-job logs in restricted cache environments: `XDG_CACHE_HOME=/private/tmp/gh-cache gh run view <RUN_ID> --job <JOB_ID> --log-failed`
+- Docker deps-stage parity check: `bun install --frozen-lockfile --ignore-scripts && bun run build` (`lib/platform/adapters/cloudflare.ts` imports `@opennextjs/cloudflare` during build)
+- Worktree fallback for PR operations: if automation checkout is detached (`git status --short --branch` shows `HEAD (no branch)`) or git metadata writes fail (`FETCH_HEAD`/`HEAD.lock`), switch to `/Users/duet/project/clickhouse-monitor` before commit/PR commands
 - Cloudflare worker size dry-run: `bun wrangler deploy --minify --dry-run`
 
 **Docs content workflow**: `/docs` pages are rendered by the main app and read source files from `docs/content`.

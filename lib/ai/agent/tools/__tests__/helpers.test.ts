@@ -2,14 +2,6 @@ import { describe, expect, mock, test } from 'bun:test'
 
 mock.module('server-only', () => ({}))
 
-mock.module('@/lib/api/shared/validators/sql', () => ({
-  validateSqlQuery: (sql: string) => {
-    if (sql.trim().toUpperCase().startsWith('DROP')) {
-      throw new Error('Write operations not allowed')
-    }
-  },
-}))
-
 mock.module('@/lib/clickhouse', () => ({
   fetchData: async ({ query, hostId }: { query: string; hostId: number }) => {
     if (hostId === 999) {

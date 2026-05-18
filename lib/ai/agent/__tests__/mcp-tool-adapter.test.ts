@@ -155,6 +155,9 @@ describe('createMcpTools', () => {
       expect(tools.get_replication_status).toBeDefined()
       expect(tools.get_clusters).toBeDefined()
       expect(tools.get_dashboard_pages).toBeDefined()
+      expect(tools.spot_issues).toBeDefined()
+      expect(tools.repair_query).toBeDefined()
+      expect(tools.recommend_table_design).toBeDefined()
     })
 
     test('uses default hostId when not provided', () => {

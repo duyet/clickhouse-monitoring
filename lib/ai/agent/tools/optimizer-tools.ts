@@ -1,4 +1,5 @@
 import { readOnlyQuery, resolveHostId } from './helpers'
+import { extractReferencedTables, validateAgentSql } from './sql-analysis'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -30,29 +31,25 @@ export function createOptimizerTools(hostId: number) {
           hostId?: number
         }
         const resolvedHostId = resolveHostId(toolHostId, hostId)
+        const safeSql = validateAgentSql(sql)
 
         // 1. Run EXPLAIN PLAN
         const plan = await readOnlyQuery({
-          query: `EXPLAIN PLAN ${sql}`,
+          query: `EXPLAIN PLAN ${safeSql}`,
           hostId: resolvedHostId,
         }).catch((e: Error) => ({ error: e.message }))
 
         // 2. Run EXPLAIN INDEXES
         const indexes = await readOnlyQuery({
-          query: `EXPLAIN INDEXES = 1 ${sql}`,
+          query: `EXPLAIN INDEXES = 1 ${safeSql}`,
           hostId: resolvedHostId,
         }).catch((e: Error) => ({ error: e.message }))
 
         // 3. Extract table names and check sorting keys
-        const tablePattern = /FROM\s+(\w+\.?\w+)/gi
-        const tables = [...sql.matchAll(tablePattern)].map((m) => m[1])
+        const tables = extractReferencedTables(safeSql, database ?? 'default')
 
         const tableAnalysis = await Promise.all(
-          tables.map(async (tableName) => {
-            const parts = tableName.split('.')
-            const db = parts.length > 1 ? parts[0] : (database ?? 'default')
-            const tbl = parts.length > 1 ? parts[1] : parts[0]
-
+          tables.map(async ({ database: db, table: tbl, qualifiedName }) => {
             const [schema, skipIndexes] = await Promise.all([
               readOnlyQuery({
                 query: `SELECT engine, sorting_key, primary_key, partition_key,
@@ -71,11 +68,13 @@ export function createOptimizerTools(hostId: number) {
               }).catch(() => []),
             ])
 
-            return { table: tableName, schema, skipIndexes }
+            return { table: qualifiedName, schema, skipIndexes }
           })
         )
 
         return {
+          type: 'query_optimization',
+          sql: safeSql,
           explain_plan: plan,
           explain_indexes: indexes,
           tables: tableAnalysis,

@@ -50,13 +50,25 @@ export function AgentSettings({ onModelChange }: AgentSettingsProps) {
     <div className="space-y-3">
       {/* Model selection */}
       <Select value={model} onValueChange={handleModelChange}>
-        <SelectTrigger className="h-8 text-xs max-w-[200px]">
-          <SelectValue placeholder="Select model" />
+        <SelectTrigger className="h-8 text-xs w-full sm:w-auto sm:max-w-[280px]">
+          {currentModelData ? (
+            <div className="flex items-center gap-1.5 truncate">
+              <Badge variant="outline" className="text-[10px] px-1 shrink-0">
+                {currentModelData.provider}
+              </Badge>
+              <span className="truncate">{currentModelData.name}</span>
+            </div>
+          ) : (
+            <span className="text-muted-foreground">Select model</span>
+          )}
         </SelectTrigger>
         <SelectContent>
           {models.map((m) => (
             <SelectItem key={m.id} value={m.id} className="text-xs">
               <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className="text-[10px] px-1">
+                  {m.provider}
+                </Badge>
                 <span>{m.name}</span>
                 {m.supportsTools && (
                   <Badge variant="outline" className="text-[10px] px-1">

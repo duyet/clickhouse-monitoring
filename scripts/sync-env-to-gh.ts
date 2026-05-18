@@ -1,0 +1,252 @@
+#!/usr/bin/env bun
+
+/**
+ * Sync local env files to GitHub Actions secrets.
+ *
+ * Cascade (first occurrence of each key wins):
+ *   .env.prod.local > .env.prod > .env.local > .env
+ *
+ * `.env.prod.local` and `.env.local` are gitignored — safe place for keys
+ * you don't want in `.env.prod` (which is shared with the team).
+ *
+ * Then `gh secret set <KEY>` uploads each value. CI's deploy workflow
+ * subsequently pushes them onto the Worker via wrangler.
+ *
+ * Usage:
+ *   bun scripts/sync-env-to-gh.ts            # interactive (prints plan, asks)
+ *   bun scripts/sync-env-to-gh.ts --yes      # non-interactive
+ *   bun scripts/sync-env-to-gh.ts --dry-run  # show what would be set, do nothing
+ *   bun scripts/sync-env-to-gh.ts --only KEY1,KEY2
+ */
+
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+/** Order: highest priority first. First file containing a given key wins. */
+const ENV_FILE_CASCADE = [
+  '.env.prod.local',
+  '.env.prod',
+  '.env.local',
+  '.env',
+] as const
+
+/**
+ * Repo secrets to sync. Mirrors the inventory consumed by
+ * `.github/workflows/cloudflare.yml` and `scripts/set-secrets.ts`.
+ * NEXT_PUBLIC_* are intentionally excluded — they're build-time only and
+ * baked into the JS bundle by CI from repo secrets, not Worker secrets.
+ * Cloudflare creds (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID) and Clerk
+ * publishable keys are managed manually — out of scope here.
+ */
+const SECRET_KEYS = [
+  // ClickHouse
+  'CLICKHOUSE_PASSWORD',
+  'CLICKHOUSE_TZ',
+  'CLICKHOUSE_EXCLUDE_USER_DEFAULT',
+  // LLM providers
+  'LLM_API_KEY',
+  'LLM_API_BASE',
+  'LLM_MODEL',
+  'OPENROUTER_API_KEY',
+  'OPENROUTER_API_BASE',
+  'OPENROUTER_REFERER',
+  'OPENROUTER_APP_NAME',
+  'NVIDIA_API_KEY',
+  'NVIDIA_API_BASE',
+  'ANYROUTER_API_KEY',
+  'ANYROUTER_API_BASE',
+  // Clerk (server-side secret keys — publishable keys are public)
+  'CLERK_SECRET_KEY',
+  'CLERK_SECRET_KEY_TEST',
+  // Misc runtime
+  'NEXT_QUERY_CACHE_TTL',
+] as const
+
+type Args = {
+  dryRun: boolean
+  yes: boolean
+  only: Set<string> | null
+}
+
+function parseArgs(): Args {
+  const argv = process.argv.slice(2)
+  const args: Args = { dryRun: false, yes: false, only: null }
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i]
+    if (a === '--dry-run') args.dryRun = true
+    else if (a === '--yes' || a === '-y') args.yes = true
+    else if (a === '--only') {
+      const csv = argv[++i] ?? ''
+      args.only = new Set(
+        csv
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      )
+    }
+  }
+  return args
+}
+
+function parseEnvFile(content: string): Record<string, string> {
+  const env: Record<string, string> = {}
+  for (const rawLine of content.split('\n')) {
+    const line = rawLine.trim()
+    if (!line || line.startsWith('#')) continue
+    const eq = line.indexOf('=')
+    if (eq === -1) continue
+    const key = line.slice(0, eq).trim()
+    let value = line.slice(eq + 1).trim()
+    // Strip a single matching pair of surrounding quotes.
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1)
+    }
+    if (key) env[key] = value
+  }
+  return env
+}
+
+/** Returns { merged, sources } where sources[key] = filename that supplied it. */
+function loadCascade(): {
+  merged: Record<string, string>
+  sources: Record<string, string>
+} {
+  const merged: Record<string, string> = {}
+  const sources: Record<string, string> = {}
+  for (const file of ENV_FILE_CASCADE) {
+    const path = join(process.cwd(), file)
+    if (!existsSync(path)) continue
+    const parsed = parseEnvFile(readFileSync(path, 'utf-8'))
+    for (const [key, value] of Object.entries(parsed)) {
+      if (key in merged) continue // first-write wins (higher priority file)
+      if (!value) continue
+      merged[key] = value
+      sources[key] = file
+    }
+  }
+  return { merged, sources }
+}
+
+function redact(key: string, value: string): string {
+  if (
+    key.includes('PASSWORD') ||
+    key.includes('SECRET') ||
+    key.includes('TOKEN') ||
+    key.endsWith('_API_KEY')
+  ) {
+    if (value.length <= 8) return '***'
+    return `${value.slice(0, 4)}…${value.slice(-4)}`
+  }
+  return value.length > 40 ? `${value.slice(0, 40)}…` : value
+}
+
+async function setGhSecret(key: string, value: string): Promise<boolean> {
+  const proc = Bun.spawn(['gh', 'secret', 'set', key, '--body', value], {
+    stdout: 'inherit',
+    stderr: 'inherit',
+  })
+  return (await proc.exited) === 0
+}
+
+async function promptYes(question: string): Promise<boolean> {
+  process.stdout.write(`${question} [y/N] `)
+  const reply = await new Promise<string>((resolve) => {
+    process.stdin.once('data', (d) =>
+      resolve(d.toString().trim().toLowerCase())
+    )
+  })
+  return reply === 'y' || reply === 'yes'
+}
+
+async function main() {
+  const args = parseArgs()
+  const { merged, sources } = loadCascade()
+
+  const present = ENV_FILE_CASCADE.filter((f) =>
+    existsSync(join(process.cwd(), f))
+  )
+  if (present.length === 0) {
+    console.error(
+      `❌ No env files found (looked for: ${ENV_FILE_CASCADE.join(', ')})`
+    )
+    process.exit(1)
+  }
+
+  console.log('📋 Env cascade (first match wins):')
+  for (const f of ENV_FILE_CASCADE) {
+    const marker = present.includes(f) ? '✓' : '·'
+    console.log(`   ${marker} ${f}`)
+  }
+  console.log()
+
+  const targetKeys = SECRET_KEYS.filter((k) => !args.only || args.only.has(k))
+
+  const plan: Array<{ key: string; value: string; source: string }> = []
+  const missing: string[] = []
+  for (const key of targetKeys) {
+    const value = merged[key]
+    if (value) plan.push({ key, value, source: sources[key] })
+    else missing.push(key)
+  }
+
+  console.log(
+    `🔐 Plan: ${plan.length} secret(s) to set, ${missing.length} skipped.\n`
+  )
+  for (const entry of plan) {
+    console.log(
+      `   ✓ ${entry.key.padEnd(34)} ← ${entry.source.padEnd(16)}  ${redact(entry.key, entry.value)}`
+    )
+  }
+  for (const key of missing) {
+    console.log(
+      `   · ${key.padEnd(34)}   (not found in any env file — skipping)`
+    )
+  }
+  console.log()
+
+  if (plan.length === 0) {
+    console.log('Nothing to do.')
+    return
+  }
+
+  if (args.dryRun) {
+    console.log('🛈  --dry-run set, exiting without uploading.')
+    return
+  }
+
+  if (!args.yes) {
+    const ok = await promptYes(
+      `Upload ${plan.length} secret(s) to GitHub via 'gh secret set'?`
+    )
+    if (!ok) {
+      console.log('Aborted.')
+      return
+    }
+  }
+
+  let failed = 0
+  for (const entry of plan) {
+    process.stdout.write(`   → gh secret set ${entry.key} ... `)
+    const ok = await setGhSecret(entry.key, entry.value)
+    console.log(ok ? '✅' : '❌')
+    if (!ok) failed++
+  }
+
+  console.log()
+  if (failed === 0) {
+    console.log(`✅ Done. ${plan.length} secret(s) synced to GitHub.`)
+    console.log('   Trigger a deploy so CI propagates them to the Worker:')
+    console.log('   gh workflow run "Deploy to Cloudflare Workers" --ref main')
+  } else {
+    console.log(`❌ ${failed} of ${plan.length} failed. See output above.`)
+    process.exit(1)
+  }
+}
+
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

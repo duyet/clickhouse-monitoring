@@ -132,3 +132,23 @@ export function resolveProvider(id: string): ResolvedProvider {
     isOpenRouter: config.sdk === 'openrouter',
   }
 }
+
+/**
+ * Check whether a provider has an API key configured on this deployment.
+ * Mirrors `resolveProvider`'s key cascade: provider-specific env var → LLM_API_KEY.
+ */
+export function isProviderConfigured(providerId: string): boolean {
+  const config = PROVIDERS[providerId]
+  if (!config) {
+    // Unknown providers fall through to legacy openrouter path → uses LLM_API_KEY.
+    return Boolean(process.env.LLM_API_KEY)
+  }
+  return Boolean(process.env[config.apiKeyEnvVar] || process.env.LLM_API_KEY)
+}
+
+/**
+ * Human-readable name for a provider id (for error messages).
+ */
+export function getProviderName(providerId: string): string {
+  return PROVIDERS[providerId]?.name ?? providerId
+}

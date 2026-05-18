@@ -26,6 +26,7 @@ import {
 import { AgentChatEmptyState } from '@/components/agents/chat/empty-state'
 import {
   ChatMessage,
+  generateFollowUpSuggestions,
   StreamingTypingIndicator,
 } from '@/components/agents/chat/message'
 import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
@@ -34,6 +35,7 @@ import {
   ConversationEmptyState,
   Conversation as ConversationUI,
 } from '@/components/ai-elements/conversation'
+import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
 import { Button } from '@/components/ui/button'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
@@ -130,6 +132,17 @@ export const AgentsChatArea = forwardRef<
 
   const isLoading = status === 'streaming' || status === 'submitted'
   const isEmpty = messages.length === 0
+  const lastAssistantMessage = useMemo(
+    () => findLastAssistantMessage(messages),
+    [messages]
+  )
+  const followUpSuggestions = useMemo(
+    () =>
+      lastAssistantMessage
+        ? generateFollowUpSuggestions(lastAssistantMessage)
+        : [],
+    [lastAssistantMessage]
+  )
 
   useEffect(() => {
     const previousStatus = prevStatusRef.current
@@ -322,12 +335,9 @@ export const AgentsChatArea = forwardRef<
                   message.role === 'assistant' &&
                   index === messages.length - 1
 
-                const latestAssistantMessage =
-                  findLastAssistantMessage(messages)
-                const showFollowUps =
+                const isLatestAssistant =
                   message.role === 'assistant' &&
-                  latestAssistantMessage?.id === message.id &&
-                  !isLoading
+                  lastAssistantMessage?.id === message.id
 
                 return (
                   <ChatMessage
@@ -335,14 +345,14 @@ export const AgentsChatArea = forwardRef<
                     message={message}
                     isLastUserMessage={index === lastUserMessageIndex}
                     isStreaming={isMessageStreaming}
-                    showFollowUps={showFollowUps}
                     responseDurationMs={responseDurations[message.id]}
+                    error={isLatestAssistant && !isLoading ? error : null}
                     onRegenerate={
                       index === lastUserMessageIndex
                         ? handleRegenerate
                         : undefined
                     }
-                    onSuggestionClick={submitPrompt}
+                    onErrorDismiss={handleClear}
                     onToolResult={handleToolResult}
                   />
                 )
@@ -353,7 +363,7 @@ export const AgentsChatArea = forwardRef<
         </ConversationContent>
       </ConversationUI>
 
-      {error && (
+      {error && !lastAssistantMessage && (
         <AgentErrorDisplay
           error={error}
           onRetry={handleRegenerate}
@@ -362,6 +372,19 @@ export const AgentsChatArea = forwardRef<
       )}
 
       <div className="shrink-0 px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
+        {!isLoading && followUpSuggestions.length > 0 && (
+          <div className="mb-2">
+            <Suggestions>
+              {followUpSuggestions.map((suggestion) => (
+                <Suggestion
+                  key={suggestion}
+                  suggestion={suggestion}
+                  onClick={submitPrompt}
+                />
+              ))}
+            </Suggestions>
+          </div>
+        )}
         <PromptInputTextareaWithMentions
           disabled={isLoading}
           onResolvedSubmit={submitPrompt}
@@ -372,7 +395,7 @@ export const AgentsChatArea = forwardRef<
               variant="ghost"
               size="sm"
               onClick={handleRegenerate}
-              className="h-7 text-xs"
+              className="h-7 text-xs transition-[transform,background-color] active:scale-[0.96]"
             >
               <RefreshCwIcon className="mr-1 h-3 w-3" />
               Regenerate
@@ -382,7 +405,7 @@ export const AgentsChatArea = forwardRef<
               variant="ghost"
               size="sm"
               onClick={stop}
-              className="h-7 text-xs"
+              className="h-7 text-xs transition-[transform,background-color] active:scale-[0.96]"
             >
               <SquareIcon className="mr-1 h-3 w-3" />
               Stop

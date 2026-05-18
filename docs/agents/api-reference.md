@@ -180,6 +180,11 @@ execute: async (input: unknown) => {
 | `get_running_queries` | Show currently executing queries | `hostId?` |
 | `get_slow_queries` | Get slowest completed queries | `limit?`, `hostId?` |
 | `get_merge_status` | Show active merge operations | `hostId?` |
+| `spot_issues` | Rank likely query, storage, mutation, and replication issues | `lastHours?`, `hostId?` |
+| `repair_query` | Validate and self-fix read-only SQL with EXPLAIN evidence | `sql`, `error?`, `database?`, `hostId?` |
+| `analyze_query_optimization` | Inspect plans, indexes, and table metadata for a query | `sql`, `database?`, `hostId?` |
+| `recommend_table_design` | Suggest ORDER BY, type, skip-index, and MV improvements | `database`, `table`, `lastDays?`, `hostId?` |
+| `discover_data_sources` | Search tables and columns relevant to a topic | `searchTerm`, `database?`, `hostId?` |
 
 ## API Endpoint
 

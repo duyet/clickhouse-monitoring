@@ -2,6 +2,7 @@
 
 import {
   ActivityIcon,
+  AlertTriangleIcon,
   ChevronRightIcon,
   ClockIcon,
   DatabaseIcon,
@@ -31,6 +32,21 @@ interface DefaultSuggestion {
 }
 
 const DEFAULT_SUGGESTIONS: DefaultSuggestion[] = [
+  {
+    text: 'Spot the most important issues in this cluster from the last 24 hours',
+    category: 'Diagnostics',
+    icon: <AlertTriangleIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'Recommend table design improvements for the largest table',
+    category: 'Schema',
+    icon: <DatabaseIcon className="h-3.5 w-3.5" />,
+  },
+  {
+    text: 'Find data sources related to query performance and suggest useful charts',
+    category: 'Discovery',
+    icon: <SparklesIcon className="h-3.5 w-3.5" />,
+  },
   {
     text: "What's the largest data scan ever performed on this cluster?",
     category: 'Insights',
@@ -113,10 +129,10 @@ export function AgentChatEmptyState({
                   <SparklesIcon className="h-4.5 w-4.5 text-primary" />
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                  <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl [text-wrap:balance]">
                     Inspect your ClickHouse cluster
                   </h2>
-                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base [text-wrap:pretty]">
                     Start with a live health signal or launch one of the
                     ready-made prompts below. Every card and question sends
                     directly to the agent.
@@ -173,7 +189,7 @@ export function AgentChatEmptyState({
               <button
                 key={suggestion.text}
                 onClick={() => onSubmitPrompt(suggestion.text)}
-                className="group flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/80 px-3 py-2 text-left transition-[border-color,background-color] hover:border-border hover:bg-accent/20"
+                className="group flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/80 px-3 py-2 text-left transition-[transform,border-color,background-color] hover:border-border hover:bg-accent/20 active:scale-[0.98]"
               >
                 <span className="shrink-0 text-muted-foreground">
                   {suggestion.icon}

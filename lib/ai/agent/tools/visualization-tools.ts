@@ -150,11 +150,28 @@ export function createVisualizationTools(hostId: number) {
 
         // '' sentinel means "no database filter" — ClickHouse evaluates the AND branch as false
         const tables = (await readOnlyQuery({
-          query: `SELECT database, name AS table, engine, total_rows, formatReadableSize(total_bytes) AS size, comment
-                  FROM system.tables
-                  WHERE (name ILIKE {pattern:String} OR comment ILIKE {pattern:String})
-                    AND ({database:String} = '' OR database = {database:String})
-                  ORDER BY total_bytes DESC
+          query: `WITH matched_tables AS (
+                    SELECT database, name AS table
+                    FROM system.tables
+                    WHERE (name ILIKE {pattern:String} OR comment ILIKE {pattern:String})
+                      AND ({database:String} = '' OR database = {database:String})
+                    UNION DISTINCT
+                    SELECT database, table
+                    FROM system.columns
+                    WHERE (name ILIKE {pattern:String} OR comment ILIKE {pattern:String})
+                      AND ({database:String} = '' OR database = {database:String})
+                  )
+                  SELECT
+                    t.database,
+                    t.name AS table,
+                    t.engine,
+                    t.total_rows,
+                    formatReadableSize(t.total_bytes) AS size,
+                    t.comment
+                  FROM system.tables AS t
+                  INNER JOIN matched_tables AS m
+                    ON m.database = t.database AND m.table = t.name
+                  ORDER BY t.total_bytes DESC
                   LIMIT 20`,
           hostId: effectiveHostId,
           query_params: {
@@ -181,12 +198,21 @@ export function createVisualizationTools(hostId: number) {
         const sourcesWithColumns = await Promise.all(
           tables.map(async (tbl) => {
             const columns = (await readOnlyQuery({
-              query: `SELECT name, type FROM system.columns
+              query: `SELECT name, type, comment FROM system.columns
                       WHERE database = {database:String} AND table = {table:String}
                       ORDER BY position`,
               hostId: effectiveHostId,
               query_params: { database: tbl.database, table: tbl.table },
-            })) as Array<{ name: string; type: string }>
+            })) as Array<{ name: string; type: string; comment?: string }>
+
+            const search = searchTerm.toLowerCase()
+            const matchedColumns = columns
+              .filter(
+                (col) =>
+                  col.name.toLowerCase().includes(search) ||
+                  (col.comment ?? '').toLowerCase().includes(search)
+              )
+              .map((col) => ({ name: col.name, type: col.type }))
 
             const measures = columns
               .filter((col) => isNumericType(col.type))
@@ -203,6 +229,7 @@ export function createVisualizationTools(hostId: number) {
               totalRows: tbl.total_rows,
               size: tbl.size,
               comment: tbl.comment ?? '',
+              matchedColumns,
               measures,
               dimensions,
             }

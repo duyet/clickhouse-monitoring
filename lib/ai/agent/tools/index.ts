@@ -14,6 +14,7 @@ import { createClusterTools } from './cluster-tools'
 import { createComparisonTools } from './comparison-tools'
 import { createControlTools } from './control-tools'
 import { createDashboardTools } from './dashboard-tools'
+import { createDiagnosticsTools } from './diagnostics-tools'
 import { createHealthTools } from './health-tools'
 import { createIncidentTools } from './incident-tools'
 import { createInsightsTools } from './insights-tools'
@@ -45,6 +46,9 @@ export function createAllTools(hostId: number) {
 
     // Query analysis
     ...createQueryTools(hostId),
+
+    // Diagnostics and recommendations
+    ...createDiagnosticsTools(hostId),
 
     // System health
     ...createHealthTools(hostId),

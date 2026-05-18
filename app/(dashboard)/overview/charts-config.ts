@@ -131,7 +131,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Query Count',
     lastHours: 24,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'area',
   },
   {
@@ -140,7 +140,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Query Count by User',
     lastHours: 24,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'bar',
   },
   {
@@ -149,8 +149,17 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Avg Query Duration',
     lastHours: 24 * 14,
     interval: 'toStartOfDay',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'bar',
+  },
+  {
+    id: 'query-duration-percentiles-overview',
+    component: ChartQueryDurationPercentiles,
+    title: 'Query Duration p50/p95/p99',
+    lastHours: 24 * 7,
+    interval: 'toStartOfHour',
+    className: 'w-full h-full',
+    type: 'area',
   },
   {
     id: 'failed-query-count',
@@ -158,14 +167,14 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Failed Queries',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'area',
   },
   {
     id: 'memory-usage',
     component: ChartMemoryUsage,
     title: 'Memory Usage',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     interval: 'toStartOfTenMinutes',
     lastHours: 24,
     type: 'area',
@@ -174,15 +183,24 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'cpu-usage',
     component: ChartCPUUsage,
     title: 'CPU Usage',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     interval: 'toStartOfTenMinutes',
     lastHours: 24,
     type: 'area',
   },
   {
+    id: 'connections-pool-overview',
+    component: ChartConnectionsPool,
+    title: 'Connection Pool',
+    lastHours: 24,
+    interval: 'toStartOfFiveMinutes',
+    className: 'w-full h-full',
+    type: 'area',
+  },
+  {
     id: 'disks-usage-overview',
     component: ChartDisksUsage,
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     title: 'Disks Usage Trend',
     interval: 'toStartOfDay',
     lastHours: 24 * 30,
@@ -192,8 +210,17 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'top-table-size',
     component: ChartTopTableSize,
     title: 'Top Tables by Size',
-    className: 'w-full h-full',
+    className: 'w-full h-full row-span-2',
     type: 'custom',
+  },
+  {
+    id: 'new-parts-created-overview',
+    component: ChartNewPartsCreated,
+    title: 'New Parts Created',
+    lastHours: 24,
+    interval: 'toStartOfHour',
+    className: 'w-full h-full',
+    type: 'bar',
   },
   {
     id: 'merge-count-overview',
@@ -201,14 +228,21 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Merge and PartMutation',
     lastHours: 24,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
+    type: 'custom',
+  },
+  {
+    id: 'mutation-progress-overview',
+    component: ChartMutationProgress,
+    title: 'Mutation Progress',
+    className: 'w-full h-full',
     type: 'custom',
   },
   {
     id: 'top-memory-queries',
     component: ChartTopMemoryQueries,
     title: 'Top Memory Queries',
-    className: 'w-full h-full',
+    className: 'w-full h-full row-span-2',
     type: 'custom',
   },
   {
@@ -217,7 +251,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Disk I/O Throughput',
     lastHours: 24,
     interval: 'toStartOfFifteenMinutes',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'area',
   },
 ]
@@ -232,7 +266,7 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Query Count',
     lastHours: 24 * 14,
     interval: 'toStartOfDay',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'bar',
   },
   {
@@ -241,7 +275,7 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Avg Query Memory Usage',
     lastHours: 24 * 14,
     interval: 'toStartOfDay',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'bar',
   },
   {
@@ -273,7 +307,7 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Query Duration Percentiles',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'area',
   },
 ]
@@ -292,7 +326,7 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'disks-usage',
     component: ChartDisksUsage,
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     title: 'Disks Usage',
     interval: 'toStartOfDay',
     lastHours: 24 * 30,
@@ -301,7 +335,7 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'disk-usage-trend',
     component: ChartDiskUsageTrend,
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     title: 'Disk Usage Trend',
     interval: 'toStartOfDay',
     lastHours: 24 * 7,
@@ -317,7 +351,7 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'data-freshness',
     component: ChartDataFreshness,
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     title: 'Data Freshness',
     interval: 'toStartOfDay',
     lastHours: 24 * 7,
@@ -333,7 +367,7 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'new-parts-created',
     component: ChartNewPartsCreated,
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     title: 'New Parts Created',
     interval: 'toStartOfHour',
     lastHours: 24,
@@ -359,7 +393,7 @@ export const OPERATIONS_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Merge and PartMutation',
     lastHours: 24,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'custom',
   },
   {
@@ -368,7 +402,7 @@ export const OPERATIONS_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Merge Avg Duration',
     lastHours: 24 * 14,
     interval: 'toStartOfDay',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'bar',
   },
   {
@@ -391,7 +425,7 @@ export const OPERATIONS_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Readonly Replicas',
     lastHours: 24,
     interval: 'toStartOfFifteenMinutes',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'bar',
   },
   {
@@ -405,7 +439,7 @@ export const OPERATIONS_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'mutation-progress',
     component: ChartMutationProgress,
     title: 'Mutation Progress',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'custom',
   },
 ]
@@ -420,14 +454,14 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Failed Queries',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'area',
   },
   {
     id: 'keeper-exception',
     component: ChartKeeperException,
     title: 'ZooKeeper/Keeper Exceptions',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'bar',
   },
   {
@@ -436,7 +470,7 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'ZooKeeper Wait Time',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'bar',
   },
   {
@@ -445,7 +479,7 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'ZooKeeper Requests',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'bar',
   },
   {
@@ -454,7 +488,7 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Connection Pool',
     lastHours: 24,
     interval: 'toStartOfFiveMinutes',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'area',
   },
   {
@@ -463,7 +497,7 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'OOM Killed Queries',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'area',
   },
   {
@@ -472,7 +506,7 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Cancelled Queries',
     lastHours: 24 * 7,
     interval: 'toStartOfHour',
-    className: 'w-full h-full min-h-[320px]',
+    className: 'w-full h-full',
     type: 'custom',
   },
 ]
@@ -482,9 +516,9 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
 // ============================================================================
 
 const GRID_LAYOUT_3_COL =
-  'grid auto-rows-fr items-stretch gap-3 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 min-w-0'
+  'grid auto-rows-[380px] items-stretch gap-3 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 min-w-0'
 const GRID_LAYOUT_2_COL =
-  'grid grid-cols-1 items-stretch gap-3 md:grid-cols-2 min-w-0'
+  'grid auto-rows-[380px] grid-cols-1 items-stretch gap-3 md:grid-cols-2 min-w-0'
 
 /**
  * All tab configurations for the overview page

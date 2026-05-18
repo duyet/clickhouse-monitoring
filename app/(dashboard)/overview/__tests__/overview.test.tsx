@@ -96,8 +96,8 @@ describe('charts-config', () => {
   })
 
   describe('Overview Tab Charts', () => {
-    it('should have 11 charts in the overview tab', () => {
-      expect(OVERVIEW_TAB_CHARTS).toHaveLength(11)
+    it('should have 15 charts in the overview tab', () => {
+      expect(OVERVIEW_TAB_CHARTS).toHaveLength(15)
     })
 
     it('should have unique chart IDs', () => {
@@ -268,7 +268,7 @@ describe('charts-config', () => {
     describe('getChartsForTab', () => {
       it('should return charts for the overview tab', () => {
         const charts = getChartsForTab('overview')
-        expect(charts).toHaveLength(11)
+        expect(charts).toHaveLength(15)
         expect(charts[0].id).toBe('query-count-24h')
       })
 
