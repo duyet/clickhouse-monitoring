@@ -13,6 +13,7 @@ const AGENT_API_TOKEN = 'test-agent-token'
 let mockClerkUserId: string | null = null
 let GET: (request: Request) => Promise<Response>
 
+mock.module('server-only', () => ({}))
 mock.module('@clerk/nextjs/server', () => ({
   auth: async () => ({
     userId: mockClerkUserId,
@@ -27,6 +28,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
+  delete process.env.CHM_AUTH_PROVIDER
   delete process.env.CHM_FEATURE_AGENT_ACCESS
   mockClerkUserId = null
 })
@@ -77,6 +79,7 @@ describe('GET /api/v1/agents/models', () => {
   })
 
   test('leaves capabilities unknown when OpenRouter omits a curated model', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     globalThis.fetch = async () =>
       new Response(
         JSON.stringify({
@@ -97,7 +100,9 @@ describe('GET /api/v1/agents/models', () => {
         { status: 200 }
       )
 
-    const response = await GET(modelsRequest())
+    const response = await GET(
+      modelsRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
     const body = await response.json()
     const omittedModel = body.models.find(
       (model: { id: string }) => model.id === 'openrouter:qwen/qwen3-coder:free'

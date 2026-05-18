@@ -4,6 +4,7 @@ const AGENT_API_TOKEN = 'test-agent-token'
 let mockClerkUserId: string | null = null
 let GET: (request: Request) => Promise<Response>
 
+mock.module('server-only', () => ({}))
 mock.module('@clerk/nextjs/server', () => ({
   auth: async () => ({
     userId: mockClerkUserId,
@@ -18,6 +19,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
+  delete process.env.CHM_AUTH_PROVIDER
   delete process.env.CHM_FEATURE_AGENT_ACCESS
   delete process.env.LLM_API_KEY
   delete process.env.LLM_API_BASE
@@ -34,7 +36,9 @@ describe('GET /api/v1/agents/config-check', () => {
     })
   }
 
-  test('skips auth when auth provider is disabled', async () => {
+  test('skips auth when agent access is public and auth provider is disabled', async () => {
+    process.env.CHM_FEATURE_AGENT_ACCESS = 'public'
+
     const response = await GET(configRequest())
 
     expect(response.status).toBe(200)
@@ -71,9 +75,12 @@ describe('GET /api/v1/agents/config-check', () => {
   })
 
   test('treats ANYROUTER_API_KEY as sufficient provider configuration', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     process.env.ANYROUTER_API_KEY = 'sk-ar-test'
 
-    const response = await GET(configRequest())
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
     const body = await response.json()
 
     expect(response.status).toBe(200)

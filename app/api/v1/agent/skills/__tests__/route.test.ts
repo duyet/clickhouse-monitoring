@@ -28,6 +28,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
+  delete process.env.CHM_AUTH_PROVIDER
   delete process.env.CHM_FEATURE_AGENT_ACCESS
   mockClerkUserId = null
 })
@@ -39,7 +40,9 @@ describe('GET /api/v1/agent/skills', () => {
     })
   }
 
-  test('skips auth when auth provider is disabled', async () => {
+  test('skips auth when agent access is public and auth provider is disabled', async () => {
+    process.env.CHM_FEATURE_AGENT_ACCESS = 'public'
+
     const response = await GET(skillsRequest())
 
     expect(response.status).toBe(200)
