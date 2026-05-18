@@ -2,11 +2,12 @@
 
 'use no memo'
 
-import { RefreshCwIcon } from 'lucide-react'
+import { ChevronLeftIcon, ChevronRightIcon, RefreshCwIcon } from 'lucide-react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import type { Spec } from '@json-render/core'
 import type { UIMessage } from 'ai'
+import type { AgentError } from '@/lib/ai/agent/errors'
 
 import {
   type DataPart,
@@ -34,11 +35,13 @@ import {
   TaskTrigger,
 } from '@/components/ai-elements/task'
 import { getMessageStats } from '@/lib/hooks/use-agent-session-stats'
-import { cn, formatDuration } from '@/lib/utils'
+import { formatDuration } from '@/lib/utils'
 
 import '../markdown-code.css'
 
+import { MessageDetailsDialog } from './message-details-dialog'
 import { type AgentToolPart, ToolCallPart } from './tool-output'
+import { parseAgentError } from '@/lib/ai/agent/errors'
 import {
   AGENT_JSON_RENDER_MAX_ELEMENT_COUNT,
   AGENT_JSON_RENDER_MAX_SPEC_BYTES,
@@ -47,16 +50,20 @@ import {
 } from '@/lib/ai/agent/json-render-catalog'
 import { AGENT_JSON_RENDER_CATALOG } from '@/lib/ai/agent/json-render-catalog-with-schema'
 import { AGENT_JSON_RENDER_REGISTRY } from '@/lib/ai/agent/json-render-registry'
+import { extractMessageUsage } from '@/lib/ai/agent/message-metadata'
 
 const jsonRenderTextEncoder = new TextEncoder()
 
 interface ChatMessageProps {
   readonly message: UIMessage
-  readonly isLastUserMessage?: boolean
   readonly isStreaming?: boolean
   readonly responseDurationMs?: number
   readonly error?: Error | null
+  readonly followUpError?: AgentError | null
   readonly onRegenerate?: () => void
+  readonly branchIndex?: number
+  readonly branchCount?: number
+  readonly onBranchChange?: (index: number) => void
   readonly onToolResult?: (toolCallId: string, result: string) => void
   readonly onErrorDismiss?: () => void
 }
@@ -374,28 +381,93 @@ function getStablePartKey(
 function MessageStatsFooter({
   message,
   responseDurationMs,
+  error,
+  followUpError,
+  onRegenerate,
+  branchIndex = 0,
+  branchCount = 1,
+  onBranchChange,
 }: {
   readonly message: UIMessage
   readonly responseDurationMs?: number
+  readonly error?: AgentError | null
+  readonly followUpError?: AgentError | null
+  readonly onRegenerate?: () => void
+  readonly branchIndex?: number
+  readonly branchCount?: number
+  readonly onBranchChange?: (index: number) => void
 }) {
   const stats = useMemo(() => getMessageStats(message), [message])
-
-  if (stats.toolCallCount === 0) return null
+  const usage = useMemo(() => extractMessageUsage(message), [message])
 
   const parts: string[] = []
   if (responseDurationMs && responseDurationMs > 0) {
     parts.push(formatDuration(responseDurationMs))
   }
-  parts.push(
-    `${stats.toolCallCount} tool ${stats.toolCallCount === 1 ? 'call' : 'calls'}`
-  )
+  if (usage?.totalTokens) {
+    parts.push(`${usage.totalTokens.toLocaleString()} tokens`)
+  }
+  if (stats.toolCallCount > 0) {
+    parts.push(
+      `${stats.toolCallCount} tool ${
+        stats.toolCallCount === 1 ? 'call' : 'calls'
+      }`
+    )
+  }
   if (stats.totalToolDurationMs > 0) {
     parts.push(`${formatDuration(stats.totalToolDurationMs)} in tools`)
   }
 
   return (
-    <div className="mt-2 select-none pt-1.5 text-[11px] text-muted-foreground/60">
-      {parts.join(' · ')}
+    <div className="mt-2 flex select-none flex-wrap items-center gap-2 pt-1.5 text-[11px] text-muted-foreground/60">
+      <span className="min-w-0 truncate">
+        {parts.length > 0 ? parts.join(' · ') : 'Response metadata'}
+      </span>
+      {branchCount > 1 && onBranchChange && (
+        <div className="inline-flex h-7 items-center rounded-full border border-border/60 bg-background text-[11px] text-muted-foreground">
+          <button
+            type="button"
+            className="flex h-6 w-6 items-center justify-center rounded-l-full transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+            disabled={branchIndex <= 0}
+            onClick={() => onBranchChange(Math.max(0, branchIndex - 1))}
+            aria-label="Show previous response branch"
+          >
+            <ChevronLeftIcon className="h-3.5 w-3.5" />
+          </button>
+          <span className="min-w-9 px-1 text-center font-mono tabular-nums">
+            &lt;{branchIndex + 1}/{branchCount}&gt;
+          </span>
+          <button
+            type="button"
+            className="flex h-6 w-6 items-center justify-center rounded-r-full transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+            disabled={branchIndex >= branchCount - 1}
+            onClick={() =>
+              onBranchChange(Math.min(branchCount - 1, branchIndex + 1))
+            }
+            aria-label="Show next response branch"
+          >
+            <ChevronRightIcon className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+      {onRegenerate && (
+        <button
+          type="button"
+          onClick={onRegenerate}
+          className="inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-[11px] text-muted-foreground transition-[transform,background-color,color] hover:bg-muted hover:text-foreground active:scale-[0.96]"
+          title="Regenerate response"
+          aria-label="Regenerate response"
+        >
+          <RefreshCwIcon className="h-3.5 w-3.5" />
+          Regenerate
+        </button>
+      )}
+      <MessageDetailsDialog
+        message={message}
+        responseDurationMs={responseDurationMs}
+        error={error}
+        followUpError={followUpError}
+      />
     </div>
   )
 }
@@ -564,11 +636,14 @@ function MarkdownContent({ text }: { readonly text: string }) {
 
 export function ChatMessage({
   message,
-  isLastUserMessage,
   isStreaming,
   responseDurationMs,
   error,
+  followUpError,
   onRegenerate,
+  branchIndex,
+  branchCount,
+  onBranchChange,
   onToolResult,
   onErrorDismiss,
 }: ChatMessageProps) {
@@ -579,16 +654,15 @@ export function ChatMessage({
     () => getSafeJsonRenderMessageParts(message.parts),
     [message.parts]
   )
+  const classifiedError = useMemo(
+    () => (error ? parseAgentError(error) : null),
+    [error]
+  )
 
   return (
     <Message from={isUser ? 'user' : 'assistant'}>
       <MessageContent>
-        <div
-          className={cn(
-            'group relative',
-            isLastUserMessage && isUser && onRegenerate && 'pr-8'
-          )}
-        >
+        <div className="group relative">
           {safeParts.map((part, index) => {
             const stableKey = getStablePartKey(message.id, part, index)
 
@@ -658,22 +732,18 @@ export function ChatMessage({
               )}
             </div>
           )}
-
-          {isLastUserMessage && isUser && onRegenerate && (
-            <button
-              onClick={onRegenerate}
-              className="absolute right-0 top-0 rounded p-1 opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
-              title="Regenerate response"
-            >
-              <RefreshCwIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-            </button>
-          )}
         </div>
 
         {isAssistant && !isStreaming && (
           <MessageStatsFooter
             message={message}
             responseDurationMs={responseDurationMs}
+            error={classifiedError}
+            followUpError={followUpError}
+            onRegenerate={onRegenerate}
+            branchIndex={branchIndex}
+            branchCount={branchCount}
+            onBranchChange={onBranchChange}
           />
         )}
 

@@ -10,11 +10,9 @@ import 'server-only'
 
 import type { ProviderOptions } from '@ai-sdk/provider-utils'
 
-import { parseModelId, resolveProvider } from '../providers'
 import { createMcpTools } from './mcp-tool-adapter'
 import { CLICKHOUSE_AGENT_INSTRUCTIONS } from './prompts/clickhouse-instructions'
-import { createOpenAI } from '@ai-sdk/openai'
-import { createOpenRouter } from '@openrouter/ai-sdk-provider'
+import { DEFAULT_MODEL, resolveAgentChatModel } from './provider-chat-model'
 import { stepCountIs, ToolLoopAgent } from 'ai'
 
 function filterTools<T extends Record<string, unknown>>(
@@ -29,24 +27,7 @@ function filterTools<T extends Record<string, unknown>>(
   return filtered
 }
 
-const DEFAULT_MODEL = process.env.LLM_MODEL || 'openrouter:openrouter/auto'
-
-function getOpenRouterFreeFallbackModel(): string {
-  return process.env.OPENROUTER_FREE_FALLBACK_MODEL || 'qwen/qwen3-coder:free'
-}
-
-function isAnthropicModel(model: string): boolean {
-  return (
-    model.startsWith('anthropic/') || model.toLowerCase().includes('claude')
-  )
-}
-
 const DEFAULT_MAX_STEPS = 30
-
-export const DEFAULT_APP_REFERER = 'https://chmonitor.dev'
-export const DEFAULT_APP_NAME = 'ClickHouse Monitoring'
-export const DEFAULT_APP_CATEGORY = 'programming-app'
-export const DEFAULT_APP_VERSION = '0.2.0'
 
 export function createClickHouseAgent(options: {
   /** Model ID in `provider:model` format (e.g., `openrouter:openrouter/free`) */
@@ -69,132 +50,13 @@ export function createClickHouseAgent(options: {
     referer,
   } = options
 
-  const resolved = resolveProvider(model)
-  const { model: modelId } = parseModelId(model)
-
   const allTools = createMcpTools(hostId)
   const tools = filterTools(allTools, disabledTools)
   const hasTools = Object.keys(tools).length > 0
-
-  if (resolved.isOpenRouter) {
-    return createOpenRouterAgent({
-      resolved,
-      modelId,
-      tools,
-      hasTools,
-      systemPrompt,
-      maxSteps,
-      providerOptions,
-      referer,
-    })
-  }
-
-  return createOpenAIAgent({
-    resolved,
-    modelId,
-    tools,
-    systemPrompt,
-    maxSteps,
-    referer,
-  })
-}
-
-type ToolSet = ReturnType<typeof createMcpTools>
-
-/**
- * Resolve app attribution metadata from env + defaults.
- * `APP_*` is the canonical name; `OPENROUTER_*` is supported as a fallback
- * so existing deployments that set the older vars keep working.
- */
-function getAppMetadata(referer?: string) {
-  return {
-    referer:
-      referer ||
-      process.env.APP_REFERER ||
-      process.env.OPENROUTER_REFERER ||
-      DEFAULT_APP_REFERER,
-    name:
-      process.env.APP_NAME ||
-      process.env.OPENROUTER_APP_NAME ||
-      DEFAULT_APP_NAME,
-    category: process.env.APP_CATEGORY || DEFAULT_APP_CATEGORY,
-    version: process.env.APP_VERSION || DEFAULT_APP_VERSION,
-  }
-}
-
-function buildProviderHeaders(
-  providerId: string,
-  referer?: string
-): Record<string, string> | undefined {
-  if (providerId === 'anyrouter') {
-    const meta = getAppMetadata(referer)
-    return {
-      'X-AnyRouter-Title': meta.name,
-      'X-AnyRouter-Source': meta.category,
-      'X-AnyRouter-Version': meta.version,
-      'HTTP-Referer': meta.referer,
-    }
-  }
-  return undefined
-}
-
-function createOpenRouterAgent(opts: {
-  resolved: ReturnType<typeof resolveProvider>
-  modelId: string
-  tools: ToolSet
-  hasTools: boolean
-  systemPrompt: string
-  maxSteps: number
-  providerOptions?: ProviderOptions
-  referer?: string
-}) {
-  const {
-    resolved,
-    modelId,
-    tools,
+  const { model: modelInstance } = resolveAgentChatModel({
+    model,
     hasTools,
-    systemPrompt,
-    maxSteps,
-    providerOptions,
     referer,
-  } = opts
-
-  const meta = getAppMetadata(referer)
-
-  const openrouter = createOpenRouter({
-    apiKey: resolved.apiKey,
-    headers: {
-      'HTTP-Referer': meta.referer,
-      'X-OpenRouter-Title': meta.name,
-      'X-OpenRouter-Categories': meta.category,
-    },
-  })
-
-  // Strip 'openrouter/' prefix for OpenRouter's chat model resolution.
-  // Map `openrouter/free` to a concrete free tool-capable model.
-  const normalizedModelId = modelId.startsWith('openrouter/')
-    ? modelId.replace('openrouter/', '')
-    : modelId
-  const resolvedModelId =
-    normalizedModelId === 'free'
-      ? getOpenRouterFreeFallbackModel()
-      : normalizedModelId
-  if (normalizedModelId === 'free') {
-    console.warn(
-      `[Agent] openrouter/free resolved to fallback: ${resolvedModelId}`
-    )
-  }
-
-  const usePromptCache = isAnthropicModel(resolvedModelId)
-  if (usePromptCache) {
-    console.log(
-      `[Agent] Prompt caching enabled for Anthropic model: ${resolvedModelId}`
-    )
-  }
-
-  const modelInstance = openrouter.chat(resolvedModelId, {
-    ...(hasTools && { provider: { require_parameters: true } }),
-    ...(usePromptCache && { cache_control: { type: 'ephemeral' } }),
   })
 
   return new ToolLoopAgent({
@@ -204,33 +66,5 @@ function createOpenRouterAgent(opts: {
     instructions: systemPrompt,
     stopWhen: stepCountIs(maxSteps),
     ...(providerOptions && { providerOptions }),
-  })
-}
-
-function createOpenAIAgent(opts: {
-  resolved: ReturnType<typeof resolveProvider>
-  modelId: string
-  tools: ToolSet
-  systemPrompt: string
-  maxSteps: number
-  referer?: string
-}) {
-  const { resolved, modelId, tools, systemPrompt, maxSteps, referer } = opts
-
-  const headers = buildProviderHeaders(resolved.providerId, referer)
-
-  const openai = createOpenAI({
-    apiKey: resolved.apiKey,
-    baseURL: resolved.baseURL,
-    name: resolved.providerId,
-    ...(headers && { headers }),
-  })
-
-  return new ToolLoopAgent({
-    id: 'clickhouse-agent',
-    model: openai.chat(modelId),
-    tools,
-    instructions: systemPrompt,
-    stopWhen: stepCountIs(maxSteps),
   })
 }

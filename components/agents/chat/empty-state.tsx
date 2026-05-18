@@ -2,11 +2,11 @@
 
 import {
   ActivityIcon,
-  AlertTriangleIcon,
   ChevronRightIcon,
   ClockIcon,
   DatabaseIcon,
   HardDriveIcon,
+  ServerIcon,
   SparklesIcon,
   TableIcon,
   UserIcon,
@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 
 import type { ReactNode } from 'react'
+import type { SuggestedPromptCategory } from '@/lib/ai/agent/suggested-prompts'
 
 import { AgentInsightCards } from '@/components/agents/agent-insight-cards'
 import { Badge } from '@/components/ui/badge'
@@ -24,80 +25,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { getSuggestedPrompts } from '@/lib/ai/agent/suggested-prompts'
 
-interface DefaultSuggestion {
-  readonly text: string
-  readonly category: string
-  readonly icon: ReactNode
+const CATEGORY_ICONS: Record<SuggestedPromptCategory, ReactNode> = {
+  Insights: <ZapIcon className="h-3.5 w-3.5" />,
+  Performance: <ActivityIcon className="h-3.5 w-3.5" />,
+  Storage: <HardDriveIcon className="h-3.5 w-3.5" />,
+  Schema: <DatabaseIcon className="h-3.5 w-3.5" />,
+  System: <ServerIcon className="h-3.5 w-3.5" />,
+  Replication: <TableIcon className="h-3.5 w-3.5" />,
+  Operations: <ClockIcon className="h-3.5 w-3.5" />,
+  Access: <UserIcon className="h-3.5 w-3.5" />,
 }
-
-const DEFAULT_SUGGESTIONS: DefaultSuggestion[] = [
-  {
-    text: 'Spot the most important issues in this cluster from the last 24 hours',
-    category: 'Diagnostics',
-    icon: <AlertTriangleIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'Recommend table design improvements for the largest table',
-    category: 'Schema',
-    icon: <DatabaseIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'Find data sources related to query performance and suggest useful charts',
-    category: 'Discovery',
-    icon: <SparklesIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: "What's the largest data scan ever performed on this cluster?",
-    category: 'Insights',
-    icon: <ZapIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'Show me the fastest query scans — how fast can this cluster read data?',
-    category: 'Performance',
-    icon: <ActivityIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'What are the biggest tables by disk usage?',
-    category: 'Storage',
-    icon: <HardDriveIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'Which table has the most rows?',
-    category: 'Storage',
-    icon: <TableIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'What databases are available and which ones have the most tables?',
-    category: 'Schema',
-    icon: <DatabaseIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'What are the slowest queries from the past 24 hours?',
-    category: 'Performance',
-    icon: <ClockIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'Show me column-level size breakdown for the largest table',
-    category: 'Storage',
-    icon: <HardDriveIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'Which tables have the best and worst compression ratios?',
-    category: 'Compression',
-    icon: <DatabaseIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'What is the current CPU, memory, and disk usage?',
-    category: 'System',
-    icon: <ZapIcon className="h-3.5 w-3.5" />,
-  },
-  {
-    text: 'Which users are consuming the most resources?',
-    category: 'Access',
-    icon: <UserIcon className="h-3.5 w-3.5" />,
-  },
-]
 
 const GETTING_STARTED_FEATURES = [
   'Live metrics',
@@ -112,6 +51,8 @@ interface AgentChatEmptyStateProps {
 export function AgentChatEmptyState({
   onSubmitPrompt,
 }: AgentChatEmptyStateProps) {
+  const suggestions = getSuggestedPrompts({ limit: 8 })
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 sm:px-6">
       <Card className="overflow-hidden border-border/60 bg-gradient-to-br from-background via-background to-muted/30">
@@ -184,15 +125,15 @@ export function AgentChatEmptyState({
           </div>
         </CardHeader>
         <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
-          <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-            {DEFAULT_SUGGESTIONS.map((suggestion) => (
+          <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
+            {suggestions.map((suggestion) => (
               <button
                 key={suggestion.text}
                 onClick={() => onSubmitPrompt(suggestion.text)}
-                className="group flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/80 px-3 py-2 text-left transition-[transform,border-color,background-color] hover:border-border hover:bg-accent/20 active:scale-[0.98]"
+                className="group flex min-h-10 items-center gap-2.5 rounded-lg border border-border/60 bg-background/80 px-3 py-2 text-left transition-[transform,border-color,background-color] hover:border-border hover:bg-accent/20 active:scale-[0.96]"
               >
                 <span className="shrink-0 text-muted-foreground">
-                  {suggestion.icon}
+                  {CATEGORY_ICONS[suggestion.category]}
                 </span>
                 <span className="min-w-0 flex-1 text-sm text-foreground">
                   {suggestion.text}

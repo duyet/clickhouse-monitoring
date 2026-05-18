@@ -2,6 +2,7 @@
 
 import {
   BookOpenIcon,
+  CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   DatabaseIcon,
@@ -11,8 +12,7 @@ import {
   RefreshCwIcon,
 } from 'lucide-react'
 
-// ChevronDownIcon already imported above
-
+import type { UIMessage } from 'ai'
 import type { ReactNode } from 'react'
 import type {
   McpResource,
@@ -50,11 +50,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { SUGGESTED_PROMPTS } from '@/lib/ai/agent/metadata'
 import {
   getSkillsMetadata,
   loadSkillContent,
 } from '@/lib/ai/agent/skills/registry'
+import { getSuggestedPrompts } from '@/lib/ai/agent/suggested-prompts'
 import { useAgentModel } from '@/lib/hooks/use-agent-model'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useMcpServerInfo } from '@/lib/swr'
@@ -63,6 +63,8 @@ import { cn } from '@/lib/utils'
 
 interface AgentsSidebarProps {
   hostId: number
+  messages?: readonly UIMessage[]
+  onSubmitPrompt?: (prompt: string) => void
   isOpen?: boolean
   onOpenChange?: (open: boolean) => void
 }
@@ -79,9 +81,9 @@ function SidebarSection({
   children: ReactNode
 }) {
   return (
-    <section>
-      <div className="flex items-center justify-between gap-3 px-3 py-2">
-        <div className="flex min-w-0 items-center gap-1.5 truncate text-sm font-medium tracking-tight text-foreground">
+    <section className="border-border/35 border-b last:border-b-0">
+      <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+        <div className="flex min-w-0 items-center gap-1.5 truncate text-[13px] font-semibold tracking-tight text-foreground">
           {title}
           {description && (
             <Tooltip>
@@ -96,18 +98,18 @@ function SidebarSection({
         </div>
         {action}
       </div>
-      <div className="pt-1 pb-3">{children}</div>
+      <div className="px-2 pb-2">{children}</div>
     </section>
   )
 }
 
 function TreeTriggerIcon({ open }: { open: boolean }) {
   return (
-    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border bg-background text-muted-foreground">
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border bg-background text-muted-foreground">
       {open ? (
-        <ChevronDownIcon className="h-3.5 w-3.5" />
+        <ChevronDownIcon className="h-3 w-3" />
       ) : (
-        <ChevronRightIcon className="h-3.5 w-3.5" />
+        <ChevronRightIcon className="h-3 w-3" />
       )}
     </span>
   )
@@ -123,7 +125,7 @@ function HostSelector({ hostId }: { readonly hostId: number }) {
       title="Host"
       description="Switch hosts from the page header."
     >
-      <div className="flex h-10 items-center gap-2 rounded-lg border border-border/60 bg-background/70 px-3 text-sm shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+      <div className="flex h-8 items-center gap-2 rounded-md border border-border/60 bg-background/70 px-2 text-xs shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
         <MonitorIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         <span className="truncate text-foreground tabular-nums">{label}</span>
       </div>
@@ -149,6 +151,11 @@ function getProviderFromModelId(modelId: string): string {
   return 'openrouter'
 }
 
+function getModelName(modelId: string): string {
+  const idx = modelId.indexOf(':')
+  return idx === -1 ? modelId : modelId.slice(idx + 1)
+}
+
 function ModelSelectorComponent() {
   const { model, models, setModel } = useAgentModel()
   const [open, setOpen] = useState(false)
@@ -156,6 +163,7 @@ function ModelSelectorComponent() {
 
   const currentModel = models.find((item) => item.id === model)
   const currentProvider = getProviderFromModelId(model)
+  const currentModelName = currentModel?.name ?? getModelName(model)
   const trimmedCustomInput = customInput.trim()
 
   const handleCustomModelSubmit = () => {
@@ -170,46 +178,50 @@ function ModelSelectorComponent() {
         <ModelSelectorTrigger asChild>
           <Button
             variant="outline"
-            className="h-auto w-full justify-between rounded-lg border-border/60 bg-background/70 px-3 py-2.5 shadow-[0_1px_0_0_rgba(0,0,0,0.02)] transition-[transform,background-color,border-color] active:scale-[0.99]"
+            className="h-9 w-full justify-between rounded-md border-border/60 bg-background/70 px-2 py-1.5 shadow-[0_1px_0_0_rgba(0,0,0,0.02)] transition-[transform,background-color,border-color] hover:bg-muted/20 active:scale-[0.99]"
             aria-label="Select model"
           >
-            <div className="flex min-w-0 items-center gap-3 text-left">
+            <div className="flex min-w-0 items-center gap-2 overflow-hidden text-left">
               <ModelSelectorLogo
                 provider={currentProvider}
                 className="size-3.5 shrink-0 dark:invert-0"
               />
-              <span className="flex min-w-0 items-center gap-1.5 font-mono text-[13px] font-medium text-foreground">
+              <span className="flex min-w-0 items-center gap-1.5 overflow-hidden font-mono text-xs font-medium text-foreground">
                 <Badge
                   variant="outline"
                   className="shrink-0 rounded-full px-1.5 py-0 text-[10px]"
                 >
                   {currentProvider}
                 </Badge>
-                <span className="min-w-0 truncate">
-                  {currentModel?.name ?? model}
-                </span>
+                <span className="min-w-0 truncate">{currentModelName}</span>
                 {currentModel?.available === false ? (
                   <Badge
                     variant="outline"
                     className="shrink-0 rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
                   >
-                    Not configured
+                    No key
                   </Badge>
                 ) : null}
               </span>
             </div>
-            <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronDownIcon className="ml-1 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           </Button>
         </ModelSelectorTrigger>
 
         <ModelSelectorContent
           title="Select Model"
-          className="max-w-[min(92vw,44rem)] border-border/70 bg-background/95"
+          className="max-w-[min(92vw,34rem)] overflow-hidden border-border/70 bg-background/95 shadow-2xl [&>button]:right-2.5 [&>button]:top-2.5 [&>button]:h-7 [&>button]:w-7 [&>button]:rounded-md"
         >
-          <ModelSelectorInput placeholder="Search models..." />
-          <ModelSelectorList className="max-h-[24rem]">
+          <ModelSelectorInput
+            placeholder="Search models..."
+            className="h-9 py-2 pr-8 text-[13px]"
+          />
+          <ModelSelectorList className="max-h-[min(58vh,22rem)] p-1 [scrollbar-width:thin]">
             <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
-            <ModelSelectorGroup heading="Available Models">
+            <ModelSelectorGroup
+              heading="Available models"
+              className="p-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em]"
+            >
               {models.map((item) => {
                 const provider = getProviderFromModelId(item.id)
                 const selected = item.id === model
@@ -226,64 +238,75 @@ function ModelSelectorComponent() {
                       setOpen(false)
                     }}
                     className={cn(
-                      'mx-2 my-1 flex items-start gap-3 rounded-lg px-3 py-2.5',
+                      'mx-0.5 my-0.5 grid min-h-10 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 py-1.5',
                       selected
-                        ? 'bg-muted/60'
-                        : 'border border-transparent hover:bg-muted/35',
+                        ? 'bg-muted/60 ring-1 ring-border/70'
+                        : 'border border-transparent hover:bg-muted/30',
                       unavailable && 'cursor-not-allowed opacity-50'
                     )}
                   >
-                    <ModelSelectorLogo
-                      provider={provider}
-                      className="size-3.5 shrink-0 dark:invert-0"
-                    />
-                    <span className="min-w-0 flex-1 truncate font-mono text-[13px] font-medium text-foreground">
-                      <Badge
-                        variant="outline"
-                        className="mr-1.5 rounded-full text-[10px] px-1.5 py-0"
-                      >
-                        {provider}
-                      </Badge>
-                      {item.name}
-                    </span>
-                    <div className="flex shrink-0 flex-col items-end gap-1.5">
-                      <Badge
-                        variant="outline"
-                        className="rounded-full tabular-nums"
-                      >
-                        {item.formattedContextLength} ctx
-                      </Badge>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <ModelSelectorLogo
+                        provider={provider}
+                        className="size-3.5 shrink-0 dark:invert-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 rounded-full px-1.5 py-0 font-mono text-[10px]"
+                          >
+                            {provider}
+                          </Badge>
+                          <span className="min-w-0 truncate font-mono text-xs font-medium text-foreground">
+                            {item.name}
+                          </span>
+                        </div>
+                        <div className="mt-0.5 flex items-center gap-1.5 text-[10px] leading-3 text-muted-foreground tabular-nums">
+                          <span>{item.formattedContextLength} ctx</span>
+                          {item.supportsTools ? <span>tools</span> : null}
+                          {item.supportsVision ? <span>vision</span> : null}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-1.5">
                       {item.isFree ? (
                         <Badge
-                          className="rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                          className="rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                           variant="outline"
                         >
                           Free
                         </Badge>
                       ) : item.pricing != null ? (
-                        <span className="text-right text-[10px] leading-4 text-muted-foreground tabular-nums">
-                          ${item.pricing.inputPerMillion}/M in
-                          <br />${item.pricing.outputPerMillion}/M out
+                        <span className="rounded-full border border-border/60 px-1.5 py-0.5 text-[10px] leading-3 text-muted-foreground tabular-nums">
+                          ${item.pricing.inputPerMillion}/$
+                          {item.pricing.outputPerMillion}
                         </span>
                       ) : null}
                       {unavailable ? (
                         <Badge
                           variant="outline"
-                          className="rounded-full border-amber-400/60 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                          className="rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
                         >
-                          Not configured
+                          No key
                         </Badge>
                       ) : selected ? (
-                        <Badge className="rounded-full">Selected</Badge>
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          <CheckIcon className="h-3 w-3" />
+                        </span>
                       ) : null}
                     </div>
                   </ModelSelectorItem>
                 )
               })}
             </ModelSelectorGroup>
-            <ModelSelectorSeparator />
-            <ModelSelectorGroup heading="Custom Model">
-              <div className="mx-2 my-1 flex items-center gap-2 px-1 py-1.5">
+            <ModelSelectorSeparator className="my-1" />
+            <ModelSelectorGroup
+              heading="Custom model"
+              className="p-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em]"
+            >
+              <div className="mx-0.5 my-0.5 flex items-center gap-1.5 rounded-md bg-muted/20 px-2 py-1.5">
                 <input
                   type="text"
                   value={customInput}
@@ -292,13 +315,13 @@ function ModelSelectorComponent() {
                     if (e.key === 'Enter') handleCustomModelSubmit()
                   }}
                   placeholder="Enter custom model ID..."
-                  className="h-8 min-w-0 flex-1 rounded-md border border-border/60 bg-background px-3 font-mono text-[13px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-7 min-w-0 flex-1 rounded-md border border-border/60 bg-background px-2 font-mono text-xs placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring"
                 />
                 <Button
                   type="button"
                   size="sm"
                   variant="secondary"
-                  className="h-8 shrink-0 rounded-md px-3 text-xs"
+                  className="h-7 shrink-0 rounded-md px-2 text-[11px]"
                   onClick={handleCustomModelSubmit}
                   disabled={!trimmedCustomInput}
                 >
@@ -325,14 +348,14 @@ function McpToolRow({
   return (
     <div
       className={cn(
-        'rounded-lg bg-muted/20 p-2.5 transition-colors',
+        'rounded-md bg-muted/20 p-2 transition-colors',
         !enabled && 'opacity-80'
       )}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <code className="rounded-md bg-muted px-2 py-1 text-[11px] font-medium text-foreground">
+            <code className="rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-medium text-foreground">
               {tool.name}
             </code>
             <Badge
@@ -342,11 +365,11 @@ function McpToolRow({
               {enabled ? 'Enabled' : 'Disabled'}
             </Badge>
           </div>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">
+          <p className="mt-1.5 text-xs leading-4 text-muted-foreground">
             {tool.description}
           </p>
           {tool.params.length > 0 ? (
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-2 flex flex-wrap gap-1">
               {tool.params.map((param) => (
                 <Badge
                   key={param.name}
@@ -363,7 +386,7 @@ function McpToolRow({
         <Switch
           checked={enabled}
           onCheckedChange={onToggle}
-          className="h-5 w-9 bg-muted-foreground/20 shadow-none data-[state=checked]:bg-primary [&>span]:bg-background"
+          className="h-4 w-8 bg-muted-foreground/20 shadow-none data-[state=checked]:bg-primary [&>span]:h-3 [&>span]:w-3 [&>span]:bg-background"
           aria-label={`${enabled ? 'Disable' : 'Enable'} ${tool.name}`}
         />
       </div>
@@ -389,9 +412,7 @@ function McpToolsSection() {
   }
 
   const expandAll = () => {
-    setOpenSections(
-      new Set(['server', 'Resources', ...Object.keys(MCP_TOOL_CATEGORIES)])
-    )
+    setOpenSections(new Set(['Resources', ...Object.keys(MCP_TOOL_CATEGORIES)]))
   }
 
   const collapseAll = () => {
@@ -403,7 +424,7 @@ function McpToolsSection() {
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 rounded-full px-3 text-xs"
+        className="h-7 rounded-md px-2 text-[11px]"
         onClick={expandAll}
         title="Expand all"
       >
@@ -412,7 +433,7 @@ function McpToolsSection() {
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 rounded-full px-3 text-xs"
+        className="h-7 rounded-md px-2 text-[11px]"
         onClick={collapseAll}
         title="Collapse all"
       >
@@ -423,11 +444,8 @@ function McpToolsSection() {
 
   if (isLoading) {
     return (
-      <SidebarSection
-        title="Model"
-        description="Choose the default model the agent should use for this session."
-      >
-        <p className="text-sm text-muted-foreground">Loading tools...</p>
+      <SidebarSection title="MCP Server" description="Loading server metadata.">
+        <p className="text-xs text-muted-foreground">Loading tools...</p>
       </SidebarSection>
     )
   }
@@ -454,7 +472,7 @@ function McpToolsSection() {
           </Tooltip>
         }
       >
-        <p className="text-sm text-destructive">Failed to load tools.</p>
+        <p className="text-xs text-destructive">Failed to load tools.</p>
       </SidebarSection>
     )
   }
@@ -465,7 +483,7 @@ function McpToolsSection() {
         title="MCP Server"
         description="No MCP server metadata is available."
       >
-        <p className="text-sm text-muted-foreground">Unable to load tools.</p>
+        <p className="text-xs text-muted-foreground">Unable to load tools.</p>
       </SidebarSection>
     )
   }
@@ -478,98 +496,90 @@ function McpToolsSection() {
       description="Review available resources and enable the tools the agent can call."
       action={action}
     >
-      <div className="space-y-3">
-        <Collapsible
-          open={openSections.has('server')}
-          onOpenChange={() => toggleSection('server')}
-        >
-          <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
-            <TreeTriggerIcon open={openSections.has('server')} />
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <DatabaseIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span className="truncate text-sm font-medium">
-                {mcpInfo.name}
-              </span>
-              <Badge variant="outline" className="rounded-full">
-                v{mcpInfo.version}
-              </Badge>
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2 rounded-md bg-muted/15 px-2 py-1.5">
+          <DatabaseIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-xs font-medium text-foreground">
+              {mcpInfo.name}
             </div>
-          </CollapsibleTrigger>
+            <div className="mt-0.5 text-[11px] text-muted-foreground tabular-nums">
+              {mcpInfo.tools.length} tools, {mcpInfo.resources.length} resources
+            </div>
+          </div>
+          <Badge variant="outline" className="rounded-full px-1.5 text-[10px]">
+            v{mcpInfo.version}
+          </Badge>
+        </div>
 
-          <CollapsibleContent className="ml-3 space-y-2 border-l border-border/40 pl-3 pt-2">
-            {mcpInfo.resources.length > 0 ? (
-              <Collapsible
-                open={openSections.has('Resources')}
-                onOpenChange={() => toggleSection('Resources')}
-              >
-                <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/25">
-                  <TreeTriggerIcon open={openSections.has('Resources')} />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium">Resources</div>
-                    <div className="text-xs text-muted-foreground">
-                      {mcpInfo.resources.length} resource
-                      {mcpInfo.resources.length === 1 ? '' : 's'}
-                    </div>
+        {mcpInfo.resources.length > 0 ? (
+          <Collapsible
+            open={openSections.has('Resources')}
+            onOpenChange={() => toggleSection('Resources')}
+          >
+            <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/25">
+              <TreeTriggerIcon open={openSections.has('Resources')} />
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-medium">Resources</div>
+                <div className="text-[11px] text-muted-foreground">
+                  {mcpInfo.resources.length} resource
+                  {mcpInfo.resources.length === 1 ? '' : 's'}
+                </div>
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="ml-2 space-y-1.5 border-l border-border/30 pl-2 pt-1">
+              {mcpInfo.resources.map((resource: McpResource) => (
+                <div key={resource.name} className="rounded-md bg-muted/15 p-2">
+                  <div className="text-xs font-medium text-foreground">
+                    {resource.name}
                   </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="ml-3 space-y-1.5 border-l border-border/30 pl-3 pt-1.5">
-                  {mcpInfo.resources.map((resource: McpResource) => (
-                    <div
-                      key={resource.name}
-                      className="rounded-lg bg-muted/15 p-2.5"
-                    >
-                      <div className="text-sm font-medium text-foreground">
-                        {resource.name}
-                      </div>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        {resource.description}
-                      </p>
-                    </div>
-                  ))}
-                </CollapsibleContent>
-              </Collapsible>
-            ) : null}
+                  <p className="mt-1 text-xs leading-4 text-muted-foreground">
+                    {resource.description}
+                  </p>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        ) : null}
 
-            {toolCategories.map((categoryKey) => {
-              const categoryInfo = MCP_TOOL_CATEGORIES[categoryKey]
-              const tools = mcpInfo.tools.filter(
-                (tool: ApiMcpTool) => tool.category === categoryKey
-              )
+        {toolCategories.map((categoryKey) => {
+          const categoryInfo = MCP_TOOL_CATEGORIES[categoryKey]
+          const tools = mcpInfo.tools.filter(
+            (tool: ApiMcpTool) => tool.category === categoryKey
+          )
 
-              if (tools.length === 0) return null
+          if (tools.length === 0) return null
 
-              return (
-                <Collapsible
-                  key={categoryKey}
-                  open={openSections.has(categoryKey)}
-                  onOpenChange={() => toggleSection(categoryKey)}
-                >
-                  <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/25">
-                    <TreeTriggerIcon open={openSections.has(categoryKey)} />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium text-foreground">
-                        {categoryInfo.icon} {categoryInfo.name}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {tools.length} tool{tools.length === 1 ? '' : 's'}
-                      </div>
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="ml-3 space-y-2 border-l border-border/30 pl-3 pt-1.5">
-                    {tools.map((tool: ApiMcpTool) => (
-                      <McpToolRow
-                        key={tool.name}
-                        tool={tool}
-                        enabled={isToolEnabled(tool.name)}
-                        onToggle={() => toggleTool(tool.name)}
-                      />
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
-              )
-            })}
-          </CollapsibleContent>
-        </Collapsible>
+          return (
+            <Collapsible
+              key={categoryKey}
+              open={openSections.has(categoryKey)}
+              onOpenChange={() => toggleSection(categoryKey)}
+            >
+              <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/25">
+                <TreeTriggerIcon open={openSections.has(categoryKey)} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-medium text-foreground">
+                    {categoryInfo.icon} {categoryInfo.name}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {tools.length} tool{tools.length === 1 ? '' : 's'}
+                  </div>
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="ml-2 space-y-1.5 border-l border-border/30 pl-2 pt-1">
+                {tools.map((tool: ApiMcpTool) => (
+                  <McpToolRow
+                    key={tool.name}
+                    tool={tool}
+                    enabled={isToolEnabled(tool.name)}
+                    onToggle={() => toggleTool(tool.name)}
+                  />
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )
+        })}
       </div>
     </SidebarSection>
   )
@@ -607,7 +617,7 @@ function SkillsSection() {
             variant="outline"
             size="sm"
             onClick={() => setShowTree(true)}
-            className="h-8 rounded-full px-3 text-xs transition-[transform,background-color,border-color] active:scale-[0.96]"
+            className="h-7 rounded-md px-2 text-[11px] transition-[transform,background-color,border-color] active:scale-[0.96]"
           >
             Open tree
           </Button>
@@ -616,14 +626,14 @@ function SkillsSection() {
         <button
           type="button"
           onClick={() => setShowTree(true)}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-[transform,background-color] hover:bg-muted/30 active:scale-[0.99]"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-[transform,background-color] hover:bg-muted/30 active:scale-[0.99]"
         >
-          <BookOpenIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <BookOpenIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-foreground">
+            <div className="text-[13px] font-medium text-foreground">
               Skill library
             </div>
-            <div className="text-xs text-muted-foreground tabular-nums">
+            <div className="text-[11px] text-muted-foreground tabular-nums">
               {skills.length} available skill
               {skills.length === 1 ? '' : 's'}
             </div>
@@ -640,28 +650,58 @@ function SkillsSection() {
   )
 }
 
-function SuggestedPromptsSection() {
+function SuggestedPromptsSection({
+  messages = [],
+  onSubmitPrompt,
+}: {
+  readonly messages?: readonly UIMessage[]
+  readonly onSubmitPrompt?: (prompt: string) => void
+}) {
+  const [showMore, setShowMore] = useState(false)
+  const prompts = useMemo(
+    () => getSuggestedPrompts({ messages, limit: showMore ? 8 : 3 }),
+    [messages, showMore]
+  )
+
   return (
     <SidebarSection
       title="Suggested prompts"
-      description="A few starter questions you can paste into the conversation."
+      description="Context-aware starter questions for the current conversation."
+      action={
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowMore((value) => !value)}
+          className="h-7 rounded-md px-2 text-[11px] transition-[transform,background-color] active:scale-[0.96]"
+        >
+          {showMore ? 'Show less' : 'Show more'}
+        </Button>
+      }
     >
-      <ul className="space-y-2">
-        {SUGGESTED_PROMPTS.map((prompt) => (
-          <li
-            key={prompt}
-            className="rounded-lg bg-muted/15 px-3 py-2.5 text-xs leading-5 text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground"
+      <div className="space-y-1">
+        {prompts.map((prompt) => (
+          <button
+            type="button"
+            key={prompt.text}
+            className="group flex min-h-8 w-full items-start gap-2 rounded-md px-2 py-1.5 text-left text-xs leading-4 text-muted-foreground transition-[transform,background-color,color] hover:bg-muted/30 hover:text-foreground active:scale-[0.96]"
+            onClick={() => onSubmitPrompt?.(prompt.text)}
           >
-            {prompt}
-          </li>
+            <span className="mt-0.5 inline-flex h-3.5 shrink-0 items-center rounded-full bg-muted px-1 text-[8px] font-medium uppercase leading-3 tracking-[0.08em] text-muted-foreground group-hover:text-foreground">
+              {prompt.category}
+            </span>
+            <span className="min-w-0 flex-1">{prompt.text}</span>
+          </button>
         ))}
-      </ul>
+      </div>
     </SidebarSection>
   )
 }
 
 export function AgentsSidebar({
   hostId,
+  messages,
+  onSubmitPrompt,
   isOpen,
   onOpenChange,
 }: AgentsSidebarProps) {
@@ -669,36 +709,43 @@ export function AgentsSidebar({
 
   const content = (
     <div className="flex h-full flex-col overflow-hidden bg-sidebar/20">
-      <div className="border-b border-border/60 bg-background/70 px-3 py-2.5 backdrop-blur">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-semibold tracking-tight text-foreground [text-wrap:balance]">
+      <div className="border-border/60 border-b bg-background/70 px-2.5 py-2 backdrop-blur">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="text-[13px] font-semibold tracking-tight text-foreground [text-wrap:balance]">
               Agent settings
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground [text-wrap:pretty]">
-              Model, tools, and skill controls for the current workspace.
+            <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground [text-wrap:pretty]">
+              Host, model, tools, and skills.
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenChange?.(false)}
-            className="h-9 rounded-full px-3 transition-[transform,background-color,border-color] active:scale-[0.96]"
-            aria-label="Hide settings sidebar"
-          >
-            <PanelRightClose className="mr-1 h-4 w-4" />
-            Hide
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onOpenChange?.(false)}
+                className="h-7 w-7 shrink-0 rounded-md transition-[transform,background-color,border-color] active:scale-[0.96]"
+                aria-label="Hide settings sidebar"
+              >
+                <PanelRightClose className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">Hide settings sidebar</TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto">
-        <div className="space-y-3 p-3">
+      <div className="flex-1 overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin]">
+        <div className="space-y-2 p-2">
           <HostSelector hostId={hostId} />
           <ModelSelectorComponent />
           <McpToolsSection />
           <SkillsSection />
-          <SuggestedPromptsSection />
+          <SuggestedPromptsSection
+            messages={messages}
+            onSubmitPrompt={onSubmitPrompt}
+          />
         </div>
       </div>
     </div>
@@ -718,7 +765,7 @@ export function AgentsSidebar({
   }
 
   return isOpen ? (
-    <aside className="hidden h-full w-80 shrink-0 border-l border-border/60 md:flex lg:w-[26rem]">
+    <aside className="hidden h-full w-80 shrink-0 border-l border-border/60 md:flex xl:w-[22rem]">
       {content}
     </aside>
   ) : null

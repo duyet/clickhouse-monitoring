@@ -1,25 +1,28 @@
 'use client'
 
-import {
-  AlertCircleIcon,
-  ChevronDownIcon,
-  CopyIcon,
-  RefreshCwIcon,
-  XIcon,
-} from 'lucide-react'
+import { AlertCircleIcon, CopyIcon, RefreshCwIcon, XIcon } from 'lucide-react'
 
-import type { AgentError, AgentErrorType } from '@/lib/ai/agent/errors'
+import type { AgentErrorType } from '@/lib/ai/agent/errors'
 
 import { useEffect, useRef, useState } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { parseAgentError } from '@/lib/ai/agent/errors'
 import { cn } from '@/lib/utils'
 
 const ERROR_TYPE_LABELS: Record<AgentErrorType, string> = {
   auth_error: 'Auth Error',
   rate_limit: 'Rate Limited',
   billing_error: 'Billing',
+  upstream_error: 'Upstream Error',
   model_error: 'Model Error',
   timeout: 'Timeout',
   network_error: 'Network Error',
@@ -34,6 +37,8 @@ const ERROR_TYPE_CLASSES: Record<AgentErrorType, string> = {
     'border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
   billing_error:
     'border-transparent bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+  upstream_error:
+    'border-transparent bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
   model_error:
     'border-transparent bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
   timeout:
@@ -55,8 +60,8 @@ interface AgentErrorDisplayProps {
 /**
  * Renders a structured, rich display of an agent error.
  *
- * Tries to parse `error.message` as JSON (AgentError); falls back to a plain
- * string representation when the message is not structured JSON.
+ * Calls `parseAgentError(error)` to extract AgentError metadata and falls back
+ * to plain `error.message` when structured metadata is unavailable.
  */
 export function AgentErrorDisplay({
   error,
@@ -75,20 +80,7 @@ export function AgentErrorDisplay({
     }
   }, [])
 
-  // Attempt to parse as structured AgentError
-  let classified: AgentError | null = null
-  try {
-    const parsed = JSON.parse(error.message) as AgentError
-    if (
-      parsed &&
-      typeof parsed.type === 'string' &&
-      typeof parsed.message === 'string'
-    ) {
-      classified = parsed
-    }
-  } catch {
-    // Not JSON — use plain message
-  }
+  const classified = parseAgentError(error)
 
   const errorType: AgentErrorType = classified?.type ?? 'unknown'
   const displayMessage = classified?.message ?? error.message
@@ -96,18 +88,51 @@ export function AgentErrorDisplay({
   const details = classified?.details
   const timestamp = classified?.timestamp
   const model = classified?.model
+  const provider = classified?.provider
+  const code = classified?.code
   const statusCode = classified?.statusCode
+  const upstreamBackend = classified?.upstreamBackend
+  const upstreamStatus = classified?.upstreamStatus
+  const upstreamMessage = classified?.upstreamMessage
+  const requestId = classified?.requestId
+  const timestampDate = timestamp ? new Date(timestamp) : null
+  const timestampLabel =
+    timestampDate && !Number.isNaN(timestampDate.getTime())
+      ? timestampDate.toLocaleString()
+      : null
 
-  const hasDetails = Boolean(details || timestamp || model || statusCode)
+  const detailRows = [
+    timestampLabel ? { label: 'Time', value: timestampLabel } : null,
+    model ? { label: 'Model', value: model } : null,
+    provider ? { label: 'Provider', value: provider } : null,
+    code ? { label: 'Code', value: code } : null,
+    statusCode ? { label: 'Status', value: String(statusCode) } : null,
+    upstreamBackend
+      ? { label: 'Upstream backend', value: upstreamBackend }
+      : null,
+    upstreamStatus
+      ? { label: 'Upstream status', value: String(upstreamStatus) }
+      : null,
+    upstreamMessage
+      ? { label: 'Upstream message', value: upstreamMessage }
+      : null,
+    requestId ? { label: 'Request ID', value: requestId } : null,
+  ].filter((row): row is { label: string; value: string } => Boolean(row))
+  const rawError = classified
+    ? JSON.stringify(classified, null, 2)
+    : error.message
 
   const handleCopy = async () => {
-    const text = classified
-      ? JSON.stringify(classified, null, 2)
-      : error.message
     try {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(rawError)
       setCopied(true)
-      copyTimerRef.current = setTimeout(() => setCopied(false), 2000)
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current)
+      }
+      copyTimerRef.current = setTimeout(() => {
+        setCopied(false)
+        copyTimerRef.current = null
+      }, 2000)
     } catch {
       // Clipboard API unavailable — silent fail
     }
@@ -118,7 +143,7 @@ export function AgentErrorDisplay({
       <Alert variant="destructive" className="gap-2">
         <AlertCircleIcon className="h-4 w-4 shrink-0 mt-0.5" />
         <AlertDescription className="flex flex-col gap-2 min-w-0">
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge
@@ -135,7 +160,15 @@ export function AgentErrorDisplay({
                 <p className="text-xs text-muted-foreground">{suggestion}</p>
               )}
             </div>
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex shrink-0 items-center gap-1 self-end sm:self-start">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDetailsOpen(true)}
+                className="h-7 text-xs"
+              >
+                Details
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -170,53 +203,83 @@ export function AgentErrorDisplay({
               )}
             </div>
           </div>
-
-          {hasDetails && (
-            <div>
-              <button
-                type="button"
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => setDetailsOpen((v) => !v)}
-              >
-                <ChevronDownIcon
-                  className={cn('h-3 w-3 transition-transform', {
-                    'rotate-180': detailsOpen,
-                  })}
-                />
-                {detailsOpen ? 'Hide details' : 'Show details'}
-              </button>
-              {detailsOpen && (
-                <div className="mt-2 rounded-md bg-muted/50 p-2 text-xs space-y-1 font-mono break-all">
-                  {details && details !== displayMessage && (
-                    <div>
-                      <span className="text-muted-foreground">Details: </span>
-                      {details}
-                    </div>
-                  )}
-                  {timestamp && (
-                    <div>
-                      <span className="text-muted-foreground">Time: </span>
-                      {new Date(timestamp).toLocaleString()}
-                    </div>
-                  )}
-                  {model && (
-                    <div>
-                      <span className="text-muted-foreground">Model: </span>
-                      {model}
-                    </div>
-                  )}
-                  {statusCode && (
-                    <div>
-                      <span className="text-muted-foreground">Status: </span>
-                      {statusCode}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </AlertDescription>
       </Alert>
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent className="max-h-[88vh] max-w-[min(94vw,42rem)] overflow-hidden p-0">
+          <DialogHeader className="border-b border-border/60 bg-muted/20 px-5 py-4 text-left">
+            <DialogTitle className="text-base tracking-tight">
+              Agent error details
+            </DialogTitle>
+            <DialogDescription className="text-left text-xs leading-5">
+              Provider, upstream, and request metadata for this failed response.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[70vh] space-y-4 overflow-auto px-5 py-4">
+            <div className="space-y-2 rounded-lg border border-border/60 bg-background p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className={cn('text-xs', ERROR_TYPE_CLASSES[errorType])}>
+                  {ERROR_TYPE_LABELS[errorType]}
+                </Badge>
+                <span className="text-sm font-medium">{displayMessage}</span>
+              </div>
+              {suggestion && (
+                <p className="text-sm text-muted-foreground">{suggestion}</p>
+              )}
+            </div>
+
+            {detailRows.length > 0 && (
+              <div className="rounded-lg bg-muted/20 px-3">
+                {detailRows.map((row) => (
+                  <div
+                    key={row.label}
+                    className="flex min-h-9 items-center justify-between gap-3 border-b border-border/40 py-2 last:border-b-0"
+                  >
+                    <span className="text-xs text-muted-foreground">
+                      {row.label}
+                    </span>
+                    <span className="min-w-0 truncate text-right font-mono text-xs">
+                      {row.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {details && details !== displayMessage && (
+              <div className="rounded-lg bg-muted/20 p-3">
+                <div className="mb-2 text-xs font-medium text-muted-foreground">
+                  Details
+                </div>
+                <pre className="whitespace-pre-wrap break-words text-xs leading-5">
+                  {details}
+                </pre>
+              </div>
+            )}
+
+            <div className="rounded-lg bg-muted/20 p-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Raw error
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopy}
+                  className="h-7 gap-1.5 px-2.5 text-xs"
+                >
+                  <CopyIcon className="h-3.5 w-3.5" />
+                  {copied ? 'Copied' : 'Copy'}
+                </Button>
+              </div>
+              <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words text-[11px] leading-5 text-muted-foreground">
+                {rawError}
+              </pre>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

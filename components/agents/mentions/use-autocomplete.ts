@@ -12,6 +12,26 @@ function uniqueId() {
   return `mention-${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
+function areAutocompleteItemsEqual(
+  previous: readonly AutocompleteItem[],
+  next: readonly AutocompleteItem[]
+) {
+  return (
+    previous.length === next.length &&
+    previous.every((item, index) => {
+      const nextItem = next[index]
+      return (
+        item.id === nextItem.id &&
+        item.type === nextItem.type &&
+        item.label === nextItem.label &&
+        item.value === nextItem.value &&
+        item.description === nextItem.description &&
+        item.group === nextItem.group
+      )
+    })
+  )
+}
+
 interface AutocompleteState {
   trigger: '@' | '/' | null
   query: string
@@ -63,6 +83,8 @@ export function useAutocomplete(): UseAutocompleteReturn {
   }, [])
 
   const updateFilteredItems = useCallback((items: AutocompleteItem[]) => {
+    if (areAutocompleteItemsEqual(filteredItemsRef.current, items)) return
+
     filteredItemsRef.current = items
     setFilteredItems(items)
   }, [])

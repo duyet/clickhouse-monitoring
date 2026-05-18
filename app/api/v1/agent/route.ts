@@ -28,6 +28,7 @@ import { aggregateUsageWithCost } from '@/lib/ai/agent/analytics'
 import { classifyError } from '@/lib/ai/agent/errors'
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
 import { createJsonRenderPatchGuardStream } from '@/lib/ai/agent/json-render-patch-guard'
+import { DEFAULT_AGENT_MODEL } from '@/lib/ai/agent-model-registry'
 import {
   getProviderName,
   isProviderConfigured,
@@ -388,20 +389,27 @@ export async function POST(request: Request) {
   const model =
     typeof body.model === 'string' && body.model.trim().length > 0
       ? body.model
-      : process.env.LLM_MODEL || 'openrouter:openrouter/auto'
+      : process.env.LLM_MODEL || DEFAULT_AGENT_MODEL
 
   // Preflight: refuse early if the selected provider has no API key on this
   // deployment. Without this, the upstream provider returns a confusing
   // "Missing Authorization header" error that looks like *our* auth failed.
   const { provider: requestedProvider } = parseModelId(model)
   if (!isProviderConfigured(requestedProvider)) {
+    const classified = classifyError(
+      {
+        statusCode: 503,
+        error: {
+          code: 'provider_not_configured',
+          message: `Provider "${getProviderName(requestedProvider)}" is not configured on this deployment. Pick a model from a configured provider or ask the operator to set ${requestedProvider.toUpperCase()}_API_KEY.`,
+        },
+      },
+      { model, provider: requestedProvider }
+    )
+
     return new Response(
       JSON.stringify({
-        error: {
-          code: 'PROVIDER_NOT_CONFIGURED',
-          message: `Provider "${getProviderName(requestedProvider)}" is not configured on this deployment. Pick a model from a configured provider or ask the operator to set ${requestedProvider.toUpperCase()}_API_KEY.`,
-          provider: requestedProvider,
-        },
+        error: classified,
       }),
       { status: 503, headers: { 'content-type': 'application/json' } }
     )
@@ -559,7 +567,11 @@ export async function POST(request: Request) {
 
       // Send aggregated usage/cost as a data part so the client can display it
       if (usageSteps.length > 0) {
-        const stats = aggregateUsageWithCost(usageSteps, model)
+        const stats = {
+          ...aggregateUsageWithCost(usageSteps, model),
+          model,
+          provider: requestedProvider,
+        }
         writer.write({
           type: 'data-usage',
           data: [stats],
@@ -567,14 +579,20 @@ export async function POST(request: Request) {
       }
     },
     onError: (error) => {
-      const classified = classifyError(error)
-      classified.model = model
+      const classified = classifyError(error, {
+        model,
+        provider: requestedProvider,
+      })
       console.error('[Agent API] Classified error:', classified)
       return JSON.stringify(classified)
     },
     onFinish: () => {
       if (usageSteps.length > 0) {
-        const stats = aggregateUsageWithCost(usageSteps, model)
+        const stats = {
+          ...aggregateUsageWithCost(usageSteps, model),
+          model,
+          provider: requestedProvider,
+        }
         console.log('[Agent API] Session usage:', stats)
       }
     },

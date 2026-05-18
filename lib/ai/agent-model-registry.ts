@@ -18,6 +18,8 @@ export interface ModelEntry {
   providers: string[]
 }
 
+export const DEFAULT_AGENT_MODEL = 'anyrouter:z-ai/glm-4.7-flash'
+
 export const MODEL_REGISTRY: readonly ModelEntry[] = [
   // ── OpenRouter auto-routers ──
   {
@@ -66,6 +68,13 @@ export const MODEL_REGISTRY: readonly ModelEntry[] = [
     description: 'GLM 4.7 Flash',
     contextLength: 131_072,
     providers: ['openrouter', 'nvidia', 'anyrouter'],
+  },
+  {
+    id: 'google/gemini-3.1-flash-lite',
+    description: 'Gemini 3.1 Flash Lite',
+    contextLength: 1_000_000,
+    pricing: { inputPerMillion: 0.25, outputPerMillion: 1.5 },
+    providers: ['anyrouter'],
   },
   {
     id: 'google/gemma-4-26b-a4b-it',

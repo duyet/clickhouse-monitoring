@@ -12,6 +12,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import {
+  DEFAULT_AGENT_MODEL,
   getAllModelOptions,
   MODEL_REGISTRY,
 } from '@/lib/ai/agent-model-registry'
@@ -27,7 +28,7 @@ export type { OpenAIModel } from '@/lib/ai/agent-models'
 
 const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 
-const DEFAULT_MODEL = 'openrouter:openrouter/auto'
+const DEFAULT_MODEL = DEFAULT_AGENT_MODEL
 
 /**
  * Normalize a model ID to `provider:model` format.

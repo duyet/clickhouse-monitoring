@@ -48,6 +48,7 @@ function isProtectedAgentApiRoute(request: NextRequest) {
   const pathname = normalizePathname(request.nextUrl.pathname)
   return (
     pathname === '/api/v1/agent' ||
+    pathname === '/api/v1/agent/followups' ||
     pathname === '/api/v1/agent/skills' ||
     pathname === '/api/v1/agents/config-check' ||
     pathname === '/api/v1/agents/models'

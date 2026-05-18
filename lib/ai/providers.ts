@@ -26,8 +26,8 @@ export interface ProviderConfig {
 }
 
 /**
- * Provider configurations. Each provider has its own credentials
- * that fall back to LLM_API_KEY / LLM_API_BASE if not set.
+ * Provider configurations. OpenRouter and legacy models can use
+ * LLM_API_KEY; other explicit providers require their provider key.
  */
 export const PROVIDERS: Record<string, ProviderConfig> = {
   openrouter: {
@@ -94,9 +94,10 @@ export interface ResolvedProvider {
  * 2. Legacy (no colon) → detect from model name (free/openrouter prefix → OpenRouter)
  * 3. Fallback → generic OpenAI-compatible with LLM_API_KEY / LLM_API_BASE
  *
- * Credential cascade for each provider:
- * - API key: provider-specific env var → LLM_API_KEY
- * - Base URL: provider-specific env var → provider default → LLM_API_BASE
+ * Credential cascade:
+ * - OpenRouter/legacy API key: provider-specific env var → LLM_API_KEY
+ * - Other explicit provider API keys: provider-specific env var
+ * - Base URL: provider-specific env var → provider default
  */
 export function resolveProvider(id: string): ResolvedProvider {
   const { provider: providerId, model } = parseModelId(id)
@@ -135,7 +136,7 @@ export function resolveProvider(id: string): ResolvedProvider {
 
 /**
  * Check whether a provider has an API key configured on this deployment.
- * Mirrors `resolveProvider`'s key cascade: provider-specific env var → LLM_API_KEY.
+ * Mirrors `resolveProvider`'s key cascade.
  */
 export function isProviderConfigured(providerId: string): boolean {
   const config = PROVIDERS[providerId]
@@ -143,7 +144,10 @@ export function isProviderConfigured(providerId: string): boolean {
     // Unknown providers fall through to legacy openrouter path → uses LLM_API_KEY.
     return Boolean(process.env.LLM_API_KEY)
   }
-  return Boolean(process.env[config.apiKeyEnvVar] || process.env.LLM_API_KEY)
+  return Boolean(
+    process.env[config.apiKeyEnvVar] ||
+      (providerId === 'openrouter' ? process.env.LLM_API_KEY : undefined)
+  )
 }
 
 /**

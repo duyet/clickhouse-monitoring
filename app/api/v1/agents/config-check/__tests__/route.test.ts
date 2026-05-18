@@ -4,6 +4,7 @@ const AGENT_API_TOKEN = 'test-agent-token'
 let mockClerkUserId: string | null = null
 let GET: (request: Request) => Promise<Response>
 
+mock.module('server-only', () => ({}))
 mock.module('@clerk/nextjs/server', () => ({
   auth: async () => ({
     userId: mockClerkUserId,
@@ -18,7 +19,17 @@ beforeAll(async () => {
 
 beforeEach(() => {
   process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
+  delete process.env.CHM_AUTH_PROVIDER
   delete process.env.CHM_FEATURE_AGENT_ACCESS
+  delete process.env.LLM_MODEL
+  delete process.env.LLM_API_KEY
+  delete process.env.LLM_API_BASE
+  delete process.env.ANYROUTER_API_KEY
+  delete process.env.ANYROUTER_API_BASE
+  delete process.env.OPENROUTER_API_KEY
+  delete process.env.OPENROUTER_API_BASE
+  delete process.env.NVIDIA_API_KEY
+  delete process.env.NVIDIA_API_BASE
   mockClerkUserId = null
 })
 
@@ -29,8 +40,12 @@ describe('GET /api/v1/agents/config-check', () => {
     })
   }
 
-  test('skips auth when auth provider is disabled', async () => {
-    const response = await GET(configRequest())
+  test('skips auth when agent access is public and auth provider is disabled', async () => {
+    process.env.CHM_FEATURE_AGENT_ACCESS = 'public'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
 
     expect(response.status).toBe(200)
   })
@@ -63,5 +78,80 @@ describe('GET /api/v1/agents/config-check', () => {
     const response = await GET(configRequest())
 
     expect(response.status).toBe(200)
+  })
+
+  test('treats ANYROUTER_API_KEY as sufficient provider configuration', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.ANYROUTER_API_KEY = 'sk-ar-test'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.configured.apiKey).toBe(true)
+    expect(body.configured.apiBase).toBe(true)
+    expect(body.isFullyConfigured).toBe(true)
+    expect(
+      body.providers.find(
+        (provider: { id: string }) => provider.id === 'anyrouter'
+      )
+    ).toMatchObject({
+      configured: true,
+      baseURL: 'https://anyrouter.dev/api/v1',
+    })
+  })
+
+  test('requires the default AnyRouter provider key for full readiness', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.OPENROUTER_API_KEY = 'sk-or-test'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.configured.apiKey).toBe(false)
+    expect(body.isFullyConfigured).toBe(false)
+    expect(body.requiredKeys.apiKey).toBe('ANYROUTER_API_KEY')
+  })
+
+  test('uses selected model provider when LLM_MODEL overrides the default', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.LLM_MODEL = 'openrouter:openrouter/auto'
+    process.env.OPENROUTER_API_KEY = 'sk-or-test'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.configured.apiKey).toBe(true)
+    expect(body.isFullyConfigured).toBe(true)
+    expect(body.requiredKeys.apiKey).toBe('OPENROUTER_API_KEY or LLM_API_KEY')
+  })
+
+  test('does not expose custom provider base URLs', async () => {
+    process.env.ANYROUTER_API_KEY = 'sk-ar-test'
+    process.env.ANYROUTER_API_BASE =
+      'https://token:secret@internal.example.test/v1'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+    const body = await response.json()
+    const anyrouter = body.providers.find(
+      (provider: { id: string }) => provider.id === 'anyrouter'
+    )
+
+    expect(response.status).toBe(200)
+    expect(JSON.stringify(body)).not.toContain('secret@internal')
+    expect(anyrouter).toMatchObject({
+      hasBaseURLOverride: true,
+      baseURL: 'custom',
+    })
   })
 })

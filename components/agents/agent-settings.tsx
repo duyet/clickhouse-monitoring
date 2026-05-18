@@ -6,7 +6,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select'
 import { type OpenAIModel, useAgentModel } from '@/lib/hooks/use-agent-model'
 
