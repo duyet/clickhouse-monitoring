@@ -21,6 +21,7 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
   delete process.env.CHM_AUTH_PROVIDER
   delete process.env.CHM_FEATURE_AGENT_ACCESS
+  delete process.env.LLM_MODEL
   delete process.env.LLM_API_KEY
   delete process.env.LLM_API_BASE
   delete process.env.ANYROUTER_API_KEY
@@ -100,6 +101,37 @@ describe('GET /api/v1/agents/config-check', () => {
       configured: true,
       baseURL: 'https://anyrouter.dev/api/v1',
     })
+  })
+
+  test('requires the default AnyRouter provider key for full readiness', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.OPENROUTER_API_KEY = 'sk-or-test'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.configured.apiKey).toBe(false)
+    expect(body.isFullyConfigured).toBe(false)
+    expect(body.requiredKeys.apiKey).toBe('ANYROUTER_API_KEY')
+  })
+
+  test('uses selected model provider when LLM_MODEL overrides the default', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.LLM_MODEL = 'openrouter:openrouter/auto'
+    process.env.OPENROUTER_API_KEY = 'sk-or-test'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.configured.apiKey).toBe(true)
+    expect(body.isFullyConfigured).toBe(true)
+    expect(body.requiredKeys.apiKey).toBe('OPENROUTER_API_KEY or LLM_API_KEY')
   })
 
   test('does not expose custom provider base URLs', async () => {

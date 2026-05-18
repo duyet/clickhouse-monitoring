@@ -130,7 +130,6 @@ export function resolveAgentChatModel({
   const openai = createOpenAI({
     apiKey: resolved.apiKey,
     baseURL: resolved.baseURL,
-    name: resolved.providerId,
     ...(headers && { headers }),
   })
 

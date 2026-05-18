@@ -17,6 +17,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import useSWRMutation from 'swr/mutation'
 import { AgentErrorDisplay } from '@/components/agents/agent-error-display'
 import {
   AgentChatCompactControls,
@@ -60,6 +61,29 @@ interface AgentsChatAreaProps {
 interface FollowUpRetryRequest {
   readonly cacheKey: string
   readonly attempt: number
+}
+
+interface FollowUpMutationArg {
+  readonly cacheKey: string
+  readonly messages: ReturnType<typeof buildCompactFollowUpMessages>
+  readonly model: string
+}
+
+interface FollowUpMutationResult {
+  readonly cacheKey: string
+  readonly suggestions: string[]
+}
+
+class FollowUpGenerationError extends Error {
+  readonly cacheKey: string
+  readonly agentError: AgentError
+
+  constructor(cacheKey: string, agentError: AgentError) {
+    super(agentError.message)
+    this.name = 'FollowUpGenerationError'
+    this.cacheKey = cacheKey
+    this.agentError = agentError
+  }
 }
 
 function findLastAssistantMessage(messages: readonly UIMessage[]) {
@@ -210,6 +234,67 @@ function buildCompactFollowUpMessages(messages: readonly UIMessage[]) {
     )
 }
 
+function getUserRetryText(message: UIMessage): string {
+  return message.parts
+    .map((part) =>
+      typeof part === 'object' &&
+      part !== null &&
+      'type' in part &&
+      part.type === 'text' &&
+      'text' in part &&
+      typeof part.text === 'string'
+        ? part.text
+        : ''
+    )
+    .filter((text) => text.trim().length > 0)
+    .join('\n')
+    .trim()
+}
+
+async function postFollowUps(
+  _key: readonly [string, string],
+  { arg }: { arg: FollowUpMutationArg }
+): Promise<FollowUpMutationResult> {
+  const response = await apiFetch('/api/v1/agent/followups', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      messages: arg.messages,
+      model: arg.model,
+    }),
+  })
+  const payload = (await response.json().catch(() => ({}))) as {
+    readonly error?: unknown
+    readonly suggestions?: unknown
+  }
+
+  if (!response.ok) {
+    const agentError = isAgentError(payload?.error)
+      ? payload.error
+      : ({
+          type: 'unknown',
+          message: 'Follow-up generation failed.',
+          suggestion: 'The main answer is still available.',
+          timestamp: Date.now(),
+          model: arg.model,
+        } satisfies AgentError)
+
+    throw new FollowUpGenerationError(arg.cacheKey, agentError)
+  }
+
+  const suggestions = Array.isArray(payload?.suggestions)
+    ? payload.suggestions.filter(
+        (item: unknown): item is string =>
+          typeof item === 'string' && item.trim().length > 0
+      )
+    : []
+
+  return {
+    cacheKey: arg.cacheKey,
+    suggestions: suggestions.slice(0, 3),
+  }
+}
+
 export const AgentsChatArea = forwardRef<
   AgentsChatAreaRef,
   AgentsChatAreaProps
@@ -257,7 +342,6 @@ export const AgentsChatArea = forwardRef<
   const lastSavedMessagesRef = useRef<UIMessage[]>([])
   const latestMessagesRef = useRef<readonly UIMessage[]>([])
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-  const followUpRequestRef = useRef<string | undefined>(undefined)
   const pendingBranchUserIdRef = useRef<string | undefined>(undefined)
   const prevConversationIdRef = useRef<string | undefined>(undefined)
   const [responseDurations, setResponseDurations] = useState<
@@ -339,6 +423,65 @@ export const AgentsChatArea = forwardRef<
       setFollowUpRetryRequest({ cacheKey, attempt: nextAttempt })
     }, FOLLOW_UP_RETRY_DELAY_MS)
   }, [])
+
+  const { trigger: triggerFollowUps, isMutating: isGeneratingFollowUps } =
+    useSWRMutation(
+      lastAssistantFollowUpKey
+        ? (['/api/v1/agent/followups', lastAssistantFollowUpKey] as const)
+        : null,
+      postFollowUps,
+      {
+        populateCache: false,
+        revalidate: false,
+        throwOnError: false,
+        onSuccess: (result) => {
+          clearFollowUpRetryState(result.cacheKey)
+          clearFollowUpError(result.cacheKey)
+
+          if (result.suggestions.length === 0) return
+
+          setGeneratedFollowUps((previous) => {
+            const next = {
+              ...previous,
+              [result.cacheKey]: result.suggestions,
+            }
+            generatedFollowUpsRef.current = next
+            return next
+          })
+        },
+        onError: (mutationError) => {
+          const cacheKey =
+            mutationError instanceof FollowUpGenerationError
+              ? mutationError.cacheKey
+              : lastAssistantFollowUpKey
+          if (!cacheKey) return
+
+          const nextError: AgentError =
+            mutationError instanceof FollowUpGenerationError
+              ? mutationError.agentError
+              : {
+                  type: 'unknown',
+                  message:
+                    mutationError instanceof Error
+                      ? mutationError.message
+                      : 'Follow-up generation failed.',
+                  suggestion: 'The main answer is still available.',
+                  timestamp: Date.now(),
+                  model,
+                }
+
+          setFollowUpErrors((previous) => {
+            const next = {
+              ...previous,
+              [cacheKey]: nextError,
+            }
+            followUpErrorsRef.current = next
+            return next
+          })
+          scheduleFollowUpRetry(cacheKey)
+        },
+      }
+    )
 
   useEffect(() => {
     latestMessagesRef.current = messages
@@ -595,10 +738,14 @@ export const AgentsChatArea = forwardRef<
 
     const userMessage = findLastUserMessage(messages)
     if (!userMessage) return
+    const retryText = getUserRetryText(userMessage)
+    if (!retryText) return
 
-    pendingBranchUserIdRef.current = userMessage.id
-    void regenerate({ messageId: userMessage.id })
-  }, [isLoading, messages, regenerate])
+    pendingBranchUserIdRef.current = undefined
+    sendMessage({
+      parts: [{ type: 'text', text: retryText }],
+    })
+  }, [isLoading, messages, sendMessage])
 
   useEffect(() => {
     if (status !== 'ready' || isLoading || error || !lastAssistantFollowUpKey) {
@@ -615,7 +762,7 @@ export const AgentsChatArea = forwardRef<
       followUpRetryConsumedRef.current[cacheKey] !== retryAttempt
 
     if (
-      followUpRequestRef.current === cacheKey ||
+      isGeneratingFollowUps ||
       generatedFollowUpsRef.current[cacheKey] ||
       (followUpErrorsRef.current[cacheKey] && !isScheduledRetry)
     ) {
@@ -626,115 +773,11 @@ export const AgentsChatArea = forwardRef<
       followUpRetryConsumedRef.current[cacheKey] = retryAttempt
     }
 
-    followUpRequestRef.current = cacheKey
-    const controller = new AbortController()
-
-    async function generateFollowUps(signal: AbortSignal) {
-      try {
-        const response = await apiFetch('/api/v1/agent/followups', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            messages: buildCompactFollowUpMessages(latestMessagesRef.current),
-            model,
-          }),
-          signal,
-        })
-        const payload = (await response.json().catch(() => ({}))) as {
-          readonly error?: unknown
-          readonly suggestions?: unknown
-        }
-
-        if (signal.aborted) return
-
-        if (!response.ok) {
-          const nextError = isAgentError(payload?.error)
-            ? payload.error
-            : ({
-                type: 'unknown',
-                message: 'Follow-up generation failed.',
-                suggestion: 'The main answer is still available.',
-                timestamp: Date.now(),
-                model,
-              } satisfies AgentError)
-
-          setFollowUpErrors((previous) => {
-            const next = {
-              ...previous,
-              [cacheKey]: nextError,
-            }
-            followUpErrorsRef.current = next
-            return next
-          })
-          scheduleFollowUpRetry(cacheKey)
-          return
-        }
-
-        clearFollowUpRetryState(cacheKey)
-        clearFollowUpError(cacheKey)
-
-        const suggestions = Array.isArray(payload?.suggestions)
-          ? payload.suggestions.filter(
-              (item: unknown): item is string =>
-                typeof item === 'string' && item.trim().length > 0
-            )
-          : []
-
-        if (suggestions.length > 0) {
-          if (signal.aborted) return
-          setGeneratedFollowUps((previous) => {
-            const next = {
-              ...previous,
-              [cacheKey]: suggestions.slice(0, 3),
-            }
-            generatedFollowUpsRef.current = next
-            return next
-          })
-        }
-      } catch (generationError) {
-        if (
-          signal.aborted ||
-          (generationError instanceof Error &&
-            generationError.name === 'AbortError')
-        ) {
-          return
-        }
-
-        const nextError: AgentError = {
-          type: 'unknown',
-          message:
-            generationError instanceof Error
-              ? generationError.message
-              : 'Follow-up generation failed.',
-          suggestion: 'The main answer is still available.',
-          timestamp: Date.now(),
-          model,
-        }
-
-        setFollowUpErrors((previous) => {
-          const next = {
-            ...previous,
-            [cacheKey]: nextError,
-          }
-          followUpErrorsRef.current = next
-          return next
-        })
-        scheduleFollowUpRetry(cacheKey)
-      } finally {
-        if (!signal.aborted && followUpRequestRef.current === cacheKey) {
-          followUpRequestRef.current = undefined
-        }
-      }
-    }
-
-    void generateFollowUps(controller.signal)
-
-    return () => {
-      controller.abort()
-      if (followUpRequestRef.current === cacheKey) {
-        followUpRequestRef.current = undefined
-      }
-    }
+    void triggerFollowUps({
+      cacheKey,
+      messages: buildCompactFollowUpMessages(latestMessagesRef.current),
+      model,
+    })
   }, [
     status,
     isLoading,
@@ -742,9 +785,8 @@ export const AgentsChatArea = forwardRef<
     lastAssistantFollowUpKey,
     model,
     followUpRetryRequest,
-    clearFollowUpError,
-    clearFollowUpRetryState,
-    scheduleFollowUpRetry,
+    isGeneratingFollowUps,
+    triggerFollowUps,
   ])
 
   return (

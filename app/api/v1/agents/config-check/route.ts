@@ -9,7 +9,12 @@
  */
 
 import { NextResponse } from 'next/server'
-import { isProviderConfigured, PROVIDERS } from '@/lib/ai/providers'
+import { DEFAULT_AGENT_MODEL } from '@/lib/ai/agent-model-registry'
+import {
+  isProviderConfigured,
+  PROVIDERS,
+  parseModelId,
+} from '@/lib/ai/providers'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 
 interface ConfigStatus {
@@ -32,19 +37,33 @@ interface ConfigStatus {
   }>
 }
 
-function getRequiredApiKeyLabel(): string {
-  const providerKeys = Object.values(PROVIDERS).map(
-    (provider) => provider.apiKeyEnvVar
-  )
-  return `${providerKeys.join(', ')}, or LLM_API_KEY`
+function getSelectedModel(): string {
+  const configuredModel = process.env.LLM_MODEL?.trim()
+  return configuredModel || DEFAULT_AGENT_MODEL
+}
+
+function getSelectedProviderId(model: string): string {
+  const { provider } = parseModelId(model)
+  return PROVIDERS[provider] ? provider : 'legacy'
+}
+
+function getRequiredApiKeyLabel(providerId: string): string {
+  if (providerId === 'legacy') return 'LLM_API_KEY'
+
+  const provider = PROVIDERS[providerId]
+  if (!provider) return 'LLM_API_KEY'
+
+  return providerId === 'openrouter'
+    ? `${provider.apiKeyEnvVar} or LLM_API_KEY`
+    : provider.apiKeyEnvVar
 }
 
 /**
  * Handle GET requests for config status
  *
- * Note: LLM_MODEL is not required as it has a default value and can be
- * selected via UI dropdown. OpenAI-compatible providers ship default base
- * URLs, so only at least one provider key is required.
+ * Note: LLM_MODEL has a default value and can be selected via UI dropdown.
+ * Readiness is checked against the selected/default model provider so the
+ * first agent request does not fail provider preflight.
  */
 export async function GET(request: Request) {
   try {
@@ -65,15 +84,18 @@ export async function GET(request: Request) {
       }
     })
 
+    const selectedProviderId = getSelectedProviderId(getSelectedModel())
+    const selectedProviderConfigured = isProviderConfigured(selectedProviderId)
+
     const configured: ConfigStatus['configured'] = {
-      apiKey: providers.some((provider) => provider.configured),
+      apiKey: selectedProviderConfigured,
       apiBase: true,
     }
 
     const isFullyConfigured = configured.apiKey
 
     const requiredKeys: ConfigStatus['requiredKeys'] = {
-      apiKey: getRequiredApiKeyLabel(),
+      apiKey: getRequiredApiKeyLabel(selectedProviderId),
       apiBase: 'Provider default base URL',
     }
 

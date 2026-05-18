@@ -96,7 +96,6 @@ describe('createClickHouseAgent OpenRouter model resolution', () => {
     expect(createOpenAIOptions[0]).toMatchObject({
       apiKey: 'ar-test',
       baseURL: 'https://anyrouter.dev/api/v1',
-      name: 'anyrouter',
       headers: {
         'HTTP-Referer': 'https://example.test/agents',
         'X-AnyRouter-Title': 'Agent Test',
@@ -104,6 +103,7 @@ describe('createClickHouseAgent OpenRouter model resolution', () => {
         'X-AnyRouter-Version': 'test-version',
       },
     })
+    expect(createOpenAIOptions[0]).not.toHaveProperty('name')
     expect(openAIChatMock).toHaveBeenCalledWith('google/gemma-test')
   })
 })
