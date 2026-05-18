@@ -111,18 +111,10 @@ function replaceAssistantBranch({
 
   const assistantIndex = findAssistantIndexAfterUser(messages, userMessageId)
   if (assistantIndex < 0) {
-    return [
-      ...messages.slice(0, userIndex + 1),
-      assistant,
-      ...messages.slice(userIndex + 1),
-    ]
+    return [...messages.slice(0, userIndex + 1), assistant]
   }
 
-  return [
-    ...messages.slice(0, assistantIndex),
-    assistant,
-    ...messages.slice(assistantIndex + 1),
-  ]
+  return [...messages.slice(0, assistantIndex), assistant]
 }
 
 function getBranchSignature(message: UIMessage): string {
