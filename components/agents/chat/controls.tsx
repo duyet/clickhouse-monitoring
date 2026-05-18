@@ -4,16 +4,13 @@ import {
   PanelRightClose,
   PanelRightOpen,
   SparklesIcon,
-  SquareIcon,
   TrashIcon,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
 interface AgentChatControlsProps {
-  readonly isLoading: boolean
   readonly onClear: () => void
-  readonly onStop: () => void
 }
 
 interface AgentChatHeaderProps extends AgentChatControlsProps {
@@ -23,10 +20,8 @@ interface AgentChatHeaderProps extends AgentChatControlsProps {
 
 export function AgentChatHeader({
   isSidebarOpen,
-  isLoading,
   onClear,
   onMenuClick,
-  onStop,
 }: AgentChatHeaderProps) {
   return (
     <div className="flex shrink-0 items-center justify-between border-b px-3 py-3 sm:px-4">
@@ -52,50 +47,22 @@ export function AgentChatHeader({
         </h2>
       </div>
 
-      <AgentChatActions
-        isLoading={isLoading}
-        onClear={onClear}
-        onStop={onStop}
-      />
+      <AgentChatActions onClear={onClear} />
     </div>
   )
 }
 
-export function AgentChatCompactControls({
-  isLoading,
-  onClear,
-  onStop,
-}: AgentChatControlsProps) {
+export function AgentChatCompactControls({ onClear }: AgentChatControlsProps) {
   return (
     <div className="flex shrink-0 items-center justify-end gap-1 border-b px-3 py-2">
-      <AgentChatActions
-        isLoading={isLoading}
-        onClear={onClear}
-        onStop={onStop}
-      />
+      <AgentChatActions onClear={onClear} />
     </div>
   )
 }
 
-function AgentChatActions({
-  isLoading,
-  onClear,
-  onStop,
-}: AgentChatControlsProps) {
+function AgentChatActions({ onClear }: AgentChatControlsProps) {
   return (
     <div className="flex shrink-0 items-center gap-1">
-      {isLoading && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onStop}
-          className="h-8 w-8"
-          aria-label="Stop generation"
-          title="Stop generation"
-        >
-          <SquareIcon className="h-4 w-4" />
-        </Button>
-      )}
       <Button
         variant="ghost"
         size="icon"

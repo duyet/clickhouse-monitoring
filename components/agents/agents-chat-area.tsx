@@ -2,8 +2,6 @@
 
 'use no memo'
 
-import { RefreshCwIcon, SquareIcon } from 'lucide-react'
-
 import type { UIMessage } from 'ai'
 import type { Conversation } from '@/lib/ai/agent/conversation-utils'
 import type { AgentError } from '@/lib/ai/agent/errors'
@@ -36,7 +34,6 @@ import {
   Conversation as ConversationUI,
 } from '@/components/ai-elements/conversation'
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
-import { Button } from '@/components/ui/button'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { isAgentError } from '@/lib/ai/agent/errors'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
@@ -71,14 +68,61 @@ function findLastUserMessage(messages: readonly UIMessage[]) {
   return undefined
 }
 
-function getTextPart(message: UIMessage) {
-  return message.parts.find(
-    (part): part is { type: 'text'; text: string } =>
-      typeof part === 'object' &&
-      part !== null &&
-      'type' in part &&
-      part.type === 'text'
+function findPrecedingUserMessageId(
+  messages: readonly UIMessage[],
+  messageIndex: number
+) {
+  for (let index = messageIndex - 1; index >= 0; index--) {
+    if (messages[index].role === 'user') return messages[index].id
+  }
+  return undefined
+}
+
+function findAssistantIndexAfterUser(
+  messages: readonly UIMessage[],
+  userMessageId: string
+) {
+  const userIndex = messages.findIndex(
+    (message) => message.id === userMessageId
   )
+  if (userIndex < 0) return -1
+
+  for (let index = userIndex + 1; index < messages.length; index++) {
+    if (messages[index].role === 'user') return -1
+    if (messages[index].role === 'assistant') return index
+  }
+
+  return -1
+}
+
+function replaceAssistantBranch({
+  messages,
+  userMessageId,
+  assistant,
+}: {
+  readonly messages: readonly UIMessage[]
+  readonly userMessageId: string
+  readonly assistant: UIMessage
+}) {
+  const userIndex = messages.findIndex(
+    (message) => message.id === userMessageId
+  )
+  if (userIndex < 0) return [...messages]
+
+  const assistantIndex = findAssistantIndexAfterUser(messages, userMessageId)
+  if (assistantIndex < 0) {
+    return [
+      ...messages.slice(0, userIndex + 1),
+      assistant,
+      ...messages.slice(userIndex + 1),
+    ]
+  }
+
+  return [
+    ...messages.slice(0, assistantIndex),
+    assistant,
+    ...messages.slice(assistantIndex + 1),
+  ]
 }
 
 export const AgentsChatArea = forwardRef<
@@ -119,6 +163,7 @@ export const AgentsChatArea = forwardRef<
     status,
     error,
     stop,
+    regenerate,
     addToolResult,
   } = useChat({ transport })
 
@@ -127,10 +172,8 @@ export const AgentsChatArea = forwardRef<
   const lastSavedMessagesRef = useRef<UIMessage[]>([])
   const latestMessagesRef = useRef<readonly UIMessage[]>([])
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-  const regenerateTimeoutRef = useRef<
-    ReturnType<typeof setTimeout> | undefined
-  >(undefined)
   const followUpRequestRef = useRef<string | undefined>(undefined)
+  const pendingBranchUserIdRef = useRef<string | undefined>(undefined)
   const prevConversationIdRef = useRef<string | undefined>(undefined)
   const [responseDurations, setResponseDurations] = useState<
     Record<string, number>
@@ -143,6 +186,14 @@ export const AgentsChatArea = forwardRef<
   >({})
   const generatedFollowUpsRef = useRef<Record<string, string[]>>({})
   const followUpErrorsRef = useRef<Record<string, AgentError>>({})
+  const responseBranchesRef = useRef<Record<string, UIMessage[]>>({})
+  const activeBranchIndexesRef = useRef<Record<string, number>>({})
+  const [responseBranches, setResponseBranches] = useState<
+    Record<string, UIMessage[]>
+  >({})
+  const [activeBranchIndexes, setActiveBranchIndexes] = useState<
+    Record<string, number>
+  >({})
 
   const isLoading = status === 'streaming' || status === 'submitted'
   const isEmpty = messages.length === 0
@@ -193,11 +244,6 @@ export const AgentsChatArea = forwardRef<
     if (!currentConversationId) return
     if (currentConversationId === prevConversationIdRef.current) return
 
-    if (regenerateTimeoutRef.current) {
-      clearTimeout(regenerateTimeoutRef.current)
-      regenerateTimeoutRef.current = undefined
-    }
-
     const conversation = conversations.find(
       (item: Conversation) => item.id === currentConversationId
     )
@@ -207,8 +253,13 @@ export const AgentsChatArea = forwardRef<
     setResponseDurations({})
     generatedFollowUpsRef.current = {}
     followUpErrorsRef.current = {}
+    responseBranchesRef.current = {}
+    activeBranchIndexesRef.current = {}
     setGeneratedFollowUps({})
     setFollowUpErrors({})
+    setResponseBranches({})
+    setActiveBranchIndexes({})
+    pendingBranchUserIdRef.current = undefined
     lastSavedMessagesRef.current = conversation.messages
     prevConversationIdRef.current = currentConversationId
   }, [currentConversationId, conversations, setMessages])
@@ -237,19 +288,12 @@ export const AgentsChatArea = forwardRef<
     }
   }, [messages, currentConversationId, updateMessages, status])
 
-  useEffect(() => {
-    return () => {
-      if (regenerateTimeoutRef.current) {
-        clearTimeout(regenerateTimeoutRef.current)
-      }
-    }
-  }, [])
-
   const submitPrompt = useCallback(
     (text: string) => {
       const trimmed = text.trim()
       if (!trimmed || isLoading) return
 
+      pendingBranchUserIdRef.current = undefined
       sendMessage({
         parts: [{ type: 'text', text: trimmed }],
       })
@@ -271,11 +315,6 @@ export const AgentsChatArea = forwardRef<
       clearTimeout(saveTimeoutRef.current)
       saveTimeoutRef.current = undefined
     }
-    if (regenerateTimeoutRef.current) {
-      clearTimeout(regenerateTimeoutRef.current)
-      regenerateTimeoutRef.current = undefined
-    }
-
     setMessages([])
     setResponseDurations({})
     setSessionId(crypto.randomUUID())
@@ -286,8 +325,13 @@ export const AgentsChatArea = forwardRef<
     }
     generatedFollowUpsRef.current = {}
     followUpErrorsRef.current = {}
+    responseBranchesRef.current = {}
+    activeBranchIndexesRef.current = {}
+    pendingBranchUserIdRef.current = undefined
     setGeneratedFollowUps({})
     setFollowUpErrors({})
+    setResponseBranches({})
+    setActiveBranchIndexes({})
   }, [stop, setMessages, currentConversationId, updateMessages])
 
   useImperativeHandle(ref, () => ({ handleClear, submitPrompt }), [
@@ -295,37 +339,101 @@ export const AgentsChatArea = forwardRef<
     submitPrompt,
   ])
 
-  const handleRegenerate = useCallback(() => {
-    stop()
+  const saveAssistantBranch = useCallback(
+    (userMessageId: string, assistant: UIMessage) => {
+      const existing = responseBranchesRef.current[userMessageId] ?? []
+      const existingIndex = existing.findIndex(
+        (branch) => branch.id === assistant.id
+      )
+      const nextBranches =
+        existingIndex >= 0 ? existing : [...existing, assistant]
+      const nextIndex =
+        existingIndex >= 0 ? existingIndex : nextBranches.length - 1
 
-    const lastUserMessage = findLastUserMessage(messages)
-    if (!lastUserMessage) return
+      responseBranchesRef.current = {
+        ...responseBranchesRef.current,
+        [userMessageId]: nextBranches,
+      }
+      activeBranchIndexesRef.current = {
+        ...activeBranchIndexesRef.current,
+        [userMessageId]: nextIndex,
+      }
+      setResponseBranches(responseBranchesRef.current)
+      setActiveBranchIndexes(activeBranchIndexesRef.current)
 
-    const textPart = getTextPart(lastUserMessage)
-    if (!textPart) return
-
-    const messagesWithoutLastExchange = messages.slice(
-      0,
-      messages.lastIndexOf(lastUserMessage)
-    )
-    setMessages(messagesWithoutLastExchange)
-
-    if (regenerateTimeoutRef.current) {
-      clearTimeout(regenerateTimeoutRef.current)
-    }
-
-    regenerateTimeoutRef.current = setTimeout(() => {
-      sendMessage({
-        parts: [{ type: 'text', text: textPart.text }],
-      })
-      regenerateTimeoutRef.current = undefined
-    }, 100)
-  }, [messages, stop, sendMessage, setMessages])
-
-  const lastUserMessageIndex = useMemo(
-    () => messages.findLastIndex((message) => message.role === 'user'),
-    [messages]
+      return nextIndex
+    },
+    []
   )
+
+  const handleRegenerate = useCallback(
+    (assistantMessageId?: string) => {
+      if (isLoading) return
+
+      const assistantIndex =
+        assistantMessageId != null
+          ? messages.findIndex((message) => message.id === assistantMessageId)
+          : messages.findLastIndex((message) => message.role === 'assistant')
+      const assistantMessage =
+        assistantIndex >= 0 ? messages[assistantIndex] : undefined
+      const userMessageId =
+        assistantIndex >= 0
+          ? findPrecedingUserMessageId(messages, assistantIndex)
+          : findLastUserMessage(messages)?.id
+
+      if (!userMessageId) return
+
+      if (assistantMessage?.role === 'assistant') {
+        saveAssistantBranch(userMessageId, assistantMessage)
+      }
+
+      pendingBranchUserIdRef.current = userMessageId
+      void regenerate({ messageId: assistantMessage?.id ?? userMessageId })
+    },
+    [isLoading, messages, regenerate, saveAssistantBranch]
+  )
+
+  const handleBranchChange = useCallback(
+    (userMessageId: string, branchIndex: number) => {
+      const assistant =
+        responseBranchesRef.current[userMessageId]?.[branchIndex]
+      if (!assistant) return
+
+      activeBranchIndexesRef.current = {
+        ...activeBranchIndexesRef.current,
+        [userMessageId]: branchIndex,
+      }
+      setActiveBranchIndexes(activeBranchIndexesRef.current)
+      setMessages((currentMessages) =>
+        replaceAssistantBranch({
+          messages: currentMessages,
+          userMessageId,
+          assistant,
+        })
+      )
+    },
+    [setMessages]
+  )
+
+  useEffect(() => {
+    if (status !== 'ready') return
+
+    const userMessageId = pendingBranchUserIdRef.current
+    if (!userMessageId || !lastAssistantMessage) return
+
+    saveAssistantBranch(userMessageId, lastAssistantMessage)
+    pendingBranchUserIdRef.current = undefined
+  }, [lastAssistantMessage, saveAssistantBranch, status])
+
+  useEffect(() => {
+    if (status === 'error') {
+      pendingBranchUserIdRef.current = undefined
+    }
+  }, [status])
+
+  const handleRootErrorRetry = useCallback(() => {
+    handleRegenerate()
+  }, [handleRegenerate])
 
   useEffect(() => {
     if (status !== 'ready' || isLoading || error || !lastAssistantMessageId) {
@@ -449,21 +557,15 @@ export const AgentsChatArea = forwardRef<
       {!hideHeader && (
         <AgentChatHeader
           isSidebarOpen={isSidebarOpen}
-          isLoading={isLoading}
           onClear={handleClear}
           onMenuClick={onMenuClick}
-          onStop={stop}
         />
       )}
 
       {hideHeader &&
         !hideCompactControls &&
         (isLoading || messages.length > 0) && (
-          <AgentChatCompactControls
-            isLoading={isLoading}
-            onClear={handleClear}
-            onStop={stop}
-          />
+          <AgentChatCompactControls onClear={handleClear} />
         )}
 
       <ConversationUI>
@@ -483,19 +585,36 @@ export const AgentsChatArea = forwardRef<
                 const isLatestAssistant =
                   message.role === 'assistant' &&
                   lastAssistantMessage?.id === message.id
+                const userMessageId =
+                  message.role === 'assistant'
+                    ? findPrecedingUserMessageId(messages, index)
+                    : undefined
+                const branchCount = userMessageId
+                  ? (responseBranches[userMessageId]?.length ?? 1)
+                  : 1
+                const branchIndex = userMessageId
+                  ? (activeBranchIndexes[userMessageId] ?? branchCount - 1)
+                  : 0
 
                 return (
                   <ChatMessage
                     key={message.id}
                     message={message}
-                    isLastUserMessage={index === lastUserMessageIndex}
                     isStreaming={isMessageStreaming}
                     responseDurationMs={responseDurations[message.id]}
                     error={isLatestAssistant && !isLoading ? error : null}
                     followUpError={followUpErrors[message.id] ?? null}
                     onRegenerate={
-                      index === lastUserMessageIndex
-                        ? handleRegenerate
+                      isLatestAssistant && !isLoading
+                        ? () => handleRegenerate(message.id)
+                        : undefined
+                    }
+                    branchIndex={branchIndex}
+                    branchCount={branchCount}
+                    onBranchChange={
+                      userMessageId && branchCount > 1
+                        ? (nextIndex) =>
+                            handleBranchChange(userMessageId, nextIndex)
                         : undefined
                     }
                     onErrorDismiss={handleClear}
@@ -512,7 +631,7 @@ export const AgentsChatArea = forwardRef<
       {error && !lastAssistantMessage && (
         <AgentErrorDisplay
           error={error}
-          onRetry={handleRegenerate}
+          onRetry={handleRootErrorRetry}
           onDismiss={handleClear}
         />
       )}
@@ -533,34 +652,13 @@ export const AgentsChatArea = forwardRef<
         )}
         <PromptInputTextareaWithMentions
           disabled={isLoading}
+          isLoading={isLoading}
+          onStop={stop}
           onResolvedSubmit={submitPrompt}
         />
         <p className="mt-2 px-1 text-[11px] leading-4 text-muted-foreground">
           Messages are stored in this browser&apos;s localStorage.
         </p>
-        {isLoading && messages.length > 0 && (
-          <div className="mt-2 flex items-center justify-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRegenerate}
-              className="h-7 text-xs transition-[transform,background-color] active:scale-[0.96]"
-            >
-              <RefreshCwIcon className="mr-1 h-3 w-3" />
-              Regenerate
-            </Button>
-            <span className="text-xs text-muted-foreground">or</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={stop}
-              className="h-7 text-xs transition-[transform,background-color] active:scale-[0.96]"
-            >
-              <SquareIcon className="mr-1 h-3 w-3" />
-              Stop
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowUpIcon } from 'lucide-react'
+import { ArrowUpIcon, SquareIcon } from 'lucide-react'
 
 import type { ChangeEvent, KeyboardEvent } from 'react'
 import type { AutocompleteItem } from './types'
@@ -27,6 +27,8 @@ interface PromptInputTextareaWithMentionsProps {
   className?: string
   /** Called when the resolved message (with mention context) is ready */
   onResolvedSubmit?: (fullText: string) => void
+  isLoading?: boolean
+  onStop?: () => void
   /** Sync text value for external state management */
   value?: string
   onChange?: (value: string) => void
@@ -37,6 +39,8 @@ export function PromptInputTextareaWithMentions({
   disabled,
   className,
   onResolvedSubmit,
+  isLoading = false,
+  onStop,
   value: controlledValue,
   onChange: controlledOnChange,
 }: PromptInputTextareaWithMentionsProps) {
@@ -58,6 +62,8 @@ export function PromptInputTextareaWithMentions({
 
   const autocomplete = useAutocomplete()
   const { tables, resources, skills, commands } = useAutocompleteData()
+  const autocompleteQuery = autocomplete.state.query
+  const setAutocompleteFilteredItems = autocomplete.setFilteredItems
 
   // Build filterable items based on current trigger
   const allItems = useMemo<AutocompleteItem[]>(() => {
@@ -79,7 +85,7 @@ export function PromptInputTextareaWithMentions({
 
   // Filter items by query
   useEffect(() => {
-    const query = autocomplete.state.query.toLowerCase()
+    const query = autocompleteQuery.toLowerCase()
     const filtered = query
       ? allItems.filter(
           (item) =>
@@ -87,8 +93,8 @@ export function PromptInputTextareaWithMentions({
             item.description?.toLowerCase().includes(query)
         )
       : allItems
-    autocomplete.setFilteredItems(filtered.slice(0, 50))
-  }, [autocomplete.state.query, allItems, autocomplete])
+    setAutocompleteFilteredItems(filtered.slice(0, 50))
+  }, [autocompleteQuery, allItems, setAutocompleteFilteredItems])
 
   // Compute anchor position for popover
   const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(
@@ -178,6 +184,16 @@ export function PromptInputTextareaWithMentions({
   const hasMentions =
     autocomplete.mentions.length > 0 || autocomplete.slashCommand !== null
   const canSubmit = value.trim().length > 0 && !disabled
+  const buttonDisabled = isLoading ? !onStop : !canSubmit
+
+  const handleActionClick = useCallback(() => {
+    if (isLoading) {
+      onStop?.()
+      return
+    }
+
+    void handleSubmit()
+  }, [handleSubmit, isLoading, onStop])
 
   return (
     <div className="relative">
@@ -216,17 +232,23 @@ export function PromptInputTextareaWithMentions({
         <InputGroupAddon align="inline-end">
           <InputGroupButton
             size="icon-sm"
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            aria-label="Send message"
+            onClick={handleActionClick}
+            disabled={buttonDisabled}
+            aria-label={isLoading ? 'Stop response' : 'Send message'}
             className={cn(
               'rounded-full transition-[transform,background-color,color] active:scale-[0.96]',
-              canSubmit
-                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                : 'bg-muted text-muted-foreground'
+              isLoading
+                ? 'bg-foreground text-background hover:bg-foreground/90'
+                : canSubmit
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'bg-muted text-muted-foreground'
             )}
           >
-            <ArrowUpIcon className="size-4" />
+            {isLoading ? (
+              <SquareIcon className="size-3.5 fill-current" />
+            ) : (
+              <ArrowUpIcon className="size-4" />
+            )}
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
