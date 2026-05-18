@@ -133,6 +133,37 @@ function getBranchSignature(message: UIMessage): string {
   }
 }
 
+function hashString(value: string): string {
+  let hash = 0
+  for (let index = 0; index < value.length; index++) {
+    hash = (hash * 31 + value.charCodeAt(index)) | 0
+  }
+  return Math.abs(hash).toString(36)
+}
+
+function getBranchCacheKey(message: UIMessage): string {
+  return `${message.id}:${hashString(getBranchSignature(message))}`
+}
+
+function getUserPromptText(message?: UIMessage): string {
+  if (!message) return ''
+
+  return message.parts
+    .map((part) => {
+      if (typeof part !== 'object' || part === null || !('type' in part)) {
+        return null
+      }
+
+      const typedPart = part as { type?: unknown; text?: unknown }
+      return typedPart.type === 'text' && typeof typedPart.text === 'string'
+        ? typedPart.text
+        : null
+    })
+    .filter((text): text is string => Boolean(text?.trim()))
+    .join('\n\n')
+    .trim()
+}
+
 function clampFollowUpText(value: string): string {
   const maxChars = 1_200
   if (value.length <= maxChars) return value
@@ -274,11 +305,13 @@ export const AgentsChatArea = forwardRef<
     () => findLastAssistantMessage(messages),
     [messages]
   )
+  const lastAssistantFollowUpKey = lastAssistantMessage
+    ? getBranchCacheKey(lastAssistantMessage)
+    : undefined
   const followUpSuggestions =
-    lastAssistantMessage != null
-      ? (generatedFollowUps[lastAssistantMessage.id] ?? [])
+    lastAssistantFollowUpKey != null
+      ? (generatedFollowUps[lastAssistantFollowUpKey] ?? [])
       : []
-  const lastAssistantMessageId = lastAssistantMessage?.id
 
   useEffect(() => {
     latestMessagesRef.current = messages
@@ -426,21 +459,6 @@ export const AgentsChatArea = forwardRef<
       const nextIndex =
         existingIndex >= 0 ? existingIndex : nextBranches.length - 1
 
-      if (existingIndex < 0) {
-        if (generatedFollowUpsRef.current[assistant.id]) {
-          const { [assistant.id]: _removed, ...nextFollowUps } =
-            generatedFollowUpsRef.current
-          generatedFollowUpsRef.current = nextFollowUps
-          setGeneratedFollowUps(nextFollowUps)
-        }
-        if (followUpErrorsRef.current[assistant.id]) {
-          const { [assistant.id]: _removed, ...nextErrors } =
-            followUpErrorsRef.current
-          followUpErrorsRef.current = nextErrors
-          setFollowUpErrors(nextErrors)
-        }
-      }
-
       responseBranchesRef.current = {
         ...responseBranchesRef.current,
         [userMessageId]: nextBranches,
@@ -527,24 +545,26 @@ export const AgentsChatArea = forwardRef<
   }, [status])
 
   const handleRootErrorRetry = useCallback(() => {
-    handleRegenerate()
-  }, [handleRegenerate])
+    const prompt = getUserPromptText(findLastUserMessage(messages))
+    if (!prompt) return
+    submitPrompt(prompt)
+  }, [messages, submitPrompt])
 
   useEffect(() => {
-    if (status !== 'ready' || isLoading || error || !lastAssistantMessageId) {
+    if (status !== 'ready' || isLoading || error || !lastAssistantFollowUpKey) {
       return
     }
 
-    const messageId = lastAssistantMessageId
+    const cacheKey = lastAssistantFollowUpKey
     if (
-      followUpRequestRef.current === messageId ||
-      generatedFollowUpsRef.current[messageId] ||
-      followUpErrorsRef.current[messageId]
+      followUpRequestRef.current === cacheKey ||
+      generatedFollowUpsRef.current[cacheKey] ||
+      followUpErrorsRef.current[cacheKey]
     ) {
       return
     }
 
-    followUpRequestRef.current = messageId
+    followUpRequestRef.current = cacheKey
     const controller = new AbortController()
 
     async function generateFollowUps(signal: AbortSignal) {
@@ -579,7 +599,7 @@ export const AgentsChatArea = forwardRef<
           setFollowUpErrors((previous) => {
             const next = {
               ...previous,
-              [messageId]: nextError,
+              [cacheKey]: nextError,
             }
             followUpErrorsRef.current = next
             return next
@@ -599,7 +619,7 @@ export const AgentsChatArea = forwardRef<
           setGeneratedFollowUps((previous) => {
             const next = {
               ...previous,
-              [messageId]: suggestions.slice(0, 3),
+              [cacheKey]: suggestions.slice(0, 3),
             }
             generatedFollowUpsRef.current = next
             return next
@@ -628,13 +648,13 @@ export const AgentsChatArea = forwardRef<
         setFollowUpErrors((previous) => {
           const next = {
             ...previous,
-            [messageId]: nextError,
+            [cacheKey]: nextError,
           }
           followUpErrorsRef.current = next
           return next
         })
       } finally {
-        if (!signal.aborted && followUpRequestRef.current === messageId) {
+        if (!signal.aborted && followUpRequestRef.current === cacheKey) {
           followUpRequestRef.current = undefined
         }
       }
@@ -644,11 +664,11 @@ export const AgentsChatArea = forwardRef<
 
     return () => {
       controller.abort()
-      if (followUpRequestRef.current === messageId) {
+      if (followUpRequestRef.current === cacheKey) {
         followUpRequestRef.current = undefined
       }
     }
-  }, [status, isLoading, error, lastAssistantMessageId, model])
+  }, [status, isLoading, error, lastAssistantFollowUpKey, model])
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -693,6 +713,10 @@ export const AgentsChatArea = forwardRef<
                 const branchIndex = userMessageId
                   ? (activeBranchIndexes[userMessageId] ?? branchCount - 1)
                   : 0
+                const followUpKey =
+                  message.role === 'assistant'
+                    ? getBranchCacheKey(message)
+                    : undefined
 
                 return (
                   <ChatMessage
@@ -701,7 +725,9 @@ export const AgentsChatArea = forwardRef<
                     isStreaming={isMessageStreaming}
                     responseDurationMs={responseDurations[message.id]}
                     error={isLatestAssistant && !isLoading ? error : null}
-                    followUpError={followUpErrors[message.id] ?? null}
+                    followUpError={
+                      followUpKey ? (followUpErrors[followUpKey] ?? null) : null
+                    }
                     onRegenerate={
                       isLatestAssistant && !isLoading
                         ? () => handleRegenerate(message.id)
