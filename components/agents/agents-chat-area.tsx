@@ -41,6 +41,9 @@ import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
 
+const FOLLOW_UP_RETRY_DELAY_MS = 10_000
+const MAX_FOLLOW_UP_RETRY_ATTEMPTS = 3
+
 export interface AgentsChatAreaRef {
   handleClear: () => void
   submitPrompt: (text: string) => void
@@ -52,6 +55,11 @@ interface AgentsChatAreaProps {
   readonly hideHeader?: boolean
   readonly hideCompactControls?: boolean
   readonly onMessagesChange?: (messages: readonly UIMessage[]) => void
+}
+
+interface FollowUpRetryRequest {
+  readonly cacheKey: string
+  readonly attempt: number
 }
 
 function findLastAssistantMessage(messages: readonly UIMessage[]) {
@@ -261,8 +269,13 @@ export const AgentsChatArea = forwardRef<
   const [followUpErrors, setFollowUpErrors] = useState<
     Record<string, AgentError>
   >({})
+  const [followUpRetryRequest, setFollowUpRetryRequest] =
+    useState<FollowUpRetryRequest | null>(null)
   const generatedFollowUpsRef = useRef<Record<string, string[]>>({})
   const followUpErrorsRef = useRef<Record<string, AgentError>>({})
+  const followUpRetryAttemptsRef = useRef<Record<string, number>>({})
+  const followUpRetryConsumedRef = useRef<Record<string, number>>({})
+  const followUpRetryTimersRef = useRef<Record<string, NodeJS.Timeout>>({})
   const responseBranchesRef = useRef<Record<string, UIMessage[]>>({})
   const activeBranchIndexesRef = useRef<Record<string, number>>({})
   const [responseBranches, setResponseBranches] = useState<
@@ -286,10 +299,57 @@ export const AgentsChatArea = forwardRef<
       ? (generatedFollowUps[lastAssistantFollowUpKey] ?? [])
       : []
 
+  const clearFollowUpRetryState = useCallback((cacheKey: string) => {
+    const timer = followUpRetryTimersRef.current[cacheKey]
+    if (timer) clearTimeout(timer)
+    delete followUpRetryTimersRef.current[cacheKey]
+    delete followUpRetryAttemptsRef.current[cacheKey]
+  }, [])
+
+  const clearAllFollowUpRetryState = useCallback(() => {
+    for (const timer of Object.values(followUpRetryTimersRef.current)) {
+      clearTimeout(timer)
+    }
+    followUpRetryTimersRef.current = {}
+    followUpRetryAttemptsRef.current = {}
+    followUpRetryConsumedRef.current = {}
+    setFollowUpRetryRequest(null)
+  }, [])
+
+  const clearFollowUpError = useCallback((cacheKey: string) => {
+    if (!followUpErrorsRef.current[cacheKey]) return
+
+    setFollowUpErrors((previous) => {
+      const next = { ...previous }
+      delete next[cacheKey]
+      followUpErrorsRef.current = next
+      return next
+    })
+  }, [])
+
+  const scheduleFollowUpRetry = useCallback((cacheKey: string) => {
+    if (followUpRetryTimersRef.current[cacheKey]) return
+
+    const nextAttempt = (followUpRetryAttemptsRef.current[cacheKey] ?? 0) + 1
+    if (nextAttempt > MAX_FOLLOW_UP_RETRY_ATTEMPTS) return
+
+    followUpRetryAttemptsRef.current[cacheKey] = nextAttempt
+    followUpRetryTimersRef.current[cacheKey] = setTimeout(() => {
+      delete followUpRetryTimersRef.current[cacheKey]
+      setFollowUpRetryRequest({ cacheKey, attempt: nextAttempt })
+    }, FOLLOW_UP_RETRY_DELAY_MS)
+  }, [])
+
   useEffect(() => {
     latestMessagesRef.current = messages
     onMessagesChange?.(messages)
   }, [messages, onMessagesChange])
+
+  useEffect(() => {
+    return () => {
+      clearAllFollowUpRetryState()
+    }
+  }, [clearAllFollowUpRetryState])
 
   useEffect(() => {
     const previousStatus = prevStatusRef.current
@@ -332,6 +392,7 @@ export const AgentsChatArea = forwardRef<
     setResponseDurations({})
     generatedFollowUpsRef.current = {}
     followUpErrorsRef.current = {}
+    clearAllFollowUpRetryState()
     responseBranchesRef.current = {}
     activeBranchIndexesRef.current = {}
     setGeneratedFollowUps({})
@@ -341,7 +402,12 @@ export const AgentsChatArea = forwardRef<
     pendingBranchUserIdRef.current = undefined
     lastSavedMessagesRef.current = conversation.messages
     prevConversationIdRef.current = currentConversationId
-  }, [currentConversationId, conversations, setMessages])
+  }, [
+    currentConversationId,
+    conversations,
+    setMessages,
+    clearAllFollowUpRetryState,
+  ])
 
   useEffect(() => {
     if (!currentConversationId) return
@@ -404,6 +470,7 @@ export const AgentsChatArea = forwardRef<
     }
     generatedFollowUpsRef.current = {}
     followUpErrorsRef.current = {}
+    clearAllFollowUpRetryState()
     responseBranchesRef.current = {}
     activeBranchIndexesRef.current = {}
     pendingBranchUserIdRef.current = undefined
@@ -411,7 +478,13 @@ export const AgentsChatArea = forwardRef<
     setFollowUpErrors({})
     setResponseBranches({})
     setActiveBranchIndexes({})
-  }, [stop, setMessages, currentConversationId, updateMessages])
+  }, [
+    stop,
+    setMessages,
+    currentConversationId,
+    updateMessages,
+    clearAllFollowUpRetryState,
+  ])
 
   useImperativeHandle(ref, () => ({ handleClear, submitPrompt }), [
     handleClear,
@@ -533,12 +606,24 @@ export const AgentsChatArea = forwardRef<
     }
 
     const cacheKey = lastAssistantFollowUpKey
+    const retryAttempt =
+      followUpRetryRequest?.cacheKey === cacheKey
+        ? followUpRetryRequest.attempt
+        : 0
+    const isScheduledRetry =
+      retryAttempt > 0 &&
+      followUpRetryConsumedRef.current[cacheKey] !== retryAttempt
+
     if (
       followUpRequestRef.current === cacheKey ||
       generatedFollowUpsRef.current[cacheKey] ||
-      followUpErrorsRef.current[cacheKey]
+      (followUpErrorsRef.current[cacheKey] && !isScheduledRetry)
     ) {
       return
+    }
+
+    if (isScheduledRetry) {
+      followUpRetryConsumedRef.current[cacheKey] = retryAttempt
     }
 
     followUpRequestRef.current = cacheKey
@@ -581,8 +666,12 @@ export const AgentsChatArea = forwardRef<
             followUpErrorsRef.current = next
             return next
           })
+          scheduleFollowUpRetry(cacheKey)
           return
         }
+
+        clearFollowUpRetryState(cacheKey)
+        clearFollowUpError(cacheKey)
 
         const suggestions = Array.isArray(payload?.suggestions)
           ? payload.suggestions.filter(
@@ -630,6 +719,7 @@ export const AgentsChatArea = forwardRef<
           followUpErrorsRef.current = next
           return next
         })
+        scheduleFollowUpRetry(cacheKey)
       } finally {
         if (!signal.aborted && followUpRequestRef.current === cacheKey) {
           followUpRequestRef.current = undefined
@@ -645,7 +735,17 @@ export const AgentsChatArea = forwardRef<
         followUpRequestRef.current = undefined
       }
     }
-  }, [status, isLoading, error, lastAssistantFollowUpKey, model])
+  }, [
+    status,
+    isLoading,
+    error,
+    lastAssistantFollowUpKey,
+    model,
+    followUpRetryRequest,
+    clearFollowUpError,
+    clearFollowUpRetryState,
+    scheduleFollowUpRetry,
+  ])
 
   return (
     <div className="flex h-full min-h-0 flex-col">
