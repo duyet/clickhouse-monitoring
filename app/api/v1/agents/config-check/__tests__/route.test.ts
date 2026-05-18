@@ -24,8 +24,11 @@ beforeEach(() => {
   delete process.env.LLM_API_KEY
   delete process.env.LLM_API_BASE
   delete process.env.ANYROUTER_API_KEY
+  delete process.env.ANYROUTER_API_BASE
   delete process.env.OPENROUTER_API_KEY
+  delete process.env.OPENROUTER_API_BASE
   delete process.env.NVIDIA_API_KEY
+  delete process.env.NVIDIA_API_BASE
   mockClerkUserId = null
 })
 
@@ -39,7 +42,9 @@ describe('GET /api/v1/agents/config-check', () => {
   test('skips auth when agent access is public and auth provider is disabled', async () => {
     process.env.CHM_FEATURE_AGENT_ACCESS = 'public'
 
-    const response = await GET(configRequest())
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
 
     expect(response.status).toBe(200)
   })
@@ -94,6 +99,27 @@ describe('GET /api/v1/agents/config-check', () => {
     ).toMatchObject({
       configured: true,
       baseURL: 'https://anyrouter.dev/api/v1',
+    })
+  })
+
+  test('does not expose custom provider base URLs', async () => {
+    process.env.ANYROUTER_API_KEY = 'sk-ar-test'
+    process.env.ANYROUTER_API_BASE =
+      'https://token:secret@internal.example.test/v1'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+    const body = await response.json()
+    const anyrouter = body.providers.find(
+      (provider: { id: string }) => provider.id === 'anyrouter'
+    )
+
+    expect(response.status).toBe(200)
+    expect(JSON.stringify(body)).not.toContain('secret@internal')
+    expect(anyrouter).toMatchObject({
+      hasBaseURLOverride: true,
+      baseURL: 'custom',
     })
   })
 })

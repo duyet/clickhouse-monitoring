@@ -12,7 +12,7 @@ import type { ProviderOptions } from '@ai-sdk/provider-utils'
 
 import { createMcpTools } from './mcp-tool-adapter'
 import { CLICKHOUSE_AGENT_INSTRUCTIONS } from './prompts/clickhouse-instructions'
-import { resolveAgentChatModel } from './provider-chat-model'
+import { DEFAULT_MODEL, resolveAgentChatModel } from './provider-chat-model'
 import { stepCountIs, ToolLoopAgent } from 'ai'
 
 function filterTools<T extends Record<string, unknown>>(
@@ -26,8 +26,6 @@ function filterTools<T extends Record<string, unknown>>(
   }
   return filtered
 }
-
-const DEFAULT_MODEL = process.env.LLM_MODEL || 'openrouter:openrouter/auto'
 
 const DEFAULT_MAX_STEPS = 30
 

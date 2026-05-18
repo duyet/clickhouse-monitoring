@@ -102,7 +102,18 @@ async function readJsonBody(
     }
   }
 
-  const text = await request.text()
+  let text: string
+  try {
+    text = await request.text()
+  } catch (_error) {
+    return {
+      ok: false,
+      status: 400,
+      code: 'INVALID_BODY',
+      message: 'Invalid request body',
+    }
+  }
+
   if (new TextEncoder().encode(text).byteLength > MAX_REQUEST_BODY_BYTES) {
     return {
       ok: false,

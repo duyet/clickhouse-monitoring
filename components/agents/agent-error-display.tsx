@@ -60,8 +60,8 @@ interface AgentErrorDisplayProps {
 /**
  * Renders a structured, rich display of an agent error.
  *
- * Tries to parse `error.message` as JSON (AgentError); falls back to a plain
- * string representation when the message is not structured JSON.
+ * Calls `parseAgentError(error)` to extract AgentError metadata and falls back
+ * to plain `error.message` when structured metadata is unavailable.
  */
 export function AgentErrorDisplay({
   error,

@@ -161,7 +161,9 @@ export function MessageDetailsDialog({
               {metadata.toolCallCount} tools
             </Badge>
             <Badge variant="outline" className="justify-center rounded-full">
-              {responseDurationMs ? formatDuration(responseDurationMs) : '-'}
+              {responseDurationMs != null
+                ? formatDuration(responseDurationMs)
+                : '-'}
             </Badge>
             <Badge variant="outline" className="justify-center rounded-full">
               {formatCost(metadata.usage?.estimatedCostUsd)}
@@ -179,7 +181,9 @@ export function MessageDetailsDialog({
               <DetailRow
                 label="Duration"
                 value={
-                  responseDurationMs ? formatDuration(responseDurationMs) : null
+                  responseDurationMs != null
+                    ? formatDuration(responseDurationMs)
+                    : null
                 }
                 mono
               />
@@ -229,18 +233,20 @@ export function MessageDetailsDialog({
               <DetailRow
                 label="Tool duration"
                 value={
-                  metadata.totalToolDurationMs > 0
+                  metadata.totalToolDurationMs != null
                     ? formatDuration(metadata.totalToolDurationMs)
                     : null
                 }
                 mono
               />
-              {metadata.tools.slice(0, 4).map((tool, index) => (
+              {metadata.tools.map((tool, index) => (
                 <DetailRow
                   key={tool.toolCallId ?? `${tool.name}-${index}`}
                   label={tool.name}
                   value={
-                    tool.durationMs ? formatDuration(tool.durationMs) : 'called'
+                    tool.durationMs != null
+                      ? formatDuration(tool.durationMs)
+                      : 'called'
                   }
                   mono
                 />

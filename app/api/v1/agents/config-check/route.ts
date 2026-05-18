@@ -27,8 +27,16 @@ interface ConfigStatus {
     name: string
     configured: boolean
     apiKeyEnvVar: string
+    hasBaseURLOverride: boolean
     baseURL: string
   }>
+}
+
+function getRequiredApiKeyLabel(): string {
+  const providerKeys = Object.values(PROVIDERS).map(
+    (provider) => provider.apiKeyEnvVar
+  )
+  return `${providerKeys.join(', ')}, or LLM_API_KEY`
 }
 
 /**
@@ -39,36 +47,47 @@ interface ConfigStatus {
  * URLs, so only at least one provider key is required.
  */
 export async function GET(request: Request) {
-  const authResponse = await authorizeAgentApiRequest(request)
-  if (authResponse) return authResponse
+  try {
+    const authResponse = await authorizeAgentApiRequest(request)
+    if (authResponse) return authResponse
 
-  const providers = Object.values(PROVIDERS).map((provider) => ({
-    id: provider.id,
-    name: provider.name,
-    configured: isProviderConfigured(provider.id),
-    apiKeyEnvVar: provider.apiKeyEnvVar,
-    baseURL:
-      (provider.baseURLEnvVar && process.env[provider.baseURLEnvVar]) ||
-      provider.baseURL,
-  }))
+    const providers = Object.values(PROVIDERS).map((provider) => {
+      const hasBaseURLOverride = Boolean(
+        provider.baseURLEnvVar && process.env[provider.baseURLEnvVar]
+      )
+      return {
+        id: provider.id,
+        name: provider.name,
+        configured: isProviderConfigured(provider.id),
+        apiKeyEnvVar: provider.apiKeyEnvVar,
+        hasBaseURLOverride,
+        baseURL: hasBaseURLOverride ? 'custom' : provider.baseURL,
+      }
+    })
 
-  const configured: ConfigStatus['configured'] = {
-    apiKey: providers.some((provider) => provider.configured),
-    apiBase: true,
+    const configured: ConfigStatus['configured'] = {
+      apiKey: providers.some((provider) => provider.configured),
+      apiBase: true,
+    }
+
+    const isFullyConfigured = configured.apiKey
+
+    const requiredKeys: ConfigStatus['requiredKeys'] = {
+      apiKey: getRequiredApiKeyLabel(),
+      apiBase: 'Provider default base URL',
+    }
+
+    return NextResponse.json({
+      configured,
+      isFullyConfigured,
+      requiredKeys,
+      providers,
+    } satisfies ConfigStatus)
+  } catch (error) {
+    console.error('[Agent Config Check] Failed to read config:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
-
-  const isFullyConfigured = configured.apiKey
-
-  const requiredKeys: ConfigStatus['requiredKeys'] = {
-    apiKey:
-      'ANYROUTER_API_KEY, OPENROUTER_API_KEY, NVIDIA_API_KEY, or LLM_API_KEY',
-    apiBase: 'Provider default base URL',
-  }
-
-  return NextResponse.json({
-    configured,
-    isFullyConfigured,
-    requiredKeys,
-    providers,
-  } satisfies ConfigStatus)
 }

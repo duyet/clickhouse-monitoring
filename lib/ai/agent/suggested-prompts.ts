@@ -1,5 +1,12 @@
 import type { UIMessage } from 'ai'
 
+const RECENT_MESSAGE_COUNT = 8
+const MIN_CONTEXT_TOKEN_LENGTH = 3
+const DEFAULT_PROMPT_LIMIT = 3
+
+/**
+ * Operational group used to organize reusable agent prompt suggestions.
+ */
 export type SuggestedPromptCategory =
   | 'Insights'
   | 'Performance'
@@ -10,6 +17,12 @@ export type SuggestedPromptCategory =
   | 'Operations'
   | 'Access'
 
+/**
+ * Immutable prompt suggestion shown in empty states and the agent sidebar.
+ *
+ * `text` is submitted to chat, `category` groups the prompt for UI context,
+ * and `tags` are matched against recent conversation text for ranking.
+ */
 export interface SuggestedPrompt {
   readonly text: string
   readonly category: SuggestedPromptCategory
@@ -96,19 +109,29 @@ function messageText(message: UIMessage): string {
 }
 
 function contextTokens(messages: readonly UIMessage[]): Set<string> {
-  const text = messages.slice(-8).map(messageText).join(' ').toLowerCase()
+  const text = messages
+    .slice(-RECENT_MESSAGE_COUNT)
+    .map(messageText)
+    .join(' ')
+    .toLowerCase()
   const tokens = new Set<string>()
 
   for (const word of text.match(/[a-z0-9_]+/g) ?? []) {
-    if (word.length >= 3) tokens.add(word)
+    if (word.length >= MIN_CONTEXT_TOKEN_LENGTH) tokens.add(word)
   }
 
   return tokens
 }
 
+/**
+ * Returns starter prompts ranked by recent conversation context.
+ *
+ * @returns Up to `limit` prompt suggestions, keeping stable starter order for
+ * equally relevant prompts.
+ */
 export function getSuggestedPrompts({
   messages = [],
-  limit = 3,
+  limit = DEFAULT_PROMPT_LIMIT,
 }: {
   readonly messages?: readonly UIMessage[]
   readonly limit?: number

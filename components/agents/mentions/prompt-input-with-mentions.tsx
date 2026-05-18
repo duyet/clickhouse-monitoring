@@ -168,10 +168,14 @@ export function PromptInputTextareaWithMentions({
       // Normal Enter = submit form
       if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
         e.preventDefault()
-        handleSubmit()
+        if (isLoading) {
+          onStop?.()
+          return
+        }
+        void handleSubmit()
       }
     },
-    [autocomplete, setValue, handleSubmit]
+    [autocomplete, setValue, handleSubmit, isLoading, onStop]
   )
 
   const handleSelect = useCallback(
