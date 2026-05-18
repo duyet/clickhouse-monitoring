@@ -28,16 +28,16 @@ describe('parseModelId', () => {
     })
   })
 
-  test('legacy format without colon defaults to openrouter', () => {
+  test('legacy format without known provider defaults to legacy provider marker', () => {
     expect(parseModelId('qwen/qwen3-coder:free')).toEqual({
-      provider: 'openrouter',
+      provider: 'legacy',
       model: 'qwen/qwen3-coder:free',
     })
   })
 
-  test('legacy openrouter/free defaults to openrouter', () => {
+  test('unprefixed openrouter/free uses legacy provider marker', () => {
     expect(parseModelId('openrouter/free')).toEqual({
-      provider: 'openrouter',
+      provider: 'legacy',
       model: 'openrouter/free',
     })
   })
@@ -66,12 +66,12 @@ describe('resolveProvider', () => {
     expect(resolved.isOpenRouter).toBe(false)
   })
 
-  test('nvidia falls back to LLM_API_KEY', () => {
+  test('nvidia does not fall back to LLM_API_KEY', () => {
     setEnv({ LLM_API_KEY: 'fallback-key', NVIDIA_API_KEY: undefined })
     const resolved = resolveProvider(
       'nvidia:nvidia/llama-3.1-nemotron-70b-instruct'
     )
-    expect(resolved.apiKey).toBe('fallback-key')
+    expect(resolved.apiKey).toBe('')
   })
 
   test('resolves openrouter provider', () => {

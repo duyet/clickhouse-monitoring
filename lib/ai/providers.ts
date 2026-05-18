@@ -75,7 +75,7 @@ export function parseModelId(id: string): { provider: string; model: string } {
       return { provider: prefix, model: id.slice(idx + 1) }
     }
   }
-  return { provider: 'openrouter', model: id }
+  return { provider: 'legacy', model: id }
 }
 
 export interface ResolvedProvider {
@@ -118,7 +118,8 @@ export function resolveProvider(id: string): ResolvedProvider {
 
   const config = PROVIDERS[providerId]
   const apiKey =
-    process.env[config.apiKeyEnvVar] || process.env.LLM_API_KEY || ''
+    process.env[config.apiKeyEnvVar] ||
+    (providerId === 'openrouter' ? process.env.LLM_API_KEY || '' : '')
   const baseURL =
     (config.baseURLEnvVar && process.env[config.baseURLEnvVar]) ||
     config.baseURL
