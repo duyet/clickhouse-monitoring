@@ -83,6 +83,43 @@ function getTextFromPart(part: unknown): string | null {
   return null
 }
 
+async function readRequestBodyTextWithLimit(
+  request: Request,
+  maxBytes: number
+): Promise<string | null> {
+  const bodyStream = request.body
+  if (!bodyStream) return ''
+
+  const reader = bodyStream.getReader()
+  const decoder = new TextDecoder()
+  const chunks: string[] = []
+  let byteLength = 0
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      byteLength += value.length
+      if (byteLength > maxBytes) {
+        try {
+          await reader.cancel()
+        } catch (_error) {
+          // Ignore cancellation errors if the stream is already closed.
+        }
+        return null
+      }
+
+      chunks.push(decoder.decode(value, { stream: true }))
+    }
+  } finally {
+    reader.releaseLock()
+  }
+
+  chunks.push(decoder.decode())
+  return chunks.join('')
+}
+
 async function readJsonBody(
   request: Request
 ): Promise<
@@ -104,22 +141,25 @@ async function readJsonBody(
 
   let text: string
   try {
-    text = await request.text()
+    const bodyText = await readRequestBodyTextWithLimit(
+      request,
+      MAX_REQUEST_BODY_BYTES
+    )
+    if (bodyText === null) {
+      return {
+        ok: false,
+        status: 413,
+        code: 'PAYLOAD_TOO_LARGE',
+        message: 'Follow-up request body is too large.',
+      }
+    }
+    text = bodyText
   } catch (_error) {
     return {
       ok: false,
       status: 400,
       code: 'INVALID_BODY',
       message: 'Invalid request body',
-    }
-  }
-
-  if (new TextEncoder().encode(text).byteLength > MAX_REQUEST_BODY_BYTES) {
-    return {
-      ok: false,
-      status: 413,
-      code: 'PAYLOAD_TOO_LARGE',
-      message: 'Follow-up request body is too large.',
     }
   }
 
