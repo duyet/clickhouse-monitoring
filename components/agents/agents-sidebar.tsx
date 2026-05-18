@@ -2,6 +2,7 @@
 
 import {
   BookOpenIcon,
+  CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   DatabaseIcon,
@@ -150,6 +151,11 @@ function getProviderFromModelId(modelId: string): string {
   return 'openrouter'
 }
 
+function getModelName(modelId: string): string {
+  const idx = modelId.indexOf(':')
+  return idx === -1 ? modelId : modelId.slice(idx + 1)
+}
+
 function ModelSelectorComponent() {
   const { model, models, setModel } = useAgentModel()
   const [open, setOpen] = useState(false)
@@ -157,6 +163,7 @@ function ModelSelectorComponent() {
 
   const currentModel = models.find((item) => item.id === model)
   const currentProvider = getProviderFromModelId(model)
+  const currentModelName = currentModel?.name ?? getModelName(model)
   const trimmedCustomInput = customInput.trim()
 
   const handleCustomModelSubmit = () => {
@@ -171,7 +178,7 @@ function ModelSelectorComponent() {
         <ModelSelectorTrigger asChild>
           <Button
             variant="outline"
-            className="h-9 w-full justify-between rounded-md border-border/60 bg-background/70 px-2 py-1.5 shadow-[0_1px_0_0_rgba(0,0,0,0.02)] transition-[transform,background-color,border-color] active:scale-[0.99]"
+            className="h-9 w-full justify-between rounded-md border-border/60 bg-background/70 px-2 py-1.5 shadow-[0_1px_0_0_rgba(0,0,0,0.02)] transition-[transform,background-color,border-color] hover:bg-muted/20 active:scale-[0.99]"
             aria-label="Select model"
           >
             <div className="flex min-w-0 items-center gap-2 overflow-hidden text-left">
@@ -186,15 +193,13 @@ function ModelSelectorComponent() {
                 >
                   {currentProvider}
                 </Badge>
-                <span className="min-w-0 truncate">
-                  {currentModel?.name ?? model}
-                </span>
+                <span className="min-w-0 truncate">{currentModelName}</span>
                 {currentModel?.available === false ? (
                   <Badge
                     variant="outline"
                     className="shrink-0 rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
                   >
-                    Not configured
+                    No key
                   </Badge>
                 ) : null}
               </span>
@@ -205,12 +210,18 @@ function ModelSelectorComponent() {
 
         <ModelSelectorContent
           title="Select Model"
-          className="max-w-[min(92vw,44rem)] border-border/70 bg-background/95"
+          className="max-w-[min(92vw,34rem)] overflow-hidden border-border/70 bg-background/95 shadow-2xl [&>button]:right-2.5 [&>button]:top-2.5 [&>button]:h-7 [&>button]:w-7 [&>button]:rounded-md"
         >
-          <ModelSelectorInput placeholder="Search models..." />
-          <ModelSelectorList className="max-h-[24rem]">
+          <ModelSelectorInput
+            placeholder="Search models..."
+            className="h-9 py-2 pr-8 text-[13px]"
+          />
+          <ModelSelectorList className="max-h-[min(58vh,22rem)] p-1 [scrollbar-width:thin]">
             <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
-            <ModelSelectorGroup heading="Available Models">
+            <ModelSelectorGroup
+              heading="Available models"
+              className="p-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em]"
+            >
               {models.map((item) => {
                 const provider = getProviderFromModelId(item.id)
                 const selected = item.id === model
@@ -227,64 +238,75 @@ function ModelSelectorComponent() {
                       setOpen(false)
                     }}
                     className={cn(
-                      'mx-2 my-1 flex items-start gap-3 rounded-lg px-3 py-2.5',
+                      'mx-0.5 my-0.5 grid min-h-10 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 py-1.5',
                       selected
-                        ? 'bg-muted/60'
-                        : 'border border-transparent hover:bg-muted/35',
+                        ? 'bg-muted/60 ring-1 ring-border/70'
+                        : 'border border-transparent hover:bg-muted/30',
                       unavailable && 'cursor-not-allowed opacity-50'
                     )}
                   >
-                    <ModelSelectorLogo
-                      provider={provider}
-                      className="size-3.5 shrink-0 dark:invert-0"
-                    />
-                    <span className="min-w-0 flex-1 truncate font-mono text-[13px] font-medium text-foreground">
-                      <Badge
-                        variant="outline"
-                        className="mr-1.5 rounded-full text-[10px] px-1.5 py-0"
-                      >
-                        {provider}
-                      </Badge>
-                      {item.name}
-                    </span>
-                    <div className="flex shrink-0 flex-col items-end gap-1.5">
-                      <Badge
-                        variant="outline"
-                        className="rounded-full tabular-nums"
-                      >
-                        {item.formattedContextLength} ctx
-                      </Badge>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <ModelSelectorLogo
+                        provider={provider}
+                        className="size-3.5 shrink-0 dark:invert-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 rounded-full px-1.5 py-0 font-mono text-[10px]"
+                          >
+                            {provider}
+                          </Badge>
+                          <span className="min-w-0 truncate font-mono text-xs font-medium text-foreground">
+                            {item.name}
+                          </span>
+                        </div>
+                        <div className="mt-0.5 flex items-center gap-1.5 text-[10px] leading-3 text-muted-foreground tabular-nums">
+                          <span>{item.formattedContextLength} ctx</span>
+                          {item.supportsTools ? <span>tools</span> : null}
+                          {item.supportsVision ? <span>vision</span> : null}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-1.5">
                       {item.isFree ? (
                         <Badge
-                          className="rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                          className="rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                           variant="outline"
                         >
                           Free
                         </Badge>
                       ) : item.pricing != null ? (
-                        <span className="text-right text-[10px] leading-4 text-muted-foreground tabular-nums">
-                          ${item.pricing.inputPerMillion}/M in
-                          <br />${item.pricing.outputPerMillion}/M out
+                        <span className="rounded-full border border-border/60 px-1.5 py-0.5 text-[10px] leading-3 text-muted-foreground tabular-nums">
+                          ${item.pricing.inputPerMillion}/$
+                          {item.pricing.outputPerMillion}
                         </span>
                       ) : null}
                       {unavailable ? (
                         <Badge
                           variant="outline"
-                          className="rounded-full border-amber-400/60 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                          className="rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
                         >
-                          Not configured
+                          No key
                         </Badge>
                       ) : selected ? (
-                        <Badge className="rounded-full">Selected</Badge>
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          <CheckIcon className="h-3 w-3" />
+                        </span>
                       ) : null}
                     </div>
                   </ModelSelectorItem>
                 )
               })}
             </ModelSelectorGroup>
-            <ModelSelectorSeparator />
-            <ModelSelectorGroup heading="Custom Model">
-              <div className="mx-2 my-1 flex items-center gap-2 px-1 py-1.5">
+            <ModelSelectorSeparator className="my-1" />
+            <ModelSelectorGroup
+              heading="Custom model"
+              className="p-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em]"
+            >
+              <div className="mx-0.5 my-0.5 flex items-center gap-1.5 rounded-md bg-muted/20 px-2 py-1.5">
                 <input
                   type="text"
                   value={customInput}
@@ -293,13 +315,13 @@ function ModelSelectorComponent() {
                     if (e.key === 'Enter') handleCustomModelSubmit()
                   }}
                   placeholder="Enter custom model ID..."
-                  className="h-8 min-w-0 flex-1 rounded-md border border-border/60 bg-background px-3 font-mono text-[13px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-7 min-w-0 flex-1 rounded-md border border-border/60 bg-background px-2 font-mono text-xs placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring"
                 />
                 <Button
                   type="button"
                   size="sm"
                   variant="secondary"
-                  className="h-8 shrink-0 rounded-md px-3 text-xs"
+                  className="h-7 shrink-0 rounded-md px-2 text-[11px]"
                   onClick={handleCustomModelSubmit}
                   disabled={!trimmedCustomInput}
                 >
