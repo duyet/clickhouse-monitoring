@@ -137,25 +137,6 @@ function getBranchCacheKey(message: UIMessage): string {
   return `${message.id}:${hashString(getBranchSignature(message))}`
 }
 
-function getUserPromptText(message?: UIMessage): string {
-  if (!message) return ''
-
-  return message.parts
-    .map((part) => {
-      if (typeof part !== 'object' || part === null || !('type' in part)) {
-        return null
-      }
-
-      const typedPart = part as { type?: unknown; text?: unknown }
-      return typedPart.type === 'text' && typeof typedPart.text === 'string'
-        ? typedPart.text
-        : null
-    })
-    .filter((text): text is string => Boolean(text?.trim()))
-    .join('\n\n')
-    .trim()
-}
-
 function clampFollowUpText(value: string): string {
   const maxChars = 1_200
   if (value.length <= maxChars) return value
@@ -537,10 +518,14 @@ export const AgentsChatArea = forwardRef<
   }, [status])
 
   const handleRootErrorRetry = useCallback(() => {
-    const prompt = getUserPromptText(findLastUserMessage(messages))
-    if (!prompt) return
-    submitPrompt(prompt)
-  }, [messages, submitPrompt])
+    if (isLoading) return
+
+    const userMessage = findLastUserMessage(messages)
+    if (!userMessage) return
+
+    pendingBranchUserIdRef.current = userMessage.id
+    void regenerate({ messageId: userMessage.id })
+  }, [isLoading, messages, regenerate])
 
   useEffect(() => {
     if (status !== 'ready' || isLoading || error || !lastAssistantFollowUpKey) {
