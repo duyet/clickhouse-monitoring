@@ -12,7 +12,7 @@ describe('Agent Chat API E2E Tests', () => {
     access: 'public' | 'authenticated'
   } = {
     enabled: true,
-    access: 'public',
+    access: 'authenticated',
   }
 
   before(() => {
@@ -27,8 +27,7 @@ describe('Agent Chat API E2E Tests', () => {
       const agentFeature = response.body?.features?.agent
       agentFeatureState = {
         enabled: agentFeature?.enabled !== false,
-        access:
-          agentFeature?.access === 'authenticated' ? 'authenticated' : 'public',
+        access: agentFeature?.access === 'public' ? 'public' : 'authenticated',
       }
     })
   })
