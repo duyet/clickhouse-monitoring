@@ -11,6 +11,8 @@ const generateTextMock = mock(async () => ({
 }))
 const outputObjectMock = mock((config: unknown) => config)
 const capturedModelOptions: Array<Record<string, unknown>> = []
+const AGENT_API_TOKEN = 'test-agent-token'
+let mockClerkUserId: string | null = null
 
 mock.module('server-only', () => ({}))
 mock.module('ai', () => ({
@@ -30,10 +32,16 @@ mock.module('@/lib/ai/agent/provider-chat-model', () => ({
     }
   },
 }))
+mock.module('@clerk/nextjs/server', () => ({
+  auth: async () => ({
+    userId: mockClerkUserId,
+  }),
+}))
 
 let POST: (request: Request) => Promise<Response>
 
 beforeAll(async () => {
+  process.env.AGENT_API_TOKEN = AGENT_API_TOKEN
   const route = await import('../route')
   POST = route.POST
 })
@@ -42,7 +50,9 @@ beforeEach(() => {
   generateTextMock.mockClear()
   outputObjectMock.mockClear()
   capturedModelOptions.length = 0
-  process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
+  mockClerkUserId = null
+  process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+  delete process.env.CHM_FEATURE_AGENT_ACCESS
   delete process.env.LLM_API_KEY
   delete process.env.OPENROUTER_API_KEY
   delete process.env.NVIDIA_API_KEY
@@ -53,6 +63,9 @@ describe('POST /api/v1/agent/followups', () => {
   function request(body: unknown) {
     return new Request('http://localhost:3000/api/v1/agent/followups', {
       method: 'POST',
+      headers: {
+        authorization: `Bearer ${AGENT_API_TOKEN}`,
+      },
       body: JSON.stringify(body),
     })
   }
