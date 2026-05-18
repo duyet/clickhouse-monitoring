@@ -697,6 +697,8 @@ export const AgentsChatArea = forwardRef<
 
   const handleBranchChange = useCallback(
     (userMessageId: string, branchIndex: number) => {
+      if (isLoading) return
+
       const assistant =
         responseBranchesRef.current[userMessageId]?.[branchIndex]
       if (!assistant) return
@@ -714,7 +716,7 @@ export const AgentsChatArea = forwardRef<
         })
       )
     },
-    [setMessages]
+    [isLoading, setMessages]
   )
 
   useEffect(() => {
@@ -863,7 +865,7 @@ export const AgentsChatArea = forwardRef<
                     branchIndex={branchIndex}
                     branchCount={branchCount}
                     onBranchChange={
-                      userMessageId && branchCount > 1
+                      userMessageId && branchCount > 1 && !isLoading
                         ? (nextIndex) =>
                             handleBranchChange(userMessageId, nextIndex)
                         : undefined
