@@ -21,6 +21,7 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 ## Commands
 
 - Since last run: `git log --since='<ISO_TIME>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+- Since last run (source commits only): `git log --since='<ISO_TIME>' --no-merges --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Fallback window (24h): `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Fallback window (7d): `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Empty-window rule: if since-last-run has zero commits, run 24h then 7d fallback and report no-op when both are empty
@@ -47,3 +48,4 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - 2026-05-16: fixed `Image build and Push` failures on main (`Module not found: Can't resolve '@opennextjs/cloudflare'`) by removing Docker `--production` install in the deps stage while keeping `--ignore-scripts`
 - 2026-05-17: automation run started on detached worktree (`HEAD (no branch)`), so branch/PR work should pivot to `/Users/duet/project/clickhouse-monitor` when git metadata writes fail in `.git/worktrees/...`
 - 2026-05-18: no commits since last run timestamp; 24h fallback was empty, 7d fallback used for evidence-only audit with no new actionable code-smell/dead-code/perf findings
+- 2026-05-19: removed zero-reference `findModelEntry` export from `lib/ai/agent-model-registry.ts`; add `--no-merges` scan variant to reduce merge-only noise in code-smell/dead-code windows
