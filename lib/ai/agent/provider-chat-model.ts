@@ -60,7 +60,7 @@ function getOpenAICompatibleHeaders(providerId: string, referer?: string) {
   return {
     'HTTP-Referer': meta.referer,
     'X-AnyRouter-Title': meta.name,
-    'X-AnyRouter-Categories': meta.category,
+    'X-AnyRouter-Source': meta.category,
     'X-AnyRouter-Version': meta.version,
   }
 }

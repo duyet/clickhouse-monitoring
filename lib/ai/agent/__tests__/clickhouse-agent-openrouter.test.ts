@@ -99,7 +99,7 @@ describe('createClickHouseAgent OpenRouter model resolution', () => {
       headers: {
         'HTTP-Referer': 'https://example.test/agents',
         'X-AnyRouter-Title': 'Agent Test',
-        'X-AnyRouter-Categories': 'ops',
+        'X-AnyRouter-Source': 'ops',
         'X-AnyRouter-Version': 'test-version',
       },
     })
