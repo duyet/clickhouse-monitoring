@@ -8,8 +8,6 @@
 
 import { z } from 'zod'
 
-import type { UIMessage } from 'ai'
-
 import { generateText, Output } from 'ai'
 import { NextResponse } from 'next/server'
 import { classifyError } from '@/lib/ai/agent/errors'
@@ -29,6 +27,7 @@ export const dynamic = 'force-dynamic'
 const MAX_MESSAGES = 12
 const MAX_TEXT_CHARS = 1_200
 const MAX_PROMPT_CHARS = 9_000
+const MAX_REQUEST_BODY_BYTES = 64 * 1024
 
 const FollowupsOutputSchema = z.object({
   suggestions: z
@@ -45,8 +44,13 @@ const FollowupsOutputSchema = z.object({
 })
 
 type FollowupsRequestBody = {
-  readonly messages?: UIMessage[]
+  readonly messages?: unknown
   readonly model?: string
+}
+
+type FollowupsMessage = {
+  readonly role: string
+  readonly parts: readonly unknown[]
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -79,7 +83,87 @@ function getTextFromPart(part: unknown): string | null {
   return null
 }
 
-function buildConversationContext(messages: readonly UIMessage[]): string {
+async function readJsonBody(
+  request: Request
+): Promise<
+  | { ok: true; value: unknown }
+  | { ok: false; status: number; code: string; message: string }
+> {
+  const contentLength = Number(request.headers.get('content-length') ?? 0)
+  if (
+    Number.isFinite(contentLength) &&
+    contentLength > MAX_REQUEST_BODY_BYTES
+  ) {
+    return {
+      ok: false,
+      status: 413,
+      code: 'PAYLOAD_TOO_LARGE',
+      message: 'Follow-up request body is too large.',
+    }
+  }
+
+  const text = await request.text()
+  if (new TextEncoder().encode(text).byteLength > MAX_REQUEST_BODY_BYTES) {
+    return {
+      ok: false,
+      status: 413,
+      code: 'PAYLOAD_TOO_LARGE',
+      message: 'Follow-up request body is too large.',
+    }
+  }
+
+  try {
+    return { ok: true, value: text.trim() ? JSON.parse(text) : {} }
+  } catch (_error) {
+    return {
+      ok: false,
+      status: 400,
+      code: 'INVALID_JSON',
+      message: 'Invalid JSON payload',
+    }
+  }
+}
+
+function normalizeMessages(
+  value: unknown
+):
+  | { ok: true; messages: FollowupsMessage[] }
+  | { ok: false; code: string; message: string } {
+  if (value === undefined) return { ok: true, messages: [] }
+  if (!Array.isArray(value)) {
+    return {
+      ok: false,
+      code: 'INVALID_MESSAGES',
+      message: 'messages must be an array.',
+    }
+  }
+
+  const messages: FollowupsMessage[] = []
+  for (const [index, message] of value.entries()) {
+    if (
+      !isObject(message) ||
+      typeof message.role !== 'string' ||
+      !Array.isArray(message.parts)
+    ) {
+      return {
+        ok: false,
+        code: 'INVALID_MESSAGE',
+        message: `messages[${index}] must include role and parts array.`,
+      }
+    }
+
+    messages.push({
+      role: message.role,
+      parts: message.parts,
+    })
+  }
+
+  return { ok: true, messages }
+}
+
+function buildConversationContext(
+  messages: readonly FollowupsMessage[]
+): string {
   const lines = messages
     .slice(-MAX_MESSAGES)
     .map((message) => {
@@ -119,16 +203,30 @@ export async function POST(request: Request) {
   const authResponse = await authorizeAgentApiRequest(request)
   if (authResponse) return authResponse
 
-  let body: FollowupsRequestBody
-  try {
-    const parsed = await request.json()
-    body = isObject(parsed) ? (parsed as FollowupsRequestBody) : {}
-  } catch (_error) {
+  const parsedBody = await readJsonBody(request)
+  if (!parsedBody.ok) {
     return NextResponse.json(
       {
         error: {
-          message: 'Invalid JSON payload',
-          code: 'INVALID_JSON',
+          message: parsedBody.message,
+          code: parsedBody.code,
+        },
+      },
+      { status: parsedBody.status }
+    )
+  }
+
+  const body = isObject(parsedBody.value)
+    ? (parsedBody.value as FollowupsRequestBody)
+    : {}
+
+  const normalizedMessages = normalizeMessages(body.messages)
+  if (!normalizedMessages.ok) {
+    return NextResponse.json(
+      {
+        error: {
+          message: normalizedMessages.message,
+          code: normalizedMessages.code,
         },
       },
       { status: 400 }
@@ -137,7 +235,7 @@ export async function POST(request: Request) {
 
   const model =
     typeof body.model === 'string' && body.model.trim().length > 0
-      ? body.model
+      ? body.model.trim()
       : DEFAULT_MODEL
   const { provider: requestedProvider } = parseModelId(model)
 
@@ -156,8 +254,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: classified }, { status: 503 })
   }
 
-  const messages = Array.isArray(body.messages) ? body.messages : []
-  const context = buildConversationContext(messages)
+  const context = buildConversationContext(normalizedMessages.messages)
 
   if (!context) {
     return NextResponse.json({ suggestions: [] })

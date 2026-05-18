@@ -26,8 +26,9 @@ function getOpenRouterFreeFallbackModel(): string {
 }
 
 function isAnthropicModel(model: string): boolean {
+  const lower = model.toLowerCase()
   return (
-    model.startsWith('anthropic/') || model.toLowerCase().includes('claude')
+    lower.startsWith('anthropic/') || /(^|[/_-])claude([/_-]|$)/.test(lower)
   )
 }
 
@@ -49,6 +50,18 @@ function getAppMetadata(referer?: string) {
       DEFAULT_APP_NAME,
     category: process.env.APP_CATEGORY || DEFAULT_APP_CATEGORY,
     version: process.env.APP_VERSION || DEFAULT_APP_VERSION,
+  }
+}
+
+function getOpenAICompatibleHeaders(providerId: string, referer?: string) {
+  if (providerId !== 'anyrouter') return undefined
+
+  const meta = getAppMetadata(referer)
+  return {
+    'HTTP-Referer': meta.referer,
+    'X-AnyRouter-Title': meta.name,
+    'X-AnyRouter-Categories': meta.category,
+    'X-AnyRouter-Version': meta.version,
   }
 }
 
@@ -113,10 +126,12 @@ export function resolveAgentChatModel({
     }
   }
 
+  const headers = getOpenAICompatibleHeaders(resolved.providerId, referer)
   const openai = createOpenAI({
     apiKey: resolved.apiKey,
     baseURL: resolved.baseURL,
     name: resolved.providerId,
+    ...(headers && { headers }),
   })
 
   return {

@@ -114,6 +114,44 @@ describe('POST /api/v1/agent/followups', () => {
     expect(generateTextMock).not.toHaveBeenCalled()
   })
 
+  test('returns 400 when a message is missing parts', async () => {
+    const response = await POST(
+      request({
+        model: 'anyrouter:google/gemma-4-26b-a4b-it',
+        messages: [{ id: 'msg-1', role: 'user' }],
+      })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(body.error).toMatchObject({
+      code: 'INVALID_MESSAGE',
+    })
+    expect(generateTextMock).not.toHaveBeenCalled()
+  })
+
+  test('returns 413 when the request body is too large', async () => {
+    const response = await POST(
+      request({
+        model: 'anyrouter:google/gemma-4-26b-a4b-it',
+        messages: [
+          {
+            id: 'msg-1',
+            role: 'user',
+            parts: [{ type: 'text', text: 'x'.repeat(70_000) }],
+          },
+        ],
+      })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(413)
+    expect(body.error).toMatchObject({
+      code: 'PAYLOAD_TOO_LARGE',
+    })
+    expect(generateTextMock).not.toHaveBeenCalled()
+  })
+
   test('returns structured error metadata when generation fails', async () => {
     generateTextMock.mockImplementationOnce(async () => {
       throw {

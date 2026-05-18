@@ -125,6 +125,79 @@ function replaceAssistantBranch({
   ]
 }
 
+function getBranchSignature(message: UIMessage): string {
+  try {
+    return JSON.stringify(message.parts)
+  } catch (_error) {
+    return String(message.parts.length)
+  }
+}
+
+function clampFollowUpText(value: string): string {
+  const maxChars = 1_200
+  if (value.length <= maxChars) return value
+  return `${value.slice(0, maxChars - 3)}...`
+}
+
+function getCompactFollowUpText(part: unknown): string | null {
+  if (typeof part !== 'object' || part === null || !('type' in part)) {
+    return null
+  }
+
+  const typedPart = part as {
+    type?: unknown
+    text?: unknown
+    toolName?: unknown
+  }
+  if (typedPart.type === 'text' && typeof typedPart.text === 'string') {
+    return typedPart.text
+  }
+  if (typedPart.type === 'reasoning' && typeof typedPart.text === 'string') {
+    return `Reasoning: ${typedPart.text}`
+  }
+  if (typedPart.type === 'dynamic-tool') {
+    const toolName =
+      typeof typedPart.toolName === 'string' ? typedPart.toolName : 'tool'
+    return `Tool call: ${toolName}`
+  }
+  if (
+    typeof typedPart.type === 'string' &&
+    typedPart.type.startsWith('tool-')
+  ) {
+    return `Tool call: ${typedPart.type.replace(/^tool-/, '')}`
+  }
+
+  return null
+}
+
+function buildCompactFollowUpMessages(messages: readonly UIMessage[]) {
+  return messages
+    .slice(-12)
+    .map((message) => {
+      const parts = message.parts
+        .map(getCompactFollowUpText)
+        .filter((text): text is string => Boolean(text?.trim()))
+        .map((text) => ({
+          type: 'text' as const,
+          text: clampFollowUpText(text.trim()),
+        }))
+
+      if (parts.length === 0) return null
+      return {
+        role: message.role,
+        parts,
+      }
+    })
+    .filter(
+      (
+        message
+      ): message is {
+        role: UIMessage['role']
+        parts: Array<{ type: 'text'; text: string }>
+      } => message !== null
+    )
+}
+
 export const AgentsChatArea = forwardRef<
   AgentsChatAreaRef,
   AgentsChatAreaProps
@@ -342,13 +415,31 @@ export const AgentsChatArea = forwardRef<
   const saveAssistantBranch = useCallback(
     (userMessageId: string, assistant: UIMessage) => {
       const existing = responseBranchesRef.current[userMessageId] ?? []
+      const assistantSignature = getBranchSignature(assistant)
       const existingIndex = existing.findIndex(
-        (branch) => branch.id === assistant.id
+        (branch) =>
+          branch.id === assistant.id &&
+          getBranchSignature(branch) === assistantSignature
       )
       const nextBranches =
         existingIndex >= 0 ? existing : [...existing, assistant]
       const nextIndex =
         existingIndex >= 0 ? existingIndex : nextBranches.length - 1
+
+      if (existingIndex < 0) {
+        if (generatedFollowUpsRef.current[assistant.id]) {
+          const { [assistant.id]: _removed, ...nextFollowUps } =
+            generatedFollowUpsRef.current
+          generatedFollowUpsRef.current = nextFollowUps
+          setGeneratedFollowUps(nextFollowUps)
+        }
+        if (followUpErrorsRef.current[assistant.id]) {
+          const { [assistant.id]: _removed, ...nextErrors } =
+            followUpErrorsRef.current
+          followUpErrorsRef.current = nextErrors
+          setFollowUpErrors(nextErrors)
+        }
+      }
 
       responseBranchesRef.current = {
         ...responseBranchesRef.current,
@@ -388,7 +479,11 @@ export const AgentsChatArea = forwardRef<
       }
 
       pendingBranchUserIdRef.current = userMessageId
-      void regenerate({ messageId: assistantMessage?.id ?? userMessageId })
+      void regenerate(
+        assistantMessage?.role === 'assistant'
+          ? { messageId: assistantMessage.id }
+          : undefined
+      )
     },
     [isLoading, messages, regenerate, saveAssistantBranch]
   )
@@ -457,7 +552,10 @@ export const AgentsChatArea = forwardRef<
         const response = await apiFetch('/api/v1/agent/followups', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ messages: latestMessagesRef.current, model }),
+          body: JSON.stringify({
+            messages: buildCompactFollowUpMessages(latestMessagesRef.current),
+            model,
+          }),
           signal,
         })
         const payload = (await response.json().catch(() => ({}))) as {

@@ -137,4 +137,38 @@ describe('isProviderConfigured', () => {
 
     expect(isProviderConfigured('anyrouter')).toBe(true)
   })
+
+  test('does not mark AnyRouter configured from generic LLM_API_KEY', () => {
+    setEnv({
+      ANYROUTER_API_KEY: undefined,
+      LLM_API_KEY: 'fallback-key',
+    })
+
+    expect(isProviderConfigured('anyrouter')).toBe(false)
+  })
+
+  test('recognizes OpenRouter from provider key or generic LLM_API_KEY', () => {
+    setEnv({
+      OPENROUTER_API_KEY: undefined,
+      LLM_API_KEY: 'fallback-key',
+    })
+
+    expect(isProviderConfigured('openrouter')).toBe(true)
+
+    setEnv({
+      OPENROUTER_API_KEY: 'or-test-key',
+      LLM_API_KEY: undefined,
+    })
+
+    expect(isProviderConfigured('openrouter')).toBe(true)
+  })
+
+  test('does not mark NVIDIA configured from generic LLM_API_KEY', () => {
+    setEnv({
+      NVIDIA_API_KEY: undefined,
+      LLM_API_KEY: 'fallback-key',
+    })
+
+    expect(isProviderConfigured('nvidia')).toBe(false)
+  })
 })

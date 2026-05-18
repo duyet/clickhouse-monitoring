@@ -22,8 +22,6 @@ const capturedAgentArgs: Array<Record<string, unknown>> = []
 const capturedAIArgs: CapturedAIArgs[] = []
 let mockClerkUserId: string | null = null
 
-mock.module('server-only', () => ({}))
-
 mock.module('@/lib/ai/agent', () => ({
   createClickHouseAgent: (options: Record<string, unknown>) => {
     capturedAgentArgs.push(options)
