@@ -65,7 +65,7 @@ describe('createClickHouseAgent OpenRouter model resolution', () => {
   })
 
   test('maps openrouter/free to fallback tool-capable model', async () => {
-    process.env.OPENROUTER_FREE_FALLBACK_MODEL = 'openai/gpt-oss-20b:free'
+    process.env.OPENROUTER_FREE_FALLBACK_MODEL = ' openai/gpt-oss-20b:free '
     const { createClickHouseAgent } = await import('../clickhouse-agent')
 
     createClickHouseAgent({

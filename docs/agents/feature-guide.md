@@ -156,7 +156,10 @@ Proactively generates actionable insights:
 **Agent returns "API key not configured":**
 
 ```bash
-# Verify environment variables are set
+# Verify the default AnyRouter key is set and valid
+echo $ANYROUTER_API_KEY
+
+# Older deployments may still use the generic fallback key
 echo $LLM_API_KEY
 echo $LLM_MODEL
 

@@ -14,7 +14,8 @@ import { parseModelId, resolveProvider } from '../providers'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 
-export const DEFAULT_MODEL = process.env.LLM_MODEL || DEFAULT_AGENT_MODEL
+export const DEFAULT_MODEL =
+  process.env.LLM_MODEL?.trim() || DEFAULT_AGENT_MODEL
 
 export const DEFAULT_APP_REFERER = 'https://chmonitor.dev'
 export const DEFAULT_APP_NAME = 'ClickHouse Monitoring'
@@ -22,7 +23,10 @@ export const DEFAULT_APP_CATEGORY = 'programming-app'
 export const DEFAULT_APP_VERSION = '0.2.0'
 
 function getOpenRouterFreeFallbackModel(): string {
-  return process.env.OPENROUTER_FREE_FALLBACK_MODEL || 'qwen/qwen3-coder:free'
+  return (
+    process.env.OPENROUTER_FREE_FALLBACK_MODEL?.trim() ||
+    'qwen/qwen3-coder:free'
+  )
 }
 
 function isAnthropicModel(model: string): boolean {
