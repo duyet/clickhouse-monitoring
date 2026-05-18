@@ -340,7 +340,7 @@ export const AgentsChatArea = forwardRef<
       const duration = Date.now() - sendTimestampRef.current
       setResponseDurations((previous) => ({
         ...previous,
-        [lastAssistantMessage.id]: duration,
+        [getBranchCacheKey(lastAssistantMessage)]: duration,
       }))
       sendTimestampRef.current = 0
     }
@@ -717,13 +717,21 @@ export const AgentsChatArea = forwardRef<
                   message.role === 'assistant'
                     ? getBranchCacheKey(message)
                     : undefined
+                const responseDurationKey =
+                  message.role === 'assistant'
+                    ? getBranchCacheKey(message)
+                    : undefined
 
                 return (
                   <ChatMessage
                     key={message.id}
                     message={message}
                     isStreaming={isMessageStreaming}
-                    responseDurationMs={responseDurations[message.id]}
+                    responseDurationMs={
+                      responseDurationKey
+                        ? responseDurations[responseDurationKey]
+                        : undefined
+                    }
                     error={isLatestAssistant && !isLoading ? error : null}
                     followUpError={
                       followUpKey ? (followUpErrors[followUpKey] ?? null) : null
