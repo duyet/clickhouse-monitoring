@@ -44,6 +44,10 @@ LLM_MODEL=gpt-4o-mini
 # Alternative: OpenRouter (supports multiple providers)
 LLM_API_BASE=https://openrouter.ai/api/v1
 LLM_MODEL=openrouter/free
+
+# Default: AnyRouter
+ANYROUTER_API_KEY=your-anyrouter-key
+LLM_MODEL=anyrouter:z-ai/glm-4.7-flash
 ```
 
 ### Model Options
@@ -52,7 +56,10 @@ All free OpenRouter options listed below support tool use (required by the agent
 
 | Model | Provider | Cost | Notes |
 |-------|----------|------|-------|
-| `openrouter/free` | OpenRouter | Free | Auto-routes to a working free tool-capable model (default) |
+| `anyrouter:z-ai/glm-4.7-flash` | AnyRouter | Paid | Default fast tool-capable model |
+| `anyrouter:google/gemini-3.1-flash-lite` | AnyRouter | Paid | 1M context, tool-capable |
+| `anyrouter:google/gemma-4-26b-a4b-it` | AnyRouter | Paid | 262K context, tool-capable |
+| `openrouter/free` | OpenRouter | Free | Auto-routes to a working free tool-capable model |
 | `openrouter/auto` | OpenRouter | Paid | Auto-routes to best available model |
 | `z-ai/glm-4.5-air:free` | OpenRouter | Free | Reliable free, tool-capable |
 | `openai/gpt-oss-120b:free` | OpenRouter | Free | OpenAI 120B open-source |
@@ -74,9 +81,7 @@ import { createClickHouseAgent } from '@/lib/ai/agent'
 
 const agent = createClickHouseAgent({
   hostId: 0,
-  model: 'openrouter/free',
-  apiKey: process.env.LLM_API_KEY,
-  baseURL: process.env.LLM_API_BASE,
+  model: 'anyrouter:z-ai/glm-4.7-flash',
 })
 ```
 
@@ -85,7 +90,7 @@ const agent = createClickHouseAgent({
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
 | `hostId` | `number` | Yes | - | ClickHouse host ID |
-| `model` | `string` | No | `'openrouter/free'` | LLM model identifier |
+| `model` | `string` | No | `'anyrouter:z-ai/glm-4.7-flash'` | LLM model identifier |
 | `apiKey` | `string` | No | `process.env.LLM_API_KEY` | LLM API key |
 | `baseURL` | `string` | No | `process.env.LLM_API_BASE` | LLM API base URL |
 | `maxSteps` | `number` | No | `30` | Max tool execution steps |

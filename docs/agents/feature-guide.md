@@ -16,16 +16,16 @@ ClickHouse Monitor includes intelligent AI agents powered by LangGraph for natur
 Add the following environment variables to your `.env.local`:
 
 ```bash
-# LangGraph Agent Configuration - OpenRouter (Free Model)
-LLM_API_KEY=your-openrouter-api-key
-LLM_API_BASE=https://openrouter.ai/api/v1
-LLM_MODEL=openrouter/free
+# Agent Configuration - AnyRouter
+ANYROUTER_API_KEY=your-anyrouter-api-key
+LLM_MODEL=anyrouter:z-ai/glm-4.7-flash
 ```
 
 **Supported Providers:**
 
 | Provider | Base URL | Models |
 |----------|----------|--------|
+| **AnyRouter** | `https://anyrouter.dev/api/v1` | `z-ai/glm-4.7-flash` (default), `google/gemini-3.1-flash-lite`, `google/gemma-4-26b-a4b-it` |
 | **OpenRouter** (Free tier) | `https://openrouter.ai/api/v1` | `openrouter/free` (auto-router), `z-ai/glm-4.5-air:free`, `qwen/qwen3-coder:free`, `meta-llama/llama-3.3-70b-instruct:free` |
 | Anthropic | `https://api.anthropic.com` | `claude-3-5-sonnet-20241022`, `claude-3-opus-20240229` |
 | OpenAI | `https://api.openai.com` | `gpt-4`, `gpt-4-turbo`, `gpt-3.5-turbo` |

@@ -28,6 +28,7 @@ import { aggregateUsageWithCost } from '@/lib/ai/agent/analytics'
 import { classifyError } from '@/lib/ai/agent/errors'
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
 import { createJsonRenderPatchGuardStream } from '@/lib/ai/agent/json-render-patch-guard'
+import { DEFAULT_AGENT_MODEL } from '@/lib/ai/agent-model-registry'
 import {
   getProviderName,
   isProviderConfigured,
@@ -388,7 +389,7 @@ export async function POST(request: Request) {
   const model =
     typeof body.model === 'string' && body.model.trim().length > 0
       ? body.model
-      : process.env.LLM_MODEL || 'openrouter:openrouter/auto'
+      : process.env.LLM_MODEL || DEFAULT_AGENT_MODEL
 
   // Preflight: refuse early if the selected provider has no API key on this
   // deployment. Without this, the upstream provider returns a confusing
