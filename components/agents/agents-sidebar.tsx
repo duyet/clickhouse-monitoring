@@ -153,7 +153,14 @@ function getProviderFromModelId(modelId: string): string {
 
 function getModelName(modelId: string): string {
   const idx = modelId.indexOf(':')
-  return idx === -1 ? modelId : modelId.slice(idx + 1)
+  if (idx === -1) return modelId
+
+  const provider = modelId.slice(0, idx)
+  return provider === 'openrouter' ||
+    provider === 'nvidia' ||
+    provider === 'anyrouter'
+    ? modelId.slice(idx + 1)
+    : modelId
 }
 
 function ModelSelectorComponent() {

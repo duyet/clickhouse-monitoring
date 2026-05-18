@@ -499,7 +499,8 @@ export const AgentsChatArea = forwardRef<
     prevStatusRef.current = status
 
     if (
-      previousStatus === 'ready' &&
+      previousStatus !== 'submitted' &&
+      previousStatus !== 'streaming' &&
       (status === 'submitted' || status === 'streaming')
     ) {
       sendTimestampRef.current = Date.now()
@@ -732,6 +733,7 @@ export const AgentsChatArea = forwardRef<
   useEffect(() => {
     if (status === 'error') {
       pendingBranchUserIdRef.current = undefined
+      sendTimestampRef.current = 0
     }
   }, [status])
 
@@ -865,7 +867,10 @@ export const AgentsChatArea = forwardRef<
                     branchIndex={branchIndex}
                     branchCount={branchCount}
                     onBranchChange={
-                      userMessageId && branchCount > 1 && !isLoading
+                      isLatestAssistant &&
+                      userMessageId &&
+                      branchCount > 1 &&
+                      !isLoading
                         ? (nextIndex) =>
                             handleBranchChange(userMessageId, nextIndex)
                         : undefined
