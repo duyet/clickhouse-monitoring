@@ -30,10 +30,17 @@ describe('parseModelId', () => {
     })
   })
 
-  test('legacy format without known provider defaults to legacy provider marker', () => {
+  test('unprefixed free model uses OpenRouter provider', () => {
     expect(parseModelId('qwen/qwen3-coder:free')).toEqual({
-      provider: 'legacy',
+      provider: 'openrouter',
       model: 'qwen/qwen3-coder:free',
+    })
+  })
+
+  test('unknown non-free model defaults to legacy provider marker', () => {
+    expect(parseModelId('custom/model:v1')).toEqual({
+      provider: 'legacy',
+      model: 'custom/model:v1',
     })
   })
 
@@ -94,10 +101,11 @@ describe('resolveProvider', () => {
     expect(resolved.sdk).toBe('openai')
   })
 
-  test('legacy free model detected as OpenRouter', () => {
-    setEnv({ LLM_API_KEY: 'test-key' })
+  test('unprefixed free model uses OpenRouter key cascade', () => {
+    setEnv({ OPENROUTER_API_KEY: 'or-test-key', LLM_API_KEY: undefined })
     const resolved = resolveProvider('qwen/qwen3-coder:free')
     expect(resolved.providerId).toBe('openrouter')
+    expect(resolved.apiKey).toBe('or-test-key')
     expect(resolved.isOpenRouter).toBe(true)
   })
 

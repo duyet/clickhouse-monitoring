@@ -589,6 +589,27 @@ describe('POST /api/v1/agent', () => {
     expect(capturedAgentArgs[0]?.model).toBe('openrouter/free')
   })
 
+  test('accepts unprefixed free OpenRouter model with OpenRouter key', async () => {
+    process.env.LLM_MODEL = 'qwen/qwen3-coder:free'
+    delete process.env.LLM_API_KEY
+    process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
+
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Run quick diagnostics',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+    expect(capturedAgentArgs[0]?.model).toBe('qwen/qwen3-coder:free')
+  })
+
   test('streams structured error metadata when the model cannot answer', async () => {
     mockAgentStreamError = {
       statusCode: 502,

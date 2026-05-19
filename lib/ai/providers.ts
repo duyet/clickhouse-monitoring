@@ -75,7 +75,7 @@ export function parseModelId(id: string): { provider: string; model: string } {
       return { provider: prefix, model: id.slice(idx + 1) }
     }
   }
-  if (id.startsWith('openrouter/')) {
+  if (id.startsWith('openrouter/') || id.endsWith(':free')) {
     return { provider: 'openrouter', model: id }
   }
   return { provider: 'legacy', model: id }
