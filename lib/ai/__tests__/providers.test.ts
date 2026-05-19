@@ -37,9 +37,9 @@ describe('parseModelId', () => {
     })
   })
 
-  test('unprefixed openrouter/free uses legacy provider marker', () => {
+  test('unprefixed openrouter/free uses OpenRouter provider', () => {
     expect(parseModelId('openrouter/free')).toEqual({
-      provider: 'legacy',
+      provider: 'openrouter',
       model: 'openrouter/free',
     })
   })
@@ -101,10 +101,11 @@ describe('resolveProvider', () => {
     expect(resolved.isOpenRouter).toBe(true)
   })
 
-  test('legacy openrouter/free detected as OpenRouter', () => {
-    setEnv({ LLM_API_KEY: 'test-key' })
+  test('unprefixed openrouter/free uses OpenRouter key cascade', () => {
+    setEnv({ OPENROUTER_API_KEY: 'or-test-key', LLM_API_KEY: undefined })
     const resolved = resolveProvider('openrouter/free')
     expect(resolved.providerId).toBe('openrouter')
+    expect(resolved.apiKey).toBe('or-test-key')
     expect(resolved.isOpenRouter).toBe(true)
   })
 

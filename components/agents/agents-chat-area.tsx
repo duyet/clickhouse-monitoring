@@ -34,6 +34,7 @@ import {
   ConversationEmptyState,
   Conversation as ConversationUI,
 } from '@/components/ai-elements/conversation'
+import { extractMessageError } from '@/lib/ai/agent/message-metadata'
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { isAgentError } from '@/lib/ai/agent/errors'
@@ -375,9 +376,13 @@ export const AgentsChatArea = forwardRef<
     () => findLastAssistantMessage(messages),
     [messages]
   )
-  const lastAssistantFollowUpKey = lastAssistantMessage
-    ? getBranchCacheKey(lastAssistantMessage)
-    : undefined
+  const lastAssistantHasError = lastAssistantMessage
+    ? extractMessageError(lastAssistantMessage) !== null
+    : false
+  const lastAssistantFollowUpKey =
+    lastAssistantMessage && !lastAssistantHasError
+      ? getBranchCacheKey(lastAssistantMessage)
+      : undefined
   const followUpSuggestions =
     lastAssistantFollowUpKey != null
       ? (generatedFollowUps[lastAssistantFollowUpKey] ?? [])

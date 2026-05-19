@@ -5,7 +5,7 @@
  * and resolves credentials from environment variables.
  *
  * Model ID format: `provider:model_name` (e.g., `nvidia:nvidia/llama-3.1-nemotron-70b-instruct`)
- * Legacy format (no colon) is treated as `openrouter:{model}` for backward compatibility.
+ * OpenRouter also accepts unprefixed `openrouter/*` model IDs for compatibility.
  */
 
 import 'server-only'
@@ -74,6 +74,9 @@ export function parseModelId(id: string): { provider: string; model: string } {
     if (KNOWN_PROVIDERS.has(prefix)) {
       return { provider: prefix, model: id.slice(idx + 1) }
     }
+  }
+  if (id.startsWith('openrouter/')) {
+    return { provider: 'openrouter', model: id }
   }
   return { provider: 'legacy', model: id }
 }

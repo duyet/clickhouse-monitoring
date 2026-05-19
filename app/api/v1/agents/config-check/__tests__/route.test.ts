@@ -132,6 +132,22 @@ describe('GET /api/v1/agents/config-check', () => {
     expect(body.requiredKeys.apiKey).toBe('ANYROUTER_API_KEY')
   })
 
+  test('accepts unprefixed OpenRouter model with OpenRouter key', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.LLM_MODEL = 'openrouter/free'
+    process.env.OPENROUTER_API_KEY = 'sk-or-test'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.configured.apiKey).toBe(true)
+    expect(body.isFullyConfigured).toBe(true)
+    expect(body.requiredKeys.apiKey).toBe('OPENROUTER_API_KEY or LLM_API_KEY')
+  })
+
   test('does not expose custom provider base URLs', async () => {
     process.env.ANYROUTER_API_KEY = 'sk-ar-test'
     process.env.ANYROUTER_API_BASE =
