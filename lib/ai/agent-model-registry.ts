@@ -96,10 +96,6 @@ export function getAllModelOptions(): string[] {
   return MODEL_REGISTRY.flatMap((m) => m.providers.map((p) => `${p}:${m.id}`))
 }
 
-export function findModelEntry(modelId: string): ModelEntry | undefined {
-  return MODEL_REGISTRY.find((m) => m.id === modelId)
-}
-
 export function isFreeAgentModel(model: string): boolean {
   return model === 'openrouter/free' || model.endsWith(':free')
 }

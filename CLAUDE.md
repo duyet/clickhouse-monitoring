@@ -173,6 +173,7 @@ Both deployment methods provide:
 - `bun run lint && bun run build` - Quick local CI parity check (matches core lint/build workflow jobs)
 - Code-smell/dead-code automation: see [docs/knowledge/core-memory.md](docs/knowledge/core-memory.md)
 - Since-last-run scan scope: `git log --since='<ISO_TIME>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+- Since-last-run scan scope (source commits only): `git log --since='<ISO_TIME>' --no-merges --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Fallback scan (24h): `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Fallback scan (7d): `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 - Empty-window rule: if since-last-run has zero commits, run 24h then 7d fallback and report no-op when both are empty
