@@ -24,6 +24,7 @@ type DataRow = {
 export const ChartTopTableSize = memo(function ChartTopTableSize({
   title,
   className,
+  chartCardContentClassName,
   hostId,
 }: ChartProps) {
   const limit = 7
@@ -60,11 +61,12 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
             data={dataArray}
             metadata={metadata}
             data-testid="top-table-size-chart"
+            contentClassName={chartCardContentClassName}
           >
             <Tabs
               id="top-table-tabs"
               defaultValue="by-size"
-              className="overflow-hidden"
+              className="flex min-h-0 flex-1 flex-col overflow-hidden"
             >
               <TabsList className="h-11 sm:h-9 gap-1 mb-3 p-1">
                 <TabsTrigger
@@ -82,10 +84,16 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
                   Top tables by Row Count
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="by-size" className="overflow-hidden">
+              <TabsContent
+                value="by-size"
+                className="min-h-0 flex-1 overflow-auto"
+              >
                 <BarList data={dataTopBySize} formatedColumn="formatted" />
               </TabsContent>
-              <TabsContent value="by-count" className="overflow-hidden">
+              <TabsContent
+                value="by-count"
+                className="min-h-0 flex-1 overflow-auto"
+              >
                 <BarList data={dataTopByCount} formatedColumn="formatted" />
               </TabsContent>
             </Tabs>

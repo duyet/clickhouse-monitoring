@@ -1,4 +1,7 @@
-import { getAgentMessageMetadata } from '../message-metadata'
+import {
+  extractMessageError,
+  getAgentMessageMetadata,
+} from '../message-metadata'
 import { describe, expect, test } from 'bun:test'
 
 describe('agent message metadata', () => {
@@ -195,6 +198,43 @@ describe('agent message metadata', () => {
       textPartCount: 0,
       dataPartCount: 1,
       toolCallCount: 0,
+    })
+  })
+
+  test('extracts structured answer errors from data-error parts', () => {
+    const message = {
+      id: 'msg-error',
+      role: 'assistant' as const,
+      parts: [
+        {
+          type: 'data-error',
+          data: [
+            {
+              type: 'upstream_error',
+              message: 'Every upstream failed',
+              suggestion: 'Retry or switch model/provider',
+              timestamp: 123,
+              provider: 'openrouter',
+              model: 'openrouter:openrouter/free',
+            },
+          ],
+        },
+      ],
+    }
+
+    expect(extractMessageError(message)).toMatchObject({
+      type: 'upstream_error',
+      message: 'Every upstream failed',
+      provider: 'openrouter',
+    })
+
+    const metadata = getAgentMessageMetadata({ message })
+    expect(metadata.messageError).toMatchObject({
+      type: 'upstream_error',
+      model: 'openrouter:openrouter/free',
+    })
+    expect(metadata.raw.error).toMatchObject({
+      message: 'Every upstream failed',
     })
   })
 })

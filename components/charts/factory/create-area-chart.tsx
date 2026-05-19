@@ -64,6 +64,7 @@ export function createAreaChart(
     lastHours = config.defaultLastHours,
     className,
     chartClassName,
+    chartCardContentClassName,
     hostId: hostIdProp,
     ...props
   }: ChartProps) {
@@ -144,6 +145,7 @@ export function createAreaChart(
             staleError={staleError}
             onRetry={mutate}
             enableScaleToggle={config.enableScaleToggle}
+            contentClassName={chartCardContentClassName}
           >
             <AreaChart
               className={cn(

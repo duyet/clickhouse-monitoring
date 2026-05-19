@@ -9,6 +9,7 @@ import { ChartContainer } from '@/components/charts/chart-container'
 import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { DATE_RANGE_PRESETS } from '@/components/date-range'
 import { useChartData } from '@/lib/swr'
+import { cn } from '@/lib/utils'
 
 // Human-readable labels for ClickHouse exception codes related to cancellation
 const EXCEPTION_LABELS: Record<string, string> = {
@@ -26,6 +27,7 @@ export const ChartCancelledQueries = memo(function ChartCancelledQueries({
   lastHours = 24 * 7,
   className,
   chartClassName,
+  chartCardContentClassName,
   hostId,
   ...props
 }: ChartProps) {
@@ -101,9 +103,10 @@ export const ChartCancelledQueries = memo(function ChartCancelledQueries({
             dateRangeConfig={DATE_RANGE_PRESETS.historical}
             currentRange={rangeOverride?.value}
             onRangeChange={setRangeOverride}
+            contentClassName={chartCardContentClassName}
           >
             <BarChart
-              className={chartClassName}
+              className={cn('h-full w-full', chartClassName)}
               data={chartData}
               index="event_time"
               categories={exceptionCodes}

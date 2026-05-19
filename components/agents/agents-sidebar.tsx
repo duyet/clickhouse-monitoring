@@ -69,6 +69,9 @@ interface AgentsSidebarProps {
   onOpenChange?: (open: boolean) => void
 }
 
+const MODEL_PROVIDER_BADGE_CLASS =
+  'shrink-0 rounded-full border-border/60 bg-muted/60 px-1.5 py-0 font-mono text-[10px] text-muted-foreground hover:bg-muted hover:text-foreground'
+
 function SidebarSection({
   title,
   description,
@@ -194,17 +197,14 @@ function ModelSelectorComponent() {
                 className="size-3.5 shrink-0 dark:invert-0"
               />
               <span className="flex min-w-0 items-center gap-1.5 overflow-hidden font-mono text-xs font-medium text-foreground">
-                <Badge
-                  variant="outline"
-                  className="shrink-0 rounded-full px-1.5 py-0 text-[10px]"
-                >
+                <Badge variant="outline" className={MODEL_PROVIDER_BADGE_CLASS}>
                   {currentProvider}
                 </Badge>
                 <span className="min-w-0 truncate">{currentModelName}</span>
                 {currentModel?.available === false ? (
                   <Badge
                     variant="outline"
-                    className="shrink-0 rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                    className="shrink-0 rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 hover:text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:text-amber-400"
                   >
                     No key
                   </Badge>
@@ -261,7 +261,7 @@ function ModelSelectorComponent() {
                         <div className="flex min-w-0 items-center gap-1.5">
                           <Badge
                             variant="outline"
-                            className="shrink-0 rounded-full px-1.5 py-0 font-mono text-[10px]"
+                            className={MODEL_PROVIDER_BADGE_CLASS}
                           >
                             {provider}
                           </Badge>
@@ -280,7 +280,7 @@ function ModelSelectorComponent() {
                     <div className="flex shrink-0 items-center gap-1.5">
                       {item.isFree ? (
                         <Badge
-                          className="rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                          className="rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] text-emerald-700 hover:text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:text-emerald-400"
                           variant="outline"
                         >
                           Free
@@ -294,7 +294,7 @@ function ModelSelectorComponent() {
                       {unavailable ? (
                         <Badge
                           variant="outline"
-                          className="rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                          className="rounded-full border-amber-400/60 bg-amber-50 px-1.5 py-0 text-[10px] text-amber-700 hover:text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:text-amber-400"
                         >
                           No key
                         </Badge>

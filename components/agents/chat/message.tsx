@@ -50,7 +50,10 @@ import {
 } from '@/lib/ai/agent/json-render-catalog'
 import { AGENT_JSON_RENDER_CATALOG } from '@/lib/ai/agent/json-render-catalog-with-schema'
 import { AGENT_JSON_RENDER_REGISTRY } from '@/lib/ai/agent/json-render-registry'
-import { extractMessageUsage } from '@/lib/ai/agent/message-metadata'
+import {
+  extractMessageError,
+  extractMessageUsage,
+} from '@/lib/ai/agent/message-metadata'
 
 const jsonRenderTextEncoder = new TextEncoder()
 
@@ -378,6 +381,41 @@ function getStablePartKey(
   return `msg-${messageId}-part-${index}`
 }
 
+function formatCompactCost(value: number | null | undefined): string | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null
+  if (value === 0) return '$0'
+  if (value < 0.0001) return '<$0.0001'
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 4,
+  }).format(value)
+}
+
+function MetadataPill({
+  label,
+  value,
+  title,
+}: {
+  readonly label: string
+  readonly value: string
+  readonly title?: string
+}) {
+  return (
+    <span
+      className="inline-flex h-7 max-w-full items-center gap-1 rounded-md bg-muted/45 px-2 text-muted-foreground ring-1 ring-border/45"
+      title={title}
+    >
+      <span className="shrink-0 text-[10px] uppercase tracking-[0.08em] text-muted-foreground/70">
+        {label}
+      </span>
+      <span className="min-w-0 truncate font-mono text-[11px] tabular-nums text-foreground/80">
+        {value}
+      </span>
+    </span>
+  )
+}
+
 function MessageStatsFooter({
   message,
   responseDurationMs,
@@ -400,46 +438,74 @@ function MessageStatsFooter({
   const stats = useMemo(() => getMessageStats(message), [message])
   const usage = useMemo(() => extractMessageUsage(message), [message])
 
-  const parts: string[] = []
+  const metadataItems: Array<{
+    label: string
+    value: string
+    title?: string
+  }> = []
   if (responseDurationMs && responseDurationMs > 0) {
-    parts.push(formatDuration(responseDurationMs))
+    metadataItems.push({
+      label: 'Time',
+      value: formatDuration(responseDurationMs),
+      title: 'Response time',
+    })
   }
   if (usage?.totalTokens) {
-    parts.push(`${usage.totalTokens.toLocaleString()} tokens`)
+    metadataItems.push({
+      label: 'Tokens',
+      value: usage.totalTokens.toLocaleString(),
+    })
+  }
+  const cost = formatCompactCost(usage?.estimatedCostUsd)
+  if (cost) {
+    metadataItems.push({ label: 'Cost', value: cost })
   }
   if (stats.toolCallCount > 0) {
-    parts.push(
-      `${stats.toolCallCount} tool ${
-        stats.toolCallCount === 1 ? 'call' : 'calls'
-      }`
-    )
+    metadataItems.push({
+      label: 'Tools',
+      value: stats.toolCallCount.toLocaleString(),
+    })
   }
   if (stats.totalToolDurationMs > 0) {
-    parts.push(`${formatDuration(stats.totalToolDurationMs)} in tools`)
+    metadataItems.push({
+      label: 'Tool time',
+      value: formatDuration(stats.totalToolDurationMs),
+    })
   }
 
   return (
-    <div className="mt-2 flex select-none flex-wrap items-center gap-2 pt-1.5 text-[11px] text-muted-foreground/60">
-      <span className="min-w-0 truncate">
-        {parts.length > 0 ? parts.join(' · ') : 'Response metadata'}
-      </span>
+    <div className="mt-1.5 flex select-none flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-muted-foreground">
+      {metadataItems.length > 0 ? (
+        metadataItems.map((item) => (
+          <MetadataPill
+            key={`${item.label}-${item.value}`}
+            label={item.label}
+            value={item.value}
+            title={item.title}
+          />
+        ))
+      ) : (
+        <span className="inline-flex h-7 items-center rounded-md bg-muted/30 px-2 text-muted-foreground/70">
+          No runtime metadata
+        </span>
+      )}
       {branchCount > 1 && onBranchChange && (
-        <div className="inline-flex h-7 items-center rounded-full border border-border/60 bg-background text-[11px] text-muted-foreground">
+        <div className="inline-flex h-7 items-center rounded-md bg-muted/35 text-[11px] text-muted-foreground ring-1 ring-border/55">
           <button
             type="button"
-            className="flex h-6 w-6 items-center justify-center rounded-l-full transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+            className="flex h-7 w-7 items-center justify-center rounded-l-md transition-[background-color,color] hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
             disabled={branchIndex <= 0}
             onClick={() => onBranchChange(Math.max(0, branchIndex - 1))}
             aria-label="Show previous response branch"
           >
             <ChevronLeftIcon className="h-3.5 w-3.5" />
           </button>
-          <span className="min-w-9 px-1 text-center font-mono tabular-nums">
-            &lt;{branchIndex + 1}/{branchCount}&gt;
+          <span className="min-w-10 px-1 text-center font-mono tabular-nums text-foreground/75">
+            {branchIndex + 1}/{branchCount}
           </span>
           <button
             type="button"
-            className="flex h-6 w-6 items-center justify-center rounded-r-full transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+            className="flex h-7 w-7 items-center justify-center rounded-r-md transition-[background-color,color] hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
             disabled={branchIndex >= branchCount - 1}
             onClick={() =>
               onBranchChange(Math.min(branchCount - 1, branchIndex + 1))
@@ -454,7 +520,7 @@ function MessageStatsFooter({
         <button
           type="button"
           onClick={onRegenerate}
-          className="inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-[11px] text-muted-foreground transition-[transform,background-color,color] hover:bg-muted hover:text-foreground active:scale-[0.96]"
+          className="inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[11px] text-muted-foreground transition-[transform,background-color,color] hover:bg-muted hover:text-foreground active:scale-[0.96]"
           title="Regenerate response"
           aria-label="Regenerate response"
         >
@@ -594,10 +660,36 @@ export function ChatMessage({
     () => (error ? parseAgentError(error) : null),
     [error]
   )
+  const messageError = useMemo(() => extractMessageError(message), [message])
+  const visibleError = classifiedError ?? messageError
+  const displayError = visibleError ?? error
+  const hasVisibleMessageContent =
+    safeParts.some((part) => {
+      if (part.type === 'text') {
+        return (
+          typeof (part as { text?: unknown }).text === 'string' &&
+          ((part as { text?: string }).text ?? '').trim().length > 0
+        )
+      }
+      if (part.type === 'reasoning') {
+        return (
+          typeof (part as { text?: unknown }).text === 'string' &&
+          ((part as { text?: string }).text ?? '').trim().length > 0
+        )
+      }
+      return (
+        part.type === 'dynamic-tool' ||
+        (typeof part.type === 'string' && part.type.startsWith('tool-'))
+      )
+    }) ||
+    jsonRender.hasSpec ||
+    Boolean(jsonRender.parseError)
 
   return (
     <Message from={isUser ? 'user' : 'assistant'}>
-      <MessageContent>
+      <MessageContent
+        className={isUser ? 'group-[.is-user]:py-2.5' : 'gap-1.5'}
+      >
         <div className="group relative">
           {safeParts.map((part, index) => {
             const stableKey = getStablePartKey(message.id, part, index)
@@ -668,29 +760,38 @@ export function ChatMessage({
               )}
             </div>
           )}
+
+          {isAssistant && !isStreaming && displayError && (
+            <AgentErrorDisplay
+              error={displayError}
+              embedded
+              onRetry={onRegenerate}
+              onDismiss={onErrorDismiss}
+            />
+          )}
+
+          {isAssistant &&
+            !isStreaming &&
+            !displayError &&
+            !hasVisibleMessageContent && (
+              <div className="mt-2 rounded-lg bg-muted/35 px-3 py-2 text-xs leading-5 text-muted-foreground">
+                The model returned an empty response. Retry or switch models if
+                this keeps happening.
+              </div>
+            )}
         </div>
 
         {isAssistant && !isStreaming && (
           <MessageStatsFooter
             message={message}
             responseDurationMs={responseDurationMs}
-            error={classifiedError}
+            error={visibleError}
             followUpError={followUpError}
             onRegenerate={onRegenerate}
             branchIndex={branchIndex}
             branchCount={branchCount}
             onBranchChange={onBranchChange}
           />
-        )}
-
-        {isAssistant && error && (
-          <div className="mt-3">
-            <AgentErrorDisplay
-              error={error}
-              onRetry={onRegenerate}
-              onDismiss={onErrorDismiss}
-            />
-          </div>
         )}
       </MessageContent>
     </Message>

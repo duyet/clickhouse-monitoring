@@ -516,9 +516,9 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
 // ============================================================================
 
 const GRID_LAYOUT_3_COL =
-  'grid auto-rows-[380px] items-stretch gap-3 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 min-w-0'
+  'grid auto-rows-[320px] items-stretch gap-3 grid-cols-1 md:grid-cols-2 xl:auto-rows-[340px] 2xl:grid-cols-3 2xl:auto-rows-[360px] min-w-0'
 const GRID_LAYOUT_2_COL =
-  'grid auto-rows-[380px] grid-cols-1 items-stretch gap-3 md:grid-cols-2 min-w-0'
+  'grid auto-rows-[320px] grid-cols-1 items-stretch gap-3 md:grid-cols-2 xl:auto-rows-[340px] 2xl:auto-rows-[360px] min-w-0'
 
 /**
  * All tab configurations for the overview page

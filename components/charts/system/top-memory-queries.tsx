@@ -20,6 +20,7 @@ type DataRow = {
 export const ChartTopMemoryQueries = memo(function ChartTopMemoryQueries({
   title,
   className,
+  chartCardContentClassName,
   hostId,
 }: ChartProps) {
   const swr = useChartData<DataRow>({
@@ -48,8 +49,11 @@ export const ChartTopMemoryQueries = memo(function ChartTopMemoryQueries({
             data-testid="top-memory-queries-chart"
             staleError={staleError}
             onRetry={mutate}
+            contentClassName={chartCardContentClassName}
           >
-            <BarList data={barData} formatedColumn="formatted" />
+            <div className="min-h-0 flex-1 overflow-auto">
+              <BarList data={barData} formatedColumn="formatted" />
+            </div>
           </ChartCard>
         )
       }}

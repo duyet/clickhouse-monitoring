@@ -16,17 +16,17 @@ ClickHouse Monitor includes intelligent AI agents powered by LangGraph for natur
 Add the following environment variables to your `.env.local`:
 
 ```bash
-# Agent Configuration - AnyRouter
-ANYROUTER_API_KEY=your-anyrouter-api-key
-LLM_MODEL=anyrouter:z-ai/glm-4.7-flash
+# Agent Configuration - OpenRouter free router
+OPENROUTER_API_KEY=your-openrouter-api-key
+LLM_MODEL=openrouter/free
 ```
 
 **Supported Providers:**
 
 | Provider | Base URL | Models |
 |----------|----------|--------|
-| **AnyRouter** | `https://anyrouter.dev/api/v1` | `z-ai/glm-4.7-flash` (default), `google/gemini-3.1-flash-lite`, `google/gemma-4-26b-a4b-it` |
-| **OpenRouter** (Free tier) | `https://openrouter.ai/api/v1` | `openrouter/free` (auto-router), `z-ai/glm-4.5-air:free`, `qwen/qwen3-coder:free`, `meta-llama/llama-3.3-70b-instruct:free` |
+| **OpenRouter** (Free tier) | `https://openrouter.ai/api/v1` | `openrouter/free` (default auto-router), `z-ai/glm-4.5-air:free`, `qwen/qwen3-coder:free`, `meta-llama/llama-3.3-70b-instruct:free` |
+| **AnyRouter** | `https://anyrouter.dev/api/v1` | `z-ai/glm-4.7-flash`, `google/gemini-3.1-flash-lite`, `google/gemma-4-26b-a4b-it` |
 | Anthropic | `https://api.anthropic.com` | `claude-3-5-sonnet-20241022`, `claude-3-opus-20240229` |
 | OpenAI | `https://api.openai.com` | `gpt-4`, `gpt-4-turbo`, `gpt-3.5-turbo` |
 | Azure OpenAI | `https://your-resource.openai.azure.com` | `gpt-4` |
@@ -156,8 +156,8 @@ Proactively generates actionable insights:
 **Agent returns "API key not configured":**
 
 ```bash
-# Verify the default AnyRouter key is set and valid
-echo $ANYROUTER_API_KEY
+# Verify the default OpenRouter key is set and valid
+echo $OPENROUTER_API_KEY
 
 # Older deployments may still use the generic fallback key
 echo $LLM_API_KEY

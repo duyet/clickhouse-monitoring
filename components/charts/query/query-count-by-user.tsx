@@ -10,7 +10,7 @@ import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { resolveDateRangeConfig } from '@/components/date-range'
 import { transformUserEventCounts } from '@/lib/chart-data-transforms'
 import { useChartData } from '@/lib/swr'
-import { chartTickFormatters } from '@/lib/utils'
+import { chartTickFormatters, cn } from '@/lib/utils'
 
 export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
   title = 'Total Queries by users',
@@ -18,6 +18,7 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
   lastHours = 24 * 14,
   className,
   chartClassName,
+  chartCardContentClassName,
   hostId,
   ...props
 }: ChartProps) {
@@ -66,10 +67,11 @@ export const ChartQueryCountByUser = memo(function ChartQueryCountByUser({
             onRangeChange={setRangeOverride}
             staleError={staleError}
             onRetry={mutate}
+            contentClassName={chartCardContentClassName}
             data-testid="query-count-by-user-chart"
           >
             <BarChart
-              className={chartClassName}
+              className={cn('h-full w-full', chartClassName)}
               data={chartData}
               index="event_time"
               categories={users}

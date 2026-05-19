@@ -9,6 +9,7 @@ import { ChartContainer } from '@/components/charts/chart-container'
 import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { resolveDateRangeConfig } from '@/components/date-range'
 import { useChartData } from '@/lib/swr'
+import { cn } from '@/lib/utils'
 
 export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
   title = 'New Parts Created',
@@ -16,6 +17,7 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
   lastHours = 24,
   className,
   chartClassName,
+  chartCardContentClassName,
   hostId,
   ...props
 }: ChartProps) {
@@ -91,10 +93,11 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
             onRangeChange={setRangeOverride}
             staleError={staleError}
             onRetry={mutate}
+            contentClassName={chartCardContentClassName}
             data-testid="new-parts-created-chart"
           >
             <BarChart
-              className={chartClassName}
+              className={cn('h-full w-full', chartClassName)}
               data={barData}
               index="event_time"
               categories={tables}

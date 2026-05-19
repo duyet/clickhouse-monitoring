@@ -22,7 +22,7 @@ mock.module('ai', () => ({
   },
 }))
 mock.module('@/lib/ai/agent/provider-chat-model', () => ({
-  DEFAULT_MODEL: 'anyrouter:z-ai/glm-4.7-flash',
+  DEFAULT_MODEL: 'openrouter:openrouter/free',
   resolveAgentChatModel: (options: Record<string, unknown>) => {
     capturedModelOptions.push(options)
     return {
