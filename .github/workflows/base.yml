@@ -26,6 +26,10 @@ on:
       image-tag:
         type: string
         description: 'Custom Docker image tag override'
+      tag-suffix:
+        type: string
+        description: 'Suffix appended to Docker tags (e.g., -amd64, -arm64)'
+        default: ''
       timeout-minutes:
         type: number
         description: 'Job timeout in minutes'
@@ -141,29 +145,29 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # ========== MAIN BRANCH ==========
-            # Branch name ref (e.g., main) - only for main branch pushes
-            type=ref,event=branch,suffix={{prefix}},enable=${{ github.ref == 'refs/heads/main' }}
-            # Latest stable tag - main branch and stable releases only
-            type=raw,value=latest,enable={{is_default_branch}}
-            # Edge tag for main branch development builds
-            type=raw,value=edge,enable={{is_default_branch}}
+            # ========== MAIN BRANCH (multi-arch only: common tags, otherwise arch-specific) ==========
+            # Branch name ref (e.g., main) - only for main branch pushes, skip for per-arch builds
+            type=ref,event=branch,suffix={{prefix}},enable=${{ github.ref == 'refs/heads/main' && inputs.tag-suffix == '' }}
+            # Latest stable tag - main branch and stable releases only, skip for per-arch builds
+            type=raw,value=latest,enable=${{ inputs.tag-suffix == '' && github.ref == 'refs/heads/main' }}
+            # Edge tag for main branch development builds, skip for per-arch builds
+            type=raw,value=edge,enable=${{ inputs.tag-suffix == '' && github.ref == 'refs/heads/main' }}
 
-            # ========== RELEASES (git tags) ==========
-            # Full semantic version (e.g., 1.2.3, 1.2.3-beta.1)
-            type=semver,pattern={{version}}
+            # ========== RELEASES (git tags, multi-arch only) ==========
+            # Full semantic version (e.g., 1.2.3, 1.2.3-beta.1) - skip for per-arch builds
+            type=semver,pattern={{version}},enable=${{ inputs.tag-suffix == '' }}
             # Major.Minor version (e.g., 1.2) - stable releases only
-            type=semver,pattern={{major}}.{{minor}},enable=${{ !contains(github.ref_name, '-') }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ inputs.tag-suffix == '' && !contains(github.ref_name, '-') }}
             # Major version only (e.g., 1) - stable releases only
-            type=semver,pattern={{major}},enable=${{ !contains(github.ref_name, '-') }}
+            type=semver,pattern={{major}},enable=${{ inputs.tag-suffix == '' && !contains(github.ref_name, '-') }}
 
             # ========== PULL REQUESTS ==========
             # PR number for testing (e.g., pr-123)
             type=ref,event=pr,suffix={{prefix}}
 
             # ========== ALWAYS ==========
-            # Short SHA for uniqueness (e.g., sha-f854045f)
-            type=sha,prefix=
+            # Full SHA with arch suffix for manifest merging (e.g., sha-f854045f...-amd64)
+            type=sha,prefix=,format=long,suffix=${{ inputs.tag-suffix }}
 
       - name: Extract first tag
         if: ${{ inputs.job-type == 'docker' && inputs.test-container }}

@@ -59,6 +59,7 @@ jobs:
       clickhouse-versions: '["25.1"]'
       platforms: linux/amd64
       push-image: true
+      tag-suffix: -amd64
 
   build-docker-arm64:
     name: build-docker-arm64
@@ -69,6 +70,7 @@ jobs:
       clickhouse-versions: '["25.1"]'
       platforms: linux/arm64
       push-image: true
+      tag-suffix: -arm64
       timeout-minutes: 120
 
   # Merge multi-arch manifests
@@ -92,13 +94,38 @@ jobs:
 
       - name: Create and push multi-arch manifests
         run: |
-          # Create manifests for common tags (latest, edge, main)
-          for TAG in latest edge main; do
-            docker buildx imagetools create \
-              -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-amd64 \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-arm64 || true
-          done
+          AMD64=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-amd64
+          ARM64=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-arm64
+          IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+          create_manifest() {
+            local tag=$1
+            echo "Creating manifest: $IMAGE:$tag"
+            docker buildx imagetools create -t "$IMAGE:$tag" "$AMD64" "$ARM64"
+          }
+
+          # Main branch: latest, edge, main
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            for TAG in latest edge main; do
+              create_manifest "$TAG"
+            done
+          fi
+
+          # Release tags: semver manifests
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
+            create_manifest "$VERSION"
+
+            # Stable releases only (no pre-release suffix like -beta)
+            if [[ "$VERSION" != *-* ]]; then
+              MAJOR_MINOR="${VERSION%.*}"
+              MAJOR="${MAJOR_MINOR%%.*}"
+              create_manifest "$MAJOR_MINOR"
+              create_manifest "$MAJOR"
+              create_manifest "latest"
+            fi
+          fi
 
   # Validate only on main/release
   validate-docker:
