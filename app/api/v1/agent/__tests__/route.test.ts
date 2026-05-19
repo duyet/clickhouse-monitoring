@@ -14,6 +14,7 @@ type CapturedAIArgs = {
   executeCalled: boolean
   pipeResultType: string
   mergedChunk?: unknown
+  writtenChunks: unknown[]
   responseHeaders?: Headers
   originalMessageCount?: number
 }
@@ -21,6 +22,7 @@ type CapturedAIArgs = {
 const capturedAgentArgs: Array<Record<string, unknown>> = []
 const capturedAIArgs: CapturedAIArgs[] = []
 let mockClerkUserId: string | null = null
+let mockAgentStreamError: unknown = null
 
 mock.module('@/lib/ai/agent', () => ({
   createClickHouseAgent: (options: Record<string, unknown>) => {
@@ -32,6 +34,10 @@ mock.module('@/lib/ai/agent', () => ({
           usage: { inputTokens: number; outputTokens: number }
         }) => void
       }) => {
+        if (mockAgentStreamError) {
+          throw mockAgentStreamError
+        }
+
         options.onStepFinish({
           usage: {
             inputTokens: 3,
@@ -79,6 +85,7 @@ mock.module('ai', () => {
       activeRecord = {
         executeCalled: false,
         pipeResultType: 'none',
+        writtenChunks: [],
         originalMessageCount: originalMessages?.length ?? 0,
       }
       const record = activeRecord
@@ -87,7 +94,9 @@ mock.module('ai', () => {
         merge: (value: unknown) => {
           record.mergedChunk = value
         },
-        write: (_value: unknown) => {},
+        write: (value: unknown) => {
+          record.writtenChunks.push(value)
+        },
       }
 
       capturedAIArgs.push(record)
@@ -150,6 +159,7 @@ describe('POST /api/v1/agent', () => {
     capturedAgentArgs.length = 0
     capturedAIArgs.length = 0
     mockClerkUserId = null
+    mockAgentStreamError = null
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     delete process.env.CHM_FEATURE_AGENT_ACCESS
     process.env.LLM_API_KEY = 'test-llm-key'
@@ -537,6 +547,109 @@ describe('POST /api/v1/agent', () => {
       'list_databases',
     ])
     expect(response.headers.get('cache-control')).toBe('no-cache')
+  })
+
+  test('defaults to OpenRouter free router when no model is configured', async () => {
+    delete process.env.LLM_MODEL
+
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Run quick diagnostics',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+    expect(capturedAgentArgs[0]?.model).toBe('openrouter:openrouter/free')
+  })
+
+  test('accepts documented unprefixed OpenRouter model with OpenRouter key', async () => {
+    process.env.LLM_MODEL = 'openrouter/free'
+    delete process.env.LLM_API_KEY
+    process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
+
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Run quick diagnostics',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+    expect(capturedAgentArgs[0]?.model).toBe('openrouter/free')
+  })
+
+  test('accepts unprefixed free OpenRouter model with OpenRouter key', async () => {
+    process.env.LLM_MODEL = 'qwen/qwen3-coder:free'
+    delete process.env.LLM_API_KEY
+    process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
+
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Run quick diagnostics',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+    expect(capturedAgentArgs[0]?.model).toBe('qwen/qwen3-coder:free')
+  })
+
+  test('streams structured error metadata when the model cannot answer', async () => {
+    mockAgentStreamError = {
+      statusCode: 502,
+      responseBody: JSON.stringify({
+        error: {
+          code: 'upstream_exhausted',
+          message: 'Every upstream failed',
+          metadata: {
+            upstream_backend: 'openrouter',
+            upstream_status: 502,
+            upstream_message: 'no route returned content',
+          },
+        },
+      }),
+    }
+
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Run quick diagnostics',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toBe('mocked stream: object')
+    expect(capturedAIArgs[0]?.writtenChunks).toContainEqual({
+      type: 'data-error',
+      data: [
+        expect.objectContaining({
+          type: 'upstream_error',
+          code: 'upstream_exhausted',
+          upstreamBackend: 'openrouter',
+          upstreamMessage: 'no route returned content',
+        }),
+      ],
+    })
   })
 
   test('forwards explicit hostId to agent factory', async () => {

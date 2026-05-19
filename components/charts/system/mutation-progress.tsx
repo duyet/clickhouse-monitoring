@@ -47,6 +47,7 @@ function getStatusLabel(row: DataRow): string {
 export const ChartMutationProgress = memo(function ChartMutationProgress({
   title,
   className,
+  chartCardContentClassName,
   hostId,
 }: ChartProps) {
   const swr = useChartData<DataRow>({
@@ -70,6 +71,7 @@ export const ChartMutationProgress = memo(function ChartMutationProgress({
               metadata={metadata}
               staleError={staleError}
               onRetry={mutate}
+              contentClassName={chartCardContentClassName}
             >
               <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
                 No active mutations
@@ -87,9 +89,10 @@ export const ChartMutationProgress = memo(function ChartMutationProgress({
             metadata={metadata}
             staleError={staleError}
             onRetry={mutate}
+            contentClassName={chartCardContentClassName}
           >
-            <div className="flex flex-col gap-1 text-xs">
-              <div className="grid grid-cols-[1fr_60px_80px_80px] gap-2 px-2 py-1 font-medium text-muted-foreground">
+            <div className="min-h-0 flex-1 overflow-auto">
+              <div className="grid grid-cols-[1fr_60px_80px_80px] gap-2 px-2 py-1 text-xs font-medium text-muted-foreground">
                 <span>Table / Command</span>
                 <span className="text-right">Status</span>
                 <span className="text-right">Parts Left</span>
@@ -100,6 +103,7 @@ export const ChartMutationProgress = memo(function ChartMutationProgress({
                   key={row.mutation_id}
                   className={cn(
                     'grid grid-cols-[1fr_60px_80px_80px] gap-2 rounded px-2 py-1.5',
+                    'text-xs',
                     row.elapsed_seconds > STUCK_THRESHOLD_SECONDS &&
                       row.status === 'running'
                       ? 'bg-red-50 dark:bg-red-950/20'

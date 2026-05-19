@@ -11,6 +11,7 @@ import { OverviewCharts } from '@/components/overview-charts/overview-charts-cli
 import { ChartSkeleton, TabsSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
+import { cn } from '@/lib/utils'
 
 const VALID_TABS = new Set(OVERVIEW_TABS.map((tab) => tab.value))
 const DEFAULT_TAB = 'overview'
@@ -25,6 +26,9 @@ interface LazyTabContentProps {
 // Number of charts to load immediately (first row in a 3-column grid).
 // Charts at index >= EAGER_CHART_COUNT are deferred until scrolled into view.
 const EAGER_CHART_COUNT = 3
+const OVERVIEW_CHART_CLASS_NAME = 'h-full min-h-0 w-full'
+const OVERVIEW_CHART_CARD_CONTENT_CLASS_NAME =
+  'flex min-h-0 flex-1 flex-col px-3 pb-3 pt-0'
 
 const LazyTabContent = memo(function LazyTabContent({
   charts,
@@ -43,8 +47,14 @@ const LazyTabContent = memo(function LazyTabContent({
             interval={chartConfig.interval}
             lastHours={chartConfig.lastHours}
             className={chartConfig.className}
-            chartClassName={chartConfig.chartClassName}
-            chartCardContentClassName={chartConfig.chartCardContentClassName}
+            chartClassName={cn(
+              OVERVIEW_CHART_CLASS_NAME,
+              chartConfig.chartClassName
+            )}
+            chartCardContentClassName={cn(
+              OVERVIEW_CHART_CARD_CONTENT_CLASS_NAME,
+              chartConfig.chartCardContentClassName
+            )}
             hostId={hostId}
             {...(chartConfig.props ?? {})}
           />

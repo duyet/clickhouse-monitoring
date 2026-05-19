@@ -386,10 +386,11 @@ export async function POST(request: Request) {
     typeof body.hostId === 'number' && Number.isFinite(body.hostId)
       ? Math.max(0, Math.trunc(body.hostId))
       : 0
+  const configuredModel = process.env.LLM_MODEL?.trim()
   const model =
     typeof body.model === 'string' && body.model.trim().length > 0
-      ? body.model
-      : process.env.LLM_MODEL || DEFAULT_AGENT_MODEL
+      ? body.model.trim()
+      : configuredModel || DEFAULT_AGENT_MODEL
 
   // Preflight: refuse early if the selected provider has no API key on this
   // deployment. Without this, the upstream provider returns a confusing
@@ -532,50 +533,74 @@ export async function POST(request: Request) {
         ] as ModelMessage[]
       }
 
-      const result = await agent.stream({
-        messages: modelMessages,
-        onStepFinish: (step) => {
-          usageSteps.push(step.usage)
+      try {
+        const result = await agent.stream({
+          messages: modelMessages,
+          onStepFinish: (step) => {
+            usageSteps.push(step.usage)
 
-          const { inputTokenDetails } = step.usage
-          if (
-            inputTokenDetails &&
-            (inputTokenDetails.cacheReadTokens ||
-              inputTokenDetails.cacheWriteTokens)
-          ) {
-            console.log('[Agent API] Cache token stats:', {
-              cacheReadTokens: inputTokenDetails.cacheReadTokens,
-              cacheWriteTokens: inputTokenDetails.cacheWriteTokens,
-              inputTokens: step.usage.inputTokens,
-              outputTokens: step.usage.outputTokens,
-            })
-          }
-        },
-        timeout: {
-          totalMs: AGENT_STREAM_TIMEOUT_MS,
-          stepMs: AGENT_STREAM_STEP_TIMEOUT_MS,
-          chunkMs: AGENT_STREAM_STEP_TIMEOUT_MS,
-        },
-      })
+            const { inputTokenDetails } = step.usage
+            if (
+              inputTokenDetails &&
+              (inputTokenDetails.cacheReadTokens ||
+                inputTokenDetails.cacheWriteTokens)
+            ) {
+              console.log('[Agent API] Cache token stats:', {
+                cacheReadTokens: inputTokenDetails.cacheReadTokens,
+                cacheWriteTokens: inputTokenDetails.cacheWriteTokens,
+                inputTokens: step.usage.inputTokens,
+                outputTokens: step.usage.outputTokens,
+              })
+            }
+          },
+          timeout: {
+            totalMs: AGENT_STREAM_TIMEOUT_MS,
+            stepMs: AGENT_STREAM_STEP_TIMEOUT_MS,
+            chunkMs: AGENT_STREAM_STEP_TIMEOUT_MS,
+          },
+        })
 
-      writer.merge(
-        createJsonRenderPatchGuardStream(
-          pipeJsonRender(result.toUIMessageStream())
+        writer.merge(
+          createJsonRenderPatchGuardStream(
+            pipeJsonRender(result.toUIMessageStream())
+          )
         )
-      )
-      await result.consumeStream()
+        await result.consumeStream()
 
-      // Send aggregated usage/cost as a data part so the client can display it
-      if (usageSteps.length > 0) {
-        const stats = {
-          ...aggregateUsageWithCost(usageSteps, model),
+        // Send aggregated usage/cost as a data part so the client can display it
+        if (usageSteps.length > 0) {
+          const stats = {
+            ...aggregateUsageWithCost(usageSteps, model),
+            model,
+            provider: requestedProvider,
+          }
+          writer.write({
+            type: 'data-usage',
+            data: [stats],
+          })
+        }
+      } catch (error) {
+        const classified = classifyError(error, {
           model,
           provider: requestedProvider,
-        }
-        writer.write({
-          type: 'data-usage',
-          data: [stats],
         })
+        console.error('[Agent API] Classified error:', classified)
+        writer.write({
+          type: 'data-error',
+          data: [classified],
+        })
+        if (usageSteps.length > 0) {
+          writer.write({
+            type: 'data-usage',
+            data: [
+              {
+                ...aggregateUsageWithCost(usageSteps, model),
+                model,
+                provider: requestedProvider,
+              },
+            ],
+          })
+        }
       }
     },
     onError: (error) => {

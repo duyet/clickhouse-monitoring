@@ -33,6 +33,7 @@ export function createCustomChart(
     interval = config.defaultInterval,
     lastHours = config.defaultLastHours,
     className,
+    chartCardContentClassName,
     hostId: hostIdProp,
   }: ChartProps) {
     const routeHostId = useHostId()
@@ -51,7 +52,10 @@ export function createCustomChart(
           <ChartCard
             title={title}
             className={cn(config.chartCardClassName, className)}
-            contentClassName={config.contentClassName}
+            contentClassName={cn(
+              config.contentClassName,
+              chartCardContentClassName
+            )}
             sql={sql}
             data={dataArray}
             metadata={metadata}

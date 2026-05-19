@@ -43,9 +43,7 @@ describe('GET /api/v1/agents/config-check', () => {
   test('skips auth when agent access is public and auth provider is disabled', async () => {
     process.env.CHM_FEATURE_AGENT_ACCESS = 'public'
 
-    const response = await GET(
-      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
-    )
+    const response = await GET(configRequest())
 
     expect(response.status).toBe(200)
   })
@@ -80,7 +78,7 @@ describe('GET /api/v1/agents/config-check', () => {
     expect(response.status).toBe(200)
   })
 
-  test('treats ANYROUTER_API_KEY as sufficient provider configuration', async () => {
+  test('reports ANYROUTER_API_KEY in provider configuration', async () => {
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     process.env.ANYROUTER_API_KEY = 'sk-ar-test'
 
@@ -90,9 +88,9 @@ describe('GET /api/v1/agents/config-check', () => {
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body.configured.apiKey).toBe(true)
+    expect(body.configured.apiKey).toBe(false)
     expect(body.configured.apiBase).toBe(true)
-    expect(body.isFullyConfigured).toBe(true)
+    expect(body.isFullyConfigured).toBe(false)
     expect(
       body.providers.find(
         (provider: { id: string }) => provider.id === 'anyrouter'
@@ -103,9 +101,9 @@ describe('GET /api/v1/agents/config-check', () => {
     })
   })
 
-  test('requires the default AnyRouter provider key for full readiness', async () => {
+  test('requires the default OpenRouter provider key for full readiness', async () => {
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
-    process.env.OPENROUTER_API_KEY = 'sk-or-test'
+    process.env.ANYROUTER_API_KEY = 'sk-ar-test'
 
     const response = await GET(
       configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
@@ -115,12 +113,44 @@ describe('GET /api/v1/agents/config-check', () => {
     expect(response.status).toBe(200)
     expect(body.configured.apiKey).toBe(false)
     expect(body.isFullyConfigured).toBe(false)
-    expect(body.requiredKeys.apiKey).toBe('ANYROUTER_API_KEY')
+    expect(body.requiredKeys.apiKey).toBe('OPENROUTER_API_KEY or LLM_API_KEY')
   })
 
   test('uses selected model provider when LLM_MODEL overrides the default', async () => {
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
-    process.env.LLM_MODEL = 'openrouter:openrouter/auto'
+    process.env.LLM_MODEL = 'anyrouter:z-ai/glm-4.7-flash'
+    process.env.ANYROUTER_API_KEY = 'sk-ar-test'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.configured.apiKey).toBe(true)
+    expect(body.isFullyConfigured).toBe(true)
+    expect(body.requiredKeys.apiKey).toBe('ANYROUTER_API_KEY')
+  })
+
+  test('accepts unprefixed OpenRouter model with OpenRouter key', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.LLM_MODEL = 'openrouter/free'
+    process.env.OPENROUTER_API_KEY = 'sk-or-test'
+
+    const response = await GET(
+      configRequest({ authorization: `Bearer ${AGENT_API_TOKEN}` })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.configured.apiKey).toBe(true)
+    expect(body.isFullyConfigured).toBe(true)
+    expect(body.requiredKeys.apiKey).toBe('OPENROUTER_API_KEY or LLM_API_KEY')
+  })
+
+  test('accepts unprefixed free OpenRouter model with OpenRouter key', async () => {
+    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
+    process.env.LLM_MODEL = 'qwen/qwen3-coder:free'
     process.env.OPENROUTER_API_KEY = 'sk-or-test'
 
     const response = await GET(

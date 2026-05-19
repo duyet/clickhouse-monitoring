@@ -9,7 +9,7 @@ import { ChartContainer } from '@/components/charts/chart-container'
 import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { DATE_RANGE_PRESETS } from '@/components/date-range'
 import { useChartData } from '@/lib/swr'
-import { chartTickFormatters } from '@/lib/utils'
+import { chartTickFormatters, cn } from '@/lib/utils'
 
 export const ChartSlowQueryOccurrences = memo(
   function ChartSlowQueryOccurrences({
@@ -18,6 +18,7 @@ export const ChartSlowQueryOccurrences = memo(
     lastHours = 24 * 7,
     className,
     chartClassName,
+    chartCardContentClassName,
     hostId,
     ...props
   }: ChartProps) {
@@ -58,9 +59,10 @@ export const ChartSlowQueryOccurrences = memo(
             staleError={staleError}
             onRetry={mutate}
             data-testid="slow-query-occurrences-chart"
+            contentClassName={chartCardContentClassName}
           >
             <BarChart
-              className={chartClassName}
+              className={cn('h-full w-full', chartClassName)}
               data={dataArray}
               index="event_time"
               categories={['count']}

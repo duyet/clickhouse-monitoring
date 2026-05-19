@@ -34,6 +34,7 @@ import {
   ConversationEmptyState,
   Conversation as ConversationUI,
 } from '@/components/ai-elements/conversation'
+import { extractMessageError } from '@/lib/ai/agent/message-metadata'
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { isAgentError } from '@/lib/ai/agent/errors'
@@ -375,9 +376,13 @@ export const AgentsChatArea = forwardRef<
     () => findLastAssistantMessage(messages),
     [messages]
   )
-  const lastAssistantFollowUpKey = lastAssistantMessage
-    ? getBranchCacheKey(lastAssistantMessage)
-    : undefined
+  const lastAssistantHasError = lastAssistantMessage
+    ? extractMessageError(lastAssistantMessage) !== null
+    : false
+  const lastAssistantFollowUpKey =
+    lastAssistantMessage && !lastAssistantHasError
+      ? getBranchCacheKey(lastAssistantMessage)
+      : undefined
   const followUpSuggestions =
     lastAssistantFollowUpKey != null
       ? (generatedFollowUps[lastAssistantFollowUpKey] ?? [])
@@ -810,7 +815,7 @@ export const AgentsChatArea = forwardRef<
         )}
 
       <ConversationUI>
-        <ConversationContent className="gap-4">
+        <ConversationContent className="gap-3">
           {isEmpty ? (
             <ConversationEmptyState className="justify-start px-0 py-6 text-left sm:py-8">
               <AgentChatEmptyState onSubmitPrompt={submitPrompt} />
@@ -894,7 +899,7 @@ export const AgentsChatArea = forwardRef<
         />
       )}
 
-      <div className="shrink-0 px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
+      <div className="shrink-0 px-3 pb-2 pt-2 sm:px-4 sm:pb-3">
         {!isLoading && followUpSuggestions.length > 0 && (
           <div className="mb-2">
             <Suggestions>
@@ -914,7 +919,7 @@ export const AgentsChatArea = forwardRef<
           onStop={stop}
           onResolvedSubmit={submitPrompt}
         />
-        <p className="mt-2 px-1 text-[11px] leading-4 text-muted-foreground">
+        <p className="mt-1.5 px-1 text-[11px] leading-4 text-muted-foreground">
           Messages are stored in this browser&apos;s localStorage.
         </p>
       </div>

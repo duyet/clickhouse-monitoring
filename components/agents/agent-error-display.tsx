@@ -2,7 +2,7 @@
 
 import { AlertCircleIcon, CopyIcon, RefreshCwIcon, XIcon } from 'lucide-react'
 
-import type { AgentErrorType } from '@/lib/ai/agent/errors'
+import type { AgentError, AgentErrorType } from '@/lib/ai/agent/errors'
 
 import { useEffect, useRef, useState } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { parseAgentError } from '@/lib/ai/agent/errors'
+import { isAgentError, parseAgentError } from '@/lib/ai/agent/errors'
 import { cn } from '@/lib/utils'
 
 const ERROR_TYPE_LABELS: Record<AgentErrorType, string> = {
@@ -52,7 +52,8 @@ const ERROR_TYPE_CLASSES: Record<AgentErrorType, string> = {
 }
 
 interface AgentErrorDisplayProps {
-  readonly error: Error
+  readonly error: Error | AgentError
+  readonly embedded?: boolean
   readonly onRetry?: () => void
   readonly onDismiss?: () => void
 }
@@ -65,6 +66,7 @@ interface AgentErrorDisplayProps {
  */
 export function AgentErrorDisplay({
   error,
+  embedded = false,
   onRetry,
   onDismiss,
 }: AgentErrorDisplayProps) {
@@ -80,7 +82,7 @@ export function AgentErrorDisplay({
     }
   }, [])
 
-  const classified = parseAgentError(error)
+  const classified = isAgentError(error) ? error : parseAgentError(error)
 
   const errorType: AgentErrorType = classified?.type ?? 'unknown'
   const displayMessage = classified?.message ?? error.message
@@ -120,7 +122,9 @@ export function AgentErrorDisplay({
   ].filter((row): row is { label: string; value: string } => Boolean(row))
   const rawError = classified
     ? JSON.stringify(classified, null, 2)
-    : error.message
+    : error instanceof Error
+      ? error.message
+      : JSON.stringify(error, null, 2)
 
   const handleCopy = async () => {
     try {
@@ -139,8 +143,16 @@ export function AgentErrorDisplay({
   }
 
   return (
-    <div className="px-3 sm:px-4 py-2 border-t shrink-0">
-      <Alert variant="destructive" className="gap-2">
+    <div
+      className={cn(embedded ? 'mt-2' : 'shrink-0 border-t px-3 py-2 sm:px-4')}
+    >
+      <Alert
+        variant="destructive"
+        className={cn(
+          'gap-2',
+          embedded && 'border-destructive/30 bg-destructive/5 text-foreground'
+        )}
+      >
         <AlertCircleIcon className="h-4 w-4 shrink-0 mt-0.5" />
         <AlertDescription className="flex flex-col gap-2 min-w-0">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">

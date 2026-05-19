@@ -18,7 +18,7 @@ export interface ModelEntry {
   providers: string[]
 }
 
-export const DEFAULT_AGENT_MODEL = 'anyrouter:z-ai/glm-4.7-flash'
+export const DEFAULT_AGENT_MODEL = 'openrouter:openrouter/free'
 
 export const MODEL_REGISTRY: readonly ModelEntry[] = [
   // ── OpenRouter auto-routers ──

@@ -62,6 +62,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     lastHours = config.defaultLastHours,
     className,
     chartClassName,
+    chartCardContentClassName,
     hostId: hostIdProp,
     ...props
   }: ChartProps) {
@@ -144,6 +145,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
             }
             staleError={staleError}
             onRetry={mutate}
+            contentClassName={chartCardContentClassName}
           >
             <BarChart
               className={cn(

@@ -2,6 +2,8 @@ import type { UIMessage } from 'ai'
 import type { AgentUsageStats } from './analytics'
 import type { AgentError } from './errors'
 
+import { isAgentError } from './errors'
+
 export interface AgentMessageUsage extends AgentUsageStats {
   readonly model?: string
   readonly provider?: string
@@ -25,6 +27,7 @@ export interface AgentMessageMetadata {
   readonly reasoningPartCount: number
   readonly totalToolDurationMs: number
   readonly usage: AgentMessageUsage | null
+  readonly messageError: AgentError | null
   readonly tools: AgentToolMetadata[]
   readonly raw: Record<string, unknown>
 }
@@ -134,6 +137,23 @@ export function extractToolMetadata(message: UIMessage): AgentToolMetadata[] {
   return tools
 }
 
+export function extractMessageError(message: UIMessage): AgentError | null {
+  for (let index = message.parts.length - 1; index >= 0; index--) {
+    const part = message.parts[index]
+    if (!isObject(part) || part.type !== 'data-error') continue
+
+    const data = part.data
+    if (Array.isArray(data) && data.length > 0 && isAgentError(data[0])) {
+      return data[0]
+    }
+    if (isAgentError(data)) {
+      return data
+    }
+  }
+
+  return null
+}
+
 export function getAgentMessageMetadata({
   message,
   responseDurationMs,
@@ -147,6 +167,7 @@ export function getAgentMessageMetadata({
 }): AgentMessageMetadata {
   const tools = extractToolMetadata(message)
   const usage = extractMessageUsage(message)
+  const messageError = extractMessageError(message)
   const partTypes = message.parts.map((part) =>
     isObject(part) && typeof part.type === 'string' ? part.type : 'unknown'
   )
@@ -164,6 +185,7 @@ export function getAgentMessageMetadata({
       0
     ),
     usage,
+    messageError,
     tools,
     raw: {
       messageId: message.id,
@@ -172,7 +194,7 @@ export function getAgentMessageMetadata({
       partTypes,
       usage,
       tools,
-      error,
+      error: error ?? messageError,
       followUpError,
     },
   }
