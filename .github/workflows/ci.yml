@@ -51,6 +51,8 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          cache: bun
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@1.94.0
@@ -144,40 +146,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ !contains(github.ref_name, '-') }}
+            type=semver,pattern={{major}},enable=${{ !contains(github.ref_name, '-') }}
+            type=sha,prefix=sha-,format=long
+
       - name: Create and push multi-arch manifests
         run: |
           AMD64=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-amd64
           ARM64=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-arm64
-          IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-          create_manifest() {
-            local tag=$1
-            echo "Creating manifest: $IMAGE:$tag"
-            docker buildx imagetools create -t "$IMAGE:$tag" "$AMD64" "$ARM64"
-          }
-
-          # Main branch: latest, edge, main
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            for TAG in latest edge main; do
-              create_manifest "$TAG"
-            done
-          fi
-
-          # Release tags: semver manifests
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            VERSION="${{ github.ref_name }}"
-            VERSION="${VERSION#v}"
-            create_manifest "$VERSION"
-
-            # Stable releases only (no pre-release suffix like -beta)
-            if [[ "$VERSION" != *-* ]]; then
-              MAJOR_MINOR="${VERSION%.*}"
-              MAJOR="${MAJOR_MINOR%%.*}"
-              create_manifest "$MAJOR_MINOR"
-              create_manifest "$MAJOR"
-              create_manifest "latest"
-            fi
-          fi
+          
+          # Use metadata-action generated tags
+          for TAG in ${{ steps.meta.outputs.tags }}; do
+            echo "Creating manifest: $TAG"
+            docker buildx imagetools create -t "$TAG" "$AMD64" "$ARM64"
+          done
 
   # Validate only on main/release
   validate-docker:

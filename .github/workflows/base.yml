@@ -93,6 +93,8 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          cache: bun
 
       - name: Setup Rust
         if: ${{ inputs.job-type == 'build' }}
@@ -114,6 +116,7 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-
 
       - name: Install dependencies
+        if: ${{ inputs.job-type == 'build' || inputs.job-type == 'lint' }}
         run: bun install
 
       # === Linting ===
@@ -178,7 +181,7 @@ jobs:
 
             # ========== ALWAYS ==========
             # Full SHA with arch suffix for manifest merging (e.g., sha-f854045f...-amd64)
-            type=sha,prefix=,format=long,suffix=${{ inputs.tag-suffix }}
+            type=sha,prefix=sha-,format=long,suffix=${{ inputs.tag-suffix }}
 
       - name: Extract first tag
         if: ${{ inputs.job-type == 'docker' && inputs.test-container }}
@@ -203,8 +206,8 @@ jobs:
             GITHUB_SHA=${{ github.sha }}
             GITHUB_REF=${{ github.ref }}
             SKIP_RUST=${{ inputs.skip-rust }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=docker-${{ inputs.tag-suffix }}
+          cache-to: type=gha,scope=docker-${{ inputs.tag-suffix }},mode=max
           platforms: ${{ inputs.platforms }}
 
       - name: Build and push Docker image
@@ -222,8 +225,8 @@ jobs:
             GITHUB_REF=${{ github.ref }}
             SKIP_RUST=${{ inputs.skip-rust }}
           # Inline cache for fastest builds (shares cache with pushed image)
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          cache-from: type=gha,scope=docker-${{ inputs.tag-suffix }}
+          cache-to: type=gha,scope=docker-${{ inputs.tag-suffix }},mode=max
           platforms: ${{ inputs.platforms }}
 
       # === Container Testing ===
