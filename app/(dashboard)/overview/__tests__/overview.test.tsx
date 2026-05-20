@@ -40,9 +40,6 @@ mock.module('@/lib/swr', () => ({
 }))
 
 const {
-  getAllChartIds,
-  getChartsForTab,
-  getTabConfig,
   HEALTH_TAB_CHARTS,
   OPERATIONS_TAB_CHARTS,
   OVERVIEW_TAB_CHARTS,
@@ -232,93 +229,6 @@ describe('charts-config', () => {
     })
   })
 
-  describe('Utility Functions', () => {
-    describe('getTabConfig', () => {
-      it('should return the correct tab configuration', () => {
-        const overviewTab = getTabConfig('overview')
-        expect(overviewTab?.value).toBe('overview')
-        expect(overviewTab?.label).toBe('Overview')
-      })
-
-      it('should return undefined for non-existent tab', () => {
-        const nonExistentTab = getTabConfig('non-existent')
-        expect(nonExistentTab).toBeUndefined()
-      })
-
-      it('should find all tabs by value', () => {
-        OVERVIEW_TABS.forEach((tab) => {
-          const found = getTabConfig(tab.value)
-          expect(found).toBeDefined()
-          expect(found?.value).toBe(tab.value)
-        })
-      })
-    })
-
-    describe('getAllChartIds', () => {
-      it('should return all unique chart IDs', () => {
-        const allIds = getAllChartIds()
-        const uniqueIds = new Set(allIds)
-        // Each chart should have a unique ID
-        expect(allIds.length).toBe(uniqueIds.size)
-      })
-
-      it('should include all chart IDs from all tabs', () => {
-        const allIds = getAllChartIds()
-        const expectedCount =
-          OVERVIEW_TAB_CHARTS.length +
-          QUERIES_TAB_CHARTS.length +
-          STORAGE_TAB_CHARTS.length +
-          OPERATIONS_TAB_CHARTS.length +
-          HEALTH_TAB_CHARTS.length
-        expect(allIds.length).toBe(expectedCount)
-      })
-
-      it('should include specific chart IDs', () => {
-        const allIds = getAllChartIds()
-        expect(allIds).toContain('query-count-24h')
-        expect(allIds).toContain('keeper-exception')
-        expect(allIds).toContain('disk-size')
-        expect(allIds).toContain('backup-size')
-        expect(allIds).toContain('replication-lag')
-        expect(allIds).toContain('query-cache-usage')
-      })
-    })
-
-    describe('getChartsForTab', () => {
-      it('should return charts for the overview tab', () => {
-        const charts = getChartsForTab('overview')
-        expect(charts).toHaveLength(17)
-        expect(charts[0].id).toBe('query-count-24h')
-      })
-
-      it('should return charts for the queries tab', () => {
-        const charts = getChartsForTab('queries')
-        expect(charts).toHaveLength(11)
-        expect(charts[0].id).toBe('query-count-14d')
-      })
-
-      it('should return charts for the storage tab', () => {
-        const charts = getChartsForTab('storage')
-        expect(charts).toHaveLength(12)
-      })
-
-      it('should return charts for the operations tab', () => {
-        const charts = getChartsForTab('operations')
-        expect(charts).toHaveLength(10)
-      })
-
-      it('should return charts for the health tab', () => {
-        const charts = getChartsForTab('health')
-        expect(charts).toHaveLength(12)
-      })
-
-      it('should return empty array for non-existent tab', () => {
-        const charts = getChartsForTab('non-existent')
-        expect(charts).toEqual([])
-      })
-    })
-  })
-
   describe('Chart Types', () => {
     it('should categorize charts by type', () => {
       const allCharts = [
@@ -357,9 +267,11 @@ describe('charts-config', () => {
 
   describe('Grid Layout Classes', () => {
     it('should have proper grid classes for each tab', () => {
-      const overviewTab = getTabConfig('overview')
-      const healthTab = getTabConfig('health')
-      const operationsTab = getTabConfig('operations')
+      const overviewTab = OVERVIEW_TABS.find((tab) => tab.value === 'overview')
+      const healthTab = OVERVIEW_TABS.find((tab) => tab.value === 'health')
+      const operationsTab = OVERVIEW_TABS.find(
+        (tab) => tab.value === 'operations'
+      )
 
       // Overview uses 3-column layout
       expect(overviewTab?.gridClassName).toContain('grid-cols-1')
