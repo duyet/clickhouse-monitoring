@@ -20,7 +20,7 @@ import {
   createErrorResponse,
   createValidationError,
 } from '@/lib/api/error-handler'
-import { createCachedResponse } from '@/lib/api/shared/response-builder'
+import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { mapErrorTypeToStatusCode } from '@/lib/api/shared/status-code-mapper'
 import { getAndValidateHostId } from '@/lib/api/shared/validators'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
@@ -300,14 +300,15 @@ export async function GET(request: Request): Promise<Response> {
       )
     }
 
-    return createCachedResponse(
+    return createSuccessResponse(
       textResult.data,
-      'no-store, no-cache, must-revalidate',
       {
         sql: explainQuery,
         rows: textResult.data.length,
         queryId: String(textResult.metadata.queryId || ''),
-      }
+      },
+      200,
+      { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
     )
   }
 
@@ -349,15 +350,16 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   // Create successful response with no-cache headers
-  return createCachedResponse(
+  return createSuccessResponse(
     result.data,
-    'no-store, no-cache, must-revalidate',
     {
       sql: explainQuery,
       rows: Number(result.metadata.rows || 0),
       duration: Number(result.metadata.duration || 0),
       queryId: String(result.metadata.queryId || ''),
-    }
+    },
+    200,
+    { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
   )
 }
 

@@ -19,10 +19,7 @@ async function fetchTableSchema(
   hostId: number
 ): Promise<string> {
   try {
-    const safeDatabase = database.replace(/'/g, "''")
-    const safeTable = table.replace(/'/g, "''")
-    const query = `SELECT name, type, default_kind, comment FROM system.columns WHERE database='${safeDatabase}' AND table='${safeTable}' ORDER BY position`
-    const url = `/api/v1/data?query=${encodeURIComponent(query)}&hostId=${hostId}`
+    const url = `/api/v1/explorer/columns?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
     const res = await apiFetch(url)
     if (!res.ok) return ''
 

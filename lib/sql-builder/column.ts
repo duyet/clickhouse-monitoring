@@ -219,9 +219,12 @@ export function col(column: string): ColumnBuilder {
  * ```
  */
 col.concat = (...parts: string[]): ColumnBuilder => {
+  const escapeLiteral = (value: string): string => value.replace(/'/g, "''")
   // Quote all parts - this is the simple approach
   // If you need column names, use raw() or pass pre-formatted strings
-  const quotedParts = parts.map((p) => (p.startsWith("'") ? p : `'${p}'`))
+  const quotedParts = parts.map((p) =>
+    p.startsWith("'") ? p : `'${escapeLiteral(p)}'`
+  )
   return new ColumnBuilder('concat', {
     expression: `concat(${quotedParts.join(', ')})`,
   })

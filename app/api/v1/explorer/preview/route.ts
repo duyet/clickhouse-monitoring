@@ -40,8 +40,15 @@ export async function GET(request: Request): Promise<Response> {
   const database = searchParams.get('database')
   const table = searchParams.get('table')
   const limit = searchParams.get('limit') || '100'
+  const offset = searchParams.get('offset') || '0'
 
-  debug(`[GET /api/v1/explorer/preview]`, { hostId, database, table, limit })
+  debug(`[GET /api/v1/explorer/preview]`, {
+    hostId,
+    database,
+    table,
+    limit,
+    offset,
+  })
 
   // Validate database parameter
   if (!database || !VALID_IDENTIFIER.test(database)) {
@@ -89,8 +96,21 @@ export async function GET(request: Request): Promise<Response> {
     )
   }
 
+  const parsedOffset = parseInt(offset, 10)
+  if (Number.isNaN(parsedOffset) || parsedOffset < 0) {
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.ValidationError,
+        message: 'Invalid offset parameter (must be a non-negative integer)',
+        details: { offset },
+      },
+      400,
+      routeContext
+    )
+  }
+
   // Build safe query using backticks for identifiers
-  const query = `SELECT * FROM \`${database}\`.\`${table}\` LIMIT ${parsedLimit}`
+  const query = `SELECT * FROM \`${database}\`.\`${table}\` LIMIT ${parsedLimit} OFFSET ${parsedOffset}`
 
   debug(`[GET /api/v1/explorer/preview] Executing query:`, { query })
 

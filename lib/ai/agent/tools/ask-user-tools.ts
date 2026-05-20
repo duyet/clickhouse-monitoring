@@ -1,6 +1,9 @@
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
+const MAX_OPTIONS = 20
+const MAX_TEXT_LEN = 200
+
 export function createAskUserTools() {
   return {
     ask_user: dynamicTool({
@@ -11,7 +14,11 @@ export function createAskUserTools() {
 - free_text: Open-ended text input (e.g., "Describe the symptoms you're seeing")
 - rating: Numeric scale (e.g., "Rate the usefulness of this analysis 1-5")`,
       inputSchema: z.object({
-        question: z.string().describe('The question to ask the user'),
+        question: z
+          .string()
+          .min(1)
+          .max(MAX_TEXT_LEN)
+          .describe('The question to ask the user'),
         inputType: z
           .enum([
             'single_choice',
@@ -24,30 +31,44 @@ export function createAskUserTools() {
         options: z
           .array(
             z.object({
-              label: z.string().describe('Display label'),
-              value: z.string().describe('Value to return when selected'),
+              label: z.string().min(1).max(80).describe('Display label'),
+              value: z
+                .string()
+                .min(1)
+                .max(120)
+                .describe('Value to return when selected'),
               description: z
                 .string()
+                .max(MAX_TEXT_LEN)
                 .optional()
                 .describe('Optional description/hint'),
             })
           )
+          .max(MAX_OPTIONS)
           .optional()
           .describe('Options for single_choice and multi_choice types'),
         placeholder: z
           .string()
+          .max(MAX_TEXT_LEN)
           .optional()
           .describe('Placeholder text for free_text input'),
         min: z
           .number()
+          .int()
+          .min(1)
+          .max(10)
           .optional()
           .describe('Minimum value for rating (default: 1)'),
         max: z
           .number()
+          .int()
+          .min(1)
+          .max(10)
           .optional()
           .describe('Maximum value for rating (default: 5)'),
         context: z
           .string()
+          .max(MAX_TEXT_LEN)
           .optional()
           .describe('Additional context shown above the question'),
       }),

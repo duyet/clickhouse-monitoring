@@ -32,9 +32,7 @@ export function useAutocompleteData() {
   const { data: tablesData, isLoading: tablesLoading } = useSWR<{
     data: TableRow[]
   }>(
-    hostId != null
-      ? `/api/v1/data?query=${encodeURIComponent("SELECT database, name, engine, toString(total_rows) as total_rows FROM system.tables WHERE database != 'INFORMATION_SCHEMA' AND database != 'information_schema' ORDER BY database, name LIMIT 500")}&hostId=${hostId}`
-      : null,
+    hostId != null ? `/api/v1/tables?hostId=${hostId}&limit=500` : null,
     (url: string) => fetchJson<{ data: TableRow[] }>(url),
     { revalidateOnFocus: false, dedupingInterval: 60000 }
   )

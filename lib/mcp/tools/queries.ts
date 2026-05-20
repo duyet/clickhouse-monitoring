@@ -42,12 +42,15 @@ export function registerQueryTools(server: McpServer) {
     {
       limit: z
         .number()
-        .optional()
+        .int()
+        .min(1)
+        .max(1000)
+        .default(10)
         .describe('Max number of queries to return (default: 10)'),
       hostId: z.number().optional().describe('Host index (default: 0)'),
     },
     async ({ limit, hostId }) => {
-      const effectiveLimit = limit ?? 10
+      const effectiveLimit = limit
 
       const result = await fetchData({
         query:

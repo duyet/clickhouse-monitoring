@@ -40,8 +40,6 @@ function normalizeModelId(id: string): string {
 }
 
 function getDefaultModel(): OpenAIModel {
-  const envModel = process.env.LLM_MODEL
-  if (envModel) return normalizeModelId(envModel)
   return DEFAULT_MODEL
 }
 
@@ -65,6 +63,15 @@ function saveModel(model: OpenAIModel): void {
 
   try {
     localStorage.setItem(MODEL_STORAGE_KEY, model)
+  } catch {
+    // localStorage may be disabled
+  }
+}
+
+function clearSavedModel(): void {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.removeItem(MODEL_STORAGE_KEY)
   } catch {
     // localStorage may be disabled
   }
@@ -157,7 +164,7 @@ export function useAgentModel(): UseAgentModelResult {
   }
 
   const resetModel = (): void => {
-    saveModel(getDefaultModel())
+    clearSavedModel()
     window.location.reload()
   }
 
