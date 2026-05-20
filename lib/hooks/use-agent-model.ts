@@ -31,17 +31,22 @@ const MODEL_STORAGE_KEY = 'clickhouse-monitor-agent-model'
 const DEFAULT_MODEL = DEFAULT_AGENT_MODEL
 
 /**
- * Normalize a model ID to `provider:model` format.
- * Legacy IDs without `:` get `openrouter:` prefix.
+ * Ensure a model identifier is in `provider:model` form.
+ *
+ * @param id - A model identifier, either already provider-qualified (`provider:model`) or legacy (just the model name)
+ * @returns The normalized identifier in `provider:model` form; if `id` has no `:`, `openrouter:` is prefixed
  */
 function normalizeModelId(id: string): string {
   if (id.includes(':')) return id
   return `openrouter:${id}`
 }
 
+/**
+ * Return the configured default agent model.
+ *
+ * @returns The default `OpenAIModel` value used when no saved model exists
+ */
 function getDefaultModel(): OpenAIModel {
-  const envModel = process.env.LLM_MODEL
-  if (envModel) return normalizeModelId(envModel)
   return DEFAULT_MODEL
 }
 
@@ -60,11 +65,32 @@ export function getSavedModel(): OpenAIModel {
   return getDefaultModel()
 }
 
+/**
+ * Persist the selected agent model identifier to browser localStorage.
+ *
+ * Does nothing when not running in a browser or if storage is unavailable or disabled; storage errors are silently ignored.
+ *
+ * @param model - Model identifier to store under the key 'clickhouse-monitor-agent-model'
+ */
 function saveModel(model: OpenAIModel): void {
   if (typeof window === 'undefined') return
 
   try {
     localStorage.setItem(MODEL_STORAGE_KEY, model)
+  } catch {
+    // localStorage may be disabled
+  }
+}
+
+/**
+ * Removes the persisted agent model selection from browser localStorage.
+ *
+ * Does nothing when not running in a browser. Any errors thrown by storage access are ignored.
+ */
+function clearSavedModel(): void {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.removeItem(MODEL_STORAGE_KEY)
   } catch {
     // localStorage may be disabled
   }
@@ -129,6 +155,15 @@ async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
   }
 }
 
+/**
+ * Manages the selected agent model, the available model list (with best-effort capability fetch), and handlers to change or reset the selection.
+ *
+ * @returns An object with:
+ * - `model` — the currently selected model identifier (normalized).
+ * - `models` — the list of available `ModelDisplayInfo` entries (initial static list, replaced by fetched capabilities when available).
+ * - `setModel` — function that saves the given model identifier and reloads the page.
+ * - `resetModel` — function that clears any saved model selection and reloads the page.
+ */
 export function useAgentModel(): UseAgentModelResult {
   const model = useMemo(() => getSavedModel(), [])
 
@@ -157,7 +192,7 @@ export function useAgentModel(): UseAgentModelResult {
   }
 
   const resetModel = (): void => {
-    saveModel(getDefaultModel())
+    clearSavedModel()
     window.location.reload()
   }
 

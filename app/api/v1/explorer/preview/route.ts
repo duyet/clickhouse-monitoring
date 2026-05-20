@@ -26,7 +26,21 @@ const ROUTE_CONTEXT_BASE = { route: '/api/v1/explorer/preview' }
 const VALID_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_]*$/
 
 /**
- * Handle GET requests for table preview
+ * Return a JSON preview of rows from a specified database table using query parameters.
+ *
+ * Accepts the following query parameters:
+ * - `hostId` (required): numeric host identifier, must be provided for all data fetching operations
+ * - `database` (required): database identifier matching `^[a-zA-Z_][a-zA-Z0-9_]*$`
+ * - `table` (required): table identifier matching `^[a-zA-Z_][a-zA-Z0-9_]*$`
+ * - `limit` (optional): number of rows to return, defaults to `100`, must be between 1 and 10000
+ * - `offset` (optional): zero-based row offset, defaults to `0`, must be an integer >= 0
+ *
+ * The endpoint performs a feature authorization check, validates parameters, executes a
+ * `SELECT *` query with `LIMIT` and `OFFSET`, and returns either a successful preview
+ * response or a structured API error response with an appropriate HTTP status code.
+ *
+ * @returns A Response containing an `ApiResponse` with preview rows and metadata on success,
+ *          or an error `ApiResponse` with details and an appropriate HTTP status on failure.
  */
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url)
@@ -47,8 +61,15 @@ export async function GET(request: Request): Promise<Response> {
   const database = searchParams.get('database')
   const table = searchParams.get('table')
   const limit = searchParams.get('limit') || '100'
+  const offset = searchParams.get('offset') || '0'
 
-  debug(`[GET /api/v1/explorer/preview]`, { hostId, database, table, limit })
+  debug(`[GET /api/v1/explorer/preview]`, {
+    hostId,
+    database,
+    table,
+    limit,
+    offset,
+  })
 
   // Validate database parameter
   if (!database || !VALID_IDENTIFIER.test(database)) {
@@ -96,14 +117,39 @@ export async function GET(request: Request): Promise<Response> {
     )
   }
 
-  // Build safe query using backticks for identifiers
-  const query = `SELECT * FROM \`${database}\`.\`${table}\` LIMIT ${parsedLimit}`
+  const parsedOffset = parseInt(offset, 10)
+  if (
+    Number.isNaN(parsedOffset) ||
+    parsedOffset < 0 ||
+    parsedOffset > 10000
+  ) {
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.ValidationError,
+        message:
+          'Invalid offset parameter (must be a non-negative integer and <= 10000)',
+        details: { offset },
+      },
+      400,
+      routeContext
+    )
+  }
+
+  // Build safe query using ClickHouse placeholders
+  const query =
+    'SELECT * FROM {database:String}.{table:String} LIMIT {limit:UInt32} OFFSET {offset:UInt32}'
 
   debug(`[GET /api/v1/explorer/preview] Executing query:`, { query })
 
   // Execute the query
   const result = await fetchData({
     query,
+    query_params: {
+      database,
+      table,
+      limit: parsedLimit,
+      offset: parsedOffset,
+    },
     hostId,
     format: 'JSONEachRow',
   })

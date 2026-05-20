@@ -13,16 +13,21 @@ interface ColumnRow {
   comment: string
 }
 
+/**
+ * Fetches column metadata for a table from the explorer API and returns it as a formatted string.
+ *
+ * @param database - The database name containing the table
+ * @param table - The table name to fetch columns for
+ * @param hostId - The identifier of the host to query
+ * @returns A comma-separated string of column definitions where each entry is `name type` optionally followed by `-- comment`; returns an empty string if no columns are available or the request fails
+ */
 async function fetchTableSchema(
   database: string,
   table: string,
   hostId: number
 ): Promise<string> {
   try {
-    const safeDatabase = database.replace(/'/g, "''")
-    const safeTable = table.replace(/'/g, "''")
-    const query = `SELECT name, type, default_kind, comment FROM system.columns WHERE database='${safeDatabase}' AND table='${safeTable}' ORDER BY position`
-    const url = `/api/v1/data?query=${encodeURIComponent(query)}&hostId=${hostId}`
+    const url = `/api/v1/explorer/columns?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
     const res = await apiFetch(url)
     if (!res.ok) return ''
 

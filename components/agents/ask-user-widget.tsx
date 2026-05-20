@@ -38,12 +38,36 @@ export function isAskUserOutput(output: unknown): output is AskUserOutput {
   return obj.type === 'ask_user' && typeof obj.question === 'string'
 }
 
+/**
+ * Render an interactive "ask user" widget that displays a question and collects a response according to `output.inputType`.
+ *
+ * @param output - Configuration for the prompt (must have `type: 'ask_user'` and `question`); supports `inputType` = `'single_choice' | 'multi_choice' | 'confirm' | 'free_text' | 'rating'`. Optional fields: `options`, `placeholder`, `min`, `max`, `context`, and `awaiting_response`. `options` entries may include `label`, `value`, and `description`.
+ * @param toolCallId - Identifier supplied to `onSubmit` when a response is submitted.
+ * @param onSubmit - Callback invoked as `onSubmit(toolCallId, result)` when the user submits a response; `result` is a string (e.g., selected value, JSON array string for multi-choice, `'yes'`/`'no'`, trimmed free-text, or rating number as a string).
+ * @param isSubmitted - Optional initial submitted state (defaults to `false`).
+ * @returns The rendered Ask User widget element.
+ */
 export function AskUserWidget({
   output,
   toolCallId,
   onSubmit,
   isSubmitted = false,
 }: AskUserWidgetProps) {
+  const safeOptions = (output.options ?? []).slice(0, 20).map((opt) => ({
+    ...opt,
+    label: opt.label.slice(0, 80),
+    value: opt.value.slice(0, 120),
+    description: opt.description?.slice(0, 200),
+  }))
+  const safeMin = Number.isFinite(output.min)
+    ? Math.trunc(output.min as number)
+    : 1
+  const safeMax = Number.isFinite(output.max)
+    ? Math.trunc(output.max as number)
+    : 5
+  const ratingMin = Math.max(1, Math.min(10, safeMin))
+  const ratingMax = Math.max(ratingMin, Math.min(10, safeMax))
+  const ratingSpan = Math.min(10, ratingMax - ratingMin + 1)
   const [selectedValue, setSelectedValue] = useState<string>('')
   const [selectedValues, setSelectedValues] = useState<Set<string>>(new Set())
   const [textValue, setTextValue] = useState('')
@@ -82,9 +106,9 @@ export function AskUserWidget({
       </div>
 
       {/* Input widget based on type */}
-      {output.inputType === 'single_choice' && output.options && (
+      {output.inputType === 'single_choice' && safeOptions.length > 0 && (
         <div className="space-y-1.5 mb-3">
-          {output.options.map((opt) => (
+          {safeOptions.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setSelectedValue(opt.value)}
@@ -128,9 +152,9 @@ export function AskUserWidget({
         </div>
       )}
 
-      {output.inputType === 'multi_choice' && output.options && (
+      {output.inputType === 'multi_choice' && safeOptions.length > 0 && (
         <div className="space-y-1.5 mb-3">
-          {output.options.map((opt) => (
+          {safeOptions.map((opt) => (
             <label
               key={opt.value}
               className={cn(
@@ -196,7 +220,10 @@ export function AskUserWidget({
           <Input
             value={textValue}
             onChange={(e) => setTextValue(e.target.value)}
-            placeholder={output.placeholder || 'Type your response...'}
+            placeholder={(output.placeholder || 'Type your response...').slice(
+              0,
+              200
+            )}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && textValue.trim()) {
                 handleSubmit(textValue.trim())
@@ -216,33 +243,32 @@ export function AskUserWidget({
       {output.inputType === 'rating' && (
         <div className="space-y-2">
           <div className="flex gap-1">
-            {Array.from(
-              { length: (output.max || 5) - (output.min || 1) + 1 },
-              (_, i) => i + (output.min || 1)
-            ).map((n) => (
-              <button
-                key={n}
-                onClick={() => setRatingValue(n)}
-                className={cn(
-                  'p-1 transition-colors',
-                  ratingValue >= n
-                    ? 'text-yellow-500'
-                    : 'text-muted-foreground/30 hover:text-yellow-300'
-                )}
-              >
-                <StarIcon
-                  className="h-6 w-6"
-                  fill={ratingValue >= n ? 'currentColor' : 'none'}
-                />
-              </button>
-            ))}
+            {Array.from({ length: ratingSpan }, (_, i) => i + ratingMin).map(
+              (n) => (
+                <button
+                  key={n}
+                  onClick={() => setRatingValue(n)}
+                  className={cn(
+                    'p-1 transition-colors',
+                    ratingValue >= n
+                      ? 'text-yellow-500'
+                      : 'text-muted-foreground/30 hover:text-yellow-300'
+                  )}
+                >
+                  <StarIcon
+                    className="h-6 w-6"
+                    fill={ratingValue >= n ? 'currentColor' : 'none'}
+                  />
+                </button>
+              )
+            )}
           </div>
           <Button
             size="sm"
             disabled={ratingValue === 0}
             onClick={() => handleSubmit(String(ratingValue))}
           >
-            Submit ({ratingValue}/{output.max || 5})
+            Submit ({ratingValue}/{ratingMax})
           </Button>
         </div>
       )}

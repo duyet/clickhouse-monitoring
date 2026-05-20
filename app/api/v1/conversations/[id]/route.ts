@@ -184,7 +184,16 @@ export async function GET(
 }
 
 /**
- * Handle PUT requests to update conversation
+ * Create or update a conversation by id using the provided `title` and/or `messages`.
+ *
+ * Validates the conversation id and request body, constructs a new or merged conversation
+ * record (setting `createdAt` when creating and `updatedAt` on every update), persists it,
+ * and returns the saved conversation in a standardized success response. On error returns
+ * a standardized API error response with an appropriate status code.
+ *
+ * @param request - The incoming HTTP request
+ * @param params - An object whose `params` promise resolves to `{ id: string }`
+ * @returns A Response whose body is a standardized success object containing `conversation` on success, or an API error object on failure
  */
 export async function PUT(
   request: Request,
@@ -254,29 +263,16 @@ export async function PUT(
     const store = await resolveStore()
     const existingConversation = await store.get(userId, id)
 
-    // Check if conversation exists
-    if (!existingConversation) {
-      return createApiErrorResponse(
-        {
-          type: ApiErrorType.ValidationError,
-          message: 'Conversation not found',
-          details: {
-            timestamp: new Date().toISOString(),
-            conversationId: id,
-          },
-        },
-        404,
-        ROUTE_CONTEXT_PUT
-      )
-    }
-
-    // Build updated conversation
+    // Build create-or-update conversation (needed for localStorage migration PUT uploads)
     const now = Date.now()
+    const baseMessages = messages ?? existingConversation?.messages ?? []
     const updatedConversation: StoredConversation = {
-      ...existingConversation,
-      title: title ?? existingConversation.title,
-      messages: messages ?? existingConversation.messages,
-      messageCount: (messages ?? existingConversation.messages).length,
+      id,
+      userId,
+      title: title ?? existingConversation?.title ?? 'Untitled Conversation',
+      messages: baseMessages,
+      messageCount: baseMessages.length,
+      createdAt: existingConversation?.createdAt ?? now,
       updatedAt: now,
     }
 
