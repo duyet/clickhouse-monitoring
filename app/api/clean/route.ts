@@ -59,10 +59,6 @@ async function handleClean(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
-  return handleClean(request)
-}
-
 export async function POST(request: Request) {
   return handleClean(request)
 }
