@@ -75,6 +75,14 @@ export interface OverviewTabConfig {
 // Chart Imports
 // ============================================================================
 
+// ============================================================================
+// Chart Imports
+// ============================================================================
+
+// ============================================================================
+// Chart Imports
+// ============================================================================
+
 // Connection charts
 import { ChartConnectionsPool } from '@/components/charts/connections-pool'
 // Merge charts
@@ -85,14 +93,18 @@ import { ChartNewPartsCreated } from '@/components/charts/merge/new-parts-create
 import { ChartCancelledQueries } from '@/components/charts/query/cancelled-queries'
 // Query charts
 import { ChartFailedQueryCount } from '@/components/charts/query/failed-query-count'
+import { ChartFailedQueryCountByUser } from '@/components/charts/query/failed-query-count-by-user'
 import { ChartQueryCache } from '@/components/charts/query/query-cache'
 import { ChartQueryCacheUsage } from '@/components/charts/query/query-cache-usage'
 import { ChartQueryCount } from '@/components/charts/query/query-count'
 import { ChartQueryCountByUser } from '@/components/charts/query/query-count-by-user'
+import { ChartQueryCountHeatmap } from '@/components/charts/query/query-count-heatmap'
 import { ChartQueryDuration } from '@/components/charts/query/query-duration'
 import { ChartQueryDurationPercentiles } from '@/components/charts/query/query-duration-percentiles'
 import { ChartQueryMemory } from '@/components/charts/query/query-memory'
 import { ChartQueryType } from '@/components/charts/query/query-type'
+import { ChartSlowQueryOccurrences } from '@/components/charts/query/slow-query-occurrences'
+import { ChartTopQueryFingerprints } from '@/components/charts/query/top-query-fingerprints'
 // Replication charts
 import { ChartReadonlyReplica } from '@/components/charts/replication/readonly-replica'
 import { ChartReplicationLag } from '@/components/charts/replication/replication-lag'
@@ -105,11 +117,13 @@ import { ChartCPUUsage } from '@/components/charts/system/cpu-usage'
 import { ChartDataFreshness } from '@/components/charts/system/data-freshness'
 import { ChartDiskIOThroughput } from '@/components/charts/system/disk-io-throughput'
 import { ChartDiskSize } from '@/components/charts/system/disk-size'
+import { ChartDiskUsageByDatabase } from '@/components/charts/system/disk-usage-by-database'
 import { ChartDiskUsageTrend } from '@/components/charts/system/disk-usage-trend'
 import { ChartDisksUsage } from '@/components/charts/system/disks-usage'
 import { ChartMemoryUsage } from '@/components/charts/system/memory-usage'
 import { ChartMutationProgress } from '@/components/charts/system/mutation-progress'
 import { ChartOomKilledQueries } from '@/components/charts/system/oom-killed-queries'
+import { ChartStoragePolicies } from '@/components/charts/system/storage-policies'
 import { ChartTopMemoryQueries } from '@/components/charts/system/top-memory-queries'
 import { ChartTopTableSize } from '@/components/charts/top-table-size'
 // ZooKeeper charts
@@ -254,6 +268,13 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     className: 'w-full h-full',
     type: 'area',
   },
+  {
+    id: 'query-count-heatmap-overview',
+    component: ChartQueryCountHeatmap,
+    title: 'Query Activity Heatmap',
+    className: 'w-full h-full col-span-1 md:col-span-2 2xl:col-span-2',
+    type: 'custom',
+  },
 ]
 
 /**
@@ -309,6 +330,20 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
     interval: 'toStartOfHour',
     className: 'w-full h-full',
     type: 'area',
+  },
+  {
+    id: 'query-count-heatmap',
+    component: ChartQueryCountHeatmap,
+    title: 'Query Activity Heatmap',
+    className: 'w-full h-full',
+    type: 'custom',
+  },
+  {
+    id: 'top-query-fingerprints',
+    component: ChartTopQueryFingerprints,
+    title: 'Top Query Patterns',
+    className: 'w-full h-full col-span-1 md:col-span-2 2xl:col-span-3',
+    type: 'bar',
   },
 ]
 
@@ -380,6 +415,20 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
     title: 'Backup Size',
     chartClassName: 'h-[140px] sm:h-[160px]',
     type: 'metric',
+  },
+  {
+    id: 'disk-usage-by-database',
+    component: ChartDiskUsageByDatabase,
+    title: 'Disk Usage by Database',
+    className: 'w-full h-full',
+    type: 'bar',
+  },
+  {
+    id: 'storage-policies',
+    component: ChartStoragePolicies,
+    title: 'Storage Policies',
+    className: 'w-full h-full col-span-1 md:col-span-2 2xl:col-span-3',
+    type: 'table',
   },
 ]
 
@@ -508,6 +557,20 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
     interval: 'toStartOfHour',
     className: 'w-full h-full',
     type: 'custom',
+  },
+  {
+    id: 'slow-query-occurrences',
+    component: ChartSlowQueryOccurrences,
+    title: 'Slow Query Occurrences',
+    className: 'w-full h-full',
+    type: 'bar',
+  },
+  {
+    id: 'failed-query-count-by-user-health',
+    component: ChartFailedQueryCountByUser,
+    title: 'Failed Queries by User',
+    className: 'w-full h-full',
+    type: 'bar',
   },
 ]
 

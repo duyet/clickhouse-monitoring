@@ -34,10 +34,10 @@ import {
   ConversationEmptyState,
   Conversation as ConversationUI,
 } from '@/components/ai-elements/conversation'
-import { extractMessageError } from '@/lib/ai/agent/message-metadata'
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
 import { useConversationContext } from '@/lib/ai/agent/conversation-context'
 import { isAgentError } from '@/lib/ai/agent/errors'
+import { extractMessageError } from '@/lib/ai/agent/message-metadata'
 import { getSavedModel } from '@/lib/hooks/use-agent-model'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useHostId } from '@/lib/swr'

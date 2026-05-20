@@ -367,6 +367,16 @@ The project uses custom chart components with consistent patterns:
 
 **Chart Refactoring**: Donut charts have been replaced with progress bars for better readability in percentage-based displays (query cache usage, query type distribution).
 
+#### Request Info (SQL) Dialog
+- **Beautify SQL**: Disabled by default to prevent slow rendering of very large queries. Users can toggle it on manually.
+- **Design**: Uses native shadcn/ui components (`Badge`, `Separator`, `ScrollArea`) for a premium look and consistent UI.
+
+#### Agent Session Metrics
+- **Location**: Agent settings sidebar.
+- **Features**: Real-time monitoring of tokens (input/output), estimated cost, and tool calls.
+- **Analytics Dialog**: Detailed breakdown of session analytics available via a premium dialog.
+- **Usage**: Automatically aggregates metrics from AI SDK messages using `useAgentSessionStats`.
+
 #### Graceful Error Handling Pattern
 
 Charts use graceful error handling during SWR revalidation to preserve user experience:

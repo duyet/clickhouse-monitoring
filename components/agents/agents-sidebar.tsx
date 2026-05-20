@@ -1,15 +1,19 @@
 'use client'
 
 import {
+  ActivityIcon,
+  BarChart3Icon,
   BookOpenIcon,
   CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  CoinsIcon,
   DatabaseIcon,
   HelpCircleIcon,
   MonitorIcon,
   PanelRightClose,
   RefreshCwIcon,
+  ZapIcon,
 } from 'lucide-react'
 
 import type { UIMessage } from 'ai'
@@ -42,6 +46,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogContent as UIDialogContent,
+} from '@/components/ui/dialog'
+import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -56,6 +67,7 @@ import {
 } from '@/lib/ai/agent/skills/registry'
 import { getSuggestedPrompts } from '@/lib/ai/agent/suggested-prompts'
 import { useAgentModel } from '@/lib/hooks/use-agent-model'
+import { useAgentSessionStats } from '@/lib/hooks/use-agent-session-stats'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { useMcpServerInfo } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
@@ -747,6 +759,7 @@ export function AgentsSidebar({
         <div className="space-y-2 p-2">
           <HostSelector hostId={hostId} />
           <ModelSelectorComponent />
+          <SessionMetricsSection messages={messages} />
           <McpToolsSection />
           <SkillsSection />
           <SuggestedPromptsSection
@@ -776,4 +789,179 @@ export function AgentsSidebar({
       {content}
     </aside>
   ) : null
+}
+
+function SessionMetricsSection({
+  messages = [],
+}: {
+  messages?: readonly UIMessage[]
+}) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const stats = useAgentSessionStats(messages)
+
+  if (stats.requestCount === 0) return null
+
+  return (
+    <>
+      <SidebarSection
+        title="Session metrics"
+        description="Real-time monitoring of agent performance, token usage, and estimated costs."
+        action={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 rounded-md px-2 text-[11px] transition-colors hover:bg-primary/10 hover:text-primary"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            Details
+          </Button>
+        }
+      >
+        <div
+          className="group relative cursor-pointer overflow-hidden rounded-xl border border-border/50 bg-background/40 p-3 transition-all hover:border-primary/30 hover:bg-muted/10 active:scale-[0.98]"
+          onClick={() => setIsDialogOpen(true)}
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-tight text-muted-foreground">
+                <ZapIcon className="size-3 text-amber-500" />
+                Tokens
+              </div>
+              <div className="text-sm font-bold tabular-nums">
+                {formatReadableQuantity(stats.totalTokens)}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-tight text-muted-foreground">
+                <CoinsIcon className="size-3 text-emerald-500" />
+                Cost
+              </div>
+              <div className="text-sm font-bold tabular-nums">
+                {stats.estimatedCostUsd !== null
+                  ? `$${stats.estimatedCostUsd.toFixed(4)}`
+                  : '—'}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-tight text-muted-foreground">
+                <ActivityIcon className="size-3 text-blue-500" />
+                Tool Calls
+              </div>
+              <div className="text-sm font-bold tabular-nums">
+                {stats.toolCallCount}
+              </div>
+            </div>
+            <div className="flex flex-col justify-end space-y-1 text-right">
+              <span className="flex items-center justify-end gap-1 text-[10px] text-muted-foreground transition-colors group-hover:text-primary">
+                See details <ChevronRightIcon className="size-3" />
+              </span>
+            </div>
+          </div>
+
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+        </div>
+      </SidebarSection>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <UIDialogContent className="border-border/60 shadow-2xl backdrop-blur-xl sm:max-w-md">
+          <DialogHeader className="pb-4">
+            <div className="mb-1 flex items-center gap-3">
+              <div className="rounded-xl bg-primary/10 p-2">
+                <BarChart3Icon className="size-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg">Session Analytics</DialogTitle>
+                <p className="text-xs text-muted-foreground">
+                  Comprehensive breakdown of your AI agent session.
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1 rounded-xl border border-border/40 bg-muted/20 p-4">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Total Messages
+                </span>
+                <span className="text-2xl font-bold tabular-nums">
+                  {stats.totalMessages}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1 rounded-xl border border-border/40 bg-muted/20 p-4">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Tool Executions
+                </span>
+                <span className="text-2xl font-bold tabular-nums">
+                  {stats.toolCallCount}
+                </span>
+              </div>
+            </div>
+
+            <Separator className="bg-border/40" />
+
+            <div className="space-y-4">
+              <h4 className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                <ZapIcon className="size-3.5 text-amber-500" />
+                Token Breakdown
+              </h4>
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Input (Context)</span>
+                  <span className="font-mono tabular-nums">
+                    {stats.totalInputTokens.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Output (Generated)
+                  </span>
+                  <span className="font-mono tabular-nums">
+                    {stats.totalOutputTokens.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-t border-border/20 pt-2 text-sm font-bold">
+                  <span>Total Tokens</span>
+                  <span className="font-mono tabular-nums">
+                    {stats.totalTokens.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <Separator className="bg-border/40" />
+
+            <div className="space-y-4">
+              <h4 className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                <CoinsIcon className="size-3.5 text-emerald-500" />
+                Cost Estimate
+              </h4>
+              <div className="rounded-xl border border-emerald-200/50 bg-emerald-50/50 p-4 dark:border-emerald-800/30 dark:bg-emerald-950/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-emerald-800 dark:text-emerald-400">
+                    Estimated Session Cost
+                  </span>
+                  <span className="text-xl font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                    {stats.estimatedCostUsd !== null
+                      ? `$${stats.estimatedCostUsd.toFixed(4)}`
+                      : '—'}
+                  </span>
+                </div>
+              </div>
+              <p className="px-1 text-[10px] italic text-muted-foreground">
+                * Cost estimates are calculated based on model pricing and token
+                counts. Real costs may vary.
+              </p>
+            </div>
+          </div>
+        </UIDialogContent>
+      </Dialog>
+    </>
+  )
+}
+
+function formatReadableQuantity(value: number): string {
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`
+  return value.toString()
 }
