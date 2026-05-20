@@ -96,8 +96,8 @@ describe('charts-config', () => {
   })
 
   describe('Overview Tab Charts', () => {
-    it('should have 16 charts in the overview tab', () => {
-      expect(OVERVIEW_TAB_CHARTS).toHaveLength(16)
+    it('should have 17 charts in the overview tab', () => {
+      expect(OVERVIEW_TAB_CHARTS).toHaveLength(17)
     })
 
     it('should have unique chart IDs', () => {
@@ -127,6 +127,7 @@ describe('charts-config', () => {
       expect(ids).toContain('top-memory-queries')
       expect(ids).toContain('disk-io-throughput')
       expect(ids).toContain('query-count-heatmap-overview')
+      expect(ids).toContain('thread-utilization-overview')
     })
 
     it('should have proper time intervals configured', () => {
@@ -139,8 +140,8 @@ describe('charts-config', () => {
   })
 
   describe('Queries Tab Charts', () => {
-    it('should have 8 charts in the queries tab', () => {
-      expect(QUERIES_TAB_CHARTS).toHaveLength(8)
+    it('should have 12 charts in the queries tab', () => {
+      expect(QUERIES_TAB_CHARTS).toHaveLength(12)
     })
 
     it('should include query performance charts', () => {
@@ -153,12 +154,16 @@ describe('charts-config', () => {
       expect(ids).toContain('query-duration-percentiles')
       expect(ids).toContain('query-count-heatmap')
       expect(ids).toContain('top-query-fingerprints')
+      expect(ids).toContain('insert-performance')
+      expect(ids).toContain('query-duration-trend')
+      expect(ids).toContain('top-inserters')
+      expect(ids).toContain('top-query-fingerprints-perf')
     })
   })
 
   describe('Storage Tab Charts', () => {
-    it('should have 10 charts in the storage tab', () => {
-      expect(STORAGE_TAB_CHARTS).toHaveLength(10)
+    it('should have 12 charts in the storage tab', () => {
+      expect(STORAGE_TAB_CHARTS).toHaveLength(12)
     })
 
     it('should include storage-related charts', () => {
@@ -173,6 +178,8 @@ describe('charts-config', () => {
       expect(ids).toContain('data-freshness')
       expect(ids).toContain('disk-usage-by-database')
       expect(ids).toContain('storage-policies')
+      expect(ids).toContain('parts-per-table')
+      expect(ids).toContain('partition-part-health')
     })
 
     it('should have proper disk usage time range', () => {
@@ -185,8 +192,8 @@ describe('charts-config', () => {
   })
 
   describe('Operations Tab Charts', () => {
-    it('should have 7 charts in the operations tab', () => {
-      expect(OPERATIONS_TAB_CHARTS).toHaveLength(7)
+    it('should have 10 charts in the operations tab', () => {
+      expect(OPERATIONS_TAB_CHARTS).toHaveLength(10)
     })
 
     it('should include merge and replication charts', () => {
@@ -198,12 +205,15 @@ describe('charts-config', () => {
       expect(ids).toContain('replication-summary-table')
       expect(ids).toContain('readonly-replica')
       expect(ids).toContain('mutation-progress')
+      expect(ids).toContain('merge-sum-read-rows')
+      expect(ids).toContain('summary-used-by-merges')
+      expect(ids).toContain('summary-stuck-mutations')
     })
   })
 
   describe('Health Tab Charts', () => {
-    it('should have 9 charts in the health tab', () => {
-      expect(HEALTH_TAB_CHARTS).toHaveLength(9)
+    it('should have 13 charts in the health tab', () => {
+      expect(HEALTH_TAB_CHARTS).toHaveLength(13)
     })
 
     it('should include error and connection charts', () => {
@@ -217,6 +227,10 @@ describe('charts-config', () => {
       expect(ids).toContain('cancelled-queries')
       expect(ids).toContain('slow-query-occurrences')
       expect(ids).toContain('failed-query-count-by-user-health')
+      expect(ids).toContain('crash-frequency')
+      expect(ids).toContain('error-rate-over-time')
+      expect(ids).toContain('log-level-distribution')
+      expect(ids).toContain('connections-http')
     })
   })
 
@@ -275,29 +289,29 @@ describe('charts-config', () => {
     describe('getChartsForTab', () => {
       it('should return charts for the overview tab', () => {
         const charts = getChartsForTab('overview')
-        expect(charts).toHaveLength(16)
+        expect(charts).toHaveLength(17)
         expect(charts[0].id).toBe('query-count-24h')
       })
 
       it('should return charts for the queries tab', () => {
         const charts = getChartsForTab('queries')
-        expect(charts).toHaveLength(8)
+        expect(charts).toHaveLength(12)
         expect(charts[0].id).toBe('query-count-14d')
       })
 
       it('should return charts for the storage tab', () => {
         const charts = getChartsForTab('storage')
-        expect(charts).toHaveLength(10)
+        expect(charts).toHaveLength(12)
       })
 
       it('should return charts for the operations tab', () => {
         const charts = getChartsForTab('operations')
-        expect(charts).toHaveLength(7)
+        expect(charts).toHaveLength(10)
       })
 
       it('should return charts for the health tab', () => {
         const charts = getChartsForTab('health')
-        expect(charts).toHaveLength(9)
+        expect(charts).toHaveLength(13)
       })
 
       it('should return empty array for non-existent tab', () => {
@@ -352,7 +366,7 @@ describe('charts-config', () => {
       // Overview uses 3-column layout
       expect(overviewTab?.gridClassName).toContain('grid-cols-1')
       expect(overviewTab?.gridClassName).toContain('md:grid-cols-2')
-      expect(overviewTab?.gridClassName).toContain('2xl:grid-cols-3')
+      expect(overviewTab?.gridClassName).toContain('xl:grid-cols-3')
 
       // Health uses 3-column layout
       expect(healthTab?.gridClassName).toContain('grid-cols-1')

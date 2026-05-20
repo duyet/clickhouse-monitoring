@@ -1,0 +1,16 @@
+[package]
+name = "ch-pivot"
+version = "0.1.0"
+edition = "2021"
+authors = ["duyet <bot@duyet.net>"]
+description = "A high-performance generic data pivoting and aggregation engine for raw datasets."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/duyet/clickhouse-monitoring"
+readme = "README.md"
+keywords = ["clickhouse", "pivot", "aggregation", "pivot-table", "data"]
+categories = ["data-structures", "algorithms"]
+exclude = ["/.github"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

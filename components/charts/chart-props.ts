@@ -11,4 +11,6 @@ export interface ChartProps extends Partial<AreaChartProps> {
   hostId?: number
   /** Grid column span (out of 10 columns) for custom layouts */
   colSpan?: number
+  /** Navigation target URL when clicked */
+  href?: string
 }

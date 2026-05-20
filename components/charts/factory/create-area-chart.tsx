@@ -66,6 +66,7 @@ export function createAreaChart(
     chartClassName,
     chartCardContentClassName,
     hostId: hostIdProp,
+    href,
     ...props
   }: ChartProps) {
     const routeHostId = useHostId()
@@ -119,6 +120,7 @@ export function createAreaChart(
           data={swr.data}
           metadata={swr.metadata}
           onRetry={() => swr.mutate()}
+          href={href}
         />
       )
     }
@@ -146,6 +148,7 @@ export function createAreaChart(
             onRetry={mutate}
             enableScaleToggle={config.enableScaleToggle}
             contentClassName={chartCardContentClassName}
+            href={href}
           >
             <AreaChart
               className={cn(

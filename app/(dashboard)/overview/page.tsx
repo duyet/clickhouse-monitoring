@@ -56,6 +56,7 @@ const LazyTabContent = memo(function LazyTabContent({
               chartConfig.chartCardContentClassName
             )}
             hostId={hostId}
+            href={chartConfig.href}
             {...(chartConfig.props ?? {})}
           />
         )

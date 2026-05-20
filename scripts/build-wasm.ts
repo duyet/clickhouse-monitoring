@@ -6,7 +6,7 @@ const root = resolve(import.meta.dir, '..')
 const manifestPath = resolve(root, 'rust/monitor-core/Cargo.toml')
 const wasmPath = resolve(
   root,
-  'rust/monitor-core/target/wasm32-unknown-unknown/release/monitor_core.wasm'
+  'rust/target/wasm32-unknown-unknown/release/monitor_core.wasm'
 )
 const outDir = resolve(root, 'lib/wasm/generated')
 const wasmOutput = resolve(outDir, 'monitor_core_bg.wasm')

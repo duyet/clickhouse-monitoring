@@ -35,6 +35,12 @@
   ],
   "exclude": [
     "node_modules",
+    ".next",
+    ".open-next",
+    ".turbo",
+    ".wrangler",
+    ".nyc_output",
+    "coverage",
     "cypress.config.ts",
     "cypress",
     "docs",

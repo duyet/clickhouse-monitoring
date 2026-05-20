@@ -1,9 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Legacy export returning JSON string (kept for backward compat).
+ * WASM export to transform a ClickHouse JSON-each-row string into a normalized JSON array.
  */
-export function transform_user_event_counts_json(input: string, time_field: string): string;
 export function transform_clickhouse_json_each_row_json(input: string): string;
 /**
  * WASM export accepting JsValue input and returning JsValue output — zero JSON string overhead.
@@ -14,6 +13,10 @@ export function transform_user_event_counts_v3(input: any, time_field: string): 
  * WASM export returning JsValue directly — avoids JSON string intermediate.
  */
 export function transform_user_event_counts_v2(input: string, time_field: string): any;
+/**
+ * Legacy export returning JSON string (kept for backward compat).
+ */
+export function transform_user_event_counts_json(input: string, time_field: string): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 

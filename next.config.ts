@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
   // Use standalone output for hybrid static pages + dynamic API routes
   output: 'standalone',
 
+  // Limit experimental cpus / worker threads to reduce memory footprint
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
+
   // Automatically bundle external packages in the Pages Router:
   bundlePagesRouterDependencies: true,
   // Opt specific packages out of bundling for both App and Pages Router:

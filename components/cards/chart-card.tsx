@@ -1,6 +1,6 @@
 'use client'
 
-import { ScalingIcon } from 'lucide-react'
+import { ArrowUpRight, ScalingIcon } from 'lucide-react'
 
 import type { ComponentPropsWithoutRef } from 'react'
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
@@ -8,6 +8,7 @@ import type { DateRangeConfig, DateRangeValue } from '@/components/date-range'
 import type { StaleError } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 
+import { useRouter } from 'next/navigation'
 import { memo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { chartCard } from '@/components/charts/chart-card-styles'
@@ -25,6 +26,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { ExpandableText } from '@/components/utilities/expandable-text'
+import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 /**
@@ -92,6 +94,8 @@ interface ChartCardProps
   icon?: React.ReactNode
   /** Optional className override for the header */
   headerClassName?: string
+  /** Navigation target URL when clicked */
+  href?: string
 }
 
 /**
@@ -113,11 +117,37 @@ function ChartCardContentWithScale({
   staleError,
   onRetry,
   zoomButton,
+  href,
   ...cardProps
 }: ChartCardProps) {
+  const router = useRouter()
+  const hostId = useHostId()
+
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!href) return
+
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest(
+      'button, a, select, input, [role="button"], [role="menuitem"], [role="tab"], .interactive-element'
+    )
+
+    if (isInteractive) {
+      return
+    }
+
+    router.push(`${href}${href.includes('?') ? '&' : '?'}host=${hostId}`)
+  }
+
   return (
     <Card
-      className={cn(chartCard.base, chartCard.variants.normal, className)}
+      className={cn(
+        chartCard.base,
+        chartCard.variants.normal,
+        href &&
+          'cursor-pointer hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300',
+        className
+      )}
+      onClick={handleCardClick}
       {...cardProps}
     >
       {title ? (
@@ -128,10 +158,16 @@ function ChartCardContentWithScale({
               <ExpandableText
                 variant="popover"
                 maxLines={1}
-                className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1"
+                className={cn(
+                  'text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1 transition-colors duration-200',
+                  href && 'group-hover:text-primary'
+                )}
               >
                 {title}
               </ExpandableText>
+              {href && (
+                <ArrowUpRight className="size-3.5 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-60 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-300 text-muted-foreground shrink-0" />
+              )}
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {staleError && onRetry && (
@@ -180,11 +216,37 @@ function ChartCardContentWithoutScale({
   staleError,
   onRetry,
   zoomButton,
+  href,
   ...cardProps
 }: ChartCardProps) {
+  const router = useRouter()
+  const hostId = useHostId()
+
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!href) return
+
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest(
+      'button, a, select, input, [role="button"], [role="menuitem"], [role="tab"], .interactive-element'
+    )
+
+    if (isInteractive) {
+      return
+    }
+
+    router.push(`${href}${href.includes('?') ? '&' : '?'}host=${hostId}`)
+  }
+
   return (
     <Card
-      className={cn(chartCard.base, chartCard.variants.normal, className)}
+      className={cn(
+        chartCard.base,
+        chartCard.variants.normal,
+        href &&
+          'cursor-pointer hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300',
+        className
+      )}
+      onClick={handleCardClick}
       {...cardProps}
     >
       {title ? (
@@ -195,10 +257,16 @@ function ChartCardContentWithoutScale({
               <ExpandableText
                 variant="popover"
                 maxLines={1}
-                className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1"
+                className={cn(
+                  'text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1 transition-colors duration-200',
+                  href && 'group-hover:text-primary'
+                )}
               >
                 {title}
               </ExpandableText>
+              {href && (
+                <ArrowUpRight className="size-3.5 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-60 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-300 text-muted-foreground shrink-0" />
+              )}
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {staleError && onRetry && (

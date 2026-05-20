@@ -35,6 +35,7 @@ export function createCustomChart(
     className,
     chartCardContentClassName,
     hostId: hostIdProp,
+    href,
   }: ChartProps) {
     const routeHostId = useHostId()
     const hostId = hostIdProp ?? routeHostId
@@ -60,6 +61,7 @@ export function createCustomChart(
             data={dataArray}
             metadata={metadata}
             data-testid={config.dataTestId}
+            href={href}
           >
             {config.render(dataArray, sql, hostId)}
           </ChartCard>

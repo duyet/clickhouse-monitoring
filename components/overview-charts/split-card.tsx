@@ -1,9 +1,10 @@
 'use client'
 
 import { cardStyles } from './card-styles'
+import { useRouter } from 'next/navigation'
 import { memo } from 'react'
 import { AnimatedNumber } from '@/components/cards/animated-number'
-import { AppLink as Link } from '@/components/ui/app-link'
+import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 export interface SplitValueProps {
@@ -17,8 +18,17 @@ export const SplitValue = memo(function SplitValue({
   label,
   href,
 }: SplitValueProps) {
+  const router = useRouter()
+  const hostId = useHostId()
+
+  const handleCellClick = () => {
+    if (!href) return
+    router.push(`${href}${href.includes('?') ? '&' : '?'}host=${hostId}`)
+  }
+
   return (
     <div
+      onClick={handleCellClick}
       className={cn(
         'group/value flex flex-1 flex-col items-center justify-center gap-1.5 w-full min-w-0 text-center',
         'py-2 px-1 rounded-lg',
@@ -32,9 +42,7 @@ export const SplitValue = memo(function SplitValue({
       <span className={cardStyles.label}>{label}</span>
 
       {href && (
-        <Link href={href} className={cardStyles.labelHover}>
-          {label.toLowerCase()} →
-        </Link>
+        <span className={cardStyles.labelHover}>{label.toLowerCase()} →</span>
       )}
     </div>
   )

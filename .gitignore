@@ -30,7 +30,7 @@ next.config.compiled.js
 logs/
 
 # rust build artifacts
-rust/
+rust/target/
 
 # misc
 .DS_Store

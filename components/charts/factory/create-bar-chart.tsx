@@ -64,6 +64,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
     chartClassName,
     chartCardContentClassName,
     hostId: hostIdProp,
+    href,
     ...props
   }: ChartProps) {
     const routeHostId = useHostId()
@@ -120,6 +121,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
           data={swr.data}
           metadata={swr.metadata}
           onRetry={() => swr.mutate()}
+          href={href}
         />
       )
     }
@@ -146,6 +148,7 @@ export function createBarChart(config: BarChartFactoryConfig): FC<ChartProps> {
             staleError={staleError}
             onRetry={mutate}
             contentClassName={chartCardContentClassName}
+            href={href}
           >
             <BarChart
               className={cn(

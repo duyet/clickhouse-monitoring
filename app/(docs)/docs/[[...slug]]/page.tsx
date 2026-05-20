@@ -1,44 +1,51 @@
+'use client'
+
 import { DocsMarkdown } from '../_components/docs-markdown'
-import { type DocsHeading, docsHref, docsNav, getDocsPage } from '../_lib/docs'
+import {
+  type DocsHeading,
+  docsHref,
+  docsNav,
+  getDocsPageClient,
+} from '../_lib/docs-client'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { useParams } from 'next/navigation'
+import { useEffect, useMemo } from 'react'
 import { cn } from '@/lib/utils'
 
-export const dynamic = 'force-static'
-export const dynamicParams = false
+export default function DocsPage() {
+  const params = useParams()
 
-type DocsPageProps = {
-  params: Promise<{
-    slug?: string[]
-  }>
-}
+  const activeSlug = useMemo(() => {
+    const slugParam = params?.slug
+    if (!slugParam) return ''
+    return Array.isArray(slugParam) ? slugParam.join('/') : slugParam
+  }, [params])
 
-export function generateStaticParams() {
-  return docsNav
-    .flatMap((section) => section.items)
-    .map((item) => ({
-      slug: item.slug ? item.slug.split('/') : [],
-    }))
-}
+  const page = useMemo(() => {
+    return getDocsPageClient(activeSlug)
+  }, [activeSlug])
 
-export async function generateMetadata(props: DocsPageProps) {
-  const params = await props.params
-  const slug = params.slug?.join('/') ?? ''
-  const page = await getDocsPage(slug)
-
-  return {
-    title: page ? `${page.title} - Docs` : 'Docs',
-    description: 'ClickHouse Monitoring documentation',
-  }
-}
-
-export default async function DocsPage(props: DocsPageProps) {
-  const params = await props.params
-  const activeSlug = params.slug?.join('/') ?? ''
-  const page = await getDocsPage(activeSlug)
+  useEffect(() => {
+    if (page) {
+      document.title = `${page.title} - Docs`
+    }
+  }, [page])
 
   if (!page) {
-    notFound()
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4 text-center">
+        <h1 className="text-2xl font-bold text-foreground">Page not found</h1>
+        <p className="mt-2 text-muted-foreground">
+          The documentation page you are looking for does not exist.
+        </p>
+        <Link
+          href="/docs"
+          className="mt-6 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition-colors"
+        >
+          Go to Docs Introduction
+        </Link>
+      </div>
+    )
   }
 
   return (
