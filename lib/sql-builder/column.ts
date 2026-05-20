@@ -227,7 +227,7 @@ col.concat = (...parts: Array<string | RawSql>): ColumnBuilder => {
   const escapeLiteral = (value: string): string => value.replace(/'/g, "''")
   const quotedParts = parts.map((p) => {
     if (p instanceof RawSql) {
-      return p.expression
+      return p.toSql()
     }
     return `'${escapeLiteral(p)}'`
   })
