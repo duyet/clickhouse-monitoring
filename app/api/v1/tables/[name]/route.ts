@@ -27,6 +27,10 @@ import { debug, error } from '@/lib/logger'
 export const dynamic = 'force-dynamic'
 
 const ROUTE_CONTEXT_BASE = { route: '/api/v1/tables/[name]' }
+const TABLES_FEATURE_PERMISSION = {
+  feature: 'tables',
+  defaultAccess: 'authenticated',
+} as const
 
 /**
  * Handle GET requests for table data
@@ -95,7 +99,7 @@ export async function GET(
   // Get the original config for optional table checks
   const config = getTableConfig(name)
   const permissionResponse = await authorizeFeatureRequest(
-    config?.permission,
+    config?.permission ?? TABLES_FEATURE_PERMISSION,
     request
   )
   if (permissionResponse) return permissionResponse

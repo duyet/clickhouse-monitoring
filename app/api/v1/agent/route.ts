@@ -24,6 +24,8 @@ import {
   type UITools,
 } from 'ai'
 import { createClickHouseAgent } from '@/lib/ai/agent'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
+import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { aggregateUsageWithCost } from '@/lib/ai/agent/analytics'
 import { classifyError } from '@/lib/ai/agent/errors'
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
@@ -441,6 +443,12 @@ export async function POST(request: Request) {
     console.log('[Agent API] OpenRouter user:', openRouterUser)
   }
 
+  const controlToolsEnabled = process.env.AGENT_ENABLE_CONTROL_TOOLS === 'true'
+  const actionsPermissionResponse = controlToolsEnabled
+    ? await authorizeFeatureRequest(ACTIONS_FEATURE_PERMISSION, request)
+    : null
+  const includeControlTools = controlToolsEnabled && !actionsPermissionResponse
+
   const requestOrigin = request.headers.get('origin') ?? undefined
   const agent = createClickHouseAgent({
     hostId,
@@ -449,6 +457,7 @@ export async function POST(request: Request) {
     systemPrompt: AGENT_JSON_RENDER_INLINE_PROMPT,
     providerOptions: { openrouter: { user: openRouterUser } },
     referer: requestOrigin,
+    includeControlTools,
   })
 
   const uiMessages: Array<{
