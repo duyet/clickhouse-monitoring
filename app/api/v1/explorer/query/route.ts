@@ -24,15 +24,11 @@ import {
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { TABLES_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
-
-const TABLES_FEATURE_PERMISSION = {
-  feature: 'tables',
-  defaultAccess: 'authenticated',
-} as const
 
 const ROUTE_CONTEXT_BASE = { route: '/api/v1/explorer/query' }
 
@@ -62,8 +58,6 @@ async function executeQuery(params: {
   maxLength: number
 }): Promise<Response> {
   const { sql, hostId, format, timezone, routeContext, maxLength } = params
-
-  
   // Validate sql parameter is present
   if (!sql) {
     return createApiErrorResponse(
@@ -184,8 +178,10 @@ export async function GET(request: Request): Promise<Response> {
     ...ROUTE_CONTEXT_BASE,
     method: 'GET',
   }
-
-  const permissionResponse = await authorizeFeatureRequest(TABLES_FEATURE_PERMISSION, request)
+  const permissionResponse = await authorizeFeatureRequest(
+    TABLES_FEATURE_PERMISSION,
+    request
+  )
   if (permissionResponse) return permissionResponse
 
   try {
@@ -228,11 +224,14 @@ export async function POST(request: Request): Promise<Response> {
     method: 'POST',
   }
 
-  try {
-    const permissionResponse = await authorizeFeatureRequest(TABLES_FEATURE_PERMISSION, request)
+  const permissionResponse = await authorizeFeatureRequest(
+    TABLES_FEATURE_PERMISSION,
+    request
+  )
   if (permissionResponse) return permissionResponse
 
-  let body: Record<string, unknown>
+  try {
+    let body: Record<string, unknown>
     try {
       body = (await request.json()) as Record<string, unknown>
     } catch {
