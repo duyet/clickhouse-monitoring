@@ -163,12 +163,14 @@ async function fetchExplainAsText(
 }
 
 /**
- * Handle GET requests for EXPLAIN queries
- * Accepts query via URL query string
+ * Handle GET requests to run a ClickHouse EXPLAIN for the provided SQL and return formatted results.
+ *
+ * Validates required query parameters and SQL safety, builds the appropriate EXPLAIN statement (including optional PLAN settings), executes it against the configured host, and returns an HTTP Response containing the explain payload or an error status.
  *
  * @example
  * GET /api/v1/explain?hostId=0&query=SELECT%20count()%20FROM%20system.tables
  * GET /api/v1/explain?hostId=0&query=SELECT%201&planSettings=indexes%3D1
+ * @returns An HTTP Response containing the explain result (JSONEachRow or transformed text) on success, or an error response with an appropriate status code on failure.
  */
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url)

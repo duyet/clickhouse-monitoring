@@ -184,7 +184,16 @@ export async function GET(
 }
 
 /**
- * Handle PUT requests to update conversation
+ * Create or update a conversation by id using the provided `title` and/or `messages`.
+ *
+ * Validates the conversation id and request body, constructs a new or merged conversation
+ * record (setting `createdAt` when creating and `updatedAt` on every update), persists it,
+ * and returns the saved conversation in a standardized success response. On error returns
+ * a standardized API error response with an appropriate status code.
+ *
+ * @param request - The incoming HTTP request
+ * @param params - An object whose `params` promise resolves to `{ id: string }`
+ * @returns A Response whose body is a standardized success object containing `conversation` on success, or an API error object on failure
  */
 export async function PUT(
   request: Request,

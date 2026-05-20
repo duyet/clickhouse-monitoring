@@ -3,6 +3,15 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod/v3'
 import { fetchData } from '@/lib/clickhouse'
 
+/**
+ * Registers two MCP tools on the provided server for inspecting ClickHouse queries.
+ *
+ * The tools added are:
+ * - `get_running_queries`: lists currently running queries ordered by elapsed time.
+ * - `get_slow_queries`: retrieves the slowest completed queries from the query log ordered by duration.
+ *
+ * @param server - MCP server instance on which to register the tools
+ */
 export function registerQueryTools(server: McpServer) {
   server.tool(
     'get_running_queries',

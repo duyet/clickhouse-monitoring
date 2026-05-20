@@ -26,7 +26,20 @@ const ROUTE_CONTEXT_BASE = { route: '/api/v1/explorer/preview' }
 const VALID_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_]*$/
 
 /**
- * Handle GET requests for table preview
+ * Return a JSON preview of rows from a specified database table using query parameters.
+ *
+ * Accepts the following query parameters:
+ * - `database` (required): database identifier matching `^[a-zA-Z_][a-zA-Z0-9_]*$`
+ * - `table` (required): table identifier matching `^[a-zA-Z_][a-zA-Z0-9_]*$`
+ * - `limit` (optional): number of rows to return, defaults to `100`, must be between 1 and 10000
+ * - `offset` (optional): zero-based row offset, defaults to `0`, must be an integer >= 0
+ *
+ * The endpoint performs a feature authorization check, validates parameters, executes a
+ * `SELECT *` query with `LIMIT` and `OFFSET`, and returns either a successful preview
+ * response or a structured API error response with an appropriate HTTP status code.
+ *
+ * @returns A Response containing an `ApiResponse` with preview rows and metadata on success,
+ *          or an error `ApiResponse` with details and an appropriate HTTP status on failure.
  */
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url)

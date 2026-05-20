@@ -25,6 +25,18 @@ async function fetchJson<T>(url: string): Promise<T> {
   return res.json() as Promise<T>
 }
 
+/**
+ * Provides autocomplete items and related resources for UI typeahead controls.
+ *
+ * Produces mapped autocomplete lists for database tables and agent skills, returns static system resources and slash commands, and exposes the loading state of the tables request.
+ *
+ * @returns An object containing:
+ * - `tables`: Array of autocomplete items for tables (group "Tables").
+ * - `resources`: Static system resources.
+ * - `skills`: Array of autocomplete items for agent skills (group "Skills").
+ * - `commands`: Static slash commands.
+ * - `isLoading`: `true` while the tables list is being fetched, `false` otherwise.
+ */
 export function useAutocompleteData() {
   const hostId = useHostId()
 

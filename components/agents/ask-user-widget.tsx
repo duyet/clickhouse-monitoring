@@ -38,6 +38,15 @@ export function isAskUserOutput(output: unknown): output is AskUserOutput {
   return obj.type === 'ask_user' && typeof obj.question === 'string'
 }
 
+/**
+ * Render an interactive "ask user" widget that displays a question and collects a response according to `output.inputType`.
+ *
+ * @param output - Configuration for the prompt (must have `type: 'ask_user'` and `question`); supports `inputType` = `'single_choice' | 'multi_choice' | 'confirm' | 'free_text' | 'rating'`. Optional fields: `options`, `placeholder`, `min`, `max`, `context`, and `awaiting_response`. `options` entries may include `label`, `value`, and `description`.
+ * @param toolCallId - Identifier supplied to `onSubmit` when a response is submitted.
+ * @param onSubmit - Callback invoked as `onSubmit(toolCallId, result)` when the user submits a response; `result` is a string (e.g., selected value, JSON array string for multi-choice, `'yes'`/`'no'`, trimmed free-text, or rating number as a string).
+ * @param isSubmitted - Optional initial submitted state (defaults to `false`).
+ * @returns The rendered Ask User widget element.
+ */
 export function AskUserWidget({
   output,
   toolCallId,
