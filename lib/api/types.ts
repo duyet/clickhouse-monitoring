@@ -25,8 +25,6 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-import type { QueryConfig } from '@/types/query-config'
-
 /**
  * Error types that can be returned from the API
  */
@@ -145,8 +143,8 @@ export interface ApiRequest {
   readonly hostId: string
   /** Data format for query response (default: JSONEachRow) */
   readonly format?: 'JSONEachRow' | 'JSON' | 'CSV' | 'TSV'
-  /** Optional query configuration with metadata */
-  readonly queryConfig?: QueryConfig
+  /** Server-side query configuration name (resolved from registry on server) */
+  readonly queryConfigName?: string
   /** IANA timezone for ClickHouse session (e.g., "America/Los_Angeles", "UTC") */
   readonly timezone?: string
 }
