@@ -1,0 +1,80 @@
+name: Publish Workspace Crates
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'rust/ch-json/**'
+      - 'rust/ch-pivot/**'
+      - '.github/workflows/cargo-publish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish Workspace Crates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust/target
+          key: cargo-publish-${{ runner.os }}-${{ hashFiles('rust/Cargo.toml') }}
+          restore-keys: |
+            cargo-publish-${{ runner.os }}-
+
+      - name: Check which crates changed
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            ch_json:
+              - 'rust/ch-json/**'
+            ch_pivot:
+              - 'rust/ch-pivot/**'
+
+      - name: Publish ch-json
+        if: steps.filter.outputs.ch_json == 'true' || github.event_name == 'workflow_dispatch'
+        working-directory: rust/ch-json
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
+          echo "Checking ch-json v$VERSION on crates.io..."
+          
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://crates.io/api/v1/crates/ch-json/$VERSION || true)
+          if [ "$STATUS_CODE" = "200" ]; then
+            echo "ch-json v$VERSION is already published on crates.io. Skipping publish."
+          else
+            echo "ch-json v$VERSION not found on crates.io. Publishing..."
+            cargo publish
+          fi
+
+      - name: Publish ch-pivot
+        if: steps.filter.outputs.ch_pivot == 'true' || github.event_name == 'workflow_dispatch'
+        working-directory: rust/ch-pivot
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
+          echo "Checking ch-pivot v$VERSION on crates.io..."
+          
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://crates.io/api/v1/crates/ch-pivot/$VERSION || true)
+          if [ "$STATUS_CODE" = "200" ]; then
+            echo "ch-pivot v$VERSION is already published on crates.io. Skipping publish."
+          else
+            echo "ch-pivot v$VERSION not found on crates.io. Publishing..."
+            cargo publish
+          fi

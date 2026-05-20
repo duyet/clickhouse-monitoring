@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   CLICKHOUSE_HOST: http://localhost:8123
   CLICKHOUSE_USER: default
   CLICKHOUSE_PASSWORD: ''

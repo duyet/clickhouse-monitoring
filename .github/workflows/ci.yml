@@ -22,6 +22,7 @@ permissions:
   packages: write
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -131,7 +132,7 @@ jobs:
       push-image: true
       tag-suffix: -arm64
       skip-rust: true
-      timeout-minutes: 30
+      timeout-minutes: 60
 
   # Merge multi-arch manifests
   docker-manifest:
