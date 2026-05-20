@@ -22,16 +22,15 @@ const HOUR_LABELS = Array.from({ length: 24 }, (_, i) =>
   String(i).padStart(2, '0')
 )
 
-// Emerald gradient tiers (GitHub-contribution style)
 const INTENSITY_TIERS = [
   { threshold: 0, bg: 'bg-muted/60', ring: '' },
-  { threshold: 0.01, bg: 'bg-emerald-100 dark:bg-emerald-950/80', ring: '' },
-  { threshold: 0.15, bg: 'bg-emerald-200 dark:bg-emerald-900/80', ring: '' },
-  { threshold: 0.3, bg: 'bg-emerald-300 dark:bg-emerald-800/90', ring: '' },
-  { threshold: 0.45, bg: 'bg-emerald-400 dark:bg-emerald-700', ring: '' },
-  { threshold: 0.6, bg: 'bg-emerald-500 dark:bg-emerald-600', ring: '' },
-  { threshold: 0.75, bg: 'bg-emerald-600 dark:bg-emerald-500', ring: '' },
-  { threshold: 0.9, bg: 'bg-emerald-700 dark:bg-emerald-400', ring: '' },
+  { threshold: 0.01, bg: 'bg-chart-2/15', ring: '' },
+  { threshold: 0.15, bg: 'bg-chart-2/25', ring: '' },
+  { threshold: 0.3, bg: 'bg-chart-2/40', ring: '' },
+  { threshold: 0.45, bg: 'bg-chart-2/55', ring: '' },
+  { threshold: 0.6, bg: 'bg-chart-2/70', ring: '' },
+  { threshold: 0.75, bg: 'bg-chart-2/85', ring: '' },
+  { threshold: 0.9, bg: 'bg-chart-2', ring: '' },
 ] as const
 
 function getIntensityClass(value: number, max: number): string {
@@ -155,10 +154,10 @@ export const ChartQueryCountHeatmap = createCustomChart({
             <div className="flex items-center gap-[2px]">
               {[
                 'bg-muted/60',
-                'bg-emerald-100 dark:bg-emerald-950/80',
-                'bg-emerald-300 dark:bg-emerald-800/90',
-                'bg-emerald-500 dark:bg-emerald-600',
-                'bg-emerald-700 dark:bg-emerald-400',
+                'bg-chart-2/15',
+                'bg-chart-2/40',
+                'bg-chart-2/70',
+                'bg-chart-2',
               ].map((cls) => (
                 <div
                   key={cls}

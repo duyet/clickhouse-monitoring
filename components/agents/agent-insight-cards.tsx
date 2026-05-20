@@ -4,8 +4,8 @@ import {
   ActivityIcon,
   AlertTriangleIcon,
   ArrowRightIcon,
-  LayersIcon,
   MergeIcon,
+  TablePropertiesIcon,
 } from 'lucide-react'
 
 import type { ReactNode } from 'react'
@@ -53,7 +53,7 @@ const INSIGHT_CARDS: InsightCardConfig[] = [
   {
     chartName: 'health-max-part-count',
     label: 'Max Part Count',
-    icon: <LayersIcon className="h-4 w-4" />,
+    icon: <TablePropertiesIcon className="h-4 w-4" />,
     question: 'Show tables with high part counts',
     getValue: (data) => Number(data[0]?.count ?? data[0]?.max_parts_count ?? 0),
     getSeverity: (v) => (v > 3000 ? 'critical' : v > 300 ? 'watch' : 'healthy'),
@@ -114,13 +114,13 @@ function InsightCard({
     return (
       <button
         onClick={() => onClick(config.question)}
-        className="group w-full rounded-xl border border-dashed border-border/60 bg-card/40 p-3 text-left transition-colors hover:border-border hover:bg-accent/20"
+        className="group w-full min-w-0 rounded-xl border border-dashed border-border/60 bg-card/40 p-3 text-left transition-colors hover:border-border hover:bg-accent/20"
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <div className="min-w-0 space-y-3">
+            <div className="flex min-w-0 items-center gap-2 text-xs font-medium text-muted-foreground">
               <span className={ICON_CONTAINER_CLASS}>{config.icon}</span>
-              <span>{config.label}</span>
+              <span className="min-w-0 truncate">{config.label}</span>
             </div>
             <div className="text-sm font-medium text-foreground">
               Data unavailable
@@ -143,18 +143,18 @@ function InsightCard({
     <button
       onClick={() => onClick(config.question)}
       className={cn(
-        'group w-full rounded-xl border border-border/60 bg-card/50 p-3 text-left transition-[border-color,background-color] hover:border-border hover:bg-accent/20'
+        'group w-full min-w-0 rounded-xl border border-border/60 bg-card/50 p-3 text-left transition-[border-color,background-color] hover:border-border hover:bg-accent/20'
       )}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2 text-xs font-medium text-muted-foreground">
           <span className={ICON_CONTAINER_CLASS}>{config.icon}</span>
-          <span>{config.label}</span>
+          <span className="min-w-0 truncate">{config.label}</span>
         </div>
         <Badge
           variant="outline"
           className={cn(
-            'rounded-full px-2 py-0 text-[10px] font-medium',
+            'max-w-full shrink-0 rounded-full px-2 py-0 text-[10px] font-medium',
             severityMeta.badgeClassName
           )}
         >
@@ -186,7 +186,7 @@ export function AgentInsightCards({
   const hostId = useHostId()
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4">
       {INSIGHT_CARDS.map((config) => (
         <InsightCard
           key={config.chartName}

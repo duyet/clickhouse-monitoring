@@ -38,13 +38,12 @@ export const chartCard = {
       'bg-gradient-to-b from-card/80 to-card/40 dark:from-card/60 dark:to-card/30',
       'border dark:border-border/30',
       'backdrop-blur-xl',
-      'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-foreground/10 before:to-transparent',
       'pt-1 pb-2'
     ),
   },
 
   /** Card header styles - consistent across all states */
-  header: 'px-2 shrink-0',
+  header: 'px-2 py-1 shrink-0',
 
   /** Card content styles - consistent across all states */
   content: 'p-4 pt-0 flex-1 min-h-0',
