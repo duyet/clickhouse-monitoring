@@ -11,6 +11,18 @@ import {
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 
+// Sanitized autocomplete limit from environment
+const AUTOCOMPLETE_LIMIT = (() => {
+  const envLimit =
+    typeof process !== 'undefined'
+      ? process.env.NEXT_PUBLIC_AUTOCOMPLETE_LIMIT
+      : undefined
+  const parsed = envLimit ? parseInt(envLimit, 10) : 500
+  // Clamp between 1 and 1000, fallback to 500 if invalid
+  if (Number.isNaN(parsed)) return 500
+  return Math.max(1, Math.min(1000, parsed))
+})()
+
 interface TableRow {
   database: string
   name: string
@@ -44,7 +56,9 @@ export function useAutocompleteData() {
   const { data: tablesData, isLoading: tablesLoading } = useSWR<{
     data: TableRow[]
   }>(
-    hostId != null ? `/api/v1/tables?hostId=${hostId}&limit=500` : null,
+    hostId != null
+      ? `/api/v1/tables?hostId=${hostId}&limit=${AUTOCOMPLETE_LIMIT}`
+      : null,
     (url: string) => fetchJson<{ data: TableRow[] }>(url),
     { revalidateOnFocus: false, dedupingInterval: 60000 }
   )

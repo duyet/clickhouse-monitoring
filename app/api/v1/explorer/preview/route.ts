@@ -117,11 +117,16 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   const parsedOffset = parseInt(offset, 10)
-  if (Number.isNaN(parsedOffset) || parsedOffset < 0) {
+  if (
+    Number.isNaN(parsedOffset) ||
+    parsedOffset < 0 ||
+    parsedOffset > 10000
+  ) {
     return createApiErrorResponse(
       {
         type: ApiErrorType.ValidationError,
-        message: 'Invalid offset parameter (must be a non-negative integer)',
+        message:
+          'Invalid offset parameter (must be a non-negative integer and <= 10000)',
         details: { offset },
       },
       400,
@@ -129,14 +134,21 @@ export async function GET(request: Request): Promise<Response> {
     )
   }
 
-  // Build safe query using backticks for identifiers
-  const query = `SELECT * FROM \`${database}\`.\`${table}\` LIMIT ${parsedLimit} OFFSET ${parsedOffset}`
+  // Build safe query using ClickHouse placeholders
+  const query =
+    'SELECT * FROM {database:String}.{table:String} LIMIT {limit:UInt32} OFFSET {offset:UInt32}'
 
   debug(`[GET /api/v1/explorer/preview] Executing query:`, { query })
 
   // Execute the query
   const result = await fetchData({
     query,
+    query_params: {
+      database,
+      table,
+      limit: parsedLimit,
+      offset: parsedOffset,
+    },
     hostId,
     format: 'JSONEachRow',
   })

@@ -6,6 +6,7 @@
  */
 
 import type { SqlFragment, WindowOptions } from './types'
+import { RawSql } from './raw'
 
 /**
  * Builder for column expressions with ClickHouse helpers
@@ -205,10 +206,10 @@ export function col(column: string): ColumnBuilder {
 /**
  * Concatenate strings and column values
  *
- * Auto-quotes string literals (single chars like '.', '/', etc.)
- * Leaves column names unquoted
+ * String literals are automatically escaped and quoted.
+ * For raw SQL expressions (like column names), wrap in `new RawSql(expr)`.
  *
- * @param parts - String parts to concatenate
+ * @param parts - String parts or RawSql objects to concatenate
  * @returns ColumnBuilder with concat expression
  *
  * @example
@@ -216,15 +217,20 @@ export function col(column: string): ColumnBuilder {
  * // All quoted (literals)
  * col.concat('database', '.', 'table').as('full_name')
  * // → "concat('database', '.', 'table') AS full_name"
+ *
+ * // Mix literals and column references
+ * col.concat(new RawSql('database'), '.', new RawSql('table')).as('full_name')
+ * // → "concat(database, '.', table) AS full_name"
  * ```
  */
-col.concat = (...parts: string[]): ColumnBuilder => {
+col.concat = (...parts: Array<string | RawSql>): ColumnBuilder => {
   const escapeLiteral = (value: string): string => value.replace(/'/g, "''")
-  // Quote all parts - this is the simple approach
-  // If you need column names, use raw() or pass pre-formatted strings
-  const quotedParts = parts.map((p) =>
-    p.startsWith("'") ? p : `'${escapeLiteral(p)}'`
-  )
+  const quotedParts = parts.map((p) => {
+    if (p instanceof RawSql) {
+      return p.expression
+    }
+    return `'${escapeLiteral(p)}'`
+  })
   return new ColumnBuilder('concat', {
     expression: `concat(${quotedParts.join(', ')})`,
   })
