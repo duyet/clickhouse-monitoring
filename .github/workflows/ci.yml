@@ -171,9 +171,10 @@ jobs:
         run: |
           AMD64=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-amd64
           ARM64=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-arm64
-          
-          # Use metadata-action generated tags
+
+          # Use metadata-action generated tags directly (multi-line safe in run block)
           for TAG in ${{ steps.meta.outputs.tags }}; do
+            [ -z "$TAG" ] && continue
             echo "Creating manifest: $TAG"
             docker buildx imagetools create -t "$TAG" "$AMD64" "$ARM64"
           done
