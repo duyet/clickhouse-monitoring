@@ -226,12 +226,13 @@ jobs:
             type=sha,prefix=sha-,format=long
 
       - name: Create and push multi-arch manifests
+        env:
+          TAGS_JSON: ${{ steps.meta.outputs.json }}
         run: |
           AMD64=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-amd64
           ARM64=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-arm64
 
-          # Use metadata-action generated tags directly (multi-line safe in run block)
-          for TAG in ${{ steps.meta.outputs.tags }}; do
+          echo "$TAGS_JSON" | jq -r '.tags[]' | while IFS= read -r TAG; do
             [ -z "$TAG" ] && continue
             echo "Creating manifest: $TAG"
             docker buildx imagetools create -t "$TAG" "$AMD64" "$ARM64"
