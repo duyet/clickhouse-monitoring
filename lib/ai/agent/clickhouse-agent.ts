@@ -39,6 +39,7 @@ export function createClickHouseAgent(options: {
   providerOptions?: ProviderOptions
   /** Origin of the calling request — passed as OpenRouter HTTP-Referer. */
   referer?: string
+  includeControlTools?: boolean
 }) {
   const {
     model = DEFAULT_MODEL,
@@ -48,9 +49,10 @@ export function createClickHouseAgent(options: {
     systemPrompt = CLICKHOUSE_AGENT_INSTRUCTIONS,
     providerOptions,
     referer,
+    includeControlTools = false,
   } = options
 
-  const allTools = createMcpTools(hostId)
+  const allTools = createMcpTools(hostId, includeControlTools)
   const tools = filterTools(allTools, disabledTools)
   const hasTools = Object.keys(tools).length > 0
   const { model: modelInstance } = resolveAgentChatModel({

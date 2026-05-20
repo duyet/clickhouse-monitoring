@@ -37,7 +37,7 @@ import { createZookeeperTools } from './zookeeper-tools'
  * Create all agent tools for a given host.
  * Returns a flat object of all tools across all categories.
  */
-export function createAllTools(hostId: number) {
+export function createAllTools(hostId: number, includeControlTools = false) {
   const enableControlTools = process.env.AGENT_ENABLE_CONTROL_TOOLS === 'true'
 
   return {
@@ -69,7 +69,7 @@ export function createAllTools(hostId: number) {
     ...createClusterTools(hostId),
 
     // Control actions (destructive)
-    ...(enableControlTools ? createControlTools(hostId) : {}),
+    ...(enableControlTools && includeControlTools ? createControlTools(hostId) : {}),
 
     // Dashboard navigation
     ...createDashboardTools(),

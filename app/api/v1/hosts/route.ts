@@ -21,6 +21,19 @@ export const dynamic = 'force-dynamic'
 
 const ROUTE_CONTEXT = { route: '/api/v1/hosts', method: 'GET' }
 
+function sanitizePublicHost(rawHost: string): string {
+  try {
+    const url = new URL(rawHost)
+    url.username = ''
+    url.password = ''
+    url.search = ''
+    url.hash = ''
+    return url.origin
+  } catch {
+    return rawHost
+  }
+}
+
 /**
  * Host information for public API responses
  */
@@ -59,7 +72,7 @@ export async function GET(): Promise<Response> {
     const hosts: HostInfo[] = configs.map((config) => ({
       id: config.id,
       name: config.customName || getHost(config.host) || `Host ${config.id}`,
-      host: config.host,
+      host: sanitizePublicHost(config.host),
       user: config.user,
     }))
 
