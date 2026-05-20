@@ -120,19 +120,77 @@ jobs:
       tag-suffix: -amd64
       skip-rust: true
 
+  # ARM64: cross-compile from AMD64 build artifacts (fast, no QEMU compilation)
   build-docker-arm64:
     name: build-docker-arm64
     if: github.event_name != 'pull_request'
-    needs: [build-wasm]
-    uses: ./.github/workflows/base.yml
-    with:
-      job-type: docker
-      clickhouse-versions: '["25.1"]'
-      platforms: linux/arm64
-      push-image: true
-      tag-suffix: -arm64
-      skip-rust: true
-      timeout-minutes: 60
+    needs: [build-docker-amd64]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    steps:
+      - name: Login to Container registry
+        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          driver-opts: |
+            network=host
+            image=moby/buildkit:latest
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-,format=long,suffix=-arm64
+
+      - name: Extract build artifacts from AMD64 image
+        run: |
+          AMD64_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-amd64"
+          echo "Pulling AMD64 image: $AMD64_TAG"
+          docker pull "$AMD64_TAG"
+
+          # Extract standalone app from AMD64 image
+          CONTAINER=$(docker create "$AMD64_TAG")
+          mkdir -p /tmp/cross-build
+          docker cp "$CONTAINER:/app/." /tmp/cross-build/
+          docker rm "$CONTAINER"
+
+          # Create minimal Dockerfile for ARM64 (just copies pre-built JS artifacts)
+          cat > /tmp/cross-build/Dockerfile <<'EOFX'
+          FROM oven/bun:1-alpine
+          WORKDIR /app
+          ENV NODE_ENV=production \
+              PORT=3000 \
+              HOSTNAME="0.0.0.0"
+          RUN addgroup --system --gid 1001 app && \
+              adduser --system --uid 1001 app
+          COPY --chown=app:app . ./
+          USER app
+          EXPOSE 3000
+          CMD ["node", "server.js"]
+          EOFX
+
+      - name: Build and push ARM64 image
+        uses: docker/build-push-action@v7
+        with:
+          context: /tmp/cross-build
+          push: true
+          platforms: linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
 
   # Merge multi-arch manifests
   docker-manifest:
