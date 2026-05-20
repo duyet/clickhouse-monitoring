@@ -13,19 +13,23 @@ RUN bun install --frozen-lockfile --ignore-scripts
 
 # Rebuild the source code only when needed
 FROM base AS builder
+ARG SKIP_RUST=false
 ENV NODE_ENV=production \
     GITHUB_SHA=${GITHUB_SHA} \
     GITHUB_REF=${GITHUB_REF}
 
-RUN set -o pipefail && apk add --no-cache build-base curl && \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain 1.94.0
+# Install Rust only when building WASM from source
+RUN if [ "$SKIP_RUST" = "false" ]; then \
+      set -o pipefail && apk add --no-cache build-base curl && \
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain 1.94.0; \
+    fi
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Copy dependencies from deps stage (avoid reinstalling)
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build the application
+# Build the application (wasm:build is skipped by next.config.ts when WASM files exist)
 RUN bun run build
 
 # Production image, copy all the files and run next

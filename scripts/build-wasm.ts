@@ -9,6 +9,13 @@ const wasmPath = resolve(
   'rust/monitor-core/target/wasm32-unknown-unknown/release/monitor_core.wasm'
 )
 const outDir = resolve(root, 'lib/wasm/generated')
+const wasmOutput = resolve(outDir, 'monitor_core_bg.wasm')
+
+// Skip build when pre-built WASM files are present (e.g. downloaded from CI artifact)
+if (existsSync(wasmOutput)) {
+  console.log('WASM output already exists, skipping build')
+  process.exit(0)
+}
 
 function run(command: string[], options: { quiet?: boolean } = {}) {
   const result = Bun.spawnSync(command, {

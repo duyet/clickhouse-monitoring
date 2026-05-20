@@ -30,6 +30,10 @@ on:
         type: string
         description: 'Suffix appended to Docker tags (e.g., -amd64, -arm64)'
         default: ''
+      skip-rust:
+        type: boolean
+        description: 'Skip Rust install and use pre-built WASM artifact'
+        default: false
       timeout-minutes:
         type: number
         description: 'Job timeout in minutes'
@@ -93,6 +97,13 @@ jobs:
       - name: Setup Rust
         if: ${{ inputs.job-type == 'build' }}
         uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Download pre-built WASM
+        if: ${{ inputs.skip-rust }}
+        uses: actions/download-artifact@v4
+        with:
+          name: wasm-output
+          path: lib/wasm/generated
 
       - name: Next.js Cache
         uses: actions/cache@v5
@@ -191,6 +202,7 @@ jobs:
           build-args: |
             GITHUB_SHA=${{ github.sha }}
             GITHUB_REF=${{ github.ref }}
+            SKIP_RUST=${{ inputs.skip-rust }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: ${{ inputs.platforms }}
@@ -208,6 +220,7 @@ jobs:
           build-args: |
             GITHUB_SHA=${{ github.sha }}
             GITHUB_REF=${{ github.ref }}
+            SKIP_RUST=${{ inputs.skip-rust }}
           # Inline cache for fastest builds (shares cache with pushed image)
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max

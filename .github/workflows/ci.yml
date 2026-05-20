@@ -38,21 +38,70 @@ jobs:
     with:
       job-type: lint
 
+  # Build WASM natively on amd64 — WASM is platform-independent
+  build-wasm:
+    name: build-wasm
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust/monitor-core/target
+          key: wasm-cargo-${{ runner.os }}-${{ hashFiles('rust/monitor-core/Cargo.lock', 'rust/monitor-core/Cargo.toml') }}
+          restore-keys: |
+            wasm-cargo-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build WASM
+        run: bun run wasm:build
+
+      - name: Upload WASM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-output
+          path: |
+            lib/wasm/generated/monitor_core.js
+            lib/wasm/generated/monitor_core.d.ts
+            lib/wasm/generated/monitor_core_bg.wasm
+          retention-days: 1
+
   # PRs: amd64 only for fast feedback (~3-5 min)
   build-docker-pr:
     name: build-docker-pr
     if: github.event_name == 'pull_request'
+    needs: [build-wasm]
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
       clickhouse-versions: '["25.1"]'
       platforms: linux/amd64
       push-image: false
+      skip-rust: true
 
   # Main/releases: parallel multi-arch builds (~10-15 min total)
   build-docker-amd64:
     name: build-docker-amd64
     if: github.event_name != 'pull_request'
+    needs: [build-wasm]
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
@@ -60,10 +109,12 @@ jobs:
       platforms: linux/amd64
       push-image: true
       tag-suffix: -amd64
+      skip-rust: true
 
   build-docker-arm64:
     name: build-docker-arm64
     if: github.event_name != 'pull_request'
+    needs: [build-wasm]
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
@@ -71,7 +122,8 @@ jobs:
       platforms: linux/arm64
       push-image: true
       tag-suffix: -arm64
-      timeout-minutes: 120
+      skip-rust: true
+      timeout-minutes: 30
 
   # Merge multi-arch manifests
   docker-manifest:
