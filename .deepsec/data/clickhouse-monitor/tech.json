@@ -1,0 +1,22 @@
+{
+  "tags": [
+    "bun",
+    "docker",
+    "express",
+    "github-actions",
+    "mcp",
+    "nextjs",
+    "node",
+    "react",
+    "workers"
+  ],
+  "sentinels": [
+    "Dockerfile",
+    "bun.lock",
+    "next.config.ts",
+    "package.json",
+    "wrangler.toml"
+  ],
+  "detectedAt": "2026-05-20T08:25:53.223Z",
+  "rootPath": "/Users/duet/project/clickhouse-monitor"
+}
