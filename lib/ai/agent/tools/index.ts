@@ -69,7 +69,9 @@ export function createAllTools(hostId: number, includeControlTools = false) {
     ...createClusterTools(hostId),
 
     // Control actions (destructive)
-    ...(enableControlTools && includeControlTools ? createControlTools(hostId) : {}),
+    ...(enableControlTools && includeControlTools
+      ? createControlTools(hostId)
+      : {}),
 
     // Dashboard navigation
     ...createDashboardTools(),

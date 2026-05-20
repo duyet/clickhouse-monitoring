@@ -24,8 +24,6 @@ import {
   type UITools,
 } from 'ai'
 import { createClickHouseAgent } from '@/lib/ai/agent'
-import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { aggregateUsageWithCost } from '@/lib/ai/agent/analytics'
 import { classifyError } from '@/lib/ai/agent/errors'
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
@@ -38,6 +36,8 @@ import {
 } from '@/lib/ai/providers'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 import { isClerkAuthProvider } from '@/lib/auth/provider'
+import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -445,7 +445,9 @@ export async function POST(request: Request) {
 
   const controlToolsEnabled = process.env.AGENT_ENABLE_CONTROL_TOOLS === 'true'
   const actionsPermissionResponse = controlToolsEnabled
-    ? await authorizeFeatureRequest(ACTIONS_FEATURE_PERMISSION, request)
+    ? await authorizeFeatureRequest(ACTIONS_FEATURE_PERMISSION, request, {
+        allowAgentBearerToken: true,
+      })
     : null
   const includeControlTools = controlToolsEnabled && !actionsPermissionResponse
 

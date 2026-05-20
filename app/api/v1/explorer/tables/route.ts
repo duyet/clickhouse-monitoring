@@ -32,7 +32,6 @@ export async function GET(request: Request): Promise<Response> {
     ...ROUTE_CONTEXT_BASE,
     method: 'GET',
   }
-
   const permissionResponse = await authorizeFeatureRequest(
     TABLES_FEATURE_PERMISSION,
     request

@@ -22,15 +22,10 @@ export const dynamic = 'force-dynamic'
 const ROUTE_CONTEXT = { route: '/api/v1/hosts', method: 'GET' }
 
 function sanitizePublicHost(rawHost: string): string {
-  try {
-    const url = new URL(rawHost)
-    url.username = ''
-    url.password = ''
-    url.search = ''
-    url.hash = ''
-    return url.origin
-  } catch {
-    return rawHost
+  const trimmedRawHost = rawHost.trim()
+  const fallback = (hostValue: string): string => {
+    const trimmedValue = hostValue.trim()
+    return trimmedValue
       .split(',')
       .map((entry) => {
         const trimmedEntry = entry.trim()
@@ -44,6 +39,22 @@ function sanitizePublicHost(rawHost: string): string {
       })
       .filter(Boolean)
       .join(',')
+  }
+
+  try {
+    const hasScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(trimmedRawHost)
+    const url = new URL(hasScheme ? trimmedRawHost : `http://${trimmedRawHost}`)
+    url.username = ''
+    url.password = ''
+    url.search = ''
+    url.hash = ''
+
+    const sanitized = url.origin
+    return hasScheme
+      ? sanitized
+      : sanitized.replace(/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//, '')
+  } catch {
+    return fallback(rawHost)
   }
 }
 

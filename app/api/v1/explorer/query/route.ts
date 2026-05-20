@@ -58,7 +58,6 @@ async function executeQuery(params: {
   maxLength: number
 }): Promise<Response> {
   const { sql, hostId, format, timezone, routeContext, maxLength } = params
-
   // Validate sql parameter is present
   if (!sql) {
     return createApiErrorResponse(
@@ -179,7 +178,6 @@ export async function GET(request: Request): Promise<Response> {
     ...ROUTE_CONTEXT_BASE,
     method: 'GET',
   }
-
   const permissionResponse = await authorizeFeatureRequest(
     TABLES_FEATURE_PERMISSION,
     request
@@ -226,13 +224,13 @@ export async function POST(request: Request): Promise<Response> {
     method: 'POST',
   }
 
-  try {
-    const permissionResponse = await authorizeFeatureRequest(
-      TABLES_FEATURE_PERMISSION,
-      request
-    )
-    if (permissionResponse) return permissionResponse
+  const permissionResponse = await authorizeFeatureRequest(
+    TABLES_FEATURE_PERMISSION,
+    request
+  )
+  if (permissionResponse) return permissionResponse
 
+  try {
     let body: Record<string, unknown>
     try {
       body = (await request.json()) as Record<string, unknown>

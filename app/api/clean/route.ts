@@ -6,9 +6,9 @@ import { NextResponse } from 'next/server'
 import { getHostIdFromParams } from '@/lib/api/error-handler'
 import { EVENTS_TABLE } from '@/lib/app-tables'
 import { getClient } from '@/lib/clickhouse'
-import { ErrorLogger } from '@/lib/logger'
-import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
+import { ErrorLogger } from '@/lib/logger'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
@@ -16,13 +16,14 @@ const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
-export async function POST(request: Request) {
+async function handleClean(request: Request) {
   const searchParams = new URL(request.url).searchParams
   let hostId: number
 
   try {
     const parsedHostId = getHostIdFromParams(searchParams, {
-      route: '/api/clean', method: 'POST',
+      route: '/api/clean',
+      method: request.method,
     })
     hostId =
       typeof parsedHostId === 'string'
@@ -35,7 +36,10 @@ export async function POST(request: Request) {
     )
   }
 
-  const permissionResponse = await authorizeFeatureRequest(ACTIONS_FEATURE_PERMISSION, request)
+  const permissionResponse = await authorizeFeatureRequest(
+    ACTIONS_FEATURE_PERMISSION,
+    request
+  )
   if (permissionResponse) return permissionResponse
 
   try {
@@ -46,13 +50,21 @@ export async function POST(request: Request) {
   } catch (error) {
     ErrorLogger.logError(
       error instanceof Error ? error : new Error(String(error)),
-      { route: '/api/clean', method: 'POST' }
+      { route: '/api/clean', method: request.method }
     )
     return NextResponse.json(
       { status: false, error: `${error}` },
       { status: 500 }
     )
   }
+}
+
+export async function GET(request: Request) {
+  return handleClean(request)
+}
+
+export async function POST(request: Request) {
+  return handleClean(request)
 }
 
 type KillQueryRow = { kill_status: string; query_id: string; user: string }
@@ -77,7 +89,8 @@ async function cleanupHangQuery(
   }
 
   ErrorLogger.logDebug('[/api/clean] Starting clean up hang queries', {
-    route: '/api/clean', method: 'POST',
+    route: '/api/clean',
+    method: 'POST',
   })
 
   const killQueryResp = await killHangingQueries(client)
@@ -85,7 +98,8 @@ async function cleanupHangQuery(
 
   if (!killQueryResp || killQueryResp.rows === 0) {
     ErrorLogger.logDebug('[/api/clean] Done, nothing to cleanup', {
-      route: '/api/clean', method: 'POST',
+      route: '/api/clean',
+      method: 'POST',
     })
     return { lastCleanup, message: 'Nothing to cleanup' }
   }
@@ -150,7 +164,8 @@ async function killHangingQueries(
     const killQueryResp = (await resp.json()) as unknown as KillQueryResponse
 
     ErrorLogger.logDebug('[/api/clean] queries found', {
-      route: '/api/clean', method: 'POST',
+      route: '/api/clean',
+      method: 'POST',
       queryIds: killQueryResp.data.map((row) => row.query_id).join(', '),
     })
     return killQueryResp
@@ -160,7 +175,8 @@ async function killHangingQueries(
       error.message.includes('Unexpected end of JSON input')
     ) {
       ErrorLogger.logDebug('[/api/clean] Done, nothing to cleanup', {
-        route: '/api/clean', method: 'POST',
+        route: '/api/clean',
+        method: 'POST',
       })
       return null
     }
@@ -178,7 +194,8 @@ async function updateLastCleanup(
       format: 'JSONEachRow',
     })
     ErrorLogger.logDebug('[/api/clean] LastCleanup event created', {
-      route: '/api/clean', method: 'POST',
+      route: '/api/clean',
+      method: 'POST',
     })
   } catch (error) {
     ErrorLogger.logError(
@@ -202,7 +219,8 @@ async function createSystemKillQueryEvent(
       {} as Record<string, number>
     )
     ErrorLogger.logDebug('[/api/clean] Kill status', {
-      route: '/api/clean', method: 'POST',
+      route: '/api/clean',
+      method: 'POST',
       killStatus,
     })
 
