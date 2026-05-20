@@ -29,6 +29,7 @@ const VALID_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_]*$/
  * Return a JSON preview of rows from a specified database table using query parameters.
  *
  * Accepts the following query parameters:
+ * - `hostId` (required): numeric host identifier, must be provided for all data fetching operations
  * - `database` (required): database identifier matching `^[a-zA-Z_][a-zA-Z0-9_]*$`
  * - `table` (required): table identifier matching `^[a-zA-Z_][a-zA-Z0-9_]*$`
  * - `limit` (optional): number of rows to return, defaults to `100`, must be between 1 and 10000
