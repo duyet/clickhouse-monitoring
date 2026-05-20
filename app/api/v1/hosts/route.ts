@@ -21,6 +21,43 @@ export const dynamic = 'force-dynamic'
 
 const ROUTE_CONTEXT = { route: '/api/v1/hosts', method: 'GET' }
 
+function sanitizePublicHost(rawHost: string): string {
+  const trimmedRawHost = rawHost.trim()
+  const fallback = (hostValue: string): string => {
+    const trimmedValue = hostValue.trim()
+    return trimmedValue
+      .split(',')
+      .map((entry) => {
+        const trimmedEntry = entry.trim()
+        if (!trimmedEntry) {
+          return ''
+        }
+
+        const withoutQueryOrHash = trimmedEntry.split('?')[0].split('#')[0]
+        const withoutUserInfo = withoutQueryOrHash.split('@').at(-1) || ''
+        return withoutUserInfo.replace(/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//, '')
+      })
+      .filter(Boolean)
+      .join(',')
+  }
+
+  try {
+    const hasScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(trimmedRawHost)
+    const url = new URL(hasScheme ? trimmedRawHost : `http://${trimmedRawHost}`)
+    url.username = ''
+    url.password = ''
+    url.search = ''
+    url.hash = ''
+
+    const sanitized = url.origin
+    return hasScheme
+      ? sanitized
+      : sanitized.replace(/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//, '')
+  } catch {
+    return fallback(rawHost)
+  }
+}
+
 /**
  * Host information for public API responses
  */
@@ -59,7 +96,7 @@ export async function GET(): Promise<Response> {
     const hosts: HostInfo[] = configs.map((config) => ({
       id: config.id,
       name: config.customName || getHost(config.host) || `Host ${config.id}`,
-      host: config.host,
+      host: sanitizePublicHost(config.host),
       user: config.user,
     }))
 

@@ -10,6 +10,11 @@ export const ACTIONS_FEATURE_PERMISSION = {
   defaultAccess: 'authenticated',
 } satisfies FeaturePermission
 
+export const TABLES_FEATURE_PERMISSION = {
+  feature: 'tables',
+  defaultAccess: 'authenticated',
+} satisfies FeaturePermission
+
 export const OVERVIEW_FEATURE_PERMISSION = {
   feature: 'overview',
 } satisfies FeaturePermission

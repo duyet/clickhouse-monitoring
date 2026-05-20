@@ -20,6 +20,7 @@ import {
 } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { TABLES_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error } from '@/lib/logger'
 
@@ -42,6 +43,12 @@ export async function GET(
     method: 'GET',
     tableName: name,
   }
+  const config = getTableConfig(name)
+  const permissionResponse = await authorizeFeatureRequest(
+    config?.permission ?? TABLES_FEATURE_PERMISSION,
+    request
+  )
+  if (permissionResponse) return permissionResponse
 
   // Extract and validate hostId
   const hostId = getHostIdFromParams(searchParams, routeContext)
@@ -91,14 +98,6 @@ export async function GET(
       routeContext
     )
   }
-
-  // Get the original config for optional table checks
-  const config = getTableConfig(name)
-  const permissionResponse = await authorizeFeatureRequest(
-    config?.permission,
-    request
-  )
-  if (permissionResponse) return permissionResponse
 
   // Execute the query - always pass the full config for version selection
   const result = await fetchData({

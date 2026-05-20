@@ -631,16 +631,6 @@ function SkillsSection() {
       <SidebarSection
         title="Skills"
         description="Browse the bundled expert guides the agent can load on demand."
-        action={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowTree(true)}
-            className="h-7 rounded-md px-2 text-[11px] transition-[transform,background-color,border-color] active:scale-[0.96]"
-          >
-            Open tree
-          </Button>
-        }
       >
         <button
           type="button"
@@ -728,8 +718,8 @@ export function AgentsSidebar({
 
   const content = (
     <div className="flex h-full flex-col overflow-hidden bg-sidebar/20">
-      <div className="border-border/60 border-b bg-background/70 px-2.5 py-2 backdrop-blur">
-        <div className="flex items-start justify-between gap-2">
+      <div className="flex h-16 shrink-0 items-center border-border/60 border-b bg-background/70 px-2.5 backdrop-blur">
+        <div className="flex w-full items-start justify-between gap-2">
           <div className="min-w-0">
             <h3 className="text-[13px] font-semibold tracking-tight text-foreground [text-wrap:balance]">
               Agent settings

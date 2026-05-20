@@ -72,7 +72,7 @@ export function AgentsLayout() {
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Page header with conversation switcher */}
-        <div className="flex items-center justify-between gap-2 border-b px-3 sm:px-4 py-3 shrink-0">
+        <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-3 sm:px-4">
           <ConversationSwitcher
             currentConversationId={currentConversationId}
             conversations={conversationList}

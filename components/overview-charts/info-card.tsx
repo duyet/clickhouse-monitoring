@@ -1,5 +1,7 @@
 'use client'
 
+import type { ReactNode } from 'react'
+
 import { cardStyles } from './card-styles'
 import { memo } from 'react'
 import { ExpandableText } from '@/components/utilities/expandable-text'
@@ -7,7 +9,7 @@ import { cn } from '@/lib/utils'
 
 export interface InfoCardProps {
   value: string
-  subtitle?: string
+  subtitle?: ReactNode
   isLoading?: boolean
 }
 
@@ -33,7 +35,7 @@ export const InfoCard = memo(function InfoCard({
         <div className="text-center">
           <div className={cardStyles.number}>{value}</div>
         </div>
-        {subtitle && (
+        {typeof subtitle === 'string' ? (
           <ExpandableText
             variant="inline"
             maxLines={1}
@@ -45,6 +47,8 @@ export const InfoCard = memo(function InfoCard({
           >
             {subtitle}
           </ExpandableText>
+        ) : (
+          subtitle
         )}
       </div>
     </div>
