@@ -179,20 +179,38 @@ export const POST = withApiHandler(async (request: Request) => {
     queryParams,
     hostId,
     format = 'JSONEachRow',
-    queryConfig,
+    queryConfigName,
     timezone,
   } = typedBody
 
   debug('[POST /api/v1/data]', {
     hostId,
     format,
-    queryConfig: queryConfig?.name,
+    queryConfigName,
     timezone,
   })
 
-  // SECURITY: If no queryConfig provided, validate the query exists in dashboard tables
+  // SECURITY: Reject client-supplied QueryConfig objects to prevent SQL override attacks.
+  if (
+    typeof body === 'object' &&
+    body !== null &&
+    'queryConfig' in body &&
+    body.queryConfig !== undefined
+  ) {
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.ValidationError,
+        message:
+          'queryConfig is not accepted from clients. Use queryConfigName instead.',
+      },
+      400,
+      { ...ROUTE_CONTEXT, method: 'POST', hostId }
+    )
+  }
+
+  // SECURITY: If no queryConfigName provided, validate the query exists in dashboard tables
   // This prevents arbitrary SQL execution from clients
-  if (!queryConfig) {
+  if (!queryConfigName) {
     const validationResult = await validateDashboardQuery(query, Number(hostId))
     if (!validationResult.valid) {
       error(
@@ -212,14 +230,14 @@ export const POST = withApiHandler(async (request: Request) => {
     }
   }
 
-  const serverQueryConfig = queryConfig?.name
-    ? getTableConfig(queryConfig.name)
+  const serverQueryConfig = queryConfigName
+    ? getTableConfig(queryConfigName)
     : undefined
-  if (queryConfig?.name && !serverQueryConfig) {
+  if (queryConfigName && !serverQueryConfig) {
     return createApiErrorResponse(
       {
         type: ApiErrorType.ValidationError,
-        message: `Unknown query config: ${queryConfig.name}`,
+        message: `Unknown query config: ${queryConfigName}`,
       },
       400,
       { ...ROUTE_CONTEXT, method: 'POST', hostId }
@@ -227,7 +245,7 @@ export const POST = withApiHandler(async (request: Request) => {
   }
 
   const permissionResponse = await authorizeFeatureRequest(
-    serverQueryConfig?.permission ?? queryConfig?.permission,
+    serverQueryConfig?.permission,
     request
   )
   if (permissionResponse) return permissionResponse
@@ -241,7 +259,7 @@ export const POST = withApiHandler(async (request: Request) => {
     query_params: queryParams,
     format: dataFormat,
     hostId,
-    queryConfig,
+    queryConfig: serverQueryConfig,
     // Pass timezone to ClickHouse for session-level time conversion
     clickhouse_settings: timezone ? { session_timezone: timezone } : undefined,
   })
