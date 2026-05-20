@@ -140,8 +140,8 @@ describe('charts-config', () => {
   })
 
   describe('Queries Tab Charts', () => {
-    it('should have 12 charts in the queries tab', () => {
-      expect(QUERIES_TAB_CHARTS).toHaveLength(12)
+    it('should have 11 charts in the queries tab', () => {
+      expect(QUERIES_TAB_CHARTS).toHaveLength(11)
     })
 
     it('should include query performance charts', () => {
@@ -153,7 +153,6 @@ describe('charts-config', () => {
       expect(ids).toContain('query-type')
       expect(ids).toContain('query-duration-percentiles')
       expect(ids).toContain('query-count-heatmap')
-      expect(ids).toContain('top-query-fingerprints')
       expect(ids).toContain('insert-performance')
       expect(ids).toContain('query-duration-trend')
       expect(ids).toContain('top-inserters')
@@ -212,8 +211,8 @@ describe('charts-config', () => {
   })
 
   describe('Health Tab Charts', () => {
-    it('should have 13 charts in the health tab', () => {
-      expect(HEALTH_TAB_CHARTS).toHaveLength(13)
+    it('should have 12 charts in the health tab', () => {
+      expect(HEALTH_TAB_CHARTS).toHaveLength(12)
     })
 
     it('should include error and connection charts', () => {
@@ -230,7 +229,6 @@ describe('charts-config', () => {
       expect(ids).toContain('crash-frequency')
       expect(ids).toContain('error-rate-over-time')
       expect(ids).toContain('log-level-distribution')
-      expect(ids).toContain('connections-http')
     })
   })
 
@@ -295,7 +293,7 @@ describe('charts-config', () => {
 
       it('should return charts for the queries tab', () => {
         const charts = getChartsForTab('queries')
-        expect(charts).toHaveLength(12)
+        expect(charts).toHaveLength(11)
         expect(charts[0].id).toBe('query-count-14d')
       })
 
@@ -311,7 +309,7 @@ describe('charts-config', () => {
 
       it('should return charts for the health tab', () => {
         const charts = getChartsForTab('health')
-        expect(charts).toHaveLength(13)
+        expect(charts).toHaveLength(12)
       })
 
       it('should return empty array for non-existent tab', () => {

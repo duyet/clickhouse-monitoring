@@ -899,7 +899,7 @@ export const AgentsChatArea = forwardRef<
         />
       )}
 
-      <div className="shrink-0 px-3 pb-2 pt-2 sm:px-4 sm:pb-3">
+      <div className="shrink-0 px-3 pb-0 pt-2 sm:px-4">
         {!isLoading && followUpSuggestions.length > 0 && (
           <div className="mb-2">
             <Suggestions>

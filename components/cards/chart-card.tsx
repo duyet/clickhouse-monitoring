@@ -140,33 +140,32 @@ function ChartCardContentWithScale({
 
   return (
     <Card
-      className={cn(
-        chartCard.base,
-        chartCard.variants.normal,
-        href &&
-          'cursor-pointer hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300',
-        className
-      )}
-      onClick={handleCardClick}
+      className={cn(chartCard.base, chartCard.variants.normal, className)}
       {...cardProps}
     >
       {title ? (
         <CardHeader className={cn(chartCard.header, headerClassName)}>
           <header className="flex flex-row items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <div
+              className={cn(
+                'flex items-center gap-1.5 min-w-0 flex-1 group/title',
+                href && 'cursor-pointer'
+              )}
+              onClick={href ? handleCardClick : undefined}
+            >
               {icon && <span className="shrink-0">{icon}</span>}
               <ExpandableText
                 variant="popover"
                 maxLines={1}
                 className={cn(
                   'text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1 transition-colors duration-200',
-                  href && 'group-hover:text-primary'
+                  href && 'group-hover/title:text-primary'
                 )}
               >
                 {title}
               </ExpandableText>
               {href && (
-                <ArrowUpRight className="size-3.5 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-60 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-300 text-muted-foreground shrink-0" />
+                <ArrowUpRight className="size-3.5 opacity-0 -translate-x-1 translate-y-1 group-hover/title:opacity-60 group-hover/title:translate-x-0 group-hover/title:translate-y-0 transition-all duration-300 text-muted-foreground shrink-0" />
               )}
             </div>
             <div className="flex items-center gap-1 shrink-0">
@@ -239,33 +238,32 @@ function ChartCardContentWithoutScale({
 
   return (
     <Card
-      className={cn(
-        chartCard.base,
-        chartCard.variants.normal,
-        href &&
-          'cursor-pointer hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300',
-        className
-      )}
-      onClick={handleCardClick}
+      className={cn(chartCard.base, chartCard.variants.normal, className)}
       {...cardProps}
     >
       {title ? (
         <CardHeader className={cn(chartCard.header, headerClassName)}>
           <header className="flex flex-row items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <div
+              className={cn(
+                'flex items-center gap-1.5 min-w-0 flex-1 group/title',
+                href && 'cursor-pointer'
+              )}
+              onClick={href ? handleCardClick : undefined}
+            >
               {icon && <span className="shrink-0">{icon}</span>}
               <ExpandableText
                 variant="popover"
                 maxLines={1}
                 className={cn(
                   'text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1 transition-colors duration-200',
-                  href && 'group-hover:text-primary'
+                  href && 'group-hover/title:text-primary'
                 )}
               >
                 {title}
               </ExpandableText>
               {href && (
-                <ArrowUpRight className="size-3.5 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-60 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-300 text-muted-foreground shrink-0" />
+                <ArrowUpRight className="size-3.5 opacity-0 -translate-x-1 translate-y-1 group-hover/title:opacity-60 group-hover/title:translate-x-0 group-hover/title:translate-y-0 transition-all duration-300 text-muted-foreground shrink-0" />
               )}
             </div>
             <div className="flex items-center gap-1 shrink-0">

@@ -86,7 +86,6 @@ export interface OverviewTabConfig {
 // ============================================================================
 
 // Connection charts
-import { ChartConnectionsHttp } from '@/components/charts/connections-http'
 import { ChartConnectionsPool } from '@/components/charts/connections-pool'
 // Logs charts
 import { ChartCrashFrequency } from '@/components/charts/logs/crash-frequency'
@@ -114,7 +113,6 @@ import { ChartQueryDurationPercentiles } from '@/components/charts/query/query-d
 import { ChartQueryMemory } from '@/components/charts/query/query-memory'
 import { ChartQueryType } from '@/components/charts/query/query-type'
 import { ChartSlowQueryOccurrences } from '@/components/charts/query/slow-query-occurrences'
-import { ChartTopQueryFingerprints } from '@/components/charts/query/top-query-fingerprints'
 // Query performance charts
 import { ChartInsertPerformance } from '@/components/charts/query-performance/insert-performance'
 import { ChartQueryDurationTrend } from '@/components/charts/query-performance/query-duration-trend'
@@ -306,7 +304,7 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'query-count-heatmap-overview',
     component: ChartQueryCountHeatmap,
     title: 'Query Activity Heatmap',
-    className: 'w-full h-full col-span-1 md:col-span-2 2xl:col-span-2',
+    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
     type: 'custom',
     href: '/history-queries',
   },
@@ -386,16 +384,8 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'query-count-heatmap',
     component: ChartQueryCountHeatmap,
     title: 'Query Activity Heatmap',
-    className: 'w-full h-full',
+    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
     type: 'custom',
-    href: '/history-queries',
-  },
-  {
-    id: 'top-query-fingerprints',
-    component: ChartTopQueryFingerprints,
-    title: 'Top Query Patterns',
-    className: 'w-full h-full col-span-1 md:col-span-2 2xl:col-span-3',
-    type: 'bar',
     href: '/history-queries',
   },
   {
@@ -756,16 +746,6 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
     className: 'w-full h-full',
     type: 'custom',
     href: '/logs',
-  },
-  {
-    id: 'connections-http',
-    component: ChartConnectionsHttp,
-    title: 'HTTP Connections',
-    lastHours: 24 * 7,
-    interval: 'toStartOfHour',
-    className: 'w-full h-full',
-    type: 'bar',
-    href: '/charts?name=connections-http',
   },
 ]
 
