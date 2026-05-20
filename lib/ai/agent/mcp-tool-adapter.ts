@@ -13,6 +13,6 @@ import { createAllTools } from './tools'
  * Create AI SDK tools from modular tool definitions.
  * Signature unchanged for backward compatibility.
  */
-export function createMcpTools(hostId: number) {
-  return createAllTools(hostId)
+export function createMcpTools(hostId: number, includeControlTools = false) {
+  return createAllTools(hostId, includeControlTools)
 }

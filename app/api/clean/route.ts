@@ -7,6 +7,8 @@ import { getHostIdFromParams } from '@/lib/api/error-handler'
 import { EVENTS_TABLE } from '@/lib/app-tables'
 import { getClient } from '@/lib/clickhouse'
 import { ErrorLogger } from '@/lib/logger'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
+import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
@@ -14,13 +16,13 @@ const MONITORING_USER = process.env.CLICKHOUSE_USER || ''
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   const searchParams = new URL(request.url).searchParams
   let hostId: number
 
   try {
     const parsedHostId = getHostIdFromParams(searchParams, {
-      route: '/api/clean',
+      route: '/api/clean', method: 'POST',
     })
     hostId =
       typeof parsedHostId === 'string'
@@ -33,6 +35,9 @@ export async function GET(request: Request) {
     )
   }
 
+  const permissionResponse = await authorizeFeatureRequest(ACTIONS_FEATURE_PERMISSION, request)
+  if (permissionResponse) return permissionResponse
+
   try {
     // getClient will auto-detect and use web client for Cloudflare Workers
     const client = await getClient({ hostId })
@@ -41,7 +46,7 @@ export async function GET(request: Request) {
   } catch (error) {
     ErrorLogger.logError(
       error instanceof Error ? error : new Error(String(error)),
-      { route: '/api/clean' }
+      { route: '/api/clean', method: 'POST' }
     )
     return NextResponse.json(
       { status: false, error: `${error}` },
@@ -72,7 +77,7 @@ async function cleanupHangQuery(
   }
 
   ErrorLogger.logDebug('[/api/clean] Starting clean up hang queries', {
-    route: '/api/clean',
+    route: '/api/clean', method: 'POST',
   })
 
   const killQueryResp = await killHangingQueries(client)
@@ -80,7 +85,7 @@ async function cleanupHangQuery(
 
   if (!killQueryResp || killQueryResp.rows === 0) {
     ErrorLogger.logDebug('[/api/clean] Done, nothing to cleanup', {
-      route: '/api/clean',
+      route: '/api/clean', method: 'POST',
     })
     return { lastCleanup, message: 'Nothing to cleanup' }
   }
@@ -111,7 +116,7 @@ async function getLastCleanup(
     const now = new Date(data[0].now)
     ErrorLogger.logDebug(
       `[/api/clean] Last cleanup: ${lastCleanup}, now: ${now}`,
-      { route: '/api/clean' }
+      { route: '/api/clean', method: 'POST' }
     )
     return [lastCleanup, now]
   } catch (error) {
@@ -145,7 +150,7 @@ async function killHangingQueries(
     const killQueryResp = (await resp.json()) as unknown as KillQueryResponse
 
     ErrorLogger.logDebug('[/api/clean] queries found', {
-      route: '/api/clean',
+      route: '/api/clean', method: 'POST',
       queryIds: killQueryResp.data.map((row) => row.query_id).join(', '),
     })
     return killQueryResp
@@ -155,7 +160,7 @@ async function killHangingQueries(
       error.message.includes('Unexpected end of JSON input')
     ) {
       ErrorLogger.logDebug('[/api/clean] Done, nothing to cleanup', {
-        route: '/api/clean',
+        route: '/api/clean', method: 'POST',
       })
       return null
     }
@@ -173,12 +178,12 @@ async function updateLastCleanup(
       format: 'JSONEachRow',
     })
     ErrorLogger.logDebug('[/api/clean] LastCleanup event created', {
-      route: '/api/clean',
+      route: '/api/clean', method: 'POST',
     })
   } catch (error) {
     ErrorLogger.logError(
       error instanceof Error ? error : new Error(String(error)),
-      { route: '/api/clean', event: 'LastCleanup' }
+      { route: '/api/clean', method: 'POST', event: 'LastCleanup' }
     )
     throw new Error(`'LastCleanup' event creating error: ${error}`)
   }
@@ -197,7 +202,7 @@ async function createSystemKillQueryEvent(
       {} as Record<string, number>
     )
     ErrorLogger.logDebug('[/api/clean] Kill status', {
-      route: '/api/clean',
+      route: '/api/clean', method: 'POST',
       killStatus,
     })
 
@@ -217,7 +222,7 @@ async function createSystemKillQueryEvent(
   } catch (error) {
     ErrorLogger.logError(
       error instanceof Error ? error : new Error(String(error)),
-      { route: '/api/clean', event: 'SystemKillQuery' }
+      { route: '/api/clean', method: 'POST', event: 'SystemKillQuery' }
     )
   }
 }

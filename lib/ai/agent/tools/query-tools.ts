@@ -330,7 +330,8 @@ export function createQueryTools(hostId: number) {
         }
         const explainType = typeMap[type]
 
-        // Build EXPLAIN query - EXPLAIN is read-only, no validation needed
+        validateSqlQuery(sql)
+
         const explainQuery = `EXPLAIN ${explainType} ${sql}`
 
         const result = await readOnlyQuery({

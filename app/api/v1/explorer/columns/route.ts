@@ -15,9 +15,15 @@ import {
 import { getTableQuery } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
+
+const TABLES_FEATURE_PERMISSION = {
+  feature: 'tables',
+  defaultAccess: 'authenticated',
+} as const
 
 const ROUTE_CONTEXT_BASE = { route: '/api/v1/explorer/columns' }
 
@@ -30,6 +36,9 @@ export async function GET(request: Request): Promise<Response> {
     ...ROUTE_CONTEXT_BASE,
     method: 'GET',
   }
+
+  const permissionResponse = await authorizeFeatureRequest(TABLES_FEATURE_PERMISSION, request)
+  if (permissionResponse) return permissionResponse
 
   // Extract and validate hostId
   const hostId = getHostIdFromParams(searchParams, routeContext)
