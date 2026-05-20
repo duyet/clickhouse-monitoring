@@ -14,15 +14,11 @@ import {
 } from '@/lib/api/error-handler'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { TABLES_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
-
-const TABLES_FEATURE_PERMISSION = {
-  feature: 'tables',
-  defaultAccess: 'authenticated',
-} as const
 
 const ROUTE_CONTEXT_BASE = { route: '/api/v1/explorer/preview' }
 
@@ -39,7 +35,10 @@ export async function GET(request: Request): Promise<Response> {
     method: 'GET',
   }
 
-  const permissionResponse = await authorizeFeatureRequest(TABLES_FEATURE_PERMISSION, request)
+  const permissionResponse = await authorizeFeatureRequest(
+    TABLES_FEATURE_PERMISSION,
+    request
+  )
   if (permissionResponse) return permissionResponse
 
   // Extract and validate hostId

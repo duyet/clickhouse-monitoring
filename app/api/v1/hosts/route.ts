@@ -31,6 +31,19 @@ function sanitizePublicHost(rawHost: string): string {
     return url.origin
   } catch {
     return rawHost
+      .split(',')
+      .map((entry) => {
+        const trimmedEntry = entry.trim()
+        if (!trimmedEntry) {
+          return ''
+        }
+
+        const withoutQueryOrHash = trimmedEntry.split('?')[0].split('#')[0]
+        const withoutUserInfo = withoutQueryOrHash.split('@').at(-1) || ''
+        return withoutUserInfo.replace(/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//, '')
+      })
+      .filter(Boolean)
+      .join(',')
   }
 }
 

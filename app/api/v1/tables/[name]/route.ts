@@ -20,6 +20,7 @@ import {
 } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { TABLES_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { debug, error } from '@/lib/logger'
 
@@ -27,10 +28,6 @@ import { debug, error } from '@/lib/logger'
 export const dynamic = 'force-dynamic'
 
 const ROUTE_CONTEXT_BASE = { route: '/api/v1/tables/[name]' }
-const TABLES_FEATURE_PERMISSION = {
-  feature: 'tables',
-  defaultAccess: 'authenticated',
-} as const
 
 /**
  * Handle GET requests for table data
