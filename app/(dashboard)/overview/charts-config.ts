@@ -793,29 +793,3 @@ export const OVERVIEW_TABS: OverviewTabConfig[] = [
     charts: HEALTH_TAB_CHARTS,
   },
 ]
-
-// ============================================================================
-// Utilities
-// ============================================================================
-
-/**
- * Get a tab configuration by its value
- */
-export function getTabConfig(value: string): OverviewTabConfig | undefined {
-  return OVERVIEW_TABS.find((tab) => tab.value === value)
-}
-
-/**
- * Get all chart IDs across all tabs
- */
-export function getAllChartIds(): string[] {
-  return OVERVIEW_TABS.flatMap((tab) => tab.charts.map((chart) => chart.id))
-}
-
-/**
- * Get charts for a specific tab
- */
-export function getChartsForTab(tabValue: string): OverviewChartConfig[] {
-  const tab = getTabConfig(tabValue)
-  return tab?.charts ?? []
-}

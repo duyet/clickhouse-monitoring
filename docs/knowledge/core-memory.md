@@ -3,7 +3,7 @@ id: core-memory
 title: Automation Core Memory
 type: workflow
 status: active
-updated: 2026-05-18
+updated: 2026-05-21
 tags:
   - automation
   - code-smell
@@ -36,7 +36,7 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - `/docs` route reads source files from `docs/content` through `app/(docs)/docs/_lib/docs.ts`
 - Verify dead-code claims with zero non-test references before deleting symbols
 - Docker build must install full deps (`bun install --frozen-lockfile --ignore-scripts`) because `lib/platform/adapters/cloudflare.ts` imports `@opennextjs/cloudflare` during `bun run build`
-- If automation checkout is detached (`git status --short --branch` shows `HEAD (no branch)`) or `.git/worktrees/...` writes fail (`FETCH_HEAD`/`HEAD.lock`), move commit/PR operations to `/Users/duet/project/clickhouse-monitor`
+- If automation checkout is detached (`git status --short --branch` shows `HEAD (no branch)`) or `.git/worktrees/...` writes fail (`FETCH_HEAD`/`HEAD.lock`/`index.lock`), refresh refs through `/Users/duet/project/clickhouse-monitor`; if that checkout is dirty, create a clean worktree under `/private/tmp` for commit/PR commands
 
 ## Latest Update
 
@@ -49,3 +49,4 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - 2026-05-17: automation run started on detached worktree (`HEAD (no branch)`), so branch/PR work should pivot to `/Users/duet/project/clickhouse-monitor` when git metadata writes fail in `.git/worktrees/...`
 - 2026-05-18: no commits since last run timestamp; 24h fallback was empty, 7d fallback used for evidence-only audit with no new actionable code-smell/dead-code/perf findings
 - 2026-05-19: removed zero-reference `findModelEntry` export from `lib/ai/agent-model-registry.ts`; add `--no-merges` scan variant to reduce merge-only noise in code-smell/dead-code windows
+- 2026-05-21: removed overview chart helper exports that had zero non-test references (`getTabConfig`, `getAllChartIds`, `getChartsForTab`); latest `main` CI was green on `7be1682b`
