@@ -243,7 +243,7 @@
     "@vercel/analytics": "^2.0.0"
   },
   "overrides": {
-    "@anthropic-ai/sdk": "^0.92.0",
+    "@anthropic-ai/sdk": "0.92.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "ajv": "^8.20.0",
@@ -269,7 +269,7 @@
     "qs": "^6.15.1",
     "serialize-javascript": "^7.0.5",
     "undici": "^7.24.5",
-    "ws": "^8.20.1",
+    "ws": "8.20.1",
     "fast-xml-parser": "^5.7.3",
     "uuid": "^14.0.0"
   }

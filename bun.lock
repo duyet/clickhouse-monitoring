@@ -151,7 +151,7 @@
     },
   },
   "overrides": {
-    "@anthropic-ai/sdk": "^0.92.0",
+    "@anthropic-ai/sdk": "0.92.0",
     "@babel/plugin-transform-modules-systemjs": "^7.29.4",
     "@hono/node-server": "^2.0.0",
     "@protobufjs/utf8": "^1.1.1",
@@ -179,7 +179,7 @@
     "serialize-javascript": "^7.0.5",
     "undici": "^7.24.5",
     "uuid": "^14.0.0",
-    "ws": "^8.20.1",
+    "ws": "8.20.1",
   },
   "packages": {
     "@actions/core": ["@actions/core@3.0.0", "", { "dependencies": { "@actions/exec": "^3.0.0", "@actions/http-client": "^4.0.0" } }, "sha512-zYt6cz+ivnTmiT/ksRVriMBOiuoUpDCJJlZ5KPl2/FRdvwU3f7MPh9qftvbkXJThragzUZieit2nyHUyw53Seg=="],
