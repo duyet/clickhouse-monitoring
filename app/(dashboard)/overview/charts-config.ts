@@ -301,14 +301,6 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     href: '/disks',
   },
   {
-    id: 'query-count-heatmap-overview',
-    component: ChartQueryCountHeatmap,
-    title: 'Query Activity Heatmap',
-    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
-    type: 'custom',
-    href: '/history-queries',
-  },
-  {
     id: 'thread-utilization-overview',
     component: ChartThreadUtilization,
     title: 'Thread Utilization',
@@ -317,6 +309,14 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     className: 'w-full h-full',
     type: 'area',
     href: '/metrics',
+  },
+  {
+    id: 'query-count-heatmap-overview',
+    component: ChartQueryCountHeatmap,
+    title: 'Query Activity Heatmap',
+    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
+    type: 'custom',
+    href: '/history-queries',
   },
 ]
 
@@ -754,9 +754,9 @@ export const HEALTH_TAB_CHARTS: OverviewChartConfig[] = [
 // ============================================================================
 
 const GRID_LAYOUT_3_COL =
-  'grid auto-rows-[280px] items-stretch gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 xl:auto-rows-[300px] 2xl:auto-rows-[320px] min-w-0'
+  'grid grid-flow-dense auto-rows-[280px] items-stretch gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 xl:auto-rows-[300px] 2xl:auto-rows-[320px] min-w-0'
 const GRID_LAYOUT_2_COL =
-  'grid auto-rows-[280px] grid-cols-1 items-stretch gap-3 md:grid-cols-2 xl:auto-rows-[300px] 2xl:auto-rows-[320px] min-w-0'
+  'grid grid-flow-dense auto-rows-[280px] grid-cols-1 items-stretch gap-3 md:grid-cols-2 xl:auto-rows-[300px] 2xl:auto-rows-[320px] min-w-0'
 
 /**
  * All tab configurations for the overview page
