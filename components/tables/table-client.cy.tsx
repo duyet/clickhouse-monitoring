@@ -55,6 +55,31 @@ describe('<TableClient />', () => {
     cy.contains(/2 row\(s\) in 0\.10s/).should('be.visible')
   })
 
+  it('shows capped result metadata when the API trims rows', () => {
+    mockTableResponse({
+      data: [
+        { name: 'users', database: 'default', engine: 'MergeTree', rows: 1000 },
+      ],
+      metadata: {
+        queryId: 'test-query-id',
+        duration: 0.1,
+        rows: 1000,
+        host: 'localhost',
+        resultRowLimit: 1000,
+        resultOverflowMode: 'break',
+        resultRowsBeforeCap: 1002,
+        resultRowsTruncated: true,
+      },
+    })
+
+    cy.mount(<TableClient title="Test Tables" queryConfig={mockQueryConfig} />)
+
+    cy.wait('@fetchTableData')
+    cy.contains('1,000 row(s) in 0.10s').should('be.visible')
+    cy.contains('Capped').should('be.visible')
+    cy.contains('1,002 before cap').should('be.visible')
+  })
+
   it('displays error alert on API error', () => {
     mockTableResponse(
       {
