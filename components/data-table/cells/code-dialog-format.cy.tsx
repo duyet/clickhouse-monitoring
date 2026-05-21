@@ -77,4 +77,20 @@ describe('<CodeDialogFormat />', () => {
       cy.get('img').should('not.exist')
     })
   })
+
+  it('does not show SQL controls for plain text content', () => {
+    const plainText =
+      'plain operational message with enough characters to open the dialog'
+
+    cy.mount(
+      <CodeDialogFormat value={plainText} options={{ max_truncate: 20 }} />
+    )
+    cy.get('code.truncated').parent().click()
+
+    cy.get('div[role="dialog"]').within(() => {
+      cy.contains('h2', 'Code content').should('be.visible')
+      cy.contains('Beautify').should('not.exist')
+      cy.contains('Plain text').should('be.visible')
+    })
+  })
 })

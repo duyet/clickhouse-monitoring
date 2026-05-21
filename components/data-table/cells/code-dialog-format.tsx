@@ -2,7 +2,15 @@ import { SizeIcon } from '@radix-ui/react-icons'
 import { Check, Copy, ExternalLinkIcon, SparklesIcon } from 'lucide-react'
 
 import dedent from 'dedent'
-import { memo, useCallback, useId, useMemo, useState } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { format } from 'sql-formatter'
 import { highlightCode } from '@/components/ai-elements/code-block'
 import { AppLink as Link } from '@/components/ui/app-link'
@@ -36,6 +44,7 @@ export interface CodeDialogOptions {
 }
 
 const STORAGE_KEY = 'code-dialog-beautify'
+type CodeLanguage = 'sql' | 'json' | 'plaintext'
 
 function getInitialBeautifyState(): boolean {
   if (typeof window === 'undefined') return false
@@ -56,9 +65,12 @@ function saveBeautifyState(value: boolean) {
 }
 
 function looksLikeSql(text: string): boolean {
-  const sqlKeywords =
-    /\b(SELECT|INSERT|CREATE|ALTER|DROP|UPDATE|DELETE|WITH|SHOW|DESCRIBE|EXPLAIN|TRUNCATE|OPTIMIZE|ATTACH|DETACH|BACKUP|RESTORE|SYSTEM|CHECK|GRANT|REVOKE)\b/i
-  return sqlKeywords.test(text)
+  const trimmed = text.trim()
+  const startsWithSql =
+    /^(SELECT|INSERT|CREATE|ALTER|DROP|UPDATE|DELETE|WITH|SHOW|DESCRIBE|EXPLAIN|TRUNCATE|OPTIMIZE|ATTACH|DETACH|BACKUP|RESTORE|SYSTEM|CHECK|GRANT|REVOKE)\b/i
+  const hasSelectFrom = /\bSELECT\b[\s\S]+\bFROM\b/i
+
+  return startsWithSql.test(trimmed) || hasSelectFrom.test(trimmed)
 }
 
 function looksLikeJson(text: string): boolean {
@@ -69,11 +81,11 @@ function looksLikeJson(text: string): boolean {
   )
 }
 
-function detectLanguage(value: string, forceJson?: boolean): string {
+function detectLanguage(value: string, forceJson?: boolean): CodeLanguage {
   if (forceJson) return 'json'
   if (looksLikeSql(value)) return 'sql'
   if (looksLikeJson(value)) return 'json'
-  return 'sql'
+  return 'plaintext'
 }
 
 function escapeHtml(text: string): string {
@@ -123,6 +135,7 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
 }: CodeDialogFormatProps): React.ReactNode {
   const truncate_length = options?.max_truncate || CODE_TRUNCATE_LENGTH
   const beautifyId = useId()
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [open, setOpen] = useState(false)
   const [isBeautified, setIsBeautified] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -132,10 +145,21 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
     [value, options?.json]
   )
   const dialogTitle =
-    options?.dialog_title ?? (language === 'json' ? 'JSON content' : 'SQL code')
+    options?.dialog_title ??
+    (language === 'json'
+      ? 'JSON content'
+      : language === 'sql'
+        ? 'SQL code'
+        : 'Code content')
   const dialogDescription =
     options?.dialog_description ||
     'Code content dialog with syntax highlighting and copy controls'
+  const languageLabel =
+    language === 'sql'
+      ? 'ClickHouse SQL'
+      : language === 'json'
+        ? 'JSON'
+        : 'Plain text'
 
   const formatted = useMemo(() => {
     return formatQuery({
@@ -164,6 +188,7 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
 
     return result
   }, [open, value, isBeautified, language])
+  const lineCount = contentLineCount(content)
 
   const highlightedHtml = useMemo(() => {
     if (!(open && content)) return ''
@@ -174,13 +199,26 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
     }
   }, [open, content, language])
 
-  const handleOpenChange = useCallback((nextOpen: boolean) => {
-    setOpen(nextOpen)
-    if (nextOpen) {
-      setCopied(false)
-      setIsBeautified(getInitialBeautifyState())
+  const clearCopyTimer = useCallback(() => {
+    if (copyTimerRef.current) {
+      clearTimeout(copyTimerRef.current)
+      copyTimerRef.current = null
     }
   }, [])
+
+  useEffect(() => clearCopyTimer, [clearCopyTimer])
+
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      setOpen(nextOpen)
+      clearCopyTimer()
+      if (nextOpen) {
+        setCopied(false)
+        setIsBeautified(getInitialBeautifyState())
+      }
+    },
+    [clearCopyTimer]
+  )
 
   const handleBeautifyToggle = useCallback((checked: boolean) => {
     setIsBeautified(checked)
@@ -189,14 +227,20 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
 
   const handleCopy = useCallback(async () => {
     try {
-      if (!navigator?.clipboard?.writeText) return
+      if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+        return
+      }
       await navigator.clipboard.writeText(content)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      clearCopyTimer()
+      copyTimerRef.current = setTimeout(() => {
+        setCopied(false)
+        copyTimerRef.current = null
+      }, 2000)
     } catch {
       /* noop */
     }
-  }, [content])
+  }, [clearCopyTimer, content])
 
   if (formatted.length < truncate_length) {
     return (
@@ -288,7 +332,7 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
         <div className="relative group/code">
           <ScrollArea className="h-[min(70vh,720px)] rounded-md border bg-muted/40">
             <div
-              className="overflow-auto [&_code]:break-words [&_pre]:whitespace-pre-wrap [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400"
+              className="[&_code]:break-words [&_pre]:whitespace-pre-wrap [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400"
               dangerouslySetInnerHTML={{ __html: highlightedHtml }}
             />
           </ScrollArea>
@@ -298,20 +342,20 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
               variant="secondary"
               className="bg-background/80 font-mono text-[10px]"
             >
-              {language.toUpperCase()}
+              {language === 'plaintext' ? 'TEXT' : language.toUpperCase()}
             </Badge>
           </div>
         </div>
 
         <div className="flex items-center justify-between text-[10px] text-muted-foreground px-0.5">
-          <span className="font-medium">
-            {language === 'sql' ? 'ClickHouse SQL' : language.toUpperCase()}
-          </span>
-          <span className="tabular-nums">
-            {content.split('\n').length} lines
-          </span>
+          <span className="font-medium">{languageLabel}</span>
+          <span className="tabular-nums">{lineCount} lines</span>
         </div>
       </DialogContent>
     </Dialog>
   )
 })
+
+function contentLineCount(content: string): number {
+  return content ? content.split('\n').length : 0
+}
