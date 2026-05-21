@@ -387,7 +387,7 @@ export function DataTable<
     onColumnVisibilityChange: setColumnVisibility,
     // Column resizing
     enableColumnResizing: true,
-    columnResizeMode: 'onChange',
+    columnResizeMode: 'onEnd',
     onColumnSizingChange: setColumnSizing,
     // Column reordering
     onColumnOrderChange: handleColumnOrderChange,
