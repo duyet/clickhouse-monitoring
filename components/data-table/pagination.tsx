@@ -82,11 +82,11 @@ export function DataTablePagination({ table }: DataTablePaginationProps) {
     <div
       aria-label="Pagination"
       className={cn(
-        'flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-6 lg:gap-8',
+        'w-full flex-col items-center gap-3 sm:w-auto sm:flex-row sm:gap-6 lg:gap-8',
         table.getCanPreviousPage() || table.getCanNextPage() ? 'flex' : 'hidden'
       )}
     >
-      <div className="flex items-center justify-between gap-2 sm:justify-start">
+      <div className="flex items-center gap-2">
         <p className="hidden sm:block text-sm font-medium">Rows per page</p>
         <Select
           value={`${table.getState().pagination.pageSize}`}
@@ -106,7 +106,7 @@ export function DataTablePagination({ table }: DataTablePaginationProps) {
         </Select>
       </div>
       <PaginationInfo table={table} />
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center gap-2">
         <Button
           variant="outline"
           className="hidden size-10 sm:size-8 p-0 lg:flex"
