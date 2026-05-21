@@ -3,24 +3,22 @@ import type { VisibilityState } from '@tanstack/react-table'
 import { useMemo, useState } from 'react'
 
 interface UseColumnVisibilityOptions {
-  allColumns: string[]
   configuredColumns: string[]
 }
 
 export function useColumnVisibility({
-  allColumns,
   configuredColumns,
 }: UseColumnVisibilityOptions) {
   const initialColumnVisibility = useMemo(
     () =>
-      allColumns.reduce(
+      configuredColumns.reduce(
         (state, col) => ({
           ...state,
-          [col]: configuredColumns.includes(col),
+          [col]: true,
         }),
         {} as VisibilityState
       ),
-    [allColumns, configuredColumns]
+    [configuredColumns]
   )
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(

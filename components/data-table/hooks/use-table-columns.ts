@@ -8,18 +8,15 @@ import {
   normalizeColumnName,
 } from '../column-defs'
 import { useMemo } from 'react'
-import { uniq } from '@/lib/utils'
 
 interface UseTableColumnsOptions<TData extends RowData, _TValue> {
   queryConfig: QueryConfig
-  data: TData[]
   context: Record<string, string>
   filteredData: TData[]
   filterContext?: ColumnFilterContext
 }
 
 interface UseTableColumnsReturn<TData extends RowData, TValue> {
-  allColumns: string[]
   configuredColumns: string[]
   contextWithPrefix: Record<string, string>
   columnDefs: ColumnDef<TData, TValue>[]
@@ -31,7 +28,6 @@ export function useTableColumns<
   TValue extends React.ReactNode,
 >({
   queryConfig,
-  data,
   context,
   filteredData,
   filterContext,
@@ -39,17 +35,6 @@ export function useTableColumns<
   TData,
   TValue
 > {
-  // Columns available in the data, normalized (memoized to prevent recalculation)
-  const allColumns: string[] = useMemo(
-    () =>
-      uniq(
-        (data.filter((row) => typeof row === 'object') as object[])
-          .flatMap((row) => Object.keys(row))
-          .map(normalizeColumnName)
-      ),
-    [data]
-  )
-
   // Configured columns available, normalized
   const configuredColumns = useMemo(
     () => queryConfig.columns.map(normalizeColumnName),
@@ -84,18 +69,17 @@ export function useTableColumns<
   // Initial column visibility state
   const initialColumnVisibility: VisibilityState = useMemo(
     () =>
-      allColumns.reduce(
+      configuredColumns.reduce(
         (state, col) => ({
           ...state,
-          [col]: configuredColumns.includes(col),
+          [col]: true,
         }),
         {} as VisibilityState
       ),
-    [allColumns, configuredColumns]
+    [configuredColumns]
   )
 
   return {
-    allColumns,
     configuredColumns,
     contextWithPrefix,
     columnDefs,

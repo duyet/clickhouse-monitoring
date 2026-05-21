@@ -224,12 +224,11 @@ export function DataTable<
   )
 
   // Column calculations and definitions
-  const { allColumns, columnDefs, initialColumnVisibility } = useTableColumns<
+  const { columnDefs, initialColumnVisibility } = useTableColumns<
     TData,
     TValue
   >({
     queryConfig,
-    data,
     context,
     filteredData,
     filterContext,
@@ -237,7 +236,6 @@ export function DataTable<
 
   // Column visibility
   const { columnVisibility, setColumnVisibility } = useColumnVisibility({
-    allColumns,
     configuredColumns,
   })
 
