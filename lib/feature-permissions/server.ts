@@ -3,10 +3,8 @@ import type {
   FeatureOverride,
   FeatureOverrides,
   FeaturePermission,
-  FeatureState,
   Principal,
   PublicFeaturePermissionConfig,
-  ResolvedFeatureStates,
 } from './types'
 
 import {
