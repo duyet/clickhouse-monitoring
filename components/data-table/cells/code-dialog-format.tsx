@@ -1,3 +1,5 @@
+'use client'
+
 import { SizeIcon } from '@radix-ui/react-icons'
 import { Check, Copy, ExternalLinkIcon, SparklesIcon } from 'lucide-react'
 
