@@ -6,6 +6,7 @@
  */
 
 import type { SqlFragment, WindowOptions } from './types'
+
 import { RawSql } from './raw'
 
 /**

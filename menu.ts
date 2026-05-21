@@ -52,7 +52,7 @@ export const menuItemsConfig: MenuItem[] = [
     icon: SparklesIcon,
     section: 'main',
     isNew: true,
-    permission: { feature: 'agent', defaultAccess: 'authenticated' },
+    permission: { feature: 'agent' },
   },
   {
     title: 'Insights',

@@ -118,11 +118,7 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   const parsedOffset = parseInt(offset, 10)
-  if (
-    Number.isNaN(parsedOffset) ||
-    parsedOffset < 0 ||
-    parsedOffset > 10000
-  ) {
+  if (Number.isNaN(parsedOffset) || parsedOffset < 0 || parsedOffset > 10000) {
     return createApiErrorResponse(
       {
         type: ApiErrorType.ValidationError,
