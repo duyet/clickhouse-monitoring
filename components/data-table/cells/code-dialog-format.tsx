@@ -1,19 +1,22 @@
-import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { SizeIcon } from '@radix-ui/react-icons'
 import { Check, Copy, ExternalLinkIcon, SparklesIcon } from 'lucide-react'
 
 import dedent from 'dedent'
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useId, useMemo, useState } from 'react'
 import { format } from 'sql-formatter'
 import { highlightCode } from '@/components/ai-elements/code-block'
 import { AppLink as Link } from '@/components/ui/app-link'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Switch } from '@/components/ui/switch'
 import { buildExplorerQueryUrl } from '@/lib/explorer-url'
@@ -66,11 +69,19 @@ function looksLikeJson(text: string): boolean {
   )
 }
 
-function detectLanguage(value: string, options?: CodeDialogOptions): string {
-  if (options?.json) return 'json'
+function detectLanguage(value: string, forceJson?: boolean): string {
+  if (forceJson) return 'json'
   if (looksLikeSql(value)) return 'sql'
   if (looksLikeJson(value)) return 'json'
   return 'sql'
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 function formatSQL(sql: string): string {
@@ -111,13 +122,20 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
   options,
 }: CodeDialogFormatProps): React.ReactNode {
   const truncate_length = options?.max_truncate || CODE_TRUNCATE_LENGTH
-  const [isBeautified, setIsBeautified] = useState(getInitialBeautifyState)
+  const beautifyId = useId()
+  const [open, setOpen] = useState(false)
+  const [isBeautified, setIsBeautified] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const language = useMemo(
-    () => detectLanguage(value, options),
-    [value, options]
+    () => detectLanguage(value, options?.json),
+    [value, options?.json]
   )
+  const dialogTitle =
+    options?.dialog_title ?? (language === 'json' ? 'JSON content' : 'SQL code')
+  const dialogDescription =
+    options?.dialog_description ||
+    'Code content dialog with syntax highlighting and copy controls'
 
   const formatted = useMemo(() => {
     return formatQuery({
@@ -128,9 +146,11 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
   }, [value, options?.hide_query_comment, truncate_length])
 
   const content = useMemo(() => {
+    if (!open) return ''
+
     let result = value
 
-    if (options?.json) {
+    if (language === 'json') {
       try {
         const json = JSON.parse(value)
         result = JSON.stringify(json, null, 2)
@@ -143,16 +163,24 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
     }
 
     return result
-  }, [value, options?.json, isBeautified, language])
+  }, [open, value, isBeautified, language])
 
   const highlightedHtml = useMemo(() => {
-    if (!content) return ''
+    if (!(open && content)) return ''
     try {
       return highlightCode(content, language, false)
     } catch {
-      return `<pre class="m-0 bg-background! p-4 text-foreground! text-sm"><code class="font-mono text-sm">${content}</code></pre>`
+      return `<pre class="m-0 bg-background! p-4 text-foreground! text-sm"><code class="font-mono text-sm">${escapeHtml(dedent(content))}</code></pre>`
     }
-  }, [content, language])
+  }, [open, content, language])
+
+  const handleOpenChange = useCallback((nextOpen: boolean) => {
+    setOpen(nextOpen)
+    if (nextOpen) {
+      setCopied(false)
+      setIsBeautified(getInitialBeautifyState())
+    }
+  }, [])
 
   const handleBeautifyToggle = useCallback((checked: boolean) => {
     setIsBeautified(checked)
@@ -161,6 +189,7 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
 
   const handleCopy = useCallback(async () => {
     try {
+      if (!navigator?.clipboard?.writeText) return
       await navigator.clipboard.writeText(content)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
@@ -182,86 +211,95 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <div
+        <Button
+          type="button"
+          variant="ghost"
           className={cn(
-            'flex max-w-fit cursor-pointer flex-row items-center gap-1.5 line-clamp-1 group/cell',
+            'group/cell h-auto max-w-full justify-start gap-1.5 p-0 text-left font-normal hover:bg-transparent',
             options?.trigger_classname
           )}
         >
-          <code className="font-mono text-xs whitespace-nowrap truncated text-muted-foreground group-hover/cell:text-foreground transition-colors">
+          <code className="min-w-0 truncate font-mono text-xs text-muted-foreground transition-colors group-hover/cell:text-foreground truncated">
             {formatted}
           </code>
-          <SizeIcon className="size-3.5 flex-none shrink-0 text-muted-foreground/60 group-hover/cell:text-muted-foreground transition-colors" />
-        </div>
+          <SizeIcon className="shrink-0 text-muted-foreground/60 transition-colors group-hover/cell:text-muted-foreground" />
+        </Button>
       </DialogTrigger>
       <DialogContent
         className={cn(
-          'max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] min-w-80',
+          'w-[min(95vw,1100px)] min-w-0 max-w-none p-4 sm:p-6',
           options?.dialog_classname
         )}
-        aria-describedby={options?.dialog_description}
       >
         <DialogHeader>
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <DialogTitle className="text-base">
-                {options?.dialog_title}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex min-w-0 items-center gap-2">
+              <DialogTitle className="truncate text-base">
+                {dialogTitle}
               </DialogTitle>
               {(options?.show_explorer_link ||
                 options?.dialog_title === 'Running Query') && (
                 <ExplorerLink query={value} />
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
               {language === 'sql' && (
-                <div className="flex items-center gap-1.5">
-                  <SparklesIcon className="size-3 text-muted-foreground" />
+                <Label
+                  htmlFor={beautifyId}
+                  className="gap-1.5 text-xs text-muted-foreground"
+                >
+                  <SparklesIcon data-icon="inline-start" />
                   <span className="text-xs text-muted-foreground">
                     Beautify
                   </span>
                   <Switch
+                    id={beautifyId}
                     checked={isBeautified}
                     onCheckedChange={handleBeautifyToggle}
                     aria-label="Toggle SQL beautification"
                     className="scale-75"
                   />
-                </div>
+                </Label>
               )}
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 gap-1 text-xs text-muted-foreground px-2"
+                className="h-6 px-2 text-xs text-muted-foreground"
                 onClick={handleCopy}
               >
                 {copied ? (
-                  <Check className="size-3" strokeWidth={1.5} />
+                  <Check data-icon="inline-start" />
                 ) : (
-                  <Copy className="size-3" strokeWidth={1.5} />
+                  <Copy data-icon="inline-start" />
                 )}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
             </div>
           </div>
-          <DialogDescription className="sr-only">
-            {options?.dialog_description ||
-              'Code content dialog with syntax highlighting'}
+          <DialogDescription
+            className={cn(!options?.dialog_description && 'sr-only')}
+          >
+            {dialogDescription}
           </DialogDescription>
         </DialogHeader>
 
         <div className="relative group/code">
-          <ScrollArea className="max-h-[70vh] rounded-lg border border-border/60 bg-muted/40">
+          <ScrollArea className="h-[min(70vh,720px)] rounded-md border bg-muted/40">
             <div
-              className="overflow-auto [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400"
+              className="overflow-auto [&_code]:break-words [&_pre]:whitespace-pre-wrap [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400"
               dangerouslySetInnerHTML={{ __html: highlightedHtml }}
             />
           </ScrollArea>
 
           <div className="absolute top-2 right-2 flex items-center gap-2 opacity-0 group-hover/code:opacity-100 transition-opacity">
-            <span className="text-[10px] text-muted-foreground bg-background/80 px-1.5 py-0.5 rounded">
+            <Badge
+              variant="secondary"
+              className="bg-background/80 font-mono text-[10px]"
+            >
               {language.toUpperCase()}
-            </span>
+            </Badge>
           </div>
         </div>
 
