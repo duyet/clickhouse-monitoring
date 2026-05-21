@@ -19,6 +19,7 @@ import type { QueryConfig } from '@/types/query-config'
 
 import { arrayMove } from '@dnd-kit/sortable'
 import { useCallback, useMemo, useState } from 'react'
+import { normalizeColumnName } from '@/components/data-table/column-defs'
 import {
   DataTableContent,
   DataTableFooter,
@@ -169,10 +170,7 @@ export function DataTable<
 
   // Determine which columns should be filterable (memoized)
   const configuredColumns = useMemo(
-    () =>
-      queryConfig.columns.map((col) =>
-        col.toLowerCase().replace('readable_', '').trim()
-      ),
+    () => queryConfig.columns.map(normalizeColumnName),
     [queryConfig.columns]
   )
 
@@ -224,10 +222,7 @@ export function DataTable<
   )
 
   // Column calculations and definitions
-  const { columnDefs, initialColumnVisibility } = useTableColumns<
-    TData,
-    TValue
-  >({
+  const { columnDefs } = useTableColumns<TData, TValue>({
     queryConfig,
     context,
     filteredData,
@@ -235,9 +230,10 @@ export function DataTable<
   })
 
   // Column visibility
-  const { columnVisibility, setColumnVisibility } = useColumnVisibility({
-    configuredColumns,
-  })
+  const { columnVisibility, setColumnVisibility, initialColumnVisibility } =
+    useColumnVisibility({
+      configuredColumns,
+    })
 
   // Density mode with localStorage persistence
   const { density, setDensity, cellClassName } = useTableDensity(

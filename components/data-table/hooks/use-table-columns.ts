@@ -1,12 +1,8 @@
-import type { ColumnDef, RowData, VisibilityState } from '@tanstack/react-table'
+import type { ColumnDef, RowData } from '@tanstack/react-table'
 
 import type { QueryConfig } from '@/types/query-config'
 
-import {
-  type ColumnFilterContext,
-  getColumnDefs,
-  normalizeColumnName,
-} from '../column-defs'
+import { type ColumnFilterContext, getColumnDefs } from '../column-defs'
 import { useMemo } from 'react'
 
 interface UseTableColumnsOptions<TData extends RowData, _TValue> {
@@ -17,10 +13,8 @@ interface UseTableColumnsOptions<TData extends RowData, _TValue> {
 }
 
 interface UseTableColumnsReturn<TData extends RowData, TValue> {
-  configuredColumns: string[]
   contextWithPrefix: Record<string, string>
   columnDefs: ColumnDef<TData, TValue>[]
-  initialColumnVisibility: VisibilityState
 }
 
 export function useTableColumns<
@@ -35,12 +29,6 @@ export function useTableColumns<
   TData,
   TValue
 > {
-  // Configured columns available, normalized
-  const configuredColumns = useMemo(
-    () => queryConfig.columns.map(normalizeColumnName),
-    [queryConfig.columns]
-  )
-
   // Add `ctx.` prefix to all keys (memoized to prevent recalculation)
   const contextWithPrefix = useMemo(
     () =>
@@ -66,23 +54,8 @@ export function useTableColumns<
     [queryConfig, filteredData, contextWithPrefix, filterContext]
   )
 
-  // Initial column visibility state
-  const initialColumnVisibility: VisibilityState = useMemo(
-    () =>
-      configuredColumns.reduce(
-        (state, col) => ({
-          ...state,
-          [col]: true,
-        }),
-        {} as VisibilityState
-      ),
-    [configuredColumns]
-  )
-
   return {
-    configuredColumns,
     contextWithPrefix,
     columnDefs,
-    initialColumnVisibility,
   }
 }

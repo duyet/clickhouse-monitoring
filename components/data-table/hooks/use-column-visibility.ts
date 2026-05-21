@@ -6,18 +6,17 @@ interface UseColumnVisibilityOptions {
   configuredColumns: string[]
 }
 
+function createVisibleColumnState(columns: string[]): VisibilityState {
+  return Object.fromEntries(
+    columns.map((col) => [col, true])
+  ) as VisibilityState
+}
+
 export function useColumnVisibility({
   configuredColumns,
 }: UseColumnVisibilityOptions) {
   const initialColumnVisibility = useMemo(
-    () =>
-      configuredColumns.reduce(
-        (state, col) => ({
-          ...state,
-          [col]: true,
-        }),
-        {} as VisibilityState
-      ),
+    () => createVisibleColumnState(configuredColumns),
     [configuredColumns]
   )
 
