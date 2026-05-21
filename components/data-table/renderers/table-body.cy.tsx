@@ -95,6 +95,21 @@ describe('TableBody Components', () => {
 
       cy.get('tr').should('have.attr', 'data-state', 'selected')
     })
+
+    it('allows standard cells to wrap long content', () => {
+      cy.mount(
+        <table>
+          <tbody>
+            <StandardTableRow row={mockRow as any} index={0} />
+          </tbody>
+        </table>
+      )
+
+      cy.get('td')
+        .first()
+        .should('have.class', 'break-words')
+        .and('not.have.class', 'whitespace-nowrap')
+    })
   })
 
   describe('VirtualizedTableRow', () => {
@@ -128,6 +143,23 @@ describe('TableBody Components', () => {
       )
 
       cy.get('tr').should('have.class', 'odd:bg-muted/30')
+    })
+
+    it('keeps virtualized cells non-wrapping for stable row heights', () => {
+      const virtualRow = { index: 0, size: 50, start: 0 }
+
+      cy.mount(
+        <table>
+          <tbody>
+            <VirtualizedTableRow row={mockRow as any} virtualRow={virtualRow} />
+          </tbody>
+        </table>
+      )
+
+      cy.get('td')
+        .first()
+        .should('have.class', 'whitespace-nowrap')
+        .and('not.have.class', 'break-words')
     })
   })
 
