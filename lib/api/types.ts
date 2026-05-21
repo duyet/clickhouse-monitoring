@@ -115,6 +115,14 @@ export interface ApiResponseMetadata {
   readonly params?: Record<string, unknown> | null
   /** IANA timezone used for ClickHouse session (e.g., "America/Los_Angeles", "UTC") */
   readonly timezone?: string
+  /** Maximum number of table rows the API asks ClickHouse to return */
+  readonly resultRowLimit?: number
+  /** ClickHouse overflow mode used when the result row limit is reached */
+  readonly resultOverflowMode?: string
+  /** Raw rows received from ClickHouse before the API response cap was applied */
+  readonly resultRowsBeforeCap?: number
+  /** Whether the API response data was trimmed to resultRowLimit */
+  readonly resultRowsTruncated?: boolean
 }
 
 /**
