@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { DocsMarkdown } from '../_components/docs-markdown'
+import { docsContent } from '../_lib/content.generated'
 import {
   type DocsHeading,
   type DocsPage as DocsPageData,
@@ -20,11 +21,9 @@ type DocsPageProps = {
 export const dynamicParams = false
 
 export function generateStaticParams() {
-  return docsNav.flatMap((section) =>
-    section.items.map((item) => ({
-      slug: item.slug ? item.slug.split('/') : [''],
-    }))
-  )
+  return Object.keys(docsContent).map((slug) => ({
+    slug: slug ? slug.split('/') : [''],
+  }))
 }
 
 export async function generateMetadata({
