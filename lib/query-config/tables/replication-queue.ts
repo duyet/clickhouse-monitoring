@@ -4,6 +4,7 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const replicationQueueConfig: QueryConfig = {
   name: 'replication-queue',
+  refreshInterval: 30_000,
   description: `Contains information about tasks from replication queues stored in ClickHouse Keeper, or ZooKeeper, for tables in the ReplicatedMergeTree family`,
   tableCheck: 'system.replication_queue',
   sql: `

@@ -71,13 +71,14 @@ export const TableClient = memo(function TableClient({
   enableRowSelection = false,
 }: TableClientProps) {
   const hostId = useHostId()
+  const refreshInterval = queryConfig.refreshInterval ?? 0
 
   const { data, metadata, error, isLoading, isValidating, refresh } =
     useTableData<Record<string, unknown>>(
       queryConfig.name,
       hostId,
       searchParams,
-      30000
+      refreshInterval
     )
 
   // Show skeleton during initial load OR if validating with no existing data

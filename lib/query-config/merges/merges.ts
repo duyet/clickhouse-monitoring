@@ -4,6 +4,7 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const mergesConfig: QueryConfig = {
   name: 'merges',
+  refreshInterval: 30_000,
   description:
     'Merges and part mutations currently in process for tables in the MergeTree family',
   sql: `

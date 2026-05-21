@@ -15,6 +15,17 @@ function mockTableResponse(body: unknown, statusCode = 200) {
   ).as('fetchTableData')
 }
 
+function mockCountingTableResponse(body: unknown) {
+  let requestCount = 0
+
+  cy.intercept({ method: 'GET', url: '/api/v1/tables/test-tables*' }, (req) => {
+    requestCount += 1
+    req.reply({ statusCode: 200, body })
+  }).as('fetchTableData')
+
+  return () => requestCount
+}
+
 describe('<TableClient />', () => {
   it('renders data table after data loads', () => {
     mockTableResponse({
@@ -107,5 +118,57 @@ describe('<TableClient />', () => {
 
     cy.wait('@fetchTableData')
     cy.contains('All tables in the cluster').should('be.visible')
+  })
+
+  it('does not poll table data by default', () => {
+    cy.clock()
+    const getRequestCount = mockCountingTableResponse({
+      data: [
+        { name: 'users', database: 'default', engine: 'MergeTree', rows: 1000 },
+      ],
+      metadata: {
+        queryId: 'test-query-id',
+        duration: 0.1,
+        rows: 1,
+        host: 'localhost',
+      },
+    })
+
+    cy.mount(<TableClient title="Test Tables" queryConfig={mockQueryConfig} />)
+
+    cy.wait('@fetchTableData')
+    cy.tick(31_000)
+    cy.then(() => {
+      expect(getRequestCount()).to.eq(1)
+    })
+  })
+
+  it('polls table data when the query config opts in', () => {
+    cy.clock()
+    const getRequestCount = mockCountingTableResponse({
+      data: [
+        { name: 'users', database: 'default', engine: 'MergeTree', rows: 1000 },
+      ],
+      metadata: {
+        queryId: 'test-query-id',
+        duration: 0.1,
+        rows: 1,
+        host: 'localhost',
+      },
+    })
+
+    cy.mount(
+      <TableClient
+        title="Test Tables"
+        queryConfig={{ ...mockQueryConfig, refreshInterval: 30_000 }}
+      />
+    )
+
+    cy.wait('@fetchTableData')
+    cy.tick(31_000)
+    cy.wait('@fetchTableData')
+    cy.then(() => {
+      expect(getRequestCount()).to.eq(2)
+    })
   })
 })

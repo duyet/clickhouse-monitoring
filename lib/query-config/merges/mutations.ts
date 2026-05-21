@@ -9,6 +9,7 @@ export const LONG_RUNNING_THRESHOLD_SECONDS = 300
 
 export const mutationsConfig: QueryConfig = {
   name: 'mutations',
+  refreshInterval: 30_000,
   description:
     'Information about mutations of MergeTree tables and their progress',
   sql: `
