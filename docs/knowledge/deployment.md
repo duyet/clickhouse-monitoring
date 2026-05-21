@@ -27,6 +27,39 @@ Dual deployment support: Docker and Cloudflare Workers from the same codebase.
 
 Both use `next build` with `output: 'standalone'` in `next.config.ts`.
 
+## Unified Cloudflare Deploy (CI + Local)
+
+The same script deploys from both CI and local:
+
+```bash
+bun run cf:deploy
+```
+
+This runs `scripts/cloudflare-deploy.ts` which executes:
+
+1. `bun run cf:build` — Next.js build + OpenNext transform
+2. `wrangler deploy --minify` — Deploy to Workers
+3. `opennextjs-cloudflare populateCache remote` — Populate KV cache
+
+**Auth priority**:
+1. `CLOUDFLARE_API_TOKEN` env var (set in `.env.prod` or CI secrets)
+2. `wrangler login` OAuth (localhost fallback)
+
+### Step-by-step (equivalent to CI)
+
+```bash
+bun run cf:config    # Set secrets from .env.prod
+bun run cf:build     # Build + OpenNext transform
+wrangler deploy --minify
+opennextjs-cloudflare populateCache remote
+```
+
+### CI
+
+Production deploys on push to `main` via `.github/workflows/cloudflare.yml`. It uses
+the same `bun run cf:build` command and the same env var names — secrets come
+from GitHub Secrets instead of local files.
+
 ## Docker
 
 ```bash
@@ -63,22 +96,7 @@ docker run -d -p 3000:3000 \
 bun run docker:health
 ```
 
-## Cloudflare Workers
-
-```bash
-# Login
-npx wrangler login
-
-# Full deploy (config + build + deploy)
-bun run cf:deploy
-
-# Or step by step
-bun run cf:config    # Set secrets from .env.local
-bun run cf:build     # Build + OpenNext transform
-wrangler deploy      # Deploy
-```
-
-### Environment Configuration
+## Cloudflare Environment Configuration
 
 **Non-sensitive** (`wrangler.toml` `[vars]`):
 ```toml
@@ -88,10 +106,9 @@ CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
 ```
 
-**Secrets** (via Wrangler):
+**Secrets** (set via `bun run cf:config` or manually):
 ```bash
 wrangler secret put CLICKHOUSE_PASSWORD
-# Or batch: bun run cf:config
 ```
 
 ### Cloudflare Resources

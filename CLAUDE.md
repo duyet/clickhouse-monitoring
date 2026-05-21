@@ -116,37 +116,60 @@ When the user says **"remember"** something — write it to `docs/knowledge/`, n
 
 ### Deployment
 
-#### Dual Deployment Support
+#### Unified Deploy Script (CI + Local)
 
-This application supports **two production-ready deployment options**. Both use the same codebase—choose based on your infrastructure preferences:
+The same deploy command works in both CI and local environments:
 
-**Docker Deployment**
-- Best for: Self-hosted environments, on-premises deployments, VPS hosting
-- Advantages: Full control over the runtime, traditional server environment, easier debugging
-- Use when: You have existing Docker infrastructure or need complete control
+```bash
+bun run cf:deploy
+```
 
-**Cloudflare Workers Deployment**
-- Best for: Serverless deployments, global edge distribution, zero-ops maintenance
-- Advantages: Automatic global CDN, built-in DDoS protection, pay-per-use pricing
-- Use when: You want global edge performance without managing servers
+This runs the unified script `scripts/cloudflare-deploy.ts` which executes:
 
-Both deployment methods provide:
-- Static site generation with the same build output
-- Client-side data fetching via SWR
-- Multi-host ClickHouse monitoring support
-- Environment variable configuration for secrets
+1. `bun run cf:build` — Next.js build + OpenNext transform
+2. `wrangler deploy --minify` — Deploy to Workers
+3. `opennextjs-cloudflare populateCache remote` — Populate KV cache
 
-**Cloudflare Workers Commands**:
+**Auth**: Set `CLOUDFLARE_API_TOKEN` in your environment (CI secrets or `.env.prod`).
+Falls back to `wrangler login` OAuth for local development.
 
-- `bun run cf:deploy` - Deploy to Cloudflare Workers (builds, sets secrets, deploys)
-- `bun run cf:build` - Build for Cloudflare (Next.js build + OpenNext)
-- `bun run cf:preview` - Preview Cloudflare deployment locally
-- `bun run cf:config` - Set Cloudflare secrets from .env.local
+#### Cloudflare Workers Commands
 
-**Deployment steps:**
-1. Ensure `.env.local` has required secrets (CLICKHOUSE_HOST, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD)
-2. Run `bun run cf:deploy` (this runs cf:config → cf:build → wrangler deploy)
-3. If build lock error occurs, remove `.next/lock` and retry
+- `bun run cf:deploy` — Unified deploy (build → deploy → populate cache)
+- `bun run cf:build` — Build for Cloudflare (Next.js build + OpenNext)
+- `bun run cf:preview` — Preview Cloudflare deployment locally
+- `bun run cf:config` — Set Cloudflare secrets from `.env.prod` or `.env.local`
+- `bun run cf:typegen` — Regenerate Cloudflare environment typings
+- `bun run cf:setup-conversations` — Provision D1 database for conversations
+- `bun run cf:migrate-conversations` — Apply conversation DB migrations (remote)
+- `bun run cf:migrate-conversations:local` — Apply conversation DB migrations (local)
+
+#### Docker Deployment
+
+- `docker compose up -d` — Quick start
+- `bun run docker:health` — Check Docker health
+
+#### Prerequisites
+
+Both environments need these env vars (set via `.env.prod`, `.env.local`, or CI secrets):
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `CLOUDFLARE_API_TOKEN` | For deploy | Cloudflare API token (recommended over OAuth) |
+| `CLICKHOUSE_HOST` | Yes | ClickHouse URL |
+| `CLICKHOUSE_USER` | Yes | ClickHouse username |
+| `CLICKHOUSE_PASSWORD` | Yes | ClickHouse password |
+
+Optional: `CLERK_SECRET_KEY`, LLM API keys, `CLICKHOUSE_TZ`, etc.
+
+#### CI Environment (GitHub Actions)
+
+Production deploys happen on push to `main`. The CI workflow in
+`.github/workflows/cloudflare.yml` uses the same `bun run cf:build` command
+and the same env var names — just sourced from GitHub Secrets instead of
+local files.
+
+Build lock errors: remove `.next/lock` and retry.
 
 ### Additional Workflows
 

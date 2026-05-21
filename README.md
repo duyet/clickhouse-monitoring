@@ -97,11 +97,20 @@ without auth.
 
 3. Deploy to Cloudflare Workers:
 ```bash
-# Login to Cloudflare
-npx wrangler login
+# Set CLOUDFLARE_API_TOKEN in .env.prod or export it
+# OR use OAuth: npx wrangler login
 
-# Set secrets and deploy
+# Unified deploy (config, build, deploy, cache — same as CI)
 bun run cf:deploy
+```
+
+**Manual Deployment Steps:**
+```bash
+# Step by step (same as CI)
+bun run cf:config      # Set secrets from .env.prod
+bun run cf:build       # Next.js build + OpenNext
+wrangler deploy --minify
+opennextjs-cloudflare populateCache remote
 ```
 
 **Important Notes:**
@@ -110,18 +119,6 @@ bun run cf:deploy
 - Static pages are pre-rendered at edge for optimal performance
 - API routes run on Workers using Fetch API
 - Supports multi-host monitoring with query parameter routing (`?host=0`)
-
-**Manual Deployment Steps:**
-```bash
-# Set secrets manually
-bun run cf:config
-
-# Build with webpack
-bun run cf:build
-
-# Deploy
-wrangler deploy
-```
 
 ### Docker
 
