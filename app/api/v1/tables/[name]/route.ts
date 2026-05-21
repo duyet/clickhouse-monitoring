@@ -13,6 +13,12 @@ import {
   type RouteContext,
 } from '@/lib/api/error-handler'
 import {
+  capTableResultRows,
+  getTableClickHouseSettings,
+  type TableClickHouseSettings,
+  type TableResultRowCap,
+} from '@/lib/api/table-query-settings'
+import {
   getAvailableTables,
   getTableConfig,
   getTableQuery,
@@ -99,14 +105,15 @@ export async function GET(
     )
   }
 
+  const clickhouseSettings = getTableClickHouseSettings(config, timezone)
+
   // Execute the query - always pass the full config for version selection
   const result = await fetchData({
     query: queryDef.query,
     query_params: queryDef.queryParams,
     hostId,
     format: 'JSONEachRow',
-    // Pass timezone to ClickHouse for session-level time conversion
-    clickhouse_settings: timezone ? { session_timezone: timezone } : undefined,
+    clickhouse_settings: clickhouseSettings,
     // Always pass queryConfig for version-aware SQL selection
     queryConfig: config,
   })
@@ -133,15 +140,22 @@ export async function GET(
     )
   }
 
+  const cappedResult = capTableResultRows(
+    result.data,
+    Number(clickhouseSettings.max_result_rows)
+  )
+
   // Create successful response with SQL and debug info
   return createSuccessResponse(
-    result.data,
+    cappedResult.data,
     result.metadata,
     queryDef.query,
     queryDef.queryParams,
     name,
     searchParams,
-    timezone
+    timezone,
+    clickhouseSettings,
+    cappedResult
   )
 }
 
@@ -172,7 +186,9 @@ function createSuccessResponse<T>(
   queryParams: Record<string, unknown> | undefined,
   tableName: string,
   searchParams: URLSearchParams,
-  timezone?: string
+  timezone: string | undefined,
+  clickhouseSettings: TableClickHouseSettings,
+  rowCap: TableResultRowCap<T>
 ): Response {
   // Build full API URL with query params
   const queryString = searchParams.toString()
@@ -184,7 +200,7 @@ function createSuccessResponse<T>(
     metadata: {
       queryId: String(metadata.queryId || ''),
       duration: Number(metadata.duration || 0),
-      rows: Number(metadata.rows || 0),
+      rows: rowCap.returnedRows ?? Number(metadata.rows || 0),
       host: String(metadata.host || ''),
       clickhouseVersion: String(metadata.clickhouseVersion || 'unknown'),
       // Full API endpoint URL with query params
@@ -198,6 +214,10 @@ function createSuccessResponse<T>(
       params: queryParams || null,
       // IANA timezone used for ClickHouse session
       timezone,
+      resultRowLimit: Number(clickhouseSettings.max_result_rows),
+      resultOverflowMode: String(clickhouseSettings.result_overflow_mode),
+      resultRowsBeforeCap: rowCap.truncated ? rowCap.sourceRows : undefined,
+      resultRowsTruncated: rowCap.truncated,
     },
   }
 
