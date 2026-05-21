@@ -122,6 +122,11 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   permission?: FeaturePermission
   description?: string
   /**
+   * Auto-refresh interval for table data in milliseconds.
+   * Leave unset to fetch once and rely on manual refresh.
+   */
+  refreshInterval?: number
+  /**
    * Helpful suggestion displayed in empty state when no data is available.
    * Shows below "No data" message with setup examples and documentation links.
    *

@@ -4,6 +4,7 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const replicasConfig: QueryConfig = {
   name: 'replicas',
+  refreshInterval: 30_000,
   description: `Contains information and status for replicated tables residing on the local server`,
   sql: `
       SELECT *, (database || '.' || table) as database_table

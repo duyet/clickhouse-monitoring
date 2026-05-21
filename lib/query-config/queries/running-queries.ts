@@ -4,6 +4,7 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const runningQueriesConfig: QueryConfig = {
   name: 'running-queries',
+  refreshInterval: 30_000,
   sql: `
     SELECT *,
       query_id as query_detail,
