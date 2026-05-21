@@ -2,14 +2,17 @@
 
 Feature permissions let each deployment hide or protect specific surfaces without changing the application code.
 
-By default, every feature is enabled and public:
+On self-hosted deployments without Clerk, every feature is public and enabled —
+no configuration needed. Just set your ClickHouse connection and the dashboard
+works. The defaults are:
 
-```toml
+```text
 enabled = true
-access = "public"
+access = "public"     (alias: "guest")
 ```
 
-Only configure features that need different behavior. Missing entries keep the default.
+Only configure features that need different behavior. Missing entries keep the
+default.
 
 ## Access Values
 

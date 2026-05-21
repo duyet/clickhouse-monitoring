@@ -92,6 +92,18 @@ export function isFeatureAllowed(
   return true
 }
 
+export function getResolvedFeatureStates(
+  config: Pick<PublicFeaturePermissionConfig, 'features'>
+): Record<FeatureId, FeatureState> {
+  const resolved: Record<string, FeatureState> = {}
+
+  for (const featureId of FEATURE_IDS) {
+    resolved[featureId] = resolveFeatureState({ feature: featureId }, config)
+  }
+
+  return resolved as Record<FeatureId, FeatureState>
+}
+
 export function mergeFeatureOverrides(
   base: FeatureOverrides,
   next: FeatureOverrides

@@ -1,0 +1,43 @@
+# ClickHouse Monitor — Feature Configuration
+#
+# Copy this file to /etc/clickhouse-monitor/config.toml and point
+# CHM_CONFIG_FILE at it. All features are public and enabled by
+# default — uncomment only what you need to override.
+#
+#   export CHM_CONFIG_FILE=/etc/clickhouse-monitor/config.toml
+
+# ── Auth Provider ──────────────────────────────────────────────────────────
+# Only needed when a feature is set to access = "authenticated".
+#
+# [auth]
+# provider = "clerk"
+
+# ── Feature Overrides ──────────────────────────────────────────────────────
+# Each feature supports: enabled (bool) and access ("public" | "guest" | "authenticated").
+# Uncomment to override the default (enabled=true, access="public").
+
+# [features.agent]
+# access = "authenticated"
+
+# [features.actions]
+# access = "authenticated"
+
+# [features.tables]
+# access = "authenticated"
+
+# [features.insights]
+# enabled = false
+
+# [features.metrics]
+# enabled = false
+
+# [features.settings]
+# access = "authenticated"
+
+# [features.mcp]
+# access = "authenticated"
+
+# ── All Supported Feature IDs ──────────────────────────────────────────────
+# overview | agent | insights | health | queries | tables
+# metrics | dashboard | security | logs | settings | cluster
+# operations | actions | mcp | docs | about

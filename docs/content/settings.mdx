@@ -32,30 +32,23 @@ Use a shorter cache TTL when you need fresher operational data. Use a longer
 TTL for shared dashboards where lower ClickHouse load matters more than
 second-by-second freshness.
 
-## Authentication
-
-Clerk authentication is optional. Public dashboards can run without it, but
-authentication is recommended for agent, MCP, settings, and control actions.
-
-```bash
-CHM_AUTH_PROVIDER=clerk
-NEXT_PUBLIC_AUTH_PROVIDER=clerk
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxx
-CLERK_SECRET_KEY=sk_live_xxx
-```
-
 ## Feature Permissions
 
-Use feature permissions to hide or protect surfaces without changing code.
+All features are public and enabled by default. You only need to configure
+features you want to restrict or disable.
 
 ```bash
+# Make agent require authentication
 CHM_FEATURE_AGENT_ACCESS=authenticated
-CHM_FEATURE_MCP_ACCESS=authenticated
-CHM_FEATURE_ACTIONS_ACCESS=authenticated
-CHM_FEATURE_SETTINGS_ACCESS=authenticated
+
+# Disable settings entirely
+CHM_FEATURE_SETTINGS_ENABLED=false
+
+# Require auth for multiple features at once
+CHM_AUTH_REQUIRED_FEATURES=agent,mcp,settings,actions
 ```
 
-You can also point the app at a TOML or YAML file:
+For complex setups, use a TOML or YAML config file:
 
 ```bash
 CHM_CONFIG_FILE=/etc/clickhouse-monitor/config.toml
@@ -66,10 +59,24 @@ CHM_CONFIG_FILE=/etc/clickhouse-monitor/config.toml
 access = "authenticated"
 
 [features.settings]
-access = "authenticated"
+enabled = false
 
 [features.mcp]
 access = "authenticated"
+```
+
+See [Feature Permissions](/docs/advanced/feature-permissions) for all available
+options.
+
+## Clerk Authentication
+
+Only needed when a feature is set to `access = "authenticated"`:
+
+```bash
+CHM_AUTH_PROVIDER=clerk
+NEXT_PUBLIC_AUTH_PROVIDER=clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxx
+CLERK_SECRET_KEY=sk_live_xxx
 ```
 
 ## AI Provider

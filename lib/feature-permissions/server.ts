@@ -3,11 +3,14 @@ import type {
   FeatureOverride,
   FeatureOverrides,
   FeaturePermission,
+  FeatureState,
   Principal,
   PublicFeaturePermissionConfig,
+  ResolvedFeatureStates,
 } from './types'
 
 import {
+  getResolvedFeatureStates,
   mergeFeatureOverrides,
   normalizeFeatureAccess,
   normalizeFeatureId,
@@ -245,14 +248,49 @@ async function getRequestPrincipal(
   }
 }
 
+let _startupConfigLogged = false
+
+function padRight(value: string, width: number): string {
+  return value.length >= width
+    ? value
+    : value + ' '.repeat(width - value.length)
+}
+
+function logStartupConfig(config: AppFeaturePermissionConfig): void {
+  if (_startupConfigLogged) return
+  _startupConfigLogged = true
+
+  const resolved = getResolvedFeatureStates(config)
+  const lines: string[] = ['[config] Feature permissions:']
+
+  for (const id of FEATURE_IDS) {
+    const state = resolved[id]
+    const status = state.enabled ? 'enabled ' : 'disabled'
+    const access = state.access
+    const override = config.features[id]
+    const tag = override ? '  (overridden)' : ''
+    lines.push(`  ${padRight(id, 14)} ${status}  ${padRight(access, 14)}${tag}`)
+  }
+
+  const provider = config.authProvider === 'clerk' ? 'clerk' : 'none'
+  lines.push(`  ${padRight('auth_provider', 14)} ${provider}`)
+
+  console.log(lines.join('\n'))
+}
+
 export async function getPublicFeaturePermissionConfig(): Promise<PublicFeaturePermissionConfig> {
   const config = await getAppFeaturePermissionConfig()
   const principal = await getRequestPrincipal(config)
+
+  logStartupConfig(config)
+
+  const resolved = getResolvedFeatureStates(config)
 
   return {
     authProvider: config.authProvider,
     principal,
     features: config.features,
+    resolved,
   }
 }
 

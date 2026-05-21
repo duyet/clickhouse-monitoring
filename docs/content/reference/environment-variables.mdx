@@ -1,0 +1,175 @@
+# Environment Variables
+
+Reference of all supported environment variables, grouped by category.
+
+---
+
+## ClickHouse Connection
+
+Required. At minimum set `CLICKHOUSE_HOST`.
+
+| Variable | Default | Description |
+|---|---|---|
+| `CLICKHOUSE_HOST` | — (required) | Comma-separated ClickHouse host URLs. |
+| `CLICKHOUSE_USER` | `default` | Comma-separated usernames. |
+| `CLICKHOUSE_PASSWORD` | `""` | Comma-separated passwords. |
+| `CLICKHOUSE_NAME` | — | Comma-separated custom labels shown in the host selector. |
+
+Each position across the comma-separated values maps to the same host index.
+All four vars must have the same number of values.
+
+---
+
+## Query Execution
+
+| Variable | Default | Description |
+|---|---|---|
+| `CLICKHOUSE_MAX_EXECUTION_TIME` | `60` | Query timeout in seconds. |
+| `CLICKHOUSE_TZ` | server default | Time zone for date/time formatting. |
+| `NEXT_QUERY_CACHE_TTL` | `3600` | Server-side query cache TTL in seconds. |
+| `CLICKHOUSE_DATABASE` | `system` | Database for app-owned tables (events, dashboards). |
+| `EVENTS_TABLE_NAME` | `system.monitoring_events` | Full override for the self-tracking events table. |
+
+### Connection Pool
+
+| Variable | Default | Description |
+|---|---|---|
+| `CLICKHOUSE_POOL_SIZE` | `10` | Max concurrent ClickHouse clients per host config. |
+| `CLICKHOUSE_POOL_TIMEOUT` | `300000` | Idle client timeout in ms (5 min). |
+| `CLICKHOUSE_POOL_CLEANUP_INTERVAL` | `60000` | Stale-client cleanup interval in ms (1 min). |
+
+---
+
+## Feature Permissions
+
+All features are **public and enabled by default**. Override only what needs
+different behavior.
+
+| Variable | Default | Description |
+|---|---|---|
+| `CHM_CONFIG_FILE` | — | Path to TOML/YAML config file for feature overrides. |
+| `CHM_DISABLED_FEATURES` | — | Comma-separated feature ids to disable. |
+| `CHM_AUTH_REQUIRED_FEATURES` | — | Comma-separated feature ids that require authentication. |
+| `CHM_FEATURE_{ID}_ACCESS` | `public` | Per-feature access level: `public`, `guest`, `authenticated`. |
+| `CHM_FEATURE_{ID}_ENABLED` | `true` | Per-feature enabled/disabled flag. |
+
+Replace `{ID}` with an uppercase feature id: `AGENT`, `TABLES`, `METRICS`,
+`SETTINGS`, `ACTIONS`, `MCP`, `INSIGHTS`, `SECURITY`, `LOGS`, `CLUSTER`,
+`OPERATIONS`, `DASHBOARD`, `OVERVIEW`, `QUERIES`, `HEALTH`, `DOCS`, `ABOUT`.
+
+```bash
+# Examples
+CHM_FEATURE_AGENT_ACCESS=authenticated
+CHM_FEATURE_METRICS_ENABLED=false
+CHM_FEATURE_SETTINGS_ACCESS=authenticated
+```
+
+See the [Feature Permissions](/docs/advanced/feature-permissions) guide for
+full details.
+
+---
+
+## Authentication (Clerk)
+
+Only needed when any feature is set to `access = "authenticated"`.
+
+| Variable | Default | Description |
+|---|---|---|
+| `CHM_AUTH_PROVIDER` | `none` | Auth provider: `none`, `clerk`. |
+| `NEXT_PUBLIC_AUTH_PROVIDER` | `none` | Client-side auth provider (mirror `CHM_AUTH_PROVIDER`). |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | — | Clerk publishable key (`pk_...`). |
+| `CLERK_SECRET_KEY` | — | Clerk secret key (`sk_...`). |
+| `CHM_API_KEY_SECRET` | — | Shared secret for `/api/v1/auth/api-key` and MCP auth. |
+
+---
+
+## AI Agent / LLM Provider
+
+The AI agent uses an OpenAI-compatible API. At minimum set `LLM_API_KEY`.
+
+| Variable | Default | Description |
+|---|---|---|
+| `LLM_API_KEY` | — | Provider API key. |
+| `LLM_API_BASE` | `https://openrouter.ai/api/v1` | API base URL. |
+| `LLM_MODEL` | `openrouter:openrouter/free` | Model identifier. |
+
+### Provider-Specific
+
+| Variable | Default | Description |
+|---|---|---|
+| `ANYROUTER_API_KEY` | — | AnyRouter API key. |
+| `ANYROUTER_API_BASE` | — | AnyRouter API base URL. |
+| `OPENROUTER_API_KEY` | — | OpenRouter API key. |
+| `OPENROUTER_API_BASE` | — | OpenRouter API base URL. |
+| `OPENROUTER_REFERER` | — | OpenRouter referer header for rankings. |
+| `OPENROUTER_APP_NAME` | — | OpenRouter app name for rankings. |
+| `OPENROUTER_MODELS_API` | `https://openrouter.ai/api/v1/models` | OpenRouter models list endpoint. |
+| `NVIDIA_API_KEY` | — | NVIDIA NIM API key. |
+| `NVIDIA_API_BASE` | — | NVIDIA NIM API base URL. |
+
+### Agent Behaviour
+
+| Variable | Default | Description |
+|---|---|---|
+| `AGENT_API_TOKEN` | — | Shared token for agent API Bearer auth. |
+| `AGENT_ENABLE_CONTROL_TOOLS` | `false` | Enables kill-query, optimize, and other write actions. |
+
+---
+
+## Conversation Store
+
+| Variable | Default | Description |
+|---|---|---|
+| `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` | `false` | Enable database-backed conversation storage. Requires Clerk. |
+| `DATABASE_URL` | — | PostgreSQL connection string for conversation store. |
+| `POSTGRES_URL` | — | Alternative PostgreSQL connection string. |
+| `POSTGRES_PRISMA_URL` | — | Prisma-specific PostgreSQL connection string. |
+
+---
+
+## Analytics & Branding
+
+| Variable | Default | Description |
+|---|---|---|
+| `NEXT_PUBLIC_TITLE_SHORT` | `ClickHouse` | Browser tab title (short form). |
+| `NEXT_PUBLIC_LOGO` | — | Custom logo URL (header branding). |
+| `NEXT_PUBLIC_AUTOCOMPLETE_LIMIT` | — | Max results in autocomplete dropdowns. |
+| `NEXT_PUBLIC_MEASUREMENT_ID` | — | Google Analytics measurement ID (`G-...`). |
+| `NEXT_PUBLIC_SELINE_ENABLED` | `false` | Enable Seline analytics. |
+| `NEXT_PUBLIC_VERCEL_ANALYTICS` | `false` | Enable Vercel Analytics. |
+| `NEXT_PUBLIC_POSTHOG_KEY` | — | PostHog project API key. |
+| `NEXT_PUBLIC_POSTHOG_HOST` | `https://us.i.posthog.com` | PostHog host URL. |
+
+---
+
+## Runtime & Build
+
+| Variable | Default | Description |
+|---|---|---|
+| `NODE_ENV` | `development` | Runtime environment (`development`, `production`, `test`). |
+| `ENABLE_CLOUDFLARE` | `false` | Enable Cloudflare-specific build configuration. |
+| `CLOUDFLARE_WORKERS` | — | Set to `1` when running on Cloudflare Workers. |
+| `CF_PAGES` | — | Set by Cloudflare Pages at runtime. |
+| `MINIFLARE` | — | Set to `1` when running locally with Miniflare. |
+| `DOCS_CONTENT_ROOT` | — | Override docs content source directory. |
+
+### Build-Time
+
+These are injected at build time for the About page:
+
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_GIT_SHA` | Current commit SHA. |
+| `NEXT_PUBLIC_GIT_REF` | Current git branch or tag. |
+| `NEXT_PUBLIC_BUILD_TIMESTAMP` | ISO build timestamp. |
+| `NEXT_PUBLIC_CI` | Set to `true` in CI environments. |
+
+---
+
+## Legacy / Migration
+
+| Variable | Default | Description |
+|---|---|---|
+| `CLICKHOUSE_CACHE_TAG` | — | Legacy cache tag override (prefer `NEXT_QUERY_CACHE_TTL`). |
+| `DATABASE_URL` | — | Migration / conversation store database URL. |
+| `POSTGRES_URL` | — | Migration / conversation store database URL (fallback). |

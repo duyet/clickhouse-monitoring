@@ -26,9 +26,18 @@ uses the same index across all four variables.
 
 ## Should I expose the AI agent publicly?
 
-Only if authentication is configured. The agent can query ClickHouse with the
-same grants as the configured monitoring user. Require authenticated access for
-agent, MCP, and action features on public deployments.
+The agent is public by default on self-hosted deployments that do not enable
+Clerk. The agent can query ClickHouse with the same grants as the configured
+monitoring user, so evaluate whether your deployment needs restricted access.
+
+To require authentication for the agent, set a feature override:
+
+```bash
+CHM_FEATURE_AGENT_ACCESS=authenticated
+```
+
+See the [Feature Permissions](/docs/advanced/feature-permissions) guide for
+all restriction options, including MCP and action features.
 
 ## Does the app modify ClickHouse data?
 

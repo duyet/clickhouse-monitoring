@@ -48,8 +48,11 @@ export type FeatureOverrides = Partial<Record<FeatureId, FeatureOverride>>
 
 export type Principal = 'anonymous' | 'authenticated'
 
+export type ResolvedFeatureStates = Record<FeatureId, FeatureState>
+
 export interface PublicFeaturePermissionConfig {
   authProvider: 'none' | 'clerk'
   principal: Principal
   features: FeatureOverrides
+  resolved?: ResolvedFeatureStates
 }
