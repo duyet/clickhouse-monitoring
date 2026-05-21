@@ -48,7 +48,7 @@ export interface VirtualizedTableRowProps<TData extends RowData> {
  * - Zebra striping with odd rows
  * - Hover effects
  *
- * Performance: Optimized for large datasets (1000+ rows), memoized to prevent re-renders
+ * Performance: Optimized for large datasets, memoized to prevent re-renders
  */
 export const VirtualizedTableRow = memo(function VirtualizedTableRow<
   TData extends RowData,
@@ -172,7 +172,7 @@ export interface TableBodyRowsProps<TData extends RowData> {
  * @param virtualizer - Virtual row instance when virtualization is enabled
  *
  * Automatically chooses rendering strategy based on dataset size:
- * - Virtualized rendering for 1000+ rows
+ * - Virtualized rendering for large row sets
  * - Standard rendering for smaller datasets
  *
  * Performance: Virtualization reduces DOM nodes from thousands to ~100, memoized to prevent re-renders

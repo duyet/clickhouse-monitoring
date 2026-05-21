@@ -123,7 +123,7 @@ interface DataTableProps<TData extends RowData> {
  * - DataTableFooter: Pagination and footnote
  *
  * Features:
- * - Virtual scrolling for large datasets (auto-enables at 1000+ rows)
+ * - Virtual scrolling for datasets larger than the standard pagination range
  * - Client-side column filtering
  * - URL filter synchronization for shareable links
  * - Custom sorting functions
@@ -412,7 +412,7 @@ export function DataTable<
     },
   })
 
-  // Virtual rows for large datasets (auto-enables at 1000+ rows)
+  // Virtual rows for datasets larger than the standard pagination range
   const rows = table.getRowModel().rows
   const { virtualizer, tableContainerRef, isVirtualized } = useVirtualRows(
     rows.length
