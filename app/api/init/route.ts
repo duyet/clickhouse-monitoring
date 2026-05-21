@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server'
 import { getHostIdFromParams } from '@/lib/api/error-handler'
 import { getClient } from '@/lib/clickhouse'
+import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { ErrorLogger } from '@/lib/logger'
 import { initTrackingTable } from '@/lib/tracking'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: Request) {
+async function handleInit(request: Request) {
   const searchParams = new URL(request.url).searchParams
   let hostId: number
 
@@ -24,6 +26,12 @@ export async function GET(request: Request) {
       { status: 400 }
     )
   }
+
+  const permissionResponse = await authorizeFeatureRequest(
+    ACTIONS_FEATURE_PERMISSION,
+    request
+  )
+  if (permissionResponse) return permissionResponse
 
   // getClient will auto-detect and use web client for Cloudflare Workers
   const client = await getClient({ hostId })
@@ -46,4 +54,8 @@ export async function GET(request: Request) {
       { status: 500 }
     )
   }
+}
+
+export async function POST(request: Request) {
+  return handleInit(request)
 }

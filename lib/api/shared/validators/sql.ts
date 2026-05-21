@@ -73,7 +73,7 @@ export const SQL_PATTERNS = {
 
   /** Dangerous ClickHouse table functions that access external resources */
   DANGEROUS_FUNCTIONS:
-    /\b(remote|remoteSecure|url|s3|hdfs|input|jdbc|odbc|mysql|postgresql)\s*\(/i,
+    /\b(remote|remoteSecure|url|urlCluster|s3|s3Cluster|hdfs|input|jdbc|odbc|mysql|postgresql|file|fileCluster|executable|mongodb|redis|azureBlobStorage|gcs)\s*\(/i,
 } as const
 
 /**

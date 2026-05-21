@@ -20,7 +20,7 @@ import {
   createErrorResponse,
   createValidationError,
 } from '@/lib/api/error-handler'
-import { createCachedResponse } from '@/lib/api/shared/response-builder'
+import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { mapErrorTypeToStatusCode } from '@/lib/api/shared/status-code-mapper'
 import { getAndValidateHostId } from '@/lib/api/shared/validators'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
@@ -163,12 +163,14 @@ async function fetchExplainAsText(
 }
 
 /**
- * Handle GET requests for EXPLAIN queries
- * Accepts query via URL query string
+ * Handle GET requests to run a ClickHouse EXPLAIN for the provided SQL and return formatted results.
+ *
+ * Validates required query parameters and SQL safety, builds the appropriate EXPLAIN statement (including optional PLAN settings), executes it against the configured host, and returns an HTTP Response containing the explain payload or an error status.
  *
  * @example
  * GET /api/v1/explain?hostId=0&query=SELECT%20count()%20FROM%20system.tables
  * GET /api/v1/explain?hostId=0&query=SELECT%201&planSettings=indexes%3D1
+ * @returns An HTTP Response containing the explain result (JSONEachRow or transformed text) on success, or an error response with an appropriate status code on failure.
  */
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url)
@@ -300,14 +302,15 @@ export async function GET(request: Request): Promise<Response> {
       )
     }
 
-    return createCachedResponse(
+    return createSuccessResponse(
       textResult.data,
-      'no-store, no-cache, must-revalidate',
       {
         sql: explainQuery,
         rows: textResult.data.length,
         queryId: String(textResult.metadata.queryId || ''),
-      }
+      },
+      200,
+      { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
     )
   }
 
@@ -349,15 +352,16 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   // Create successful response with no-cache headers
-  return createCachedResponse(
+  return createSuccessResponse(
     result.data,
-    'no-store, no-cache, must-revalidate',
     {
       sql: explainQuery,
       rows: Number(result.metadata.rows || 0),
       duration: Number(result.metadata.duration || 0),
       queryId: String(result.metadata.queryId || ''),
-    }
+    },
+    200,
+    { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
   )
 }
 

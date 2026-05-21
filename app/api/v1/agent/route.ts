@@ -36,6 +36,8 @@ import {
 } from '@/lib/ai/providers'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 import { isClerkAuthProvider } from '@/lib/auth/provider'
+import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -441,6 +443,14 @@ export async function POST(request: Request) {
     console.log('[Agent API] OpenRouter user:', openRouterUser)
   }
 
+  const controlToolsEnabled = process.env.AGENT_ENABLE_CONTROL_TOOLS === 'true'
+  const actionsPermissionResponse = controlToolsEnabled
+    ? await authorizeFeatureRequest(ACTIONS_FEATURE_PERMISSION, request, {
+        allowAgentBearerToken: true,
+      })
+    : null
+  const includeControlTools = controlToolsEnabled && !actionsPermissionResponse
+
   const requestOrigin = request.headers.get('origin') ?? undefined
   const agent = createClickHouseAgent({
     hostId,
@@ -449,6 +459,7 @@ export async function POST(request: Request) {
     systemPrompt: AGENT_JSON_RENDER_INLINE_PROMPT,
     providerOptions: { openrouter: { user: openRouterUser } },
     referer: requestOrigin,
+    includeControlTools,
   })
 
   const uiMessages: Array<{

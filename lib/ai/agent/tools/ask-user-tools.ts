@@ -1,6 +1,16 @@
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
+const MAX_OPTIONS = 20
+const MAX_TEXT_LEN = 200
+
+/**
+ * Creates tools for prompting the user with structured questions using supported input widgets.
+ *
+ * @returns An object containing an `ask_user` dynamic tool that, when executed, emits a payload of the form
+ * `{ type: 'ask_user', question, inputType, options?, placeholder?, min, max, context?, awaiting_response: true }`
+ * for the UI to render and collect the user's response.
+ */
 export function createAskUserTools() {
   return {
     ask_user: dynamicTool({
@@ -10,47 +20,78 @@ export function createAskUserTools() {
 - confirm: Yes/no confirmation with context (e.g., "Analyze all 5 slow queries or just the top one?")
 - free_text: Open-ended text input (e.g., "Describe the symptoms you're seeing")
 - rating: Numeric scale (e.g., "Rate the usefulness of this analysis 1-5")`,
-      inputSchema: z.object({
-        question: z.string().describe('The question to ask the user'),
-        inputType: z
-          .enum([
-            'single_choice',
-            'multi_choice',
-            'confirm',
-            'free_text',
-            'rating',
-          ])
-          .describe('Type of input widget to show'),
-        options: z
-          .array(
-            z.object({
-              label: z.string().describe('Display label'),
-              value: z.string().describe('Value to return when selected'),
-              description: z
-                .string()
-                .optional()
-                .describe('Optional description/hint'),
-            })
-          )
-          .optional()
-          .describe('Options for single_choice and multi_choice types'),
-        placeholder: z
-          .string()
-          .optional()
-          .describe('Placeholder text for free_text input'),
-        min: z
-          .number()
-          .optional()
-          .describe('Minimum value for rating (default: 1)'),
-        max: z
-          .number()
-          .optional()
-          .describe('Maximum value for rating (default: 5)'),
-        context: z
-          .string()
-          .optional()
-          .describe('Additional context shown above the question'),
-      }),
+      inputSchema: z
+        .object({
+          question: z
+            .string()
+            .min(1)
+            .max(MAX_TEXT_LEN)
+            .describe('The question to ask the user'),
+          inputType: z
+            .enum([
+              'single_choice',
+              'multi_choice',
+              'confirm',
+              'free_text',
+              'rating',
+            ])
+            .describe('Type of input widget to show'),
+          options: z
+            .array(
+              z.object({
+                label: z.string().min(1).max(80).describe('Display label'),
+                value: z
+                  .string()
+                  .min(1)
+                  .max(120)
+                  .describe('Value to return when selected'),
+                description: z
+                  .string()
+                  .max(MAX_TEXT_LEN)
+                  .optional()
+                  .describe('Optional description/hint'),
+              })
+            )
+            .max(MAX_OPTIONS)
+            .optional()
+            .describe('Options for single_choice and multi_choice types'),
+          placeholder: z
+            .string()
+            .max(MAX_TEXT_LEN)
+            .optional()
+            .describe('Placeholder text for free_text input'),
+          min: z
+            .number()
+            .int()
+            .min(1)
+            .max(10)
+            .optional()
+            .describe('Minimum value for rating (default: 1)'),
+          max: z
+            .number()
+            .int()
+            .min(1)
+            .max(10)
+            .optional()
+            .describe('Maximum value for rating (default: 5)'),
+          context: z
+            .string()
+            .max(MAX_TEXT_LEN)
+            .optional()
+            .describe('Additional context shown above the question'),
+        })
+        .refine(
+          (data) => {
+            if (data.min !== undefined && data.max !== undefined) {
+              return data.max >= data.min
+            }
+            return true
+          },
+          {
+            message:
+              'Maximum rating value must be greater than or equal to minimum rating value',
+          }
+        ),
       execute: async (input: unknown) => {
         const params = input as {
           question: string
