@@ -102,6 +102,36 @@ describe('<TableClient />', () => {
     cy.contains('Test Tables').should('be.visible')
   })
 
+  it('renders table missing errors with docs link', () => {
+    mockTableResponse(
+      {
+        error: {
+          type: 'table_not_found',
+          message: 'Required system table is missing',
+        },
+      },
+      404
+    )
+
+    cy.mount(<TableClient title="Test Tables" queryConfig={mockQueryConfig} />)
+
+    cy.wait('@fetchTableData')
+    cy.get('[role="alert"]').should(
+      'have.attr',
+      'aria-label',
+      'Test Tables unavailable'
+    )
+    cy.contains('Required system table is missing').should('be.visible')
+    cy.contains('View ClickHouse documentation ↗')
+      .should('be.visible')
+      .and(
+        'have.attr',
+        'href',
+        'https://clickhouse.com/docs/en/operations/system-tables'
+      )
+    cy.contains('Retry').should('not.exist')
+  })
+
   it('displays no data alert when result is empty', () => {
     mockTableResponse({
       data: [],
