@@ -115,8 +115,8 @@ describe('<DataTableFooter />', () => {
     }))
     cy.mount(<TestDataTableFooter rows={largeData} pageSize={10} />)
 
-    // Check that both elements exist and are in the same container
-    cy.get('.flex.items-center.justify-between').should('be.visible')
+    // Check that both elements exist in the footer
+    cy.get('.flex.shrink-0').should('be.visible')
     cy.contains('0 of 25 row(s) selected').should('be.visible')
     cy.get('[aria-label="Pagination"]').should('be.visible')
   })
@@ -124,7 +124,7 @@ describe('<DataTableFooter />', () => {
   it('applies correct styling classes', () => {
     cy.mount(<TestDataTableFooter />)
 
-    cy.get('.flex.shrink-0.items-center.justify-between').should('be.visible')
+    cy.get('.flex.shrink-0.flex-col').should('be.visible')
   })
 
   it('displays correct page information', () => {
@@ -156,5 +156,33 @@ describe('<DataTableFooter />', () => {
     cy.mount(<TestDataTableFooter rows={largeData} pageSize={10} />)
 
     cy.get('button[aria-label="Go to previous page"]').should('be.disabled')
+  })
+
+  it('stacks footer controls on narrow screens without horizontal overflow', () => {
+    const largeData = Array.from({ length: 25 }, (_, i) => ({
+      col1: `val${i}`,
+      col2: `val${i}`,
+    }))
+
+    cy.viewport(320, 500)
+    cy.mount(
+      <div style={{ width: 305 }}>
+        <TestDataTableFooter rows={largeData} pageSize={10} />
+      </div>
+    )
+
+    cy.contains('0 of 25 row(s) selected').should('be.visible')
+    cy.get('[aria-label="Pagination"]')
+      .should('be.visible')
+      .and('have.class', 'w-full')
+    cy.contains('1/3').should('be.visible')
+    cy.get('.flex.shrink-0.flex-col').then(($footer) => {
+      const footer = $footer[0]
+      expect(footer.scrollWidth).to.be.at.most(footer.clientWidth)
+    })
+    cy.get('[aria-label="Pagination"]').then(($pagination) => {
+      const pagination = $pagination[0]
+      expect(pagination.scrollWidth).to.be.at.most(pagination.clientWidth)
+    })
   })
 })
