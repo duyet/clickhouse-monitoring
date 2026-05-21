@@ -2,12 +2,14 @@
 
 import { RefreshCw } from 'lucide-react'
 
+import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { QueryConfig } from '@/types/query-config'
 
 import { memo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { DataTable } from '@/components/data-table/data-table'
 import { TableSkeleton } from '@/components/skeletons'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { SuggestionCard } from '@/components/ui/suggestion-card'
@@ -39,6 +41,33 @@ interface TableClientProps {
   filterableColumns?: string[]
   /** Enable row selection with checkboxes */
   enableRowSelection?: boolean
+}
+
+const tableRowFormatter = new Intl.NumberFormat('en-US')
+
+function TableResultFootnote({ metadata }: { metadata: ApiResponseMetadata }) {
+  const beforeCap =
+    typeof metadata.resultRowsBeforeCap === 'number'
+      ? tableRowFormatter.format(metadata.resultRowsBeforeCap)
+      : null
+  const duration =
+    typeof metadata.duration === 'number'
+      ? metadata.duration.toFixed(2)
+      : '0.00'
+
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <span>
+        {tableRowFormatter.format(metadata.rows)} row(s) in {duration}s
+      </span>
+      {metadata.resultRowsTruncated ? (
+        <>
+          <Badge variant="outline">Capped</Badge>
+          {beforeCap ? <span>{beforeCap} before cap</span> : null}
+        </>
+      ) : null}
+    </span>
+  )
 }
 
 /**
@@ -275,9 +304,7 @@ export const TableClient = memo(function TableClient({
       context={{ ...searchParams, hostId: String(hostId) }}
       defaultPageSize={defaultPageSize}
       footnote={
-        metadata
-          ? `${metadata.rows} row(s) in ${metadata.duration?.toFixed(2)}s`
-          : undefined
+        metadata ? <TableResultFootnote metadata={metadata} /> : undefined
       }
       className={className}
       topRightToolbarExtras={topRightToolbarExtras}
