@@ -13,7 +13,7 @@ export const Footnote = memo(function Footnote({
   footnote,
 }: FootnoteProps) {
   return (
-    <div className="text-muted-foreground flex-1 text-sm">
+    <div className="min-w-0 flex-1 text-wrap break-words text-sm text-muted-foreground">
       {footnote ? (
         footnote
       ) : (

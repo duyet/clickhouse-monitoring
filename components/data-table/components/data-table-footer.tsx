@@ -82,7 +82,7 @@ export const DataTableFooter = memo(function DataTableFooter<
   }
 
   return (
-    <div className="flex shrink-0 items-center justify-between px-2">
+    <div className="flex shrink-0 flex-col gap-2 px-2 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:py-0">
       <Footnote table={table} footnote={footnote} />
       <DataTablePagination table={table} />
     </div>
