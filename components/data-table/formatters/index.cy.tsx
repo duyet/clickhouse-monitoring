@@ -158,14 +158,17 @@ describe('Formatters Module', () => {
       cy.mount(<TestWrapper>{codeDialogFormatter(longCode)}</TestWrapper>)
 
       cy.get('code').should('contain.text', '...')
-      cy.get('code.truncated').parent().should('have.class', 'cursor-pointer')
+      cy.get('code.truncated')
+        .closest('button')
+        .should('have.attr', 'type', 'button')
+        .and('be.enabled')
     })
 
     it('codeDialogFormatter should show dialog trigger for long code', () => {
       const longQuery = 'SELECT * FROM users WHERE id = 1'.repeat(5)
       cy.mount(<TestWrapper>{codeDialogFormatter(longQuery)}</TestWrapper>)
 
-      cy.get('code.truncated').parent().click()
+      cy.get('code.truncated').closest('button').click()
       cy.get('[role="dialog"]').should('exist')
     })
 

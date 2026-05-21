@@ -1,6 +1,10 @@
 import { CodeDialogFormat } from './code-dialog-format'
 
 describe('<CodeDialogFormat />', () => {
+  beforeEach(() => {
+    cy.clearLocalStorage()
+  })
+
   it('renders short code without dialog', () => {
     const shortCode = 'SELECT * FROM table'
     cy.mount(<CodeDialogFormat value={shortCode} />)
@@ -57,5 +61,36 @@ describe('<CodeDialogFormat />', () => {
     const options = { hide_query_comment: true, max_truncate: 100 }
     cy.mount(<CodeDialogFormat value={codeWithComment} options={options} />)
     cy.get('code').should('not.contain', '/* This is a comment */')
+  })
+
+  it('escapes HTML-like code in the dialog body', () => {
+    const maliciousCode =
+      "SELECT '<img src=x onerror=alert(1)>' AS payload FROM table WHERE column1 = 'value' AND column2 > 100"
+
+    cy.mount(
+      <CodeDialogFormat value={maliciousCode} options={{ max_truncate: 20 }} />
+    )
+    cy.get('code.truncated').parent().click()
+
+    cy.get('div[role="dialog"]').within(() => {
+      cy.contains('<img src=x onerror=alert(1)>').should('be.visible')
+      cy.get('img').should('not.exist')
+    })
+  })
+
+  it('does not show SQL controls for plain text content', () => {
+    const plainText =
+      'plain operational message with enough characters to open the dialog'
+
+    cy.mount(
+      <CodeDialogFormat value={plainText} options={{ max_truncate: 20 }} />
+    )
+    cy.get('code.truncated').parent().click()
+
+    cy.get('div[role="dialog"]').within(() => {
+      cy.contains('h2', 'Code content').should('be.visible')
+      cy.contains('Beautify').should('not.exist')
+      cy.contains('Plain text').should('be.visible')
+    })
   })
 })
