@@ -37,7 +37,7 @@ import { cn } from '@/lib/utils'
  * @param table - TanStack Table instance
  * @param columnDefs - Column definitions for rendering
  * @param tableContainerRef - Ref for the table container (used for virtualization)
- * @param isVirtualized - Whether virtualization is enabled (1000+ rows)
+ * @param isVirtualized - Whether virtualization is enabled
  * @param virtualizer - Virtual row instance from useVirtualRows hook
  * @param activeFilterCount - Number of active column filters
  * @param onAutoFit - Callback when double-clicking column resizer to auto-fit
@@ -58,7 +58,7 @@ export interface DataTableContentProps<
   columnDefs: ColumnDef<TData, TValue>[]
   /** Ref for the table container (used for virtualization) */
   tableContainerRef: React.RefObject<HTMLDivElement | null>
-  /** Whether virtualization is enabled (1000+ rows) */
+  /** Whether virtualization is enabled */
   isVirtualized: boolean
   /** Virtual row instance from useVirtualRows hook */
   virtualizer: ReturnType<
@@ -82,7 +82,7 @@ export interface DataTableContentProps<
  * DataTableContent - Content wrapper with virtualization logic
  *
  * Handles:
- * - Virtual scrolling for large datasets (1000+ rows)
+ * - Virtual scrolling for datasets larger than the standard pagination range
  * - Standard scrolling for smaller datasets
  * - Table header and body rendering
  * - Empty state handling with contextual messaging
@@ -92,7 +92,7 @@ export interface DataTableContentProps<
  * Performance considerations:
  * - Virtualization reduces DOM nodes from thousands to ~100
  * - Memoized to prevent unnecessary re-renders
- * - Auto-enables virtualization at 1000+ rows
+ * - Auto-enables virtualization beyond the standard pagination range
  */
 export const DataTableContent = memo(function DataTableContent<
   TData extends RowData,

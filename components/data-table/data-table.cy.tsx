@@ -95,6 +95,27 @@ describe('<DataTable />', () => {
     cy.get('button[aria-label="Go to next page"]').should('be.enabled')
   })
 
+  it('keeps large paginated pages on the standard table path', () => {
+    const data = Array.from({ length: 300 }, (_, index) => ({
+      col1: `val${index}`,
+      col2: `val${index}`,
+    }))
+
+    cy.mount(
+      <DataTable
+        title="Test Table"
+        queryConfig={queryConfig}
+        data={data}
+        context={{}}
+        defaultPageSize={200}
+      />
+    )
+
+    cy.get('[role="region"]').should('not.have.attr', 'style')
+    cy.get('tbody tr').should('have.length', 200)
+    cy.get('div').contains('1–200 of 300 rows')
+  })
+
   it('should adjust column visibility, hide col1', () => {
     // Define some mock data
     const data = [
