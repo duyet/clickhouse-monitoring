@@ -18,6 +18,9 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
+const VIRTUALIZED_CELL_CLASS = 'text-sm whitespace-nowrap tabular-nums'
+const STANDARD_CELL_CLASS = 'text-sm align-top break-words tabular-nums'
+
 /**
  * Virtual row item from @tanstack/react-virtual
  */
@@ -72,10 +75,7 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
         return (
           <TableCell
             key={cell.id}
-            className={cn(
-              'text-sm whitespace-nowrap tabular-nums',
-              cellClassName
-            )}
+            className={cn(VIRTUALIZED_CELL_CLASS, cellClassName)}
             style={{
               width: 'auto',
               minWidth: 0,
@@ -131,10 +131,7 @@ export const StandardTableRow = memo(function StandardTableRow<
         return (
           <TableCell
             key={cell.id}
-            className={cn(
-              'text-sm whitespace-nowrap tabular-nums',
-              cellClassName
-            )}
+            className={cn(STANDARD_CELL_CLASS, cellClassName)}
             style={{
               width: 'auto',
               minWidth: 0,
