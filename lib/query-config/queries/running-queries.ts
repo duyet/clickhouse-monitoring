@@ -75,7 +75,7 @@ export const runningQueriesConfig: QueryConfig = {
     query: [
       ColumnFormat.CodeDialog,
       {
-        max_truncate: 40,
+        max_truncate: 80,
         hide_query_comment: true,
         dialog_title: 'Running Query',
       },

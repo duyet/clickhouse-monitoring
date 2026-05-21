@@ -72,7 +72,10 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
         return (
           <TableCell
             key={cell.id}
-            className={cn('text-sm whitespace-nowrap', cellClassName)}
+            className={cn(
+              'text-sm whitespace-nowrap tabular-nums',
+              cellClassName
+            )}
             style={{
               width: 'auto',
               minWidth: 0,
@@ -128,7 +131,10 @@ export const StandardTableRow = memo(function StandardTableRow<
         return (
           <TableCell
             key={cell.id}
-            className={cn('text-sm whitespace-nowrap', cellClassName)}
+            className={cn(
+              'text-sm whitespace-nowrap tabular-nums',
+              cellClassName
+            )}
             style={{
               width: 'auto',
               minWidth: 0,
