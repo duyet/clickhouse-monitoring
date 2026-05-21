@@ -1,35 +1,44 @@
-'use client'
+import type { Metadata } from 'next'
 
 import { DocsMarkdown } from '../_components/docs-markdown'
 import {
   type DocsHeading,
+  type DocsPage as DocsPageData,
   docsHref,
   docsNav,
-  getDocsPageClient,
-} from '../_lib/docs-client'
+  getDocsPage,
+} from '../_lib/docs'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
-import { useEffect, useMemo } from 'react'
 import { cn } from '@/lib/utils'
 
-export default function DocsPage() {
-  const params = useParams()
+type DocsPageProps = {
+  params: Promise<{
+    slug?: string[]
+  }>
+}
 
-  const activeSlug = useMemo(() => {
-    const slugParam = params?.slug
-    if (!slugParam) return ''
-    return Array.isArray(slugParam) ? slugParam.join('/') : slugParam
-  }, [params])
+export const dynamicParams = false
 
-  const page = useMemo(() => {
-    return getDocsPageClient(activeSlug)
-  }, [activeSlug])
+export function generateStaticParams() {
+  return docsNav.flatMap((section) =>
+    section.items.map((item) => ({
+      slug: item.slug ? item.slug.split('/') : [''],
+    }))
+  )
+}
 
-  useEffect(() => {
-    if (page) {
-      document.title = `${page.title} - Docs`
-    }
-  }, [page])
+export async function generateMetadata({
+  params,
+}: DocsPageProps): Promise<Metadata> {
+  const page = await getPageFromParams(params)
+
+  return {
+    title: page ? `${page.title} - Docs` : 'Docs - Page not found',
+  }
+}
+
+export default async function DocsPage({ params }: DocsPageProps) {
+  const page = await getPageFromParams(params)
 
   if (!page) {
     return (
@@ -66,6 +75,15 @@ export default function DocsPage() {
       </div>
     </div>
   )
+}
+
+async function getPageFromParams(
+  params: DocsPageProps['params']
+): Promise<DocsPageData | null> {
+  const { slug } = await params
+  const activeSlug = Array.isArray(slug) ? slug.filter(Boolean).join('/') : ''
+
+  return getDocsPage(activeSlug)
 }
 
 function DocsMobileNav({
