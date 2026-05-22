@@ -25,6 +25,7 @@ const STANDARD_CELL_CLASS = 'text-sm align-top break-words tabular-nums'
  * Virtual row item from @tanstack/react-virtual
  */
 export interface VirtualItem {
+  end: number
   index: number
   size: number
   start: number
@@ -68,7 +69,6 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
       )}
       style={{
         height: `${virtualRow.size}px`,
-        transform: `translateY(${virtualRow.start}px)`,
       }}
     >
       {row.getVisibleCells().map((cell: Cell<TData, unknown>) => {
@@ -152,6 +152,7 @@ export const StandardTableRow = memo(function StandardTableRow<
  */
 export interface Virtualizer {
   getVirtualItems(): VirtualItem[]
+  getTotalSize(): number
 }
 
 /**
@@ -190,10 +191,33 @@ export const TableBodyRows = memo(function TableBodyRows<
   if (isVirtualized && virtualizer) {
     // Virtualized rendering for large datasets
     const virtualRows = virtualizer.getVirtualItems()
+    const firstVirtualRow = virtualRows[0]
+    const lastVirtualRow = virtualRows.at(-1)
+    const paddingTop = firstVirtualRow?.start ?? 0
+    const paddingBottom = lastVirtualRow
+      ? Math.max(virtualizer.getTotalSize() - lastVirtualRow.end, 0)
+      : 0
+    const colSpan = Math.max(table.getVisibleLeafColumns().length, 1)
+
     return (
       <>
+        {paddingTop > 0 && (
+          <TableRow
+            aria-hidden="true"
+            data-virtual-spacer="top"
+            className="border-0 hover:bg-transparent"
+          >
+            <TableCell
+              colSpan={colSpan}
+              className="border-0 p-0"
+              style={{ height: `${paddingTop}px` }}
+            />
+          </TableRow>
+        )}
         {virtualRows.map((virtualRow: VirtualItem) => {
           const row = rows[virtualRow.index]
+          if (!row) return null
+
           return (
             <VirtualizedTableRow<TData>
               key={row.id}
@@ -203,6 +227,19 @@ export const TableBodyRows = memo(function TableBodyRows<
             />
           )
         })}
+        {paddingBottom > 0 && (
+          <TableRow
+            aria-hidden="true"
+            data-virtual-spacer="bottom"
+            className="border-0 hover:bg-transparent"
+          >
+            <TableCell
+              colSpan={colSpan}
+              className="border-0 p-0"
+              style={{ height: `${paddingBottom}px` }}
+            />
+          </TableRow>
+        )}
       </>
     )
   }
