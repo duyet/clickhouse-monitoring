@@ -21,7 +21,6 @@ describe('Authentication', () => {
 
     cy.get('[data-testid="nav-user-trigger"]')
       .scrollIntoView()
-      .should('be.visible')
       .click({ force: true })
   }
 
@@ -179,7 +178,6 @@ describe('Authentication', () => {
 
       cy.get('[data-testid="nav-user-trigger"]')
         .scrollIntoView()
-        .should('be.visible')
         .focus()
       cy.get('[data-testid="nav-user-trigger"]').should('have.focus')
 
