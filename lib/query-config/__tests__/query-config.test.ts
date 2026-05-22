@@ -351,40 +351,49 @@ describe('Query Config Validation', () => {
     })
   })
 
-  describe('History query filter params', () => {
+  describe('History query filter schema', () => {
     const historyQueriesConfig = queries.find(
       (config) => config.name === 'history-queries'
     )
 
-    it('should define defaults for every history query preset key', () => {
+    it('should define a schema-driven filter configuration', () => {
       expect(historyQueriesConfig).toBeDefined()
+      expect(historyQueriesConfig?.filterSchema).toBeDefined()
+      expect(historyQueriesConfig?.filterSchema?.fields.length).toBeGreaterThan(
+        0
+      )
+    })
 
-      const defaultParams = historyQueriesConfig?.defaultParams || {}
-      const presetKeys =
-        historyQueriesConfig?.filterParamPresets?.map((preset) => preset.key) ||
-        []
+    it('should give every filter field a non-empty operator list', () => {
+      expect(historyQueriesConfig?.filterSchema).toBeDefined()
+      const fields = historyQueriesConfig?.filterSchema?.fields ?? []
 
-      presetKeys.forEach((key) => {
-        expect(defaultParams).toHaveProperty(key)
+      fields.forEach((field) => {
+        expect(field.key).toBeTruthy()
+        expect(field.column).toBeTruthy()
+        expect(field.operators.length).toBeGreaterThan(0)
       })
     })
 
-    it('should apply visible time and duration filter params in SQL', () => {
-      expect(historyQueriesConfig).toBeDefined()
+    it('should only reference known fields from presets', () => {
+      expect(historyQueriesConfig?.filterSchema).toBeDefined()
+      const schema = historyQueriesConfig?.filterSchema
+      const fieldKeys = new Set(schema?.fields.map((field) => field.key))
 
+      schema?.presets?.forEach((preset) => {
+        preset.filters.forEach((filter) => {
+          expect(fieldKeys.has(filter.key)).toBe(true)
+        })
+      })
+    })
+
+    it('should embed the filter placeholder in every SQL variant', () => {
       const sqlVariants = Array.isArray(historyQueriesConfig?.sql)
         ? historyQueriesConfig.sql.map((variant) => variant.sql)
         : [historyQueriesConfig?.sql || '']
 
       sqlVariants.forEach((sql) => {
-        expect(sql).toContain('{min_duration_s: String}')
-        expect(sql).toContain('toUInt64OrZero({min_duration_s: String})')
-        expect(sql).toContain('{last_hours: String}')
-        expect(sql).toContain(
-          'toIntervalHour(toUInt64OrZero({last_hours: String}))'
-        )
-        expect(sql).not.toContain('{min_duration_s:UInt64}')
-        expect(sql).not.toContain('{last_hours:UInt64}')
+        expect(sql).toContain('/* __FILTERS__ */')
       })
     })
   })

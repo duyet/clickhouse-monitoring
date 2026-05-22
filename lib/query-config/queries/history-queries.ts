@@ -1,35 +1,256 @@
 import {
-  CircleXIcon,
+  ActivityIcon,
   ClockIcon,
   DatabaseIcon,
+  FileOutputIcon,
+  HashIcon,
+  LayersIcon,
   MemoryStickIcon,
+  MonitorIcon,
   SearchIcon,
-  SettingsIcon,
+  TableIcon,
   TimerIcon,
+  UserIcon,
+  UserXIcon,
+  ZapIcon,
 } from 'lucide-react'
 
+import type { FilterSchema } from '@/lib/filters/types'
 import type { QueryConfig } from '@/types/query-config'
 
+import { FILTER_PLACEHOLDER } from '@/lib/filters/where-builder'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 
-const historyQueryFilters = `
-          WHERE
-            if ({type: String} != '', type = {type: String}, type != 'QueryStart')
-            AND if ({duration_1m: String} = '1', query_duration >= 60, true)
-            AND if ({min_duration_s: String} != '', query_duration >= toUInt64OrZero({min_duration_s: String}), true)
-            AND if ({last_hours: String} != '', event_time > now() - toIntervalHour(toUInt64OrZero({last_hours: String})), true)
-            AND if (notEmpty({event_time: String}), toDate(event_time) = {event_time: String}, true)
-            AND if ({database: String} != '' AND {table: String} != '', has(tables, format('{}.{}', {database: String}, {table: String})), true)
-            AND if ({user: String} != '', user = {user: String}, true)
-            AND if ({excluded_users: String} != '', not(has(splitByChar(',', {excluded_users: String}), user)), true)
-            AND if ({query_text: String} != '', positionCaseInsensitiveUTF8(query, {query_text: String}) > 0, true)
-            AND if ({query_id: String} != '', query_id = {query_id: String}, true)
-            AND if ({min_memory_mb: String} != '', memory_usage > toUInt64OrZero({min_memory_mb: String}) * 1024 * 1024, true)
-            AND if ({min_read_rows: String} != '', read_rows > toUInt64OrZero({min_read_rows: String}), true)
-            AND if ({query_kind: String} != '', query_kind = {query_kind: String}, true)
+/**
+ * Query tail shared by every version variant. The {@link FILTER_PLACEHOLDER}
+ * marker is replaced server-side with a parameterized `WHERE` clause built
+ * from the {@link historyQueryFilterSchema}.
+ */
+const historyQueryTail = `
+          FROM system.query_log
+          ${FILTER_PLACEHOLDER}
           ORDER BY event_time DESC
-          LIMIT 100`
+          LIMIT 1000`
+
+/** Service users excluded from the result by default (configurable per deploy). */
+const defaultExcludedUsers = process.env.CLICKHOUSE_EXCLUDE_USER_DEFAULT || ''
+
+const queryLogDynamicOptions = (column: string) => ({
+  table: 'system.query_log',
+  column,
+  where: 'event_time > now() - toIntervalDay(7)',
+})
+
+/**
+ * Schema-driven filter definition for the History Queries page.
+ *
+ * Each field declares the column it targets, the operators it supports, and
+ * how its value editor should render. The server validates active filters
+ * against this schema before building the SQL `WHERE` clause.
+ */
+export const historyQueryFilterSchema: FilterSchema = {
+  fields: [
+    {
+      key: 'event_time',
+      column: 'event_time',
+      label: 'Time',
+      type: 'datetime',
+      operators: ['withinHours', 'between', 'gte', 'lte'],
+      icon: ClockIcon,
+      options: [
+        { label: 'Last 1 hour', value: '1' },
+        { label: 'Last 6 hours', value: '6' },
+        { label: 'Last 24 hours', value: '24' },
+        { label: 'Last 7 days', value: '168' },
+        { label: 'Last 30 days', value: '720' },
+      ],
+      description: 'Relative window or an explicit date range.',
+    },
+    {
+      key: 'user',
+      column: 'user',
+      label: 'User',
+      type: 'select',
+      operators: ['in', 'notIn', 'eq', 'ne', 'contains'],
+      dynamicOptions: queryLogDynamicOptions('user'),
+      icon: UserIcon,
+      description: 'Pick from recent users or search by name.',
+    },
+    {
+      key: 'excluded_users',
+      column: 'user',
+      label: 'Exclude users',
+      type: 'select',
+      operators: ['notIn'],
+      dynamicOptions: queryLogDynamicOptions('user'),
+      icon: UserXIcon,
+      defaultValue: defaultExcludedUsers
+        ? { operator: 'notIn', value: defaultExcludedUsers }
+        : undefined,
+    },
+    {
+      key: 'query',
+      column: 'query',
+      label: 'Query text',
+      type: 'text',
+      operators: ['contains', 'notContains', 'eq'],
+      icon: SearchIcon,
+      placeholder: 'e.g. SELECT * FROM ...',
+      description: 'Full-text search inside the query body.',
+    },
+    {
+      key: 'query_id',
+      column: 'query_id',
+      label: 'Query ID',
+      type: 'text',
+      operators: ['eq', 'contains'],
+      icon: HashIcon,
+      placeholder: 'e.g. 8f3a1c2e-...',
+    },
+    {
+      key: 'query_kind',
+      column: 'query_kind',
+      label: 'Query kind',
+      type: 'select',
+      operators: ['in', 'eq', 'ne'],
+      icon: LayersIcon,
+      options: [
+        { label: 'Select', value: 'Select' },
+        { label: 'Insert', value: 'Insert' },
+        { label: 'Create', value: 'Create' },
+        { label: 'Alter', value: 'Alter' },
+        { label: 'Drop', value: 'Drop' },
+        { label: 'Rename', value: 'Rename' },
+        { label: 'Optimize', value: 'Optimize' },
+        { label: 'System', value: 'System' },
+        { label: 'Show', value: 'Show' },
+        { label: 'Set', value: 'Set' },
+        { label: 'Backup', value: 'Backup' },
+      ],
+    },
+    {
+      key: 'type',
+      column: 'type',
+      label: 'Status',
+      type: 'select',
+      operators: ['in', 'eq', 'ne'],
+      icon: ActivityIcon,
+      options: [
+        { label: 'Query started', value: 'QueryStart' },
+        { label: 'Query finished', value: 'QueryFinish' },
+        { label: 'Failed before start', value: 'ExceptionBeforeStart' },
+        { label: 'Failed while running', value: 'ExceptionWhileProcessing' },
+      ],
+    },
+    {
+      key: 'duration',
+      column: 'query_duration_ms',
+      label: 'Duration',
+      type: 'number',
+      operators: ['gte', 'gt', 'lte', 'lt', 'between'],
+      icon: TimerIcon,
+      unit: 's',
+      scale: 1000,
+      placeholder: 'seconds',
+    },
+    {
+      key: 'memory',
+      column: 'memory_usage',
+      label: 'Memory',
+      type: 'number',
+      operators: ['gte', 'gt', 'lte', 'lt', 'between'],
+      icon: MemoryStickIcon,
+      unit: 'MB',
+      scale: 1024 * 1024,
+      placeholder: 'megabytes',
+    },
+    {
+      key: 'read_rows',
+      column: 'read_rows',
+      label: 'Read rows',
+      type: 'number',
+      operators: ['gte', 'gt', 'lte', 'lt', 'between'],
+      icon: DatabaseIcon,
+      unit: 'rows',
+    },
+    {
+      key: 'written_rows',
+      column: 'written_rows',
+      label: 'Written rows',
+      type: 'number',
+      operators: ['gte', 'gt', 'lte', 'lt'],
+      icon: DatabaseIcon,
+      unit: 'rows',
+    },
+    {
+      key: 'result_rows',
+      column: 'result_rows',
+      label: 'Result rows',
+      type: 'number',
+      operators: ['gte', 'gt', 'lte', 'lt'],
+      icon: FileOutputIcon,
+      unit: 'rows',
+    },
+    {
+      key: 'tables',
+      column: "arrayStringConcat(tables, ', ')",
+      label: 'Table',
+      type: 'text',
+      operators: ['contains'],
+      icon: TableIcon,
+      placeholder: 'e.g. default.events',
+      description: 'Matches any table the query touched.',
+    },
+    {
+      key: 'client_name',
+      column: 'client_name',
+      label: 'Client',
+      type: 'select',
+      operators: ['in', 'contains', 'eq'],
+      dynamicOptions: queryLogDynamicOptions('client_name'),
+      icon: MonitorIcon,
+    },
+  ],
+  presets: [
+    {
+      name: 'Last hour',
+      icon: ClockIcon,
+      filters: [{ key: 'event_time', operator: 'withinHours', value: '1' }],
+    },
+    {
+      name: 'Slow queries (> 10s)',
+      icon: TimerIcon,
+      filters: [{ key: 'duration', operator: 'gte', value: '10' }],
+    },
+    {
+      name: 'Failed queries',
+      icon: ZapIcon,
+      filters: [
+        {
+          key: 'type',
+          operator: 'in',
+          value: 'ExceptionBeforeStart,ExceptionWhileProcessing',
+        },
+      ],
+    },
+    {
+      name: 'Heavy memory (> 1GB)',
+      icon: MemoryStickIcon,
+      filters: [{ key: 'memory', operator: 'gte', value: '1024' }],
+    },
+    {
+      name: 'Inserts only',
+      icon: DatabaseIcon,
+      filters: [{ key: 'query_kind', operator: 'in', value: 'Insert' }],
+    },
+    {
+      name: 'Selects only',
+      icon: SearchIcon,
+      filters: [{ key: 'query_kind', operator: 'in', value: 'Select' }],
+    },
+  ],
+}
 
 export const historyQueriesConfig: QueryConfig = {
   name: 'history-queries',
@@ -64,8 +285,7 @@ export const historyQueriesConfig: QueryConfig = {
               round(100 * memory_usage / MAX(memory_usage) OVER ()) AS pct_memory_usage,
               query_kind,
               client_name
-          FROM system.query_log
-${historyQueryFilters}
+${historyQueryTail}
       `,
     },
     {
@@ -95,8 +315,7 @@ ${historyQueryFilters}
               query_kind,
               query_cache_usage,
               client_name
-          FROM system.query_log
-${historyQueryFilters}
+${historyQueryTail}
       `,
     },
   ],
@@ -170,104 +389,7 @@ ${historyQueryFilters}
     return undefined
   },
 
-  defaultParams: {
-    type: '',
-    duration_1m: '',
-    min_duration_s: '',
-    last_hours: '',
-    event_time: '',
-    database: '',
-    table: '',
-    user: '',
-    excluded_users: process.env.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '',
-    query_text: '',
-    query_id: '',
-    min_memory_mb: '',
-    min_read_rows: '',
-    query_kind: '',
-  },
-
-  filterParamPresets: [
-    // Time-based
-    { name: 'Last 1 hour', key: 'last_hours', value: '1' },
-    { name: 'Last 6 hours', key: 'last_hours', value: '6' },
-    { name: 'Last 24 hours', key: 'last_hours', value: '24' },
-    { name: 'Last 7 days', key: 'last_hours', value: '168' },
-
-    // Query Kind (user-friendly names)
-    {
-      name: 'Select Queries',
-      key: 'query_kind',
-      value: 'Select',
-      icon: SearchIcon,
-    },
-    {
-      name: 'Insert Queries',
-      key: 'query_kind',
-      value: 'Insert',
-      icon: DatabaseIcon,
-    },
-    {
-      name: 'System Queries',
-      key: 'type',
-      value: 'QueryFinish',
-      icon: SettingsIcon,
-    },
-    {
-      name: 'Failed Queries',
-      key: 'type',
-      value: 'ExceptionBeforeStart',
-      icon: CircleXIcon,
-    },
-
-    // Duration
-    { name: '> 1 second', key: 'min_duration_s', value: '1', icon: ClockIcon },
-    {
-      name: '> 10 seconds',
-      key: 'min_duration_s',
-      value: '10',
-      icon: TimerIcon,
-    },
-    {
-      name: '> 1 minute',
-      key: 'min_duration_s',
-      value: '60',
-      icon: TimerIcon,
-    },
-
-    // Memory
-    {
-      name: 'Memory > 100MB',
-      key: 'min_memory_mb',
-      value: '100',
-      icon: MemoryStickIcon,
-    },
-    {
-      name: 'Memory > 500MB',
-      key: 'min_memory_mb',
-      value: '500',
-      icon: MemoryStickIcon,
-    },
-    {
-      name: 'Memory > 1GB',
-      key: 'min_memory_mb',
-      value: '1024',
-      icon: MemoryStickIcon,
-    },
-
-    // Read Rows
-    { name: 'Read > 1M rows', key: 'min_read_rows', value: '1000000' },
-    { name: 'Read > 10M rows', key: 'min_read_rows', value: '10000000' },
-    { name: 'Read > 100M rows', key: 'min_read_rows', value: '100000000' },
-
-    // Legacy (kept for compatibility)
-    { name: 'type = QueryStart', key: 'type', value: 'QueryStart' },
-    {
-      name: `user != ${process.env.CLICKHOUSE_EXCLUDE_USER_DEFAULT || ''}`,
-      key: 'excluded_users',
-      value: process.env.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '',
-    },
-  ],
+  filterSchema: historyQueryFilterSchema,
 
   relatedCharts: [
     ['query-count', {}],

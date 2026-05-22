@@ -3,6 +3,7 @@ import type { ClickHouseSettings } from '@clickhouse/client'
 import type { ChartProps } from '@/components/charts/chart-props'
 import type { CustomSortingFnNames } from '@/components/data-table/sorting-fns'
 import type { FeaturePermission } from '@/lib/feature-permissions/types'
+import type { FilterSchema } from '@/lib/filters/types'
 import type { ColumnFormat, ColumnFormatWithArgs } from '@/types/column-format'
 import type { Icon } from '@/types/icon'
 
@@ -260,6 +261,17 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
     value: string
     icon?: Icon
   }[]
+  /**
+   * Declarative, schema-driven filter configuration.
+   *
+   * When set, the table query must contain the `FILTER_PLACEHOLDER` marker.
+   * The server parses active filters from the URL, validates them against this
+   * schema, and injects a parameterized `WHERE` clause at the marker. This
+   * also drives the dynamic filter bar UI.
+   *
+   * @see {@link FilterSchema}
+   */
+  filterSchema?: FilterSchema
   /**
    * ClickHouse settings to be used for this query
    */
