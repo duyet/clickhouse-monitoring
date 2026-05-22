@@ -143,6 +143,13 @@ describe('formatQuery', () => {
     expect(result).toBe(expected)
   })
 
+  it('should remove leading query comments', () => {
+    const query = '/* clickhouse-monitor */ SELECT * FROM system.processes'
+    const expected = 'SELECT * FROM system.processes'
+    const result = formatQuery({ query, comment_remove: true })
+    expect(result).toBe(expected)
+  })
+
   it('should not remove comments when comment_remove is undefined', () => {
     const query = 'SELECT * FROM table /* This is a comment */'
     const result = formatQuery({ query })

@@ -112,6 +112,16 @@ function formatSQL(sql: string): string {
   }
 }
 
+function prepareDialogContent(
+  value: string,
+  hideQueryComment?: boolean
+): string {
+  const withoutComment = hideQueryComment
+    ? value.replace(/\/\*[\s\S]*?\*\//g, '')
+    : value
+  return dedent(withoutComment).trim()
+}
+
 function ExplorerLink({ query }: { query: string }) {
   const hostId = useHostId()
   const href = buildExplorerQueryUrl(query, hostId)
@@ -174,11 +184,11 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
   const content = useMemo(() => {
     if (!open) return ''
 
-    let result = value
+    let result = prepareDialogContent(value, options?.hide_query_comment)
 
     if (language === 'json') {
       try {
-        const json = JSON.parse(value)
+        const json = JSON.parse(result)
         result = JSON.stringify(json, null, 2)
       } catch {}
       return result
@@ -189,7 +199,7 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
     }
 
     return result
-  }, [open, value, isBeautified, language])
+  }, [open, value, options?.hide_query_comment, isBeautified, language])
   const lineCount = contentLineCount(content)
 
   const highlightedHtml = useMemo(() => {
@@ -275,7 +285,7 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
       </DialogTrigger>
       <DialogContent
         className={cn(
-          'w-[min(95vw,1100px)] min-w-0 max-w-none p-4 sm:p-6',
+          'flex max-h-[min(92dvh,900px)] w-[min(95vw,1100px)] min-w-0 max-w-none flex-col overflow-hidden p-4 sm:p-6',
           options?.dialog_classname
         )}
       >
@@ -331,10 +341,10 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="relative group/code">
-          <ScrollArea className="h-[min(70vh,720px)] rounded-md border bg-muted/40">
+        <div className="relative min-h-0 flex flex-1 flex-col group/code">
+          <ScrollArea className="min-h-0 flex-1 rounded-md border bg-muted/40">
             <div
-              className="[&_code]:break-words [&_pre]:whitespace-pre-wrap [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400"
+              className="[&_code]:break-words [&_pre]:m-0 [&_pre]:max-w-full [&_pre]:whitespace-pre-wrap [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400"
               dangerouslySetInnerHTML={{ __html: highlightedHtml }}
             />
           </ScrollArea>

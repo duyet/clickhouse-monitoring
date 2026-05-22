@@ -6,7 +6,7 @@ import type { MenuItem as MenuItemType } from '@/components/menu/types'
 import type { MenuItemActiveState, MenuItemProps } from './types'
 
 import { CollapsedSubmenu } from './collapsed-submenu'
-import { lazy, memo, Suspense } from 'react'
+import { lazy, memo, Suspense, useCallback } from 'react'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
 
 const NewBadge = lazy(() =>
@@ -36,6 +36,19 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
+
+function useCloseMobileSidebar() {
+  const { isMobile, setOpenMobile } = useSidebar()
+
+  return useCallback(
+    (event?: React.MouseEvent<HTMLAnchorElement>) => {
+      if (!event?.defaultPrevented && isMobile) {
+        setOpenMobile(false)
+      }
+    },
+    [isMobile, setOpenMobile]
+  )
+}
 
 /**
  * Determines the active state for a menu item
@@ -67,10 +80,16 @@ const SingleMenuItem = memo(function SingleMenuItem({
   item: MenuItemType
   isActive: boolean
 }) {
+  const closeMobileSidebar = useCloseMobileSidebar()
+
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-        <HostPrefixedLink href={item.href} className="flex w-full items-center">
+        <HostPrefixedLink
+          href={item.href}
+          className="flex w-full items-center"
+          onClick={closeMobileSidebar}
+        >
           {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
           <span className="group-data-[state=collapsed]/sidebar:hidden">
             {item.title}
@@ -113,6 +132,7 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
   hasActiveChild: boolean
 }) {
   const { state } = useSidebar()
+  const closeMobileSidebar = useCloseMobileSidebar()
   const isCollapsed = state === 'collapsed'
 
   // When collapsed, use Popover submenu
@@ -188,6 +208,7 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
                   <HostPrefixedLink
                     href={subItem.href}
                     className="flex w-full items-center gap-2"
+                    onClick={closeMobileSidebar}
                   >
                     <span className="group-data-[state=collapsed]/sidebar:hidden min-w-0 truncate">
                       {subItem.title}

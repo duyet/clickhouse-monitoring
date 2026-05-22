@@ -23,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { useSidebar } from '@/components/ui/sidebar'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 import { cn } from '@/lib/utils'
 
@@ -47,6 +48,7 @@ export const CollapsedSubmenu = memo(function CollapsedSubmenu({
   trigger,
 }: CollapsedSubmenuProps) {
   const [open, setOpen] = useState(false)
+  const { isMobile, setOpenMobile } = useSidebar()
   const hasChildren = item.items && item.items.length > 0
 
   if (!hasChildren) {
@@ -85,7 +87,12 @@ export const CollapsedSubmenu = memo(function CollapsedSubmenu({
                 <HostPrefixedLink
                   key={subItem.href}
                   href={subItem.href}
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    setOpen(false)
+                    if (isMobile) {
+                      setOpenMobile(false)
+                    }
+                  }}
                 >
                   <div
                     className={cn(

@@ -79,6 +79,7 @@ export const runningQueriesConfig: QueryConfig = {
         max_truncate: 80,
         hide_query_comment: true,
         dialog_title: 'Running Query',
+        trigger_classname: '-ml-1 w-full min-w-0 sm:-ml-2',
       },
     ],
     query_detail: [

@@ -76,10 +76,7 @@ export function formatQuery({
   trim?: boolean
 }) {
   let formattedQuery = comment_remove
-    ? query.replace(
-        /\/\*[\s\S]*?\*\//g,
-        query.trim().startsWith('/*') ? '/* ... */' : ''
-      )
+    ? query.replace(/\/\*[\s\S]*?\*\//g, '')
     : query
 
   if (trim) {
