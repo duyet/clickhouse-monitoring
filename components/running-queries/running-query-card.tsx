@@ -25,8 +25,9 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { memo, useCallback, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { CodeDialogFormat } from '@/components/data-table/cells/code-dialog-format'
+import { MetricSparkline } from '@/components/running-queries/metric-sparkline'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -40,6 +41,7 @@ import {
   formatReadableSecondDuration,
   formatReadableSize,
 } from '@/lib/format-readable'
+import { getRunningQueryHistory } from '@/lib/running-queries/metrics-history'
 import { useActions } from '@/lib/swr'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
@@ -82,6 +84,7 @@ export interface RunningQueryRow {
   readable_peak_memory_usage?: string
   pct_memory_usage?: number
   peak_threads_usage?: number
+  thread_count?: number
   thread_ids?: unknown[]
   pct_progress?: number
   estimated_remaining_time?: number | null
@@ -158,9 +161,16 @@ function formatCpuTime(micros: number): string {
 }
 
 const SEVERITY_CARD: Record<Severity, string> = {
-  critical: 'border-l-red-500 bg-red-50/40 dark:bg-red-950/15',
-  warning: 'border-l-amber-500 bg-amber-50/40 dark:bg-amber-950/15',
-  normal: 'border-l-transparent',
+  critical: 'border-l-2 border-l-red-500 bg-red-50/40 dark:bg-red-950/15',
+  warning: 'border-l-2 border-l-amber-500 bg-amber-50/40 dark:bg-amber-950/15',
+  normal: '',
+}
+
+/** Live-status dot color, keyed to the same severity scale. */
+const SEVERITY_DOT: Record<Severity, string> = {
+  critical: 'bg-red-500',
+  warning: 'bg-amber-500',
+  normal: 'bg-emerald-500',
 }
 
 const SEVERITY_ELAPSED: Record<Severity, string> = {
@@ -226,6 +236,30 @@ function DetailField({
   )
 }
 
+/** A small pulsing dot that signals the card is a live, in-flight query. */
+function LiveDot({ severity }: { severity: Severity }) {
+  return (
+    <span
+      className="relative flex size-2 shrink-0"
+      title="Query is running"
+      aria-hidden="true"
+    >
+      <span
+        className={cn(
+          'absolute inline-flex h-full w-full animate-ping rounded-full opacity-60',
+          SEVERITY_DOT[severity]
+        )}
+      />
+      <span
+        className={cn(
+          'relative inline-flex size-2 rounded-full',
+          SEVERITY_DOT[severity]
+        )}
+      />
+    </span>
+  )
+}
+
 interface RunningQueryCardProps {
   row: RunningQueryRow
 }
@@ -259,6 +293,7 @@ export const RunningQueryCard = memo(function RunningQueryCard({
   const writtenRows = Number(row.written_rows ?? 0)
   const threads =
     Number(row.peak_threads_usage ?? 0) ||
+    Number(row.thread_count ?? 0) ||
     (Array.isArray(row.thread_ids) ? row.thread_ids.length : 0)
   const remaining =
     typeof row.estimated_remaining_time === 'number' &&
@@ -271,6 +306,16 @@ export const RunningQueryCard = memo(function RunningQueryCard({
   const peakMemory = Number(row.peak_memory_usage ?? 0)
   const readBytes = Number(row.read_bytes ?? 0)
   const writtenBytes = Number(row.written_bytes ?? 0)
+
+  // Rolling memory history for the live sparkline. The history store is
+  // refreshed in an effect (one render behind), so append the live value to
+  // keep the curve's last point in sync with the headline number.
+  const memoryHistory = getRunningQueryHistory(queryId)
+  const memorySeries = useMemo(() => {
+    const series = memoryHistory.map((sample) => sample.memory)
+    if (series[series.length - 1] !== memoryUsage) series.push(memoryUsage)
+    return series
+  }, [memoryHistory, memoryUsage])
 
   // CPU + network are only exposed through the ProfileEvents map
   const events = row.ProfileEvents
@@ -318,12 +363,13 @@ export const RunningQueryCard = memo(function RunningQueryCard({
   return (
     <div
       className={cn(
-        'group rounded-lg border border-l-2 bg-card transition-colors hover:bg-muted/30',
+        'group rounded-lg border bg-card transition-colors hover:bg-muted/30',
         SEVERITY_CARD[severity]
       )}
     >
       {/* Row 1 — query metadata */}
       <div className="flex items-center gap-2 px-3 pt-2.5 text-xs">
+        <LiveDot severity={severity} />
         <span
           className={cn(
             'rounded px-1.5 py-0.5 font-medium uppercase tracking-wide',
@@ -387,6 +433,8 @@ export const RunningQueryCard = memo(function RunningQueryCard({
             dialog_title: 'Running Query',
             hide_query_comment: true,
             max_truncate: 160,
+            force_dialog: true,
+            show_query_plan: true,
             trigger_classname: 'w-full min-w-0',
           }}
         />
@@ -408,19 +456,40 @@ export const RunningQueryCard = memo(function RunningQueryCard({
         </div>
       )}
 
+      {/* Live memory chart — sparkline accumulates one point per poll */}
+      <div className="flex items-center gap-3 border-t border-border/60 px-3 py-1.5">
+        <span className="flex shrink-0 items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
+          <MemoryStick className="size-3" />
+          Memory
+        </span>
+        <div className="flex h-7 min-w-0 flex-1 items-center">
+          {memorySeries.length >= 2 ? (
+            <MetricSparkline
+              values={memorySeries}
+              height={28}
+              className="w-full text-indigo-500 dark:text-indigo-400"
+            />
+          ) : (
+            <span className="text-[10px] text-muted-foreground/50">
+              Collecting samples…
+            </span>
+          )}
+        </div>
+        <span className="shrink-0 text-right leading-tight">
+          <span className="block text-sm font-semibold tabular-nums">
+            {formatReadableSize(memoryUsage)}
+          </span>
+          {peakMemory > memoryUsage && (
+            <span className="block text-[10px] tabular-nums text-muted-foreground">
+              peak {formatReadableSize(peakMemory)}
+            </span>
+          )}
+        </span>
+      </div>
+
       {/* Row 4 — metrics grid + actions */}
       <div className="flex items-start gap-2 border-t border-border/60 px-3 py-2">
         <div className="flex flex-1 flex-wrap gap-1.5">
-          <MetricTile
-            icon={MemoryStick}
-            label="Memory"
-            value={formatReadableSize(memoryUsage)}
-            sub={
-              peakMemory > memoryUsage
-                ? `peak ${formatReadableSize(peakMemory)}`
-                : undefined
-            }
-          />
           <MetricTile
             icon={Cpu}
             label="CPU"

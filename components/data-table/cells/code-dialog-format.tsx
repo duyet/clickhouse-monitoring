@@ -1,7 +1,14 @@
 'use client'
 
 import { SizeIcon } from '@radix-ui/react-icons'
-import { Check, Copy, ExternalLinkIcon, SparklesIcon } from 'lucide-react'
+import {
+  Check,
+  Copy,
+  ExternalLinkIcon,
+  Loader2,
+  SparklesIcon,
+} from 'lucide-react'
+import useSWR from 'swr'
 
 import dedent from 'dedent'
 import {
@@ -29,8 +36,10 @@ import {
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { buildExplorerQueryUrl } from '@/lib/explorer-url'
 import { formatQuery } from '@/lib/format-readable'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
@@ -45,6 +54,11 @@ export interface CodeDialogOptions {
   show_explorer_link?: boolean
   /** Force the dialog trigger for short content; defaults to false. */
   force_dialog?: boolean
+  /**
+   * Add a "Query Plan" tab that runs `EXPLAIN` for the SQL. Only takes effect
+   * when the detected language is SQL. Defaults to false.
+   */
+  show_query_plan?: boolean
 }
 
 const STORAGE_KEY = 'code-dialog-beautify'
@@ -136,6 +150,113 @@ function ExplorerLink({ query }: { query: string }) {
   )
 }
 
+interface ExplainResponse {
+  data?: { explain?: string }[]
+}
+
+/** SWR fetcher for the EXPLAIN endpoint; surfaces API error messages. */
+async function explainFetcher(url: string): Promise<ExplainResponse> {
+  const res = await apiFetch(url)
+  const json = (await res.json().catch(() => ({}))) as ExplainResponse & {
+    error?: { message?: string }
+  }
+  if (!res.ok) {
+    throw new Error(json?.error?.message || 'Failed to load query plan')
+  }
+  return json
+}
+
+/** Centered status / message panel used inside the Query Plan tab. */
+function PlanMessage({
+  children,
+  tone = 'muted',
+}: {
+  children: React.ReactNode
+  tone?: 'muted' | 'error'
+}) {
+  return (
+    <div
+      className={cn(
+        'flex min-h-0 flex-1 items-center justify-center gap-2 rounded-md border border-dashed bg-muted/30 p-6 text-center text-sm',
+        tone === 'error' ? 'text-destructive' : 'text-muted-foreground'
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
+/**
+ * Query Plan tab body: runs `EXPLAIN` for the SQL via `/api/v1/explain`.
+ *
+ * ClickHouse only explains read statements, so non-SELECT/WITH queries skip
+ * the network call entirely. The fetch is lazy — this component only mounts
+ * when the user opens the dialog and switches to the plan tab.
+ */
+function QueryPlanPanel({
+  query,
+  hideQueryComment,
+}: {
+  query: string
+  hideQueryComment?: boolean
+}) {
+  const hostId = useHostId()
+  const cleanQuery = useMemo(
+    () => prepareDialogContent(query, hideQueryComment ?? true),
+    [query, hideQueryComment]
+  )
+  const isExplainable = /^\s*(SELECT|WITH)\b/i.test(cleanQuery)
+  const url = isExplainable
+    ? `/api/v1/explain?hostId=${hostId}&query=${encodeURIComponent(cleanQuery)}`
+    : null
+
+  const { data, error, isLoading } = useSWR(url, explainFetcher, {
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+    shouldRetryOnError: false,
+  })
+
+  if (!isExplainable) {
+    return (
+      <PlanMessage>
+        Query plans are only available for SELECT / WITH statements.
+      </PlanMessage>
+    )
+  }
+  if (isLoading) {
+    return (
+      <PlanMessage>
+        <Loader2 className="size-4 animate-spin" />
+        Running EXPLAIN…
+      </PlanMessage>
+    )
+  }
+  if (error) {
+    return (
+      <PlanMessage tone="error">
+        {error instanceof Error ? error.message : 'Failed to load query plan'}
+      </PlanMessage>
+    )
+  }
+
+  const planText = (data?.data ?? [])
+    .map((row) => row?.explain ?? '')
+    .join('\n')
+    .trim()
+
+  if (!planText) {
+    return <PlanMessage>EXPLAIN returned no output.</PlanMessage>
+  }
+
+  return (
+    <ScrollArea className="min-h-0 flex-1 rounded-md border bg-muted/40">
+      <pre className="m-0 overflow-x-auto p-4 font-mono text-xs leading-relaxed text-foreground">
+        {planText}
+      </pre>
+    </ScrollArea>
+  )
+}
+
 interface CodeDialogFormatProps {
   value: string
   options?: CodeDialogOptions
@@ -174,6 +295,7 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
       : language === 'json'
         ? 'JSON'
         : 'Plain text'
+  const showQueryPlan = Boolean(options?.show_query_plan) && language === 'sql'
 
   const formatted = useMemo(() => {
     return formatQuery({
@@ -207,7 +329,8 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
   const highlightedHtml = useMemo(() => {
     if (!(open && content)) return ''
     try {
-      return highlightCode(content, language, false)
+      // Line numbers make multi-statement SQL far easier to scan.
+      return highlightCode(content, language, language === 'sql')
     } catch {
       return `<pre class="m-0 bg-background! p-4 text-foreground! text-sm"><code class="font-mono text-sm">${escapeHtml(dedent(content))}</code></pre>`
     }
@@ -268,6 +391,35 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
     )
   }
 
+  // The syntax-highlighted code body + footer. Extracted so it can render
+  // standalone or as the first tab when a Query Plan tab is present.
+  const codeView = (
+    <>
+      <div className="group/code relative flex min-h-0 flex-1 flex-col">
+        <ScrollArea className="min-h-0 flex-1 rounded-md border bg-muted/40">
+          <div
+            className="[&_code]:break-words [&_pre]:m-0 [&_pre]:max-w-full [&_pre]:whitespace-pre-wrap [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400"
+            dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+          />
+        </ScrollArea>
+
+        <div className="absolute top-2 right-2 flex items-center gap-2 opacity-0 transition-opacity group-hover/code:opacity-100">
+          <Badge
+            variant="secondary"
+            className="bg-background/80 font-mono text-[10px]"
+          >
+            {language === 'plaintext' ? 'TEXT' : language.toUpperCase()}
+          </Badge>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between px-0.5 text-[10px] text-muted-foreground">
+        <span className="font-medium">{languageLabel}</span>
+        <span className="tabular-nums">{lineCount} lines</span>
+      </div>
+    </>
+  )
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -282,7 +434,7 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
           <code className="min-w-0 truncate font-mono text-xs text-muted-foreground transition-colors group-hover/cell:text-foreground truncated">
             {formatted}
           </code>
-          <SizeIcon className="shrink-0 text-muted-foreground/60 transition-colors group-hover/cell:text-muted-foreground" />
+          <SizeIcon className="size-3.5 shrink-0 text-muted-foreground/60 transition-colors group-hover/cell:text-muted-foreground" />
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -343,28 +495,35 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="relative min-h-0 flex flex-1 flex-col group/code">
-          <ScrollArea className="min-h-0 flex-1 rounded-md border bg-muted/40">
-            <div
-              className="[&_code]:break-words [&_pre]:m-0 [&_pre]:max-w-full [&_pre]:whitespace-pre-wrap [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400"
-              dangerouslySetInnerHTML={{ __html: highlightedHtml }}
-            />
-          </ScrollArea>
-
-          <div className="absolute top-2 right-2 flex items-center gap-2 opacity-0 group-hover/code:opacity-100 transition-opacity">
-            <Badge
-              variant="secondary"
-              className="bg-background/80 font-mono text-[10px]"
+        {showQueryPlan ? (
+          <Tabs defaultValue="query" className="flex min-h-0 flex-1 flex-col">
+            <TabsList className="mb-2 h-8 self-start">
+              <TabsTrigger value="query" className="px-3 text-xs">
+                SQL
+              </TabsTrigger>
+              <TabsTrigger value="plan" className="px-3 text-xs">
+                Query Plan
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent
+              value="query"
+              className="mt-0 flex min-h-0 flex-1 flex-col gap-1.5 outline-none"
             >
-              {language === 'plaintext' ? 'TEXT' : language.toUpperCase()}
-            </Badge>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground px-0.5">
-          <span className="font-medium">{languageLabel}</span>
-          <span className="tabular-nums">{lineCount} lines</span>
-        </div>
+              {codeView}
+            </TabsContent>
+            <TabsContent
+              value="plan"
+              className="mt-0 flex min-h-0 flex-1 flex-col outline-none"
+            >
+              <QueryPlanPanel
+                query={value}
+                hideQueryComment={options?.hide_query_comment}
+              />
+            </TabsContent>
+          </Tabs>
+        ) : (
+          codeView
+        )}
       </DialogContent>
     </Dialog>
   )

@@ -2,11 +2,11 @@
 
 import { Activity, RefreshCw } from 'lucide-react'
 
-import type { CardError } from '@/lib/card-error-utils'
 import type { RunningQueryRow } from '@/components/running-queries/running-query-card'
+import type { CardError } from '@/lib/card-error-utils'
 
+import { memo, useEffect } from 'react'
 import { RunningQueryCard } from '@/components/running-queries/running-query-card'
-import { memo } from 'react'
 import { Skeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -17,15 +17,22 @@ import {
   getCardErrorDescription,
   getCardErrorTitle,
 } from '@/lib/card-error-utils'
+import { recordRunningQuerySnapshot } from '@/lib/running-queries/metrics-history'
 import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/swr/use-table-data'
 import { cn } from '@/lib/utils'
 
-/** Auto-refresh cadence for the running-queries list (ms). */
+/**
+ * Auto-refresh cadence for the running-queries list (ms).
+ *
+ * Defaults to 5s so the per-card memory sparkline reads as genuinely "live";
+ * `system.processes` is an in-memory table, so frequent polling is cheap.
+ * Override with `NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS`.
+ */
 const REFRESH_INTERVAL = (() => {
   const envValue = process.env.NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS
   const parsed = envValue ? Number.parseInt(envValue, 10) : NaN
-  return !Number.isNaN(parsed) && parsed > 0 ? parsed : 30_000
+  return !Number.isNaN(parsed) && parsed > 0 ? parsed : 5_000
 })()
 
 /** Skeleton placeholder shown during the initial load. */
@@ -33,10 +40,7 @@ function LoadingState() {
   return (
     <div className="flex flex-col gap-2">
       {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className="rounded-lg border border-l-2 border-l-transparent bg-card"
-        >
+        <div key={i} className="rounded-lg border bg-card">
           <div className="flex items-center gap-2 px-3 pt-2.5">
             <Skeleton className="h-4 w-14" />
             <Skeleton className="h-4 w-20" />
@@ -72,6 +76,13 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
       undefined,
       REFRESH_INTERVAL
     )
+
+  // Fold each poll into the rolling metric history that powers the per-card
+  // live memory sparkline. Cards append the latest value themselves, so a
+  // one-render lag here is invisible.
+  useEffect(() => {
+    if (data) recordRunningQuerySnapshot(data)
+  }, [data])
 
   // Show the skeleton on first load only — keep stale rows visible while
   // a background refresh is in flight to avoid layout flicker.
