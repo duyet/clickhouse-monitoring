@@ -61,6 +61,7 @@ describe('<DataTableContent />', () => {
     enableColumnReordering = defaultProps.enableColumnReordering,
     onColumnOrderChange,
     virtualizer = defaultProps.virtualizer,
+    columnVisibility,
   }: {
     rows?: Row[]
     activeFilterCount?: number
@@ -70,12 +71,14 @@ describe('<DataTableContent />', () => {
     enableColumnReordering?: boolean
     onColumnOrderChange?: (activeId: string, overId: string) => void
     virtualizer?: (typeof defaultProps)['virtualizer']
+    columnVisibility?: Record<string, boolean>
   }) {
     const table = useReactTable({
       data: rows,
       columns,
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
+      state: columnVisibility ? { columnVisibility } : undefined,
     })
 
     return (
@@ -234,6 +237,15 @@ describe('<DataTableContent />', () => {
     cy.get('[data-testid="mobile-table-sort"]').should('be.visible').click()
     cy.contains('[role="menuitem"]', 'col1 ascending').should('be.visible')
     cy.contains('[role="menuitem"]', 'col1 descending').should('be.visible')
+  })
+
+  it('only shows visible columns in the mobile sort menu', () => {
+    cy.viewport(375, 667)
+    cy.mount(<TestDataTableContent columnVisibility={{ col2: false }} />)
+
+    cy.get('[data-testid="mobile-table-sort"]').click()
+    cy.contains('[role="menuitem"]', 'col1 ascending').should('be.visible')
+    cy.contains('[role="menuitem"]', 'col2 ascending').should('not.exist')
   })
 
   it('virtualizes mobile cards when large result sets are virtualized', () => {

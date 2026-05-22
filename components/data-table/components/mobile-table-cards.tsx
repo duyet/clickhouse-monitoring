@@ -76,7 +76,7 @@ function MobileSortMenu<TData extends RowData>({
   table: Table<TData>
 }) {
   const sortableColumns = table
-    .getAllLeafColumns()
+    .getVisibleLeafColumns()
     .filter((column) => column.getCanSort() && !UTILITY_COLUMNS.has(column.id))
 
   if (!sortableColumns.length) {
