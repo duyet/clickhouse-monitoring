@@ -404,3 +404,20 @@
   --color-chart-yellow: var(--chart-yellow);
   --color-sidebar: var(--sidebar);
 }
+
+/* Indeterminate progress — a segment that slides across the track, used by
+   the running-queries "Reading…" state where no total row count is known. */
+@keyframes rq-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@layer utilities {
+  .animate-rq-indeterminate {
+    animation: rq-indeterminate 1.3s ease-in-out infinite;
+  }
+}

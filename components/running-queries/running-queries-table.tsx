@@ -354,9 +354,10 @@ function ProgressCell({ d }: { d: DerivedQuery }) {
             style={{ width: `${Math.max(pct, 2)}%`, background: color }}
           />
         ) : indeterminate ? (
+          // No known total — a segment slides across to signal live scanning.
           <div
-            className="absolute inset-0 animate-pulse rounded-full"
-            style={{ background: color, opacity: 0.5 }}
+            className="absolute inset-y-0 w-1/3 animate-rq-indeterminate rounded-full"
+            style={{ background: color }}
           />
         ) : null}
       </div>
@@ -647,7 +648,7 @@ const QueryRow = memo(function QueryRow({
   return (
     <>
       <tr
-        className="group cursor-pointer border-b border-border align-middle hover:bg-muted/60"
+        className="group animate-in cursor-pointer border-b border-border align-middle fade-in-0 slide-in-from-top-1 duration-300 hover:bg-muted/60"
         onClick={onToggle}
       >
         {/* Type + expand chevron */}

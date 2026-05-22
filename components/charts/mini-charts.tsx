@@ -67,16 +67,8 @@ export function MiniAreaChart({
       >
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop
-              offset="0%"
-              stopColor="var(--color-value)"
-              stopOpacity={0.22}
-            />
-            <stop
-              offset="100%"
-              stopColor="var(--color-value)"
-              stopOpacity={0}
-            />
+            <stop offset="0%" stopColor={color} stopOpacity={0.22} />
+            <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
         <ChartTooltip
@@ -95,7 +87,7 @@ export function MiniAreaChart({
         <Area
           dataKey="value"
           type="monotone"
-          stroke="var(--color-value)"
+          stroke={color}
           strokeWidth={1.6}
           fill={`url(#${gradientId})`}
           dot={false}
@@ -146,13 +138,16 @@ export function MiniBarChart({ data, series, className }: MiniBarChartProps) {
         margin={{ top: 4, right: 0, bottom: 0, left: 0 }}
         barCategoryGap={2}
       >
-        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+        <ChartTooltip
+          cursor={{ fill: 'var(--muted)', opacity: 0.5 }}
+          content={<ChartTooltipContent hideLabel indicator="dot" />}
+        />
         {series.map((s, i) => (
           <Bar
             key={s.key}
             dataKey={s.key}
             stackId="series"
-            fill={`var(--color-${s.key})`}
+            fill={s.color}
             isAnimationActive={false}
             radius={i === series.length - 1 ? [2, 2, 0, 0] : undefined}
           />

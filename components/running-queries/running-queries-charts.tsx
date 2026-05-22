@@ -1,5 +1,15 @@
 'use client'
 
+import {
+  Activity,
+  CalendarDays,
+  HardDrive,
+  Layers,
+  type LucideIcon,
+  MemoryStick,
+  Rows3,
+} from 'lucide-react'
+
 import type { MiniBarSeries } from '@/components/charts/mini-charts'
 import type { RunningQueryRow } from './running-queries-table'
 
@@ -140,12 +150,15 @@ function ByUserCard({
   )
 }
 
-/** Summary card: a labelled key / value list. */
-function SummaryCard({
-  items,
-}: {
-  items: { label: string; value: string; unit?: string }[]
-}) {
+interface SummaryItem {
+  icon: LucideIcon
+  label: string
+  value: string
+  unit?: string
+}
+
+/** Summary card: an icon-labelled key / value list. */
+function SummaryCard({ items }: { items: SummaryItem[] }) {
   return (
     <div className={cardClass}>
       <span className={labelClass}>Summary</span>
@@ -153,9 +166,12 @@ function SummaryCard({
         {items.map((item) => (
           <div
             key={item.label}
-            className="flex items-baseline justify-between gap-2 text-[12px]"
+            className="flex items-center justify-between gap-2 text-[12px]"
           >
-            <dt className="text-muted-foreground">{item.label}</dt>
+            <dt className="flex items-center gap-1.5 text-muted-foreground">
+              <item.icon className="size-3.5 text-muted-foreground/60" />
+              {item.label}
+            </dt>
             <dd className="font-semibold tabular-nums">
               {item.value}
               {item.unit && (
@@ -177,15 +193,6 @@ function SummaryCard({
 function splitSize(readable: string): { value: string; unit: string } {
   const [value, ...rest] = readable.split(' ')
   return { value: value ?? readable, unit: rest.join(' ') }
-}
-
-/** Split a "560.6 MiB" reading into a `{value, unit}` summary item. */
-function splitItem(
-  label: string,
-  readable: string
-): { label: string; value: string; unit?: string }[] {
-  const { value, unit } = splitSize(readable)
-  return [{ label, value, unit }]
 }
 
 // ───────────────────────── strip ─────────────────────────
@@ -309,17 +316,33 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
   }, [byUserSwr.data])
 
   // "Summary" — aggregated straight from the live rows.
-  const summary = useMemo(() => {
+  const summary = useMemo<SummaryItem[]>(() => {
     const sum = (key: keyof RunningQueryRow) =>
       rows.reduce((s, r) => s + (Number(r[key]) || 0), 0)
     const today = Number(todaySwr.data?.[0]?.count ?? 0)
+    const memory = splitSize(formatReadableSize(sum('memory_usage')))
+    const dataRead = splitSize(formatReadableSize(sum('read_bytes')))
     return [
-      { label: 'Active', value: String(rows.length) },
-      ...splitItem('Memory', formatReadableSize(sum('memory_usage'))),
-      { label: 'Rows read', value: formatReadableQuantity(sum('read_rows')) },
-      ...splitItem('Data read', formatReadableSize(sum('read_bytes'))),
-      { label: 'Threads', value: String(sum('thread_count')) },
-      { label: 'Today', value: formatCompactNumber(today) },
+      { icon: Activity, label: 'Active', value: String(rows.length) },
+      {
+        icon: MemoryStick,
+        label: 'Memory',
+        value: memory.value,
+        unit: memory.unit,
+      },
+      {
+        icon: Rows3,
+        label: 'Rows read',
+        value: formatReadableQuantity(sum('read_rows')),
+      },
+      {
+        icon: HardDrive,
+        label: 'Data read',
+        value: dataRead.value,
+        unit: dataRead.unit,
+      },
+      { icon: Layers, label: 'Threads', value: String(sum('thread_count')) },
+      { icon: CalendarDays, label: 'Today', value: formatCompactNumber(today) },
     ]
   }, [rows, todaySwr.data])
 

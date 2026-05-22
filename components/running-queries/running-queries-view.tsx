@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, RefreshCw } from 'lucide-react'
+import { ArrowRight, ChevronDown, History, RefreshCw } from 'lucide-react'
 
 import type { RunningQueryRow } from '@/components/running-queries/running-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
@@ -9,6 +9,7 @@ import { memo, useState } from 'react'
 import { RunningQueriesCharts } from '@/components/running-queries/running-queries-charts'
 import { RunningQueriesTable } from '@/components/running-queries/running-queries-table'
 import { Skeleton } from '@/components/skeletons'
+import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -20,6 +21,7 @@ import {
 } from '@/lib/card-error-utils'
 import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/swr/use-table-data'
+import { buildUrl } from '@/lib/url/url-builder'
 import { cn } from '@/lib/utils'
 
 /**
@@ -57,6 +59,33 @@ function LoadingState() {
         </div>
       ))}
     </div>
+  )
+}
+
+/**
+ * Link card to the full query history — completed queries leave the live
+ * list, so this points to where they can still be inspected.
+ */
+function HistoryLink({ hostId }: { hostId: number }) {
+  return (
+    <AppLink
+      href={buildUrl('/query-history', { host: hostId })}
+      className="group flex items-center gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-3 transition-colors hover:bg-muted/40"
+    >
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+        <History className="size-4" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[13px] font-medium">Completed queries</span>
+        <span className="block text-[12px] text-muted-foreground">
+          Queries that finish leave this list — browse them in query history.
+        </span>
+      </span>
+      <span className="inline-flex shrink-0 items-center gap-1 text-[12px] font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+        View history
+        <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+      </span>
+    </AppLink>
   )
 }
 
@@ -201,6 +230,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
             ) : (
               <RunningQueriesTable rows={rows} />
             )}
+            <HistoryLink hostId={hostId} />
           </>
         )}
       </div>
