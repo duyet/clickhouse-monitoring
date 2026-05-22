@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Popover,
   PopoverContent,
@@ -39,22 +40,24 @@ export function ExpandableCell({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
+        <Button
+          type="button"
+          variant="link"
           className={cn(
-            'max-w-xs truncate cursor-pointer text-left underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 hover:decoration-muted-foreground/80 transition-colors',
+            'block h-auto max-w-xs truncate p-0 text-left font-normal text-foreground',
+            'underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 hover:decoration-muted-foreground/80',
             className
           )}
           title="Click to expand"
           onClick={(e) => {
             e.stopPropagation()
-            setOpen(true)
           }}
         >
           {stringValue.slice(0, maxLength)}…
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-96 max-h-64 overflow-y-auto p-3"
+        className="max-h-64 w-[calc(100vw-2rem)] overflow-y-auto p-3 sm:w-96"
         align="start"
         side="bottom"
         onClick={(e) => e.stopPropagation()}
