@@ -17,10 +17,9 @@ import { ErrorBoundary } from 'react-error-boundary'
 import dynamic from 'next/dynamic'
 
 const GlobalAssistantModalImpl = dynamic(
-  () =>
-    import('./global-assistant-modal-impl').then(
-      (module) => module.GlobalAssistantModalImpl
-    ),
+  async () =>
+    (await import('@/components/assistant-ui/global-assistant-modal-impl'))
+      .GlobalAssistantModalImpl,
   { ssr: false }
 )
 

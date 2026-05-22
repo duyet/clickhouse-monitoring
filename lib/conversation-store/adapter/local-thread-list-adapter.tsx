@@ -3,18 +3,27 @@
 /**
  * localStorage-backed assistant-ui thread list adapter.
  *
- * Replicates assistant-ui's internal `createLocalStorageAdapter` (which is not
- * publicly exported) so the agent's conversation history persists entirely in
- * the browser. This is the default backend — used by self-hosted / Docker
+ * The default conversation-history backend — used by self-hosted / Docker
  * deployments where the ClickHouse connection is read-only and no server-side
- * conversation store is available.
+ * store is available. Persists the thread list and each thread's messages
+ * entirely in the browser.
  */
 
-import type { RemoteThreadListAdapter } from '@assistant-ui/react'
+import type {
+  GenericThreadHistoryAdapter,
+  MessageFormatAdapter,
+  MessageFormatRepository,
+  RemoteThreadListAdapter,
+  ThreadHistoryAdapter,
+} from '@assistant-ui/react'
 
 import { RuntimeAdapterProvider, useAui } from '@assistant-ui/react'
 import { createAssistantStream } from 'assistant-stream'
 import { type FC, type PropsWithChildren, useMemo } from 'react'
+import {
+  replaceHistoryItem,
+  upsertHistoryItem,
+} from '@/lib/conversation-store/adapter/generic-history'
 
 const PREFIX = 'clickhouse-agent:aui:'
 const THREADS_KEY = `${PREFIX}threads`
@@ -25,11 +34,6 @@ interface ThreadMeta {
   externalId?: string
   status: 'regular' | 'archived'
   title?: string
-}
-
-interface MessageRepo {
-  messages: Array<{ message: { id: string; role?: string } }>
-  headId?: string
 }
 
 function readJson<T>(key: string, fallback: T): T {
@@ -47,7 +51,7 @@ function writeJson(key: string, value: unknown): void {
   try {
     window.localStorage.setItem(key, JSON.stringify(value))
   } catch {
-    // Quota exceeded / unavailable — fail silently, same as the old store.
+    // Quota exceeded / unavailable — fail silently, like the old store.
   }
 }
 
@@ -61,38 +65,54 @@ function removeKey(key: string): void {
 }
 
 /**
- * Per-thread message history adapter. assistant-ui calls `load()` when a thread
- * becomes active and `append()` once per finalized message turn.
+ * Per-thread message history. `useChatRuntime` calls `withFormat()` to obtain a
+ * format-bound `GenericThreadHistoryAdapter`; the legacy `load` / `append` are
+ * required by the type but unused on the AI SDK runtime.
  */
-class LocalHistoryAdapter {
-  constructor(private readonly aui: ReturnType<typeof useAui>) {}
+function createLocalHistoryAdapter(
+  aui: ReturnType<typeof useAui>
+): ThreadHistoryAdapter {
+  return {
+    async load() {
+      return { messages: [] }
+    },
+    async append() {},
+    withFormat<TMessage, TStorageFormat extends Record<string, unknown>>(
+      formatAdapter: MessageFormatAdapter<TMessage, TStorageFormat>
+    ): GenericThreadHistoryAdapter<TMessage> {
+      const getId = (message: TMessage) => formatAdapter.getId(message)
+      const readRepo = (remoteId: string) =>
+        readJson<MessageFormatRepository<TMessage>>(messagesKey(remoteId), {
+          messages: [],
+        })
 
-  async load(): Promise<MessageRepo> {
-    const remoteId = this.aui.threadListItem().getState().remoteId
-    if (!remoteId) return { messages: [] }
-    return readJson<MessageRepo>(messagesKey(remoteId), { messages: [] })
-  }
-
-  async append(item: { message: { id: string } }): Promise<void> {
-    const { remoteId } = await this.aui.threadListItem().initialize()
-    const key = messagesKey(remoteId)
-    const repo = readJson<MessageRepo>(key, { messages: [] })
-    const index = repo.messages.findIndex(
-      (entry) => entry.message.id === item.message.id
-    )
-    if (index >= 0) {
-      repo.messages[index] = item as MessageRepo['messages'][number]
-    } else {
-      repo.messages.push(item as MessageRepo['messages'][number])
-    }
-    repo.headId = item.message.id
-    writeJson(key, repo)
+      return {
+        async load() {
+          const remoteId = aui.threadListItem().getState().remoteId
+          if (!remoteId) return { messages: [] }
+          return readRepo(remoteId)
+        },
+        async append(item) {
+          const { remoteId } = await aui.threadListItem().initialize()
+          const repo = readRepo(remoteId)
+          upsertHistoryItem(repo, item, getId)
+          writeJson(messagesKey(remoteId), repo)
+        },
+        async update(item, localMessageId) {
+          const remoteId = aui.threadListItem().getState().remoteId
+          if (!remoteId) return
+          const repo = readRepo(remoteId)
+          replaceHistoryItem(repo, item, localMessageId, getId)
+          writeJson(messagesKey(remoteId), repo)
+        },
+      }
+    },
   }
 }
 
 const HistoryProvider: FC<PropsWithChildren> = ({ children }) => {
   const aui = useAui()
-  const history = useMemo(() => new LocalHistoryAdapter(aui), [aui])
+  const history = useMemo(() => createLocalHistoryAdapter(aui), [aui])
   const adapters = useMemo(() => ({ history }), [history])
   return (
     <RuntimeAdapterProvider adapters={adapters as never}>
@@ -176,8 +196,8 @@ export function createLocalThreadListAdapter(): RemoteThreadListAdapter {
     },
 
     async generateTitle(remoteId) {
-      // Title is derived from the first user message during persistence; no
-      // LLM round-trip needed. Return an empty stream.
+      // Title is derived from the first message during persistence; no LLM
+      // round-trip needed. Return an empty stream.
       void remoteId
       return createAssistantStream(() => {})
     },

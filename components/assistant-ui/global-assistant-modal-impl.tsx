@@ -6,8 +6,8 @@
  * assistant-ui out of the Cloudflare Worker server bundle (3 MiB limit).
  */
 
-import { AgentRuntimeProvider } from './agent-runtime-provider'
-import { AssistantModal } from './assistant-modal'
+import { AgentRuntimeProvider } from '@/components/assistant-ui/agent-runtime-provider'
+import { AssistantModal } from '@/components/assistant-ui/assistant-modal'
 
 export function GlobalAssistantModalImpl() {
   return (

@@ -29,7 +29,7 @@ export function AgentThreadPage() {
     <ErrorBoundary FallbackComponent={AgentThreadPageError}>
       <AgentRuntimeProvider>
         <div className="bg-background flex h-[calc(100dvh-6rem)] min-h-0 overflow-hidden rounded-xl border">
-          <aside className="hidden w-64 shrink-0 flex-col gap-2 overflow-y-auto border-r p-2 lg:flex">
+          <aside className="bg-muted/30 hidden w-64 shrink-0 flex-col gap-2 overflow-y-auto border-r p-2 lg:flex">
             <p className="text-muted-foreground px-2 pt-1 text-xs font-medium tracking-wide uppercase">
               Conversations
             </p>

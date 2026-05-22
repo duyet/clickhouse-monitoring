@@ -11,24 +11,27 @@
  * backend so the two are interchangeable behind `resolve-thread-list-adapter`.
  */
 
-import type { RemoteThreadListAdapter } from '@assistant-ui/react'
+import type {
+  GenericThreadHistoryAdapter,
+  MessageFormatAdapter,
+  MessageFormatRepository,
+  RemoteThreadListAdapter,
+  ThreadHistoryAdapter,
+} from '@assistant-ui/react'
 
 import { RuntimeAdapterProvider, useAui } from '@assistant-ui/react'
 import { createAssistantStream } from 'assistant-stream'
 import { type FC, type PropsWithChildren, useMemo } from 'react'
+import {
+  replaceHistoryItem,
+  upsertHistoryItem,
+} from '@/lib/conversation-store/adapter/generic-history'
 import { apiFetch } from '@/lib/swr/api-fetch'
 
 const BASE = '/api/v1/conversations'
 
-interface MessageRepo {
-  messages: Array<{
-    message: { id: string; role?: string; parts?: unknown[] }
-  }>
-  headId?: string
-}
-
 /** In-memory cache so per-turn `append()` calls do not refetch every time. */
-const repoCache = new Map<string, MessageRepo>()
+const repoCache = new Map<string, MessageFormatRepository<unknown>>()
 
 function unwrap(json: unknown): Record<string, unknown> {
   if (json && typeof json === 'object') {
@@ -80,18 +83,20 @@ async function apiPut(
       throw new Error(`PUT failed with status ${res.status}`)
     }
   } catch {
-    // Network failure — keep the cached copy; next append retries.
+    // Network / non-OK response — keep the cached copy; next append retries.
   }
 }
 
 async function apiDelete(id: string): Promise<void> {
   try {
-    const res = await apiFetch(`${BASE}/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    const res = await apiFetch(`${BASE}/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    })
     if (!res.ok) {
       throw new Error(`DELETE failed with status ${res.status}`)
     }
   } catch {
-    // ignore
+    // ignore — deletion is best-effort
   }
 }
 
@@ -117,60 +122,82 @@ function deriveTitle(
   return undefined
 }
 
-class D1HistoryAdapter {
-  constructor(private readonly aui: ReturnType<typeof useAui>) {}
+/**
+ * Per-thread message history backed by the conversations API. `useChatRuntime`
+ * calls `withFormat()` for a format-bound `GenericThreadHistoryAdapter`; the
+ * stored `MessageFormatItem[]` is kept in the conversation's `messages` field.
+ */
+function createD1HistoryAdapter(
+  aui: ReturnType<typeof useAui>
+): ThreadHistoryAdapter {
+  return {
+    async load() {
+      return { messages: [] }
+    },
+    async append() {},
+    withFormat<TMessage, TStorageFormat extends Record<string, unknown>>(
+      formatAdapter: MessageFormatAdapter<TMessage, TStorageFormat>
+    ): GenericThreadHistoryAdapter<TMessage> {
+      const getId = (message: TMessage) => formatAdapter.getId(message)
+      const getCachedRepo = (
+        remoteId: string
+      ): MessageFormatRepository<TMessage> =>
+        (repoCache.get(remoteId) as
+          | MessageFormatRepository<TMessage>
+          | undefined) ?? { messages: [] }
 
-  async load(): Promise<MessageRepo> {
-    const remoteId = this.aui.threadListItem().getState().remoteId
-    if (!remoteId) return { messages: [] }
+      return {
+        async load() {
+          const remoteId = aui.threadListItem().getState().remoteId
+          if (!remoteId) return { messages: [] }
+          const conversation = await apiGet(remoteId)
+          const stored = conversation?.messages
+          const messages = Array.isArray(stored)
+            ? (stored as MessageFormatRepository<TMessage>['messages'])
+            : []
+          const repo: MessageFormatRepository<TMessage> = {
+            messages,
+            headId: messages.length
+              ? getId(messages[messages.length - 1].message)
+              : undefined,
+          }
+          repoCache.set(remoteId, repo)
+          return repo
+        },
+        async append(item) {
+          const { remoteId } = await aui.threadListItem().initialize()
+          const repo = getCachedRepo(remoteId)
+          upsertHistoryItem(repo, item, getId)
+          repoCache.set(remoteId, repo)
 
-    const conversation = await apiGet(remoteId)
-    const stored = conversation?.messages
-    const messages = Array.isArray(stored)
-      ? (stored as MessageRepo['messages'])
-      : []
-    const repo: MessageRepo = {
-      messages,
-      headId: messages.at(-1)?.message.id,
-    }
-    repoCache.set(remoteId, repo)
-    return repo
-  }
-
-  async append(item: {
-    message: { id: string; role?: string; parts?: unknown[] }
-  }): Promise<void> {
-    const { remoteId } = await this.aui.threadListItem().initialize()
-
-    const repo = repoCache.get(remoteId) ?? { messages: [] }
-    const index = repo.messages.findIndex(
-      (entry) => entry.message.id === item.message.id
-    )
-    if (index >= 0) {
-      repo.messages[index] = item
-    } else {
-      repo.messages.push(item)
-    }
-    repo.headId = item.message.id
-    repoCache.set(remoteId, repo)
-
-    const currentTitle = this.aui.threadListItem().getState().title
-    const payload: { messages: unknown[]; title?: string } = {
-      messages: repo.messages,
-    }
-    if (!currentTitle) {
-      const title = deriveTitle(item.message)
-      if (title) {
-        payload.title = title
+          const payload: { messages: unknown[]; title?: string } = {
+            messages: repo.messages,
+          }
+          // Seed the title from the first message only — never overwrite.
+          if (!aui.threadListItem().getState().title) {
+            const title = deriveTitle(
+              item.message as { role?: string; parts?: unknown[] }
+            )
+            if (title) payload.title = title
+          }
+          await apiPut(remoteId, payload)
+        },
+        async update(item, localMessageId) {
+          const remoteId = aui.threadListItem().getState().remoteId
+          if (!remoteId) return
+          const repo = getCachedRepo(remoteId)
+          replaceHistoryItem(repo, item, localMessageId, getId)
+          repoCache.set(remoteId, repo)
+          await apiPut(remoteId, { messages: repo.messages })
+        },
       }
-    }
-    await apiPut(remoteId, payload)
+    },
   }
 }
 
 const HistoryProvider: FC<PropsWithChildren> = ({ children }) => {
   const aui = useAui()
-  const history = useMemo(() => new D1HistoryAdapter(aui), [aui])
+  const history = useMemo(() => createD1HistoryAdapter(aui), [aui])
   const adapters = useMemo(() => ({ history }), [history])
   return (
     <RuntimeAdapterProvider adapters={adapters as never}>
