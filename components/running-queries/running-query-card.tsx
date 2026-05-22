@@ -312,7 +312,10 @@ export const RunningQueryCard = memo(function RunningQueryCard({
   // keep the curve's last point in sync with the headline number.
   const memoryHistory = getRunningQueryHistory(queryId)
   const memorySeries = useMemo(() => {
-    const series = memoryHistory.map((sample) => sample.memory)
+    // Clone memoryHistory to ensure a new array reference on every update,
+    // since recordRunningQuerySnapshot mutates the array in-place and
+    // getRunningQueryHistory returns the same reference.
+    const series = [...memoryHistory].map((sample) => sample.memory)
     if (series[series.length - 1] !== memoryUsage) series.push(memoryUsage)
     return series
   }, [memoryHistory, memoryUsage])
