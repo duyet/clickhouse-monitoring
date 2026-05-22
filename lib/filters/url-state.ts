@@ -7,7 +7,11 @@
  * falls back to the field's default operator.
  */
 
-import type { ActiveFilter, FilterField, FilterSchema } from '@/lib/filters/types'
+import type {
+  ActiveFilter,
+  FilterField,
+  FilterSchema,
+} from '@/lib/filters/types'
 
 import {
   isFilterOperator,

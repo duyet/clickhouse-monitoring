@@ -154,7 +154,8 @@ export function getTableQuery(
 
     return {
       query: getSqlForDisplay(resolvedConfig.sql),
-      queryParams: Object.keys(mergedParams).length > 0 ? mergedParams : undefined,
+      queryParams:
+        Object.keys(mergedParams).length > 0 ? mergedParams : undefined,
       queryConfig: resolvedConfig,
     }
   }

@@ -2,6 +2,7 @@
 
 import { FilterIcon, PlusIcon, SparklesIcon, XIcon } from 'lucide-react'
 
+import type { FilterDraft } from '@/components/filters/filter-editor'
 import type {
   ActiveFilter,
   FilterField,
@@ -9,11 +10,10 @@ import type {
   FilterSchema,
 } from '@/lib/filters/types'
 import type { QueryConfig } from '@/types/query-config'
-import type { FilterDraft } from '@/components/filters/filter-editor'
 
-import { FilterEditor } from '@/components/filters/filter-editor'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useMemo, useState } from 'react'
+import { FilterEditor } from '@/components/filters/filter-editor'
 import { Button } from '@/components/ui/button'
 import {
   Command,

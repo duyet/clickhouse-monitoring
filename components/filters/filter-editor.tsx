@@ -5,9 +5,8 @@ import { CheckIcon, Loader2Icon, PlusIcon } from 'lucide-react'
 import type { KeyboardEvent } from 'react'
 import type { FilterField, FilterOperator } from '@/lib/filters/types'
 
-import { useFilterOptions } from '@/components/filters/use-filter-options'
-import { useHostId } from '@/lib/swr'
 import { useState } from 'react'
+import { useFilterOptions } from '@/components/filters/use-filter-options'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -31,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { OPERATORS } from '@/lib/filters/operators'
+import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 /** A draft filter being edited (operator + raw values, before serialization). */
@@ -334,12 +334,11 @@ function OptionsList({
 }: OptionsListProps) {
   const hostId = useHostId()
   const isDynamic = Boolean(field.dynamicOptions)
-  const { options: dynamicOptions, isLoading, error } = useFilterOptions(
-    configName,
-    field.key,
-    hostId,
-    isDynamic
-  )
+  const {
+    options: dynamicOptions,
+    isLoading,
+    error,
+  } = useFilterOptions(configName, field.key, hostId, isDynamic)
   const options = isDynamic ? dynamicOptions : (field.options ?? [])
   const [search, setSearch] = useState('')
 
