@@ -5,11 +5,19 @@ import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { DateRangeConfig, DateRangeValue } from '@/components/date-range'
 import type { StaleError, UseChartResult } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
+import type { ChartSkeletonType } from './chart-registry'
 
 import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
+import { getChartSkeletonType } from './chart-registry'
 import { ChartZoomButton, ChartZoomDialog } from './chart-zoom-dialog'
-import { cloneElement, isValidElement, useMemo, useState } from 'react'
+import {
+  cloneElement,
+  isValidElement,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
 import { cn } from '@/lib/utils'
@@ -46,6 +54,8 @@ export interface ChartContainerProps<
   currentRange?: string
   /** Callback when date range changes */
   onRangeChange?: (range: DateRangeValue) => void
+  /** Skeleton type hint (auto-detected from chart name if omitted) */
+  type?: ChartSkeletonType
 }
 
 /**
@@ -84,10 +94,25 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
   dateRangeConfig,
   currentRange,
   onRangeChange,
+  type,
 }: ChartContainerProps<TData>) {
   const { data, isLoading, error, mutate, sql, metadata, hasData, staleError } =
     swr
   const [zoomOpen, setZoomOpen] = useState(false)
+
+  // Resolve skeleton type: explicit prop, or dynamic lookup from registry, or fallback
+  const skeletonType = useMemo(() => {
+    if (type) return type
+    if (swr.chartName) {
+      return getChartSkeletonType(swr.chartName)
+    }
+    return 'area'
+  }, [type, swr.chartName])
+
+  // Stable retry handler to prevent re-renders in ChartError
+  const handleRetry = useCallback(() => {
+    mutate()
+  }, [mutate])
 
   // Pass all metadata fields dynamically
   const toolbarMetadata: CardToolbarMetadata | undefined = metadata
@@ -110,13 +135,15 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
 
   // Loading state
   if (isLoading) {
-    return <ChartSkeleton title={title} className={className} />
+    return (
+      <ChartSkeleton title={title} type={skeletonType} className={className} />
+    )
   }
 
   // Error state - ONLY when no previous data exists (initial load error)
   // If we have data but error occurred during revalidation, show data with stale indicator
   if (error && !hasData) {
-    return <ChartError error={error} title={title} onRetry={() => mutate()} />
+    return <ChartError error={error} title={title} onRetry={handleRetry} />
   }
 
   // Empty state - show empty state message instead of hiding
