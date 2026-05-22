@@ -57,6 +57,8 @@ export interface UseChartResult<TData extends ChartDataPoint = ChartDataPoint> {
   hasData: boolean
   /** Error from failed revalidation (only set when data exists but refresh failed) */
   staleError?: StaleError
+  /** The semantic identifier of this chart */
+  chartName: string
 }
 
 export type SwrConfigPreset = keyof typeof REFRESH_INTERVAL | SWRConfiguration
@@ -309,5 +311,6 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     mutate,
     hasData,
     staleError,
+    chartName,
   }
 }
