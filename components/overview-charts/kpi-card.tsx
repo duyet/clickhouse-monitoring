@@ -1,7 +1,6 @@
 'use client'
 
 import type { LucideIcon } from 'lucide-react'
-import { Area, AreaChart, ResponsiveContainer } from 'recharts'
 
 import type { ReactNode } from 'react'
 
@@ -12,10 +11,14 @@ import {
   progressFillStyles,
   progressTrackStyles,
 } from './card-styles'
-import { memo, useId } from 'react'
+import { memo } from 'react'
 import { AnimatedNumber } from '@/components/cards/animated-number'
+import { MiniAreaChart } from '@/components/charts/mini-charts'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { cn } from '@/lib/utils'
+
+/** Sparkline color when a card does not specify one (blue-600). */
+const DEFAULT_SPARK_COLOR = 'hsl(217 91% 60%)'
 
 /** Accent tone for the card's icon. */
 export type KpiTone = 'amber' | 'blue' | 'violet' | 'green' | 'rose' | 'neutral'
@@ -53,41 +56,6 @@ export interface KpiCardProps {
   /** Makes the whole card a link to this href. */
   href?: string
   isLoading?: boolean
-}
-
-/** A tiny smooth Recharts area sparkline for the KPI header. */
-function KpiSparkline({ data, color }: { data: number[]; color: string }) {
-  const gradientId = useId()
-  if (data.length < 2) return null
-
-  const chartData = data.map((value, index) => ({ index, value }))
-
-  return (
-    <div className="h-[22px] w-16 shrink-0" aria-hidden="true">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
-          data={chartData}
-          margin={{ top: 2, right: 0, bottom: 0, left: 0 }}
-        >
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.25} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke={color}
-            strokeWidth={1.5}
-            fill={`url(#${gradientId})`}
-            dot={false}
-            isAnimationActive={false}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  )
 }
 
 /** Headline numbers animate; version/uptime strings render as-is. */
@@ -147,12 +115,13 @@ export const KpiCard = memo(function KpiCard({
           {label}
         </span>
         {spark && spark.length >= 2 ? (
-          <span className="ml-auto">
-            <KpiSparkline
+          <div className="ml-auto h-[22px] w-16 shrink-0">
+            <MiniAreaChart
               data={spark}
-              color={sparkColor ?? 'hsl(217 91% 60%)'}
+              label={label}
+              color={sparkColor ?? DEFAULT_SPARK_COLOR}
             />
-          </span>
+          </div>
         ) : href ? (
           <span className="ml-auto text-[11px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
             →

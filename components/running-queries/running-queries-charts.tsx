@@ -1,10 +1,10 @@
 'use client'
 
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer } from 'recharts'
-
+import type { MiniBarSeries } from '@/components/charts/mini-charts'
 import type { RunningQueryRow } from './running-queries-table'
 
-import { memo, useId, useMemo } from 'react'
+import { memo, useMemo } from 'react'
+import { MiniAreaChart, MiniBarChart } from '@/components/charts/mini-charts'
 import {
   formatReadableQuantity,
   formatReadableSize,
@@ -39,97 +39,6 @@ interface TodayPoint {
 /** Series color palette for the per-user stacked bars. */
 const USER_COLORS = ['#0d9488', '#1e3a5f', '#f59e0b', '#8b5cf6', '#ef4444']
 
-// ───────────────────────── mini charts (Recharts) ─────────────────────────
-
-/** A smooth, gradient-filled Recharts area sparkline. */
-function MiniArea({
-  data,
-  color,
-  height = 92,
-}: {
-  data: number[]
-  color: string
-  height?: number
-}) {
-  const gradientId = useId()
-  if (data.length < 2) {
-    return <div style={{ height }} aria-hidden="true" />
-  }
-
-  const chartData = data.map((value, index) => ({ index, value }))
-
-  return (
-    <ResponsiveContainer width="100%" height={height}>
-      <AreaChart
-        data={chartData}
-        margin={{ top: 4, right: 0, bottom: 0, left: 0 }}
-      >
-        <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity={0.22} />
-            <stop offset="100%" stopColor={color} stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <Area
-          type="monotone"
-          dataKey="value"
-          stroke={color}
-          strokeWidth={1.6}
-          fill={`url(#${gradientId})`}
-          dot={false}
-          isAnimationActive={false}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
-  )
-}
-
-/** Per-time-bucket stacked bars rendered with Recharts. */
-function MiniStackedBar({
-  buckets,
-  users,
-  colors,
-  height = 92,
-}: {
-  buckets: number[][]
-  users: string[]
-  colors: string[]
-  height?: number
-}) {
-  if (buckets.length === 0 || users.length === 0) {
-    return <div style={{ height }} aria-hidden="true" />
-  }
-
-  const chartData = buckets.map((bucket) => {
-    const row: Record<string, number> = {}
-    users.forEach((user, i) => {
-      row[user] = bucket[i] ?? 0
-    })
-    return row
-  })
-
-  return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart
-        data={chartData}
-        margin={{ top: 4, right: 0, bottom: 0, left: 0 }}
-        barCategoryGap={2}
-      >
-        {users.map((user, i) => (
-          <Bar
-            key={user}
-            dataKey={user}
-            stackId="users"
-            fill={colors[i % colors.length]}
-            isAnimationActive={false}
-            radius={i === users.length - 1 ? [1.5, 1.5, 0, 0] : undefined}
-          />
-        ))}
-      </BarChart>
-    </ResponsiveContainer>
-  )
-}
-
 // ───────────────────────── card primitives ─────────────────────────
 
 const cardClass =
@@ -137,7 +46,7 @@ const cardClass =
 const labelClass =
   'text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground'
 
-/** A stat card: label + headline value + sub line + area sparkline. */
+/** A stat card: label + headline value + sub line + area chart. */
 function StatCard({
   label,
   value,
@@ -146,6 +55,7 @@ function StatCard({
   trend,
   color,
   series,
+  valueFormatter,
 }: {
   label: string
   value: string
@@ -154,6 +64,7 @@ function StatCard({
   trend?: { text: string; positive: boolean }
   color: string
   series: number[]
+  valueFormatter?: (value: number) => string
 }) {
   return (
     <div className={cardClass}>
@@ -183,8 +94,13 @@ function StatCard({
         )}
       </div>
       <div className="mt-0.5 text-[11.5px] text-muted-foreground">{sub}</div>
-      <div className="mt-auto pt-3">
-        <MiniArea data={series} color={color} />
+      <div className="mt-auto h-[96px] pt-3">
+        <MiniAreaChart
+          data={series}
+          label={label}
+          color={color}
+          valueFormatter={valueFormatter}
+        />
       </div>
     </div>
   )
@@ -192,26 +108,28 @@ function StatCard({
 
 /** Queries-by-user card: stacked bars + a per-user legend. */
 function ByUserCard({
-  buckets,
-  users,
+  data,
+  series,
 }: {
-  buckets: number[][]
-  users: string[]
+  data: Record<string, number>[]
+  series: MiniBarSeries[]
 }) {
   return (
     <div className={cardClass}>
       <span className={labelClass}>Queries by user</span>
       <div className="mt-auto pt-3">
-        <MiniStackedBar buckets={buckets} users={users} colors={USER_COLORS} />
-        {users.length > 0 && (
+        <div className="h-[96px]">
+          <MiniBarChart data={data} series={series} />
+        </div>
+        {series.length > 0 && (
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] text-muted-foreground">
-            {users.map((user, i) => (
-              <span key={user} className="inline-flex items-center gap-1">
+            {series.map((s) => (
+              <span key={s.key} className="inline-flex items-center gap-1">
                 <span
                   className="size-2 rounded-sm"
-                  style={{ background: USER_COLORS[i % USER_COLORS.length] }}
+                  style={{ background: s.color }}
                 />
-                {user}
+                {s.label}
               </span>
             ))}
           </div>
@@ -267,6 +185,15 @@ function compact(n: number): string {
 function splitSize(readable: string): { value: string; unit: string } {
   const [value, ...rest] = readable.split(' ')
   return { value: value ?? readable, unit: rest.join(' ') }
+}
+
+/** Split a "560.6 MiB" reading into a `{value, unit}` summary item. */
+function splitItem(
+  label: string,
+  readable: string
+): { label: string; value: string; unit?: string }[] {
+  const { value, unit } = splitSize(readable)
+  return [{ label, value, unit }]
 }
 
 // ───────────────────────── strip ─────────────────────────
@@ -355,29 +282,38 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
 
   // "Queries by user" — pivot the long-form rows into stacked daily bars.
   const byUser = useMemo(() => {
-    const data = byUserSwr.data ?? []
+    const points = byUserSwr.data ?? []
     const totals = new Map<string, number>()
-    for (const d of data) {
+    for (const d of points) {
       totals.set(d.user, (totals.get(d.user) ?? 0) + (Number(d.count) || 0))
     }
-    const users = Array.from(totals.entries())
+    const topUsers = Array.from(totals.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, USER_COLORS.length)
       .map(([user]) => user)
+    const series: MiniBarSeries[] = topUsers.map((user, i) => ({
+      key: `s${i}`,
+      label: user,
+      color: USER_COLORS[i],
+    }))
 
     const byTime = new Map<string, Map<string, number>>()
-    for (const d of data) {
+    for (const d of points) {
       const bucket = byTime.get(d.event_time) ?? new Map()
       bucket.set(d.user, (bucket.get(d.user) ?? 0) + (Number(d.count) || 0))
       byTime.set(d.event_time, bucket)
     }
-    const buckets = Array.from(byTime.keys())
+    const data = Array.from(byTime.keys())
       .sort()
       .map((time) => {
         const bucket = byTime.get(time)
-        return users.map((user) => bucket?.get(user) ?? 0)
+        const row: Record<string, number> = {}
+        topUsers.forEach((user, i) => {
+          row[`s${i}`] = bucket?.get(user) ?? 0
+        })
+        return row
       })
-    return { buckets, users }
+    return { data, series }
   }, [byUserSwr.data])
 
   // "Summary" — aggregated straight from the live rows.
@@ -404,6 +340,7 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
         trend={running.trend}
         color="hsl(38 92% 55%)"
         series={running.series}
+        valueFormatter={(v) => `${v.toLocaleString()} queries`}
       />
       <StatCard
         label="Memory consumed"
@@ -412,18 +349,10 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
         sub={memory.sub}
         color="#8b5cf6"
         series={memory.series}
+        valueFormatter={formatReadableSize}
       />
-      <ByUserCard buckets={byUser.buckets} users={byUser.users} />
+      <ByUserCard data={byUser.data} series={byUser.series} />
       <SummaryCard items={summary} />
     </div>
   )
 })
-
-/** Split a "560.6 MiB" reading into a `{value, unit}` summary item. */
-function splitItem(
-  label: string,
-  readable: string
-): { label: string; value: string; unit?: string }[] {
-  const { value, unit } = splitSize(readable)
-  return [{ label, value, unit }]
-}

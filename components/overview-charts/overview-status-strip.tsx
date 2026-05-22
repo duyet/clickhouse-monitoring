@@ -1,7 +1,7 @@
 'use client'
 
 import { memo } from 'react'
-import { useHostId } from '@/lib/swr'
+import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useHostStatus } from '@/lib/swr/use-host-status'
 import { cn } from '@/lib/utils'
 
@@ -22,7 +22,7 @@ export const OverviewStatusStrip = memo(function OverviewStatusStrip({
   // refresh interval identical so SWR dedupes to a single 5-minute poll
   // (host version / uptime / hostname are near-static).
   const { data, error, isLoading } = useHostStatus(hostId, {
-    refreshInterval: 300000,
+    refreshInterval: REFRESH_INTERVAL.VERY_SLOW_5M,
   })
 
   let dot: string
