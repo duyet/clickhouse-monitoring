@@ -116,6 +116,62 @@ describe('<DataTable />', () => {
     cy.get('div').contains('1–200 of 300 rows')
   })
 
+  it('selects rows with accessible checkbox states', () => {
+    const data = [
+      { col1: 'val1', col2: 'val1' },
+      { col1: 'val2', col2: 'val2' },
+      { col1: 'val3', col2: 'val3' },
+    ]
+
+    cy.mount(
+      <DataTable
+        title="Test Table"
+        queryConfig={queryConfig}
+        data={data}
+        context={{}}
+        enableRowSelection
+      />
+    )
+
+    cy.get('[role="checkbox"][aria-label="Select all rows"]')
+      .should('have.attr', 'aria-checked', 'false')
+      .click()
+      .should('have.attr', 'aria-checked', 'true')
+
+    cy.get('[role="checkbox"][aria-label="Select row"]')
+      .should('have.length', 3)
+      .each(($checkbox) => {
+        expect($checkbox).to.have.attr('aria-checked', 'true')
+      })
+
+    cy.get('[role="checkbox"][aria-label="Select row"]').first().click()
+
+    cy.get('[role="checkbox"][aria-label="Select all rows"]').should(
+      'have.attr',
+      'aria-checked',
+      'mixed'
+    )
+  })
+
+  it('notifies consumers when row selection changes', () => {
+    const onRowSelectionChange = cy.stub().as('onRowSelectionChange')
+
+    cy.mount(
+      <DataTable
+        title="Test Table"
+        queryConfig={queryConfig}
+        data={[{ col1: 'val1', col2: 'val1' }]}
+        context={{}}
+        enableRowSelection
+        onRowSelectionChange={onRowSelectionChange}
+      />
+    )
+
+    cy.get('[role="checkbox"][aria-label="Select row"]').click()
+
+    cy.get('@onRowSelectionChange').should('have.been.calledWith', { 0: true })
+  })
+
   it('should adjust column visibility, hide col1', () => {
     // Define some mock data
     const data = [
