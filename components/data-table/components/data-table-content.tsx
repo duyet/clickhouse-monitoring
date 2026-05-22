@@ -4,6 +4,7 @@ import type { ColumnDef, RowData } from '@tanstack/react-table'
 
 import type { QueryConfig } from '@/types/query-config'
 
+import { MobileTableCards } from './mobile-table-cards'
 import {
   closestCenter,
   DndContext,
@@ -140,6 +141,7 @@ export const DataTableContent = memo(function DataTableContent<
   const tableContent = (
     <Table
       aria-describedby="table-description"
+      style={{ width: table.getTotalSize(), minWidth: '100%' }}
       // Force re-render when column order changes
       key={table.getState().columnOrder.join(',')}
     >
@@ -170,13 +172,6 @@ export const DataTableContent = memo(function DataTableContent<
 
   return (
     <div className="relative">
-      {/* Right-edge gradient hint for horizontal scroll on mobile */}
-      {!compact && (
-        <div
-          className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent z-10 rounded-r-lg sm:hidden"
-          aria-hidden="true"
-        />
-      )}
       <div
         ref={tableContainerRef}
         className={cn(
@@ -191,23 +186,37 @@ export const DataTableContent = memo(function DataTableContent<
         aria-label={`${title || 'Data'} table`}
         style={isVirtualized ? { height: '60vh' } : undefined}
       >
-        {enableColumnReordering ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-            modifiers={[restrictToHorizontalAxis]}
-          >
-            <SortableContext
-              items={columnIds}
-              strategy={horizontalListSortingStrategy}
-            >
-              {tableContent}
-            </SortableContext>
-          </DndContext>
-        ) : (
-          tableContent
+        {!compact && (
+          <div className="p-3 sm:hidden">
+            <MobileTableCards
+              table={table}
+              title={title}
+              activeFilterCount={activeFilterCount}
+              rowClassName={queryConfig.rowClassName}
+              isVirtualized={isVirtualized}
+              virtualizer={virtualizer}
+            />
+          </div>
         )}
+        <div className={cn(!compact && 'hidden sm:block')}>
+          {enableColumnReordering ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+              modifiers={[restrictToHorizontalAxis]}
+            >
+              <SortableContext
+                items={columnIds}
+                strategy={horizontalListSortingStrategy}
+              >
+                {tableContent}
+              </SortableContext>
+            </DndContext>
+          ) : (
+            tableContent
+          )}
+        </div>
       </div>
     </div>
   )

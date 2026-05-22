@@ -29,43 +29,57 @@ export const Breadcrumb = memo(function Breadcrumb({
     return getBreadcrumbPath(pathname, menuItems)
   }, [pathname, menuItems])
 
+  const breadcrumbLabel = useMemo(() => {
+    if (breadcrumbs.length === 0) {
+      return 'Breadcrumb navigation'
+    }
+
+    return `Breadcrumb: ${breadcrumbs.map((crumb) => crumb.title).join(' / ')}`
+  }, [breadcrumbs])
+
   return (
     <nav
-      aria-label="Breadcrumb navigation"
-      className={cn('flex items-center', className)}
+      aria-label={breadcrumbLabel}
+      className={cn('flex min-w-0 items-center overflow-hidden', className)}
     >
-      <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+      <ol className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-sm text-muted-foreground">
         {breadcrumbs.map((crumb, index) => {
           const isLast = index === breadcrumbs.length - 1
 
           return (
             <li
               key={`${index}-${crumb.href}`}
-              className="flex items-center gap-1.5"
+              className="flex min-w-0 items-center gap-1.5"
             >
               {index > 0 && (
                 <ChevronRightIcon
-                  className="size-3.5 shrink-0"
+                  className="hidden size-3.5 shrink-0 sm:block"
                   strokeWidth={2.5}
                   aria-hidden="true"
                 />
               )}
               {isLast ? (
                 <span
-                  className="font-medium text-foreground"
+                  className="truncate font-medium text-foreground"
                   aria-current="page"
                 >
                   {crumb.title}
                 </span>
               ) : crumb.href ? (
-                <HostPrefixedLink
-                  href={crumb.href}
-                  className="hover:text-foreground hover:underline transition-colors"
-                >
-                  {crumb.title}
-                </HostPrefixedLink>
+                <>
+                  <span className="sr-only sm:hidden">{crumb.title}</span>
+                  <HostPrefixedLink
+                    href={crumb.href}
+                    className="hidden truncate transition-colors hover:text-foreground hover:underline sm:inline"
+                  >
+                    {crumb.title}
+                  </HostPrefixedLink>
+                </>
               ) : (
-                <span>{crumb.title}</span>
+                <>
+                  <span className="sr-only sm:hidden">{crumb.title}</span>
+                  <span className="hidden sm:inline">{crumb.title}</span>
+                </>
               )}
             </li>
           )

@@ -27,6 +27,13 @@ import { cn } from '@/lib/utils'
 
 const VIRTUALIZED_CELL_CLASS = 'text-sm whitespace-nowrap tabular-nums'
 const STANDARD_CELL_CLASS = 'text-sm align-top break-words tabular-nums'
+const DEFAULT_COLUMN_SIZE = 150
+
+function getCellWidth<TData extends RowData>(cell: Cell<TData, unknown>) {
+  return (
+    cell.column.getSize?.() ?? cell.column.columnDef.size ?? DEFAULT_COLUMN_SIZE
+  )
+}
 
 /**
  * Virtual row item from @tanstack/react-virtual
@@ -84,8 +91,9 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
             key={cell.id}
             className={cn(VIRTUALIZED_CELL_CLASS, cellClassName)}
             style={{
-              width: 'auto',
-              minWidth: 0,
+              width: getCellWidth(cell),
+              minWidth: cell.column.columnDef.minSize ?? 50,
+              maxWidth: cell.column.columnDef.maxSize ?? undefined,
             }}
           >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -140,8 +148,9 @@ export const StandardTableRow = memo(function StandardTableRow<
             key={cell.id}
             className={cn(STANDARD_CELL_CLASS, cellClassName)}
             style={{
-              width: 'auto',
-              minWidth: 0,
+              width: getCellWidth(cell),
+              minWidth: cell.column.columnDef.minSize ?? 50,
+              maxWidth: cell.column.columnDef.maxSize ?? undefined,
             }}
           >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}

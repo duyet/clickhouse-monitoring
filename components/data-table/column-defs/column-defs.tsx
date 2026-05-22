@@ -80,6 +80,7 @@ export function getColumnDefs<
     const { format: columnFormat, options: columnFormatOptions } =
       parseColumnFormat(column, config.columnFormats || {})
     const sortingFnName = config.sortingFns?.[name]
+    const sizing = config.columnSizing?.[name] ?? config.columnSizing?.[column]
 
     // Check if this column should have a filter
     const isFilterable = isColumnFilterable(
@@ -125,6 +126,16 @@ export function getColumnDefs<
           formatOptions={columnFormatOptions as ColumnFormatOptions}
         />
       ),
+    }
+
+    if (sizing?.size !== undefined) {
+      columnDef.size = sizing.size
+    }
+    if (sizing?.minSize !== undefined) {
+      columnDef.minSize = sizing.minSize
+    }
+    if (sizing?.maxSize !== undefined) {
+      columnDef.maxSize = sizing.maxSize
     }
 
     // Add the sorting function if specified
