@@ -418,7 +418,21 @@ export async function POST(request: Request): Promise<Response> {
     )
   }
 
-  if (!body || typeof body !== 'object') {
+  if (body === null) {
+    return createValidationError(
+      'Request body must be a JSON object',
+      ROUTE_CONTEXT
+    )
+  }
+
+  if (Array.isArray(body)) {
+    return createValidationError(
+      'Request body must be a JSON object',
+      ROUTE_CONTEXT
+    )
+  }
+
+  if (typeof body !== 'object') {
     return createValidationError(
       'Request body must be a JSON object',
       ROUTE_CONTEXT
