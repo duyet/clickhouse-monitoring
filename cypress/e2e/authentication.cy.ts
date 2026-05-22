@@ -178,10 +178,15 @@ describe('Authentication', () => {
 
       cy.get('[data-testid="nav-user-trigger"]')
         .scrollIntoView()
+        // dismissTransientIssueOverlay can leave a transient overlay in front of
+        // the trigger; force: true is intentional for this step to avoid false
+        // negatives, even though it bypasses Cypress actionability checks.
         .focus({ force: true })
       cy.get('[data-testid="nav-user-trigger"]').should('have.focus')
 
       // Press Enter to open menu
+        // Keep this force override while the transient overlay cleanup is flaky; it
+        // should be removed once the overlay lifecycle is fully deterministic.
       cy.get('[data-testid="nav-user-trigger"]').type('{enter}', { force: true })
       cy.get('[data-testid="nav-user-about"]').should('be.visible')
     })
