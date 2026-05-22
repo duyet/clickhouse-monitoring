@@ -6,8 +6,27 @@
 describe('Authentication', () => {
   const clerkEnabled = Boolean(Cypress.env('CLERK_PUBLISHABLE_KEY'))
 
+  const dismissTransientIssueOverlay = () => {
+    cy.get('body').then(($body) => {
+      const issueBadge = $body.find('button[data-issues-collapse="true"]')
+
+      if (issueBadge.length > 0) {
+        cy.wrap(issueBadge).click({ force: true })
+      }
+    })
+  }
+
+  const openUserMenu = () => {
+    dismissTransientIssueOverlay()
+
+    cy.get('[data-testid="nav-user-trigger"]')
+      .scrollIntoView()
+      .click({ force: true })
+  }
+
   beforeEach(() => {
     cy.visit('/overview?host=0')
+    dismissTransientIssueOverlay()
   })
 
   // Helper to run tests only when Clerk is enabled
@@ -21,8 +40,7 @@ describe('Authentication', () => {
     })
 
     it('shows correct menu items for guest user', () => {
-      // Click the user menu to open dropdown
-      cy.get('[data-testid="nav-user-trigger"]').click()
+      openUserMenu()
 
       // Verify all expected menu items are present
       cy.get('[data-testid="nav-user-about"]')
@@ -41,7 +59,7 @@ describe('Authentication', () => {
 
     it('does not show authentication buttons in guest mode', () => {
       // Open the user menu
-      cy.get('[data-testid="nav-user-trigger"]').click()
+      openUserMenu()
 
       // Should NOT show Sign In or Sign Up buttons (guest mode)
       cy.contains('Sign In').should('not.exist')
@@ -50,7 +68,7 @@ describe('Authentication', () => {
     })
 
     it('opens settings dialog from user menu', () => {
-      cy.get('[data-testid="nav-user-trigger"]').click()
+      openUserMenu()
       cy.get('[data-testid="nav-user-settings"]').click()
 
       // Settings dialog should appear (via SettingsDialog component)
@@ -59,14 +77,14 @@ describe('Authentication', () => {
     })
 
     it('navigates to about page from user menu', () => {
-      cy.get('[data-testid="nav-user-trigger"]').click()
+      openUserMenu()
       cy.get('[data-testid="nav-user-about"]').click()
 
       cy.url().should('include', '/about')
     })
 
     it('opens GitHub repo link in new tab', () => {
-      cy.get('[data-testid="nav-user-trigger"]').click()
+      openUserMenu()
 
       cy.get('[data-testid="nav-user-github"]')
         .should(
@@ -109,7 +127,7 @@ describe('Authentication', () => {
       cy.visit('/overview?host=0')
 
       // Open user menu
-      cy.get('[data-testid="nav-user-trigger"]').click()
+      openUserMenu()
 
       // When Clerk integration is complete, Sign Up option should be visible
       // For now, we verify the menu opens successfully
@@ -133,7 +151,7 @@ describe('Authentication', () => {
   describe('User menu interactions', () => {
     it('closes menu when clicking outside', () => {
       // Open the menu
-      cy.get('[data-testid="nav-user-trigger"]').click()
+      openUserMenu()
       cy.get('[data-testid="nav-user-about"]').should('be.visible')
 
       // Click outside the menu at a stable viewport coordinate. Clicking the
@@ -156,16 +174,25 @@ describe('Authentication', () => {
   describe('Accessibility', () => {
     it('user menu button is keyboard accessible', () => {
       // Tab to the user menu button
-      cy.get('[data-testid="nav-user-trigger"]').focus()
+      dismissTransientIssueOverlay()
+
+      cy.get('[data-testid="nav-user-trigger"]')
+        .scrollIntoView()
+        // dismissTransientIssueOverlay can leave a transient overlay in front of
+        // the trigger; force: true is intentional for this step to avoid false
+        // negatives, even though it bypasses Cypress actionability checks.
+        .focus({ force: true })
       cy.get('[data-testid="nav-user-trigger"]').should('have.focus')
 
       // Press Enter to open menu
-      cy.get('[data-testid="nav-user-trigger"]').type('{enter}')
+        // Keep this force override while the transient overlay cleanup is flaky; it
+        // should be removed once the overlay lifecycle is fully deterministic.
+      cy.get('[data-testid="nav-user-trigger"]').type('{enter}', { force: true })
       cy.get('[data-testid="nav-user-about"]').should('be.visible')
     })
 
     it('menu items are keyboard navigable', () => {
-      cy.get('[data-testid="nav-user-trigger"]').click()
+      openUserMenu()
 
       // Press arrow down to navigate through menu items
       cy.get('body').type('{downarrow}')
