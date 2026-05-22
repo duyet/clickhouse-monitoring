@@ -2,11 +2,11 @@
 
 import { Activity, RefreshCw } from 'lucide-react'
 
-import type { RunningQueryRow } from '@/components/running-queries/running-query-card'
+import type { RunningQueryRow } from '@/components/running-queries/running-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
 
-import { memo, useEffect } from 'react'
-import { RunningQueryCard } from '@/components/running-queries/running-query-card'
+import { memo } from 'react'
+import { RunningQueriesTable } from '@/components/running-queries/running-queries-table'
 import { Skeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -17,7 +17,6 @@ import {
   getCardErrorDescription,
   getCardErrorTitle,
 } from '@/lib/card-error-utils'
-import { recordRunningQuerySnapshot } from '@/lib/running-queries/metrics-history'
 import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/swr/use-table-data'
 import { cn } from '@/lib/utils'
@@ -25,8 +24,8 @@ import { cn } from '@/lib/utils'
 /**
  * Auto-refresh cadence for the running-queries list (ms).
  *
- * Defaults to 5s so the per-card memory sparkline reads as genuinely "live";
- * `system.processes` is an in-memory table, so frequent polling is cheap.
+ * Defaults to 5s so the table reads as genuinely "live"; `system.processes`
+ * is an in-memory table, so frequent polling is cheap.
  * Override with `NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS`.
  */
 const REFRESH_INTERVAL = (() => {
@@ -38,22 +37,20 @@ const REFRESH_INTERVAL = (() => {
 /** Skeleton placeholder shown during the initial load. */
 function LoadingState() {
   return (
-    <div className="flex flex-col gap-2">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="rounded-lg border bg-card">
-          <div className="flex items-center gap-2 px-3 pt-2.5">
-            <Skeleton className="h-4 w-14" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="ml-auto h-4 w-16" />
-          </div>
-          <div className="px-3 py-1.5">
-            <Skeleton className="h-4 w-2/3" />
-          </div>
-          <div className="flex gap-3 border-t border-border/60 px-3 py-2">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="ml-auto h-7 w-28" />
-          </div>
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="ml-auto h-4 w-16" />
+      </div>
+      {[0, 1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="flex items-center gap-3 border-b border-border px-3 py-3"
+        >
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-4 flex-1" />
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-16" />
         </div>
       ))}
     </div>
@@ -61,12 +58,12 @@ function LoadingState() {
 }
 
 /**
- * RunningQueriesView — compact card-list of in-flight ClickHouse queries.
+ * RunningQueriesView — the Running Queries page table.
  *
- * Replaces the generic 17-column data table on the Running Queries page.
- * Each query renders as a dense {@link RunningQueryCard}; the list auto-
- * refreshes on {@link REFRESH_INTERVAL} (5s by default) and surfaces
- * loading / empty / error states inline.
+ * Fetches in-flight queries from `system.processes` and renders them in a
+ * dense, sortable {@link RunningQueriesTable}. The list auto-refreshes on
+ * {@link REFRESH_INTERVAL} (5s by default) and surfaces loading / empty /
+ * error states inline.
  */
 export const RunningQueriesView = memo(function RunningQueriesView() {
   const hostId = useHostId()
@@ -78,15 +75,8 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
       REFRESH_INTERVAL
     )
 
-  // Fold each poll into the rolling metric history that powers the per-card
-  // live memory sparkline. Cards append the latest value themselves, so a
-  // one-render lag here is invisible.
-  useEffect(() => {
-    if (data) recordRunningQuerySnapshot(data)
-  }, [data])
-
-  // Show the skeleton on first load only — keep stale rows visible while
-  // a background refresh is in flight to avoid layout flicker.
+  // Show the skeleton on first load only — keep stale rows visible while a
+  // background refresh is in flight to avoid layout flicker.
   if (isLoading && !data) {
     return <LoadingState />
   }
@@ -117,12 +107,12 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
   return (
     <TooltipProvider>
       <div className="flex flex-col gap-2">
-        {/* Header: title, live count, manual refresh */}
+        {/* Header: title, live count, live indicator, manual refresh */}
         <div className="flex items-center justify-between gap-2 px-0.5">
           <div className="flex items-center gap-2">
-            <h2 className="font-medium text-sm">Running Queries</h2>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums text-muted-foreground">
-              {rows.length}
+            <h2 className="text-sm font-medium">Running Queries</h2>
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium tabular-nums text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+              {rows.length} active
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -166,14 +156,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
             </CardContent>
           </Card>
         ) : (
-          <div className="flex flex-col gap-2">
-            {rows.map((row, index) => (
-              <RunningQueryCard
-                key={String(row.query_id) || `query-${index}`}
-                row={row}
-              />
-            ))}
-          </div>
+          <RunningQueriesTable rows={rows} />
         )}
       </div>
     </TooltipProvider>
