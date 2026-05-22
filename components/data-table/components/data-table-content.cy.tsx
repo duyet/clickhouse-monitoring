@@ -1,6 +1,7 @@
 import {
   createColumnHelper,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 
@@ -59,6 +60,7 @@ describe('<DataTableContent />', () => {
     queryConfig: config = defaultProps.queryConfig,
     enableColumnReordering = defaultProps.enableColumnReordering,
     onColumnOrderChange,
+    virtualizer = defaultProps.virtualizer,
   }: {
     rows?: Row[]
     activeFilterCount?: number
@@ -67,11 +69,13 @@ describe('<DataTableContent />', () => {
     queryConfig?: QueryConfig
     enableColumnReordering?: boolean
     onColumnOrderChange?: (activeId: string, overId: string) => void
+    virtualizer?: (typeof defaultProps)['virtualizer']
   }) {
     const table = useReactTable({
       data: rows,
       columns,
       getCoreRowModel: getCoreRowModel(),
+      getSortedRowModel: getSortedRowModel(),
     })
 
     return (
@@ -84,6 +88,7 @@ describe('<DataTableContent />', () => {
         onColumnOrderChange={onColumnOrderChange}
         queryConfig={config}
         table={table}
+        virtualizer={virtualizer}
       />
     )
   }
@@ -197,8 +202,9 @@ describe('<DataTableContent />', () => {
 
     cy.get('button[aria-label="Drag to reorder col1 column"]')
       .should('have.attr', 'type', 'button')
-      .and('have.class', 'size-10')
-      .and('have.class', 'sm:size-7')
+      .and('have.class', 'size-7')
+      .and('have.class', 'hidden')
+      .and('have.class', 'sm:inline-flex')
       .find('[data-icon]')
       .should('exist')
     cy.get('button[aria-label="Drag to reorder col2 column"]').should('exist')
@@ -219,5 +225,33 @@ describe('<DataTableContent />', () => {
     })
 
     cy.get('@onColumnOrderChange').should('not.have.been.called')
+  })
+
+  it('exposes sort controls in mobile card mode', () => {
+    cy.viewport(375, 667)
+    cy.mount(<TestDataTableContent />)
+
+    cy.get('[data-testid="mobile-table-sort"]').should('be.visible').click()
+    cy.contains('[role="menuitem"]', 'col1 ascending').should('be.visible')
+    cy.contains('[role="menuitem"]', 'col1 descending').should('be.visible')
+  })
+
+  it('virtualizes mobile cards when large result sets are virtualized', () => {
+    cy.viewport(375, 667)
+
+    const virtualizer = {
+      getTotalSize: () => 90,
+      getVirtualItems: () => [
+        { end: 90, index: 1, key: 1, size: 90, start: 0 },
+      ],
+      measureElement: () => undefined,
+    } as any
+
+    cy.mount(
+      <TestDataTableContent isVirtualized={true} virtualizer={virtualizer} />
+    )
+
+    cy.get('[data-testid="mobile-table-card"]').should('have.length', 1)
+    cy.get('[data-testid="mobile-table-card"]').should('contain', 'val2')
   })
 })

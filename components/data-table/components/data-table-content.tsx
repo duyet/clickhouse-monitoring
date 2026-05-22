@@ -172,21 +172,10 @@ export const DataTableContent = memo(function DataTableContent<
 
   return (
     <div className="relative">
-      {!compact && (
-        <div className="sm:hidden">
-          <MobileTableCards
-            table={table}
-            title={title}
-            activeFilterCount={activeFilterCount}
-            rowClassName={queryConfig.rowClassName}
-          />
-        </div>
-      )}
       <div
         ref={tableContainerRef}
         className={cn(
           'min-h-0 min-w-0',
-          !compact && 'hidden sm:block',
           isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto',
           {
             'max-h-[50vh]': compact && !isVirtualized,
@@ -197,23 +186,37 @@ export const DataTableContent = memo(function DataTableContent<
         aria-label={`${title || 'Data'} table`}
         style={isVirtualized ? { height: '60vh' } : undefined}
       >
-        {enableColumnReordering ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-            modifiers={[restrictToHorizontalAxis]}
-          >
-            <SortableContext
-              items={columnIds}
-              strategy={horizontalListSortingStrategy}
-            >
-              {tableContent}
-            </SortableContext>
-          </DndContext>
-        ) : (
-          tableContent
+        {!compact && (
+          <div className="p-3 sm:hidden">
+            <MobileTableCards
+              table={table}
+              title={title}
+              activeFilterCount={activeFilterCount}
+              rowClassName={queryConfig.rowClassName}
+              isVirtualized={isVirtualized}
+              virtualizer={virtualizer}
+            />
+          </div>
         )}
+        <div className={cn(!compact && 'hidden sm:block')}>
+          {enableColumnReordering ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+              modifiers={[restrictToHorizontalAxis]}
+            >
+              <SortableContext
+                items={columnIds}
+                strategy={horizontalListSortingStrategy}
+              >
+                {tableContent}
+              </SortableContext>
+            </DndContext>
+          ) : (
+            tableContent
+          )}
+        </div>
       </div>
     </div>
   )
