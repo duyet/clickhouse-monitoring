@@ -177,6 +177,7 @@ describe('TableBody Components', () => {
       )
 
       cy.get('td').should('have.attr', 'colspan', '2')
+      cy.get('[data-slot="empty"]').should('be.visible')
       cy.contains('No results').should('be.visible')
       cy.contains(/no test data found/i).should('be.visible')
     })
@@ -194,6 +195,7 @@ describe('TableBody Components', () => {
         </table>
       )
 
+      cy.get('[data-slot="empty-icon"]').should('be.visible')
       cy.contains(/no test data match your filters/i).should('be.visible')
       cy.contains(/clearing filters/i).should('be.visible')
     })
