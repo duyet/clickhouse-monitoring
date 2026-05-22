@@ -5,7 +5,7 @@
 
 describe('Host Switching Smoke Tests', () => {
   it('should load overview page with host query parameter', () => {
-    cy.visit('/overview?host=0', { timeout: 30000 })
+    cy.visit('/overview?host=0')
     cy.url().should('include', 'host=0')
     cy.url().should('include', '/overview')
     cy.get('body').should('contain', 'Overview')
@@ -15,7 +15,7 @@ describe('Host Switching Smoke Tests', () => {
     const pages = ['/overview', '/dashboard', '/clusters', '/running-queries']
 
     pages.forEach((page) => {
-      cy.visit(`${page}?host=0`, { timeout: 30000 })
+      cy.visit(`${page}?host=0`)
       cy.url().should('include', page)
       cy.url().should('include', 'host=0')
       cy.get('body').should('exist')
@@ -23,12 +23,12 @@ describe('Host Switching Smoke Tests', () => {
   })
 
   it('should handle missing hostId gracefully', () => {
-    cy.visit('/overview', { timeout: 30000 })
+    cy.visit('/overview')
     cy.get('body').should('exist')
   })
 
   it('should handle invalid hostId gracefully', () => {
-    cy.visit('/overview?host=999', { timeout: 30000 })
+    cy.visit('/overview?host=999')
     cy.get('body').should('exist')
   })
 })
