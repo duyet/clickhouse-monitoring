@@ -1,11 +1,13 @@
 import type { QueryConfig } from '@/types/query-config'
 
+import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { ColumnFormat } from '@/types/column-format'
 
 export const runningQueriesConfig: QueryConfig = {
   name: 'running-queries',
   refreshInterval: 30_000,
   sql: `
+    ${QUERY_COMMENT}
     SELECT *,
       query_id as action,
       query_id as query_detail,

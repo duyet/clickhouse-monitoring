@@ -25,6 +25,7 @@ import {
   formatReadableQuantity,
   formatReadableSize,
 } from '@/lib/format-readable'
+import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
 interface RunningQuerySummaryFormatProps<TData extends RowData> {
@@ -145,14 +146,23 @@ function DetailItem({ icon: Icon, label, value, title }: DetailItemProps) {
   )
 }
 
+/**
+ * Renders a memoized, responsive summary for a `system.processes` row.
+ *
+ * Expects `row.original` to contain running-query fields, tolerates missing
+ * optional columns, and returns a React node for the data-table formatter.
+ *
+ * @param props.row TanStack row whose `original` value is the process record.
+ * @param props.value Fallback query text when `row.original.query` is absent.
+ * @param props.context Formatter context kept for RowContextFormatter shape.
+ */
 export const RunningQuerySummaryFormat = memo(
   function RunningQuerySummaryFormat<TData extends RowData>({
     row,
     value,
-    context,
   }: RunningQuerySummaryFormatProps<TData>): React.ReactNode {
     const record = row.original as Record<string, unknown>
-    const hostId = context?.['ctx.hostId'] ?? context?.hostId ?? '0'
+    const hostId = useHostId()
     const query = stringValue(record.query ?? value)
     const queryId = stringValue(record.query_id ?? record.query_detail)
     const initialQueryId = stringValue(record.initial_query_id)

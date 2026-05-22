@@ -43,6 +43,7 @@ export interface CodeDialogOptions {
   json?: boolean
   dialog_classname?: string
   show_explorer_link?: boolean
+  /** Force the dialog trigger for short content; defaults to false. */
   force_dialog?: boolean
 }
 

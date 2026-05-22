@@ -129,6 +129,12 @@ describe('Running Queries Version Selection', () => {
     })
 
     it('should configure the compact running-query summary table shape', () => {
+      const sql = selectVersionedSql(
+        runningQueriesConfig.sql,
+        parseVersion('24.1.0.0')
+      )
+
+      expect(sql).toContain('ORDER BY elapsed DESC')
       expect(runningQueriesConfig.columns).toEqual(['action', 'query'])
       expect(runningQueriesConfig.columnFormats?.query).toBe(
         ColumnFormat.RunningQuerySummary

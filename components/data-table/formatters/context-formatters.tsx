@@ -14,7 +14,7 @@ import {
   type HoverCardOptions,
 } from '../cells/hover-card-format'
 import { LinkFormat, type LinkFormatOptions } from '../cells/link-format'
-import { RunningQuerySummaryFormat } from '../cells/running-query-summary-format'
+import { RunningQuerySummaryFormat } from '@/components/data-table/cells/running-query-summary-format'
 import { ColumnFormat } from '@/types/column-format'
 
 /**
