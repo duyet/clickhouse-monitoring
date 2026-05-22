@@ -203,11 +203,15 @@ function derive(row: RunningQueryRow): DerivedQuery {
 
   // CPU is only exposed through ProfileEvents. `cores` is the average number
   // of cores burned; `cpuPct` is how saturated the query's own threads are.
+  // Prefer the virtualized CPU counter; fall back to user + system time only
+  // when it is absent (profileEvent returns 0 for missing keys).
   const events = row.ProfileEvents
+  const cpuVirtual = profileEvent(events, 'OSCPUVirtualTimeMicroseconds')
   const cpuMicros =
-    profileEvent(events, 'OSCPUVirtualTimeMicroseconds') ||
-    profileEvent(events, 'UserTimeMicroseconds') +
-      profileEvent(events, 'SystemTimeMicroseconds')
+    cpuVirtual > 0
+      ? cpuVirtual
+      : profileEvent(events, 'UserTimeMicroseconds') +
+        profileEvent(events, 'SystemTimeMicroseconds')
   const cores = elapsed > 0 ? cpuMicros / 1e6 / elapsed : 0
   const cpuPct = threads > 0 ? Math.min(100, (cores / threads) * 100) : 0
 
@@ -253,7 +257,9 @@ type SortKey =
 type SortDir = 'asc' | 'desc'
 
 const SORT_ACCESSOR: Record<SortKey, (d: DerivedQuery) => number> = {
-  progress: (d) => d.pct ?? -1,
+  // Indeterminate progress sorts as 0 — it groups with "no measurable
+  // progress yet" rather than below it via an arbitrary sentinel.
+  progress: (d) => d.pct ?? 0,
   memory: (d) => d.memory,
   dataRead: (d) => d.readBytes,
   cpu: (d) => d.cores,
