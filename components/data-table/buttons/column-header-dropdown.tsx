@@ -2,6 +2,7 @@
 
 import {
   CopyIcon,
+  EllipsisVerticalIcon,
   RotateCcwIcon,
   SortAscIcon,
   SortDescIcon,
@@ -9,6 +10,7 @@ import {
 import type { Header } from '@tanstack/react-table'
 
 import { memo, useCallback, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,28 +76,19 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
-        <button
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
           className={cn(
-            'flex items-center justify-center rounded',
-            'w-10 h-10 sm:w-auto sm:h-auto sm:p-0 p-2',
-            'opacity-0 group-hover:opacity-40 hover:opacity-100 focus:opacity-100',
-            'focus:outline-none transition-opacity',
-            'disabled:cursor-default disabled:opacity-50'
+            'size-10 sm:size-7',
+            'opacity-0 group-hover:opacity-40 hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100',
+            'transition'
           )}
           aria-label="Column options"
         >
-          <svg
-            className="h-3.5 w-3.5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="12" cy="5" r="1" />
-            <circle cx="12" cy="19" r="1" />
-          </svg>
-        </button>
+          <EllipsisVerticalIcon data-icon="inline-start" />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-40" sticky="always">
         {canSort && (
