@@ -2,19 +2,23 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useMemo } from 'react'
-import { QueryFiltersBar } from '@/components/history-queries/filter-bar'
-import { getHistoryQuerySearchParams } from '@/components/history-queries/search-params'
+import { FilterBar } from '@/components/filters/filter-bar'
 import { PageLayout } from '@/components/layout/query-page'
 import { ChartSkeleton } from '@/components/skeletons'
+import {
+  parseFiltersFromParams,
+  serializeActiveFilters,
+} from '@/lib/filters/url-state'
 import { historyQueriesConfig } from '@/lib/query-config/queries/history-queries'
 
 function HistoryQueriesPageContent() {
   const searchParams = useSearchParams()
+
+  // Normalize URL filter state into the params the table query consumes.
   const tableSearchParams = useMemo(() => {
-    return getHistoryQuerySearchParams(
-      searchParams,
-      historyQueriesConfig.defaultParams
-    )
+    const schema = historyQueriesConfig.filterSchema
+    if (!schema) return {}
+    return serializeActiveFilters(parseFiltersFromParams(schema, searchParams))
   }, [searchParams])
 
   return (
@@ -23,7 +27,7 @@ function HistoryQueriesPageContent() {
       title="History Queries"
       defaultPageSize={100}
       searchParams={tableSearchParams}
-      headerContent={<QueryFiltersBar queryConfig={historyQueriesConfig} />}
+      headerContent={<FilterBar queryConfig={historyQueriesConfig} />}
     />
   )
 }
