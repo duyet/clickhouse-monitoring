@@ -1,10 +1,16 @@
 /**
  * Explain Query endpoint
- * GET /api/v1/explain?hostId=0&query=SELECT...
  *
  * Executes EXPLAIN on the provided query and returns the execution plan.
  *
- * Optional parameters:
+ *   GET  /api/v1/explain?hostId=0&query=SELECT...
+ *   POST /api/v1/explain   { "hostId": 0, "query": "SELECT ..." }
+ *
+ * GET keeps the query in the URL for simple/linkable calls; POST accepts a
+ * JSON body and is the safe choice for long queries that would otherwise hit
+ * URL-length limits.
+ *
+ * Optional parameters (search param for GET, body field for POST):
  *   mode         - EXPLAIN mode: PIPELINE, AST, SYNTAX, ESTIMATE (default: PLAN)
  *   planSettings - Comma-separated key=value pairs for EXPLAIN PLAN settings.
  *                  Valid keys: optimize, header, description, indexes,
@@ -13,7 +19,8 @@
  *                  Values must be 0 or 1. Only non-default values need to be sent.
  *
  * @example
- * GET /api/v1/explain?hostId=0&query=SELECT+1&planSettings=indexes%3D1%2Cactions%3D1
+ * GET  /api/v1/explain?hostId=0&query=SELECT+1&planSettings=indexes%3D1%2Cactions%3D1
+ * POST /api/v1/explain   { "hostId": 0, "query": "SELECT 1" }
  */
 
 import {
@@ -35,7 +42,7 @@ import { debug, error as logError } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 
-const ROUTE_CONTEXT = { route: '/api/v1/explain', method: 'GET' }
+const ROUTE_CONTEXT = { route: '/api/v1/explain' }
 
 /**
  * Valid ClickHouse EXPLAIN modes. PLAN is excluded -- the UI Plan tab sends
@@ -63,6 +70,9 @@ const VALID_PLAN_SETTING_KEYS = new Set([
   'json',
   'distributed',
 ])
+
+/** Reject queries longer than this (characters). */
+const MAX_QUERY_LENGTH = 100000
 
 /**
  * Parse and validate the planSettings parameter.
@@ -163,33 +173,25 @@ async function fetchExplainAsText(
 }
 
 /**
- * Handle GET requests to run a ClickHouse EXPLAIN for the provided SQL and return formatted results.
+ * Run a ClickHouse EXPLAIN once the request inputs have been collected.
  *
- * Validates required query parameters and SQL safety, builds the appropriate EXPLAIN statement (including optional PLAN settings), executes it against the configured host, and returns an HTTP Response containing the explain payload or an error status.
+ * Shared by the GET and POST handlers: they only differ in how the inputs are
+ * parsed (search params vs JSON body). This validates SQL safety, the explain
+ * mode and plan settings, builds the EXPLAIN statement, executes it against
+ * the host and returns the formatted Response.
  *
- * @example
- * GET /api/v1/explain?hostId=0&query=SELECT%20count()%20FROM%20system.tables
- * GET /api/v1/explain?hostId=0&query=SELECT%201&planSettings=indexes%3D1
- * @returns An HTTP Response containing the explain result (JSONEachRow or transformed text) on success, or an error response with an appropriate status code on failure.
+ * @param hostId Validated host id.
+ * @param query Raw SQL to explain (may be null/empty — validated here).
+ * @param modeParam Upper-cased explain mode, or '' for the default PLAN.
+ * @param planSettingsRaw Raw planSettings string, or '' when not provided.
  */
-export async function GET(request: Request): Promise<Response> {
-  const { searchParams } = new URL(request.url)
-
-  // Validate required parameters
-  const validationError = validateSearchParams(searchParams)
-  if (validationError) {
-    return createValidationError(validationError.message, ROUTE_CONTEXT)
-  }
-
-  // Get and validate hostId
-  const hostIdResult = getAndValidateHostId(searchParams)
-  if (typeof hostIdResult !== 'number') {
-    return createValidationError(hostIdResult.message, ROUTE_CONTEXT)
-  }
-  const hostId = hostIdResult
-
-  // Get and validate query parameter
-  const query = searchParams.get('query')
+async function runExplain(
+  hostId: number,
+  query: string | null,
+  modeParam: string,
+  planSettingsRaw: string
+): Promise<Response> {
+  // Validate the query is present
   if (!query || query.trim() === '') {
     return createValidationError(
       'Missing required parameter: query',
@@ -198,11 +200,11 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   // Validate query length
-  if (query.length > 100000) {
+  if (query.length > MAX_QUERY_LENGTH) {
     return createErrorResponse(
       {
         type: ApiErrorType.ValidationError,
-        message: 'Query is too long (maximum 100000 characters)',
+        message: `Query is too long (maximum ${MAX_QUERY_LENGTH} characters)`,
       },
       400,
       { ...ROUTE_CONTEXT, hostId }
@@ -214,7 +216,7 @@ export async function GET(request: Request): Promise<Response> {
   try {
     validateSqlQuery(query)
   } catch (validationError) {
-    logError('[GET /api/v1/explain] Security: SQL validation failed', {
+    logError('[/api/v1/explain] Security: SQL validation failed', {
       queryPreview: query.substring(0, 100),
       error:
         validationError instanceof Error
@@ -234,8 +236,7 @@ export async function GET(request: Request): Promise<Response> {
     )
   }
 
-  // Get and validate explain mode
-  const modeParam = (searchParams.get('mode') || '').toUpperCase()
+  // Validate explain mode
   if (modeParam && !VALID_EXPLAIN_MODES.includes(modeParam as ExplainMode)) {
     return createValidationError(
       `Invalid explain mode: ${modeParam}. Valid modes: ${VALID_EXPLAIN_MODES.filter(Boolean).join(', ')}`,
@@ -244,7 +245,6 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   // Parse EXPLAIN PLAN settings (only applicable when mode is PLAN / empty)
-  const planSettingsRaw = searchParams.get('planSettings') || ''
   let settingsClause = ''
 
   if (planSettingsRaw && modeParam) {
@@ -262,7 +262,7 @@ export async function GET(request: Request): Promise<Response> {
     settingsClause = result.clause
   }
 
-  debug('[GET /api/v1/explain]', {
+  debug('[/api/v1/explain]', {
     hostId,
     queryLength: query.length,
     mode: modeParam || 'PLAN',
@@ -289,7 +289,7 @@ export async function GET(request: Request): Promise<Response> {
     const textResult = await fetchExplainAsText(explainQuery, hostId)
 
     if ('error' in textResult) {
-      logError('[GET /api/v1/explain] Query error:', textResult.error)
+      logError('[/api/v1/explain] Query error:', textResult.error)
       const errorType =
         (textResult.error.type as ApiErrorType) ?? ApiErrorType.QueryError
       return createErrorResponse(
@@ -323,7 +323,7 @@ export async function GET(request: Request): Promise<Response> {
 
   // Handle errors
   if (result.error) {
-    logError('[GET /api/v1/explain] Query error:', result.error)
+    logError('[/api/v1/explain] Query error:', result.error)
 
     // Map FetchDataError type to ApiErrorType
     const errorTypeMap: Record<string, ApiErrorType> = {
@@ -362,6 +362,90 @@ export async function GET(request: Request): Promise<Response> {
     },
     200,
     { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+  )
+}
+
+/**
+ * Handle GET requests to run a ClickHouse EXPLAIN for the provided SQL.
+ *
+ * Inputs come from the URL search params. Best for short, linkable queries;
+ * use POST for long queries that risk URL-length limits.
+ *
+ * @example
+ * GET /api/v1/explain?hostId=0&query=SELECT%20count()%20FROM%20system.tables
+ * GET /api/v1/explain?hostId=0&query=SELECT%201&planSettings=indexes%3D1
+ */
+export async function GET(request: Request): Promise<Response> {
+  const { searchParams } = new URL(request.url)
+
+  // Validate required parameters
+  const validationError = validateSearchParams(searchParams)
+  if (validationError) {
+    return createValidationError(validationError.message, ROUTE_CONTEXT)
+  }
+
+  // Get and validate hostId
+  const hostIdResult = getAndValidateHostId(searchParams)
+  if (typeof hostIdResult !== 'number') {
+    return createValidationError(hostIdResult.message, ROUTE_CONTEXT)
+  }
+
+  return runExplain(
+    hostIdResult,
+    searchParams.get('query'),
+    (searchParams.get('mode') || '').toUpperCase(),
+    searchParams.get('planSettings') || ''
+  )
+}
+
+/**
+ * Handle POST requests to run a ClickHouse EXPLAIN for the provided SQL.
+ *
+ * Inputs come from a JSON body — the preferred path for long queries that
+ * would exceed URL-length limits as GET search params.
+ *
+ * @example
+ * POST /api/v1/explain   { "hostId": 0, "query": "SELECT 1", "mode": "PIPELINE" }
+ */
+export async function POST(request: Request): Promise<Response> {
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    return createValidationError(
+      'Request body must be valid JSON',
+      ROUTE_CONTEXT
+    )
+  }
+
+  if (!body || typeof body !== 'object') {
+    return createValidationError(
+      'Request body must be a JSON object',
+      ROUTE_CONTEXT
+    )
+  }
+
+  const { hostId, query, mode, planSettings } = body as Record<string, unknown>
+
+  // Validate hostId by reusing the shared validator via synthesized params
+  if (hostId === undefined || hostId === null || hostId === '') {
+    return createValidationError(
+      'Missing required parameter: hostId',
+      ROUTE_CONTEXT
+    )
+  }
+  const hostIdResult = getAndValidateHostId(
+    new URLSearchParams({ hostId: String(hostId) })
+  )
+  if (typeof hostIdResult !== 'number') {
+    return createValidationError(hostIdResult.message, ROUTE_CONTEXT)
+  }
+
+  return runExplain(
+    hostIdResult,
+    typeof query === 'string' ? query : null,
+    typeof mode === 'string' ? mode.toUpperCase() : '',
+    typeof planSettings === 'string' ? planSettings : ''
   )
 }
 

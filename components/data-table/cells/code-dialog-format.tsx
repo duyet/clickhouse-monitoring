@@ -154,9 +154,21 @@ interface ExplainResponse {
   data?: { explain?: string }[]
 }
 
-/** SWR fetcher for the EXPLAIN endpoint; surfaces API error messages. */
-async function explainFetcher(url: string): Promise<ExplainResponse> {
-  const res = await apiFetch(url)
+/**
+ * Fetch a query plan from the EXPLAIN endpoint; surfaces API error messages.
+ *
+ * Uses POST so arbitrarily long queries are carried in the request body —
+ * a GET would risk URL-length limits for large SQL.
+ */
+async function explainFetcher(
+  hostId: number,
+  query: string
+): Promise<ExplainResponse> {
+  const res = await apiFetch('/api/v1/explain', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hostId, query }),
+  })
   const json = (await res.json().catch(() => ({}))) as ExplainResponse & {
     error?: { message?: string }
   }
@@ -206,15 +218,19 @@ function QueryPlanPanel({
     [query, hideQueryComment]
   )
   const isExplainable = /^\s*(SELECT|WITH)\b/i.test(cleanQuery)
-  const url = isExplainable
-    ? `/api/v1/explain?hostId=${hostId}&query=${encodeURIComponent(cleanQuery)}`
-    : null
+  // String SWR key keeps caching version-agnostic; the inline fetcher closes
+  // over hostId + query so they reach the POST body.
+  const swrKey = isExplainable ? `explain:${hostId}:${cleanQuery}` : null
 
-  const { data, error, isLoading } = useSWR(url, explainFetcher, {
-    revalidateOnFocus: false,
-    revalidateIfStale: false,
-    shouldRetryOnError: false,
-  })
+  const { data, error, isLoading } = useSWR<ExplainResponse>(
+    swrKey,
+    () => explainFetcher(hostId, cleanQuery),
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      shouldRetryOnError: false,
+    }
+  )
 
   if (!isExplainable) {
     return (
