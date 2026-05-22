@@ -58,9 +58,15 @@ export interface KpiCardProps {
   isLoading?: boolean
 }
 
-/** Headline numbers animate; version/uptime strings render as-is. */
+/**
+ * True when {@link AnimatedNumber} can cleanly count the value up: a plain
+ * number, optionally with one trailing unit token ("339 GiB"). Strings with
+ * interior digits — "12d 1h", "v26.1.3.52" — render statically, since the
+ * counter would otherwise animate only the leading fragment.
+ */
 function isCountable(value: string | number): boolean {
-  return typeof value === 'number' || /^-?\d/.test(String(value))
+  if (typeof value === 'number') return true
+  return /^-?[\d,]+(\.\d+)?\s*[a-z%]*$/i.test(value)
 }
 
 const VALUE_CLASS =

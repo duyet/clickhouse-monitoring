@@ -247,37 +247,57 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
     const series = (countSwr.data ?? []).map((d) => Number(d.query_count) || 0)
     const total = series.reduce((s, v) => s + v, 0)
     const half = Math.floor(series.length / 2)
-    const prior = series.slice(0, half).reduce((s, v) => s + v, 0)
-    const recent = series.slice(half).reduce((s, v) => s + v, 0)
-    const pct = prior > 0 ? ((recent - prior) / prior) * 100 : 0
+    const priorDays = series.slice(0, half)
+    const recentDays = series.slice(half)
+    const prior = priorDays.reduce((s, v) => s + v, 0)
+    const recent = recentDays.reduce((s, v) => s + v, 0)
+
+    // Only show a trend when BOTH halves have a few active days — otherwise
+    // a single tiny day in an otherwise zero-filled (WITH FILL) prior window
+    // produces an astronomical, meaningless percentage. The result is also
+    // clamped so an extreme-but-valid swing stays readable.
+    const priorActiveDays = priorDays.filter((v) => v > 0).length
+    const recentActiveDays = recentDays.filter((v) => v > 0).length
+    const hasComparableHistory =
+      priorActiveDays >= 2 && recentActiveDays >= 2 && prior > 0
+
+    const pct = hasComparableHistory
+      ? Math.max(-999, Math.min(999, ((recent - prior) / prior) * 100))
+      : 0
+
     return {
       series,
       total: total.toLocaleString(),
-      trend:
-        series.length >= 4 && prior > 0
-          ? {
-              text: `${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%`,
-              positive: pct >= 0,
-            }
-          : undefined,
+      trend: hasComparableHistory
+        ? {
+            text: `${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%`,
+            positive: pct >= 0,
+          }
+        : undefined,
     }
   }, [countSwr.data])
 
-  // "Memory consumed" — live active total, with the 14-day query-memory trend.
+  // Distributed queries show up in system.processes as an initial row plus
+  // secondary fragment rows. Aggregate only the initial rows so memory / row /
+  // thread totals are not multiplied by the shard count on a clustered host.
+  const initialRows = useMemo(
+    () => rows.filter((r) => Number(r.is_initial_query ?? 1) !== 0),
+    [rows]
+  )
+
+  // "Query memory" — the most recent day's average memory per query. The
+  // headline and the sparkline plot the *same* metric, so the number agrees
+  // with the chart beneath it. (Live total memory lives in the Summary card.)
   const memory = useMemo(() => {
     const series = (memorySwr.data ?? []).map(
       (d) => Number(d.memory_usage) || 0
     )
-    const active = rows.reduce((s, r) => s + (Number(r.memory_usage) || 0), 0)
-    const avg = series.length
-      ? series.reduce((s, v) => s + v, 0) / series.length
-      : 0
+    const latest = series.length ? series[series.length - 1] : 0
     return {
       series,
-      ...splitSize(formatReadableSize(active)),
-      sub: `active · ${formatReadableSize(avg)} 14d avg`,
+      ...splitSize(formatReadableSize(latest)),
     }
-  }, [memorySwr.data, rows])
+  }, [memorySwr.data])
 
   // "Queries by user" — pivot the long-form rows into stacked daily bars.
   const byUser = useMemo(() => {
@@ -315,20 +335,20 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
     return { data, series }
   }, [byUserSwr.data])
 
-  // "Summary" — aggregated straight from the live rows.
+  // "Summary" — aggregated from the live rows (initial queries only).
   const summary = useMemo<SummaryItem[]>(() => {
     const sum = (key: keyof RunningQueryRow) =>
-      rows.reduce((s, r) => s + (Number(r[key]) || 0), 0)
+      initialRows.reduce((s, r) => s + (Number(r[key]) || 0), 0)
     const today = Number(todaySwr.data?.[0]?.count ?? 0)
-    const memory = splitSize(formatReadableSize(sum('memory_usage')))
+    const memoryTotal = splitSize(formatReadableSize(sum('memory_usage')))
     const dataRead = splitSize(formatReadableSize(sum('read_bytes')))
     return [
-      { icon: Activity, label: 'Active', value: String(rows.length) },
+      { icon: Activity, label: 'Active', value: String(initialRows.length) },
       {
         icon: MemoryStick,
         label: 'Memory',
-        value: memory.value,
-        unit: memory.unit,
+        value: memoryTotal.value,
+        unit: memoryTotal.unit,
       },
       {
         icon: Rows3,
@@ -344,7 +364,7 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
       { icon: Layers, label: 'Threads', value: String(sum('thread_count')) },
       { icon: CalendarDays, label: 'Today', value: formatCompactNumber(today) },
     ]
-  }, [rows, todaySwr.data])
+  }, [initialRows, todaySwr.data])
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -358,10 +378,10 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
         valueFormatter={(v) => `${v.toLocaleString()} queries`}
       />
       <StatCard
-        label="Memory consumed"
+        label="Query memory"
         value={memory.value}
         unit={memory.unit}
-        sub={memory.sub}
+        sub="avg per query · last 14d"
         color="#8b5cf6"
         series={memory.series}
         valueFormatter={formatReadableSize}
