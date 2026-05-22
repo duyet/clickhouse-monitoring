@@ -2,6 +2,7 @@
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
+import { RunningQueriesView } from '@/components/running-queries'
 import { ChartSkeleton } from '@/components/skeletons'
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
 
@@ -10,7 +11,7 @@ function RunningQueriesContent() {
     <PageLayout
       queryConfig={runningQueriesConfig}
       title="Running Queries"
-      enableRowSelection
+      tableSlot={<RunningQueriesView />}
     />
   )
 }
