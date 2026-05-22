@@ -10,6 +10,7 @@ import { parseVersion, selectVersionedSql } from '@/lib/clickhouse-version'
 import { queries } from '@/lib/query-config'
 import { queryViewsLogConfig } from '@/lib/query-config/queries/query-views-log'
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
+import { ColumnFormat } from '@/types/column-format'
 
 describe('Running Queries Version Selection', () => {
   describe('SQL variant selection', () => {
@@ -64,6 +65,7 @@ describe('Running Queries Version Selection', () => {
 
       // peak_threads_usage is NOT available in ClickHouse 24.x+
       expect(sql).not.toContain('peak_threads_usage')
+      expect(sql).not.toContain('normalized_query_hash')
     })
 
     it('should fallback to oldest variant when version is null', () => {
@@ -95,7 +97,7 @@ describe('Running Queries Version Selection', () => {
       expect(sql).toContain('ORDER BY elapsed')
     })
 
-    it('both versions should have same base columns (single query now)', () => {
+    it('both versions should have same base projection columns', () => {
       const v23 = selectVersionedSql(
         runningQueriesConfig.sql,
         parseVersion('23.8.0.0')
@@ -107,19 +109,67 @@ describe('Running Queries Version Selection', () => {
 
       // Common columns (same query for all versions now)
       const commonColumns = [
-        'query_id as query_detail',
+        'query_id,',
+        'query,',
+        'query_kind,',
+        'user,',
+        'current_database,',
+        'initial_query_id,',
+        'address,',
+        'port,',
+        'interface,',
+        'client_name,',
+        'client_hostname,',
+        'distributed_depth,',
+        'elapsed,',
+        'read_rows,',
+        'read_bytes,',
+        'total_rows_approx,',
+        'written_rows,',
+        'written_bytes,',
+        'memory_usage,',
+        'peak_memory_usage,',
         'readable_elapsed',
         'readable_read_rows',
         'readable_written_rows',
         'readable_memory_usage',
         'progress',
         'launched_merges',
+        'query_id AS action',
+        'readable_read_bytes',
+        'readable_written_bytes',
+        'thread_count',
+        'interface_label',
       ]
 
       for (const col of commonColumns) {
         expect(v23).toContain(col)
         expect(v24).toContain(col)
       }
+    })
+
+    it('should avoid SELECT star for the frequently refreshed table', () => {
+      const sql = selectVersionedSql(
+        runningQueriesConfig.sql,
+        parseVersion('24.1.0.0')
+      )
+
+      expect(sql).not.toContain('SELECT *')
+      expect(sql).not.toContain('SELECT *,')
+    })
+
+    it('should configure the compact running-query summary table shape', () => {
+      const sql = selectVersionedSql(
+        runningQueriesConfig.sql,
+        parseVersion('24.1.0.0')
+      )
+
+      expect(sql).toContain('ORDER BY elapsed DESC')
+      expect(runningQueriesConfig.columns).toEqual(['action', 'query'])
+      expect(runningQueriesConfig.columnFormats?.query).toBe(
+        ColumnFormat.RunningQuerySummary
+      )
+      expect(runningQueriesConfig.columnFormats?.action).toBeTruthy()
     })
   })
 })
@@ -254,21 +304,18 @@ describe('Version Selection Edge Cases', () => {
 })
 
 describe('getSqlForDisplay vs selectVersionedSql', () => {
-  // This test documents the behavior with single (non-versioned) query
-  it('getSqlForDisplay and selectVersionedSql return same query for single query config', () => {
+  it('getSqlForDisplay and selectVersionedSql return same running queries SQL', () => {
     const { getSqlForDisplay } = require('@/types/query-config')
 
     const displaySql = getSqlForDisplay(runningQueriesConfig.sql)
     const executionSql = selectVersionedSql(
       runningQueriesConfig.sql,
-      parseVersion('23.8.0.0')
+      parseVersion('25.3.0.0')
     )
 
-    // Both should return the same single query (no versioning)
     expect(displaySql).not.toContain('peak_threads_usage')
     expect(executionSql).not.toContain('peak_threads_usage')
-
-    // Both queries should be identical
+    expect(displaySql).not.toContain('normalized_query_hash')
     expect(displaySql).toBe(executionSql)
   })
 })
