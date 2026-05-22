@@ -8,6 +8,7 @@ import { memo, Suspense, useCallback, useMemo, useState } from 'react'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { ClientOnly } from '@/components/client-only'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
+import { OverviewStatusStrip } from '@/components/overview-charts/overview-status-strip'
 import { ChartSkeleton, TabsSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
@@ -123,6 +124,7 @@ function OverviewPageContent() {
 
   return (
     <div>
+      <OverviewStatusStrip className="mb-3" />
       <OverviewCharts className="mb-6" />
 
       <ClientOnly fallback={<TabsSkeleton tabCount={OVERVIEW_TABS.length} />}>
@@ -131,13 +133,13 @@ function OverviewPageContent() {
           onValueChange={handleTabChange}
           className="space-y-2"
         >
-          <div className="overflow-x-auto pb-1">
-            <TabsList className="h-11 gap-1 w-full md:w-fit inline-flex min-w-max backdrop-blur-sm border border-border/40 p-1">
+          <div className="overflow-x-auto pb-px">
+            <TabsList className="inline-flex h-auto w-full min-w-max items-center justify-start gap-1 rounded-none border-b border-border bg-transparent p-0 text-muted-foreground">
               {OVERVIEW_TABS.map((tab) => (
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1 data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all duration-200"
+                  className="h-auto flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-3 py-2 text-[13px] font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none dark:data-[state=active]:border-foreground dark:data-[state=active]:bg-transparent"
                 >
                   {tab.label}
                 </TabsTrigger>
