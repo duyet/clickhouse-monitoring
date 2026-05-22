@@ -1,6 +1,8 @@
 'use client'
 
-import { SplitCard } from './split-card'
+import { Database } from 'lucide-react'
+
+import { KpiCard } from './kpi-card'
 import { memo } from 'react'
 import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
@@ -11,8 +13,8 @@ import { buildUrl } from '@/lib/url/url-builder'
 // ============================================================================
 
 /**
- * DatabaseTableCountCard - Displays database and table counts
- * Shows a split view with animated numbers for both metrics
+ * DatabaseTableCountCard - "Schema" overview KPI.
+ * Headline is the database count; the table count sits in the sub line.
  */
 
 export const DatabaseTableCountCard = memo(function DatabaseTableCountCard() {
@@ -33,13 +35,21 @@ export const DatabaseTableCountCard = memo(function DatabaseTableCountCard() {
   const tableCount = tablesSwr.data?.[0]?.count ?? 0
 
   return (
-    <SplitCard
-      value1={dbCount}
-      label1="Databases"
-      value2={tableCount}
-      label2="Tables"
-      href1={buildUrl('/tables-overview', { host: hostId })}
-      href2={buildUrl('/tables-overview', { host: hostId })}
+    <KpiCard
+      icon={Database}
+      tone="violet"
+      label="Schema"
+      value={dbCount}
+      unit={dbCount === 1 ? 'database' : 'databases'}
+      sub={
+        <>
+          <span className="font-medium tabular-nums text-foreground/80">
+            {tableCount.toLocaleString()}
+          </span>{' '}
+          {tableCount === 1 ? 'table' : 'tables'}
+        </>
+      }
+      href={buildUrl('/tables-overview', { host: hostId })}
       isLoading={isLoading}
     />
   )

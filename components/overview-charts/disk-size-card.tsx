@@ -1,9 +1,12 @@
 'use client'
 
+import { HardDrive } from 'lucide-react'
+
 import type { CardVariant } from './card-styles'
 
-import { ProgressCard } from './progress-card'
+import { KpiCard } from './kpi-card'
 import { memo } from 'react'
+import { formatReadableSize } from '@/lib/format-readable'
 import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { buildUrl } from '@/lib/url/url-builder'
@@ -13,9 +16,9 @@ import { buildUrl } from '@/lib/url/url-builder'
 // ============================================================================
 
 /**
- * DiskSizeCard - Displays disk usage with progress bar
- * Shows animated size value and visual progress indicator
- * Color changes based on usage percentage (warning > 75%, danger > 90%)
+ * DiskSizeCard - "Storage" overview KPI.
+ * Headline is the used size; a progress bar and `used / total / free`
+ * breakdown sit below. Bar color escalates past 75% / 90% usage.
  */
 
 export const DiskSizeCard = memo(function DiskSizeCard() {
@@ -36,17 +39,29 @@ export const DiskSizeCard = memo(function DiskSizeCard() {
   const used = swr.data?.[0]?.used_space ?? 0
   const total = swr.data?.[0]?.total_space ?? 1
   const readableUsed = swr.data?.[0]?.readable_used_space ?? '-'
+  const readableTotal = swr.data?.[0]?.readable_total_space ?? '-'
   const percent = total > 0 ? (used / total) * 100 : 0
+  const free = Math.max(0, total - used)
 
   const variant: CardVariant =
     percent > 90 ? 'danger' : percent > 75 ? 'warning' : 'default'
 
   return (
-    <ProgressCard
+    <KpiCard
+      icon={HardDrive}
+      tone="blue"
+      label="Storage"
       value={readableUsed}
-      percent={percent}
+      progress={percent}
+      progressVariant={variant}
+      sub={
+        <>
+          <span className="tabular-nums">{percent.toFixed(0)}%</span> of{' '}
+          <span className="tabular-nums">{readableTotal}</span> ·{' '}
+          <span className="tabular-nums">{formatReadableSize(free)}</span> free
+        </>
+      }
       href={buildUrl('/disks', { host: hostId })}
-      variant={variant}
       isLoading={isLoading}
     />
   )

@@ -1,96 +1,73 @@
 'use client'
 
-import { InfoCard } from './info-card'
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
-import { useHostId } from '@/lib/swr'
+import { Clock } from 'lucide-react'
+
+import { KpiCard } from './kpi-card'
+import { memo } from 'react'
+import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useHostStatus } from '@/lib/swr/use-host-status'
-import { getResponsiveUptimeLabels } from '@/lib/uptime-format'
-import { cn } from '@/lib/utils'
 
 // ============================================================================
 // ClickHouseInfoCard Component
 // ============================================================================
 
 /**
- * ClickHouseInfoCard - Displays ClickHouse version and uptime
- * Shows static version info with optional uptime subtitle
+ * ClickHouseInfoCard - "Uptime" overview KPI.
+ * Headline is a compact uptime (e.g. "12d 1h"); the version sits below.
+ * Falls back to showing the version as the headline when uptime is missing.
  */
+
+const UNIT_ABBR: Record<string, string> = {
+  year: 'y',
+  month: 'mo',
+  week: 'w',
+  day: 'd',
+  hour: 'h',
+  minute: 'm',
+  second: 's',
+}
+
+/**
+ * Condense a human uptime string ("12 days, 1 hour and 20 minutes") into the
+ * two most significant parts ("12d 1h").
+ *
+ * Units outside {@link UNIT_ABBR} are dropped; if nothing matches, the
+ * original trimmed string is returned unchanged.
+ */
+function compactUptime(uptime: string): string {
+  const matches = uptime.matchAll(
+    /(\d+)\s*(year|month|week|day|hour|minute|second)s?/gi
+  )
+  const parts = Array.from(matches, (m) => ({
+    n: Number(m[1]),
+    unit: UNIT_ABBR[m[2].toLowerCase()],
+  })).filter((p) => p.n > 0 && p.unit)
+
+  if (parts.length === 0) return uptime.trim()
+  return parts
+    .slice(0, 2)
+    .map((p) => `${p.n}${p.unit}`)
+    .join(' ')
+}
 
 export const ClickHouseInfoCard = memo(function ClickHouseInfoCard() {
   const hostId = useHostId()
-  const statusSwr = useHostStatus(hostId, { refreshInterval: 300000 })
+  const statusSwr = useHostStatus(hostId, {
+    refreshInterval: REFRESH_INTERVAL.VERY_SLOW_5M,
+  })
 
-  const version = statusSwr.data?.version ? `v${statusSwr.data?.version}` : '-'
+  const version = statusSwr.data?.version ? `v${statusSwr.data.version}` : '-'
   const uptime = statusSwr.data?.uptime ?? ''
+  const compact = uptime ? compactUptime(uptime) : ''
 
   return (
-    <InfoCard
-      value={version}
-      subtitle={uptime ? <UptimeSubtitle uptime={uptime} /> : undefined}
+    <KpiCard
+      icon={Clock}
+      tone="green"
+      label={compact ? 'Uptime' : 'Version'}
+      value={compact || version}
+      sub={compact ? version : undefined}
       isLoading={statusSwr.isLoading}
     />
-  )
-})
-
-const uptimeSubtitleClassName = [
-  'block max-w-full truncate text-center text-xs uppercase tracking-widest font-medium',
-  'text-foreground/40 dark:text-foreground/35',
-].join(' ')
-
-const UptimeSubtitle = memo(function UptimeSubtitle({
-  uptime,
-}: {
-  uptime: string
-}) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const measureRef = useRef<HTMLSpanElement>(null)
-  const labels = useMemo(() => getResponsiveUptimeLabels(uptime), [uptime])
-  const [label, setLabel] = useState(labels[0] ?? '')
-
-  useEffect(() => {
-    setLabel(labels[0] ?? '')
-  }, [labels])
-
-  useEffect(() => {
-    const container = containerRef.current
-    const measure = measureRef.current
-    if (!container || !measure || labels.length === 0) return
-
-    const fitLabel = () => {
-      const availableWidth = container.clientWidth
-      let nextLabel = labels.at(-1) ?? ''
-
-      for (const candidate of labels) {
-        measure.textContent = candidate
-        if (measure.scrollWidth <= availableWidth) {
-          nextLabel = candidate
-          break
-        }
-      }
-
-      setLabel(nextLabel)
-    }
-
-    fitLabel()
-
-    const resizeObserver = new ResizeObserver(fitLabel)
-    resizeObserver.observe(container)
-
-    return () => resizeObserver.disconnect()
-  }, [labels])
-
-  if (!label) return null
-
-  return (
-    <div ref={containerRef} className="relative min-w-0 max-w-full px-2">
-      <span className={uptimeSubtitleClassName} title={labels[0]}>
-        {label}
-      </span>
-      <span
-        ref={measureRef}
-        className={cn(uptimeSubtitleClassName, 'invisible absolute w-max')}
-        aria-hidden="true"
-      />
-    </div>
   )
 })

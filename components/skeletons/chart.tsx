@@ -44,15 +44,17 @@ const AreaChartSkeleton = () => (
           </linearGradient>
         </defs>
 
-        {/* Wave path */}
+        {/* Wave path — explicit Q segments keep every control point inside
+            the 0–100 viewBox; a smooth `T` chain reflects control points
+            unboundedly and clips the curve at the top edge. */}
         <path
-          d="M0,100 L0,70 Q40,30 80,60 T160,30 T240,80 T320,40 T400,60 L400,100 Z"
+          d="M0,100 L0,68 Q50,22 100,52 Q150,80 200,44 Q250,22 300,58 Q350,82 400,48 L400,100 Z"
           fill="url(#area-skeleton-grad)"
           className="animate-[pulse-subtle_3s_ease-in-out_infinite]"
         />
         {/* Wavy line stroke */}
         <path
-          d="M0,70 Q40,30 80,60 T160,30 T240,80 T320,40 T400,60"
+          d="M0,68 Q50,22 100,52 Q150,80 200,44 Q250,22 300,58 Q350,82 400,48"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -90,9 +92,9 @@ const LineChartSkeleton = () => (
         viewBox="0 0 400 100"
         preserveAspectRatio="none"
       >
-        {/* Wavy line stroke */}
+        {/* Wavy line stroke — explicit Q segments stay inside the viewBox. */}
         <path
-          d="M0,45 Q50,90 100,30 T200,75 T300,20 T400,55"
+          d="M0,52 Q50,18 100,48 Q150,84 200,40 Q250,18 300,60 Q350,82 400,46"
           fill="none"
           stroke="currentColor"
           strokeWidth="2.5"
@@ -163,7 +165,7 @@ const MetricCardSkeleton = () => (
         preserveAspectRatio="none"
       >
         <path
-          d="M0,25 Q15,5 30,20 T60,10 T90,25"
+          d="M0,20 Q17,7 34,16 Q50,25 67,12 Q84,6 100,17"
           fill="none"
           stroke="currentColor"
           strokeWidth="3"
