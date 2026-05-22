@@ -188,10 +188,7 @@ export const RunningQuerySummaryFormat = memo(
     const port = stringValue(record.port)
     const addressLabel = address && port ? `${address}:${port}` : address
     const distributedDepth = numberValue(record.distributed_depth)
-    const isDistributed =
-      distributedDepth !== null && Number.isFinite(distributedDepth)
-        ? distributedDepth > 0
-        : false
+    const isDistributed = (distributedDepth ?? 0) > 0
 
     const queryLink = useMemo(() => {
       if (!queryId) return ''
