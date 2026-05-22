@@ -1,25 +1,20 @@
 'use client'
 
 import { Suspense } from 'react'
-import { PageLayout } from '@/components/layout/query-page'
 import { RunningQueriesView } from '@/components/running-queries'
 import { ChartSkeleton } from '@/components/skeletons'
-import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
 
-function RunningQueriesContent() {
-  return (
-    <PageLayout
-      queryConfig={runningQueriesConfig}
-      title="Running Queries"
-      tableSlot={<RunningQueriesView />}
-    />
-  )
-}
-
+/**
+ * Running Queries page.
+ *
+ * {@link RunningQueriesView} is self-contained — it renders its own header,
+ * the collapsible chart strip and the query table — so the page just wraps it
+ * in a Suspense boundary.
+ */
 export default function RunningQueriesPage() {
   return (
     <Suspense fallback={<ChartSkeleton />}>
-      <RunningQueriesContent />
+      <RunningQueriesView />
     </Suspense>
   )
 }

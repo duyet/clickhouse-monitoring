@@ -1,11 +1,12 @@
 'use client'
 
-import { Activity, RefreshCw } from 'lucide-react'
+import { ChevronDown, RefreshCw } from 'lucide-react'
 
 import type { RunningQueryRow } from '@/components/running-queries/running-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
 
-import { memo } from 'react'
+import { memo, useState } from 'react'
+import { RunningQueriesCharts } from '@/components/running-queries/running-queries-charts'
 import { RunningQueriesTable } from '@/components/running-queries/running-queries-table'
 import { Skeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
@@ -34,6 +35,8 @@ const REFRESH_INTERVAL = (() => {
   return !Number.isNaN(parsed) && parsed > 0 ? parsed : 5_000
 })()
 
+const REFRESH_SECONDS = Math.round(REFRESH_INTERVAL / 1000)
+
 /** Skeleton placeholder shown during the initial load. */
 function LoadingState() {
   return (
@@ -57,106 +60,148 @@ function LoadingState() {
   )
 }
 
+/** Header action button — outlined, compact, matches the redesign. */
+function HeaderButton({
+  onClick,
+  children,
+  disabled,
+}: {
+  onClick: () => void
+  children: React.ReactNode
+  disabled?: boolean
+}) {
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="h-8 gap-1.5 text-[12px]"
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {children}
+    </Button>
+  )
+}
+
 /**
- * RunningQueriesView — the Running Queries page table.
+ * RunningQueriesView — the Running Queries page.
  *
- * Fetches in-flight queries from `system.processes` and renders them in a
- * dense, sortable {@link RunningQueriesTable}. The list auto-refreshes on
- * {@link REFRESH_INTERVAL} (5s by default) and surfaces loading / empty /
- * error states inline.
+ * A self-contained layout: header (title, live count, charts toggle, refresh,
+ * live toggle) → collapsible four-card chart strip → the sortable
+ * {@link RunningQueriesTable}. Data comes from `system.processes`; auto-refresh
+ * runs on {@link REFRESH_INTERVAL} while "Live" is on and pauses when off.
  */
 export const RunningQueriesView = memo(function RunningQueriesView() {
   const hostId = useHostId()
+  const [chartsOpen, setChartsOpen] = useState(true)
+  const [live, setLive] = useState(true)
+
   const { data, error, isLoading, isValidating, refresh } =
     useTableData<RunningQueryRow>(
       'running-queries',
       hostId,
       undefined,
-      REFRESH_INTERVAL
+      live ? REFRESH_INTERVAL : 0
     )
-
-  // Show the skeleton on first load only — keep stale rows visible while a
-  // background refresh is in flight to avoid layout flicker.
-  if (isLoading && !data) {
-    return <LoadingState />
-  }
-
-  if (error && !data) {
-    const variant = detectCardErrorVariant(error as CardError)
-    return (
-      <Card className="rounded-lg shadow-none">
-        <CardContent className="p-4">
-          <EmptyState
-            variant={variant}
-            title={getCardErrorTitle(variant, 'Running Queries')}
-            description={getCardErrorDescription(error as CardError, variant)}
-            compact
-            action={{
-              label: 'Retry',
-              onClick: refresh,
-              icon: <RefreshCw className="mr-1.5 h-3.5 w-3.5" />,
-            }}
-          />
-        </CardContent>
-      </Card>
-    )
-  }
 
   const rows = data ?? []
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col gap-2">
-        {/* Header: title, live count, live indicator, manual refresh */}
-        <div className="flex items-center justify-between gap-2 px-0.5">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-medium">Running Queries</h2>
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium tabular-nums text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-              {rows.length} active
-            </span>
+      <div className="flex flex-col gap-4">
+        {/* Header */}
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight sm:text-[22px]">
+                Running Queries
+              </h1>
+              <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium tabular-nums text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                {rows.length} active
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <HeaderButton onClick={() => setChartsOpen((v) => !v)}>
+                <ChevronDown
+                  className={cn(
+                    'size-3.5 transition-transform',
+                    !chartsOpen && '-rotate-90'
+                  )}
+                />
+                {chartsOpen ? 'Hide charts' : 'Show charts'}
+              </HeaderButton>
+              <HeaderButton onClick={() => refresh()} disabled={isValidating}>
+                <RefreshCw
+                  className={cn('size-3.5', isValidating && 'animate-spin')}
+                />
+                Refresh
+              </HeaderButton>
+              <HeaderButton onClick={() => setLive((v) => !v)}>
+                <span className="relative inline-flex size-2">
+                  {live && (
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500 opacity-70" />
+                  )}
+                  <span
+                    className={cn(
+                      'relative inline-flex size-2 rounded-full',
+                      live ? 'bg-rose-500' : 'bg-muted-foreground/40'
+                    )}
+                  />
+                </span>
+                {live ? 'Live' : 'Paused'}
+              </HeaderButton>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground"
-              title={`Auto-refreshes every ${REFRESH_INTERVAL / 1000}s`}
-            >
-              <Activity
-                className={cn(
-                  'size-3.5',
-                  isValidating
-                    ? 'animate-pulse text-green-500'
-                    : 'text-muted-foreground/60'
-                )}
-              />
-              Live
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 text-muted-foreground hover:text-foreground"
-              onClick={() => refresh()}
-              disabled={isValidating}
-              aria-label="Refresh now"
-            >
-              <RefreshCw
-                className={cn('size-3.5', isValidating && 'animate-spin')}
-              />
-            </Button>
-          </div>
+          <p className="text-[12.5px] text-muted-foreground">
+            Queries currently executing on the cluster
+            {live
+              ? ` · auto-refreshes every ${REFRESH_SECONDS}s`
+              : ' · auto-refresh paused'}
+          </p>
         </div>
 
-        {rows.length === 0 ? (
-          <Card className="rounded-lg border-dashed shadow-none">
-            <CardContent className="p-6">
+        {/* Body */}
+        {isLoading && !data ? (
+          <LoadingState />
+        ) : error && !data ? (
+          <Card className="rounded-xl shadow-none">
+            <CardContent className="p-4">
               <EmptyState
-                variant="no-data"
-                title="No queries running"
-                description="Nothing is executing on this host right now. New queries appear here automatically."
+                variant={detectCardErrorVariant(error as CardError)}
+                title={getCardErrorTitle(
+                  detectCardErrorVariant(error as CardError),
+                  'Running Queries'
+                )}
+                description={getCardErrorDescription(
+                  error as CardError,
+                  detectCardErrorVariant(error as CardError)
+                )}
+                compact
+                action={{
+                  label: 'Retry',
+                  onClick: refresh,
+                  icon: <RefreshCw className="mr-1.5 h-3.5 w-3.5" />,
+                }}
               />
             </CardContent>
           </Card>
         ) : (
-          <RunningQueriesTable rows={rows} />
+          <>
+            {chartsOpen && <RunningQueriesCharts rows={rows} hostId={hostId} />}
+            {rows.length === 0 ? (
+              <Card className="rounded-xl border-dashed shadow-none">
+                <CardContent className="p-6">
+                  <EmptyState
+                    variant="no-data"
+                    title="No queries running"
+                    description="Nothing is executing on this host right now. New queries appear here automatically."
+                  />
+                </CardContent>
+              </Card>
+            ) : (
+              <RunningQueriesTable rows={rows} />
+            )}
+          </>
         )}
       </div>
     </TooltipProvider>

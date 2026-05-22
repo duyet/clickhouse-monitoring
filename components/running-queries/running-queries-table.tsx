@@ -8,13 +8,16 @@ import {
   Clock,
   Cpu,
   Database,
+  Download,
   ExternalLink,
   Globe,
   HardDrive,
+  ListFilter,
   Loader2,
   MemoryStick,
   ScanSearch,
   Search,
+  SlidersHorizontal,
   User as UserIcon,
   X,
 } from 'lucide-react'
@@ -24,6 +27,22 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import { CodeDialogFormat } from '@/components/data-table/cells/code-dialog-format'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   Tooltip,
   TooltipContent,
@@ -147,6 +166,15 @@ function fmtCount(n: number): string {
   return String(Math.round(n))
 }
 
+/** Compact elapsed time as a `{value, unit}` pair, e.g. `28.1 s`, `4.2 m`. */
+function formatDuration(elapsed: number): { value: string; unit: string } {
+  if (!Number.isFinite(elapsed) || elapsed < 0)
+    return { value: '0.0', unit: 's' }
+  if (elapsed < 60) return { value: elapsed.toFixed(1), unit: 's' }
+  if (elapsed < 3600) return { value: (elapsed / 60).toFixed(1), unit: 'm' }
+  return { value: (elapsed / 3600).toFixed(1), unit: 'h' }
+}
+
 // ───────────────────────── derived row ─────────────────────────
 
 /**
@@ -233,7 +261,9 @@ function derive(row: RunningQueryRow): DerivedQuery {
     totalRows,
     readableTotalRows: row.readable_total_rows_approx || fmtCount(totalRows),
     memory,
-    readableMemory: row.readable_memory_usage || formatReadableSize(memory),
+    // Base size only — `readable_memory_usage` can carry a "(peak …)" suffix
+    // that overflows the fixed-width Memory column.
+    readableMemory: formatReadableSize(memory),
     peakMemory: Number(row.peak_memory_usage ?? 0),
     readBytes: Number(row.read_bytes ?? 0),
     writtenRows: Number(row.written_rows ?? 0),
@@ -262,10 +292,26 @@ const SORT_ACCESSOR: Record<SortKey, (d: DerivedQuery) => number> = {
   progress: (d) => d.pct ?? 0,
   memory: (d) => d.memory,
   dataRead: (d) => d.readBytes,
-  cpu: (d) => d.cores,
+  cpu: (d) => d.cpuPct,
   threads: (d) => d.threads,
   duration: (d) => d.elapsed,
 }
+
+// ───────────────────────── columns ─────────────────────────
+
+/** The metric columns the user can show / hide via the column menu. */
+type OptionalColumn = 'memory' | 'dataRead' | 'cpu' | 'threads' | 'duration'
+
+const OPTIONAL_COLUMNS: { key: OptionalColumn; label: string }[] = [
+  { key: 'memory', label: 'Memory' },
+  { key: 'dataRead', label: 'Data' },
+  { key: 'cpu', label: 'CPU' },
+  { key: 'threads', label: 'Threads' },
+  { key: 'duration', label: 'Duration' },
+]
+
+// Always-present columns: Type, Query, Progress, Actions.
+const BASE_COLUMN_COUNT = 4
 
 // ───────────────────────── cells ─────────────────────────
 
@@ -322,6 +368,25 @@ function ProgressCell({ d }: { d: DerivedQuery }) {
           />
         ) : null}
       </div>
+    </div>
+  )
+}
+
+/** A small CPU-utilisation bar + percentage. */
+function CpuMeter({ pct }: { pct: number }) {
+  const rounded = Math.round(pct)
+  return (
+    <div className="flex items-center justify-end gap-1.5">
+      <div className="h-1 w-9 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: `${Math.max(pct, 3)}%`,
+            background: pct > 70 ? 'hsl(0 84% 60%)' : 'hsl(217 91% 60%)',
+          }}
+        />
+      </div>
+      <span className="tabular-nums">{rounded}%</span>
     </div>
   )
 }
@@ -398,13 +463,13 @@ function DetailField({
   mono?: boolean
 }) {
   return (
-    <div className="min-w-0 border-l border-t border-border px-3 py-1.5">
+    <div className="min-w-0 border-l border-t border-border px-3 py-2">
       <dt className="text-[10px] font-semibold uppercase leading-tight tracking-wider text-muted-foreground">
         {label}
       </dt>
       <dd
         className={cn(
-          'truncate text-[12px] font-medium tabular-nums',
+          'mt-0.5 truncate text-[12.5px] font-medium tabular-nums',
           mono && 'font-mono'
         )}
         title={typeof value === 'string' ? value : undefined}
@@ -422,14 +487,16 @@ interface ExpandedRowProps {
 }
 
 /**
- * Expanded row — execution details grid, the full query (via the shared
+ * Expanded row — an execution-details grid, the full query (via the shared
  * CodeDialogFormat with an Expand/Format dialog + query plan), then actions.
  */
 function ExpandedRow({ d, onKill, isKilling }: ExpandedRowProps) {
   const hostId = useHostId()
   const explorerUrl = buildExplorerQueryUrl(d.query, hostId)
   const detailUrl = `/query?query_id=${encodeURIComponent(d.id)}&host=${hostId}`
+  const lineCount = (d.query.match(/\n/g)?.length ?? 0) + 1
 
+  // Every field is backed by a real `system.processes` column.
   const fields: { label: string; value: React.ReactNode; mono?: boolean }[] = [
     { label: 'Query ID', value: d.id },
     { label: 'User', value: d.user, mono: false },
@@ -442,26 +509,14 @@ function ExpandedRow({ d, onKill, isKilling }: ExpandedRowProps) {
         : '—',
     },
     {
-      label: 'Distributed depth',
+      label: 'Depth',
       value:
         d.row.distributed_depth != null ? String(d.row.distributed_depth) : '0',
     },
-    { label: 'Duration', value: d.readableElapsed },
+    { label: 'Duration', value: d.readableElapsed, mono: false },
     { label: 'Memory', value: d.readableMemory },
-    {
-      label: 'Peak memory',
-      value:
-        d.row.readable_peak_memory_usage || formatReadableSize(d.peakMemory),
-    },
     { label: 'Rows read', value: d.readableReadRows },
     { label: 'Data read', value: formatReadableSize(d.readBytes) },
-    {
-      label: 'Written',
-      value:
-        d.writtenRows > 0
-          ? d.row.readable_written_rows || fmtCount(d.writtenRows)
-          : '—',
-    },
   ]
 
   return (
@@ -471,7 +526,7 @@ function ExpandedRow({ d, onKill, isKilling }: ExpandedRowProps) {
         <div className="border-b border-border bg-muted/40 px-3 pb-1.5 pt-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           Execution details
         </div>
-        <dl className="-ml-px -mt-px grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
+        <dl className="-ml-px -mt-px grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
           {fields.map((f) => (
             <DetailField
               key={f.label}
@@ -485,20 +540,29 @@ function ExpandedRow({ d, onKill, isKilling }: ExpandedRowProps) {
 
       {/* Full query — shared formatter with Expand/Format dialog + query plan */}
       <div>
-        <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Full query
+        <div className="mb-1.5 flex items-center justify-between gap-2">
+          <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Full query
+          </span>
+          <span className="whitespace-nowrap text-[10.5px] tabular-nums text-muted-foreground">
+            {d.query.length.toLocaleString()} chars
+            <span className="mx-1.5 opacity-50">·</span>
+            {lineCount} {lineCount === 1 ? 'line' : 'lines'}
+          </span>
         </div>
-        <CodeDialogFormat
-          value={d.query}
-          options={{
-            dialog_title: 'Running Query',
-            hide_query_comment: true,
-            max_truncate: 220,
-            force_dialog: true,
-            show_query_plan: true,
-            trigger_classname: 'w-full min-w-0',
-          }}
-        />
+        <div className="rounded-md border border-border bg-card px-3 py-2">
+          <CodeDialogFormat
+            value={d.query}
+            options={{
+              dialog_title: 'Running Query',
+              hide_query_comment: true,
+              max_truncate: 220,
+              force_dialog: true,
+              show_query_plan: true,
+              trigger_classname: 'w-full min-w-0',
+            }}
+          />
+        </div>
       </div>
 
       {/* Actions */}
@@ -546,6 +610,7 @@ interface QueryRowProps {
   d: DerivedQuery
   expanded: boolean
   onToggle: () => void
+  hiddenColumns: Set<OptionalColumn>
 }
 
 /** One running query rendered as a table row (collapsed) + detail row. */
@@ -553,6 +618,7 @@ const QueryRow = memo(function QueryRow({
   d,
   expanded,
   onToggle,
+  hiddenColumns,
 }: QueryRowProps) {
   const hostId = useHostId()
   const { killQuery } = useActions()
@@ -562,6 +628,7 @@ const QueryRow = memo(function QueryRow({
     if (!d.id) return
     setIsKilling(true)
     try {
+      // `useActions` binds the active hostId internally — killQuery(queryId).
       const result = await killQuery(d.id)
       if (result.success) toast.success(result.message)
       else toast.error(result.message)
@@ -571,6 +638,15 @@ const QueryRow = memo(function QueryRow({
       setIsKilling(false)
     }
   }, [killQuery, d.id])
+
+  const dur = formatDuration(d.elapsed)
+  const showMemory = !hiddenColumns.has('memory')
+  const showData = !hiddenColumns.has('dataRead')
+  const showCpu = !hiddenColumns.has('cpu')
+  const showThreads = !hiddenColumns.has('threads')
+  const showDuration = !hiddenColumns.has('duration')
+  const colSpan =
+    BASE_COLUMN_COUNT + (OPTIONAL_COLUMNS.length - hiddenColumns.size)
 
   return (
     <>
@@ -626,23 +702,31 @@ const QueryRow = memo(function QueryRow({
                 {d.iface}
               </span>
             )}
-            {/* Metrics that surface inline once their column is hidden */}
-            <span className="inline-flex items-center gap-1 md:hidden">
-              <MemoryStick className="size-3" />
-              {d.readableMemory}
-            </span>
-            <span className="inline-flex items-center gap-1 lg:hidden">
-              <Cpu className="size-3" />
-              {d.cores.toFixed(1)} cores
-            </span>
-            <span className="inline-flex items-center gap-1 xl:hidden">
-              <HardDrive className="size-3" />
-              {formatReadableSize(d.readBytes)}
-            </span>
-            <span className="inline-flex items-center gap-1 sm:hidden">
-              <Clock className="size-3" />
-              {d.readableElapsed}
-            </span>
+            {/* Metrics surface inline once their column is hidden or collapsed */}
+            {showMemory && (
+              <span className="inline-flex items-center gap-1 md:hidden">
+                <MemoryStick className="size-3" />
+                {d.readableMemory}
+              </span>
+            )}
+            {showCpu && (
+              <span className="inline-flex items-center gap-1 lg:hidden">
+                <Cpu className="size-3" />
+                {Math.round(d.cpuPct)}%
+              </span>
+            )}
+            {showData && (
+              <span className="inline-flex items-center gap-1 xl:hidden">
+                <HardDrive className="size-3" />
+                {formatReadableSize(d.readBytes)}
+              </span>
+            )}
+            {showDuration && (
+              <span className="inline-flex items-center gap-1 sm:hidden">
+                <Clock className="size-3" />
+                {dur.value} {dur.unit}
+              </span>
+            )}
           </div>
         </td>
 
@@ -652,47 +736,48 @@ const QueryRow = memo(function QueryRow({
         </td>
 
         {/* Memory — md+ */}
-        <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums md:table-cell">
-          {d.readableMemory}
-        </td>
+        {showMemory && (
+          <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums md:table-cell">
+            {d.readableMemory}
+          </td>
+        )}
 
         {/* Data read — xl+ */}
-        <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums xl:table-cell">
-          {formatReadableSize(d.readBytes)}
-        </td>
+        {showData && (
+          <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums xl:table-cell">
+            {formatReadableSize(d.readBytes)}
+          </td>
+        )}
 
         {/* CPU — lg+ */}
-        <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums lg:table-cell">
-          {d.cores > 0 ? (
-            <div className="flex items-center justify-end gap-1.5">
-              <div className="h-1 w-9 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.max(d.cpuPct, 4)}%`,
-                    background:
-                      d.cpuPct > 70 ? 'hsl(0 84% 60%)' : 'hsl(217 91% 60%)',
-                  }}
-                />
-              </div>
-              <span>{d.cores.toFixed(1)}</span>
-            </div>
-          ) : (
-            <span className="text-muted-foreground">0</span>
-          )}
-        </td>
+        {showCpu && (
+          <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums lg:table-cell">
+            {d.cpuPct > 0 ? (
+              <CpuMeter pct={d.cpuPct} />
+            ) : (
+              <span className="text-muted-foreground">0%</span>
+            )}
+          </td>
+        )}
 
         {/* Threads — 2xl+ */}
-        <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums text-muted-foreground 2xl:table-cell">
-          {d.threads || 0}
-        </td>
+        {showThreads && (
+          <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums text-muted-foreground 2xl:table-cell">
+            {d.threads || 0}
+          </td>
+        )}
 
         {/* Duration — sm+ (lives in the meta line on xs) */}
-        <td className="hidden whitespace-nowrap px-2 py-2.5 text-right text-[12px] tabular-nums sm:table-cell sm:px-3">
-          <span className={SEVERITY_DURATION[d.severity]}>
-            {d.readableElapsed}
-          </span>
-        </td>
+        {showDuration && (
+          <td className="hidden whitespace-nowrap px-2 py-2.5 text-right text-[12px] tabular-nums sm:table-cell sm:px-3">
+            <span className={SEVERITY_DURATION[d.severity]}>
+              {dur.value}
+              <span className="ml-0.5 text-[10.5px] text-muted-foreground">
+                {dur.unit}
+              </span>
+            </span>
+          </td>
+        )}
 
         {/* Actions */}
         <td className="px-1.5 py-2.5 sm:px-3">
@@ -756,7 +841,7 @@ const QueryRow = memo(function QueryRow({
       </tr>
       {expanded && (
         <tr>
-          <td colSpan={9} className="p-0">
+          <td colSpan={colSpan} className="p-0">
             <ExpandedRow d={d} onKill={handleKill} isKilling={isKilling} />
           </td>
         </tr>
@@ -764,6 +849,115 @@ const QueryRow = memo(function QueryRow({
     </>
   )
 })
+
+// ───────────────────────── toolbar ─────────────────────────
+
+/** Outlined toolbar button with the redesign's compact sizing. */
+function ToolbarButton({
+  children,
+  active,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) {
+  return (
+    <button
+      type="button"
+      {...props}
+      className={cn(
+        'inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-md border px-2.5 text-[12px] font-medium transition-colors',
+        active
+          ? 'border-border bg-muted text-foreground'
+          : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
+/** Segmented query-kind filter ("All / SELECT / INSERT / …"). */
+function KindFilter({
+  options,
+  value,
+  onChange,
+}: {
+  options: string[]
+  value: string
+  onChange: (kind: string) => void
+}) {
+  return (
+    <div className="flex max-w-full items-center gap-0.5 overflow-x-auto rounded-md bg-muted p-0.5">
+      {options.map((kind) => (
+        <button
+          key={kind}
+          type="button"
+          onClick={() => onChange(kind)}
+          className={cn(
+            'h-7 whitespace-nowrap rounded px-2.5 text-[11.5px] font-medium uppercase tracking-wide transition-colors',
+            value === kind
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          {kind === 'all' ? 'All' : kind}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ───────────────────────── csv export ─────────────────────────
+
+const CSV_HEADERS = [
+  'Query ID',
+  'Type',
+  'User',
+  'Database',
+  'Interface',
+  'Progress %',
+  'Memory',
+  'Data read',
+  'CPU %',
+  'Threads',
+  'Duration (s)',
+  'Query',
+] as const
+
+/** Download the currently-filtered rows as a CSV file. */
+function exportCsv(rows: DerivedQuery[]) {
+  if (typeof document === 'undefined') return
+  const escape = (value: unknown) =>
+    `"${String(value ?? '').replace(/"/g, '""')}"`
+  const lines = [CSV_HEADERS.join(',')]
+  for (const d of rows) {
+    lines.push(
+      [
+        d.id,
+        d.kind,
+        d.user,
+        d.db,
+        d.iface ?? '',
+        d.pct ?? '',
+        d.readableMemory,
+        formatReadableSize(d.readBytes),
+        Math.round(d.cpuPct),
+        d.threads,
+        d.elapsed.toFixed(1),
+        d.query,
+      ]
+        .map(escape)
+        .join(',')
+    )
+  }
+  const blob = new Blob([lines.join('\n')], {
+    type: 'text/csv;charset=utf-8',
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `running-queries-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+}
 
 // ───────────────────────── table ─────────────────────────
 
@@ -775,34 +969,55 @@ interface RunningQueriesTableProps {
  * RunningQueriesTable — a dense, sortable, responsive table of in-flight
  * ClickHouse queries.
  *
- * Columns collapse progressively (Threads → CPU → Data → Memory → Duration)
- * as the viewport narrows; hidden values reappear inline under the query
- * text. Rows expand to a full execution-details panel. Search and a
- * kind filter operate over the derived rows; the count badge tracks the
- * filtered total.
+ * The toolbar carries search, a query-kind segment, a user filter, a
+ * "more filters" popover (interface + long-running), a column-visibility menu
+ * and CSV export. Columns also collapse progressively as the viewport narrows;
+ * hidden values reappear inline under the query text. Rows expand to a full
+ * execution-details panel.
  */
 export const RunningQueriesTable = memo(function RunningQueriesTable({
   rows,
 }: RunningQueriesTableProps) {
   const [search, setSearch] = useState('')
   const [filterKind, setFilterKind] = useState('all')
+  const [filterUser, setFilterUser] = useState('all')
+  const [filterInterface, setFilterInterface] = useState('all')
+  const [longRunningOnly, setLongRunningOnly] = useState(false)
+  const [hiddenColumns, setHiddenColumns] = useState<Set<OptionalColumn>>(
+    () => new Set()
+  )
   const [sortKey, setSortKey] = useState<SortKey>('duration')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   const derived = useMemo(() => rows.map(derive), [rows])
 
-  // Kind filter options come from the kinds actually present in the data.
+  // Filter options come from the values actually present in the data.
   const kindOptions = useMemo(() => {
     const kinds = new Set<string>()
     for (const d of derived) kinds.add(d.kind)
     return ['all', ...Array.from(kinds).sort()]
   }, [derived])
 
+  const userOptions = useMemo(() => {
+    const users = new Set<string>()
+    for (const d of derived) if (d.user) users.add(d.user)
+    return Array.from(users).sort()
+  }, [derived])
+
+  const interfaceOptions = useMemo(() => {
+    const ifaces = new Set<string>()
+    for (const d of derived) if (d.iface) ifaces.add(d.iface)
+    return Array.from(ifaces).sort()
+  }, [derived])
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase()
     const filtered = derived.filter((d) => {
       if (filterKind !== 'all' && d.kind !== filterKind) return false
+      if (filterUser !== 'all' && d.user !== filterUser) return false
+      if (filterInterface !== 'all' && d.iface !== filterInterface) return false
+      if (longRunningOnly && d.elapsed <= 30) return false
       if (q) {
         return (
           d.id.toLowerCase().includes(q) ||
@@ -817,7 +1032,20 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
       const cmp = accessor(a) - accessor(b)
       return sortDir === 'desc' ? -cmp : cmp
     })
-  }, [derived, search, filterKind, sortKey, sortDir])
+  }, [
+    derived,
+    search,
+    filterKind,
+    filterUser,
+    filterInterface,
+    longRunningOnly,
+    sortKey,
+    sortDir,
+  ])
+
+  const moreFiltersActive = filterInterface !== 'all' || longRunningOnly
+  const totalColumns =
+    BASE_COLUMN_COUNT + (OPTIONAL_COLUMNS.length - hiddenColumns.size)
 
   const toggleRow = useCallback((id: string) => {
     setExpanded((prev) => {
@@ -839,10 +1067,22 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
     })
   }, [])
 
+  const toggleColumn = useCallback((key: OptionalColumn) => {
+    setHiddenColumns((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }, [])
+
+  const headerFor = (key: OptionalColumn) => !hiddenColumns.has(key)
+
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
-      {/* Toolbar — search + kind filter + filtered count */}
+      {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-2.5 py-2.5 sm:px-3">
+        {/* Search */}
         <div className="flex h-8 min-w-[160px] flex-1 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 sm:w-64 sm:flex-none md:w-72">
           <Search className="size-3.5 text-muted-foreground" />
           <input
@@ -863,29 +1103,141 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
           )}
         </div>
 
-        {kindOptions.length > 2 && (
-          <div className="flex max-w-full items-center gap-0.5 overflow-x-auto rounded-md bg-muted p-0.5">
-            {kindOptions.map((kind) => (
-              <button
-                key={kind}
-                type="button"
-                onClick={() => setFilterKind(kind)}
-                className={cn(
-                  'h-7 whitespace-nowrap rounded px-2.5 text-[11.5px] font-medium transition-colors',
-                  filterKind === kind
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {kind === 'all' ? 'All' : kind}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Query-kind segment */}
+        <KindFilter
+          options={kindOptions}
+          value={filterKind}
+          onChange={setFilterKind}
+        />
 
-        <span className="ml-auto whitespace-nowrap text-[11.5px] tabular-nums text-muted-foreground">
-          {visible.length} of {rows.length}
-        </span>
+        {/* User filter */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <ToolbarButton active={filterUser !== 'all'}>
+              <UserIcon className="size-3.5" />
+              {filterUser === 'all' ? 'All users' : filterUser}
+              <ChevronDown className="size-3 opacity-60" />
+            </ToolbarButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            <DropdownMenuLabel>Filter by user</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup
+              value={filterUser}
+              onValueChange={setFilterUser}
+            >
+              <DropdownMenuRadioItem value="all">
+                All users
+              </DropdownMenuRadioItem>
+              {userOptions.map((user) => (
+                <DropdownMenuRadioItem key={user} value={user}>
+                  {user}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* More filters */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <ToolbarButton active={moreFiltersActive}>
+              <ListFilter className="size-3.5" />
+              More filters
+              {moreFiltersActive && (
+                <span className="ml-0.5 size-1.5 rounded-full bg-blue-500" />
+              )}
+            </ToolbarButton>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-60 space-y-3">
+            <div>
+              <p className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Interface
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {['all', ...interfaceOptions].map((iface) => (
+                  <button
+                    key={iface}
+                    type="button"
+                    onClick={() => setFilterInterface(iface)}
+                    className={cn(
+                      'rounded-md border px-2 py-1 text-[11.5px] font-medium transition-colors',
+                      filterInterface === iface
+                        ? 'border-border bg-muted text-foreground'
+                        : 'border-border text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {iface === 'all' ? 'All' : iface}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <label className="flex cursor-pointer items-center gap-2 text-[12.5px]">
+              <Checkbox
+                checked={longRunningOnly}
+                onCheckedChange={(c) => setLongRunningOnly(c === true)}
+              />
+              Long-running only{' '}
+              <span className="text-muted-foreground">(&gt; 30s)</span>
+            </label>
+            {moreFiltersActive && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-full text-[12px]"
+                onClick={() => {
+                  setFilterInterface('all')
+                  setLongRunningOnly(false)
+                }}
+              >
+                Reset filters
+              </Button>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        <div className="ml-auto flex items-center gap-2">
+          <span className="whitespace-nowrap text-[11.5px] tabular-nums text-muted-foreground">
+            {visible.length} of {rows.length}
+          </span>
+          <div className="h-5 w-px bg-border" />
+
+          {/* Column visibility */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Column settings"
+                className="inline-flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <SlidersHorizontal className="size-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuLabel>Columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {OPTIONAL_COLUMNS.map((col) => (
+                <DropdownMenuCheckboxItem
+                  key={col.key}
+                  checked={!hiddenColumns.has(col.key)}
+                  onCheckedChange={() => toggleColumn(col.key)}
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  {col.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Export */}
+          <ToolbarButton
+            onClick={() => exportCsv(visible)}
+            disabled={visible.length === 0}
+          >
+            <Download className="size-3.5" />
+            Export
+          </ToolbarButton>
+        </div>
       </div>
 
       {/* Table — table-fixed so the Query column truncates instead of pushing
@@ -907,61 +1259,71 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
               >
                 Progress
               </SortableHeader>
-              <SortableHeader
-                align="right"
-                width="92px"
-                className="hidden md:table-cell"
-                sortKey="memory"
-                activeKey={sortKey}
-                dir={sortDir}
-                onSort={handleSort}
-              >
-                Memory
-              </SortableHeader>
-              <SortableHeader
-                align="right"
-                width="96px"
-                className="hidden xl:table-cell"
-                sortKey="dataRead"
-                activeKey={sortKey}
-                dir={sortDir}
-                onSort={handleSort}
-              >
-                Data
-              </SortableHeader>
-              <SortableHeader
-                align="right"
-                width="104px"
-                className="hidden lg:table-cell"
-                sortKey="cpu"
-                activeKey={sortKey}
-                dir={sortDir}
-                onSort={handleSort}
-              >
-                CPU
-              </SortableHeader>
-              <SortableHeader
-                align="right"
-                width="72px"
-                className="hidden 2xl:table-cell"
-                sortKey="threads"
-                activeKey={sortKey}
-                dir={sortDir}
-                onSort={handleSort}
-              >
-                Threads
-              </SortableHeader>
-              <SortableHeader
-                align="right"
-                width="86px"
-                className="hidden sm:table-cell"
-                sortKey="duration"
-                activeKey={sortKey}
-                dir={sortDir}
-                onSort={handleSort}
-              >
-                Duration
-              </SortableHeader>
+              {headerFor('memory') && (
+                <SortableHeader
+                  align="right"
+                  width="92px"
+                  className="hidden md:table-cell"
+                  sortKey="memory"
+                  activeKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
+                >
+                  Memory
+                </SortableHeader>
+              )}
+              {headerFor('dataRead') && (
+                <SortableHeader
+                  align="right"
+                  width="96px"
+                  className="hidden xl:table-cell"
+                  sortKey="dataRead"
+                  activeKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
+                >
+                  Data
+                </SortableHeader>
+              )}
+              {headerFor('cpu') && (
+                <SortableHeader
+                  align="right"
+                  width="104px"
+                  className="hidden lg:table-cell"
+                  sortKey="cpu"
+                  activeKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
+                >
+                  CPU
+                </SortableHeader>
+              )}
+              {headerFor('threads') && (
+                <SortableHeader
+                  align="right"
+                  width="72px"
+                  className="hidden 2xl:table-cell"
+                  sortKey="threads"
+                  activeKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
+                >
+                  Threads
+                </SortableHeader>
+              )}
+              {headerFor('duration') && (
+                <SortableHeader
+                  align="right"
+                  width="86px"
+                  className="hidden sm:table-cell"
+                  sortKey="duration"
+                  activeKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
+                >
+                  Duration
+                </SortableHeader>
+              )}
               <SortableHeader width="84px" align="right">
                 <span className="sr-only">Actions</span>
               </SortableHeader>
@@ -974,12 +1336,13 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
                 d={d}
                 expanded={expanded.has(d.id)}
                 onToggle={() => toggleRow(d.id)}
+                hiddenColumns={hiddenColumns}
               />
             ))}
             {visible.length === 0 && (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={totalColumns}
                   className="px-6 py-12 text-center text-[13px] text-muted-foreground"
                 >
                   No queries match your filters
