@@ -79,12 +79,11 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
         <Button
           type="button"
           variant="ghost"
-          size="icon"
+          size="icon-sm"
           className={cn(
-            'size-10 p-2 sm:h-auto sm:w-auto sm:p-0',
-            'opacity-0 group-hover:opacity-40 hover:opacity-100 focus:opacity-100',
-            'transition-opacity',
-            'disabled:cursor-default disabled:opacity-50'
+            'size-10 sm:size-7',
+            'opacity-0 group-hover:opacity-40 hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100',
+            'transition'
           )}
           aria-label="Column options"
         >

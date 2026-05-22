@@ -1,6 +1,6 @@
 import type { Header } from '@tanstack/react-table'
 
-import { ColumnHeaderDropdown } from './column-header-dropdown'
+import { ColumnHeaderDropdown } from '@/components/data-table/buttons/column-header-dropdown'
 
 function createHeader({
   id = 'query',
@@ -36,7 +36,12 @@ describe('<ColumnHeaderDropdown />', () => {
   it('opens sort and copy actions from the column options button', () => {
     mountDropdown()
 
-    cy.get('button[aria-label="Column options"]').click({ force: true })
+    cy.get('button[aria-label="Column options"]').as('trigger').click({
+      force: true,
+    })
+    cy.get('@trigger')
+      .should('have.attr', 'data-state', 'open')
+      .and('have.css', 'opacity', '1')
     cy.contains('[role="menuitem"]', /^A . Z$/).should('be.visible')
     cy.contains('[role="menuitem"]', /^Z . A$/).should('be.visible')
     cy.contains('[role="menuitem"]', 'Reset sort').should('be.visible')
