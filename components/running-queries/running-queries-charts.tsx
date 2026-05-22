@@ -6,6 +6,7 @@ import type { RunningQueryRow } from './running-queries-table'
 import { memo, useMemo } from 'react'
 import { MiniAreaChart, MiniBarChart } from '@/components/charts/mini-charts'
 import {
+  formatCompactNumber,
   formatReadableQuantity,
   formatReadableSize,
 } from '@/lib/format-readable'
@@ -172,15 +173,6 @@ function SummaryCard({
 
 // ───────────────────────── helpers ─────────────────────────
 
-/** Compact integer ("13,247" → "13.2K", "1.4M"). */
-function compact(n: number): string {
-  if (!Number.isFinite(n) || n <= 0) return '0'
-  if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`
-  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`
-  if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K`
-  return String(Math.round(n))
-}
-
 /** Split a "560.6 MiB" string into its number and unit halves. */
 function splitSize(readable: string): { value: string; unit: string } {
   const [value, ...rest] = readable.split(' ')
@@ -327,7 +319,7 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
       { label: 'Rows read', value: formatReadableQuantity(sum('read_rows')) },
       ...splitItem('Data read', formatReadableSize(sum('read_bytes'))),
       { label: 'Threads', value: String(sum('thread_count')) },
-      { label: 'Today', value: compact(today) },
+      { label: 'Today', value: formatCompactNumber(today) },
     ]
   }, [rows, todaySwr.data])
 

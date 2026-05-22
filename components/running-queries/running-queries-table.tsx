@@ -49,7 +49,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { buildExplorerQueryUrl } from '@/lib/explorer-url'
-import { formatReadableSize } from '@/lib/format-readable'
+import { formatCompactNumber, formatReadableSize } from '@/lib/format-readable'
 import { useActions } from '@/lib/swr'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
@@ -157,15 +157,6 @@ function profileEvent(events: unknown, key: string): number {
   return 0
 }
 
-/** Compact integer formatter for the rows-read denominator. */
-function fmtCount(n: number): string {
-  if (!Number.isFinite(n) || n <= 0) return '0'
-  if (n >= 1e9) return `${(n / 1e9).toFixed(2)}B`
-  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`
-  if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K`
-  return String(Math.round(n))
-}
-
 /** Compact elapsed time as a `{value, unit}` pair, e.g. `28.1 s`, `4.2 m`. */
 function formatDuration(elapsed: number): { value: string; unit: string } {
   if (!Number.isFinite(elapsed) || elapsed < 0)
@@ -257,9 +248,10 @@ function derive(row: RunningQueryRow): DerivedQuery {
     readableElapsed: row.readable_elapsed || `${elapsed.toFixed(1)}s`,
     pct,
     readRows,
-    readableReadRows: row.readable_read_rows || fmtCount(readRows),
+    readableReadRows: row.readable_read_rows || formatCompactNumber(readRows),
     totalRows,
-    readableTotalRows: row.readable_total_rows_approx || fmtCount(totalRows),
+    readableTotalRows:
+      row.readable_total_rows_approx || formatCompactNumber(totalRows),
     memory,
     // Base size only — `readable_memory_usage` can carry a "(peak …)" suffix
     // that overflows the fixed-width Memory column.
@@ -702,31 +694,46 @@ const QueryRow = memo(function QueryRow({
                 {d.iface}
               </span>
             )}
-            {/* Metrics surface inline once their column is hidden or collapsed */}
-            {showMemory && (
-              <span className="inline-flex items-center gap-1 md:hidden">
-                <MemoryStick className="size-3" />
-                {d.readableMemory}
-              </span>
-            )}
-            {showCpu && (
-              <span className="inline-flex items-center gap-1 lg:hidden">
-                <Cpu className="size-3" />
-                {Math.round(d.cpuPct)}%
-              </span>
-            )}
-            {showData && (
-              <span className="inline-flex items-center gap-1 xl:hidden">
-                <HardDrive className="size-3" />
-                {formatReadableSize(d.readBytes)}
-              </span>
-            )}
-            {showDuration && (
-              <span className="inline-flex items-center gap-1 sm:hidden">
-                <Clock className="size-3" />
-                {dur.value} {dur.unit}
-              </span>
-            )}
+            {/* Each metric surfaces inline when its column is unavailable —
+                either collapsed by the viewport (responsive `*:hidden`) or
+                switched off in the column menu (no responsive class, so it
+                stays visible). */}
+            <span
+              className={cn(
+                'inline-flex items-center gap-1',
+                showMemory && 'md:hidden'
+              )}
+            >
+              <MemoryStick className="size-3" />
+              {d.readableMemory}
+            </span>
+            <span
+              className={cn(
+                'inline-flex items-center gap-1',
+                showCpu && 'lg:hidden'
+              )}
+            >
+              <Cpu className="size-3" />
+              {Math.round(d.cpuPct)}%
+            </span>
+            <span
+              className={cn(
+                'inline-flex items-center gap-1',
+                showData && 'xl:hidden'
+              )}
+            >
+              <HardDrive className="size-3" />
+              {formatReadableSize(d.readBytes)}
+            </span>
+            <span
+              className={cn(
+                'inline-flex items-center gap-1',
+                showDuration && 'sm:hidden'
+              )}
+            >
+              <Clock className="size-3" />
+              {dur.value} {dur.unit}
+            </span>
           </div>
         </td>
 
