@@ -1,6 +1,7 @@
 'use client'
 
 import type { LucideIcon } from 'lucide-react'
+import { Area, AreaChart, ResponsiveContainer } from 'recharts'
 
 import type { ReactNode } from 'react'
 
@@ -11,7 +12,7 @@ import {
   progressFillStyles,
   progressTrackStyles,
 } from './card-styles'
-import { memo } from 'react'
+import { memo, useId } from 'react'
 import { AnimatedNumber } from '@/components/cards/animated-number'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { cn } from '@/lib/utils'
@@ -45,9 +46,48 @@ export interface KpiCardProps {
   progress?: number
   /** Progress bar variant for warning / danger coloring. */
   progressVariant?: CardVariant
+  /** Optional real-data sparkline series shown top-right. */
+  spark?: number[]
+  /** Sparkline stroke color (CSS color). */
+  sparkColor?: string
   /** Makes the whole card a link to this href. */
   href?: string
   isLoading?: boolean
+}
+
+/** A tiny smooth Recharts area sparkline for the KPI header. */
+function KpiSparkline({ data, color }: { data: number[]; color: string }) {
+  const gradientId = useId()
+  if (data.length < 2) return null
+
+  const chartData = data.map((value, index) => ({ index, value }))
+
+  return (
+    <div className="h-[22px] w-16 shrink-0" aria-hidden="true">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart
+          data={chartData}
+          margin={{ top: 2, right: 0, bottom: 0, left: 0 }}
+        >
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+              <stop offset="100%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={color}
+            strokeWidth={1.5}
+            fill={`url(#${gradientId})`}
+            dot={false}
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  )
 }
 
 /** Headline numbers animate; version/uptime strings render as-is. */
@@ -74,6 +114,8 @@ export const KpiCard = memo(function KpiCard({
   tone = 'neutral',
   progress,
   progressVariant = 'default',
+  spark,
+  sparkColor,
   href,
   isLoading,
 }: KpiCardProps) {
@@ -98,17 +140,24 @@ export const KpiCard = memo(function KpiCard({
         href && cardStyles.hover
       )}
     >
-      {/* Row 1 — icon + label */}
+      {/* Row 1 — icon + label + optional sparkline */}
       <div className="flex items-center gap-1.5">
         <Icon className={cn('size-3.5 shrink-0', TONE_ICON[tone])} />
         <span className="truncate text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           {label}
         </span>
-        {href && (
+        {spark && spark.length >= 2 ? (
+          <span className="ml-auto">
+            <KpiSparkline
+              data={spark}
+              color={sparkColor ?? 'hsl(217 91% 60%)'}
+            />
+          </span>
+        ) : href ? (
           <span className="ml-auto text-[11px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
             →
           </span>
-        )}
+        ) : null}
       </div>
 
       {/* Row 2 — value + unit */}

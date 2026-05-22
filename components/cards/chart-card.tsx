@@ -158,7 +158,7 @@ function ChartCardContentWithScale({
                 variant="popover"
                 maxLines={1}
                 className={cn(
-                  'text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1 transition-colors duration-200',
+                  'text-xs font-semibold tracking-wide text-foreground/90 uppercase min-w-0 flex-1 transition-colors duration-200',
                   href && 'group-hover/title:text-primary'
                 )}
               >
@@ -256,7 +256,7 @@ function ChartCardContentWithoutScale({
                 variant="popover"
                 maxLines={1}
                 className={cn(
-                  'text-xs font-medium tracking-wide text-muted-foreground/80 uppercase min-w-0 flex-1 transition-colors duration-200',
+                  'text-xs font-semibold tracking-wide text-foreground/90 uppercase min-w-0 flex-1 transition-colors duration-200',
                   href && 'group-hover/title:text-primary'
                 )}
               >

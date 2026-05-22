@@ -30,9 +30,23 @@ export const RunningQueriesCard = memo(function RunningQueriesCard() {
     refreshInterval: REFRESH_INTERVAL.SLOW_2M,
   })
 
+  // 24h hourly query volume — real data feeding the header sparkline.
+  const trendSwr = useChartData<{
+    event_time: string
+    query_count: number
+    [key: string]: unknown
+  }>({
+    chartName: 'query-count',
+    hostId,
+    interval: 'toStartOfHour',
+    lastHours: 24,
+    refreshInterval: REFRESH_INTERVAL.SLOW_2M,
+  })
+
   const isLoading = runningSwr.isLoading || todaySwr.isLoading
   const runningCount = runningSwr.data?.[0]?.count ?? 0
   const todayCount = todaySwr.data?.[0]?.count ?? 0
+  const spark = (trendSwr.data ?? []).map((d) => Number(d.query_count) || 0)
 
   return (
     <KpiCard
@@ -41,6 +55,8 @@ export const RunningQueriesCard = memo(function RunningQueriesCard() {
       label="Active Queries"
       value={runningCount}
       unit="running"
+      spark={spark.length >= 2 ? spark : undefined}
+      sparkColor="hsl(38 92% 55%)"
       sub={
         <>
           <span className="font-medium tabular-nums text-foreground/80">

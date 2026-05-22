@@ -1,5 +1,7 @@
 'use client'
 
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer } from 'recharts'
+
 import type { RunningQueryRow } from './running-queries-table'
 
 import { memo, useId, useMemo } from 'react'
@@ -37,9 +39,9 @@ interface TodayPoint {
 /** Series color palette for the per-user stacked bars. */
 const USER_COLORS = ['#0d9488', '#1e3a5f', '#f59e0b', '#8b5cf6', '#ef4444']
 
-// ───────────────────────── mini SVG charts ─────────────────────────
+// ───────────────────────── mini charts (Recharts) ─────────────────────────
 
-/** A smooth, gradient-filled area sparkline. Stretches to fill its box. */
+/** A smooth, gradient-filled Recharts area sparkline. */
 function MiniArea({
   data,
   color,
@@ -54,105 +56,77 @@ function MiniArea({
     return <div style={{ height }} aria-hidden="true" />
   }
 
-  const w = 100
-  const h = 100
-  const max = Math.max(...data)
-  const min = Math.min(...data)
-  const range = max - min || 1
-  const step = w / (data.length - 1)
-  const points = data.map(
-    (v, i) => [i * step, h - ((v - min) / range) * (h - 8) - 4] as const
-  )
-
-  let line = `M ${points[0][0]} ${points[0][1]}`
-  for (let i = 1; i < points.length; i++) {
-    const [x0, y0] = points[i - 1]
-    const [x1, y1] = points[i]
-    const cx = (x0 + x1) / 2
-    line += ` C ${cx} ${y0} ${cx} ${y1} ${x1} ${y1}`
-  }
-  const area = `${line} L ${w} ${h} L 0 ${h} Z`
+  const chartData = data.map((value, index) => ({ index, value }))
 
   return (
-    <svg
-      viewBox={`0 0 ${w} ${h}`}
-      preserveAspectRatio="none"
-      className="block w-full"
-      style={{ height }}
-      aria-hidden="true"
-    >
-      <defs>
-        <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor={color} stopOpacity="0.22" />
-          <stop offset="1" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={area} fill={`url(#${gradientId})`} />
-      <path
-        d={line}
-        fill="none"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
+    <ResponsiveContainer width="100%" height={height}>
+      <AreaChart
+        data={chartData}
+        margin={{ top: 4, right: 0, bottom: 0, left: 0 }}
+      >
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={0.22} />
+            <stop offset="100%" stopColor={color} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke={color}
+          strokeWidth={1.6}
+          fill={`url(#${gradientId})`}
+          dot={false}
+          isAnimationActive={false}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   )
 }
 
-/** Per-time-bucket stacked bars — each bucket is an array of per-series values. */
+/** Per-time-bucket stacked bars rendered with Recharts. */
 function MiniStackedBar({
   buckets,
+  users,
   colors,
   height = 92,
 }: {
   buckets: number[][]
+  users: string[]
   colors: string[]
   height?: number
 }) {
-  if (buckets.length === 0) {
+  if (buckets.length === 0 || users.length === 0) {
     return <div style={{ height }} aria-hidden="true" />
   }
 
-  const w = 100
-  const h = 100
-  const totals = buckets.map((b) => b.reduce((s, v) => s + v, 0))
-  const max = Math.max(...totals, 1)
-  const slot = w / buckets.length
-  const barWidth = slot * 0.68
-  const gap = slot * 0.32
+  const chartData = buckets.map((bucket) => {
+    const row: Record<string, number> = {}
+    users.forEach((user, i) => {
+      row[user] = bucket[i] ?? 0
+    })
+    return row
+  })
 
   return (
-    <svg
-      viewBox={`0 0 ${w} ${h}`}
-      preserveAspectRatio="none"
-      className="block w-full"
-      style={{ height }}
-      aria-hidden="true"
-    >
-      {buckets.map((bucket, i) => {
-        const x = i * slot + gap / 2
-        let y = h
-        return (
-          <g key={i}>
-            {bucket.map((value, si) => {
-              const barHeight = (value / max) * (h - 3)
-              y -= barHeight
-              return (
-                <rect
-                  key={si}
-                  x={x}
-                  y={y}
-                  width={barWidth}
-                  height={barHeight}
-                  fill={colors[si % colors.length]}
-                />
-              )
-            })}
-          </g>
-        )
-      })}
-    </svg>
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart
+        data={chartData}
+        margin={{ top: 4, right: 0, bottom: 0, left: 0 }}
+        barCategoryGap={2}
+      >
+        {users.map((user, i) => (
+          <Bar
+            key={user}
+            dataKey={user}
+            stackId="users"
+            fill={colors[i % colors.length]}
+            isAnimationActive={false}
+            radius={i === users.length - 1 ? [1.5, 1.5, 0, 0] : undefined}
+          />
+        ))}
+      </BarChart>
+    </ResponsiveContainer>
   )
 }
 
@@ -228,7 +202,7 @@ function ByUserCard({
     <div className={cardClass}>
       <span className={labelClass}>Queries by user</span>
       <div className="mt-auto pt-3">
-        <MiniStackedBar buckets={buckets} colors={USER_COLORS} />
+        <MiniStackedBar buckets={buckets} users={users} colors={USER_COLORS} />
         {users.length > 0 && (
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] text-muted-foreground">
             {users.map((user, i) => (
