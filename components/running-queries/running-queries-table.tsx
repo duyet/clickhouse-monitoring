@@ -883,9 +883,11 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
       </div>
 
       {/* Table — table-fixed so the Query column truncates instead of pushing
-          the metric columns off-screen. */}
+          the metric columns off-screen. `min-w` keeps the columns legible on
+          phones: below it the wrapper scrolls horizontally rather than letting
+          table-fixed crush the Query column to a few pixels. */}
       <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-collapse">
+        <table className="w-full min-w-[640px] table-fixed border-collapse">
           <thead className="border-b border-border bg-muted/40">
             <tr>
               <SortableHeader width="108px">Type</SortableHeader>
