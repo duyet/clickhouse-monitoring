@@ -16,6 +16,7 @@ import { DensityToggle } from '@/components/data-table/buttons/density-toggle'
 import { ResetColumnOrderButton } from '@/components/data-table/buttons/reset-column-order'
 import { BulkActions } from '@/components/data-table/components/bulk-actions'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
+import { Button } from '@/components/ui/button'
 import { getSqlForDisplay } from '@/types/query-config'
 
 /**
@@ -123,14 +124,17 @@ export const DataTableHeader = memo(function DataTableHeader<
             />
           )}
           {enableColumnFilters && activeFilterCount > 0 && (
-            <button
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
               onClick={clearAllColumnFilters}
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+              className="h-7 gap-1.5 px-2.5"
               aria-label={`Clear ${activeFilterCount} active filter${activeFilterCount > 1 ? 's' : ''}`}
             >
-              <X className="h-3 w-3" />
+              <X data-icon="inline-start" />
               Clear {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
-            </button>
+            </Button>
           )}
         </div>
         <p className="text-muted-foreground truncate text-sm">
