@@ -10,6 +10,7 @@ import { parseVersion, selectVersionedSql } from '@/lib/clickhouse-version'
 import { queries } from '@/lib/query-config'
 import { queryViewsLogConfig } from '@/lib/query-config/queries/query-views-log'
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
+import { ColumnFormat } from '@/types/column-format'
 
 describe('Running Queries Version Selection', () => {
   describe('SQL variant selection', () => {
@@ -114,12 +115,25 @@ describe('Running Queries Version Selection', () => {
         'readable_memory_usage',
         'progress',
         'launched_merges',
+        'query_id as action',
+        'readable_read_bytes',
+        'readable_written_bytes',
+        'thread_count',
+        'interface_label',
       ]
 
       for (const col of commonColumns) {
         expect(v23).toContain(col)
         expect(v24).toContain(col)
       }
+    })
+
+    it('should configure the compact running-query summary table shape', () => {
+      expect(runningQueriesConfig.columns).toEqual(['action', 'query'])
+      expect(runningQueriesConfig.columnFormats?.query).toBe(
+        ColumnFormat.RunningQuerySummary
+      )
+      expect(runningQueriesConfig.columnFormats?.action).toBeTruthy()
     })
   })
 })

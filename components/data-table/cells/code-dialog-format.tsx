@@ -43,6 +43,7 @@ export interface CodeDialogOptions {
   json?: boolean
   dialog_classname?: string
   show_explorer_link?: boolean
+  force_dialog?: boolean
 }
 
 const STORAGE_KEY = 'code-dialog-beautify'
@@ -254,13 +255,13 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
     }
   }, [clearCopyTimer, content])
 
-  if (formatted.length < truncate_length) {
+  if (!options?.force_dialog && formatted.length < truncate_length) {
     return (
       <code className="whitespace-nowrap font-mono text-xs">{formatted}</code>
     )
   }
 
-  if (!formatted.endsWith('...')) {
+  if (!options?.force_dialog && !formatted.endsWith('...')) {
     return (
       <code className="whitespace-nowrap font-mono text-xs">{formatted}</code>
     )

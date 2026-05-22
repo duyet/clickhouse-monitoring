@@ -15,6 +15,7 @@ export enum ColumnFormat {
   NumberShort = 'number-short',
   CodeToggle = 'code-toggle',
   CodeDialog = 'code-dialog',
+  RunningQuerySummary = 'running-query-summary',
   HoverCard = 'hover-card',
   Duration = 'duration',
   Markdown = 'markdown',
