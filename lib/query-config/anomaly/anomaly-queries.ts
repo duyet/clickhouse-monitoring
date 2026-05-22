@@ -235,7 +235,7 @@ export const diskUsageChangeConfig: QueryConfig = {
   description: 'Disk usage changes over time',
   sql: `
     SELECT
-      toUnixTimestamp(event_time) * 1000 as timestamp,
+      toUnixTimestamp(modification_time) * 1000 as timestamp,
       disk_name,
       database,
       table,
@@ -244,9 +244,9 @@ export const diskUsageChangeConfig: QueryConfig = {
       sum(rows) as total_rows
     FROM system.parts
     WHERE active
-      AND event_time >= now() - INTERVAL {baseline_hours: UInt32} HOUR
-    GROUP BY disk_name, database, table, event_time
-    ORDER BY event_time ASC, total_bytes DESC
+      AND modification_time >= now() - INTERVAL {baseline_hours: UInt32} HOUR
+    GROUP BY disk_name, database, table, modification_time
+    ORDER BY modification_time ASC, total_bytes DESC
   `,
   columns: [
     'timestamp',

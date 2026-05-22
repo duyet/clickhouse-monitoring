@@ -47,6 +47,17 @@ export async function GET(request: Request) {
 
     debug('[host-status] FetchData result:', result)
 
+    if (result.error) {
+      console.error('Host status API error:', result.error)
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.error.message || 'Failed to fetch host status',
+        },
+        { status: 502 }
+      )
+    }
+
     const data = result.data?.[0]
     const version = data?.version ?? ''
     const uptime = data?.uptime ?? ''
