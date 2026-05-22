@@ -14,6 +14,7 @@ import {
   type HoverCardOptions,
 } from '../cells/hover-card-format'
 import { LinkFormat, type LinkFormatOptions } from '../cells/link-format'
+import { RunningQuerySummaryFormat } from '@/components/data-table/cells/running-query-summary-format'
 import { ColumnFormat } from '@/types/column-format'
 
 /**
@@ -156,6 +157,25 @@ export const hoverCardFormatter: RowContextFormatter = <
 }
 
 /**
+ * Running query summary formatter - renders a responsive process row.
+ */
+export const runningQuerySummaryFormatter: RowContextFormatter = <
+  TData extends RowData,
+  TValue,
+>(
+  props: FormatterProps<TData, TValue>
+): React.ReactNode => {
+  const { row, value, context } = props
+  return (
+    <RunningQuerySummaryFormat
+      row={row}
+      value={value as React.ReactNode}
+      context={context}
+    />
+  )
+}
+
+/**
  * Registry of context formatters
  * These formatters need access to row, table, and context data
  */
@@ -164,7 +184,8 @@ export const CONTEXT_FORMATTERS: Record<
   | ColumnFormat.InlineAction
   | ColumnFormat.BackgroundBar
   | ColumnFormat.HoverCard
-  | ColumnFormat.Link,
+  | ColumnFormat.Link
+  | ColumnFormat.RunningQuerySummary,
   RowContextFormatter
 > = {
   [ColumnFormat.Action]: actionFormatter,
@@ -172,4 +193,5 @@ export const CONTEXT_FORMATTERS: Record<
   [ColumnFormat.BackgroundBar]: backgroundBarFormatter,
   [ColumnFormat.HoverCard]: hoverCardFormatter,
   [ColumnFormat.Link]: linkFormatter,
+  [ColumnFormat.RunningQuerySummary]: runningQuerySummaryFormatter,
 } as const
