@@ -206,6 +206,7 @@ Build lock errors: remove `.next/lock` and retry.
 - Docker deps-stage parity check: `bun install --frozen-lockfile --ignore-scripts && bun run build` (`lib/platform/adapters/cloudflare.ts` imports `@opennextjs/cloudflare` during build)
 - Worktree fallback for PR operations: if automation checkout is detached (`git status --short --branch` shows `HEAD (no branch)`) or git metadata writes fail (`FETCH_HEAD`/`HEAD.lock`/`index.lock`), refresh refs through `/Users/duet/project/clickhouse-monitor`; if that checkout is dirty, create a clean worktree under `/private/tmp` for commit/PR commands
 - Cloudflare worker size dry-run: `bun wrangler deploy --minify --dry-run`
+- Code-smell automation workflow now records findings in `docs/knowledge/core-memory.md`, then validates `gh run list --branch main --limit 10 ...` and keeps a dedicated memory note under `/Users/duet/.codex/automations/code-smell-detector/memory.md`.
 
 **Docs content workflow**: `/docs` pages are rendered by the main app and read source files from `docs/content`.
 

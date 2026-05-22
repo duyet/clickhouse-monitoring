@@ -176,6 +176,7 @@ function formatDuration(elapsed: number): { value: string; unit: string } {
 interface DerivedQuery {
   row: RunningQueryRow
   id: string
+  key: string
   kind: string
   query: string
   user: string
@@ -201,6 +202,19 @@ interface DerivedQuery {
 }
 
 function derive(row: RunningQueryRow): DerivedQuery {
+  const queryId = String(row.query_id ?? '')
+  const queryText = String(row.query ?? '')
+  const fallbackKeyParts = [
+    row.user || 'anon',
+    row.current_database || 'default',
+    row.interface || 'unknown',
+    row.address || 'unknown',
+    row.port?.toString() || '0',
+    queryText.slice(0, 64),
+  ].map((value) => value.trim())
+
+  const key = queryId || fallbackKeyParts.join('|')
+
   const elapsed = Number(row.elapsed ?? 0)
   const readRows = Number(row.read_rows ?? 0)
   const totalRows = Number(row.total_rows_approx ?? 0)
@@ -237,7 +251,8 @@ function derive(row: RunningQueryRow): DerivedQuery {
 
   return {
     row,
-    id: String(row.query_id ?? ''),
+    id: queryId,
+    key,
     kind: row.query_kind || 'Query',
     query: String(row.query ?? ''),
     user: String(row.user ?? ''),
@@ -485,7 +500,9 @@ interface ExpandedRowProps {
 function ExpandedRow({ d, onKill, isKilling }: ExpandedRowProps) {
   const hostId = useHostId()
   const explorerUrl = buildExplorerQueryUrl(d.query, hostId)
-  const detailUrl = `/query?query_id=${encodeURIComponent(d.id)}&host=${hostId}`
+  const detailUrl = d.id
+    ? `/query?query_id=${encodeURIComponent(d.id)}&host=${hostId}`
+    : ''
   const lineCount = (d.query.match(/\n/g)?.length ?? 0) + 1
 
   // Every field is backed by a real `system.processes` column.
@@ -557,11 +574,24 @@ function ExpandedRow({ d, onKill, isKilling }: ExpandedRowProps) {
             Open in Explorer
           </Link>
         </Button>
-        <Button variant="outline" size="sm" className="h-7 gap-1.5" asChild>
-          <Link href={detailUrl}>
-            <ScanSearch className="size-3.5" />
-            Query detail
-          </Link>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1.5"
+          asChild={Boolean(detailUrl)}
+          disabled={!detailUrl}
+        >
+          {detailUrl ? (
+            <Link href={detailUrl}>
+              <ScanSearch className="size-3.5" />
+              Query detail
+            </Link>
+          ) : (
+            <span className="inline-flex h-7 items-center gap-1.5">
+              <ScanSearch className="size-3.5" />
+              Query detail
+            </span>
+          )}
         </Button>
         <Button
           variant="ghost"
@@ -607,6 +637,9 @@ const QueryRow = memo(function QueryRow({
   const hostId = useHostId()
   const { killQuery } = useActions()
   const [isKilling, setIsKilling] = useState(false)
+  const queryDetailUrl = d.id
+    ? `/query?query_id=${encodeURIComponent(d.id)}&host=${hostId}`
+    : ''
 
   const handleKill = useCallback(async () => {
     if (!d.id) return
@@ -661,12 +694,12 @@ const QueryRow = memo(function QueryRow({
               {d.query}
             </span>
             <span className="hidden shrink-0 font-mono text-[11px] text-muted-foreground md:inline">
-              #{d.id.slice(0, 8)}
+              #{d.id ? d.id.slice(0, 8) : 'n/a'}
             </span>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[10.5px] text-muted-foreground">
             <span className="inline-flex items-center gap-1 font-mono md:hidden">
-              #{d.id.slice(0, 8)}
+              #{d.id ? d.id.slice(0, 8) : 'n/a'}
             </span>
             {d.user && (
               <span className="inline-flex items-center gap-1">
@@ -824,16 +857,23 @@ const QueryRow = memo(function QueryRow({
                   variant="ghost"
                   size="icon"
                   className="hidden size-7 text-muted-foreground hover:text-foreground md:inline-flex"
-                  asChild
+                  asChild={Boolean(queryDetailUrl)}
+                  disabled={!queryDetailUrl}
                 >
-                  <Link
-                    href={`/query?query_id=${encodeURIComponent(d.id)}&host=${hostId}`}
-                  >
-                    <ScanSearch className="size-3.5" />
-                  </Link>
+                  {queryDetailUrl ? (
+                    <Link href={queryDetailUrl}>
+                      <ScanSearch className="size-3.5" />
+                    </Link>
+                  ) : (
+                    <span>
+                      <ScanSearch className="size-3.5" />
+                    </span>
+                  )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Query detail</TooltipContent>
+              <TooltipContent>
+                {queryDetailUrl ? 'Query detail' : 'Query ID unavailable'}
+              </TooltipContent>
             </Tooltip>
           </div>
         </td>
@@ -987,8 +1027,9 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
   )
   const [sortKey, setSortKey] = useState<SortKey>('duration')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
-  // Expansion is keyed by `query_id` — the query's real identity. A row stays
-  // open across refreshes and re-sorts as long as that query is still running;
+  // Expansion is keyed by a stable row key; `query_id` still drives actions.
+  // A row stays open across refreshes and re-sorts as long as that underlying
+  // identifier remains stable.
   // sorting / filtering never reassigns the panel to a different query.
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
@@ -1333,13 +1374,13 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
           </thead>
           <tbody>
             {visible.map((d) => (
-              // Keyed by query_id so each row keeps its own identity and
+              // Keyed by stable row key so each row keeps identity and
               // component state through refreshes, sorts and filters.
               <QueryRow
-                key={d.id}
+                key={d.key}
                 d={d}
-                expanded={expanded.has(d.id)}
-                onToggle={() => toggleRow(d.id)}
+                expanded={expanded.has(d.key)}
+                onToggle={() => toggleRow(d.key)}
                 hiddenColumns={hiddenColumns}
               />
             ))}

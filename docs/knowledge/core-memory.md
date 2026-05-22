@@ -3,7 +3,7 @@ id: core-memory
 title: Automation Core Memory
 type: workflow
 status: active
-updated: 2026-05-21
+updated: 2026-05-23
 tags:
   - automation
   - code-smell
@@ -50,3 +50,4 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - 2026-05-18: no commits since last run timestamp; 24h fallback was empty, 7d fallback used for evidence-only audit with no new actionable code-smell/dead-code/perf findings
 - 2026-05-19: removed zero-reference `findModelEntry` export from `lib/ai/agent-model-registry.ts`; add `--no-merges` scan variant to reduce merge-only noise in code-smell/dead-code windows
 - 2026-05-21: removed overview chart helper exports that had zero non-test references (`getTabConfig`, `getAllChartIds`, `getChartsForTab`); latest `main` CI was green on `7be1682b`
+- 2026-05-23: from `268f01e48a03003770e1fae11b179a91a224b1b4` window (since `2026-05-22T04:06:53.367Z`), identified a running-queries row-identity regression risk in `components/running-queries/running-queries-table.tsx` where missing/empty `query_id` values collapsed table keys/actions; fixed by adding a stable `key` fallback for UI state and guarding query-detail links/actions when `query_id` is absent. No additional confirmed dead-code candidates in changed files. Main CI check for current merge (`268f01e4`) currently shows Deploy and Image build green, Test cancelled.
