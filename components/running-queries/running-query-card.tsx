@@ -2,6 +2,7 @@
 
 import {
   ArrowDownToLine,
+  ArrowLeftRight,
   ArrowUpFromLine,
   BotMessageSquare,
   Check,
@@ -12,9 +13,12 @@ import {
   Cpu,
   Database,
   ExternalLink,
-  Gauge,
+  GitMerge,
+  HardDrive,
   Hash,
+  Layers,
   Loader2,
+  MemoryStick,
   Network,
   ScanSearch,
   User as UserIcon,
@@ -32,7 +36,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { buildExplorerQueryUrl } from '@/lib/explorer-url'
-import { formatReadableSecondDuration } from '@/lib/format-readable'
+import {
+  formatReadableSecondDuration,
+  formatReadableSize,
+} from '@/lib/format-readable'
 import { useActions } from '@/lib/swr'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
@@ -50,18 +57,27 @@ export interface RunningQueryRow {
   current_database?: string
   interface?: string
   address?: string
+  port?: number
+  initial_address?: string
   client_name?: string
+  client_hostname?: string
+  os_user?: string
+  http_user_agent?: string
   initial_query_id?: string
   is_initial_query?: number | boolean
   distributed_depth?: number
   elapsed?: number
   readable_elapsed?: string
   read_rows?: number
+  read_bytes?: number
   readable_read_rows?: string
   written_rows?: number
+  written_bytes?: number
   readable_written_rows?: string
   total_rows_approx?: number
   readable_total_rows_approx?: string
+  memory_usage?: number
+  peak_memory_usage?: number
   readable_memory_usage?: string
   readable_peak_memory_usage?: string
   pct_memory_usage?: number
@@ -70,6 +86,7 @@ export interface RunningQueryRow {
   pct_progress?: number
   estimated_remaining_time?: number | null
   launched_merges?: string
+  ProfileEvents?: Record<string, number>
   [key: string]: unknown
 }
 
@@ -121,6 +138,25 @@ function interfaceName(value: unknown): string | null {
   return INTERFACE_NAMES[String(value)] ?? String(value)
 }
 
+/** Safely read a numeric counter out of the ProfileEvents map. */
+function profileEvent(events: unknown, key: string): number {
+  if (events && typeof events === 'object' && !Array.isArray(events)) {
+    const value = (events as Record<string, unknown>)[key]
+    const n = typeof value === 'number' ? value : Number(value)
+    return Number.isFinite(n) ? n : 0
+  }
+  return 0
+}
+
+/** Render CPU time (given in microseconds) at an appropriate scale. */
+function formatCpuTime(micros: number): string {
+  if (micros <= 0) return '0s'
+  const seconds = micros / 1e6
+  if (seconds < 1) return `${Math.round(micros / 1000)}ms`
+  if (seconds < 60) return `${seconds.toFixed(1)}s`
+  return formatReadableSecondDuration(Math.round(seconds))
+}
+
 const SEVERITY_CARD: Record<Severity, string> = {
   critical: 'border-l-red-500 bg-red-50/40 dark:bg-red-950/15',
   warning: 'border-l-amber-500 bg-amber-50/40 dark:bg-amber-950/15',
@@ -133,24 +169,40 @@ const SEVERITY_ELAPSED: Record<Severity, string> = {
   normal: 'text-foreground',
 }
 
-/** A compact inline metric: small icon + value. */
-function Stat({
+/** A compact metric tile: icon + label, value, optional sub-value. */
+function MetricTile({
   icon: Icon,
-  children,
-  title,
+  label,
+  value,
+  sub,
+  accent,
 }: {
   icon: React.ElementType
-  children: React.ReactNode
-  title: string
+  label: string
+  value: React.ReactNode
+  sub?: React.ReactNode
+  accent?: string
 }) {
   return (
-    <span
-      className="inline-flex items-center gap-1 whitespace-nowrap"
-      title={title}
-    >
-      <Icon className="size-3.5 shrink-0 text-muted-foreground/70" />
-      <span className="tabular-nums text-foreground/80">{children}</span>
-    </span>
+    <div className="flex min-w-[100px] flex-1 flex-col gap-0.5 rounded-md border border-border/60 bg-muted/30 px-2.5 py-1.5">
+      <span className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
+        <Icon className="size-3" />
+        {label}
+      </span>
+      <span
+        className={cn(
+          'truncate text-[13px] font-semibold leading-tight tabular-nums',
+          accent
+        )}
+      >
+        {value}
+      </span>
+      {sub ? (
+        <span className="truncate text-[10px] leading-tight tabular-nums text-muted-foreground/80">
+          {sub}
+        </span>
+      ) : null}
+    </div>
   )
 }
 
@@ -179,12 +231,12 @@ interface RunningQueryCardProps {
 }
 
 /**
- * RunningQueryCard — one running query rendered as a compact row-card.
+ * RunningQueryCard — one running query rendered as a rich row-card.
  *
- * Layout (top to bottom): query metadata → SQL → metrics + actions.
- * Query content comes first; actions sit last on the right. Long-running
- * queries get a colored left border. Extended attributes are tucked into a
- * collapsed detail grid so the default view stays dense.
+ * Layout (top to bottom): query metadata → SQL → progress bar → metrics
+ * grid + actions → centered details toggle. Query content comes first;
+ * actions sit last. Long-running queries get a colored left border, and
+ * the deepest attributes live behind the collapsed detail grid.
  */
 export const RunningQueryCard = memo(function RunningQueryCard({
   row,
@@ -213,6 +265,24 @@ export const RunningQueryCard = memo(function RunningQueryCard({
     row.estimated_remaining_time > 0
       ? formatReadableSecondDuration(Math.round(row.estimated_remaining_time))
       : null
+
+  // Resource metrics
+  const memoryUsage = Number(row.memory_usage ?? 0)
+  const peakMemory = Number(row.peak_memory_usage ?? 0)
+  const readBytes = Number(row.read_bytes ?? 0)
+  const writtenBytes = Number(row.written_bytes ?? 0)
+
+  // CPU + network are only exposed through the ProfileEvents map
+  const events = row.ProfileEvents
+  const cpuMicros =
+    profileEvent(events, 'OSCPUVirtualTimeMicroseconds') ||
+    profileEvent(events, 'UserTimeMicroseconds') +
+      profileEvent(events, 'SystemTimeMicroseconds')
+  const cpuCores = elapsed > 0 ? cpuMicros / 1e6 / elapsed : 0
+  const networkBytes =
+    profileEvent(events, 'NetworkReceiveBytes') +
+    profileEvent(events, 'NetworkSendBytes')
+  const mergeCount = profileEvent(events, 'Merge')
 
   const handleKill = useCallback(async () => {
     if (!queryId) return
@@ -322,42 +392,85 @@ export const RunningQueryCard = memo(function RunningQueryCard({
         />
       </div>
 
-      {/* Row 3 — metrics + actions */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border/60 px-3 py-1.5 text-xs">
-        <Stat icon={Gauge} title="Memory usage">
-          {row.readable_memory_usage || '0 B'}
-        </Stat>
-        <Stat icon={ArrowDownToLine} title="Rows read">
-          {row.readable_read_rows || '0'} read
-        </Stat>
-        {writtenRows > 0 && (
-          <Stat icon={ArrowUpFromLine} title="Rows written">
-            {row.readable_written_rows} written
-          </Stat>
-        )}
-        {threads > 0 && (
-          <Stat icon={Cpu} title="Peak threads">
-            {threads} {threads === 1 ? 'thread' : 'threads'}
-          </Stat>
-        )}
-
-        {showProgress && (
-          <span
-            className="inline-flex min-w-[140px] items-center gap-2"
-            title={`Scanned ${pctProgress.toFixed(1)}% of approx. rows`}
-          >
-            <Progress value={pctProgress} className="h-1.5 w-20" />
-            <span className="tabular-nums text-foreground/80">
-              {pctProgress.toFixed(0)}%
-            </span>
-            {remaining && (
-              <span className="text-muted-foreground">~{remaining} left</span>
-            )}
+      {/* Row 3 — scan progress (SELECT queries with a known row estimate) */}
+      {showProgress && (
+        <div className="flex items-center gap-2 px-3 pb-1 text-xs">
+          <span className="text-muted-foreground">Progress</span>
+          <Progress value={pctProgress} className="h-2 flex-1" />
+          <span className="font-semibold tabular-nums">
+            {pctProgress.toFixed(0)}%
           </span>
-        )}
+          <span className="hidden text-muted-foreground tabular-nums sm:inline">
+            {row.readable_read_rows || '0'} /{' '}
+            {row.readable_total_rows_approx || '?'} rows
+            {remaining ? ` · ~${remaining} left` : ''}
+          </span>
+        </div>
+      )}
+
+      {/* Row 4 — metrics grid + actions */}
+      <div className="flex items-start gap-2 border-t border-border/60 px-3 py-2">
+        <div className="flex flex-1 flex-wrap gap-1.5">
+          <MetricTile
+            icon={MemoryStick}
+            label="Memory"
+            value={formatReadableSize(memoryUsage)}
+            sub={
+              peakMemory > memoryUsage
+                ? `peak ${formatReadableSize(peakMemory)}`
+                : undefined
+            }
+          />
+          <MetricTile
+            icon={Cpu}
+            label="CPU"
+            value={formatCpuTime(cpuMicros)}
+            sub={cpuCores >= 0.05 ? `${cpuCores.toFixed(1)} cores` : undefined}
+          />
+          <MetricTile
+            icon={ArrowDownToLine}
+            label="Rows read"
+            value={row.readable_read_rows || '0'}
+            sub={
+              totalRows > 0
+                ? `of ${row.readable_total_rows_approx || '?'}`
+                : undefined
+            }
+          />
+          <MetricTile
+            icon={HardDrive}
+            label="Data read"
+            value={formatReadableSize(readBytes)}
+          />
+          <MetricTile icon={Layers} label="Threads" value={threads || '0'} />
+          {writtenRows > 0 && (
+            <MetricTile
+              icon={ArrowUpFromLine}
+              label="Written"
+              value={row.readable_written_rows || '0'}
+              sub={
+                writtenBytes > 0 ? formatReadableSize(writtenBytes) : undefined
+              }
+            />
+          )}
+          {networkBytes > 0 && (
+            <MetricTile
+              icon={ArrowLeftRight}
+              label="Network"
+              value={formatReadableSize(networkBytes)}
+            />
+          )}
+          {mergeCount > 0 && (
+            <MetricTile
+              icon={GitMerge}
+              label="Merges"
+              value={row.launched_merges || String(mergeCount)}
+            />
+          )}
+        </div>
 
         {/* Actions — placed last, on the right */}
-        <div className="ml-auto flex items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-0.5">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -424,43 +537,32 @@ export const RunningQueryCard = memo(function RunningQueryCard({
             </TooltipTrigger>
             <TooltipContent>Query detail</TooltipContent>
           </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-7 text-muted-foreground hover:text-foreground"
-                onClick={() => setExpanded((v) => !v)}
-                aria-expanded={expanded}
-                aria-label={expanded ? 'Hide details' : 'Show details'}
-              >
-                <ChevronDown
-                  className={cn(
-                    'size-3.5 transition-transform',
-                    expanded && 'rotate-180'
-                  )}
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {expanded ? 'Hide details' : 'More details'}
-            </TooltipContent>
-          </Tooltip>
         </div>
       </div>
 
-      {/* Row 4 — extended details (collapsed by default) */}
+      {/* Row 5 — extended details (collapsed by default) */}
       {expanded && (
         <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-border/60 px-3 py-2.5 sm:grid-cols-3 lg:grid-cols-4">
           <DetailField label="Query ID">{queryId}</DetailField>
-          <DetailField label="Address">{row.address}</DetailField>
+          <DetailField label="Address">
+            {row.address
+              ? `${row.address}${row.port ? `:${row.port}` : ''}`
+              : undefined}
+          </DetailField>
           <DetailField label="Client">{row.client_name}</DetailField>
+          <DetailField label="Client host">{row.client_hostname}</DetailField>
+          <DetailField label="OS user">{row.os_user}</DetailField>
           <DetailField label="Peak memory">
-            {row.readable_peak_memory_usage}
+            {row.readable_peak_memory_usage || formatReadableSize(peakMemory)}
           </DetailField>
           <DetailField label="Total rows (approx)">
             {row.readable_total_rows_approx}
+          </DetailField>
+          <DetailField label="Data read">
+            {formatReadableSize(readBytes)}
+          </DetailField>
+          <DetailField label="Network I/O">
+            {networkBytes > 0 ? formatReadableSize(networkBytes) : undefined}
           </DetailField>
           <DetailField label="Launched merges">
             {row.launched_merges}
@@ -468,13 +570,29 @@ export const RunningQueryCard = memo(function RunningQueryCard({
           <DetailField label="Distributed depth">
             {row.distributed_depth != null
               ? String(row.distributed_depth)
-              : '—'}
+              : undefined}
           </DetailField>
           <DetailField label="Initial query">
             {row.is_initial_query ? 'Yes' : row.initial_query_id || 'No'}
           </DetailField>
         </div>
       )}
+
+      {/* Row 6 — full-width details toggle, centered for an easy click target */}
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        className="flex w-full items-center justify-center gap-1.5 rounded-b-lg border-t border-border/60 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+      >
+        <ChevronDown
+          className={cn(
+            'size-4 transition-transform',
+            expanded && 'rotate-180'
+          )}
+        />
+        {expanded ? 'Hide details' : 'Show details'}
+      </button>
     </div>
   )
 })
