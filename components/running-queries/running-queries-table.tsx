@@ -542,16 +542,20 @@ function ExpandedRow({ d, onKill, isKilling }: ExpandedRowProps) {
             {lineCount} {lineCount === 1 ? 'line' : 'lines'}
           </span>
         </div>
-        <div className="rounded-md border border-border bg-card px-3 py-2">
+        {/* Preview clamps to ~5 lines; click opens the full Expand/Format
+            dialog. The `[&>code]` overrides turn CodeDialogFormat's
+            single-line trigger into a multi-line clamped block. */}
+        <div className="max-h-[120px] overflow-hidden rounded-md border border-border bg-card px-3 py-2">
           <CodeDialogFormat
             value={d.query}
             options={{
               dialog_title: 'Running Query',
               hide_query_comment: true,
-              max_truncate: 220,
+              max_truncate: 800,
               force_dialog: true,
               show_query_plan: true,
-              trigger_classname: 'w-full min-w-0',
+              trigger_classname:
+                'w-full min-w-0 items-start [&>code]:line-clamp-5 [&>code]:whitespace-pre-wrap [&>code]:break-words [&>code]:leading-relaxed',
             }}
           />
         </div>
@@ -995,7 +999,11 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
   )
   const [sortKey, setSortKey] = useState<SortKey>('duration')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
-  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  // Expansion is keyed by row position, not query_id. On a live cluster the
+  // captured queries change every poll (and re-sort), so position is the only
+  // identity that lets an open row stay open across a refresh — the panel just
+  // re-renders with the current occupant's details.
+  const [expanded, setExpanded] = useState<Set<number>>(new Set())
 
   const derived = useMemo(() => rows.map(derive), [rows])
 
@@ -1054,11 +1062,11 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
   const totalColumns =
     BASE_COLUMN_COUNT + (OPTIONAL_COLUMNS.length - hiddenColumns.size)
 
-  const toggleRow = useCallback((id: string) => {
+  const toggleRow = useCallback((index: number) => {
     setExpanded((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      if (next.has(index)) next.delete(index)
+      else next.add(index)
       return next
     })
   }, [])
@@ -1337,12 +1345,14 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
             </tr>
           </thead>
           <tbody>
-            {visible.map((d) => (
+            {visible.map((d, index) => (
+              // Keyed by index so a refresh updates each row slot in place
+              // (no remount) and the expanded panel stays open.
               <QueryRow
-                key={d.id}
+                key={index}
                 d={d}
-                expanded={expanded.has(d.id)}
-                onToggle={() => toggleRow(d.id)}
+                expanded={expanded.has(index)}
+                onToggle={() => toggleRow(index)}
                 hiddenColumns={hiddenColumns}
               />
             ))}
