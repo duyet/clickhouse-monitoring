@@ -7,6 +7,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { memo } from 'react'
 import { ColumnHeaderDropdown } from '@/components/data-table/buttons/column-header-dropdown'
+import { Button } from '@/components/ui/button'
 import { TableHead, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
@@ -133,14 +134,17 @@ function DraggableTableHeader({
     >
       <div className="group flex items-center">
         {/* Drag handle for column reordering - hidden by default, shown on hover */}
-        <button
+        <Button
           {...attributes}
           {...listeners}
+          type="button"
+          variant="ghost"
+          size="icon-sm"
           className={cn(
-            'mr-1.5 cursor-grab active:cursor-grabbing text-muted-foreground opacity-0',
-            'group-hover:opacity-40 hover:opacity-100 focus:opacity-100',
-            'focus:outline-none',
-            'transition-opacity',
+            'mr-1.5 size-10 cursor-grab text-muted-foreground opacity-0 sm:size-7',
+            'active:cursor-grabbing',
+            'group-hover:opacity-40 hover:opacity-100 focus:opacity-100 focus-visible:opacity-100',
+            'transition',
             'disabled:cursor-default disabled:opacity-50'
           )}
           aria-label={`Drag to reorder ${header.column.id} column`}
@@ -148,8 +152,8 @@ function DraggableTableHeader({
           style={{ touchAction: 'none' }}
           onClick={(e) => e.stopPropagation()} // Prevent drag from triggering sort
         >
-          <GripVertical className="h-3.5 w-3.5" />
-        </button>
+          <GripVertical data-icon className="h-3.5 w-3.5" />
+        </Button>
         <div className="flex-1">
           <div className="group flex items-center gap-1">
             <span className="flex-1">

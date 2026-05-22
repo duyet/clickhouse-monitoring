@@ -57,12 +57,16 @@ describe('<DataTableContent />', () => {
     isVirtualized = defaultProps.isVirtualized,
     description = defaultProps.description,
     queryConfig: config = defaultProps.queryConfig,
+    enableColumnReordering = defaultProps.enableColumnReordering,
+    onColumnOrderChange,
   }: {
     rows?: Row[]
     activeFilterCount?: number
     isVirtualized?: boolean
     description?: string
     queryConfig?: QueryConfig
+    enableColumnReordering?: boolean
+    onColumnOrderChange?: (activeId: string, overId: string) => void
   }) {
     const table = useReactTable({
       data: rows,
@@ -75,7 +79,9 @@ describe('<DataTableContent />', () => {
         {...defaultProps}
         activeFilterCount={activeFilterCount}
         description={description}
+        enableColumnReordering={enableColumnReordering}
         isVirtualized={isVirtualized}
+        onColumnOrderChange={onColumnOrderChange}
         queryConfig={config}
         table={table}
       />
@@ -184,5 +190,34 @@ describe('<DataTableContent />', () => {
     )
 
     cy.get('#table-description').should('contain', 'Test Table data table')
+  })
+
+  it('renders column reorder handles as shared icon buttons when enabled', () => {
+    cy.mount(<TestDataTableContent enableColumnReordering={true} />)
+
+    cy.get('button[aria-label="Drag to reorder col1 column"]')
+      .should('have.attr', 'type', 'button')
+      .and('have.class', 'size-10')
+      .and('have.class', 'sm:size-7')
+      .find('[data-icon]')
+      .should('exist')
+    cy.get('button[aria-label="Drag to reorder col2 column"]').should('exist')
+  })
+
+  it('does not reorder columns on a plain drag-handle click', () => {
+    const onColumnOrderChange = cy.stub().as('onColumnOrderChange')
+
+    cy.mount(
+      <TestDataTableContent
+        enableColumnReordering={true}
+        onColumnOrderChange={onColumnOrderChange}
+      />
+    )
+
+    cy.get('button[aria-label="Drag to reorder col1 column"]').click({
+      force: true,
+    })
+
+    cy.get('@onColumnOrderChange').should('not.have.been.called')
   })
 })
