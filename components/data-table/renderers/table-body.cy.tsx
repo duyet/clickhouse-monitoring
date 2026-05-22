@@ -34,6 +34,7 @@ describe('TableBody Components', () => {
   }
 
   const mockTable = {
+    getVisibleLeafColumns: () => [{ id: 'col1' }, { id: 'col2' }],
     getRowModel: () => ({
       rows: [
         mockRow,
@@ -114,7 +115,7 @@ describe('TableBody Components', () => {
 
   describe('VirtualizedTableRow', () => {
     it('renders a virtualized table row with positioning', () => {
-      const virtualRow = { index: 0, size: 50, start: 0 }
+      const virtualRow = { end: 50, index: 0, size: 50, start: 0 }
 
       cy.mount(
         <table>
@@ -126,13 +127,11 @@ describe('TableBody Components', () => {
 
       cy.get('tr').should('have.attr', 'data-index', '0')
       cy.get('tr').should('have.attr', 'style').and('include', 'height: 50px')
-      cy.get('tr')
-        .should('have.attr', 'style')
-        .and('include', 'translateY(0px)')
+      cy.get('tr').should('have.attr', 'style').and('not.include', 'translateY')
     })
 
     it('applies odd row styling for odd virtual row indices', () => {
-      const virtualRow = { index: 1, size: 50, start: 50 }
+      const virtualRow = { end: 100, index: 1, size: 50, start: 50 }
 
       cy.mount(
         <table>
@@ -146,7 +145,7 @@ describe('TableBody Components', () => {
     })
 
     it('keeps virtualized cells non-wrapping for stable row heights', () => {
-      const virtualRow = { index: 0, size: 50, start: 0 }
+      const virtualRow = { end: 50, index: 0, size: 50, start: 0 }
 
       cy.mount(
         <table>
@@ -216,9 +215,10 @@ describe('TableBody Components', () => {
     it('renders virtual rows when virtualized', () => {
       const mockVirtualizer = {
         getVirtualItems: () => [
-          { index: 0, size: 50, start: 0 },
-          { index: 1, size: 50, start: 50 },
+          { end: 50, index: 0, size: 50, start: 0 },
+          { end: 100, index: 1, size: 50, start: 50 },
         ],
+        getTotalSize: () => 150,
       }
 
       cy.mount(
@@ -233,9 +233,49 @@ describe('TableBody Components', () => {
         </table>
       )
 
-      cy.get('tr').should('have.length', 2)
-      cy.get('tr').eq(0).should('have.attr', 'data-index', '0')
-      cy.get('tr').eq(1).should('have.attr', 'data-index', '1')
+      cy.get('tr[data-index]').should('have.length', 2)
+      cy.get('tr[data-index]').eq(0).should('have.attr', 'data-index', '0')
+      cy.get('tr[data-index]').eq(1).should('have.attr', 'data-index', '1')
+      cy.get('[data-virtual-spacer="bottom"] td').should(
+        'have.attr',
+        'style',
+        'height: 50px;'
+      )
+    })
+
+    it('adds top and bottom spacer rows for scrolled virtual windows', () => {
+      const mockVirtualizer = {
+        getVirtualItems: () => [
+          { end: 150, index: 1, size: 50, start: 100 },
+          { end: 200, index: 999, size: 50, start: 150 },
+        ],
+        getTotalSize: () => 500,
+      }
+
+      cy.mount(
+        <table>
+          <tbody>
+            <TableBodyRows
+              table={mockTable as any}
+              isVirtualized={true}
+              virtualizer={mockVirtualizer as any}
+            />
+          </tbody>
+        </table>
+      )
+
+      cy.get('[data-virtual-spacer="top"] td').should(
+        'have.attr',
+        'style',
+        'height: 100px;'
+      )
+      cy.get('tr[data-index]').should('have.length', 1)
+      cy.get('tr[data-index]').should('have.attr', 'data-index', '1')
+      cy.get('[data-virtual-spacer="bottom"] td').should(
+        'have.attr',
+        'style',
+        'height: 300px;'
+      )
     })
   })
 
@@ -279,7 +319,8 @@ describe('TableBody Components', () => {
 
     it('passes virtualization context correctly', () => {
       const mockVirtualizer = {
-        getVirtualItems: () => [{ index: 0, size: 50, start: 0 }],
+        getVirtualItems: () => [{ end: 50, index: 0, size: 50, start: 0 }],
+        getTotalSize: () => 50,
       }
 
       cy.mount(

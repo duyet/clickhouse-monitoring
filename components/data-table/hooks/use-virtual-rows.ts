@@ -4,7 +4,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 
 import { type RefObject, useRef } from 'react'
 
-const MAX_PAGINATED_TABLE_ROWS = 1_000
+const DEFAULT_VIRTUALIZE_THRESHOLD = 250
 
 /**
  * Hook for virtualizing table rows to improve performance with large datasets.
@@ -31,7 +31,7 @@ export interface UseVirtualRowsOptions {
   estimateSize?: number
   /** Number of rows to render outside viewport (default: 20) */
   overscan?: number
-  /** Row count threshold to enable virtualization (default: 1001) */
+  /** Row count threshold to enable virtualization (default: 250) */
   virtualizeThreshold?: number
 }
 
@@ -51,13 +51,10 @@ export function useVirtualRows(
   const {
     estimateSize = 40,
     overscan = 20,
-    virtualizeThreshold = MAX_PAGINATED_TABLE_ROWS + 1,
+    virtualizeThreshold = DEFAULT_VIRTUALIZE_THRESHOLD,
   } = options
 
   const tableContainerRef = useRef<HTMLDivElement>(null)
-
-  // The table is paginated to at most 1,000 rows. Keep the standard table path
-  // for normal page sizes until the virtual renderer has a proper spacer layout.
   const shouldVirtualize = rowCount >= virtualizeThreshold
 
   const virtualizer = useVirtualizer<HTMLDivElement, Element>({
