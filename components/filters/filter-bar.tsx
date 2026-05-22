@@ -9,9 +9,9 @@ import type {
   FilterSchema,
 } from '@/lib/filters/types'
 import type { QueryConfig } from '@/types/query-config'
-import type { FilterDraft } from './filter-editor'
+import type { FilterDraft } from '@/components/filters/filter-editor'
 
-import { FilterEditor } from './filter-editor'
+import { FilterEditor } from '@/components/filters/filter-editor'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -39,7 +39,6 @@ import {
   parseFiltersFromParams,
   serializeFilter,
 } from '@/lib/filters/url-state'
-import { useHostId } from '@/lib/swr'
 
 interface FilterBarProps {
   queryConfig: QueryConfig
@@ -57,7 +56,6 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
-  const hostId = useHostId()
 
   const activeFilters = useMemo(
     () => (schema ? parseFiltersFromParams(schema, searchParams) : []),
@@ -110,7 +108,14 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
     (preset: FilterPreset) => {
       updateParams((params) => {
         preset.filters.forEach((filter) => {
-          params.set(filter.key, `${filter.operator}:${filter.value}`)
+          params.set(
+            filter.key,
+            serializeFilter({
+              key: filter.key,
+              operator: filter.operator,
+              values: [filter.value],
+            })
+          )
         })
       })
     },
@@ -139,7 +144,6 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
             field={field}
             filter={filter}
             configName={queryConfig.name}
-            hostId={hostId}
             onChange={(draft) => setFilter(filter.key, draft)}
             onRemove={() => removeFilter(filter.key)}
           />
@@ -150,7 +154,6 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
         schema={schema}
         activeKeys={activeKeys}
         configName={queryConfig.name}
-        hostId={hostId}
         onAdd={setFilter}
       />
 
@@ -214,7 +217,6 @@ interface FilterChipProps {
   field: FilterField
   filter: ActiveFilter
   configName: string
-  hostId: number
   onChange: (draft: FilterDraft) => void
   onRemove: () => void
 }
@@ -224,7 +226,6 @@ function FilterChip({
   field,
   filter,
   configName,
-  hostId,
   onChange,
   onRemove,
 }: FilterChipProps) {
@@ -257,7 +258,6 @@ function FilterChip({
           <FilterEditor
             field={field}
             configName={configName}
-            hostId={hostId}
             initial={{ operator: filter.operator, values: filter.values }}
             onSubmit={(draft) => {
               onChange(draft)
@@ -283,7 +283,6 @@ interface AddFilterPopoverProps {
   schema: FilterSchema
   activeKeys: string[]
   configName: string
-  hostId: number
   onAdd: (key: string, draft: FilterDraft) => void
 }
 
@@ -292,7 +291,6 @@ function AddFilterPopover({
   schema,
   activeKeys,
   configName,
-  hostId,
   onAdd,
 }: AddFilterPopoverProps) {
   const [open, setOpen] = useState(false)
@@ -325,7 +323,6 @@ function AddFilterPopover({
             <FilterEditor
               field={selectedField}
               configName={configName}
-              hostId={hostId}
               onSubmit={(draft) => {
                 onAdd(selectedField.key, draft)
                 handleOpenChange(false)

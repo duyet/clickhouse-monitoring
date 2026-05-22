@@ -7,13 +7,13 @@
  * falls back to the field's default operator.
  */
 
-import type { ActiveFilter, FilterField, FilterSchema } from './types'
+import type { ActiveFilter, FilterField, FilterSchema } from '@/lib/filters/types'
 
 import {
   isFilterOperator,
   isMultiValueOperator,
   isRangeOperator,
-} from './operators'
+} from '@/lib/filters/operators'
 
 /** Minimal read interface satisfied by both URLSearchParams and the Next.js
  *  ReadonlyURLSearchParams. */

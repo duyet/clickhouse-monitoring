@@ -65,7 +65,7 @@ export interface FilterField {
   /** Input type used to render the value editor. */
   type: FilterFieldType
   /** Allowed operators; the first entry is the default. */
-  operators: FilterOperator[]
+  operators: [FilterOperator, ...FilterOperator[]]
   /** Static options for `select` fields. */
   options?: FilterFieldOption[]
   /** Load `select` options from ClickHouse at runtime. */

@@ -16,6 +16,7 @@ import {
 import { getTableConfig } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
+import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { error } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
@@ -71,6 +72,7 @@ export async function GET(
     ? `WHERE ${where} AND notEmpty(toString(${column}))`
     : `WHERE notEmpty(toString(${column}))`
   const sql = `
+    ${QUERY_COMMENT}
     SELECT
       ${column} AS value,
       count() AS count

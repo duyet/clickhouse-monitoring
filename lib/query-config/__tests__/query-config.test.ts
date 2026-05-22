@@ -365,6 +365,7 @@ describe('Query Config Validation', () => {
     })
 
     it('should give every filter field a non-empty operator list', () => {
+      expect(historyQueriesConfig?.filterSchema).toBeDefined()
       const fields = historyQueriesConfig?.filterSchema?.fields ?? []
 
       fields.forEach((field) => {
@@ -375,6 +376,7 @@ describe('Query Config Validation', () => {
     })
 
     it('should only reference known fields from presets', () => {
+      expect(historyQueriesConfig?.filterSchema).toBeDefined()
       const schema = historyQueriesConfig?.filterSchema
       const fieldKeys = new Set(schema?.fields.map((field) => field.key))
 

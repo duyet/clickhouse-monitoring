@@ -5,7 +5,8 @@ import { CheckIcon, Loader2Icon, PlusIcon } from 'lucide-react'
 import type { KeyboardEvent } from 'react'
 import type { FilterField, FilterOperator } from '@/lib/filters/types'
 
-import { useFilterOptions } from './use-filter-options'
+import { useFilterOptions } from '@/components/filters/use-filter-options'
+import { useHostId } from '@/lib/swr'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -41,7 +42,6 @@ export interface FilterDraft {
 interface FilterEditorProps {
   field: FilterField
   configName: string
-  hostId: number
   /** Existing filter being edited; omitted when adding a new filter. */
   initial?: FilterDraft
   onSubmit: (draft: FilterDraft) => void
@@ -72,7 +72,6 @@ function normalizeValues(operator: FilterOperator, values: string[]): string[] {
 export function FilterEditor({
   field,
   configName,
-  hostId,
   initial,
   onSubmit,
   onCancel,
@@ -124,7 +123,6 @@ export function FilterEditor({
         onChange={setValues}
         onSubmit={submit}
         configName={configName}
-        hostId={hostId}
       />
 
       {field.description && (
@@ -150,7 +148,6 @@ interface FilterValueInputProps {
   onChange: (values: string[]) => void
   onSubmit: () => void
   configName: string
-  hostId: number
 }
 
 /** Renders the value editor appropriate for the field type + operator. */
@@ -161,7 +158,6 @@ function FilterValueInput({
   onChange,
   onSubmit,
   configName,
-  hostId,
 }: FilterValueInputProps) {
   const { arity } = OPERATORS[operator]
 
@@ -171,7 +167,6 @@ function FilterValueInput({
       <OptionsList
         field={field}
         configName={configName}
-        hostId={hostId}
         multiple
         selected={values}
         onChange={onChange}
@@ -210,7 +205,6 @@ function FilterValueInput({
       <OptionsList
         field={field}
         configName={configName}
-        hostId={hostId}
         multiple={false}
         selected={values}
         onChange={onChange}
@@ -321,7 +315,6 @@ function SingleValueInput({
 interface OptionsListProps {
   field: FilterField
   configName: string
-  hostId: number
   multiple: boolean
   selected: string[]
   onChange: (values: string[]) => void
@@ -335,13 +328,13 @@ interface OptionsListProps {
 function OptionsList({
   field,
   configName,
-  hostId,
   multiple,
   selected,
   onChange,
 }: OptionsListProps) {
+  const hostId = useHostId()
   const isDynamic = Boolean(field.dynamicOptions)
-  const { options: dynamicOptions, isLoading } = useFilterOptions(
+  const { options: dynamicOptions, isLoading, error } = useFilterOptions(
     configName,
     field.key,
     hostId,
@@ -378,6 +371,11 @@ function OptionsList({
         className="h-9"
       />
       <CommandList className="max-h-44">
+        {error && (
+          <div className="px-2 py-3 text-xs text-amber-600 dark:text-amber-400">
+            Failed to load values — showing cached results
+          </div>
+        )}
         {isLoading && (
           <div className="flex items-center justify-center gap-2 py-4 text-xs text-muted-foreground">
             <Loader2Icon className="size-3.5 animate-spin" />

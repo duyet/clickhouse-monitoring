@@ -147,10 +147,14 @@ export function getTableQuery(
       sql: applyFilterPlaceholder(queryConfig.sql, clause),
     }
 
+    const mergedParams = {
+      ...(resolvedConfig.defaultParams || {}),
+      ...filterParams,
+    }
+
     return {
       query: getSqlForDisplay(resolvedConfig.sql),
-      queryParams:
-        Object.keys(filterParams).length > 0 ? filterParams : undefined,
+      queryParams: Object.keys(mergedParams).length > 0 ? mergedParams : undefined,
       queryConfig: resolvedConfig,
     }
   }

@@ -41,6 +41,8 @@ export function useFilterOptions(
     {
       revalidateOnFocus: false,
       dedupingInterval: 60_000,
+      revalidateInterval: 300_000,
+      keepPreviousData: true,
     }
   )
 

@@ -100,7 +100,7 @@ describe('buildWhereClause', () => {
       { key: 'event_time', operator: 'gte', values: ['2026-01-01'] },
     ])
     expect(clause).toBe(
-      'WHERE event_time >= parseDateTimeBestEffort({flt_0:String})'
+      'WHERE event_time >= parseDateTimeBestEffortOrNull({flt_0:String})'
     )
   })
 
@@ -132,6 +132,21 @@ describe('buildWhereClause', () => {
   it('drops non-numeric values on number fields', () => {
     const { clause } = buildWhereClause(schema, [
       { key: 'memory', operator: 'gte', values: ['not-a-number'] },
+    ])
+    expect(clause).toBe('')
+  })
+
+  it('allows malformed datetime values (ClickHouse will parse or return null)', () => {
+    const { clause } = buildWhereClause(schema, [
+      { key: 'event_time', operator: 'gte', values: ['invalid-date'] },
+    ])
+    // parseDateTimeBestEffortOrNull handles invalid dates by returning NULL
+    expect(clause).toContain('parseDateTimeBestEffortOrNull')
+  })
+
+  it('drops filters with numeric overflow after scaling', () => {
+    const { clause } = buildWhereClause(schema, [
+      { key: 'memory', operator: 'gte', values: ['1e308'] },
     ])
     expect(clause).toBe('')
   })

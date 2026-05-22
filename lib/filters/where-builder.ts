@@ -154,11 +154,13 @@ function operandFor(
   if (field.type === 'number') {
     const parsed = Number(rawValue)
     if (!Number.isFinite(parsed)) return null
-    return addParam(parsed * (field.scale ?? 1), 'Float64')
+    const scaledValue = parsed * (field.scale ?? 1)
+    if (!Number.isFinite(scaledValue)) return null
+    return addParam(scaledValue, 'Float64')
   }
 
   if (field.type === 'datetime') {
-    return `parseDateTimeBestEffort(${addParam(rawValue, 'String')})`
+    return `parseDateTimeBestEffortOrNull(${addParam(rawValue, 'String')})`
   }
 
   // text / select
