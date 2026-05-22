@@ -65,7 +65,8 @@ function LoadingState() {
  *
  * Replaces the generic 17-column data table on the Running Queries page.
  * Each query renders as a dense {@link RunningQueryCard}; the list auto-
- * refreshes every 30s and surfaces loading / empty / error states inline.
+ * refreshes on {@link REFRESH_INTERVAL} (5s by default) and surfaces
+ * loading / empty / error states inline.
  */
 export const RunningQueriesView = memo(function RunningQueriesView() {
   const hostId = useHostId()
