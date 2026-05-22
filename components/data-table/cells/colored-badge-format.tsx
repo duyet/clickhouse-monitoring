@@ -16,7 +16,7 @@ export const ColoredBadgeFormat = memo(function ColoredBadgeFormat({
 }: ColoredBadgeFormatProps): React.ReactNode {
   // Memoize expensive color calculation - includes dark mode variants
   const pickedColor = useMemo(() => {
-    if (value == null || value === '') return ''
+    if (value == null || value === '' || typeof value === 'boolean') return ''
 
     const colors = [
       'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -38,7 +38,7 @@ export const ColoredBadgeFormat = memo(function ColoredBadgeFormat({
     ]
   }, [value])
 
-  if (value == null || value === '') {
+  if (value == null || value === '' || typeof value === 'boolean') {
     return null
   }
 

@@ -75,9 +75,10 @@ export async function GET(request: Request): Promise<Response> {
     const url = new URL(request.url)
     const limitParam = url.searchParams.get('limit')
     const parsedLimit = limitParam ? Number(limitParam) : DEFAULT_LIMIT
+    const normalizedLimit = Math.floor(parsedLimit)
     const limit =
-      Number.isFinite(parsedLimit) && parsedLimit > 0
-        ? Math.min(Math.floor(parsedLimit), 100)
+      Number.isFinite(parsedLimit) && normalizedLimit > 0
+        ? Math.min(normalizedLimit, 100)
         : DEFAULT_LIMIT
 
     // Resolve store and fetch conversations

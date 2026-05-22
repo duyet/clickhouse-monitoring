@@ -18,7 +18,10 @@ export function formatReadableSize(bytes: number, decimals = 1) {
 
   const sign = bytes < 0 ? '-' : ''
   const abs = Math.abs(bytes)
-  const i = Math.min(Math.floor(Math.log(abs) / Math.log(k)), sizes.length - 1)
+  const i = Math.max(
+    0,
+    Math.min(Math.floor(Math.log(abs) / Math.log(k)), sizes.length - 1)
+  )
 
   return `${sign}${parseFloat((abs / k ** i).toFixed(dm))} ${sizes[i]}`
 }
