@@ -3,12 +3,10 @@ import type { QueryConfig } from '@/types/query-config'
 import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { ColumnFormat } from '@/types/column-format'
 
-function buildRunningQueriesSql({
-  includeNormalizedQueryHash,
-}: {
-  includeNormalizedQueryHash: boolean
-}): string {
-  return `
+export const runningQueriesConfig: QueryConfig = {
+  name: 'running-queries',
+  refreshInterval: 30_000,
+  sql: `
     ${QUERY_COMMENT}
     SELECT
       query_id,
@@ -31,11 +29,6 @@ function buildRunningQueriesSql({
       written_bytes,
       memory_usage,
       peak_memory_usage,
-      ${
-        includeNormalizedQueryHash
-          ? 'normalized_query_hash'
-          : 'NULL AS normalized_query_hash'
-      },
       query_id AS action,
       multiIf (elapsed < 30, format('{} seconds', round(elapsed, 1)),
                elapsed < 90, 'a minute',
@@ -64,24 +57,7 @@ function buildRunningQueriesSql({
     FROM system.processes
     WHERE is_cancelled = 0
     ORDER BY elapsed DESC
-  `
-}
-
-export const runningQueriesConfig: QueryConfig = {
-  name: 'running-queries',
-  refreshInterval: 30_000,
-  sql: [
-    {
-      since: '23.8',
-      description: 'Base system.processes projection',
-      sql: buildRunningQueriesSql({ includeNormalizedQueryHash: false }),
-    },
-    {
-      since: '25.3',
-      description: 'Includes normalized_query_hash from system.processes',
-      sql: buildRunningQueriesSql({ includeNormalizedQueryHash: true }),
-    },
-  ],
+  `,
   columns: ['action', 'query'],
   rowClassName: (row) => {
     // elapsed is in seconds for running queries

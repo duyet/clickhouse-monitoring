@@ -65,15 +65,7 @@ describe('Running Queries Version Selection', () => {
 
       // peak_threads_usage is NOT available in ClickHouse 24.x+
       expect(sql).not.toContain('peak_threads_usage')
-      expect(sql).toContain('NULL AS normalized_query_hash')
-    })
-
-    it('should select normalized query hash for ClickHouse 25.3+', () => {
-      const version = parseVersion('25.3.0.0')
-      const sql = selectVersionedSql(runningQueriesConfig.sql, version)
-
-      expect(sql).toContain('normalized_query_hash')
-      expect(sql).not.toContain('NULL AS normalized_query_hash')
+      expect(sql).not.toContain('normalized_query_hash')
     })
 
     it('should fallback to oldest variant when version is null', () => {
@@ -312,7 +304,7 @@ describe('Version Selection Edge Cases', () => {
 })
 
 describe('getSqlForDisplay vs selectVersionedSql', () => {
-  it('getSqlForDisplay returns the latest running queries SQL variant', () => {
+  it('getSqlForDisplay and selectVersionedSql return same running queries SQL', () => {
     const { getSqlForDisplay } = require('@/types/query-config')
 
     const displaySql = getSqlForDisplay(runningQueriesConfig.sql)
@@ -323,7 +315,7 @@ describe('getSqlForDisplay vs selectVersionedSql', () => {
 
     expect(displaySql).not.toContain('peak_threads_usage')
     expect(executionSql).not.toContain('peak_threads_usage')
-    expect(displaySql).toContain('normalized_query_hash')
+    expect(displaySql).not.toContain('normalized_query_hash')
     expect(displaySql).toBe(executionSql)
   })
 })
