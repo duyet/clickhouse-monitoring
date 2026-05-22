@@ -32,27 +32,30 @@ export const Breadcrumb = memo(function Breadcrumb({
   return (
     <nav
       aria-label="Breadcrumb navigation"
-      className={cn('flex items-center', className)}
+      className={cn('flex min-w-0 items-center overflow-hidden', className)}
     >
-      <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+      <ol className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-sm text-muted-foreground">
         {breadcrumbs.map((crumb, index) => {
           const isLast = index === breadcrumbs.length - 1
 
           return (
             <li
               key={`${index}-${crumb.href}`}
-              className="flex items-center gap-1.5"
+              className={cn(
+                'flex min-w-0 items-center gap-1.5',
+                !isLast && 'hidden sm:flex'
+              )}
             >
               {index > 0 && (
                 <ChevronRightIcon
-                  className="size-3.5 shrink-0"
+                  className="hidden size-3.5 shrink-0 sm:block"
                   strokeWidth={2.5}
                   aria-hidden="true"
                 />
               )}
               {isLast ? (
                 <span
-                  className="font-medium text-foreground"
+                  className="truncate font-medium text-foreground"
                   aria-current="page"
                 >
                   {crumb.title}
@@ -60,7 +63,7 @@ export const Breadcrumb = memo(function Breadcrumb({
               ) : crumb.href ? (
                 <HostPrefixedLink
                   href={crumb.href}
-                  className="hover:text-foreground hover:underline transition-colors"
+                  className="truncate transition-colors hover:text-foreground hover:underline"
                 >
                   {crumb.title}
                 </HostPrefixedLink>
