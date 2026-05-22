@@ -11,6 +11,15 @@ export type RowClassNameFn = (
   row: Record<string, unknown>
 ) => string | undefined
 
+export interface ColumnSizingConfig {
+  /** Preferred column width in pixels */
+  size?: number
+  /** Minimum column width in pixels */
+  minSize?: number
+  /** Maximum column width in pixels */
+  maxSize?: number
+}
+
 /**
  * Infer row data type from column names array
  *
@@ -212,6 +221,11 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   columnIcons?: {
     [key: string]: Icon
   }
+  /**
+   * Optional TanStack column sizing hints keyed by normalized or raw column name.
+   * Use this only for columns whose default width creates poor scan density.
+   */
+  columnSizing?: Record<string, ColumnSizingConfig>
   relatedCharts?:
     | string[]
     | [string, Omit<ChartProps, 'hostId'>][]

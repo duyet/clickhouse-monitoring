@@ -232,20 +232,26 @@ export function QueryFiltersBar({ queryConfig }: QueryFiltersBarProps) {
       {quickPresets && quickPresets.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground">Quick Filters:</span>
-          {quickPresets.slice(0, 8).map((preset) => (
-            <Badge
-              key={`${preset.key}-${preset.value}`}
-              variant={isPresetActive(preset) ? 'default' : 'outline'}
-              className={cn(
-                'cursor-pointer transition-colors hover:bg-primary/80',
-                isPresetActive(preset) && 'bg-primary text-primary-foreground'
-              )}
-              onClick={() => togglePreset(preset)}
-            >
-              {preset.name}
-              {isPresetActive(preset) && <XIcon className="ml-1 h-3 w-3" />}
-            </Badge>
-          ))}
+          {quickPresets.slice(0, 8).map((preset) => {
+            const Icon = preset.icon
+            const isActive = isPresetActive(preset)
+
+            return (
+              <Badge
+                key={`${preset.key}-${preset.value}`}
+                variant={isActive ? 'default' : 'outline'}
+                className={cn(
+                  'inline-flex cursor-pointer items-center gap-1.5 transition-colors hover:bg-primary/80',
+                  isActive && 'bg-primary text-primary-foreground'
+                )}
+                onClick={() => togglePreset(preset)}
+              >
+                {Icon && <Icon className="size-3" aria-hidden="true" />}
+                {preset.name}
+                {isActive && <XIcon className="size-3" />}
+              </Badge>
+            )
+          })}
         </div>
       )}
 

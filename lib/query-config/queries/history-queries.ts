@@ -1,3 +1,13 @@
+import {
+  CircleXIcon,
+  ClockIcon,
+  DatabaseIcon,
+  MemoryStickIcon,
+  SearchIcon,
+  SettingsIcon,
+  TimerIcon,
+} from 'lucide-react'
+
 import type { QueryConfig } from '@/types/query-config'
 
 import { QUERY_LOG } from '@/lib/table-notes'
@@ -107,6 +117,18 @@ ${historyQueryFilters}
     'type',
     'client_name',
   ],
+  columnSizing: {
+    action: { size: 64, minSize: 56, maxSize: 72 },
+    user: { size: 104, minSize: 88, maxSize: 140 },
+    query: { size: 360, minSize: 240, maxSize: 520 },
+    query_id: { size: 220, minSize: 160, maxSize: 320 },
+    query_duration: { size: 120, minSize: 104, maxSize: 150 },
+    readable_memory_usage: { size: 160, minSize: 140, maxSize: 220 },
+    event_time: { size: 180, minSize: 150, maxSize: 220 },
+    query_kind: { size: 140, minSize: 120, maxSize: 180 },
+    type: { size: 150, minSize: 120, maxSize: 180 },
+    client_name: { size: 180, minSize: 140, maxSize: 240 },
+  },
   columnFormats: {
     action: [
       ColumnFormat.Action,
@@ -173,20 +195,65 @@ ${historyQueryFilters}
     { name: 'Last 7 days', key: 'last_hours', value: '168' },
 
     // Query Kind (user-friendly names)
-    { name: 'Select Queries', key: 'query_kind', value: 'Select' },
-    { name: 'Insert Queries', key: 'query_kind', value: 'Insert' },
-    { name: 'System Queries', key: 'type', value: 'QueryFinish' },
-    { name: 'Failed Queries', key: 'type', value: 'ExceptionBeforeStart' },
+    {
+      name: 'Select Queries',
+      key: 'query_kind',
+      value: 'Select',
+      icon: SearchIcon,
+    },
+    {
+      name: 'Insert Queries',
+      key: 'query_kind',
+      value: 'Insert',
+      icon: DatabaseIcon,
+    },
+    {
+      name: 'System Queries',
+      key: 'type',
+      value: 'QueryFinish',
+      icon: SettingsIcon,
+    },
+    {
+      name: 'Failed Queries',
+      key: 'type',
+      value: 'ExceptionBeforeStart',
+      icon: CircleXIcon,
+    },
 
     // Duration
-    { name: '> 1 second', key: 'min_duration_s', value: '1' },
-    { name: '> 10 seconds', key: 'min_duration_s', value: '10' },
-    { name: '> 1 minute', key: 'min_duration_s', value: '60' },
+    { name: '> 1 second', key: 'min_duration_s', value: '1', icon: ClockIcon },
+    {
+      name: '> 10 seconds',
+      key: 'min_duration_s',
+      value: '10',
+      icon: TimerIcon,
+    },
+    {
+      name: '> 1 minute',
+      key: 'min_duration_s',
+      value: '60',
+      icon: TimerIcon,
+    },
 
     // Memory
-    { name: 'Memory > 100MB', key: 'min_memory_mb', value: '100' },
-    { name: 'Memory > 500MB', key: 'min_memory_mb', value: '500' },
-    { name: 'Memory > 1GB', key: 'min_memory_mb', value: '1024' },
+    {
+      name: 'Memory > 100MB',
+      key: 'min_memory_mb',
+      value: '100',
+      icon: MemoryStickIcon,
+    },
+    {
+      name: 'Memory > 500MB',
+      key: 'min_memory_mb',
+      value: '500',
+      icon: MemoryStickIcon,
+    },
+    {
+      name: 'Memory > 1GB',
+      key: 'min_memory_mb',
+      value: '1024',
+      icon: MemoryStickIcon,
+    },
 
     // Read Rows
     { name: 'Read > 1M rows', key: 'min_read_rows', value: '1000000' },

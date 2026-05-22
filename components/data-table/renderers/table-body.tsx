@@ -84,8 +84,9 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
             key={cell.id}
             className={cn(VIRTUALIZED_CELL_CLASS, cellClassName)}
             style={{
-              width: 'auto',
-              minWidth: 0,
+              width: cell.column.getSize(),
+              minWidth: cell.column.columnDef.minSize ?? 50,
+              maxWidth: cell.column.columnDef.maxSize ?? undefined,
             }}
           >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -140,8 +141,9 @@ export const StandardTableRow = memo(function StandardTableRow<
             key={cell.id}
             className={cn(STANDARD_CELL_CLASS, cellClassName)}
             style={{
-              width: 'auto',
-              minWidth: 0,
+              width: cell.column.getSize(),
+              minWidth: cell.column.columnDef.minSize ?? 50,
+              maxWidth: cell.column.columnDef.maxSize ?? undefined,
             }}
           >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}

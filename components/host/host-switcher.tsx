@@ -46,6 +46,7 @@ export function HostSwitcher() {
   const currentHostId = useHostId()
 
   const activeHost = hosts[currentHostId] || hosts[0]
+  const showExpanded = isMobile || state === 'expanded'
 
   const handleHostChange = useCallback(
     (hostId: number) => {
@@ -64,13 +65,13 @@ export function HostSwitcher() {
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" asChild>
             <div
-              className={`flex gap-2 ${state === 'expanded' ? 'items-center' : 'items-center justify-center'}`}
+              className={`flex gap-2 ${showExpanded ? 'items-center' : 'items-center justify-center'}`}
             >
               <div className="relative">
                 <ClickHouseLogo width={20} height={20} className="size-5" />
-                {state === 'collapsed' && <LogoStatusIndicatorSkeleton />}
+                {!showExpanded && <LogoStatusIndicatorSkeleton />}
               </div>
-              {state === 'expanded' && (
+              {showExpanded && (
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-3 w-16" />
@@ -98,15 +99,15 @@ export function HostSwitcher() {
           // Single host: simplified display without dropdown
           <SidebarMenuButton size="lg" asChild>
             <div
-              className={`flex gap-2 ${state === 'expanded' ? 'items-center' : 'items-center justify-center'}`}
+              className={`flex gap-2 ${showExpanded ? 'items-center' : 'items-center justify-center'}`}
             >
               <div className="relative">
                 <ClickHouseLogo width={20} height={20} className="size-5" />
-                {state === 'collapsed' && (
+                {!showExpanded && (
                   <LogoStatusIndicator hostId={activeHost.id} />
                 )}
               </div>
-              {state === 'expanded' && (
+              {showExpanded && (
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
                     {activeHost.name || getHost(activeHost.host)}
@@ -128,15 +129,15 @@ export function HostSwitcher() {
                 asChild
               >
                 <div
-                  className={`flex gap-2 ${state === 'expanded' ? 'items-center' : 'items-center justify-center'}`}
+                  className={`flex gap-2 ${showExpanded ? 'items-center' : 'items-center justify-center'}`}
                 >
                   <div className="relative">
                     <ClickHouseLogo width={20} height={20} className="size-5" />
-                    {state === 'collapsed' && (
+                    {!showExpanded && (
                       <LogoStatusIndicator hostId={activeHost.id} />
                     )}
                   </div>
-                  {state === 'expanded' && (
+                  {showExpanded && (
                     <>
                       <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-semibold">

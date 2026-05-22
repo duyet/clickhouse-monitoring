@@ -49,10 +49,7 @@ export const Breadcrumb = memo(function Breadcrumb({
           return (
             <li
               key={`${index}-${crumb.href}`}
-              className={cn(
-                'flex min-w-0 items-center gap-1.5',
-                !isLast && 'sr-only sm:not-sr-only'
-              )}
+              className="flex min-w-0 items-center gap-1.5"
             >
               {index > 0 && (
                 <ChevronRightIcon
@@ -69,14 +66,20 @@ export const Breadcrumb = memo(function Breadcrumb({
                   {crumb.title}
                 </span>
               ) : crumb.href ? (
-                <HostPrefixedLink
-                  href={crumb.href}
-                  className="truncate transition-colors hover:text-foreground hover:underline"
-                >
-                  {crumb.title}
-                </HostPrefixedLink>
+                <>
+                  <span className="sr-only sm:hidden">{crumb.title}</span>
+                  <HostPrefixedLink
+                    href={crumb.href}
+                    className="hidden truncate transition-colors hover:text-foreground hover:underline sm:inline"
+                  >
+                    {crumb.title}
+                  </HostPrefixedLink>
+                </>
               ) : (
-                <span>{crumb.title}</span>
+                <>
+                  <span className="sr-only sm:hidden">{crumb.title}</span>
+                  <span className="hidden sm:inline">{crumb.title}</span>
+                </>
               )}
             </li>
           )
