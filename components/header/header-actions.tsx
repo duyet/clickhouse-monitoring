@@ -39,7 +39,7 @@ export const HeaderActions = memo(function HeaderActions({
   }
 
   return (
-    <div className="ml-auto flex items-center gap-2 sm:gap-3">
+    <div className="flex w-max shrink-0 items-center gap-1 sm:ml-auto sm:w-auto sm:gap-3">
       <GlobalTimeRangePicker />
 
       <RefreshCountdown />

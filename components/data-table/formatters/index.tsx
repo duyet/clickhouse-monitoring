@@ -51,6 +51,7 @@ export {
   hoverCardFormatter,
   inlineActionFormatter,
   linkFormatter,
+  runningQuerySummaryFormatter,
 } from './context-formatters'
 // Export core formatting function
 export { formatCell } from './format-cell'

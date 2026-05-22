@@ -1,63 +1,64 @@
 import type { QueryConfig } from '@/types/query-config'
 
+import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { ColumnFormat } from '@/types/column-format'
 
 export const runningQueriesConfig: QueryConfig = {
   name: 'running-queries',
   refreshInterval: 30_000,
   sql: `
-    SELECT *,
-      query_id as query_detail,
+    ${QUERY_COMMENT}
+    SELECT
+      query_id,
+      query,
+      query_kind,
+      user,
+      current_database,
+      initial_query_id,
+      address,
+      port,
+      interface,
+      client_name,
+      client_hostname,
+      distributed_depth,
+      elapsed,
+      read_rows,
+      read_bytes,
+      total_rows_approx,
+      written_rows,
+      written_bytes,
+      memory_usage,
+      peak_memory_usage,
+      query_id AS action,
       multiIf (elapsed < 30, format('{} seconds', round(elapsed, 1)),
                elapsed < 90, 'a minute',
-               formatReadableTimeDelta(elapsed, 'days', 'minutes')) as readable_elapsed,
-      round(100 * elapsed / nullIf(max(elapsed) OVER (), 0)) AS pct_elapsed,
-      formatReadableQuantity(read_rows) as readable_read_rows,
-      round(100 * read_rows / nullIf(max(read_rows) OVER (), 0)) AS pct_read_rows,
-      formatReadableQuantity(written_rows) as readable_written_rows,
-      round(100 * written_rows / nullIf(max(written_rows) OVER (), 0)) AS pct_written_rows,
-      formatReadableQuantity(total_rows_approx) as readable_total_rows_approx,
-      formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
+               formatReadableTimeDelta(elapsed, 'days', 'minutes')) AS readable_elapsed,
+      formatReadableQuantity(read_rows) AS readable_read_rows,
+      formatReadableSize(read_bytes) AS readable_read_bytes,
+      formatReadableQuantity(written_rows) AS readable_written_rows,
+      formatReadableSize(written_bytes) AS readable_written_bytes,
+      formatReadableSize(peak_memory_usage) AS readable_peak_memory_usage,
       multiIf (
         memory_usage = 0, formatReadableSize(memory_usage),
         formatReadableSize(memory_usage) = formatReadableSize(peak_memory_usage), formatReadableSize(memory_usage),
         formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')'
-      ) as readable_memory_usage,
-      round(100 * memory_usage / nullIf(max(memory_usage) OVER (), 0)) AS pct_memory_usage,
+      ) AS readable_memory_usage,
       if(total_rows_approx > 0 AND query_kind = 'Select', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
-      if(total_rows_approx > 0 AND query_kind = 'Select', round((100 * read_rows) / total_rows_approx, 2), 0) AS pct_progress,
-      if(total_rows_approx > 0 AND read_rows > 0, (elapsed / (read_rows / total_rows_approx)) * (1 - (read_rows / total_rows_approx)), NULL) AS estimated_remaining_time,
       formatReadableQuantity(ProfileEvents['Merge']) AS launched_merges,
-      formatReadableQuantity(ProfileEvents['MergedRows']) AS rows_before_merge,
-      formatReadableSize(ProfileEvents['MergedUncompressedBytes']) AS bytes_before_merge,
-      formatReadableTimeDelta(ProfileEvents['MergesTimeMilliseconds'] / 1000, 'days', 'minutes') AS merges_time,
-      formatReadableTimeDelta(ProfileEvents['PartsLockHoldMicroseconds'] / 1000 / 1000) AS parts_lock_hold,
-      ProfileEvents['FileOpen'] AS file_open,
-      ProfileEvents['ContextLock'] AS context_lock,
-      ProfileEvents['RWLockAcquiredReadLocks'] AS rw_lock_acquired_read_locks
+      length(thread_ids) AS thread_count,
+      multiIf(interface = 1, 'TCP',
+              interface = 2, 'HTTP',
+              interface = 3, 'gRPC',
+              interface = 4, 'MySQL',
+              interface = 5, 'PostgreSQL',
+              interface = 6, 'Local',
+              interface = 7, 'Interserver',
+              toString(interface)) AS interface_label
     FROM system.processes
     WHERE is_cancelled = 0
-    ORDER BY elapsed
+    ORDER BY elapsed DESC
   `,
-  columns: [
-    'action',
-    'query',
-    'query_detail',
-    'user',
-    'readable_memory_usage',
-    'readable_elapsed',
-    'progress',
-    'readable_read_rows',
-    'readable_written_rows',
-    'launched_merges',
-    'rows_before_merge',
-    'bytes_before_merge',
-    'merges_time',
-    'file_open',
-    'parts_lock_hold',
-    'context_lock',
-    'rw_lock_acquired_read_locks',
-  ],
+  columns: ['action', 'query'],
   rowClassName: (row) => {
     // elapsed is in seconds for running queries
     const elapsed = Number(row.elapsed || 0)
@@ -73,31 +74,7 @@ export const runningQueriesConfig: QueryConfig = {
       ColumnFormat.InlineAction,
       ['kill-query', 'analyze-with-ai', 'open-in-explorer'],
     ],
-    query: [
-      ColumnFormat.CodeDialog,
-      {
-        max_truncate: 80,
-        hide_query_comment: true,
-        dialog_title: 'Running Query',
-        trigger_classname: '-ml-1 w-full min-w-0 sm:-ml-2',
-      },
-    ],
-    query_detail: [
-      ColumnFormat.Link,
-      {
-        href: '/query?query_id=[query_id]&host=[ctx.hostId]',
-        className: 'max-w-32 truncate',
-        title: 'Query Detail',
-      },
-    ],
-    user: ColumnFormat.ColoredBadge,
-    estimated_remaining_time: ColumnFormat.Duration,
-    readable_elapsed: ColumnFormat.BackgroundBar,
-    readable_read_rows: ColumnFormat.BackgroundBar,
-    readable_written_rows: ColumnFormat.BackgroundBar,
-    readable_memory_usage: ColumnFormat.BackgroundBar,
-    progress: ColumnFormat.BackgroundBar,
-    file_open: ColumnFormat.Number,
+    query: ColumnFormat.RunningQuerySummary,
   },
   relatedCharts: [
     [

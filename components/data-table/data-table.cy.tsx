@@ -3,6 +3,10 @@ import type { QueryConfig } from '@/types/query-config'
 import { DataTable } from './data-table'
 
 describe('<DataTable />', () => {
+  beforeEach(() => {
+    cy.viewport(1024, 768)
+  })
+
   // Define mock config
   const queryConfig: QueryConfig = {
     name: 'settings',
@@ -133,20 +137,20 @@ describe('<DataTable />', () => {
       />
     )
 
-    cy.get('[role="checkbox"][aria-label="Select all rows"]')
+    cy.get('table [role="checkbox"][aria-label="Select all rows"]')
       .should('have.attr', 'aria-checked', 'false')
       .click()
       .should('have.attr', 'aria-checked', 'true')
 
-    cy.get('[role="checkbox"][aria-label="Select row"]')
+    cy.get('table [role="checkbox"][aria-label="Select row"]')
       .should('have.length', 3)
       .each(($checkbox) => {
         expect($checkbox).to.have.attr('aria-checked', 'true')
       })
 
-    cy.get('[role="checkbox"][aria-label="Select row"]').first().click()
+    cy.get('table [role="checkbox"][aria-label="Select row"]').first().click()
 
-    cy.get('[role="checkbox"][aria-label="Select all rows"]').should(
+    cy.get('table [role="checkbox"][aria-label="Select all rows"]').should(
       'have.attr',
       'aria-checked',
       'mixed'
@@ -167,7 +171,7 @@ describe('<DataTable />', () => {
       />
     )
 
-    cy.get('[role="checkbox"][aria-label="Select row"]').click()
+    cy.get('table [role="checkbox"][aria-label="Select row"]').click()
 
     cy.get('@onRowSelectionChange').should('have.been.calledWith', { 0: true })
   })

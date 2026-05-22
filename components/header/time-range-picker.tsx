@@ -18,7 +18,7 @@ export const GlobalTimeRangePicker = memo(function GlobalTimeRangePicker() {
 
   return (
     <div
-      className="flex items-center gap-0.5 rounded-md border border-border/50 bg-muted/40 p-0.5"
+      className="flex shrink-0 items-center gap-0.5 rounded-md border border-border/50 bg-muted/40 p-0.5"
       role="group"
       aria-label="Global time range"
     >

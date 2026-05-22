@@ -12,13 +12,25 @@ import {
   markdownFormatter,
   numberFormatter,
   relatedTimeFormatter,
+  runningQuerySummaryFormatter,
   textFormatter,
 } from './index'
+import { HostProvider } from '@/lib/swr/host-context'
 import { ColumnFormat } from '@/types/column-format'
 
 // Test wrapper with required context
-function TestWrapper({ children }: { children: React.ReactNode }) {
-  return <div className="p-4">{children}</div>
+function TestWrapper({
+  children,
+  hostId = 0,
+}: {
+  children: React.ReactNode
+  hostId?: number
+}) {
+  return (
+    <HostProvider hostId={hostId}>
+      <div className="p-4">{children}</div>
+    </HostProvider>
+  )
 }
 
 describe('Formatters Module', () => {
@@ -149,6 +161,89 @@ describe('Formatters Module', () => {
       cy.mount(<TestWrapper>{result}</TestWrapper>)
 
       cy.get('a[href="/details/123"]').should('contain.text', 'Navigate')
+    })
+
+    it('runningQuerySummaryFormatter should render a responsive process summary', () => {
+      cy.viewport(390, 700)
+
+      const rowData = {
+        query_id: '98e83379-9adb-4c1d-9ad3-111111111111',
+        query:
+          'SELECT database, table, count() FROM system.parts WHERE active GROUP BY database, table ORDER BY count() DESC',
+        query_kind: 'Select',
+        user: 'duyet',
+        current_database: 'system',
+        readable_elapsed: '12 seconds',
+        readable_memory_usage: '42 MiB',
+        progress: '64%',
+        readable_read_rows: '12.4M',
+        readable_read_bytes: '3.2 GiB',
+        readable_written_rows: '0',
+        readable_written_bytes: '0 Bytes',
+        peak_threads_usage: 8,
+        client_name: 'ClickHouse',
+        client_hostname: 'workstation',
+        interface_label: 'HTTP',
+        address: '127.0.0.1',
+        port: 8123,
+        normalized_query_hash: '123456789',
+      }
+
+      const props = createMockProps(rowData.query, {
+        row: {
+          original: rowData,
+          index: 0,
+          getValue: (key: string) =>
+            rowData[key as keyof typeof rowData] as unknown,
+        } as unknown as Row<any>,
+        data: [rowData],
+      })
+
+      const result = runningQuerySummaryFormatter(props)
+      cy.mount(<TestWrapper hostId={2}>{result}</TestWrapper>)
+
+      cy.get('[data-slot="running-query-summary"]').should(($summary) => {
+        expect($summary[0].scrollWidth).to.be.lte($summary[0].clientWidth + 1)
+      })
+      cy.contains('duyet').should('exist')
+      cy.contains('42 MiB').should('exist')
+      cy.contains('Peak threads').should('exist')
+      cy.contains('8').should('exist')
+      cy.get(
+        'a[href="/query?query_id=98e83379-9adb-4c1d-9ad3-111111111111&host=2"]'
+      ).should('exist')
+    })
+
+    it('runningQuerySummaryFormatter should render without peak thread data', () => {
+      const rowData = {
+        query_id: '49bc477a-dc31-4c1d-9ad3-222222222222',
+        query: 'SELECT 1',
+        user: 'duyet',
+        readable_elapsed: '1.5 seconds',
+        readable_memory_usage: '12 MiB',
+        thread_count: 3,
+      }
+
+      const props = createMockProps(rowData.query, {
+        row: {
+          original: rowData,
+          index: 0,
+          getValue: (key: string) =>
+            rowData[key as keyof typeof rowData] as unknown,
+        } as unknown as Row<any>,
+        data: [rowData],
+      })
+
+      const result = runningQuerySummaryFormatter(props)
+      cy.mount(<TestWrapper hostId={3}>{result}</TestWrapper>)
+
+      cy.contains('duyet').should('exist')
+      cy.contains('12 MiB').should('exist')
+      cy.contains('Threads').should('exist')
+      cy.contains('Peak threads').should('not.exist')
+      cy.get(
+        'a[href="/query?query_id=49bc477a-dc31-4c1d-9ad3-222222222222&host=3"]'
+      ).should('exist')
     })
   })
 

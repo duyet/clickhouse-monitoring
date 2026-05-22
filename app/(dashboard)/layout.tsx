@@ -118,19 +118,19 @@ export default function RootLayout({
             <ResizableSidebarProvider defaultOpen={true}>
               <AppSidebar />
               <SidebarInset className="min-w-0 overflow-hidden">
-                <header className="relative z-10 flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-                  <div className="flex items-center gap-2 px-4">
+                <header className="relative z-10 flex min-h-16 shrink-0 flex-wrap items-center gap-x-2 gap-y-2 transition-[width,height] ease-linear sm:h-16 sm:flex-nowrap sm:group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sm:group-has-data-[collapsible=icon]/sidebar-wrapper:min-h-12">
+                  <div className="flex min-w-0 flex-1 items-center gap-2 px-4 pt-3 sm:pt-0">
                     <SidebarTrigger className="-ml-1" />
                     <Separator orientation="vertical" className="mr-2 h-4" />
                     <Suspense fallback={<Skeleton className="h-4 w-32" />}>
-                      <Breadcrumb />
+                      <Breadcrumb className="min-w-0" />
                     </Suspense>
                   </div>
-                  <div className="ml-auto px-4">
+                  <div className="w-full min-w-0 overflow-x-auto px-4 pb-3 sm:ml-auto sm:w-auto sm:overflow-visible sm:pb-0">
                     <HeaderActions />
                   </div>
                 </header>
-                <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto pt-0 p-4">
+                <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-3 pt-0 sm:p-4 sm:pt-0">
                   {children}
                 </div>
               </SidebarInset>
