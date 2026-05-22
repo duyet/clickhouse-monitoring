@@ -71,10 +71,15 @@ export async function GET(request: Request): Promise<Response> {
     const userId = await resolveUserId()
     debug('[GET /api/v1/conversations] User resolved', { userId, requestId })
 
-    // Get limit from query params
+    // Get limit from query params (reject non-numeric/negative values)
     const url = new URL(request.url)
     const limitParam = url.searchParams.get('limit')
-    const limit = limitParam ? Math.min(Number(limitParam), 100) : DEFAULT_LIMIT
+    const parsedLimit = limitParam ? Number(limitParam) : DEFAULT_LIMIT
+    const normalizedLimit = Math.floor(parsedLimit)
+    const limit =
+      Number.isFinite(parsedLimit) && normalizedLimit > 0
+        ? Math.min(normalizedLimit, 100)
+        : DEFAULT_LIMIT
 
     // Resolve store and fetch conversations
     const store = await resolveStore()

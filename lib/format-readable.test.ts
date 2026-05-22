@@ -41,6 +41,11 @@ describe('formatReadableSize', () => {
     const result = formatReadableSize(1.5e15)
     expect(result).toBe('1.3 PiB')
   })
+
+  it('should format negative sizes with a sign instead of NaN', () => {
+    expect(formatReadableSize(-1024)).toBe('-1 KiB')
+    expect(formatReadableSize(-512)).toBe('-512 Bytes')
+  })
 })
 
 describe('formatReadableQuantity', () => {

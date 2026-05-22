@@ -288,10 +288,10 @@ export const fetchData = async <
       httpStatusCode = parseInt(statusMatch[1], 10)
     }
 
-    // SSL/TLS errors (Cloudflare 525, 526, etc.)
+    // SSL/TLS errors (Cloudflare 525/526 as standalone status codes, not
+    // digits embedded in larger numbers like "525.00 MiB" or "15251")
     if (
-      errorMessage.includes('525') ||
-      errorMessage.includes('526') ||
+      /(?<![\d.])52[56](?!\d)(?!\.\d)/.test(errorMessage) ||
       errorMessage.toLowerCase().includes('ssl') ||
       errorMessage.toLowerCase().includes('tls') ||
       errorMessage.toLowerCase().includes('certificate') ||
@@ -552,10 +552,10 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
       httpStatusCode = parseInt(statusMatch[1], 10)
     }
 
-    // SSL/TLS errors (Cloudflare 525, 526, etc.)
+    // SSL/TLS errors (Cloudflare 525/526 as standalone status codes, not
+    // digits embedded in larger numbers like "525.00 MiB" or "15251")
     if (
-      errorMessage.includes('525') ||
-      errorMessage.includes('526') ||
+      /(?<![\d.])52[56](?!\d)(?!\.\d)/.test(errorMessage) ||
       errorMessage.toLowerCase().includes('ssl') ||
       errorMessage.toLowerCase().includes('tls') ||
       errorMessage.toLowerCase().includes('certificate') ||

@@ -16,9 +16,14 @@ export function formatReadableSize(bytes: number, decimals = 1) {
     'YiB',
   ]
 
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  const sign = bytes < 0 ? '-' : ''
+  const abs = Math.abs(bytes)
+  const i = Math.max(
+    0,
+    Math.min(Math.floor(Math.log(abs) / Math.log(k)), sizes.length - 1)
+  )
 
-  return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`
+  return `${sign}${parseFloat((abs / k ** i).toFixed(dm))} ${sizes[i]}`
 }
 
 /**
