@@ -14,8 +14,8 @@
 
 import type { RemoteThreadListAdapter } from '@assistant-ui/react'
 
-import { createD1ThreadListAdapter } from './d1-thread-list-adapter'
-import { createLocalThreadListAdapter } from './local-thread-list-adapter'
+import { createD1ThreadListAdapter } from '@/lib/conversation-store/adapter/d1-thread-list-adapter'
+import { createLocalThreadListAdapter } from '@/lib/conversation-store/adapter/local-thread-list-adapter'
 import { featureFlags } from '@/lib/feature-flags'
 
 export type ConversationBackend = 'd1' | 'local'

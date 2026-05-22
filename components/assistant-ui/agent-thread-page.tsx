@@ -8,9 +8,9 @@
 
 import { ErrorBoundary } from 'react-error-boundary'
 
-import { AgentRuntimeProvider } from './agent-runtime-provider'
-import { Thread } from './thread'
-import { ThreadList } from './thread-list'
+import { AgentRuntimeProvider } from '@/components/assistant-ui/agent-runtime-provider'
+import { Thread } from '@/components/assistant-ui/thread'
+import { ThreadList } from '@/components/assistant-ui/thread-list'
 
 function AgentThreadPageError() {
   return (

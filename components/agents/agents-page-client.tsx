@@ -10,10 +10,10 @@ import dynamic from 'next/dynamic'
  * the page is loaded with `ssr: false`.
  */
 const AgentThreadPage = dynamic(
-  () =>
-    import('@/components/assistant-ui/agent-thread-page').then(
-      (module) => module.AgentThreadPage
-    ),
+  async () => {
+    const module = await import('@/components/assistant-ui/agent-thread-page')
+    return module.AgentThreadPage
+  },
   {
     loading: () => <div className="bg-background h-full" />,
     ssr: false,

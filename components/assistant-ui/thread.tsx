@@ -25,10 +25,10 @@ import {
 
 import type { FC } from 'react'
 
-import { JsonRenderMessage } from './json-render-message'
-import { MarkdownText } from './markdown-text'
-import { ToolFallback } from './tool-fallback'
-import { TooltipIconButton } from './tooltip-icon-button'
+import { JsonRenderMessage } from '@/components/assistant-ui/json-render-message'
+import { MarkdownText } from '@/components/assistant-ui/markdown-text'
+import { ToolFallback } from '@/components/assistant-ui/tool-fallback'
+import { TooltipIconButton } from '@/components/assistant-ui/tooltip-icon-button'
 import {
   ActionBarPrimitive,
   BranchPickerPrimitive,
@@ -91,8 +91,7 @@ export function Thread() {
           <ThreadScrollToBottom />
           <Composer />
           <p className="text-muted-foreground px-1 text-[11px] leading-4">
-            The agent runs read-only ClickHouse queries. Conversations are saved
-            for this browser.
+            The agent runs read-only ClickHouse queries. Conversations may be stored locally in this browser and/or in a server-backed database.
           </p>
         </div>
       </ThreadPrimitive.Viewport>

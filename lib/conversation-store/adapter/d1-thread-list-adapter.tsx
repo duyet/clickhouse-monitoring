@@ -71,11 +71,14 @@ async function apiPut(
   payload: { title?: string; messages?: unknown[] }
 ): Promise<void> {
   try {
-    await apiFetch(`${BASE}/${encodeURIComponent(id)}`, {
+    const res = await apiFetch(`${BASE}/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(payload),
     })
+    if (!res.ok) {
+      throw new Error(`PUT failed with status ${res.status}`)
+    }
   } catch {
     // Network failure — keep the cached copy; next append retries.
   }
@@ -83,7 +86,10 @@ async function apiPut(
 
 async function apiDelete(id: string): Promise<void> {
   try {
-    await apiFetch(`${BASE}/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    const res = await apiFetch(`${BASE}/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    if (!res.ok) {
+      throw new Error(`DELETE failed with status ${res.status}`)
+    }
   } catch {
     // ignore
   }
@@ -148,11 +154,17 @@ class D1HistoryAdapter {
     repo.headId = item.message.id
     repoCache.set(remoteId, repo)
 
-    const title = deriveTitle(item.message)
-    await apiPut(remoteId, {
+    const currentTitle = this.aui.threadListItem().getState().title
+    const payload: { messages: unknown[]; title?: string } = {
       messages: repo.messages,
-      ...(title ? { title } : {}),
-    })
+    }
+    if (!currentTitle) {
+      const title = deriveTitle(item.message)
+      if (title) {
+        payload.title = title
+      }
+    }
+    await apiPut(remoteId, payload)
   }
 }
 
