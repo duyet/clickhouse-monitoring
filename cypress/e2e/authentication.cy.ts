@@ -178,11 +178,11 @@ describe('Authentication', () => {
 
       cy.get('[data-testid="nav-user-trigger"]')
         .scrollIntoView()
-        .focus()
+        .focus({ force: true })
       cy.get('[data-testid="nav-user-trigger"]').should('have.focus')
 
       // Press Enter to open menu
-      cy.get('[data-testid="nav-user-trigger"]').type('{enter}')
+      cy.get('[data-testid="nav-user-trigger"]').type('{enter}', { force: true })
       cy.get('[data-testid="nav-user-about"]').should('be.visible')
     })
 
