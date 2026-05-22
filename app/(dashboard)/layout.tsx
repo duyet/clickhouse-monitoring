@@ -11,6 +11,7 @@ import { HostProviderFromUrl } from '@/app/host-provider-from-url'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { VercelAnalytics } from '@/components/analytics/vercel-analytics'
 import { AppSidebar } from '@/components/app-sidebar'
+import { GlobalAssistantModal } from '@/components/assistant-ui/global-assistant-modal'
 import { ClerkAuthProvider } from '@/components/clerk/clerk-auth-provider'
 import { KeyboardShortcuts } from '@/components/controls/keyboard-shortcuts'
 import { HeaderActions } from '@/components/header/header-actions'
@@ -135,6 +136,7 @@ export default function RootLayout({
                 </div>
               </SidebarInset>
             </ResizableSidebarProvider>
+            <GlobalAssistantModal />
             <Toaster />
           </Providers>
         </ClerkAuthProvider>
