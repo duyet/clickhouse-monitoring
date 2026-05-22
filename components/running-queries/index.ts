@@ -5,8 +5,8 @@
  * the generic data table with a denser query-first layout.
  */
 
-export { RunningQueriesView } from './running-queries-view'
+export { RunningQueriesView } from '@/components/running-queries/running-queries-view'
 export {
   RunningQueryCard,
   type RunningQueryRow,
-} from './running-query-card'
+} from '@/components/running-queries/running-query-card'

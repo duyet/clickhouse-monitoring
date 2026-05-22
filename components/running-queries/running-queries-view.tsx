@@ -3,9 +3,9 @@
 import { Activity, RefreshCw } from 'lucide-react'
 
 import type { CardError } from '@/lib/card-error-utils'
-import type { RunningQueryRow } from './running-query-card'
+import type { RunningQueryRow } from '@/components/running-queries/running-query-card'
 
-import { RunningQueryCard } from './running-query-card'
+import { RunningQueryCard } from '@/components/running-queries/running-query-card'
 import { memo } from 'react'
 import { Skeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
@@ -22,7 +22,11 @@ import { useTableData } from '@/lib/swr/use-table-data'
 import { cn } from '@/lib/utils'
 
 /** Auto-refresh cadence for the running-queries list (ms). */
-const REFRESH_INTERVAL = 30_000
+const REFRESH_INTERVAL = (() => {
+  const envValue = process.env.NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS
+  const parsed = envValue ? Number.parseInt(envValue, 10) : NaN
+  return !Number.isNaN(parsed) && parsed > 0 ? parsed : 30_000
+})()
 
 /** Skeleton placeholder shown during the initial load. */
 function LoadingState() {
@@ -75,7 +79,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
     return <LoadingState />
   }
 
-  if (error) {
+  if (error && !data) {
     const variant = detectCardErrorVariant(error as CardError)
     return (
       <Card className="rounded-lg shadow-none">
