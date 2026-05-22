@@ -130,12 +130,7 @@ export const KpiCard = memo(function KpiCard({
         <div className={progressTrackStyles}>
           <div
             className={cn(progressFillStyles, progressColors[progressVariant])}
-            style={
-              {
-                width: `${clampedProgress}%`,
-                '--progress-width': `${clampedProgress}%`,
-              } as React.CSSProperties
-            }
+            style={{ width: `${clampedProgress}%` }}
           />
         </div>
       )}

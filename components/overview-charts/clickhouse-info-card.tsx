@@ -30,6 +30,9 @@ const UNIT_ABBR: Record<string, string> = {
 /**
  * Condense a human uptime string ("12 days, 1 hour and 20 minutes") into the
  * two most significant parts ("12d 1h").
+ *
+ * Units outside {@link UNIT_ABBR} are dropped; if nothing matches, the
+ * original trimmed string is returned unchanged.
  */
 function compactUptime(uptime: string): string {
   const matches = uptime.matchAll(
