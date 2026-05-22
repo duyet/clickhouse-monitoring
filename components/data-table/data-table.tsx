@@ -10,6 +10,7 @@ import {
   type RowData,
   type RowSelectionState,
   type SortingState,
+  type Updater,
   useReactTable,
 } from '@tanstack/react-table'
 
@@ -36,6 +37,7 @@ import {
   useVirtualRows,
 } from '@/components/data-table/hooks'
 import { getCustomSortingFns } from '@/components/data-table/sorting-fns'
+import { Checkbox } from '@/components/ui/checkbox'
 
 /**
  * Props for the DataTable component
@@ -159,7 +161,7 @@ export function DataTable<
   isRefreshing = false,
   executedSql,
   enableRowSelection = false,
-  onRowSelectionChange: _onRowSelectionChange,
+  onRowSelectionChange,
   metadata,
   enableColumnReordering = true,
   columnOrderStorageKey,
@@ -298,6 +300,19 @@ export function DataTable<
 
   // Row selection state
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const handleRowSelectionChange = useCallback(
+    (updaterOrValue: Updater<RowSelectionState>) => {
+      setRowSelection((current) => {
+        const next =
+          typeof updaterOrValue === 'function'
+            ? updaterOrValue(current)
+            : updaterOrValue
+        onRowSelectionChange?.(next)
+        return next
+      })
+    },
+    [onRowSelectionChange]
+  )
 
   // Selection column definition using TanStack Table's row selection
   const selectionColumn: ColumnDef<TData, unknown> = useMemo(
@@ -312,15 +327,14 @@ export function DataTable<
             className="flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <input
-              type="checkbox"
-              className="size-4 cursor-pointer accent-primary"
-              checked={isAllSelected}
-              ref={(el) => {
-                if (el) el.indeterminate = isSomeSelected && !isAllSelected
-              }}
-              onChange={(e) =>
-                table.toggleAllPageRowsSelected(e.target.checked)
+            <Checkbox
+              checked={
+                isSomeSelected && !isAllSelected
+                  ? 'indeterminate'
+                  : isAllSelected
+              }
+              onCheckedChange={(checked) =>
+                table.toggleAllPageRowsSelected(checked === true)
               }
               onClick={(e) => e.stopPropagation()}
               aria-label="Select all rows"
@@ -334,12 +348,10 @@ export function DataTable<
           className="flex items-center justify-center"
           onClick={(e) => e.stopPropagation()}
         >
-          <input
-            type="checkbox"
-            className="size-4 cursor-pointer accent-primary"
+          <Checkbox
             checked={row.getIsSelected()}
             disabled={!row.getCanSelect()}
-            onChange={row.getToggleSelectedHandler()}
+            onCheckedChange={(checked) => row.toggleSelected(checked === true)}
             onClick={(e) => e.stopPropagation()}
             aria-label="Select row"
           />
@@ -394,7 +406,7 @@ export function DataTable<
     // Row selection - pass true to enable for all rows
     enableRowSelection: !!enableRowSelection,
     getRowId,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: handleRowSelectionChange,
     // Enable sorting (click on header to sort, plus dropdown menu options)
     enableSorting: true,
     state: {
