@@ -5,6 +5,11 @@
 
 import type { QueryConfig } from '@/types/query-config'
 
+import { parseFiltersFromParams } from '@/lib/filters/url-state'
+import {
+  applyFilterPlaceholder,
+  buildWhereClause,
+} from '@/lib/filters/where-builder'
 import { queries } from '@/lib/query-config'
 import {
   explorerAllDependenciesConfig,
@@ -123,6 +128,31 @@ export function getTableQuery(
   const queryConfig = tableRegistry.get(name)
   if (!queryConfig) {
     return null
+  }
+
+  // Schema-driven dynamic filtering: parse + validate active filters against
+  // the config's filterSchema, then inject a parameterized WHERE clause.
+  if (queryConfig.filterSchema) {
+    const urlParams = new URLSearchParams(params.searchParams ?? {})
+    const activeFilters = parseFiltersFromParams(
+      queryConfig.filterSchema,
+      urlParams
+    )
+    const { clause, params: filterParams } = buildWhereClause(
+      queryConfig.filterSchema,
+      activeFilters
+    )
+    const resolvedConfig: QueryConfig = {
+      ...queryConfig,
+      sql: applyFilterPlaceholder(queryConfig.sql, clause),
+    }
+
+    return {
+      query: getSqlForDisplay(resolvedConfig.sql),
+      queryParams:
+        Object.keys(filterParams).length > 0 ? filterParams : undefined,
+      queryConfig: resolvedConfig,
+    }
   }
 
   // Start with default params from the config
