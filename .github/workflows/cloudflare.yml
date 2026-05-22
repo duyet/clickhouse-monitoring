@@ -6,6 +6,9 @@ on:
       - main
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - main
   release:
     types: [published]
   workflow_dispatch:
@@ -24,12 +27,15 @@ permissions:
 
 jobs:
   # ──────────────────────────────────────────────────────────────────────────
-  # Preview: disabled for pull_request events to avoid exposing secrets
-  # in public preview environments.
+  # Preview: deploys pull requests to https://preview.chmonitor.dev.
+  # Skipped for forked PRs — deployment secrets must never be exposed to a
+  # workflow running PR-controlled code from outside the repository.
   # ──────────────────────────────────────────────────────────────────────────
   preview:
     name: preview
-    if: github.event_name == 'pull_request'
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -149,7 +155,7 @@ jobs:
         uses: actions/github-script@v9
         with:
           script: |
-            const previewUrl = 'https://clickhouse-monitor-preview.duyet.workers.dev';
+            const previewUrl = 'https://preview.chmonitor.dev';
             const sha = '${{ steps.meta.outputs.git_sha }}';
             const timestamp = '${{ steps.meta.outputs.build_timestamp }}';
             const body = [

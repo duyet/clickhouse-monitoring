@@ -51,6 +51,8 @@ export interface QueryPageLayoutProps {
   chartsGridClass?: string
   /** Whether to hide the table */
   hideTable?: boolean
+  /** Custom renderer used in place of the default data table (e.g. a card list) */
+  tableSlot?: ReactNode
   /** Additional search params to pass to table */
   searchParams?: Record<string, string | number | boolean>
   /** Enable row selection with checkboxes */
@@ -69,6 +71,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   footerContent,
   chartsGridClass,
   hideTable = false,
+  tableSlot,
   searchParams,
   enableRowSelection = false,
   defaultPageSize,
@@ -129,7 +132,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
       {/* Filter bar above the table */}
       {headerContent}
 
-      {/* Data Table - flex-1 to fill remaining space */}
+      {/* Data Table (or custom tableSlot) - flex-1 to fill remaining space */}
       {!hideTable && (
         <Suspense fallback={<TableSkeleton />}>
           <FadeIn
@@ -137,15 +140,17 @@ export const QueryPageLayout = memo(function QueryPageLayout({
             className="flex min-w-0 flex-1 flex-col"
             style={maxTableHeight ? { maxHeight: maxTableHeight } : undefined}
           >
-            <TableClient
-              title={title || queryConfig.name}
-              description={description || queryConfig.description}
-              queryConfig={queryConfig}
-              searchParams={searchParams}
-              className="flex min-w-0 flex-1 flex-col"
-              enableRowSelection={enableRowSelection}
-              defaultPageSize={defaultPageSize}
-            />
+            {tableSlot ?? (
+              <TableClient
+                title={title || queryConfig.name}
+                description={description || queryConfig.description}
+                queryConfig={queryConfig}
+                searchParams={searchParams}
+                className="flex min-w-0 flex-1 flex-col"
+                enableRowSelection={enableRowSelection}
+                defaultPageSize={defaultPageSize}
+              />
+            )}
           </FadeIn>
         </Suspense>
       )}
@@ -167,6 +172,7 @@ export interface CreateQueryPageOptions {
   footerContent?: ReactNode
   chartsGridClass?: string
   hideTable?: boolean
+  tableSlot?: ReactNode
   searchParams?: Record<string, string | number | boolean>
   enableRowSelection?: boolean
   defaultPageSize?: number
