@@ -29,9 +29,17 @@ export const Breadcrumb = memo(function Breadcrumb({
     return getBreadcrumbPath(pathname, menuItems)
   }, [pathname, menuItems])
 
+  const breadcrumbLabel = useMemo(() => {
+    if (breadcrumbs.length === 0) {
+      return 'Breadcrumb navigation'
+    }
+
+    return `Breadcrumb: ${breadcrumbs.map((crumb) => crumb.title).join(' / ')}`
+  }, [breadcrumbs])
+
   return (
     <nav
-      aria-label="Breadcrumb navigation"
+      aria-label={breadcrumbLabel}
       className={cn('flex min-w-0 items-center overflow-hidden', className)}
     >
       <ol className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-sm text-muted-foreground">
@@ -43,7 +51,7 @@ export const Breadcrumb = memo(function Breadcrumb({
               key={`${index}-${crumb.href}`}
               className={cn(
                 'flex min-w-0 items-center gap-1.5',
-                !isLast && 'hidden sm:flex'
+                !isLast && 'sr-only sm:not-sr-only'
               )}
             >
               {index > 0 && (
