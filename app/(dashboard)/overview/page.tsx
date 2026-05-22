@@ -17,6 +17,20 @@ import { cn } from '@/lib/utils'
 const VALID_TABS = new Set(OVERVIEW_TABS.map((tab) => tab.value))
 const DEFAULT_TAB = 'overview'
 
+/** Underline-active tab styling, overriding the shadcn pill defaults. */
+const TAB_TRIGGER_CLASS = cn(
+  // layout
+  'h-auto flex-none px-3 py-2',
+  // borders — bottom-only underline
+  'rounded-none border-0 border-b-2 border-transparent bg-transparent shadow-none',
+  // typography
+  'text-[13px] font-medium text-muted-foreground',
+  // states
+  'transition-colors hover:text-foreground',
+  'data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none',
+  'dark:data-[state=active]:border-foreground dark:data-[state=active]:bg-transparent'
+)
+
 interface LazyTabContentProps {
   charts: OverviewChartConfig[]
   gridClassName: string
@@ -139,7 +153,7 @@ function OverviewPageContent() {
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="h-auto flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-3 py-2 text-[13px] font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none dark:data-[state=active]:border-foreground dark:data-[state=active]:bg-transparent"
+                  className={TAB_TRIGGER_CLASS}
                 >
                   {tab.label}
                 </TabsTrigger>
