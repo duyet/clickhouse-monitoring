@@ -254,6 +254,7 @@ export const RunningQuerySummaryFormat = memo(
                   hide_query_comment: true,
                   max_truncate: 320,
                   force_dialog: true,
+                  show_query_plan: true,
                   trigger_classname:
                     'w-full min-w-0 justify-start rounded-md border border-transparent bg-muted/30 px-2 py-1.5 hover:border-border hover:bg-muted/60',
                 }}
