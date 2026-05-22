@@ -3,43 +3,55 @@ import type { QueryConfig } from '@/types/query-config'
 import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { ColumnFormat } from '@/types/column-format'
 
-export const runningQueriesConfig: QueryConfig = {
-  name: 'running-queries',
-  refreshInterval: 30_000,
-  sql: `
+function buildRunningQueriesSql({
+  includeNormalizedQueryHash,
+}: {
+  includeNormalizedQueryHash: boolean
+}): string {
+  return `
     ${QUERY_COMMENT}
-    SELECT *,
-      query_id as action,
-      query_id as query_detail,
+    SELECT
+      query_id,
+      query,
+      query_kind,
+      user,
+      current_database,
+      initial_query_id,
+      address,
+      port,
+      interface,
+      client_name,
+      client_hostname,
+      distributed_depth,
+      elapsed,
+      read_rows,
+      read_bytes,
+      total_rows_approx,
+      written_rows,
+      written_bytes,
+      memory_usage,
+      peak_memory_usage,
+      ${
+        includeNormalizedQueryHash
+          ? 'normalized_query_hash'
+          : 'NULL AS normalized_query_hash'
+      },
+      query_id AS action,
       multiIf (elapsed < 30, format('{} seconds', round(elapsed, 1)),
                elapsed < 90, 'a minute',
-               formatReadableTimeDelta(elapsed, 'days', 'minutes')) as readable_elapsed,
-      round(100 * elapsed / nullIf(max(elapsed) OVER (), 0)) AS pct_elapsed,
-      formatReadableQuantity(read_rows) as readable_read_rows,
-      formatReadableSize(read_bytes) as readable_read_bytes,
-      round(100 * read_rows / nullIf(max(read_rows) OVER (), 0)) AS pct_read_rows,
-      formatReadableQuantity(written_rows) as readable_written_rows,
-      formatReadableSize(written_bytes) as readable_written_bytes,
-      round(100 * written_rows / nullIf(max(written_rows) OVER (), 0)) AS pct_written_rows,
-      formatReadableQuantity(total_rows_approx) as readable_total_rows_approx,
-      formatReadableSize(peak_memory_usage) as readable_peak_memory_usage,
+               formatReadableTimeDelta(elapsed, 'days', 'minutes')) AS readable_elapsed,
+      formatReadableQuantity(read_rows) AS readable_read_rows,
+      formatReadableSize(read_bytes) AS readable_read_bytes,
+      formatReadableQuantity(written_rows) AS readable_written_rows,
+      formatReadableSize(written_bytes) AS readable_written_bytes,
+      formatReadableSize(peak_memory_usage) AS readable_peak_memory_usage,
       multiIf (
         memory_usage = 0, formatReadableSize(memory_usage),
         formatReadableSize(memory_usage) = formatReadableSize(peak_memory_usage), formatReadableSize(memory_usage),
         formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')'
-      ) as readable_memory_usage,
-      round(100 * memory_usage / nullIf(max(memory_usage) OVER (), 0)) AS pct_memory_usage,
+      ) AS readable_memory_usage,
       if(total_rows_approx > 0 AND query_kind = 'Select', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
-      if(total_rows_approx > 0 AND query_kind = 'Select', round((100 * read_rows) / total_rows_approx, 2), 0) AS pct_progress,
-      if(total_rows_approx > 0 AND read_rows > 0, (elapsed / (read_rows / total_rows_approx)) * (1 - (read_rows / total_rows_approx)), NULL) AS estimated_remaining_time,
       formatReadableQuantity(ProfileEvents['Merge']) AS launched_merges,
-      formatReadableQuantity(ProfileEvents['MergedRows']) AS rows_before_merge,
-      formatReadableSize(ProfileEvents['MergedUncompressedBytes']) AS bytes_before_merge,
-      formatReadableTimeDelta(ProfileEvents['MergesTimeMilliseconds'] / 1000, 'days', 'minutes') AS merges_time,
-      formatReadableTimeDelta(ProfileEvents['PartsLockHoldMicroseconds'] / 1000 / 1000) AS parts_lock_hold,
-      ProfileEvents['FileOpen'] AS file_open,
-      ProfileEvents['ContextLock'] AS context_lock,
-      ProfileEvents['RWLockAcquiredReadLocks'] AS rw_lock_acquired_read_locks,
       length(thread_ids) AS thread_count,
       multiIf(interface = 1, 'TCP',
               interface = 2, 'HTTP',
@@ -52,7 +64,24 @@ export const runningQueriesConfig: QueryConfig = {
     FROM system.processes
     WHERE is_cancelled = 0
     ORDER BY elapsed DESC
-  `,
+  `
+}
+
+export const runningQueriesConfig: QueryConfig = {
+  name: 'running-queries',
+  refreshInterval: 30_000,
+  sql: [
+    {
+      since: '23.8',
+      description: 'Base system.processes projection',
+      sql: buildRunningQueriesSql({ includeNormalizedQueryHash: false }),
+    },
+    {
+      since: '25.3',
+      description: 'Includes normalized_query_hash from system.processes',
+      sql: buildRunningQueriesSql({ includeNormalizedQueryHash: true }),
+    },
+  ],
   columns: ['action', 'query'],
   rowClassName: (row) => {
     // elapsed is in seconds for running queries
