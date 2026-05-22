@@ -1,5 +1,6 @@
 'use client'
 
+import { SearchX } from 'lucide-react'
 import {
   type Cell,
   type ColumnDef,
@@ -14,7 +15,13 @@ import type { RowClassNameFn } from '@/types/query-config'
 
 import { memo, type ReactNode } from 'react'
 import { useTableDensityContext } from '@/components/data-table/context/table-density-context'
-import { EmptyState } from '@/components/ui/empty-state'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
@@ -302,15 +309,19 @@ export const TableBodyEmptyState = memo(function TableBodyEmptyState<
   return (
     <TableRow>
       <TableCell colSpan={columnDefs.length} className="h-64 p-4">
-        <EmptyState
-          variant="no-data"
-          title="No results"
-          description={
-            activeFilterCount > 0
-              ? `No ${title?.toLowerCase() || 'data'} match your filters. Try clearing filters or adjusting your search.`
-              : `No ${title?.toLowerCase() || 'data'} found. Try adjusting your query or check back later.`
-          }
-        />
+        <Empty className="h-full min-h-48 border-0 p-4 md:p-6">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <SearchX className="h-5 w-5" />
+            </EmptyMedia>
+            <EmptyTitle>No results</EmptyTitle>
+            <EmptyDescription>
+              {activeFilterCount > 0
+                ? `No ${title?.toLowerCase() || 'data'} match your filters. Try clearing filters or adjusting your search.`
+                : `No ${title?.toLowerCase() || 'data'} found. Try adjusting your query or check back later.`}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       </TableCell>
     </TableRow>
   )
