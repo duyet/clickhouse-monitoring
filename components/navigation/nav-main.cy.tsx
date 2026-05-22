@@ -5,7 +5,12 @@ import {
   PathnameContext,
   SearchParamsContext,
 } from 'next/dist/shared/lib/hooks-client-context.shared-runtime'
-import { SidebarProvider } from '@/components/ui/sidebar'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
 import { HostProvider } from '@/lib/swr/host-context'
 
 describe('<NavMain />', () => {
@@ -30,6 +35,35 @@ describe('<NavMain />', () => {
         </SearchParamsContext.Provider>
       </PathnameContext.Provider>
     )
+
+  const mountMobileSidebar = (
+    items: MenuItem[],
+    {
+      pathname = '/',
+      searchParams = new URLSearchParams('host=0'),
+    }: {
+      pathname?: string
+      searchParams?: URLSearchParams
+    } = {}
+  ) => {
+    cy.viewport('iphone-x')
+    cy.mount(
+      <PathnameContext.Provider value={pathname}>
+        <SearchParamsContext.Provider value={searchParams}>
+          <HostProvider hostId={Number(searchParams.get('host') ?? 0)}>
+            <SidebarProvider defaultOpen={true}>
+              <SidebarTrigger />
+              <Sidebar collapsible="icon" variant="inset">
+                <SidebarContent>
+                  <NavMain items={items} />
+                </SidebarContent>
+              </Sidebar>
+            </SidebarProvider>
+          </HostProvider>
+        </SearchParamsContext.Provider>
+      </PathnameContext.Provider>
+    )
+  }
 
   const singleItems: MenuItem[] = [
     {
@@ -271,6 +305,28 @@ describe('<NavMain />', () => {
 
       cy.get('[data-sidebar="menu"]').should('be.visible')
       cy.contains('Overview').should('be.visible')
+    })
+
+    it('closes the mobile sidebar after selecting a top-level item', () => {
+      mountMobileSidebar(singleItems)
+
+      cy.get('[data-sidebar="trigger"]').click()
+      cy.get('[data-mobile="true"]').should('be.visible')
+
+      cy.contains('Overview').trigger('click')
+
+      cy.get('[data-mobile="true"]').should('not.exist')
+    })
+
+    it('closes the mobile sidebar after selecting a child item', () => {
+      mountMobileSidebar(collapsibleItems)
+
+      cy.get('[data-sidebar="trigger"]').click()
+      cy.get('[data-mobile="true"]').should('be.visible')
+      cy.contains('Queries').click()
+      cy.contains('Running Queries').trigger('click')
+
+      cy.get('[data-mobile="true"]').should('not.exist')
     })
   })
 

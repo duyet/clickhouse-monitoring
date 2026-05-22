@@ -61,6 +61,43 @@ describe('<CodeDialogFormat />', () => {
     const options = { hide_query_comment: true, max_truncate: 100 }
     cy.mount(<CodeDialogFormat value={codeWithComment} options={options} />)
     cy.get('code').should('not.contain', '/* This is a comment */')
+    cy.get('code').should('have.text', 'SELECT * FROM table')
+  })
+
+  it('keeps running-query dialog content inside the viewport', () => {
+    cy.viewport(390, 844)
+    const longQuery = `/* clickhouse-monitor */ SELECT ${'very_long_identifier_'.repeat(
+      20
+    )} FROM system.processes WHERE query_id = 'abc'`
+
+    cy.mount(
+      <CodeDialogFormat
+        value={longQuery}
+        options={{
+          dialog_title: 'Running Query',
+          hide_query_comment: true,
+          max_truncate: 20,
+          trigger_classname: '-ml-1 w-full min-w-0 sm:-ml-2',
+        }}
+      />
+    )
+
+    cy.get('code.truncated')
+      .invoke('text')
+      .should('match', /^SELECT/)
+      .and('not.contain', 'clickhouse-monitor')
+    cy.get('code.truncated').parent().click()
+
+    cy.get('div[role="dialog"]')
+      .should('be.visible')
+      .then(($dialog) => {
+        const rect = $dialog[0].getBoundingClientRect()
+        expect(rect.width).to.be.lte(390)
+        expect(rect.height).to.be.lte(844)
+      })
+    cy.get('div[role="dialog"] code')
+      .should('contain.text', 'SELECT')
+      .and('not.contain.text', 'clickhouse-monitor')
   })
 
   it('escapes HTML-like code in the dialog body', () => {
