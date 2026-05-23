@@ -66,17 +66,28 @@ function runStep([icon, label, cmd, args]: Step): void {
 
   const result = spawnSync(cmd, args, {
     stdio: 'inherit',
-    env: { ...process.env },
-    shell: true,
+    env: process.env,
   })
 
+  if (result.error) {
+    console.error(
+      `\n❌ ${label} failed to spawn: ${result.error.message}\n   command: ${cmd} ${args.join(' ')}`
+    )
+    process.exit(1)
+  }
+
   if (result.status !== 0) {
-    console.error(`\n❌ ${label} failed (exit code ${result.status})`)
+    console.error(
+      `\n❌ ${label} failed (exit code ${result.status})\n   command: ${cmd} ${args.join(' ')}`
+    )
     process.exit(result.status ?? 1)
   }
 }
 
 function main(): void {
+  const binDir = join(__dirname, '..', 'node_modules', '.bin')
+  process.env.PATH = `${binDir}:${process.env.PATH ?? ''}`
+
   const envFile = loadEnvFile()
 
   // Merge env file vars into process env (env file vars don't override existing)
