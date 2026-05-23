@@ -1,3 +1,5 @@
+/// <reference types="cypress" />
+
 /**
  * @fileoverview Navigation E2E tests - Simplified smoke tests
  * Tests the new static site architecture with ?host= query parameters
@@ -12,7 +14,7 @@ describe('Navigation Smoke Tests', () => {
   })
 
   it('should navigate between main pages', () => {
-    const mainPages = ['/overview', '/dashboard', '/clusters', '/merges']
+    const mainPages: string[] = ['/overview', '/dashboard', '/clusters', '/merges']
 
     mainPages.forEach((page) => {
       cy.visit(`${page}?host=0`)
