@@ -7,6 +7,7 @@ export const queryDetailConfig: QueryConfig = {
   name: 'query-detail',
   description: 'Detailed information about a specific query execution',
   docs: QUERY_LOG,
+  permission: { feature: 'queries' },
   tableCheck: 'system.query_log',
   sql: [
     {
