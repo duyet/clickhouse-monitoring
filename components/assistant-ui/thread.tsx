@@ -33,7 +33,7 @@ import {
   useThread,
   useThreadRuntime,
 } from '@assistant-ui/react'
-import { type FC, useCallback, useState } from 'react'
+import { type FC, useCallback } from 'react'
 import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
 import { AgentWelcomeScreen } from '@/components/agents/welcome/agent-welcome-screen'
 import { ComposerToolbar } from '@/components/agents/welcome/composer-toolbar'
@@ -244,7 +244,7 @@ const EditComposer: FC = () => {
   return (
     <ComposerPrimitive.Root className="bg-muted mx-auto my-2 flex w-full max-w-[var(--thread-max-width)] flex-col gap-2 rounded-2xl p-3">
       <ComposerPrimitive.Input
-        className="text-foreground min-h-12 w-full resize-none bg-transparent text-sm outline-none"
+        className="text-foreground min-h-12 w-full resize-none bg-transparent text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-sm"
         autoFocus
       />
       <div className="flex items-center justify-end gap-2">

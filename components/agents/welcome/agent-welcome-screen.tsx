@@ -53,10 +53,14 @@ export function AgentWelcomeScreen({
       {/* Greeting */}
       <div className="mb-8 text-center">
         <div className="bg-muted border-border mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border">
-          <SparklesIcon className="text-foreground size-5" strokeWidth={1.6} />
+          <SparklesIcon
+            className="text-foreground size-5"
+            strokeWidth={1.6}
+            aria-hidden="true"
+          />
         </div>
         <h1
-          className={`text-[28px] font-semibold leading-tight tracking-tight ${
+          className={`text-balance text-[28px] font-semibold leading-tight tracking-tight ${
             greeting.tone === 'alert' ? 'text-foreground' : 'text-foreground'
           }`}
         >
@@ -83,7 +87,7 @@ export function AgentWelcomeScreen({
       {/* Footer status */}
       <div className="text-muted-foreground mt-4 flex items-center justify-center gap-2 text-center text-[10.5px]">
         <span className="relative inline-flex h-1.5 w-1.5">
-          <span className="absolute inset-0 animate-ping rounded-full bg-emerald-500 opacity-70" />
+          <span className="absolute inset-0 animate-ping rounded-full bg-emerald-500 opacity-70 motion-reduce:animate-pulse" />
           <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-500" />
         </span>
         Connected to{' '}
