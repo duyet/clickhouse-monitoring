@@ -22,7 +22,7 @@ export const dynamicParams = false
 
 export function generateStaticParams() {
   return Object.keys(docsContent).map((slug) => ({
-    slug: slug ? slug.split('/') : [''],
+    slug: slug ? slug.split('/') : [],
   }))
 }
 
