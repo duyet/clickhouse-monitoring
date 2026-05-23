@@ -240,12 +240,12 @@ export function PromptInputTextareaWithMentions({
             disabled={buttonDisabled}
             aria-label={isLoading ? 'Stop response' : 'Send message'}
             className={cn(
-              'rounded-full transition-[transform,background-color,color] active:scale-[0.96]',
+              'rounded-full shadow-sm transition-[transform,background-color,color,box-shadow] active:scale-[0.96]',
               isLoading
                 ? 'bg-foreground text-background hover:bg-foreground/90'
                 : canSubmit
-                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                  : 'bg-muted text-muted-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90'
+                  : 'bg-muted text-muted-foreground shadow-none'
             )}
           >
             {isLoading ? (
