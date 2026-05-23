@@ -288,7 +288,7 @@ export const QueryDetailView = memo(function QueryDetailView({
 }: QueryDetailViewProps) {
   const hostId = useHostId()
 
-  const { data, isLoading, error } = useTableData<QueryDetailRow>(
+  const { data, isLoading, error, refresh } = useTableData<QueryDetailRow>(
     'query-detail',
     hostId,
     { query_id: queryId }
@@ -335,11 +335,7 @@ export const QueryDetailView = memo(function QueryDetailView({
         <p className="text-[13px] text-muted-foreground">
           {error instanceof Error ? error.message : 'Failed to load query'}
         </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => window.location.reload()}
-        >
+        <Button variant="outline" size="sm" onClick={() => refresh()}>
           Retry
         </Button>
       </div>
@@ -367,10 +363,10 @@ export const QueryDetailView = memo(function QueryDetailView({
   const startTime = toStr(row.query_start_time)
   const finishTime = toStr(row.query_finish_time)
   const databases = toStr(row.databases)
-    .replace(/^\[|\]$/g, '')
+    .replace(/^\[?\s*|\s*\]?,?\s*$/g, '')
     .trim()
   const tables = toStr(row.tables)
-    .replace(/^\[|\]$/g, '')
+    .replace(/^\[?\s*|\s*\]?,?\s*$/g, '')
     .trim()
   const clientName = toStr(row.client_name)
   const clientHost = toStr(row.client_hostname)
