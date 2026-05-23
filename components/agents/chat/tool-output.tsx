@@ -414,36 +414,46 @@ export function ToolCallPart({
   }, [hasOutput, part.output])
 
   return (
-    <div className="my-2">
-      <div className="overflow-hidden rounded-md border border-border/60 bg-muted/20">
-        <div className="flex w-full items-center transition-colors hover:bg-muted/30">
+    <div className="my-1.5">
+      <div
+        className={cn(
+          'overflow-hidden rounded-md transition-colors',
+          isExpanded
+            ? 'border border-border/60 bg-muted/20'
+            : 'border border-transparent hover:bg-muted/30'
+        )}
+      >
+        <div className="flex w-full items-center transition-colors">
           <button
             onClick={() => setIsExpanded((previous) => !previous)}
-            className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-left"
+            className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left"
             aria-expanded={isExpanded}
           >
-            <span className="shrink-0 text-muted-foreground">
+            <span className="text-muted-foreground shrink-0">
               {isExpanded ? (
-                <ChevronDownIcon className="h-3.5 w-3.5" />
+                <ChevronDownIcon className="h-3 w-3" />
               ) : (
-                <ChevronRightIcon className="h-3.5 w-3.5" />
+                <ChevronRightIcon className="h-3 w-3" />
               )}
             </span>
 
             <div
               className={cn(
-                'h-2 w-2 shrink-0 rounded-full',
+                'size-1.5 shrink-0 rounded-full',
                 isStarting && 'animate-pulse bg-yellow-500',
                 isStreaming && 'animate-ping bg-yellow-400',
-                hasOutput && 'bg-green-500',
+                hasOutput && 'bg-emerald-500',
                 hasError && 'bg-red-500'
               )}
             />
 
             <div className="flex min-w-0 items-center gap-1.5">
+              <span className="text-muted-foreground text-xs">
+                {hasError ? 'Failed' : hasOutput ? 'Ran' : 'Running'}
+              </span>
               <span className="font-mono text-xs font-medium">{toolName}</span>
               {inputParams && (
-                <span className="truncate font-mono text-xs text-muted-foreground/70">
+                <span className="text-muted-foreground/70 truncate font-mono text-xs">
                   {inputParams}
                 </span>
               )}
