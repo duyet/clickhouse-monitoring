@@ -10,7 +10,7 @@
  * Legacy IDs without `:` are treated as `openrouter:{model}`.
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   DEFAULT_AGENT_MODEL,
   getAllModelOptions,
@@ -155,17 +155,26 @@ async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
   }
 }
 
+const MODEL_CHANGE_EVENT = 'clickhouse-monitor-agent-model-changed'
+
+function emitModelChange(model: OpenAIModel | null): void {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(
+    new CustomEvent<OpenAIModel | null>(MODEL_CHANGE_EVENT, { detail: model })
+  )
+}
+
 /**
- * Manages the selected agent model, the available model list (with best-effort capability fetch), and handlers to change or reset the selection.
+ * Manages the selected agent model, the available model list (with best-effort
+ * capability fetch), and handlers to change or reset the selection.
  *
- * @returns An object with:
- * - `model` — the currently selected model identifier (normalized).
- * - `models` — the list of available `ModelDisplayInfo` entries (initial static list, replaced by fetched capabilities when available).
- * - `setModel` — function that saves the given model identifier and reloads the page.
- * - `resetModel` — function that clears any saved model selection and reloads the page.
+ * Changing the model updates `localStorage` and broadcasts a custom event so
+ * any other `useAgentModel` consumer on the page picks up the new value
+ * without a full page reload — the agent runtime swaps to the new model on
+ * the next request.
  */
 export function useAgentModel(): UseAgentModelResult {
-  const model = useMemo(() => getSavedModel(), [])
+  const [model, setModelState] = useState<OpenAIModel>(() => getSavedModel())
 
   const [models, setModels] = useState<ModelDisplayInfo[]>(getStaticModels)
 
@@ -186,14 +195,27 @@ export function useAgentModel(): UseAgentModelResult {
     }
   }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<OpenAIModel | null>).detail
+      setModelState(detail ?? getSavedModel())
+    }
+    window.addEventListener(MODEL_CHANGE_EVENT, handler)
+    return () => window.removeEventListener(MODEL_CHANGE_EVENT, handler)
+  }, [])
+
   const setModel = (newModel: OpenAIModel): void => {
     saveModel(newModel)
-    window.location.reload()
+    setModelState(newModel)
+    emitModelChange(newModel)
   }
 
   const resetModel = (): void => {
     clearSavedModel()
-    window.location.reload()
+    const fallback = getDefaultModel()
+    setModelState(fallback)
+    emitModelChange(null)
   }
 
   return {
