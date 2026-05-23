@@ -98,6 +98,7 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
 
   const clearAll = useCallback(() => {
     updateParams((params) => {
+      params.delete('q')
       schema?.fields.forEach((field) => {
         if (field.defaultValue) params.set(field.key, '')
         else params.delete(field.key)
