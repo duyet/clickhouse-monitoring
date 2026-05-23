@@ -17,13 +17,10 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CopyIcon,
-  DatabaseIcon,
   PencilIcon,
   RefreshCwIcon,
   SparklesIcon,
 } from 'lucide-react'
-
-import type { FC } from 'react'
 
 import {
   ActionBarPrimitive,
@@ -36,7 +33,10 @@ import {
   useThread,
   useThreadRuntime,
 } from '@assistant-ui/react'
+import { type FC, useState } from 'react'
 import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
+import { AgentWelcomeScreen } from '@/components/agents/welcome/agent-welcome-screen'
+import { ComposerToolbar } from '@/components/agents/welcome/composer-toolbar'
 import { JsonRenderMessage } from '@/components/assistant-ui/json-render-message'
 import { MarkdownText } from '@/components/assistant-ui/markdown-text'
 import { ToolFallback } from '@/components/assistant-ui/tool-fallback'
@@ -47,34 +47,33 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { resolveConversationBackend } from '@/lib/conversation-store/adapter/resolve-thread-list-adapter'
+import { useAgentSkills } from '@/lib/hooks/use-agent-skills'
 
-const SUGGESTED_PROMPTS: ReadonlyArray<{ label: string; prompt: string }> = [
-  {
-    label: 'Slow queries',
-    prompt: 'Show the slowest queries in the last 24 hours and explain why.',
-  },
-  {
-    label: 'Largest tables',
-    prompt: 'Which tables use the most disk space? Suggest what to optimize.',
-  },
-  {
-    label: 'Cluster health',
-    prompt: 'Give me an overview of cluster health and any current issues.',
-  },
-  {
-    label: 'Merge activity',
-    prompt: 'Are there any long-running or stuck merges right now?',
-  },
-]
+interface ThreadProps {
+  /** Display name to weave into the welcome heading. */
+  firstName?: string | null
+  /** Cluster the agent is wired into (shown in the greeting + footer). */
+  clusterName?: string | null
+  /** When true, the greeting switches to its alert variant. */
+  hasClusterIssue?: boolean
+}
 
-export function Thread() {
+export function Thread({
+  firstName,
+  clusterName,
+  hasClusterIssue,
+}: ThreadProps = {}) {
   return (
     <ThreadPrimitive.Root
       className="aui-root flex h-full flex-col overflow-hidden bg-background"
       style={{ ['--thread-max-width' as string]: '46rem' }}
     >
       <ThreadPrimitive.Viewport className="relative flex flex-1 flex-col overflow-y-auto scroll-smooth px-4">
-        <ThreadWelcome />
+        <ThreadWelcome
+          firstName={firstName}
+          clusterName={clusterName}
+          hasClusterIssue={hasClusterIssue}
+        />
 
         <ThreadPrimitive.Messages
           components={{
@@ -88,17 +87,20 @@ export function Thread() {
           <div className="min-h-6 grow" />
         </ThreadPrimitive.If>
 
-        <div className="sticky bottom-0 z-10 mx-auto flex w-full max-w-[var(--thread-max-width)] flex-col items-center gap-2 bg-background pb-3">
-          <ThreadScrollToBottom />
-          <Composer />
-          <p className="text-muted-foreground px-1 text-[11px] leading-4">
-            The agent runs read-only ClickHouse queries. Conversations are saved{' '}
-            {resolveConversationBackend() === 'd1'
-              ? 'to your account'
-              : 'in this browser'}
-            .
-          </p>
-        </div>
+        <ThreadPrimitive.If empty={false}>
+          <div className="sticky bottom-0 z-10 mx-auto flex w-full max-w-[var(--thread-max-width)] flex-col items-center gap-2 bg-background pb-3">
+            <ThreadScrollToBottom />
+            <ThreadComposer />
+            <p className="text-muted-foreground px-1 text-[11px] leading-4">
+              The agent runs read-only ClickHouse queries. Conversations are
+              saved{' '}
+              {resolveConversationBackend() === 'd1'
+                ? 'to your account'
+                : 'in this browser'}
+              .
+            </p>
+          </div>
+        </ThreadPrimitive.If>
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
   )
@@ -118,53 +120,77 @@ function ThreadScrollToBottom() {
   )
 }
 
-function ThreadWelcome() {
+interface ThreadWelcomeProps {
+  firstName?: string | null
+  clusterName?: string | null
+  hasClusterIssue?: boolean
+}
+
+function ThreadWelcome({
+  firstName,
+  clusterName,
+  hasClusterIssue,
+}: ThreadWelcomeProps) {
+  const { activeToolCount } = useAgentSkills()
+  const [composerValue, setComposerValue] = useState('')
+
   return (
     <ThreadPrimitive.Empty>
-      <div className="mx-auto flex w-full max-w-[var(--thread-max-width)] flex-1 flex-col justify-center px-2 py-12">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-2xl">
-            <DatabaseIcon className="size-6" />
-          </div>
-          <h2 className="text-xl font-semibold">
-            Inspect your ClickHouse cluster
-          </h2>
-          <p className="text-muted-foreground max-w-md text-sm">
-            Ask in plain English — the agent inspects system tables, queries,
-            merges, storage and replication, then explains what it finds.
-          </p>
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {SUGGESTED_PROMPTS.map((item) => (
-            <ThreadPrimitive.Suggestion
-              key={item.label}
-              prompt={item.prompt}
-              method="replace"
-              autoSend
-              asChild
-            >
-              <button
-                type="button"
-                className="border-border/70 hover:border-border hover:bg-muted/50 flex flex-col gap-1 rounded-xl border p-3 text-left transition-colors"
-              >
-                <span className="flex items-center gap-1.5 text-sm font-medium">
-                  <SparklesIcon className="text-primary size-3.5" />
-                  {item.label}
-                </span>
-                <span className="text-muted-foreground text-xs">
-                  {item.prompt}
-                </span>
-              </button>
-            </ThreadPrimitive.Suggestion>
-          ))}
-        </div>
-      </div>
+      <AgentWelcomeScreen
+        firstName={firstName}
+        clusterName={clusterName}
+        hasClusterIssue={hasClusterIssue}
+        activeToolCount={activeToolCount}
+        composer={
+          <WelcomeComposer
+            value={composerValue}
+            onValueChange={setComposerValue}
+          />
+        }
+        onPickPrompt={(prompt) => setComposerValue(prompt)}
+      />
     </ThreadPrimitive.Empty>
   )
 }
 
-function Composer() {
+/**
+ * Welcome-screen composer card: mentions textarea + toolbar (model · skills ·
+ * tools · add-context). Wraps the same submission wiring as the in-thread
+ * composer below.
+ */
+function WelcomeComposer({
+  value,
+  onValueChange,
+}: {
+  value: string
+  onValueChange: (next: string) => void
+}) {
+  const threadRuntime = useThreadRuntime()
+  const isRunning = useThread((thread) => thread.isRunning)
+
+  return (
+    <div className="flex flex-col gap-2">
+      <PromptInputTextareaWithMentions
+        value={value}
+        onChange={onValueChange}
+        isLoading={isRunning}
+        onResolvedSubmit={(text) => {
+          const trimmed = text.trim()
+          if (!trimmed) return
+          threadRuntime.append({
+            role: 'user',
+            content: [{ type: 'text', text: trimmed }],
+          })
+          onValueChange('')
+        }}
+        onStop={() => threadRuntime.cancelRun()}
+      />
+      <ComposerToolbar />
+    </div>
+  )
+}
+
+function ThreadComposer() {
   const threadRuntime = useThreadRuntime()
   const isRunning = useThread((thread) => thread.isRunning)
 
@@ -251,7 +277,8 @@ const ReasoningPart: ReasoningMessagePartComponent = ({ text }) => {
     <Collapsible className="border-border/60 bg-muted/30 my-2 rounded-lg border">
       <CollapsibleTrigger className="text-muted-foreground hover:text-foreground flex w-full items-center gap-1.5 px-3 py-2 text-xs font-medium">
         <SparklesIcon className="size-3.5" />
-        Reasoning
+        <span>Thought process</span>
+        <ChevronRightIcon className="ml-auto size-3 transition-transform group-data-[state=open]:rotate-90" />
       </CollapsibleTrigger>
       <CollapsibleContent className="text-muted-foreground border-border/60 border-t px-3 py-2 text-xs whitespace-pre-wrap">
         {text}
@@ -260,6 +287,11 @@ const ReasoningPart: ReasoningMessagePartComponent = ({ text }) => {
   )
 }
 
+/**
+ * Assistant message body. Renders streaming parts (text · reasoning · tool
+ * calls) without an "Agent" avatar header — the message column already aligns
+ * left while user messages align right, so the chrome stays minimal.
+ */
 const AssistantMessage: FC = () => {
   return (
     <MessagePrimitive.Root className="mx-auto w-full max-w-[var(--thread-max-width)] py-3">

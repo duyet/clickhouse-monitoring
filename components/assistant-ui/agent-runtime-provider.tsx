@@ -20,7 +20,7 @@ import { useChatRuntime } from '@assistant-ui/react-ai-sdk'
 import { DefaultChatTransport } from 'ai'
 import { type ReactNode, useMemo } from 'react'
 import { resolveThreadListAdapter } from '@/lib/conversation-store/adapter/resolve-thread-list-adapter'
-import { getSavedModel } from '@/lib/hooks/use-agent-model'
+import { useAgentModel } from '@/lib/hooks/use-agent-model'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
@@ -32,7 +32,7 @@ import { useHostId } from '@/lib/swr/use-host'
 function useAgentChatRuntime() {
   const hostId = useHostId()
   const { disabledTools } = useToolConfig()
-  const model = useMemo(() => getSavedModel(), [])
+  const { model } = useAgentModel()
   const sessionId = useMemo(() => crypto.randomUUID(), [])
 
   const transport = useMemo(
