@@ -15,7 +15,7 @@
     "build": "bun scripts/build-docs-content.ts && bun run wasm:build && bun next build",
     "start": "bun --bun next start",
     "analyze": "ANALYZE=true bun run build",
-    "cf:build": "bun run build && bun scripts/stub-prerendered-handlers.ts && opennextjs-cloudflare build --skipBuild && bun scripts/copy-prerendered-to-assets.ts && bun scripts/restore-prerendered-handlers.ts",
+    "cf:build": "bun run build && bun scripts/stub-prerendered-handlers.ts && (opennextjs-cloudflare build --skipBuild && bun scripts/copy-prerendered-to-assets.ts; status=$?; bun scripts/restore-prerendered-handlers.ts; exit $status)",
     "cf:preview": "bun run cf:build && opennextjs-cloudflare preview",
     "cf:config": "bun scripts/set-secrets.ts",
     "gh:sync-secrets": "bun scripts/sync-env-to-gh.ts",

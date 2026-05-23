@@ -63,12 +63,27 @@ function parseEnvFile(content: string): Record<string, string> {
   return env
 }
 
+interface SecretPushResult {
+  ok: boolean
+  missingWorker: boolean
+  stderr: string
+}
+
+// Wrangler's error message when a worker doesn't exist yet. Match generously
+// — Cloudflare phrases this differently across versions ("worker not found",
+// "service not found", "could not find a worker named", etc.).
+const MISSING_WORKER_PATTERNS = [
+  /worker.{0,12}(?:not\s*found|does\s*not\s*exist)/i,
+  /service.{0,12}(?:not\s*found|does\s*not\s*exist)/i,
+  /could not find a (worker|service)/i,
+  /\[code:?\s*10007\]/i,
+]
+
 async function setSecretsBulk(
   env: Record<string, string>,
   keys: readonly string[],
   configPath?: string
-): Promise<boolean> {
-  // Create a temporary file with secrets in bulk format
+): Promise<SecretPushResult> {
   const tempFile = join(tmpdir(), `wrangler-secrets-${Date.now()}.txt`)
 
   const secretsToSet: string[] = []
@@ -81,7 +96,7 @@ async function setSecretsBulk(
 
   if (secretsToSet.length === 0) {
     console.log('⚠️  No secrets to set')
-    return false
+    return { ok: false, missingWorker: false, stderr: '' }
   }
 
   writeFileSync(tempFile, secretsToSet.join('\n'))
@@ -92,13 +107,22 @@ async function setSecretsBulk(
   try {
     const args = ['secret', 'bulk', tempFile]
     if (configPath) args.push('--config', configPath)
+    // Pipe stderr so we can classify "worker not found" (benign bootstrap
+    // state) vs any other failure (real error, must surface). Mirror stderr
+    // to our process stderr so the operator still sees the wrangler output.
     const proc = Bun.spawn(['wrangler', ...args], {
       stdout: 'inherit',
-      stderr: 'inherit',
+      stderr: 'pipe',
     })
 
+    const stderrText = await new Response(proc.stderr).text()
+    process.stderr.write(stderrText)
+
     const exitCode = await proc.exited
-    return exitCode === 0
+    const ok = exitCode === 0
+    const missingWorker =
+      !ok && MISSING_WORKER_PATTERNS.some((re) => re.test(stderrText))
+    return { ok, missingWorker, stderr: stderrText }
   } finally {
     try {
       unlinkSync(tempFile)
@@ -165,30 +189,37 @@ async function main() {
   }
 
   console.log()
-  const mainOk = await setSecretsBulk(env, SECRET_KEYS)
-  if (!mainOk) {
+  const mainResult = await setSecretsBulk(env, SECRET_KEYS)
+  if (!mainResult.ok) {
     console.log('\n❌ Failed to set main worker secrets')
     process.exit(1)
   }
 
   console.log('\n🔌 Setting MCP worker secrets (wrangler-mcp.toml)...')
-  const mcpOk = await setSecretsBulk(
+  const mcpResult = await setSecretsBulk(
     env,
     MCP_WORKER_SECRET_KEYS,
     'wrangler-mcp.toml'
   )
-  if (!mcpOk) {
-    // On a fresh account the MCP worker may not exist yet — wrangler errors
-    // when targeting an unknown worker. Warn instead of failing so the
-    // operator can deploy first, then re-run cf:config. cf:deploy runs
-    // set-secrets AFTER the deploys, so this path is only hit when invoking
-    // cf:config standalone before the first deploy.
-    console.warn(
-      '\n⚠️  MCP worker secrets push failed (worker may not be deployed yet).\n' +
-        '   Run `bun run cf:deploy` first — that pipeline deploys the MCP\n' +
-        '   worker and then re-runs this script automatically.\n'
+  if (!mcpResult.ok) {
+    if (mcpResult.missingWorker) {
+      // Benign bootstrap state: operator ran cf:config before the first
+      // cf:deploy. cf:deploy itself runs set-secrets AFTER deploying both
+      // workers, so this branch never fires from there.
+      console.warn(
+        '\n⚠️  MCP worker is not deployed yet — secrets push skipped.\n' +
+          '   Run `bun run cf:deploy` first; it deploys the MCP worker and\n' +
+          '   then re-runs this script automatically.\n'
+      )
+      process.exit(0)
+    }
+    // Real failure (auth, network, wrangler bug, etc.). Surface it so
+    // cf:deploy aborts and the operator doesn't end up with a deployed but
+    // mis-secreted worker.
+    console.error(
+      '\n❌ Failed to set MCP worker secrets (not a missing-worker error).'
     )
-    process.exit(0)
+    process.exit(1)
   }
 
   console.log('\n✅ Done! All secrets set successfully on both workers')
