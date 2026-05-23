@@ -21,7 +21,7 @@
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { delimiter, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -30,6 +30,12 @@ const ENV_FILE_PROD = join(__dirname, '..', '.env.prod')
 const ENV_FILE_LOCAL = join(__dirname, '..', '.env.local')
 
 type Step = [string, string, string, string[]]
+
+function formatCommand(cmd: string, args: string[]): string {
+  const quote = (s: string) =>
+    /[\s'"$`\\]/.test(s) || s === '' ? JSON.stringify(s) : s
+  return [cmd, ...args].map(quote).join(' ')
+}
 
 const STEPS: Step[] = [
   ['📦', 'Building for Cloudflare', 'bun', ['run', 'cf:build']],
@@ -71,14 +77,14 @@ function runStep([icon, label, cmd, args]: Step): void {
 
   if (result.error) {
     console.error(
-      `\n❌ ${label} failed to spawn: ${result.error.message}\n   command: ${cmd} ${args.join(' ')}`
+      `\n❌ ${label} failed to spawn: ${result.error.message}\n   command: ${formatCommand(cmd, args)}`
     )
     process.exit(1)
   }
 
   if (result.status !== 0) {
     console.error(
-      `\n❌ ${label} failed (exit code ${result.status})\n   command: ${cmd} ${args.join(' ')}`
+      `\n❌ ${label} failed (exit code ${result.status})\n   command: ${formatCommand(cmd, args)}`
     )
     process.exit(result.status ?? 1)
   }
@@ -86,7 +92,7 @@ function runStep([icon, label, cmd, args]: Step): void {
 
 function main(): void {
   const binDir = join(__dirname, '..', 'node_modules', '.bin')
-  process.env.PATH = `${binDir}:${process.env.PATH ?? ''}`
+  process.env.PATH = [binDir, process.env.PATH].filter(Boolean).join(delimiter)
 
   const envFile = loadEnvFile()
 

@@ -16,11 +16,24 @@
  * automatically.
  */
 
-import { copyFileSync, mkdirSync, readdirSync, statSync } from 'node:fs'
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  statSync,
+} from 'node:fs'
 import path from 'node:path'
 
 const SOURCE_ROOT = path.join(process.cwd(), '.next/server/app')
 const TARGET_ROOT = path.join(process.cwd(), '.open-next/assets')
+
+if (!existsSync(SOURCE_ROOT)) {
+  console.error(
+    `Source root not found: ${SOURCE_ROOT}. Did the Next.js build run before this script?`
+  )
+  process.exit(1)
+}
 
 function* walk(dir: string): Generator<string> {
   for (const entry of readdirSync(dir)) {
@@ -34,14 +47,16 @@ const copied: string[] = []
 
 for (const source of walk(SOURCE_ROOT)) {
   const rel = path.relative(SOURCE_ROOT, source)
+  const relPosix = rel.split(path.sep).join('/')
   const isDocsHtml =
-    rel.endsWith('.html') && (rel === 'docs.html' || rel.startsWith('docs/'))
+    relPosix.endsWith('.html') &&
+    (relPosix === 'docs.html' || relPosix.startsWith('docs/'))
   if (!isDocsHtml) continue
 
   const target = path.join(TARGET_ROOT, rel)
   mkdirSync(path.dirname(target), { recursive: true })
   copyFileSync(source, target)
-  copied.push(rel)
+  copied.push(relPosix)
 }
 
 if (copied.length === 0) {
