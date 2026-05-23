@@ -227,6 +227,10 @@ export function createD1ThreadListAdapter(): RemoteThreadListAdapter {
               typeof conversation.title === 'string'
                 ? conversation.title
                 : undefined,
+            custom:
+              typeof conversation.createdAt === 'number'
+                ? { createdAt: conversation.createdAt }
+                : undefined,
           })),
       }
     },

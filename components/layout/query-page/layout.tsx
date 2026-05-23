@@ -129,30 +129,56 @@ export const QueryPageLayout = memo(function QueryPageLayout({
         </div>
       )}
 
-      {/* Filter bar above the table */}
-      {headerContent}
-
-      {/* Data Table (or custom tableSlot) - flex-1 to fill remaining space */}
-      {!hideTable && (
-        <Suspense fallback={<TableSkeleton />}>
-          <FadeIn
-            duration={300}
-            className="flex min-w-0 flex-1 flex-col"
-            style={maxTableHeight ? { maxHeight: maxTableHeight } : undefined}
-          >
-            {tableSlot ?? (
-              <TableClient
-                title={title || queryConfig.name}
-                description={description || queryConfig.description}
-                queryConfig={queryConfig}
-                searchParams={searchParams}
+      {/* Filter bar + Data Table — visually merged when headerContent present */}
+      {headerContent ? (
+        <div className="flex flex-col">
+          {headerContent}
+          {!hideTable && (
+            <Suspense fallback={<TableSkeleton />}>
+              <FadeIn
+                duration={300}
                 className="flex min-w-0 flex-1 flex-col"
-                enableRowSelection={enableRowSelection}
-                defaultPageSize={defaultPageSize}
-              />
-            )}
-          </FadeIn>
-        </Suspense>
+                style={
+                  maxTableHeight ? { maxHeight: maxTableHeight } : undefined
+                }
+              >
+                {tableSlot ?? (
+                  <TableClient
+                    title={title || queryConfig.name}
+                    description={description || queryConfig.description}
+                    queryConfig={queryConfig}
+                    searchParams={searchParams}
+                    className="flex min-w-0 flex-1 flex-col"
+                    enableRowSelection={enableRowSelection}
+                    defaultPageSize={defaultPageSize}
+                  />
+                )}
+              </FadeIn>
+            </Suspense>
+          )}
+        </div>
+      ) : (
+        !hideTable && (
+          <Suspense fallback={<TableSkeleton />}>
+            <FadeIn
+              duration={300}
+              className="flex min-w-0 flex-1 flex-col"
+              style={maxTableHeight ? { maxHeight: maxTableHeight } : undefined}
+            >
+              {tableSlot ?? (
+                <TableClient
+                  title={title || queryConfig.name}
+                  description={description || queryConfig.description}
+                  queryConfig={queryConfig}
+                  searchParams={searchParams}
+                  className="flex min-w-0 flex-1 flex-col"
+                  enableRowSelection={enableRowSelection}
+                  defaultPageSize={defaultPageSize}
+                />
+              )}
+            </FadeIn>
+          </Suspense>
+        )
       )}
 
       {/* Optional Footer Content */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { FilterIcon, PlusIcon, SparklesIcon, XIcon } from 'lucide-react'
+import { PlusIcon, SearchIcon, SparklesIcon, XIcon } from 'lucide-react'
 
 import type { FilterDraft } from '@/components/filters/filter-editor'
 import type {
@@ -23,6 +23,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import { DebouncedInput } from '@/components/ui/debounced-input'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,12 +129,39 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
   const activeKeys = activeFilters.map((filter) => filter.key)
   const hasPresets = Boolean(schema.presets && schema.presets.length > 0)
 
+  const searchValue = searchParams.get('q') ?? ''
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <FilterIcon
-        className="size-4 shrink-0 text-muted-foreground"
-        aria-hidden
-      />
+    <div className="flex flex-wrap items-center gap-2 rounded-t-xl border border-b-0 border-border/50 bg-card/30 px-3 py-2.5">
+      {/* Search input */}
+      <div className="relative flex h-8 min-w-[160px] flex-1 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 sm:w-64 sm:flex-none md:w-72">
+        <SearchIcon
+          className="size-3.5 shrink-0 text-muted-foreground"
+          aria-hidden
+        />
+        <DebouncedInput
+          value={searchValue}
+          onValueChange={(value) => {
+            updateParams((params) => {
+              if (value.trim()) params.set('q', value.trim())
+              else params.delete('q')
+            })
+          }}
+          placeholder="Search queries..."
+          className="h-7 flex-1 border-0 bg-transparent px-0 text-[12.5px] shadow-none focus-visible:ring-0"
+          debounceMs={300}
+        />
+        {searchValue && (
+          <button
+            type="button"
+            onClick={() => updateParams((params) => params.delete('q'))}
+            className="text-muted-foreground hover:text-foreground shrink-0 rounded p-0.5"
+            aria-label="Clear search"
+          >
+            <XIcon className="size-3" />
+          </button>
+        )}
+      </div>
 
       {activeFilters.map((filter) => {
         const field = fieldByKey.get(filter.key)

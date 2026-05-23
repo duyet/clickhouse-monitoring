@@ -18,7 +18,15 @@ function HistoryQueriesPageContent() {
   const tableSearchParams = useMemo(() => {
     const schema = historyQueriesConfig.filterSchema
     if (!schema) return {}
-    return serializeActiveFilters(parseFiltersFromParams(schema, searchParams))
+    const params = serializeActiveFilters(
+      parseFiltersFromParams(schema, searchParams)
+    )
+    // Map the `q` text-search param to a server-side `contains` on the query column.
+    const q = searchParams.get('q')
+    if (q?.trim()) {
+      params.query = `contains:${q.trim()}`
+    }
+    return params
   }, [searchParams])
 
   return (

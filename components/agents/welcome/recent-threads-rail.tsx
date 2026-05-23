@@ -14,8 +14,25 @@ import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
   useThreadList,
+  useThreadListItem,
 } from '@assistant-ui/react'
 import { cn } from '@/lib/utils'
+
+/** Format a Unix-ms timestamp as a short relative string. */
+function formatRelativeTime(ms: number): string {
+  const seconds = Math.floor((Date.now() - ms) / 1000)
+  if (seconds < 60) return 'just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days}d ago`
+  return new Date(ms).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
+}
 
 export function RecentThreadsRail() {
   return (
@@ -75,9 +92,24 @@ function ThreadListItem() {
           <div className="truncate text-[12.5px] font-medium">
             <ThreadListItemPrimitive.Title fallback="New chat" />
           </div>
+          <ThreadItemTime />
         </div>
         <ArrowRightIcon className="text-muted-foreground/60 group-hover:text-foreground size-3 shrink-0 transition-transform duration-150 group-hover:translate-x-0.5" />
       </ThreadListItemPrimitive.Trigger>
     </ThreadListItemPrimitive.Root>
+  )
+}
+
+/** Reads `custom.createdAt` from the current thread list item context. */
+function ThreadItemTime() {
+  const custom = useThreadListItem(
+    (s: { custom?: Record<string, unknown> }) => s.custom
+  )
+  const ts = custom?.createdAt
+  if (typeof ts !== 'number') return null
+  return (
+    <div className="text-muted-foreground text-[10.5px] tabular-nums">
+      {formatRelativeTime(ts)}
+    </div>
   )
 }

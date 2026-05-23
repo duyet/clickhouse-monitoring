@@ -64,7 +64,7 @@ export function RecommendationsList({
             >
               <span
                 className={cn(
-                  'mt-0.5 inline-flex shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold leading-none tracking-wider uppercase',
+                  'mt-0.5 inline-flex shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold leading-[14px] tracking-wider uppercase',
                   colorClass
                 )}
               >

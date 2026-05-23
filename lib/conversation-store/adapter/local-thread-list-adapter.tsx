@@ -35,6 +35,7 @@ interface ThreadMeta {
   externalId?: string
   status: 'regular' | 'archived'
   title?: string
+  createdAt?: number
 }
 
 function readJson<T>(key: string, fallback: T): T {
@@ -140,6 +141,9 @@ export function createLocalThreadListAdapter(): RemoteThreadListAdapter {
           externalId: thread.externalId,
           status: thread.status,
           title: thread.title,
+          custom: thread.createdAt
+            ? { createdAt: thread.createdAt }
+            : undefined,
         })),
       }
     },
@@ -147,7 +151,11 @@ export function createLocalThreadListAdapter(): RemoteThreadListAdapter {
     async initialize(threadId) {
       const threads = loadThreads()
       if (!threads.some((thread) => thread.remoteId === threadId)) {
-        threads.unshift({ remoteId: threadId, status: 'regular' })
+        threads.unshift({
+          remoteId: threadId,
+          status: 'regular',
+          createdAt: Date.now(),
+        })
         saveThreads(threads)
       }
       return { remoteId: threadId, externalId: undefined }

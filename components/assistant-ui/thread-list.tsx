@@ -12,9 +12,26 @@ import { TooltipIconButton } from './tooltip-icon-button'
 import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
+  useThreadListItem,
 } from '@assistant-ui/react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+
+/** Format a Unix-ms timestamp as a short relative string. */
+function formatRelativeTime(ms: number): string {
+  const seconds = Math.floor((Date.now() - ms) / 1000)
+  if (seconds < 60) return 'just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days}d ago`
+  return new Date(ms).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
+}
 
 export function ThreadList() {
   return (
@@ -52,11 +69,25 @@ function ThreadListItem() {
         'focus-visible:outline-none focus-visible:ring-2'
       )}
     >
-      <ThreadListItemPrimitive.Trigger className="flex-grow truncate px-3 py-2 text-start">
+      <ThreadListItemPrimitive.Trigger className="min-w-0 flex-grow truncate px-3 py-2 text-start">
         <ThreadListItemPrimitive.Title fallback="New Chat" />
+        <ThreadItemTime />
       </ThreadListItemPrimitive.Trigger>
       <ThreadListItemActions />
     </ThreadListItemPrimitive.Root>
+  )
+}
+
+function ThreadItemTime() {
+  const custom = useThreadListItem(
+    (s: { custom?: Record<string, unknown> }) => s.custom
+  )
+  const ts = custom?.createdAt
+  if (typeof ts !== 'number') return null
+  return (
+    <div className="text-muted-foreground truncate text-[10.5px] tabular-nums">
+      {formatRelativeTime(ts)}
+    </div>
   )
 }
 

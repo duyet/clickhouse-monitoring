@@ -81,11 +81,8 @@ export function AgentWelcomeScreen({
       <RecentThreadsRail />
 
       {/* Footer status */}
-      <div className="text-muted-foreground mt-4 flex items-center justify-center gap-2 text-center text-[10.5px]">
-        <span className="relative inline-flex h-1.5 w-1.5">
-          <span className="absolute inset-0 animate-ping rounded-full bg-emerald-500 opacity-70 motion-reduce:animate-pulse" />
-          <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        </span>
+      <div className="text-muted-foreground mt-4 flex items-center justify-center gap-2 text-center text-[11px] tracking-[0.02em]">
+        <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
         Connected to{' '}
         <span className="text-foreground font-mono">
           {clusterName ?? 'cluster'}

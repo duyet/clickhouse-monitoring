@@ -98,14 +98,10 @@ export function AgentSettingsSidebar({
         <SidebarSection
           label="MCP Server"
           right={
-            <div className="text-muted-foreground flex items-center gap-2 text-[10.5px]">
-              <button type="button" className="hover:text-foreground">
-                Expand
-              </button>
-              <button type="button" className="hover:text-foreground">
-                Collapse
-              </button>
-            </div>
+            <span className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              Connected
+            </span>
           }
         >
           <div className="border-border rounded-md border p-2.5">

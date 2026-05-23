@@ -69,7 +69,7 @@ function LoadingState() {
 function HistoryLink({ hostId }: { hostId: number }) {
   return (
     <AppLink
-      href={buildUrl('/query-history', { host: hostId })}
+      href={buildUrl('/history-queries', { host: hostId })}
       className="group flex items-center gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-3 transition-colors hover:bg-muted/40"
     >
       <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
