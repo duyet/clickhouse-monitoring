@@ -58,7 +58,7 @@ export function RecommendationsList({
               key={entry.title}
               type="button"
               onClick={() => onPickPrompt?.(entry.prompt)}
-              className="hover:bg-muted/40 group flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors first:rounded-t-lg last:rounded-b-lg"
+              className="hover:bg-muted/40 group flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors first:rounded-t-lg last:rounded-b-lg touch-manipulation"
             >
               <span
                 className={cn(
