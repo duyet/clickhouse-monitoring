@@ -377,7 +377,7 @@ ${historyQueryTail}
       ColumnFormat.Link,
       {
         href: '/query?query_id=[query_id]&host=[ctx.hostId]',
-        className: 'truncate max-w-48 text-wrap',
+        className: 'truncate max-w-48',
         title: 'Query Detail',
       },
     ],

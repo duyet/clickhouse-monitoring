@@ -211,7 +211,7 @@ function derive(row: RunningQueryRow): DerivedQuery {
     row.address || 'unknown',
     row.port?.toString() || '0',
     queryText.slice(0, 64),
-  ].map((value) => value.trim())
+  ].map((value) => String(value).trim())
 
   const key = queryId || fallbackKeyParts.join('|')
 
