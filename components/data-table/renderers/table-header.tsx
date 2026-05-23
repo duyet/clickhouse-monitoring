@@ -123,13 +123,7 @@ function DraggableTableHeader({
       ref={setNodeRef}
       key={header.id}
       scope="col"
-      className={cn(
-        'relative text-xs font-medium uppercase tracking-wider text-muted-foreground',
-        headerPy,
-        headerPx,
-        // Visual feedback during drag
-        isDragging && 'opacity-50'
-      )}
+      className={cn('relative', headerPy, headerPx, isDragging && 'opacity-50')}
       style={style}
       colSpan={header.colSpan}
     >
@@ -211,11 +205,7 @@ export const TableHeaderRow = memo(function TableHeaderRow({
             <TableHead
               key={header.id}
               scope="col"
-              className={cn(
-                'relative text-xs font-medium uppercase tracking-wider text-muted-foreground',
-                headerPy,
-                'px-2'
-              )}
+              className={cn('relative', headerPy, 'px-2')}
               style={{
                 width: header.column.getSize(),
                 minWidth: header.column.columnDef.minSize ?? 50,
@@ -248,7 +238,7 @@ export const TableHeaderRow = memo(function TableHeaderRow({
             key={header.id}
             scope="col"
             className={cn(
-              'relative text-xs font-medium uppercase tracking-wider text-muted-foreground',
+              'relative',
               headerPy,
               isSelectColumn ? 'px-2' : headerPx,
               // Show pointer cursor for sortable columns
