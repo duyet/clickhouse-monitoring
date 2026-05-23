@@ -3,42 +3,79 @@ import type { QueryConfig } from '@/types/query-config'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 
+/**
+ * query-detail: detailed information about a specific query execution.
+ *
+ * Version boundaries:
+ * - 23.8+: `exception` (renamed from `exception_text`), `query_cache_usage` added
+ * - 24.3+: `peak_threads_usage` added (not selected here)
+ *
+ * Columns that exist in ALL supported versions (23.8–26.x):
+ * query_id, type, event_time, query_duration_ms, query, formatted_query,
+ * exception_code, exception (was exception_text pre-23.8), user, query_kind,
+ * read_rows, written_rows, result_rows, memory_usage, peak_memory_usage
+ */
+
+const baseSelect = `
+    query_id,
+    type,
+    event_time,
+    query_duration_ms / 1000 as query_duration,
+    query,
+    formatted_query AS readable_query,
+    exception_code,
+    user,
+    query_kind,
+    read_rows,
+    formatReadableQuantity(read_rows) AS readable_read_rows,
+    round(100 * read_rows / MAX(read_rows) OVER ()) AS pct_read_rows,
+    written_rows,
+    formatReadableQuantity(written_rows) AS readable_written_rows,
+    round(100 * written_rows / MAX(written_rows) OVER ()) AS pct_written_rows,
+    result_rows,
+    formatReadableQuantity(result_rows) AS readable_result_rows,
+    memory_usage,
+    formatReadableSize(memory_usage) AS readable_memory_usage,
+    round(100 * memory_usage / MAX(memory_usage) OVER ()) AS pct_memory_usage,
+    peak_memory_usage,
+    formatReadableSize(peak_memory_usage) AS readable_peak_memory_usage`
+
 export const queryDetailConfig: QueryConfig = {
   name: 'query-detail',
   description: 'Detailed information about a specific query execution',
   docs: QUERY_LOG,
   permission: { feature: 'queries' },
   tableCheck: 'system.query_log',
-  sql: `
+  sql: [
+    {
+      since: '23.8',
+      description:
+        'exception column (renamed from exception_text), with query_cache_usage',
+      sql: `
     SELECT
-      query_id,
-      type,
-      event_time,
-      query_duration_ms / 1000 as query_duration,
-      query,
-      formatted_query AS readable_query,
-      exception_code,
-      exception_text,
-      user,
-      query_kind,
-      read_rows,
-      formatReadableQuantity(read_rows) AS readable_read_rows,
-      round(100 * read_rows / MAX(read_rows) OVER ()) AS pct_read_rows,
-      written_rows,
-      formatReadableQuantity(written_rows) AS readable_written_rows,
-      round(100 * written_rows / MAX(written_rows) OVER ()) AS pct_written_rows,
-      result_rows,
-      formatReadableQuantity(result_rows) AS readable_result_rows,
-      memory_usage,
-      formatReadableSize(memory_usage) AS readable_memory_usage,
-      round(100 * memory_usage / MAX(memory_usage) OVER ()) AS pct_memory_usage,
-      peak_memory_usage,
-      formatReadableSize(peak_memory_usage) AS readable_peak_memory_usage
+      ${baseSelect},
+      exception AS exception_text,
+      query_cache_usage
     FROM system.query_log
     WHERE query_id = {query_id: String}
     ORDER BY event_time DESC
     LIMIT 1
   `,
+    },
+    {
+      since: '20.0',
+      description: 'Legacy: exception_text column, no query_cache_usage',
+      sql: `
+    SELECT
+      ${baseSelect},
+      exception_text
+    FROM system.query_log
+    WHERE query_id = {query_id: String}
+    ORDER BY event_time DESC
+    LIMIT 1
+  `,
+    },
+  ],
   columns: [
     'query_id',
     'type',
@@ -46,6 +83,7 @@ export const queryDetailConfig: QueryConfig = {
     'query_duration',
     'user',
     'query_kind',
+    'query_cache_usage',
     'readable_read_rows',
     'readable_written_rows',
     'readable_result_rows',
@@ -58,6 +96,7 @@ export const queryDetailConfig: QueryConfig = {
   columnFormats: {
     type: ColumnFormat.ColoredBadge,
     query_kind: ColumnFormat.ColoredBadge,
+    query_cache_usage: ColumnFormat.ColoredBadge,
     query_duration: ColumnFormat.Duration,
     readable_query: ColumnFormat.Code,
     query: [
