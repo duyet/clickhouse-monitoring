@@ -10,10 +10,13 @@ import { ColumnFormat } from '@/types/column-format'
  * - 23.8+: `exception` (renamed from `exception_text`), `query_cache_usage` added
  * - 24.3+: `peak_threads_usage` added (not selected here)
  *
- * Columns that exist in ALL supported versions (23.8–26.x):
+ * Columns verified in ClickHouse 26.5 system.query_log (88 columns):
  * query_id, type, event_time, query_duration_ms, query, formatted_query,
- * exception_code, exception (was exception_text pre-23.8), user, query_kind,
- * read_rows, written_rows, result_rows, memory_usage, peak_memory_usage
+ * exception_code, exception (renamed from exception_text in 23.8), user,
+ * query_kind, read_rows, written_rows, result_rows, memory_usage,
+ * query_cache_usage, peak_threads_usage
+ *
+ * NOTE: peak_memory_usage does NOT exist in system.query_log.
  */
 
 const baseSelect = `
@@ -36,9 +39,7 @@ const baseSelect = `
     formatReadableQuantity(result_rows) AS readable_result_rows,
     memory_usage,
     formatReadableSize(memory_usage) AS readable_memory_usage,
-    round(100 * memory_usage / MAX(memory_usage) OVER ()) AS pct_memory_usage,
-    peak_memory_usage,
-    formatReadableSize(peak_memory_usage) AS readable_peak_memory_usage`
+    round(100 * memory_usage / MAX(memory_usage) OVER ()) AS pct_memory_usage`
 
 export const queryDetailConfig: QueryConfig = {
   name: 'query-detail',
@@ -88,7 +89,6 @@ export const queryDetailConfig: QueryConfig = {
     'readable_written_rows',
     'readable_result_rows',
     'readable_memory_usage',
-    'readable_peak_memory_usage',
     'exception_code',
     'exception_text',
     'query',
