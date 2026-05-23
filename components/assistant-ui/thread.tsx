@@ -33,7 +33,7 @@ import {
   useThread,
   useThreadRuntime,
 } from '@assistant-ui/react'
-import { type FC, useState } from 'react'
+import { type FC, useCallback, useState } from 'react'
 import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
 import { AgentWelcomeScreen } from '@/components/agents/welcome/agent-welcome-screen'
 import { ComposerToolbar } from '@/components/agents/welcome/composer-toolbar'
@@ -132,7 +132,19 @@ function ThreadWelcome({
   hasClusterIssue,
 }: ThreadWelcomeProps) {
   const { activeToolCount } = useAgentSkills()
-  const [composerValue, setComposerValue] = useState('')
+  const threadRuntime = useThreadRuntime()
+
+  const handlePickPrompt = useCallback(
+    (prompt: string) => {
+      const trimmed = prompt.trim()
+      if (!trimmed) return
+      threadRuntime.append({
+        role: 'user',
+        content: [{ type: 'text', text: trimmed }],
+      })
+    },
+    [threadRuntime]
+  )
 
   return (
     <ThreadPrimitive.Empty>
@@ -141,13 +153,8 @@ function ThreadWelcome({
         clusterName={clusterName}
         hasClusterIssue={hasClusterIssue}
         activeToolCount={activeToolCount}
-        composer={
-          <WelcomeComposer
-            value={composerValue}
-            onValueChange={setComposerValue}
-          />
-        }
-        onPickPrompt={(prompt) => setComposerValue(prompt)}
+        composer={<WelcomeComposer />}
+        onPickPrompt={handlePickPrompt}
       />
     </ThreadPrimitive.Empty>
   )
@@ -158,21 +165,13 @@ function ThreadWelcome({
  * tools · add-context). Wraps the same submission wiring as the in-thread
  * composer below.
  */
-function WelcomeComposer({
-  value,
-  onValueChange,
-}: {
-  value: string
-  onValueChange: (next: string) => void
-}) {
+function WelcomeComposer() {
   const threadRuntime = useThreadRuntime()
   const isRunning = useThread((thread) => thread.isRunning)
 
   return (
     <div className="flex flex-col gap-2">
       <PromptInputTextareaWithMentions
-        value={value}
-        onChange={onValueChange}
         isLoading={isRunning}
         onResolvedSubmit={(text) => {
           const trimmed = text.trim()
@@ -181,7 +180,6 @@ function WelcomeComposer({
             role: 'user',
             content: [{ type: 'text', text: trimmed }],
           })
-          onValueChange('')
         }}
         onStop={() => threadRuntime.cancelRun()}
       />

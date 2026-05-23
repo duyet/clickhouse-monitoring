@@ -101,7 +101,12 @@ export function ComposerToolbar({
             <ChevronDownIcon className="size-2.5 opacity-60" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={4} className="w-[340px] p-1">
+        <PopoverContent
+          align="start"
+          sideOffset={4}
+          className="w-[340px] p-1"
+          collisionPadding={8}
+        >
           <div className="text-muted-foreground px-2 py-1.5 text-[10px] font-semibold tracking-wider uppercase">
             Skills
           </div>
@@ -183,7 +188,12 @@ export function ComposerToolbar({
             <ChevronDownIcon className="size-2.5 opacity-60" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={4} className="w-[320px] p-1">
+        <PopoverContent
+          align="start"
+          sideOffset={4}
+          className="w-[320px] p-1"
+          collisionPadding={8}
+        >
           <div className="text-muted-foreground flex items-center justify-between px-2 py-1.5 text-[10px] font-semibold tracking-wider uppercase">
             <span>Tools</span>
             <span className="text-muted-foreground/70 font-normal normal-case tabular-nums">

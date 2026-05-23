@@ -22,6 +22,7 @@ import type {
 import { RuntimeAdapterProvider, useAui } from '@assistant-ui/react'
 import { createAssistantStream } from 'assistant-stream'
 import { type FC, type PropsWithChildren, useMemo } from 'react'
+import { generateTitleFromMessage } from '@/lib/ai/agent/conversation-utils'
 import {
   replaceHistoryItem,
   upsertHistoryItem,
@@ -267,8 +268,28 @@ export function createD1ThreadListAdapter(): RemoteThreadListAdapter {
     },
 
     async generateTitle(remoteId) {
-      void remoteId
-      return createAssistantStream(() => {})
+      const conversation = await apiGet(remoteId)
+      const messages = Array.isArray(conversation?.messages)
+        ? (conversation.messages as Array<Record<string, unknown>>)
+        : []
+      const firstUserMsg = messages.find((m) => m.role === 'user')
+      const text =
+        typeof firstUserMsg?.content === 'string'
+          ? firstUserMsg.content
+          : Array.isArray(firstUserMsg?.content)
+            ? (firstUserMsg.content as Array<{ text?: string }>)
+                .map((p) => p.text ?? '')
+                .join(' ')
+            : ''
+
+      const title = text ? generateTitleFromMessage(text) : 'New Chat'
+
+      // Persist the title server-side
+      await apiPut(remoteId, { title })
+
+      return createAssistantStream((controller) => {
+        controller.appendText(title)
+      })
     },
   }
 }

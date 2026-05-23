@@ -20,6 +20,7 @@ import type {
 import { RuntimeAdapterProvider, useAui } from '@assistant-ui/react'
 import { createAssistantStream } from 'assistant-stream'
 import { type FC, type PropsWithChildren, useMemo } from 'react'
+import { generateTitleFromMessage } from '@/lib/ai/agent/conversation-utils'
 import {
   replaceHistoryItem,
   upsertHistoryItem,
@@ -196,10 +197,33 @@ export function createLocalThreadListAdapter(): RemoteThreadListAdapter {
     },
 
     async generateTitle(remoteId) {
-      // Title is derived from the first message during persistence; no LLM
-      // round-trip needed. Return an empty stream.
-      void remoteId
-      return createAssistantStream(() => {})
+      // Derive a title from the first user message in the stored conversation.
+      type Msg = { role: string; content?: string | Array<{ text?: string }> }
+      const repo = readJson<{ messages: Msg[] }>(messagesKey(remoteId), {
+        messages: [],
+      })
+      const firstUserMsg = repo.messages.find((m) => m.role === 'user')
+      const text =
+        typeof firstUserMsg?.content === 'string'
+          ? firstUserMsg.content
+          : Array.isArray(firstUserMsg?.content)
+            ? firstUserMsg.content.map((p) => p.text ?? '').join(' ')
+            : ''
+
+      const title = text ? generateTitleFromMessage(text) : 'New Chat'
+
+      // Persist the generated title
+      const threads = loadThreads()
+      const thread = threads.find((item) => item.remoteId === remoteId)
+      if (thread) {
+        thread.title = title
+        saveThreads(threads)
+      }
+
+      // Stream the title back so assistant-ui updates the thread list item
+      return createAssistantStream((controller) => {
+        controller.appendText(title)
+      })
     },
   }
 }
