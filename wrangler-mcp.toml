@@ -1,0 +1,88 @@
+# wrangler-mcp.toml — standalone MCP worker
+#
+# Split out of the main Next.js worker because @modelcontextprotocol/sdk +
+# MCP tools accounted for ~390 KB of the main bundle (pushing it past the
+# 3 MiB free-tier cap). Each worker gets its own 3 MiB cap, so this gives
+# headroom to both.
+#
+# Routing: Cloudflare Workers Routes on chmonitor.dev/api/mcp* +
+# /api/v1/mcp/info match more specifically than the main worker's
+# chmonitor.dev/* catch-all, so they intercept first. The main worker stubs
+# the route handlers via scripts/stub-prerendered-handlers.ts.
+#
+# Bindings: shares ClickHouse env vars + CHM_API_KEY_SECRET secret. No
+# KV/D1/R2 — MCP tools only query ClickHouse over HTTP.
+#
+# Secrets to set (or run `bun run cf:config`):
+#   wrangler secret put CHM_API_KEY_SECRET --config wrangler-mcp.toml
+#   wrangler secret put CLICKHOUSE_PASSWORD --config wrangler-mcp.toml
+#
+# Local development:
+#   `wrangler dev --config wrangler-mcp.toml` inherits NODE_ENV=production
+#   from [vars], which forces authRequired=true. To iterate locally, copy
+#   `workers/mcp/.dev.vars.example` to `workers/mcp/.dev.vars` and set
+#   CHM_API_KEY_SECRET (any value works; clients must use a key signed with
+#   the same secret) and CLICKHOUSE_PASSWORD.
+
+name = "clickhouse-monitor-mcp"
+main = "workers/mcp/index.ts"
+compatibility_date = "2024-12-29"
+
+minify = true
+upload_source_maps = false
+
+# Required when minify = true with libraries that introspect Function.name —
+# without this, @modelcontextprotocol/sdk's class-dispatch crashes with
+# "e is not defined" at first request. Matches main wrangler.toml.
+keep_names = false
+
+compatibility_flags = [
+  "nodejs_compat",
+  "nodejs_compat_populate_process_env",
+  "global_fetch_strictly_public",
+]
+
+[observability]
+enabled = true
+
+# Workers Routes — more specific than main worker's chmonitor.dev/*, win first.
+# Trailing-slash and future sub-path variants (/api/mcp/, /api/mcp/session/…)
+# are captured with the `*` suffix.
+[[routes]]
+pattern = "chmonitor.dev/api/mcp*"
+zone_name = "chmonitor.dev"
+
+[[routes]]
+pattern = "chmonitor.dev/api/v1/mcp/info*"
+zone_name = "chmonitor.dev"
+
+[vars]
+CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net"
+CLICKHOUSE_USER = "duyet,monitoring"
+CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
+CLICKHOUSE_MAX_EXECUTION_TIME = "60"
+CLOUDFLARE_WORKERS = "1"
+# NODE_ENV gates auth: production requires CHM_API_KEY_SECRET to be set.
+NODE_ENV = "production"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Preview environment (mirrors main worker preview at preview.chmonitor.dev)
+# ─────────────────────────────────────────────────────────────────────────────
+[env.preview]
+name = "clickhouse-monitor-mcp-preview"
+
+[[env.preview.routes]]
+pattern = "preview.chmonitor.dev/api/mcp*"
+zone_name = "chmonitor.dev"
+
+[[env.preview.routes]]
+pattern = "preview.chmonitor.dev/api/v1/mcp/info*"
+zone_name = "chmonitor.dev"
+
+[env.preview.vars]
+CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net"
+CLICKHOUSE_USER = "duyet,monitoring"
+CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
+CLICKHOUSE_MAX_EXECUTION_TIME = "60"
+CLOUDFLARE_WORKERS = "1"
+NODE_ENV = "production"

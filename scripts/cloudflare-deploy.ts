@@ -21,7 +21,7 @@
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { delimiter, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -31,9 +31,28 @@ const ENV_FILE_LOCAL = join(__dirname, '..', '.env.local')
 
 type Step = [string, string, string, string[]]
 
+function formatCommand(cmd: string, args: string[]): string {
+  const quote = (s: string) =>
+    /[\s'"$`\\]/.test(s) || s === '' ? JSON.stringify(s) : s
+  return [cmd, ...args].map(quote).join(' ')
+}
+
 const STEPS: Step[] = [
   ['📦', 'Building for Cloudflare', 'bun', ['run', 'cf:build']],
-  ['🚀', 'Deploying to Cloudflare', 'wrangler', ['deploy', '--minify']],
+  ['🚀', 'Deploying main worker', 'wrangler', ['deploy', '--minify']],
+  // Deploy the MCP worker separately. Workers Routes on chmonitor.dev/api/mcp*
+  // are configured in wrangler-mcp.toml; this command provisions them.
+  [
+    '🔌',
+    'Deploying MCP worker',
+    'wrangler',
+    ['deploy', '--minify', '--config', 'wrangler-mcp.toml'],
+  ],
+  // Push secrets to both workers AFTER deploy so `wrangler secret bulk` finds
+  // the worker on a fresh account. Without this, the MCP worker is live with
+  // routes active but no CHM_API_KEY_SECRET → 503s every /api/mcp request.
+  // set-secrets.ts is idempotent — safe to run on every deploy.
+  ['🔐', 'Pushing secrets to both workers', 'bun', ['run', 'cf:config']],
   [
     '🗄️',
     'Populating remote cache',
@@ -41,6 +60,14 @@ const STEPS: Step[] = [
     ['populateCache', 'remote'],
   ],
 ]
+
+// Required for the MCP worker to serve any request in production — without it
+// the worker boots and returns 503 to every /api/mcp. Verified BEFORE any
+// deploy so we never ship a worker with active routes but no auth secret.
+const PREDEPLOY_REQUIRED_SECRETS = [
+  'CHM_API_KEY_SECRET',
+  'CLICKHOUSE_PASSWORD',
+] as const
 
 function loadEnvFile(): Record<string, string> {
   const file = existsSync(ENV_FILE_PROD)
@@ -66,17 +93,28 @@ function runStep([icon, label, cmd, args]: Step): void {
 
   const result = spawnSync(cmd, args, {
     stdio: 'inherit',
-    env: { ...process.env },
-    shell: true,
+    env: process.env,
   })
 
+  if (result.error) {
+    console.error(
+      `\n❌ ${label} failed to spawn: ${result.error.message}\n   command: ${formatCommand(cmd, args)}`
+    )
+    process.exit(1)
+  }
+
   if (result.status !== 0) {
-    console.error(`\n❌ ${label} failed (exit code ${result.status})`)
+    console.error(
+      `\n❌ ${label} failed (exit code ${result.status})\n   command: ${formatCommand(cmd, args)}`
+    )
     process.exit(result.status ?? 1)
   }
 }
 
 function main(): void {
+  const binDir = join(__dirname, '..', 'node_modules', '.bin')
+  process.env.PATH = [binDir, process.env.PATH].filter(Boolean).join(delimiter)
+
   const envFile = loadEnvFile()
 
   // Merge env file vars into process env (env file vars don't override existing)
@@ -95,6 +133,22 @@ function main(): void {
       '   Recommended: set CLOUDFLARE_API_TOKEN in .env.prod or CI secrets'
     )
     console.warn('   for consistent auth across CI and local.\n')
+  }
+
+  // Fail fast on missing secrets. The MCP worker activates Workers Routes
+  // immediately on deploy; if CHM_API_KEY_SECRET isn't pushable, /api/mcp
+  // would 503 every request with no fallback (the main worker's handler is
+  // stubbed by cf:build).
+  const missingSecrets = PREDEPLOY_REQUIRED_SECRETS.filter(
+    (k) => !process.env[k]
+  )
+  if (missingSecrets.length > 0) {
+    console.error(
+      `\n❌ Missing required secrets in env: ${missingSecrets.join(', ')}\n` +
+        `   Set them in .env.prod / .env.local or as CI secrets before deploying.\n` +
+        `   Refusing to deploy MCP worker without them — production /api/mcp would 503.`
+    )
+    process.exit(1)
   }
 
   for (const step of STEPS) {

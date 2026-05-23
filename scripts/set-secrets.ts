@@ -31,6 +31,8 @@ const SECRET_KEYS = [
   'ANYROUTER_API_BASE',
   // Clerk authentication secret (never commit this)
   'CLERK_SECRET_KEY',
+  // HMAC secret for issuing/verifying MCP API keys (shared with MCP worker)
+  'CHM_API_KEY_SECRET',
   // LLM_MODEL has a default value and is selected via UI dropdown
   // These are already set in wrangler.toml [vars], so skip them:
   // 'CLICKHOUSE_HOST',
@@ -61,12 +63,31 @@ function parseEnvFile(content: string): Record<string, string> {
   return env
 }
 
-async function setSecretsBulk(env: Record<string, string>): Promise<boolean> {
-  // Create a temporary file with secrets in bulk format
+interface SecretPushResult {
+  ok: boolean
+  missingWorker: boolean
+  stderr: string
+}
+
+// Wrangler's error message when a worker doesn't exist yet. Match generously
+// — Cloudflare phrases this differently across versions ("worker not found",
+// "service not found", "could not find a worker named", etc.).
+const MISSING_WORKER_PATTERNS = [
+  /worker.{0,12}(?:not\s*found|does\s*not\s*exist)/i,
+  /service.{0,12}(?:not\s*found|does\s*not\s*exist)/i,
+  /could not find a (worker|service)/i,
+  /\[code:?\s*10007\]/i,
+]
+
+async function setSecretsBulk(
+  env: Record<string, string>,
+  keys: readonly string[],
+  configPath?: string
+): Promise<SecretPushResult> {
   const tempFile = join(tmpdir(), `wrangler-secrets-${Date.now()}.txt`)
 
   const secretsToSet: string[] = []
-  for (const key of SECRET_KEYS) {
+  for (const key of keys) {
     const value = env[key]
     if (value && value !== '') {
       secretsToSet.push(`${key}=${value}`)
@@ -75,25 +96,34 @@ async function setSecretsBulk(env: Record<string, string>): Promise<boolean> {
 
   if (secretsToSet.length === 0) {
     console.log('⚠️  No secrets to set')
-    return false
+    return { ok: false, missingWorker: false, stderr: '' }
   }
 
-  // Write secrets to temp file
   writeFileSync(tempFile, secretsToSet.join('\n'))
 
-  console.log(`🔐 Setting ${secretsToSet.length} secrets in batch...`)
+  const target = configPath ? ` (config: ${configPath})` : ''
+  console.log(`🔐 Setting ${secretsToSet.length} secrets in batch${target}...`)
 
   try {
-    // Use wrangler secret bulk with the temp file
-    const proc = Bun.spawn(['wrangler', 'secret', 'bulk', tempFile], {
+    const args = ['secret', 'bulk', tempFile]
+    if (configPath) args.push('--config', configPath)
+    // Pipe stderr so we can classify "worker not found" (benign bootstrap
+    // state) vs any other failure (real error, must surface). Mirror stderr
+    // to our process stderr so the operator still sees the wrangler output.
+    const proc = Bun.spawn(['wrangler', ...args], {
       stdout: 'inherit',
-      stderr: 'inherit',
+      stderr: 'pipe',
     })
 
+    const stderrText = await new Response(proc.stderr).text()
+    process.stderr.write(stderrText)
+
     const exitCode = await proc.exited
-    return exitCode === 0
+    const ok = exitCode === 0
+    const missingWorker =
+      !ok && MISSING_WORKER_PATTERNS.some((re) => re.test(stderrText))
+    return { ok, missingWorker, stderr: stderrText }
   } finally {
-    // Clean up temp file
     try {
       unlinkSync(tempFile)
     } catch {
@@ -101,6 +131,13 @@ async function setSecretsBulk(env: Record<string, string>): Promise<boolean> {
     }
   }
 }
+
+// Subset of secrets the standalone MCP worker actually consumes — see
+// wrangler-mcp.toml and workers/mcp/index.ts.
+const MCP_WORKER_SECRET_KEYS = [
+  'CLICKHOUSE_PASSWORD',
+  'CHM_API_KEY_SECRET',
+] as const
 
 async function main() {
   // Determine which env file to use (prefer .env.prod)
@@ -152,14 +189,40 @@ async function main() {
   }
 
   console.log()
-  const ok = await setSecretsBulk(env)
-
-  if (ok) {
-    console.log('\n✅ Done! All secrets set successfully')
-  } else {
-    console.log('\n❌ Failed to set secrets')
+  const mainResult = await setSecretsBulk(env, SECRET_KEYS)
+  if (!mainResult.ok) {
+    console.log('\n❌ Failed to set main worker secrets')
     process.exit(1)
   }
+
+  console.log('\n🔌 Setting MCP worker secrets (wrangler-mcp.toml)...')
+  const mcpResult = await setSecretsBulk(
+    env,
+    MCP_WORKER_SECRET_KEYS,
+    'wrangler-mcp.toml'
+  )
+  if (!mcpResult.ok) {
+    if (mcpResult.missingWorker) {
+      // Benign bootstrap state: operator ran cf:config before the first
+      // cf:deploy. cf:deploy itself runs set-secrets AFTER deploying both
+      // workers, so this branch never fires from there.
+      console.warn(
+        '\n⚠️  MCP worker is not deployed yet — secrets push skipped.\n' +
+          '   Run `bun run cf:deploy` first; it deploys the MCP worker and\n' +
+          '   then re-runs this script automatically.\n'
+      )
+      process.exit(0)
+    }
+    // Real failure (auth, network, wrangler bug, etc.). Surface it so
+    // cf:deploy aborts and the operator doesn't end up with a deployed but
+    // mis-secreted worker.
+    console.error(
+      '\n❌ Failed to set MCP worker secrets (not a missing-worker error).'
+    )
+    process.exit(1)
+  }
+
+  console.log('\n✅ Done! All secrets set successfully on both workers')
 }
 
 main().catch(console.error)
