@@ -1,0 +1,14 @@
+# Local development secrets for the MCP worker.
+# Copy this file to `.dev.vars` and fill in real values. Never commit `.dev.vars`.
+#
+# NOTE: wrangler-mcp.toml sets NODE_ENV=production in [vars] so the deployed
+# worker fails closed when secrets are missing. That same env is in effect for
+# `wrangler dev --config wrangler-mcp.toml`, so you must provide a secret here
+# to avoid 503 "MCP API key auth is not configured" responses.
+
+# Any HMAC secret. Clients connecting locally must use a key signed with the
+# same value (see lib/api-key.ts issueApiKey).
+CHM_API_KEY_SECRET=dev-secret-change-me
+
+# Matches the comma-separated CLICKHOUSE_HOST/USER in [vars].
+CLICKHOUSE_PASSWORD=

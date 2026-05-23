@@ -39,7 +39,20 @@ function formatCommand(cmd: string, args: string[]): string {
 
 const STEPS: Step[] = [
   ['📦', 'Building for Cloudflare', 'bun', ['run', 'cf:build']],
-  ['🚀', 'Deploying to Cloudflare', 'wrangler', ['deploy', '--minify']],
+  ['🚀', 'Deploying main worker', 'wrangler', ['deploy', '--minify']],
+  // Deploy the MCP worker separately. Workers Routes on chmonitor.dev/api/mcp*
+  // are configured in wrangler-mcp.toml; this command provisions them.
+  [
+    '🔌',
+    'Deploying MCP worker',
+    'wrangler',
+    ['deploy', '--minify', '--config', 'wrangler-mcp.toml'],
+  ],
+  // Push secrets to both workers AFTER deploy so `wrangler secret bulk` finds
+  // the worker on a fresh account. Without this, the MCP worker is live with
+  // routes active but no CHM_API_KEY_SECRET → 503s every /api/mcp request.
+  // set-secrets.ts is idempotent — safe to run on every deploy.
+  ['🔐', 'Pushing secrets to both workers', 'bun', ['run', 'cf:config']],
   [
     '🗄️',
     'Populating remote cache',
@@ -47,6 +60,14 @@ const STEPS: Step[] = [
     ['populateCache', 'remote'],
   ],
 ]
+
+// Required for the MCP worker to serve any request in production — without it
+// the worker boots and returns 503 to every /api/mcp. Verified BEFORE any
+// deploy so we never ship a worker with active routes but no auth secret.
+const PREDEPLOY_REQUIRED_SECRETS = [
+  'CHM_API_KEY_SECRET',
+  'CLICKHOUSE_PASSWORD',
+] as const
 
 function loadEnvFile(): Record<string, string> {
   const file = existsSync(ENV_FILE_PROD)
@@ -112,6 +133,22 @@ function main(): void {
       '   Recommended: set CLOUDFLARE_API_TOKEN in .env.prod or CI secrets'
     )
     console.warn('   for consistent auth across CI and local.\n')
+  }
+
+  // Fail fast on missing secrets. The MCP worker activates Workers Routes
+  // immediately on deploy; if CHM_API_KEY_SECRET isn't pushable, /api/mcp
+  // would 503 every request with no fallback (the main worker's handler is
+  // stubbed by cf:build).
+  const missingSecrets = PREDEPLOY_REQUIRED_SECRETS.filter(
+    (k) => !process.env[k]
+  )
+  if (missingSecrets.length > 0) {
+    console.error(
+      `\n❌ Missing required secrets in env: ${missingSecrets.join(', ')}\n` +
+        `   Set them in .env.prod / .env.local or as CI secrets before deploying.\n` +
+        `   Refusing to deploy MCP worker without them — production /api/mcp would 503.`
+    )
+    process.exit(1)
   }
 
   for (const step of STEPS) {

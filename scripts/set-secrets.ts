@@ -31,6 +31,8 @@ const SECRET_KEYS = [
   'ANYROUTER_API_BASE',
   // Clerk authentication secret (never commit this)
   'CLERK_SECRET_KEY',
+  // HMAC secret for issuing/verifying MCP API keys (shared with MCP worker)
+  'CHM_API_KEY_SECRET',
   // LLM_MODEL has a default value and is selected via UI dropdown
   // These are already set in wrangler.toml [vars], so skip them:
   // 'CLICKHOUSE_HOST',
@@ -61,12 +63,16 @@ function parseEnvFile(content: string): Record<string, string> {
   return env
 }
 
-async function setSecretsBulk(env: Record<string, string>): Promise<boolean> {
+async function setSecretsBulk(
+  env: Record<string, string>,
+  keys: readonly string[],
+  configPath?: string
+): Promise<boolean> {
   // Create a temporary file with secrets in bulk format
   const tempFile = join(tmpdir(), `wrangler-secrets-${Date.now()}.txt`)
 
   const secretsToSet: string[] = []
-  for (const key of SECRET_KEYS) {
+  for (const key of keys) {
     const value = env[key]
     if (value && value !== '') {
       secretsToSet.push(`${key}=${value}`)
@@ -78,14 +84,15 @@ async function setSecretsBulk(env: Record<string, string>): Promise<boolean> {
     return false
   }
 
-  // Write secrets to temp file
   writeFileSync(tempFile, secretsToSet.join('\n'))
 
-  console.log(`🔐 Setting ${secretsToSet.length} secrets in batch...`)
+  const target = configPath ? ` (config: ${configPath})` : ''
+  console.log(`🔐 Setting ${secretsToSet.length} secrets in batch${target}...`)
 
   try {
-    // Use wrangler secret bulk with the temp file
-    const proc = Bun.spawn(['wrangler', 'secret', 'bulk', tempFile], {
+    const args = ['secret', 'bulk', tempFile]
+    if (configPath) args.push('--config', configPath)
+    const proc = Bun.spawn(['wrangler', ...args], {
       stdout: 'inherit',
       stderr: 'inherit',
     })
@@ -93,7 +100,6 @@ async function setSecretsBulk(env: Record<string, string>): Promise<boolean> {
     const exitCode = await proc.exited
     return exitCode === 0
   } finally {
-    // Clean up temp file
     try {
       unlinkSync(tempFile)
     } catch {
@@ -101,6 +107,13 @@ async function setSecretsBulk(env: Record<string, string>): Promise<boolean> {
     }
   }
 }
+
+// Subset of secrets the standalone MCP worker actually consumes — see
+// wrangler-mcp.toml and workers/mcp/index.ts.
+const MCP_WORKER_SECRET_KEYS = [
+  'CLICKHOUSE_PASSWORD',
+  'CHM_API_KEY_SECRET',
+] as const
 
 async function main() {
   // Determine which env file to use (prefer .env.prod)
@@ -152,14 +165,33 @@ async function main() {
   }
 
   console.log()
-  const ok = await setSecretsBulk(env)
-
-  if (ok) {
-    console.log('\n✅ Done! All secrets set successfully')
-  } else {
-    console.log('\n❌ Failed to set secrets')
+  const mainOk = await setSecretsBulk(env, SECRET_KEYS)
+  if (!mainOk) {
+    console.log('\n❌ Failed to set main worker secrets')
     process.exit(1)
   }
+
+  console.log('\n🔌 Setting MCP worker secrets (wrangler-mcp.toml)...')
+  const mcpOk = await setSecretsBulk(
+    env,
+    MCP_WORKER_SECRET_KEYS,
+    'wrangler-mcp.toml'
+  )
+  if (!mcpOk) {
+    // On a fresh account the MCP worker may not exist yet — wrangler errors
+    // when targeting an unknown worker. Warn instead of failing so the
+    // operator can deploy first, then re-run cf:config. cf:deploy runs
+    // set-secrets AFTER the deploys, so this path is only hit when invoking
+    // cf:config standalone before the first deploy.
+    console.warn(
+      '\n⚠️  MCP worker secrets push failed (worker may not be deployed yet).\n' +
+        '   Run `bun run cf:deploy` first — that pipeline deploys the MCP\n' +
+        '   worker and then re-runs this script automatically.\n'
+    )
+    process.exit(0)
+  }
+
+  console.log('\n✅ Done! All secrets set successfully on both workers')
 }
 
 main().catch(console.error)
