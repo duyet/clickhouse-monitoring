@@ -26,7 +26,7 @@ import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
 const VIRTUALIZED_CELL_CLASS = 'text-sm whitespace-nowrap tabular-nums'
-const STANDARD_CELL_CLASS = 'text-sm align-top break-words tabular-nums'
+const STANDARD_CELL_CLASS = 'text-sm align-middle break-words tabular-nums'
 const DEFAULT_COLUMN_SIZE = 150
 
 function getCellWidth<TData extends RowData>(cell: Cell<TData, unknown>) {
