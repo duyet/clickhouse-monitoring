@@ -366,6 +366,7 @@ ${historyQueryTail}
         hide_query_comment: true,
         dialog_title: 'Query',
         trigger_classname: '!max-w-[280px] overflow-hidden',
+        force_dialog: true,
       },
     ],
     event_time: ColumnFormat.RelatedTime,
