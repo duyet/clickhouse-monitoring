@@ -13,15 +13,16 @@ import { cn } from '@/lib/utils'
 
 const CATEGORY_COLORS: Record<string, string> = {
   INSIGHTS:
-    'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300',
-  SCHEMA: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300',
+    'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400',
+  SCHEMA: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400',
   STORAGE:
-    'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300',
+    'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400',
   QUERIES:
-    'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300',
-  ERRORS: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300',
-  MERGES: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300',
-  SYSTEM: 'bg-slate-50 text-slate-700 dark:bg-slate-500/10 dark:text-slate-300',
+    'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
+  ERRORS: 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400',
+  MERGES: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400',
+  SYSTEM:
+    'bg-slate-100 text-slate-600 dark:bg-slate-500/10 dark:text-slate-400',
 }
 
 interface RecommendationsListProps {
@@ -49,8 +50,8 @@ export function RecommendationsList({
         </p>
       </div>
 
-      <div className="border-border divide-border divide-y rounded-lg border">
-        {prompts.map((entry) => {
+      <div className="divide-border divide-y rounded-lg border border-border/60">
+        {prompts.map((entry, index) => {
           const colorClass =
             CATEGORY_COLORS[entry.category] ?? 'bg-muted text-muted-foreground'
           return (
@@ -58,7 +59,8 @@ export function RecommendationsList({
               key={entry.title}
               type="button"
               onClick={() => onPickPrompt?.(entry.prompt)}
-              className="hover:bg-muted/40 group flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors first:rounded-t-lg last:rounded-b-lg touch-manipulation"
+              style={{ animationDelay: `${index * 40}ms` }}
+              className="hover:bg-muted/40 active:scale-[0.995] group flex w-full items-start gap-3 px-3 py-2.5 text-left transition-[transform,background-color] duration-150 first:rounded-t-lg last:rounded-b-lg touch-manipulation animate-in fade-in-0 slide-in-from-bottom-1"
             >
               <span
                 className={cn(
@@ -68,10 +70,10 @@ export function RecommendationsList({
               >
                 {entry.category}
               </span>
-              <span className="text-foreground/90 flex-1 text-[12.5px] leading-snug">
+              <span className="text-foreground/90 min-w-0 flex-1 text-[12.5px] leading-snug">
                 {entry.prompt}
               </span>
-              <ArrowRightIcon className="text-muted-foreground/60 group-hover:text-foreground mt-1 size-3 shrink-0" />
+              <ArrowRightIcon className="text-muted-foreground/60 group-hover:text-foreground mt-1 size-3 shrink-0 transition-transform duration-150 group-hover:translate-x-0.5" />
             </button>
           )
         })}

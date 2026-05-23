@@ -52,23 +52,19 @@ export function AgentWelcomeScreen({
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 pt-10 pb-6">
       {/* Greeting */}
       <div className="mb-8 text-center">
-        <div className="bg-muted border-border mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border">
+        <div className="mx-auto mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-foreground/[0.04]">
           <SparklesIcon
-            className="text-foreground size-5"
-            strokeWidth={1.6}
+            className="text-foreground/70 size-[18px]"
+            strokeWidth={1.8}
             aria-hidden="true"
           />
         </div>
-        <h1
-          className={`text-balance text-[28px] font-semibold leading-tight tracking-tight ${
-            greeting.tone === 'alert' ? 'text-foreground' : 'text-foreground'
-          }`}
-        >
+        <h1 className="text-balance text-[26px] font-semibold leading-tight tracking-tight text-foreground">
           {greeting.heading}
         </h1>
-        <p className="text-muted-foreground mx-auto mt-2 max-w-md text-[13.5px]">
-          I’m wired into your ClickHouse cluster{' '}
-          <span className="text-foreground font-mono">
+        <p className="text-muted-foreground mx-auto mt-2 max-w-md text-[13px] leading-relaxed">
+          Wired into{' '}
+          <span className="text-foreground/80 font-mono text-[12.5px]">
             {clusterName ?? 'unknown'}
           </span>
           . Ask anything — schemas, queries, performance, health.

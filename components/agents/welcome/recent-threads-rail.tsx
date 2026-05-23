@@ -21,7 +21,7 @@ export function RecentThreadsRail() {
   return (
     <section className="mb-6">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-muted-foreground text-[11px] font-semibold tracking-[0.08em] uppercase">
+        <h3 className="text-muted-foreground text-[11px] font-medium tracking-[0.06em] uppercase">
           Recent threads
         </h3>
         <span className="text-muted-foreground text-[11px]">
@@ -29,7 +29,7 @@ export function RecentThreadsRail() {
         </span>
       </div>
 
-      <div className="bg-card divide-border border-border divide-y rounded-lg border">
+      <div className="divide-border border-border/60 divide-y rounded-lg border">
         <ThreadListPrimitive.Root>
           <ThreadListPrimitive.Items components={{ ThreadListItem }} />
         </ThreadListPrimitive.Root>
@@ -53,8 +53,8 @@ function ThreadEmptyState() {
   const count = useThreadList((state) => state.threadIds.length)
   if (count > 0) return null
   return (
-    <div className="text-muted-foreground px-3 py-6 text-center text-[12px]">
-      No conversations yet — start one above.
+    <div className="text-muted-foreground px-3 py-8 text-center text-[12px]">
+      No conversations yet. Start one above.
     </div>
   )
 }
@@ -63,7 +63,7 @@ function ThreadListItem() {
   return (
     <ThreadListItemPrimitive.Root
       className={cn(
-        'hover:bg-muted/50 group flex items-center gap-3 transition-colors',
+        'hover:bg-muted/50 active:scale-[0.995] group flex items-center gap-3 transition-[transform,background-color] duration-150',
         'first:rounded-t-lg last:rounded-b-lg'
       )}
     >
@@ -76,7 +76,7 @@ function ThreadListItem() {
             <ThreadListItemPrimitive.Title fallback="New chat" />
           </div>
         </div>
-        <ArrowRightIcon className="text-muted-foreground/60 group-hover:text-foreground size-3 shrink-0" />
+        <ArrowRightIcon className="text-muted-foreground/60 group-hover:text-foreground size-3 shrink-0 transition-transform duration-150 group-hover:translate-x-0.5" />
       </ThreadListItemPrimitive.Trigger>
     </ThreadListItemPrimitive.Root>
   )
