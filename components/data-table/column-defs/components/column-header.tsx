@@ -15,7 +15,7 @@ import type { ColumnFormat } from '@/types/column-format'
 import type { Icon } from '@/types/icon'
 
 import { ColumnFilter } from '@/components/data-table/column-filter'
-import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export interface ColumnHeaderProps<TData extends RowData> {
   column: Column<TData, unknown>
@@ -27,44 +27,35 @@ export interface ColumnHeaderProps<TData extends RowData> {
   onFilterChange: (value: string) => void
 }
 
-/**
- * Sort icon component showing current sort state
- */
 function SortIcon({ sortState }: { sortState: false | 'asc' | 'desc' }) {
-  if (sortState === false) return <CaretSortIcon className="ml-2 size-4" />
-  if (sortState === 'asc') return <CaretUpIcon className="ml-2 size-4" />
-  return <CaretDownIcon className="ml-2 size-4" />
+  if (sortState === false)
+    return <CaretSortIcon className="ml-1 size-3.5 opacity-40" />
+  if (sortState === 'asc')
+    return <CaretUpIcon className="ml-1 size-3.5 text-primary" />
+  return <CaretDownIcon className="ml-1 size-3.5 text-primary" />
 }
 
-/**
- * Header content with optional icon
- */
 function HeaderContent({
   name,
   format,
-  icon,
+  icon: Icon,
 }: {
   name: string
   format: ColumnFormat
   icon?: Icon
 }) {
   if (format === 'action') {
-    return <div className="text-muted-foreground">action</div>
+    return <span className="text-muted-foreground/60">actions</span>
   }
 
-  const CustomIcon = icon
-
   return (
-    <div className="text-muted-foreground">
-      {CustomIcon ? <CustomIcon /> : null}
+    <span className="inline-flex items-center gap-1 text-muted-foreground">
+      {Icon && <Icon className="size-3" />}
       {name}
-    </div>
+    </span>
   )
 }
 
-/**
- * Column header with sorting indicator and optional filter input
- */
 export function ColumnHeader<TData extends RowData>({
   column,
   name,
@@ -75,23 +66,36 @@ export function ColumnHeader<TData extends RowData>({
   onFilterChange,
 }: ColumnHeaderProps<TData>) {
   const sortState = column.getIsSorted()
+  const canSort = column.getCanSort()
 
   return (
-    <div className="flex flex-col gap-1.5 py-1">
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(sortState === 'asc')}
-        className="h-8 truncate justify-start font-medium"
+    <div className="flex flex-col gap-1">
+      <div
+        role={canSort ? 'button' : undefined}
+        tabIndex={canSort ? 0 : undefined}
+        onClick={() => {
+          if (canSort) column.toggleSorting(sortState === 'asc')
+        }}
+        onKeyDown={(e) => {
+          if (canSort && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault()
+            column.toggleSorting(sortState === 'asc')
+          }
+        }}
+        className={cn(
+          'inline-flex items-center gap-0.5 truncate text-xs font-medium uppercase tracking-wider',
+          canSort && 'cursor-pointer hover:text-foreground'
+        )}
       >
         <HeaderContent name={name} format={format} icon={icon} />
-        <SortIcon sortState={sortState} />
+        {canSort && <SortIcon sortState={sortState} />}
         {filterValue && (
           <span
-            className="ml-1 h-1.5 w-1.5 rounded-full bg-primary shrink-0"
+            className="ml-1 size-1.5 rounded-full bg-primary shrink-0"
             aria-label="Filter active"
           />
         )}
-      </Button>
+      </div>
 
       {isFilterable && (
         <ColumnFilter
