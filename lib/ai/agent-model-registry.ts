@@ -18,9 +18,17 @@ export interface ModelEntry {
   providers: string[]
 }
 
-export const DEFAULT_AGENT_MODEL = 'openrouter:openrouter/free'
+export const DEFAULT_AGENT_MODEL = 'anyrouter:@preset/chmonitor'
 
 export const MODEL_REGISTRY: readonly ModelEntry[] = [
+  // ── Presets (auto-routing via AnyRouter) ──
+  {
+    id: '@preset/chmonitor',
+    description: 'Preset: ClickHouse Monitor agent routing',
+    contextLength: 200_000,
+    providers: ['anyrouter'],
+  },
+
   // ── OpenRouter auto-routers ──
   {
     id: 'openrouter/free',

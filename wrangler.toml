@@ -122,6 +122,10 @@ CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 # Required because Workers runtime doesn't support Node.js net/tls modules.
 CLOUDFLARE_WORKERS = "1"
 
+# Default model for AI agent — uses the chmonitor preset via AnyRouter
+# Users can override via the UI dropdown at runtime.
+LLM_MODEL = "anyrouter:@preset/chmonitor"
+
 # OpenRouter identification headers for rankings/analytics
 # See: https://openrouter.ai/docs#hosts
 OPENROUTER_REFERER = "https://clickhouse.duyet.net"
