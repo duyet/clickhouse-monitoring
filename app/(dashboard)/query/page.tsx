@@ -2,9 +2,8 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import { QueryDetailView } from '@/components/query-detail/query-detail-view'
 import { TableSkeleton } from '@/components/skeletons'
-import { TableClient } from '@/components/tables/table-client'
-import { queryDetailConfig } from '@/lib/query-config/queries/query-detail'
 
 function QueryDetailContent() {
   const searchParams = useSearchParams()
@@ -18,16 +17,7 @@ function QueryDetailContent() {
     )
   }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <TableClient
-        title="Query Detail"
-        description={queryDetailConfig.description}
-        queryConfig={queryDetailConfig}
-        searchParams={{ query_id }}
-      />
-    </div>
-  )
+  return <QueryDetailView queryId={query_id} />
 }
 
 export default function QueryDetailPage() {
