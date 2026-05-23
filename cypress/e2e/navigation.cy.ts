@@ -14,7 +14,12 @@ describe('Navigation Smoke Tests', () => {
   })
 
   it('should navigate between main pages', () => {
-    const mainPages: string[] = ['/overview', '/dashboard', '/clusters', '/merges']
+    const mainPages: string[] = [
+      '/overview',
+      '/dashboard',
+      '/clusters',
+      '/merges',
+    ]
 
     mainPages.forEach((page) => {
       cy.visit(`${page}?host=0`)
