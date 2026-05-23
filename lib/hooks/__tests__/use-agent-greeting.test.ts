@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'bun:test'
-
 import { buildAgentGreeting } from '@/lib/hooks/use-agent-greeting'
 
 const at = (hour: number) =>

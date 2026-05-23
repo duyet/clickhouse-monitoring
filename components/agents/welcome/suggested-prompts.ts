@@ -22,8 +22,7 @@ export const SUGGESTED_PROMPTS: readonly SuggestedPrompt[] = [
   {
     category: 'SCHEMA',
     title: 'Database overview',
-    prompt:
-      'What databases are available and which ones have the most tables?',
+    prompt: 'What databases are available and which ones have the most tables?',
   },
   {
     category: 'STORAGE',
