@@ -15,8 +15,8 @@ import { SparklesIcon } from 'lucide-react'
 
 import type { ReactNode } from 'react'
 
-import { AgentSkillsGrid } from '@/components/agents/welcome/agent-skills-grid'
 import { RecentThreadsRail } from '@/components/agents/welcome/recent-threads-rail'
+import { RecommendationsList } from '@/components/agents/welcome/recommendations-list'
 import { useAgentGreeting } from '@/lib/hooks/use-agent-greeting'
 
 interface AgentWelcomeScreenProps {
@@ -30,6 +30,8 @@ interface AgentWelcomeScreenProps {
   composer: ReactNode
   /** Number of currently active MCP tools, for the connection footer. */
   activeToolCount: number
+  /** Called when the user picks a suggested prompt — fills the composer. */
+  onPickPrompt?: (prompt: string) => void
 }
 
 export function AgentWelcomeScreen({
@@ -38,6 +40,7 @@ export function AgentWelcomeScreen({
   hasClusterIssue,
   composer,
   activeToolCount,
+  onPickPrompt,
 }: AgentWelcomeScreenProps) {
   const greeting = useAgentGreeting({
     firstName,
@@ -71,8 +74,8 @@ export function AgentWelcomeScreen({
       {/* Composer (parent-owned) */}
       <div className="mb-8">{composer}</div>
 
-      {/* Skills grid */}
-      <AgentSkillsGrid />
+      {/* Suggested questions */}
+      <RecommendationsList onPickPrompt={onPickPrompt} />
 
       {/* Recent threads */}
       <RecentThreadsRail />

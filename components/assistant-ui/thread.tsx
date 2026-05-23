@@ -22,8 +22,6 @@ import {
   SparklesIcon,
 } from 'lucide-react'
 
-import type { FC } from 'react'
-
 import {
   ActionBarPrimitive,
   BranchPickerPrimitive,
@@ -35,6 +33,7 @@ import {
   useThread,
   useThreadRuntime,
 } from '@assistant-ui/react'
+import { type FC, useState } from 'react'
 import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
 import { AgentWelcomeScreen } from '@/components/agents/welcome/agent-welcome-screen'
 import { ComposerToolbar } from '@/components/agents/welcome/composer-toolbar'
@@ -133,6 +132,7 @@ function ThreadWelcome({
   hasClusterIssue,
 }: ThreadWelcomeProps) {
   const { activeToolCount } = useAgentSkills()
+  const [composerValue, setComposerValue] = useState('')
 
   return (
     <ThreadPrimitive.Empty>
@@ -141,7 +141,13 @@ function ThreadWelcome({
         clusterName={clusterName}
         hasClusterIssue={hasClusterIssue}
         activeToolCount={activeToolCount}
-        composer={<WelcomeComposer />}
+        composer={
+          <WelcomeComposer
+            value={composerValue}
+            onValueChange={setComposerValue}
+          />
+        }
+        onPickPrompt={(prompt) => setComposerValue(prompt)}
       />
     </ThreadPrimitive.Empty>
   )
@@ -152,13 +158,21 @@ function ThreadWelcome({
  * tools · add-context). Wraps the same submission wiring as the in-thread
  * composer below.
  */
-function WelcomeComposer() {
+function WelcomeComposer({
+  value,
+  onValueChange,
+}: {
+  value: string
+  onValueChange: (next: string) => void
+}) {
   const threadRuntime = useThreadRuntime()
   const isRunning = useThread((thread) => thread.isRunning)
 
   return (
     <div className="flex flex-col gap-2">
       <PromptInputTextareaWithMentions
+        value={value}
+        onChange={onValueChange}
         isLoading={isRunning}
         onResolvedSubmit={(text) => {
           const trimmed = text.trim()
@@ -167,6 +181,7 @@ function WelcomeComposer() {
             role: 'user',
             content: [{ type: 'text', text: trimmed }],
           })
+          onValueChange('')
         }}
         onStop={() => threadRuntime.cancelRun()}
       />
@@ -273,34 +288,26 @@ const ReasoningPart: ReasoningMessagePartComponent = ({ text }) => {
 }
 
 /**
- * Codex-style assistant message: small "Agent" header with model/time chips,
- * then the streaming parts (text · reasoning · tool calls). The chrome stays
- * minimal so the response body reads like a prose log.
+ * Assistant message body. Renders streaming parts (text · reasoning · tool
+ * calls) without an "Agent" avatar header — the message column already aligns
+ * left while user messages align right, so the chrome stays minimal.
  */
 const AssistantMessage: FC = () => {
   return (
     <MessagePrimitive.Root className="mx-auto w-full max-w-[var(--thread-max-width)] py-3">
       <div className="text-foreground flex flex-col gap-1.5">
-        <div className="text-muted-foreground mb-1 flex items-center gap-2 text-[11px]">
-          <div className="bg-foreground/5 border-border inline-flex size-5 items-center justify-center rounded-md border">
-            <SparklesIcon className="text-foreground size-3" />
-          </div>
-          <span className="text-foreground font-medium">Agent</span>
-        </div>
-        <div className="ml-7 flex flex-col gap-1.5">
-          <MessagePrimitive.Parts
-            components={{
-              Text: MarkdownText,
-              Reasoning: ReasoningPart,
-              tools: { Fallback: ToolFallback },
-            }}
-          />
-          <JsonRenderMessage />
-          <MessageError />
-          <div className="flex items-center gap-1">
-            <BranchPicker />
-            <AssistantActionBar />
-          </div>
+        <MessagePrimitive.Parts
+          components={{
+            Text: MarkdownText,
+            Reasoning: ReasoningPart,
+            tools: { Fallback: ToolFallback },
+          }}
+        />
+        <JsonRenderMessage />
+        <MessageError />
+        <div className="flex items-center gap-1">
+          <BranchPicker />
+          <AssistantActionBar />
         </div>
       </div>
     </MessagePrimitive.Root>

@@ -4,8 +4,13 @@
  * Tool/skills toolbar that sits below the AI Agent composer.
  *
  * Shows the active model, skill count and tool count — each opening a
- * popover with the relevant management UI. Matches the toolbar pattern in
- * the design handoff: model · skills · tools · add-context · send.
+ * popover with the relevant management UI:
+ *
+ * - Skills popover: flat list of skill bundles with a per-skill toggle; the
+ *   row itself opens a detail dialog so users can read about what each skill
+ *   covers before enabling/disabling.
+ * - Tools popover: flat list of individual MCP tools with a per-tool toggle,
+ *   no longer grouped by skill.
  *
  * The send button itself stays inside the composer (the assistant-ui
  * `PromptInputTextareaWithMentions` already owns submission); this toolbar
@@ -19,8 +24,14 @@ import {
   WrenchIcon,
 } from 'lucide-react'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { AgentModelPicker } from '@/components/agents/welcome/agent-model-picker'
+import { SkillDetailDialog } from '@/components/agents/welcome/skill-detail-dialog'
+import {
+  getAllSkillTools,
+  getSkillsForTool,
+  type Skill,
+} from '@/components/agents/welcome/skills-data'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +42,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Switch } from '@/components/ui/switch'
 import { useAgentSkills } from '@/lib/hooks/use-agent-skills'
+import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { cn } from '@/lib/utils'
 
 interface ComposerToolbarProps {
@@ -51,18 +63,22 @@ export function ComposerToolbar({
     toggleSkill,
     activeSkillCount,
     totalSkillCount,
-    activeToolCount,
   } = useAgentSkills()
+  const { isToolEnabled, toggleTool } = useToolConfig()
 
   const [skillsOpen, setSkillsOpen] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
+  const [skillDetail, setSkillDetail] = useState<Skill | null>(null)
+
+  const allTools = useMemo(() => getAllSkillTools(), [])
+  const enabledToolCount = useMemo(
+    () => allTools.filter((t) => isToolEnabled(t)).length,
+    [allTools, isToolEnabled]
+  )
 
   return (
     <div
-      className={cn(
-        'flex flex-wrap items-center gap-1 px-1 py-1',
-        className
-      )}
+      className={cn('flex flex-wrap items-center gap-1 px-1 py-1', className)}
     >
       <AgentModelPicker variant="toolbar" />
 
@@ -85,13 +101,9 @@ export function ComposerToolbar({
             <ChevronDownIcon className="size-2.5 opacity-60" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent
-          align="start"
-          sideOffset={4}
-          className="w-[340px] p-1"
-        >
+        <PopoverContent align="start" sideOffset={4} className="w-[340px] p-1">
           <div className="text-muted-foreground px-2 py-1.5 text-[10px] font-semibold tracking-wider uppercase">
-            Skills · bundles of tools
+            Skills
           </div>
           <ScrollArea className="max-h-96">
             <div className="space-y-0.5">
@@ -101,34 +113,43 @@ export function ComposerToolbar({
                 return (
                   <div
                     key={skill.id}
-                    className="hover:bg-muted/40 flex items-center gap-2 rounded-md px-2 py-1.5"
+                    className="hover:bg-muted/40 flex items-center gap-2 rounded-md py-1.5 pr-2 pl-1"
                   >
-                    <div className="bg-muted text-muted-foreground inline-flex size-6 shrink-0 items-center justify-center rounded-md">
-                      <Icon className="size-3" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="truncate text-[12px] font-medium">
-                          {skill.name}
-                        </span>
-                        <Badge
-                          variant={
-                            skill.source === 'system' ? 'default' : 'outline'
-                          }
-                          className={cn(
-                            'h-4 px-1.5 text-[10px] font-normal',
-                            skill.source === 'system'
-                              ? 'bg-blue-50 text-blue-700 hover:bg-blue-50 dark:bg-blue-500/10 dark:text-blue-300'
-                              : 'text-muted-foreground'
-                          )}
-                        >
-                          {skill.source}
-                        </Badge>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSkillsOpen(false)
+                        setSkillDetail(skill)
+                      }}
+                      className="flex min-w-0 flex-1 items-center gap-2 rounded px-1 py-0.5 text-left"
+                    >
+                      <div className="bg-muted text-muted-foreground inline-flex size-6 shrink-0 items-center justify-center rounded-md">
+                        <Icon className="size-3" />
                       </div>
-                      <div className="text-muted-foreground text-[10px] tabular-nums">
-                        {skill.tools.length} tools
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate text-[12px] font-medium">
+                            {skill.name}
+                          </span>
+                          <Badge
+                            variant={
+                              skill.source === 'system' ? 'default' : 'outline'
+                            }
+                            className={cn(
+                              'h-4 px-1.5 text-[10px] font-normal',
+                              skill.source === 'system'
+                                ? 'bg-blue-50 text-blue-700 hover:bg-blue-50 dark:bg-blue-500/10 dark:text-blue-300'
+                                : 'text-muted-foreground'
+                            )}
+                          >
+                            {skill.source}
+                          </Badge>
+                        </div>
+                        <div className="text-muted-foreground truncate text-[10.5px]">
+                          {skill.description}
+                        </div>
                       </div>
-                    </div>
+                    </button>
                     <Switch
                       checked={on}
                       onCheckedChange={() => toggleSkill(skill.id)}
@@ -143,7 +164,7 @@ export function ComposerToolbar({
         </PopoverContent>
       </Popover>
 
-      {/* Tools popover */}
+      {/* Tools popover — flat list, per-tool toggle */}
       <Popover open={toolsOpen} onOpenChange={setToolsOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -155,53 +176,55 @@ export function ComposerToolbar({
             <WrenchIcon className="size-3" />
             <span>
               <span className="text-foreground font-medium tabular-nums">
-                {activeToolCount}
-              </span>{' '}
-              tools
+                {enabledToolCount}
+              </span>
+              <span className="tabular-nums">/{allTools.length}</span> tools
             </span>
             <ChevronDownIcon className="size-2.5 opacity-60" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent
-          align="start"
-          sideOffset={4}
-          className="w-[320px] p-1"
-        >
+        <PopoverContent align="start" sideOffset={4} className="w-[320px] p-1">
           <div className="text-muted-foreground flex items-center justify-between px-2 py-1.5 text-[10px] font-semibold tracking-wider uppercase">
-            <span>Tools · grouped by skill</span>
+            <span>Tools</span>
             <span className="text-muted-foreground/70 font-normal normal-case tabular-nums">
-              {activeToolCount} active
+              {enabledToolCount} active
             </span>
           </div>
           <ScrollArea className="max-h-96">
-            <div className="space-y-2">
-              {skills
-                .filter((s) => isSkillEnabled(s.id))
-                .map((skill) => {
-                  const Icon = skill.icon
-                  return (
-                    <div key={skill.id} className="px-1 pt-1">
-                      <div className="text-foreground flex items-center gap-1.5 px-1.5 py-1 text-[10.5px] font-semibold tracking-wider uppercase">
-                        <Icon className="text-muted-foreground size-3" />
-                        {skill.name}
-                        <span className="text-muted-foreground tabular-nums">
-                          {skill.tools.length}
-                        </span>
+            <div className="space-y-0.5">
+              {allTools.map((tool) => {
+                const on = isToolEnabled(tool)
+                const owners = getSkillsForTool(tool)
+                return (
+                  <div
+                    key={tool}
+                    className="hover:bg-muted/40 flex items-center gap-2 rounded-md px-2 py-1.5"
+                  >
+                    <span
+                      className={cn(
+                        'inline-block size-1.5 shrink-0 rounded-full',
+                        on ? 'bg-emerald-500' : 'bg-muted-foreground/40'
+                      )}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-mono text-[11.5px]">
+                        {tool}
                       </div>
-                      {skill.tools.map((t) => (
-                        <div
-                          key={`${skill.id}.${t}`}
-                          className="hover:bg-muted/40 flex items-center gap-2 rounded-md px-2 py-1 text-[11.5px]"
-                        >
-                          <span className="inline-block size-1 shrink-0 rounded-full bg-emerald-500" />
-                          <span className="font-mono">
-                            {skill.id}.{t}
-                          </span>
+                      {owners.length > 0 ? (
+                        <div className="text-muted-foreground truncate text-[10px]">
+                          {owners.map((o) => o.name).join(' · ')}
                         </div>
-                      ))}
+                      ) : null}
                     </div>
-                  )
-                })}
+                    <Switch
+                      checked={on}
+                      onCheckedChange={() => toggleTool(tool)}
+                      className="shrink-0"
+                      aria-label={`Toggle ${tool}`}
+                    />
+                  </div>
+                )
+              })}
             </div>
           </ScrollArea>
         </PopoverContent>
@@ -225,6 +248,16 @@ export function ComposerToolbar({
           ) : null}
         </span>
       </Button>
+
+      <SkillDetailDialog
+        skill={skillDetail}
+        open={skillDetail !== null}
+        onOpenChange={(open) => {
+          if (!open) setSkillDetail(null)
+        }}
+        isEnabled={skillDetail ? isSkillEnabled(skillDetail.id) : false}
+        onToggle={(id) => toggleSkill(id)}
+      />
     </div>
   )
 }

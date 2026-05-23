@@ -17,7 +17,11 @@ import {
   WrenchIcon,
 } from 'lucide-react'
 
+import type { Skill } from '@/components/agents/welcome/skills-data'
+
+import { useState } from 'react'
 import { AgentModelPicker } from '@/components/agents/welcome/agent-model-picker'
+import { SkillDetailDialog } from '@/components/agents/welcome/skill-detail-dialog'
 import { SUGGESTED_PROMPTS } from '@/components/agents/welcome/suggested-prompts'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -48,14 +52,13 @@ export function AgentSettingsSidebar({
     totalSkillCount,
   } = useAgentSkills()
   const topSkills = skills.slice(0, 3)
+  const [skillDetail, setSkillDetail] = useState<Skill | null>(null)
 
   return (
     <aside
       className={cn(
         'bg-card border-border shrink-0 overflow-y-auto border-l transition-all duration-200',
-        open
-          ? 'w-[320px] opacity-100'
-          : 'pointer-events-none w-0 opacity-0'
+        open ? 'w-[320px] opacity-100' : 'pointer-events-none w-0 opacity-0'
       )}
     >
       <div className="w-[320px] p-4">
@@ -144,19 +147,25 @@ export function AgentSettingsSidebar({
               return (
                 <div
                   key={skill.id}
-                  className="flex items-center gap-2 px-3 py-2"
+                  className="flex items-center gap-2 py-2 pr-3 pl-2"
                 >
-                  <div className="bg-muted text-muted-foreground inline-flex size-6 shrink-0 items-center justify-center rounded-md">
-                    <Icon className="size-3" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[12px] font-medium">
-                      {skill.name}
+                  <button
+                    type="button"
+                    onClick={() => setSkillDetail(skill)}
+                    className="hover:bg-muted/40 flex min-w-0 flex-1 items-center gap-2 rounded px-1 py-0.5 text-left"
+                  >
+                    <div className="bg-muted text-muted-foreground inline-flex size-6 shrink-0 items-center justify-center rounded-md">
+                      <Icon className="size-3" />
                     </div>
-                    <div className="text-muted-foreground text-[10px] tabular-nums">
-                      {skill.tools.length} tools · {skill.source}
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[12px] font-medium">
+                        {skill.name}
+                      </div>
+                      <div className="text-muted-foreground text-[10px] tabular-nums">
+                        {skill.tools.length} tools · {skill.source}
+                      </div>
                     </div>
-                  </div>
+                  </button>
                   <Switch
                     checked={on}
                     onCheckedChange={() => toggleSkill(skill.id)}
@@ -213,6 +222,16 @@ export function AgentSettingsSidebar({
             ))}
           </div>
         </SidebarSection>
+
+        <SkillDetailDialog
+          skill={skillDetail}
+          open={skillDetail !== null}
+          onOpenChange={(next) => {
+            if (!next) setSkillDetail(null)
+          }}
+          isEnabled={skillDetail ? isSkillEnabled(skillDetail.id) : false}
+          onToggle={(id) => toggleSkill(id)}
+        />
       </div>
     </aside>
   )

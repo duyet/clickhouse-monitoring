@@ -180,11 +180,7 @@ export function AgentModelPicker({
           </button>
         )}
       </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        sideOffset={4}
-        className="w-[340px] p-1"
-      >
+      <PopoverContent align="start" sideOffset={4} className="w-[340px] p-1">
         <ScrollArea className="max-h-[360px]">
           <div className="space-y-1">
             {grouped.map(([provider, list]) => (
@@ -216,7 +212,11 @@ export function AgentModelPicker({
                     >
                       <div className="min-w-0 flex-1">
                         <div className="truncate font-mono text-[12px]">
-                          {m.name}
+                          <span className={providerColorClass(m.provider)}>
+                            {m.provider}
+                          </span>
+                          <span className="text-muted-foreground">:</span>
+                          <span className="text-foreground">{m.name}</span>
                         </div>
                         <div className="text-muted-foreground text-[10px] tabular-nums">
                           {m.formattedContextLength} ctx
