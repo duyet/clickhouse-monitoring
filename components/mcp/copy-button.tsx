@@ -30,7 +30,9 @@ export function CopyButton({ text, className, label }: CopyButtonProps) {
         onClick={handleCopy}
       >
         {copied ? (
-          <Check className="h-3.5 w-3.5 text-green-600" />
+          <span className="t-success-check">
+            <Check className="h-3.5 w-3.5 text-green-600" />
+          </span>
         ) : (
           <Copy className="h-3.5 w-3.5" />
         )}

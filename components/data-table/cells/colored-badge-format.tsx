@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react'
+import { memo, useEffect, useMemo, useRef } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface ColoredBadgeOptions {
@@ -14,6 +14,11 @@ export const ColoredBadgeFormat = memo(function ColoredBadgeFormat({
   value,
   options,
 }: ColoredBadgeFormatProps): React.ReactNode {
+  const isFirstRenderRef = useRef(true)
+  useEffect(() => {
+    isFirstRenderRef.current = false
+  }, [])
+
   // Memoize expensive color calculation - includes dark mode variants
   const pickedColor = useMemo(() => {
     if (value == null || value === '' || typeof value === 'boolean') return ''
@@ -50,7 +55,12 @@ export const ColoredBadgeFormat = memo(function ColoredBadgeFormat({
         options?.className
       )}
     >
-      {value}
+      <span
+        key={String(value)}
+        className={isFirstRenderRef.current ? undefined : 't-text-swap'}
+      >
+        {value}
+      </span>
     </span>
   )
 })

@@ -8,9 +8,9 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
+import { ShakeFormControl } from '@/components/forms/shake-form-control'
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
@@ -79,9 +79,9 @@ export const ChartParamsForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{key}</FormLabel>
-                <FormControl>
+                <ShakeFormControl>
                   <Input {...field} />
-                </FormControl>
+                </ShakeFormControl>
               </FormItem>
             )}
           />
