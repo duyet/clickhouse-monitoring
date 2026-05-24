@@ -593,5 +593,11 @@
       animation: none !important;
       transition: none !important;
     }
+    /* Without the draw animation the path would stay clipped at its
+       full stroke-dashoffset and render invisibly. Snap it to the final
+       drawn state so the check still appears for reduced-motion users. */
+    .t-success-check svg path {
+      stroke-dashoffset: 0 !important;
+    }
   }
 }

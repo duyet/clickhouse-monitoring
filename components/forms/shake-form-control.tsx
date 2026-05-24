@@ -1,14 +1,15 @@
 'use client'
 
-import type { Slot } from '@radix-ui/react-slot'
-
 import { useEffect, useState } from 'react'
 import { FormControl, useFormField } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
 
-const SHAKE_DURATION_MS = 320
+// Must stay in sync with the CSS `t-error-shake` animation duration in
+// app/globals.css: calc(var(--shake-dur-a) * 2 + var(--shake-dur-b) * 2)
+// which currently resolves to 280ms.
+const SHAKE_DURATION_MS = 280
 
-type ShakeFormControlProps = React.ComponentProps<typeof Slot>
+type ShakeFormControlProps = React.ComponentProps<typeof FormControl>
 
 export function ShakeFormControl({
   className,
@@ -18,7 +19,10 @@ export function ShakeFormControl({
   const [shake, setShake] = useState(false)
 
   useEffect(() => {
-    if (!error) return
+    if (!error) {
+      setShake(false)
+      return
+    }
     setShake(true)
     const timer = setTimeout(() => setShake(false), SHAKE_DURATION_MS)
     return () => clearTimeout(timer)

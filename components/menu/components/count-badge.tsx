@@ -29,10 +29,10 @@ export const CountBadge = memo(function CountBadge({
 }: CountBadgeProps) {
   const hostId = useHostId()
   const { count, isLoading } = useMenuCount(countKey, hostId)
-  const isFirstUpdateRef = useRef(true)
+  const isFirstRenderRef = useRef(true)
 
   useEffect(() => {
-    isFirstUpdateRef.current = false
+    isFirstRenderRef.current = false
   }, [])
 
   // Don't render if loading, no count, or count is 0
@@ -57,7 +57,7 @@ export const CountBadge = memo(function CountBadge({
     >
       <span
         key={count}
-        className={cn('shrink-0', !isFirstUpdateRef.current && 't-digit')}
+        className={cn('shrink-0', !isFirstRenderRef.current && 't-digit')}
       >
         {formatReadableQuantity(count, 'short')}
       </span>
