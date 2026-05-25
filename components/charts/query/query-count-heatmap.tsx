@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { formatCompactNumber } from '@/lib/format-readable'
+import { useUserSettings } from '@/lib/hooks/use-user-settings'
 import { cn } from '@/lib/utils'
 
 interface HeatmapCell {
@@ -48,33 +49,85 @@ function getIntensityClass(value: number, max: number): string {
   return INTENSITY_TIERS[0]
 }
 
-/** ClickHouse toDayOfWeek convention (1=Mon..7=Sun) from a JS Date. */
-function jsDateToChDay(d: Date): number {
-  const js = d.getDay()
-  return js === 0 ? 7 : js
+/** ClickHouse toDayOfWeek convention (1=Mon..7=Sun) from a JS day-of-week index. */
+function jsDayToChDay(jsDay: number): number {
+  return jsDay === 0 ? 7 : jsDay
 }
 
-function isCurrentSlot(dayOfWeek: number, hour: number): boolean {
-  const now = new Date()
-  return jsDateToChDay(now) === dayOfWeek && now.getHours() === hour
+/** A wall-clock instant (no timezone). Operations on this object use JS `Date`
+ *  arithmetic, but the components reflect the user's selected timezone. */
+interface WallClock {
+  year: number
+  month: number // 1..12
+  day: number // 1..31
+  hour: number // 0..23
+  jsDayOfWeek: number // 0..6 (Sun=0)
+  asDate: Date // local-time Date whose components match the wall clock
+}
+
+/** Read the current wall clock in the given IANA timezone. */
+function nowInTimezone(timezone: string): WallClock {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    weekday: 'short',
+    hour12: false,
+  }).formatToParts(new Date())
+
+  const pick = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
+  const year = Number(pick('year'))
+  const month = Number(pick('month'))
+  const day = Number(pick('day'))
+  // Intl reports "24" instead of "00" in some runtimes; coerce.
+  const hour = Number(pick('hour')) % 24
+  const weekdayShort = pick('weekday') // e.g. 'Mon'
+  const weekdayMap: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  }
+  const jsDayOfWeek = weekdayMap[weekdayShort] ?? 0
+  // Build a "fake-local" Date whose getFullYear/getMonth/... match the wall clock.
+  // This lets us use Date arithmetic (setHours) without bringing the host
+  // timezone into the math.
+  const asDate = new Date(year, month - 1, day, hour, 0, 0)
+  return { year, month, day, hour, jsDayOfWeek, asDate }
+}
+
+function isCurrentSlotIn(
+  timezone: string,
+  dayOfWeek: number,
+  hour: number
+): boolean {
+  const now = nowInTimezone(timezone)
+  return jsDayToChDay(now.jsDayOfWeek) === dayOfWeek && now.hour === hour
 }
 
 /**
- * Find the most-recent absolute Date matching (chDay, hour) within the last
- * `windowHours` hours from now. Returns null when the slot has not occurred
- * within the window.
+ * Find the most-recent wall-clock instant matching (chDay, hour) within the
+ * last `windowHours` hours from the current moment in `timezone`. Returns
+ * null when the slot has not occurred within the window.
  */
 function findMostRecentSlot(
+  timezone: string,
   chDay: number,
   hour: number,
   windowHours: number
 ): Date | null {
-  const now = new Date()
-  const probe = new Date(now)
-  probe.setMinutes(0, 0, 0)
-  // Walk back hour-by-hour until we match. Capped at windowHours iterations.
+  const now = nowInTimezone(timezone)
+  const probe = new Date(now.asDate.getTime())
   for (let i = 0; i <= windowHours; i++) {
-    if (jsDateToChDay(probe) === chDay && probe.getHours() === hour) {
+    const probeChDay = jsDayToChDay(probe.getDay())
+    if (probeChDay === chDay && probe.getHours() === hour) {
       return probe
     }
     probe.setHours(probe.getHours() - 1)
@@ -82,7 +135,7 @@ function findMostRecentSlot(
   return null
 }
 
-/** Format a Date into ClickHouse-friendly `YYYY-MM-DD HH:mm:ss` (local time). */
+/** Format a wall-clock Date as `YYYY-MM-DD HH:mm:ss`. */
 function formatChDateTime(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
@@ -183,6 +236,7 @@ function KpiCard({ label, value, hint, accent = 'default' }: KpiCardProps) {
 
 interface CellLinkProps {
   hostId: number
+  timezone: string
   dayOfWeek: number
   hour: number
   windowHours: number
@@ -196,6 +250,7 @@ interface CellLinkProps {
 
 function HeatmapCellLink({
   hostId,
+  timezone,
   dayOfWeek,
   hour,
   windowHours,
@@ -207,14 +262,17 @@ function HeatmapCellLink({
   isCurrent,
 }: CellLinkProps) {
   const slotDate = useMemo(
-    () => findMostRecentSlot(dayOfWeek, hour, windowHours),
-    [dayOfWeek, hour, windowHours]
+    () => findMostRecentSlot(timezone, dayOfWeek, hour, windowHours),
+    [timezone, dayOfWeek, hour, windowHours]
   )
 
   const href = useMemo(() => {
     if (!slotDate) return null
+    // BETWEEN is inclusive on both ends in ClickHouse — use 59:59 so the
+    // exact next-hour boundary belongs to the next hour's drilldown.
     const end = new Date(slotDate)
     end.setHours(end.getHours() + 1)
+    end.setSeconds(end.getSeconds() - 1)
     const params = new URLSearchParams()
     params.set('host', String(hostId))
     params.set(
@@ -295,207 +353,234 @@ function HeatmapCellLink({
   return inner
 }
 
+function HeatmapBody({
+  data,
+  hostId,
+}: {
+  data: HeatmapCell[]
+  hostId: number
+}) {
+  const { settings } = useUserSettings()
+  const timezone =
+    settings.timezone ||
+    Intl?.DateTimeFormat()?.resolvedOptions()?.timeZone ||
+    'UTC'
+
+  if (data.length === 0) {
+    return (
+      <div className="text-muted-foreground flex h-32 items-center justify-center text-sm">
+        No query data available
+      </div>
+    )
+  }
+
+  // Build lookup: [day][hour] -> cell
+  const grid: Record<number, Record<number, HeatmapCell>> = {}
+  let maxCount = 0
+  for (const cell of data) {
+    if (!grid[cell.day_of_week]) grid[cell.day_of_week] = {}
+    grid[cell.day_of_week][cell.hour_of_day] = cell
+    if (cell.query_count > maxCount) maxCount = cell.query_count
+  }
+
+  const stats = deriveStats(data)
+  // Dense rank: ties share the same rank, next distinct count gets the
+  // sequential rank (1,2,2,3 rather than 1,2,2,4).
+  const sortedByCount = [...data].sort((a, b) => b.query_count - a.query_count)
+  const rankByKey = new Map<string, number>()
+  let denseRank = 0
+  let lastCount = Number.POSITIVE_INFINITY
+  for (const cell of sortedByCount) {
+    if (cell.query_count <= 0) continue
+    if (cell.query_count !== lastCount) {
+      denseRank += 1
+      lastCount = cell.query_count
+    }
+    rankByKey.set(`${cell.day_of_week}-${cell.hour_of_day}`, denseRank)
+  }
+  const totalActiveCells = sortedByCount.filter((c) => c.query_count > 0).length
+
+  const peakLabel = stats.peak
+    ? `${DAY_LABELS[stats.peak.day_of_week - 1]} ${String(stats.peak.hour_of_day).padStart(2, '0')}:00 · ${stats.peak.readable_count}`
+    : '—'
+  const quietestLabel = stats.quietest
+    ? `${DAY_LABELS[stats.quietest.day_of_week - 1]} ${String(stats.quietest.hour_of_day).padStart(2, '0')}:00 · ${stats.quietest.readable_count}`
+    : '—'
+
+  // Bucket boundaries for the legend (rounded). Skip numeric labels when
+  // there is no traffic — all buckets would collapse to "≥ 0".
+  const hasTraffic = maxCount > 0
+  const legendBuckets = TIER_THRESHOLDS.slice(1).map((t) =>
+    formatCompactNumber(Math.round(t * maxCount))
+  )
+
+  // windowHours: matches `defaultLastHours` on the chart definition.
+  const windowHours = 24 * 7
+
+  return (
+    <TooltipProvider delayDuration={0}>
+      <div className="flex h-full flex-col gap-3 px-1 py-1">
+        {/* KPI strip */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <KpiCard
+            label="Total queries"
+            value={formatCompactNumber(stats.total)}
+            hint={`${stats.activeHours}/168 active hours`}
+          />
+          <KpiCard
+            label="Peak hour"
+            value={peakLabel}
+            accent="peak"
+            hint={
+              stats.peak && hasTraffic
+                ? `${Math.round(((stats.peak.query_count - stats.avg) * 100) / Math.max(stats.avg, 1))}% above avg`
+                : undefined
+            }
+          />
+          <KpiCard
+            label="Quietest hour"
+            value={quietestLabel}
+            accent="quiet"
+            hint={stats.quietest ? 'lowest non-zero' : undefined}
+          />
+          <KpiCard
+            label="Avg / active hour"
+            value={formatCompactNumber(Math.round(stats.avg))}
+            hint={`across ${stats.activeHours} hours`}
+          />
+        </div>
+
+        {/* Heatmap grid + day-total bars */}
+        <div className="flex min-h-0 flex-1 flex-col gap-1">
+          {/* Hour labels row */}
+          <div className="flex items-end gap-[3px] pl-10 pr-12">
+            {HOUR_LABELS.map((label, hour) => (
+              <div
+                key={hour}
+                className="text-muted-foreground min-w-0 flex-1 text-center text-[10px] leading-none tabular-nums"
+              >
+                {hour % 3 === 0 ? label : ''}
+              </div>
+            ))}
+          </div>
+
+          {/* Grid rows: one per day, with right-margin day total */}
+          <div className="flex flex-1 flex-col gap-[3px]">
+            {DAY_LABELS.map((dayLabel, i) => {
+              const dayOfWeek = i + 1 // 1=Mon .. 7=Sun
+              const isWeekend = dayOfWeek >= 6
+              const dayTotal = stats.dayTotals[i]
+              const dayPct =
+                stats.maxDayTotal > 0 ? (dayTotal * 100) / stats.maxDayTotal : 0
+              return (
+                <div
+                  key={dayOfWeek}
+                  className="flex min-h-0 flex-1 items-stretch gap-[3px]"
+                >
+                  <div
+                    className={cn(
+                      'flex w-9 flex-shrink-0 items-center justify-end pr-1.5 text-[11px] font-medium',
+                      isWeekend
+                        ? 'text-muted-foreground/60'
+                        : 'text-muted-foreground'
+                    )}
+                  >
+                    {dayLabel}
+                  </div>
+                  {Array.from({ length: 24 }, (_, hour) => {
+                    const cell = grid[dayOfWeek]?.[hour]
+                    const count = cell?.query_count ?? 0
+                    const readable = cell?.readable_count ?? '0'
+                    const isCurrent = isCurrentSlotIn(timezone, dayOfWeek, hour)
+                    const rank = rankByKey.get(`${dayOfWeek}-${hour}`) ?? null
+
+                    return (
+                      <HeatmapCellLink
+                        key={hour}
+                        hostId={hostId}
+                        timezone={timezone}
+                        dayOfWeek={dayOfWeek}
+                        hour={hour}
+                        windowHours={windowHours}
+                        count={count}
+                        readable={readable}
+                        maxCount={maxCount}
+                        rank={rank}
+                        totalCells={totalActiveCells}
+                        isCurrent={isCurrent}
+                      />
+                    )
+                  })}
+                  {/* Day-total mini bar */}
+                  <div
+                    className="ml-1 flex w-10 flex-shrink-0 items-center gap-1"
+                    title={`${dayLabel}: ${formatCompactNumber(dayTotal)} queries`}
+                  >
+                    <div className="bg-muted/40 relative h-1.5 flex-1 overflow-hidden rounded-full">
+                      <div
+                        className="bg-chart-2/70 absolute inset-y-0 left-0 rounded-full transition-all"
+                        style={{ width: `${dayPct}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Footer: legend + helper text */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+          <p className="text-muted-foreground text-[10px]">
+            Click any cell to view its queries
+          </p>
+          <div className="flex items-center gap-2">
+            {hasTraffic ? (
+              <span className="text-muted-foreground text-[10px]">0</span>
+            ) : null}
+            <div className="flex items-center gap-[2px]">
+              {INTENSITY_TIERS.map((cls, idx) => (
+                <div
+                  key={cls}
+                  className={cn(
+                    'h-[10px] w-[10px] flex-shrink-0 rounded-[2px]',
+                    cls
+                  )}
+                  title={
+                    !hasTraffic
+                      ? 'No traffic'
+                      : idx === 0
+                        ? '0 queries'
+                        : `≥ ${legendBuckets[idx - 1]} queries`
+                  }
+                />
+              ))}
+            </div>
+            {hasTraffic ? (
+              <span className="text-muted-foreground text-[10px] tabular-nums">
+                {formatCompactNumber(maxCount)}
+              </span>
+            ) : (
+              <span className="text-muted-foreground text-[10px]">
+                no traffic
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </TooltipProvider>
+  )
+}
+
 export const ChartQueryCountHeatmap = createCustomChart({
   chartName: 'query-count-heatmap',
   defaultTitle: 'Query Activity Heatmap',
   defaultLastHours: 24 * 7,
   dataTestId: 'query-count-heatmap-chart',
   contentClassName: 'overflow-x-auto',
-  render: (dataArray, _sql, hostId) => {
-    const data = dataArray as HeatmapCell[]
-
-    if (data.length === 0) {
-      return (
-        <div className="text-muted-foreground flex h-32 items-center justify-center text-sm">
-          No query data available
-        </div>
-      )
-    }
-
-    // Build lookup: [day][hour] -> cell
-    const grid: Record<number, Record<number, HeatmapCell>> = {}
-    let maxCount = 0
-    for (const cell of data) {
-      if (!grid[cell.day_of_week]) grid[cell.day_of_week] = {}
-      grid[cell.day_of_week][cell.hour_of_day] = cell
-      if (cell.query_count > maxCount) maxCount = cell.query_count
-    }
-
-    const stats = deriveStats(data)
-    // Pre-compute rank per cell (descending by count, ties share a slot).
-    const sortedByCount = [...data].sort(
-      (a, b) => b.query_count - a.query_count
-    )
-    const rankByKey = new Map<string, number>()
-    sortedByCount.forEach((cell, idx) => {
-      if (cell.query_count > 0) {
-        rankByKey.set(`${cell.day_of_week}-${cell.hour_of_day}`, idx + 1)
-      }
-    })
-    const totalActiveCells = sortedByCount.filter(
-      (c) => c.query_count > 0
-    ).length
-
-    const peakLabel = stats.peak
-      ? `${DAY_LABELS[stats.peak.day_of_week - 1]} ${String(stats.peak.hour_of_day).padStart(2, '0')}:00 · ${stats.peak.readable_count}`
-      : '—'
-    const quietestLabel = stats.quietest
-      ? `${DAY_LABELS[stats.quietest.day_of_week - 1]} ${String(stats.quietest.hour_of_day).padStart(2, '0')}:00 · ${stats.quietest.readable_count}`
-      : '—'
-
-    // Bucket boundaries for the legend (rounded to nice numbers).
-    const legendBuckets = TIER_THRESHOLDS.slice(1).map((t) =>
-      formatCompactNumber(Math.round(t * maxCount))
-    )
-
-    // windowHours: best-effort from data — fall back to 168.
-    const windowHours = 24 * 7
-
-    return (
-      <TooltipProvider delayDuration={0}>
-        <div className="flex h-full flex-col gap-3 px-1 py-1">
-          {/* KPI strip */}
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <KpiCard
-              label="Total queries"
-              value={formatCompactNumber(stats.total)}
-              hint={`${stats.activeHours}/168 active hours`}
-            />
-            <KpiCard
-              label="Peak hour"
-              value={peakLabel}
-              accent="peak"
-              hint={
-                stats.peak && maxCount > 0
-                  ? `${Math.round(((stats.peak.query_count - stats.avg) * 100) / Math.max(stats.avg, 1))}% above avg`
-                  : undefined
-              }
-            />
-            <KpiCard
-              label="Quietest hour"
-              value={quietestLabel}
-              accent="quiet"
-              hint={stats.quietest ? 'lowest non-zero' : undefined}
-            />
-            <KpiCard
-              label="Avg / active hour"
-              value={formatCompactNumber(Math.round(stats.avg))}
-              hint={`across ${stats.activeHours} hours`}
-            />
-          </div>
-
-          {/* Heatmap grid + day-total bars */}
-          <div className="flex min-h-0 flex-1 flex-col gap-1">
-            {/* Hour labels row */}
-            <div className="flex items-end gap-[3px] pl-10 pr-12">
-              {HOUR_LABELS.map((label, hour) => (
-                <div
-                  key={hour}
-                  className="text-muted-foreground min-w-0 flex-1 text-center text-[10px] leading-none tabular-nums"
-                >
-                  {hour % 3 === 0 ? label : ''}
-                </div>
-              ))}
-            </div>
-
-            {/* Grid rows: one per day, with right-margin day total */}
-            <div className="flex flex-1 flex-col gap-[3px]">
-              {DAY_LABELS.map((dayLabel, i) => {
-                const dayOfWeek = i + 1 // 1=Mon .. 7=Sun
-                const isWeekend = dayOfWeek >= 6
-                const dayTotal = stats.dayTotals[i]
-                const dayPct =
-                  stats.maxDayTotal > 0
-                    ? (dayTotal * 100) / stats.maxDayTotal
-                    : 0
-                return (
-                  <div
-                    key={dayOfWeek}
-                    className="flex min-h-0 flex-1 items-stretch gap-[3px]"
-                  >
-                    <div
-                      className={cn(
-                        'flex w-9 flex-shrink-0 items-center justify-end pr-1.5 text-[11px] font-medium',
-                        isWeekend
-                          ? 'text-muted-foreground/60'
-                          : 'text-muted-foreground'
-                      )}
-                    >
-                      {dayLabel}
-                    </div>
-                    {Array.from({ length: 24 }, (_, hour) => {
-                      const cell = grid[dayOfWeek]?.[hour]
-                      const count = cell?.query_count ?? 0
-                      const readable = cell?.readable_count ?? '0'
-                      const isCurrent = isCurrentSlot(dayOfWeek, hour)
-                      const rank = rankByKey.get(`${dayOfWeek}-${hour}`) ?? null
-
-                      return (
-                        <HeatmapCellLink
-                          key={hour}
-                          hostId={hostId}
-                          dayOfWeek={dayOfWeek}
-                          hour={hour}
-                          windowHours={windowHours}
-                          count={count}
-                          readable={readable}
-                          maxCount={maxCount}
-                          rank={rank}
-                          totalCells={totalActiveCells}
-                          isCurrent={isCurrent}
-                        />
-                      )
-                    })}
-                    {/* Day-total mini bar */}
-                    <div
-                      className="ml-1 flex w-10 flex-shrink-0 items-center gap-1"
-                      title={`${dayLabel}: ${formatCompactNumber(dayTotal)} queries`}
-                    >
-                      <div className="bg-muted/40 relative h-1.5 flex-1 overflow-hidden rounded-full">
-                        <div
-                          className="bg-chart-2/70 absolute inset-y-0 left-0 rounded-full transition-all"
-                          style={{ width: `${dayPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Footer: legend + helper text */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-            <p className="text-muted-foreground text-[10px]">
-              Click any cell to view its queries
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-[10px]">0</span>
-              <div className="flex items-center gap-[2px]">
-                {INTENSITY_TIERS.map((cls, idx) => (
-                  <div
-                    key={cls}
-                    className={cn(
-                      'h-[10px] w-[10px] flex-shrink-0 rounded-[2px]',
-                      cls
-                    )}
-                    title={
-                      idx === 0
-                        ? '0 queries'
-                        : `≥ ${legendBuckets[idx - 1]} queries`
-                    }
-                  />
-                ))}
-              </div>
-              <span className="text-muted-foreground text-[10px] tabular-nums">
-                {formatCompactNumber(maxCount)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </TooltipProvider>
-    )
-  },
+  render: (dataArray, _sql, hostId) => (
+    <HeatmapBody data={dataArray as HeatmapCell[]} hostId={hostId} />
+  ),
 })
 
 export default ChartQueryCountHeatmap
