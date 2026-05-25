@@ -154,14 +154,11 @@ interface DerivedStats {
   avg: number
   activeHours: number
   dayTotals: number[] // index 0..6 → Mon..Sun
-  hourTotals: number[] // index 0..23
   maxDayTotal: number
-  maxHourTotal: number
 }
 
 function deriveStats(data: HeatmapCell[]): DerivedStats {
   const dayTotals = new Array(7).fill(0)
-  const hourTotals = new Array(24).fill(0)
   let total = 0
   let peak: HeatmapCell | null = null
   let quietest: HeatmapCell | null = null
@@ -171,9 +168,6 @@ function deriveStats(data: HeatmapCell[]): DerivedStats {
     total += cell.query_count
     if (cell.day_of_week >= 1 && cell.day_of_week <= 7) {
       dayTotals[cell.day_of_week - 1] += cell.query_count
-    }
-    if (cell.hour_of_day >= 0 && cell.hour_of_day <= 23) {
-      hourTotals[cell.hour_of_day] += cell.query_count
     }
     if (cell.query_count > 0) activeHours++
     if (!peak || cell.query_count > peak.query_count) peak = cell
@@ -192,9 +186,7 @@ function deriveStats(data: HeatmapCell[]): DerivedStats {
     avg: activeHours > 0 ? total / activeHours : 0,
     activeHours,
     dayTotals,
-    hourTotals,
     maxDayTotal: Math.max(...dayTotals, 0),
-    maxHourTotal: Math.max(...hourTotals, 0),
   }
 }
 
@@ -356,15 +348,20 @@ function HeatmapCellLink({
 function HeatmapBody({
   data,
   hostId,
+  lastHours,
 }: {
   data: HeatmapCell[]
   hostId: number
+  lastHours: number | undefined
 }) {
   const { settings } = useUserSettings()
   const timezone =
     settings.timezone ||
     Intl?.DateTimeFormat()?.resolvedOptions()?.timeZone ||
     'UTC'
+  // Drilldown window: bounded by the chart's data window so the resolved
+  // slot is guaranteed to live inside what the user can see.
+  const windowHours = Math.max(1, Math.round(lastHours ?? 24 * 7))
 
   if (data.length === 0) {
     return (
@@ -414,9 +411,6 @@ function HeatmapBody({
     formatCompactNumber(Math.round(t * maxCount))
   )
 
-  // windowHours: matches `defaultLastHours` on the chart definition.
-  const windowHours = 24 * 7
-
   return (
     <TooltipProvider delayDuration={0}>
       <div className="flex h-full flex-col gap-3 px-1 py-1">
@@ -425,7 +419,7 @@ function HeatmapBody({
           <KpiCard
             label="Total queries"
             value={formatCompactNumber(stats.total)}
-            hint={`${stats.activeHours}/168 active hours`}
+            hint={`${stats.activeHours}/${windowHours} active hours`}
           />
           <KpiCard
             label="Peak hour"
@@ -578,8 +572,12 @@ export const ChartQueryCountHeatmap = createCustomChart({
   defaultLastHours: 24 * 7,
   dataTestId: 'query-count-heatmap-chart',
   contentClassName: 'overflow-x-auto',
-  render: (dataArray, _sql, hostId) => (
-    <HeatmapBody data={dataArray as HeatmapCell[]} hostId={hostId} />
+  render: (dataArray, _sql, hostId, lastHours) => (
+    <HeatmapBody
+      data={dataArray as HeatmapCell[]}
+      hostId={hostId}
+      lastHours={lastHours}
+    />
   ),
 })
 
