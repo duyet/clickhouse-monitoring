@@ -141,11 +141,41 @@ function formatChDateTime(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
 }
 
-const DATE_FORMAT = new Intl.DateTimeFormat(undefined, {
-  weekday: 'short',
-  month: 'short',
-  day: 'numeric',
-})
+const WEEKDAY_NAMES_SHORT = [
+  'Sun',
+  'Mon',
+  'Tue',
+  'Wed',
+  'Thu',
+  'Fri',
+  'Sat',
+] as const
+const MONTH_NAMES_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+] as const
+
+/**
+ * Format a wall-clock Date for display, reading components directly so the
+ * output reflects the user-tz components that were encoded into the Date —
+ * not the browser's interpretation through `Intl`. Going through
+ * `Intl.DateTimeFormat` here would either implicitly use the browser zone
+ * (correct only by coincidence) or, with an explicit `timeZone`, would
+ * double-shift the already-encoded wall clock.
+ */
+function formatDisplayDate(d: Date): string {
+  return `${WEEKDAY_NAMES_SHORT[d.getDay()]}, ${MONTH_NAMES_SHORT[d.getMonth()]} ${d.getDate()}`
+}
 
 interface DerivedStats {
   total: number
@@ -319,7 +349,7 @@ function HeatmapCellLink({
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="text-muted-foreground text-[11px]">
-              {slotDate ? DATE_FORMAT.format(slotDate) : dayLabel}
+              {slotDate ? formatDisplayDate(slotDate) : dayLabel}
               {' · '}
               <span className="tabular-nums">
                 {hourLabel}:00–{hourLabel}:59
