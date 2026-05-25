@@ -11,7 +11,7 @@
 import type { BadgeVariant } from '@/types/badge-variant'
 
 import { useMenuCount } from '../hooks/use-menu-count'
-import { memo } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import { formatReadableQuantity } from '@/lib/format-readable'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
@@ -29,6 +29,11 @@ export const CountBadge = memo(function CountBadge({
 }: CountBadgeProps) {
   const hostId = useHostId()
   const { count, isLoading } = useMenuCount(countKey, hostId)
+  const isFirstRenderRef = useRef(true)
+
+  useEffect(() => {
+    isFirstRenderRef.current = false
+  }, [])
 
   // Don't render if loading, no count, or count is 0
   if (isLoading || count === null || count === 0) {
@@ -50,7 +55,12 @@ export const CountBadge = memo(function CountBadge({
         variantClasses
       )}
     >
-      <span className="shrink-0">{formatReadableQuantity(count, 'short')}</span>
+      <span
+        key={count}
+        className={cn('shrink-0', !isFirstRenderRef.current && 't-digit')}
+      >
+        {formatReadableQuantity(count, 'short')}
+      </span>
       {countLabel && (
         <span
           className={cn(

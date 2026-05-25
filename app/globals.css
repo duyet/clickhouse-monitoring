@@ -421,3 +421,183 @@
     animation: rq-indeterminate 1.3s ease-in-out infinite;
   }
 }
+
+/* ---------------------------------------------------------------
+ * transitions.dev — copy-paste CSS snippets (https://transitions.dev)
+ *
+ * Source: https://github.com/Jakubantalik/transitions.dev
+ * Patterns: digit pop-in, text swap, success check, error shake.
+ *
+ * The :root custom properties and @keyframes are taken verbatim
+ * from the upstream snippets. The trigger classes are simplified
+ * to fire on element mount (paired with React `key` remount in
+ * usage sites) instead of the upstream is-animating/is-shaking
+ * class-toggle workflow.
+ * --------------------------------------------------------------- */
+
+:root {
+  /* Digit pop-in */
+  --digit-dur: 500ms;
+  --digit-distance: 8px;
+  --digit-blur: 2px;
+  --digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --digit-dir-x: 0;
+  --digit-dir-y: 1;
+
+  /* Text swap */
+  --text-swap-dur: 280ms;
+  --text-swap-translate-y: 6px;
+  --text-swap-blur: 4px;
+  --text-swap-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Success check */
+  --check-opacity-dur: 550ms;
+  --check-rotate-dur: 550ms;
+  --check-rotate-from: 80deg;
+  --check-bob-dur: 450ms;
+  --check-y-amount: 40px;
+  --check-blur-dur: 500ms;
+  --check-blur-from: 10px;
+  --check-path-dur: 550ms;
+  --check-path-delay: 80ms;
+  --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-bob: cubic-bezier(0.34, 1.35, 0.64, 1);
+
+  /* Error shake */
+  --shake-distance: 6px;
+  --shake-overshoot: 4px;
+  --shake-dur-a: 80ms;
+  --shake-dur-b: 60ms;
+  --shake-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer utilities {
+  /* Digit pop-in: a number that fades + blurs + slides on every change. */
+  @keyframes t-digit-pop-in {
+    0% {
+      transform: translate(
+        calc(var(--digit-distance) * var(--digit-dir-x)),
+        calc(var(--digit-distance) * var(--digit-dir-y))
+      );
+      opacity: 0;
+      filter: blur(var(--digit-blur));
+    }
+    100% {
+      transform: translate(0, 0);
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+  .t-digit {
+    display: inline-block;
+    will-change: transform, opacity, filter;
+    animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;
+  }
+
+  /* Text swap (enter half): blur + slide in when the text changes. */
+  @keyframes t-text-swap-in {
+    0% {
+      transform: translateY(var(--text-swap-translate-y));
+      filter: blur(var(--text-swap-blur));
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      filter: blur(0);
+      opacity: 1;
+    }
+  }
+  .t-text-swap {
+    display: inline-block;
+    will-change: transform, filter, opacity;
+    animation: t-text-swap-in var(--text-swap-dur) var(--text-swap-ease) both;
+  }
+
+  /* Success check: fade + rotate + Y-bob + blur on the wrapper, with an
+     SVG stroke draw on the path. Applied to a span wrapping a lucide icon. */
+  @keyframes t-check-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes t-check-rotate {
+    from { transform: rotate(var(--check-rotate-from)); }
+    to { transform: rotate(0deg); }
+  }
+  @keyframes t-check-blur {
+    from { filter: blur(var(--check-blur-from)); }
+    to { filter: blur(0); }
+  }
+  @keyframes t-check-bob {
+    from { translate: 0 var(--check-y-amount); }
+    to { translate: 0 0; }
+  }
+  @keyframes t-check-draw {
+    to { stroke-dashoffset: 0; }
+  }
+  .t-success-check {
+    display: inline-block;
+    transform-origin: center;
+    will-change: transform, opacity, filter;
+    animation:
+      t-check-fade var(--check-opacity-dur) var(--check-ease-out) both,
+      t-check-rotate var(--check-rotate-dur) var(--check-ease-out) both,
+      t-check-blur var(--check-blur-dur) var(--check-ease-out) both,
+      t-check-bob var(--check-bob-dur) var(--check-ease-bob) both;
+  }
+  .t-success-check svg {
+    display: block;
+    overflow: visible;
+  }
+  .t-success-check svg path {
+    stroke-dasharray: 20;
+    stroke-dashoffset: 20;
+    animation: t-check-draw var(--check-path-dur) var(--check-ease-out)
+      var(--check-path-delay) both;
+  }
+
+  /* Error shake: short side-to-side oscillation on validation failure. */
+  @keyframes t-input-shake {
+    0% {
+      transform: translateX(0);
+      animation-timing-function: var(--shake-ease);
+    }
+    28.57% {
+      transform: translateX(var(--shake-distance));
+      animation-timing-function: var(--shake-ease);
+    }
+    57.14% {
+      transform: translateX(calc(var(--shake-distance) * -1));
+      animation-timing-function: var(--shake-ease);
+    }
+    78.57% {
+      transform: translateX(var(--shake-overshoot));
+      animation-timing-function: var(--shake-ease);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+  .t-error-shake {
+    will-change: transform;
+    animation: t-input-shake
+      calc(var(--shake-dur-a) * 2 + var(--shake-dur-b) * 2)
+      linear both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .t-digit,
+    .t-text-swap,
+    .t-success-check,
+    .t-success-check svg path,
+    .t-error-shake {
+      animation: none !important;
+      transition: none !important;
+    }
+    /* Without the draw animation the path would stay clipped at its
+       full stroke-dashoffset and render invisibly. Snap it to the final
+       drawn state so the check still appears for reduced-motion users. */
+    .t-success-check svg path {
+      stroke-dashoffset: 0 !important;
+    }
+  }
+}
