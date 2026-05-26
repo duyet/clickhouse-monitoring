@@ -112,6 +112,37 @@ function isCurrentSlotIn(
   return jsDayToChDay(now.jsDayOfWeek) === dayOfWeek && now.hour === hour
 }
 
+/** Step a wall clock back by one hour using pure component arithmetic, so the
+ *  walk follows the target timezone's calendar — not the browser's DST rules.
+ *  Day rollover uses a Date at noon to dodge any DST jump zones. */
+function stepBackOneHour(wc: WallClock): WallClock {
+  if (wc.hour > 0) {
+    const hour = wc.hour - 1
+    return {
+      year: wc.year,
+      month: wc.month,
+      day: wc.day,
+      hour,
+      jsDayOfWeek: wc.jsDayOfWeek,
+      asDate: new Date(wc.year, wc.month - 1, wc.day, hour, 0, 0),
+    }
+  }
+  // Roll over to the previous calendar day at hour 23.
+  const prev = new Date(wc.year, wc.month - 1, wc.day - 1, 12)
+  const year = prev.getFullYear()
+  const month = prev.getMonth() + 1
+  const day = prev.getDate()
+  const jsDayOfWeek = prev.getDay()
+  return {
+    year,
+    month,
+    day,
+    hour: 23,
+    jsDayOfWeek,
+    asDate: new Date(year, month - 1, day, 23, 0, 0),
+  }
+}
+
 /**
  * Find the most-recent wall-clock instant matching (chDay, hour) within the
  * last `windowHours` hours from the current moment in `timezone`. Returns
@@ -123,14 +154,12 @@ function findMostRecentSlot(
   hour: number,
   windowHours: number
 ): Date | null {
-  const now = nowInTimezone(timezone)
-  const probe = new Date(now.asDate.getTime())
+  let probe = nowInTimezone(timezone)
   for (let i = 0; i <= windowHours; i++) {
-    const probeChDay = jsDayToChDay(probe.getDay())
-    if (probeChDay === chDay && probe.getHours() === hour) {
-      return probe
+    if (jsDayToChDay(probe.jsDayOfWeek) === chDay && probe.hour === hour) {
+      return probe.asDate
     }
-    probe.setHours(probe.getHours() - 1)
+    probe = stepBackOneHour(probe)
   }
   return null
 }
