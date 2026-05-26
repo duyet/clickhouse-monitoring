@@ -8,11 +8,20 @@ import { ExplorerEmptyState } from './explorer-empty-state'
 import { type ExplorerTab, useExplorerState } from './hooks/use-explorer-state'
 import { DataTab } from './tabs/data-tab'
 import { DdlTab } from './tabs/ddl-tab'
-import { DependenciesTab } from './tabs/dependencies-tab'
 import { IndexesTab } from './tabs/indexes-tab'
-import { QueryTab } from './tabs/query-tab'
 import { StructureTab } from './tabs/structure-tab'
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+
+const DependenciesTab = lazy(() =>
+  import('./tabs/dependencies-tab').then((mod) => ({
+    default: mod.DependenciesTab,
+  }))
+)
+
+const QueryTab = lazy(() =>
+  import('./tabs/query-tab').then((mod) => ({ default: mod.QueryTab }))
+)
+
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
@@ -78,7 +87,16 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
     return (
       <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
         <ExplorerBreadcrumb hostName={hostName} />
-        <QueryTab />
+        <Suspense
+          fallback={
+            <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+              Loading query editor…
+            </div>
+          }
+        >
+          <QueryTab />
+        </Suspense>
       </div>
     )
   }
@@ -172,14 +190,32 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
         {/* Dependencies tab: NOT force-mounted — React Flow + dagre layout
             is heavyweight and should unmount when switching away */}
         <TabsContent value="dependencies" className="mt-4 flex-none">
-          <DependenciesTab />
+          <Suspense
+            fallback={
+              <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+                Loading dependencies…
+              </div>
+            }
+          >
+            <DependenciesTab />
+          </Suspense>
         </TabsContent>
 
         {/* Query tab: NOT force-mounted — CodeMirror editor is heavyweight
             and should unmount when switching away. Editor state is
             re-initialized from URL (customQuery) on revisit. */}
         <TabsContent value="query" className="mt-4 flex-none">
-          <QueryTab />
+          <Suspense
+            fallback={
+              <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+                Loading query editor…
+              </div>
+            }
+          >
+            <QueryTab />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>

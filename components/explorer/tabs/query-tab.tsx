@@ -37,7 +37,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { format } from 'sql-formatter'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -408,8 +407,9 @@ export function QueryTab() {
     [validationError]
   )
 
-  const handleFormat = useCallback(() => {
+  const handleFormat = useCallback(async () => {
     try {
+      const { format } = await import('sql-formatter')
       setEditorValue(
         format(editorValue, { language: 'sql', keywordCase: 'upper' })
       )
