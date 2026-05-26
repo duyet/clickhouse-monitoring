@@ -70,7 +70,7 @@ function SqlEditorWrapper({ children }: { children: React.ReactNode }) {
 }
 
 const MAX_CELL_LENGTH = 100
-const DEFAULT_LIMIT = 1000
+const DEFAULT_LIMIT = 100
 const PAGE_SIZE = 50
 
 /**
@@ -335,7 +335,7 @@ export function QueryTab() {
     revalidateOnReconnect: false,
   })
 
-  const rows = response?.data || []
+  const rows = useMemo(() => response?.data ?? [], [response?.data])
   const metadata = response?.metadata
 
   // Generate columns dynamically from data
@@ -384,8 +384,13 @@ export function QueryTab() {
     const wasLimitAdded = finalSql !== sql
     setLimitAdded(wasLimitAdded)
 
+    // Set the executed query first to trigger SWR fetch immediately.
+    // Defer the URL update (router.push) so it doesn't cause a re-render
+    // that races with the state update and SWR key creation.
     setExecutedQuery(finalSql)
-    setCustomQuery(finalSql)
+    requestAnimationFrame(() => {
+      setCustomQuery(finalSql)
+    })
   }, [editorValue, setCustomQuery])
 
   const handleCancel = useCallback(() => {
