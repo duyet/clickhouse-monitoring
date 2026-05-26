@@ -133,7 +133,7 @@ export async function GET(request: Request): Promise<Response> {
 
   // Build safe query using ClickHouse placeholders
   const query =
-    'SELECT * FROM {database:String}.{table:String} LIMIT {limit:UInt32} OFFSET {offset:UInt32}'
+    'SELECT * FROM {database:Identifier}.{table:Identifier} LIMIT {limit:UInt32} OFFSET {offset:UInt32}'
 
   debug(`[GET /api/v1/explorer/preview] Executing query:`, { query })
 
