@@ -169,22 +169,17 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
           {visitedTabs.has('indexes') && <IndexesTab />}
         </TabsContent>
 
-        {/* Dependencies tab: force-mount to keep content cached */}
-        <TabsContent
-          value="dependencies"
-          className={cn('mt-4', tab !== 'dependencies' && 'hidden flex-none')}
-          forceMount
-        >
-          {visitedTabs.has('dependencies') && <DependenciesTab />}
+        {/* Dependencies tab: NOT force-mounted — React Flow + dagre layout
+            is heavyweight and should unmount when switching away */}
+        <TabsContent value="dependencies" className="mt-4 flex-none">
+          <DependenciesTab />
         </TabsContent>
 
-        {/* Query tab: force-mount to preserve editor state */}
-        <TabsContent
-          value="query"
-          className={cn('mt-4', tab !== 'query' && 'hidden flex-none')}
-          forceMount
-        >
-          {visitedTabs.has('query') && <QueryTab />}
+        {/* Query tab: NOT force-mounted — CodeMirror editor is heavyweight
+            and should unmount when switching away. Editor state is
+            re-initialized from URL (customQuery) on revisit. */}
+        <TabsContent value="query" className="mt-4 flex-none">
+          <QueryTab />
         </TabsContent>
       </Tabs>
     </div>
