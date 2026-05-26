@@ -7,14 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Button } from '@/components/ui/button'
 import { ShakeFormControl } from '@/components/forms/shake-form-control'
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-} from '@/components/ui/form'
+import { Button } from '@/components/ui/button'
+import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { updateSettingParams } from '@/lib/api/dashboard-api-client'
 import { ErrorLogger } from '@/lib/logger'
