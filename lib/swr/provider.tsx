@@ -76,12 +76,13 @@ const globalFetcher = async (url: string) => {
 
   const data = await res.json()
 
-  // Track metrics
+  // Track metrics (only compute size in development to avoid
+  // synchronous JSON.stringify of large table responses on every fetch)
   trackFetchMetrics({
     url,
     duration,
     timestamp: Date.now(),
-    size: JSON.stringify(data).length,
+    size: isDevelopment() ? JSON.stringify(data).length : undefined,
     cached: res.headers.get('x-cache') === 'HIT',
   })
 
