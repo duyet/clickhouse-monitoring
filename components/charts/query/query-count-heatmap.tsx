@@ -223,11 +223,18 @@ function deriveStats(data: HeatmapCell[]): DerivedStats {
 interface KpiCardProps {
   label: string
   value: string
+  sublabel?: string
   hint?: string
   accent?: 'default' | 'peak' | 'quiet'
 }
 
-function KpiCard({ label, value, hint, accent = 'default' }: KpiCardProps) {
+function KpiCard({
+  label,
+  value,
+  sublabel,
+  hint,
+  accent = 'default',
+}: KpiCardProps) {
   return (
     <div
       className={cn(
@@ -238,15 +245,22 @@ function KpiCard({ label, value, hint, accent = 'default' }: KpiCardProps) {
       <span className="text-muted-foreground text-[10px] uppercase tracking-wide">
         {label}
       </span>
-      <span
-        className={cn(
-          'truncate text-base font-semibold tabular-nums leading-tight',
-          accent === 'peak' && 'text-chart-2',
-          accent === 'quiet' && 'text-muted-foreground'
-        )}
-      >
-        {value}
-      </span>
+      <div className="flex items-baseline gap-1.5 min-w-0">
+        <span
+          className={cn(
+            'truncate text-base font-semibold tabular-nums leading-tight',
+            accent === 'peak' && 'text-chart-2',
+            accent === 'quiet' && 'text-muted-foreground'
+          )}
+        >
+          {value}
+        </span>
+        {sublabel ? (
+          <span className="text-muted-foreground/80 truncate text-[11px] tabular-nums">
+            {sublabel}
+          </span>
+        ) : null}
+      </div>
       {hint ? (
         <span className="text-muted-foreground truncate text-[10px] tabular-nums">
           {hint}
@@ -427,12 +441,14 @@ function HeatmapBody({
   }
   const totalActiveCells = sortedByCount.filter((c) => c.query_count > 0).length
 
-  const peakLabel = stats.peak
-    ? `${DAY_LABELS[stats.peak.day_of_week - 1]} ${String(stats.peak.hour_of_day).padStart(2, '0')}:00 · ${stats.peak.readable_count}`
-    : '—'
-  const quietestLabel = stats.quietest
-    ? `${DAY_LABELS[stats.quietest.day_of_week - 1]} ${String(stats.quietest.hour_of_day).padStart(2, '0')}:00 · ${stats.quietest.readable_count}`
-    : '—'
+  const peakValue = stats.peak ? stats.peak.readable_count : '—'
+  const peakSlot = stats.peak
+    ? `${DAY_LABELS[stats.peak.day_of_week - 1]} ${String(stats.peak.hour_of_day).padStart(2, '0')}:00`
+    : undefined
+  const quietestValue = stats.quietest ? stats.quietest.readable_count : '—'
+  const quietestSlot = stats.quietest
+    ? `${DAY_LABELS[stats.quietest.day_of_week - 1]} ${String(stats.quietest.hour_of_day).padStart(2, '0')}:00`
+    : undefined
 
   // Bucket boundaries for the legend (rounded). Skip numeric labels when
   // there is no traffic — all buckets would collapse to "≥ 0".
@@ -443,7 +459,7 @@ function HeatmapBody({
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="flex h-full flex-col gap-3 px-1 py-1">
+      <div className="flex flex-col gap-3 px-1 py-1">
         {/* KPI strip */}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <KpiCard
@@ -453,7 +469,8 @@ function HeatmapBody({
           />
           <KpiCard
             label="Peak hour"
-            value={peakLabel}
+            value={peakValue}
+            sublabel={peakSlot}
             accent="peak"
             hint={
               stats.peak && hasTraffic
@@ -463,7 +480,8 @@ function HeatmapBody({
           />
           <KpiCard
             label="Quietest hour"
-            value={quietestLabel}
+            value={quietestValue}
+            sublabel={quietestSlot}
             accent="quiet"
             hint={stats.quietest ? 'lowest non-zero' : undefined}
           />
@@ -475,9 +493,10 @@ function HeatmapBody({
         </div>
 
         {/* Heatmap grid + day-total bars */}
-        <div className="flex min-h-0 flex-1 flex-col gap-1">
-          {/* Hour labels row */}
-          <div className="flex items-end gap-[3px] pl-10 pr-12">
+        <div className="flex flex-col gap-1.5">
+          {/* Hour labels row — left gutter (40px) and right gutter (56px) match
+              the day-label column and the day-total mini-bar+number column. */}
+          <div className="flex items-end gap-[3px] pl-10 pr-14">
             {HOUR_LABELS.map((label, hour) => (
               <div
                 key={hour}
@@ -488,8 +507,10 @@ function HeatmapBody({
             ))}
           </div>
 
-          {/* Grid rows: one per day, with right-margin day total */}
-          <div className="flex flex-1 flex-col gap-[3px]">
+          {/* Grid rows: one per day, with right-margin day total. Fixed row
+              height (h-5) keeps the card from squeezing rows behind the
+              footer when its container is short. */}
+          <div className="flex flex-col gap-[3px]">
             {DAY_LABELS.map((dayLabel, i) => {
               const dayOfWeek = i + 1 // 1=Mon .. 7=Sun
               const isWeekend = dayOfWeek >= 6
@@ -499,11 +520,11 @@ function HeatmapBody({
               return (
                 <div
                   key={dayOfWeek}
-                  className="flex min-h-0 flex-1 items-stretch gap-[3px]"
+                  className="flex h-5 items-stretch gap-[3px]"
                 >
                   <div
                     className={cn(
-                      'flex w-9 flex-shrink-0 items-center justify-end pr-1.5 text-[11px] font-medium',
+                      'flex w-10 flex-shrink-0 items-center justify-end pr-1.5 text-[11px] font-medium',
                       isWeekend
                         ? 'text-muted-foreground/60'
                         : 'text-muted-foreground'
@@ -535,9 +556,10 @@ function HeatmapBody({
                       />
                     )
                   })}
-                  {/* Day-total mini bar */}
+                  {/* Day-total mini bar + numeric tag. Reserved column width
+                      (w-14) matches the hour-row right gutter. */}
                   <div
-                    className="ml-1 flex w-10 flex-shrink-0 items-center gap-1"
+                    className="ml-1 flex w-14 flex-shrink-0 items-center gap-1.5"
                     title={`${dayLabel}: ${formatCompactNumber(dayTotal)} queries`}
                   >
                     <div className="bg-muted/40 relative h-1.5 flex-1 overflow-hidden rounded-full">
@@ -546,6 +568,16 @@ function HeatmapBody({
                         style={{ width: `${dayPct}%` }}
                       />
                     </div>
+                    <span
+                      className={cn(
+                        'min-w-[1.75rem] text-right text-[10px] tabular-nums leading-none',
+                        isWeekend
+                          ? 'text-muted-foreground/60'
+                          : 'text-muted-foreground'
+                      )}
+                    >
+                      {hasTraffic ? formatCompactNumber(dayTotal) : ''}
+                    </span>
                   </div>
                 </div>
               )
