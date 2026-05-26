@@ -63,7 +63,7 @@ export function createCustomChart(
             data-testid={config.dataTestId}
             href={href}
           >
-            {config.render(dataArray, sql, hostId)}
+            {config.render(dataArray, sql, hostId, lastHours)}
           </ChartCard>
         )}
       </ChartContainer>
