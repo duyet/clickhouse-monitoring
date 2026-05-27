@@ -484,6 +484,15 @@ function renderGroupedPart({ part, children }: GroupedRenderInfo) {
  * current assistant message has no real parts yet.
  */
 function LoadingIndicator() {
+  const isRunning = useThread((thread) => thread.isRunning)
+  const hasError = useMessage(
+    (msg) =>
+      msg.role === 'assistant' &&
+      (msg.status?.type === 'incomplete' ||
+        msg.content.some(
+          (p) => (p as { type?: string })?.type === 'data-error'
+        ))
+  )
   const hasNoParts = useMessage(
     (msg) =>
       msg.role === 'assistant' &&
@@ -493,7 +502,7 @@ function LoadingIndicator() {
           (msg.content[0] as { type: 'text'; text: string }).text === ''))
   )
 
-  if (!hasNoParts) return null
+  if (!isRunning || hasError || !hasNoParts) return null
 
   return (
     <div className="flex items-center gap-2 py-1">

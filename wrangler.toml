@@ -41,6 +41,14 @@ bucket_name = "clickhouse-monitoring-inc-cache"
 [observability]
 enabled = true
 
+# Resource limits — Paid plan only.
+# When this account upgrades to Workers Paid, uncomment to extend the CPU
+# budget so multi-step agent loops don't hit Cloudflare 1027
+# "Worker exceeded resource limits".
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#limits
+# [limits]
+# cpu_ms = 300000
+
 # Smart Placement
 # Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
 [placement]
@@ -182,6 +190,10 @@ CHM_FEATURE_AGENT_ACCESS = "authenticated"
 # Clerk authentication (public key is safe to include)
 # Test key for preview environment - uses Clerk's test instance
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ"
+
+# Resource limits — Paid plan only; mirror the top-level block when enabled.
+# [env.preview.limits]
+# cpu_ms = 300000
 
 # Self-reference must point to the preview worker
 [[env.preview.services]]
