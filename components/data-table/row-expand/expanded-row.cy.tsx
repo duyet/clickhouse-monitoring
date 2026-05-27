@@ -1,8 +1,7 @@
 import type { Row } from '@tanstack/react-table'
 
-import { Table, TableBody } from '@/components/ui/table'
-
 import { ExpandedRow } from './expanded-row'
+import { Table, TableBody } from '@/components/ui/table'
 
 interface Sample {
   id: string

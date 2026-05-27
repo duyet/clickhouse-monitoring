@@ -4,10 +4,9 @@ import type { Row, RowData } from '@tanstack/react-table'
 
 import type { ExpandableConfig, ExpandedRenderer } from '@/types/query-config'
 
+import { DefaultExpandedRow } from './default-renderer'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-
-import { DefaultExpandedRow } from './default-renderer'
 
 interface ExpandedRowProps<TData extends RowData> {
   row: Row<TData>
