@@ -87,15 +87,17 @@ export function DatabaseOverview({ database }: DatabaseOverviewProps) {
   }
 
   return (
-    <div className="group flex h-full flex-col gap-4 p-4">
+    <div className="group flex h-full flex-col gap-3 p-3 sm:gap-4 sm:p-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
           <DatabaseIcon className="size-5 text-muted-foreground" />
         </div>
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold">{database}</h2>
-          <p className="text-sm text-muted-foreground">
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-base font-semibold sm:text-lg">
+            {database}
+          </h2>
+          <p className="text-xs text-muted-foreground sm:text-sm">
             {tableCount} table{tableCount !== 1 ? 's' : ''}
             {depCount > 0 &&
               ` · ${depCount} dependency relationship${depCount !== 1 ? 's' : ''}`}
