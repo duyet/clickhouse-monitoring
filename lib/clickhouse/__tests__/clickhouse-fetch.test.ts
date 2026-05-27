@@ -162,6 +162,8 @@ describe('clickhouse-fetch', () => {
           sql: 'SELECT 1',
         })
         expect(result.metadata.clickhouseVersion).toBeDefined()
+        expect(result.metadata.rawResponseLength).toBeGreaterThan(0)
+        expect(result.metadata.rawResponsePreview).toBeDefined()
         expect(result.error).toBeUndefined()
       })
 
@@ -575,6 +577,7 @@ describe('clickhouse-fetch', () => {
         '[{"result":1,"max":"9007199254740992"},{"result":2}]'
       )
       expect(result.metadata.rows).toBe(2)
+      expect(result.metadata.rawResponseLength).toBeGreaterThan(0)
     })
 
     it('counts JSONEachRow rows without allocating line arrays', () => {

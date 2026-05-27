@@ -222,6 +222,15 @@ export const fetchData = async <
     // Use the client's json() method which handles format-specific parsing
     const data = (await resultSet.json()) as T
 
+    // For debugging: serialize the parsed data to see what we got
+    const rawText = JSON.stringify(data)
+    debug(`[fetchData] ClickHouse response (${query_id}):`, {
+      dataType: typeof data,
+      isArray: Array.isArray(data),
+      length: Array.isArray(data) ? data.length : 'N/A',
+      preview: rawText.substring(0, 500),
+    })
+
     const end = new Date()
     const duration = (end.getTime() - start.getTime()) / 1000
     let rows: number = 0
@@ -256,6 +265,10 @@ export const fetchData = async <
       clickhouseVersion: clickhouseVersion?.raw ?? 'unknown',
       // Include the actual SQL that was executed (normalized for readability)
       sql: effectiveQuery.replace(/\s+/g, ' ').trim(),
+      // Include raw response for debugging (truncated if large)
+      rawResponseLength: rawText.length,
+      rawResponsePreview:
+        rawText.length <= 500 ? rawText : `${rawText.substring(0, 500)}...`,
     }
 
     return { data, metadata }
