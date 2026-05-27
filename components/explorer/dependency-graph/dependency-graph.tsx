@@ -87,10 +87,10 @@ function TableNode({
   return (
     <div
       className={cn(
-        'w-[260px] rounded-lg border-2 bg-card px-4 py-3 shadow-md transition-all',
+        'w-[260px] rounded-lg border-2 bg-card px-4 py-3 transition-all',
         data.isCurrent
           ? 'border-primary ring-2 ring-primary/30'
-          : 'border-border hover:border-primary/50 hover:shadow-lg'
+          : 'border-border hover:border-primary/50'
       )}
     >
       {/* Invisible handles for edge connections */}
@@ -544,7 +544,7 @@ export function DependencyGraph({
         {edgeCount > 0 && (
           <Panel
             position="bottom-left"
-            className="rounded-lg border bg-card/95 p-2.5 shadow-sm backdrop-blur-sm"
+            className="rounded-lg border bg-card/95 p-2.5 backdrop-blur-sm"
           >
             <div className="mb-2 text-xs font-medium text-foreground">
               Dependency Types

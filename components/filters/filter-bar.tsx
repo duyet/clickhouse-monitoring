@@ -268,7 +268,7 @@ function FilterChip({
   const FieldIcon = field.icon
 
   return (
-    <div className="inline-flex h-7 items-center rounded-md border bg-card pl-2 pr-0.5 text-xs shadow-sm">
+    <div className="inline-flex h-7 max-w-full items-center rounded-md border bg-card pl-2 pr-0.5 text-xs">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
@@ -283,7 +283,7 @@ function FilterChip({
             )}
             <span className="font-medium">{field.label}</span>
             <span className="text-muted-foreground">{operatorLabel}</span>
-            <span className="max-w-[180px] truncate font-semibold text-primary">
+            <span className="max-w-[120px] truncate font-semibold text-primary sm:max-w-[180px]">
               {valueText}
             </span>
           </button>
