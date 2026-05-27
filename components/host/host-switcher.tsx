@@ -1,8 +1,8 @@
 'use client'
 
-import { Check, ChevronsUpDown } from 'lucide-react'
+import { ChevronsUpDown } from 'lucide-react'
 
-import { HostStatusDropdown } from './host-status-dropdown'
+import { HostMenuRow } from './host-menu-row'
 import { HostVersionWithStatus } from './host-version-status'
 import {
   LogoStatusIndicator,
@@ -179,15 +179,11 @@ export function HostSwitcher() {
                   className="gap-2 p-2"
                   data-testid={`host-option-${index}`}
                 >
-                  <div className="flex flex-1 items-center gap-2">
-                    <span className="truncate">
-                      {host.name || getHost(host.host)}
-                    </span>
-                    <HostStatusDropdown hostId={host.id} />
-                  </div>
-                  {index === currentHostId && (
-                    <Check className="ml-auto size-4" />
-                  )}
+                  <HostMenuRow
+                    hostId={host.id}
+                    hostName={host.name || getHost(host.host)}
+                    isActive={index === currentHostId}
+                  />
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
