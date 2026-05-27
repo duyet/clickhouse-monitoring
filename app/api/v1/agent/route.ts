@@ -45,8 +45,12 @@ export const dynamic = 'force-dynamic'
 const AGENT_DEBUG_LOGS = process.env.NODE_ENV !== 'production'
 
 const AGENT_MAX_REQUEST_SIZE_BYTES = 128 * 1024
-const AGENT_STREAM_TIMEOUT_MS = 30_000
-const AGENT_STREAM_STEP_TIMEOUT_MS = 12_000
+// Free / routed providers can take 20-40s between a tool call and the
+// follow-up summary. The previous 12s step/chunk budget killed the loop
+// after the first tool call on slower models. Give it real room and let
+// stepCountIs(maxSteps) remain the actual termination guard.
+const AGENT_STREAM_TIMEOUT_MS = 120_000
+const AGENT_STREAM_STEP_TIMEOUT_MS = 45_000
 const AGENT_MAX_MESSAGES = 64
 const AGENT_MAX_MESSAGE_PARTS = 64
 const AGENT_MAX_USER_MESSAGE_LENGTH = 8_192
