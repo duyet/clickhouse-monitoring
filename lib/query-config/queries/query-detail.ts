@@ -49,6 +49,19 @@ export const queryDetailConfig: QueryConfig = {
   tableCheck: 'system.query_log',
   sql: [
     {
+      since: '20.0',
+      description: 'Legacy: exception_text column, no query_cache_usage',
+      sql: `
+    SELECT
+      ${baseSelect},
+      exception_text
+    FROM system.query_log
+    WHERE query_id = {query_id: String}
+    ORDER BY event_time DESC
+    LIMIT 1
+  `,
+    },
+    {
       since: '23.8',
       description:
         'exception column (renamed from exception_text), with query_cache_usage',
@@ -57,19 +70,6 @@ export const queryDetailConfig: QueryConfig = {
       ${baseSelect},
       exception AS exception_text,
       query_cache_usage
-    FROM system.query_log
-    WHERE query_id = {query_id: String}
-    ORDER BY event_time DESC
-    LIMIT 1
-  `,
-    },
-    {
-      since: '20.0',
-      description: 'Legacy: exception_text column, no query_cache_usage',
-      sql: `
-    SELECT
-      ${baseSelect},
-      exception_text
     FROM system.query_log
     WHERE query_id = {query_id: String}
     ORDER BY event_time DESC
