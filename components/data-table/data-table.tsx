@@ -31,6 +31,7 @@ import {
   useAutoFitColumns,
   useColumnVisibility,
   useFilteredData,
+  useTableBehavior,
   useTableColumns,
   useTableDensity,
   useTableFilters,
@@ -171,14 +172,12 @@ export function DataTable<
   // Support both old and new prop names for backward compatibility
   const queryParams = apiParams ?? deprecatedQueryParams
 
-  // Resolve per-table behavior, with prop overrides taking precedence over
-  // queryConfig.tableBehavior, which in turn overrides the global defaults.
-  const behavior = queryConfig.tableBehavior ?? {}
-  const resolvedEnableColumnResizing = behavior.enableColumnResizing ?? true
-  const resolvedColumnResizeMode = behavior.columnResizeMode ?? 'onChange'
-  const resolvedEnableSorting = behavior.enableSorting ?? true
-  const resolvedEnableColumnReordering =
-    enableColumnReorderingProp ?? behavior.enableColumnReordering ?? true
+  const {
+    enableColumnResizing: resolvedEnableColumnResizing,
+    columnResizeMode: resolvedColumnResizeMode,
+    enableSorting: resolvedEnableSorting,
+    enableColumnReordering: resolvedEnableColumnReordering,
+  } = useTableBehavior({ queryConfig, enableColumnReorderingProp })
 
   // Determine which columns should be filterable (memoized)
   const configuredColumns = useMemo(
