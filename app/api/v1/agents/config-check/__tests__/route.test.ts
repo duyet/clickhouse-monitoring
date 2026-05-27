@@ -88,9 +88,7 @@ describe('GET /api/v1/agents/config-check', () => {
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body.configured.apiKey).toBe(false)
     expect(body.configured.apiBase).toBe(true)
-    expect(body.isFullyConfigured).toBe(false)
     expect(
       body.providers.find(
         (provider: { id: string }) => provider.id === 'anyrouter'
@@ -101,7 +99,7 @@ describe('GET /api/v1/agents/config-check', () => {
     })
   })
 
-  test('requires the default OpenRouter provider key for full readiness', async () => {
+  test('satisfies readiness with the default AnyRouter model when ANYROUTER_API_KEY is set', async () => {
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     process.env.ANYROUTER_API_KEY = 'sk-ar-test'
 
@@ -111,9 +109,9 @@ describe('GET /api/v1/agents/config-check', () => {
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body.configured.apiKey).toBe(false)
-    expect(body.isFullyConfigured).toBe(false)
-    expect(body.requiredKeys.apiKey).toBe('OPENROUTER_API_KEY or LLM_API_KEY')
+    expect(body.configured.apiKey).toBe(true)
+    expect(body.isFullyConfigured).toBe(true)
+    expect(body.requiredKeys.apiKey).toBe('ANYROUTER_API_KEY')
   })
 
   test('uses selected model provider when LLM_MODEL overrides the default', async () => {

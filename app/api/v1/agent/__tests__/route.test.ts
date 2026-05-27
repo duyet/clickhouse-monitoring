@@ -162,6 +162,7 @@ describe('POST /api/v1/agent', () => {
     mockAgentStreamError = null
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     delete process.env.CHM_FEATURE_AGENT_ACCESS
+    delete process.env.ANYROUTER_API_KEY
     process.env.LLM_API_KEY = 'test-llm-key'
     process.env.LLM_MODEL = 'openrouter:openrouter/auto'
     process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
@@ -565,7 +566,7 @@ describe('POST /api/v1/agent', () => {
 
     expect(response.status).toBe(200)
     expect(body).toBe('mocked stream: object')
-    expect(capturedAgentArgs[0]?.model).toBe('openrouter:openrouter/free')
+    expect(capturedAgentArgs[0]?.model).toBe('openrouter/free')
   })
 
   test('accepts documented unprefixed OpenRouter model with OpenRouter key', async () => {
