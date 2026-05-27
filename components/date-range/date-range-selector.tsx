@@ -121,7 +121,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                   'px-2.5 py-1 text-xs font-medium rounded-md transition-colors',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   isActive
-                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 )}
               >
