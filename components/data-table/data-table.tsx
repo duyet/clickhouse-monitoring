@@ -164,12 +164,21 @@ export function DataTable<
   enableRowSelection = false,
   onRowSelectionChange,
   metadata,
-  enableColumnReordering = true,
+  enableColumnReordering: enableColumnReorderingProp,
   columnOrderStorageKey,
   compact = false,
 }: DataTableProps<TData>) {
   // Support both old and new prop names for backward compatibility
   const queryParams = apiParams ?? deprecatedQueryParams
+
+  // Resolve per-table behavior, with prop overrides taking precedence over
+  // queryConfig.tableBehavior, which in turn overrides the global defaults.
+  const behavior = queryConfig.tableBehavior ?? {}
+  const resolvedEnableColumnResizing = behavior.enableColumnResizing ?? true
+  const resolvedColumnResizeMode = behavior.columnResizeMode ?? 'onChange'
+  const resolvedEnableSorting = behavior.enableSorting ?? true
+  const resolvedEnableColumnReordering =
+    enableColumnReorderingProp ?? behavior.enableColumnReordering ?? true
 
   // Determine which columns should be filterable (memoized)
   const configuredColumns = useMemo(
@@ -256,7 +265,7 @@ export function DataTable<
     [columnOrderStorageKey, queryConfig.name]
   )
   const initialColumnOrder = useMemo(() => {
-    if (enableColumnReordering && typeof window !== 'undefined') {
+    if (resolvedEnableColumnReordering && typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(getStorageKey())
         if (saved) return JSON.parse(saved) as ColumnOrderState
@@ -265,7 +274,7 @@ export function DataTable<
       }
     }
     return []
-  }, [enableColumnReordering, getStorageKey])
+  }, [resolvedEnableColumnReordering, getStorageKey])
 
   const [columnOrder, setColumnOrder] =
     useState<ColumnOrderState>(initialColumnOrder)
@@ -282,7 +291,7 @@ export function DataTable<
       setColumnOrder(updaterOrValue)
 
       // Save to localStorage
-      if (enableColumnReordering && typeof window !== 'undefined') {
+      if (resolvedEnableColumnReordering && typeof window !== 'undefined') {
         const newOrder =
           typeof updaterOrValue === 'function'
             ? (updaterOrValue as (old: ColumnOrderState) => ColumnOrderState)(
@@ -296,7 +305,7 @@ export function DataTable<
         }
       }
     },
-    [enableColumnReordering, getStorageKey, columnOrder]
+    [resolvedEnableColumnReordering, getStorageKey, columnOrder]
   )
 
   // Row selection state
@@ -398,9 +407,9 @@ export function DataTable<
     sortingFns: getCustomSortingFns<TData>(),
     getPaginationRowModel: getPaginationRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    // Column resizing
-    enableColumnResizing: true,
-    columnResizeMode: 'onEnd',
+    // Column resizing (configurable via queryConfig.tableBehavior)
+    enableColumnResizing: resolvedEnableColumnResizing,
+    columnResizeMode: resolvedColumnResizeMode,
     onColumnSizingChange: setColumnSizing,
     // Column reordering
     onColumnOrderChange: handleColumnOrderChange,
@@ -408,8 +417,17 @@ export function DataTable<
     enableRowSelection: !!enableRowSelection,
     getRowId,
     onRowSelectionChange: handleRowSelectionChange,
-    // Enable sorting (click on header to sort, plus dropdown menu options)
-    enableSorting: true,
+    // Sorting (configurable via queryConfig.tableBehavior)
+    enableSorting: resolvedEnableSorting,
+    // Default column sizing so getSize() returns sensible values for layout
+    // even when no explicit columnSizing hint exists. Without this, resizing
+    // appears "broken" because TanStack's default size (150) is identical to
+    // the natural fit on most short headers.
+    defaultColumn: {
+      size: 180,
+      minSize: 60,
+      maxSize: 800,
+    },
     state: {
       sorting,
       columnVisibility,
@@ -474,14 +492,14 @@ export function DataTable<
   // Reset column order to default (empty array means use natural order)
   const handleResetColumnOrder = useCallback(() => {
     handleColumnOrderChange([])
-    if (enableColumnReordering && typeof window !== 'undefined') {
+    if (resolvedEnableColumnReordering && typeof window !== 'undefined') {
       try {
         localStorage.removeItem(getStorageKey())
       } catch {
         // Ignore localStorage errors
       }
     }
-  }, [handleColumnOrderChange, enableColumnReordering, getStorageKey])
+  }, [handleColumnOrderChange, resolvedEnableColumnReordering, getStorageKey])
 
   return (
     <TableDensityProvider value={{ cellClassName }}>
@@ -502,7 +520,7 @@ export function DataTable<
             clearAllColumnFilters={clearAllColumnFilters}
             executedSql={executedSql}
             metadata={metadata}
-            enableColumnReordering={enableColumnReordering}
+            enableColumnReordering={resolvedEnableColumnReordering}
             onResetColumnOrder={handleResetColumnOrder}
             density={density}
             onDensityChange={setDensity}
@@ -520,7 +538,7 @@ export function DataTable<
           virtualizer={virtualizer}
           activeFilterCount={activeFilterCount}
           onAutoFit={handleAutoFit}
-          enableColumnReordering={enableColumnReordering}
+          enableColumnReordering={resolvedEnableColumnReordering}
           onColumnOrderChange={handleDragEndColumnReorder}
           onResetColumnOrder={handleResetColumnOrder}
           compact={compact}
