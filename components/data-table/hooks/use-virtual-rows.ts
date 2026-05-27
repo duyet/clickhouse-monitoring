@@ -33,6 +33,12 @@ export interface UseVirtualRowsOptions {
   overscan?: number
   /** Row count threshold to enable virtualization (default: 250) */
   virtualizeThreshold?: number
+  /**
+   * Hard disable virtualization regardless of row count. Used when a feature
+   * incompatible with the current fixed-height virtualizer is on — namely
+   * inline row expansion, which adds out-of-band height to each row.
+   */
+  disabled?: boolean
 }
 
 export interface UseVirtualRowsResult {
@@ -52,10 +58,11 @@ export function useVirtualRows(
     estimateSize = 40,
     overscan = 20,
     virtualizeThreshold = DEFAULT_VIRTUALIZE_THRESHOLD,
+    disabled = false,
   } = options
 
   const tableContainerRef = useRef<HTMLDivElement>(null)
-  const shouldVirtualize = rowCount >= virtualizeThreshold
+  const shouldVirtualize = !disabled && rowCount >= virtualizeThreshold
 
   const virtualizer = useVirtualizer<HTMLDivElement, Element>({
     count: rowCount,

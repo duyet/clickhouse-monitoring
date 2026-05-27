@@ -7,7 +7,13 @@ export type {
   ColumnFormatInfo,
   ColumnType,
   GetColumnDefsOptions,
+  SchemaColumnFilterContext,
 } from './types'
 
-export { getColumnDefs, normalizeColumnName } from './column-defs'
+export {
+  buildExpandColumnDef,
+  EXPAND_COLUMN_ID,
+  getColumnDefs,
+  normalizeColumnName,
+} from './column-defs'
 export { isColumnFilterable, parseColumnFormat } from './utils'

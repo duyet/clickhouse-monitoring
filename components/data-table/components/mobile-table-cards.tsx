@@ -3,6 +3,8 @@
 import {
   ArrowUpDown,
   Check,
+  ChevronDown,
+  ChevronRight,
   RotateCcw,
   SearchX,
   SortAsc,
@@ -19,9 +21,15 @@ import {
 import type { VirtualItem } from '@tanstack/react-virtual'
 
 import type { UseVirtualRowsResult } from '@/components/data-table/hooks/use-virtual-rows'
-import type { RowClassNameFn } from '@/types/query-config'
+import type {
+  ExpandableConfig,
+  ExpandedRenderer,
+  RowClassNameFn,
+} from '@/types/query-config'
 
 import { Fragment, memo } from 'react'
+import { EXPAND_COLUMN_ID } from '@/components/data-table/column-defs'
+import { DefaultExpandedRow } from '@/components/data-table/row-expand/default-renderer'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -40,7 +48,7 @@ import {
 } from '@/components/ui/empty'
 import { cn } from '@/lib/utils'
 
-const UTILITY_COLUMNS = new Set(['select', 'action'])
+const UTILITY_COLUMNS = new Set(['select', 'action', EXPAND_COLUMN_ID])
 const PRIMARY_COLUMN_PRIORITY = [
   'query',
   'query_detail',
@@ -149,11 +157,13 @@ function MobileSortMenu<TData extends RowData>({
 interface MobileTableCardProps<TData extends RowData> {
   row: Row<TData>
   rowClassName?: RowClassNameFn
+  expandable?: true | ExpandableConfig
 }
 
 const MobileTableCard = memo(function MobileTableCard<TData extends RowData>({
   row,
   rowClassName,
+  expandable,
 }: MobileTableCardProps<TData>) {
   const cells = row.getVisibleCells()
   const selectCell = cells.find((cell) => cell.column.id === 'select')
@@ -161,21 +171,36 @@ const MobileTableCard = memo(function MobileTableCard<TData extends RowData>({
   const primaryCell = pickPrimaryCell(cells)
   const detailCells = cells.filter(
     (cell) =>
-      cell.id !== primaryCell?.id &&
-      cell.column.id !== 'select' &&
-      cell.column.id !== 'action'
+      cell.id !== primaryCell?.id && !UTILITY_COLUMNS.has(cell.column.id)
   )
   const customClass = rowClassName?.(row.original as Record<string, unknown>)
+  const isExpandable = !!expandable && row.getCanExpand()
+  const isExpanded = isExpandable && row.getIsExpanded()
+  const ExpandIcon = isExpanded ? ChevronDown : ChevronRight
 
   return (
     <article
       data-testid="mobile-table-card"
+      data-expanded={isExpanded || undefined}
       className={cn(
         'rounded-lg border border-border/60 bg-card/40 p-3 shadow-xs',
         customClass
       )}
     >
       <div className="flex min-w-0 items-start gap-2">
+        {isExpandable && (
+          <button
+            type="button"
+            onClick={() => row.toggleExpanded()}
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
+            className="-ml-1 mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+            data-testid="mobile-table-card-expand"
+          >
+            <ExpandIcon className="size-4" />
+          </button>
+        )}
+
         {selectCell && (
           <div className="-ml-1 shrink-0 pt-1">
             {flexRender(
@@ -226,6 +251,19 @@ const MobileTableCard = memo(function MobileTableCard<TData extends RowData>({
           ))}
         </dl>
       )}
+
+      {isExpanded && (
+        <div className="mt-3 border-t border-border/50 pt-3 animate-in fade-in slide-in-from-top-1 duration-150">
+          {expandable === true ? (
+            <DefaultExpandedRow row={row.original as Record<string, unknown>} />
+          ) : (
+            (expandable.renderExpanded as ExpandedRenderer)(
+              row.original as Record<string, unknown>,
+              { row: row as unknown as Row<Record<string, unknown>> }
+            )
+          )}
+        </div>
+      )}
     </article>
   )
 }) as <TData extends RowData>(
@@ -239,6 +277,7 @@ export interface MobileTableCardsProps<TData extends RowData> {
   rowClassName?: RowClassNameFn
   isVirtualized?: boolean
   virtualizer?: UseVirtualRowsResult['virtualizer']
+  expandable?: true | ExpandableConfig
 }
 
 export const MobileTableCards = memo(function MobileTableCards<
@@ -250,6 +289,7 @@ export const MobileTableCards = memo(function MobileTableCards<
   rowClassName,
   isVirtualized = false,
   virtualizer,
+  expandable,
 }: MobileTableCardsProps<TData>) {
   const rows = table.getRowModel().rows
 
@@ -298,7 +338,11 @@ export const MobileTableCards = memo(function MobileTableCards<
                 className="absolute left-0 top-0 w-full pb-3"
                 style={{ transform: `translateY(${virtualRow.start}px)` }}
               >
-                <MobileTableCard row={row} rowClassName={rowClassName} />
+                <MobileTableCard
+                  row={row}
+                  rowClassName={rowClassName}
+                  expandable={expandable}
+                />
               </div>
             )
           })}
@@ -310,6 +354,7 @@ export const MobileTableCards = memo(function MobileTableCards<
               key={row.id}
               row={row}
               rowClassName={rowClassName}
+              expandable={expandable}
             />
           ))}
         </div>

@@ -14,8 +14,14 @@ import type {
 } from '@tanstack/react-table'
 
 import type { ColumnFormat, ColumnFormatOptions } from '@/types/column-format'
-import type { ColumnFilterContext, GetColumnDefsOptions } from './types'
+import type {
+  ColumnFilterContext,
+  GetColumnDefsOptions,
+  SchemaColumnFilterContext,
+} from './types'
 
+import { resolveColumnFilterField } from '../filters/column-filter-bridge'
+import { ExpandChevron } from '../row-expand/expand-chevron'
 import { getCustomSortingFns } from '../sorting-fns'
 import { ColumnCell } from './components/column-cell'
 import { ColumnHeader } from './components/column-header'
@@ -25,6 +31,26 @@ import {
   normalizeColumnName,
   parseColumnFormat,
 } from './utils'
+
+export const EXPAND_COLUMN_ID = '__expand'
+
+/** Build the synthetic leftmost column that renders an expand/collapse chevron. */
+export function buildExpandColumnDef<
+  TData extends RowData,
+  TValue extends React.ReactNode,
+>(): ColumnDef<TData, TValue> {
+  return {
+    id: EXPAND_COLUMN_ID,
+    enableSorting: false,
+    enableHiding: false,
+    enableResizing: false,
+    size: 32,
+    minSize: 32,
+    maxSize: 32,
+    header: () => <span className="sr-only">Expand row</span>,
+    cell: ({ row }: { row: Row<TData> }) => <ExpandChevron row={row} />,
+  } as ColumnDef<TData, TValue>
+}
 
 export type {
   ColumnFilterContext,
@@ -63,7 +89,8 @@ export function getColumnDefs<
   config: GetColumnDefsOptions<TData>['config'],
   data: TData[],
   context: GetColumnDefsOptions<TData>['context'],
-  filterContext?: ColumnFilterContext
+  filterContext?: ColumnFilterContext,
+  schemaFilterContext?: SchemaColumnFilterContext
 ): ColumnDef<TData, TValue>[] {
   const configColumns = config.columns || []
   const customSortingFns = getCustomSortingFns<TData>()
@@ -89,6 +116,35 @@ export function getColumnDefs<
       filterableColumns
     )
 
+    // Schema-driven typed filter (date-range, multi-select, etc.)
+    const columnFilterDef = config.columnFilters?.[
+      column as keyof typeof config.columnFilters
+    ] as
+      | NonNullable<typeof config.columnFilters>[keyof NonNullable<
+          typeof config.columnFilters
+        >]
+      | undefined
+    const schemaField = schemaFilterContext
+      ? resolveColumnFilterField(
+          name,
+          columnFilterDef,
+          schemaFilterContext.schema
+        )
+      : null
+    const schemaFilter =
+      schemaField && columnFilterDef && schemaFilterContext
+        ? {
+            field: schemaField,
+            def: columnFilterDef,
+            configName: schemaFilterContext.configName,
+            activeFilter: schemaFilterContext.getActiveFilter(schemaField),
+            onSubmit: (
+              draft: import('@/components/filters/filter-editor').FilterDraft
+            ) => schemaFilterContext.setFilter(schemaField.key, draft),
+            onClear: () => schemaFilterContext.clearFilter(schemaField.key),
+          }
+        : undefined
+
     // Create the column definition
     const columnDef: ColumnDef<TData, TValue> = {
       id: name,
@@ -103,6 +159,7 @@ export function getColumnDefs<
           isFilterable={isFilterable}
           filterValue={columnFilters[name] || ''}
           onFilterChange={(value) => setColumnFilter?.(name, value)}
+          schemaFilter={schemaFilter}
         />
       ),
 
