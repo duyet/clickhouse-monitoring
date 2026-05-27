@@ -14,16 +14,15 @@ import {
   MonitorIcon,
   PanelRightCloseIcon,
   SparklesIcon,
-  WrenchIcon,
 } from 'lucide-react'
 
 import type { Skill } from '@/components/agents/welcome/skills-data'
 
 import { useState } from 'react'
+import { AgentMcpPanel } from '@/components/agents/welcome/agent-mcp-panel'
 import { AgentModelPicker } from '@/components/agents/welcome/agent-model-picker'
 import { SkillDetailDialog } from '@/components/agents/welcome/skill-detail-dialog'
 import { SUGGESTED_PROMPTS } from '@/components/agents/welcome/suggested-prompts'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useAgentSkills } from '@/lib/hooks/use-agent-skills'
@@ -96,33 +95,8 @@ export function AgentSettingsSidebar({
         </SidebarSection>
 
         {/* MCP SERVER */}
-        <SidebarSection
-          label="MCP Server"
-          right={
-            <span className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400">
-              <span className="size-1.5 rounded-full bg-emerald-500" />
-              Connected
-            </span>
-          }
-        >
-          <div className="border-border rounded-md border p-2.5">
-            <div className="flex items-center gap-2">
-              <div className="bg-muted inline-flex size-7 items-center justify-center rounded-md">
-                <WrenchIcon className="text-foreground size-3.5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-mono text-[12.5px]">
-                  clickhouse-monitor
-                </div>
-                <div className="text-muted-foreground text-[10.5px] tabular-nums">
-                  14 tools · 2 resources
-                </div>
-              </div>
-              <Badge variant="outline" className="h-4 px-1.5 text-[10px]">
-                v1.0.0
-              </Badge>
-            </div>
-          </div>
+        <SidebarSection label="MCP Servers">
+          <AgentMcpPanel />
         </SidebarSection>
 
         {/* SKILLS */}
