@@ -5,7 +5,7 @@ import type { MermaidErrorComponentProps } from 'streamdown'
 
 import { mermaid as mermaidPlugin } from '@streamdown/mermaid'
 import { useTheme } from 'next-themes'
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { Streamdown } from 'streamdown'
 
 import '@/components/agents/markdown-code.css'
@@ -34,15 +34,34 @@ function MermaidError({ chart, error }: MermaidErrorComponentProps) {
  * cleanly while a response is in flight, and keeps mermaid diagram support
  * plus the project's existing `.markdown-content` styling from globals.css.
  *
+ * Syntax highlighting is provided by Streamdown's built-in Shiki integration
+ * via the `shikiTheme` prop. The theme tuple is wired to next-themes so code
+ * blocks switch between github-light (light mode) and github-dark (dark mode)
+ * automatically. This replaces the previous manual .hljs-* CSS overrides which
+ * are now removed from markdown-code.css.
+ *
  * Mermaid theme adapts to the app's dark/light mode via next-themes.
  */
 const MarkdownTextImpl: TextMessagePartComponent = ({ text }) => {
   const { resolvedTheme } = useTheme()
-  const mermaidTheme = resolvedTheme === 'dark' ? 'dark' : 'default'
+  const isDark = resolvedTheme === 'dark'
+
+  const mermaidTheme = isDark ? 'dark' : 'default'
+
+  // Shiki theme tuple: [light-theme, dark-theme].
+  // Streamdown reads the active theme from the CSS `color-scheme` on the
+  // root element (set by next-themes). Passing both themes lets Shiki embed
+  // dual-theme CSS vars; Streamdown then switches via the dark-class variant
+  // already declared in globals.css (@custom-variant dark (&:is(.dark *))).
+  const shikiTheme = useMemo(
+    () => ['github-light', 'github-dark'] as [string, string],
+    []
+  )
 
   return (
     <div className="markdown-content aui-md text-sm leading-6">
       <Streamdown
+        shikiTheme={shikiTheme}
         mermaid={{
           config: { theme: mermaidTheme },
           errorComponent: MermaidError,
