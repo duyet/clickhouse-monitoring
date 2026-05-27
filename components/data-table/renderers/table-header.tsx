@@ -55,14 +55,25 @@ function ColumnResizer({ header, onAutoFit }: ColumnResizerProps) {
       role="separator"
       aria-orientation="vertical"
       aria-valuenow={header.column.getSize()}
-      onMouseDown={header.getResizeHandler()}
-      onTouchStart={header.getResizeHandler()}
-      onDoubleClick={handleDoubleClick}
+      onMouseDown={(e) => {
+        e.stopPropagation()
+        header.getResizeHandler()(e)
+      }}
+      onTouchStart={(e) => {
+        e.stopPropagation()
+        header.getResizeHandler()(e)
+      }}
+      onClick={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => {
+        e.stopPropagation()
+        handleDoubleClick()
+      }}
       className={cn(
-        'absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none',
-        'bg-transparent hover:bg-primary/50 active:bg-primary',
-        'transition-colors',
-        header.column.getIsResizing() && 'bg-primary'
+        'absolute right-0 top-0 z-10 h-full w-2 -mr-1 cursor-col-resize select-none touch-none',
+        'after:absolute after:right-1 after:top-0 after:h-full after:w-px',
+        'after:bg-border/40 hover:after:bg-primary active:after:bg-primary',
+        'after:transition-colors',
+        header.column.getIsResizing() && 'after:bg-primary'
       )}
       title={
         onAutoFit

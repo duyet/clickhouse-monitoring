@@ -108,6 +108,22 @@ export const tablesOverviewConfig: QueryConfig = {
   clickhouseSettings: {
     allow_experimental_analyzer: 0,
   },
+  columnSizing: {
+    table: { size: 280, minSize: 160 },
+    compressed: { size: 110, minSize: 80 },
+    uncompressed: { size: 110, minSize: 80 },
+    compr_rate: { size: 90, minSize: 70 },
+    avg_part_size_compressed: { size: 110, minSize: 80 },
+    avg_part_size_uncompressed: { size: 110, minSize: 80 },
+    max_part_size_compressed: { size: 110, minSize: 80 },
+    max_part_size_uncompressed: { size: 110, minSize: 80 },
+    total_rows: { size: 110, minSize: 80 },
+    parts_count: { size: 80, minSize: 60 },
+    latest_modification: { size: 150, minSize: 120 },
+    primary_keys_size: { size: 110, minSize: 80 },
+    detached_bytes_on_disk: { size: 110, minSize: 80 },
+    engine: { size: 130, minSize: 90 },
+  },
   sortingFns: {
     compressed: 'sort_column_using_actual_value',
     uncompressed: 'sort_column_using_actual_value',
