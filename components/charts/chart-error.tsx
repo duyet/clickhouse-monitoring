@@ -11,6 +11,8 @@ import {
 import { toast } from 'sonner'
 
 import { memo, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { chartCard } from '@/components/charts/chart-card-styles'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -278,9 +280,42 @@ ${error.stack}
                       {tableMissingInfo.guidance?.enableInstructions && (
                         <div className="p-3 bg-muted/40 dark:bg-zinc-900 rounded-md border border-border/50">
                           <p className="font-semibold mb-1">How to enable:</p>
-                          <pre className="text-[11px] font-mono whitespace-pre-wrap text-foreground/90">
-                            {tableMissingInfo.guidance.enableInstructions}
-                          </pre>
+                          <div className="text-[11px] text-foreground/90 leading-relaxed [&>p]:my-0 [&>p+p]:mt-2">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                code: ({ className, children, ...props }) => {
+                                  const isInline =
+                                    !className?.startsWith('language-')
+                                  if (isInline) {
+                                    return (
+                                      <code
+                                        className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]"
+                                        {...props}
+                                      >
+                                        {children}
+                                      </code>
+                                    )
+                                  }
+                                  return (
+                                    <code
+                                      className={cn('font-mono', className)}
+                                      {...props}
+                                    >
+                                      {children}
+                                    </code>
+                                  )
+                                },
+                                pre: ({ children }) => (
+                                  <pre className="my-2 overflow-x-auto rounded border border-border/50 bg-background p-2 text-[0.9em] leading-snug">
+                                    {children}
+                                  </pre>
+                                ),
+                              }}
+                            >
+                              {tableMissingInfo.guidance.enableInstructions}
+                            </ReactMarkdown>
+                          </div>
                         </div>
                       )}
                     </div>
