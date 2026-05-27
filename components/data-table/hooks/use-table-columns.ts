@@ -2,7 +2,11 @@ import type { ColumnDef, RowData } from '@tanstack/react-table'
 
 import type { QueryConfig } from '@/types/query-config'
 
-import { type ColumnFilterContext, getColumnDefs } from '../column-defs'
+import {
+  type ColumnFilterContext,
+  getColumnDefs,
+  type SchemaColumnFilterContext,
+} from '../column-defs'
 import { useMemo } from 'react'
 
 interface UseTableColumnsOptions<TData extends RowData, _TValue> {
@@ -10,6 +14,7 @@ interface UseTableColumnsOptions<TData extends RowData, _TValue> {
   context: Record<string, string>
   filteredData: TData[]
   filterContext?: ColumnFilterContext
+  schemaFilterContext?: SchemaColumnFilterContext
 }
 
 interface UseTableColumnsReturn<TData extends RowData, TValue> {
@@ -25,6 +30,7 @@ export function useTableColumns<
   context,
   filteredData,
   filterContext,
+  schemaFilterContext,
 }: UseTableColumnsOptions<TData, TValue>): UseTableColumnsReturn<
   TData,
   TValue
@@ -49,9 +55,16 @@ export function useTableColumns<
         queryConfig,
         filteredData,
         contextWithPrefix,
-        filterContext
+        filterContext,
+        schemaFilterContext
       ) as ColumnDef<TData, TValue>[],
-    [queryConfig, filteredData, contextWithPrefix, filterContext]
+    [
+      queryConfig,
+      filteredData,
+      contextWithPrefix,
+      filterContext,
+      schemaFilterContext,
+    ]
   )
 
   return {

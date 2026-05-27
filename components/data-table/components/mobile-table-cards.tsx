@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/empty'
 import { cn } from '@/lib/utils'
 
-const UTILITY_COLUMNS = new Set(['select', 'action'])
+const UTILITY_COLUMNS = new Set(['select', 'action', '__expand'])
 const PRIMARY_COLUMN_PRIORITY = [
   'query',
   'query_detail',
@@ -161,9 +161,7 @@ const MobileTableCard = memo(function MobileTableCard<TData extends RowData>({
   const primaryCell = pickPrimaryCell(cells)
   const detailCells = cells.filter(
     (cell) =>
-      cell.id !== primaryCell?.id &&
-      cell.column.id !== 'select' &&
-      cell.column.id !== 'action'
+      cell.id !== primaryCell?.id && !UTILITY_COLUMNS.has(cell.column.id)
   )
   const customClass = rowClassName?.(row.original as Record<string, unknown>)
 

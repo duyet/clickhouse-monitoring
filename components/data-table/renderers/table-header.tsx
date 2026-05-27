@@ -212,15 +212,22 @@ export const TableHeaderRow = memo(function TableHeaderRow({
       {headers.map((header) => {
         const canResize = enableResize && header.column.getCanResize()
         const isSelectColumn = header.column.id === 'select'
+        const isExpandColumn = header.column.id === '__expand'
+        const isUtilityColumn = isSelectColumn || isExpandColumn
         const canSort = header.column.getCanSort()
 
-        // Select column is never draggable
-        if (isSelectColumn) {
+        // Utility columns (selection checkbox, expand chevron) are pinned
+        // and never draggable.
+        if (isUtilityColumn) {
           return (
             <TableHead
               key={header.id}
               scope="col"
-              className={cn('relative', headerPy, 'px-2')}
+              className={cn(
+                'relative',
+                headerPy,
+                isExpandColumn ? 'px-1' : 'px-2'
+              )}
               style={{
                 width: header.column.getSize(),
                 minWidth: header.column.columnDef.minSize ?? 50,

@@ -4,7 +4,9 @@ import {
   type ColumnDef,
   type ColumnOrderState,
   type ColumnSizingState,
+  type ExpandedState,
   getCoreRowModel,
+  getExpandedRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   type RowData,
@@ -16,17 +18,24 @@ import {
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartQueryParams } from '@/types/chart-data'
-import type { QueryConfig } from '@/types/query-config'
+import type { ExpandableConfig, QueryConfig } from '@/types/query-config'
 
 import { arrayMove } from '@dnd-kit/sortable'
 import { useCallback, useMemo, useState } from 'react'
-import { normalizeColumnName } from '@/components/data-table/column-defs'
+import { FilterBar } from '@/components/filters/filter-bar'
+import {
+  buildExpandColumnDef,
+  EXPAND_COLUMN_ID,
+  normalizeColumnName,
+  type SchemaColumnFilterContext,
+} from '@/components/data-table/column-defs'
 import {
   DataTableContent,
   DataTableFooter,
   DataTableHeader,
 } from '@/components/data-table/components'
 import { TableDensityProvider } from '@/components/data-table/context/table-density-context'
+import { useColumnFilterState } from '@/components/data-table/filters/use-column-filter-state'
 import {
   useAutoFitColumns,
   useColumnVisibility,
@@ -115,6 +124,17 @@ interface DataTableProps<TData extends RowData> {
   columnOrderStorageKey?: string
   /** Compact mode: hides header/toolbar, removes borders, forces dense density (default: false) */
   compact?: boolean
+  /**
+   * Inline row expansion. When set, each row renders a chevron and a click on
+   * the row (outside interactive children) toggles a full-width detail panel.
+   * Overrides `queryConfig.expandable`.
+   */
+  expandable?: true | ExpandableConfig
+  /**
+   * Render the schema-driven filter bar above the table when a `filterSchema`
+   * is present on the QueryConfig. Defaults to true.
+   */
+  showFilterBar?: boolean
 }
 
 /**
@@ -167,9 +187,14 @@ export function DataTable<
   enableColumnReordering = true,
   columnOrderStorageKey,
   compact = false,
+  expandable: expandableProp,
+  showFilterBar = true,
 }: DataTableProps<TData>) {
   // Support both old and new prop names for backward compatibility
   const queryParams = apiParams ?? deprecatedQueryParams
+
+  // Resolve expansion config: explicit prop wins over QueryConfig declaration
+  const expandable = expandableProp ?? queryConfig.expandable
 
   // Determine which columns should be filterable (memoized)
   const configuredColumns = useMemo(
@@ -224,12 +249,38 @@ export function DataTable<
     ]
   )
 
+  // Schema-driven typed column filter wiring (date-range, multi-select, etc.)
+  const { getActiveFilter, setFilter, clearFilter } = useColumnFilterState(
+    queryConfig.filterSchema
+  )
+  const schemaFilterContext = useMemo<SchemaColumnFilterContext | undefined>(
+    () =>
+      queryConfig.filterSchema && queryConfig.columnFilters
+        ? {
+            schema: queryConfig.filterSchema,
+            configName: queryConfig.name,
+            getActiveFilter,
+            setFilter,
+            clearFilter,
+          }
+        : undefined,
+    [
+      queryConfig.filterSchema,
+      queryConfig.columnFilters,
+      queryConfig.name,
+      getActiveFilter,
+      setFilter,
+      clearFilter,
+    ]
+  )
+
   // Column calculations and definitions
   const { columnDefs } = useTableColumns<TData, TValue>({
     queryConfig,
     context,
     filteredData,
     filterContext,
+    schemaFilterContext,
   })
 
   // Column visibility
@@ -368,11 +419,40 @@ export function DataTable<
     []
   )
 
-  // Combine selection column with other columns when enabled
-  const finalColumnDefs = useMemo(
-    () => (enableRowSelection ? [selectionColumn, ...columnDefs] : columnDefs),
-    [enableRowSelection, selectionColumn, columnDefs]
-  )
+  // Expand chevron column (inserted at the very left when expansion is on)
+  const expandColumn = useMemo(() => buildExpandColumnDef<TData, TValue>(), [])
+
+  // Combine special columns with data columns:
+  // [expand?, select?, ...columnDefs]
+  const finalColumnDefs = useMemo(() => {
+    const cols: ColumnDef<TData, unknown>[] = []
+    if (expandable) cols.push(expandColumn as ColumnDef<TData, unknown>)
+    if (enableRowSelection) cols.push(selectionColumn)
+    return [
+      ...cols,
+      ...(columnDefs as ColumnDef<TData, unknown>[]),
+    ] as ColumnDef<TData, TValue>[]
+  }, [
+    expandable,
+    expandColumn,
+    enableRowSelection,
+    selectionColumn,
+    columnDefs,
+  ])
+
+  // Row expansion state. When `expandable.defaultExpanded` is true we expand
+  // everything by default; the user can collapse individually.
+  const initialExpanded: ExpandedState = useMemo(() => {
+    if (
+      expandable &&
+      typeof expandable === 'object' &&
+      expandable.defaultExpanded
+    ) {
+      return true
+    }
+    return {}
+  }, [expandable])
+  const [expanded, setExpanded] = useState<ExpandedState>(initialExpanded)
 
   // Generate unique row ID from data (use query_id if available, otherwise index)
   const getRowId = useMemo(
@@ -410,12 +490,18 @@ export function DataTable<
     onRowSelectionChange: handleRowSelectionChange,
     // Enable sorting (click on header to sort, plus dropdown menu options)
     enableSorting: true,
+    // Inline row expansion (only enabled when the QueryConfig opts in)
+    enableExpanding: !!expandable,
+    getRowCanExpand: () => !!expandable,
+    getExpandedRowModel: getExpandedRowModel(),
+    onExpandedChange: setExpanded,
     state: {
       sorting,
       columnVisibility,
       columnSizing,
       rowSelection,
       columnOrder,
+      expanded,
     },
     initialState: {
       pagination: {
@@ -425,10 +511,13 @@ export function DataTable<
     },
   })
 
-  // Virtual rows for datasets larger than the standard pagination range
+  // Virtual rows for datasets larger than the standard pagination range.
+  // Disabled when row expansion is on because expanded rows add out-of-band
+  // height the fixed-size virtualizer can't account for.
   const rows = table.getRowModel().rows
   const { virtualizer, tableContainerRef, isVirtualized } = useVirtualRows(
-    rows.length
+    rows.length,
+    { disabled: Boolean(expandable) }
   )
 
   // Auto-fit columns functionality
@@ -509,6 +598,10 @@ export function DataTable<
           />
         )}
 
+        {!compact && showFilterBar && queryConfig.filterSchema && (
+          <FilterBar queryConfig={queryConfig} />
+        )}
+
         <DataTableContent
           title={title}
           description={description}
@@ -524,6 +617,7 @@ export function DataTable<
           onColumnOrderChange={handleDragEndColumnReorder}
           onResetColumnOrder={handleResetColumnOrder}
           compact={compact}
+          expandable={expandable}
         />
 
         <DataTableFooter table={table} footnote={footnote} compact={compact} />
@@ -531,3 +625,5 @@ export function DataTable<
     </TableDensityProvider>
   )
 }
+
+export { EXPAND_COLUMN_ID }

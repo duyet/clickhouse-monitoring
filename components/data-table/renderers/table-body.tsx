@@ -11,10 +11,11 @@ import {
   type Table,
 } from '@tanstack/react-table'
 
-import type { RowClassNameFn } from '@/types/query-config'
+import type { ExpandableConfig, RowClassNameFn } from '@/types/query-config'
 
-import { memo, type ReactNode } from 'react'
+import { Fragment, memo, type ReactNode } from 'react'
 import { useTableDensityContext } from '@/components/data-table/context/table-density-context'
+import { ExpandedRow } from '@/components/data-table/row-expand/expanded-row'
 import {
   Empty,
   EmptyDescription,
@@ -24,6 +25,18 @@ import {
 } from '@/components/ui/empty'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
+
+/**
+ * Heuristic: don't trigger row expand when the user clicks an interactive
+ * element inside a row (button, link, input, etc.) or any subtree marked
+ * with `data-no-expand`.
+ */
+function shouldExpandOnRowClick(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  return !target.closest(
+    'button, a, input, label, select, textarea, summary, [contenteditable], [role="button"], [role="link"], [role="menuitem"], [role="combobox"], [role="checkbox"], [data-no-expand]'
+  )
+}
 
 const VIRTUALIZED_CELL_CLASS = 'text-sm whitespace-nowrap tabular-nums'
 const STANDARD_CELL_CLASS = 'text-sm align-middle break-words tabular-nums'
@@ -52,6 +65,8 @@ export interface VirtualizedTableRowProps<TData extends RowData> {
   row: Row<TData>
   virtualRow: VirtualItem
   rowClassName?: RowClassNameFn
+  /** When set, row clicks (outside interactive elements) toggle expansion. */
+  expandable?: true | ExpandableConfig
 }
 
 /**
@@ -67,18 +82,35 @@ export interface VirtualizedTableRowProps<TData extends RowData> {
  */
 export const VirtualizedTableRow = memo(function VirtualizedTableRow<
   TData extends RowData,
->({ row, virtualRow, rowClassName }: VirtualizedTableRowProps<TData>) {
+>({
+  row,
+  virtualRow,
+  rowClassName,
+  expandable,
+}: VirtualizedTableRowProps<TData>) {
   const { cellClassName } = useTableDensityContext()
   const customClass = rowClassName?.(row.original as Record<string, unknown>)
+  const canExpand = Boolean(expandable) && row.getCanExpand()
+  const isExpanded = canExpand && row.getIsExpanded()
   return (
     <TableRow
       key={row.id}
       data-state={row.getIsSelected() ? 'selected' : undefined}
       data-index={virtualRow.index}
+      data-expanded={isExpanded || undefined}
+      onClick={
+        canExpand
+          ? (e) => {
+              if (shouldExpandOnRowClick(e.target)) row.toggleExpanded()
+            }
+          : undefined
+      }
       className={cn(
         'border-b border-border/50 transition-colors hover:bg-accent/50 dark:hover:bg-accent/20',
         virtualRow.index % 2 === 1 && 'odd:bg-muted/30',
         row.getIsSelected() && 'border-l-2 border-l-primary',
+        canExpand && 'cursor-pointer',
+        isExpanded && 'bg-accent/30 hover:bg-accent/30 dark:bg-accent/15',
         customClass
       )}
       style={{
@@ -113,6 +145,8 @@ export interface StandardTableRowProps<TData extends RowData> {
   row: Row<TData>
   index: number
   rowClassName?: RowClassNameFn
+  /** When set, row clicks (outside interactive elements) toggle expansion. */
+  expandable?: true | ExpandableConfig
 }
 
 /**
@@ -128,17 +162,29 @@ export interface StandardTableRowProps<TData extends RowData> {
  */
 export const StandardTableRow = memo(function StandardTableRow<
   TData extends RowData,
->({ row, index, rowClassName }: StandardTableRowProps<TData>) {
+>({ row, index, rowClassName, expandable }: StandardTableRowProps<TData>) {
   const { cellClassName } = useTableDensityContext()
   const customClass = rowClassName?.(row.original as Record<string, unknown>)
+  const canExpand = Boolean(expandable) && row.getCanExpand()
+  const isExpanded = canExpand && row.getIsExpanded()
   return (
     <TableRow
       key={row.id}
       data-state={row.getIsSelected() ? 'selected' : undefined}
+      data-expanded={isExpanded || undefined}
+      onClick={
+        canExpand
+          ? (e) => {
+              if (shouldExpandOnRowClick(e.target)) row.toggleExpanded()
+            }
+          : undefined
+      }
       className={cn(
         'border-b border-border/50 transition-colors hover:bg-accent/50 dark:hover:bg-accent/20',
         index % 2 === 1 && 'odd:bg-muted/30',
         row.getIsSelected() && 'border-l-2 border-l-primary',
+        canExpand && 'cursor-pointer',
+        isExpanded && 'bg-accent/30 hover:bg-accent/30 dark:bg-accent/15',
         customClass
       )}
     >
@@ -179,6 +225,7 @@ export interface TableBodyRowsProps<TData extends RowData> {
   isVirtualized: boolean
   virtualizer: Virtualizer | null
   rowClassName?: RowClassNameFn
+  expandable?: true | ExpandableConfig
 }
 
 /**
@@ -201,8 +248,10 @@ export const TableBodyRows = memo(function TableBodyRows<
   isVirtualized,
   virtualizer,
   rowClassName,
+  expandable,
 }: TableBodyRowsProps<TData>) {
   const rows = table.getRowModel().rows
+  const colSpan = Math.max(table.getVisibleLeafColumns().length, 1)
 
   if (isVirtualized && virtualizer) {
     // Virtualized rendering for large datasets
@@ -213,7 +262,6 @@ export const TableBodyRows = memo(function TableBodyRows<
     const paddingBottom = lastVirtualRow
       ? Math.max(virtualizer.getTotalSize() - lastVirtualRow.end, 0)
       : 0
-    const colSpan = Math.max(table.getVisibleLeafColumns().length, 1)
 
     return (
       <>
@@ -235,12 +283,21 @@ export const TableBodyRows = memo(function TableBodyRows<
           if (!row) return null
 
           return (
-            <VirtualizedTableRow<TData>
-              key={row.id}
-              row={row}
-              virtualRow={virtualRow}
-              rowClassName={rowClassName}
-            />
+            <Fragment key={row.id}>
+              <VirtualizedTableRow<TData>
+                row={row}
+                virtualRow={virtualRow}
+                rowClassName={rowClassName}
+                expandable={expandable}
+              />
+              {expandable && row.getIsExpanded() && (
+                <ExpandedRow<TData>
+                  row={row}
+                  colSpan={colSpan}
+                  config={expandable}
+                />
+              )}
+            </Fragment>
           )
         })}
         {paddingBottom > 0 && (
@@ -264,12 +321,21 @@ export const TableBodyRows = memo(function TableBodyRows<
   return (
     <>
       {rows.map((row: Row<TData>, index: number) => (
-        <StandardTableRow<TData>
-          key={row.id}
-          row={row}
-          index={index}
-          rowClassName={rowClassName}
-        />
+        <Fragment key={row.id}>
+          <StandardTableRow<TData>
+            row={row}
+            index={index}
+            rowClassName={rowClassName}
+            expandable={expandable}
+          />
+          {expandable && row.getIsExpanded() && (
+            <ExpandedRow<TData>
+              row={row}
+              colSpan={colSpan}
+              config={expandable}
+            />
+          )}
+        </Fragment>
       ))}
     </>
   )
@@ -352,6 +418,7 @@ export interface TableBodyProps<
   title: string
   activeFilterCount: number
   rowClassName?: RowClassNameFn
+  expandable?: true | ExpandableConfig
 }
 
 /**
@@ -382,6 +449,7 @@ export const TableBody = memo(function TableBody<
   title,
   activeFilterCount,
   rowClassName,
+  expandable,
 }: TableBodyProps<TData, TValue>) {
   const rows = table.getRowModel().rows
 
@@ -393,6 +461,7 @@ export const TableBody = memo(function TableBody<
           isVirtualized={isVirtualized}
           virtualizer={virtualizer}
           rowClassName={rowClassName}
+          expandable={expandable}
         />
       ) : (
         <TableBodyEmptyState

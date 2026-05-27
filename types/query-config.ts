@@ -1,9 +1,10 @@
 import type { ClickHouseSettings } from '@clickhouse/client'
+import type { Row } from '@tanstack/react-table'
 
 import type { ChartProps } from '@/components/charts/chart-props'
 import type { CustomSortingFnNames } from '@/components/data-table/sorting-fns'
 import type { FeaturePermission } from '@/lib/feature-permissions/types'
-import type { FilterSchema } from '@/lib/filters/types'
+import type { FilterOperator, FilterSchema } from '@/lib/filters/types'
 import type { ColumnFormat, ColumnFormatWithArgs } from '@/types/column-format'
 import type { Icon } from '@/types/icon'
 
@@ -19,6 +20,41 @@ export interface ColumnSizingConfig {
   minSize?: number
   /** Maximum column width in pixels */
   maxSize?: number
+}
+
+/**
+ * Per-column filter declaration that appears in the column header.
+ * UI sugar over `filterSchema` — the schema remains the trusted SQL source.
+ * A column-header filter only renders when a matching field exists in the
+ * schema (by `fieldKey` or column name).
+ */
+export interface ColumnFilterDef {
+  /** Input type shown in the column-header filter popover. */
+  type: 'text' | 'numeric' | 'date' | 'date-range' | 'multi-select' | 'boolean'
+  /** Static options for multi-select; dynamicOptions in filterSchema take precedence. */
+  options?: string[]
+  /** Placeholder for text/numeric input. */
+  placeholder?: string
+  /** Override which filterSchema field key this column maps to (default: column name). */
+  fieldKey?: string
+  /** Override default operator (otherwise derived from `type`). */
+  operator?: FilterOperator
+}
+
+/**
+ * Inline row-expansion renderer. The returned node is rendered in a
+ * full-width `<tr><td colSpan={columns}>` below the row.
+ */
+export type ExpandedRenderer<TData = Record<string, unknown>> = (
+  row: TData,
+  context: { row: Row<TData> }
+) => React.ReactNode
+
+export interface ExpandableConfig<TData = Record<string, unknown>> {
+  /** Renderer for the expanded panel below a row. */
+  renderExpanded: ExpandedRenderer<TData>
+  /** Initial expanded state for newly fetched rows. */
+  defaultExpanded?: boolean
 }
 
 /**
@@ -329,6 +365,35 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    * ```
    */
   rowClassName?: RowClassNameFn
+  /**
+   * Per-column filter declarations rendered in the column header popover.
+   * Renders only for columns whose `fieldKey` (or column name) maps to a
+   * `filterSchema.fields[].key`. The schema stays the trusted SQL source;
+   * `columnFilters` is UI sugar.
+   *
+   * @example
+   * ```ts
+   * columnFilters: {
+   *   user: { type: 'multi-select' },
+   *   query: { type: 'text', placeholder: 'SELECT ...' },
+   *   event_time: { type: 'date-range' },
+   * }
+   * ```
+   */
+  columnFilters?: Partial<Record<TColumns[number], ColumnFilterDef>>
+  /**
+   * Enable inline row expansion. Clicking a row toggles a full-width detail
+   * panel below it. Pass `true` for the default JSON renderer, or supply a
+   * custom renderer.
+   *
+   * @example
+   * ```ts
+   * expandable: {
+   *   renderExpanded: (row) => <RunningQueryDetails row={row} />,
+   * }
+   * ```
+   */
+  expandable?: true | ExpandableConfig
   /**
    * Bulk actions available for selected rows (shown in toolbar).
    * These actions apply to all selected rows at once.
