@@ -5,7 +5,7 @@ import { Info, RefreshCw } from 'lucide-react'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { QueryConfig } from '@/types/query-config'
 
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { DataTable } from '@/components/data-table/data-table'
 import { TableSkeleton } from '@/components/skeletons'
@@ -103,6 +103,15 @@ export const TableClient = memo(function TableClient({
 }: TableClientProps) {
   const hostId = useHostId()
   const refreshInterval = queryConfig.refreshInterval ?? 0
+
+  // Memoize context to prevent columnDefs recalculation on every render.
+  // Without this, every SWR revalidation cycle triggers full table re-renders
+  // because new context object → new contextWithPrefix → new columnDefs → all cells re-render.
+  const context = useMemo(
+    () => ({ ...searchParams, hostId: String(hostId) }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(searchParams), hostId]
+  )
 
   const { data, metadata, error, isLoading, isValidating, refresh } =
     useTableData<Record<string, unknown>>(
@@ -300,7 +309,7 @@ export const TableClient = memo(function TableClient({
       description={description}
       queryConfig={queryConfig}
       data={data}
-      context={{ ...searchParams, hostId: String(hostId) }}
+      context={context}
       defaultPageSize={defaultPageSize}
       footnote={
         metadata ? <TableResultFootnote metadata={metadata} /> : undefined

@@ -17,6 +17,7 @@ import {
   getHostIdFromParams,
   type RouteContext,
 } from '@/lib/api/error-handler'
+import { truncateLargeValues } from '@/lib/api/shared'
 import {
   isSupportedFormat,
   SUPPORTED_FORMATS,
@@ -165,8 +166,11 @@ async function executeQuery(params: {
     )
   }
 
+  // Truncate large cell values to prevent browser OOM on large text/JSON columns
+  const truncatedData = truncateLargeValues(result.data)
+
   // Create successful response
-  return createSuccessResponse(result.data, result.metadata)
+  return createSuccessResponse(truncatedData, result.metadata)
 }
 
 /**

@@ -18,12 +18,13 @@ import { PanelLeftOpenIcon, PanelRightOpenIcon } from 'lucide-react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { useUser } from '@clerk/nextjs'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AgentSettingsSidebar } from '@/components/agents/welcome/agent-settings-sidebar'
 import { AgentRuntimeProvider } from '@/components/assistant-ui/agent-runtime-provider'
 import { Thread } from '@/components/assistant-ui/thread'
 import { ThreadList } from '@/components/assistant-ui/thread-list'
 import { Button } from '@/components/ui/button'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useHostId } from '@/lib/swr/use-host'
 import { useHosts } from '@/lib/swr/use-hosts'
 
@@ -40,8 +41,12 @@ function AgentThreadPageError() {
 }
 
 export function AgentThreadPage() {
+  const isMobile = useIsMobile()
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(false)
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(true)
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false)
+  useEffect(() => {
+    setRightSidebarOpen(!isMobile)
+  }, [isMobile])
   const { user } = useUser()
   const hostId = useHostId()
   const { hosts } = useHosts()

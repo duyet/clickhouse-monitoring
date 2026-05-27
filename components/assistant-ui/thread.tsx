@@ -105,7 +105,10 @@ export function Thread({
         ['--user-max-width' as string]: 'min(100%, 46rem)',
       }}
     >
-      <ThreadPrimitive.Viewport className="relative flex flex-1 flex-col overflow-y-auto scroll-smooth px-4 pt-14">
+      <ThreadPrimitive.Viewport
+        scrollToBottomOnInitialize={false}
+        className="relative flex flex-1 flex-col overflow-y-auto scroll-smooth px-4 pt-14"
+      >
         <ThreadWelcome
           firstName={firstName}
           clusterName={clusterName}
