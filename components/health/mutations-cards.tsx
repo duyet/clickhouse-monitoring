@@ -35,14 +35,20 @@ function useAlertOnEscalate(
   useEffect(() => {
     if (status !== 'ok' && status !== 'warning' && status !== 'critical') return
     if (isEscalation(lastRef.current, status) && status !== 'ok') {
-      void dispatchAlert({
-        checkId,
-        title,
-        severity: status,
-        value,
-        label,
-        hostId,
-      })
+      void (async () => {
+        try {
+          await dispatchAlert({
+            checkId,
+            title,
+            severity: status,
+            value,
+            label,
+            hostId,
+          })
+        } catch (error) {
+          console.error('Failed to dispatch health alert', error)
+        }
+      })()
     }
     lastRef.current = status
   }, [status, value, label, checkId, title, hostId])

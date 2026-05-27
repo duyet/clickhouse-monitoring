@@ -88,14 +88,20 @@ export function HealthCard({ check, thresholds }: HealthCardProps) {
     if (status !== 'ok' && status !== 'warning' && status !== 'critical') return
     const prev = lastStatusRef.current
     if (isEscalation(prev, status) && status !== 'ok') {
-      void dispatchAlert({
-        checkId: check.id,
-        title: check.title,
-        severity: status,
-        value,
-        label,
-        hostId,
-      })
+      void (async () => {
+        try {
+          await dispatchAlert({
+            checkId: check.id,
+            title: check.title,
+            severity: status,
+            value,
+            label,
+            hostId,
+          })
+        } catch (error) {
+          console.error('Failed to dispatch health alert', error)
+        }
+      })()
     }
     lastStatusRef.current = status
   }, [status, value, label, check.id, check.title, hostId])
