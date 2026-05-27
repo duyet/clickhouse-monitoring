@@ -92,7 +92,7 @@ function HealthCard({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-lg border p-4 bg-card shadow-sm transition-colors',
+        'flex flex-col gap-3 rounded-lg border p-4 bg-card transition-colors',
         status === 'critical' && 'border-red-500/50 bg-red-500/5',
         status === 'warning' && 'border-amber-500/50 bg-amber-500/5'
       )}
@@ -155,7 +155,7 @@ function MutationsCard({ hostId }: { hostId: number }) {
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-lg border p-4 bg-card shadow-sm transition-colors',
+        'flex flex-col gap-3 rounded-lg border p-4 bg-card transition-colors',
         status === 'critical' && 'border-red-500/50 bg-red-500/5',
         status === 'warning' && 'border-amber-500/50 bg-amber-500/5'
       )}
@@ -205,7 +205,7 @@ function RunningMutationsCard({ hostId }: { hostId: number }) {
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-lg border p-4 bg-card shadow-sm transition-colors',
+        'flex flex-col gap-3 rounded-lg border p-4 bg-card transition-colors',
         status === 'critical' && 'border-red-500/50 bg-red-500/5',
         status === 'warning' && 'border-amber-500/50 bg-amber-500/5'
       )}
@@ -238,7 +238,7 @@ function HealthPageContent() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         <HealthCard
           title="Readonly Replicas"
           chartName="health-readonly-replicas"
