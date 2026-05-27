@@ -1,9 +1,13 @@
 'use client'
 
+import { Maximize2 } from 'lucide-react'
+
 import type { Thresholds } from '@/lib/health/thresholds-storage'
 import type { HealthCheckDef } from './health-checks'
 
-import { useEffect, useRef } from 'react'
+import { HealthDetailDialog } from './health-detail-dialog'
+import { useEffect, useRef, useState } from 'react'
+import { AppLink } from '@/components/ui/app-link'
 import { dispatchAlert, isEscalation } from '@/lib/health/alert-dispatcher'
 import { useChartData, useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
@@ -33,6 +37,7 @@ interface HealthCardProps {
 
 export function HealthCard({ check, thresholds }: HealthCardProps) {
   const hostId = useHostId()
+  const [detailOpen, setDetailOpen] = useState(false)
   const swr = useChartData({
     chartName: check.chartName,
     hostId,
@@ -42,6 +47,7 @@ export function HealthCard({ check, thresholds }: HealthCardProps) {
   let status: HealthStatus = 'loading'
   let value: number | null = null
   let label = ''
+  let row: Record<string, unknown> | undefined
 
   const metaStatus = swr.metadata?.status
   const isUnavailable =
@@ -57,7 +63,7 @@ export function HealthCard({ check, thresholds }: HealthCardProps) {
     status = 'error'
     label = swr.metadata?.statusMessage ?? 'Unavailable'
   } else if (swr.data && swr.data.length > 0) {
-    const row = swr.data[0] as Record<string, unknown>
+    row = swr.data[0] as Record<string, unknown>
     const raw = row[check.valueKey]
     value = raw === null || raw === undefined ? 0 : Number(raw)
     label = check.formatLabel ? check.formatLabel(value) : String(value)
@@ -100,22 +106,69 @@ export function HealthCard({ check, thresholds }: HealthCardProps) {
       ? value.toLocaleString()
       : '—'
 
+  const withHost = (href: string) =>
+    `${href}${href.includes('?') ? '&' : '?'}host=${hostId}`
+
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-3 rounded-lg border p-4 bg-card transition-colors',
-        status === 'critical' && 'border-red-500/50 bg-red-500/5',
-        status === 'warning' && 'border-amber-500/50 bg-amber-500/5'
-      )}
-    >
-      <div className="flex items-center gap-2">
-        <StatusDot status={status} />
-        <span className="text-sm font-medium text-muted-foreground">
-          {check.title}
-        </span>
+    <>
+      <div
+        className={cn(
+          'group flex flex-col gap-3 rounded-lg border p-4 bg-card transition-colors',
+          status === 'critical' && 'border-red-500/50 bg-red-500/5',
+          status === 'warning' && 'border-amber-500/50 bg-amber-500/5'
+        )}
+      >
+        <div className="flex items-center gap-2">
+          <StatusDot status={status} />
+          <span className="text-sm font-medium text-muted-foreground">
+            {check.title}
+          </span>
+          <button
+            type="button"
+            onClick={() => setDetailOpen(true)}
+            aria-label={`Open ${check.title} details`}
+            className="ml-auto rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => setDetailOpen(true)}
+          className="text-left"
+        >
+          <div className="text-2xl font-bold tabular-nums">{displayValue}</div>
+          <div className="text-xs text-muted-foreground mt-1">{label}</div>
+        </button>
+        {check.relatedLinks && check.relatedLinks.length > 0 && (
+          <div className="flex flex-wrap gap-x-2 gap-y-1 border-t pt-2 text-xs text-muted-foreground">
+            {check.relatedLinks.slice(0, 3).map((l, i) => (
+              <span key={l.href} className="inline-flex items-center gap-2">
+                {i > 0 && <span aria-hidden>·</span>}
+                <AppLink
+                  href={withHost(l.href)}
+                  className="text-primary hover:underline"
+                >
+                  {l.label}
+                </AppLink>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
-      <div className="text-2xl font-bold tabular-nums">{displayValue}</div>
-      <div className="text-xs text-muted-foreground">{label}</div>
-    </div>
+
+      <HealthDetailDialog
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        check={check}
+        hostId={hostId}
+        status={status}
+        value={value}
+        label={label}
+        thresholds={thresholds}
+        row={row}
+        clickhouseVersion={swr.metadata?.clickhouseVersion}
+      />
+    </>
   )
 }
