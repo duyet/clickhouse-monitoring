@@ -9,7 +9,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { DEFAULT_AGENT_MODEL } from '@/lib/ai/agent-model-registry'
+import { resolveDefaultAgentModel } from '@/lib/ai/agent-model-registry'
 import {
   isProviderConfigured,
   PROVIDERS,
@@ -39,7 +39,7 @@ interface ConfigStatus {
 
 function getSelectedModel(): string {
   const configuredModel = process.env.LLM_MODEL?.trim()
-  return configuredModel || DEFAULT_AGENT_MODEL
+  return configuredModel || resolveDefaultAgentModel()
 }
 
 function getSelectedProviderId(model: string): string {

@@ -9,13 +9,13 @@ import 'server-only'
 
 import type { LanguageModel } from 'ai'
 
-import { DEFAULT_AGENT_MODEL } from '../agent-model-registry'
+import { resolveDefaultAgentModel } from '../agent-model-registry'
 import { parseModelId, resolveProvider } from '../providers'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 
 export const DEFAULT_MODEL =
-  process.env.LLM_MODEL?.trim() || DEFAULT_AGENT_MODEL
+  process.env.LLM_MODEL?.trim() || resolveDefaultAgentModel()
 
 export const DEFAULT_APP_REFERER = 'https://chmonitor.dev'
 export const DEFAULT_APP_NAME = 'ClickHouse Monitoring'
