@@ -217,7 +217,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
           </Card>
         ) : (
           <>
-            {chartsOpen && <RunningQueriesCharts rows={rows} hostId={hostId} />}
+            {chartsOpen && <RunningQueriesCharts rows={rows} />}
             {rows.length === 0 ? (
               <Card className="rounded-xl border-dashed">
                 <CardContent className="p-6">

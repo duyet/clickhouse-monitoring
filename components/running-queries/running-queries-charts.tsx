@@ -20,6 +20,7 @@ import {
   formatReadableQuantity,
   formatReadableSize,
 } from '@/lib/format-readable'
+import { useHostId } from '@/lib/swr'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { cn } from '@/lib/utils'
@@ -200,7 +201,6 @@ function splitSize(readable: string): { value: string; unit: string } {
 interface RunningQueriesChartsProps {
   /** Live `system.processes` rows — drives the Summary + active-memory card. */
   rows: RunningQueryRow[]
-  hostId: number
 }
 
 /**
@@ -213,8 +213,8 @@ interface RunningQueriesChartsProps {
  */
 export const RunningQueriesCharts = memo(function RunningQueriesCharts({
   rows,
-  hostId,
 }: RunningQueriesChartsProps) {
+  const hostId = useHostId()
   const countSwr = useChartData<CountPoint>({
     chartName: 'query-count',
     hostId,
