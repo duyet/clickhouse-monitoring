@@ -108,7 +108,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   }
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-4 w-full max-w-full">
+    <div className="flex min-w-0 w-full max-w-full flex-1 flex-col gap-3 sm:gap-4">
       {/* Charts Section with Collapse Toggle */}
       {hasCharts && (
         <div className="flex flex-col gap-2">
