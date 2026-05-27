@@ -1,7 +1,8 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { Check, ClockIcon, TagIcon } from 'lucide-react'
 
+import { formatCompactUptime } from './format-uptime'
 import { StatusIndicator } from './shared'
 import { memo } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -44,10 +45,17 @@ export const HostMenuRow = memo(function HostMenuRow({
         {isLoading ? (
           <Skeleton className="mt-0.5 h-3 w-24" />
         ) : isOnline && data ? (
-          <span className="truncate text-xs text-muted-foreground">
-            {data.version}
-            <span className="mx-1 opacity-60">·</span>
-            {data.uptime}
+          <span
+            className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-muted-foreground"
+            title={`Version ${data.version} · Uptime ${data.uptime}`}
+          >
+            <TagIcon className="size-3 shrink-0 opacity-70" />
+            <span className="truncate tabular-nums">{data.version}</span>
+            <span className="opacity-40">·</span>
+            <ClockIcon className="size-3 shrink-0 opacity-70" />
+            <span className="truncate tabular-nums">
+              {formatCompactUptime(data.uptime)}
+            </span>
           </span>
         ) : (
           <span className="truncate text-xs text-muted-foreground">

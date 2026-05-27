@@ -6,6 +6,9 @@
 
 'use client'
 
+import { ClockIcon, TagIcon } from 'lucide-react'
+
+import { formatCompactUptime } from './format-uptime'
 import { useHostStatus } from '@/lib/swr/use-host-status'
 
 interface HostVersionWithStatusProps {
@@ -31,13 +34,15 @@ export function HostVersionWithStatus({ hostId }: HostVersionWithStatusProps) {
     return (
       <span
         className="flex items-center gap-1.5 truncate text-xs text-muted-foreground"
-        title={`Host: ${data.hostname}\nUptime: ${data.uptime}\nVersion: ${data.version}`}
+        title={`Host: ${data.hostname}\nVersion: ${data.version}\nUptime: ${data.uptime}`}
       >
         <StatusIndicatorOnline />
-        <span className="truncate">
-          {data.version}
-          <span className="mx-1 opacity-60">·</span>
-          {data.uptime}
+        <TagIcon className="size-3 shrink-0 opacity-70" />
+        <span className="truncate tabular-nums">{data.version}</span>
+        <span className="opacity-40">·</span>
+        <ClockIcon className="size-3 shrink-0 opacity-70" />
+        <span className="truncate tabular-nums">
+          {formatCompactUptime(data.uptime)}
         </span>
       </span>
     )
