@@ -26,28 +26,31 @@ const TIME_FIELDS = new Set([
   'date',
 ])
 
+const IGNORED_FIELD_PATTERNS = [
+  /^pct_/i,
+  /_pct$/i,
+  /^percent_/i,
+  /_percent$/i,
+  /^readable_/i,
+  /_readable$/i,
+]
+
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value)
 }
 
-function detectValueFields(row: ChartDataPoint): string[] {
-  return Object.keys(row).filter((key) => {
-    if (TIME_FIELDS.has(key)) return false
-    return isFiniteNumber(row[key])
-  })
+function isIgnoredField(key: string): boolean {
+  return IGNORED_FIELD_PATTERNS.some((pattern) => pattern.test(key))
 }
 
-function rowTotal(row: ChartDataPoint, fields: string[]): number | null {
-  let total = 0
-  let any = false
-  for (const field of fields) {
-    const v = row[field]
-    if (isFiniteNumber(v)) {
-      total += v
-      any = true
+function detectValueField(data: ChartDataPoint[]): string | null {
+  for (const row of data) {
+    for (const key of Object.keys(row)) {
+      if (TIME_FIELDS.has(key) || isIgnoredField(key)) continue
+      if (isFiniteNumber(row[key])) return key
     }
   }
-  return any ? total : null
+  return null
 }
 
 const SPARK_LENGTH = 20
@@ -58,13 +61,13 @@ export function deriveChartSummary(
 ): ChartSummary {
   if (!data || data.length === 0) return EMPTY
 
-  const fields = valueField ? [valueField] : detectValueFields(data[0])
-  if (fields.length === 0) return EMPTY
+  const field = valueField ?? detectValueField(data)
+  if (!field) return EMPTY
 
   const series: number[] = []
   for (const row of data) {
-    const total = rowTotal(row, fields)
-    if (total !== null) series.push(total)
+    const v = row[field]
+    if (isFiniteNumber(v)) series.push(v)
   }
   if (series.length === 0) return EMPTY
 

@@ -2,6 +2,8 @@
 
 import { TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
 
+import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+
 import { deriveChartSummary } from './derive-chart-summary'
 import { memo } from 'react'
 import { MiniAreaChart } from '@/components/charts/mini-charts'
@@ -14,6 +16,8 @@ export interface ChartChipProps {
   hostId: number
   label: string
   valueField?: string
+  interval?: ClickHouseInterval
+  lastHours?: number
 }
 
 const TREND_COLOR = {
@@ -40,10 +44,14 @@ export const ChartChip = memo(function ChartChip({
   hostId,
   label,
   valueField,
+  interval,
+  lastHours,
 }: ChartChipProps) {
   const { data, isLoading, hasData } = useChartData({
     chartName,
     hostId,
+    interval,
+    lastHours,
     refreshInterval: REFRESH_INTERVAL.VERY_SLOW_5M,
   })
 
@@ -51,7 +59,7 @@ export const ChartChip = memo(function ChartChip({
   const trendKey = summary.trend ?? 'flat'
 
   return (
-    <div className="flex min-w-0 items-center gap-2 px-2 py-1">
+    <div className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1">
       <span className="truncate text-xs font-medium text-muted-foreground">
         {label}
       </span>

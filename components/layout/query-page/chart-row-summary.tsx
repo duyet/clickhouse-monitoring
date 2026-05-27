@@ -1,5 +1,6 @@
 'use client'
 
+import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 import type { QueryConfig } from '@/types/query-config'
 
 import { ChartChip } from './chart-chip'
@@ -32,19 +33,36 @@ export const ChartRowSummary = memo(function ChartRowSummary({
       const props = Array.isArray(c)
         ? ((c[1] as Record<string, unknown> | undefined) ?? undefined)
         : undefined
-      return { name, label: chartLabel(name, props) }
+      const valueField =
+        typeof props?.valueField === 'string' ? props.valueField : undefined
+      const interval =
+        typeof props?.interval === 'string'
+          ? (props.interval as ClickHouseInterval)
+          : undefined
+      const lastHours =
+        typeof props?.lastHours === 'number' ? props.lastHours : undefined
+      return {
+        name,
+        label: chartLabel(name, props),
+        valueField,
+        interval,
+        lastHours,
+      }
     })
 
   if (items.length === 0) return null
 
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-1 divide-x divide-border/60 overflow-hidden">
+    <div className="flex min-w-0 flex-1 items-stretch gap-1 divide-x divide-border/60 overflow-hidden">
       {items.map((item, index) => (
         <ChartChip
           key={`${item.name}-${index}`}
           chartName={item.name}
           hostId={hostId}
           label={item.label}
+          valueField={item.valueField}
+          interval={item.interval}
+          lastHours={item.lastHours}
         />
       ))}
     </div>
