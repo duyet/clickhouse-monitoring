@@ -95,7 +95,6 @@ export function DatabaseTree() {
           {databases.map((db) => (
             <DatabaseNode
               key={db.name}
-              hostId={hostId}
               database={db.name}
               isExpanded={isDatabaseExpanded(db.name)}
               isTableExpanded={isTableExpanded}
