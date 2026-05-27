@@ -23,7 +23,7 @@ export function HostVersionWithStatus({ hostId }: HostVersionWithStatusProps) {
 
   if (isLoading) {
     return (
-      <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+      <span className="flex items-center gap-1.5 min-w-0 text-xs text-muted-foreground">
         <span className="size-2 rounded-full bg-gray-400 animate-pulse" />
         Loading...
       </span>
@@ -33,7 +33,7 @@ export function HostVersionWithStatus({ hostId }: HostVersionWithStatusProps) {
   if (isOnline && data) {
     return (
       <span
-        className="flex items-center gap-1.5 truncate text-xs text-muted-foreground"
+        className="flex items-center gap-1.5 min-w-0 text-xs text-muted-foreground"
         title={`Host: ${data.hostname}\nVersion: ${data.version}\nUptime: ${data.uptime}`}
       >
         <StatusIndicatorOnline />
@@ -49,7 +49,7 @@ export function HostVersionWithStatus({ hostId }: HostVersionWithStatusProps) {
   }
 
   return (
-    <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+    <span className="flex items-center gap-1.5 min-w-0 text-xs text-muted-foreground">
       <StatusIndicatorOffline />
       Offline
     </span>
