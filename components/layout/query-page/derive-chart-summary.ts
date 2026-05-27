@@ -53,6 +53,52 @@ function detectValueField(data: ChartDataPoint[]): string | null {
   return null
 }
 
+function detectTimeField(data: ChartDataPoint[]): string | null {
+  for (const row of data) {
+    for (const key of Object.keys(row)) {
+      if (TIME_FIELDS.has(key)) return key
+    }
+  }
+  return null
+}
+
+/**
+ * Build the time-ordered numeric series for a chart.
+ *
+ * If a time field is present, multiple rows sharing the same time bucket
+ * are summed (e.g. `query-count-by-user` returns one row per user per
+ * bucket — we collapse to a per-bucket total). Otherwise rows are taken
+ * as-is, one point per row.
+ */
+function buildSeries(
+  data: ChartDataPoint[],
+  valueField: string,
+  timeField: string | null
+): number[] {
+  if (!timeField) {
+    const series: number[] = []
+    for (const row of data) {
+      const v = row[valueField]
+      if (isFiniteNumber(v)) series.push(v)
+    }
+    return series
+  }
+
+  const buckets = new Map<string, number>()
+  const order: string[] = []
+  for (const row of data) {
+    const v = row[valueField]
+    if (!isFiniteNumber(v)) continue
+    const key = String(row[timeField] ?? '')
+    if (!buckets.has(key)) {
+      buckets.set(key, 0)
+      order.push(key)
+    }
+    buckets.set(key, (buckets.get(key) ?? 0) + v)
+  }
+  return order.map((k) => buckets.get(k) ?? 0)
+}
+
 const SPARK_LENGTH = 20
 
 export function deriveChartSummary(
@@ -64,11 +110,8 @@ export function deriveChartSummary(
   const field = valueField ?? detectValueField(data)
   if (!field) return EMPTY
 
-  const series: number[] = []
-  for (const row of data) {
-    const v = row[field]
-    if (isFiniteNumber(v)) series.push(v)
-  }
+  const timeField = detectTimeField(data)
+  const series = buildSeries(data, field, timeField)
   if (series.length === 0) return EMPTY
 
   const latest = series[series.length - 1]
