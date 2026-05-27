@@ -17,6 +17,7 @@ import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 
 import type { QueryConfig } from '@/types/query-config'
 
+import { ChartRowSummary } from './chart-row-summary'
 import { DynamicChart } from './dynamic-chart'
 import { memo, Suspense } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
@@ -64,23 +65,14 @@ export const ChartRow = memo(function ChartRow({
   return (
     <Collapsible open={!isCollapsed} onOpenChange={onToggle}>
       <div className="group relative">
-        {/* Collapsed state - clickable titles to expand */}
+        {/* Collapsed state - compact chart summaries, click to expand */}
         {isCollapsed && (
           <CollapsibleTrigger asChild>
-            <div className="group/row relative flex h-10 w-full min-w-0 items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer px-4">
-              <span className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground opacity-0 group-hover/row:opacity-100 transition-opacity duration-200">
+            <div className="group/row relative flex h-10 w-full min-w-0 items-center gap-2 rounded-lg border border-dashed bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer px-3">
+              <ChartRowSummary charts={charts} hostId={hostId} />
+              <span className="ml-auto flex shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground opacity-0 group-hover/row:opacity-100 transition-opacity duration-200">
                 Show
                 <ChevronDownIcon className="h-3 w-3" />
-              </span>
-              <span className="text-muted-foreground text-sm truncate">
-                {charts
-                  .filter((c) => c && c !== 'break')
-                  .map((c) => {
-                    const props = Array.isArray(c) ? c[1] : undefined
-                    const name = Array.isArray(c) ? c[0] : c
-                    return props?.title || name.replace(/-/g, ' ')
-                  })
-                  .join(' · ')}
               </span>
             </div>
           </CollapsibleTrigger>
