@@ -45,6 +45,13 @@ interface TableClientProps {
   filterableColumns?: string[]
   /** Enable row selection with checkboxes */
   enableRowSelection?: boolean
+  /**
+   * Render the schema-driven filter bar above the table when the
+   * QueryConfig declares a filterSchema (default: true). Set to false
+   * when the surrounding page already renders its own FilterBar to avoid
+   * a duplicated control wired to the same URL state.
+   */
+  showFilterBar?: boolean
 }
 
 const tableRowFormatter = new Intl.NumberFormat('en-US')
@@ -150,6 +157,7 @@ export const TableClient = memo(function TableClient({
   enableColumnFilters = false,
   filterableColumns,
   enableRowSelection = false,
+  showFilterBar = true,
 }: TableClientProps) {
   const hostId = useHostId()
   const refreshInterval = queryConfig.refreshInterval ?? 0
@@ -369,6 +377,7 @@ export const TableClient = memo(function TableClient({
       isRefreshing={isValidating}
       enableRowSelection={enableRowSelection}
       metadata={metadata}
+      showFilterBar={showFilterBar}
     />
   )
 })
