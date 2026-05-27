@@ -49,9 +49,9 @@ function HeaderContent({
   }
 
   return (
-    <span className="inline-flex items-center gap-1 text-muted-foreground">
-      {Icon && <Icon className="size-3" />}
-      {name}
+    <span className="inline-flex flex-1 min-w-0 items-center gap-1 truncate text-muted-foreground">
+      {Icon && <Icon className="size-3 shrink-0" />}
+      <span className="truncate">{name}</span>
     </span>
   )
 }
@@ -83,7 +83,7 @@ export function ColumnHeader<TData extends RowData>({
           }
         }}
         className={cn(
-          'inline-flex items-center gap-0.5 truncate text-xs font-medium uppercase tracking-wider',
+          'flex w-full items-center gap-0.5 truncate text-xs font-medium uppercase tracking-wider select-none',
           canSort && 'cursor-pointer hover:text-foreground'
         )}
       >
