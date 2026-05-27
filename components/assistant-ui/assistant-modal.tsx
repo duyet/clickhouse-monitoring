@@ -59,7 +59,7 @@ const AssistantModalButton = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         size="icon"
         aria-label={open ? 'Close agent' : 'Open agent'}
-        className="size-11 rounded-full shadow-lg transition-transform hover:scale-105"
+        className="size-11 rounded-full transition-transform hover:scale-105"
       >
         <span
           className={cn(

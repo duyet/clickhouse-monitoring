@@ -356,7 +356,7 @@ function HeatmapCellLink({
     'group/cell relative block min-w-0 flex-1 cursor-pointer rounded-[3px]',
     'transition-all duration-150',
     'hover:scale-110 hover:z-10',
-    'hover:ring-2 hover:ring-foreground/30 hover:shadow-sm',
+    'hover:ring-2 hover:ring-foreground/30',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:z-10',
     intensity,
     isCurrent &&
