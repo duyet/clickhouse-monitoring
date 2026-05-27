@@ -43,12 +43,19 @@ export function HealthCard({ check, hostId, thresholds }: HealthCardProps) {
   let value: number | null = null
   let label = ''
 
+  const metaStatus = swr.metadata?.status
+  const isUnavailable =
+    metaStatus === 'table_not_found' || metaStatus === 'table_not_configured'
+
   if (swr.isLoading) {
     status = 'loading'
     label = 'Loading…'
   } else if (swr.error) {
     status = 'error'
     label = 'Unavailable'
+  } else if (isUnavailable) {
+    status = 'error'
+    label = swr.metadata?.statusMessage ?? 'Unavailable'
   } else if (swr.data && swr.data.length > 0) {
     const row = swr.data[0] as Record<string, unknown>
     const raw = row[check.valueKey]

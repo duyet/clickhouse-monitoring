@@ -46,17 +46,24 @@ export function fireBrowserNotification(alert: HealthAlertEvent): void {
   }
 }
 
-export async function fireWebhook(alert: HealthAlertEvent): Promise<boolean> {
-  const settings = loadAlertSettings()
-  if (!settings.webhookEnabled || !settings.webhookUrl) return false
+export async function fireWebhook(
+  alert: HealthAlertEvent,
+  webhookUrl?: string
+): Promise<boolean> {
+  let url = webhookUrl
+  if (!url) {
+    const settings = loadAlertSettings()
+    if (!settings.webhookEnabled || !settings.webhookUrl) return false
+    url = settings.webhookUrl
+  }
   try {
     const text = `[${alert.severity.toUpperCase()}] ${alert.title} — ${alert.label} (host ${alert.hostId})`
-    await fetch(settings.webhookUrl, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, content: text }),
     })
-    return true
+    return res.ok
   } catch {
     return false
   }
@@ -81,6 +88,8 @@ export function isEscalation(
   prev: 'ok' | 'warning' | 'critical' | null,
   next: 'ok' | 'warning' | 'critical'
 ): boolean {
+  // Don't alert on initial mount — only fire on actual transitions during active monitoring.
+  if (prev === null) return false
   const order = { ok: 0, warning: 1, critical: 2 } as const
-  return prev === null || order[next] > order[prev]
+  return order[next] > order[prev]
 }

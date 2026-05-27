@@ -78,7 +78,11 @@ export function HealthSettingsDialog() {
   }
 
   const handleEnableBrowser = async (checked: boolean) => {
-    if (checked && 'Notification' in window) {
+    if (checked) {
+      if (!('Notification' in window)) {
+        toast.error('Browser notifications are not supported in this browser')
+        return
+      }
       if (Notification.permission === 'default') {
         const result = await Notification.requestPermission()
         if (result !== 'granted') {
@@ -100,21 +104,26 @@ export function HealthSettingsDialog() {
       toast.error('Enter a webhook URL first')
       return
     }
-    // Persist current input so fireWebhook picks it up
-    saveAlertSettings({ ...alerts, webhookEnabled: true })
-    const ok = await fireWebhook({
-      checkId: 'test',
-      title: 'Test Alert',
-      severity: 'warning',
-      value: 0,
-      label: 'This is a test alert from ClickHouse Monitor',
-      hostId: 0,
-    })
+    const ok = await fireWebhook(
+      {
+        checkId: 'test',
+        title: 'Test Alert',
+        severity: 'warning',
+        value: 0,
+        label: 'This is a test alert from ClickHouse Monitor',
+        hostId: 0,
+      },
+      alerts.webhookUrl
+    )
     if (ok) toast.success('Test alert sent')
     else toast.error('Webhook request failed')
   }
 
   const handleTestBrowser = () => {
+    if (!('Notification' in window)) {
+      toast.error('Browser notifications are not supported in this browser')
+      return
+    }
     if (Notification.permission !== 'granted') {
       toast.error('Browser notifications are not granted')
       return

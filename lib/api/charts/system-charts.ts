@@ -500,12 +500,12 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   'health-keeper-exceptions-recent': () => ({
     query: `
     SELECT sum(value) AS exception_count
-    FROM system.errors
-    WHERE name = 'KEEPER_EXCEPTION'
-      AND last_error_time > now() - INTERVAL 1 HOUR
+    FROM merge('system', '^error_log')
+    WHERE error = 'KEEPER_EXCEPTION'
+      AND event_time > now() - INTERVAL 1 HOUR
   `,
     optional: true,
-    tableCheck: 'system.errors',
+    tableCheck: 'system.error_log',
   }),
 
   'health-memory-percent': () => ({
