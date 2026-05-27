@@ -66,7 +66,7 @@ export function createSchemaTools(hostId: number) {
         const effectiveHostId = resolveHostId(paramHostId, hostId)
         const result = await readOnlyQuery({
           query:
-            'SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY total_bytes DESC',
+            'SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY total_bytes DESC LIMIT 500',
           hostId: effectiveHostId,
           query_params: { database },
         })
@@ -145,7 +145,7 @@ export function createSchemaTools(hostId: number) {
         if (!table) {
           const result = await readOnlyQuery({
             query:
-              'SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY name',
+              'SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY name LIMIT 500',
             hostId: effectiveHostId,
             query_params: { database },
           })
@@ -175,7 +175,7 @@ export function createSchemaTools(hostId: number) {
           // Get partition info
           readOnlyQuery({
             query:
-              'SELECT partition, parts, is_inactive FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active = 1 ORDER BY partition',
+              'SELECT partition, parts, is_inactive FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active = 1 ORDER BY partition LIMIT 500',
             hostId: effectiveHostId,
             query_params: { database, table },
           }),
