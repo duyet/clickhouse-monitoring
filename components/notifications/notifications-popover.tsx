@@ -150,7 +150,6 @@ export const NotificationsPopover = memo(function NotificationsPopover() {
                 <NotificationItem
                   key={notification.key}
                   notification={notification}
-                  hostId={hostId}
                 />
               ))}
             </div>
@@ -188,10 +187,10 @@ export const NotificationsPopover = memo(function NotificationsPopover() {
 
 interface NotificationItemProps {
   notification: NotificationWithKey
-  hostId: number
 }
 
-function NotificationItem({ notification, hostId }: NotificationItemProps) {
+function NotificationItem({ notification }: NotificationItemProps) {
+  const hostId = useHostId()
   const { type, cluster, count, severity } = notification
 
   // Generate link based on notification type

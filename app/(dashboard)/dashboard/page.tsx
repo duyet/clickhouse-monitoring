@@ -65,7 +65,7 @@ function DashboardContent() {
   return (
     <div className="flex flex-col gap-4">
       {/* Toolbar */}
-      <div className="flex flex-row flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <SavedDashboardsToolbar
           selectedCharts={validCharts}
           onLoad={handleLoad}
