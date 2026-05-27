@@ -32,7 +32,8 @@ import { cn } from '@/lib/utils'
  * with `data-no-expand`.
  */
 function shouldExpandOnRowClick(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false
+  // Use Element so SVG descendants (icons) inside cells still toggle the row.
+  if (!(target instanceof Element)) return false
   return !target.closest(
     'button, a, input, label, select, textarea, summary, [contenteditable], [role="button"], [role="link"], [role="menuitem"], [role="combobox"], [role="checkbox"], [data-no-expand]'
   )

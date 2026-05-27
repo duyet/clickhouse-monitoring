@@ -5,12 +5,12 @@
  * stays the trusted SQL source.
  */
 
-import type { ColumnFilterDef } from '@/types/query-config'
 import type {
   FilterField,
   FilterOperator,
   FilterSchema,
 } from '@/lib/filters/types'
+import type { ColumnFilterDef } from '@/types/query-config'
 
 const DEFAULT_OPERATOR: Record<ColumnFilterDef['type'], FilterOperator> = {
   text: 'contains',
@@ -52,5 +52,8 @@ export function pickColumnFilterOperator(
   field: FilterField
 ): FilterOperator {
   const preferred = def.operator ?? defaultOperatorForType(def.type)
-  return field.operators.includes(preferred) ? preferred : field.operators[0]
+  if (field.operators.includes(preferred)) return preferred
+  // Misconfigured schema field — fall back to the type default rather than
+  // returning `undefined` from an empty operators array.
+  return field.operators[0] ?? preferred
 }

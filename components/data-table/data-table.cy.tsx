@@ -399,4 +399,204 @@ describe('<DataTable />', () => {
     )
     cy.contains('0 of 10 row(s)')
   })
+
+  describe('column resizing', () => {
+    const resizeData = [
+      { col1: 'aaa', col2: 'bbb' },
+      { col1: 'ccc', col2: 'ddd' },
+    ]
+
+    it('renders resize handles by default', () => {
+      cy.mount(
+        <DataTable queryConfig={queryConfig} data={resizeData} context={{}} />
+      )
+
+      // One resizer per resizable column header
+      cy.get('thead [role="separator"][aria-orientation="vertical"]').should(
+        'have.length.at.least',
+        queryConfig.columns.length
+      )
+    })
+
+    it('omits resize handles when tableBehavior.enableColumnResizing is false', () => {
+      const lockedConfig: QueryConfig = {
+        ...queryConfig,
+        tableBehavior: { enableColumnResizing: false },
+      }
+
+      cy.mount(
+        <DataTable queryConfig={lockedConfig} data={resizeData} context={{}} />
+      )
+
+      cy.get('thead [role="separator"][aria-orientation="vertical"]').should(
+        'not.exist'
+      )
+    })
+
+    it('updates column width when dragging the resize handle', () => {
+      cy.mount(
+        <DataTable queryConfig={queryConfig} data={resizeData} context={{}} />
+      )
+
+      cy.get('thead th')
+        .first()
+        .invoke('outerWidth')
+        .then((startWidth) => {
+          // Pointer-based drag: pointerdown -> pointermove -> pointerup.
+          // Use the first resizer (col1 boundary).
+          cy.get('thead [role="separator"][aria-orientation="vertical"]')
+            .first()
+            .trigger('pointerdown', {
+              button: 0,
+              pointerId: 1,
+              clientX: startWidth,
+              clientY: 10,
+              force: true,
+            })
+          cy.get('body').trigger('pointermove', {
+            pointerId: 1,
+            clientX: startWidth + 120,
+            clientY: 10,
+            force: true,
+          })
+          cy.get('body').trigger('pointerup', {
+            pointerId: 1,
+            clientX: startWidth + 120,
+            clientY: 10,
+            force: true,
+          })
+
+          cy.get('thead th')
+            .first()
+            .invoke('outerWidth')
+            .should('be.greaterThan', startWidth + 50)
+        })
+    })
+  })
+
+  describe('column sorting', () => {
+    const sortData = [
+      { col1: 'banana', col2: '3' },
+      { col1: 'apple', col2: '1' },
+      { col1: 'cherry', col2: '2' },
+    ]
+
+    it('sorts ascending then descending when the header is clicked', () => {
+      cy.mount(
+        <DataTable queryConfig={queryConfig} data={sortData} context={{}} />
+      )
+
+      // Initial natural order
+      cy.get('tbody tr').eq(0).should('contain.text', 'banana')
+
+      // First click → ascending (apple, banana, cherry)
+      cy.get('thead th').first().contains('col1').click()
+      cy.get('tbody tr').eq(0).should('contain.text', 'apple')
+      cy.get('tbody tr').eq(1).should('contain.text', 'banana')
+      cy.get('tbody tr').eq(2).should('contain.text', 'cherry')
+
+      // Second click → descending (cherry, banana, apple)
+      cy.get('thead th').first().contains('col1').click()
+      cy.get('tbody tr').eq(0).should('contain.text', 'cherry')
+      cy.get('tbody tr').eq(2).should('contain.text', 'apple')
+    })
+
+    it('does not sort when tableBehavior.enableSorting is false', () => {
+      const lockedConfig: QueryConfig = {
+        ...queryConfig,
+        tableBehavior: { enableSorting: false },
+      }
+
+      cy.mount(
+        <DataTable queryConfig={lockedConfig} data={sortData} context={{}} />
+      )
+
+      cy.get('thead th').first().contains('col1').click()
+      // Order preserved
+      cy.get('tbody tr').eq(0).should('contain.text', 'banana')
+      cy.get('tbody tr').eq(1).should('contain.text', 'apple')
+      cy.get('tbody tr').eq(2).should('contain.text', 'cherry')
+    })
+  })
+
+  describe('action columns', () => {
+    it('renders action columns at a compact width and not resizable', () => {
+      const actionConfig: QueryConfig = {
+        name: 'with-action',
+        sql: '/* No need */',
+        columns: ['action', 'query_id', 'message'],
+        columnFormats: {
+          action: 'action' as never,
+        },
+      }
+      const data = [{ action: '', query_id: 'abc-123', message: 'hello' }]
+
+      cy.mount(
+        <DataTable queryConfig={actionConfig} data={data} context={{}} />
+      )
+
+      // Action column header should be narrow (<= 80px) instead of taking 180px
+      cy.get('thead th').first().invoke('outerWidth').should('be.lte', 80)
+
+      // No resizer on the action column
+      cy.get('thead th')
+        .first()
+        .find('[role="separator"][aria-orientation="vertical"]')
+        .should('not.exist')
+    })
+
+    it('does NOT cap inline-action columns (multi-button rows like running-queries)', () => {
+      const inlineActionConfig: QueryConfig = {
+        name: 'with-inline-action',
+        sql: '/* No need */',
+        columns: ['action', 'query'],
+        columnFormats: {
+          action: ['inline-action', []] as never,
+        },
+      }
+
+      cy.mount(
+        <DataTable
+          queryConfig={inlineActionConfig}
+          data={[{ action: 'abc-123', query: 'SELECT 1' }]}
+          context={{}}
+        />
+      )
+
+      // Inline-action column should keep the standard defaultColumn width
+      // (180px) so multiple icon buttons fit, and the resize handle must
+      // still be present.
+      cy.get('thead th').first().invoke('outerWidth').should('be.gt', 80)
+      cy.get('thead th')
+        .first()
+        .find('[role="separator"][aria-orientation="vertical"]')
+        .should('exist')
+    })
+  })
+
+  describe('header layout', () => {
+    it('truncates long header text instead of overlapping neighboring columns', () => {
+      const longHeaderConfig: QueryConfig = {
+        name: 'long',
+        sql: '/* No need */',
+        columns: ['a_very_long_column_name_that_should_truncate', 'col2'],
+      }
+
+      cy.mount(
+        <DataTable
+          queryConfig={longHeaderConfig}
+          data={[
+            { a_very_long_column_name_that_should_truncate: 'x', col2: 'y' },
+          ]}
+          context={{}}
+        />
+      )
+
+      // The truncate utility puts overflow:hidden on the header text span.
+      cy.get('thead th')
+        .first()
+        .find('.truncate')
+        .should('have.css', 'overflow-x', 'hidden')
+    })
+  })
 })

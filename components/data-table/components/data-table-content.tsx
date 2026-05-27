@@ -5,7 +5,6 @@ import type { ColumnDef, RowData } from '@tanstack/react-table'
 import type { ExpandableConfig, QueryConfig } from '@/types/query-config'
 
 import { MobileTableCards } from './mobile-table-cards'
-import { EXPAND_COLUMN_ID } from '@/components/data-table/column-defs'
 import {
   closestCenter,
   DndContext,
@@ -20,6 +19,7 @@ import {
   SortableContext,
 } from '@dnd-kit/sortable'
 import { memo, useCallback } from 'react'
+import { EXPAND_COLUMN_ID } from '@/components/data-table/column-defs'
 import {
   TableBody as TableBodyRenderer,
   TableHeader as TableHeaderRenderer,
@@ -204,6 +204,7 @@ export const DataTableContent = memo(function DataTableContent<
               rowClassName={queryConfig.rowClassName}
               isVirtualized={isVirtualized}
               virtualizer={virtualizer}
+              expandable={expandable}
             />
           </div>
         )}

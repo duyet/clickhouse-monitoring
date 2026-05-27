@@ -142,7 +142,7 @@ function DraggableTableHeader({
       style={style}
       colSpan={header.colSpan}
     >
-      <div className="group flex items-center">
+      <div className="group flex min-w-0 items-center pr-2">
         {/* Drag handle for column reordering - hidden by default, shown on hover */}
         <Button
           {...attributes}
@@ -151,7 +151,7 @@ function DraggableTableHeader({
           variant="ghost"
           size="icon-sm"
           className={cn(
-            'mr-1.5 hidden size-7 cursor-grab text-muted-foreground opacity-0 sm:inline-flex',
+            'mr-1.5 hidden size-7 shrink-0 cursor-grab text-muted-foreground opacity-0 sm:inline-flex',
             'active:cursor-grabbing',
             'group-hover:opacity-40 hover:opacity-100 focus:opacity-100 focus-visible:opacity-100',
             'transition',
@@ -164,9 +164,9 @@ function DraggableTableHeader({
         >
           <GripVertical data-icon className="h-3.5 w-3.5" />
         </Button>
-        <div className="flex-1">
-          <div className="group flex items-center gap-1">
-            <span className="flex-1">
+        <div className="min-w-0 flex-1">
+          <div className="group flex min-w-0 items-center gap-1">
+            <span className="min-w-0 flex-1 truncate">
               {header.isPlaceholder
                 ? null
                 : flexRender(
@@ -272,21 +272,21 @@ export const TableHeaderRow = memo(function TableHeaderRow({
               width: header.column.getSize(),
             }}
           >
-            <div className="group flex items-center">
-              <div className="flex-1">
-                <div className="group flex items-center gap-1">
+            <div className="group flex min-w-0 items-center pr-2">
+              <div className="min-w-0 flex-1">
+                <div className="group flex min-w-0 items-center gap-1">
                   {/* Sort indicator */}
                   {isSorted === 'asc' && (
-                    <ArrowUp className="h-3.5 w-3.5 text-primary" />
+                    <ArrowUp className="h-3.5 w-3.5 shrink-0 text-primary" />
                   )}
                   {isSorted === 'desc' && (
-                    <ArrowDown className="h-3.5 w-3.5 text-primary" />
+                    <ArrowDown className="h-3.5 w-3.5 shrink-0 text-primary" />
                   )}
                   <span
                     role={canSort ? 'button' : undefined}
                     tabIndex={canSort ? 0 : undefined}
                     className={cn(
-                      'flex-1',
+                      'min-w-0 flex-1 truncate',
                       // Make header clickable for sorting
                       canSort && 'cursor-pointer'
                     )}

@@ -5,7 +5,8 @@ import { ArrowRight, ChevronDown, History, RefreshCw } from 'lucide-react'
 import type { RunningQueryRow } from '@/components/running-queries/running-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
 
-import { memo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { memo, useMemo, useState } from 'react'
 import { RunningQueriesCharts } from '@/components/running-queries/running-queries-charts'
 import { RunningQueriesTable } from '@/components/running-queries/running-queries-table'
 import { Skeleton } from '@/components/skeletons'
@@ -19,6 +20,11 @@ import {
   getCardErrorDescription,
   getCardErrorTitle,
 } from '@/lib/card-error-utils'
+import {
+  parseFiltersFromParams,
+  serializeActiveFilters,
+} from '@/lib/filters/url-state'
+import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
 import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/swr/use-table-data'
 import { buildUrl } from '@/lib/url/url-builder'
@@ -122,14 +128,27 @@ function HeaderButton({
  */
 export const RunningQueriesView = memo(function RunningQueriesView() {
   const hostId = useHostId()
+  const searchParams = useSearchParams()
   const [chartsOpen, setChartsOpen] = useState(true)
   const [live, setLive] = useState(true)
+
+  // Pipe URL-driven filter params into the SWR key so the schema-driven
+  // header filters and bar (rendered by the underlying DataTable) actually
+  // shape the data fetched from /api/v1/tables/running-queries.
+  const filterParams = useMemo(() => {
+    const schema = runningQueriesConfig.filterSchema
+    if (!schema) return undefined
+    const serialized = serializeActiveFilters(
+      parseFiltersFromParams(schema, searchParams)
+    )
+    return Object.keys(serialized).length > 0 ? serialized : undefined
+  }, [searchParams])
 
   const { data, error, isLoading, isValidating, refresh } =
     useTableData<RunningQueryRow>(
       'running-queries',
       hostId,
-      undefined,
+      filterParams,
       live ? REFRESH_INTERVAL : 0
     )
 

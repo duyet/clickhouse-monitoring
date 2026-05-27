@@ -64,13 +64,20 @@ export function createSchemaTools(hostId: number) {
           hostId?: number
         }
         const effectiveHostId = resolveHostId(paramHostId, hostId)
-        const result = await readOnlyQuery({
-          query:
-            'SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY total_bytes DESC',
+        const limit = 500
+        const result = (await readOnlyQuery({
+          query: `SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY total_bytes DESC LIMIT ${limit}`,
           hostId: effectiveHostId,
           query_params: { database },
-        })
-        return result
+        })) as unknown[]
+        const truncated = Array.isArray(result) && result.length === limit
+        return {
+          tables: result,
+          truncated,
+          ...(truncated && {
+            note: `Showing the largest ${limit} tables by size; smaller tables beyond this cutoff are omitted. Query system.tables directly with a narrower filter to inspect them.`,
+          }),
+        }
       },
     }),
 
@@ -143,16 +150,21 @@ export function createSchemaTools(hostId: number) {
 
         // Mode 2: Database only - list tables in database
         if (!table) {
-          const result = await readOnlyQuery({
-            query:
-              'SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY name',
+          const limit = 500
+          const result = (await readOnlyQuery({
+            query: `SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY name LIMIT ${limit}`,
             hostId: effectiveHostId,
             query_params: { database },
-          })
+          })) as unknown[]
+          const truncated = Array.isArray(result) && result.length === limit
           return {
             mode: 'tables',
             database,
             data: result,
+            truncated,
+            ...(truncated && {
+              note: `Showing the first ${limit} tables alphabetically; additional tables in this database are omitted. Query system.tables directly with a narrower filter to inspect them.`,
+            }),
           }
         }
 
@@ -175,7 +187,7 @@ export function createSchemaTools(hostId: number) {
           // Get partition info
           readOnlyQuery({
             query:
-              'SELECT partition, parts, is_inactive FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active = 1 ORDER BY partition',
+              'SELECT partition, parts, is_inactive FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active = 1 ORDER BY partition LIMIT 500',
             hostId: effectiveHostId,
             query_params: { database, table },
           }),

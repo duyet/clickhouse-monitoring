@@ -61,6 +61,12 @@ export interface QueryPageLayoutProps {
   defaultPageSize?: number
   /** Maximum height for the table card */
   maxTableHeight?: string
+  /**
+   * Render DataTable's schema-driven filter bar above the table. Defaults to
+   * `false` when `headerContent` is provided (assumed to host its own
+   * FilterBar) and `true` otherwise. Set explicitly to override.
+   */
+  showFilterBar?: boolean
 }
 
 export const QueryPageLayout = memo(function QueryPageLayout({
@@ -76,7 +82,12 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   enableRowSelection = false,
   defaultPageSize,
   maxTableHeight,
+  showFilterBar,
 }: QueryPageLayoutProps) {
+  // Default: hide the auto-rendered filter bar when the page already
+  // supplies its own headerContent (typically a FilterBar wired to the
+  // same URL params). Avoids two controls mutating the same state.
+  const effectiveShowFilterBar = showFilterBar ?? !headerContent
   const hostId = useHostId()
   const { config, isLoading } = useFeaturePermissions()
   const relatedCharts = queryConfig.relatedCharts || []
@@ -151,6 +162,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
                     className="flex min-w-0 flex-1 flex-col"
                     enableRowSelection={enableRowSelection}
                     defaultPageSize={defaultPageSize}
+                    showFilterBar={effectiveShowFilterBar}
                   />
                 )}
               </FadeIn>
@@ -174,6 +186,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
                   className="flex min-w-0 flex-1 flex-col"
                   enableRowSelection={enableRowSelection}
                   defaultPageSize={defaultPageSize}
+                  showFilterBar={effectiveShowFilterBar}
                 />
               )}
             </FadeIn>
