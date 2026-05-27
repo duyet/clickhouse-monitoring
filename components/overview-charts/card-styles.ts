@@ -23,7 +23,9 @@ export const cardStyles = {
     'font-mono font-semibold tabular-nums tracking-tight',
     'text-foreground/90 dark:text-foreground/80',
     'text-lg sm:text-xl md:text-2xl lg:text-3xl',
-    'line-clamp-1'
+    'line-clamp-1',
+    '[text-shadow:0_1px_2px_rgba(0,0,0,0.05)]',
+    'dark:[text-shadow:0_1px_3px_rgba(0,0,0,0.3)]'
   ),
 
   label: cn(
@@ -75,7 +77,8 @@ export const progressColors: Record<CardVariant, string> = {
 
 export const progressTrackStyles = cn(
   'h-2 sm:h-2.5 w-full overflow-hidden rounded-full',
-  'bg-foreground/[0.06] dark:bg-foreground/[0.08]'
+  'bg-foreground/[0.06] dark:bg-foreground/[0.08]',
+  'shadow-inner shadow-black/[0.03]'
 )
 
 export const progressFillStyles = cn(

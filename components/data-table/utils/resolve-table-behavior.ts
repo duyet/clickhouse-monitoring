@@ -6,14 +6,15 @@
  *   2. queryConfig.tableBehavior
  *   3. global defaults
  *
- * Returning a single typed object keeps the call-site in data-table.tsx flat
- * and prevents the resolved booleans from leaking through the file as a
- * loose collection of locals.
+ * Pure utility, not a hook — it makes no React calls. Returning a single
+ * typed object keeps the call-site in data-table.tsx flat and prevents
+ * the resolved booleans from leaking through the file as a loose
+ * collection of locals.
  */
 
 import type { QueryConfig } from '@/types/query-config'
 
-interface UseTableBehaviorOptions {
+interface ResolveTableBehaviorOptions {
   queryConfig: QueryConfig
   enableColumnReorderingProp?: boolean
 }
@@ -25,10 +26,10 @@ interface ResolvedTableBehavior {
   enableColumnReordering: boolean
 }
 
-export function useTableBehavior({
+export function resolveTableBehavior({
   queryConfig,
   enableColumnReorderingProp,
-}: UseTableBehaviorOptions): ResolvedTableBehavior {
+}: ResolveTableBehaviorOptions): ResolvedTableBehavior {
   const behavior = queryConfig.tableBehavior ?? {}
 
   return {

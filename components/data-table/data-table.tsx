@@ -31,13 +31,13 @@ import {
   useAutoFitColumns,
   useColumnVisibility,
   useFilteredData,
-  useTableBehavior,
   useTableColumns,
   useTableDensity,
   useTableFilters,
   useVirtualRows,
 } from '@/components/data-table/hooks'
 import { getCustomSortingFns } from '@/components/data-table/sorting-fns'
+import { resolveTableBehavior } from '@/components/data-table/utils/resolve-table-behavior'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 
@@ -177,7 +177,7 @@ export function DataTable<
     columnResizeMode: resolvedColumnResizeMode,
     enableSorting: resolvedEnableSorting,
     enableColumnReordering: resolvedEnableColumnReordering,
-  } = useTableBehavior({ queryConfig, enableColumnReorderingProp })
+  } = resolveTableBehavior({ queryConfig, enableColumnReorderingProp })
 
   // Determine which columns should be filterable (memoized)
   const configuredColumns = useMemo(

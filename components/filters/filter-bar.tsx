@@ -102,12 +102,11 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
   )
 
   const fieldByKey = useMemo(
-    () =>
-      schema ? new Map(schema.fields.map((field) => [field.key, field])) : null,
+    () => new Map(schema?.fields.map((field) => [field.key, field]) ?? []),
     [schema]
   )
 
-  if (!schema || !fieldByKey) return null
+  if (!schema) return null
 
   const activeKeys = activeFilters.map((filter) => filter.key)
   const hasPresets = Boolean(schema.presets && schema.presets.length > 0)

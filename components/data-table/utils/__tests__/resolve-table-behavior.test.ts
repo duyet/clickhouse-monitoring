@@ -1,6 +1,6 @@
 import type { QueryConfig } from '@/types/query-config'
 
-import { useTableBehavior } from '../use-table-behavior'
+import { resolveTableBehavior } from '../resolve-table-behavior'
 import { describe, expect, it } from 'bun:test'
 
 function makeConfig(tableBehavior?: QueryConfig['tableBehavior']): QueryConfig {
@@ -12,9 +12,9 @@ function makeConfig(tableBehavior?: QueryConfig['tableBehavior']): QueryConfig {
   } as unknown as QueryConfig
 }
 
-describe('useTableBehavior', () => {
+describe('resolveTableBehavior', () => {
   it('returns the global defaults when nothing is configured', () => {
-    const result = useTableBehavior({ queryConfig: makeConfig() })
+    const result = resolveTableBehavior({ queryConfig: makeConfig() })
 
     expect(result).toEqual({
       enableColumnResizing: true,
@@ -25,7 +25,7 @@ describe('useTableBehavior', () => {
   })
 
   it('honors queryConfig.tableBehavior overrides', () => {
-    const result = useTableBehavior({
+    const result = resolveTableBehavior({
       queryConfig: makeConfig({
         enableColumnResizing: false,
         columnResizeMode: 'onEnd',
@@ -43,7 +43,7 @@ describe('useTableBehavior', () => {
   })
 
   it('lets the prop override queryConfig for enableColumnReordering', () => {
-    const result = useTableBehavior({
+    const result = resolveTableBehavior({
       queryConfig: makeConfig({ enableColumnReordering: false }),
       enableColumnReorderingProp: true,
     })
@@ -52,7 +52,7 @@ describe('useTableBehavior', () => {
   })
 
   it('falls back to queryConfig when the prop is undefined', () => {
-    const result = useTableBehavior({
+    const result = resolveTableBehavior({
       queryConfig: makeConfig({ enableColumnReordering: false }),
       enableColumnReorderingProp: undefined,
     })
@@ -61,7 +61,7 @@ describe('useTableBehavior', () => {
   })
 
   it('only resolves the reordering flag from props; resizing stays from config', () => {
-    const result = useTableBehavior({
+    const result = resolveTableBehavior({
       queryConfig: makeConfig({ enableColumnResizing: false }),
       enableColumnReorderingProp: false,
     })
