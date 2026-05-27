@@ -215,10 +215,13 @@ describe('createMcpTools', () => {
     test('returns tables when executed with database', async () => {
       const tools = createMcpTools(0)
 
-      const result = await tools.list_tables.execute({ database: 'default' })
+      const result = (await tools.list_tables.execute({
+        database: 'default',
+      })) as { tables: unknown[]; truncated: boolean }
 
       expect(result).toBeDefined()
-      expect(Array.isArray(result)).toBe(true)
+      expect(Array.isArray(result.tables)).toBe(true)
+      expect(typeof result.truncated).toBe('boolean')
     })
   })
 

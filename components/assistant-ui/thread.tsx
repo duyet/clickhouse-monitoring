@@ -489,7 +489,9 @@ function LoadingIndicator() {
     (msg) =>
       msg.role === 'assistant' &&
       (msg.status?.type === 'incomplete' ||
-        msg.content.some((p) => (p as { type: string }).type === 'data-error'))
+        msg.content.some(
+          (p) => (p as { type?: string })?.type === 'data-error'
+        ))
   )
   const hasNoParts = useMessage(
     (msg) =>

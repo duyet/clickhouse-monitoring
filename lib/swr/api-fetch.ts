@@ -26,7 +26,7 @@ export async function apiFetch(
 
   if (response.ok && isStream) return response
 
-  if (!isStream && contentType.includes('text/html')) {
+  if (!response.ok && !isStream && contentType.includes('text/html')) {
     const bodyText = await response.clone().text()
     const truncated = bodyText.slice(0, 500)
     const isCfResourceLimit = /Worker exceeded resource limits/i.test(bodyText)
