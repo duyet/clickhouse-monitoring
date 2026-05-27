@@ -18,7 +18,13 @@ export interface ModelEntry {
   providers: string[]
 }
 
-export const DEFAULT_AGENT_MODEL = 'anyrouter:@preset/chmonitor'
+// NOTE: do not default to `anyrouter:@preset/chmonitor` until the preset
+// is rerouted away from `z-ai/glm-4.7-flash`. That model emits prose that
+// *describes* tool calls instead of producing structured tool_calls, so the
+// agent loop exits after step 1 with no tools ever invoked (verified
+// 2026-05-27 against /api/v1/agent). Gemma 4 26B via AnyRouter completes a
+// full two-step tool loop cleanly and stays effectively free.
+export const DEFAULT_AGENT_MODEL = 'anyrouter:google/gemma-4-26b-a4b-it'
 
 export const MODEL_REGISTRY: readonly ModelEntry[] = [
   // ── Presets (auto-routing via AnyRouter) ──

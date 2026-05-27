@@ -18,7 +18,7 @@ describe('AnyRouter model registry', () => {
   test('includes the curated AnyRouter models and OpenRouter free default', () => {
     const options = getAllModelOptions()
 
-    expect(DEFAULT_AGENT_MODEL).toBe('openrouter:openrouter/free')
+    expect(DEFAULT_AGENT_MODEL).toBe('anyrouter:google/gemma-4-26b-a4b-it')
     expect(options).toContain('openrouter:openrouter/free')
     expect(options).toContain('anyrouter:z-ai/glm-4.7-flash')
     expect(options).toContain('anyrouter:google/gemini-3.1-flash-lite')
