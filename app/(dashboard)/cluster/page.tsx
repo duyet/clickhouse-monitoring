@@ -90,13 +90,13 @@ function ClusterComparisonContent() {
   const isSingleHost = hosts.length === 1
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 sm:gap-8">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
           Cluster Comparison
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
           {isSingleHost
             ? 'Side-by-side view of key metrics. Add more hosts to compare across nodes.'
             : `Comparing ${hosts.length} hosts — spot imbalances in CPU, memory, and query load.`}
