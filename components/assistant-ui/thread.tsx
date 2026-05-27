@@ -68,7 +68,7 @@ export function Thread({
       className="aui-root flex h-full flex-col overflow-hidden bg-background"
       style={{ ['--thread-max-width' as string]: '46rem' }}
     >
-      <ThreadPrimitive.Viewport className="relative flex flex-1 flex-col overflow-y-auto scroll-smooth px-4">
+      <ThreadPrimitive.Viewport className="relative flex flex-1 flex-col overflow-y-auto scroll-smooth px-4 pt-14">
         <ThreadWelcome
           firstName={firstName}
           clusterName={clusterName}

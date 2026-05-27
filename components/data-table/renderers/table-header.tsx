@@ -55,7 +55,10 @@ function ColumnResizer({ header, onAutoFit }: ColumnResizerProps) {
       role="separator"
       aria-orientation="vertical"
       aria-valuenow={header.column.getSize()}
-      onMouseDown={(e) => {
+      // PointerSensor (dnd-kit) listens for pointerdown to start a column
+      // drag; stop it here so resize wins. Also block the synthetic click so
+      // the header sort handler doesn't fire on mouseup.
+      onPointerDown={(e) => {
         e.stopPropagation()
         header.getResizeHandler()(e)
       }}
@@ -63,13 +66,14 @@ function ColumnResizer({ header, onAutoFit }: ColumnResizerProps) {
         e.stopPropagation()
         header.getResizeHandler()(e)
       }}
+      onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
       onDoubleClick={(e) => {
         e.stopPropagation()
         handleDoubleClick()
       }}
       className={cn(
-        'absolute right-0 top-0 z-10 h-full w-2 -mr-1 cursor-col-resize select-none touch-none',
+        'absolute right-0 top-0 z-20 h-full w-2 -mr-1 cursor-col-resize select-none touch-none',
         'after:absolute after:right-1 after:top-0 after:h-full after:w-px',
         'after:bg-border/40 hover:after:bg-primary active:after:bg-primary',
         'after:transition-colors',

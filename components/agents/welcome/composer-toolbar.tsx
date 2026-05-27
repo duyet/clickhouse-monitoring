@@ -17,12 +17,7 @@
  * is a sibling that lives in the same outer card.
  */
 
-import {
-  ChevronDownIcon,
-  HashIcon,
-  SparklesIcon,
-  WrenchIcon,
-} from 'lucide-react'
+import { HashIcon, SparklesIcon, WrenchIcon } from 'lucide-react'
 
 import { useMemo, useState } from 'react'
 import { AgentModelPicker } from '@/components/agents/welcome/agent-model-picker'
@@ -98,7 +93,6 @@ export function ComposerToolbar({
               </span>
               <span className="tabular-nums">/{totalSkillCount}</span> skills
             </span>
-            <ChevronDownIcon className="size-2.5 opacity-60" />
           </Button>
         </PopoverTrigger>
         <PopoverContent
@@ -185,7 +179,6 @@ export function ComposerToolbar({
               </span>
               <span className="tabular-nums">/{allTools.length}</span> tools
             </span>
-            <ChevronDownIcon className="size-2.5 opacity-60" />
           </Button>
         </PopoverTrigger>
         <PopoverContent
