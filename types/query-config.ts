@@ -22,6 +22,26 @@ export interface ColumnSizingConfig {
 }
 
 /**
+ * Per-table behavior configuration. Each flag is optional and falls back to a
+ * sensible default. Use this on a QueryConfig to override defaults for a
+ * specific table (e.g. disable resizing for compact summary tables).
+ */
+export interface TableBehaviorConfig {
+  /** Enable column resizing via drag handles (default: true) */
+  enableColumnResizing?: boolean
+  /**
+   * When to commit column size changes:
+   * - 'onChange': live, updates every pointermove (default — feels responsive)
+   * - 'onEnd': commits only after the user releases the mouse
+   */
+  columnResizeMode?: 'onChange' | 'onEnd'
+  /** Enable click-to-sort on column headers (default: true) */
+  enableSorting?: boolean
+  /** Enable drag-and-drop column reordering (default: true) */
+  enableColumnReordering?: boolean
+}
+
+/**
  * Infer row data type from column names array
  *
  * @example
@@ -227,6 +247,19 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    * Use this only for columns whose default width creates poor scan density.
    */
   columnSizing?: Record<string, ColumnSizingConfig>
+  /**
+   * Per-table behavior overrides (resize / sort / reorder / cached fetching).
+   * Each field is optional; omitted fields fall back to the global default.
+   *
+   * @example
+   * ```ts
+   * tableBehavior: {
+   *   enableColumnResizing: false, // lock column widths
+   *   columnResizeMode: 'onEnd',   // batched commit for very large tables
+   * }
+   * ```
+   */
+  tableBehavior?: TableBehaviorConfig
   relatedCharts?:
     | string[]
     | [string, Omit<ChartProps, 'hostId'>][]

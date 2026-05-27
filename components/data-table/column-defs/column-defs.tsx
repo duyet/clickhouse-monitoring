@@ -128,6 +128,21 @@ export function getColumnDefs<
       ),
     }
 
+    // Single-trigger action columns (ColumnFormat.Action → "⋯" dropdown menu)
+    // render one icon button, so cap them tight. We deliberately do NOT match
+    // by column name nor by ColumnFormat.InlineAction — inline-action columns
+    // render multiple buttons (kill / analyze / open-in-explorer on Running
+    // Queries) and need their natural width plus resize.
+    const isMenuActionColumn = columnFormat === 'action'
+    if (isMenuActionColumn) {
+      columnDef.size = 56
+      columnDef.minSize = 48
+      columnDef.maxSize = 80
+      columnDef.enableResizing = false
+      columnDef.enableSorting = false
+      columnDef.enableHiding = false
+    }
+
     if (sizing?.size !== undefined) {
       columnDef.size = sizing.size
     }

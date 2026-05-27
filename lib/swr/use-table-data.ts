@@ -186,6 +186,13 @@ export function useTableData<T = unknown>(
     revalidateOnReconnect: true,
     dedupingInterval: 3000,
     focusThrottleInterval: 5000,
+    // NOTE: do NOT enable `keepPreviousData` here. SWR's per-key cache
+    // already prevents flashes on same-key revalidation, but
+    // `keepPreviousData` also reuses data across cache-key changes (host
+    // swap, search/sort/pagination, timezone). If the new key's request
+    // fails, the consumer's `error && !data` branch would still see the
+    // OLD key's rows and render them under the new selection — wrong data
+    // under a wrong header. See PR #1196 review for context.
     refreshInterval:
       refreshInterval && refreshInterval > 0
         ? visibilityAwareInterval(refreshInterval)
