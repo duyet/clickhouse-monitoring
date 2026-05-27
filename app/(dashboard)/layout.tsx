@@ -131,7 +131,7 @@ export default function RootLayout({
                     <HeaderActions />
                   </div>
                 </header>
-                <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-3 pt-0 sm:p-4 sm:pt-0">
+                <div className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-3 pt-0 sm:gap-4 sm:p-4 sm:pt-0">
                   {children}
                 </div>
               </SidebarInset>
