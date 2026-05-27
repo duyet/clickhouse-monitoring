@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
+import { cn } from '@/lib/utils'
 
 interface Database {
   name: string
@@ -164,9 +165,12 @@ export function ExplorerEmptyState() {
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`flex size-9 items-center justify-center rounded-md transition-colors ${bg}`}
+                      className={cn(
+                        'flex size-9 items-center justify-center rounded-md transition-colors',
+                        bg
+                      )}
                     >
-                      <Icon className={`size-4 ${color}`} />
+                      <Icon className={cn('size-4', color)} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{db.name}</p>

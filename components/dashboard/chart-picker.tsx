@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 
 // Category display labels
 const CATEGORY_LABELS: Record<string, string> = {
@@ -81,17 +82,20 @@ export function ChartPicker({ selectedCharts, onChange }: ChartPickerProps) {
                     key={chartName}
                     type="button"
                     onClick={() => toggle(chartName)}
-                    className={`
-                      flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm
-                      hover:bg-accent hover:text-accent-foreground
-                      ${checked ? 'font-medium text-foreground' : 'text-muted-foreground'}
-                    `}
+                    className={cn(
+                      'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground',
+                      checked
+                        ? 'font-medium text-foreground'
+                        : 'text-muted-foreground'
+                    )}
                   >
                     <span
-                      className={`
-                        flex h-4 w-4 shrink-0 items-center justify-center rounded border
-                        ${checked ? 'border-primary bg-primary text-primary-foreground' : 'border-muted'}
-                      `}
+                      className={cn(
+                        'flex h-4 w-4 shrink-0 items-center justify-center rounded border',
+                        checked
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-muted'
+                      )}
                     >
                       {checked && (
                         <svg

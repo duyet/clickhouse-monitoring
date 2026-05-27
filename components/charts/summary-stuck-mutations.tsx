@@ -10,6 +10,7 @@ import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/skeletons'
 import { useChartData } from '@/lib/swr'
+import { cn } from '@/lib/utils'
 
 interface MutationMetrics extends ChartDataPoint {
   active: number
@@ -71,7 +72,10 @@ export const ChartSummaryStuckMutations = memo(
                 {METRIC_CONFIGS.map(({ key, label, activeColor }) => (
                   <span key={key}>
                     <span
-                      className={`text-2xl font-bold ${metrics[key] > 0 ? activeColor : ''}`}
+                      className={cn(
+                        'text-2xl font-bold',
+                        metrics[key] > 0 && activeColor
+                      )}
                     >
                       {metrics[key]}
                     </span>{' '}
