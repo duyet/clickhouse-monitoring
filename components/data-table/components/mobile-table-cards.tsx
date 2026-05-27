@@ -21,10 +21,15 @@ import {
 import type { VirtualItem } from '@tanstack/react-virtual'
 
 import type { UseVirtualRowsResult } from '@/components/data-table/hooks/use-virtual-rows'
-import type { ExpandableConfig, RowClassNameFn } from '@/types/query-config'
+import type {
+  ExpandableConfig,
+  ExpandedRenderer,
+  RowClassNameFn,
+} from '@/types/query-config'
 
 import { Fragment, memo } from 'react'
 import { EXPAND_COLUMN_ID } from '@/components/data-table/column-defs'
+import { DefaultExpandedRow } from '@/components/data-table/row-expand/default-renderer'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -172,10 +177,6 @@ const MobileTableCard = memo(function MobileTableCard<TData extends RowData>({
   const isExpandable = !!expandable && row.getCanExpand()
   const isExpanded = isExpandable && row.getIsExpanded()
   const ExpandIcon = isExpanded ? ChevronDown : ChevronRight
-  const renderExpanded =
-    expandable && typeof expandable === 'object'
-      ? expandable.renderExpanded
-      : undefined
 
   return (
     <article
@@ -251,11 +252,16 @@ const MobileTableCard = memo(function MobileTableCard<TData extends RowData>({
         </dl>
       )}
 
-      {isExpanded && renderExpanded && (
-        <div className="mt-3 border-t border-border/50 pt-3">
-          {renderExpanded(row.original as Record<string, unknown>, {
-            row: row as unknown as Row<Record<string, unknown>>,
-          })}
+      {isExpanded && (
+        <div className="mt-3 border-t border-border/50 pt-3 animate-in fade-in slide-in-from-top-1 duration-150">
+          {expandable === true ? (
+            <DefaultExpandedRow row={row.original as Record<string, unknown>} />
+          ) : (
+            (expandable.renderExpanded as ExpandedRenderer)(
+              row.original as Record<string, unknown>,
+              { row: row as unknown as Row<Record<string, unknown>> }
+            )
+          )}
         </div>
       )}
     </article>

@@ -141,6 +141,11 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
     const serialized = serializeActiveFilters(
       parseFiltersFromParams(schema, searchParams)
     )
+    // Map the `q` text-search param to a server-side `contains` on the query column.
+    const q = searchParams.get('q')
+    if (q?.trim()) {
+      serialized.query = `contains:${q.trim()}`
+    }
     return Object.keys(serialized).length > 0 ? serialized : undefined
   }, [searchParams])
 
