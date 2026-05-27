@@ -4,6 +4,8 @@ import { ExternalLink, Info } from 'lucide-react'
 
 import type { TableGuidance } from '@/lib/table-guidance'
 
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
@@ -70,43 +72,37 @@ export function OptionalTableInfo({
 
             {/* Instructions */}
             <div className="text-sm text-muted-foreground space-y-3">
-              <div className="leading-relaxed">
-                {/* Handle markdown-like code blocks by splitting and rendering */}
-                {guidance.enableInstructions
-                  .split(/```/g)
-                  .map((part, index) => {
-                    // Odd indices are inside code blocks
-                    if (index % 2 === 1) {
-                      const language = part.split('\n')[0] || ''
-                      const codeContent = part
-                        .split('\n')
-                        .slice(language ? 1 : 0)
-                        .join('\n')
-                        .trim()
-
+              <div className="leading-relaxed [&>p]:my-0 [&>p+p]:mt-2">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    code: ({ className, children, ...props }) => {
+                      const isInline = !className?.startsWith('language-')
+                      if (isInline) {
+                        return (
+                          <code
+                            className="rounded bg-blue-100/60 px-1 py-0.5 font-mono text-[0.85em] text-blue-900 dark:bg-blue-900/40 dark:text-blue-100"
+                            {...props}
+                          >
+                            {children}
+                          </code>
+                        )
+                      }
                       return (
-                        <pre
-                          key={`code-${index}`}
-                          className="mt-2 mb-2 overflow-x-auto rounded border border-blue-300/60 bg-slate-900 p-3 text-xs text-slate-50 dark:border-blue-800/60 dark:bg-slate-950 dark:text-slate-100"
-                        >
-                          <code>{codeContent}</code>
-                        </pre>
+                        <code className={cn('font-mono', className)} {...props}>
+                          {children}
+                        </code>
                       )
-                    }
-
-                    // Even indices are regular text
-                    if (part.trim()) {
-                      return (
-                        <div
-                          key={`text-${index}`}
-                          className="whitespace-pre-wrap"
-                        >
-                          {part.trim()}
-                        </div>
-                      )
-                    }
-                    return null
-                  })}
+                    },
+                    pre: ({ children }) => (
+                      <pre className="mt-2 mb-2 overflow-x-auto rounded border border-blue-300/60 bg-slate-900 p-3 text-xs text-slate-50 dark:border-blue-800/60 dark:bg-slate-950 dark:text-slate-100">
+                        {children}
+                      </pre>
+                    ),
+                  }}
+                >
+                  {guidance.enableInstructions}
+                </ReactMarkdown>
               </div>
 
               {/* Documentation link */}
