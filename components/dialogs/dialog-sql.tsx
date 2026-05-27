@@ -30,7 +30,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { dedent, formatDuration } from '@/lib/utils'
+import { cn, dedent, formatDuration } from '@/lib/utils'
 
 interface ShowSQLButtonProps extends Omit<DialogContentProps, 'content'> {
   sql?: string
@@ -99,7 +99,10 @@ function CopyableValue({
   return (
     <button
       onClick={handleCopy}
-      className={`font-mono font-medium text-right truncate min-w-0 hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1 group/copy ${className}`}
+      className={cn(
+        'font-mono font-medium text-right truncate min-w-0 hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1 group/copy',
+        className
+      )}
       title={`Click to copy: ${value}`}
     >
       <span className="truncate">{value}</span>
@@ -402,7 +405,3 @@ export const DialogSQL = memo(function DialogSQL({
     />
   )
 })
-
-function cn(...classes: (string | undefined | false | null)[]) {
-  return classes.filter(Boolean).join(' ')
-}

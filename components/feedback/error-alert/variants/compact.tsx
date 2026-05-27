@@ -10,6 +10,7 @@ import type React from 'react'
 import type { ErrorAlertVariant } from '../error-alert-variants'
 
 import { getVariantStyles } from '../error-alert-variants'
+import { cn } from '@/lib/utils'
 
 export interface CompactErrorAlertProps {
   title: string
@@ -30,7 +31,11 @@ export function CompactErrorAlert({
 
   return (
     <div
-      className={`${className} ${getVariantStyles(variant)} rounded-lg border p-2`}
+      className={cn(
+        'rounded-lg border p-2',
+        getVariantStyles(variant),
+        className
+      )}
       data-testid="error-message-compact"
       role="alert"
       aria-live="polite"
