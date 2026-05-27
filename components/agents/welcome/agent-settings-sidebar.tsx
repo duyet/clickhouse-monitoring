@@ -212,12 +212,12 @@ export function AgentSettingsSidebar({
   return (
     <aside
       className={cn(
-        'bg-card border-border shrink-0 overflow-y-auto border-l transition-all duration-200',
+        'bg-card border-border shrink-0 overflow-x-hidden overflow-y-auto border-l transition-all duration-200',
         open ? 'w-[320px] opacity-100' : 'pointer-events-none w-0 opacity-0'
       )}
       style={{ maxHeight: 'calc(100dvh - 6rem)' }}
     >
-      <div className="w-[320px] p-4">
+      <div className="w-[320px] min-w-0 max-w-full p-4">
         <div className="mb-1 flex items-center justify-between gap-2">
           <h3 className="text-[14px] font-semibold whitespace-nowrap">
             Agent settings
