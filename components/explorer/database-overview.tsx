@@ -121,7 +121,6 @@ export function DatabaseOverview({ database }: DatabaseOverviewProps) {
       <DependencyGraph
         dependencies={graphData}
         currentDatabase={database}
-        hostId={hostId}
         className="flex-1 min-h-[400px]"
       />
     </div>

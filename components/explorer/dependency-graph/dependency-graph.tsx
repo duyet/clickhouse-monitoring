@@ -20,6 +20,7 @@ import dagre from '@dagrejs/dagre'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { getEngineIconConfig } from '@/lib/clickhouse-engine-icons'
+import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 /**
@@ -50,7 +51,6 @@ interface DependencyGraphProps {
   dependencies: DependencyEdge[]
   currentTable?: string
   currentDatabase?: string
-  hostId: number
   className?: string
 }
 
@@ -409,9 +409,9 @@ export function DependencyGraph({
   dependencies,
   currentTable,
   currentDatabase,
-  hostId,
   className,
 }: DependencyGraphProps) {
+  const hostId = useHostId()
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null)
   const [direction, setDirection] = useState<LayoutDirection>('TB')
 
