@@ -14,6 +14,7 @@ import { useMemo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
 
 interface ApiResponse<T> {
@@ -31,10 +32,10 @@ const fetcher = async <T,>(url: string): Promise<ApiResponse<T>> => {
 
 interface DatabaseOverviewProps {
   database: string
-  hostId: number
 }
 
-export function DatabaseOverview({ database, hostId }: DatabaseOverviewProps) {
+export function DatabaseOverview({ database }: DatabaseOverviewProps) {
+  const hostId = useHostId()
   const { setTab } = useExplorerState()
 
   // Use unified query that includes all dependency types + standalone tables
