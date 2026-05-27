@@ -69,7 +69,7 @@ export const ChartRow = memo(function ChartRow({
         {isCollapsed && (
           <CollapsibleTrigger asChild>
             <div className="group/row relative flex h-10 w-full min-w-0 items-center gap-2 rounded-lg border border-dashed bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer px-3">
-              <ChartRowSummary charts={charts} hostId={hostId} />
+              <ChartRowSummary charts={charts} />
               <span className="ml-auto flex shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground opacity-0 group-hover/row:opacity-100 transition-opacity duration-200">
                 Show
                 <ChevronDownIcon className="h-3 w-3" />

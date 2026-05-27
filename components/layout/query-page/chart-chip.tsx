@@ -7,13 +7,13 @@ import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 import { deriveChartSummary } from './derive-chart-summary'
 import { memo } from 'react'
 import { MiniAreaChart } from '@/components/charts/mini-charts'
+import { useHostId } from '@/lib/swr'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { cn } from '@/lib/utils'
 
 export interface ChartChipProps {
   chartName: string
-  hostId: number
   label: string
   valueField?: string
   interval?: ClickHouseInterval
@@ -41,12 +41,12 @@ function formatCompact(n: number): string {
 
 export const ChartChip = memo(function ChartChip({
   chartName,
-  hostId,
   label,
   valueField,
   interval,
   lastHours,
 }: ChartChipProps) {
+  const hostId = useHostId()
   const { data, isLoading, hasData } = useChartData({
     chartName,
     hostId,
