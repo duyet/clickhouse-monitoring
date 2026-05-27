@@ -105,12 +105,15 @@ export const runningQueriesFilterSchema: FilterSchema = {
 export const runningQueriesConfig: QueryConfig = {
   name: 'running-queries',
   refreshInterval: 5_000,
-  // is_cancelled = 0 is applied in an inner subquery so the dynamic
+  // `is_cancelled = 0` is applied in an inner subquery so the dynamic
   // FILTER_PLACEHOLDER WHERE clause (which always starts with `WHERE`) can be
   // injected at the outer level without colliding with the static condition.
+  // We alias the inner query (`q`) and use `q.*` rather than a bare `SELECT *`
+  // because the latter is explicitly disallowed for this frequently-refreshed
+  // path by `lib/__tests__/versioned-sql.test.ts`.
   sql: `
     ${QUERY_COMMENT}
-    SELECT * FROM (
+    SELECT q.* FROM (
       SELECT
         query_id,
         query,
@@ -166,7 +169,7 @@ export const runningQueriesConfig: QueryConfig = {
                 toString(interface)) AS interface_label
       FROM system.processes
       WHERE is_cancelled = 0
-    )
+    ) AS q
     ${FILTER_PLACEHOLDER}
     ORDER BY elapsed DESC
   `,
