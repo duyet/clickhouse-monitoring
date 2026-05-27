@@ -297,7 +297,7 @@ function ExplainContent() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className="shadow-none">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <InfoCircledIcon className="size-5" />

@@ -193,7 +193,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
         {isLoading && !data ? (
           <LoadingState />
         ) : error && !data ? (
-          <Card className="rounded-xl shadow-none">
+          <Card className="rounded-xl">
             <CardContent className="p-4">
               <EmptyState
                 variant={detectCardErrorVariant(error as CardError)}
@@ -218,7 +218,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
           <>
             {chartsOpen && <RunningQueriesCharts rows={rows} hostId={hostId} />}
             {rows.length === 0 ? (
-              <Card className="rounded-xl border-dashed shadow-none">
+              <Card className="rounded-xl border-dashed">
                 <CardContent className="p-6">
                   <EmptyState
                     variant="no-data"
