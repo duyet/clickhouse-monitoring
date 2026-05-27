@@ -18,7 +18,7 @@ export async function apiFetch(
   const response =
     init === undefined ? await fetch(input) : await fetch(input, init)
 
-  const contentType = response.headers.get('content-type') ?? ''
+  const contentType = response.headers?.get?.('content-type') ?? ''
   const isStream =
     contentType.includes('text/event-stream') ||
     contentType.includes('application/json') ||
