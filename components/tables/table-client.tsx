@@ -6,6 +6,8 @@ import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { QueryConfig } from '@/types/query-config'
 
 import { memo, useMemo } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { DataTable } from '@/components/data-table/data-table'
 import { TableSkeleton } from '@/components/skeletons'
@@ -46,6 +48,54 @@ interface TableClientProps {
 }
 
 const tableRowFormatter = new Intl.NumberFormat('en-US')
+
+function GuidanceMarkdown({ content }: { content: string }) {
+  return (
+    <div className="text-foreground/80 leading-relaxed [&>p]:my-0 [&>p+p]:mt-2">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          p: ({ children }) => <p>{children}</p>,
+          code: ({ className, children, ...props }) => {
+            const isInline = !className?.startsWith('language-')
+            if (isInline) {
+              return (
+                <code
+                  className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em]"
+                  {...props}
+                >
+                  {children}
+                </code>
+              )
+            }
+            return (
+              <code className={cn('font-mono', className)} {...props}>
+                {children}
+              </code>
+            )
+          },
+          pre: ({ children }) => (
+            <pre className="my-2 overflow-x-auto rounded border bg-muted p-2 text-[0.85em] leading-snug">
+              {children}
+            </pre>
+          ),
+          a: ({ href, children }) => (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline-offset-2 hover:underline"
+            >
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  )
+}
 
 function TableResultFootnote({ metadata }: { metadata: ApiResponseMetadata }) {
   const beforeCap =
@@ -172,9 +222,7 @@ export const TableClient = memo(function TableClient({
                 <p>{errorDescription}</p>
                 {guidance ? (
                   <div className="flex flex-col gap-1 border-t pt-3 text-xs">
-                    <p className="text-foreground/80">
-                      {guidance.enableInstructions}
-                    </p>
+                    <GuidanceMarkdown content={guidance.enableInstructions} />
                     {guidance.docsUrl && (
                       <Button
                         asChild
