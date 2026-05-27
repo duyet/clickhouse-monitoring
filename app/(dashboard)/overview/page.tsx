@@ -139,7 +139,7 @@ function OverviewPageContent() {
   return (
     <div>
       <OverviewStatusStrip className="mb-3" />
-      <OverviewCharts className="mb-6" />
+      <OverviewCharts className="mb-4 sm:mb-6" />
 
       <ClientOnly fallback={<TabsSkeleton tabCount={OVERVIEW_TABS.length} />}>
         <Tabs
