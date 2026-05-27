@@ -1,9 +1,19 @@
-import { SidebarProvider } from '@/components/ui/sidebar'
 import { HostSwitcher } from './host-switcher'
+import { SidebarProvider } from '@/components/ui/sidebar'
 
 const mockHosts = [
-  { id: 0, name: 'Production', host: 'prod.clickhouse.internal', user: 'default' },
-  { id: 1, name: 'Staging', host: 'staging.clickhouse.internal', user: 'default' },
+  {
+    id: 0,
+    name: 'Production',
+    host: 'prod.clickhouse.internal',
+    user: 'default',
+  },
+  {
+    id: 1,
+    name: 'Staging',
+    host: 'staging.clickhouse.internal',
+    user: 'default',
+  },
   { id: 2, name: '', host: 'localhost:8123', user: 'admin' },
 ]
 
@@ -25,7 +35,11 @@ describe('<HostSwitcher /> - dropdown items use HostMenuRow', () => {
       statusCode: 200,
       body: {
         success: true,
-        data: { version: '24.3.1.1', uptime: '2 days', hostname: 'prod.clickhouse.internal' },
+        data: {
+          version: '24.3.1.1',
+          uptime: '2 days',
+          hostname: 'prod.clickhouse.internal',
+        },
       },
     }).as('hostStatus0')
 
@@ -33,7 +47,11 @@ describe('<HostSwitcher /> - dropdown items use HostMenuRow', () => {
       statusCode: 200,
       body: {
         success: true,
-        data: { version: '24.2.1.1', uptime: '5 hours', hostname: 'staging.clickhouse.internal' },
+        data: {
+          version: '24.2.1.1',
+          uptime: '5 hours',
+          hostname: 'staging.clickhouse.internal',
+        },
       },
     }).as('hostStatus1')
 
@@ -65,7 +83,9 @@ describe('<HostSwitcher /> - dropdown items use HostMenuRow', () => {
 
     cy.get('[data-testid="host-switcher"]').click()
 
-    cy.get('[data-testid="host-option-0"]').contains('Production').should('exist')
+    cy.get('[data-testid="host-option-0"]')
+      .contains('Production')
+      .should('exist')
     cy.get('[data-testid="host-option-1"]').contains('Staging').should('exist')
   })
 
@@ -77,7 +97,9 @@ describe('<HostSwitcher /> - dropdown items use HostMenuRow', () => {
     cy.get('[data-testid="host-switcher"]').click()
 
     // Host 2 has no name, should show extracted host
-    cy.get('[data-testid="host-option-2"]').contains('localhost:8123').should('exist')
+    cy.get('[data-testid="host-option-2"]')
+      .contains('localhost:8123')
+      .should('exist')
   })
 
   it('shows version and uptime for each online host in the dropdown', () => {
@@ -145,8 +167,12 @@ describe('<HostSwitcher /> - dropdown items use HostMenuRow', () => {
     cy.wait('@hostStatus2')
 
     // Online hosts have green dot
-    cy.get('[data-testid="host-option-0"]').find('.bg-emerald-500').should('exist')
-    cy.get('[data-testid="host-option-1"]').find('.bg-emerald-500').should('exist')
+    cy.get('[data-testid="host-option-0"]')
+      .find('.bg-emerald-500')
+      .should('exist')
+    cy.get('[data-testid="host-option-1"]')
+      .find('.bg-emerald-500')
+      .should('exist')
 
     // Offline host has red dot
     cy.get('[data-testid="host-option-2"]').find('.bg-red-400').should('exist')

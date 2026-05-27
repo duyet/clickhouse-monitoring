@@ -15,7 +15,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.contains('Production').should('exist')
 
@@ -32,7 +34,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.get('.bg-gray-400.animate-pulse').should('exist')
 
@@ -49,7 +53,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     // Skeleton is rendered while loading (not version/uptime text)
     cy.contains('Offline').should('not.exist')
@@ -68,9 +74,15 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
-    cy.get('.bg-gray-400.animate-pulse').should('have.attr', 'title', 'Checking...')
+    cy.get('.bg-gray-400.animate-pulse').should(
+      'have.attr',
+      'title',
+      'Checking...'
+    )
 
     cy.wait('@hostStatus')
   })
@@ -82,11 +94,17 @@ describe('<HostMenuRow />', () => {
       statusCode: 200,
       body: {
         success: true,
-        data: { version: '24.3.1.1', uptime: '1 day 2 hours', hostname: 'clickhouse-01' },
+        data: {
+          version: '24.3.1.1',
+          uptime: '1 day 2 hours',
+          hostname: 'clickhouse-01',
+        },
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -100,11 +118,17 @@ describe('<HostMenuRow />', () => {
       statusCode: 200,
       body: {
         success: true,
-        data: { version: '24.3.1.1', uptime: '1 day 2 hours', hostname: 'clickhouse-01' },
+        data: {
+          version: '24.3.1.1',
+          uptime: '1 day 2 hours',
+          hostname: 'clickhouse-01',
+        },
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="My Cluster" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="My Cluster" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -116,11 +140,17 @@ describe('<HostMenuRow />', () => {
       statusCode: 200,
       body: {
         success: true,
-        data: { version: '24.3.1.1', uptime: '1 day 2 hours', hostname: 'clickhouse-01' },
+        data: {
+          version: '24.3.1.1',
+          uptime: '1 day 2 hours',
+          hostname: 'clickhouse-01',
+        },
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -132,11 +162,17 @@ describe('<HostMenuRow />', () => {
       statusCode: 200,
       body: {
         success: true,
-        data: { version: '24.3.1.1', uptime: '1 day 2 hours', hostname: 'clickhouse-01' },
+        data: {
+          version: '24.3.1.1',
+          uptime: '1 day 2 hours',
+          hostname: 'clickhouse-01',
+        },
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -148,11 +184,17 @@ describe('<HostMenuRow />', () => {
       statusCode: 200,
       body: {
         success: true,
-        data: { version: '24.3.1.1', uptime: '5 hours', hostname: 'clickhouse-01' },
+        data: {
+          version: '24.3.1.1',
+          uptime: '5 hours',
+          hostname: 'clickhouse-01',
+        },
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -164,11 +206,17 @@ describe('<HostMenuRow />', () => {
       statusCode: 200,
       body: {
         success: true,
-        data: { version: '24.3.1.1', uptime: '1 day 2 hours', hostname: 'clickhouse-01' },
+        data: {
+          version: '24.3.1.1',
+          uptime: '1 day 2 hours',
+          hostname: 'clickhouse-01',
+        },
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -191,7 +239,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -208,7 +258,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -224,7 +276,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -240,7 +294,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -253,7 +309,9 @@ describe('<HostMenuRow />', () => {
       body: { success: false, error: 'Connection failed' },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -270,7 +328,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Staging DB" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Staging DB" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -288,7 +348,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={true} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={true} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -306,7 +368,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -323,7 +387,9 @@ describe('<HostMenuRow />', () => {
       },
     }).as('hostStatus')
 
-    cy.mount(<HostMenuRow hostId={hostId} hostName="Production" isActive={false} />)
+    cy.mount(
+      <HostMenuRow hostId={hostId} hostName="Production" isActive={false} />
+    )
 
     cy.wait('@hostStatus')
 
@@ -364,7 +430,11 @@ describe('<HostMenuRow />', () => {
     }).as('hostStatus')
 
     cy.mount(
-      <HostMenuRow hostId={hostId} hostName="Always Visible Name" isActive={false} />
+      <HostMenuRow
+        hostId={hostId}
+        hostName="Always Visible Name"
+        isActive={false}
+      />
     )
 
     // Name visible before data loads
