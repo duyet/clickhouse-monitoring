@@ -66,7 +66,13 @@ export function Thread({
   return (
     <ThreadPrimitive.Root
       className="aui-root flex h-full flex-col overflow-hidden bg-background"
-      style={{ ['--thread-max-width' as string]: '46rem' }}
+      style={{
+        // User messages and composer stay narrow for readability.
+        // Assistant responses (charts, tables, SQL) use the full container width.
+        ['--thread-max-width' as string]: 'min(100%, 56rem)',
+        ['--assistant-max-width' as string]: '100%',
+        ['--user-max-width' as string]: 'min(100%, 46rem)',
+      }}
     >
       <ThreadPrimitive.Viewport className="relative flex flex-1 flex-col overflow-y-auto scroll-smooth px-4 pt-14">
         <ThreadWelcome
@@ -212,7 +218,7 @@ function ThreadComposer() {
 
 const UserMessage: FC = () => {
   return (
-    <MessagePrimitive.Root className="mx-auto w-full max-w-[var(--thread-max-width)] py-3">
+    <MessagePrimitive.Root className="mx-auto w-full max-w-[var(--user-max-width)] py-3">
       <div className="flex flex-col items-end gap-1">
         <UserActionBar />
         <div className="bg-muted text-foreground max-w-[80%] break-words rounded-2xl rounded-br-sm px-4 py-2 text-sm">
@@ -292,7 +298,7 @@ const ReasoningPart: ReasoningMessagePartComponent = ({ text }) => {
  */
 const AssistantMessage: FC = () => {
   return (
-    <MessagePrimitive.Root className="mx-auto w-full max-w-[var(--thread-max-width)] py-3">
+    <MessagePrimitive.Root className="mx-auto w-full max-w-[var(--assistant-max-width)] py-3">
       <div className="text-foreground flex flex-col gap-1.5">
         <MessagePrimitive.Parts
           components={{
