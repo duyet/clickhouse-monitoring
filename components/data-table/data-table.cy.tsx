@@ -408,11 +408,7 @@ describe('<DataTable />', () => {
 
     it('renders resize handles by default', () => {
       cy.mount(
-        <DataTable
-          queryConfig={queryConfig}
-          data={resizeData}
-          context={{}}
-        />
+        <DataTable queryConfig={queryConfig} data={resizeData} context={{}} />
       )
 
       // One resizer per resizable column header
@@ -429,11 +425,7 @@ describe('<DataTable />', () => {
       }
 
       cy.mount(
-        <DataTable
-          queryConfig={lockedConfig}
-          data={resizeData}
-          context={{}}
-        />
+        <DataTable queryConfig={lockedConfig} data={resizeData} context={{}} />
       )
 
       cy.get('thead [role="separator"][aria-orientation="vertical"]').should(
@@ -443,11 +435,7 @@ describe('<DataTable />', () => {
 
     it('updates column width when dragging the resize handle', () => {
       cy.mount(
-        <DataTable
-          queryConfig={queryConfig}
-          data={resizeData}
-          context={{}}
-        />
+        <DataTable queryConfig={queryConfig} data={resizeData} context={{}} />
       )
 
       cy.get('thead th')
@@ -495,11 +483,7 @@ describe('<DataTable />', () => {
 
     it('sorts ascending then descending when the header is clicked', () => {
       cy.mount(
-        <DataTable
-          queryConfig={queryConfig}
-          data={sortData}
-          context={{}}
-        />
+        <DataTable queryConfig={queryConfig} data={sortData} context={{}} />
       )
 
       // Initial natural order
@@ -524,11 +508,7 @@ describe('<DataTable />', () => {
       }
 
       cy.mount(
-        <DataTable
-          queryConfig={lockedConfig}
-          data={sortData}
-          context={{}}
-        />
+        <DataTable queryConfig={lockedConfig} data={sortData} context={{}} />
       )
 
       cy.get('thead th').first().contains('col1').click()
@@ -536,6 +516,33 @@ describe('<DataTable />', () => {
       cy.get('tbody tr').eq(0).should('contain.text', 'banana')
       cy.get('tbody tr').eq(1).should('contain.text', 'apple')
       cy.get('tbody tr').eq(2).should('contain.text', 'cherry')
+    })
+  })
+
+  describe('action columns', () => {
+    it('renders action columns at a compact width and not resizable', () => {
+      const actionConfig: QueryConfig = {
+        name: 'with-action',
+        sql: '/* No need */',
+        columns: ['action', 'query_id', 'message'],
+        columnFormats: {
+          action: 'action' as never,
+        },
+      }
+      const data = [{ action: '', query_id: 'abc-123', message: 'hello' }]
+
+      cy.mount(
+        <DataTable queryConfig={actionConfig} data={data} context={{}} />
+      )
+
+      // Action column header should be narrow (<= 80px) instead of taking 180px
+      cy.get('thead th').first().invoke('outerWidth').should('be.lte', 80)
+
+      // No resizer on the action column
+      cy.get('thead th')
+        .first()
+        .find('[role="separator"][aria-orientation="vertical"]')
+        .should('not.exist')
     })
   })
 
@@ -550,7 +557,9 @@ describe('<DataTable />', () => {
       cy.mount(
         <DataTable
           queryConfig={longHeaderConfig}
-          data={[{ a_very_long_column_name_that_should_truncate: 'x', col2: 'y' }]}
+          data={[
+            { a_very_long_column_name_that_should_truncate: 'x', col2: 'y' },
+          ]}
           context={{}}
         />
       )

@@ -128,6 +128,20 @@ export function getColumnDefs<
       ),
     }
 
+    // Action columns are tiny "⋯" menu cells. Give them a compact width by
+    // default and disable resize/sort so they never bloat the layout. Per-config
+    // `columnSizing` still overrides this.
+    const isActionColumn =
+      name === 'action' || name === 'actions' || columnFormat === 'action'
+    if (isActionColumn) {
+      columnDef.size = 56
+      columnDef.minSize = 48
+      columnDef.maxSize = 80
+      columnDef.enableResizing = false
+      columnDef.enableSorting = false
+      columnDef.enableHiding = false
+    }
+
     if (sizing?.size !== undefined) {
       columnDef.size = sizing.size
     }
