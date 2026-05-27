@@ -32,7 +32,7 @@ const SPARK_COLOR = {
   flat: 'hsl(217 10% 60%)',
 } as const
 
-function formatCompact(n: number): string {
+export function formatCompact(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
   if (Math.abs(n) >= 1_000) return `${(n / 1_000).toFixed(1)}K`
   if (Number.isInteger(n)) return n.toLocaleString()
