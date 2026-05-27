@@ -76,15 +76,7 @@ describe('<ColumnFilterPopover />', () => {
       .should('have.class', 'rounded-full')
   })
 
-  it('renders Clear filter only when activeFilter is set and triggers onClear', () => {
-    const onClear = cy.stub().as('onClear')
-    const active: ActiveFilter = {
-      key: 'query',
-      operator: 'contains',
-      values: ['foo'],
-    }
-
-    // Without active: Clear filter button absent
+  it('does not render Clear filter when activeFilter is null', () => {
     cy.mount(
       <ColumnFilterPopover
         field={field}
@@ -96,9 +88,18 @@ describe('<ColumnFilterPopover />', () => {
       />
     )
     cy.get('button[aria-label="Filter Query"]').click()
+    cy.get('[role="dialog"]').should('be.visible')
     cy.get('[role="dialog"]').contains('Clear filter').should('not.exist')
+  })
 
-    // With active: Clear filter button appears and fires onClear
+  it('renders Clear filter and fires onClear when activeFilter is set', () => {
+    const onClear = cy.stub().as('onClear')
+    const active: ActiveFilter = {
+      key: 'query',
+      operator: 'contains',
+      values: ['foo'],
+    }
+
     cy.mount(
       <ColumnFilterPopover
         field={field}
