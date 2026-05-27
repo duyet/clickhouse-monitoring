@@ -1,11 +1,31 @@
 'use client'
 
 import type { TextMessagePartComponent } from '@assistant-ui/react'
+import type { MermaidErrorComponentProps } from 'streamdown'
 
+import { mermaid as mermaidPlugin } from '@streamdown/mermaid'
+import { useTheme } from 'next-themes'
 import { memo } from 'react'
 import { Streamdown } from 'streamdown'
 
 import '@/components/agents/markdown-code.css'
+
+/**
+ * Fallback shown when a mermaid diagram fails to parse or render.
+ * Displays the raw source in a code block so the user can still read it.
+ */
+function MermaidError({ chart, error }: MermaidErrorComponentProps) {
+  return (
+    <div className="my-4 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm">
+      <p className="mb-2 font-medium text-destructive">
+        Diagram error: {error}
+      </p>
+      <pre className="overflow-x-auto rounded bg-muted p-2 font-mono text-xs text-muted-foreground">
+        {chart}
+      </pre>
+    </div>
+  )
+}
 
 /**
  * Markdown renderer for assistant-ui text message parts.
@@ -13,11 +33,22 @@ import '@/components/agents/markdown-code.css'
  * Uses `Streamdown` (streaming-aware markdown) so partial tokens render
  * cleanly while a response is in flight, and keeps mermaid diagram support
  * plus the project's existing `.markdown-content` styling from globals.css.
+ *
+ * Mermaid theme adapts to the app's dark/light mode via next-themes.
  */
 const MarkdownTextImpl: TextMessagePartComponent = ({ text }) => {
+  const { resolvedTheme } = useTheme()
+  const mermaidTheme = resolvedTheme === 'dark' ? 'dark' : 'default'
+
   return (
     <div className="markdown-content aui-md text-sm leading-6">
-      <Streamdown mermaid={{ config: { theme: 'default' } }}>
+      <Streamdown
+        mermaid={{
+          config: { theme: mermaidTheme },
+          errorComponent: MermaidError,
+        }}
+        plugins={{ mermaid: mermaidPlugin }}
+      >
         {text ?? ''}
       </Streamdown>
     </div>
