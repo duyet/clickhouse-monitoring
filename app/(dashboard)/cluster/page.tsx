@@ -8,6 +8,7 @@ import { ChartSkeleton } from '@/components/skeletons'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHosts } from '@/lib/swr/use-hosts'
+import { cn } from '@/lib/utils'
 
 /** Metric row config */
 const METRICS = [
@@ -109,13 +110,12 @@ function ClusterComparisonContent() {
             {label}
           </h2>
           <div
-            className={
-              hosts.length === 1
-                ? 'grid grid-cols-1 max-w-sm'
-                : hosts.length === 2
-                  ? 'grid grid-cols-1 gap-4 sm:grid-cols-2'
-                  : 'grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3'
-            }
+            className={cn(
+              'grid grid-cols-1 gap-4',
+              hosts.length === 1 && 'max-w-sm gap-0',
+              hosts.length === 2 && 'sm:grid-cols-2',
+              hosts.length >= 3 && 'sm:grid-cols-2 xl:grid-cols-3'
+            )}
           >
             {hosts.map((host) => (
               <div key={host.id} className="flex flex-col gap-2">

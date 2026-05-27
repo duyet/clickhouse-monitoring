@@ -66,7 +66,8 @@ function LoadingState() {
  * Link card to the full query history — completed queries leave the live
  * list, so this points to where they can still be inspected.
  */
-function HistoryLink({ hostId }: { hostId: number }) {
+function HistoryLink() {
+  const hostId = useHostId()
   return (
     <AppLink
       href={buildUrl('/history-queries', { host: hostId })}
@@ -230,7 +231,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
             ) : (
               <RunningQueriesTable rows={rows} />
             )}
-            <HistoryLink hostId={hostId} />
+            <HistoryLink />
           </>
         )}
       </div>
