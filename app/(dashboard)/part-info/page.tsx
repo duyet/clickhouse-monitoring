@@ -21,9 +21,9 @@ function PartInfoContent() {
       : null
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3 sm:gap-4">
       {/* Database and Table Selector */}
-      <div className="bg-card rounded-lg border p-4 flex items-center justify-between gap-4">
+      <div className="bg-card flex flex-col items-stretch justify-between gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
         <DatabaseTableSelector />
         {explorerUrl && (
           <Link
