@@ -237,11 +237,11 @@ describe('createTableQueryHandler', () => {
   describe('error handling - ClickHouse errors', () => {
     it('should return 404 for TableNotFound', async () => {
       const mockQueryDef = {
-        query: 'SELECT * FROM {database:String}.{table:String}',
+        query: 'SELECT * FROM {database:Identifier}.{table:Identifier}',
         queryParams: { database: 'test', table: 'nonexistent' },
         queryConfig: {
           name: mockQueryConfigName,
-          sql: 'SELECT * FROM {database:String}.{table:String}',
+          sql: 'SELECT * FROM {database:Identifier}.{table:Identifier}',
           columns: ['name'],
         },
       }
