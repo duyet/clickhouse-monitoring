@@ -544,6 +544,34 @@ describe('<DataTable />', () => {
         .find('[role="separator"][aria-orientation="vertical"]')
         .should('not.exist')
     })
+
+    it('does NOT cap inline-action columns (multi-button rows like running-queries)', () => {
+      const inlineActionConfig: QueryConfig = {
+        name: 'with-inline-action',
+        sql: '/* No need */',
+        columns: ['action', 'query'],
+        columnFormats: {
+          action: ['inline-action', []] as never,
+        },
+      }
+
+      cy.mount(
+        <DataTable
+          queryConfig={inlineActionConfig}
+          data={[{ action: 'abc-123', query: 'SELECT 1' }]}
+          context={{}}
+        />
+      )
+
+      // Inline-action column should keep the standard defaultColumn width
+      // (180px) so multiple icon buttons fit, and the resize handle must
+      // still be present.
+      cy.get('thead th').first().invoke('outerWidth').should('be.gt', 80)
+      cy.get('thead th')
+        .first()
+        .find('[role="separator"][aria-orientation="vertical"]')
+        .should('exist')
+    })
   })
 
   describe('header layout', () => {
