@@ -11,6 +11,7 @@ an OpenAI-compatible client/agent runtime expects.
 ## Bug 1 — `@preset/chmonitor` (and any preset resolving to `z-ai/glm-4.7-flash`) never produces structured tool_calls
 
 ### What I see
+
 The preset currently resolves to `z-ai/glm-4.7-flash` via the `deepinfra`
 backend. Given a tool definition and a prompt that explicitly asks it to
 call the tool, the model returns:
@@ -78,6 +79,7 @@ Sample failing requestIds from my tests:
 - `req_8787a2e30c4e4c0d9d52476b` (direct, no tools — also went to glm-4.7-flash)
 
 ### What should happen
+
 Either:
 
 1. **Preset routing fix (preferred):** `@preset/chmonitor` should route
@@ -94,6 +96,7 @@ Either:
    in your routing.
 
 ### Why this is an AnyRouter-side problem, not a client problem
+
 - The tools array uses the standard OpenAI schema.
 - Other AnyRouter-served models (`google/gemma-4-26b-a4b-it`,
   `qwen/qwen3.5-397b-a17b`) get the same request and emit proper
@@ -106,6 +109,7 @@ Either:
 ## Bug 2 — `google/gemini-3.1-flash-lite` via the `cloudflare` backend strips Gemini's `thought_signature`, breaking every follow-up tool turn
 
 ### What I see
+
 Step 1 works: model returns a normal-looking OpenAI `tool_calls` block.
 
 When the client sends the conventional follow-up — the same
@@ -214,6 +218,7 @@ Sample requestIds:
 - another full repro end-to-end through our stack: `req_dde198eb75d54643a2ae4b1c`
 
 ### What should happen
+
 When AnyRouter receives a tool_call from a Gemini-family upstream:
 
 1. **Capture the upstream's `thought_signature`** (Vertex returns it
@@ -243,6 +248,7 @@ extension field and asks clients to pass it back. Either eliminates the
 400.
 
 ### Why this is an AnyRouter-side problem, not a client problem
+
 - The Gemini `thought_signature` is **only available** in Gemini's
   native response format. Clients calling AnyRouter speak
   OpenAI-compatible JSON — they cannot retrieve a field your shim

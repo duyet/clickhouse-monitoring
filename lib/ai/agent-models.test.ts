@@ -20,7 +20,7 @@ describe('isFreeAgentModel', () => {
 })
 
 describe('AnyRouter model registry', () => {
-  test('includes the curated AnyRouter models and OpenRouter free default', () => {
+  test('defaults to AnyRouter Gemma 4 26B and includes curated free models', () => {
     const options = getAllModelOptions()
 
     expect(DEFAULT_AGENT_MODEL).toBe('anyrouter:google/gemma-4-26b-a4b-it')
