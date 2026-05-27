@@ -38,6 +38,7 @@ import {
 } from '@/components/data-table/hooks'
 import { getCustomSortingFns } from '@/components/data-table/sorting-fns'
 import { Checkbox } from '@/components/ui/checkbox'
+import { cn } from '@/lib/utils'
 
 /**
  * Props for the DataTable component
@@ -484,9 +485,7 @@ export function DataTable<
 
   return (
     <TableDensityProvider value={{ cellClassName }}>
-      <div
-        className={`flex min-w-0 flex-col overflow-hidden ${className || ''}`}
-      >
+      <div className={cn('flex min-w-0 flex-col overflow-hidden', className)}>
         {!compact && (
           <DataTableHeader
             title={title}

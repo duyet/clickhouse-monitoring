@@ -48,18 +48,18 @@ export const BackgroundBarFormat = memo(function BackgroundBarFormat({
 
   return (
     <div
-      className="relative flex items-center w-full min-h-[1.75rem] h-full overflow-hidden rounded"
+      className="relative flex items-center w-full h-full overflow-hidden rounded-sm"
       title={`${orgValue} (${pct}%)`}
       aria-label={`${orgValue} (${pct}%)`}
       aria-roledescription="background-bar"
     >
       {/* Background bar - uses inline styles for dynamic color */}
       <div
-        className="absolute inset-y-0 left-0 rounded transition-[width]"
+        className="absolute inset-y-0 left-0 rounded-sm transition-[width]"
         style={{ width: `${pct}%`, ...barStyle }}
         aria-hidden="true"
       />
-      <span className="relative inline-block min-w-0 truncate px-2">
+      <span className="relative inline-block min-w-0 truncate">
         {options?.numberFormat
           ? formatReadableQuantity(value as number, 'long')
           : value}

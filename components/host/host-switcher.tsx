@@ -29,7 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useHostId } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
 import { buildUrl } from '@/lib/url/url-builder'
-import { getHost } from '@/lib/utils'
+import { cn, getHost } from '@/lib/utils'
 
 /**
  * Host switcher component for sidebar header.
@@ -65,7 +65,10 @@ export function HostSwitcher() {
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" asChild>
             <div
-              className={`flex gap-2 ${showExpanded ? 'items-center' : 'items-center justify-center'}`}
+              className={cn(
+                'flex gap-2',
+                showExpanded ? 'items-center' : 'items-center justify-center'
+              )}
             >
               <div className="relative">
                 <ClickHouseLogo width={20} height={20} className="size-5" />
@@ -99,7 +102,10 @@ export function HostSwitcher() {
           // Single host: simplified display without dropdown
           <SidebarMenuButton size="lg" asChild>
             <div
-              className={`flex gap-2 ${showExpanded ? 'items-center' : 'items-center justify-center'}`}
+              className={cn(
+                'flex gap-2',
+                showExpanded ? 'items-center' : 'items-center justify-center'
+              )}
             >
               <div className="relative">
                 <ClickHouseLogo width={20} height={20} className="size-5" />
@@ -129,7 +135,12 @@ export function HostSwitcher() {
                 asChild
               >
                 <div
-                  className={`flex gap-2 ${showExpanded ? 'items-center' : 'items-center justify-center'}`}
+                  className={cn(
+                    'flex gap-2',
+                    showExpanded
+                      ? 'items-center'
+                      : 'items-center justify-center'
+                  )}
                 >
                   <div className="relative">
                     <ClickHouseLogo width={20} height={20} className="size-5" />

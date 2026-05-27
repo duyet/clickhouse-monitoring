@@ -22,6 +22,7 @@ import { getVariantStyles } from '../error-alert-variants'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getEnvironment, shouldShowDetailedErrors } from '@/lib/env-utils'
+import { cn } from '@/lib/utils'
 
 export interface FullErrorAlertProps {
   title: string
@@ -63,7 +64,11 @@ export function FullErrorAlert({
 
   return (
     <div
-      className={`${className} ${getVariantStyles(variant)} rounded-lg border p-4`}
+      className={cn(
+        'rounded-lg border p-4',
+        getVariantStyles(variant),
+        className
+      )}
       data-testid="error-message-full"
       role="alert"
       aria-live="polite"

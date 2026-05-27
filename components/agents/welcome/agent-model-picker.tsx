@@ -128,7 +128,6 @@ export function AgentModelPicker({
               <span className="text-muted-foreground">:</span>
               <span className="text-foreground">{selected.name}</span>
             </span>
-            <ChevronDownIcon className="size-2.5 opacity-60" />
           </Button>
         ) : (
           <button

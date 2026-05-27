@@ -39,6 +39,17 @@ related:
 - Create wrapper components in `components/` (not `components/ui/`) if needed
 - Use `cn()` utility to merge classes
 
+## className Composition
+
+**Always use `cn()` for className — never string concatenation or template literals.**
+
+- Bad: `` className={`flex ${isActive ? 'text-red' : 'text-gray'}`} ``
+- Bad: `className={'flex ' + (isActive ? 'text-red' : 'text-gray')}`
+- Good: `className={cn('flex', isActive ? 'text-red' : 'text-gray')}`
+- Good: `className={cn('flex', isActive && 'text-red')}`
+
+Reason: `cn()` (clsx + tailwind-merge) deduplicates conflicting Tailwind classes (e.g. `p-2 p-4` → `p-4`) and handles falsy values cleanly. Template literals leave conflicting classes in place, causing unpredictable specificity bugs.
+
 ## Query Patterns
 
 - All queries include `QUERY_COMMENT` for identification (applied centrally in `fetchData()`)

@@ -18,7 +18,38 @@ export interface ModelEntry {
   providers: string[]
 }
 
-export const DEFAULT_AGENT_MODEL = 'anyrouter:@preset/chmonitor'
+// NOTE: do not default to `anyrouter:@preset/chmonitor` until the preset
+// is rerouted away from `z-ai/glm-4.7-flash`. That model emits prose that
+// *describes* tool calls instead of producing structured tool_calls, so the
+// agent loop exits after step 1 with no tools ever invoked (verified
+// 2026-05-27 against /api/v1/agent). Gemma 4 26B via AnyRouter completes a
+// full two-step tool loop cleanly and stays effectively free.
+export const DEFAULT_AGENT_MODEL = 'anyrouter:google/gemma-4-26b-a4b-it'
+
+/**
+ * Fallback default when AnyRouter is not configured. OpenRouter's free
+ * auto-router only requires LLM_API_KEY (the documented minimum AI setup),
+ * so it works in deployments that haven't opted in to AnyRouter.
+ */
+export const FALLBACK_AGENT_MODEL = 'openrouter/free'
+
+/**
+ * Resolve the best default model for the current deployment.
+ *
+ * Server-only — reads provider env vars. The preferred default
+ * (`DEFAULT_AGENT_MODEL`, AnyRouter Gemma) requires `ANYROUTER_API_KEY`.
+ * If AnyRouter is not configured, fall back to OpenRouter's free
+ * auto-router which works with the documented `LLM_API_KEY`-only setup.
+ */
+export function resolveDefaultAgentModel(): string {
+  if (process.env.ANYROUTER_API_KEY) return DEFAULT_AGENT_MODEL
+  if (process.env.LLM_API_KEY || process.env.OPENROUTER_API_KEY) {
+    return FALLBACK_AGENT_MODEL
+  }
+  // No provider configured — return the preferred default; the caller's
+  // provider preflight will surface a clear 503 if it actually runs.
+  return DEFAULT_AGENT_MODEL
+}
 
 export const MODEL_REGISTRY: readonly ModelEntry[] = [
   // ── Presets (auto-routing via AnyRouter) ──

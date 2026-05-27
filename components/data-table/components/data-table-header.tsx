@@ -17,6 +17,7 @@ import { ResetColumnOrderButton } from '@/components/data-table/buttons/reset-co
 import { BulkActions } from '@/components/data-table/components/bulk-actions'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { getSqlForDisplay } from '@/types/query-config'
 
 /**
@@ -100,12 +101,30 @@ export const DataTableHeader = memo(function DataTableHeader<
 }: DataTableHeaderProps<TData>) {
   // Use executed SQL if provided, otherwise fallback to config SQL
   const displaySql = executedSql || getSqlForDisplay(queryConfig.sql)
+  const isCompact = density === 'compact' || density === 'dense'
   return (
-    <div className="flex min-w-0 shrink-0 flex-col sm:flex-row items-start justify-between gap-2 sm:gap-4 pb-2">
+    <div
+      className={cn(
+        'flex min-w-0 shrink-0 flex-col sm:flex-row items-start justify-between gap-2 sm:gap-4',
+        isCompact ? 'pb-1' : 'pb-2'
+      )}
+    >
       <div className="min-w-0 flex-1">
-        <div className="mb-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div
+          className={cn(
+            'flex flex-wrap items-center gap-1.5 sm:gap-2',
+            isCompact ? 'mb-0.5' : 'mb-2'
+          )}
+        >
           <div className="flex items-center gap-2">
-            <h1 className="text-muted-foreground flex-none text-xl">{title}</h1>
+            <h1
+              className={cn(
+                'text-muted-foreground flex-none',
+                isCompact ? 'text-sm font-medium' : 'text-xl'
+              )}
+            >
+              {title}
+            </h1>
             {isRefreshing && (
               <Loader2Icon
                 className="text-muted-foreground size-4 animate-spin"
@@ -137,7 +156,12 @@ export const DataTableHeader = memo(function DataTableHeader<
             </Button>
           )}
         </div>
-        <p className="text-muted-foreground truncate text-sm">
+        <p
+          className={cn(
+            'text-muted-foreground truncate',
+            isCompact ? 'text-xs' : 'text-sm'
+          )}
+        >
           {description || queryConfig.description}
         </p>
       </div>

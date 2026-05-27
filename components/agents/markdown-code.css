@@ -1,5 +1,32 @@
 /* Markdown code blocks with theme-aware syntax highlighting */
 
+/*
+ * Streamdown code-block spacing overrides.
+ *
+ * Streamdown renders:
+ *   [data-streamdown="code-block"]        outer card  (gap-2, p-2 by default)
+ *   [data-streamdown="code-block-header"] language label row (h-8)
+ *   [data-streamdown="code-block-body"]   code area   (p-4 by default)
+ *
+ * The default gap + body padding stacks to ~64 px of dead space above the
+ * first line of code.  These overrides tighten it to ~8 px while keeping
+ * the copy/download buttons, language label, line numbers, and horizontal
+ * scroll intact.
+ *
+ * PR #1184 — do not remove these overrides.
+ */
+
+/* Reduce the column gap between the language header and the code body */
+.markdown-content [data-streamdown='code-block'] {
+  gap: 0.25rem; /* 4 px instead of 8 px */
+}
+
+/* Tighten vertical padding inside the code body */
+.markdown-content [data-streamdown='code-block-body'] {
+  padding-top: 0.5rem;    /* 8 px instead of 16 px */
+  padding-bottom: 0.5rem; /* 8 px instead of 16 px */
+}
+
 /* Base code block styling */
 .markdown-content pre {
   background-color: hsl(var(--muted));
@@ -21,162 +48,15 @@
   border-radius: 0.25rem;
 }
 
-/* Syntax highlighting - light mode */
-.markdown-content .hljs {
-  color: #24292e;
-  background: transparent;
-}
-
-.markdown-content .hljs-comment,
-.markdown-content .hljs-quote {
-  color: #6a737d;
-  font-style: italic;
-}
-
-.markdown-content .hljs-keyword,
-.markdown-content .hljs-selector-tag,
-.markdown-content .hljs-subst {
-  color: #d73a49;
-}
-
-.markdown-content .hljs-number,
-.markdown-content .hljs-literal,
-.markdown-content .hljs-variable,
-.markdown-content .hljs-template-variable,
-.markdown-content .hljs-tag .hljs-attr {
-  color: #005cc5;
-}
-
-.markdown-content .hljs-string,
-.markdown-content .hljs-doctag {
-  color: #032f62;
-}
-
-.markdown-content .hljs-title,
-.markdown-content .hljs-section,
-.markdown-content .hljs-selector-id {
-  color: #6f42c1;
-  font-weight: bold;
-}
-
-.markdown-content .hljs-type,
-.markdown-content .hljs-class .hljs-title {
-  color: #6f42c1;
-}
-
-.markdown-content .hljs-tag,
-.markdown-content .hljs-name,
-.markdown-content .hljs-attribute {
-  color: #22863a;
-  font-weight: normal;
-}
-
-.markdown-content .hljs-regexp,
-.markdown-content .hljs-link {
-  color: #032f62;
-}
-
-.markdown-content .hljs-symbol,
-.markdown-content .hljs-bullet {
-  color: #005cc5;
-}
-
-.markdown-content .hljs-built_in,
-.markdown-content .hljs-builtin-name {
-  color: #005cc5;
-}
-
-.markdown-content .hljs-meta {
-  color: #6a737d;
-}
-
-.markdown-content .hljs-deletion {
-  background-color: #ffeef0;
-}
-
-.markdown-content .hljs-addition {
-  background-color: #e6ffec;
-}
-
-.markdown-content .hljs-emphasis {
-  font-style: italic;
-}
-
-.markdown-content .hljs-strong {
-  font-weight: bold;
-}
-
-/* Syntax highlighting - dark mode */
-.dark .markdown-content .hljs {
-  color: #e1e4e8;
-  background: transparent;
-}
-
-.dark .markdown-content .hljs-comment,
-.dark .markdown-content .hljs-quote {
-  color: #8b949e;
-}
-
-.dark .markdown-content .hljs-keyword,
-.dark .markdown-content .hljs-selector-tag,
-.dark .markdown-content .hljs-subst {
-  color: #ff7b72;
-}
-
-.dark .markdown-content .hljs-number,
-.dark .markdown-content .hljs-literal,
-.dark .markdown-content .hljs-variable,
-.dark .markdown-content .hljs-template-variable,
-.dark .markdown-content .hljs-tag .hljs-attr {
-  color: #79c0ff;
-}
-
-.dark .markdown-content .hljs-string,
-.dark .markdown-content .hljs-doctag {
-  color: #a5d6ff;
-}
-
-.dark .markdown-content .hljs-title,
-.dark .markdown-content .hljs-section,
-.dark .markdown-content .hljs-selector-id {
-  color: #d2a8ff;
-  font-weight: bold;
-}
-
-.dark .markdown-content .hljs-type,
-.dark .markdown-content .hljs-class .hljs-title {
-  color: #d2a8ff;
-}
-
-.dark .markdown-content .hljs-tag,
-.dark .markdown-content .hljs-name,
-.dark .markdown-content .hljs-attribute {
-  color: #7ee787;
-}
-
-.dark .markdown-content .hljs-regexp,
-.dark .markdown-content .hljs-link {
-  color: #a5d6ff;
-}
-
-.dark .markdown-content .hljs-symbol,
-.dark .markdown-content .hljs-bullet {
-  color: #79c0ff;
-}
-
-.dark .markdown-content .hljs-built_in,
-.dark .markdown-content .hljs-builtin-name {
-  color: #79c0ff;
-}
-
-.dark .markdown-content .hljs-meta {
-  color: #8b949e;
-}
-
-.dark .markdown-content .hljs-deletion {
-  background-color: rgba(248, 81, 73, 0.15);
-}
-
-.dark .markdown-content .hljs-addition {
-  background-color: rgba(46, 160, 67, 0.15);
-}
+/*
+ * NOTE: .hljs-* rules have been removed.
+ *
+ * Streamdown v2.4.0 uses Shiki for syntax highlighting via the `shikiTheme`
+ * prop. Shiki outputs inline color styles using CSS custom properties
+ * (--shiki-light / --shiki-dark), not .hljs-* class names. The previous
+ * manual highlight.js theme rules were dead code and have been removed.
+ *
+ * Theme switching (light ↔ dark) is handled automatically by Streamdown
+ * reading the `.dark` class on <html> (set by next-themes), matching the
+ * @custom-variant dark (&:is(.dark *)) declaration in globals.css.
+ */

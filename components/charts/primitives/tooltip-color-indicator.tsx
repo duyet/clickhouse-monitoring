@@ -8,6 +8,8 @@
 
 import type { HTMLAttributes } from 'react'
 
+import { cn } from '@/lib/utils'
+
 interface TooltipColorIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   colorVar: string
   size?: 'default' | 'small'
@@ -27,7 +29,11 @@ export function TooltipColorIndicator({
 
   return (
     <div
-      className={`${sizeClass} shrink-0 rounded-[2px] bg-(--color-bg) ${className}`}
+      className={cn(
+        'shrink-0 rounded-[2px] bg-(--color-bg)',
+        sizeClass,
+        className
+      )}
       style={
         {
           '--color-bg': colorVar,
