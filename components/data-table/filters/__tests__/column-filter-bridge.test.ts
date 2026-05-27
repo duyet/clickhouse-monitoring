@@ -1,13 +1,12 @@
-import { describe, expect, it } from 'bun:test'
-
-import type { ColumnFilterDef } from '@/types/query-config'
 import type { FilterField, FilterSchema } from '@/lib/filters/types'
+import type { ColumnFilterDef } from '@/types/query-config'
 
 import {
   defaultOperatorForType,
   pickColumnFilterOperator,
   resolveColumnFilterField,
 } from '../column-filter-bridge'
+import { describe, expect, it } from 'bun:test'
 
 const textField: FilterField = {
   key: 'query',
