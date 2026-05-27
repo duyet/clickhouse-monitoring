@@ -29,9 +29,16 @@ export function HostVersionWithStatus({ hostId }: HostVersionWithStatusProps) {
 
   if (isOnline && data) {
     return (
-      <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+      <span
+        className="flex items-center gap-1.5 truncate text-xs text-muted-foreground"
+        title={`Host: ${data.hostname}\nUptime: ${data.uptime}\nVersion: ${data.version}`}
+      >
         <StatusIndicatorOnline />
-        {data.version}
+        <span className="truncate">
+          {data.version}
+          <span className="mx-1 opacity-60">·</span>
+          {data.uptime}
+        </span>
       </span>
     )
   }
