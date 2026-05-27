@@ -98,12 +98,21 @@ export function useNotifications(hostId: number): NotificationsResult {
         count: alert.value ?? 0,
         severity: alert.severity,
         checkId: alert.checkId,
+        incidentId: alert.incidentId,
         label: `${alert.title}: ${alert.label}`,
       }
-      const key = getNotificationKey(n)
       setHealthAlerts((prev) => {
-        // dedupe by key, keep latest at front
-        const filtered = prev.filter((p) => getNotificationKey(p) !== key)
+        // Replace older incidents for the same check+severity so the bell only
+        // shows the latest occurrence (older incidents may have been dismissed).
+        const filtered = prev.filter(
+          (p) =>
+            !(
+              p.type === 'health-check' &&
+              p.checkId === n.checkId &&
+              p.severity === n.severity &&
+              p.cluster === n.cluster
+            )
+        )
         return [n, ...filtered].slice(0, 50)
       })
     })
@@ -111,8 +120,9 @@ export function useNotifications(hostId: number): NotificationsResult {
 
   // Add unique keys to notifications and filter out dismissed ones
   const notifications = useMemo(() => {
+    const hostCluster = `host-${hostId}`
     const rawNotifications = [
-      ...healthAlerts,
+      ...healthAlerts.filter((n) => n.cluster === hostCluster),
       ...(data?.data?.notifications ?? []),
     ]
 
@@ -124,7 +134,7 @@ export function useNotifications(hostId: number): NotificationsResult {
 
     // Filter out dismissed notifications
     return filterActiveNotifications(withKeys)
-  }, [data, healthAlerts])
+  }, [data, healthAlerts, hostId])
 
   const totalCount = notifications.length
 

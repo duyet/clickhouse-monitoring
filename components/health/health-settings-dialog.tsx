@@ -70,11 +70,26 @@ export function HealthSettingsDialog() {
     })
   }
 
+  const invalidCheck = HEALTH_CHECKS.find((check) => {
+    const current = thresholds[check.id] ?? check.defaults
+    return current.warning > current.critical
+  })
+
   const handleSave = () => {
-    saveThresholds(thresholds)
-    saveAlertSettings(alerts)
-    toast.success('Health settings saved')
-    setOpen(false)
+    if (invalidCheck) {
+      toast.error(`${invalidCheck.title}: warning must be ≤ critical`)
+      return
+    }
+    const thresholdsSaved = saveThresholds(thresholds)
+    const alertsSaved = saveAlertSettings(alerts)
+    if (thresholdsSaved && alertsSaved) {
+      toast.success('Health settings saved')
+      setOpen(false)
+      return
+    }
+    toast.error(
+      'Failed to save health settings. Check browser storage permissions.'
+    )
   }
 
   const handleEnableBrowser = async (checked: boolean) => {
@@ -84,9 +99,14 @@ export function HealthSettingsDialog() {
         return
       }
       if (Notification.permission === 'default') {
-        const result = await Notification.requestPermission()
-        if (result !== 'granted') {
-          toast.error('Browser notifications were not granted')
+        try {
+          const result = await Notification.requestPermission()
+          if (result !== 'granted') {
+            toast.error('Browser notifications were not granted')
+            return
+          }
+        } catch {
+          toast.error('Failed to request browser notification permission')
           return
         }
       } else if (Notification.permission === 'denied') {

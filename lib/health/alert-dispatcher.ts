@@ -9,6 +9,8 @@ export interface HealthAlertEvent {
   value: number | null
   label: string
   hostId: number
+  /** Monotonic id used to keep dismissed notifications from suppressing later incidents */
+  incidentId?: string
 }
 
 const HEALTH_ALERT_EVENT = 'health-alert'
@@ -56,30 +58,43 @@ export async function fireWebhook(
     if (!settings.webhookEnabled || !settings.webhookUrl) return false
     url = settings.webhookUrl
   }
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10_000)
   try {
     const text = `[${alert.severity.toUpperCase()}] ${alert.title} — ${alert.label} (host ${alert.hostId})`
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, content: text }),
+      signal: controller.signal,
     })
     return res.ok
   } catch {
     return false
+  } finally {
+    clearTimeout(timeout)
   }
 }
 
 export async function dispatchAlert(alert: HealthAlertEvent): Promise<void> {
-  const settings = loadAlertSettings()
-  if (settings.minSeverity === 'critical' && alert.severity !== 'critical') {
-    return
-  }
-  emitInAppAlert(alert)
-  if (settings.browserNotificationsEnabled) {
-    fireBrowserNotification(alert)
-  }
-  if (settings.webhookEnabled && settings.webhookUrl) {
-    await fireWebhook(alert)
+  try {
+    const settings = loadAlertSettings()
+    if (settings.minSeverity === 'critical' && alert.severity !== 'critical') {
+      return
+    }
+    const withIncident: HealthAlertEvent = {
+      ...alert,
+      incidentId: alert.incidentId ?? String(Date.now()),
+    }
+    emitInAppAlert(withIncident)
+    if (settings.browserNotificationsEnabled) {
+      fireBrowserNotification(withIncident)
+    }
+    if (settings.webhookEnabled && settings.webhookUrl) {
+      await fireWebhook(withIncident)
+    }
+  } catch (err) {
+    console.error('[health] dispatchAlert failed', err)
   }
 }
 

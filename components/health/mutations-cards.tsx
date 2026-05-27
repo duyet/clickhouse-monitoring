@@ -4,7 +4,7 @@ import type { HealthStatus } from './health-card'
 
 import { useEffect, useRef } from 'react'
 import { dispatchAlert, isEscalation } from '@/lib/health/alert-dispatcher'
-import { useChartData } from '@/lib/swr'
+import { useChartData, useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 function StatusDot({ status }: { status: HealthStatus }) {
@@ -48,7 +48,8 @@ function useAlertOnEscalate(
   }, [status, value, label, checkId, title, hostId])
 }
 
-export function StuckMutationsCard({ hostId }: { hostId: number }) {
+export function StuckMutationsCard() {
+  const hostId = useHostId()
   const swr = useChartData({
     chartName: 'summary-stuck-mutations',
     hostId,
@@ -72,10 +73,22 @@ export function StuckMutationsCard({ hostId }: { hostId: number }) {
     stuck = Number(row.stuck ?? 0)
     active = Number(row.active ?? 0)
     failed = Number(row.failed ?? 0)
-    label = `${active} active, ${stuck} stuck, ${failed} failed`
-    if (stuck > 0 || failed > 0) status = 'critical'
-    else if (active > 5) status = 'warning'
-    else status = 'ok'
+    if (
+      !Number.isFinite(stuck) ||
+      !Number.isFinite(active) ||
+      !Number.isFinite(failed)
+    ) {
+      status = 'error'
+      label = 'Invalid value'
+      stuck = 0
+      active = 0
+      failed = 0
+    } else {
+      label = `${active} active, ${stuck} stuck, ${failed} failed`
+      if (stuck > 0 || failed > 0) status = 'critical'
+      else if (active > 5) status = 'warning'
+      else status = 'ok'
+    }
   } else {
     status = 'ok'
     label = '0 active, 0 stuck, 0 failed'
@@ -110,7 +123,8 @@ export function StuckMutationsCard({ hostId }: { hostId: number }) {
   )
 }
 
-export function RunningMutationsCard({ hostId }: { hostId: number }) {
+export function RunningMutationsCard() {
+  const hostId = useHostId()
   const swr = useChartData({
     chartName: 'summary-used-by-mutations',
     hostId,
@@ -130,8 +144,14 @@ export function RunningMutationsCard({ hostId }: { hostId: number }) {
   } else if (swr.data && swr.data.length > 0) {
     const row = swr.data[0] as Record<string, unknown>
     value = Number(row.running_count ?? 0)
-    label = `${value} running mutations`
-    status = value >= 10 ? 'critical' : value >= 3 ? 'warning' : 'ok'
+    if (!Number.isFinite(value)) {
+      status = 'error'
+      label = 'Invalid value'
+      value = 0
+    } else {
+      label = `${value} running mutations`
+      status = value >= 10 ? 'critical' : value >= 3 ? 'warning' : 'ok'
+    }
   } else {
     label = '0 running mutations'
     status = 'ok'

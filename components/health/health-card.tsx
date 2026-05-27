@@ -5,7 +5,7 @@ import type { HealthCheckDef } from './health-checks'
 
 import { useEffect, useRef } from 'react'
 import { dispatchAlert, isEscalation } from '@/lib/health/alert-dispatcher'
-import { useChartData } from '@/lib/swr'
+import { useChartData, useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 export type HealthStatus = 'ok' | 'warning' | 'critical' | 'loading' | 'error'
@@ -28,11 +28,11 @@ function StatusDot({ status }: { status: HealthStatus }) {
 
 interface HealthCardProps {
   check: HealthCheckDef
-  hostId: number
   thresholds: Thresholds
 }
 
-export function HealthCard({ check, hostId, thresholds }: HealthCardProps) {
+export function HealthCard({ check, thresholds }: HealthCardProps) {
+  const hostId = useHostId()
   const swr = useChartData({
     chartName: check.chartName,
     hostId,

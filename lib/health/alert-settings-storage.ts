@@ -23,18 +23,39 @@ export function loadAlertSettings(): AlertSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return DEFAULT_ALERT_SETTINGS
-    return { ...DEFAULT_ALERT_SETTINGS, ...JSON.parse(raw) } as AlertSettings
+    const parsed = JSON.parse(raw) as Partial<
+      Record<keyof AlertSettings, unknown>
+    >
+    return {
+      webhookUrl:
+        typeof parsed.webhookUrl === 'string'
+          ? parsed.webhookUrl
+          : DEFAULT_ALERT_SETTINGS.webhookUrl,
+      webhookEnabled:
+        typeof parsed.webhookEnabled === 'boolean'
+          ? parsed.webhookEnabled
+          : DEFAULT_ALERT_SETTINGS.webhookEnabled,
+      browserNotificationsEnabled:
+        typeof parsed.browserNotificationsEnabled === 'boolean'
+          ? parsed.browserNotificationsEnabled
+          : DEFAULT_ALERT_SETTINGS.browserNotificationsEnabled,
+      minSeverity:
+        parsed.minSeverity === 'warning' || parsed.minSeverity === 'critical'
+          ? parsed.minSeverity
+          : DEFAULT_ALERT_SETTINGS.minSeverity,
+    }
   } catch {
     return DEFAULT_ALERT_SETTINGS
   }
 }
 
-export function saveAlertSettings(settings: AlertSettings): void {
-  if (typeof window === 'undefined') return
+export function saveAlertSettings(settings: AlertSettings): boolean {
+  if (typeof window === 'undefined') return false
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
     window.dispatchEvent(new CustomEvent('health-alert-settings-changed'))
+    return true
   } catch {
-    // localStorage may be full or disabled
+    return false
   }
 }

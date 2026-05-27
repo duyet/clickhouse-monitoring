@@ -14,30 +14,45 @@ export function loadThresholds(): ThresholdsMap {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return {}
-    return JSON.parse(raw) as ThresholdsMap
+    const parsed = JSON.parse(raw) as unknown
+    if (!parsed || typeof parsed !== 'object') return {}
+    const sanitized: ThresholdsMap = {}
+    for (const [checkId, value] of Object.entries(
+      parsed as Record<string, unknown>
+    )) {
+      if (!value || typeof value !== 'object') continue
+      const v = value as { warning?: unknown; critical?: unknown }
+      const warning = Number(v.warning)
+      const critical = Number(v.critical)
+      if (Number.isFinite(warning) && Number.isFinite(critical)) {
+        sanitized[checkId] = { warning, critical }
+      }
+    }
+    return sanitized
   } catch {
     return {}
   }
 }
 
-export function saveThresholds(map: ThresholdsMap): void {
-  if (typeof window === 'undefined') return
+export function saveThresholds(map: ThresholdsMap): boolean {
+  if (typeof window === 'undefined') return false
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(map))
     window.dispatchEvent(new CustomEvent('health-thresholds-changed'))
+    return true
   } catch {
-    // localStorage may be full or disabled
+    return false
   }
 }
 
-export function resetThreshold(checkId: string): void {
+export function resetThreshold(checkId: string): boolean {
   const map = loadThresholds()
   delete map[checkId]
-  saveThresholds(map)
+  return saveThresholds(map)
 }
 
-export function setThreshold(checkId: string, thresholds: Thresholds): void {
+export function setThreshold(checkId: string, thresholds: Thresholds): boolean {
   const map = loadThresholds()
   map[checkId] = thresholds
-  saveThresholds(map)
+  return saveThresholds(map)
 }
