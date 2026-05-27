@@ -10,6 +10,7 @@ import { TreeSkeleton } from './tree-skeleton'
 import { useCallback, useState } from 'react'
 import { SidebarMenu } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
 
 interface Database {
@@ -21,10 +22,6 @@ interface ApiResponse<T> {
   metadata?: Record<string, unknown>
 }
 
-interface DatabaseTreeProps {
-  hostId: number
-}
-
 const fetcher = async (url: string): Promise<ApiResponse<Database[]>> => {
   const res = await apiFetch(url)
   if (!res.ok) {
@@ -33,7 +30,8 @@ const fetcher = async (url: string): Promise<ApiResponse<Database[]>> => {
   return res.json()
 }
 
-export function DatabaseTree({ hostId }: DatabaseTreeProps) {
+export function DatabaseTree() {
+  const hostId = useHostId()
   const [searchFilter, setSearchFilter] = useState('')
   const { database, table, setDatabase, setDatabaseAndTable } =
     useExplorerState()
