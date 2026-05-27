@@ -34,7 +34,6 @@ import { TableClient } from '@/components/tables/table-client'
 import { FadeIn } from '@/components/ui/fade-in'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { resolveFeatureState } from '@/lib/feature-permissions/shared'
-import { useHostId } from '@/lib/swr'
 
 export interface QueryPageLayoutProps {
   /** Query config for the page table */
@@ -77,7 +76,6 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   defaultPageSize,
   maxTableHeight,
 }: QueryPageLayoutProps) {
-  const hostId = useHostId()
   const { config, isLoading } = useFeaturePermissions()
   const relatedCharts = queryConfig.relatedCharts || []
   const { isCollapsed, toggleCollapsed, collapsedRows, toggleRow } =
@@ -119,7 +117,6 @@ export const QueryPageLayout = memo(function QueryPageLayout({
             <FadeIn duration={200}>
               <RelatedCharts
                 relatedCharts={relatedCharts}
-                hostId={hostId}
                 gridClass={chartsGridClass}
                 collapsedRows={collapsedRows}
                 onToggleRow={toggleRow}

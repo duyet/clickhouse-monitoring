@@ -26,7 +26,6 @@ import { cn } from '@/lib/utils'
 
 export interface RelatedChartsProps {
   relatedCharts: QueryConfig['relatedCharts']
-  hostId: number
   gridClass?: string
   /** Row indices that are collapsed (only used for multi-row layout) */
   collapsedRows?: Set<number>
@@ -36,7 +35,6 @@ export interface RelatedChartsProps {
 
 export const RelatedCharts = memo(function RelatedCharts({
   relatedCharts,
-  hostId,
   gridClass,
   collapsedRows,
   onToggleRow,
@@ -58,7 +56,6 @@ export const RelatedCharts = memo(function RelatedCharts({
           key={`row-${rowIndex}`}
           rowIndex={rowIndex}
           charts={rowCharts}
-          hostId={hostId}
           isCollapsed={collapsedRows?.has(rowIndex) ?? false}
           onToggle={() => onToggleRow?.(rowIndex)}
         />

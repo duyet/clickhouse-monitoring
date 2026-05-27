@@ -43,7 +43,6 @@ function hasColSpan(charts: ChartConfig[]): boolean {
 export interface ChartRowProps {
   rowIndex: number
   charts: ChartConfig[]
-  hostId: number
   isCollapsed: boolean
   onToggle: () => void
 }
@@ -51,7 +50,6 @@ export interface ChartRowProps {
 export const ChartRow = memo(function ChartRow({
   rowIndex: _rowIndex,
   charts,
-  hostId,
   isCollapsed,
   onToggle,
 }: ChartRowProps) {
@@ -131,7 +129,6 @@ export const ChartRow = memo(function ChartRow({
                       <Suspense fallback={<ChartSkeleton />}>
                         <DynamicChart
                           chartName={chartName}
-                          hostId={hostId}
                           chartProps={chartProps}
                         />
                       </Suspense>

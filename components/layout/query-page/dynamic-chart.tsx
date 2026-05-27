@@ -9,18 +9,18 @@
 
 import { memo } from 'react'
 import { getChartComponent } from '@/components/charts/chart-registry'
+import { useHostId } from '@/lib/swr'
 
 export interface DynamicChartProps {
   chartName: string
-  hostId: number
   chartProps?: Record<string, unknown>
 }
 
 export const DynamicChart = memo(function DynamicChart({
   chartName,
-  hostId,
   chartProps = {},
 }: DynamicChartProps) {
+  const hostId = useHostId()
   const ChartComponent = getChartComponent(chartName)
 
   if (!ChartComponent) {
