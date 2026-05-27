@@ -39,12 +39,6 @@ export interface TableBehaviorConfig {
   enableSorting?: boolean
   /** Enable drag-and-drop column reordering (default: true) */
   enableColumnReordering?: boolean
-  /**
-   * Keep previously fetched rows visible while SWR revalidates in the
-   * background. Avoids flashing skeletons on refresh.
-   * Default: true.
-   */
-  keepPreviousData?: boolean
 }
 
 /**

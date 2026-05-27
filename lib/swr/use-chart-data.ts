@@ -256,9 +256,13 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     revalidateOnReconnect: true,
     dedupingInterval: 5000,
     focusThrottleInterval: 5000,
-    // Keep the last successful response visible during revalidation so charts
-    // don't flicker when the refresh interval fires or params change.
-    keepPreviousData: true,
+    // NOTE: do NOT enable `keepPreviousData` here. SWR's per-key cache
+    // already prevents flicker on same-key revalidation (refreshInterval,
+    // mutate). `keepPreviousData` additionally reuses data across
+    // cache-key changes (host swap, time-range/interval change, params)
+    // — when the new key's fetch fails, `ChartContainer`'s
+    // `error && !hasData` branch still sees the previous key's series and
+    // shows it under the new selection. See PR #1196 review.
     refreshInterval:
       refreshInterval > 0 ? visibilityAwareInterval(refreshInterval) : 0,
     onErrorRetry,
