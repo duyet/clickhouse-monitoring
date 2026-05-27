@@ -19,6 +19,18 @@
   }
 }
 
+/* Strip box-shadow from all buttons and card-like surfaces project-wide.
+   Overlay surfaces (popover, dialog, sheet, dropdown, tooltip, hover-card)
+   keep their shadows so they remain visually distinct from page content. */
+@layer utilities {
+  button,
+  [role='button'],
+  [data-slot='card'],
+  .bg-card {
+    box-shadow: none !important;
+  }
+}
+
 /* Screen reader only utility - hides content visually but keeps it accessible to screen readers */
 @layer utilities {
   .sr-only {

@@ -148,7 +148,7 @@ export const DataTableContent = memo(function DataTableContent<
       <caption id="table-description" className="sr-only">
         {description || queryConfig.description || `${title} data table`}
       </caption>
-      <TableHeader className="bg-muted/95 backdrop-blur-sm sticky top-0 z-10 border-b border-border/50 shadow-[0_1px_3px_0_rgb(0_0_0/0.05)]">
+      <TableHeader className="bg-muted/95 backdrop-blur-sm sticky top-0 z-10 border-b border-border/50">
         <TableHeaderRenderer
           headerGroups={table.getHeaderGroups()}
           onAutoFit={onAutoFit}
