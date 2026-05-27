@@ -7,6 +7,7 @@ import { TreeNode } from './tree-node'
 import { memo, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getEngineIconConfig } from '@/lib/clickhouse-engine-icons'
+import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { cn } from '@/lib/utils'
 
@@ -23,7 +24,6 @@ interface ApiResponse<T> {
 }
 
 interface TableNodeProps {
-  hostId: number
   database: string
   table: string
   engine: string
@@ -104,7 +104,6 @@ function RowCountBadge({ totalRows }: { totalRows: number }) {
 }
 
 export const TableNode = memo(function TableNode({
-  hostId,
   database,
   table,
   engine,
@@ -115,6 +114,7 @@ export const TableNode = memo(function TableNode({
   onToggle,
   onSelect,
 }: TableNodeProps) {
+  const hostId = useHostId()
   const [shouldFetch, setShouldFetch] = useState(false)
   const engineConfig = getEngineIconConfig(engine)
 

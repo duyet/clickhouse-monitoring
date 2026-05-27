@@ -34,7 +34,6 @@ import { TableClient } from '@/components/tables/table-client'
 import { FadeIn } from '@/components/ui/fade-in'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { resolveFeatureState } from '@/lib/feature-permissions/shared'
-import { useHostId } from '@/lib/swr'
 
 export interface QueryPageLayoutProps {
   /** Query config for the page table */
@@ -88,7 +87,6 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   // supplies its own headerContent (typically a FilterBar wired to the
   // same URL params). Avoids two controls mutating the same state.
   const effectiveShowFilterBar = showFilterBar ?? !headerContent
-  const hostId = useHostId()
   const { config, isLoading } = useFeaturePermissions()
   const relatedCharts = queryConfig.relatedCharts || []
   const { isCollapsed, toggleCollapsed, collapsedRows, toggleRow } =
@@ -121,7 +119,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
   }
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-4 w-full max-w-full">
+    <div className="flex min-w-0 w-full max-w-full flex-1 flex-col gap-3 sm:gap-4">
       {/* Charts Section with Collapse Toggle */}
       {hasCharts && (
         <div className="flex flex-col gap-2">
@@ -130,7 +128,6 @@ export const QueryPageLayout = memo(function QueryPageLayout({
             <FadeIn duration={200}>
               <RelatedCharts
                 relatedCharts={relatedCharts}
-                hostId={hostId}
                 gridClass={chartsGridClass}
                 collapsedRows={collapsedRows}
                 onToggleRow={toggleRow}

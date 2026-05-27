@@ -156,7 +156,6 @@ export function DependenciesTab() {
         dependencies={dependencies}
         currentTable={table || undefined}
         currentDatabase={database}
-        hostId={hostId}
         className="h-[600px]"
       />
     </div>

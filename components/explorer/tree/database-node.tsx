@@ -7,6 +7,7 @@ import { TableNode } from './table-node'
 import { TreeNode } from './tree-node'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
 
 interface Table {
@@ -21,7 +22,6 @@ interface ApiResponse<T> {
 }
 
 interface DatabaseNodeProps {
-  hostId: number
   database: string
   isExpanded: boolean
   isTableExpanded: (key: string) => boolean
@@ -44,7 +44,6 @@ const fetcher = async (url: string): Promise<ApiResponse<Table[]>> => {
 }
 
 export const DatabaseNode = memo(function DatabaseNode({
-  hostId,
   database,
   isExpanded,
   isTableExpanded,
@@ -57,6 +56,7 @@ export const DatabaseNode = memo(function DatabaseNode({
   onSelectDatabase,
   onSelectTable,
 }: DatabaseNodeProps) {
+  const hostId = useHostId()
   const [shouldFetch, setShouldFetch] = useState(false)
 
   // Auto-trigger fetch when expanded (including from URL state)
@@ -136,7 +136,6 @@ export const DatabaseNode = memo(function DatabaseNode({
           return (
             <TableNode
               key={tableKey}
-              hostId={hostId}
               database={database}
               table={table.name}
               engine={table.engine}

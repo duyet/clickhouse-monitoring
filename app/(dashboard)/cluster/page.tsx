@@ -8,6 +8,7 @@ import { ChartSkeleton } from '@/components/skeletons'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHosts } from '@/lib/swr/use-hosts'
+import { cn } from '@/lib/utils'
 
 /** Metric row config */
 const METRICS = [
@@ -89,13 +90,13 @@ function ClusterComparisonContent() {
   const isSingleHost = hosts.length === 1
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 sm:gap-8">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
           Cluster Comparison
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
           {isSingleHost
             ? 'Side-by-side view of key metrics. Add more hosts to compare across nodes.'
             : `Comparing ${hosts.length} hosts — spot imbalances in CPU, memory, and query load.`}
@@ -109,13 +110,12 @@ function ClusterComparisonContent() {
             {label}
           </h2>
           <div
-            className={
-              hosts.length === 1
-                ? 'grid grid-cols-1 max-w-sm'
-                : hosts.length === 2
-                  ? 'grid grid-cols-1 gap-4 sm:grid-cols-2'
-                  : 'grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3'
-            }
+            className={cn(
+              'grid grid-cols-1 gap-4',
+              hosts.length === 1 && 'max-w-sm gap-0',
+              hosts.length === 2 && 'sm:grid-cols-2',
+              hosts.length >= 3 && 'sm:grid-cols-2 xl:grid-cols-3'
+            )}
           >
             {hosts.map((host) => (
               <div key={host.id} className="flex flex-col gap-2">

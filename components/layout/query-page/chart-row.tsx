@@ -43,7 +43,6 @@ function hasColSpan(charts: ChartConfig[]): boolean {
 export interface ChartRowProps {
   rowIndex: number
   charts: ChartConfig[]
-  hostId: number
   isCollapsed: boolean
   onToggle: () => void
 }
@@ -51,7 +50,6 @@ export interface ChartRowProps {
 export const ChartRow = memo(function ChartRow({
   rowIndex: _rowIndex,
   charts,
-  hostId,
   isCollapsed,
   onToggle,
 }: ChartRowProps) {
@@ -69,7 +67,7 @@ export const ChartRow = memo(function ChartRow({
         {isCollapsed && (
           <CollapsibleTrigger asChild>
             <div className="group/row relative flex h-10 w-full min-w-0 items-center gap-2 rounded-lg border border-dashed bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer px-3">
-              <ChartRowSummary charts={charts} hostId={hostId} />
+              <ChartRowSummary charts={charts} />
               <span className="ml-auto flex shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground opacity-0 group-hover/row:opacity-100 transition-opacity duration-200">
                 Show
                 <ChevronDownIcon className="h-3 w-3" />
@@ -131,7 +129,6 @@ export const ChartRow = memo(function ChartRow({
                       <Suspense fallback={<ChartSkeleton />}>
                         <DynamicChart
                           chartName={chartName}
-                          hostId={hostId}
                           chartProps={chartProps}
                         />
                       </Suspense>
@@ -150,7 +147,7 @@ export const ChartRow = memo(function ChartRow({
                   'bottom-2 left-1/2 -translate-x-1/2',
                   'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
                   'bg-muted hover:bg-muted/80 text-muted-foreground',
-                  'rounded-full text-xs shadow-sm'
+                  'rounded-full text-xs'
                 )}
                 aria-label="Collapse row"
               >

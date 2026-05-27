@@ -19,6 +19,28 @@
   }
 }
 
+/* Strip box-shadow from all buttons and card-like surfaces project-wide.
+   Overlay surfaces (popover, dialog, sheet, dropdown, tooltip, hover-card)
+   keep their shadows so they remain visually distinct from page content.
+
+   NOTE: !important suppresses hover:shadow-* and any other shadow utility
+   on these elements. If a future contributor needs a shadow on a specific
+   button/card, override this with an inline style or a more-specific
+   selector — not a Tailwind shadow utility.
+
+   The [class*="bg-card/"] selector catches Tailwind's opacity variants
+   (bg-card/30, bg-card/40, etc.) which are emitted as separate classes
+   and would otherwise miss this rule. */
+@layer utilities {
+  button,
+  [role='button'],
+  [data-slot='card'],
+  .bg-card,
+  [class*='bg-card/'] {
+    box-shadow: none !important;
+  }
+}
+
 /* Screen reader only utility - hides content visually but keeps it accessible to screen readers */
 @layer utilities {
   .sr-only {

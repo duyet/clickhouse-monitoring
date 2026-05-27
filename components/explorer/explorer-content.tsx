@@ -70,7 +70,7 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
 
   // Database selected but no table, and not on query tab — show database overview
   if (database && !table && tab !== 'query') {
-    return <DatabaseOverview database={database} hostId={hostId} />
+    return <DatabaseOverview database={database} />
   }
 
   // Query tab without a table context — render standalone (no tab strip)

@@ -7,10 +7,8 @@ import { ExplorerSidebar } from './explorer-sidebar'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useHostId } from '@/lib/swr'
 
 export function ExplorerLayout() {
-  const hostId = useHostId()
   const isMobile = useIsMobile()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
@@ -36,7 +34,6 @@ export function ExplorerLayout() {
           <ExplorerContent />
         </div>
         <ExplorerSidebar
-          hostId={hostId}
           isOpen={isSidebarOpen}
           onOpenChange={setIsSidebarOpen}
         />
@@ -48,7 +45,7 @@ export function ExplorerLayout() {
   return (
     <div className="flex h-full">
       <div className="w-64 md:w-72 lg:w-80 shrink-0 border-r overflow-auto">
-        <ExplorerSidebar hostId={hostId} />
+        <ExplorerSidebar />
       </div>
       <div className="flex-1 overflow-auto">
         <ExplorerContent />

@@ -45,6 +45,7 @@ import {
   useVirtualRows,
 } from '@/components/data-table/hooks'
 import { getCustomSortingFns } from '@/components/data-table/sorting-fns'
+import { resolveTableBehavior } from '@/components/data-table/utils/resolve-table-behavior'
 import { FilterBar } from '@/components/filters/filter-bar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
@@ -196,14 +197,12 @@ export function DataTable<
   // Resolve expansion config: explicit prop wins over QueryConfig declaration
   const expandable = expandableProp ?? queryConfig.expandable
 
-  // Resolve per-table behavior, with prop overrides taking precedence over
-  // queryConfig.tableBehavior, which in turn overrides the global defaults.
-  const behavior = queryConfig.tableBehavior ?? {}
-  const resolvedEnableColumnResizing = behavior.enableColumnResizing ?? true
-  const resolvedColumnResizeMode = behavior.columnResizeMode ?? 'onChange'
-  const resolvedEnableSorting = behavior.enableSorting ?? true
-  const resolvedEnableColumnReordering =
-    enableColumnReorderingProp ?? behavior.enableColumnReordering ?? true
+  const {
+    enableColumnResizing: resolvedEnableColumnResizing,
+    columnResizeMode: resolvedColumnResizeMode,
+    enableSorting: resolvedEnableSorting,
+    enableColumnReordering: resolvedEnableColumnReordering,
+  } = resolveTableBehavior({ queryConfig, enableColumnReorderingProp })
 
   // Determine which columns should be filterable (memoized)
   const configuredColumns = useMemo(

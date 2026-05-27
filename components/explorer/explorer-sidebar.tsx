@@ -10,13 +10,11 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile'
 
 interface ExplorerSidebarProps {
-  hostId: number
   isOpen?: boolean
   onOpenChange?: (open: boolean) => void
 }
 
 export function ExplorerSidebar({
-  hostId,
   isOpen,
   onOpenChange,
 }: ExplorerSidebarProps) {
@@ -30,7 +28,7 @@ export function ExplorerSidebar({
       >
         <SidebarGroup>
           <SidebarGroupContent>
-            <DatabaseTree hostId={hostId} />
+            <DatabaseTree />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

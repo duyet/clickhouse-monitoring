@@ -96,7 +96,7 @@ export const ChartEmpty = memo(function ChartEmpty({
         chartCard.base,
         chartCard.variants.normal,
         href &&
-          'cursor-pointer hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300',
+          'cursor-pointer hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300',
         className
       )}
       onClick={handleCardClick}

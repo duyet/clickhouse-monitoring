@@ -179,7 +179,7 @@ function PlanSettingsPanel({
               <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wider">
                 {group.label}
               </p>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
                 {PLAN_SETTINGS.filter((s) => s.group === group.key).map(
                   (setting) => (
                     <div key={setting.key} className="flex items-start gap-2">
@@ -297,7 +297,7 @@ function ExplainContent() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className="shadow-none">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <InfoCircledIcon className="size-5" />

@@ -86,13 +86,12 @@ const ICON_CONTAINER_CLASS =
 
 function InsightCard({
   config,
-  hostId,
   onClick,
 }: {
   config: InsightCardConfig
-  hostId: number
   onClick: (question: string) => void
 }) {
+  const hostId = useHostId()
   const { data, isLoading, error } = useChartData({
     chartName: config.chartName,
     hostId,
@@ -183,15 +182,12 @@ export function AgentInsightCards({
 }: {
   onQuestionClick: (question: string) => void
 }) {
-  const hostId = useHostId()
-
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4">
       {INSIGHT_CARDS.map((config) => (
         <InsightCard
           key={config.chartName}
           config={config}
-          hostId={hostId}
           onClick={onQuestionClick}
         />
       ))}

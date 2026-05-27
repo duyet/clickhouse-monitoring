@@ -117,7 +117,7 @@ ${error.stack}
         chartCard.base,
         chartCard.variants.error,
         errorClassName,
-        'transition-all duration-300 hover:shadow-md hover:border-destructive/40',
+        'transition-all duration-300 hover:border-destructive/40',
         className
       )}
       role="alert"

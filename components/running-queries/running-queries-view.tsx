@@ -72,7 +72,8 @@ function LoadingState() {
  * Link card to the full query history — completed queries leave the live
  * list, so this points to where they can still be inspected.
  */
-function HistoryLink({ hostId }: { hostId: number }) {
+function HistoryLink() {
+  const hostId = useHostId()
   return (
     <AppLink
       href={buildUrl('/history-queries', { host: hostId })}
@@ -164,16 +165,16 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
       <div className="flex flex-col gap-4">
         {/* Header */}
         <div className="flex flex-col gap-1">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:flex-wrap">
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold tracking-tight sm:text-[22px]">
+              <h1 className="text-lg font-bold tracking-tight sm:text-[22px]">
                 Running Queries
               </h1>
               <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium tabular-nums text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
                 {rows.length} active
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <HeaderButton onClick={() => setChartsOpen((v) => !v)}>
                 <ChevronDown
                   className={cn(
@@ -217,7 +218,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
         {isLoading && !data ? (
           <LoadingState />
         ) : error && !data ? (
-          <Card className="rounded-xl shadow-none">
+          <Card className="rounded-xl">
             <CardContent className="p-4">
               <EmptyState
                 variant={detectCardErrorVariant(error as CardError)}
@@ -240,9 +241,9 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
           </Card>
         ) : (
           <>
-            {chartsOpen && <RunningQueriesCharts rows={rows} hostId={hostId} />}
+            {chartsOpen && <RunningQueriesCharts rows={rows} />}
             {rows.length === 0 ? (
-              <Card className="rounded-xl border-dashed shadow-none">
+              <Card className="rounded-xl border-dashed">
                 <CardContent className="p-6">
                   <EmptyState
                     variant="no-data"
@@ -254,7 +255,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
             ) : (
               <RunningQueriesTable rows={rows} />
             )}
-            <HistoryLink hostId={hostId} />
+            <HistoryLink />
           </>
         )}
       </div>

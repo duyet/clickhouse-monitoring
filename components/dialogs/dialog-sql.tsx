@@ -216,7 +216,7 @@ export const DialogSQL = memo(function DialogSQL({
         <div className="flex flex-col gap-3">
           {/* Metadata Section */}
           {hasMetadata && (
-            <div className="rounded-xl border border-border/60 bg-muted/30 p-4 shadow-sm">
+            <div className="rounded-xl border border-border/60 bg-muted/30 p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
                   <Info className="size-3.5 text-primary" strokeWidth={2} />
@@ -372,7 +372,7 @@ export const DialogSQL = memo(function DialogSQL({
                     <Button
                       variant="secondary"
                       size="icon"
-                      className="size-8 rounded-lg shadow-sm"
+                      className="size-8 rounded-lg"
                       onClick={() => handleCopy(displaySQL)}
                     >
                       {copied ? (

@@ -26,8 +26,8 @@ function DynamicChart({ chartName, hostId }: DynamicChartProps) {
   return (
     <Suspense fallback={<ChartSkeleton />}>
       <ChartComponent
-        className="mb-4 w-full p-0 shadow-none"
-        chartClassName="h-full min-h-[300px]"
+        className="mb-4 w-full p-0"
+        chartClassName="h-full min-h-[260px] sm:min-h-[300px]"
         hostId={hostId}
       />
     </Suspense>
@@ -66,8 +66,8 @@ function ChartsPageContent() {
       : `${chartNames.length} Charts`
 
   return (
-    <div className="max-w-full">
-      <h1 className="text-xl font-semibold mb-4">{displayTitle}</h1>
+    <div className="max-w-full px-3 sm:px-0">
+      <h1 className="mb-4 text-lg font-semibold sm:text-xl">{displayTitle}</h1>
       {chartNames.map((chartName, index) => (
         <DynamicChart
           key={`${chartName}-${index}`}

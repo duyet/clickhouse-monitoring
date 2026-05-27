@@ -14,6 +14,7 @@ import { useMemo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
 
 interface ApiResponse<T> {
@@ -31,10 +32,10 @@ const fetcher = async <T,>(url: string): Promise<ApiResponse<T>> => {
 
 interface DatabaseOverviewProps {
   database: string
-  hostId: number
 }
 
-export function DatabaseOverview({ database, hostId }: DatabaseOverviewProps) {
+export function DatabaseOverview({ database }: DatabaseOverviewProps) {
+  const hostId = useHostId()
   const { setTab } = useExplorerState()
 
   // Use unified query that includes all dependency types + standalone tables
@@ -86,15 +87,17 @@ export function DatabaseOverview({ database, hostId }: DatabaseOverviewProps) {
   }
 
   return (
-    <div className="group flex h-full flex-col gap-4 p-4">
+    <div className="group flex h-full flex-col gap-3 p-3 sm:gap-4 sm:p-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
           <DatabaseIcon className="size-5 text-muted-foreground" />
         </div>
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold">{database}</h2>
-          <p className="text-sm text-muted-foreground">
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-base font-semibold sm:text-lg">
+            {database}
+          </h2>
+          <p className="text-xs text-muted-foreground sm:text-sm">
             {tableCount} table{tableCount !== 1 ? 's' : ''}
             {depCount > 0 &&
               ` · ${depCount} dependency relationship${depCount !== 1 ? 's' : ''}`}
@@ -120,7 +123,6 @@ export function DatabaseOverview({ database, hostId }: DatabaseOverviewProps) {
       <DependencyGraph
         dependencies={graphData}
         currentDatabase={database}
-        hostId={hostId}
         className="flex-1 min-h-[400px]"
       />
     </div>

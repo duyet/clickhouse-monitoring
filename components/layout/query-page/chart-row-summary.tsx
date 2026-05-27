@@ -10,7 +10,6 @@ type ChartConfig = NonNullable<QueryConfig['relatedCharts']>[number]
 
 export interface ChartRowSummaryProps {
   charts: ChartConfig[]
-  hostId: number
 }
 
 function chartLabel(name: string, props?: Record<string, unknown>): string {
@@ -21,7 +20,6 @@ function chartLabel(name: string, props?: Record<string, unknown>): string {
 
 export const ChartRowSummary = memo(function ChartRowSummary({
   charts,
-  hostId,
 }: ChartRowSummaryProps) {
   const items = charts
     .filter(
@@ -58,7 +56,6 @@ export const ChartRowSummary = memo(function ChartRowSummary({
         <ChartChip
           key={`${item.name}-${index}`}
           chartName={item.name}
-          hostId={hostId}
           label={item.label}
           valueField={item.valueField}
           interval={item.interval}

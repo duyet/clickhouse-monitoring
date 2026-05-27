@@ -183,7 +183,7 @@ const MobileTableCard = memo(function MobileTableCard<TData extends RowData>({
       data-testid="mobile-table-card"
       data-expanded={isExpanded || undefined}
       className={cn(
-        'rounded-lg border border-border/60 bg-card/40 p-3 shadow-xs',
+        'rounded-lg border border-border/60 bg-card/40 p-3',
         customClass
       )}
     >

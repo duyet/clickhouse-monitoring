@@ -73,7 +73,7 @@ export const ColumnFilter = memo(function ColumnFilter({
           placeholder={placeholder}
           debounceMs={300}
           className={cn(
-            'h-7 w-full pl-6 text-xs shadow-none',
+            'h-7 w-full pl-6 text-xs',
             'bg-muted/30 border-transparent',
             'focus:bg-background focus:border-primary/50',
             'placeholder:text-muted-foreground/60',
@@ -137,23 +137,23 @@ export function useColumnFilters<T extends Record<string, unknown>>(
 
   const [filters, setFiltersState] = useState<Record<string, string>>({})
 
-  const setFilter = (column: string, value: string) => {
+  const setFilter = useCallback((column: string, value: string) => {
     setFiltersState((prev) => ({
       ...prev,
       [column]: value,
     }))
-  }
+  }, [])
 
-  const clearFilter = (column: string) => {
+  const clearFilter = useCallback((column: string) => {
     setFiltersState((prev) => {
       const { [column]: _, ...rest } = prev
       return rest
     })
-  }
+  }, [])
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     setFiltersState({})
-  }
+  }, [])
 
   // Filter data based on active filters
   const filteredData = useMemo(() => {
@@ -174,7 +174,10 @@ export function useColumnFilters<T extends Record<string, unknown>>(
     })
   }, [data, filters])
 
-  const hasFilters = Object.keys(filters).some((key) => filters[key].length > 0)
+  const hasFilters = useMemo(
+    () => Object.values(filters).some((value) => value.length > 0),
+    [filters]
+  )
 
   return {
     filteredData,
