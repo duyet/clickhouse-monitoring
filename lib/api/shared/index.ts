@@ -15,6 +15,11 @@ export {
 } from './response-builder'
 // Status code mapping
 export { mapErrorTypeToStatusCode } from './status-code-mapper'
+// Result-data sanitizers
+export {
+  MAX_CELL_VALUE_LENGTH,
+  truncateLargeValues,
+} from './truncate-large-values'
 // Validators
 export {
   getAndValidateHostId,
