@@ -256,6 +256,9 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     revalidateOnReconnect: true,
     dedupingInterval: 5000,
     focusThrottleInterval: 5000,
+    // Keep the last successful response visible during revalidation so charts
+    // don't flicker when the refresh interval fires or params change.
+    keepPreviousData: true,
     refreshInterval:
       refreshInterval > 0 ? visibilityAwareInterval(refreshInterval) : 0,
     onErrorRetry,

@@ -186,6 +186,9 @@ export function useTableData<T = unknown>(
     revalidateOnReconnect: true,
     dedupingInterval: 3000,
     focusThrottleInterval: 5000,
+    // Keep previously fetched rows visible while a revalidation is in flight.
+    // Avoids a blank "loading" flash when refreshing or switching params.
+    keepPreviousData: true,
     refreshInterval:
       refreshInterval && refreshInterval > 0
         ? visibilityAwareInterval(refreshInterval)
