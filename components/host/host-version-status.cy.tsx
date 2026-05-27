@@ -107,4 +107,90 @@ describe('<HostVersionWithStatus />', () => {
     cy.contains('23.10.1.1').should('exist')
     cy.get('.bg-emerald-500').should('exist')
   })
+
+  it('renders uptime alongside version when online', () => {
+    cy.intercept('GET', '/api/v1/host-status?hostId=0*', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          version: '24.3.1.1',
+          uptime: '3 days 4 hours',
+          hostname: 'clickhouse-01',
+        },
+      },
+    }).as('hostStatus')
+
+    cy.mount(<HostVersionWithStatus hostId={hostId} />)
+
+    cy.wait('@hostStatus')
+
+    cy.contains('24.3.1.1').should('exist')
+    cy.contains('3 days 4 hours').should('exist')
+  })
+
+  it('shows dot separator between version and uptime when online', () => {
+    cy.intercept('GET', '/api/v1/host-status?hostId=0*', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          version: '24.3.1.1',
+          uptime: '2 hours',
+          hostname: 'clickhouse-01',
+        },
+      },
+    }).as('hostStatus')
+
+    cy.mount(<HostVersionWithStatus hostId={hostId} />)
+
+    cy.wait('@hostStatus')
+
+    // The separator span has opacity-60 class
+    cy.get('.opacity-60').should('exist')
+  })
+
+  it('shows tooltip with hostname, uptime, and version when online', () => {
+    cy.intercept('GET', '/api/v1/host-status?hostId=0*', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          version: '24.3.1.1',
+          uptime: '1 day 2 hours',
+          hostname: 'clickhouse-01',
+        },
+      },
+    }).as('hostStatus')
+
+    cy.mount(<HostVersionWithStatus hostId={hostId} />)
+
+    cy.wait('@hostStatus')
+
+    // Outer span should carry the full title attribute
+    cy.get('.bg-emerald-500')
+      .closest('span')
+      .should(
+        'have.attr',
+        'title',
+        'Host: clickhouse-01\nUptime: 1 day 2 hours\nVersion: 24.3.1.1'
+      )
+  })
+
+  it('does not show uptime or version when offline', () => {
+    cy.intercept('GET', '/api/v1/host-status?hostId=0*', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: { version: '', uptime: '', hostname: '' },
+      },
+    }).as('hostStatus')
+
+    cy.mount(<HostVersionWithStatus hostId={hostId} />)
+
+    cy.wait('@hostStatus')
+
+    cy.contains('Offline').should('exist')
+    cy.get('.opacity-60').should('not.exist')
+  })
 })

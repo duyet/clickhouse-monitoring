@@ -11,11 +11,24 @@ import {
 } from '@radix-ui/react-icons'
 import type { Column, RowData } from '@tanstack/react-table'
 
+import type { FilterDraft } from '@/components/filters/filter-editor'
+import type { ActiveFilter, FilterField } from '@/lib/filters/types'
 import type { ColumnFormat } from '@/types/column-format'
 import type { Icon } from '@/types/icon'
+import type { ColumnFilterDef } from '@/types/query-config'
 
 import { ColumnFilter } from '@/components/data-table/column-filter'
+import { ColumnFilterPopover } from '@/components/data-table/filters/column-filter-popover'
 import { cn } from '@/lib/utils'
+
+export interface SchemaFilterContext {
+  field: FilterField
+  def: ColumnFilterDef
+  configName: string
+  activeFilter: ActiveFilter | null
+  onSubmit: (draft: FilterDraft) => void
+  onClear: () => void
+}
 
 export interface ColumnHeaderProps<TData extends RowData> {
   column: Column<TData, unknown>
@@ -25,6 +38,8 @@ export interface ColumnHeaderProps<TData extends RowData> {
   isFilterable: boolean
   filterValue: string
   onFilterChange: (value: string) => void
+  /** Schema-driven per-column filter (typed inputs via FilterEditor). */
+  schemaFilter?: SchemaFilterContext
 }
 
 function SortIcon({ sortState }: { sortState: false | 'asc' | 'desc' }) {
@@ -64,6 +79,7 @@ export function ColumnHeader<TData extends RowData>({
   isFilterable,
   filterValue,
   onFilterChange,
+  schemaFilter,
 }: ColumnHeaderProps<TData>) {
   const sortState = column.getIsSorted()
   const canSort = column.getCanSort()
@@ -71,28 +87,39 @@ export function ColumnHeader<TData extends RowData>({
   return (
     <div className="flex flex-col gap-1">
       <div
-        role={canSort ? 'button' : undefined}
-        tabIndex={canSort ? 0 : undefined}
-        onClick={() => {
-          if (canSort) column.toggleSorting(sortState === 'asc')
-        }}
-        onKeyDown={(e) => {
-          if (canSort && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault()
-            column.toggleSorting(sortState === 'asc')
-          }
-        }}
         className={cn(
-          'flex w-full items-center gap-0.5 truncate text-xs font-medium uppercase tracking-wider select-none',
-          canSort && 'cursor-pointer hover:text-foreground'
+          'flex w-full items-center gap-0.5 truncate text-xs font-medium uppercase tracking-wider select-none'
         )}
       >
-        <HeaderContent name={name} format={format} icon={icon} />
-        {canSort && <SortIcon sortState={sortState} />}
-        {filterValue && (
-          <span
-            className="ml-1 size-1.5 rounded-full bg-primary shrink-0"
-            aria-label="Filter active"
+        <button
+          type="button"
+          aria-label={canSort ? `Sort by ${name}` : undefined}
+          disabled={!canSort}
+          onClick={() => {
+            if (canSort) column.toggleSorting(sortState === 'asc')
+          }}
+          className={cn(
+            'flex flex-1 min-w-0 items-center gap-0.5 truncate text-left',
+            canSort && 'cursor-pointer hover:text-foreground'
+          )}
+        >
+          <HeaderContent name={name} format={format} icon={icon} />
+          {canSort && <SortIcon sortState={sortState} />}
+          {filterValue && (
+            <span
+              className="ml-1 size-1.5 rounded-full bg-primary shrink-0"
+              aria-label="Text filter active"
+            />
+          )}
+        </button>
+        {schemaFilter && (
+          <ColumnFilterPopover
+            field={schemaFilter.field}
+            def={schemaFilter.def}
+            configName={schemaFilter.configName}
+            activeFilter={schemaFilter.activeFilter}
+            onSubmit={schemaFilter.onSubmit}
+            onClear={schemaFilter.onClear}
           />
         )}
       </div>

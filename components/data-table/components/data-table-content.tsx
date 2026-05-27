@@ -2,7 +2,7 @@
 
 import type { ColumnDef, RowData } from '@tanstack/react-table'
 
-import type { QueryConfig } from '@/types/query-config'
+import type { ExpandableConfig, QueryConfig } from '@/types/query-config'
 
 import { MobileTableCards } from './mobile-table-cards'
 import {
@@ -19,6 +19,7 @@ import {
   SortableContext,
 } from '@dnd-kit/sortable'
 import { memo, useCallback } from 'react'
+import { EXPAND_COLUMN_ID } from '@/components/data-table/column-defs'
 import {
   TableBody as TableBodyRenderer,
   TableHeader as TableHeaderRenderer,
@@ -77,6 +78,8 @@ export interface DataTableContentProps<
   onResetColumnOrder?: () => void
   /** Compact mode: removes borders, background, and margin */
   compact?: boolean
+  /** When set, rows render an expand chevron and clicking a row toggles a detail panel below it. */
+  expandable?: true | ExpandableConfig
 }
 
 /**
@@ -113,6 +116,7 @@ export const DataTableContent = memo(function DataTableContent<
   onColumnOrderChange,
   onResetColumnOrder: _onResetColumnOrder,
   compact = false,
+  expandable,
 }: DataTableContentProps<TData, TValue>) {
   // Configure drag-and-drop sensors
   const sensors = useSensors(
@@ -134,9 +138,13 @@ export const DataTableContent = memo(function DataTableContent<
     [onColumnOrderChange]
   )
 
-  // Extract column IDs for SortableContext
-  // IMPORTANT: Must match all columns, not just sortable ones, for proper reordering
-  const columnIds = table.getAllLeafColumns().map((col) => col.id)
+  // Extract column IDs for SortableContext.
+  // Exclude utility columns (__expand chevron, selection checkbox) — they are
+  // pinned to the left and must not be drag-reordered.
+  const columnIds = table
+    .getAllLeafColumns()
+    .map((col) => col.id)
+    .filter((id) => id !== EXPAND_COLUMN_ID && id !== 'select')
 
   const tableContent = (
     <Table
@@ -165,6 +173,7 @@ export const DataTableContent = memo(function DataTableContent<
           title={title}
           activeFilterCount={activeFilterCount}
           rowClassName={queryConfig.rowClassName}
+          expandable={expandable}
         />
       </TableBody>
     </Table>
@@ -195,6 +204,7 @@ export const DataTableContent = memo(function DataTableContent<
               rowClassName={queryConfig.rowClassName}
               isVirtualized={isVirtualized}
               virtualizer={virtualizer}
+              expandable={expandable}
             />
           </div>
         )}

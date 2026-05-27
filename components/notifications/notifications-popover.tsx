@@ -191,16 +191,23 @@ interface NotificationItemProps {
 
 function NotificationItem({ notification }: NotificationItemProps) {
   const hostId = useHostId()
-  const { type, cluster, count, severity } = notification
+  const { type, cluster, count, severity, label } = notification
 
   // Generate link based on notification type
   const href =
     type === 'readonly-tables'
       ? `/readonly-tables?host=${hostId}`
-      : `/clusters?host=${hostId}`
+      : type === 'health-check'
+        ? `/health?host=${hostId}`
+        : `/clusters?host=${hostId}`
 
   // Generate title and description based on notification type
-  const title = type === 'readonly-tables' ? 'Readonly Tables' : 'Cluster Alert'
+  const title =
+    type === 'readonly-tables'
+      ? 'Readonly Tables'
+      : type === 'health-check'
+        ? (label ?? 'Health Alert')
+        : 'Cluster Alert'
 
   const severityColor =
     severity === 'critical' ? 'text-destructive' : 'text-orange-500'

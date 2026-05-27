@@ -20,7 +20,8 @@ import useSWR from 'swr'
 import type { Notification } from '@/lib/notifications/dismissed-notifications'
 
 import { apiFetch } from './api-fetch'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { subscribeInAppAlerts } from '@/lib/health/alert-dispatcher'
 import {
   dismissNotification as dismissNotificationUtil,
   filterActiveNotifications,
@@ -87,9 +88,43 @@ export function useNotifications(hostId: number): NotificationsResult {
     }
   )
 
+  // In-memory store of health-check alerts emitted via CustomEvent
+  const [healthAlerts, setHealthAlerts] = useState<Notification[]>([])
+  useEffect(() => {
+    return subscribeInAppAlerts((alert) => {
+      const n: Notification = {
+        type: 'health-check',
+        cluster: `host-${alert.hostId}`,
+        count: alert.value ?? 0,
+        severity: alert.severity,
+        checkId: alert.checkId,
+        incidentId: alert.incidentId,
+        label: `${alert.title}: ${alert.label}`,
+      }
+      setHealthAlerts((prev) => {
+        // Replace older incidents for the same check+severity so the bell only
+        // shows the latest occurrence (older incidents may have been dismissed).
+        const filtered = prev.filter(
+          (p) =>
+            !(
+              p.type === 'health-check' &&
+              p.checkId === n.checkId &&
+              p.severity === n.severity &&
+              p.cluster === n.cluster
+            )
+        )
+        return [n, ...filtered].slice(0, 50)
+      })
+    })
+  }, [])
+
   // Add unique keys to notifications and filter out dismissed ones
   const notifications = useMemo(() => {
-    const rawNotifications = data?.data?.notifications ?? []
+    const hostCluster = `host-${hostId}`
+    const rawNotifications = [
+      ...healthAlerts.filter((n) => n.cluster === hostCluster),
+      ...(data?.data?.notifications ?? []),
+    ]
 
     // Add unique keys to each notification
     const withKeys: NotificationWithKey[] = rawNotifications.map((n) => ({
@@ -99,7 +134,7 @@ export function useNotifications(hostId: number): NotificationsResult {
 
     // Filter out dismissed notifications
     return filterActiveNotifications(withKeys)
-  }, [data])
+  }, [data, healthAlerts, hostId])
 
   const totalCount = notifications.length
 
