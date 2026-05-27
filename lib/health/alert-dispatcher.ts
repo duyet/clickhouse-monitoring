@@ -62,10 +62,10 @@ export async function fireWebhook(
   const timeout = setTimeout(() => controller.abort(), 10_000)
   try {
     const text = `[${alert.severity.toUpperCase()}] ${alert.title} — ${alert.label} (host ${alert.hostId})`
-    const res = await fetch(url, {
+    const res = await fetch('/api/v1/health/webhook', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, content: text }),
+      body: JSON.stringify({ url, text }),
       signal: controller.signal,
     })
     return res.ok
@@ -75,7 +75,6 @@ export async function fireWebhook(
     clearTimeout(timeout)
   }
 }
-
 export async function dispatchAlert(alert: HealthAlertEvent): Promise<void> {
   try {
     const settings = loadAlertSettings()
@@ -103,8 +102,10 @@ export function isEscalation(
   prev: 'ok' | 'warning' | 'critical' | null,
   next: 'ok' | 'warning' | 'critical'
 ): boolean {
-  // Don't alert on initial mount — only fire on actual transitions during active monitoring.
-  if (prev === null) return false
   const order = { ok: 0, warning: 1, critical: 2 } as const
+  if (prev === null) {
+    // Alert on initial poll if the status is already unhealthy
+    return next !== 'ok'
+  }
   return order[next] > order[prev]
 }

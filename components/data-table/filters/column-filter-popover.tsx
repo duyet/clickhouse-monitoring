@@ -1,17 +1,20 @@
 'use client'
 
 import { FilterIcon, XIcon } from 'lucide-react'
-import { useState } from 'react'
 
-import type { ColumnFilterDef } from '@/types/query-config'
-import type { ActiveFilter, FilterField } from '@/lib/filters/types'
 import type { FilterDraft } from '@/components/filters/filter-editor'
-
-import { FilterEditor } from '@/components/filters/filter-editor'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
+import type { ActiveFilter, FilterField } from '@/lib/filters/types'
+import type { ColumnFilterDef } from '@/types/query-config'
 
 import { pickColumnFilterOperator } from './column-filter-bridge'
+import { useState } from 'react'
+import { FilterEditor } from '@/components/filters/filter-editor'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 
 interface ColumnFilterPopoverProps {
   field: FilterField
@@ -57,10 +60,7 @@ export function ColumnFilterPopover({
           )}
         >
           {active ? (
-            <span
-              className="size-1.5 rounded-full bg-current"
-              aria-hidden
-            />
+            <span className="size-1.5 rounded-full bg-current" aria-hidden />
           ) : (
             <FilterIcon className="size-3" aria-hidden />
           )}

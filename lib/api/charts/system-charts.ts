@@ -499,7 +499,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
 
   'health-keeper-exceptions-recent': () => ({
     query: `
-    SELECT sum(value) AS exception_count
+    SELECT coalesce(max(value) - min(value), 0) AS exception_count
     FROM merge('system', '^error_log')
     WHERE error = 'KEEPER_EXCEPTION'
       AND event_time > now() - INTERVAL 1 HOUR

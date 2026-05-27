@@ -8,8 +8,8 @@ import {
   NetworkIcon,
   UserIcon,
 } from 'lucide-react'
-import { memo, useMemo } from 'react'
 
+import { memo, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {
   formatReadableQuantity,

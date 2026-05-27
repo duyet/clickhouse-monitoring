@@ -1,14 +1,18 @@
 'use client'
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
 import type { FilterDraft } from '@/components/filters/filter-editor'
 import type {
   ActiveFilter,
   FilterField,
   FilterSchema,
 } from '@/lib/filters/types'
-import { parseFiltersFromParams, serializeFilter } from '@/lib/filters/url-state'
+
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useCallback } from 'react'
+import {
+  parseFiltersFromParams,
+  serializeFilter,
+} from '@/lib/filters/url-state'
 
 /**
  * Reads/writes a single field's active filter via URL params. The filter bar
