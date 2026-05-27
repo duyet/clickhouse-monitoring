@@ -457,6 +457,83 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
   `,
   }),
 
+  'health-long-running-queries': () => ({
+    query: `
+    SELECT count() AS long_running
+    FROM system.processes
+    WHERE elapsed > 60 AND is_initial_query
+  `,
+  }),
+
+  'health-oom-killed-recent': () => ({
+    query: `
+    SELECT count() AS oom_count
+    FROM system.query_log
+    WHERE event_time > now() - INTERVAL 1 HOUR
+      AND type IN ('ExceptionWhileProcessing', 'ExceptionBeforeStart')
+      AND (exception_code = 241 OR exception LIKE '%MEMORY_LIMIT_EXCEEDED%')
+  `,
+    optional: true,
+    tableCheck: 'system.query_log',
+  }),
+
+  'health-failed-queries-recent': () => ({
+    query: `
+    SELECT count() AS failed_count
+    FROM system.query_log
+    WHERE event_time > now() - INTERVAL 1 HOUR
+      AND type IN ('ExceptionWhileProcessing', 'ExceptionBeforeStart')
+  `,
+    optional: true,
+    tableCheck: 'system.query_log',
+  }),
+
+  'health-replication-lag': () => ({
+    query: `
+    SELECT max(absolute_delay) AS max_lag
+    FROM system.replicas
+  `,
+    optional: true,
+    tableCheck: 'system.replicas',
+  }),
+
+  'health-keeper-exceptions-recent': () => ({
+    query: `
+    SELECT sum(value) AS exception_count
+    FROM system.errors
+    WHERE name = 'KEEPER_EXCEPTION'
+      AND last_error_time > now() - INTERVAL 1 HOUR
+  `,
+    optional: true,
+    tableCheck: 'system.errors',
+  }),
+
+  'health-memory-percent': () => ({
+    query: `
+    SELECT
+      round(
+        (
+          (SELECT value FROM system.asynchronous_metrics WHERE metric = 'OSMemoryTotal')
+          - (SELECT value FROM system.asynchronous_metrics WHERE metric = 'OSMemoryAvailable')
+        )
+        * 100.0
+        / nullIf((SELECT value FROM system.asynchronous_metrics WHERE metric = 'OSMemoryTotal'), 0),
+        1
+      ) AS memory_percent
+  `,
+    optional: true,
+    tableCheck: 'system.asynchronous_metrics',
+  }),
+
+  'health-disk-percent': () => ({
+    query: `
+    SELECT round(max((total_space - free_space) * 100.0 / nullIf(total_space, 0)), 1) AS disk_percent
+    FROM system.disks
+  `,
+    optional: true,
+    tableCheck: 'system.disks',
+  }),
+
   'keeper-requests': ({
     interval = 'toStartOfFifteenMinutes',
     lastHours = 24,

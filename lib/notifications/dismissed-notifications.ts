@@ -8,10 +8,14 @@
 const STORAGE_KEY = 'dismissed-notifications'
 
 export interface Notification {
-  readonly type: 'readonly-tables'
+  readonly type: 'readonly-tables' | 'health-check'
   readonly cluster: string
   readonly count: number
   readonly severity: 'critical' | 'warning'
+  /** Optional check identifier for 'health-check' notifications */
+  readonly checkId?: string
+  /** Optional human-readable label */
+  readonly label?: string
   // key is added by the hook
   readonly key?: string
 }
@@ -22,6 +26,9 @@ export interface Notification {
  * Example: "readonly-tables:my-cluster:5"
  */
 export function getNotificationKey(notification: Notification): string {
+  if (notification.type === 'health-check' && notification.checkId) {
+    return `health-check:${notification.cluster}:${notification.checkId}:${notification.severity}`
+  }
   return `${notification.type}:${notification.cluster}:${notification.count}`
 }
 
