@@ -12,6 +12,7 @@ import {
   getHostIdFromParams,
   type RouteContext,
 } from '@/lib/api/error-handler'
+import { truncateLargeValues } from '@/lib/api/shared'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
 import { TABLES_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
@@ -167,8 +168,11 @@ export async function GET(request: Request): Promise<Response> {
     )
   }
 
+  // Truncate large cell values to prevent browser OOM on large text/JSON columns
+  const truncatedData = truncateLargeValues(result.data)
+
   // Create successful response
-  return createSuccessResponse(result.data, result.metadata)
+  return createSuccessResponse(truncatedData, result.metadata)
 }
 
 /**

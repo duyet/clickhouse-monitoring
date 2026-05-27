@@ -17,6 +17,7 @@ import {
   getHostIdFromParams,
   type RouteContext,
 } from '@/lib/api/error-handler'
+import { truncateLargeValues } from '@/lib/api/shared'
 import {
   isSupportedFormat,
   SUPPORTED_FORMATS,
@@ -37,32 +38,6 @@ const MAX_GET_QUERY_LENGTH = 8_000
 
 /** Maximum query length for POST requests */
 const MAX_POST_QUERY_LENGTH = 100_000
-
-/** Maximum string length for individual cell values to prevent OOM in the browser */
-const MAX_CELL_VALUE_LENGTH = 10_000
-
-/**
- * Truncate large string values in result rows to prevent browser OOM.
- * ClickHouse tables can contain very large text/JSON columns that,
- * when serialized as JSON, create responses too large for the browser to parse.
- */
-function truncateLargeValues<T>(data: T): T {
-  if (!Array.isArray(data)) return data
-
-  return data.map((row: Record<string, unknown>) => {
-    const truncatedRow: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(row)) {
-      if (typeof value === 'string' && value.length > MAX_CELL_VALUE_LENGTH) {
-        truncatedRow[key] =
-          value.slice(0, MAX_CELL_VALUE_LENGTH) +
-          `… (truncated, ${value.length} chars total)`
-      } else {
-        truncatedRow[key] = value
-      }
-    }
-    return truncatedRow
-  }) as T
-}
 
 /**
  * Extract the first SQL verb from a query for safe logging
