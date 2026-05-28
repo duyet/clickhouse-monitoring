@@ -12,7 +12,9 @@ export function partitionState(
   p: QRepPartition
 ): 'done' | 'running' | 'queued' {
   if (p.endTime) return 'done'
-  if (toNumber(p.rowsSynced) > 0) return 'running'
+  // A partition that has started (has a startTime) or already synced rows is
+  // in flight; only un-started partitions are queued.
+  if (p.startTime || toNumber(p.rowsSynced) > 0) return 'running'
   return 'queued'
 }
 
@@ -110,7 +112,9 @@ export function QRepPartitions({
               const tone = PART_TONE[st]
               const rowsIn = toNumber(p.rowsInPartition ?? p.numRows)
               const rowsSy = toNumber(p.rowsSynced)
-              const pct = rowsIn ? (rowsSy / rowsIn) * 100 : 0
+              const pct = rowsIn
+                ? Math.min(100, Math.max(0, (rowsSy / rowsIn) * 100))
+                : 0
               const dur = durationMs(p.startTime, p.endTime ?? p.pullEndTime)
               const uuid = p.partitionId ?? ''
               return (

@@ -10,16 +10,24 @@ import { apiFetch } from '@/lib/swr/api-fetch'
 const STATUS_URL = '/api/v1/peerdb-status'
 
 async function fetchStatus(url: string): Promise<PeerDBStatusPayload> {
-  const response = await apiFetch(url)
-  if (!response.ok) {
-    throw new Error(`PeerDB status probe failed (${response.status})`)
+  try {
+    const response = await apiFetch(url)
+    if (!response.ok) {
+      throw new Error(`PeerDB status probe failed (${response.status})`)
+    }
+    const json = (await response.json()) as ApiResponse<PeerDBStatusPayload>
+    const data = json?.data
+    if (!data || typeof data.state !== 'string') {
+      throw new Error('Malformed PeerDB status response')
+    }
+    return data
+  } catch (err) {
+    throw new Error(
+      `Failed to fetch PeerDB status: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    )
   }
-  const json = (await response.json()) as ApiResponse<PeerDBStatusPayload>
-  const data = json?.data
-  if (!data || typeof data.state !== 'string') {
-    throw new Error('Malformed PeerDB status response')
-  }
-  return data
 }
 
 /**

@@ -63,6 +63,9 @@ export function PhaseTimeline({
             : mode === 'paused' && cur
               ? '‖'
               : String(i + 1)
+        // Pending steps use a light border-colored fill; white text on it is
+        // illegible, so fall back to the muted foreground for those markers.
+        const pending = !done && !cur
         return (
           <div
             key={n.id}
@@ -70,7 +73,10 @@ export function PhaseTimeline({
           >
             <div className="flex shrink-0 items-start gap-2">
               <span
-                className="relative mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                className={cn(
+                  'relative mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold',
+                  pending ? 'text-muted-foreground' : 'text-white'
+                )}
                 style={{
                   background: tone,
                   boxShadow: cur ? `0 0 0 3px ${currentColor}33` : undefined,

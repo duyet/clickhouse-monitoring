@@ -152,7 +152,7 @@ export interface MirrorLog {
   flowName?: string
   errorMessage?: string
   errorType?: string
-  errorTimestamp?: string
+  errorTimestamp?: string | number
 }
 
 export interface ListMirrorLogsResponse {

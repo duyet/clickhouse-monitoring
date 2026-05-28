@@ -517,7 +517,11 @@ async function handle(req: Request): Promise<Response> {
   let body: Record<string, unknown> = {}
   if (req.method === 'POST') {
     try {
-      body = (await req.json()) as Record<string, unknown>
+      const parsed = await req.json()
+      // req.json() can yield null/arrays/primitives; only accept plain objects.
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        body = parsed as Record<string, unknown>
+      }
     } catch (err) {
       console.warn(`[peerdb-mock] invalid JSON body for ${path}:`, err)
     }
@@ -588,7 +592,16 @@ async function handle(req: Request): Promise<Response> {
     }
     if (path === '/v1/mirrors/logs') {
       const m = mirror(flowJobName)
-      return m ? json(mirrorLogs(m)) : json({ errors: [], total: 0, page: 0 })
+      if (!m) return json({ errors: [], total: 0, page: 0 })
+      const logs = mirrorLogs(m)
+      const level = typeof body.level === 'string' ? body.level : ''
+      if (level && level !== 'all') {
+        const errors = logs.errors.filter(
+          (e) => (e.errorType ?? 'info') === level
+        )
+        return json({ errors, total: errors.length, page: 0 })
+      }
+      return json(logs)
     }
     if (path === '/v1/peers/slots/lag_history') return json(lagHistory())
   }

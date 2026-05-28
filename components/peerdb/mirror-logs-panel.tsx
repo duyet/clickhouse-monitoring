@@ -2,44 +2,66 @@
 
 import type { ListMirrorLogsResponse } from '@/lib/peerdb/types'
 
-import { LOG_LEVEL_META, pdbFmtClock, pdbFmtRelative } from './peerdb-utils'
+import {
+  LOG_LEVEL_META,
+  parseTs,
+  pdbFmtClock,
+  pdbFmtRelative,
+} from './peerdb-utils'
 import { useMemo, useState } from 'react'
 import { usePeerDB } from '@/lib/swr'
 
 type Level = 'all' | 'error' | 'warn' | 'info'
 const LEVELS: Level[] = ['all', 'error', 'warn', 'info']
 
+const sortByNewest = (list: ListMirrorLogsResponse['errors'] = []) =>
+  [...list].sort(
+    (a, b) =>
+      (parseTs(b.errorTimestamp) ?? 0) - (parseTs(a.errorTimestamp) ?? 0)
+  )
+
 /** Mirror logs panel with level tabs — POST /v1/mirrors/logs. */
 export function MirrorLogsPanel({ flowJobName }: { flowJobName: string }) {
   const [level, setLevel] = useState<Level>('all')
   const [showAll, setShowAll] = useState(false)
 
-  const { data } = usePeerDB<ListMirrorLogsResponse>('/mirrors/logs', {
+  // Always fetch the unfiltered set for the per-tab counts. When a specific
+  // level is selected, also request it server-side (PeerDB filters before the
+  // numPerPage cap), so the level tabs aren't limited to whatever happened to
+  // be in the first page of all logs. The `all` selection reuses this request.
+  const countsReq = usePeerDB<ListMirrorLogsResponse>('/mirrors/logs', {
     body: { flowJobName, page: 0, numPerPage: 100 },
     refreshInterval: 60_000,
     swrConfig: { shouldRetryOnError: false },
   })
-
-  const all = useMemo(() => {
-    const list = data?.errors ?? []
-    return [...list].sort(
-      (a, b) =>
-        Date.parse(b.errorTimestamp ?? '') - Date.parse(a.errorTimestamp ?? '')
-    )
-  }, [data])
+  const listReq = usePeerDB<ListMirrorLogsResponse>('/mirrors/logs', {
+    body: {
+      flowJobName,
+      page: 0,
+      numPerPage: 100,
+      ...(level === 'all' ? {} : { level }),
+    },
+    refreshInterval: 60_000,
+    swrConfig: { shouldRetryOnError: false },
+  })
 
   const counts = useMemo(() => {
     const c: Record<Level, number> = { all: 0, error: 0, warn: 0, info: 0 }
-    for (const l of all) {
+    for (const l of countsReq.data?.errors ?? []) {
       c.all++
       const t = (l.errorType ?? 'info') as Level
       if (t in c) c[t]++
     }
     return c
-  }, [all])
+  }, [countsReq.data])
 
-  const filtered =
-    level === 'all' ? all : all.filter((l) => (l.errorType ?? 'info') === level)
+  const filtered = useMemo(() => {
+    const sorted = sortByNewest(listReq.data?.errors)
+    // Client-side filter as a safety net for upstreams that ignore `level`.
+    return level === 'all'
+      ? sorted
+      : sorted.filter((l) => (l.errorType ?? 'info') === level)
+  }, [listReq.data, level])
   const rows = showAll ? filtered : filtered.slice(0, 6)
 
   return (

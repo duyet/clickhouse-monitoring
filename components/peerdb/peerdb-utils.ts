@@ -114,12 +114,14 @@ export function toNumber(value: unknown): number {
 
 /** Format an ISO-8601 timestamp for display; falls back to the raw string. */
 export function formatDateTime(
-  iso?: string,
+  iso?: string | number,
   options?: Intl.DateTimeFormatOptions
 ): string {
-  if (!iso) return '—'
-  const t = Date.parse(iso)
-  return Number.isNaN(t) ? iso : new Date(t).toLocaleString(undefined, options)
+  if (iso == null || iso === '') return '—'
+  const t = parseTs(iso)
+  return t == null
+    ? String(iso)
+    : new Date(t).toLocaleString(undefined, options)
 }
 
 /**
@@ -167,11 +169,27 @@ export function pdbFmtDuration(s?: number | null): string {
   return `${Math.floor(s / 60)}m ${Math.round(s % 60)}s`
 }
 
-/** ISO → "HH:MM:SSZ" clock (UTC), used in the partitions table. */
-export function pdbFmtClock(iso?: string): string {
-  if (!iso) return '—'
-  const t = Date.parse(iso)
-  if (Number.isNaN(t)) return '—'
+/**
+ * Parse a timestamp to epoch ms, accepting ISO strings, epoch-ms numbers, and
+ * epoch-seconds/ms numeric strings (PeerDB serializes timestamps inconsistently
+ * across endpoints/versions). Returns null when unparseable.
+ */
+export function parseTs(value?: string | number | null): number | null {
+  if (value == null || value === '') return null
+  if (typeof value === 'number' || /^\d+$/.test(value)) {
+    const n = Number(value)
+    if (!Number.isFinite(n)) return null
+    // < 1e12 is epoch seconds, otherwise epoch milliseconds.
+    return n < 1e12 ? n * 1000 : n
+  }
+  const t = Date.parse(value)
+  return Number.isNaN(t) ? null : t
+}
+
+/** ISO/epoch → "HH:MM:SSZ" clock (UTC), used in the partitions table + logs. */
+export function pdbFmtClock(iso?: string | number): string {
+  const t = parseTs(iso)
+  if (t == null) return '—'
   return `${new Date(t).toISOString().substring(11, 19)}Z`
 }
 
@@ -414,10 +432,9 @@ export const LOG_LEVEL_META: Record<string, LogLevelMeta> = {
 }
 
 /** Relative "Ns ago / Nm ago / Nh ago" from an ISO timestamp. */
-export function pdbFmtRelative(iso?: string): string {
-  if (!iso) return '—'
-  const t = Date.parse(iso)
-  if (Number.isNaN(t)) return '—'
+export function pdbFmtRelative(iso?: string | number): string {
+  const t = parseTs(iso)
+  if (t == null) return '—'
   const diff = Math.max(0, Date.now() - t)
   if (diff < 60_000) return `${Math.max(1, Math.round(diff / 1000))}s ago`
   if (diff < 3_600_000) return `${Math.round(diff / 60_000)}m ago`
