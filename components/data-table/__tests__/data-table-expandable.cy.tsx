@@ -37,19 +37,19 @@ describe('<DataTable /> with expandable rows', () => {
 
     // Three data rows, each with an expand chevron
     cy.get('tbody tr').should('have.length', 3)
-    cy.get('button[aria-label="Expand row"]').should('have.length', 3)
+    cy.get('table button[aria-label="Expand row"]').should('have.length', 3)
 
-    // Click the second row's chevron and assert the expanded row appears
-    cy.get('button[aria-label="Expand row"]').eq(1).click()
+    // Click the second row to expand and assert the expanded row appears
+    cy.get('tbody tr').eq(1).click()
     cy.get('tr[data-expanded-row]').should('have.length', 1)
     cy.get('tr[data-expanded-row]').contains('DETAILS 2').should('be.visible')
 
     // Chevron flips to Collapse row
-    cy.get('button[aria-label="Collapse row"]').should('have.length', 1)
+    cy.get('table button[aria-label="Collapse row"]').should('have.length', 1)
 
     // Click again to collapse
-    cy.get('button[aria-label="Collapse row"]').click()
+    cy.get('tbody tr').eq(1).click()
     cy.get('tr[data-expanded-row]').should('not.exist')
-    cy.get('button[aria-label="Expand row"]').should('have.length', 3)
+    cy.get('table button[aria-label="Expand row"]').should('have.length', 3)
   })
 })

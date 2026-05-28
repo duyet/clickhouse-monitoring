@@ -126,7 +126,7 @@ describe('<HostVersionWithStatus />', () => {
     cy.wait('@hostStatus')
 
     cy.contains('24.3.1.1').should('exist')
-    cy.contains('3 days 4 hours').should('exist')
+    cy.contains('3d 4h').should('exist')
   })
 
   it('shows dot separator between version and uptime when online', () => {
@@ -146,8 +146,8 @@ describe('<HostVersionWithStatus />', () => {
 
     cy.wait('@hostStatus')
 
-    // The separator span has opacity-60 class
-    cy.get('.opacity-60').should('exist')
+    // The separator span has opacity-40 class
+    cy.get('.opacity-40').should('exist')
   })
 
   it('shows tooltip with hostname, uptime, and version when online', () => {
@@ -168,13 +168,11 @@ describe('<HostVersionWithStatus />', () => {
     cy.wait('@hostStatus')
 
     // Outer span should carry the full title attribute
-    cy.get('.bg-emerald-500')
-      .closest('span')
-      .should(
-        'have.attr',
-        'title',
-        'Host: clickhouse-01\nUptime: 1 day 2 hours\nVersion: 24.3.1.1'
-      )
+    cy.get('span[title]').should(
+      'have.attr',
+      'title',
+      'Host: clickhouse-01\nVersion: 24.3.1.1\nUptime: 1 day 2 hours'
+    )
   })
 
   it('does not show uptime or version when offline', () => {
@@ -191,6 +189,6 @@ describe('<HostVersionWithStatus />', () => {
     cy.wait('@hostStatus')
 
     cy.contains('Offline').should('exist')
-    cy.get('.opacity-60').should('not.exist')
+    cy.get('.opacity-40').should('not.exist')
   })
 })

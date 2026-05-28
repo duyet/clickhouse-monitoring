@@ -176,7 +176,7 @@ describe('<HostMenuRow />', () => {
 
     cy.wait('@hostStatus')
 
-    cy.contains('1 day 2 hours').should('exist')
+    cy.contains('1d 2h').should('exist')
   })
 
   it('shows dot separator between version and uptime when online', () => {
@@ -198,7 +198,7 @@ describe('<HostMenuRow />', () => {
 
     cy.wait('@hostStatus')
 
-    cy.get('.opacity-60').should('exist')
+    cy.get('.opacity-40').should('exist')
   })
 
   it('shows hostname and uptime in tooltip when online', () => {
@@ -282,7 +282,7 @@ describe('<HostMenuRow />', () => {
 
     cy.wait('@hostStatus')
 
-    cy.get('.opacity-60').should('not.exist')
+    cy.get('.opacity-40').should('not.exist')
   })
 
   it('shows Offline tooltip when offline', () => {
@@ -412,7 +412,7 @@ describe('<HostMenuRow />', () => {
     cy.wait('@hostStatus7')
 
     cy.contains('23.8.1.1').should('exist')
-    cy.contains('7 days').should('exist')
+    cy.contains('7d').should('exist')
     cy.get('.bg-emerald-500').should('exist')
   })
 

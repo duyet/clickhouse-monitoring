@@ -4,9 +4,29 @@ import { AddFilterPopover } from './add-filter-popover'
 
 const schema: FilterSchema = {
   fields: [
-    { key: 'duration', label: 'Duration', type: 'number', unit: 'ms' },
-    { key: 'user', label: 'User', type: 'text' },
-    { key: 'type', label: 'Type', type: 'select', options: [] },
+    {
+      key: 'duration',
+      column: 'duration',
+      label: 'Duration',
+      type: 'number',
+      unit: 'ms',
+      operators: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'between'],
+    },
+    {
+      key: 'user',
+      column: 'user',
+      label: 'User',
+      type: 'text',
+      operators: ['eq', 'ne', 'contains', 'notContains', 'in', 'notIn'],
+    },
+    {
+      key: 'type',
+      column: 'type',
+      label: 'Type',
+      type: 'select',
+      options: [],
+      operators: ['eq', 'ne', 'in', 'notIn'],
+    },
   ],
 }
 

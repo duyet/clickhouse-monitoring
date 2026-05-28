@@ -282,34 +282,7 @@ export const TableHeaderRow = memo(function TableHeaderRow({
                   {isSorted === 'desc' && (
                     <ArrowDown className="h-3.5 w-3.5 shrink-0 text-primary" />
                   )}
-                  <span
-                    role={canSort ? 'button' : undefined}
-                    tabIndex={canSort ? 0 : undefined}
-                    className={cn(
-                      'min-w-0 flex-1 truncate',
-                      // Make header clickable for sorting
-                      canSort && 'cursor-pointer'
-                    )}
-                    onClick={(e) => {
-                      if (canSort) {
-                        const toggleHandler =
-                          header.column.getToggleSortingHandler()
-                        if (toggleHandler) {
-                          toggleHandler(e)
-                        }
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (canSort && (e.key === 'Enter' || e.key === ' ')) {
-                        e.preventDefault()
-                        const toggleHandler =
-                          header.column.getToggleSortingHandler()
-                        if (toggleHandler) {
-                          toggleHandler(e)
-                        }
-                      }
-                    }}
-                  >
+                  <span className="min-w-0 flex-1 truncate">
                     {header.isPlaceholder
                       ? null
                       : flexRender(

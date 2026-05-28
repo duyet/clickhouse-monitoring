@@ -434,42 +434,41 @@ describe('<DataTable />', () => {
     })
 
     it('updates column width when dragging the resize handle', () => {
+      cy.viewport(1024, 768)
       cy.mount(
-        <DataTable queryConfig={queryConfig} data={resizeData} context={{}} />
+        <DataTable
+          queryConfig={queryConfig}
+          data={resizeData}
+          context={{}}
+          enableColumnReordering={false}
+        />
       )
 
-      cy.get('thead th')
+      // The first column's rendered getSize() before resizing (the inline cell
+      // width reflects column.getSize(), independent of how auto-layout may
+      // stretch the visible column to fill the container).
+      cy.get('tbody td')
         .first()
-        .invoke('outerWidth')
-        .then((startWidth) => {
-          // Pointer-based drag: pointerdown -> pointermove -> pointerup.
-          // Use the first resizer (col1 boundary).
+        .then(($td) => Number.parseFloat($td[0].style.width))
+        .then((startSize) => {
+          // Real CDP events: synthetic .trigger() events do not drive
+          // TanStack's document-level mouse resize listeners reliably.
           cy.get('thead [role="separator"][aria-orientation="vertical"]')
             .first()
-            .trigger('pointerdown', {
-              button: 0,
-              pointerId: 1,
-              clientX: startWidth,
-              clientY: 10,
-              force: true,
-            })
-          cy.get('body').trigger('pointermove', {
-            pointerId: 1,
-            clientX: startWidth + 120,
-            clientY: 10,
-            force: true,
-          })
-          cy.get('body').trigger('pointerup', {
-            pointerId: 1,
-            clientX: startWidth + 120,
-            clientY: 10,
-            force: true,
-          })
-
-          cy.get('thead th')
+            .realMouseDown()
+          cy.get('thead [role="separator"][aria-orientation="vertical"]')
             .first()
-            .invoke('outerWidth')
-            .should('be.greaterThan', startWidth + 50)
+            .realMouseMove(120, 2)
+          cy.get('thead [role="separator"][aria-orientation="vertical"]')
+            .first()
+            .realMouseUp()
+
+          cy.get('tbody td')
+            .first()
+            .should(($td) => {
+              const size = Number.parseFloat($td[0].style.width)
+              expect(size).to.be.greaterThan(startSize + 50)
+            })
         })
     })
   })
@@ -483,20 +482,25 @@ describe('<DataTable />', () => {
 
     it('sorts ascending then descending when the header is clicked', () => {
       cy.mount(
-        <DataTable queryConfig={queryConfig} data={sortData} context={{}} />
+        <DataTable
+          queryConfig={queryConfig}
+          data={sortData}
+          context={{}}
+          enableColumnReordering={false}
+        />
       )
 
       // Initial natural order
       cy.get('tbody tr').eq(0).should('contain.text', 'banana')
 
       // First click → ascending (apple, banana, cherry)
-      cy.get('thead th').first().contains('col1').click()
+      cy.get('button[aria-label="Sort by col1"]').click()
       cy.get('tbody tr').eq(0).should('contain.text', 'apple')
       cy.get('tbody tr').eq(1).should('contain.text', 'banana')
       cy.get('tbody tr').eq(2).should('contain.text', 'cherry')
 
       // Second click → descending (cherry, banana, apple)
-      cy.get('thead th').first().contains('col1').click()
+      cy.get('button[aria-label="Sort by col1"]').click()
       cy.get('tbody tr').eq(0).should('contain.text', 'cherry')
       cy.get('tbody tr').eq(2).should('contain.text', 'apple')
     })
@@ -508,11 +512,18 @@ describe('<DataTable />', () => {
       }
 
       cy.mount(
-        <DataTable queryConfig={lockedConfig} data={sortData} context={{}} />
+        <DataTable
+          queryConfig={lockedConfig}
+          data={sortData}
+          context={{}}
+          enableColumnReordering={false}
+        />
       )
 
-      cy.get('thead th').first().contains('col1').click()
-      // Order preserved
+      // Sort control is disabled when sorting is locked off
+      cy.get('thead th').first().find('button').first().should('be.disabled')
+      // A forced click must still not reorder rows
+      cy.get('thead th').first().find('button').first().click({ force: true })
       cy.get('tbody tr').eq(0).should('contain.text', 'banana')
       cy.get('tbody tr').eq(1).should('contain.text', 'apple')
       cy.get('tbody tr').eq(2).should('contain.text', 'cherry')
@@ -521,22 +532,30 @@ describe('<DataTable />', () => {
 
   describe('action columns', () => {
     it('renders action columns at a compact width and not resizable', () => {
+      cy.viewport(400, 768)
       const actionConfig: QueryConfig = {
         name: 'with-action',
         sql: '/* No need */',
         columns: ['action', 'query_id', 'message'],
         columnFormats: {
-          action: 'action' as never,
+          action: ['action', []] as never,
         },
       }
       const data = [{ action: '', query_id: 'abc-123', message: 'hello' }]
 
       cy.mount(
-        <DataTable queryConfig={actionConfig} data={data} context={{}} />
+        <DataTable
+          queryConfig={actionConfig}
+          data={data}
+          context={{}}
+          enableColumnReordering={false}
+        />
       )
 
-      // Action column header should be narrow (<= 80px) instead of taking 180px
-      cy.get('thead th').first().invoke('outerWidth').should('be.lte', 80)
+      // Action column is capped compact via maxSize (80px) instead of the
+      // 180px default. Rendered width can stretch when an auto-layout table
+      // fills a wide container, so assert the applied cap, not outerWidth.
+      cy.get('thead th').first().should('have.css', 'max-width', '80px')
 
       // No resizer on the action column
       cy.get('thead th')

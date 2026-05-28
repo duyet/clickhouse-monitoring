@@ -227,6 +227,13 @@ export interface TableBodyRowsProps<TData extends RowData> {
   virtualizer: Virtualizer | null
   rowClassName?: RowClassNameFn
   expandable?: true | ExpandableConfig
+  /**
+   * Signature of the table state that affects row output (sorting, pagination,
+   * expansion, sizing, order, visibility, selection). The `table` instance has
+   * a stable identity, so memo would otherwise never re-render when that state
+   * changes; this prop changes whenever the rendered rows must update.
+   */
+  renderKey?: string
 }
 
 /**
@@ -420,6 +427,8 @@ export interface TableBodyProps<
   activeFilterCount: number
   rowClassName?: RowClassNameFn
   expandable?: true | ExpandableConfig
+  /** See {@link TableBodyRowsProps.renderKey}. Forwarded to the row renderer. */
+  renderKey?: string
 }
 
 /**
@@ -451,6 +460,7 @@ export const TableBody = memo(function TableBody<
   activeFilterCount,
   rowClassName,
   expandable,
+  renderKey,
 }: TableBodyProps<TData, TValue>) {
   const rows = table.getRowModel().rows
 
@@ -463,6 +473,7 @@ export const TableBody = memo(function TableBody<
           virtualizer={virtualizer}
           rowClassName={rowClassName}
           expandable={expandable}
+          renderKey={renderKey}
         />
       ) : (
         <TableBodyEmptyState

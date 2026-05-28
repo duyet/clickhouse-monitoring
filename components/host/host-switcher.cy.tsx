@@ -14,7 +14,7 @@ const mockHosts = [
     host: 'staging.clickhouse.internal',
     user: 'default',
   },
-  { id: 2, name: '', host: 'localhost:8123', user: 'admin' },
+  { id: 2, name: '', host: 'http://localhost:8123', user: 'admin' },
 ]
 
 const mountWithSidebar = (defaultOpen = true) =>
@@ -113,10 +113,10 @@ describe('<HostSwitcher /> - dropdown items use HostMenuRow', () => {
     cy.wait('@hostStatus1')
 
     cy.get('[data-testid="host-option-0"]').contains('24.3.1.1').should('exist')
-    cy.get('[data-testid="host-option-0"]').contains('2 days').should('exist')
+    cy.get('[data-testid="host-option-0"]').contains('2d').should('exist')
 
     cy.get('[data-testid="host-option-1"]').contains('24.2.1.1').should('exist')
-    cy.get('[data-testid="host-option-1"]').contains('5 hours').should('exist')
+    cy.get('[data-testid="host-option-1"]').contains('5h').should('exist')
   })
 
   it('shows Offline for hosts that are down', () => {

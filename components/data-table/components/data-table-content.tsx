@@ -146,6 +146,21 @@ export const DataTableContent = memo(function DataTableContent<
     .map((col) => col.id)
     .filter((id) => id !== EXPAND_COLUMN_ID && id !== 'select')
 
+  // The memoized body reads row output from the stable `table` instance, so it
+  // needs an explicit signal to re-render when that output changes. Capture the
+  // state slices that affect rows/cells (order is set via columnOrder so it is
+  // covered) into a key the body memo can compare.
+  const bodyState = table.getState()
+  const bodyRenderKey = JSON.stringify([
+    bodyState.sorting,
+    bodyState.pagination,
+    bodyState.expanded,
+    bodyState.columnSizing,
+    bodyState.columnOrder,
+    bodyState.columnVisibility,
+    bodyState.rowSelection,
+  ])
+
   const tableContent = (
     <Table
       aria-describedby="table-description"
@@ -174,6 +189,7 @@ export const DataTableContent = memo(function DataTableContent<
           activeFilterCount={activeFilterCount}
           rowClassName={queryConfig.rowClassName}
           expandable={expandable}
+          renderKey={bodyRenderKey}
         />
       </TableBody>
     </Table>

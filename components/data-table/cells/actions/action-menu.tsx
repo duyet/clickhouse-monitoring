@@ -58,7 +58,7 @@ function ActionMenuComponent<TData extends RowData, TValue>({
         <DropdownMenuSeparator />
         <NoSsr>
           <Suspense fallback={null}>
-            {actions.map((action) => (
+            {actions?.map((action) => (
               <ActionItem
                 key={action}
                 value={value}

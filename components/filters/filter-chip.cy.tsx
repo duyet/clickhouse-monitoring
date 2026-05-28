@@ -4,9 +4,11 @@ import { FilterChip } from './filter-chip'
 
 const field: FilterField = {
   key: 'duration',
+  column: 'duration',
   label: 'Duration',
   type: 'number',
   unit: 'ms',
+  operators: ['between'],
 }
 
 const filter: ActiveFilter = {

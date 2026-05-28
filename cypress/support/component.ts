@@ -51,7 +51,7 @@ Cypress.Commands.add('mount', (component, options) =>
   mount(
     createElement(
       'div',
-      { style: { height: '500px', width: '500px' } },
+      { style: { height: '100%', width: '100%' } },
       createElement(
         AppRouterContext.Provider,
         {
