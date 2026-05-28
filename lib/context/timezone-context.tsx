@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext } from 'react'
+import { createContext, use } from 'react'
 import { useUserSettings } from '@/lib/hooks/use-user-settings'
 
 const TimezoneContext = createContext<string>('UTC')
@@ -15,6 +15,6 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useTimezone(): string {
-  const context = useContext(TimezoneContext)
+  const context = use(TimezoneContext)
   return context || 'UTC'
 }

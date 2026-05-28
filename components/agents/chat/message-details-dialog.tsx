@@ -20,20 +20,23 @@ import {
 import { getAgentMessageMetadata } from '@/lib/ai/agent/message-metadata'
 import { cn, formatDuration } from '@/lib/utils'
 
+const NUMBER_FORMAT = new Intl.NumberFormat('en-US')
+const CURRENCY_FORMAT = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 6,
+})
+
 function formatNumber(value: number | undefined): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) return '-'
-  return new Intl.NumberFormat('en-US').format(value)
+  return NUMBER_FORMAT.format(value)
 }
 
 function formatCost(value: number | null | undefined): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) return '-'
   if (value === 0) return '$0.00'
   if (value < 0.0001) return '<$0.0001'
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 6,
-  }).format(value)
+  return CURRENCY_FORMAT.format(value)
 }
 
 function DetailRow({

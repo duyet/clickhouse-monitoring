@@ -7,7 +7,7 @@ import {
   createContext,
   type Dispatch,
   type SetStateAction,
-  useContext,
+  use,
   useState,
 } from 'react'
 
@@ -56,7 +56,7 @@ export const AppProvider = ({
 }
 
 export const useAppContext = () => {
-  const context = useContext(Context)
+  const context = use(Context)
 
   if (context === undefined) {
     throw new Error('useAppContext must be used within a AppProvider')

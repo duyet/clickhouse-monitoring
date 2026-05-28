@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, type ReactNode, useContext, useMemo } from 'react'
+import { createContext, type ReactNode, use, useMemo } from 'react'
 
 interface HostContextValue {
   hostId: number
@@ -42,7 +42,7 @@ export function HostProvider({
  * useHostContext - Access hostId from context (throws if not in provider)
  */
 export function useHostContext(): HostContextValue {
-  const context = useContext(HostContext)
+  const context = use(HostContext)
   if (!context) {
     throw new Error('useHostContext must be used within a HostProvider')
   }
@@ -57,7 +57,7 @@ export function useHostContext(): HostContextValue {
  * On client hydration, the actual hostId from URL will be used.
  */
 export function useHostIdFromContext(): number {
-  const context = useContext(HostContext)
+  const context = use(HostContext)
   // Return default host if context not available (during SSG)
   return context?.hostId ?? 0
 }

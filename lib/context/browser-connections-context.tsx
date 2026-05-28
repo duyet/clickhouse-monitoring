@@ -2,13 +2,7 @@
 
 import type { BrowserConnection } from '@/lib/types/browser-connection'
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react'
+import { createContext, use, useCallback, useEffect, useState } from 'react'
 import { BROWSER_CONNECTIONS_STORAGE_KEY } from '@/lib/types/browser-connection'
 
 interface BrowserConnectionsContextValue {
@@ -80,5 +74,5 @@ export function BrowserConnectionsProvider({
  * Returns connections stored in localStorage.
  */
 export function useBrowserConnectionsContext(): BrowserConnectionsContextValue {
-  return useContext(BrowserConnectionsContext)
+  return use(BrowserConnectionsContext)
 }

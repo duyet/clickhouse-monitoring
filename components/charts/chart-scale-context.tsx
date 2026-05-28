@@ -2,7 +2,7 @@
 
 import type { YAxisScale } from '@/types/charts'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, use, useEffect, useState } from 'react'
 
 const LOCAL_STORAGE_KEY = 'chart-log-scale-preference'
 
@@ -101,7 +101,7 @@ export function ChartScaleProvider({
  * Returns null if not within a ChartScaleProvider
  */
 export function useChartScale(): ChartScaleContextValue | null {
-  return useContext(ChartScaleContext)
+  return use(ChartScaleContext)
 }
 
 /**
@@ -109,6 +109,6 @@ export function useChartScale(): ChartScaleContextValue | null {
  * Falls back to 'auto' if not in a provider
  */
 export function useChartScaleValue(): YAxisScale {
-  const context = useContext(ChartScaleContext)
+  const context = use(ChartScaleContext)
   return context?.scale ?? 'auto'
 }
