@@ -43,4 +43,5 @@ export {
   type UseOverviewDataResult,
   useOverviewData,
 } from './use-overview-data'
+export { usePeerDB } from './use-peerdb-data'
 export { useTableData } from './use-table-data'

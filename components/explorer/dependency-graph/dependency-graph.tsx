@@ -16,10 +16,10 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-import dagre from '@dagrejs/dagre'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { getEngineIconConfig } from '@/lib/clickhouse-engine-icons'
+import { computeDagrePositions } from '@/lib/graph/dagre-layout'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
@@ -229,45 +229,28 @@ function getLayoutedElements(
 
   const layoutedNodes: Node[] = []
 
-  // Layout connected nodes with dagre
+  // Layout connected nodes with dagre (shared core in lib/graph/dagre-layout)
   if (connectedNodes.length > 0) {
-    const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(
-      () => ({})
+    const positions = computeDagrePositions(
+      connectedNodes.map((node) => node.id),
+      edges,
+      {
+        direction,
+        nodeWidth: NODE_WIDTH,
+        nodeHeight: NODE_HEIGHT,
+        nodesep: 60,
+        ranksep: 80,
+      }
     )
 
-    // Configure dagre graph with generous spacing
-    dagreGraph.setGraph({
-      rankdir: direction,
-      nodesep: 60, // Spacing between nodes in same rank
-      ranksep: 80, // Spacing between ranks
-      marginx: 40,
-      marginy: 40,
-    })
-
-    // Add connected nodes to dagre
     connectedNodes.forEach((node) => {
-      dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT })
-    })
-
-    // Add edges to dagre
-    edges.forEach((edge) => {
-      dagreGraph.setEdge(edge.source, edge.target)
-    })
-
-    // Run the layout algorithm
-    dagre.layout(dagreGraph)
-
-    // Apply calculated positions to connected nodes
-    connectedNodes.forEach((node) => {
-      const nodeWithPosition = dagreGraph.node(node.id)
+      const position = positions.get(node.id)
+      if (!position) return
       layoutedNodes.push({
         ...node,
         targetPosition: isHorizontal ? Position.Left : Position.Top,
         sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
-        position: {
-          x: nodeWithPosition.x - NODE_WIDTH / 2,
-          y: nodeWithPosition.y - NODE_HEIGHT / 2,
-        },
+        position,
       })
     })
   }

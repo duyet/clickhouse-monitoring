@@ -13,6 +13,24 @@ const nextConfig: NextConfig = {
   // Use standalone output for hybrid static pages + dynamic API routes
   output: 'standalone',
 
+  // Safety net: exclude non-production and development assets from tracing
+  outputFileTracingExcludes: {
+    '*': [
+      'node_modules/@swc/core-linux-x64-gnu',
+      'node_modules/@swc/core-linux-x64-musl',
+      'rust/**/*',
+      'coverage/**/*',
+      'cypress/**/*',
+      '.nyc_output/**/*',
+      '.open-next/**/*',
+      '.next/cache/**/*',
+      'public/docs-assets/**/*',
+      'tsconfig.tsbuildinfo',
+      'tsconfig.codex-temp.tsbuildinfo',
+      'bun.lock',
+    ],
+  },
+
   // Limit experimental cpus / worker threads to reduce memory footprint
   experimental: {
     workerThreads: false,

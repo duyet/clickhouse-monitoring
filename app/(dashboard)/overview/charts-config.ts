@@ -16,6 +16,8 @@ import type { ComponentType } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
+import dynamic from 'next/dynamic'
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -73,80 +75,276 @@ export interface OverviewTabConfig {
 // Chart Imports
 // ============================================================================
 
-// ============================================================================
-// Chart Imports
-// ============================================================================
-
-// ============================================================================
-// Chart Imports
-// ============================================================================
-
-// ============================================================================
-// Chart Imports
-// ============================================================================
-
 // Connection charts
-import { ChartConnectionsPool } from '@/components/charts/connections-pool'
+const ChartConnectionsPool = dynamic(() =>
+  import('@/components/charts/connections-pool').then(
+    (mod) => mod.ChartConnectionsPool
+  )
+)
 // Logs charts
-import { ChartCrashFrequency } from '@/components/charts/logs/crash-frequency'
-import { ChartErrorRateOverTime } from '@/components/charts/logs/error-rate-over-time'
-import { ChartLogLevelDistribution } from '@/components/charts/logs/log-level-distribution'
+const ChartCrashFrequency = dynamic(() =>
+  import('@/components/charts/logs/crash-frequency').then(
+    (mod) => mod.ChartCrashFrequency
+  )
+)
+const ChartErrorRateOverTime = dynamic(() =>
+  import('@/components/charts/logs/error-rate-over-time').then(
+    (mod) => mod.ChartErrorRateOverTime
+  )
+)
+const ChartLogLevelDistribution = dynamic(() =>
+  import('@/components/charts/logs/log-level-distribution').then(
+    (mod) => mod.ChartLogLevelDistribution
+  )
+)
 // Merge charts
-import { ChartMergeAvgDuration } from '@/components/charts/merge/merge-avg-duration'
-import { ChartMergeCount } from '@/components/charts/merge/merge-count'
-import { ChartMergeSumReadRows } from '@/components/charts/merge/merge-sum-read-rows'
-import { ChartNewPartsCreated } from '@/components/charts/merge/new-parts-created'
-import { ChartSummaryUsedByMerges } from '@/components/charts/merge/summary-used-by-merges'
-import { ChartPartsPerTable } from '@/components/charts/parts-per-table'
+const ChartMergeAvgDuration = dynamic(() =>
+  import('@/components/charts/merge/merge-avg-duration').then(
+    (mod) => mod.ChartMergeAvgDuration
+  )
+)
+const ChartMergeCount = dynamic(() =>
+  import('@/components/charts/merge/merge-count').then(
+    (mod) => mod.ChartMergeCount
+  )
+)
+const ChartMergeSumReadRows = dynamic(() =>
+  import('@/components/charts/merge/merge-sum-read-rows').then(
+    (mod) => mod.ChartMergeSumReadRows
+  )
+)
+const ChartNewPartsCreated = dynamic(() =>
+  import('@/components/charts/merge/new-parts-created').then(
+    (mod) => mod.ChartNewPartsCreated
+  )
+)
+const ChartSummaryUsedByMerges = dynamic(() =>
+  import('@/components/charts/merge/summary-used-by-merges').then(
+    (mod) => mod.ChartSummaryUsedByMerges
+  )
+)
+const ChartPartsPerTable = dynamic(() =>
+  import('@/components/charts/parts-per-table').then(
+    (mod) => mod.ChartPartsPerTable
+  )
+)
 // Query additional charts
-import { ChartCancelledQueries } from '@/components/charts/query/cancelled-queries'
+const ChartCancelledQueries = dynamic(() =>
+  import('@/components/charts/query/cancelled-queries').then(
+    (mod) => mod.ChartCancelledQueries
+  )
+)
 // Query charts
-import { ChartFailedQueryCount } from '@/components/charts/query/failed-query-count'
-import { ChartFailedQueryCountByUser } from '@/components/charts/query/failed-query-count-by-user'
-import { ChartQueryCache } from '@/components/charts/query/query-cache'
-import { ChartQueryCacheUsage } from '@/components/charts/query/query-cache-usage'
-import { ChartQueryCount } from '@/components/charts/query/query-count'
-import { ChartQueryCountByUser } from '@/components/charts/query/query-count-by-user'
-import { ChartQueryCountHeatmap } from '@/components/charts/query/query-count-heatmap'
-import { ChartQueryDuration } from '@/components/charts/query/query-duration'
-import { ChartQueryDurationPercentiles } from '@/components/charts/query/query-duration-percentiles'
-import { ChartQueryMemory } from '@/components/charts/query/query-memory'
-import { ChartQueryType } from '@/components/charts/query/query-type'
-import { ChartSlowQueryOccurrences } from '@/components/charts/query/slow-query-occurrences'
+const ChartFailedQueryCount = dynamic(() =>
+  import('@/components/charts/query/failed-query-count').then(
+    (mod) => mod.ChartFailedQueryCount
+  )
+)
+const ChartFailedQueryCountByUser = dynamic(() =>
+  import('@/components/charts/query/failed-query-count-by-user').then(
+    (mod) => mod.ChartFailedQueryCountByUser
+  )
+)
+const ChartQueryCache = dynamic(() =>
+  import('@/components/charts/query/query-cache').then(
+    (mod) => mod.ChartQueryCache
+  )
+)
+const ChartQueryCacheUsage = dynamic(() =>
+  import('@/components/charts/query/query-cache-usage').then(
+    (mod) => mod.ChartQueryCacheUsage
+  )
+)
+const ChartQueryCount = dynamic(() =>
+  import('@/components/charts/query/query-count').then(
+    (mod) => mod.ChartQueryCount
+  )
+)
+const ChartQueryCountByUser = dynamic(() =>
+  import('@/components/charts/query/query-count-by-user').then(
+    (mod) => mod.ChartQueryCountByUser
+  )
+)
+const ChartQueryCountHeatmap = dynamic(() =>
+  import('@/components/charts/query/query-count-heatmap').then(
+    (mod) => mod.ChartQueryCountHeatmap
+  )
+)
+const ChartQueryDuration = dynamic(() =>
+  import('@/components/charts/query/query-duration').then(
+    (mod) => mod.ChartQueryDuration
+  )
+)
+const ChartQueryDurationPercentiles = dynamic(() =>
+  import('@/components/charts/query/query-duration-percentiles').then(
+    (mod) => mod.ChartQueryDurationPercentiles
+  )
+)
+const ChartQueryMemory = dynamic(() =>
+  import('@/components/charts/query/query-memory').then(
+    (mod) => mod.ChartQueryMemory
+  )
+)
+const ChartQueryType = dynamic(() =>
+  import('@/components/charts/query/query-type').then(
+    (mod) => mod.ChartQueryType
+  )
+)
+const ChartSlowQueryOccurrences = dynamic(() =>
+  import('@/components/charts/query/slow-query-occurrences').then(
+    (mod) => mod.ChartSlowQueryOccurrences
+  )
+)
 // Query performance charts
-import { ChartInsertPerformance } from '@/components/charts/query-performance/insert-performance'
-import { ChartQueryDurationTrend } from '@/components/charts/query-performance/query-duration-trend'
-import { ChartTopInserters } from '@/components/charts/query-performance/top-inserters'
-import { ChartTopQueryFingerprints as ChartTopQueryFingerprintsPerf } from '@/components/charts/query-performance/top-query-fingerprints'
+const ChartInsertPerformance = dynamic(() =>
+  import('@/components/charts/query-performance/insert-performance').then(
+    (mod) => mod.ChartInsertPerformance
+  )
+)
+const ChartQueryDurationTrend = dynamic(() =>
+  import('@/components/charts/query-performance/query-duration-trend').then(
+    (mod) => mod.ChartQueryDurationTrend
+  )
+)
+const ChartTopInserters = dynamic(() =>
+  import('@/components/charts/query-performance/top-inserters').then(
+    (mod) => mod.ChartTopInserters
+  )
+)
+const ChartTopQueryFingerprintsPerf = dynamic(() =>
+  import('@/components/charts/query-performance/top-query-fingerprints').then(
+    (mod) => mod.ChartTopQueryFingerprints
+  )
+)
 // Replication charts
-import { ChartReadonlyReplica } from '@/components/charts/replication/readonly-replica'
-import { ChartReplicationLag } from '@/components/charts/replication/replication-lag'
-import { ChartReplicationQueueCount } from '@/components/charts/replication/replication-queue-count'
-import { ChartReplicationSummaryTable } from '@/components/charts/replication/replication-summary-table'
-import { ChartSummaryStuckMutations } from '@/components/charts/summary-stuck-mutations'
+const ChartReadonlyReplica = dynamic(() =>
+  import('@/components/charts/replication/readonly-replica').then(
+    (mod) => mod.ChartReadonlyReplica
+  )
+)
+const ChartReplicationLag = dynamic(() =>
+  import('@/components/charts/replication/replication-lag').then(
+    (mod) => mod.ChartReplicationLag
+  )
+)
+const ChartReplicationQueueCount = dynamic(() =>
+  import('@/components/charts/replication/replication-queue-count').then(
+    (mod) => mod.ChartReplicationQueueCount
+  )
+)
+const ChartReplicationSummaryTable = dynamic(() =>
+  import('@/components/charts/replication/replication-summary-table').then(
+    (mod) => mod.ChartReplicationSummaryTable
+  )
+)
+const ChartSummaryStuckMutations = dynamic(() =>
+  import('@/components/charts/summary-stuck-mutations').then(
+    (mod) => mod.ChartSummaryStuckMutations
+  )
+)
 // System charts
-import { ChartBackupSize } from '@/components/charts/system/backup-size'
-import { ChartCompressionRatio } from '@/components/charts/system/compression-ratio'
-import { ChartCPUUsage } from '@/components/charts/system/cpu-usage'
-import { ChartDataFreshness } from '@/components/charts/system/data-freshness'
-import { ChartDiskIOThroughput } from '@/components/charts/system/disk-io-throughput'
-import { ChartDiskSize } from '@/components/charts/system/disk-size'
-import { ChartDiskUsageByDatabase } from '@/components/charts/system/disk-usage-by-database'
-import { ChartDiskUsageTrend } from '@/components/charts/system/disk-usage-trend'
-import { ChartDisksUsage } from '@/components/charts/system/disks-usage'
-import { ChartMemoryUsage } from '@/components/charts/system/memory-usage'
-import { ChartMutationProgress } from '@/components/charts/system/mutation-progress'
-import { ChartOomKilledQueries } from '@/components/charts/system/oom-killed-queries'
-import { ChartPartitionPartHealth } from '@/components/charts/system/partition-part-health'
-import { ChartStoragePolicies } from '@/components/charts/system/storage-policies'
-import { ChartTopMemoryQueries } from '@/components/charts/system/top-memory-queries'
+const ChartBackupSize = dynamic(() =>
+  import('@/components/charts/system/backup-size').then(
+    (mod) => mod.ChartBackupSize
+  )
+)
+const ChartCompressionRatio = dynamic(() =>
+  import('@/components/charts/system/compression-ratio').then(
+    (mod) => mod.ChartCompressionRatio
+  )
+)
+const ChartCPUUsage = dynamic(() =>
+  import('@/components/charts/system/cpu-usage').then(
+    (mod) => mod.ChartCPUUsage
+  )
+)
+const ChartDataFreshness = dynamic(() =>
+  import('@/components/charts/system/data-freshness').then(
+    (mod) => mod.ChartDataFreshness
+  )
+)
+const ChartDiskIOThroughput = dynamic(() =>
+  import('@/components/charts/system/disk-io-throughput').then(
+    (mod) => mod.ChartDiskIOThroughput
+  )
+)
+const ChartDiskSize = dynamic(() =>
+  import('@/components/charts/system/disk-size').then(
+    (mod) => mod.ChartDiskSize
+  )
+)
+const ChartDiskUsageByDatabase = dynamic(() =>
+  import('@/components/charts/system/disk-usage-by-database').then(
+    (mod) => mod.ChartDiskUsageByDatabase
+  )
+)
+const ChartDiskUsageTrend = dynamic(() =>
+  import('@/components/charts/system/disk-usage-trend').then(
+    (mod) => mod.ChartDiskUsageTrend
+  )
+)
+const ChartDisksUsage = dynamic(() =>
+  import('@/components/charts/system/disks-usage').then(
+    (mod) => mod.ChartDisksUsage
+  )
+)
+const ChartMemoryUsage = dynamic(() =>
+  import('@/components/charts/system/memory-usage').then(
+    (mod) => mod.ChartMemoryUsage
+  )
+)
+const ChartMutationProgress = dynamic(() =>
+  import('@/components/charts/system/mutation-progress').then(
+    (mod) => mod.ChartMutationProgress
+  )
+)
+const ChartOomKilledQueries = dynamic(() =>
+  import('@/components/charts/system/oom-killed-queries').then(
+    (mod) => mod.ChartOomKilledQueries
+  )
+)
+const ChartPartitionPartHealth = dynamic(() =>
+  import('@/components/charts/system/partition-part-health').then(
+    (mod) => mod.ChartPartitionPartHealth
+  )
+)
+const ChartStoragePolicies = dynamic(() =>
+  import('@/components/charts/system/storage-policies').then(
+    (mod) => mod.ChartStoragePolicies
+  )
+)
+const ChartTopMemoryQueries = dynamic(() =>
+  import('@/components/charts/system/top-memory-queries').then(
+    (mod) => mod.ChartTopMemoryQueries
+  )
+)
 // Thread charts
-import { ChartThreadUtilization } from '@/components/charts/threads/thread-utilization'
-import { ChartTopTableSize } from '@/components/charts/top-table-size'
+const ChartThreadUtilization = dynamic(() =>
+  import('@/components/charts/threads/thread-utilization').then(
+    (mod) => mod.ChartThreadUtilization
+  )
+)
+const ChartTopTableSize = dynamic(() =>
+  import('@/components/charts/top-table-size').then(
+    (mod) => mod.ChartTopTableSize
+  )
+)
 // ZooKeeper charts
-import { ChartKeeperException } from '@/components/charts/zookeeper/zookeeper-exception'
-import { ChartZookeeperRequests } from '@/components/charts/zookeeper/zookeeper-requests'
-import { ChartZookeeperWait } from '@/components/charts/zookeeper/zookeeper-wait'
+const ChartKeeperException = dynamic(() =>
+  import('@/components/charts/zookeeper/zookeeper-exception').then(
+    (mod) => mod.ChartKeeperException
+  )
+)
+const ChartZookeeperRequests = dynamic(() =>
+  import('@/components/charts/zookeeper/zookeeper-requests').then(
+    (mod) => mod.ChartZookeeperRequests
+  )
+)
+const ChartZookeeperWait = dynamic(() =>
+  import('@/components/charts/zookeeper/zookeeper-wait').then(
+    (mod) => mod.ChartZookeeperWait
+  )
+)
 
 // ============================================================================
 // Chart Configurations by Tab

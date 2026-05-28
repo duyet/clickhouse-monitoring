@@ -210,7 +210,7 @@ export class MigrationRegistry {
 
     for (const [type, typeDir] of Object.entries(this.typeDirs)) {
       if (!typeDir) continue
-      const dir = join(process.cwd(), typeDir)
+      const dir = join(/*turbopackIgnore: true*/ process.cwd(), typeDir)
 
       try {
         const stat = statSync(dir)
@@ -229,7 +229,7 @@ export class MigrationRegistry {
 
         const [, id, description] = match
         const migrationId = description ? `${id}_${description}` : id
-        const filePath = join(dir, entry)
+        const filePath = join(/*turbopackIgnore: true*/ dir, entry)
         const sql = readFileSync(filePath, 'utf-8')
 
         this.register({

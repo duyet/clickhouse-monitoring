@@ -54,8 +54,9 @@ different behavior.
 | `CHM_FEATURE_{ID}_ENABLED` | `true` | Per-feature enabled/disabled flag. |
 
 Replace `{ID}` with an uppercase feature id: `AGENT`, `TABLES`, `METRICS`,
-`SETTINGS`, `ACTIONS`, `MCP`, `INSIGHTS`, `SECURITY`, `LOGS`, `CLUSTER`,
-`OPERATIONS`, `DASHBOARD`, `OVERVIEW`, `QUERIES`, `HEALTH`, `DOCS`, `ABOUT`.
+`SETTINGS`, `ACTIONS`, `MCP`, `PEERDB`, `INSIGHTS`, `SECURITY`, `LOGS`,
+`CLUSTER`, `OPERATIONS`, `DASHBOARD`, `OVERVIEW`, `QUERIES`, `HEALTH`, `DOCS`,
+`ABOUT`.
 
 ```bash
 # Examples
@@ -124,6 +125,42 @@ The AI agent uses an OpenAI-compatible API. At minimum set `LLM_API_KEY`.
 | `DATABASE_URL` | — | PostgreSQL connection string for conversation store. |
 | `POSTGRES_URL` | — | Alternative PostgreSQL connection string. |
 | `POSTGRES_PRISMA_URL` | — | Prisma-specific PostgreSQL connection string. |
+
+---
+
+## PeerDB Monitoring
+
+Optional, view-only. Set `PEERDB_API_URL` to enable the **PeerDB** section
+(Mirrors and Peers) in the sidebar. When unset, the section shows a
+"not configured" state and the proxy returns `503`.
+
+| Variable | Default | Description |
+|---|---|---|
+| `PEERDB_API_URL` | — | Base URL of the PeerDB REST API. For the PeerDB **UI** (NextAuth), include the `/api` suffix — e.g. `https://peerdb.example.com/api` — since it proxies `/api/v1/*` to the flow-api. For a raw **flow-api**, use the bare origin — e.g. `http://localhost:8113`. |
+| `PEERDB_PASSWORD` | — | PeerDB UI/API password. Sent as HTTP Basic with an empty username (`base64(":" + password)`). Leave empty if the API has no auth. Server-side only — never exposed to the browser. |
+| `PEERDB_CACHE_TTL_MS` | `10000` | TTL for the server-side response cache (ms). Set `0` to disable. |
+| `PEERDB_CACHE_MAX_ENTRIES` | `500` | Max cached responses before oldest entries are evicted. |
+| `PEERDB_FETCH_TIMEOUT_MS` | `10000` | Upstream PeerDB request timeout (ms). |
+
+CHM proxies only a **read-only allowlist** of PeerDB endpoints
+(`app/api/v1/peerdb/[...slug]`); mutating endpoints (create/drop/pause,
+alert config, maintenance) are rejected with `403`.
+
+```bash
+# Example: PeerDB UI behind NextAuth
+PEERDB_API_URL=https://peerdb.example.com/api
+PEERDB_PASSWORD=your-peerdb-ui-password
+
+# Example: raw flow-api (no auth)
+PEERDB_API_URL=http://localhost:8113
+```
+
+For local development without a PeerDB instance, run the bundled mock:
+
+```bash
+bun run peerdb:mock                                  # serves :8113
+PEERDB_API_URL=http://localhost:8113 bun run dev
+```
 
 ---
 

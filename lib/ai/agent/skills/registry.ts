@@ -10,7 +10,8 @@ import type { Skill } from './types'
 export const SKILLS: readonly Skill[] = [
   {
     name: 'system-tables-reference',
-    description: 'Exact column names for the system tables the agent queries most (processes, query_log, parts, merges, replicas, metrics) plus rules for choosing dedicated tools over raw SQL. Load before hand-writing SQL against system tables.',
+    description:
+      'Exact column names for the system tables the agent queries most (processes, query_log, parts, merges, replicas, metrics) plus rules for choosing dedicated tools over raw SQL. Load before hand-writing SQL against system tables.',
     content: `# System Tables Reference
 
 Load this skill before writing raw SQL against \`system.*\` tables. It lists the
@@ -132,7 +133,8 @@ Columns: \`name\`, \`code\`, \`value\`, \`last_error_time\`, \`last_error_messag
   },
   {
     name: 'query-optimization',
-    description: 'Advanced query tuning: join algorithms, skip index selection, EXPLAIN interpretation, ProfileEvents profiling, and optimizer settings.',
+    description:
+      'Advanced query tuning: join algorithms, skip index selection, EXPLAIN interpretation, ProfileEvents profiling, and optimizer settings.',
     content: `# Query Optimization
 
 ## JOIN Strategies
@@ -168,7 +170,8 @@ Columns: \`name\`, \`code\`, \`value\`, \`last_error_time\`, \`last_error_messag
   },
   {
     name: 'replication-guide',
-    description: 'ReplicatedMergeTree operations, failover procedures, lag diagnosis, quorum writes, and Keeper management.',
+    description:
+      'ReplicatedMergeTree operations, failover procedures, lag diagnosis, quorum writes, and Keeper management.',
     content: `# Replication Guide
 
 ## ReplicatedMergeTree Basics
@@ -214,7 +217,8 @@ Columns: \`name\`, \`code\`, \`value\`, \`last_error_time\`, \`last_error_messag
   },
   {
     name: 'cluster-operations',
-    description: 'Cluster management: distributed tables, ON CLUSTER DDL, node lifecycle, resharding, load balancing, and Keeper migration.',
+    description:
+      'Cluster management: distributed tables, ON CLUSTER DDL, node lifecycle, resharding, load balancing, and Keeper migration.',
     content: `# Cluster Operations
 
 ## Distributed Tables
@@ -267,7 +271,8 @@ Columns: \`name\`, \`code\`, \`value\`, \`last_error_time\`, \`last_error_messag
   },
   {
     name: 'storage-optimization',
-    description: 'Compression codecs, TTL policies, tiered storage, part management, and disk space optimization.',
+    description:
+      'Compression codecs, TTL policies, tiered storage, part management, and disk space optimization.',
     content: `# Storage Optimization
 
 ## Compression Codecs
@@ -309,7 +314,8 @@ Columns: \`name\`, \`code\`, \`value\`, \`last_error_time\`, \`last_error_messag
   },
   {
     name: 'security-hardening',
-    description: 'RBAC configuration, row policies, quotas, network security, audit logging, and access control best practices.',
+    description:
+      'RBAC configuration, row policies, quotas, network security, audit logging, and access control best practices.',
     content: `# Security Hardening
 
 ## RBAC (Role-Based Access Control)
@@ -355,7 +361,8 @@ Columns: \`name\`, \`code\`, \`value\`, \`last_error_time\`, \`last_error_messag
   },
   {
     name: 'clickhouse-best-practices',
-    description: 'Production operational practices: insert batching, async writes, query cache, connection pooling, and recommended settings.',
+    description:
+      'Production operational practices: insert batching, async writes, query cache, connection pooling, and recommended settings.',
     content: `# ClickHouse Best Practices
 
 ## Insert Best Practices
@@ -396,7 +403,8 @@ Columns: \`name\`, \`code\`, \`value\`, \`last_error_time\`, \`last_error_messag
   },
   {
     name: 'migration-patterns',
-    description: 'Schema migrations: ALTER patterns, engine changes, zero-downtime swaps, clickhouse-local offline migrations, and lightweight UPDATE/DELETE strategies.',
+    description:
+      'Schema migrations: ALTER patterns, engine changes, zero-downtime swaps, clickhouse-local offline migrations, and lightweight UPDATE/DELETE strategies.',
     content: `# Migration Patterns
 
 ## ALTER TABLE Operations
@@ -475,7 +483,8 @@ CREATE TABLE _schema_migrations (name String, applied_at DateTime DEFAULT now())
   },
   {
     name: 'troubleshooting',
-    description: 'Diagnose and resolve ClickHouse issues: OOM, slow merges, stuck mutations, query failures with error codes, and systematic error clustering.',
+    description:
+      'Diagnose and resolve ClickHouse issues: OOM, slow merges, stuck mutations, query failures with error codes, and systematic error clustering.',
     content: `# Troubleshooting Guide
 
 ## OOM (Out of Memory)
@@ -526,7 +535,7 @@ For persistent errors, check \`system.error_log\` (requires error logging enable
 ## Cross-references
 - Load the \`replication-guide\` skill for replication lag diagnosis and recovery.
 - Load the \`storage-optimization\` skill for disk recovery and tiered storage management.`,
-  }
+  },
 ]
 
 /** Get all available skills metadata (without content) */
