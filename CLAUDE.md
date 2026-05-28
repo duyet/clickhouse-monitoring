@@ -215,6 +215,12 @@ Build lock errors: remove `.next/lock` and retry.
 - `bun run dev` then open `/docs` - Preview docs through the main app shell
 - `DOCS_CONTENT_ROOT=<path> bun run dev` - Override docs source root for local validation
 
+**IMPORTANT — keep the AI Agent docs in sync**: `docs/content/ai-agent.mdx` is
+the user-facing reference for the agent's tools, skills, and configuration.
+Whenever you add, rename, or remove an agent tool (`lib/ai/agent/tools/*.ts`), a
+skill (`.agents/skills/*/SKILL.md`), or an agent env var, update
+`docs/content/ai-agent.mdx` in the same change so the docs do not drift.
+
 ## Architecture
 
 ### Core Technologies
