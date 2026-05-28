@@ -107,7 +107,7 @@ describe('<ChartParams />', () => {
       cy.get('input[name="interval"]').clear().type('600')
       cy.contains('button', 'Update').click()
 
-      cy.contains('Updating...').should('be.visible')
+      cy.contains('Updating…').should('be.visible')
       cy.wait('@updateSettings')
       cy.get('@routerRefresh').should('have.been.calledOnce')
       cy.contains('button', 'Update').should('be.visible')
@@ -149,7 +149,7 @@ describe('<ChartParams />', () => {
       cy.contains('button', 'Update').click()
 
       cy.get('.animate-spin').should('be.visible')
-      cy.contains('Updating...').should('be.visible')
+      cy.contains('Updating…').should('be.visible')
     })
   })
 
@@ -202,7 +202,7 @@ describe('<ChartParams />', () => {
       }).as('updateSettingsSuccess')
 
       cy.contains('button', 'Update (error)').click()
-      cy.contains('Updating...').should('be.visible')
+      cy.contains('Updating…').should('be.visible')
       cy.wait('@updateSettingsSuccess')
 
       cy.contains('(error)').should('not.exist')
@@ -335,7 +335,7 @@ describe('<ChartParams />', () => {
 
       cy.contains('button', 'Update').click()
 
-      cy.contains('button', 'Updating...').should('be.disabled')
+      cy.contains('button', 'Updating…').should('be.disabled')
     })
 
     it('shows Update icon in button during loading', () => {

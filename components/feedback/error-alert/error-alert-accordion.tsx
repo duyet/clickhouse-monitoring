@@ -86,7 +86,7 @@ export function ErrorAlertDigest({ digest }: ErrorAlertDigestProps) {
   return (
     <div className="mt-3 border-t pt-3">
       <div className="flex items-start gap-2">
-        <BugIcon className="text-muted-foreground mt-0.5 size-4 flexnone" />
+        <BugIcon className="text-muted-foreground mt-0.5 size-4 flex-none" />
         <div className="text-muted-foreground text-xs">
           <div className="font-medium">Error ID (for support):</div>
           <code className="bg-muted/30 mt-1 block rounded px-2 py-1 font-mono">
