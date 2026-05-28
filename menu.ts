@@ -38,6 +38,8 @@ import {
 
 import type { MenuItem } from '@/components/menu/types'
 
+import { PeerDBLogo } from '@/components/icons/peerdb-logo'
+
 export const menuItemsConfig: MenuItem[] = [
   {
     title: 'Overview',
@@ -298,7 +300,7 @@ export const menuItemsConfig: MenuItem[] = [
   {
     title: 'PeerDB',
     href: '',
-    icon: GitCompareArrowsIcon,
+    icon: PeerDBLogo,
     section: 'main',
     isNew: true,
     permission: { feature: 'peerdb' },
