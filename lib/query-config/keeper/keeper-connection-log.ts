@@ -10,26 +10,52 @@ export const keeperConnectionLogConfig: QueryConfig = {
   optional: true,
   tableCheck: 'system.zookeeper_connection_log',
   docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_connection_log',
-  sql: `
-      ${QUERY_COMMENT}
-      SELECT
-          event_time,
-          hostname,
-          type,
-          name,
-          host,
-          port,
-          index,
-          client_id,
-          reason,
-          keeper_api_version,
-          enabled_feature_flags,
-          availability_zone
-      FROM system.zookeeper_connection_log
-      WHERE event_time >= now() - INTERVAL 7 DAY
-      ORDER BY event_time DESC
-      LIMIT 1000
-  `,
+  sql: [
+    {
+      since: '22.11',
+      sql: `
+        ${QUERY_COMMENT}
+        SELECT
+            event_time,
+            hostname,
+            type,
+            name,
+            host,
+            port,
+            index,
+            client_id,
+            reason,
+            keeper_api_version
+        FROM system.zookeeper_connection_log
+        WHERE event_time >= now() - INTERVAL 7 DAY
+        ORDER BY event_time DESC
+        LIMIT 1000
+      `,
+    },
+    {
+      since: '25.1',
+      sql: `
+        ${QUERY_COMMENT}
+        SELECT
+            event_time,
+            hostname,
+            type,
+            name,
+            host,
+            port,
+            index,
+            client_id,
+            reason,
+            keeper_api_version,
+            enabled_feature_flags,
+            availability_zone
+        FROM system.zookeeper_connection_log
+        WHERE event_time >= now() - INTERVAL 7 DAY
+        ORDER BY event_time DESC
+        LIMIT 1000
+      `,
+    },
+  ],
   columns: [
     'event_time',
     'hostname',

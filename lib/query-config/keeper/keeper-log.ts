@@ -43,8 +43,7 @@ export const keeperLogConfig: QueryConfig = {
         stat_cversion,
         stat_aversion,
         stat_dataLength,
-        stat_numChildren,
-        children
+        stat_numChildren
       FROM system.zookeeper_log
       WHERE event_time >= now() - INTERVAL 7 DAY
       ORDER BY event_time DESC
@@ -82,7 +81,6 @@ export const keeperLogConfig: QueryConfig = {
     'stat_aversion',
     'stat_dataLength',
     'stat_numChildren',
-    'children',
   ],
   columnFormats: {
     hostname: ColumnFormat.Text,
@@ -116,6 +114,5 @@ export const keeperLogConfig: QueryConfig = {
     stat_aversion: ColumnFormat.Number,
     stat_dataLength: ColumnFormat.Number,
     stat_numChildren: ColumnFormat.Number,
-    children: ColumnFormat.Text,
   },
 }
