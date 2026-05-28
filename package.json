@@ -186,7 +186,7 @@
     "@cypress/code-coverage": "^4.0.3",
     "@cypress/request": "^4.0.0",
     "@cypress/webpack-preprocessor": "^7.1.0",
-    "@opennextjs/cloudflare": "1.17.1",
+    "@opennextjs/cloudflare": "1.19.11",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.2.2",
     "@types/react": "^19.0.0",
