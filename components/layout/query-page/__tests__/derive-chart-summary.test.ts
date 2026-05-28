@@ -9,6 +9,7 @@ describe('deriveChartSummary', () => {
       spark: [],
       deltaPct: null,
       trend: null,
+      field: null,
     })
     expect(deriveChartSummary([])).toEqual({
       latest: null,
@@ -16,6 +17,7 @@ describe('deriveChartSummary', () => {
       spark: [],
       deltaPct: null,
       trend: null,
+      field: null,
     })
   })
 
@@ -29,6 +31,35 @@ describe('deriveChartSummary', () => {
 
     expect(result.latest).toBe(20)
     expect(result.prev).toBe(10)
+  })
+
+  it('reports the detected value field for unit inference', () => {
+    const data = [
+      { event_time: '2026-01-01', memory_usage: 100 },
+      { event_time: '2026-01-02', memory_usage: 200 },
+    ]
+
+    expect(deriveChartSummary(data).field).toBe('memory_usage')
+  })
+
+  it('skips hash / id / code identifier columns during auto-detection', () => {
+    // top-query-fingerprints shape: the hash is numeric but is not the metric.
+    const fingerprints = [
+      { event_time: '2026-01-01', hash: 56708661833928, count: 10 },
+      { event_time: '2026-01-02', hash: 56708661833928, count: 20 },
+    ]
+    const fp = deriveChartSummary(fingerprints)
+    expect(fp.field).toBe('count')
+    expect(fp.latest).toBe(20)
+
+    // cancelled-queries shape: exception_code is numeric but not the metric.
+    const cancelled = [
+      { event_time: '2026-01-01', exception_code: 394, count: 3 },
+      { event_time: '2026-01-02', exception_code: 159, count: 5 },
+    ]
+    const c = deriveChartSummary(cancelled)
+    expect(c.field).toBe('count')
+    expect(c.latest).toBe(5)
   })
 
   it('skips readable_ / percent_ fields during auto-detection', () => {
