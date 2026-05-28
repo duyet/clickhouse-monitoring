@@ -101,8 +101,30 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Select specs for shard ${{ matrix.shard }}
+        id: specs
+        run: |
+          # Collect all component test files, sort for determinism
+          mapfile -t ALL < <(find . -name '*.cy.tsx' -not -path '*/node_modules/*' -not -path '*/.claude/*' | sort)
+          TOTAL=${#ALL[@]}
+          INDEX=$(( ${{ matrix.shard }} - 1 ))
+          CHUNK=$(( (TOTAL + 3) / 4 ))
+          START=$(( INDEX * CHUNK ))
+          END=$(( START + CHUNK ))
+          [ "$END" -gt "$TOTAL" ] && END=$TOTAL
+
+          SPECS=""
+          for (( i=START; i<END; i++ )); do
+            [ -n "$SPECS" ] && SPECS="$SPECS,"
+            SPECS="$SPECS${ALL[$i]}"
+          done
+
+          echo "Shard ${{ matrix.shard }}: specs $START..$((END-1)) of $TOTAL"
+          echo "specs=$SPECS" >> "$GITHUB_OUTPUT"
+
       - name: Run component tests (shard ${{ matrix.shard }})
-        run: npx cypress run --component --browser chrome --shard ${{ matrix.shard }}
+        if: steps.specs.outputs.specs != ''
+        run: cypress run --component --browser chrome --spec "${{ steps.specs.outputs.specs }}"
 
   # E2E tests - single browser, latest ClickHouse
   e2e-test:
