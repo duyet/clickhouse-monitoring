@@ -1,6 +1,7 @@
 'use client'
 
-import { useId } from 'react'
+import { bucketSeries, downsample } from './peerdb-utils'
+import { useId, useMemo } from 'react'
 
 /**
  * SVG charts ported verbatim from the CHM Redesign prototype (shared.jsx).
@@ -46,6 +47,9 @@ export function PdbSparkline({
   fill = 0.28,
 }: PdbSparklineProps) {
   const gid = useId()
+  // Cap rendered points to roughly the pixel width — more is invisible but
+  // still costs DOM/curve work when a mirror returns thousands of samples.
+  const points = useMemo(() => downsample(data ?? [], width), [data, width])
   if (!data || data.length < 2) {
     return (
       <div
@@ -56,7 +60,7 @@ export function PdbSparkline({
       </div>
     )
   }
-  const { line } = smoothPath(data, width, height)
+  const { line } = smoothPath(points, width, height)
   return (
     <svg width={width} height={height} className="block">
       <defs>
@@ -92,6 +96,9 @@ export function PdbBarChart({
   height = 200,
   valueFormatter,
 }: PdbBarChartProps) {
+  // Keep at most ~120 bars so a long history stays legible and cheap. Bars are
+  // ~2px min; more would just overlap.
+  const bars = useMemo(() => bucketSeries(data ?? [], 120), [data])
   if (!data || data.length === 0) {
     return (
       <div
@@ -102,10 +109,10 @@ export function PdbBarChart({
       </div>
     )
   }
-  const max = Math.max(...data.map((d) => d.y), 1)
+  const max = Math.max(...bars.map((d) => d.y), 1)
   const fmt = valueFormatter ?? ((v: number) => `${Math.round(v)}`)
   const ticks = [1, 0.75, 0.5, 0.25, 0].map((f) => f * max)
-  const labelEvery = Math.max(1, Math.ceil(data.length / 8))
+  const labelEvery = Math.max(1, Math.ceil(bars.length / 8))
 
   return (
     <div className="flex flex-col" style={{ height }}>
@@ -124,7 +131,7 @@ export function PdbBarChart({
             />
           ))}
           <div className="absolute inset-0 flex items-end gap-px px-1">
-            {data.map((d, i) => (
+            {bars.map((d, i) => (
               <div
                 key={`${d.x}-${i}`}
                 className="min-w-[2px] flex-1 rounded-t-sm transition-all hover:opacity-80"
@@ -140,7 +147,7 @@ export function PdbBarChart({
       </div>
       <div className="flex pl-12 pt-1 text-[9.5px] tabular-nums text-muted-foreground">
         <div className="flex flex-1 justify-between px-1">
-          {data
+          {bars
             .filter((_, i) => i % labelEvery === 0)
             .map((d, i) => (
               <span key={`${d.x}-${i}`} className="whitespace-nowrap">
@@ -168,6 +175,9 @@ export function PdbAreaChart({
   fill = 0.22,
 }: PdbAreaChartProps) {
   const gid = useId()
+  // The chart is drawn in a 100-unit viewBox; ~160 points is far more than the
+  // curve can resolve, so downsample longer series before building the path.
+  const points = useMemo(() => downsample(data ?? [], 160), [data])
   if (!data || data.length < 2) {
     return (
       <div
@@ -180,7 +190,7 @@ export function PdbAreaChart({
   }
   const w = 100
   const h = 100
-  const { line } = smoothPath(data, w, h, 4)
+  const { line } = smoothPath(points, w, h, 4)
   return (
     <div className="w-full" style={{ height }}>
       <svg

@@ -12,7 +12,7 @@ import {
 import type { MirrorMetricsSummary } from '@/components/peerdb/mirror-row'
 import type { ListMirrorsResponse, ListPeersResponse } from '@/lib/peerdb/types'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { KpiCard } from '@/components/peerdb/kpi-card'
 import { MirrorRow } from '@/components/peerdb/mirror-row'
 import { PeerGraph } from '@/components/peerdb/peer-graph'
@@ -35,6 +35,9 @@ const FILTERS: { k: DesignStatus | 'all'; label: string }[] = [
   { k: 'paused', label: 'Paused' },
   { k: 'failed', label: 'Failed' },
 ]
+
+/** Rows rendered before "Show more" — windows huge fleets so the DOM stays light. */
+const PAGE_SIZE = 60
 
 export default function PeerDBMirrorsPage() {
   const {
@@ -63,6 +66,7 @@ export default function PeerDBMirrorsPage() {
   const [statusFilter, setStatusFilter] = useState<DesignStatus | 'all'>('all')
   const [search, setSearch] = useState('')
   const [graphOpen, setGraphOpen] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [metrics, setMetrics] = useState<Record<string, MirrorMetricsSummary>>(
     {}
   )
@@ -147,6 +151,18 @@ export default function PeerDBMirrorsPage() {
         return true
       }),
     [mirrors, statusFilter, search]
+  )
+
+  // Reset the window whenever the filter/search changes. statusFilter/search
+  // are intentional triggers (not read in the body), so the lint is silenced.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: deliberate reset triggers
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [statusFilter, search])
+
+  const visible = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount]
   )
 
   if (isPeerDBNotConfigured(error)) {
@@ -413,7 +429,7 @@ export default function PeerDBMirrorsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((m) => (
+              {visible.map((m) => (
                 <MirrorRow
                   key={m.name}
                   mirror={m}
@@ -437,13 +453,30 @@ export default function PeerDBMirrorsPage() {
           </table>
         </div>
 
+        {visible.length < filtered.length && (
+          <div className="border-t border-border px-3 py-2 text-center">
+            <button
+              type="button"
+              onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+              className="text-[12px] font-medium text-muted-foreground hover:text-foreground"
+            >
+              Show {Math.min(PAGE_SIZE, filtered.length - visible.length)} more
+              mirrors
+            </button>
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2 text-[11.5px] text-muted-foreground">
           <div>
             Showing{' '}
             <span className="font-medium tabular-nums text-foreground">
-              {filtered.length}
+              {visible.length}
             </span>{' '}
-            of {mirrors.length} mirrors
+            of {filtered.length}
+            {filtered.length !== mirrors.length
+              ? ` (filtered from ${mirrors.length})`
+              : ''}{' '}
+            mirrors
           </div>
           <div className="flex items-center gap-2">
             <RefreshCwIcon className="size-3" />

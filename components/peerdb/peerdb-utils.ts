@@ -112,6 +112,78 @@ export function toNumber(value: unknown): number {
   return Number.isFinite(n) ? n : 0
 }
 
+/**
+ * Largest-Triangle-Three-Buckets downsample. Reduces a numeric series to at
+ * most `threshold` points while preserving visual shape (peaks/troughs), so a
+ * chart fed thousands of points renders a bounded number of SVG nodes.
+ * Returns the input unchanged when already small enough.
+ */
+export function downsample(data: number[], threshold: number): number[] {
+  const n = data.length
+  if (threshold >= n || threshold < 3) return data
+
+  const sampled: number[] = [data[0]]
+  const bucketSize = (n - 2) / (threshold - 2)
+  let a = 0
+
+  for (let i = 0; i < threshold - 2; i++) {
+    const avgStart = Math.floor((i + 1) * bucketSize) + 1
+    const avgEnd = Math.min(Math.floor((i + 2) * bucketSize) + 1, n)
+    let avgX = 0
+    let avgY = 0
+    for (let j = avgStart; j < avgEnd; j++) {
+      avgX += j
+      avgY += data[j]
+    }
+    const avgCount = avgEnd - avgStart || 1
+    avgX /= avgCount
+    avgY /= avgCount
+
+    const rangeStart = Math.floor(i * bucketSize) + 1
+    const rangeEnd = Math.floor((i + 1) * bucketSize) + 1
+    const ay = data[a]
+    let maxArea = -1
+    let nextA = rangeStart
+    let pickedValue = data[rangeStart]
+    for (let j = rangeStart; j < rangeEnd; j++) {
+      const area =
+        Math.abs((a - avgX) * (data[j] - ay) - (a - j) * (avgY - ay)) * 0.5
+      if (area > maxArea) {
+        maxArea = area
+        nextA = j
+        pickedValue = data[j]
+      }
+    }
+    sampled.push(pickedValue)
+    a = nextA
+  }
+
+  sampled.push(data[n - 1])
+  return sampled
+}
+
+/**
+ * Bucket an (x,y) series down to at most `maxBars` bars by summing adjacent
+ * groups, keeping the first label of each group. Used by the partition
+ * sync-history chart so long histories stay legible and cheap to render.
+ */
+export function bucketSeries(
+  data: { x: string; y: number }[],
+  maxBars: number
+): { x: string; y: number }[] {
+  if (maxBars < 1 || data.length <= maxBars) return data
+  const groupSize = Math.ceil(data.length / maxBars)
+  const out: { x: string; y: number }[] = []
+  for (let i = 0; i < data.length; i += groupSize) {
+    const group = data.slice(i, i + groupSize)
+    out.push({
+      x: group[0].x,
+      y: group.reduce((s, d) => s + d.y, 0),
+    })
+  }
+  return out
+}
+
 /** Format an ISO-8601 timestamp for display; falls back to the raw string. */
 export function formatDateTime(
   iso?: string | number,

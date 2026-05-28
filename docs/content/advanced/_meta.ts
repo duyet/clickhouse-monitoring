@@ -4,6 +4,7 @@ export const meta = {
   'queries-history': 'Queries History',
   'self-tracking': 'Self-Tracking',
   'feature-permissions': 'Feature Permissions',
+  'peerdb-monitoring': 'PeerDB Monitoring',
 }
 
 export default meta
