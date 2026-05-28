@@ -138,6 +138,9 @@ Optional, view-only. Set `PEERDB_API_URL` to enable the **PeerDB** section
 |---|---|---|
 | `PEERDB_API_URL` | — | Base URL of the PeerDB REST API. For the PeerDB **UI** (NextAuth), include the `/api` suffix — e.g. `https://peerdb.example.com/api` — since it proxies `/api/v1/*` to the flow-api. For a raw **flow-api**, use the bare origin — e.g. `http://localhost:8113`. |
 | `PEERDB_PASSWORD` | — | PeerDB UI/API password. Sent as HTTP Basic with an empty username (`base64(":" + password)`). Leave empty if the API has no auth. Server-side only — never exposed to the browser. |
+| `PEERDB_CACHE_TTL_MS` | `10000` | TTL for the server-side response cache (ms). Set `0` to disable. |
+| `PEERDB_CACHE_MAX_ENTRIES` | `500` | Max cached responses before oldest entries are evicted. |
+| `PEERDB_FETCH_TIMEOUT_MS` | `10000` | Upstream PeerDB request timeout (ms). |
 
 CHM proxies only a **read-only allowlist** of PeerDB endpoints
 (`app/api/v1/peerdb/[...slug]`); mutating endpoints (create/drop/pause,

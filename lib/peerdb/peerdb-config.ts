@@ -68,7 +68,7 @@ export class PeerDBError extends Error {
  */
 const CACHE_TTL_MS = Number(process.env.PEERDB_CACHE_TTL_MS ?? 10_000)
 const CACHE_MAX_ENTRIES = Number(process.env.PEERDB_CACHE_MAX_ENTRIES ?? 500)
-const FETCH_TIMEOUT_MS = Number(process.env.PEERDB_FETCH_TIMEOUT_MS ?? 10_000)
+const FETCH_TIMEOUT_MS = Number(process.env.PEERDB_FETCH_TIMEOUT_MS) || 10_000
 const responseCache = new Map<string, { at: number; value: unknown }>()
 
 /**
@@ -118,8 +118,8 @@ export async function peerdbFetch<T = unknown>(
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
-        ...authHeader(config),
         ...init?.headers,
+        ...authHeader(config),
       },
     })
   } catch (err) {

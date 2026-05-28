@@ -13,7 +13,7 @@
 /** Browser-safe PeerDB connection status (from `/api/v1/peerdb-status`). */
 export interface PeerDBStatusPayload {
   configured: boolean
-  /** Sanitized host (scheme + host, no credentials/path), or null. */
+  /** Sanitized host as `hostname:port` (no scheme/credentials/path), or null. */
   host: string | null
   state: 'connected' | 'auth' | 'unreachable' | 'not-configured'
   version?: string

@@ -91,7 +91,7 @@ jobs:
         with:
           path: ~/.cache/Cypress
           key: ${{ runner.os }}-cypress-v1-${{ hashFiles('**/bun.lock') }}
-          restore-links: |
+          restore-keys: |
             ${{ runner.os }}-cypress-v1-
 
       - name: Install dependencies

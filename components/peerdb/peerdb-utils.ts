@@ -224,7 +224,7 @@ export function pdbFmtNum(n?: number | null): string {
 
 /** WAL/slot size from MiB → "18.4 MiB" / "4.08 GiB". */
 export function pdbFmtBytes(mib?: number | null): string {
-  if (mib == null || mib === 0) return '—'
+  if (mib == null) return '—'
   if (mib >= 1024) return `${(mib / 1024).toFixed(2)} GiB`
   return `${mib.toFixed(1)} MiB`
 }
