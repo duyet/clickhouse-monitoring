@@ -120,7 +120,10 @@ export function toNumber(value: unknown): number {
  */
 export function downsample(data: number[], threshold: number): number[] {
   const n = data.length
-  if (threshold >= n || threshold < 3) return data
+  if (threshold >= n || threshold < 3) {
+    const allowed = Math.min(threshold, n)
+    return data.slice(0, allowed)
+  }
 
   const sampled: number[] = [data[0]]
   const bucketSize = (n - 2) / (threshold - 2)
@@ -171,7 +174,10 @@ export function bucketSeries(
   data: { x: string; y: number }[],
   maxBars: number
 ): { x: string; y: number }[] {
-  if (maxBars < 1 || data.length <= maxBars) return data
+  if (maxBars < 1 || data.length <= maxBars) {
+    const allowed = Math.min(maxBars, data.length)
+    return data.slice(0, allowed)
+  }
   const groupSize = Math.ceil(data.length / maxBars)
   const out: { x: string; y: number }[] = []
   for (let i = 0; i < data.length; i += groupSize) {
