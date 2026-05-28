@@ -10,7 +10,7 @@ export default defineConfig({
   execTimeout: 60000,
   fixturesFolder: 'cypress/fixtures',
   retries: {
-    runMode: 2,
+    runMode: 1,
     openMode: 0,
   },
   e2e: {
