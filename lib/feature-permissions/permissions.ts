@@ -23,3 +23,7 @@ export const SETTINGS_FEATURE_PERMISSION = {
 export const CLUSTER_FEATURE_PERMISSION = {
   feature: 'cluster',
 } satisfies FeaturePermission
+
+export const PEERDB_FEATURE_PERMISSION = {
+  feature: 'peerdb',
+} satisfies FeaturePermission

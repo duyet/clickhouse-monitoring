@@ -18,6 +18,7 @@ export const FEATURE_IDS = [
   'operations',
   'actions',
   'mcp',
+  'peerdb',
   'docs',
   'about',
 ] as const

@@ -12,6 +12,7 @@
   },
   "scripts": {
     "dev": "bun --bun next dev --turbopack",
+    "peerdb:mock": "bun scripts/peerdb-mock-server.ts",
     "build": "bun scripts/build-docs-content.ts && bun run wasm:build && bun next build",
     "start": "bun --bun next start",
     "analyze": "ANALYZE=true bun run build",
