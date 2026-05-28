@@ -20,6 +20,19 @@ export interface ExplorerState {
   customQuery: string | null
 }
 
+/**
+ * Exposes explorer state derived from the current URL search parameters and provides setters that update those parameters.
+ *
+ * The returned state mirrors the explorer's URL-driven values: `hostId`, `database`, `table`, `engine`, `tab`, and `customQuery`.
+ * Setter functions modify the URL search parameters so the explorer state stays in sync with the browser address bar.
+ *
+ * @returns An object containing the current explorer state and setter functions:
+ * - `setDatabase(database: string | null)` — set or clear the `database` parameter; clearing the database also clears `table` and `engine`.
+ * - `setTable(table: string | null, engine?: string | null)` — set or clear the `table` parameter; optionally set or clear `engine`. Clearing the table also clears `engine`.
+ * - `setDatabaseAndTable(database: string, table: string, engine?: string)` — set `database`, `table`, and `engine` (defaults `engine` to `null` when omitted) and clear `customQuery`.
+ * - `setTab(tab: ExplorerTab)` — set the `tab` parameter.
+ * - `setCustomQuery(sql: string | null)` — set or clear the encoded custom query (`q`) parameter.
+ */
 export function useExplorerState(): ExplorerState & {
   setDatabase: (database: string | null) => void
   setTable: (table: string | null, engine?: string | null) => void
