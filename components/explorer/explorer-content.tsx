@@ -29,21 +29,32 @@ function useTabVisitTracker(tableKey: string | null, currentTab: ExplorerTab) {
   )
   const prevTableKey = useRef<string | null>(null)
 
+  // Reset visited tabs when table changes, keeping the active tab
+  // biome-ignore lint/correctness/useExhaustiveDependencies: currentTab is only used to seed the set on table reset
   useEffect(() => {
     if (tableKey !== prevTableKey.current) {
-      // Reset visited tabs when table changes, but keep the active tab
       setVisitedTabs(new Set<ExplorerTab>(['data', currentTab]))
       prevTableKey.current = tableKey
-    } else {
-      // Mark the active tab visited when it changes externally (e.g. URL/history navigation)
-      setVisitedTabs((prev) =>
-        prev.has(currentTab) ? prev : new Set([...prev, currentTab])
-      )
     }
-  }, [tableKey, currentTab])
+  }, [tableKey])
+
+  // Track visited tabs when currentTab changes externally (e.g. URL/history navigation)
+  useEffect(() => {
+    setVisitedTabs((prev) => {
+      if (prev.has(currentTab)) return prev
+      const next = new Set(prev)
+      next.add(currentTab)
+      return next
+    })
+  }, [currentTab])
 
   const markVisited = (tab: ExplorerTab) => {
-    setVisitedTabs((prev) => new Set([...prev, tab]))
+    setVisitedTabs((prev) => {
+      if (prev.has(tab)) return prev
+      const next = new Set(prev)
+      next.add(tab)
+      return next
+    })
   }
 
   return { visitedTabs, markVisited }
