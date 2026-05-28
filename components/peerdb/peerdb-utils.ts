@@ -509,6 +509,20 @@ export const LOG_LEVEL_META: Record<string, LogLevelMeta> = {
   info: { label: 'INFO', dot: '#3b82f6' },
 }
 
+/**
+ * Normalize a PeerDB log `errorType` to a canonical level. PeerDB is not
+ * consistent about casing (`ERROR`, `WARNING`, `warn`), so fold to lowercase
+ * and collapse the `warning` synonym before matching tabs/colors.
+ */
+export function normalizePdbLogLevel(
+  errorType?: string | null
+): 'error' | 'warn' | 'info' {
+  const t = (errorType ?? 'info').toLowerCase()
+  if (t.startsWith('err')) return 'error'
+  if (t.startsWith('warn')) return 'warn'
+  return 'info'
+}
+
 /** Relative "Ns ago / Nm ago / Nh ago" from an ISO timestamp. */
 export function pdbFmtRelative(iso?: string | number): string {
   const t = parseTs(iso)
