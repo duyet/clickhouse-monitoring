@@ -53,7 +53,7 @@ export function DataTableFacetedFilter({
           data-is-activate={selectedCount > 0}
           className="data-[is-activate=true]:bg-accent"
         >
-          <ListFilterIcon className="mr-2 h-4 w-4" />
+          <ListFilterIcon className="mr-2 size-4" />
           {title}
           {selectedCount > 0 && ` (${selectedCount})`}
         </Button>

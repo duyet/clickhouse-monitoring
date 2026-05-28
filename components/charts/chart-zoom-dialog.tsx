@@ -89,6 +89,7 @@ function CopyableValue({
     <Tooltip>
       <TooltipTrigger asChild>
         <button
+          type="button"
           onClick={handleCopy}
           className={cn(
             'font-mono font-medium text-right truncate min-w-0 hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1 group/copy',

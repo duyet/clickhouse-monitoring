@@ -131,7 +131,7 @@ export const NotificationsPopover = memo(function NotificationsPopover() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="size-7"
             onClick={() => setIsOpen(false)}
           >
             <X className="size-3.5" />

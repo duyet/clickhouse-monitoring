@@ -397,7 +397,7 @@ export const QueryDetailView = memo(function QueryDetailView({
   return (
     <div className="flex flex-col gap-4">
       {/* ── 1. Header card ── */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card px-4 py-4">
+      <div className="overflow-hidden rounded-xl border border-border bg-card p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           {/* Left: id + badges */}
           <div className="flex flex-wrap items-center gap-2">

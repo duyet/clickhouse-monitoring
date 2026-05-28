@@ -18,9 +18,9 @@ import { cn } from '@/lib/utils'
 
 function ChevronToggle({ open }: { open: boolean }) {
   return open ? (
-    <ChevronDownIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+    <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground" />
   ) : (
-    <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+    <ChevronRightIcon className="size-3.5 shrink-0 text-muted-foreground" />
   )
 }
 
@@ -95,7 +95,7 @@ function DataSourceItem({
         >
           <ChevronToggle open={isOpen} />
 
-          <TableIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <TableIcon className="size-3.5 shrink-0 text-muted-foreground" />
 
           <span className="flex-1 min-w-0 text-xs font-semibold text-foreground truncate">
             {source.database}.{source.table}
@@ -174,7 +174,7 @@ export function AgentDataSources({
           >
             <ChevronToggle open={isGroupOpen} />
 
-            <DatabaseIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <DatabaseIcon className="size-3.5 shrink-0 text-muted-foreground" />
 
             <span className="text-xs font-medium text-foreground">
               Discovered sources

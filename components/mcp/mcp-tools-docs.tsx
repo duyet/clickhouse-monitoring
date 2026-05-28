@@ -25,6 +25,7 @@ function ToolCard({ tool }: { tool: (typeof MCP_TOOLS)[number] }) {
   return (
     <div className="border rounded-lg overflow-hidden">
       <button
+        type="button"
         className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted/50 transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
@@ -44,15 +45,15 @@ function ToolCard({ tool }: { tool: (typeof MCP_TOOLS)[number] }) {
             {tool.params.length} param{tool.params.length !== 1 ? 's' : ''}
           </Badge>
           {expanded ? (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <ChevronDown className="size-4 text-muted-foreground" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <ChevronRight className="size-4 text-muted-foreground" />
           )}
         </div>
       </button>
 
       {expanded && (
-        <div className="border-t px-4 py-4 space-y-4 bg-muted/20">
+        <div className="border-t p-4 space-y-4 bg-muted/20">
           <p className="text-sm text-muted-foreground sm:hidden">
             {tool.description}
           </p>

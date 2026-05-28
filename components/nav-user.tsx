@@ -63,7 +63,7 @@ export function NavUser({
       className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
       data-testid="nav-user-trigger"
     >
-      <Avatar className="avatar h-8 w-8 rounded-lg">
+      <Avatar className="avatar size-8 rounded-lg">
         <AvatarImage src={user.avatar} alt={user.name} />
         <AvatarFallback className="rounded-lg">G</AvatarFallback>
       </Avatar>
@@ -94,7 +94,7 @@ export function NavUser({
               >
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="avatar h-8 w-8 rounded-lg">
+                    <Avatar className="avatar size-8 rounded-lg">
                       <AvatarImage src={user.avatar} alt={user.name} />
                       <AvatarFallback className="rounded-lg">G</AvatarFallback>
                     </Avatar>
@@ -111,7 +111,7 @@ export function NavUser({
                     onClick={() => (window.location.href = '/about')}
                     data-testid="nav-user-about"
                   >
-                    <Info className="h-4 w-4" />
+                    <Info className="size-4" />
                     <span>About</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -122,7 +122,7 @@ export function NavUser({
                       className="flex items-center gap-2"
                       data-testid="nav-user-github"
                     >
-                      <ExternalLink className="h-4 w-4" />
+                      <ExternalLink className="size-4" />
                       <span>GitHub Repo</span>
                     </a>
                   </DropdownMenuItem>
@@ -134,7 +134,7 @@ export function NavUser({
                       }}
                       data-testid="nav-user-settings"
                     >
-                      <Settings className="h-4 w-4" />
+                      <Settings className="size-4" />
                       <span>Settings</span>
                       <span className="ml-auto text-xs text-muted-foreground">
                         ⌘,

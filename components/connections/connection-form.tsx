@@ -141,7 +141,7 @@ export function ConnectionForm({
           Host URL
         </Label>
         <div className="relative">
-          <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
           <Input
             id="conn-host"
             placeholder="https://clickhouse.example.com:8123"
@@ -195,9 +195,9 @@ export function ConnectionForm({
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="size-4" />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="size-4" />
             )}
           </button>
         </div>
@@ -218,20 +218,20 @@ export function ConnectionForm({
           disabled={!valid || testStatus.state === 'loading'}
         >
           {testStatus.state === 'loading' ? (
-            <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+            <Loader2 className="size-3.5 mr-1.5 animate-spin" />
           ) : null}
           Test Connection
         </Button>
 
         {testStatus.state === 'success' && (
           <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-            <Check className="h-3.5 w-3.5" />
+            <Check className="size-3.5" />
             {testStatus.message}
           </span>
         )}
         {testStatus.state === 'error' && (
           <span className="flex items-center gap-1.5 text-xs text-destructive">
-            <X className="h-3.5 w-3.5" />
+            <X className="size-3.5" />
             {testStatus.message}
           </span>
         )}

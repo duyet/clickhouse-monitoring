@@ -240,7 +240,7 @@ export function HealthDetailDialog({
                             className="text-primary hover:underline inline-flex items-center gap-1"
                           >
                             {d.label}
-                            <ExternalLink className="h-3 w-3" />
+                            <ExternalLink className="size-3" />
                           </a>
                         </li>
                       ))}
@@ -256,7 +256,7 @@ export function HealthDetailDialog({
               Close
             </Button>
             <Button onClick={() => setPromptOpen(true)}>
-              <Sparkles className="mr-2 h-4 w-4" />
+              <Sparkles className="mr-2 size-4" />
               Generate audit prompt
             </Button>
           </DialogFooter>

@@ -194,12 +194,13 @@ function ExpandTableButton({
     <Dialog>
       <DialogTrigger asChild>
         <button
+          type="button"
           className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
           aria-label="Expand table"
           title="Expand table"
           onClick={(event) => event.stopPropagation()}
         >
-          <Maximize2Icon className="h-3 w-3" />
+          <Maximize2Icon className="size-3" />
         </button>
       </DialogTrigger>
       <DialogContent className="flex max-h-[90vh] max-w-[95vw] flex-col">
@@ -425,15 +426,16 @@ export function ToolCallPart({
       >
         <div className="flex w-full items-center transition-colors">
           <button
+            type="button"
             onClick={() => setIsExpanded((previous) => !previous)}
             className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left"
             aria-expanded={isExpanded}
           >
             <span className="text-muted-foreground shrink-0">
               {isExpanded ? (
-                <ChevronDownIcon className="h-3 w-3" />
+                <ChevronDownIcon className="size-3" />
               ) : (
-                <ChevronRightIcon className="h-3 w-3" />
+                <ChevronRightIcon className="size-3" />
               )}
             </span>
 
@@ -465,7 +467,7 @@ export function ToolCallPart({
                   variant="outline"
                   className="shrink-0 text-[10px] text-yellow-600"
                 >
-                  Executing...
+                  Executing…
                 </Badge>
               )}
               {hasOutput && (
@@ -490,6 +492,7 @@ export function ToolCallPart({
           {hasOutput && outputRows.length > 0 && outputQueryConfig && (
             <div className="shrink-0 flex items-center gap-1 pr-2">
               <button
+                type="button"
                 className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
                 aria-label="Download CSV"
                 title="Download CSV"
@@ -498,7 +501,7 @@ export function ToolCallPart({
                   downloadCsv(outputRows, `${toolName}-results.csv`)
                 }}
               >
-                <DownloadIcon className="h-3 w-3" />
+                <DownloadIcon className="size-3" />
               </button>
               <ExpandTableButton
                 rows={outputRows}
@@ -511,18 +514,18 @@ export function ToolCallPart({
         {isExpanded ? (
           <div className="bg-background/50">
             {isStreaming ? (
-              <div className="px-2.5 py-2.5">
+              <div className="p-2.5">
                 <div className="flex items-center gap-2">
-                  <Loader2Icon className="h-4 w-4 animate-spin text-yellow-500" />
+                  <Loader2Icon className="size-4 animate-spin text-yellow-500" />
                   <span className="text-xs text-muted-foreground">
-                    Executing {toolName}...
+                    Executing {toolName}…
                   </span>
                 </div>
               </div>
             ) : null}
 
             {hasOutput && part.output != null && !promotedOutput ? (
-              <div className="px-1 py-1">
+              <div className="p-1">
                 {isAskUserOutput(part.output) && onToolResult ? (
                   <AskUserWidget
                     output={part.output}

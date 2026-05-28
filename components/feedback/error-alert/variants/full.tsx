@@ -111,7 +111,7 @@ export function FullErrorAlert({
                 onClick={() => reset()}
                 className="flex items-center gap-2"
               >
-                <RefreshCwIcon className="h-4 w-4" />
+                <RefreshCwIcon className="size-4" />
                 Try again {countdown >= 0 && `(${countdown}s)`}
               </Button>
             </div>

@@ -106,7 +106,7 @@ function DocsMobileNav({
             Close
           </span>
         </summary>
-        <div className="max-h-[calc(100vh-8rem)] overflow-y-auto border-border border-t px-3 py-3">
+        <div className="max-h-[calc(100vh-8rem)] overflow-y-auto border-border border-t p-3">
           <DocsNavList activeSlug={activeSlug} compact />
           {headings.length > 0 ? (
             <div className="mt-4 border-border border-t pt-4">

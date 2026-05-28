@@ -89,7 +89,7 @@ export const ChartParamsForm = ({
           {form.formState.isSubmitting ? (
             <span className="flex-rows flex gap-2">
               <UpdateIcon className="mr-2 size-3 animate-spin" />
-              Updating...
+              Updating…
             </span>
           ) : (
             'Update'

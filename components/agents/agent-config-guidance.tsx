@@ -62,7 +62,7 @@ export function AgentConfigGuidance({
         <div className="flex gap-3 items-start">
           {/* Icon */}
           <div className="flex-shrink-0 pt-0.5">
-            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
           </div>
 
           {/* Content */}
@@ -76,10 +76,10 @@ export function AgentConfigGuidance({
                   variant="ghost"
                   size="icon"
                   onClick={onDismiss}
-                  className="h-6 w-6 shrink-0"
+                  className="size-6 shrink-0"
                   aria-label="Dismiss"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="size-3.5" />
                 </Button>
               )}
             </div>
@@ -166,7 +166,7 @@ LLM_API_BASE=https://openrouter.ai/api/v1`}</code>
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
                 >
-                  <ExternalLink className="h-3 w-3" />
+                  <ExternalLink className="size-3" />
                   OpenRouter Quick Start Guide
                 </a>
               </div>
@@ -174,17 +174,18 @@ LLM_API_BASE=https://openrouter.ai/api/v1`}</code>
 
             {/* Toggle button */}
             <button
+              type="button"
               onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
               className="text-xs text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 mt-2 flex items-center gap-1"
             >
               {isDetailsExpanded ? (
                 <>
-                  <ChevronDown className="h-3 w-3" />
+                  <ChevronDown className="size-3" />
                   Hide details
                 </>
               ) : (
                 <>
-                  <BookOpen className="h-3 w-3" />
+                  <BookOpen className="size-3" />
                   View setup instructions
                 </>
               )}

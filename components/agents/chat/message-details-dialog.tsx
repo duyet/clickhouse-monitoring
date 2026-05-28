@@ -138,7 +138,7 @@ export function MessageDetailsDialog({
           size="sm"
           className="h-7 gap-1.5 rounded-full px-2.5 text-[11px] text-muted-foreground transition-[transform,background-color,color] hover:text-foreground active:scale-[0.96]"
         >
-          <BarChart3Icon className="h-3.5 w-3.5" />
+          <BarChart3Icon className="size-3.5" />
           Details
         </Button>
       </DialogTrigger>
@@ -289,7 +289,7 @@ export function MessageDetailsDialog({
                   onClick={handleCopy}
                   className="h-7 gap-1.5 rounded-full px-2.5 text-xs transition-[transform,background-color] active:scale-[0.96]"
                 >
-                  <CopyIcon className="h-3.5 w-3.5" />
+                  <CopyIcon className="size-3.5" />
                   {copied ? 'Copied' : 'Copy'}
                 </Button>
               </div>

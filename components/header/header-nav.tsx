@@ -34,7 +34,7 @@ export const HeaderNav = memo(function HeaderNav({
               isActive ? 'text-foreground' : 'text-muted-foreground'
             )}
           >
-            <item.icon className="h-3.5 w-3.5" />
+            <item.icon className="size-3.5" />
             {item.name}
             {isActive && (
               <span className="absolute bottom-0 left-0 h-[1.5px] w-full bg-primary animate-in fade-in slide-in-from-bottom-1" />

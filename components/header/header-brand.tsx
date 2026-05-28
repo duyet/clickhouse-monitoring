@@ -27,7 +27,7 @@ export const HeaderBrand = memo(function HeaderBrand({
         <ClickHouseLogo
           width={24}
           height={24}
-          className="h-6 w-6 text-foreground dark:text-white"
+          className="size-6 text-foreground dark:text-white"
         />
       </Link>
 

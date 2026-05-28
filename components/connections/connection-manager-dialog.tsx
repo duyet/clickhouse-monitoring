@@ -105,7 +105,7 @@ export function ConnectionManagerDialog({
           <div className="space-y-3">
             {connections.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 py-8 text-center text-muted-foreground">
-                <Plug className="h-8 w-8 opacity-40" />
+                <Plug className="size-8 opacity-40" />
                 <p className="text-sm">No connections yet</p>
               </div>
             ) : (
@@ -167,22 +167,22 @@ export function ConnectionManagerDialog({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7"
+                              className="size-7"
                               aria-label="Edit connection"
                               onClick={() =>
                                 setView({ type: 'form', editing: conn })
                               }
                             >
-                              <Pencil className="h-3.5 w-3.5" />
+                              <Pencil className="size-3.5" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 text-destructive hover:text-destructive"
+                              className="size-7 text-destructive hover:text-destructive"
                               aria-label="Delete connection"
                               onClick={() => setConfirmDeleteId(conn.id)}
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="size-3.5" />
                             </Button>
                           </>
                         )}
@@ -195,7 +195,7 @@ export function ConnectionManagerDialog({
 
             <div className="flex justify-end pt-1">
               <Button size="sm" onClick={() => setView({ type: 'form' })}>
-                <Plus className="h-4 w-4 mr-1.5" />
+                <Plus className="size-4 mr-1.5" />
                 Add Connection
               </Button>
             </div>

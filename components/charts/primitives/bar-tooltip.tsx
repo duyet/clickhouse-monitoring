@@ -55,7 +55,7 @@ export function renderBarTooltip({
             formatter={(value, name, item, index) => (
               <>
                 <div
-                  className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                  className="size-2.5 shrink-0 rounded-[2px]"
                   style={{ backgroundColor: item.color }}
                 />
                 <span className="text-muted-foreground">
@@ -98,7 +98,7 @@ export function renderBarTooltip({
           formatter={(value, name, item) => (
             <>
               <div
-                className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                className="size-2.5 shrink-0 rounded-[2px]"
                 style={{ backgroundColor: item.color }}
               />
               <span className="text-muted-foreground">

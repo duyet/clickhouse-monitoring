@@ -162,7 +162,7 @@ function DraggableTableHeader({
           style={{ touchAction: 'none' }}
           onClick={(e) => e.stopPropagation()} // Prevent drag from triggering sort
         >
-          <GripVertical data-icon className="h-3.5 w-3.5" />
+          <GripVertical data-icon className="size-3.5" />
         </Button>
         <div className="min-w-0 flex-1">
           <div className="group flex min-w-0 items-center gap-1">
@@ -277,10 +277,10 @@ export const TableHeaderRow = memo(function TableHeaderRow({
                 <div className="group flex min-w-0 items-center gap-1">
                   {/* Sort indicator */}
                   {isSorted === 'asc' && (
-                    <ArrowUp className="h-3.5 w-3.5 shrink-0 text-primary" />
+                    <ArrowUp className="size-3.5 shrink-0 text-primary" />
                   )}
                   {isSorted === 'desc' && (
-                    <ArrowDown className="h-3.5 w-3.5 shrink-0 text-primary" />
+                    <ArrowDown className="size-3.5 shrink-0 text-primary" />
                   )}
                   <span className="min-w-0 flex-1 truncate">
                     {header.isPlaceholder

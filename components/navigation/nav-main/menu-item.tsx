@@ -90,7 +90,7 @@ const SingleMenuItem = memo(function SingleMenuItem({
           className="flex w-full items-center"
           onClick={closeMobileSidebar}
         >
-          {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
+          {item.icon && <item.icon className="size-4 shrink-0" />}
           <span className="group-data-[state=collapsed]/sidebar:hidden">
             {item.title}
           </span>
@@ -140,7 +140,7 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
   if (isCollapsed) {
     const triggerButton = (
       <SidebarMenuButton isActive={hasActiveChild}>
-        {item.icon && <item.icon className="h-4 w-4" />}
+        {item.icon && <item.icon className="size-4" />}
         <span className="group-data-[state=collapsed]/sidebar:hidden">
           {item.title}
         </span>
@@ -181,7 +181,7 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
           <SidebarMenuButton isActive={hasActiveChild} tooltip={item.title}>
-            {item.icon && <item.icon className="h-4 w-4" />}
+            {item.icon && <item.icon className="size-4" />}
             <span>{item.title}</span>
             <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>

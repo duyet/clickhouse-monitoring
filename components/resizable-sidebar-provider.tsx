@@ -161,7 +161,7 @@ function ResizeHandle() {
           isResizing && 'opacity-100'
         )}
       >
-        <GripVertical className="h-3 w-3 text-muted-foreground" />
+        <GripVertical className="size-3 text-muted-foreground" />
       </div>
     </div>
   )

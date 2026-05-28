@@ -228,7 +228,7 @@ function SkillBody({ lines }: { lines: string[] }) {
                   key={`${item}-${itemIndex}`}
                   className="flex gap-2 leading-6"
                 >
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
+                  <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary/70" />
                   <span>{item}</span>
                 </li>
               ))}
@@ -278,15 +278,15 @@ function SkillTreeNodeView({
             aria-expanded={hasChildren ? open : undefined}
             className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted/30"
           >
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background text-muted-foreground">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background text-muted-foreground">
               {hasChildren || hasBody ? (
                 open ? (
-                  <ChevronDownIcon className="h-4 w-4" />
+                  <ChevronDownIcon className="size-4" />
                 ) : (
-                  <ChevronRightIcon className="h-4 w-4" />
+                  <ChevronRightIcon className="size-4" />
                 )
               ) : (
-                <FileCode2Icon className="h-4 w-4" />
+                <FileCode2Icon className="size-4" />
               )}
             </span>
             <div className="min-w-0 flex-1">
@@ -304,7 +304,7 @@ function SkillTreeNodeView({
           </button>
 
           {open && (hasBody || hasChildren) ? (
-            <div className="space-y-3 border-t border-border/60 px-3 py-3">
+            <div className="space-y-3 border-t border-border/60 p-3">
               {hasBody ? <SkillBody lines={node.body} /> : null}
               {hasChildren ? (
                 <div className="space-y-3" role="group">
@@ -340,8 +340,8 @@ export function SkillsTreeDialog({
       <DialogContent className="max-h-[90vh] max-w-[min(96vw,64rem)] overflow-hidden border-border/70 p-0">
         <DialogHeader className="border-b border-border/60 bg-muted/20 px-5 py-4 text-left">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-background">
-              <BookOpenIcon className="h-4.5 w-4.5 text-foreground" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-background">
+              <BookOpenIcon className="size-4.5 text-foreground" />
             </div>
             <div className="min-w-0 space-y-1">
               <DialogTitle className="truncate text-left text-xl">
@@ -355,7 +355,7 @@ export function SkillsTreeDialog({
           </div>
           <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background px-2.5 py-1">
-              <ListTreeIcon className="h-3.5 w-3.5" />
+              <ListTreeIcon className="size-3.5" />
               Tree view
             </span>
             <span className="inline-flex items-center rounded-full border border-border/60 bg-background px-2.5 py-1">

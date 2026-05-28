@@ -56,7 +56,7 @@ export function OptionalTableInfo({
         <div className="flex gap-4">
           {/* Icon */}
           <div className="flex-shrink-0">
-            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+            <Info className="size-5 text-blue-600 dark:text-blue-400 mt-0.5" />
           </div>
 
           {/* Content */}
@@ -114,7 +114,7 @@ export function OptionalTableInfo({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline font-medium"
                   >
-                    <ExternalLink className="h-3.5 w-3.5" />
+                    <ExternalLink className="size-3.5" />
                     View ClickHouse documentation
                   </a>
                 </div>

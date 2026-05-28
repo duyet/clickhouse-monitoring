@@ -488,7 +488,7 @@ function HeatmapBody({
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="flex flex-col gap-3 px-1 py-1">
+      <div className="flex flex-col gap-3 p-1">
         {/* KPI strip */}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <KpiCard

@@ -56,7 +56,7 @@ function LoadingState() {
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="flex items-center gap-3 border-b border-border px-3 py-3"
+          className="flex items-center gap-3 border-b border-border p-3"
         >
           <Skeleton className="h-5 w-16" />
           <Skeleton className="h-4 flex-1" />
@@ -85,7 +85,7 @@ function HistoryLink() {
       <span className="min-w-0 flex-1">
         <span className="block text-[13px] font-medium">Completed queries</span>
         <span className="block text-[12px] text-muted-foreground">
-          Queries that finish leave this list — browse them in query history.
+          Queries that finish leave this list. Browse them in query history.
         </span>
       </span>
       <span className="inline-flex shrink-0 items-center gap-1 text-[12px] font-medium text-muted-foreground transition-colors group-hover:text-foreground">
@@ -234,7 +234,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
                 action={{
                   label: 'Retry',
                   onClick: refresh,
-                  icon: <RefreshCw className="mr-1.5 h-3.5 w-3.5" />,
+                  icon: <RefreshCw className="mr-1.5 size-3.5" />,
                 }}
               />
             </CardContent>

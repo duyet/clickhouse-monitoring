@@ -153,7 +153,7 @@ export function AgentErrorDisplay({
           embedded && 'border-destructive/30 bg-destructive/5 text-foreground'
         )}
       >
-        <AlertCircleIcon className="h-4 w-4 shrink-0 mt-0.5" />
+        <AlertCircleIcon className="size-4 shrink-0 mt-0.5" />
         <AlertDescription className="flex flex-col gap-2 min-w-0">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex flex-col gap-1 min-w-0">
@@ -188,7 +188,7 @@ export function AgentErrorDisplay({
                 className="h-7 text-xs"
                 title="Copy error details"
               >
-                <CopyIcon className="h-3 w-3 mr-1" />
+                <CopyIcon className="size-3 mr-1" />
                 {copied ? 'Copied' : 'Copy'}
               </Button>
               {onRetry && (
@@ -198,7 +198,7 @@ export function AgentErrorDisplay({
                   onClick={onRetry}
                   className="h-7 text-xs"
                 >
-                  <RefreshCwIcon className="h-3 w-3 mr-1" />
+                  <RefreshCwIcon className="size-3 mr-1" />
                   Retry
                 </Button>
               )}
@@ -207,10 +207,10 @@ export function AgentErrorDisplay({
                   variant="ghost"
                   size="icon"
                   onClick={onDismiss}
-                  className="h-7 w-7"
+                  className="size-7"
                   title="Dismiss"
                 >
-                  <XIcon className="h-3 w-3" />
+                  <XIcon className="size-3" />
                 </Button>
               )}
             </div>
@@ -281,7 +281,7 @@ export function AgentErrorDisplay({
                   onClick={handleCopy}
                   className="h-7 gap-1.5 px-2.5 text-xs"
                 >
-                  <CopyIcon className="h-3.5 w-3.5" />
+                  <CopyIcon className="size-3.5" />
                   {copied ? 'Copied' : 'Copy'}
                 </Button>
               </div>
