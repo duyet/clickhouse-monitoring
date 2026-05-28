@@ -6,6 +6,8 @@ export interface ChartSummary {
   spark: number[]
   deltaPct: number | null
   trend: 'up' | 'down' | 'flat' | null
+  /** The numeric column used for the summary, for unit inference. */
+  field: string | null
 }
 
 const EMPTY: ChartSummary = {
@@ -14,6 +16,7 @@ const EMPTY: ChartSummary = {
   spark: [],
   deltaPct: null,
   trend: null,
+  field: null,
 }
 
 const TIME_FIELDS = new Set([
@@ -33,6 +36,14 @@ const IGNORED_FIELD_PATTERNS = [
   /_percent$/i,
   /^readable_/i,
   /_readable$/i,
+  // Identifier-like columns are never the headline metric (e.g. the
+  // `normalized_query_hash` in top-query-fingerprints, or `exception_code`
+  // in cancelled-queries).
+  /hash$/i,
+  /^id$/i,
+  /_id$/i,
+  /^code$/i,
+  /_code$/i,
 ]
 
 function isFiniteNumber(value: unknown): value is number {
@@ -128,5 +139,5 @@ export function deriveChartSummary(
     trend = latest > 0 ? 'up' : 'flat'
   }
 
-  return { latest, prev, spark, deltaPct, trend }
+  return { latest, prev, spark, deltaPct, trend, field }
 }

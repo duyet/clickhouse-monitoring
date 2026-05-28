@@ -2,9 +2,18 @@
 
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 import type { QueryConfig } from '@/types/query-config'
+import type { ChartValueUnit } from './chart-format'
 
 import { ChartChip } from './chart-chip'
 import { memo } from 'react'
+
+const VALID_UNITS: ReadonlySet<string> = new Set([
+  'count',
+  'bytes',
+  'ms',
+  'seconds',
+  'percent',
+])
 
 type ChartConfig = NonNullable<QueryConfig['relatedCharts']>[number]
 
@@ -33,6 +42,10 @@ export const ChartRowSummary = memo(function ChartRowSummary({
         : undefined
       const valueField =
         typeof props?.valueField === 'string' ? props.valueField : undefined
+      const unit =
+        typeof props?.unit === 'string' && VALID_UNITS.has(props.unit)
+          ? (props.unit as ChartValueUnit)
+          : undefined
       const interval =
         typeof props?.interval === 'string'
           ? (props.interval as ClickHouseInterval)
@@ -43,6 +56,7 @@ export const ChartRowSummary = memo(function ChartRowSummary({
         name,
         label: chartLabel(name, props),
         valueField,
+        unit,
         interval,
         lastHours,
       }
@@ -58,6 +72,7 @@ export const ChartRowSummary = memo(function ChartRowSummary({
           chartName={item.name}
           label={item.label}
           valueField={item.valueField}
+          unit={item.unit}
           interval={item.interval}
           lastHours={item.lastHours}
         />

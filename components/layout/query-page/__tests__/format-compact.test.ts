@@ -1,4 +1,4 @@
-import { formatCompact } from '../chart-chip'
+import { formatCompact } from '../chart-format'
 import { describe, expect, it } from 'bun:test'
 
 describe('formatCompact', () => {

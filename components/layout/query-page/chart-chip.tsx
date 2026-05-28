@@ -4,6 +4,11 @@ import { TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
 
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
+import {
+  type ChartValueUnit,
+  formatChartValue,
+  inferUnit,
+} from './chart-format'
 import { deriveChartSummary } from './derive-chart-summary'
 import { memo } from 'react'
 import { MiniAreaChart } from '@/components/charts/mini-charts'
@@ -16,6 +21,7 @@ export interface ChartChipProps {
   chartName: string
   label: string
   valueField?: string
+  unit?: ChartValueUnit
   interval?: ClickHouseInterval
   lastHours?: number
 }
@@ -32,17 +38,11 @@ const SPARK_COLOR = {
   flat: 'hsl(217 10% 60%)',
 } as const
 
-export function formatCompact(n: number): string {
-  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (Math.abs(n) >= 1_000) return `${(n / 1_000).toFixed(1)}K`
-  if (Number.isInteger(n)) return n.toLocaleString()
-  return n.toFixed(2)
-}
-
 export const ChartChip = memo(function ChartChip({
   chartName,
   label,
   valueField,
+  unit,
   interval,
   lastHours,
 }: ChartChipProps) {
@@ -69,7 +69,7 @@ export const ChartChip = memo(function ChartChip({
       ) : summary.latest !== null ? (
         <>
           <span className="shrink-0 text-xs font-semibold tabular-nums text-foreground/90">
-            {formatCompact(summary.latest)}
+            {formatChartValue(summary.latest, unit ?? inferUnit(summary.field))}
           </span>
           {summary.deltaPct !== null &&
           summary.trend &&
