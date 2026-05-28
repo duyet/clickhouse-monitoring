@@ -50,6 +50,10 @@ export function PdbSparkline({
   // Cap rendered points to roughly the pixel width — more is invisible but
   // still costs DOM/curve work when a mirror returns thousands of samples.
   const points = useMemo(() => downsample(data ?? [], width), [data, width])
+  const { line } = useMemo(
+    () => smoothPath(points, width, height),
+    [points, width, height]
+  )
   if (!data || data.length < 2) {
     return (
       <div
@@ -60,7 +64,6 @@ export function PdbSparkline({
       </div>
     )
   }
-  const { line } = smoothPath(points, width, height)
   return (
     <svg width={width} height={height} className="block">
       <defs>
@@ -178,6 +181,7 @@ export function PdbAreaChart({
   // The chart is drawn in a 100-unit viewBox; ~160 points is far more than the
   // curve can resolve, so downsample longer series before building the path.
   const points = useMemo(() => downsample(data ?? [], 160), [data])
+  const { line } = useMemo(() => smoothPath(points, 100, 100, 4), [points])
   if (!data || data.length < 2) {
     return (
       <div
@@ -190,7 +194,6 @@ export function PdbAreaChart({
   }
   const w = 100
   const h = 100
-  const { line } = smoothPath(points, w, h, 4)
   return (
     <div className="w-full" style={{ height }}>
       <svg
