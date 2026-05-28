@@ -2,7 +2,7 @@
 
 import { Area, AreaChart, Bar, BarChart } from 'recharts'
 
-import { useId } from 'react'
+import { memo, useId } from 'react'
 import {
   type ChartConfig,
   ChartContainer,
@@ -40,7 +40,7 @@ export interface MiniAreaChartProps {
 }
 
 /** A compact, gradient-filled area chart with a value tooltip. */
-export function MiniAreaChart({
+export const MiniAreaChart = memo(function MiniAreaChart({
   data,
   label,
   color,
@@ -96,7 +96,7 @@ export function MiniAreaChart({
       </AreaChart>
     </ChartContainer>
   )
-}
+})
 
 // ───────────────────────── stacked bar ─────────────────────────
 
@@ -119,7 +119,11 @@ export interface MiniBarChartProps {
 }
 
 /** A compact stacked bar chart with a per-series tooltip. */
-export function MiniBarChart({ data, series, className }: MiniBarChartProps) {
+export const MiniBarChart = memo(function MiniBarChart({
+  data,
+  series,
+  className,
+}: MiniBarChartProps) {
   if (data.length === 0 || series.length === 0) {
     return <div className={EMPTY_CLASS}>No data</div>
   }
@@ -155,4 +159,4 @@ export function MiniBarChart({ data, series, className }: MiniBarChartProps) {
       </BarChart>
     </ChartContainer>
   )
-}
+})

@@ -5,7 +5,7 @@
 /**
  * Convert an array of row objects to a CSV string.
  */
-function rowsToCsv(rows: Record<string, unknown>[]): string {
+export function rowsToCsv(rows: Record<string, unknown>[]): string {
   if (rows.length === 0) return ''
 
   const headers = Object.keys(rows[0])

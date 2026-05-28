@@ -189,7 +189,9 @@ interface NotificationItemProps {
   notification: NotificationWithKey
 }
 
-function NotificationItem({ notification }: NotificationItemProps) {
+const NotificationItem = memo(function NotificationItem({
+  notification,
+}: NotificationItemProps) {
   const hostId = useHostId()
   const { type, cluster, count, severity, label } = notification
 
@@ -252,4 +254,4 @@ function NotificationItem({ notification }: NotificationItemProps) {
       </div>
     </Link>
   )
-}
+})

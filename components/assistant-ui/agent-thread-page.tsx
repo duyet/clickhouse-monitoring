@@ -91,7 +91,7 @@ export function AgentThreadPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setLeftSidebarOpen(true)}
-                className="absolute top-3 left-3 z-10 hidden h-8 gap-1.5 px-2.5 text-[11.5px] whitespace-nowrap shadow-sm lg:inline-flex"
+                className="absolute top-3 left-3 z-10 hidden h-8 gap-1.5 px-2.5 text-[11.5px] whitespace-nowrap lg:inline-flex"
               >
                 <PanelLeftOpenIcon className="size-3.5" />
                 Conversations
@@ -103,7 +103,7 @@ export function AgentThreadPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setRightSidebarOpen(true)}
-                className="absolute top-3 right-3 z-10 h-8 gap-1.5 px-2.5 text-[11.5px] whitespace-nowrap shadow-sm"
+                className="absolute top-3 right-3 z-10 h-8 gap-1.5 px-2.5 text-[11.5px] whitespace-nowrap"
               >
                 <PanelRightOpenIcon className="size-3.5" />
                 Agent settings

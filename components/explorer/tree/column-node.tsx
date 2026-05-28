@@ -3,6 +3,7 @@
 import { ColumnsIcon, KeyIcon } from 'lucide-react'
 
 import { TreeNode } from './tree-node'
+import { memo } from 'react'
 import { Badge } from '@/components/ui/badge'
 
 interface ColumnNodeProps {
@@ -13,7 +14,7 @@ interface ColumnNodeProps {
   level: number
 }
 
-export function ColumnNode({
+export const ColumnNode = memo(function ColumnNode({
   name,
   type,
   isInPrimaryKey,
@@ -34,4 +35,4 @@ export function ColumnNode({
       }
     />
   )
-}
+})
