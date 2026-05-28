@@ -11,7 +11,12 @@ mock.module('@/lib/clickhouse', () => ({
   },
 }))
 
-const { resolveHostId, isValidTableIdentifier } = await import('../helpers')
+const {
+  resolveHostId,
+  isValidTableIdentifier,
+  hostIdSchema,
+  requiredHostIdSchema,
+} = await import('../helpers')
 
 describe('resolveHostId', () => {
   test('returns default when tool host ID is undefined', () => {
@@ -57,5 +62,56 @@ describe('isValidTableIdentifier', () => {
   test('rejects identifiers with special characters', () => {
     expect(isValidTableIdentifier('table;DROP')).toBe(false)
     expect(isValidTableIdentifier("table'OR")).toBe(false)
+  })
+})
+
+describe('hostIdSchema', () => {
+  test('accepts valid integers and coerces valid strings', () => {
+    expect(hostIdSchema.safeParse(0).success).toBe(true)
+    expect(hostIdSchema.safeParse(0).data).toBe(0)
+    expect(hostIdSchema.safeParse(3).success).toBe(true)
+    expect(hostIdSchema.safeParse(3).data).toBe(3)
+    expect(hostIdSchema.safeParse('1').success).toBe(true)
+    expect(hostIdSchema.safeParse('1').data).toBe(1)
+  })
+
+  test('accepts undefined, null, empty strings and coerces them to undefined', () => {
+    expect(hostIdSchema.safeParse(undefined).success).toBe(true)
+    expect(hostIdSchema.safeParse(undefined).data).toBeUndefined()
+    expect(hostIdSchema.safeParse(null).success).toBe(true)
+    expect(hostIdSchema.safeParse(null).data).toBeUndefined()
+    expect(hostIdSchema.safeParse('').success).toBe(true)
+    expect(hostIdSchema.safeParse('').data).toBeUndefined()
+    expect(hostIdSchema.safeParse('   ').success).toBe(true)
+    expect(hostIdSchema.safeParse('   ').data).toBeUndefined()
+  })
+
+  test('rejects negative integers, floats, and invalid strings', () => {
+    expect(hostIdSchema.safeParse(-1).success).toBe(false)
+    expect(hostIdSchema.safeParse('-2').success).toBe(false)
+    expect(hostIdSchema.safeParse(1.5).success).toBe(false)
+    expect(hostIdSchema.safeParse('abc').success).toBe(false)
+  })
+})
+
+describe('requiredHostIdSchema', () => {
+  test('accepts valid integers and coerces valid strings', () => {
+    expect(requiredHostIdSchema.safeParse(0).success).toBe(true)
+    expect(requiredHostIdSchema.safeParse(0).data).toBe(0)
+    expect(requiredHostIdSchema.safeParse('2').success).toBe(true)
+    expect(requiredHostIdSchema.safeParse('2').data).toBe(2)
+  })
+
+  test('rejects undefined, null, and empty strings', () => {
+    expect(requiredHostIdSchema.safeParse(undefined).success).toBe(false)
+    expect(requiredHostIdSchema.safeParse(null).success).toBe(false)
+    expect(requiredHostIdSchema.safeParse('').success).toBe(false)
+    expect(requiredHostIdSchema.safeParse('   ').success).toBe(false)
+  })
+
+  test('rejects negative integers, floats, and invalid strings', () => {
+    expect(requiredHostIdSchema.safeParse(-1).success).toBe(false)
+    expect(requiredHostIdSchema.safeParse(1.5).success).toBe(false)
+    expect(requiredHostIdSchema.safeParse('abc').success).toBe(false)
   })
 })

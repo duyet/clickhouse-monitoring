@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 import { formatDuration } from '@/lib/utils'
@@ -57,7 +57,7 @@ export function createInsightsTools(hostId: number) {
           .max(720)
           .default(720)
           .describe('Look back period in hours'),
-        hostId: z.coerce.number().int().optional(),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const params = input as {
@@ -220,7 +220,7 @@ WHERE type = 'QueryFinish' AND event_time > now() - INTERVAL {lastHours:UInt32} 
           .optional()
           .describe('Table name (required for column_breakdown)'),
         limit: z.number().int().min(1).max(50).optional().default(10),
-        hostId: z.coerce.number().int().optional(),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const params = input as {

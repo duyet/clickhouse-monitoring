@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -13,7 +13,7 @@ export function createSettingsTools(hostId: number) {
           .optional()
           .default('')
           .describe('Optional LIKE pattern to filter setting names'),
-        hostId: z.coerce.number().optional().describe('Host index override'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { pattern = '', hostId: hostIdOverride } = input as {
@@ -38,7 +38,7 @@ export function createSettingsTools(hostId: number) {
           .optional()
           .default('')
           .describe('Optional LIKE pattern to filter setting names'),
-        hostId: z.coerce.number().optional().describe('Host index override'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { pattern = '', hostId: hostIdOverride } = input as {

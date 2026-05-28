@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -8,10 +8,7 @@ export function createSecurityTools(hostId: number) {
       description:
         'Get active sessions with user, client info, and resource usage.',
       inputSchema: z.object({
-        hostId: z.coerce
-          .number()
-          .optional()
-          .describe('Override the default ClickHouse host index.'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { hostId: toolHostId } = input as { hostId?: number }
@@ -48,10 +45,7 @@ export function createSecurityTools(hostId: number) {
           .optional()
           .default(24)
           .describe('Number of hours to look back.'),
-        hostId: z.coerce
-          .number()
-          .optional()
-          .describe('Override the default ClickHouse host index.'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
@@ -86,10 +80,7 @@ export function createSecurityTools(hostId: number) {
       description:
         'Get all users and roles defined in ClickHouse access control.',
       inputSchema: z.object({
-        hostId: z.coerce
-          .number()
-          .optional()
-          .describe('Override the default ClickHouse host index.'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { hostId: toolHostId } = input as { hostId?: number }

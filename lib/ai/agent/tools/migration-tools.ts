@@ -5,7 +5,7 @@
  * before executing DDL operations on production tables.
  */
 
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -22,7 +22,7 @@ export function createMigrationTools(hostId: number) {
           .describe(
             'The ALTER TABLE statement to analyze (will NOT be executed)'
           ),
-        hostId: z.coerce.number().int().optional().describe('Host ID override'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
@@ -128,7 +128,7 @@ export function createMigrationTools(hostId: number) {
           .optional()
           .default(7)
           .describe('Days of query history to search (default: 7)'),
-        hostId: z.coerce.number().int().optional().describe('Host ID override'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {

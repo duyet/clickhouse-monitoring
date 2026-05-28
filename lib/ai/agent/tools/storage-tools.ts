@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -19,7 +19,7 @@ export function createStorageTools(hostId: number) {
           .optional()
           .default(100)
           .describe('Maximum number of parts to return'),
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
@@ -62,7 +62,7 @@ export function createStorageTools(hostId: number) {
           .optional()
           .default('')
           .describe('Filter by database name'),
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { database = '', hostId: toolHostId } = input as {
@@ -87,7 +87,7 @@ export function createStorageTools(hostId: number) {
           .optional()
           .default(20)
           .describe('Maximum number of tables to return'),
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { limit = 20, hostId: toolHostId } = input as {

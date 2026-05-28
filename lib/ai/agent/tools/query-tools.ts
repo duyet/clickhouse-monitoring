@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
@@ -9,11 +9,7 @@ export function createQueryTools(hostId: number) {
       description:
         'Get currently running queries. Useful for identifying long-running queries and monitoring active workloads.',
       inputSchema: z.object({
-        hostId: z.coerce
-          .number()
-          .int()
-          .optional()
-          .describe('Host ID to query (defaults to provided host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { hostId: toolHostId } = input as { hostId?: number }
@@ -48,11 +44,7 @@ export function createQueryTools(hostId: number) {
           .optional()
           .default(10)
           .describe('Number of queries to return'),
-        hostId: z.coerce
-          .number()
-          .int()
-          .optional()
-          .describe('Host ID to query (defaults to provided host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { limit = 10, hostId: toolHostId } = input as {
@@ -102,11 +94,7 @@ export function createQueryTools(hostId: number) {
           .optional()
           .default(24)
           .describe('Time window in hours'),
-        hostId: z.coerce
-          .number()
-          .int()
-          .optional()
-          .describe('Host ID to query (defaults to provided host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
@@ -167,11 +155,7 @@ export function createQueryTools(hostId: number) {
           .optional()
           .default(24)
           .describe('Time window in hours'),
-        hostId: z.coerce
-          .number()
-          .int()
-          .optional()
-          .describe('Host ID to query (defaults to provided host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
@@ -248,11 +232,7 @@ export function createQueryTools(hostId: number) {
           .optional()
           .default(2)
           .describe('Minimum occurrence count'),
-        hostId: z.coerce
-          .number()
-          .int()
-          .optional()
-          .describe('Host ID to query (defaults to provided host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
@@ -305,11 +285,7 @@ export function createQueryTools(hostId: number) {
           .optional()
           .default('plan')
           .describe('Type of explanation'),
-        hostId: z.coerce
-          .number()
-          .int()
-          .optional()
-          .describe('Host ID to query (defaults to provided host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {

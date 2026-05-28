@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 import { formatBytes } from '@/lib/utils'
@@ -17,7 +17,7 @@ export function createCapacityTools(hostId: number) {
           .optional()
           .default(90)
           .describe('Number of days to forecast ahead (default: 90)'),
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { forecastDays = 90, hostId: toolHostId } = input as {

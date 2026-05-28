@@ -1,4 +1,9 @@
-import { isValidTableIdentifier, resolveHostId, writeQuery } from './helpers'
+import {
+  hostIdSchema,
+  isValidTableIdentifier,
+  resolveHostId,
+  writeQuery,
+} from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -9,7 +14,7 @@ export function createControlTools(hostId: number) {
         'Kill a running query by its query_id. DESTRUCTIVE — confirm with user before executing.',
       inputSchema: z.object({
         queryId: z.string().describe('The query_id of the query to kill'),
-        hostId: z.coerce.number().optional().describe('Host index override'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { queryId, hostId: hostIdOverride } = input as {
@@ -36,7 +41,7 @@ export function createControlTools(hostId: number) {
           .optional()
           .default(false)
           .describe('Whether to run OPTIMIZE FINAL'),
-        hostId: z.coerce.number().optional().describe('Host index override'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
@@ -74,7 +79,7 @@ export function createControlTools(hostId: number) {
         database: z.string().describe('Database name'),
         table: z.string().describe('Table name'),
         mutationId: z.string().describe('The mutation_id to cancel'),
-        hostId: z.coerce.number().optional().describe('Host index override'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {

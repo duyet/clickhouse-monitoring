@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -8,10 +8,7 @@ export function createClusterTools(hostId: number) {
       description:
         'Get cluster topology including shards, replicas, and host addresses.',
       inputSchema: z.object({
-        hostId: z.coerce
-          .number()
-          .optional()
-          .describe('Override the default ClickHouse host index.'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { hostId: toolHostId } = input as { hostId?: number }
@@ -41,10 +38,7 @@ export function createClusterTools(hostId: number) {
           .optional()
           .default(50)
           .describe('Maximum number of rows to return.'),
-        hostId: z.coerce
-          .number()
-          .optional()
-          .describe('Override the default ClickHouse host index.'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { limit = 50, hostId: toolHostId } = input as {

@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { extractReferencedTables, validateAgentSql } from './sql-analysis'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
@@ -14,11 +14,7 @@ export function createOptimizerTools(hostId: number) {
           .string()
           .optional()
           .describe('Database context for table lookups'),
-        hostId: z.coerce
-          .number()
-          .int()
-          .optional()
-          .describe('Host ID to query (defaults to provided host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {

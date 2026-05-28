@@ -1,3 +1,4 @@
+import { hostIdSchema } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -73,7 +74,7 @@ export function createDashboardTools() {
         'Fetch chart data for a named chart. Provides guidance on how to retrieve data using the query tool.',
       inputSchema: z.object({
         chartName: z.string().describe('Name of the chart to fetch data for'),
-        hostId: z.coerce.number().optional().describe('Host index override'),
+        hostId: hostIdSchema,
       }),
       execute: async (_input: unknown) => {
         return {

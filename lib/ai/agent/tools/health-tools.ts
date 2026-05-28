@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -8,7 +8,7 @@ export function createHealthTools(hostId: number) {
       description:
         'Get server health metrics including version, uptime, and connection counts.',
       inputSchema: z.object({
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { hostId: toolHostId } = input as { hostId?: number }
@@ -53,7 +53,7 @@ export function createHealthTools(hostId: number) {
       description:
         'Get CPU, memory, disk, and thread usage from system metrics.',
       inputSchema: z.object({
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { hostId: toolHostId } = input as { hostId?: number }
@@ -80,7 +80,7 @@ export function createHealthTools(hostId: number) {
     get_disk_usage: dynamicTool({
       description: 'Get per-disk space usage including free and total space.',
       inputSchema: z.object({
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { hostId: toolHostId } = input as { hostId?: number }
@@ -101,7 +101,7 @@ export function createHealthTools(hostId: number) {
           .optional()
           .default(20)
           .describe('Maximum number of errors to return'),
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { limit = 20, hostId: toolHostId } = input as {
@@ -126,7 +126,7 @@ export function createHealthTools(hostId: number) {
           .optional()
           .default(10)
           .describe('Maximum number of crash entries to return'),
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { limit = 10, hostId: toolHostId } = input as {

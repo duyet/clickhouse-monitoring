@@ -9,6 +9,7 @@ import 'server-only'
 
 import type { DataFormat } from '@clickhouse/client'
 
+import { z } from 'zod/v3'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { fetchData } from '@/lib/clickhouse'
 
@@ -109,3 +110,27 @@ export function isValidTableIdentifier(table: string): boolean {
   if (!table || table.length > 256) return false
   return VALID_TABLE_IDENTIFIER.test(table.trim())
 }
+
+/**
+ * Standardized schema for ClickHouse host ID overriding.
+ * Preprocesses null, empty string, and whitespace-only strings into undefined
+ * to prevent silent coercion to host 0, while coercing integer values safely.
+ */
+export const hostIdSchema = z
+  .preprocess((val) => {
+    if (val === null || val === undefined) return undefined
+    if (typeof val === 'string' && val.trim() === '') return undefined
+    return val
+  }, z.coerce.number().int().nonnegative().optional())
+  .describe('Override host ID')
+
+/**
+ * Standardized schema for required ClickHouse host IDs.
+ * Preprocesses null, empty string, and whitespace-only strings into undefined
+ * to trigger validation failures instead of silent coercion to host 0.
+ */
+export const requiredHostIdSchema = z.preprocess((val) => {
+  if (val === null || val === undefined) return undefined
+  if (typeof val === 'string' && val.trim() === '') return undefined
+  return val
+}, z.coerce.number().int().nonnegative())

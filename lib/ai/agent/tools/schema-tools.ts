@@ -1,4 +1,9 @@
-import { readOnlyQuery, resolveHostId, validatedReadOnlyQuery } from './helpers'
+import {
+  hostIdSchema,
+  readOnlyQuery,
+  resolveHostId,
+  validatedReadOnlyQuery,
+} from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -9,10 +14,7 @@ export function createSchemaTools(hostId: number) {
         'Execute read-only SQL queries on ClickHouse. Use this to fetch data, analyze metrics, and explore the database structure.',
       inputSchema: z.object({
         sql: z.string().describe('The SQL query to execute'),
-        hostId: z.coerce
-          .number()
-          .optional()
-          .describe('The host ID (defaults to the session host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { sql, hostId: paramHostId } = input as {
@@ -31,10 +33,7 @@ export function createSchemaTools(hostId: number) {
       description:
         'List all databases in ClickHouse with their engine and comment metadata.',
       inputSchema: z.object({
-        hostId: z.coerce
-          .number()
-          .optional()
-          .describe('The host ID (defaults to the session host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { hostId: paramHostId } = input as { hostId?: number }
@@ -53,10 +52,7 @@ export function createSchemaTools(hostId: number) {
         'List tables in a specific database with row counts and size information.',
       inputSchema: z.object({
         database: z.string().describe('The database name'),
-        hostId: z.coerce
-          .number()
-          .optional()
-          .describe('The host ID (defaults to the session host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { database, hostId: paramHostId } = input as {
@@ -86,10 +82,7 @@ export function createSchemaTools(hostId: number) {
       inputSchema: z.object({
         database: z.string().describe('The database name'),
         table: z.string().describe('The table name'),
-        hostId: z.coerce
-          .number()
-          .optional()
-          .describe('The host ID (defaults to the session host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
@@ -118,10 +111,7 @@ export function createSchemaTools(hostId: number) {
       inputSchema: z.object({
         database: z.string().optional().describe('The database name'),
         table: z.string().optional().describe('The table name'),
-        hostId: z.coerce
-          .number()
-          .optional()
-          .describe('The host ID (defaults to the session host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {

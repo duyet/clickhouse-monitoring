@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -13,7 +13,7 @@ export function createZookeeperTools(hostId: number) {
           .optional()
           .default('/')
           .describe('ZooKeeper path to inspect (default: root path "/")'),
-        hostId: z.coerce.number().optional().describe('Host index override'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { path = '/', hostId: hostIdOverride } = input as {

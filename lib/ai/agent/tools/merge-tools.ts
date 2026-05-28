@@ -1,4 +1,4 @@
-import { readOnlyQuery, resolveHostId } from './helpers'
+import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -8,7 +8,7 @@ export function createMergeTools(hostId: number) {
       description:
         'Get currently active merges with progress and elapsed time.',
       inputSchema: z.object({
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { hostId: toolHostId } = input as { hostId?: number }
@@ -32,7 +32,7 @@ export function createMergeTools(hostId: number) {
           .optional()
           .default(50)
           .describe('Maximum number of mutations to return'),
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
@@ -77,7 +77,7 @@ export function createMergeTools(hostId: number) {
           .optional()
           .default(24)
           .describe('Number of hours to look back'),
-        hostId: z.coerce.number().optional().describe('Override host ID'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const { lastHours = 24, hostId: toolHostId } = input as {

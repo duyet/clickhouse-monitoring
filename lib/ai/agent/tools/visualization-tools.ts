@@ -1,6 +1,11 @@
 import 'server-only'
 
-import { readOnlyQuery, resolveHostId, validatedReadOnlyQuery } from './helpers'
+import {
+  hostIdSchema,
+  readOnlyQuery,
+  resolveHostId,
+  validatedReadOnlyQuery,
+} from './helpers'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
 
@@ -45,11 +50,7 @@ export function createVisualizationTools(hostId: number) {
           .enum(['bytes', 'duration', 'number', 'quantity'])
           .optional()
           .describe('Value format hint'),
-        hostId: z.coerce
-          .number()
-          .int()
-          .optional()
-          .describe('Host ID (defaults to session host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
@@ -129,11 +130,7 @@ export function createVisualizationTools(hostId: number) {
       inputSchema: z.object({
         searchTerm: z.string().describe('Topic to search for'),
         database: z.string().optional().describe('Limit to specific database'),
-        hostId: z.coerce
-          .number()
-          .int()
-          .optional()
-          .describe('Host ID (defaults to session host)'),
+        hostId: hostIdSchema,
       }),
       execute: async (input: unknown) => {
         const {
