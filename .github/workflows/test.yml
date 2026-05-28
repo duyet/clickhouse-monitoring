@@ -67,11 +67,7 @@ jobs:
   # Cypress component tests cover isolated React/component behavior
   component-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1/4, 2/4, 3/4, 4/4]
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -95,36 +91,16 @@ jobs:
         with:
           path: ~/.cache/Cypress
           key: ${{ runner.os }}-cypress-v1-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
+          restore-links: |
             ${{ runner.os }}-cypress-v1-
 
       - name: Install dependencies
         run: bun install
 
-      - name: Select specs for shard ${{ matrix.shard }}
-        id: specs
-        run: |
-          # Collect all component test files, sort for determinism
-          mapfile -t ALL < <(find . -name '*.cy.tsx' -not -path '*/node_modules/*' -not -path '*/.claude/*' | sort)
-          TOTAL=${#ALL[@]}
-          INDEX=$(( ${{ matrix.shard }} - 1 ))
-          CHUNK=$(( (TOTAL + 3) / 4 ))
-          START=$(( INDEX * CHUNK ))
-          END=$(( START + CHUNK ))
-          [ "$END" -gt "$TOTAL" ] && END=$TOTAL
-
-          SPECS=""
-          for (( i=START; i<END; i++ )); do
-            [ -n "$SPECS" ] && SPECS="$SPECS,"
-            SPECS="$SPECS${ALL[$i]}"
-          done
-
-          echo "Shard ${{ matrix.shard }}: specs $START..$((END-1)) of $TOTAL"
-          echo "specs=$SPECS" >> "$GITHUB_OUTPUT"
-
-      - name: Run component tests (shard ${{ matrix.shard }})
-        if: steps.specs.outputs.specs != ''
-        run: cypress run --component --browser chrome --spec "${{ steps.specs.outputs.specs }}"
+      - name: Run component tests
+        run: bun run component:headless
+        env:
+          CYPRESS_BROWSER: chrome
 
   # E2E tests - single browser, latest ClickHouse
   e2e-test:
