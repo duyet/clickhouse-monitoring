@@ -34,14 +34,14 @@ export function PeerChip({
         : 'h-6 text-[11.5px]'
   const mono =
     size === 'lg'
-      ? 'w-6 h-6 text-[10.5px]'
+      ? 'w-7 h-full text-[10.5px] rounded-l-[5px]'
       : size === 'xs'
-        ? 'w-4 h-4 text-[8.5px]'
-        : 'w-5 h-5 text-[9.5px]'
+        ? 'w-5 h-full text-[8.5px] rounded-l-[4px]'
+        : 'w-6 h-full text-[9.5px] rounded-l-[5px]'
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border border-border bg-card pr-2',
+        'inline-flex items-center gap-1.5 rounded-md border border-border bg-card pr-2 overflow-hidden',
         shell,
         dim && 'opacity-70',
         className
@@ -49,13 +49,13 @@ export function PeerChip({
     >
       <span
         className={cn(
-          'inline-flex shrink-0 items-center justify-center rounded-l-[5px] font-mono font-bold',
+          'inline-flex shrink-0 items-center justify-center font-mono font-bold',
           mono
         )}
         style={{ background: k.bg, color: k.fg }}
       >
         {hasDbLogo(normalizedType) ? (
-          <DbLogo type={normalizedType} className="size-full p-[3px]" />
+          <DbLogo type={normalizedType} className="size-full p-[3.5px]" />
         ) : (
           k.mono
         )}

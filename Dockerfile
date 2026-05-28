@@ -9,7 +9,8 @@ FROM base AS deps
 ENV NODE_ENV=production
 RUN apk add --no-cache libc6-compat
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile --ignore-scripts
+RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile --ignore-scripts
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -60,4 +61,4 @@ COPY --from=builder --chown=app:app /app/lib/conversation-store/pg-migrations ./
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
 # Auto-migration runs on first API request via autoMigrate() singleton
-CMD ["node", "server.js"]
+CMD ["bun", "run", "server.js"]
