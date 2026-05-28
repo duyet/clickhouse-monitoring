@@ -24,7 +24,8 @@ describe('ErrorAlert', () => {
   describe('Component Structure', () => {
     it('should export ErrorAlert component', () => {
       expect(ErrorAlert).toBeDefined()
-      expect(typeof ErrorAlert).toBe('object') // memo returns an object
+      // Plain function component; React Compiler handles memoization (manual memo removed)
+      expect(typeof ErrorAlert).toBe('function')
     })
 
     it('should export CompactErrorAlert component', () => {
