@@ -10,7 +10,7 @@ import { getCaretCoordinates } from './caret-position'
 import { MentionBadge, SlashCommandBadge } from './mention-badge'
 import { resolveMentionContext } from './resolve-mentions'
 import { useAutocomplete } from './use-autocomplete'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   InputGroup,
   InputGroupAddon,
@@ -49,16 +49,13 @@ export function PromptInputTextareaWithMentions({
   const [internalValue, setInternalValue] = useState('')
 
   const value = controlledValue ?? internalValue
-  const setValue = useCallback(
-    (v: string) => {
-      if (controlledOnChange) {
-        controlledOnChange(v)
-      } else {
-        setInternalValue(v)
-      }
-    },
-    [controlledOnChange]
-  )
+  const setValue = (v: string) => {
+    if (controlledOnChange) {
+      controlledOnChange(v)
+    } else {
+      setInternalValue(v)
+    }
+  }
 
   const autocomplete = useAutocomplete()
   const { tables, resources, skills, commands } = useAutocompleteData()
@@ -66,7 +63,7 @@ export function PromptInputTextareaWithMentions({
   const setAutocompleteFilteredItems = autocomplete.setFilteredItems
 
   // Build filterable items based on current trigger
-  const allItems = useMemo<AutocompleteItem[]>(() => {
+  const allItems = ((): AutocompleteItem[] => {
     if (autocomplete.state.trigger === '@') {
       return [...resources, ...tables, ...skills]
     }
@@ -81,7 +78,7 @@ export function PromptInputTextareaWithMentions({
       }))
     }
     return []
-  }, [autocomplete.state.trigger, tables, resources, skills, commands])
+  })()
 
   // Filter items by query
   useEffect(() => {
@@ -121,16 +118,13 @@ export function PromptInputTextareaWithMentions({
     }
   }, [autocomplete.state.isOpen, autocomplete.state.triggerIndex])
 
-  const handleChange = useCallback(
-    (e: ChangeEvent<HTMLTextAreaElement>) => {
-      const newValue = e.currentTarget.value
-      setValue(newValue)
-      autocomplete.handleTextChange(newValue, e.currentTarget.selectionStart)
-    },
-    [setValue, autocomplete]
-  )
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.currentTarget.value
+    setValue(newValue)
+    autocomplete.handleTextChange(newValue, e.currentTarget.selectionStart)
+  }
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = async () => {
     if (!value.trim() || disabled) return
 
     const resolved = await resolveMentionContext(
@@ -145,59 +139,53 @@ export function PromptInputTextareaWithMentions({
     // Clear state
     setValue('')
     autocomplete.clear()
-  }, [value, disabled, autocomplete, hostId, onResolvedSubmit, setValue])
+  }
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLTextAreaElement>) => {
-      const handled = autocomplete.handleKeyDown(e)
-      if (handled) {
-        // If Enter/Tab was handled and there are filtered items, perform selection
-        if (
-          (e.key === 'Enter' || e.key === 'Tab') &&
-          autocomplete.filteredItems.length > 0
-        ) {
-          const selectedItem =
-            autocomplete.filteredItems[autocomplete.state.selectedIndex]
-          if (selectedItem) {
-            autocomplete.handleSelect(selectedItem, textareaRef, setValue)
-          }
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    const handled = autocomplete.handleKeyDown(e)
+    if (handled) {
+      // If Enter/Tab was handled and there are filtered items, perform selection
+      if (
+        (e.key === 'Enter' || e.key === 'Tab') &&
+        autocomplete.filteredItems.length > 0
+      ) {
+        const selectedItem =
+          autocomplete.filteredItems[autocomplete.state.selectedIndex]
+        if (selectedItem) {
+          autocomplete.handleSelect(selectedItem, textareaRef, setValue)
         }
+      }
+      return
+    }
+
+    // Normal Enter = submit form
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault()
+      if (isLoading) {
+        onStop?.()
         return
       }
+      void handleSubmit()
+    }
+  }
 
-      // Normal Enter = submit form
-      if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-        e.preventDefault()
-        if (isLoading) {
-          onStop?.()
-          return
-        }
-        void handleSubmit()
-      }
-    },
-    [autocomplete, setValue, handleSubmit, isLoading, onStop]
-  )
-
-  const handleSelect = useCallback(
-    (item: AutocompleteItem) => {
-      autocomplete.handleSelect(item, textareaRef, setValue)
-    },
-    [autocomplete, setValue]
-  )
+  const handleSelect = (item: AutocompleteItem) => {
+    autocomplete.handleSelect(item, textareaRef, setValue)
+  }
 
   const hasMentions =
     autocomplete.mentions.length > 0 || autocomplete.slashCommand !== null
   const canSubmit = value.trim().length > 0 && !disabled
   const buttonDisabled = isLoading ? !onStop : !canSubmit
 
-  const handleActionClick = useCallback(() => {
+  const handleActionClick = () => {
     if (isLoading) {
       onStop?.()
       return
     }
 
     void handleSubmit()
-  }, [handleSubmit, isLoading, onStop])
+  }
 
   return (
     <div className="relative">

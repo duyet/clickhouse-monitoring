@@ -2,7 +2,7 @@
 
 import { Check, Copy, Globe, Terminal } from 'lucide-react'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -54,11 +54,11 @@ const MCP_TOOLS = [
 function CopyButton({ text, className }: { text: string; className?: string }) {
   const [copied, setCopied] = useState(false)
 
-  const handleCopy = useCallback(async () => {
+  const handleCopy = async () => {
     await navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }, [text])
+  }
 
   return (
     <Button
@@ -102,20 +102,16 @@ export function McpInfoCard() {
     setEndpointUrl(`${window.location.origin}/api/mcp`)
   }, [])
 
-  const claudeDesktopConfig = useMemo(
-    () =>
-      JSON.stringify(
-        {
-          mcpServers: {
-            'clickhouse-monitor': {
-              url: endpointUrl,
-            },
-          },
+  const claudeDesktopConfig = JSON.stringify(
+    {
+      mcpServers: {
+        'clickhouse-monitor': {
+          url: endpointUrl,
         },
-        null,
-        2
-      ),
-    [endpointUrl]
+      },
+    },
+    null,
+    2
   )
 
   const curlExample = `curl -X POST ${endpointUrl || 'http://localhost:3000/api/mcp'} \\

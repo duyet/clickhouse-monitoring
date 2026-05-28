@@ -1,8 +1,8 @@
 'use client'
 
-import { memo, useEffect } from 'react'
+import { useEffect } from 'react'
 
-export const BackgroundJobs = memo(function BackgroundJobs({
+export const BackgroundJobs = function BackgroundJobs({
   hostId,
 }: {
   hostId: string | number
@@ -15,4 +15,4 @@ export const BackgroundJobs = memo(function BackgroundJobs({
   }, [hostId])
 
   return null
-})
+}

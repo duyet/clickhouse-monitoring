@@ -7,7 +7,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const COOKIE_NAME = 'visited_pages'
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
@@ -71,16 +71,13 @@ export function useVisitedPages() {
     })
   }, [pathname])
 
-  const isVisited = useCallback(
-    (href: string): boolean => {
-      // Normalize href
-      const normalizedHref = href.replace(/\/$/, '') || '/'
-      return visitedPages.has(normalizedHref)
-    },
-    [visitedPages]
-  )
+  const isVisited = (href: string): boolean => {
+    // Normalize href
+    const normalizedHref = href.replace(/\/$/, '') || '/'
+    return visitedPages.has(normalizedHref)
+  }
 
-  const markAsVisited = useCallback((href: string): void => {
+  const markAsVisited = (href: string): void => {
     const normalizedHref = href.replace(/\/$/, '') || '/'
     setVisitedPages((prev) => {
       if (prev.has(normalizedHref)) return prev
@@ -90,7 +87,7 @@ export function useVisitedPages() {
       saveVisitedPages(newSet)
       return newSet
     })
-  }, [])
+  }
 
   return { isVisited, markAsVisited, visitedPages }
 }

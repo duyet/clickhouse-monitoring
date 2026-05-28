@@ -2,7 +2,7 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo, useId } from 'react'
+import { useId } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
@@ -18,7 +18,7 @@ type DataRow = {
   part_count: number
 }
 
-export const ChartDiskUsageByDatabase = memo(function ChartDiskUsageByDatabase({
+export const ChartDiskUsageByDatabase = function ChartDiskUsageByDatabase({
   title,
   className,
   hostId,
@@ -89,6 +89,6 @@ export const ChartDiskUsageByDatabase = memo(function ChartDiskUsageByDatabase({
       }}
     </ChartContainer>
   )
-})
+}
 
 export default ChartDiskUsageByDatabase

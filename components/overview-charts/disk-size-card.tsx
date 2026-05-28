@@ -5,7 +5,6 @@ import { HardDrive } from 'lucide-react'
 import type { CardVariant } from './card-styles'
 
 import { KpiCard } from './kpi-card'
-import { memo } from 'react'
 import { formatReadableSize } from '@/lib/format-readable'
 import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
@@ -21,7 +20,7 @@ import { buildUrl } from '@/lib/url/url-builder'
  * breakdown sit below. Bar color escalates past 75% / 90% usage.
  */
 
-export const DiskSizeCard = memo(function DiskSizeCard() {
+export const DiskSizeCard = function DiskSizeCard() {
   const hostId = useHostId()
   const swr = useChartData<{
     name: string
@@ -65,4 +64,4 @@ export const DiskSizeCard = memo(function DiskSizeCard() {
       isLoading={isLoading}
     />
   )
-})
+}

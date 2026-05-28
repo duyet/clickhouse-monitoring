@@ -1,6 +1,6 @@
 'use client'
 
-import { Children, memo, useState } from 'react'
+import { Children, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 interface TruncatedListProps {
@@ -9,7 +9,7 @@ interface TruncatedListProps {
   className?: string
 }
 
-export const TruncatedList = memo(function TruncatedList({
+export const TruncatedList = function TruncatedList({
   items = 3,
   children,
   className,
@@ -32,4 +32,4 @@ export const TruncatedList = memo(function TruncatedList({
       )}
     </div>
   )
-})
+}

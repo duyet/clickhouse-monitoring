@@ -10,7 +10,7 @@
 
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   countActiveTools,
   readSkillStorage,
@@ -39,35 +39,28 @@ export function useAgentSkills(): UseAgentSkillsResult {
     writeSkillStorage({ disabled })
   }, [disabled])
 
-  const isSkillEnabled = useCallback(
-    (id: string) => !disabled.includes(id),
-    [disabled]
-  )
+  const isSkillEnabled = (id: string) => !disabled.includes(id)
 
-  const toggleSkill = useCallback((id: string) => {
+  const toggleSkill = (id: string) => {
     setDisabled((prev) =>
       prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
     )
-  }, [])
+  }
 
-  const setSkillEnabled = useCallback((id: string, enabled: boolean) => {
+  const setSkillEnabled = (id: string, enabled: boolean) => {
     setDisabled((prev) => {
       const has = prev.includes(id)
       if (enabled && has) return prev.filter((d) => d !== id)
       if (!enabled && !has) return [...prev, id]
       return prev
     })
-  }, [])
+  }
 
-  const activeSkillIds = useMemo(
-    () => SKILLS.filter((s) => !disabled.includes(s.id)).map((s) => s.id),
-    [disabled]
+  const activeSkillIds = SKILLS.filter((s) => !disabled.includes(s.id)).map(
+    (s) => s.id
   )
 
-  const activeToolCount = useMemo(
-    () => countActiveTools(activeSkillIds),
-    [activeSkillIds]
-  )
+  const activeToolCount = countActiveTools(activeSkillIds)
 
   return {
     skills: SKILLS,

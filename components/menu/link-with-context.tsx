@@ -1,7 +1,6 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useCallback } from 'react'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 import { useHostId } from '@/lib/swr'
@@ -28,18 +27,15 @@ export const HostPrefixedLink = ({
   // Check if this link is active
   const isActive = isMenuItemActive(href, pathname)
 
-  const handleMouseEnter = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
-      // Prefetch route data on hover using idle callback to avoid blocking
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        requestIdleCallback(() => prefetchRoute(href, hostId))
-      } else {
-        setTimeout(() => prefetchRoute(href, hostId), 100)
-      }
-      onMouseEnter?.(e)
-    },
-    [href, hostId, onMouseEnter]
-  )
+  const handleMouseEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Prefetch route data on hover using idle callback to avoid blocking
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      requestIdleCallback(() => prefetchRoute(href, hostId))
+    } else {
+      setTimeout(() => prefetchRoute(href, hostId), 100)
+    }
+    onMouseEnter?.(e)
+  }
 
   return (
     <Link

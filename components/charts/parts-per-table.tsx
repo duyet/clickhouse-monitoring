@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
@@ -16,7 +15,7 @@ type DataRow = {
   readable_size: string
 }
 
-export const ChartPartsPerTable = memo(function ChartPartsPerTable({
+export const ChartPartsPerTable = function ChartPartsPerTable({
   title,
   className,
   hostId,
@@ -51,6 +50,6 @@ export const ChartPartsPerTable = memo(function ChartPartsPerTable({
       }}
     </ChartContainer>
   )
-})
+}
 
 export default ChartPartsPerTable

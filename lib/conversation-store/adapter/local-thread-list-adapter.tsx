@@ -16,10 +16,10 @@ import type {
   RemoteThreadListAdapter,
   ThreadHistoryAdapter,
 } from '@assistant-ui/react'
+import type { FC, PropsWithChildren } from 'react'
 
 import { RuntimeAdapterProvider, useAui } from '@assistant-ui/react'
 import { createAssistantStream } from 'assistant-stream'
-import { type FC, type PropsWithChildren, useMemo } from 'react'
 import { generateTitleFromMessage } from '@/lib/ai/agent/conversation-utils'
 import {
   replaceHistoryItem,
@@ -114,8 +114,8 @@ function createLocalHistoryAdapter(
 
 const HistoryProvider: FC<PropsWithChildren> = ({ children }) => {
   const aui = useAui()
-  const history = useMemo(() => createLocalHistoryAdapter(aui), [aui])
-  const adapters = useMemo(() => ({ history }), [history])
+  const history = createLocalHistoryAdapter(aui)
+  const adapters = { history }
   return (
     <RuntimeAdapterProvider adapters={adapters as never}>
       {children}

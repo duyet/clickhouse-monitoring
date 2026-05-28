@@ -27,7 +27,7 @@ import type { QueryConfig } from '@/types/query-config'
 import { ChartsToggle } from './charts-toggle'
 import { RelatedCharts } from './related-charts'
 import { useChartsCollapsed } from './use-charts-collapsed'
-import { memo, type ReactNode, Suspense } from 'react'
+import { type ReactNode, Suspense } from 'react'
 import { FeatureUnavailable } from '@/components/feature-permissions/feature-unavailable'
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
@@ -68,7 +68,7 @@ export interface QueryPageLayoutProps {
   showFilterBar?: boolean
 }
 
-export const QueryPageLayout = memo(function QueryPageLayout({
+export const QueryPageLayout = function QueryPageLayout({
   queryConfig,
   title,
   description,
@@ -195,7 +195,7 @@ export const QueryPageLayout = memo(function QueryPageLayout({
       {footerContent}
     </div>
   )
-})
+}
 
 /**
  * Options for creating a standardized page from a QueryConfig
@@ -230,7 +230,7 @@ export interface CreateQueryPageOptions {
  * ```
  */
 export function createQueryPage(options: CreateQueryPageOptions) {
-  return memo(function Page() {
+  return function Page() {
     return <QueryPageLayout {...options} />
-  })
+  }
 }

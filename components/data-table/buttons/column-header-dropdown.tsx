@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import type { Header } from '@tanstack/react-table'
 
-import { memo, useCallback, useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -23,7 +23,7 @@ interface ColumnHeaderDropdownProps {
   header: Header<any, unknown>
 }
 
-export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
+export const ColumnHeaderDropdown = function ColumnHeaderDropdown({
   header,
 }: ColumnHeaderDropdownProps) {
   const [copied, setCopied] = useState(false)
@@ -32,46 +32,34 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
   const column = header.column
   const canSort = column.getCanSort()
 
-  const handleSortAsc = useCallback(
-    (_e: React.MouseEvent) => {
-      column.toggleSorting(false)
-      // Close and re-open dropdown to force re-render with new sort
-      setOpen(false)
-      setTimeout(() => setOpen(true), 0)
-    },
-    [column]
-  )
+  const handleSortAsc = (_e: React.MouseEvent) => {
+    column.toggleSorting(false)
+    // Close and re-open dropdown to force re-render with new sort
+    setOpen(false)
+    setTimeout(() => setOpen(true), 0)
+  }
 
-  const handleSortDesc = useCallback(
-    (_e: React.MouseEvent) => {
-      column.toggleSorting(true)
-      // Close and re-open dropdown to force re-render with new sort
-      setOpen(false)
-      setTimeout(() => setOpen(true), 0)
-    },
-    [column]
-  )
+  const handleSortDesc = (_e: React.MouseEvent) => {
+    column.toggleSorting(true)
+    // Close and re-open dropdown to force re-render with new sort
+    setOpen(false)
+    setTimeout(() => setOpen(true), 0)
+  }
 
-  const handleResetSort = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      column.clearSorting()
-      // Keep dropdown open after reset
-    },
-    [column]
-  )
+  const handleResetSort = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    column.clearSorting()
+    // Keep dropdown open after reset
+  }
 
-  const handleCopy = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      navigator.clipboard.writeText(column.id)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    },
-    [column.id]
-  )
+  const handleCopy = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    navigator.clipboard.writeText(column.id)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
@@ -120,4 +108,4 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
       </DropdownMenuContent>
     </DropdownMenu>
   )
-})
+}

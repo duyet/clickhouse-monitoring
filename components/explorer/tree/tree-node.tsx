@@ -2,7 +2,8 @@
 
 import { ChevronRight, Loader2 } from 'lucide-react'
 
-import { type ComponentType, memo } from 'react'
+import type { ComponentType } from 'react'
+
 import {
   Collapsible,
   CollapsibleContent,
@@ -38,7 +39,7 @@ interface TreeNodeProps {
   children?: React.ReactNode
 }
 
-export const TreeNode = memo(function TreeNode({
+export const TreeNode = function TreeNode({
   label,
   icon: Icon,
   iconClassName,
@@ -145,4 +146,4 @@ export const TreeNode = memo(function TreeNode({
       </SidebarMenuItem>
     </Collapsible>
   )
-})
+}

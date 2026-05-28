@@ -28,7 +28,6 @@ import {
   sanitizeCssVarName,
   sortCategoriesByTotal,
 } from './utils'
-import { memo, useMemo } from 'react'
 import { useChartScaleValue } from '@/components/charts/chart-scale-context'
 import {
   ChartContainer,
@@ -38,7 +37,7 @@ import {
 import { getYAxisDomain, resolveYAxisScale } from '@/lib/chart-scale'
 import { cn } from '@/lib/utils'
 
-export const BarChart = memo(function BarChart({
+export const BarChart = function BarChart({
   data,
   index,
   categories,
@@ -65,10 +64,9 @@ export const BarChart = memo(function BarChart({
   yAxisTickFormatter?: (value: string | number) => string
 }) {
   // Sort categories by total value for stacked bars (larger on top)
-  const sortedCategories = useMemo(
-    () => (stack ? sortCategoriesByTotal(data, categories) : categories),
-    [data, categories, stack]
-  )
+  const sortedCategories = stack
+    ? sortCategoriesByTotal(data, categories)
+    : categories
 
   // Get scale preference from context (if available)
   const contextScale = useChartScaleValue()
@@ -77,42 +75,27 @@ export const BarChart = memo(function BarChart({
   const effectiveScale = yAxisScale ?? contextScale ?? 'linear'
 
   // Resolve scale type (linear, log, or auto-detect)
-  const resolvedScale = useMemo(
-    () =>
-      resolveYAxisScale(
-        effectiveScale,
-        data as Record<string, unknown>[],
-        categories
-      ),
-    [effectiveScale, data, categories]
+  const resolvedScale = resolveYAxisScale(
+    effectiveScale,
+    data as Record<string, unknown>[],
+    categories
   )
 
   // Get appropriate domain for the scale type
-  const yAxisDomain = useMemo(
-    () =>
-      getYAxisDomain(
-        data as Record<string, unknown>[],
-        categories,
-        resolvedScale === 'log'
-      ),
-    [data, categories, resolvedScale]
+  const yAxisDomain = getYAxisDomain(
+    data as Record<string, unknown>[],
+    categories,
+    resolvedScale === 'log'
   )
 
-  const chartConfig = useMemo(
-    () => generateChartConfig(categories, colors, colorLabel),
-    [categories, colors, colorLabel]
-  )
+  const chartConfig = generateChartConfig(categories, colors, colorLabel)
 
   // Memoize tooltip to prevent recreation on every render
   // Must use render function (not component) for Recharts to detect it
-  const tooltip = useMemo(
-    () =>
-      renderBarTooltip({
-        tooltipTotal,
-        categories: sortedCategories,
-      }),
-    [tooltipTotal, sortedCategories]
-  )
+  const tooltip = renderBarTooltip({
+    tooltipTotal,
+    categories: sortedCategories,
+  })
 
   return (
     <ChartContainer
@@ -173,4 +156,4 @@ export const BarChart = memo(function BarChart({
       </RechartBarChart>
     </ChartContainer>
   )
-})
+}

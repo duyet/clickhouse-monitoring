@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { STUCK_THRESHOLD_SECONDS } from '@/lib/query-config/merges/mutations'
@@ -44,7 +43,7 @@ function getStatusLabel(row: DataRow): string {
   return row.status
 }
 
-export const ChartMutationProgress = memo(function ChartMutationProgress({
+export const ChartMutationProgress = function ChartMutationProgress({
   title,
   className,
   chartCardContentClassName,
@@ -157,6 +156,6 @@ export const ChartMutationProgress = memo(function ChartMutationProgress({
       }}
     </ChartContainer>
   )
-})
+}
 
 export default ChartMutationProgress

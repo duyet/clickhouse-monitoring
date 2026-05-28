@@ -2,7 +2,7 @@
 
 import { useShortcutHandlers } from './hooks/use-shortcut-handlers'
 import { KeyboardShortcutsDialog } from './keyboard-shortcuts-dialog'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { useKeyboardShortcut } from '@/lib/hooks/use-keyboard-shortcut'
 
 /**
@@ -65,9 +65,9 @@ export const KeyboardShortcuts = () => {
     onKeyDown: triggerRevalidate,
   })
 
-  const showShortcuts = useCallback(() => {
+  const showShortcuts = () => {
     setShowHelp(true)
-  }, [])
+  }
 
   useKeyboardShortcut({
     key: '/',

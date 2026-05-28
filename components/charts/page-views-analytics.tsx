@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
@@ -28,7 +27,7 @@ type CountryRow = {
   views: number
 }
 
-export const PageViewsAnalyticsTabs = memo(function PageViewsAnalyticsTabs({
+export const PageViewsAnalyticsTabs = function PageViewsAnalyticsTabs({
   title,
   className,
   hostId,
@@ -144,7 +143,7 @@ export const PageViewsAnalyticsTabs = memo(function PageViewsAnalyticsTabs({
       }}
     </ChartContainer>
   )
-})
+}
 
 export default PageViewsAnalyticsTabs
 

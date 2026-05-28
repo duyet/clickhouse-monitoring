@@ -2,7 +2,6 @@
 
 import { CheckCircle2Icon, CircleXIcon, LoaderIcon } from 'lucide-react'
 
-import { memo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {
   Tooltip,
@@ -33,7 +32,7 @@ const statusConfig = {
   },
 } as const
 
-export const ConnectionStatusBadge = memo(function ConnectionStatusBadge() {
+export const ConnectionStatusBadge = function ConnectionStatusBadge() {
   const hostId = useHostId()
   const { data, error, isLoading } = useHostStatus(hostId, {
     refreshInterval: 30000,
@@ -75,4 +74,4 @@ export const ConnectionStatusBadge = memo(function ConnectionStatusBadge() {
       <TooltipContent side="bottom">{config.tooltip}</TooltipContent>
     </Tooltip>
   )
-})
+}

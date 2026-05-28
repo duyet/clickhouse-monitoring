@@ -2,7 +2,6 @@
 
 import HeatMap, { type HeatMapProps } from '@uiw/react-heat-map'
 
-import { memo } from 'react'
 import {
   Tooltip,
   TooltipContent,
@@ -27,7 +26,7 @@ export interface GithubHeatmapChartProps extends HeatMapProps {
   className?: string
 }
 
-export const GithubHeatmapChart = memo(function GithubHeatmapChart({
+export const GithubHeatmapChart = function GithubHeatmapChart({
   data,
   index = 'date',
   weekLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -71,6 +70,6 @@ export const GithubHeatmapChart = memo(function GithubHeatmapChart({
       />
     </div>
   )
-})
+}
 
 export default GithubHeatmapChart

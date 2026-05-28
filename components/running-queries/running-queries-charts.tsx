@@ -13,7 +13,6 @@ import {
 import type { MiniBarSeries } from '@/components/charts/mini-charts'
 import type { RunningQueryRow } from './running-queries-table'
 
-import { memo, useMemo } from 'react'
 import { MiniAreaChart, MiniBarChart } from '@/components/charts/mini-charts'
 import {
   formatCompactNumber,
@@ -211,7 +210,7 @@ interface RunningQueriesChartsProps {
  * query-memory trend; "Summary" is aggregated straight from the live rows.
  * Every number is real — there is no synthetic series.
  */
-export const RunningQueriesCharts = memo(function RunningQueriesCharts({
+export const RunningQueriesCharts = function RunningQueriesCharts({
   rows,
 }: RunningQueriesChartsProps) {
   const hostId = useHostId()
@@ -243,7 +242,7 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
   })
 
   // "Running over time" — 14-day query volume + a recent-vs-prior-week trend.
-  const running = useMemo(() => {
+  const running = (() => {
     const series = (countSwr.data ?? []).map((d) => Number(d.query_count) || 0)
     const total = series.reduce((s, v) => s + v, 0)
     const half = Math.floor(series.length / 2)
@@ -275,20 +274,17 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
           }
         : undefined,
     }
-  }, [countSwr.data])
+  })()
 
   // Distributed queries show up in system.processes as an initial row plus
   // secondary fragment rows. Aggregate only the initial rows so memory / row /
   // thread totals are not multiplied by the shard count on a clustered host.
-  const initialRows = useMemo(
-    () => rows.filter((r) => Number(r.is_initial_query ?? 1) !== 0),
-    [rows]
-  )
+  const initialRows = rows.filter((r) => Number(r.is_initial_query ?? 1) !== 0)
 
   // "Query memory" — the most recent day's average memory per query. The
   // headline and the sparkline plot the *same* metric, so the number agrees
   // with the chart beneath it. (Live total memory lives in the Summary card.)
-  const memory = useMemo(() => {
+  const memory = (() => {
     const series = (memorySwr.data ?? []).map(
       (d) => Number(d.memory_usage) || 0
     )
@@ -297,10 +293,10 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
       series,
       ...splitSize(formatReadableSize(latest)),
     }
-  }, [memorySwr.data])
+  })()
 
   // "Queries by user" — pivot the long-form rows into stacked daily bars.
-  const byUser = useMemo(() => {
+  const byUser = (() => {
     const points = byUserSwr.data ?? []
     const totals = new Map<string, number>()
     for (const d of points) {
@@ -333,10 +329,10 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
         return row
       })
     return { data, series }
-  }, [byUserSwr.data])
+  })()
 
   // "Summary" — aggregated from the live rows (initial queries only).
-  const summary = useMemo<SummaryItem[]>(() => {
+  const summary = ((): SummaryItem[] => {
     const sum = (key: keyof RunningQueryRow) =>
       initialRows.reduce((s, r) => s + (Number(r[key]) || 0), 0)
     const today = Number(todaySwr.data?.[0]?.count ?? 0)
@@ -364,7 +360,7 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
       { icon: Layers, label: 'Threads', value: String(sum('thread_count')) },
       { icon: CalendarDays, label: 'Today', value: formatCompactNumber(today) },
     ]
-  }, [initialRows, todaySwr.data])
+  })()
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -390,4 +386,4 @@ export const RunningQueriesCharts = memo(function RunningQueriesCharts({
       <SummaryCard items={summary} />
     </div>
   )
-})
+}

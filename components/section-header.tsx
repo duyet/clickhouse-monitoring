@@ -1,6 +1,5 @@
 'use client'
 
-import { memo } from 'react'
 import { cn } from '@/lib/utils'
 
 /**
@@ -36,7 +35,7 @@ export interface SectionHeaderProps {
   className?: string
 }
 
-export const SectionHeader = memo(function SectionHeader({
+export const SectionHeader = function SectionHeader({
   title,
   description,
   actions,
@@ -64,4 +63,4 @@ export const SectionHeader = memo(function SectionHeader({
       )}
     </div>
   )
-})
+}

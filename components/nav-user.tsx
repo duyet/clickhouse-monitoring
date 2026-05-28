@@ -2,7 +2,7 @@
 
 import { ChevronsUpDown, ExternalLink, Info, Settings } from 'lucide-react'
 
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
 import { useSettingsShortcut } from '@/components/nav-user/use-settings-shortcut'
 import { SettingsDialog } from '@/components/settings'
@@ -45,9 +45,9 @@ export function NavUser({
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { config } = useFeaturePermissions()
   const canUseSettings = isFeatureAllowed(SETTINGS_FEATURE_PERMISSION, config)
-  const openSettings = useCallback(() => {
+  const openSettings = () => {
     if (canUseSettings) setSettingsOpen(true)
-  }, [canUseSettings])
+  }
   useSettingsShortcut(openSettings, canUseSettings)
 
   // If Clerk is enabled, use Clerk navigation

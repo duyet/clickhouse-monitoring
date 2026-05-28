@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react'
 
 import type { DateRangeConfig, DateRangeValue } from './date-range-types'
 
-import { memo, useCallback, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -45,7 +45,7 @@ interface DateRangeSelectorProps {
  * />
  * ```
  */
-export const DateRangeSelector = memo(function DateRangeSelector({
+export const DateRangeSelector = function DateRangeSelector({
   config,
   value,
   onChange,
@@ -56,26 +56,21 @@ export const DateRangeSelector = memo(function DateRangeSelector({
   const [isOpen, setIsOpen] = useState(false)
 
   // Find current option for label display
-  const currentOption = useMemo(
-    () => config.options.find((o) => o.value === value) ?? config.options[0],
-    [config.options, value]
-  )
+  const currentOption =
+    config.options.find((o) => o.value === value) ?? config.options[0]
 
   // Handle option selection
-  const handleSelect = useCallback(
-    (optionValue: string) => {
-      const option = config.options.find((o) => o.value === optionValue)
-      if (option) {
-        onChange({
-          value: option.value,
-          lastHours: option.lastHours,
-          interval: option.interval,
-        })
-        setIsOpen(false)
-      }
-    },
-    [config.options, onChange]
-  )
+  const handleSelect = (optionValue: string) => {
+    const option = config.options.find((o) => o.value === optionValue)
+    if (option) {
+      onChange({
+        value: option.value,
+        lastHours: option.lastHours,
+        interval: option.interval,
+      })
+      setIsOpen(false)
+    }
+  }
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -133,4 +128,4 @@ export const DateRangeSelector = memo(function DateRangeSelector({
       </DropdownMenuContent>
     </DropdownMenu>
   )
-})
+}

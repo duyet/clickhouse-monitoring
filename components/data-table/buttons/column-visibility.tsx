@@ -1,7 +1,6 @@
 import { MixerHorizontalIcon } from '@radix-ui/react-icons'
 import type { Table } from '@tanstack/react-table'
 
-import { memo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -16,14 +15,14 @@ interface ColumnVisibilityButtonProps {
   table: Table<any>
 }
 
-export const ColumnVisibilityButton = memo(function ColumnVisibilityButton({
+export const ColumnVisibilityButton = function ColumnVisibilityButton({
   table,
 }: ColumnVisibilityButtonProps) {
-  const handleSelect = useCallback((event: Event) => {
+  const handleSelect = (event: Event) => {
     event.preventDefault()
     // Prevent default selection behavior to avoid
     // unintended interactions with checkbox state
-  }, [])
+  }
 
   return (
     <DropdownMenu modal={false}>
@@ -63,4 +62,4 @@ export const ColumnVisibilityButton = memo(function ColumnVisibilityButton({
       </DropdownMenuContent>
     </DropdownMenu>
   )
-})
+}

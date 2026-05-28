@@ -5,7 +5,7 @@ import type { Row, RowData } from '@tanstack/react-table'
 
 import type { Action } from './types'
 
-import { lazy, memo, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -74,6 +74,4 @@ function ActionMenuComponent<TData extends RowData, TValue>({
 }
 
 // Memoized export to prevent unnecessary re-renders
-export const ActionMenu = memo(
-  ActionMenuComponent
-) as typeof ActionMenuComponent
+export const ActionMenu = ActionMenuComponent as typeof ActionMenuComponent

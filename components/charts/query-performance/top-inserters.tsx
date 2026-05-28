@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
@@ -20,7 +19,7 @@ type DataRow = {
   [key: string]: unknown
 }
 
-export const ChartTopInserters = memo(function ChartTopInserters({
+export const ChartTopInserters = function ChartTopInserters({
   title,
   className,
   hostId,
@@ -55,6 +54,6 @@ export const ChartTopInserters = memo(function ChartTopInserters({
       }}
     </ChartContainer>
   )
-})
+}
 
 export default ChartTopInserters

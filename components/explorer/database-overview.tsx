@@ -10,7 +10,6 @@ import {
   DependencyGraph,
 } from './dependency-graph/dependency-graph'
 import { useExplorerState } from './hooks/use-explorer-state'
-import { useMemo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -50,7 +49,7 @@ export function DatabaseOverview({ database }: DatabaseOverviewProps) {
   const graphData = depsData?.data || []
 
   // Count actual dependencies (edges with targets)
-  const { tableCount, depCount } = useMemo(() => {
+  const { tableCount, depCount } = (() => {
     const tables = new Set<string>()
     let deps = 0
     for (const dep of graphData) {
@@ -61,15 +60,15 @@ export function DatabaseOverview({ database }: DatabaseOverviewProps) {
       }
     }
     return { tableCount: tables.size, depCount: deps }
-  }, [graphData])
+  })()
 
-  const metadata = useMemo(() => {
+  const metadata = (() => {
     if (!depsData?.metadata) return undefined
     return {
       ...depsData.metadata,
       api: depsUrl,
     }
-  }, [depsData?.metadata, depsUrl])
+  })()
 
   if (isLoading) {
     return (

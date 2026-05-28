@@ -1,6 +1,5 @@
 'use client'
 
-import { memo } from 'react'
 import { chartCard } from '@/components/charts/chart-card-styles'
 import {
   Card,
@@ -205,7 +204,7 @@ const TableSkeletonMini = () => (
  * - Matches ChartCard styling: gap-2, py-2, border-border/50
  * - Supports realistic mock types to prevent Layout Shift
  */
-export const ChartSkeleton = memo(function ChartSkeleton({
+export const ChartSkeleton = function ChartSkeleton({
   className,
   title,
   type = 'area',
@@ -260,4 +259,4 @@ export const ChartSkeleton = memo(function ChartSkeleton({
       </CardContent>
     </Card>
   )
-})
+}

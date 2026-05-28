@@ -1,6 +1,5 @@
 import type { FetchDataError } from '@/lib/clickhouse'
 
-import { memo } from 'react'
 import { ErrorAlert } from '@/components/feedback/error-alert'
 import {
   formatErrorMessage,
@@ -19,7 +18,7 @@ interface WithErrorHandlingProps {
  * HOC component that handles error states consistently across the application.
  * Renders ErrorAlert for error states, otherwise renders children.
  */
-export const WithErrorHandling = memo(function WithErrorHandling({
+export const WithErrorHandling = function WithErrorHandling({
   error,
   query,
   children,
@@ -38,4 +37,4 @@ export const WithErrorHandling = memo(function WithErrorHandling({
   }
 
   return <>{children}</>
-})
+}

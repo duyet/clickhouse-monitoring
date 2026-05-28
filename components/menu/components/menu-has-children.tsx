@@ -12,7 +12,7 @@ import { useMenuActiveState } from '../hooks/use-menu-active-state'
 import { ActiveIndicator } from './active-indicator'
 import { MenuIcon } from './menu-icon'
 import { MenuListItem } from './menu-list-item'
-import { lazy, memo, Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import {
   NavigationMenuContent,
   NavigationMenuItem,
@@ -30,7 +30,7 @@ interface MenuHasChildrenProps {
   item: MenuItem
 }
 
-export const MenuHasChildren = memo(function MenuHasChildren({
+export const MenuHasChildren = function MenuHasChildren({
   item,
 }: MenuHasChildrenProps) {
   const hasActiveChild = useMenuActiveState(item)
@@ -70,4 +70,4 @@ export const MenuHasChildren = memo(function MenuHasChildren({
       </NavigationMenuContent>
     </NavigationMenuItem>
   )
-})
+}

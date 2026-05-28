@@ -9,7 +9,7 @@
 
 import { BookmarkIcon, TrashIcon } from '@radix-ui/react-icons'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -40,13 +40,14 @@ export function SavedDashboardsToolbar({
   const [activeName, setActiveName] = useState<string>('')
 
   // Refresh the list from localStorage (runs client-side only)
-  const refreshList = useCallback(() => {
+  const refreshList = () => {
+    setSavedNames(listDashboards())
+  }
+
+  // Load the saved list on mount (inline to keep an empty dependency array).
+  useEffect(() => {
     setSavedNames(listDashboards())
   }, [])
-
-  useEffect(() => {
-    refreshList()
-  }, [refreshList])
 
   function handleLoad(name: string) {
     const charts = loadDashboard(name)

@@ -4,7 +4,6 @@ import { Check, ClockIcon, TagIcon } from 'lucide-react'
 
 import { formatCompactUptime } from './format-uptime'
 import { StatusIndicator } from './shared'
-import { memo } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHostStatus } from '@/lib/swr/use-host-status'
 import { cn } from '@/lib/utils'
@@ -15,7 +14,7 @@ interface HostMenuRowProps {
   isActive: boolean
 }
 
-export const HostMenuRow = memo(function HostMenuRow({
+export const HostMenuRow = function HostMenuRow({
   hostId,
   hostName,
   isActive,
@@ -71,4 +70,4 @@ export const HostMenuRow = memo(function HostMenuRow({
       />
     </div>
   )
-})
+}

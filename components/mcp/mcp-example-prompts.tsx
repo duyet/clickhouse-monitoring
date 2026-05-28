@@ -3,7 +3,7 @@
 import { Check, Copy, MessageSquare } from 'lucide-react'
 
 import { EXAMPLE_PROMPTS } from './mcp-tools-data'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {
   Card,
@@ -16,11 +16,11 @@ import {
 function PromptItem({ prompt }: { prompt: string }) {
   const [copied, setCopied] = useState(false)
 
-  const handleCopy = useCallback(async () => {
+  const handleCopy = async () => {
     await navigator.clipboard.writeText(prompt)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }, [prompt])
+  }
 
   return (
     <button

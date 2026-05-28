@@ -4,7 +4,6 @@ import type { MenuSection } from '@/components/menu/types'
 import type { MenuGroupProps } from './types'
 
 import { MenuItem } from './menu-item'
-import { memo } from 'react'
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -22,7 +21,7 @@ const SECTION_LABELS: Record<MenuSection, string> = {
 /**
  * MenuGroup component - renders a section of menu items with a label
  */
-export const MenuGroup = memo(function MenuGroup({
+export const MenuGroup = function MenuGroup({
   section,
   items,
   pathname,
@@ -49,4 +48,4 @@ export const MenuGroup = memo(function MenuGroup({
       </SidebarMenu>
     </SidebarGroup>
   )
-})
+}

@@ -6,7 +6,7 @@ import type { UIMessage } from 'ai'
 import type { ReactNode } from 'react'
 import type { AgentError } from '@/lib/ai/agent/errors'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -90,20 +90,13 @@ export function MessageDetailsDialog({
 }) {
   const [copied, setCopied] = useState(false)
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const metadata = useMemo(
-    () =>
-      getAgentMessageMetadata({
-        message,
-        responseDurationMs,
-        error,
-        followUpError,
-      }),
-    [message, responseDurationMs, error, followUpError]
-  )
-  const rawMetadata = useMemo(
-    () => JSON.stringify(metadata.raw, null, 2),
-    [metadata.raw]
-  )
+  const metadata = getAgentMessageMetadata({
+    message,
+    responseDurationMs,
+    error,
+    followUpError,
+  })
+  const rawMetadata = JSON.stringify(metadata.raw, null, 2)
 
   useEffect(() => {
     return () => {

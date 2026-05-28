@@ -2,14 +2,13 @@
 
 import type { MergedHostInfo } from '@/lib/swr/use-merged-hosts'
 
-import { memo } from 'react'
 import { ClickHouseHostSelector } from '@/components/host/clickhouse-host-selector'
 import { ClickHouseLogo } from '@/components/icons/clickhouse-logo'
 import { AppLink as Link } from '@/components/ui/app-link'
 
 const TITLE_SHORT = process.env.NEXT_PUBLIC_TITLE_SHORT || 'ClickHouse'
 
-export const HeaderBrand = memo(function HeaderBrand({
+export const HeaderBrand = function HeaderBrand({
   currentHostId,
   hosts,
 }: {
@@ -48,9 +47,9 @@ export const HeaderBrand = memo(function HeaderBrand({
       </div>
     </div>
   )
-})
+}
 
-export const HeaderBrandSkeleton = memo(function HeaderBrandSkeleton() {
+export const HeaderBrandSkeleton = function HeaderBrandSkeleton() {
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-1.5">
@@ -60,4 +59,4 @@ export const HeaderBrandSkeleton = memo(function HeaderBrandSkeleton() {
       </div>
     </div>
   )
-})
+}

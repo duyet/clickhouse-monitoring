@@ -14,7 +14,7 @@ import {
   User as UserIcon,
 } from 'lucide-react'
 
-import { memo, useCallback, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { KpiCard } from '@/components/overview-charts/kpi-card'
 import { TableSkeleton } from '@/components/skeletons'
 import { AppLink as Link } from '@/components/ui/app-link'
@@ -164,7 +164,7 @@ function MetaField({
 }
 
 /** Expandable card for ProfileEvents or Settings map data. */
-const CollapsibleSection = memo(function CollapsibleSection({
+const CollapsibleSection = function CollapsibleSection({
   title,
   entries,
 }: {
@@ -216,13 +216,13 @@ const CollapsibleSection = memo(function CollapsibleSection({
       )}
     </div>
   )
-})
+}
 
 /** Inline SQL block with copy-to-clipboard. Not a modal — beautify off by default per project rule. */
 function SqlBlock({ query }: { query: string }) {
   const [copied, setCopied] = useState(false)
 
-  const handleCopy = useCallback(async () => {
+  const handleCopy = async () => {
     if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText)
       return
     try {
@@ -232,7 +232,7 @@ function SqlBlock({ query }: { query: string }) {
     } catch {
       /* noop */
     }
-  }, [query])
+  }
 
   const lineCount = (query.match(/\n/g)?.length ?? 0) + 1
 
@@ -283,7 +283,7 @@ interface QueryDetailViewProps {
  * and finished queries (from system.query_log). If no row is found, shows
  * a "Query not found" empty state.
  */
-export const QueryDetailView = memo(function QueryDetailView({
+export const QueryDetailView = function QueryDetailView({
   queryId,
 }: QueryDetailViewProps) {
   const hostId = useHostId()
@@ -300,7 +300,7 @@ export const QueryDetailView = memo(function QueryDetailView({
   // before any early returns.
 
   // ProfileEvents — filter out zero values for a cleaner view
-  const profileEntries = useMemo((): [string, string][] => {
+  const profileEntries = (() => {
     const map = row?.ProfileEvents
     if (!map || typeof map !== 'object' || Array.isArray(map)) return []
     return Object.entries(map)
@@ -310,17 +310,17 @@ export const QueryDetailView = memo(function QueryDetailView({
       })
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([k, v]) => [k, String(v)] as [string, string])
-  }, [row?.ProfileEvents])
+  })()
 
   // Settings — show all non-empty entries
-  const settingsEntries = useMemo((): [string, string][] => {
+  const settingsEntries = (() => {
     const map = row?.Settings
     if (!map || typeof map !== 'object' || Array.isArray(map)) return []
     return Object.entries(map)
       .filter(([, v]) => v != null && v !== '')
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([k, v]) => [k, String(v)] as [string, string])
-  }, [row?.Settings])
+  })()
 
   // ── Loading ──
   if (isLoading) {
@@ -534,4 +534,4 @@ export const QueryDetailView = memo(function QueryDetailView({
       )}
     </div>
   )
-})
+}

@@ -4,7 +4,6 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo, useMemo } from 'react'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
@@ -17,7 +16,7 @@ import {
 } from '@/lib/chart-data-transforms'
 import { useChartData } from '@/lib/swr'
 
-export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
+export const ChartSummaryUsedByMerges = function ChartSummaryUsedByMerges({
   title,
   className,
   hostId,
@@ -43,7 +42,7 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
     hostId,
   })
 
-  const transformedData = useMemo(() => {
+  const transformedData = (() => {
     if (!data || data.length === 0) return null
 
     const summaryData = {
@@ -71,7 +70,7 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
     }
 
     return transformMergeSummaryData(summaryData)
-  }, [data])
+  })()
 
   if (isLoading) {
     return <ChartSkeleton title={title} className={className} />
@@ -108,6 +107,6 @@ export const ChartSummaryUsedByMerges = memo(function ChartSummaryUsedByMerges({
       />
     </ChartCard>
   )
-})
+}
 
 export default ChartSummaryUsedByMerges

@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { useChartData, useHostId } from '@/lib/swr'
@@ -18,7 +17,7 @@ type DataRow = {
 const CHART_NAME = 'storage-policies'
 const DEFAULT_TITLE = 'Storage Policies'
 
-export const ChartStoragePolicies = memo(function ChartStoragePolicies({
+export const ChartStoragePolicies = function ChartStoragePolicies({
   title = DEFAULT_TITLE,
   className,
   chartClassName,
@@ -93,7 +92,7 @@ export const ChartStoragePolicies = memo(function ChartStoragePolicies({
       }}
     </ChartContainer>
   )
-})
+}
 
 export type ChartStoragePoliciesProps = ChartProps
 

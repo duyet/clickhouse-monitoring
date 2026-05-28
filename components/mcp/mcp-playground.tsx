@@ -2,7 +2,7 @@
 
 import { CodeBlock, CopyButton } from './copy-button'
 import { MCP_TOOLS, type McpToolParam } from './mcp-tools-data'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {
   Card,
@@ -85,7 +85,7 @@ export function McpPlayground() {
     setParamValues((prev) => ({ ...prev, [name]: value }))
   }
 
-  const toolArguments = useMemo(() => {
+  const toolArguments = (() => {
     const args: Record<string, string | number> = {}
     for (const param of tool.params) {
       const raw = paramValues[param.name]
@@ -96,33 +96,27 @@ export function McpPlayground() {
       }
     }
     return args
-  }, [tool, paramValues])
+  })()
 
-  const jsonRpcPayload = useMemo(
-    () => ({
-      jsonrpc: '2.0',
-      method: 'tools/call',
-      id: 1,
-      params: {
-        name: selectedTool,
-        arguments: toolArguments,
-      },
-    }),
-    [selectedTool, toolArguments]
-  )
+  const jsonRpcPayload = {
+    jsonrpc: '2.0',
+    method: 'tools/call',
+    id: 1,
+    params: {
+      name: selectedTool,
+      arguments: toolArguments,
+    },
+  }
 
-  const jsonRpcRequest = useMemo(
-    () => JSON.stringify(jsonRpcPayload, null, 2),
-    [jsonRpcPayload]
-  )
+  const jsonRpcRequest = JSON.stringify(jsonRpcPayload, null, 2)
 
-  const curlCommand = useMemo(() => {
+  const curlCommand = (() => {
     const jsonPayload = JSON.stringify(jsonRpcPayload)
     const escapedJson = jsonPayload.replace(/'/g, "'\\''")
     return `curl -X POST ${endpointUrl} \\
-  -H "Content-Type: application/json" \\
-  -d '${escapedJson}'`
-  }, [endpointUrl, jsonRpcPayload])
+    -H "Content-Type: application/json" \\
+    -d '${escapedJson}'`
+  })()
 
   return (
     <Card>

@@ -1,6 +1,5 @@
 'use client'
 
-import { memo } from 'react'
 import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useHostStatus } from '@/lib/swr/use-host-status'
 import { cn } from '@/lib/utils'
@@ -12,7 +11,7 @@ import { cn } from '@/lib/utils'
  * when the cluster responds, amber when its status can't be read, and a muted
  * dot while the first probe is in flight.
  */
-export const OverviewStatusStrip = memo(function OverviewStatusStrip({
+export const OverviewStatusStrip = function OverviewStatusStrip({
   className,
 }: {
   className?: string
@@ -80,4 +79,4 @@ export const OverviewStatusStrip = memo(function OverviewStatusStrip({
       )}
     </div>
   )
-})
+}

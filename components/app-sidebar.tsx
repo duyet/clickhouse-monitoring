@@ -2,7 +2,6 @@
 
 import { menuItemsConfig } from '@/menu'
 
-import { useMemo } from 'react'
 import { HostSwitcher } from '@/components/host/host-switcher'
 import { NavUser } from '@/components/nav-user'
 import { NavMain } from '@/components/navigation/nav-main'
@@ -18,10 +17,7 @@ import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
 
 export function AppSidebar() {
   const { config } = useFeaturePermissions()
-  const menuItems = useMemo(
-    () => filterMenuItemsByPermissions(menuItemsConfig, config),
-    [config]
-  )
+  const menuItems = filterMenuItemsByPermissions(menuItemsConfig, config)
 
   return (
     <Sidebar collapsible="icon" variant="inset">

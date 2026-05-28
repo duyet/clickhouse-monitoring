@@ -6,7 +6,7 @@ import type { RunningQueryRow } from '@/components/running-queries/running-queri
 import type { CardError } from '@/lib/card-error-utils'
 
 import { useSearchParams } from 'next/navigation'
-import { memo, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { RunningQueriesCharts } from '@/components/running-queries/running-queries-charts'
 import { RunningQueriesTable } from '@/components/running-queries/running-queries-table'
 import { Skeleton } from '@/components/skeletons'
@@ -127,7 +127,7 @@ function HeaderButton({
  * {@link RunningQueriesTable}. Data comes from `system.processes`; auto-refresh
  * runs on {@link REFRESH_INTERVAL} while "Live" is on and pauses when off.
  */
-export const RunningQueriesView = memo(function RunningQueriesView() {
+export const RunningQueriesView = function RunningQueriesView() {
   const hostId = useHostId()
   const searchParams = useSearchParams()
   const [chartsOpen, setChartsOpen] = useState(true)
@@ -136,7 +136,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
   // Pipe URL-driven filter params into the SWR key so the schema-driven
   // header filters and bar (rendered by the underlying DataTable) actually
   // shape the data fetched from /api/v1/tables/running-queries.
-  const filterParams = useMemo(() => {
+  const filterParams = (() => {
     const schema = runningQueriesConfig.filterSchema
     if (!schema) return undefined
     const serialized = serializeActiveFilters(
@@ -148,7 +148,7 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
       serialized.query = `contains:${q.trim()}`
     }
     return Object.keys(serialized).length > 0 ? serialized : undefined
-  }, [searchParams])
+  })()
 
   const { data, error, isLoading, isValidating, refresh } =
     useTableData<RunningQueryRow>(
@@ -261,4 +261,4 @@ export const RunningQueriesView = memo(function RunningQueriesView() {
       </div>
     </TooltipProvider>
   )
-})
+}

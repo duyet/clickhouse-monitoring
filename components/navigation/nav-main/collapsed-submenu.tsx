@@ -2,7 +2,7 @@
 
 import type { MenuItem as MenuItemType } from '@/components/menu/types'
 
-import { lazy, memo, Suspense, useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
 
@@ -42,7 +42,7 @@ interface CollapsedSubmenuProps {
  * - Closes on click outside or Escape key
  * - Shows active state for child items
  */
-export const CollapsedSubmenu = memo(function CollapsedSubmenu({
+export const CollapsedSubmenu = function CollapsedSubmenu({
   item,
   pathname,
   trigger,
@@ -126,4 +126,4 @@ export const CollapsedSubmenu = memo(function CollapsedSubmenu({
       </Popover>
     </ClientOnly>
   )
-})
+}

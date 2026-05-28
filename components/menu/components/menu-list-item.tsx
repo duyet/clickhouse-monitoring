@@ -12,7 +12,7 @@ import { useMenuActiveState } from '../hooks/use-menu-active-state'
 import { HostPrefixedLink } from '../link-with-context'
 import { ActiveIndicator } from './active-indicator'
 import { MenuIcon } from './menu-icon'
-import { lazy, memo, Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import { NavigationMenuLink } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
 
@@ -30,9 +30,7 @@ interface MenuListItemProps {
   item: MenuItem
 }
 
-export const MenuListItem = memo(function MenuListItem({
-  item,
-}: MenuListItemProps) {
+export const MenuListItem = function MenuListItem({ item }: MenuListItemProps) {
   const isActive = useMenuActiveState(item)
 
   const title = (
@@ -85,4 +83,4 @@ export const MenuListItem = memo(function MenuListItem({
       </NavigationMenuLink>
     </li>
   )
-})
+}

@@ -1,6 +1,5 @@
 'use client'
 
-import { memo } from 'react'
 import {
   Tooltip,
   TooltipContent,
@@ -50,7 +49,7 @@ export interface StatusIndicatorProps {
  *   title={['Loading...']}
  * />
  */
-export const StatusIndicator = memo(function StatusIndicator({
+export const StatusIndicator = function StatusIndicator({
   title,
   className,
   size = 'size-2',
@@ -86,4 +85,4 @@ export const StatusIndicator = memo(function StatusIndicator({
       </Tooltip>
     </TooltipProvider>
   )
-})
+}

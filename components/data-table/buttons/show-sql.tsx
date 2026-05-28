@@ -1,6 +1,5 @@
 import type { ApiResponseMetadata } from '@/lib/api/types'
 
-import { memo } from 'react'
 import { DialogSQL } from '@/components/dialogs/dialog-sql'
 import { withQueryParams } from '@/lib/clickhouse-query'
 
@@ -11,7 +10,7 @@ interface ShowSQLButtonProps {
   metadata?: Partial<ApiResponseMetadata>
 }
 
-export const ShowSQLButton = memo(function ShowSQLButton({
+export const ShowSQLButton = function ShowSQLButton({
   sql,
   queryParams,
   metadata,
@@ -23,4 +22,4 @@ export const ShowSQLButton = memo(function ShowSQLButton({
   const formattedSql = withQueryParams(sql, queryParams)
 
   return <DialogSQL sql={formattedSql} metadata={metadata} />
-})
+}

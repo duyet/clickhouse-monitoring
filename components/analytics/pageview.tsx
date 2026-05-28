@@ -1,9 +1,9 @@
 'use client'
 
 import { usePathname, useSearchParams } from 'next/navigation'
-import { memo, useEffect } from 'react'
+import { useEffect } from 'react'
 
-export const PageView = memo(function PageView({
+export const PageView = function PageView({
   hostId,
 }: {
   hostId: string | number
@@ -31,4 +31,4 @@ export const PageView = memo(function PageView({
   }, [pathname, searchParams, hostId])
 
   return null
-})
+}

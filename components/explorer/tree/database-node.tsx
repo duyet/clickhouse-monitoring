@@ -5,7 +5,7 @@ import useSWR from 'swr'
 
 import { TableNode } from './table-node'
 import { TreeNode } from './tree-node'
-import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
@@ -43,7 +43,7 @@ const fetcher = async (url: string): Promise<ApiResponse<Table[]>> => {
   return res.json()
 }
 
-export const DatabaseNode = memo(function DatabaseNode({
+export const DatabaseNode = function DatabaseNode({
   database,
   isExpanded,
   isTableExpanded,
@@ -75,7 +75,7 @@ export const DatabaseNode = memo(function DatabaseNode({
 
   const tables = response?.data
 
-  const filteredTables = useMemo(() => {
+  const filteredTables = (() => {
     if (!tables) return []
     if (!searchFilter) return tables
 
@@ -83,25 +83,22 @@ export const DatabaseNode = memo(function DatabaseNode({
     return tables.filter((table) =>
       table.name.toLowerCase().includes(lowerFilter)
     )
-  }, [tables, searchFilter])
+  })()
 
-  const handleToggle = useCallback(() => {
+  const handleToggle = () => {
     if (!shouldFetch) {
       setShouldFetch(true)
     }
     onToggleDatabase(database)
-  }, [shouldFetch, onToggleDatabase, database])
+  }
 
-  const handleSelect = useCallback(() => {
+  const handleSelect = () => {
     onSelectDatabase(database)
-  }, [onSelectDatabase, database])
+  }
 
-  const handleSelectTable = useCallback(
-    (tbl: string, engine: string) => {
-      onSelectTable(database, tbl, engine)
-    },
-    [onSelectTable, database]
-  )
+  const handleSelectTable = (tbl: string, engine: string) => {
+    onSelectTable(database, tbl, engine)
+  }
 
   const showLoadingSkeleton = isLoading && isExpanded && !tables
 
@@ -153,4 +150,4 @@ export const DatabaseNode = memo(function DatabaseNode({
       )}
     </TreeNode>
   )
-})
+}

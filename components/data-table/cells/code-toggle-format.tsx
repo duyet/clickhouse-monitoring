@@ -1,6 +1,5 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo, useCallback } from 'react'
 import {
   Accordion,
   AccordionContent,
@@ -22,19 +21,16 @@ interface CodeToggleFormatProps {
 
 const CODE_TRUNCATE_LENGTH = 50
 
-export const CodeToggleFormat = memo(function CodeToggleFormat({
+export const CodeToggleFormat = function CodeToggleFormat({
   row,
   value,
   options,
 }: CodeToggleFormatProps): React.ReactNode {
   const truncate_length = options?.max_truncate || CODE_TRUNCATE_LENGTH
 
-  const handleValueChange = useCallback(
-    (accordionValue: string) => {
-      row.toggleExpanded(accordionValue === 'code')
-    },
-    [row]
-  )
+  const handleValueChange = (accordionValue: string) => {
+    row.toggleExpanded(accordionValue === 'code')
+  }
 
   if (value.length < truncate_length) {
     return <code>{value}</code>
@@ -67,4 +63,4 @@ export const CodeToggleFormat = memo(function CodeToggleFormat({
       </AccordionItem>
     </Accordion>
   )
-})
+}

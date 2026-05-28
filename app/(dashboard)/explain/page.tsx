@@ -9,7 +9,7 @@ import {
 import useSWR from 'swr'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useCallback, useMemo, useState } from 'react'
+import { Suspense, useState } from 'react'
 import { ErrorAlert } from '@/components/feedback'
 import { ChartSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
@@ -243,28 +243,25 @@ function ExplainContent() {
   const [planSettings, setPlanSettings] =
     useState<Record<string, number>>(buildDefaultSettings)
 
-  const setMode = useCallback(
-    (newMode: string) => {
-      setModeState(newMode)
-      const params = new URLSearchParams(searchParams.toString())
-      if (newMode) {
-        params.set('mode', newMode.toLowerCase())
-      } else {
-        params.delete('mode')
-      }
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false })
-    },
-    [searchParams, router, pathname]
-  )
+  const setMode = (newMode: string) => {
+    setModeState(newMode)
+    const params = new URLSearchParams(searchParams.toString())
+    if (newMode) {
+      params.set('mode', newMode.toLowerCase())
+    } else {
+      params.delete('mode')
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+  }
 
-  const toggleSetting = useCallback((key: string) => {
+  const toggleSetting = (key: string) => {
     setPlanSettings((prev) => ({
       ...prev,
       [key]: prev[key] === 1 ? 0 : 1,
     }))
-  }, [])
+  }
 
-  const apiUrl = useMemo(() => {
+  const apiUrl = (() => {
     if (!queryToExplain) return null
 
     const params = new URLSearchParams()
@@ -278,22 +275,19 @@ function ExplainContent() {
     }
 
     return `/api/v1/explain?${params.toString()}`
-  }, [queryToExplain, hostId, mode, planSettings])
+  })()
 
   const { data, error, isLoading } = useSWR<ApiResponse>(apiUrl, fetcher)
 
-  const handleExplain = useCallback(() => {
+  const handleExplain = () => {
     setQueryToExplain(queryInput)
-  }, [queryInput])
+  }
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        handleExplain()
-      }
-    },
-    [handleExplain]
-  )
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      handleExplain()
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">

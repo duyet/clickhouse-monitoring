@@ -3,7 +3,6 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 import type { ChartDataPoint } from '@/types/chart-data'
 
-import { useMemo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { ChartEmpty } from '@/components/charts/chart-empty'
@@ -33,17 +32,14 @@ export function ChartKeeperRequests({
     refreshInterval: 30000,
   })
 
-  const { pivoted, categories } = useMemo(() => {
+  const { pivoted, categories } = (() => {
     if (!swr.data || swr.data.length === 0) {
       return { pivoted: [], categories: [] }
     }
     return pivotRows(swr.data)
-  }, [swr.data])
+  })()
 
-  const tickFormatter = useMemo(
-    () => createDateTickFormatter(lastHours),
-    [lastHours]
-  )
+  const tickFormatter = createDateTickFormatter(lastHours)
 
   if (!swr.isLoading && !swr.error && pivoted.length === 0) {
     return (

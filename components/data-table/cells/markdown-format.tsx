@@ -1,4 +1,3 @@
-import { memo } from 'react'
 import Markdown from 'react-markdown'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +10,7 @@ interface MarkdownFormatProps {
   options?: MarkdownFormatOptions
 }
 
-export const MarkdownFormat = memo(function MarkdownFormat({
+export const MarkdownFormat = function MarkdownFormat({
   value,
   options,
 }: MarkdownFormatProps): React.ReactNode {
@@ -20,4 +19,4 @@ export const MarkdownFormat = memo(function MarkdownFormat({
       <Markdown>{`${value ? value : ''}`}</Markdown>
     </span>
   )
-})
+}

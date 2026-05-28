@@ -10,7 +10,6 @@ import {
   inferUnit,
 } from './chart-format'
 import { deriveChartSummary } from './derive-chart-summary'
-import { memo } from 'react'
 import { MiniAreaChart } from '@/components/charts/mini-charts'
 import { useHostId } from '@/lib/swr'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
@@ -38,7 +37,7 @@ const SPARK_COLOR = {
   flat: 'hsl(217 10% 60%)',
 } as const
 
-export const ChartChip = memo(function ChartChip({
+export const ChartChip = function ChartChip({
   chartName,
   label,
   valueField,
@@ -103,4 +102,4 @@ export const ChartChip = memo(function ChartChip({
       )}
     </div>
   )
-})
+}

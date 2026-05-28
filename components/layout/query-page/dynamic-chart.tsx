@@ -7,7 +7,6 @@
 
 'use client'
 
-import { memo } from 'react'
 import { getChartComponent } from '@/components/charts/chart-registry'
 import { useHostId } from '@/lib/swr'
 
@@ -16,7 +15,7 @@ export interface DynamicChartProps {
   chartProps?: Record<string, unknown>
 }
 
-export const DynamicChart = memo(function DynamicChart({
+export const DynamicChart = function DynamicChart({
   chartName,
   chartProps = {},
 }: DynamicChartProps) {
@@ -41,4 +40,4 @@ export const DynamicChart = memo(function DynamicChart({
       {...chartProps}
     />
   )
-})
+}

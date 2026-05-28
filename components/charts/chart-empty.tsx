@@ -7,7 +7,6 @@ import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartDataPoint } from '@/types/chart-data'
 
 import { useRouter } from 'next/navigation'
-import { memo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { chartCard } from '@/components/charts/chart-card-styles'
 import { Button } from '@/components/ui/button'
@@ -40,7 +39,7 @@ interface ChartEmptyProps {
   href?: string
 }
 
-export const ChartEmpty = memo(function ChartEmpty({
+export const ChartEmpty = function ChartEmpty({
   title,
   className,
   description,
@@ -191,4 +190,4 @@ export const ChartEmpty = memo(function ChartEmpty({
       </CardContent>
     </Card>
   )
-})
+}

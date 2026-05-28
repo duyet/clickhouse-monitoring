@@ -4,8 +4,6 @@ import { LabelList } from 'recharts'
 
 import type { BarChartProps } from '@/types/charts'
 
-import { memo } from 'react'
-
 interface BarLabelProps
   extends Pick<
     BarChartProps,
@@ -27,7 +25,7 @@ interface BarLabelProps
  * Handles label positioning and formatting for bar chart labels.
  * Supports stacked bars with different positioning strategies.
  */
-export const BarLabel = memo(function BarLabel({
+export const BarLabel = function BarLabel({
   dataKey,
   showLabel,
   labelPosition,
@@ -83,4 +81,4 @@ export const BarLabel = memo(function BarLabel({
       angle={labelAngle}
     />
   )
-})
+}

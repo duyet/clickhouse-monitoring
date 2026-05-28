@@ -3,7 +3,7 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 import type { DateRangeValue } from '@/components/date-range'
 
-import { memo, useState } from 'react'
+import { useState } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarChart } from '@/components/charts/primitives/bar/bar'
@@ -11,7 +11,7 @@ import { resolveDateRangeConfig } from '@/components/date-range'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
+export const ChartNewPartsCreated = function ChartNewPartsCreated({
   title = 'New Parts Created',
   interval = 'toStartOfHour',
   lastHours = 24,
@@ -116,6 +116,6 @@ export const ChartNewPartsCreated = memo(function ChartNewPartsCreated({
       }}
     </ChartContainer>
   )
-})
+}
 
 export default ChartNewPartsCreated

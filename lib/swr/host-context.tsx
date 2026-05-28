@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, type ReactNode, useContext, useMemo } from 'react'
+import { createContext, type ReactNode, useContext } from 'react'
 
 interface HostContextValue {
   hostId: number
@@ -33,7 +33,7 @@ export function HostProvider({
 }) {
   // Memoize the context value to prevent unnecessary re-renders
   // when hostId hasn't actually changed
-  const value = useMemo(() => ({ hostId }), [hostId])
+  const value = { hostId }
 
   return <HostContext.Provider value={value}>{children}</HostContext.Provider>
 }

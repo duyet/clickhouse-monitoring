@@ -9,7 +9,6 @@ import {
   LogoStatusIndicatorSkeleton,
 } from './logo-status-indicator'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
 import { ClickHouseLogo } from '@/components/icons/clickhouse-logo'
 import {
   DropdownMenu,
@@ -48,15 +47,12 @@ export function HostSwitcher() {
   const activeHost = hosts[currentHostId] || hosts[0]
   const showExpanded = isMobile || state === 'expanded'
 
-  const handleHostChange = useCallback(
-    (hostId: number) => {
-      if (hostId >= 0 && hostId < hosts.length) {
-        const url = buildUrl(pathname, { host: hostId }, searchParams)
-        router.push(url)
-      }
-    },
-    [searchParams, pathname, router, hosts.length]
-  )
+  const handleHostChange = (hostId: number) => {
+    if (hostId >= 0 && hostId < hosts.length) {
+      const url = buildUrl(pathname, { host: hostId }, searchParams)
+      router.push(url)
+    }
+  }
 
   // Show skeleton while loading hosts
   if (isLoading) {

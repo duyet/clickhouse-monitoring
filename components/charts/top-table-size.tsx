@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
@@ -21,7 +20,7 @@ type DataRow = {
   part_count: number
 }
 
-export const ChartTopTableSize = memo(function ChartTopTableSize({
+export const ChartTopTableSize = function ChartTopTableSize({
   title,
   className,
   chartCardContentClassName,
@@ -102,6 +101,6 @@ export const ChartTopTableSize = memo(function ChartTopTableSize({
       }}
     </ChartContainer>
   )
-})
+}
 
 export default ChartTopTableSize

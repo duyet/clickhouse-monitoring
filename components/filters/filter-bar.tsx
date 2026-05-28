@@ -7,7 +7,6 @@ import type { FilterPreset } from '@/lib/filters/types'
 import type { QueryConfig } from '@/types/query-config'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useMemo } from 'react'
 import { AddFilterPopover } from '@/components/filters/add-filter-popover'
 import { FilterChip } from '@/components/filters/filter-chip'
 import { PresetsMenu } from '@/components/filters/presets-menu'
@@ -35,45 +34,35 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
   const router = useRouter()
   const pathname = usePathname()
 
-  const activeFilters = useMemo(
-    () => (schema ? parseFiltersFromParams(schema, searchParams) : []),
-    [schema, searchParams]
-  )
+  const activeFilters = schema
+    ? parseFiltersFromParams(schema, searchParams)
+    : []
 
-  const updateParams = useCallback(
-    (mutate: (params: URLSearchParams) => void) => {
-      const params = new URLSearchParams(searchParams.toString())
-      mutate(params)
-      const queryString = params.toString()
-      router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
-        scroll: false,
-      })
-    },
-    [searchParams, router, pathname]
-  )
+  const updateParams = (mutate: (params: URLSearchParams) => void) => {
+    const params = new URLSearchParams(searchParams.toString())
+    mutate(params)
+    const queryString = params.toString()
+    router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
+      scroll: false,
+    })
+  }
 
-  const setFilter = useCallback(
-    (key: string, draft: FilterDraft) => {
-      updateParams((params) =>
-        params.set(key, serializeFilter({ key, ...draft }))
-      )
-    },
-    [updateParams]
-  )
+  const setFilter = (key: string, draft: FilterDraft) => {
+    updateParams((params) =>
+      params.set(key, serializeFilter({ key, ...draft }))
+    )
+  }
 
-  const removeFilter = useCallback(
-    (key: string) => {
-      const field = schema?.fields.find((f) => f.key === key)
-      updateParams((params) => {
-        // An explicit empty value overrides a field's default; otherwise drop.
-        if (field?.defaultValue) params.set(key, '')
-        else params.delete(key)
-      })
-    },
-    [updateParams, schema]
-  )
+  const removeFilter = (key: string) => {
+    const field = schema?.fields.find((f) => f.key === key)
+    updateParams((params) => {
+      // An explicit empty value overrides a field's default; otherwise drop.
+      if (field?.defaultValue) params.set(key, '')
+      else params.delete(key)
+    })
+  }
 
-  const clearAll = useCallback(() => {
+  const clearAll = () => {
     updateParams((params) => {
       params.delete('q')
       schema?.fields.forEach((field) => {
@@ -81,29 +70,25 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
         else params.delete(field.key)
       })
     })
-  }, [updateParams, schema])
+  }
 
-  const applyPreset = useCallback(
-    (preset: FilterPreset) => {
-      updateParams((params) => {
-        preset.filters.forEach((filter) => {
-          params.set(
-            filter.key,
-            serializeFilter({
-              key: filter.key,
-              operator: filter.operator,
-              values: [filter.value],
-            })
-          )
-        })
+  const applyPreset = (preset: FilterPreset) => {
+    updateParams((params) => {
+      preset.filters.forEach((filter) => {
+        params.set(
+          filter.key,
+          serializeFilter({
+            key: filter.key,
+            operator: filter.operator,
+            values: [filter.value],
+          })
+        )
       })
-    },
-    [updateParams]
-  )
+    })
+  }
 
-  const fieldByKey = useMemo(
-    () => new Map(schema?.fields.map((field) => [field.key, field]) ?? []),
-    [schema]
+  const fieldByKey = new Map(
+    schema?.fields.map((field) => [field.key, field]) ?? []
   )
 
   if (!schema) return null

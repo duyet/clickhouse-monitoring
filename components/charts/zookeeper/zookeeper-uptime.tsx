@@ -4,14 +4,13 @@ import { ArrowUpIcon } from '@radix-ui/react-icons'
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export const ChartZookeeperUptime = memo(function ChartZookeeperUptime({
+export const ChartZookeeperUptime = function ChartZookeeperUptime({
   title = 'Zookeeper Uptime',
   className,
   hostId,
@@ -56,4 +55,4 @@ export const ChartZookeeperUptime = memo(function ChartZookeeperUptime({
       }}
     </ChartContainer>
   )
-})
+}

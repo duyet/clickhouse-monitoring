@@ -8,7 +8,6 @@ import type {
 } from '@/lib/filters/types'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
 import {
   parseFiltersFromParams,
   serializeFilter,
@@ -24,36 +23,27 @@ export function useColumnFilterState(schema: FilterSchema | undefined) {
   const router = useRouter()
   const pathname = usePathname()
 
-  const getActiveFilter = useCallback(
-    (field: FilterField): ActiveFilter | null => {
-      if (!schema) return null
-      const active = parseFiltersFromParams(schema, searchParams)
-      return active.find((f) => f.key === field.key) ?? null
-    },
-    [schema, searchParams]
-  )
+  const getActiveFilter = (field: FilterField): ActiveFilter | null => {
+    if (!schema) return null
+    const active = parseFiltersFromParams(schema, searchParams)
+    return active.find((f) => f.key === field.key) ?? null
+  }
 
-  const setFilter = useCallback(
-    (key: string, draft: FilterDraft) => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set(key, serializeFilter({ key, ...draft }))
-      const qs = params.toString()
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
-    },
-    [searchParams, router, pathname]
-  )
+  const setFilter = (key: string, draft: FilterDraft) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set(key, serializeFilter({ key, ...draft }))
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+  }
 
-  const clearFilter = useCallback(
-    (key: string) => {
-      const field = schema?.fields.find((f) => f.key === key)
-      const params = new URLSearchParams(searchParams.toString())
-      if (field?.defaultValue) params.set(key, '')
-      else params.delete(key)
-      const qs = params.toString()
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
-    },
-    [schema, searchParams, router, pathname]
-  )
+  const clearFilter = (key: string) => {
+    const field = schema?.fields.find((f) => f.key === key)
+    const params = new URLSearchParams(searchParams.toString())
+    if (field?.defaultValue) params.set(key, '')
+    else params.delete(key)
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+  }
 
   return { getActiveFilter, setFilter, clearFilter }
 }

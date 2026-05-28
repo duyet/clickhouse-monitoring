@@ -1,11 +1,10 @@
-import { memo } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 /**
  * Single line skeleton for inline loading states
  */
-export const SingleLineSkeleton = memo(function SingleLineSkeleton({
+export const SingleLineSkeleton = function SingleLineSkeleton({
   className = 'w-[500px]',
 }: {
   className?: string
@@ -25,12 +24,12 @@ export const SingleLineSkeleton = memo(function SingleLineSkeleton({
       <span className="sr-only">Loading...</span>
     </div>
   )
-})
+}
 
 /**
  * Multi-line skeleton for larger content areas
  */
-export const MultiLineSkeleton = memo(function MultiLineSkeleton({
+export const MultiLineSkeleton = function MultiLineSkeleton({
   className = 'w-[500px]',
 }: {
   className?: string
@@ -54,12 +53,12 @@ export const MultiLineSkeleton = memo(function MultiLineSkeleton({
       <span className="sr-only">Loading...</span>
     </div>
   )
-})
+}
 
 /**
  * List skeleton for loading list items
  */
-export const ListSkeleton = memo(function ListSkeleton({
+export const ListSkeleton = function ListSkeleton({
   nrows = 4,
   className = 'w-[500px]',
 }: {
@@ -79,4 +78,4 @@ export const ListSkeleton = memo(function ListSkeleton({
       <span className="sr-only">Loading list items...</span>
     </div>
   )
-})
+}

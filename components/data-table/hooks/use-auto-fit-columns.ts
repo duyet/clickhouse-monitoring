@@ -2,7 +2,7 @@
 
 import type { Column, Row } from '@tanstack/react-table'
 
-import { useCallback, useMemo, useRef } from 'react'
+import { useRef } from 'react'
 
 /**
  * Result from auto-fitting a column
@@ -50,13 +50,13 @@ export function useAutoFitColumns<TData>(
   _tableRef: React.RefObject<HTMLDivElement | null>,
   options: AutoFitOptions = {}
 ) {
-  const opts = useMemo(() => ({ ...DEFAULT_OPTIONS, ...options }), [options])
+  const opts = { ...DEFAULT_OPTIONS, ...options }
   const measureCache = useRef<Map<string, number>>(new Map())
 
   /**
    * Measure text width using a temporary element with table cell styles
    */
-  const measureTextWidth = useCallback((text: string): number => {
+  const measureTextWidth = (text: string): number => {
     const cacheKey = text
     if (measureCache.current.has(cacheKey)) {
       return measureCache.current.get(cacheKey)!
@@ -80,74 +80,68 @@ export function useAutoFitColumns<TData>(
 
     measureCache.current.set(cacheKey, width)
     return width
-  }, [])
+  }
 
   /**
    * Auto-fit a single column to its content width
    */
-  const autoFitColumn = useCallback(
-    (
-      column: Column<TData, unknown>,
-      rows: Row<TData>[],
-      headerText?: string
-    ): AutoFitResult => {
-      let maxContentWidth =
-        headerText && opts.includeHeader ? measureTextWidth(headerText) : 0
+  const autoFitColumn = (
+    column: Column<TData, unknown>,
+    rows: Row<TData>[],
+    headerText?: string
+  ): AutoFitResult => {
+    let maxContentWidth =
+      headerText && opts.includeHeader ? measureTextWidth(headerText) : 0
 
-      // Sample rows for performance with large datasets
-      const sampleSize = Math.min(rows.length, opts.maxSampleRows)
-      const step =
-        rows.length > sampleSize ? Math.floor(rows.length / sampleSize) : 1
+    // Sample rows for performance with large datasets
+    const sampleSize = Math.min(rows.length, opts.maxSampleRows)
+    const step =
+      rows.length > sampleSize ? Math.floor(rows.length / sampleSize) : 1
 
-      for (let i = 0; i < rows.length; i += step) {
-        const row = rows[i]
-        const cellValue = row.getValue(column.id)
+    for (let i = 0; i < rows.length; i += step) {
+      const row = rows[i]
+      const cellValue = row.getValue(column.id)
 
-        if (cellValue != null) {
-          const text = String(cellValue)
-          const cellWidth = measureTextWidth(text)
-          maxContentWidth = Math.max(maxContentWidth, cellWidth)
-        }
+      if (cellValue != null) {
+        const text = String(cellValue)
+        const cellWidth = measureTextWidth(text)
+        maxContentWidth = Math.max(maxContentWidth, cellWidth)
       }
+    }
 
-      // Apply bounds and padding
-      const fittedWidth = Math.min(
-        opts.maxWidth,
-        Math.max(opts.minWidth, maxContentWidth + opts.padding)
-      )
+    // Apply bounds and padding
+    const fittedWidth = Math.min(
+      opts.maxWidth,
+      Math.max(opts.minWidth, maxContentWidth + opts.padding)
+    )
 
-      // Set the column size
-      column.resetSize() // First reset to clear any manual sizing
-      column.columnDef.size = fittedWidth
+    // Set the column size
+    column.resetSize() // First reset to clear any manual sizing
+    column.columnDef.size = fittedWidth
 
-      return {
-        columnId: column.id,
-        fittedWidth,
-      }
-    },
-    [measureTextWidth, opts]
-  )
+    return {
+      columnId: column.id,
+      fittedWidth,
+    }
+  }
 
   /**
    * Auto-fit all columns to their content
    */
-  const autoFitAllColumns = useCallback(
-    (
-      columns: Column<TData, unknown>[],
-      rows: Row<TData>[]
-    ): AutoFitResult[] => {
-      return columns.map((column) => {
-        const headerText = column.columnDef.header as string
-        return autoFitColumn(column, rows, headerText)
-      })
-    },
-    [autoFitColumn]
-  )
+  const autoFitAllColumns = (
+    columns: Column<TData, unknown>[],
+    rows: Row<TData>[]
+  ): AutoFitResult[] => {
+    return columns.map((column) => {
+      const headerText = column.columnDef.header as string
+      return autoFitColumn(column, rows, headerText)
+    })
+  }
 
   // Clear cache when component unmounts
-  const clearCache = useCallback(() => {
+  const clearCache = () => {
     measureCache.current.clear()
-  }, [])
+  }
 
   return {
     autoFitColumn,

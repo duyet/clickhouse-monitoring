@@ -6,7 +6,7 @@ import type { MergedHostInfo } from '@/lib/swr/use-merged-hosts'
 
 import { StatusIndicator } from './shared'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { memo, useCallback, useState } from 'react'
+import { useState } from 'react'
 import { ConnectionManagerDialog } from '@/components/connections'
 import {
   Select,
@@ -41,20 +41,17 @@ export function ClickHouseHostSelector({
   const { connections, addConnection, updateConnection, deleteConnection } =
     useBrowserConnections()
 
-  const handleValueChange = useCallback(
-    (val: string) => {
-      if (val === '__add_connection__') {
-        setDialogOpen(true)
-        return
-      }
-      const hostId = parseInt(val, 10)
-      if (!Number.isNaN(hostId)) {
-        const url = buildUrl(pathname, { host: hostId }, searchParams)
-        router.push(url)
-      }
-    },
-    [searchParams, pathname, router]
-  )
+  const handleValueChange = (val: string) => {
+    if (val === '__add_connection__') {
+      setDialogOpen(true)
+      return
+    }
+    const hostId = parseInt(val, 10)
+    if (!Number.isNaN(hostId)) {
+      const url = buildUrl(pathname, { host: hostId }, searchParams)
+      router.push(url)
+    }
+  }
 
   // Find current host by id (works for both positive env hosts and negative browser hosts)
   const current = hosts.find((h) => h.id === currentHostId) ?? hosts[0]
@@ -123,7 +120,7 @@ export function ClickHouseHostSelector({
  * Host status indicator component using SWR for data fetching.
  * Displays online/offline status with tooltip showing host details.
  */
-const HostStatusIndicator = memo(function HostStatusIndicator({
+const HostStatusIndicator = function HostStatusIndicator({
   hostId,
   hostName,
 }: {
@@ -169,4 +166,4 @@ const HostStatusIndicator = memo(function HostStatusIndicator({
       <StatusIndicator title={['The host is offline']} />
     </div>
   )
-})
+}

@@ -3,7 +3,6 @@
 import { Clock } from 'lucide-react'
 
 import { KpiCard } from './kpi-card'
-import { memo } from 'react'
 import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useHostStatus } from '@/lib/swr/use-host-status'
 
@@ -50,7 +49,7 @@ function compactUptime(uptime: string): string {
     .join(' ')
 }
 
-export const ClickHouseInfoCard = memo(function ClickHouseInfoCard() {
+export const ClickHouseInfoCard = function ClickHouseInfoCard() {
   const hostId = useHostId()
   const statusSwr = useHostStatus(hostId, {
     refreshInterval: REFRESH_INTERVAL.VERY_SLOW_5M,
@@ -70,4 +69,4 @@ export const ClickHouseInfoCard = memo(function ClickHouseInfoCard() {
       isLoading={statusSwr.isLoading}
     />
   )
-})
+}

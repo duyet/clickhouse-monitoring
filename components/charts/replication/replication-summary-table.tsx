@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -18,7 +17,7 @@ import {
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-export const ChartReplicationSummaryTable = memo(
+export const ChartReplicationSummaryTable =
   function ChartReplicationSummaryTable({
     title,
     className,
@@ -78,6 +77,5 @@ export const ChartReplicationSummaryTable = memo(
       </ChartCard>
     )
   }
-)
 
 export default ChartReplicationSummaryTable

@@ -5,7 +5,7 @@ import { menuItemsConfig } from '@/menu'
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
-import { memo, useCallback, useMemo, useState } from 'react'
+import { useState } from 'react'
 import {
   CommandDialog,
   CommandEmpty,
@@ -31,7 +31,7 @@ interface CommandPaletteProps {
   onOpenSettings?: () => void
 }
 
-export const CommandPalette = memo(function CommandPalette({
+export const CommandPalette = function CommandPalette({
   open: controlledOpen,
   onOpenChange,
   onOpenSettings,
@@ -41,10 +41,7 @@ export const CommandPalette = memo(function CommandPalette({
   const [internalOpen, setInternalOpen] = React.useState(false)
   const [inputValue, setInputValue] = useState('')
   const { config } = useFeaturePermissions()
-  const menuItems = useMemo(
-    () => filterMenuItemsByPermissions(menuItemsConfig, config),
-    [config]
-  )
+  const menuItems = filterMenuItemsByPermissions(menuItemsConfig, config)
 
   const open = controlledOpen ?? internalOpen
   const setOpen = onOpenChange ?? setInternalOpen
@@ -64,15 +61,12 @@ export const CommandPalette = memo(function CommandPalette({
 
   const hostId = searchParams.get('host') || '0'
 
-  const navigate = useCallback(
-    (href: string) => {
-      setOpen(false)
-      setInputValue('')
-      const url = buildUrl(href, { host: hostId })
-      router.push(url)
-    },
-    [router, setOpen, hostId]
-  )
+  const navigate = (href: string) => {
+    setOpen(false)
+    setInputValue('')
+    const url = buildUrl(href, { host: hostId })
+    router.push(url)
+  }
 
   const isQueryId =
     UUID_PATTERN.test(inputValue.trim()) ||
@@ -80,7 +74,7 @@ export const CommandPalette = memo(function CommandPalette({
   const isTableName = TABLE_PATTERN.test(inputValue.trim())
   const showQuickNav = isQueryId || isTableName
 
-  const handleGoToQuery = useCallback(() => {
+  const handleGoToQuery = () => {
     setOpen(false)
     setInputValue('')
     const url = buildUrl('/query', {
@@ -88,9 +82,9 @@ export const CommandPalette = memo(function CommandPalette({
       query_id: inputValue.trim(),
     })
     router.push(url)
-  }, [router, setOpen, hostId, inputValue])
+  }
 
-  const handleOpenInExplorer = useCallback(() => {
+  const handleOpenInExplorer = () => {
     setOpen(false)
     setInputValue('')
     const [database, table] = inputValue.trim().split('.')
@@ -100,12 +94,12 @@ export const CommandPalette = memo(function CommandPalette({
       table,
     })
     router.push(url)
-  }, [router, setOpen, hostId, inputValue])
+  }
 
-  const handleOpenSettings = useCallback(() => {
+  const handleOpenSettings = () => {
     setOpen(false)
     onOpenSettings?.()
-  }, [setOpen, onOpenSettings])
+  }
 
   return (
     <>
@@ -241,4 +235,4 @@ export const CommandPalette = memo(function CommandPalette({
       </CommandDialog>
     </>
   )
-})
+}

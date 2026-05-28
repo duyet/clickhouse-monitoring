@@ -11,7 +11,6 @@ import {
   progressFillStyles,
   progressTrackStyles,
 } from './card-styles'
-import { memo } from 'react'
 import { AnimatedNumber } from '@/components/cards/animated-number'
 import { MiniAreaChart } from '@/components/charts/mini-charts'
 import { AppLink as Link } from '@/components/ui/app-link'
@@ -79,7 +78,7 @@ const VALUE_CLASS =
  * Replaces the previous mix of split / progress / info cards so all four
  * overview metrics read with equal visual weight.
  */
-export const KpiCard = memo(function KpiCard({
+export const KpiCard = function KpiCard({
   icon: Icon,
   label,
   value,
@@ -177,4 +176,4 @@ export const KpiCard = memo(function KpiCard({
   }
 
   return content
-})
+}

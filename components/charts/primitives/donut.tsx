@@ -4,7 +4,6 @@ import { Cell, Label, Pie, PieChart } from 'recharts'
 
 import { DonutChartLabel } from './donut-chart-label'
 import { useDonutValueFormatter } from './use-donut-value-formatter'
-import { memo, useMemo } from 'react'
 import {
   type ChartConfig,
   ChartContainer,
@@ -98,7 +97,7 @@ export interface DonutChartProps {
   onClick?: (data: unknown) => void
 }
 
-export const DonutChart = memo(function DonutChart({
+export const DonutChart = function DonutChart({
   data,
   index,
   categories,
@@ -116,23 +115,23 @@ export const DonutChart = memo(function DonutChart({
   onClick,
 }: DonutChartProps) {
   // Determine the value key (categories[0] or category)
-  const valueKey = useMemo(() => {
+  const valueKey = (() => {
     if (categories && categories.length > 0) return categories[0]
     if (category) return category
     return 'value'
-  }, [categories, category])
+  })()
 
   // Transform data for Recharts PieChart
-  const chartData = useMemo(() => {
+  const chartData = (() => {
     return data.map((row) => ({
       name: String(row[index]),
       value: Number(row[valueKey]) || 0,
       originalData: row,
     }))
-  }, [data, index, valueKey])
+  })()
 
   // Generate chart config for colors and labels
-  const chartConfig = useMemo((): ChartConfig => {
+  const chartConfig = (() => {
     const config: ChartConfig = {}
     data.forEach((row, i) => {
       const categoryName = String(row[index])
@@ -142,7 +141,7 @@ export const DonutChart = memo(function DonutChart({
       }
     })
     return config
-  }, [data, index, colors])
+  })()
 
   // Custom value formatter with readable support
   const formatValue = useDonutValueFormatter({
@@ -154,9 +153,9 @@ export const DonutChart = memo(function DonutChart({
   })
 
   // Calculate total for center label
-  const total = useMemo(() => {
+  const total = (() => {
     return chartData.reduce((sum, item) => sum + item.value, 0)
-  }, [chartData])
+  })()
 
   return (
     <ChartContainer
@@ -223,4 +222,4 @@ export const DonutChart = memo(function DonutChart({
       </PieChart>
     </ChartContainer>
   )
-})
+}

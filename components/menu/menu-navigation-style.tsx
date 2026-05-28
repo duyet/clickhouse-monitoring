@@ -12,7 +12,6 @@ import type { MenuItem } from './types'
 
 import { MenuHasChildren } from './components/menu-has-children'
 import { MenuSingleItem } from './components/menu-single-item'
-import { memo } from 'react'
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -28,7 +27,7 @@ export interface MenuProps {
  *
  * Renders menu items as either single links or dropdowns with children.
  */
-export const MenuNavigationStyle = memo(function MenuNavigationStyle({
+export const MenuNavigationStyle = function MenuNavigationStyle({
   items = menuItemsConfig,
   className,
 }: MenuProps) {
@@ -41,14 +40,14 @@ export const MenuNavigationStyle = memo(function MenuNavigationStyle({
       </NavigationMenuList>
     </NavigationMenu>
   )
-})
+}
 
 /**
  * Menu item component router
  *
  * Delegates to appropriate component based on whether item has children.
  */
-const MenuItemComponent = memo(function MenuItemComponent({
+const MenuItemComponent = function MenuItemComponent({
   item,
 }: {
   item: MenuItem
@@ -58,4 +57,4 @@ const MenuItemComponent = memo(function MenuItemComponent({
   }
 
   return <MenuSingleItem item={item} />
-})
+}

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { memo, useState } from 'react'
+import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { chartCard } from '@/components/charts/chart-card-styles'
@@ -49,7 +49,7 @@ interface ChartErrorProps {
   sql?: string
 }
 
-export const ChartError = memo(function ChartError({
+export const ChartError = function ChartError({
   error,
   title: customTitle,
   className,
@@ -352,4 +352,4 @@ ${error.stack}
       </CardContent>
     </Card>
   )
-})
+}

@@ -9,7 +9,6 @@ import type { StaleError } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 
 import { useRouter } from 'next/navigation'
-import { memo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { chartCard } from '@/components/charts/chart-card-styles'
 import {
@@ -293,7 +292,7 @@ function ChartCardContentWithoutScale({
   )
 }
 
-export const ChartCard = memo(function ChartCard({
+export const ChartCard = function ChartCard({
   enableScaleToggle = true,
   ...props
 }: ChartCardProps) {
@@ -307,4 +306,4 @@ export const ChartCard = memo(function ChartCard({
   }
 
   return <ChartCardContentWithoutScale {...props} />
-})
+}

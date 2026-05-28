@@ -1,6 +1,5 @@
 'use client'
 
-import { memo } from 'react'
 import {
   TIME_RANGE_PRESETS,
   useTimeRange,
@@ -13,7 +12,7 @@ import { cn } from '@/lib/utils'
  * Sets the global default lastHours used by all charts that do not have an
  * individual per-chart date range selector configured.
  */
-export const GlobalTimeRangePicker = memo(function GlobalTimeRangePicker() {
+export const GlobalTimeRangePicker = function GlobalTimeRangePicker() {
   const { timeRange, setTimeRange } = useTimeRange()
 
   return (
@@ -45,4 +44,4 @@ export const GlobalTimeRangePicker = memo(function GlobalTimeRangePicker() {
       })}
     </div>
   )
-})
+}

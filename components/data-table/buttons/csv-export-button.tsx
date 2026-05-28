@@ -2,7 +2,6 @@ import { Download } from 'lucide-react'
 import { toast } from 'sonner'
 import type { RowData, Table } from '@tanstack/react-table'
 
-import { memo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -111,11 +110,11 @@ function downloadCsv(content: string, filename: string) {
  * - Generates filename with timestamp
  * - Shows toast notifications
  */
-export const CsvExportButton = memo(function CsvExportButton({
+export const CsvExportButton = function CsvExportButton({
   table,
   filename = 'export',
 }: CsvExportButtonProps) {
-  const handleExportCurrentPage = useCallback(() => {
+  const handleExportCurrentPage = () => {
     const csvContent = generateCsvContent(table)
 
     if (!csvContent) {
@@ -127,9 +126,9 @@ export const CsvExportButton = memo(function CsvExportButton({
     downloadCsv(csvContent, `${filename}-${timestamp}`)
 
     toast.success('Exported current page to CSV')
-  }, [table, filename])
+  }
 
-  const handleExportAllData = useCallback(() => {
+  const handleExportAllData = () => {
     // Get all rows (not just current page) - this works for client-side data
     const allRows = table.getCoreRowModel().rows
 
@@ -158,7 +157,7 @@ export const CsvExportButton = memo(function CsvExportButton({
     downloadCsv(csvContent, `${filename}-all-${timestamp}`)
 
     toast.success(`Exported ${allRows.length} rows to CSV`)
-  }, [table, filename])
+  }
 
   const hasData = table.getRowModel().rows.length > 0
 
@@ -202,4 +201,4 @@ export const CsvExportButton = memo(function CsvExportButton({
       </DropdownMenuContent>
     </DropdownMenu>
   )
-})
+}

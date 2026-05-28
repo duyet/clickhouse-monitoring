@@ -5,7 +5,6 @@ import { flexRender, type Header } from '@tanstack/react-table'
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { memo } from 'react'
 import { ColumnHeaderDropdown } from '@/components/data-table/buttons/column-header-dropdown'
 import { Button } from '@/components/ui/button'
 import { TableHead, TableRow } from '@/components/ui/table'
@@ -196,7 +195,7 @@ function DraggableTableHeader({
  *
  * Performance: Memoized to prevent unnecessary re-renders
  */
-export const TableHeaderRow = memo(function TableHeaderRow({
+export const TableHeaderRow = function TableHeaderRow({
   headers,
   enableResize = true,
   onAutoFit,
@@ -303,7 +302,7 @@ export const TableHeaderRow = memo(function TableHeaderRow({
       })}
     </TableRow>
   )
-})
+}
 
 /**
  * Props for TableHeader component
@@ -328,7 +327,7 @@ export interface TableHeaderProps {
  * Renders all header groups (typically one) with TableHeaderRow components.
  * Performance: Memoized to prevent unnecessary re-renders
  */
-export const TableHeader = memo(function TableHeader({
+export const TableHeader = function TableHeader({
   headerGroups,
   onAutoFit,
   enableColumnReordering = false,
@@ -347,4 +346,4 @@ export const TableHeader = memo(function TableHeader({
       ))}
     </>
   )
-})
+}

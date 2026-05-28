@@ -7,14 +7,13 @@
 'use client'
 
 import { useShowNewBadge } from '../hooks/use-visited-pages'
-import { memo } from 'react'
 
 interface NewBadgeProps {
   href: string
   isNew?: boolean
 }
 
-export const NewBadge = memo(function NewBadge({ href, isNew }: NewBadgeProps) {
+export const NewBadge = function NewBadge({ href, isNew }: NewBadgeProps) {
   const showBadge = useShowNewBadge(href, isNew)
 
   if (!showBadge) return null
@@ -24,4 +23,4 @@ export const NewBadge = memo(function NewBadge({ href, isNew }: NewBadgeProps) {
       New
     </span>
   )
-})
+}

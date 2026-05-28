@@ -1,7 +1,7 @@
 'use client'
 
 import { bucketSeries, downsample } from './peerdb-utils'
-import { useId, useMemo } from 'react'
+import { useId } from 'react'
 
 /**
  * SVG charts ported verbatim from the CHM Redesign prototype (shared.jsx).
@@ -49,11 +49,8 @@ export function PdbSparkline({
   const gid = useId()
   // Cap rendered points to roughly the pixel width — more is invisible but
   // still costs DOM/curve work when a mirror returns thousands of samples.
-  const points = useMemo(() => downsample(data ?? [], width), [data, width])
-  const { line } = useMemo(
-    () => smoothPath(points, width, height),
-    [points, width, height]
-  )
+  const points = downsample(data ?? [], width)
+  const { line } = smoothPath(points, width, height)
   if (!data || data.length < 2) {
     return (
       <div
@@ -101,7 +98,7 @@ export function PdbBarChart({
 }: PdbBarChartProps) {
   // Keep at most ~120 bars so a long history stays legible and cheap. Bars are
   // ~2px min; more would just overlap.
-  const bars = useMemo(() => bucketSeries(data ?? [], 120), [data])
+  const bars = bucketSeries(data ?? [], 120)
   if (!data || data.length === 0) {
     return (
       <div
@@ -180,8 +177,8 @@ export function PdbAreaChart({
   const gid = useId()
   // The chart is drawn in a 100-unit viewBox; ~160 points is far more than the
   // curve can resolve, so downsample longer series before building the path.
-  const points = useMemo(() => downsample(data ?? [], 160), [data])
-  const { line } = useMemo(() => smoothPath(points, 100, 100, 4), [points])
+  const points = downsample(data ?? [], 160)
+  const { line } = smoothPath(points, 100, 100, 4)
   if (!data || data.length < 2) {
     return (
       <div

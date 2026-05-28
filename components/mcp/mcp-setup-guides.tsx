@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'
 
 import { CodeBlock } from './copy-button'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Card,
   CardContent,
@@ -72,158 +72,154 @@ export function McpSetupGuides() {
     setEndpointUrl(`${window.location.origin}/api/mcp`)
   }, [])
 
-  const guides: SetupGuide[] = useMemo(
-    () => [
-      {
-        id: 'claude-desktop',
-        name: 'Claude Desktop',
-        description:
-          'Add to claude_desktop_config.json to connect Claude Desktop',
-        steps: [
-          {
-            type: 'text',
-            content:
-              'Open your Claude Desktop config file. On macOS it is at ~/Library/Application Support/Claude/claude_desktop_config.json, on Windows at %APPDATA%/Claude/claude_desktop_config.json.',
-          },
-          {
-            type: 'text',
-            content: 'Add the following to your mcpServers section:',
-          },
-          {
-            type: 'code',
-            content: JSON.stringify(
-              {
-                mcpServers: {
-                  'clickhouse-monitor': {
-                    url: endpointUrl,
-                  },
+  const guides: SetupGuide[] = [
+    {
+      id: 'claude-desktop',
+      name: 'Claude Desktop',
+      description:
+        'Add to claude_desktop_config.json to connect Claude Desktop',
+      steps: [
+        {
+          type: 'text',
+          content:
+            'Open your Claude Desktop config file. On macOS it is at ~/Library/Application Support/Claude/claude_desktop_config.json, on Windows at %APPDATA%/Claude/claude_desktop_config.json.',
+        },
+        {
+          type: 'text',
+          content: 'Add the following to your mcpServers section:',
+        },
+        {
+          type: 'code',
+          content: JSON.stringify(
+            {
+              mcpServers: {
+                'clickhouse-monitor': {
+                  url: endpointUrl,
                 },
               },
-              null,
-              2
-            ),
-            copyText: JSON.stringify(
-              {
-                mcpServers: {
-                  'clickhouse-monitor': {
-                    url: endpointUrl,
-                  },
+            },
+            null,
+            2
+          ),
+          copyText: JSON.stringify(
+            {
+              mcpServers: {
+                'clickhouse-monitor': {
+                  url: endpointUrl,
                 },
               },
-              null,
-              2
-            ),
-          },
-          {
-            type: 'text',
-            content: 'Restart Claude Desktop to apply the changes.',
-          },
-        ],
-      },
-      {
-        id: 'claude-code',
-        name: 'Claude Code',
-        description: 'Add via the claude mcp add command in your terminal',
-        steps: [
-          {
-            type: 'text',
-            content:
-              'Run the following command in your terminal to add the MCP server to Claude Code:',
-          },
-          {
-            type: 'code',
-            content: `claude mcp add --transport http clickhouse-monitor ${endpointUrl}`,
-            copyText: `claude mcp add --transport http clickhouse-monitor ${endpointUrl}`,
-          },
-          {
-            type: 'text',
-            content:
-              'You can verify the server was added by running: claude mcp list',
-          },
-          {
-            type: 'code',
-            content: 'claude mcp list',
-            copyText: 'claude mcp list',
-          },
-        ],
-      },
-      {
-        id: 'cursor',
-        name: 'Cursor',
-        description: 'Add via Settings > MCP in the Cursor IDE',
-        steps: [
-          {
-            type: 'text',
-            content:
-              'Open Cursor Settings (Cmd+, on macOS), navigate to Features > MCP, and click "Add MCP Server".',
-          },
-          {
-            type: 'text',
-            content:
-              'Alternatively, add the following to your .cursor/mcp.json file:',
-          },
-          {
-            type: 'code',
-            content: JSON.stringify(
-              {
-                mcpServers: {
-                  'clickhouse-monitor': {
-                    url: endpointUrl,
-                    transport: 'http',
-                  },
+            },
+            null,
+            2
+          ),
+        },
+        {
+          type: 'text',
+          content: 'Restart Claude Desktop to apply the changes.',
+        },
+      ],
+    },
+    {
+      id: 'claude-code',
+      name: 'Claude Code',
+      description: 'Add via the claude mcp add command in your terminal',
+      steps: [
+        {
+          type: 'text',
+          content:
+            'Run the following command in your terminal to add the MCP server to Claude Code:',
+        },
+        {
+          type: 'code',
+          content: `claude mcp add --transport http clickhouse-monitor ${endpointUrl}`,
+          copyText: `claude mcp add --transport http clickhouse-monitor ${endpointUrl}`,
+        },
+        {
+          type: 'text',
+          content:
+            'You can verify the server was added by running: claude mcp list',
+        },
+        {
+          type: 'code',
+          content: 'claude mcp list',
+          copyText: 'claude mcp list',
+        },
+      ],
+    },
+    {
+      id: 'cursor',
+      name: 'Cursor',
+      description: 'Add via Settings > MCP in the Cursor IDE',
+      steps: [
+        {
+          type: 'text',
+          content:
+            'Open Cursor Settings (Cmd+, on macOS), navigate to Features > MCP, and click "Add MCP Server".',
+        },
+        {
+          type: 'text',
+          content:
+            'Alternatively, add the following to your .cursor/mcp.json file:',
+        },
+        {
+          type: 'code',
+          content: JSON.stringify(
+            {
+              mcpServers: {
+                'clickhouse-monitor': {
+                  url: endpointUrl,
+                  transport: 'http',
                 },
               },
-              null,
-              2
-            ),
-            copyText: JSON.stringify(
-              {
-                mcpServers: {
-                  'clickhouse-monitor': {
-                    url: endpointUrl,
-                    transport: 'http',
-                  },
+            },
+            null,
+            2
+          ),
+          copyText: JSON.stringify(
+            {
+              mcpServers: {
+                'clickhouse-monitor': {
+                  url: endpointUrl,
+                  transport: 'http',
                 },
               },
-              null,
-              2
-            ),
-          },
-        ],
-      },
-      {
-        id: 'other',
-        name: 'Other MCP Clients',
-        description:
-          'Any MCP-compatible client using Streamable HTTP transport',
-        steps: [
-          {
-            type: 'text',
-            content:
-              'This server uses the Streamable HTTP transport (stateless mode). Point your MCP client to the endpoint URL:',
-          },
-          {
-            type: 'code',
-            content: endpointUrl,
-            copyText: endpointUrl,
-          },
-          {
-            type: 'text',
-            content:
-              'You can test connectivity with curl by listing available tools:',
-          },
-          {
-            type: 'code',
-            content: `curl -X POST ${endpointUrl} \\
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    },
+    {
+      id: 'other',
+      name: 'Other MCP Clients',
+      description: 'Any MCP-compatible client using Streamable HTTP transport',
+      steps: [
+        {
+          type: 'text',
+          content:
+            'This server uses the Streamable HTTP transport (stateless mode). Point your MCP client to the endpoint URL:',
+        },
+        {
+          type: 'code',
+          content: endpointUrl,
+          copyText: endpointUrl,
+        },
+        {
+          type: 'text',
+          content:
+            'You can test connectivity with curl by listing available tools:',
+        },
+        {
+          type: 'code',
+          content: `curl -X POST ${endpointUrl} \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'`,
-            copyText: `curl -X POST ${endpointUrl} -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'`,
-          },
-        ],
-      },
-    ],
-    [endpointUrl]
-  )
+          copyText: `curl -X POST ${endpointUrl} -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'`,
+        },
+      ],
+    },
+  ]
 
   return (
     <Card>

@@ -4,8 +4,6 @@ import { XAxis, YAxis } from 'recharts'
 
 import type { BarChartProps } from '@/types/charts'
 
-import { memo } from 'react'
-
 interface BarAxesProps {
   horizontal: boolean
   index?: string
@@ -24,7 +22,7 @@ interface BarAxesProps {
  * Handles X and Y axis rendering for both horizontal and vertical bar charts.
  * Supports axis labels, tick formatting, and conditional visibility.
  */
-export const BarAxes = memo(function BarAxes({
+export const BarAxes = function BarAxes({
   horizontal,
   index,
   categories,
@@ -111,4 +109,4 @@ export const BarAxes = memo(function BarAxes({
       )}
     </>
   )
-})
+}

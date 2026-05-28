@@ -15,7 +15,7 @@
 
 import { AlertTriangle, ExternalLink, RefreshCw } from 'lucide-react'
 
-import { memo, useState } from 'react'
+import { useState } from 'react'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import {
@@ -41,7 +41,7 @@ interface ReadonlyTablesWarningProps {
  * Displays a red warning indicator with count badge.
  * Click to see details and link to full readonly tables page.
  */
-export const ReadonlyTablesWarning = memo(function ReadonlyTablesWarning({
+export const ReadonlyTablesWarning = function ReadonlyTablesWarning({
   hostId,
   cluster,
   alwaysVisible = true,
@@ -140,4 +140,4 @@ export const ReadonlyTablesWarning = memo(function ReadonlyTablesWarning({
       </PopoverContent>
     </Popover>
   )
-})
+}

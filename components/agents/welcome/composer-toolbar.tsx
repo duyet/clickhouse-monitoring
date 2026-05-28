@@ -19,7 +19,7 @@
 
 import { HashIcon, SparklesIcon, WrenchIcon } from 'lucide-react'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { AgentModelPicker } from '@/components/agents/welcome/agent-model-picker'
 import { SkillDetailDialog } from '@/components/agents/welcome/skill-detail-dialog'
 import {
@@ -65,11 +65,8 @@ export function ComposerToolbar({
   const [toolsOpen, setToolsOpen] = useState(false)
   const [skillDetail, setSkillDetail] = useState<Skill | null>(null)
 
-  const allTools = useMemo(() => getAllSkillTools(), [])
-  const enabledToolCount = useMemo(
-    () => allTools.filter((t) => isToolEnabled(t)).length,
-    [allTools, isToolEnabled]
-  )
+  const allTools = getAllSkillTools()
+  const enabledToolCount = allTools.filter((t) => isToolEnabled(t)).length
 
   return (
     <div

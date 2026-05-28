@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { Suspense, useMemo } from 'react'
+import { Suspense } from 'react'
 import { getChartComponent, hasChart } from '@/components/charts/chart-registry'
 import { ChartSkeleton } from '@/components/skeletons'
 import { useHostId } from '@/lib/swr'
@@ -39,11 +39,11 @@ function ChartsPageContent() {
   const searchParams = useSearchParams()
 
   // Get chart names from URL search params
-  const chartNames: string[] = useMemo(() => {
+  const chartNames: string[] = (() => {
     const chartsParam = searchParams.get('name')
     if (!chartsParam) return []
     return decodeURIComponent(chartsParam).split(',')
-  }, [searchParams])
+  })()
 
   if (chartNames.length === 0) {
     return (

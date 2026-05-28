@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export type TableDensity = 'comfortable' | 'compact' | 'dense'
 
@@ -38,14 +38,14 @@ export function useTableDensity(override?: TableDensity) {
     setDensityState(readStoredDensity())
   }, [override])
 
-  const setDensity = useCallback((next: TableDensity) => {
+  const setDensity = (next: TableDensity) => {
     setDensityState(next)
     try {
       localStorage.setItem(STORAGE_KEY, next)
     } catch {
       // Ignore localStorage errors
     }
-  }, [])
+  }
 
   const effectiveDensity = override ?? density
 

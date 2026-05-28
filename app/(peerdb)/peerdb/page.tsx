@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 import type { MirrorMetricsSummary } from '@/components/peerdb/mirror-row'
 import type { ListMirrorsResponse, ListPeersResponse } from '@/lib/peerdb/types'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { KpiCard } from '@/components/peerdb/kpi-card'
 import { MirrorRow } from '@/components/peerdb/mirror-row'
 import { PeerGraph } from '@/components/peerdb/peer-graph'
@@ -71,14 +71,14 @@ export default function PeerDBMirrorsPage() {
     isValidatingMirrors || isValidatingPeers || isValidatingStatus
   const isLoadingAny = isLoadingMirrors || isLoadingPeers || isLoadingStatus
 
-  const refreshAll = useCallback(async () => {
+  const refreshAll = async () => {
     try {
       await Promise.all([refreshMirrors(), refreshPeers(), refreshStatus()])
     } catch {
       // SWR surfaces per-hook errors in the UI; swallow here so the manual
       // refresh click never produces an unhandled rejection.
     }
-  }, [refreshMirrors, refreshPeers, refreshStatus])
+  }
 
   // Trigger sonner toast notifications on fetching errors
   useEffect(() => {
@@ -108,7 +108,7 @@ export default function PeerDBMirrorsPage() {
     {}
   )
 
-  const onMetrics = useCallback((name: string, m: MirrorMetricsSummary) => {
+  const onMetrics = (name: string, m: MirrorMetricsSummary) => {
     setMetrics((prev) => {
       const cur = prev[name]
       const sameTrend =
@@ -125,10 +125,10 @@ export default function PeerDBMirrorsPage() {
       }
       return { ...prev, [name]: m }
     })
-  }, [])
+  }
 
-  const mirrors = useMemo(() => data?.mirrors ?? [], [data])
-  const peers = useMemo(() => {
+  const mirrors = data?.mirrors ?? []
+  const peers = (() => {
     const seen = new Map<
       string,
       NonNullable<ListPeersResponse['items']>[number]
@@ -141,9 +141,9 @@ export default function PeerDBMirrorsPage() {
       if (p?.name && !seen.has(p.name)) seen.set(p.name, p)
     }
     return Array.from(seen.values())
-  }, [peersData])
+  })()
 
-  const counts = useMemo(() => {
+  const counts = (() => {
     const c: Record<DesignStatus, number> = {
       running: 0,
       snapshotting: 0,
@@ -152,9 +152,9 @@ export default function PeerDBMirrorsPage() {
     }
     for (const m of mirrors) c[toDesignStatus(m.status)]++
     return c
-  }, [mirrors])
+  })()
 
-  const totals = useMemo(() => {
+  const totals = (() => {
     let rowsPerSec = 0
     let rowsSynced = 0
     let trendLen = 0
@@ -171,24 +171,20 @@ export default function PeerDBMirrorsPage() {
       mirrors.reduce((a, m) => a + (metrics[m.name]?.trend[i] ?? 0), 0)
     )
     return { rowsPerSec, rowsSynced, aggTrend, measured }
-  }, [mirrors, metrics])
+  })()
 
-  const filtered = useMemo(
-    () =>
-      mirrors.filter((m) => {
-        if (statusFilter !== 'all' && toDesignStatus(m.status) !== statusFilter)
-          return false
-        if (
-          search &&
-          !`${m.name} ${m.sourceName ?? ''} ${m.destinationName ?? ''}`
-            .toLowerCase()
-            .includes(search.toLowerCase())
-        )
-          return false
-        return true
-      }),
-    [mirrors, statusFilter, search]
-  )
+  const filtered = mirrors.filter((m) => {
+    if (statusFilter !== 'all' && toDesignStatus(m.status) !== statusFilter)
+      return false
+    if (
+      search &&
+      !`${m.name} ${m.sourceName ?? ''} ${m.destinationName ?? ''}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    )
+      return false
+    return true
+  })
 
   // Reset the window whenever the filter/search changes. statusFilter/search
   // are intentional triggers (not read in the body), so the lint is silenced.
@@ -197,10 +193,7 @@ export default function PeerDBMirrorsPage() {
     setVisibleCount(PAGE_SIZE)
   }, [statusFilter, search])
 
-  const visible = useMemo(
-    () => filtered.slice(0, visibleCount),
-    [filtered, visibleCount]
-  )
+  const visible = filtered.slice(0, visibleCount)
 
   if (isPeerDBNotConfigured(error)) {
     return <PeerDBNotConfigured />

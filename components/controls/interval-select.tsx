@@ -4,7 +4,7 @@ import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
 
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
-import { memo, useCallback, useState } from 'react'
+import { useState } from 'react'
 import { useAppContext } from '@/app/context'
 import { Button } from '@/components/ui/button'
 import {
@@ -44,7 +44,7 @@ interface IntervalSelectProps {
   values?: { value: ClickHouseInterval; label: string }[]
 }
 
-export const IntervalSelect = memo(function IntervalSelect({
+export const IntervalSelect = function IntervalSelect({
   values = [],
 }: IntervalSelectProps) {
   const intervals = values.length ? values : defaultIntervals
@@ -53,13 +53,10 @@ export const IntervalSelect = memo(function IntervalSelect({
   const { interval, setInterval } = useAppContext()
 
   // Memoized handler to prevent recreation on every render
-  const handleIntervalSelect = useCallback(
-    (currentValue: string) => {
-      setInterval?.(currentValue as ClickHouseInterval)
-      setOpen(false)
-    },
-    [setInterval]
-  )
+  const handleIntervalSelect = (currentValue: string) => {
+    setInterval?.(currentValue as ClickHouseInterval)
+    setOpen(false)
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -104,4 +101,4 @@ export const IntervalSelect = memo(function IntervalSelect({
       </PopoverContent>
     </Popover>
   )
-})
+}

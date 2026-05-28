@@ -20,7 +20,7 @@ import useSWR from 'swr'
 import type { Notification } from '@/lib/notifications/dismissed-notifications'
 
 import { apiFetch } from './api-fetch'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { subscribeInAppAlerts } from '@/lib/health/alert-dispatcher'
 import {
   dismissNotification as dismissNotificationUtil,
@@ -119,7 +119,7 @@ export function useNotifications(hostId: number): NotificationsResult {
   }, [])
 
   // Add unique keys to notifications and filter out dismissed ones
-  const notifications = useMemo(() => {
+  const notifications = (() => {
     const hostCluster = `host-${hostId}`
     const rawNotifications = [
       ...healthAlerts.filter((n) => n.cluster === hostCluster),
@@ -134,28 +134,25 @@ export function useNotifications(hostId: number): NotificationsResult {
 
     // Filter out dismissed notifications
     return filterActiveNotifications(withKeys)
-  }, [data, healthAlerts, hostId])
+  })()
 
   const totalCount = notifications.length
 
   // Dismiss a specific notification
-  const dismiss = useCallback(
-    (notification: NotificationWithKey) => {
-      dismissNotificationUtil(notification)
-      // Trigger revalidation to update the UI
-      mutate()
-    },
-    [mutate]
-  )
+  const dismiss = (notification: NotificationWithKey) => {
+    dismissNotificationUtil(notification)
+    // Trigger revalidation to update the UI
+    mutate()
+  }
 
   // Dismiss all current notifications
-  const dismissAll = useCallback(() => {
+  const dismissAll = () => {
     for (const notification of notifications) {
       dismissNotificationUtil(notification)
     }
     // Trigger revalidation to update the UI
     mutate()
-  }, [notifications, mutate])
+  }
 
   return {
     notifications,

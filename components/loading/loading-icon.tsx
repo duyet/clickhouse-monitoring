@@ -1,6 +1,5 @@
 import { UpdateIcon } from '@radix-ui/react-icons'
 
-import { memo } from 'react'
 import { cn } from '@/lib/utils'
 
 interface LoadingIconProps {
@@ -15,7 +14,7 @@ const sizeClasses = {
   lg: 'size-5',
 }
 
-export const LoadingIcon = memo(function LoadingIcon({
+export const LoadingIcon = function LoadingIcon({
   className,
   size = 'default',
 }: LoadingIconProps) {
@@ -33,4 +32,4 @@ export const LoadingIcon = memo(function LoadingIcon({
       aria-hidden="false"
     />
   )
-})
+}

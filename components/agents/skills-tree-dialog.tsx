@@ -8,7 +8,7 @@ import {
   ListTreeIcon,
 } from 'lucide-react'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -199,7 +199,7 @@ function createBodyBlocks(lines: string[]): SkillBodyBlock[] {
 }
 
 function SkillBody({ lines }: { lines: string[] }) {
-  const blocks = useMemo(() => createBodyBlocks(lines), [lines])
+  const blocks = createBodyBlocks(lines)
 
   if (blocks.length === 0) return null
 
@@ -330,10 +330,7 @@ export function SkillsTreeDialog({
   open,
   onOpenChange,
 }: SkillsTreeDialogProps) {
-  const trees = useMemo(
-    () => skills.map((skill) => buildSkillTree(skill)),
-    [skills]
-  )
+  const trees = skills.map((skill) => buildSkillTree(skill))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

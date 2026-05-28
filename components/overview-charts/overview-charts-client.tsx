@@ -4,7 +4,6 @@ import { ClickHouseInfoCard } from './clickhouse-info-card'
 import { DatabaseTableCountCard } from './database-table-count-card'
 import { DiskSizeCard } from './disk-size-card'
 import { RunningQueriesCard } from './running-queries-card'
-import { memo } from 'react'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -20,7 +19,7 @@ interface OverviewChartsProps {
   className?: string
 }
 
-export const OverviewCharts = memo(function OverviewCharts({
+export const OverviewCharts = function OverviewCharts({
   className,
 }: OverviewChartsProps) {
   return (
@@ -38,4 +37,4 @@ export const OverviewCharts = memo(function OverviewCharts({
       <ClickHouseInfoCard />
     </div>
   )
-})
+}

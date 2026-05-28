@@ -13,7 +13,7 @@ import type { AgentVisualizationProps } from '@/components/agents/agent-visualiz
 import type { QueryConfig } from '@/types/query-config'
 
 import { QueryInsightsCard } from './query-insights-card'
-import { type ComponentProps, useEffect, useMemo, useState } from 'react'
+import { type ComponentProps, useEffect, useState } from 'react'
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
 import { AgentDataSources } from '@/components/agents/agent-data-sources'
 import {
@@ -124,12 +124,12 @@ export function ResultTable({
 }) {
   const displayRows = rows.slice(0, maxRows) as Record<string, unknown>[]
 
-  const columns = useMemo(() => {
+  const columns = (() => {
     if (displayRows.length === 0) return []
     return Object.keys(displayRows[0])
-  }, [displayRows])
+  })()
 
-  const queryConfig = useMemo(() => createResultQueryConfig(columns), [columns])
+  const queryConfig = createResultQueryConfig(columns)
 
   if (columns.length === 0) {
     return (
@@ -386,32 +386,32 @@ export function ToolCallPart({
     }
   }, [isMessageStreaming, hasOutput, hasError, isExpanded])
 
-  const inputParams = useMemo(() => {
+  const inputParams = (() => {
     if (!part.input || typeof part.input !== 'object') return null
     return Object.entries(part.input as Record<string, unknown>)
       .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
       .join(', ')
-  }, [part.input])
+  })()
 
-  const toolParams = useMemo(() => {
+  const toolParams = (() => {
     const tool = getToolMetadata(toolName)
     return tool?.params || []
-  }, [toolName])
+  })()
 
-  const outputRows = useMemo(() => {
+  const outputRows = (() => {
     if (!hasOutput || !part.output) return []
     return getRowsFromOutput(part.output)
-  }, [hasOutput, part.output])
+  })()
 
-  const outputQueryConfig = useMemo(() => {
+  const outputQueryConfig = (() => {
     if (outputRows.length === 0) return null
     return createResultQueryConfig(Object.keys(outputRows[0]))
-  }, [outputRows])
+  })()
 
-  const promotedOutput = useMemo(() => {
+  const promotedOutput = (() => {
     if (!hasOutput || part.output == null) return null
     return getPromotedOutputType(part.output)
-  }, [hasOutput, part.output])
+  })()
 
   return (
     <div className="my-1.5">

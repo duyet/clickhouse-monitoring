@@ -1,12 +1,10 @@
 import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons'
 
-import { memo } from 'react'
-
 interface BooleanFormatProps {
   value: string | number | boolean
 }
 
-export const BooleanFormat = memo(function BooleanFormat({
+export const BooleanFormat = function BooleanFormat({
   value,
 }: BooleanFormatProps): React.ReactNode {
   const isTrue =
@@ -19,4 +17,4 @@ export const BooleanFormat = memo(function BooleanFormat({
   ) : (
     <CrossCircledIcon aria-label="no" className="text-rose-700" />
   )
-})
+}

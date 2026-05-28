@@ -17,7 +17,6 @@ import {
 } from 'lucide-react'
 import type { Row, RowData } from '@tanstack/react-table'
 
-import { memo, useMemo } from 'react'
 import { CodeDialogFormat } from '@/components/data-table/cells/code-dialog-format'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
@@ -156,207 +155,204 @@ function DetailItem({ icon: Icon, label, value, title }: DetailItemProps) {
  * @param props.value Fallback query text when `row.original.query` is absent.
  * @param props.context Formatter context kept for RowContextFormatter shape.
  */
-export const RunningQuerySummaryFormat = memo(
-  function RunningQuerySummaryFormat<TData extends RowData>({
-    row,
-    value,
-  }: RunningQuerySummaryFormatProps<TData>): React.ReactNode {
-    const record = row.original as Record<string, unknown>
-    const hostId = useHostId()
-    const query = stringValue(record.query ?? value)
-    const queryId = stringValue(record.query_id ?? record.query_detail)
-    const initialQueryId = stringValue(record.initial_query_id)
-    const normalizedQueryHash = stringValue(record.normalized_query_hash)
-    const elapsed = numberValue(record.elapsed)
-    const elapsedLabel =
-      stringValue(record.readable_elapsed) ||
-      (elapsed === null ? '' : `${elapsed.toFixed(1)} seconds`)
-    const progress = stringValue(record.progress)
-    const memory =
-      stringValue(record.readable_memory_usage) ||
-      readableSize(record.memory_usage)
-    const readRows =
-      stringValue(record.readable_read_rows) || readableCount(record.read_rows)
-    const readBytes =
-      stringValue(record.readable_read_bytes) || readableSize(record.read_bytes)
-    const writtenRows =
-      stringValue(record.readable_written_rows) ||
-      readableCount(record.written_rows)
-    const writtenBytes =
-      stringValue(record.readable_written_bytes) ||
-      readableSize(record.written_bytes)
-    const threadCount = getThreadCount(record)
-    const merges = stringValue(record.launched_merges)
-    const queryKind = stringValue(record.query_kind)
-    const user = stringValue(record.user)
-    const database = stringValue(record.current_database)
-    const interfaceLabel =
-      stringValue(record.interface_label) || stringValue(record.interface)
-    const client = stringValue(record.client_name)
-    const clientHost = stringValue(record.client_hostname)
-    const address = stringValue(record.address)
-    const port = stringValue(record.port)
-    const addressLabel = address && port ? `${address}:${port}` : address
-    const distributedDepth = numberValue(record.distributed_depth)
-    const isDistributed = (distributedDepth ?? 0) > 0
+export const RunningQuerySummaryFormat = function RunningQuerySummaryFormat<
+  TData extends RowData,
+>({ row, value }: RunningQuerySummaryFormatProps<TData>): React.ReactNode {
+  const record = row.original as Record<string, unknown>
+  const hostId = useHostId()
+  const query = stringValue(record.query ?? value)
+  const queryId = stringValue(record.query_id ?? record.query_detail)
+  const initialQueryId = stringValue(record.initial_query_id)
+  const normalizedQueryHash = stringValue(record.normalized_query_hash)
+  const elapsed = numberValue(record.elapsed)
+  const elapsedLabel =
+    stringValue(record.readable_elapsed) ||
+    (elapsed === null ? '' : `${elapsed.toFixed(1)} seconds`)
+  const progress = stringValue(record.progress)
+  const memory =
+    stringValue(record.readable_memory_usage) ||
+    readableSize(record.memory_usage)
+  const readRows =
+    stringValue(record.readable_read_rows) || readableCount(record.read_rows)
+  const readBytes =
+    stringValue(record.readable_read_bytes) || readableSize(record.read_bytes)
+  const writtenRows =
+    stringValue(record.readable_written_rows) ||
+    readableCount(record.written_rows)
+  const writtenBytes =
+    stringValue(record.readable_written_bytes) ||
+    readableSize(record.written_bytes)
+  const threadCount = getThreadCount(record)
+  const merges = stringValue(record.launched_merges)
+  const queryKind = stringValue(record.query_kind)
+  const user = stringValue(record.user)
+  const database = stringValue(record.current_database)
+  const interfaceLabel =
+    stringValue(record.interface_label) || stringValue(record.interface)
+  const client = stringValue(record.client_name)
+  const clientHost = stringValue(record.client_hostname)
+  const address = stringValue(record.address)
+  const port = stringValue(record.port)
+  const addressLabel = address && port ? `${address}:${port}` : address
+  const distributedDepth = numberValue(record.distributed_depth)
+  const isDistributed = (distributedDepth ?? 0) > 0
 
-    const queryLink = useMemo(() => {
-      if (!queryId) return ''
-      return `/query?query_id=${encodeURIComponent(queryId)}&host=${encodeURIComponent(hostId)}`
-    }, [hostId, queryId])
+  const queryLink = (() => {
+    if (!queryId) return ''
+    return `/query?query_id=${encodeURIComponent(queryId)}&host=${encodeURIComponent(hostId)}`
+  })()
 
-    return (
-      <div data-slot="running-query-summary" className="min-w-0 py-2 pr-2">
-        <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="min-w-0">
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-              {queryKind && (
-                <Badge
-                  variant="secondary"
-                  className="h-6 shrink-0 rounded-md px-2 font-mono text-[11px] uppercase"
-                >
-                  {queryKind}
-                </Badge>
-              )}
-              {user && (
-                <Badge
-                  variant="outline"
-                  className="h-6 max-w-36 shrink-0 rounded-md px-2 text-[11px]"
-                >
-                  <User className="mr-1 size-3" aria-hidden="true" />
-                  <span className="truncate">{user}</span>
-                </Badge>
-              )}
-              {database && (
-                <Badge
-                  variant="outline"
-                  className="h-6 max-w-44 shrink-0 rounded-md px-2 text-[11px]"
-                >
-                  <Database className="mr-1 size-3" aria-hidden="true" />
-                  <span className="truncate font-mono">{database}</span>
-                </Badge>
-              )}
-              {isDistributed && (
-                <Badge
-                  variant="outline"
-                  className="h-6 shrink-0 rounded-md px-2 text-[11px]"
-                >
-                  Distributed depth {distributedDepth}
-                </Badge>
-              )}
-            </div>
-
-            <div className="mt-2 min-w-0 [&_code]:break-words [&_code]:whitespace-normal">
-              <CodeDialogFormat
-                value={query}
-                options={{
-                  dialog_title: 'Running Query',
-                  hide_query_comment: true,
-                  max_truncate: 320,
-                  force_dialog: true,
-                  show_query_plan: true,
-                  trigger_classname:
-                    'w-full min-w-0 justify-start rounded-md border border-transparent bg-muted/30 px-2 py-1.5 hover:border-border hover:bg-muted/60',
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="flex min-w-0 flex-wrap items-start gap-2 xl:max-w-[28rem] xl:justify-end">
-            {queryLink && (
-              <Link
-                href={queryLink}
-                className="inline-flex h-7 max-w-full min-w-0 items-center gap-1.5 rounded-md border bg-background px-2 text-xs font-medium text-foreground transition-colors hover:border-primary/50 hover:text-primary"
+  return (
+    <div data-slot="running-query-summary" className="min-w-0 py-2 pr-2">
+      <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="min-w-0">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            {queryKind && (
+              <Badge
+                variant="secondary"
+                className="h-6 shrink-0 rounded-md px-2 font-mono text-[11px] uppercase"
               >
-                <Fingerprint className="size-3.5 shrink-0" aria-hidden="true" />
-                <span className="min-w-0 truncate font-mono">
-                  {queryId.slice(0, 18)}
-                  {queryId.length > 18 ? '...' : ''}
-                </span>
-              </Link>
+                {queryKind}
+              </Badge>
+            )}
+            {user && (
+              <Badge
+                variant="outline"
+                className="h-6 max-w-36 shrink-0 rounded-md px-2 text-[11px]"
+              >
+                <User className="mr-1 size-3" aria-hidden="true" />
+                <span className="truncate">{user}</span>
+              </Badge>
+            )}
+            {database && (
+              <Badge
+                variant="outline"
+                className="h-6 max-w-44 shrink-0 rounded-md px-2 text-[11px]"
+              >
+                <Database className="mr-1 size-3" aria-hidden="true" />
+                <span className="truncate font-mono">{database}</span>
+              </Badge>
+            )}
+            {isDistributed && (
+              <Badge
+                variant="outline"
+                className="h-6 shrink-0 rounded-md px-2 text-[11px]"
+              >
+                Distributed depth {distributedDepth}
+              </Badge>
             )}
           </div>
+
+          <div className="mt-2 min-w-0 [&_code]:break-words [&_code]:whitespace-normal">
+            <CodeDialogFormat
+              value={query}
+              options={{
+                dialog_title: 'Running Query',
+                hide_query_comment: true,
+                max_truncate: 320,
+                force_dialog: true,
+                show_query_plan: true,
+                trigger_classname:
+                  'w-full min-w-0 justify-start rounded-md border border-transparent bg-muted/30 px-2 py-1.5 hover:border-border hover:bg-muted/60',
+              }}
+            />
+          </div>
         </div>
 
-        <div className="mt-3 grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-          <MetricItem
-            icon={Clock3}
-            label="Elapsed"
-            value={elapsedLabel}
-            tone={getElapsedTone(elapsed)}
-          />
-          <MetricItem icon={MemoryStick} label="Memory" value={memory} />
-          <MetricItem
-            icon={Activity}
-            label="Progress"
-            value={progress}
-            subValue={
-              numberValue(record.total_rows_approx) !== null
-                ? `${readRows} of ${readableCount(record.total_rows_approx)} rows`
-                : undefined
-            }
-          />
-          <MetricItem
-            icon={HardDriveDownload}
-            label="Read"
-            value={readRows}
-            subValue={readBytes}
-          />
-          <MetricItem
-            icon={HardDriveUpload}
-            label="Written"
-            value={writtenRows}
-            subValue={writtenBytes}
-          />
-          <MetricItem
-            icon={Cpu}
-            label={
-              hasValue(record.peak_threads_usage) ? 'Peak threads' : 'Threads'
-            }
-            value={threadCount}
-            subValue={
-              hasValue(record.peak_threads_usage)
-                ? 'from system.processes'
-                : undefined
-            }
-          />
-        </div>
-
-        <div className="mt-3 grid min-w-0 grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2 xl:grid-cols-3">
-          <DetailItem icon={Monitor} label="Client" value={client} />
-          <DetailItem icon={Server} label="Host" value={clientHost} />
-          <DetailItem icon={Network} label="Interface" value={interfaceLabel} />
-          <DetailItem
-            icon={Network}
-            label="Address"
-            value={addressLabel}
-            title={addressLabel}
-          />
-          <DetailItem
-            icon={Fingerprint}
-            label="Initial"
-            value={
-              initialQueryId && initialQueryId !== queryId
-                ? initialQueryId
-                : undefined
-            }
-            title={initialQueryId}
-          />
-          <DetailItem
-            icon={Fingerprint}
-            label="Hash"
-            value={normalizedQueryHash}
-            title={normalizedQueryHash}
-          />
-          <DetailItem
-            icon={Activity}
-            label="Merges"
-            value={merges && merges !== '0' ? merges : undefined}
-          />
+        <div className="flex min-w-0 flex-wrap items-start gap-2 xl:max-w-[28rem] xl:justify-end">
+          {queryLink && (
+            <Link
+              href={queryLink}
+              className="inline-flex h-7 max-w-full min-w-0 items-center gap-1.5 rounded-md border bg-background px-2 text-xs font-medium text-foreground transition-colors hover:border-primary/50 hover:text-primary"
+            >
+              <Fingerprint className="size-3.5 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 truncate font-mono">
+                {queryId.slice(0, 18)}
+                {queryId.length > 18 ? '...' : ''}
+              </span>
+            </Link>
+          )}
         </div>
       </div>
-    )
-  }
-) as <TData extends RowData>(
+
+      <div className="mt-3 grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+        <MetricItem
+          icon={Clock3}
+          label="Elapsed"
+          value={elapsedLabel}
+          tone={getElapsedTone(elapsed)}
+        />
+        <MetricItem icon={MemoryStick} label="Memory" value={memory} />
+        <MetricItem
+          icon={Activity}
+          label="Progress"
+          value={progress}
+          subValue={
+            numberValue(record.total_rows_approx) !== null
+              ? `${readRows} of ${readableCount(record.total_rows_approx)} rows`
+              : undefined
+          }
+        />
+        <MetricItem
+          icon={HardDriveDownload}
+          label="Read"
+          value={readRows}
+          subValue={readBytes}
+        />
+        <MetricItem
+          icon={HardDriveUpload}
+          label="Written"
+          value={writtenRows}
+          subValue={writtenBytes}
+        />
+        <MetricItem
+          icon={Cpu}
+          label={
+            hasValue(record.peak_threads_usage) ? 'Peak threads' : 'Threads'
+          }
+          value={threadCount}
+          subValue={
+            hasValue(record.peak_threads_usage)
+              ? 'from system.processes'
+              : undefined
+          }
+        />
+      </div>
+
+      <div className="mt-3 grid min-w-0 grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2 xl:grid-cols-3">
+        <DetailItem icon={Monitor} label="Client" value={client} />
+        <DetailItem icon={Server} label="Host" value={clientHost} />
+        <DetailItem icon={Network} label="Interface" value={interfaceLabel} />
+        <DetailItem
+          icon={Network}
+          label="Address"
+          value={addressLabel}
+          title={addressLabel}
+        />
+        <DetailItem
+          icon={Fingerprint}
+          label="Initial"
+          value={
+            initialQueryId && initialQueryId !== queryId
+              ? initialQueryId
+              : undefined
+          }
+          title={initialQueryId}
+        />
+        <DetailItem
+          icon={Fingerprint}
+          label="Hash"
+          value={normalizedQueryHash}
+          title={normalizedQueryHash}
+        />
+        <DetailItem
+          icon={Activity}
+          label="Merges"
+          value={merges && merges !== '0' ? merges : undefined}
+        />
+      </div>
+    </div>
+  )
+} as <TData extends RowData>(
   props: RunningQuerySummaryFormatProps<TData>
 ) => React.ReactNode

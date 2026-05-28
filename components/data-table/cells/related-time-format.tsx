@@ -1,4 +1,3 @@
-import { memo, useMemo } from 'react'
 import { useTimezone } from '@/lib/context/timezone-context'
 import dayjs from '@/lib/dayjs'
 
@@ -6,13 +5,13 @@ interface RelatedTimeFormatProps {
   value: any
 }
 
-export const RelatedTimeFormat = memo(function RelatedTimeFormat({
+export const RelatedTimeFormat = function RelatedTimeFormat({
   value,
 }: RelatedTimeFormatProps) {
   const userTimezone = useTimezone()
 
   // Memoize dayjs computation
-  const fromNow = useMemo(() => {
+  const fromNow = (() => {
     try {
       // Parse in user's timezone
       const parsed = dayjs.tz(value as string, userTimezone)
@@ -21,7 +20,7 @@ export const RelatedTimeFormat = memo(function RelatedTimeFormat({
       // Failed to parse time with timezone, fallback to default parsing
       return dayjs(value as string).fromNow()
     }
-  }, [value, userTimezone])
+  })()
 
   return <span title={value as string}>{fromNow}</span>
-})
+}
