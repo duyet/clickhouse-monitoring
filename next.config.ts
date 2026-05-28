@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // React Compiler auto-memoizes components, replacing manual
+  // useMemo/useCallback/memo. Requires babel-plugin-react-compiler.
+  reactCompiler: true,
+
   // Limit experimental cpus / worker threads to reduce memory footprint
   experimental: {
     workerThreads: false,
