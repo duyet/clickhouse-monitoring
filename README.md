@@ -5,6 +5,10 @@
 
 A modern Next.js 15 dashboard that provides real-time insights into ClickHouse clusters through system tables. Features static site generation with client-side data fetching for optimal performance and CDN caching.
 
+<p align="center">
+  <strong>Live:</strong> <a href="https://chmonitor.dev/?ref=github">chmonitor.dev</a> | <a href="#screenshots">Screenshots</a>
+</p>
+
 **Features:**
 
 - **Query Monitoring**: Running queries, query history, resources (memory, parts read, file_open), expensive queries, slow queries, failed queries, query profiler
@@ -20,13 +24,6 @@ A modern Next.js 15 dashboard that provides real-time insights into ClickHouse c
 - **MCP Server**: Model Context Protocol endpoint for AI tool integration (Claude, Cursor, etc.)
 - **Rust CLI**: Standalone terminal and TUI monitoring tool
 
-## Demo
-
-_The ClickHouse server running on my homelab so can be slow sometimes_:
-
-- [chmonitor.dev](https://chmonitor.dev) (Cloudflare Workers)
-- [clickhouse-monitoring.duyet.net](https://clickhouse-monitoring.duyet.net)
-- [clickhouse-monitor.duyet.workers.dev](https://clickhouse-monitor.duyet.workers.dev) (Cloudflare Workers legacy)
 
 ## Deployment
 
@@ -178,6 +175,10 @@ For repeatable Docker deploys, prefer the versioned image tag from the release p
 ![](.github/screenshots/screenshot_8.png)
 ![](.github/screenshots/screenshot_9.png)
 ![](.github/screenshots/screenshot_10.png)
+![](.github/screenshots/screenshot_11.png)
+![](.github/screenshots/screenshot_12.png)
+![](.github/screenshots/screenshot_13.png)
+![](.github/screenshots/screenshot_14.png)
 
 ## Feedback and Contributions
 
