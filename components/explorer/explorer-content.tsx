@@ -23,21 +23,26 @@ interface ExplorerContentProps {
 }
 
 // Track which tabs have been visited for this table to enable pre-loading
-function useTabVisitTracker(tableKey: string | null, currentTab: string) {
-  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
-    () => new Set(['data', currentTab])
+function useTabVisitTracker(tableKey: string | null, currentTab: ExplorerTab) {
+  const [visitedTabs, setVisitedTabs] = useState<Set<ExplorerTab>>(
+    () => new Set<ExplorerTab>(['data', currentTab])
   )
   const prevTableKey = useRef<string | null>(null)
 
   useEffect(() => {
     if (tableKey !== prevTableKey.current) {
       // Reset visited tabs when table changes, but keep the active tab
-      setVisitedTabs(new Set(['data', currentTab]))
+      setVisitedTabs(new Set<ExplorerTab>(['data', currentTab]))
       prevTableKey.current = tableKey
+    } else {
+      // Mark the active tab visited when it changes externally (e.g. URL/history navigation)
+      setVisitedTabs((prev) =>
+        prev.has(currentTab) ? prev : new Set([...prev, currentTab])
+      )
     }
   }, [tableKey, currentTab])
 
-  const markVisited = (tab: string) => {
+  const markVisited = (tab: ExplorerTab) => {
     setVisitedTabs((prev) => new Set([...prev, tab]))
   }
 
@@ -56,7 +61,7 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
     if (value === tab) return
 
     setIsTabSwitching(true)
-    markVisited(value)
+    markVisited(value as ExplorerTab)
     setTab(value as ExplorerTab)
 
     // Clear switching state after a brief moment
