@@ -21,6 +21,7 @@ permissions:
   contents: write
   id-token: write
   packages: write
+  models: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -342,7 +343,36 @@ jobs:
             bun.lock
           shasum -a 256 "clickhouse-monitor-${TAG}-standalone.tar.gz" "clickhouse-monitor-${TAG}-cloudflare.tar.gz" > SHA256SUMS
 
+      - name: Build AI summary prompt
+        id: ai_prompt
+        env:
+          RELEASE_TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          PREV="$(git describe --tags --abbrev=0 "${RELEASE_TAG}^" 2>/dev/null || git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo '')"
+          if [ -n "$PREV" ]; then RANGE="$PREV..HEAD"; else RANGE="HEAD"; fi
+          {
+            echo "Summarize the following git commits into concise, user-facing release notes for ClickHouse Monitor ${RELEASE_TAG}."
+            echo "Group changes under Features, Fixes, and Other headings using short markdown bullet points."
+            echo "Skip noise such as merge commits, version bumps, and formatting-only changes. Do not invent changes."
+            echo ""
+            echo "Commits:"
+            git log --pretty=format:'- %s' "$RANGE"
+          } > ai-prompt.txt
+          echo "previous_tag=$PREV" >> "$GITHUB_OUTPUT"
+
+      - name: Generate AI summary
+        id: ai_summary
+        continue-on-error: true
+        uses: actions/ai-inference@v1
+        with:
+          prompt-file: ai-prompt.txt
+          system-prompt: 'You are a release-notes assistant. Output only markdown bullet points grouped by category. Be concise and accurate, and never invent changes that are not in the commit list.'
+          model: openai/gpt-4o
+
       - name: Generate release notes
+        env:
+          AI_SUMMARY: ${{ steps.ai_summary.outputs.response }}
+          PREVIOUS_TAG: ${{ steps.ai_prompt.outputs.previous_tag }}
         run: bun run --silent release:notes > release-notes.md
 
       - name: Upload workflow artifacts
@@ -362,12 +392,19 @@ jobs:
           TAG: ${{ steps.meta.outputs.tag }}
         run: |
           if gh release view "$TAG" >/dev/null 2>&1; then
+            # Append on top: keep any existing notes, prepend the new content.
+            EXISTING="$(gh release view "$TAG" --json body --jq '.body // ""')"
+            if [ -n "$EXISTING" ]; then
+              printf '%s\n\n---\n\n%s\n' "$(cat release-notes.md)" "$EXISTING" > final-notes.md
+            else
+              cp release-notes.md final-notes.md
+            fi
             gh release edit "$TAG" \
-              --title "clickhouse-monitor $TAG" \
-              --notes-file release-notes.md
+              --title "$TAG" \
+              --notes-file final-notes.md
           else
             gh release create "$TAG" \
-              --title "clickhouse-monitor $TAG" \
+              --title "$TAG" \
               --notes-file release-notes.md
           fi
 
