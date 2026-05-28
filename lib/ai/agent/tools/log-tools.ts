@@ -29,7 +29,7 @@ export function createLogTools(hostId: number) {
           .optional()
           .default('')
           .describe('Optional LIKE pattern to filter log messages'),
-        hostId: z.number().optional().describe('Host index override'),
+        hostId: z.coerce.number().optional().describe('Host index override'),
       }),
       execute: async (input: unknown) => {
         const {
@@ -63,7 +63,7 @@ export function createLogTools(hostId: number) {
           .optional()
           .default(20)
           .describe('Maximum number of stack traces to return'),
-        hostId: z.number().optional().describe('Host index override'),
+        hostId: z.coerce.number().optional().describe('Host index override'),
       }),
       execute: async (input: unknown) => {
         const { limit = 20, hostId: hostIdOverride } = input as {

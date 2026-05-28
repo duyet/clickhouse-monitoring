@@ -8,7 +8,7 @@ export function createClusterTools(hostId: number) {
       description:
         'Get cluster topology including shards, replicas, and host addresses.',
       inputSchema: z.object({
-        hostId: z
+        hostId: z.coerce
           .number()
           .optional()
           .describe('Override the default ClickHouse host index.'),
@@ -41,7 +41,7 @@ export function createClusterTools(hostId: number) {
           .optional()
           .default(50)
           .describe('Maximum number of rows to return.'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .optional()
           .describe('Override the default ClickHouse host index.'),

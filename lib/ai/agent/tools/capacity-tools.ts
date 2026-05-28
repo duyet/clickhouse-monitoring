@@ -17,7 +17,7 @@ export function createCapacityTools(hostId: number) {
           .optional()
           .default(90)
           .describe('Number of days to forecast ahead (default: 90)'),
-        hostId: z.number().optional().describe('Override host ID'),
+        hostId: z.coerce.number().optional().describe('Override host ID'),
       }),
       execute: async (input: unknown) => {
         const { forecastDays = 90, hostId: toolHostId } = input as {

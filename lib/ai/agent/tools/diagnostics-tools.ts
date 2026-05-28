@@ -195,7 +195,7 @@ export function createDiagnosticsTools(hostId: number) {
           .optional()
           .default(24)
           .describe('Lookback window for query-log based checks'),
-        hostId: z.number().int().optional().describe('Override host ID'),
+        hostId: z.coerce.number().int().optional().describe('Override host ID'),
       }),
       execute: async (input: unknown) => {
         const { lastHours = 24, hostId: toolHostId } = input as {
@@ -433,7 +433,7 @@ export function createDiagnosticsTools(hostId: number) {
           .string()
           .optional()
           .describe('Default database for table metadata lookup'),
-        hostId: z.number().int().optional().describe('Override host ID'),
+        hostId: z.coerce.number().int().optional().describe('Override host ID'),
       }),
       execute: async (input: unknown) => {
         const {
@@ -555,7 +555,7 @@ export function createDiagnosticsTools(hostId: number) {
           .optional()
           .default(7)
           .describe('Lookback window for query pattern analysis'),
-        hostId: z.number().int().optional().describe('Override host ID'),
+        hostId: z.coerce.number().int().optional().describe('Override host ID'),
       }),
       execute: async (input: unknown) => {
         const {

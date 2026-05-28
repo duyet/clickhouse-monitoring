@@ -388,9 +388,11 @@ export async function POST(request: Request) {
     )
   }
 
+  const rawHostId =
+    typeof body.hostId === 'string' ? Number(body.hostId) : body.hostId
   const hostId =
-    typeof body.hostId === 'number' && Number.isFinite(body.hostId)
-      ? Math.max(0, Math.trunc(body.hostId))
+    typeof rawHostId === 'number' && Number.isFinite(rawHostId)
+      ? Math.max(0, Math.trunc(rawHostId))
       : 0
   const configuredModel = process.env.LLM_MODEL?.trim()
   const model =

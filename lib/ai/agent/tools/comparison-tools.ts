@@ -39,7 +39,7 @@ export function createComparisonTools(hostId: number) {
           .min(1)
           .max(168)
           .describe('Duration of period 2 in hours'),
-        hostId: z.number().int().optional().describe('Override host ID'),
+        hostId: z.coerce.number().int().optional().describe('Override host ID'),
       }),
       execute: async (input: unknown) => {
         const params = input as {
@@ -149,13 +149,13 @@ export function createComparisonTools(hostId: number) {
       description:
         'Compare two ClickHouse hosts side-by-side: version, uptime, query load, storage, and disk usage.',
       inputSchema: z.object({
-        hostId1: z
+        hostId1: z.coerce
           .number()
           .int()
           .describe(
             'First host ID (0-based index matching the configured CLICKHOUSE_HOST list)'
           ),
-        hostId2: z
+        hostId2: z.coerce
           .number()
           .int()
           .describe(

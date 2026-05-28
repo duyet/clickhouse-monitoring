@@ -141,7 +141,7 @@ export function createIncidentTools(hostId: number) {
           .optional()
           .default('1 HOUR')
           .describe('Time window, e.g. "2 HOUR", "30 MINUTE"'),
-        hostId: z.number().int().optional().describe('Override host ID'),
+        hostId: z.coerce.number().int().optional().describe('Override host ID'),
       }),
       execute: async (input: unknown) => {
         const {

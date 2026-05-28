@@ -13,7 +13,7 @@ export function createSettingsTools(hostId: number) {
           .optional()
           .default('')
           .describe('Optional LIKE pattern to filter setting names'),
-        hostId: z.number().optional().describe('Host index override'),
+        hostId: z.coerce.number().optional().describe('Host index override'),
       }),
       execute: async (input: unknown) => {
         const { pattern = '', hostId: hostIdOverride } = input as {
@@ -38,7 +38,7 @@ export function createSettingsTools(hostId: number) {
           .optional()
           .default('')
           .describe('Optional LIKE pattern to filter setting names'),
-        hostId: z.number().optional().describe('Host index override'),
+        hostId: z.coerce.number().optional().describe('Host index override'),
       }),
       execute: async (input: unknown) => {
         const { pattern = '', hostId: hostIdOverride } = input as {

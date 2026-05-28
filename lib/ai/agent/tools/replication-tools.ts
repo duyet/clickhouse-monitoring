@@ -13,7 +13,7 @@ export function createReplicationTools(hostId: number) {
           .optional()
           .default('')
           .describe('Filter by database name, or empty for all databases.'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .optional()
           .describe('Override the default ClickHouse host index.'),
@@ -65,7 +65,7 @@ export function createReplicationTools(hostId: number) {
           .optional()
           .default(50)
           .describe('Maximum number of rows to return.'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .optional()
           .describe('Override the default ClickHouse host index.'),

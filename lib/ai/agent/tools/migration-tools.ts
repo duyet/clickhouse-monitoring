@@ -22,7 +22,7 @@ export function createMigrationTools(hostId: number) {
           .describe(
             'The ALTER TABLE statement to analyze (will NOT be executed)'
           ),
-        hostId: z.number().int().optional().describe('Host ID override'),
+        hostId: z.coerce.number().int().optional().describe('Host ID override'),
       }),
       execute: async (input: unknown) => {
         const {
@@ -128,7 +128,7 @@ export function createMigrationTools(hostId: number) {
           .optional()
           .default(7)
           .describe('Days of query history to search (default: 7)'),
-        hostId: z.number().int().optional().describe('Host ID override'),
+        hostId: z.coerce.number().int().optional().describe('Host ID override'),
       }),
       execute: async (input: unknown) => {
         const {

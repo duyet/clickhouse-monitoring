@@ -9,9 +9,166 @@ import type { Skill } from './types'
 
 export const SKILLS: readonly Skill[] = [
   {
+    name: 'system-tables-reference',
+    description: 'Exact column names for the system tables the agent queries most (processes, query_log, parts, merges, replicas, metrics) plus rules for choosing dedicated tools over raw SQL. Load before hand-writing SQL against system tables.',
+    content: `# System Tables Reference
+
+Load this skill before writing raw SQL against \`system.*\` tables. It lists the
+columns that actually exist so you don't reference hallucinated columns. When a
+dedicated tool exists for what you need, call it instead of writing SQL.
+
+## Prefer Dedicated Tools Over Raw SQL
+
+Many questions map to a purpose-built tool. Use it — the SQL is already correct
+and version-aware:
+
+| Question | Use this tool, not raw SQL |
+|----------|----------------------------|
+| What is running now? | \`get_running_queries\` |
+| Slowest finished queries? | \`get_slow_queries\` |
+| Recent failures/errors? | \`get_failed_queries\` |
+| Heaviest queries by memory/bytes/duration? | \`get_expensive_queries\` |
+| Active merges? | \`get_merge_status\` |
+| Replication health? | \`get_replication_status\` |
+| Disk space? | \`get_disk_usage\` |
+| Server version/uptime/connections? | \`get_metrics\` |
+
+Only fall back to the \`query\` tool for ad-hoc questions that no dedicated tool
+covers. If a dedicated tool returns an error, fix the call (e.g. \`hostId\` is a
+number like \`0\`, not a string), do **not** rewrite it as raw SQL.
+
+## system.processes — currently running queries
+
+There is **no \`database\` column** on \`system.processes\`. Selecting it fails with
+"Unknown expression identifier \`database\`".
+
+Available columns:
+\`query_id\`, \`user\`, \`query\`, \`elapsed\`, \`read_rows\`, \`read_bytes\`,
+\`written_rows\`, \`written_bytes\`, \`total_rows_approx\`, \`memory_usage\`,
+\`peak_memory_usage\`, \`query_kind\`, \`is_initial_query\`, \`address\`, \`port\`,
+\`initial_user\`, \`initial_query_id\`, \`client_name\`, \`thread_ids\`, \`ProfileEvents\`,
+\`Settings\`, \`current_database\`.
+
+- Use \`current_database\` (not \`database\`) for the session's database.
+- To exclude the monitoring query itself: \`WHERE query NOT LIKE '%processes%'\`.
+  Do not invent syntax like \`WHERE is_query SELECT WITHOUT '...'\`.
+- \`elapsed\` is seconds (Float64). Display with \`formatReadableTimeDelta(elapsed)\`.
+
+\`\`\`sql
+SELECT query_id, user, current_database, elapsed, read_rows, memory_usage,
+       substring(query, 1, 200) AS query
+FROM system.processes
+WHERE query NOT LIKE '%processes%'
+ORDER BY elapsed DESC
+\`\`\`
+
+## system.query_log — query history
+
+Filter by \`type\` and time. Each query produces a \`QueryStart\` row and a finish
+row (\`QueryFinish\` on success, \`ExceptionWhileProcessing\` on error). For
+completed queries always filter \`WHERE type = 'QueryFinish'\`, otherwise you
+double-count starts.
+
+Key columns: \`query_id\`, \`type\`, \`event_time\`, \`event_date\`, \`query_start_time\`,
+\`query_duration_ms\`, \`read_rows\`, \`read_bytes\`, \`result_rows\`, \`memory_usage\`,
+\`user\`, \`query\`, \`exception_code\`, \`exception\`, \`normalized_query_hash\`,
+\`is_initial_query\`, \`databases\`, \`tables\`, \`columns\`, \`ProfileEvents\`.
+
+- The per-row database/table lists are \`databases\`/\`tables\`/\`columns\` (Array),
+  not \`database\`/\`table\`.
+- Add \`AND is_initial_query = 1\` to avoid counting internal sub-queries.
+
+## system.parts — table parts
+
+Has \`database\` and \`table\`. Filter \`WHERE active = 1\` for live parts.
+Key columns: \`database\`, \`table\`, \`partition\`, \`name\`, \`active\`, \`rows\`,
+\`bytes_on_disk\`, \`data_compressed_bytes\`, \`data_uncompressed_bytes\`,
+\`marks\`, \`modification_time\`, \`min_time\`, \`max_time\`, \`part_type\`, \`disk_name\`.
+
+Compression ratio: \`data_uncompressed_bytes / data_compressed_bytes\`.
+
+## system.merges — active merges
+
+Columns: \`database\`, \`table\`, \`elapsed\`, \`progress\` (0..1), \`num_parts\`,
+\`source_part_names\`, \`result_part_name\`, \`total_size_bytes_compressed\`,
+\`rows_read\`, \`rows_written\`, \`memory_usage\`, \`is_mutation\`, \`merge_type\`.
+
+## system.replicas — replication status
+
+One row per replicated table. Columns: \`database\`, \`table\`, \`is_leader\`,
+\`is_readonly\`, \`absolute_delay\`, \`queue_size\`, \`inserts_in_queue\`,
+\`merges_in_queue\`, \`total_replicas\`, \`active_replicas\`, \`last_queue_update\`,
+\`zookeeper_path\`. Healthy = \`absolute_delay = 0\`, \`is_readonly = 0\`,
+\`active_replicas = total_replicas\`.
+
+## system.metrics vs system.events vs system.asynchronous_metrics
+
+These three are easy to confuse — they use different column names:
+
+- \`system.metrics\`: instantaneous gauges. Columns \`metric\`, \`value\`,
+  \`description\`. e.g. \`Query\`, \`TCPConnection\`, \`MemoryTracking\`.
+- \`system.events\`: cumulative counters. Columns \`event\`, \`value\`,
+  \`description\` — the name column is \`event\`, **not** \`metric\`.
+- \`system.asynchronous_metrics\`: periodically sampled. Columns \`metric\`,
+  \`value\`. e.g. \`Uptime\`, \`jemalloc.*\`, disk/CPU samples.
+
+## system.errors — error counters
+
+Columns: \`name\`, \`code\`, \`value\`, \`last_error_time\`, \`last_error_message\`,
+\`last_error_trace\`. There is no \`last_update_time\` column.
+
+## Recovery Rules
+
+- Unknown column (code 47) or unknown identifier → load this skill or call
+  \`get_table_schema\` for the table, then retry with real column names. Do not
+  guess again.
+- There is no CPU% column anywhere. Approximate load via \`memory_usage\`,
+  \`read_rows\`, \`read_bytes\` on \`system.processes\`, or \`ProfileEvents\` such as
+  \`OSCPUVirtualTimeMicroseconds\` in \`system.query_log\`.
+
+## Cross-references
+- Load \`query-optimization\` for EXPLAIN, PREWHERE, JOIN tuning.
+- Load \`troubleshooting\` for error-code-driven diagnosis.`,
+  },
+  {
+    name: 'query-optimization',
+    description: 'Advanced query tuning: join algorithms, skip index selection, EXPLAIN interpretation, ProfileEvents profiling, and optimizer settings.',
+    content: `# Query Optimization
+
+## JOIN Strategies
+- \`join_algorithm\` setting: \`hash\` (default, in-memory), \`partial_merge\` (spills to disk for large right table), \`auto\` (lets ClickHouse decide)
+- \`JOIN ... USING\` avoids repeated column names vs \`ON\` for same-name columns
+- Filter both sides before joining to reduce intermediate data
+- \`GLOBAL JOIN\` broadcasts the right table to all shards for distributed queries
+
+## EXPLAIN Analysis
+- \`EXPLAIN PLAN\` — logical plan, shows projection/pushdown transformations
+- \`EXPLAIN PIPELINE\` — physical execution with parallelism info and port counts
+- \`EXPLAIN INDEXES\` — which indexes fire, granules selected vs total
+- Look for: full table scans, missing index usage, excessive granule reads
+
+## Index Usage
+- Skip index types with use-cases:
+  - \`minmax\` — range queries on numeric/date columns
+  - \`set(N)\` — equality on low-cardinality columns, stores N unique values per granule
+  - \`bloom_filter\` — equality on high-cardinality strings
+  - \`tokenbf_v1\` — tokenized text search (logs, URLs)
+- Check effectiveness via \`ProfileEvents['SelectedRows']\` vs result size
+
+## Query Profiling
+- \`ProfileEvents\` map counters: \`SelectedRows\`, \`MergedRows\`, \`FileOpen\`, \`SeekCount\`
+- \`normalized_query_hash\` to group parameterized query variants
+- \`system.query_log\` columns: \`query_duration_ms\`, \`memory_usage\`, \`read_bytes\`
+
+## Optimizer Settings
+- \`enable_optimizer = 1\` — activates ClickHouse's new cost-based query optimizer (v22.6+)
+- \`max_threads\` — controls query parallelism; higher = faster but more memory; lower for concurrent workloads
+- \`prefer_localhost_replica = 1\` — avoids network round-trip by reading from local replica on distributed queries
+- \`system.query_plan\` (v23.6+) — persisted query plans for analysis across runs`,
+  },
+  {
     name: 'replication-guide',
-    description:
-      'ReplicatedMergeTree operations, failover procedures, lag diagnosis, quorum writes, and Keeper management.',
+    description: 'ReplicatedMergeTree operations, failover procedures, lag diagnosis, quorum writes, and Keeper management.',
     content: `# Replication Guide
 
 ## ReplicatedMergeTree Basics
@@ -56,46 +213,8 @@ export const SKILLS: readonly Skill[] = [
 - Load the \`troubleshooting\` skill for OOM-related replica failures and disk-full scenarios.`,
   },
   {
-    name: 'query-optimization',
-    description:
-      'Advanced query tuning: join algorithms, skip index selection, EXPLAIN interpretation, ProfileEvents profiling, and optimizer settings.',
-    content: `# Query Optimization
-
-## JOIN Strategies
-- \`join_algorithm\` setting: \`hash\` (default, in-memory), \`partial_merge\` (spills to disk for large right table), \`auto\` (lets ClickHouse decide)
-- \`JOIN ... USING\` avoids repeated column names vs \`ON\` for same-name columns
-- Filter both sides before joining to reduce intermediate data
-- \`GLOBAL JOIN\` broadcasts the right table to all shards for distributed queries
-
-## EXPLAIN Analysis
-- \`EXPLAIN PLAN\` — logical plan, shows projection/pushdown transformations
-- \`EXPLAIN PIPELINE\` — physical execution with parallelism info and port counts
-- \`EXPLAIN INDEXES\` — which indexes fire, granules selected vs total
-- Look for: full table scans, missing index usage, excessive granule reads
-
-## Index Usage
-- Skip index types with use-cases:
-  - \`minmax\` — range queries on numeric/date columns
-  - \`set(N)\` — equality on low-cardinality columns, stores N unique values per granule
-  - \`bloom_filter\` — equality on high-cardinality strings
-  - \`tokenbf_v1\` — tokenized text search (logs, URLs)
-- Check effectiveness via \`ProfileEvents['SelectedRows']\` vs result size
-
-## Query Profiling
-- \`ProfileEvents\` map counters: \`SelectedRows\`, \`MergedRows\`, \`FileOpen\`, \`SeekCount\`
-- \`normalized_query_hash\` to group parameterized query variants
-- \`system.query_log\` columns: \`query_duration_ms\`, \`memory_usage\`, \`read_bytes\`
-
-## Optimizer Settings
-- \`enable_optimizer = 1\` — activates ClickHouse's new cost-based query optimizer (v22.6+)
-- \`max_threads\` — controls query parallelism; higher = faster but more memory; lower for concurrent workloads
-- \`prefer_localhost_replica = 1\` — avoids network round-trip by reading from local replica on distributed queries
-- \`system.query_plan\` (v23.6+) — persisted query plans for analysis across runs`,
-  },
-  {
     name: 'cluster-operations',
-    description:
-      'Cluster management: distributed tables, ON CLUSTER DDL, node lifecycle, resharding, load balancing, and Keeper migration.',
+    description: 'Cluster management: distributed tables, ON CLUSTER DDL, node lifecycle, resharding, load balancing, and Keeper migration.',
     content: `# Cluster Operations
 
 ## Distributed Tables
@@ -147,64 +266,50 @@ export const SKILLS: readonly Skill[] = [
 5. Verify replication recovers, then remove ZooKeeper`,
   },
   {
-    name: 'troubleshooting',
-    description:
-      'Diagnose and resolve ClickHouse issues: OOM, slow merges, stuck mutations, query failures with error codes, and systematic error clustering.',
-    content: `# Troubleshooting Guide
+    name: 'storage-optimization',
+    description: 'Compression codecs, TTL policies, tiered storage, part management, and disk space optimization.',
+    content: `# Storage Optimization
 
-## OOM (Out of Memory)
-**Diagnosis**: \`system.query_log\` WHERE \`memory_usage\` is high. \`system.metrics\` WHERE metric = 'MemoryTracking'.
+## Compression Codecs
+- Default: LZ4 — fast, moderate compression
+- \`ZSTD(level)\` — better compression, slower. Level 1-22 (3 is good default)
+- \`Delta\` + ZSTD — excellent for time-series monotonic data
+- \`DoubleDelta\` — best for timestamps and counters
+- \`Gorilla\` — optimized for floating-point gauge metrics
+- \`T64\` — for integer columns with small range
+- Per-column: \`ALTER TABLE t MODIFY COLUMN col TYPE UInt32 CODEC(Delta, ZSTD(3))\`
+- In-place codec change: \`ALTER TABLE t MODIFY COLUMN col CODEC(Delta, ZSTD(3))\`
 
-**Solutions**:
-- \`max_memory_usage\` per query (e.g., 10GB), \`max_memory_usage_for_user\` per user
-- \`max_bytes_before_external_group_by\` / \`max_bytes_before_external_sort\` for spill-to-disk
-- Reduce JOIN sizes with pre-filtering; use SAMPLE for approximate aggregations
+## TTL Policies
+- Table-level: \`ALTER TABLE t MODIFY TTL event_time + INTERVAL 90 DAY\`
+- Column-level: \`ALTER TABLE t MODIFY COLUMN old_col TTL event_time + INTERVAL 30 DAY\`
+- Move to volume: \`TTL event_time + INTERVAL 7 DAY TO VOLUME 'cold'\`
+- Delete: \`TTL event_time + INTERVAL 365 DAY DELETE\`
+- Monitor TTL merges: \`system.merges WHERE is_ttl_merge = 1\`
 
-## Slow Merges
-**Diagnosis**: \`system.merges\` — check \`elapsed\`, \`progress\`, \`total_size_bytes_compressed\`. \`system.part_log\` WHERE event_type = 'MergeParts' for throughput. Too many parts: \`max_parts_count_for_partition\` in \`system.asynchronous_metrics\`.
+## Tiered Storage
+- Define storage policies in config: hot (SSD) → warm (HDD) → cold (S3)
+- \`<storage_configuration>\` in config.xml
+- Move rules: \`TTL event_time + INTERVAL 7 DAY TO DISK 'hdd'\`
+- Check disk usage: \`system.disks\`
+- Check volume usage: \`system.storage_policies\`
 
-**Solutions**:
-- Increase \`background_pool_size\` (default: 16)
-- Check disk I/O via \`system.asynchronous_metrics\` (ReadBufferFromFileDescriptorReadBytes)
-- Batch larger inserts to reduce frequency; avoid excessive partitioning
-- \`OPTIMIZE TABLE ... FINAL\` to force merge (expensive, off-peak only)
+## Part Management
+- Monitor part count: \`SELECT count() FROM system.parts WHERE active AND database = 'db' AND table = 't'\`
+- Too many parts (>300 per partition) = degraded performance
+- Detached parts: check \`system.detached_parts\`, clean with \`DROP DETACHED PART\`
+- Part size target: 1-10GB per part for optimal performance
 
-## Stuck Mutations
-**Diagnosis**: \`system.mutations\` WHERE is_done = 0 — check \`parts_to_do\`, \`latest_fail_reason\`. Mutations block new merges on affected parts.
-
-**Solutions**:
-- \`KILL MUTATION WHERE mutation_id = '...'\` to cancel
-- Fix underlying issue (schema mismatch, disk space), then re-submit
-- Prefer INSERT + ReplacingMergeTree over UPDATE mutations
-
-## Query Failures
-**Diagnosis**: \`system.query_log\` WHERE type = 'ExceptionWhileProcessing'. Use error clustering to find patterns:
-\`\`\`sql
-SELECT exception_code, count(), topK(10)(exception)
-FROM system.query_log
-WHERE type = 'ExceptionWhileProcessing'
-GROUP BY exception_code ORDER BY count() DESC
-\`\`\`
-For persistent errors, check \`system.error_log\` (requires error logging enabled).
-
-**Common error codes**:
-- **60**: table not found — verify table exists, check database name
-- **47**: unknown column — use \`get_table_schema\` to check column names
-- **241**: memory limit — reduce scope, add LIMIT, use SAMPLE
-- **159**: timeout — add time filters, use LIMIT
-- **252**: too many parts — wait for merges or OPTIMIZE
-
-## Network Connectivity
-**Diagnosis**: Check inter-server connectivity for replication or distributed queries. Verify \`interserver_http_port\` is reachable between nodes. Test with \`curl http://<peer>:9009\`. Check firewall rules and DNS resolution.
-
-## Cross-references
-- Load the \`replication-guide\` skill for replication lag diagnosis and recovery.
-- Load the \`storage-optimization\` skill for disk recovery and tiered storage management.`,
+## Disk Space Recovery
+- \`DROP PARTITION\` for bulk deletion by time
+- \`TRUNCATE TABLE\` for full table cleanup
+- Check for orphaned data: detached parts, temporary files
+- System tables can grow large — set TTL on query_log, trace_log, etc.
+- Load the \`troubleshooting\` skill for disk-full recovery procedures.`,
   },
   {
     name: 'security-hardening',
-    description:
-      'RBAC configuration, row policies, quotas, network security, audit logging, and access control best practices.',
+    description: 'RBAC configuration, row policies, quotas, network security, audit logging, and access control best practices.',
     content: `# Security Hardening
 
 ## RBAC (Role-Based Access Control)
@@ -249,9 +354,49 @@ For persistent errors, check \`system.error_log\` (requires error logging enable
 - Use \`readonly = 1\` setting for monitoring connections`,
   },
   {
+    name: 'clickhouse-best-practices',
+    description: 'Production operational practices: insert batching, async writes, query cache, connection pooling, and recommended settings.',
+    content: `# ClickHouse Best Practices
+
+## Insert Best Practices
+
+- Batch 10k-100k rows per insert; max 1-2 inserts/sec per table
+- Sub-1k-row inserts cause part proliferation; insert in sorting-key order to reduce merge work
+- For bulk loads, tune \`min_insert_block_size_rows\` / \`max_insert_block_size_rows\`
+
+## Async Inserts
+
+- \`SET async_insert = 1; SET wait_for_async_insert = 1;\` (1=durable, 0=fire-and-forget)
+- Tune \`async_insert_max_data_size\` (1M) and \`async_insert_busy_timeout_ms\` (10s) for batch window
+
+## Query Cache (v23.5+)
+
+- \`SET allow_experimental_query_cache = 1; SET use_query_cache = 1;\`
+- TTL: \`query_cache_ttl\`; share across users: \`query_cache_shared_between_users = 1\`
+- Control: \`enable_writes_to_query_cache\`, \`enable_reads_from_query_cache\`
+
+## Connection Pooling
+
+- HTTP: set \`pool_size\`, \`max_queries\`; keep-alive is critical
+- TCP: built-in multiplexing; tune \`max_connections\`
+- Monitor \`system.metrics\` for \`HTTPConnection\`/\`TCPConnection\` to size pools
+
+## Production Settings
+
+- \`max_threads\` — lower for concurrent loads; \`max_insert_threads\` — raise for parallel inserts
+- \`max_execution_time\` / \`max_memory_usage\` — per-query limits
+- \`join_algorithm\` — prefer \`grace_hash\` or \`auto\` for large joins
+- \`input_format_allow_errors_num\` / \`ratio\` — tolerate parse errors in bulk imports
+
+## Query Patterns
+
+- \`COLUMNS('pattern')\` — regex column selection; \`APPLY func\` transforms matches
+- \`clusterAllReplicas('cluster')\` — aggregate across all replicas
+- \`FINAL\` — force merge for ReplacingMergeTree; use sparingly (full scan)`,
+  },
+  {
     name: 'migration-patterns',
-    description:
-      'Schema migrations: ALTER patterns, engine changes, zero-downtime swaps, clickhouse-local offline migrations, and lightweight UPDATE/DELETE strategies.',
+    description: 'Schema migrations: ALTER patterns, engine changes, zero-downtime swaps, clickhouse-local offline migrations, and lightweight UPDATE/DELETE strategies.',
     content: `# Migration Patterns
 
 ## ALTER TABLE Operations
@@ -329,90 +474,59 @@ CREATE TABLE _schema_migrations (name String, applied_at DateTime DEFAULT now())
 - \`EXCHANGE TABLES\` fails if either table is replicated with different replica paths`,
   },
   {
-    name: 'storage-optimization',
-    description:
-      'Compression codecs, TTL policies, tiered storage, part management, and disk space optimization.',
-    content: `# Storage Optimization
+    name: 'troubleshooting',
+    description: 'Diagnose and resolve ClickHouse issues: OOM, slow merges, stuck mutations, query failures with error codes, and systematic error clustering.',
+    content: `# Troubleshooting Guide
 
-## Compression Codecs
-- Default: LZ4 — fast, moderate compression
-- \`ZSTD(level)\` — better compression, slower. Level 1-22 (3 is good default)
-- \`Delta\` + ZSTD — excellent for time-series monotonic data
-- \`DoubleDelta\` — best for timestamps and counters
-- \`Gorilla\` — optimized for floating-point gauge metrics
-- \`T64\` — for integer columns with small range
-- Per-column: \`ALTER TABLE t MODIFY COLUMN col TYPE UInt32 CODEC(Delta, ZSTD(3))\`
-- In-place codec change: \`ALTER TABLE t MODIFY COLUMN col CODEC(Delta, ZSTD(3))\`
+## OOM (Out of Memory)
+**Diagnosis**: \`system.query_log\` WHERE \`memory_usage\` is high. \`system.metrics\` WHERE metric = 'MemoryTracking'.
 
-## TTL Policies
-- Table-level: \`ALTER TABLE t MODIFY TTL event_time + INTERVAL 90 DAY\`
-- Column-level: \`ALTER TABLE t MODIFY COLUMN old_col TTL event_time + INTERVAL 30 DAY\`
-- Move to volume: \`TTL event_time + INTERVAL 7 DAY TO VOLUME 'cold'\`
-- Delete: \`TTL event_time + INTERVAL 365 DAY DELETE\`
-- Monitor TTL merges: \`system.merges WHERE is_ttl_merge = 1\`
+**Solutions**:
+- \`max_memory_usage\` per query (e.g., 10GB), \`max_memory_usage_for_user\` per user
+- \`max_bytes_before_external_group_by\` / \`max_bytes_before_external_sort\` for spill-to-disk
+- Reduce JOIN sizes with pre-filtering; use SAMPLE for approximate aggregations
 
-## Tiered Storage
-- Define storage policies in config: hot (SSD) → warm (HDD) → cold (S3)
-- \`<storage_configuration>\` in config.xml
-- Move rules: \`TTL event_time + INTERVAL 7 DAY TO DISK 'hdd'\`
-- Check disk usage: \`system.disks\`
-- Check volume usage: \`system.storage_policies\`
+## Slow Merges
+**Diagnosis**: \`system.merges\` — check \`elapsed\`, \`progress\`, \`total_size_bytes_compressed\`. \`system.part_log\` WHERE event_type = 'MergeParts' for throughput. Too many parts: \`max_parts_count_for_partition\` in \`system.asynchronous_metrics\`.
 
-## Part Management
-- Monitor part count: \`SELECT count() FROM system.parts WHERE active AND database = 'db' AND table = 't'\`
-- Too many parts (>300 per partition) = degraded performance
-- Detached parts: check \`system.detached_parts\`, clean with \`DROP DETACHED PART\`
-- Part size target: 1-10GB per part for optimal performance
+**Solutions**:
+- Increase \`background_pool_size\` (default: 16)
+- Check disk I/O via \`system.asynchronous_metrics\` (ReadBufferFromFileDescriptorReadBytes)
+- Batch larger inserts to reduce frequency; avoid excessive partitioning
+- \`OPTIMIZE TABLE ... FINAL\` to force merge (expensive, off-peak only)
 
-## Disk Space Recovery
-- \`DROP PARTITION\` for bulk deletion by time
-- \`TRUNCATE TABLE\` for full table cleanup
-- Check for orphaned data: detached parts, temporary files
-- System tables can grow large — set TTL on query_log, trace_log, etc.
-- Load the \`troubleshooting\` skill for disk-full recovery procedures.`,
-  },
-  {
-    name: 'clickhouse-best-practices',
-    description:
-      'Production operational practices: insert batching, async writes, query cache, connection pooling, and recommended settings.',
-    content: `# ClickHouse Best Practices
+## Stuck Mutations
+**Diagnosis**: \`system.mutations\` WHERE is_done = 0 — check \`parts_to_do\`, \`latest_fail_reason\`. Mutations block new merges on affected parts.
 
-## Insert Best Practices
+**Solutions**:
+- \`KILL MUTATION WHERE mutation_id = '...'\` to cancel
+- Fix underlying issue (schema mismatch, disk space), then re-submit
+- Prefer INSERT + ReplacingMergeTree over UPDATE mutations
 
-- Batch 10k-100k rows per insert; max 1-2 inserts/sec per table
-- Sub-1k-row inserts cause part proliferation; insert in sorting-key order to reduce merge work
-- For bulk loads, tune \`min_insert_block_size_rows\` / \`max_insert_block_size_rows\`
+## Query Failures
+**Diagnosis**: \`system.query_log\` WHERE type = 'ExceptionWhileProcessing'. Use error clustering to find patterns:
+\`\`\`sql
+SELECT exception_code, count(), topK(10)(exception)
+FROM system.query_log
+WHERE type = 'ExceptionWhileProcessing'
+GROUP BY exception_code ORDER BY count() DESC
+\`\`\`
+For persistent errors, check \`system.error_log\` (requires error logging enabled).
 
-## Async Inserts
+**Common error codes**:
+- **60**: table not found — verify table exists, check database name
+- **47**: unknown column — use \`get_table_schema\` to check column names
+- **241**: memory limit — reduce scope, add LIMIT, use SAMPLE
+- **159**: timeout — add time filters, use LIMIT
+- **252**: too many parts — wait for merges or OPTIMIZE
 
-- \`SET async_insert = 1; SET wait_for_async_insert = 1;\` (1=durable, 0=fire-and-forget)
-- Tune \`async_insert_max_data_size\` (1M) and \`async_insert_busy_timeout_ms\` (10s) for batch window
+## Network Connectivity
+**Diagnosis**: Check inter-server connectivity for replication or distributed queries. Verify \`interserver_http_port\` is reachable between nodes. Test with \`curl http://<peer>:9009\`. Check firewall rules and DNS resolution.
 
-## Query Cache (v23.5+)
-
-- \`SET allow_experimental_query_cache = 1; SET use_query_cache = 1;\`
-- TTL: \`query_cache_ttl\`; share across users: \`query_cache_shared_between_users = 1\`
-- Control: \`enable_writes_to_query_cache\`, \`enable_reads_from_query_cache\`
-
-## Connection Pooling
-
-- HTTP: set \`pool_size\`, \`max_queries\`; keep-alive is critical
-- TCP: built-in multiplexing; tune \`max_connections\`
-- Monitor \`system.metrics\` for \`HTTPConnection\`/\`TCPConnection\` to size pools
-
-## Production Settings
-
-- \`max_threads\` — lower for concurrent loads; \`max_insert_threads\` — raise for parallel inserts
-- \`max_execution_time\` / \`max_memory_usage\` — per-query limits
-- \`join_algorithm\` — prefer \`grace_hash\` or \`auto\` for large joins
-- \`input_format_allow_errors_num\` / \`ratio\` — tolerate parse errors in bulk imports
-
-## Query Patterns
-
-- \`COLUMNS('pattern')\` — regex column selection; \`APPLY func\` transforms matches
-- \`clusterAllReplicas('cluster')\` — aggregate across all replicas
-- \`FINAL\` — force merge for ReplacingMergeTree; use sparingly (full scan)`,
-  },
+## Cross-references
+- Load the \`replication-guide\` skill for replication lag diagnosis and recovery.
+- Load the \`storage-optimization\` skill for disk recovery and tiered storage management.`,
+  }
 ]
 
 /** Get all available skills metadata (without content) */

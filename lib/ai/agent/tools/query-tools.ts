@@ -9,7 +9,7 @@ export function createQueryTools(hostId: number) {
       description:
         'Get currently running queries. Useful for identifying long-running queries and monitoring active workloads.',
       inputSchema: z.object({
-        hostId: z
+        hostId: z.coerce
           .number()
           .int()
           .optional()
@@ -48,7 +48,7 @@ export function createQueryTools(hostId: number) {
           .optional()
           .default(10)
           .describe('Number of queries to return'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .int()
           .optional()
@@ -102,7 +102,7 @@ export function createQueryTools(hostId: number) {
           .optional()
           .default(24)
           .describe('Time window in hours'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .int()
           .optional()
@@ -167,7 +167,7 @@ export function createQueryTools(hostId: number) {
           .optional()
           .default(24)
           .describe('Time window in hours'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .int()
           .optional()
@@ -248,7 +248,7 @@ export function createQueryTools(hostId: number) {
           .optional()
           .default(2)
           .describe('Minimum occurrence count'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .int()
           .optional()
@@ -305,7 +305,7 @@ export function createQueryTools(hostId: number) {
           .optional()
           .default('plan')
           .describe('Type of explanation'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .int()
           .optional()

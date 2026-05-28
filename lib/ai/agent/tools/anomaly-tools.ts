@@ -48,7 +48,7 @@ export function createAnomalyTools(hostId: number) {
       description:
         'Detect statistical anomalies by comparing recent (1h) vs baseline (24h) metrics. Checks error rate, query duration P95, query volume, memory usage, and part counts. Returns severity levels.',
       inputSchema: z.object({
-        hostId: z.number().optional().describe('Override host ID'),
+        hostId: z.coerce.number().optional().describe('Override host ID'),
       }),
       execute: async (input: unknown) => {
         const { hostId: toolHostId } = input as { hostId?: number }

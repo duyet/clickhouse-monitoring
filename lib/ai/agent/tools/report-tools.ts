@@ -16,7 +16,7 @@ export function createReportTools(hostId: number) {
           .optional()
           .default(24)
           .describe('Time window in hours (default: 24)'),
-        hostId: z.number().int().optional().describe('Host ID override'),
+        hostId: z.coerce.number().int().optional().describe('Host ID override'),
       }),
       execute: async (input: unknown) => {
         const { lastHours = 24, hostId: toolHostId } = input as {

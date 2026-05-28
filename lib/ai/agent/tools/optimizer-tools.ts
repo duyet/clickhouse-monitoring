@@ -14,7 +14,7 @@ export function createOptimizerTools(hostId: number) {
           .string()
           .optional()
           .describe('Database context for table lookups'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .int()
           .optional()

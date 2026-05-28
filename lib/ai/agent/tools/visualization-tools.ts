@@ -45,7 +45,7 @@ export function createVisualizationTools(hostId: number) {
           .enum(['bytes', 'duration', 'number', 'quantity'])
           .optional()
           .describe('Value format hint'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .int()
           .optional()
@@ -129,7 +129,7 @@ export function createVisualizationTools(hostId: number) {
       inputSchema: z.object({
         searchTerm: z.string().describe('Topic to search for'),
         database: z.string().optional().describe('Limit to specific database'),
-        hostId: z
+        hostId: z.coerce
           .number()
           .int()
           .optional()
