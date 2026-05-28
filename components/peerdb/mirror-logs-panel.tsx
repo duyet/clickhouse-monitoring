@@ -4,6 +4,7 @@ import type { ListMirrorLogsResponse } from '@/lib/peerdb/types'
 
 import {
   LOG_LEVEL_META,
+  normalizePdbLogLevel,
   parseTs,
   pdbFmtClock,
   pdbFmtRelative,
@@ -49,8 +50,7 @@ export function MirrorLogsPanel({ flowJobName }: { flowJobName: string }) {
     const c: Record<Level, number> = { all: 0, error: 0, warn: 0, info: 0 }
     for (const l of countsReq.data?.errors ?? []) {
       c.all++
-      const t = (l.errorType ?? 'info') as Level
-      if (t in c) c[t]++
+      c[normalizePdbLogLevel(l.errorType)]++
     }
     return c
   }, [countsReq.data])
@@ -60,7 +60,7 @@ export function MirrorLogsPanel({ flowJobName }: { flowJobName: string }) {
     // Client-side filter as a safety net for upstreams that ignore `level`.
     return level === 'all'
       ? sorted
-      : sorted.filter((l) => (l.errorType ?? 'info') === level)
+      : sorted.filter((l) => normalizePdbLogLevel(l.errorType) === level)
   }, [listReq.data, level])
   const rows = showAll ? filtered : filtered.slice(0, 6)
 
@@ -103,8 +103,8 @@ export function MirrorLogsPanel({ flowJobName }: { flowJobName: string }) {
       ) : (
         <ul className="divide-y divide-border">
           {rows.map((l, i) => {
-            const meta =
-              LOG_LEVEL_META[l.errorType ?? 'info'] ?? LOG_LEVEL_META.info
+            const lvl = normalizePdbLogLevel(l.errorType)
+            const meta = LOG_LEVEL_META[lvl]
             return (
               <li
                 key={l.id ?? i}
@@ -123,9 +123,7 @@ export function MirrorLogsPanel({ flowJobName }: { flowJobName: string }) {
                 <div className="min-w-0 flex-1">
                   <div
                     className="break-words font-mono text-[11.5px] leading-snug"
-                    style={
-                      l.errorType === 'error' ? { color: meta.dot } : undefined
-                    }
+                    style={lvl === 'error' ? { color: meta.dot } : undefined}
                   >
                     {l.errorMessage}
                   </div>
