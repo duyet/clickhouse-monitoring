@@ -36,7 +36,7 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - `/docs` route reads source files from `docs/content` through `app/(docs)/docs/_lib/docs.ts`
 - Verify dead-code claims with zero non-test references before deleting symbols
 - Docker build must install full deps (`bun install --frozen-lockfile --ignore-scripts`) because `lib/platform/adapters/cloudflare.ts` imports `@opennextjs/cloudflare` during `bun run build`
-- If automation checkout is detached (`git status --short --branch` shows `HEAD (no branch)`) or `.git/worktrees/...` writes fail (`FETCH_HEAD`/`HEAD.lock`/`index.lock`), refresh refs through `/Users/duet/project/clickhouse-monitor`; if that checkout is dirty, create a clean worktree under `/private/tmp` for commit/PR commands
+- If automation checkout is detached (`git status --short --branch` shows `HEAD (no branch)`), stale versus `origin/main`, or `.git/worktrees/...` writes fail (`FETCH_HEAD`/`HEAD.lock`/`index.lock`), run `git -C /Users/duet/project/clickhouse-monitor fetch origin`; if that checkout is dirty, create a clean worktree under `/private/tmp` for commit/PR commands
 
 ## Latest Update
 
@@ -54,3 +54,4 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - 2026-05-23 (follow-up): E2E failures in PR `#1159` were traced to an intermittently visible issues overlay button (`button[data-issues-collapse="true"]`) covering the user trigger during Cypress auth menu actions and causing `cy.click` timeouts. Hardened `cypress/e2e/authentication.cy.ts` with an overlay-dismiss helper and consistent `openUserMenu` menu-entry flow to keep coverage stable without changing app behavior.
 - 2026-05-23 (follow-up): Full `cypress/e2e/authentication.cy.ts` logs in PR check `26313228001` showed 8 hard failures caused by `nav-user-trigger` being covered; follow-up hardening removes `should('be.visible')` assertions before clicking/focusing and relies on `click({ force: true })` after overlay dismissal to prevent false negatives from transient blockers.
 - 2026-05-22 (follow-up): CI run `26316686483` (`Test` job on `main`) reported repeated `CypressError: Timed out after waiting 30000ms for your remote page to load` in `host-switching.cy.ts` and `navigation.cy.js`; removed hardcoded `timeout: 30000` from those `cy.visit` calls so they follow global `pageLoadTimeout`.
+- 2026-05-29: from the `2026-05-28T06:13:19.122Z` window, fixed `lib/peerdb/peerdb-config.ts` so invalid `PEERDB_CACHE_TTL_MS` / `PEERDB_CACHE_MAX_ENTRIES` env values fall back to safe defaults instead of disabling TTL/cap logic, and hardened `.github/workflows/release.yml` so rerunning the release workflow for the same tag does not prepend duplicate generated notes to an existing GitHub release.
