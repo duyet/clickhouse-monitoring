@@ -71,7 +71,7 @@ function SqlEditorWrapper({ children }: { children: React.ReactNode }) {
 }
 
 const MAX_CELL_LENGTH = 100
-const DEFAULT_LIMIT = 1000
+const DEFAULT_LIMIT = 100
 const PAGE_SIZE = 50
 
 /**
@@ -336,7 +336,7 @@ export function QueryTab() {
     revalidateOnReconnect: false,
   })
 
-  const rows = response?.data || []
+  const rows = useMemo(() => response?.data || [], [response?.data])
   const metadata = response?.metadata
 
   // Generate columns dynamically from data
@@ -386,7 +386,9 @@ export function QueryTab() {
     setLimitAdded(wasLimitAdded)
 
     setExecutedQuery(finalSql)
-    setCustomQuery(finalSql)
+    // Defer URL update to next frame so setExecutedQuery commits first,
+    // preventing router.push re-render from racing with the SWR key
+    requestAnimationFrame(() => setCustomQuery(finalSql))
   }, [editorValue, setCustomQuery])
 
   const handleCancel = useCallback(() => {
