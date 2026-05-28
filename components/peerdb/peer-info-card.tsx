@@ -2,7 +2,8 @@
 
 import type { DBType, PeerInfoResponse } from '@/lib/peerdb/types'
 
-import { dbTypeLabel, peerKind } from './peerdb-utils'
+import { dbTypeLabel, normalizeDbType, peerKind } from './peerdb-utils'
+import { DbLogo, hasDbLogo } from '@/components/icons/peerdb-logo'
 import { usePeerDB } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
@@ -31,7 +32,8 @@ export function PeerInfoCard({ name, type, peerRole }: PeerInfoCardProps) {
     { refreshInterval: 120_000, swrConfig: { shouldRetryOnError: false } }
   )
 
-  const k = peerKind(type ?? data?.peer?.type)
+  const resolvedType = normalizeDbType(type ?? data?.peer?.type)
+  const k = peerKind(resolvedType)
   const config = data?.peer?.config ?? {}
   const entries = Object.entries(config)
   const region = (config.region as string | undefined) ?? undefined
@@ -44,8 +46,13 @@ export function PeerInfoCard({ name, type, peerRole }: PeerInfoCardProps) {
             className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md font-mono text-[10px] font-bold"
             style={{ background: k.bg, color: k.fg }}
           >
-            {k.mono}
+            {hasDbLogo(resolvedType) ? (
+              <DbLogo type={resolvedType} className="size-full p-[3px]" />
+            ) : (
+              k.mono
+            )}
           </span>
+
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="truncate font-mono text-[12px] font-semibold">

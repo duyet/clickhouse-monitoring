@@ -9,8 +9,8 @@ import type {
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { MiniAreaChart } from '@/components/charts/mini-charts'
-import { PeerDBNotConfigured } from '@/components/peerdb/peerdb-not-configured'
 import { PeerDetailSkeleton } from '@/components/peerdb/peer-detail-skeleton'
+import { PeerDBNotConfigured } from '@/components/peerdb/peerdb-not-configured'
 import {
   isPeerDBNotConfigured,
   toNumber,

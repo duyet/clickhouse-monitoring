@@ -144,6 +144,7 @@ export interface MirrorStatusResponse {
   cdcStatus?: CDCMirrorStatus
   qrepStatus?: QRepMirrorStatus
   errorMessage?: string
+  lagSec?: number | null
 }
 
 /** One mirror error/log entry (`POST /v1/mirrors/logs`). */

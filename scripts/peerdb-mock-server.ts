@@ -443,6 +443,7 @@ function mirrorStatus(name: string) {
     currentFlowState: m.status,
     createdAt: new Date(Date.now() - m.createdAgoHours * HOUR).toISOString(),
     errorMessage: m.errorMessage,
+    lagSec: m.lagSec,
   }
   if (!m.isCdc) {
     return { ...base, qrepStatus: { config: {}, partitions: partitions(m) } }

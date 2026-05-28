@@ -1,6 +1,7 @@
 import type { DBType } from '@/lib/peerdb/types'
 
-import { peerKind } from './peerdb-utils'
+import { normalizeDbType, peerKind } from './peerdb-utils'
+import { DbLogo, hasDbLogo } from '@/components/icons/peerdb-logo'
 import { cn } from '@/lib/utils'
 
 interface PeerChipProps {
@@ -22,7 +23,9 @@ export function PeerChip({
   dim = false,
   className,
 }: PeerChipProps) {
-  const k = peerKind(type)
+  const normalizedType = normalizeDbType(type)
+  const k = peerKind(normalizedType)
+
   const shell =
     size === 'lg'
       ? 'h-7 text-[12px]'
@@ -51,7 +54,11 @@ export function PeerChip({
         )}
         style={{ background: k.bg, color: k.fg }}
       >
-        {k.mono}
+        {hasDbLogo(normalizedType) ? (
+          <DbLogo type={normalizedType} className="size-full p-[3px]" />
+        ) : (
+          k.mono
+        )}
       </span>
       <span className="max-w-[140px] truncate font-medium" title={name}>
         {name ?? k.label}

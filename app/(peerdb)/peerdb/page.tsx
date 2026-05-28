@@ -8,6 +8,7 @@ import {
   SearchIcon,
   XIcon,
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import type { MirrorMetricsSummary } from '@/components/peerdb/mirror-row'
 import type { ListMirrorsResponse, ListPeersResponse } from '@/lib/peerdb/types'
@@ -43,15 +44,32 @@ export default function PeerDBMirrorsPage() {
   const {
     data,
     error,
+    isLoading: isLoadingMirrors,
+    isValidating: isValidatingMirrors,
     refresh: refreshMirrors,
   } = usePeerDB<ListMirrorsResponse>('/mirrors/list', {
     refreshInterval: 60_000,
   })
-  const { data: peersData, refresh: refreshPeers } =
-    usePeerDB<ListPeersResponse>('/peers/list', {
-      refreshInterval: 120_000,
-    })
-  const { data: status, mutate: refreshStatus } = usePeerDBStatus(120_000)
+  const {
+    data: peersData,
+    error: peersError,
+    isLoading: isLoadingPeers,
+    isValidating: isValidatingPeers,
+    refresh: refreshPeers,
+  } = usePeerDB<ListPeersResponse>('/peers/list', {
+    refreshInterval: 120_000,
+  })
+  const {
+    data: status,
+    error: statusError,
+    isLoading: isLoadingStatus,
+    isValidating: isValidatingStatus,
+    mutate: refreshStatus,
+  } = usePeerDBStatus(120_000)
+
+  const isRefreshing =
+    isValidatingMirrors || isValidatingPeers || isValidatingStatus
+  const isLoadingAny = isLoadingMirrors || isLoadingPeers || isLoadingStatus
 
   const refreshAll = useCallback(async () => {
     try {
@@ -61,6 +79,25 @@ export default function PeerDBMirrorsPage() {
       // refresh click never produces an unhandled rejection.
     }
   }, [refreshMirrors, refreshPeers, refreshStatus])
+
+  // Trigger sonner toast notifications on fetching errors
+  useEffect(() => {
+    if (error) {
+      toast.error(`Mirrors API Error: ${error.message}`)
+    }
+  }, [error])
+
+  useEffect(() => {
+    if (peersError) {
+      toast.error(`Peers API Error: ${peersError.message}`)
+    }
+  }, [peersError])
+
+  useEffect(() => {
+    if (statusError) {
+      toast.error(`Connection Probe Error: ${statusError.message}`)
+    }
+  }, [statusError])
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [statusFilter, setStatusFilter] = useState<DesignStatus | 'all'>('all')
@@ -229,13 +266,27 @@ export default function PeerDBMirrorsPage() {
               {status?.host ?? '—'}
             </span>
           </span>
+          {isRefreshing && (
+            <span className="mr-1 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground animate-pulse">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              Syncing in background...
+            </span>
+          )}
           <button
             type="button"
             onClick={refreshAll}
-            className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2 text-[12px] font-medium text-foreground hover:bg-muted"
+            disabled={isLoadingAny || isRefreshing}
+            className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2 text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-85 disabled:cursor-not-allowed transition-all"
           >
-            <RefreshCwIcon className="size-3" />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCwIcon
+              className={cn(
+                'size-3',
+                (isLoadingAny || isRefreshing) && 'animate-spin text-primary'
+              )}
+            />
+            <span className="hidden sm:inline">
+              {isLoadingAny || isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </span>
           </button>
           {status?.host && (
             <a
@@ -255,6 +306,28 @@ export default function PeerDBMirrorsPage() {
         topology. Data sourced from{' '}
         <span className="font-mono">/v1/mirrors/list</span>.
       </p>
+
+      {/* API connection error warning banner */}
+      {(error || peersError || statusError) && (
+        <div className="mb-4 rounded-md border border-destructive/20 bg-destructive/10 px-4 py-3 text-[12.5px] text-destructive flex flex-wrap gap-2 items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-2">
+            <span className="font-bold uppercase tracking-wider text-[10px] bg-destructive/20 px-1.5 py-0.5 rounded mr-1">
+              Connection Alert
+            </span>
+            <span className="font-medium text-left">
+              {error?.message || peersError?.message || statusError?.message}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={refreshAll}
+            className="rounded border border-destructive/30 bg-background hover:bg-muted px-2.5 py-1 text-[11.5px] font-medium text-foreground transition-all flex items-center gap-1 shadow-sm shrink-0"
+          >
+            <RefreshCwIcon className="size-3" />
+            Retry Connection
+          </button>
+        </div>
+      )}
 
       {/* KPI row */}
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

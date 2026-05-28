@@ -64,6 +64,15 @@ export function MirrorRow({
           ? 'text-amber-700 dark:text-amber-400'
           : ''
 
+  const hasTrend = trend && trend.length >= 2
+  const sparkData = hasTrend ? trend : [0, 0]
+  const sparkFill =
+    hasTrend &&
+    mirror.status !== 'STATUS_PAUSED' &&
+    mirror.status !== 'STATUS_FAILED'
+      ? 0.28
+      : 0
+
   return (
     <>
       <tr
@@ -155,11 +164,11 @@ export function MirrorRow({
             </div>
             <div className="shrink-0">
               <PdbSparkline
-                data={trend}
+                data={sparkData}
                 color={meta.dot}
                 width={120}
                 height={32}
-                fill={0.28}
+                fill={sparkFill}
               />
             </div>
           </div>

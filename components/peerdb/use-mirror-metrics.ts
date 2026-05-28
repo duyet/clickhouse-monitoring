@@ -80,8 +80,8 @@ export function useMirrorMetrics(
       : toNumber(cdc.rowsSynced)
     : partitions.reduce((a, p) => a + toNumber(p.rowsSynced), 0)
 
-  let lagSec: number | null = null
-  if (isCdc && batches.length) {
+  let lagSec: number | null = status.data?.lagSec ?? null
+  if (lagSec === null && isCdc && batches.length) {
     const last = batches[batches.length - 1]
     const end = last.endTime ? Date.parse(last.endTime) : NaN
     if (!Number.isNaN(end)) lagSec = Math.max(0, (Date.now() - end) / 1000)

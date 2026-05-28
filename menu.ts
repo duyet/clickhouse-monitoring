@@ -38,7 +38,7 @@ import {
 
 import type { MenuItem } from '@/components/menu/types'
 
-import { PeerDBLogo } from '@/components/icons/peerdb-logo'
+import { PeerDBLogo } from '@/components/icons/peerdb-brand-logo'
 
 export const menuItemsConfig: MenuItem[] = [
   {
