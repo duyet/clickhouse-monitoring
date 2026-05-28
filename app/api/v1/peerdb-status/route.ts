@@ -30,7 +30,15 @@ function sanitizeHost(baseUrl: string): string {
   try {
     return new URL(baseUrl).host
   } catch {
-    return baseUrl.replace(/^[a-z]+:\/\//i, '').split('/')[0]
+    // Remove scheme, userinfo, and path - return only host:port
+    let sanitized = baseUrl.replace(/^[a-z]+:\/\//i, '')
+    // Remove userinfo (user:pass@) if present
+    const atIndex = sanitized.indexOf('@')
+    if (atIndex !== -1) {
+      sanitized = sanitized.slice(atIndex + 1)
+    }
+    // Remove path
+    return sanitized.split('/')[0]
   }
 }
 

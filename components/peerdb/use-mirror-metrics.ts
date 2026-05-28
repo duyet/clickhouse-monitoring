@@ -75,7 +75,7 @@ export function useMirrorMetrics(
   const rowsPerSec = trend.length ? Math.round(trend[trend.length - 1] / 60) : 0
 
   const rowsSynced = isCdc
-    ? toNumber(cdc?.rowsSynced) || toNumber(graph.data?.totalRows)
+    ? toNumber(cdc?.rowsSynced) ?? toNumber(graph.data?.totalRows)
     : partitions.reduce((a, p) => a + toNumber(p.rowsSynced), 0)
 
   let lagSec: number | null = null

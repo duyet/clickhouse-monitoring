@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { MiniAreaChart } from '@/components/charts/mini-charts'
 import { PeerDBNotConfigured } from '@/components/peerdb/peerdb-not-configured'
+import { PeerDetailSkeleton } from '@/components/peerdb/peer-detail-skeleton'
 import {
   isPeerDBNotConfigured,
   toNumber,
@@ -198,7 +199,7 @@ function PeerDetailContent() {
 
 export default function PeerDBPeerDetailPage() {
   return (
-    <Suspense fallback={<div className="p-4 text-sm">Loading…</div>}>
+    <Suspense fallback={<PeerDetailSkeleton />}>
       <PeerDetailContent />
     </Suspense>
   )

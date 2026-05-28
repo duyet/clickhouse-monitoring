@@ -140,10 +140,14 @@ export async function peerdbFetch<T = unknown>(
 
   if (!response.ok) {
     const body = await response.text().catch(() => '')
+    // Log the full response for debugging but keep it out of the error message
+    error('[PeerDB] upstream error', {
+      status: response.status,
+      statusText: response.statusText,
+      body: body.slice(0, 300),
+    })
     throw new PeerDBError(
-      `PeerDB API error ${response.status}: ${
-        body.slice(0, 300) || response.statusText
-      }`,
+      `PeerDB API error ${response.status}: ${response.statusText}`,
       response.status
     )
   }

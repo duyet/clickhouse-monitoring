@@ -53,13 +53,13 @@ export default function PeerDBMirrorsPage() {
     })
   const { data: status, mutate: refreshStatus } = usePeerDBStatus(120_000)
 
-  const refreshAll = useCallback(() => {
-    Promise.all([refreshMirrors(), refreshPeers(), refreshStatus()]).catch(
-      () => {
-        // SWR surfaces per-hook errors in the UI; swallow here so the manual
-        // refresh click never produces an unhandled rejection.
-      }
-    )
+  const refreshAll = useCallback(async () => {
+    try {
+      await Promise.all([refreshMirrors(), refreshPeers(), refreshStatus()])
+    } catch {
+      // SWR surfaces per-hook errors in the UI; swallow here so the manual
+      // refresh click never produces an unhandled rejection.
+    }
   }, [refreshMirrors, refreshPeers, refreshStatus])
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
