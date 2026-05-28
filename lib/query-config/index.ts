@@ -10,6 +10,13 @@ import {
   explorerSkipIndexesConfig,
   explorerTablesConfig,
 } from './explorer'
+import {
+  keeperConnectionLogConfig,
+  keeperConnectionsConfig,
+  keeperInfoConfig,
+  keeperLogConfig,
+  keeperWatchesConfig,
+} from './keeper'
 import { crashLogConfig } from './logs/crashes'
 import { stackTracesConfig } from './logs/stack-traces'
 // Logs
@@ -124,6 +131,13 @@ export const queries: Array<QueryConfig> = [
   zookeeperConfig,
   errorsConfig,
   pageViewsConfig,
+
+  // Keeper / ZooKeeper
+  keeperInfoConfig,
+  keeperConnectionsConfig,
+  keeperConnectionLogConfig,
+  keeperLogConfig,
+  keeperWatchesConfig,
 
   // System
   clustersConfig,

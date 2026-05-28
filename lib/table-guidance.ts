@@ -61,6 +61,41 @@ export const TABLE_GUIDANCE: Record<string, TableGuidance> = {
     docsUrl:
       'https://clickhouse.com/docs/en/operations/system-tables/zookeeper',
   },
+  'system.zookeeper_info': {
+    description: 'Introspection of all available Keeper/ZooKeeper nodes',
+    enableInstructions:
+      'This table is only available when ZooKeeper or ClickHouse Keeper is configured. It was introduced in a recent ClickHouse release — older servers will not expose it.',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_info',
+  },
+  'system.zookeeper_connection': {
+    description: 'Current connections to ZooKeeper/Keeper',
+    enableInstructions:
+      'This table is only available when ZooKeeper or ClickHouse Keeper is configured for your cluster.',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_connection',
+  },
+  'system.zookeeper_connection_log': {
+    description: 'History of ZooKeeper/Keeper connection events',
+    enableInstructions:
+      'This table is only available when ZooKeeper or ClickHouse Keeper is configured. It was introduced in a recent ClickHouse release — older servers will not expose it.',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_connection_log',
+  },
+  'system.zookeeper_log': {
+    description: 'Per-request log of ZooKeeper/Keeper operations',
+    enableInstructions:
+      'Enable by adding the `<zookeeper_log>` section to your ClickHouse server config. It is not enabled by default even when Keeper/ZooKeeper is configured.',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_log',
+  },
+  'system.zookeeper_watches': {
+    description: 'Currently active ZooKeeper/Keeper watches',
+    enableInstructions:
+      'This table is only available when ZooKeeper or ClickHouse Keeper is configured. It was introduced in a recent ClickHouse release — older servers will not expose it.',
+    docsUrl:
+      'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_watches',
+  },
   'system.backup_log': {
     description: 'Backup operation history',
     enableInstructions:

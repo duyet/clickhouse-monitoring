@@ -1,18 +1,31 @@
 'use client'
 
-import { Suspense } from 'react'
-import { PageLayout } from '@/components/layout/query-page'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
-import { zookeeperConfig } from '@/lib/query-config/more/zookeeper'
 
-function ZookeeperPageContent() {
-  return <PageLayout queryConfig={zookeeperConfig} title="ZooKeeper" />
+/**
+ * Legacy route. ZooKeeper monitoring moved under the dedicated "Keeper" menu
+ * section at `/keeper`. Redirect client-side (static site — no server
+ * redirects) while preserving the `?path=` query param so existing bookmarks
+ * keep working.
+ */
+function ZookeeperRedirect() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const query = searchParams.toString()
+    router.replace(`/keeper${query ? `?${query}` : '?path=/'}`)
+  }, [router, searchParams])
+
+  return <ChartSkeleton />
 }
 
 export default function ZookeeperPage() {
   return (
     <Suspense fallback={<ChartSkeleton />}>
-      <ZookeeperPageContent />
+      <ZookeeperRedirect />
     </Suspense>
   )
 }

@@ -20,6 +20,7 @@ import {
   CircleDollarSignIcon,
   CombineIcon,
   CpuIcon,
+  EyeIcon,
   GitCompareArrowsIcon,
   Grid2x2CheckIcon,
   HardDriveIcon,
@@ -298,6 +299,63 @@ export const menuItemsConfig: MenuItem[] = [
     ],
   },
   {
+    title: 'Keeper',
+    href: '',
+    icon: RollerCoasterIcon,
+    section: 'main',
+    isNew: true,
+    items: [
+      {
+        title: 'Data Browser',
+        href: '/keeper?path=/',
+        description:
+          'Browse the ZooKeeper/Keeper znode tree for distributed coordination',
+        icon: RollerCoasterIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper',
+      },
+      {
+        title: 'Keeper Info',
+        href: '/keeper/info',
+        description:
+          'Cluster-health introspection of every Keeper node: role, latency, raft log, znode counts',
+        icon: HeartPulseIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_info',
+      },
+      {
+        title: 'Connections',
+        href: '/keeper/connections',
+        description:
+          'Live connections from this ClickHouse server to Keeper/ZooKeeper',
+        icon: UnplugIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_connection',
+      },
+      {
+        title: 'Connection Log',
+        href: '/keeper/connection-log',
+        description:
+          'History of Keeper/ZooKeeper connect and disconnect events with reasons',
+        icon: CounterClockwiseClockIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_connection_log',
+      },
+      {
+        title: 'Request Log',
+        href: '/keeper/log',
+        description:
+          'Per-request log of Keeper/ZooKeeper operations and responses (requires <zookeeper_log>)',
+        icon: ScrollTextIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_log',
+      },
+      {
+        title: 'Watches',
+        href: '/keeper/watches',
+        description:
+          'Currently active ZooKeeper/Keeper watches registered by this server',
+        icon: EyeIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_watches',
+      },
+    ],
+  },
+  {
     title: 'PeerDB',
     href: '',
     icon: PeerDBLogo,
@@ -445,14 +503,6 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'clusters',
         icon: UngroupIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/clusters',
-      },
-      {
-        title: 'Zookeeper',
-        href: '/zookeeper?path=/',
-        description:
-          'ZooKeeper/Keeper data browser for distributed coordination',
-        icon: RollerCoasterIcon,
-        docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper',
       },
       {
         title: 'Connections',
