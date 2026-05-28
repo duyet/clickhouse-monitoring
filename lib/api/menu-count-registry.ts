@@ -30,6 +30,8 @@ export const menuCountRegistry: Record<string, MenuCountQuery> = {
   },
   'distributed-ddl-queue': {
     query: `SELECT COUNT() as count FROM system.distributed_ddl_queue WHERE status != 'Finished'`,
+    optional: true,
+    tableCheck: 'system.distributed_ddl_queue',
   },
   'table-replicas': {
     query: `SELECT COUNT() as count FROM system.replicas`,

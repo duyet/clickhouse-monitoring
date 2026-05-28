@@ -23,20 +23,38 @@ interface ExplorerContentProps {
 }
 
 // Track which tabs have been visited for this table to enable pre-loading
-function useTabVisitTracker(tableKey: string | null) {
-  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['data']))
+function useTabVisitTracker(tableKey: string | null, currentTab: ExplorerTab) {
+  const [visitedTabs, setVisitedTabs] = useState<Set<ExplorerTab>>(
+    () => new Set<ExplorerTab>(['data', currentTab])
+  )
   const prevTableKey = useRef<string | null>(null)
 
+  // Reset visited tabs when table changes, keeping the active tab
+  // biome-ignore lint/correctness/useExhaustiveDependencies: currentTab is only used to seed the set on table reset
   useEffect(() => {
     if (tableKey !== prevTableKey.current) {
-      // Reset visited tabs when table changes
-      setVisitedTabs(new Set(['data']))
+      setVisitedTabs(new Set<ExplorerTab>(['data', currentTab]))
       prevTableKey.current = tableKey
     }
   }, [tableKey])
 
-  const markVisited = (tab: string) => {
-    setVisitedTabs((prev) => new Set([...prev, tab]))
+  // Track visited tabs when currentTab changes externally (e.g. URL/history navigation)
+  useEffect(() => {
+    setVisitedTabs((prev) => {
+      if (prev.has(currentTab)) return prev
+      const next = new Set(prev)
+      next.add(currentTab)
+      return next
+    })
+  }, [currentTab])
+
+  const markVisited = (tab: ExplorerTab) => {
+    setVisitedTabs((prev) => {
+      if (prev.has(tab)) return prev
+      const next = new Set(prev)
+      next.add(tab)
+      return next
+    })
   }
 
   return { visitedTabs, markVisited }
@@ -47,14 +65,14 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
   const { database, table, tab, setTab } = useExplorerState()
   const [isTabSwitching, setIsTabSwitching] = useState(false)
   const tableKey = database && table ? `${database}.${table}` : null
-  const { visitedTabs, markVisited } = useTabVisitTracker(tableKey)
+  const { visitedTabs, markVisited } = useTabVisitTracker(tableKey, tab)
 
   // Handle tab switching with instant visual feedback
   const handleTabChange = (value: string) => {
     if (value === tab) return
 
     setIsTabSwitching(true)
-    markVisited(value)
+    markVisited(value as ExplorerTab)
     setTab(value as ExplorerTab)
 
     // Clear switching state after a brief moment

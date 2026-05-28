@@ -168,9 +168,14 @@ export async function GET(
       hostId,
     })
 
-    // Handle errors - for optional tables, return null count
+    // Handle errors - for optional tables, return null count only when the
+    // table genuinely does not exist. Other failures (permissions, timeouts,
+    // connectivity, query errors) must surface so the badge isn't silently wrong.
     if (result.error) {
-      if (menuCount.optional) {
+      if (
+        menuCount.optional &&
+        result.error.type === ApiErrorType.TableNotFound
+      ) {
         debug('[GET /api/v1/menu-counts] Optional table not found:', {
           requestId,
           countKey,
