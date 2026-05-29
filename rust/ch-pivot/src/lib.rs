@@ -46,15 +46,9 @@ impl PivotEngine {
         let mut nested: HashMap<String, HashMap<String, f64>> = HashMap::new();
 
         for row in rows {
-            let row_val = row
-                .get(row_key)
-                .map(stringify_val)
-                .unwrap_or_default();
+            let row_val = row.get(row_key).map(stringify_val).unwrap_or_default();
 
-            let raw_col = row
-                .get(column_key)
-                .map(stringify_val)
-                .unwrap_or_default();
+            let raw_col = row.get(column_key).map(stringify_val).unwrap_or_default();
 
             let col_val = if raw_col.trim().is_empty() {
                 default_column_val.unwrap_or("(empty)").to_string()
@@ -62,10 +56,7 @@ impl PivotEngine {
                 raw_col
             };
 
-            let count_val = row
-                .get(value_key)
-                .map(to_count)
-                .unwrap_or(0.0);
+            let count_val = row.get(value_key).map(to_count).unwrap_or(0.0);
 
             column_set.insert(col_val.clone());
             if !nested.contains_key(&row_val) {
@@ -214,9 +205,18 @@ mod tests {
     #[test]
     fn generic_pivot_engine_works() {
         let input = vec![
-            json!({"date": "2026-05-20", "metric": "cpu", "value": 45.2}).as_object().unwrap().clone(),
-            json!({"date": "2026-05-20", "metric": "cpu", "value": 5.8}).as_object().unwrap().clone(),
-            json!({"date": "2026-05-20", "metric": "memory", "value": 82.0}).as_object().unwrap().clone(),
+            json!({"date": "2026-05-20", "metric": "cpu", "value": 45.2})
+                .as_object()
+                .unwrap()
+                .clone(),
+            json!({"date": "2026-05-20", "metric": "cpu", "value": 5.8})
+                .as_object()
+                .unwrap()
+                .clone(),
+            json!({"date": "2026-05-20", "metric": "memory", "value": 82.0})
+                .as_object()
+                .unwrap()
+                .clone(),
         ];
 
         let result = PivotEngine::pivot(input, "date", "metric", "value", None);
