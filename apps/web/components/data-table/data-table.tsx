@@ -504,6 +504,13 @@ export function DataTable<
     { disabled: Boolean(expandable) }
   )
 
+  // Card vs. table view. Only offered (with a toolbar toggle) when the config
+  // opts in via `defaultView`; otherwise tables behave exactly as before.
+  const offerViewToggle = queryConfig.defaultView !== undefined
+  const [view, setView] = useState<'table' | 'cards'>(
+    queryConfig.defaultView ?? 'table'
+  )
+
   // Auto-fit columns functionality
   const { autoFitColumn } = useAutoFitColumns<TData>(tableContainerRef)
 
@@ -595,6 +602,9 @@ export function DataTable<
           onResetColumnOrder={handleResetColumnOrder}
           compact={compact}
           expandable={expandable}
+          view={view}
+          offerViewToggle={offerViewToggle}
+          onViewChange={setView}
         />
 
         <DataTableFooter table={table} footnote={footnote} compact={compact} />
