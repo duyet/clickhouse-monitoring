@@ -288,6 +288,24 @@ export function QueryTab() {
     }
   }, [customQuery, database, tableName])
 
+  // Re-seed the editor when the selected table changes.
+  // setDatabaseAndTable clears customQuery (sets q=null in URL), so when
+  // customQuery is null and database+table change, the user picked a new table.
+  const prevTableKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!initialized.current) return
+    const tableKey = database && tableName ? `${database}.${tableName}` : null
+    if (tableKey === prevTableKeyRef.current) return
+    prevTableKeyRef.current = tableKey
+
+    if (!customQuery && database && tableName) {
+      const defaultQuery = `SELECT *\nFROM \`${database}\`.\`${tableName}\`\nLIMIT 100`
+      setEditorValue(defaultQuery)
+      setExecutedQuery(null)
+      setLimitAdded(false)
+    }
+  }, [database, tableName, customQuery])
+
   // Build the SWR URL only when we have an executed query
   const swrKey = (() => {
     if (!executedQuery) return null
