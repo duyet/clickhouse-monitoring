@@ -67,7 +67,7 @@ describe('validateBuilderState', () => {
     })
 
     it('should accept fully populated valid state', () => {
-      const _state: BuilderState = {
+      const state: BuilderState = {
         ctes: [],
         columns: ['id', 'name'],
         from: { table: 'users', alias: 'u' },
@@ -141,8 +141,6 @@ describe('validateBuilderState', () => {
         'NOT LIKE',
         'IN',
         'NOT IN',
-        'IS',
-        'IS NOT',
         'BETWEEN',
         'NOT BETWEEN',
       ]
@@ -153,6 +151,26 @@ describe('validateBuilderState', () => {
           from: { table: 'users' },
           joins: [],
           wheres: [{ column: 'col', operator: op, value: 1, type: 'and' }],
+          groupBy: [],
+          having: [],
+          orderBy: [],
+          unions: [],
+          settings: {},
+        }
+        expect(
+          () => validateBuilderState(state),
+          `operator ${op}`
+        ).not.toThrow()
+      }
+
+      // IS / IS NOT require NULL value
+      for (const op of ['IS', 'IS NOT']) {
+        const state: BuilderState = {
+          ctes: [],
+          columns: ['id'],
+          from: { table: 'users' },
+          joins: [],
+          wheres: [{ column: 'col', operator: op, value: null, type: 'and' }],
           groupBy: [],
           having: [],
           orderBy: [],
