@@ -6,8 +6,8 @@
  */
 
 import type { ClickHouseClient } from '@clickhouse/client'
+import type { ClickHouseClient as WebClickHouseClient } from '@clickhouse/client-web'
 
-import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 import type { ClickHouseConfig } from './types'
 
 import { debug } from '@/lib/logger'

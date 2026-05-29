@@ -6,9 +6,11 @@
 
 import type { ClickHouseClient, ClickHouseSettings } from '@clickhouse/client'
 import { createClient } from '@clickhouse/client'
-import { createClient as createClientWeb } from '@clickhouse/client-web'
+import {
+  createClient as createClientWeb,
+  type ClickHouseClient as WebClickHouseClient,
+} from '@clickhouse/client-web'
 
-import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
 import type { ClickHouseConfig } from './types'
 
 import { getAndValidateClientConfig } from './clickhouse-config'
@@ -69,5 +71,4 @@ export const getClient = async ({
 }
 
 // Re-export connection pool stats
-export { getConnectionPoolStats }
-export { isCloudflareWorkers }
+export { getConnectionPoolStats, isCloudflareWorkers }
