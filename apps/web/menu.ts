@@ -55,7 +55,9 @@ export const menuItemsConfig: MenuItem[] = [
     icon: SparklesIcon,
     section: 'main',
     isNew: true,
-    permission: { feature: 'agent' },
+    // Render the chat UI for everyone; sign-in is prompted on send, not at the
+    // route level. See AGENT_FEATURE_PERMISSION / AgentAuthGate.
+    permission: { feature: 'agent', interactionGated: true },
   },
   {
     title: 'Insights',

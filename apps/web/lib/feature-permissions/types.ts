@@ -33,6 +33,15 @@ export interface FeaturePermission {
    * @default public
    */
   defaultAccess?: FeatureAccess
+  /**
+   * When true, an `authenticated`-only feature is NOT blocked at the route
+   * level for anonymous principals — the page renders and the feature gates
+   * the auth-requiring *interaction* itself (e.g. the agent shows its chat UI
+   * and only prompts for sign-in when the user tries to send a message).
+   *
+   * @default false
+   */
+  interactionGated?: boolean
 }
 
 export interface FeatureOverride {

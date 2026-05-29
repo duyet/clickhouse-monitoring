@@ -19,6 +19,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 
 import { useEffect, useState } from 'react'
 import { AgentSettingsSidebar } from '@/components/agents/welcome/agent-settings-sidebar'
+import { AgentAuthGate } from '@/components/assistant-ui/agent-auth-gate'
 import { AgentRuntimeProvider } from '@/components/assistant-ui/agent-runtime-provider'
 import { Thread } from '@/components/assistant-ui/thread'
 import { ThreadList } from '@/components/assistant-ui/thread-list'
@@ -66,67 +67,69 @@ export function AgentThreadPage() {
 
   return (
     <ErrorBoundary FallbackComponent={AgentThreadPageError}>
-      <AgentRuntimeProvider>
-        <div className="bg-background flex h-[calc(100dvh-6rem)] min-h-0 overflow-hidden rounded-xl border">
-          {/* Conversation rail */}
-          {leftSidebarOpen ? (
-            <aside className="bg-muted/30 hidden w-64 shrink-0 flex-col gap-2 overflow-y-auto border-r p-2 lg:flex">
-              <div className="flex items-center justify-between gap-2 px-2 pt-1">
-                <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                  Conversations
-                </p>
+      <AgentAuthGate>
+        <AgentRuntimeProvider>
+          <div className="bg-background flex h-[calc(100dvh-6rem)] min-h-0 overflow-hidden rounded-xl border">
+            {/* Conversation rail */}
+            {leftSidebarOpen ? (
+              <aside className="bg-muted/30 hidden w-64 shrink-0 flex-col gap-2 overflow-y-auto border-r p-2 lg:flex">
+                <div className="flex items-center justify-between gap-2 px-2 pt-1">
+                  <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                    Conversations
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setLeftSidebarOpen(false)}
+                    className="text-muted-foreground hover:text-foreground size-6 shrink-0"
+                    aria-label="Hide conversations"
+                  >
+                    <PanelLeftOpenIcon className="size-3.5 rotate-180" />
+                  </Button>
+                </div>
+                <ThreadList />
+              </aside>
+            ) : null}
+
+            {/* Main column */}
+            <div className="relative flex min-w-0 flex-1 flex-col">
+              {!leftSidebarOpen ? (
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setLeftSidebarOpen(false)}
-                  className="text-muted-foreground hover:text-foreground size-6 shrink-0"
-                  aria-label="Hide conversations"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLeftSidebarOpen(true)}
+                  className="absolute top-3 left-3 z-10 hidden h-8 gap-1.5 px-2.5 text-[11.5px] whitespace-nowrap lg:inline-flex"
                 >
-                  <PanelLeftOpenIcon className="size-3.5 rotate-180" />
+                  <PanelLeftOpenIcon className="size-3.5" />
+                  Conversations
                 </Button>
-              </div>
-              <ThreadList />
-            </aside>
-          ) : null}
+              ) : null}
+              {!rightSidebarOpen ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRightSidebarOpen(true)}
+                  className="absolute top-3 right-3 z-10 h-8 gap-1.5 px-2.5 text-[11.5px] whitespace-nowrap"
+                >
+                  <PanelRightOpenIcon className="size-3.5" />
+                  Agent settings
+                </Button>
+              ) : null}
+              <Thread firstName={firstName} clusterName={clusterName} />
+            </div>
 
-          {/* Main column */}
-          <div className="relative flex min-w-0 flex-1 flex-col">
-            {!leftSidebarOpen ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setLeftSidebarOpen(true)}
-                className="absolute top-3 left-3 z-10 hidden h-8 gap-1.5 px-2.5 text-[11.5px] whitespace-nowrap lg:inline-flex"
-              >
-                <PanelLeftOpenIcon className="size-3.5" />
-                Conversations
-              </Button>
-            ) : null}
-            {!rightSidebarOpen ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setRightSidebarOpen(true)}
-                className="absolute top-3 right-3 z-10 h-8 gap-1.5 px-2.5 text-[11.5px] whitespace-nowrap"
-              >
-                <PanelRightOpenIcon className="size-3.5" />
-                Agent settings
-              </Button>
-            ) : null}
-            <Thread firstName={firstName} clusterName={clusterName} />
+            {/* Settings sidebar */}
+            <AgentSettingsSidebar
+              open={rightSidebarOpen}
+              onClose={() => setRightSidebarOpen(false)}
+              hostName={clusterName ?? 'duyet-agent'}
+            />
           </div>
-
-          {/* Settings sidebar */}
-          <AgentSettingsSidebar
-            open={rightSidebarOpen}
-            onClose={() => setRightSidebarOpen(false)}
-            hostName={clusterName ?? 'duyet-agent'}
-          />
-        </div>
-      </AgentRuntimeProvider>
+        </AgentRuntimeProvider>
+      </AgentAuthGate>
     </ErrorBoundary>
   )
 }

@@ -30,6 +30,9 @@ export function FeatureRouteGate({ children }: { children: ReactNode }) {
     state.access === 'authenticated' &&
     config.principal !== 'authenticated'
   ) {
+    // Interaction-gated features (e.g. the agent) render their UI for everyone
+    // and prompt for sign-in only when an auth-requiring action is attempted.
+    if (permission.interactionGated) return children
     return <FeatureUnavailable feature={permission.feature} reason="auth" />
   }
 

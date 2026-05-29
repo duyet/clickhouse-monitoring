@@ -2,6 +2,7 @@ import type { FeaturePermission } from './types'
 
 export const AGENT_FEATURE_PERMISSION = {
   feature: 'agent',
+  interactionGated: true,
 } satisfies FeaturePermission
 
 export const ACTIONS_FEATURE_PERMISSION = {
