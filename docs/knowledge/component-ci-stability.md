@@ -101,6 +101,10 @@ document-level listeners / portals don't settle; need a browser-verified fix):
   path renders an empty/error state, so `[aria-label="<title> chart"]` never
   appears. Needs a browser-verified fix to the spec's data mock / fetch wiring
   (the `/api/v1/data` mock shape vs `validateChartData`/`extractCategories`).
+- `table-client.cy.tsx`: "polls table data when the query config opts in" — flaky
+  under CI load. Uses `cy.clock()`/`cy.tick()` to assert a 2nd poll request; the
+  request intermittently never fires within the wait window. Needs a sturdier
+  fake-timer/poll assertion before re-enabling.
 
 These exercise Radix-portal / TanStack interactions that don't drive
 document-level mouse/state listeners reliably in headless CI Chrome. Re-enable
