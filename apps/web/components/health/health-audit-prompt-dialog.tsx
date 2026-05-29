@@ -3,7 +3,7 @@
 import { Check, Copy } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -13,23 +13,85 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  type AuditPromptInput,
+  type AuditPromptOptions,
+  buildAuditPrompt,
+  DEFAULT_AUDIT_PROMPT_OPTIONS,
+  estimateTokens,
+} from '@/lib/health/audit-prompt'
 
 interface HealthAuditPromptDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   title: string
-  prompt: string
+  input: AuditPromptInput
+}
+
+/** A toggleable section, shown only when the check actually has that content. */
+interface ToggleDef {
+  key: keyof AuditPromptOptions
+  label: string
+  available: boolean
 }
 
 export function HealthAuditPromptDialog({
   open,
   onOpenChange,
   title,
-  prompt,
+  input,
 }: HealthAuditPromptDialogProps) {
   const [copied, setCopied] = useState(false)
+  const [options, setOptions] = useState<AuditPromptOptions>(
+    DEFAULT_AUDIT_PROMPT_OPTIONS
+  )
+
+  const { check, row } = input
+
+  // Only surface toggles for sections this particular check can populate.
+  const toggles: ToggleDef[] = [
+    { key: 'sql', label: 'Metric query', available: Boolean(check.sql) },
+    {
+      key: 'rawData',
+      label: 'Raw data row',
+      available: Boolean(row && Object.keys(row).length > 0),
+    },
+    {
+      key: 'systemTables',
+      label: 'System tables',
+      available: Boolean(check.systemTables?.length),
+    },
+    {
+      key: 'commonCauses',
+      label: 'Common causes',
+      available: Boolean(check.commonCauses?.length),
+    },
+    {
+      key: 'relatedLinks',
+      label: 'Related dashboards',
+      available: Boolean(check.relatedLinks?.length),
+    },
+    {
+      key: 'docsLinks',
+      label: 'Documentation',
+      available: Boolean(check.docsLinks?.length),
+    },
+    {
+      key: 'docsMarkdown',
+      label: 'Doc markdown URLs',
+      available: Boolean(check.docsLinks?.length) && Boolean(options.docsLinks),
+    },
+  ]
+
+  const prompt = useMemo(
+    () => buildAuditPrompt(input, options),
+    [input, options]
+  )
+  const tokens = useMemo(() => estimateTokens(prompt), [prompt])
 
   const handleCopy = async () => {
     try {
@@ -53,26 +115,55 @@ export function HealthAuditPromptDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="h-[420px] rounded-md border">
+        {/* Section toggles — trim the prompt to control its size/cost. */}
+        <div className="flex flex-wrap gap-x-4 gap-y-2 rounded-md border p-3">
+          {toggles
+            .filter((t) => t.available)
+            .map((t) => (
+              <div key={t.key} className="flex items-center gap-2">
+                <Switch
+                  id={`audit-toggle-${t.key}`}
+                  checked={Boolean(options[t.key])}
+                  onCheckedChange={(next) =>
+                    setOptions((prev) => ({ ...prev, [t.key]: next }))
+                  }
+                />
+                <Label
+                  htmlFor={`audit-toggle-${t.key}`}
+                  className="text-xs font-normal"
+                >
+                  {t.label}
+                </Label>
+              </div>
+            ))}
+        </div>
+
+        <ScrollArea className="h-[360px] rounded-md border">
           <Textarea
             readOnly
             value={prompt}
-            className="min-h-[420px] resize-none border-0 font-mono text-xs leading-relaxed focus-visible:ring-0"
+            className="min-h-[360px] resize-none border-0 font-mono text-xs leading-relaxed focus-visible:ring-0"
           />
         </ScrollArea>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
-          <Button onClick={handleCopy}>
-            {copied ? (
-              <Check className="mr-2 size-4" />
-            ) : (
-              <Copy className="mr-2 size-4" />
-            )}
-            {copied ? 'Copied' : 'Copy prompt'}
-          </Button>
+        <DialogFooter className="items-center sm:justify-between">
+          <span className="text-xs text-muted-foreground tabular-nums">
+            ~{tokens.toLocaleString()} tokens · {prompt.length.toLocaleString()}{' '}
+            chars
+          </span>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
+            <Button onClick={handleCopy}>
+              {copied ? (
+                <Check className="mr-2 size-4" />
+              ) : (
+                <Copy className="mr-2 size-4" />
+              )}
+              {copied ? 'Copied' : 'Copy prompt'}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

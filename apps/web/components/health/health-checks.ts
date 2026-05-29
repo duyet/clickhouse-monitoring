@@ -51,6 +51,13 @@ export interface HealthCheckDef {
   relatedLinks?: readonly RelatedLink[]
   /** External documentation links. */
   docsLinks?: readonly DocsLink[]
+  /**
+   * The SQL query that computes this check's value. Shown in the detail dialog
+   * and embedded in the audit prompt. Kept verbatim in sync with the backing
+   * chart query in `lib/api/charts/system-charts.ts` (display-only — importing
+   * the chart registry here would cross a layering boundary depcruise enforces).
+   */
+  sql?: string
 }
 
 const fmtCount = (singular: string, plural?: string) => (v: number | null) => {
@@ -90,6 +97,9 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
         url: 'https://clickhouse.com/docs/en/engines/table-engines/mergetree-family/replication',
       },
     ],
+    sql: `SELECT count() AS readonly_count
+FROM system.replicas
+WHERE is_readonly = 1`,
   },
   {
     id: 'delayed-inserts',
@@ -118,6 +128,9 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
         url: 'https://clickhouse.com/docs/en/operations/settings/merge-tree-settings#parts-to-delay-insert',
       },
     ],
+    sql: `SELECT value AS delayed_inserts
+FROM system.metrics
+WHERE metric = 'DelayedInserts'`,
   },
   {
     id: 'max-parts',
@@ -150,6 +163,15 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
         url: 'https://clickhouse.com/docs/en/engines/table-engines/mergetree-family/custom-partitioning-key',
       },
     ],
+    sql: `SELECT
+  concat(database, '.', table) AS table_path,
+  partition,
+  count() AS part_count
+FROM system.parts
+WHERE active AND database NOT IN ('system', 'INFORMATION_SCHEMA', 'information_schema')
+GROUP BY database, table, partition
+ORDER BY part_count DESC
+LIMIT 1`,
   },
   {
     id: 'long-running-queries',
@@ -182,6 +204,9 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
         url: 'https://clickhouse.com/docs/en/sql-reference/statements/kill',
       },
     ],
+    sql: `SELECT count() AS long_running
+FROM system.processes
+WHERE elapsed > 60 AND is_initial_query`,
   },
   {
     id: 'oom-killed',
@@ -214,6 +239,11 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
         url: 'https://clickhouse.com/docs/en/operations/settings/query-complexity#settings-max_bytes_before_external_group_by',
       },
     ],
+    sql: `SELECT count() AS oom_count
+FROM system.query_log
+WHERE event_time > now() - INTERVAL 1 HOUR
+  AND type IN ('ExceptionWhileProcessing', 'ExceptionBeforeStart')
+  AND (exception_code = 241 OR exception LIKE '%MEMORY_LIMIT_EXCEEDED%')`,
   },
   {
     id: 'failed-queries',
@@ -246,6 +276,10 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
         url: 'https://clickhouse.com/docs/en/operations/system-tables/errors',
       },
     ],
+    sql: `SELECT count() AS failed_count
+FROM system.query_log
+WHERE event_time > now() - INTERVAL 1 HOUR
+  AND type IN ('ExceptionWhileProcessing', 'ExceptionBeforeStart')`,
   },
   {
     id: 'replication-lag',
@@ -278,6 +312,8 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
         url: 'https://clickhouse.com/docs/en/engines/table-engines/mergetree-family/replication#recovery-after-failures',
       },
     ],
+    sql: `SELECT max(absolute_delay) AS max_lag
+FROM system.replicas`,
   },
   {
     id: 'keeper-exceptions',
@@ -305,6 +341,10 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
         url: 'https://clickhouse.com/docs/en/operations/clickhouse-keeper',
       },
     ],
+    sql: `SELECT coalesce(max(value) - min(value), 0) AS exception_count
+FROM merge('system', '^error_log')
+WHERE error = 'KEEPER_EXCEPTION'
+  AND event_time > now() - INTERVAL 1 HOUR`,
   },
   {
     id: 'memory-percent',
@@ -334,6 +374,14 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
         url: 'https://clickhouse.com/docs/en/operations/system-tables/asynchronous_metrics',
       },
     ],
+    sql: `SELECT round(
+  (
+    (SELECT value FROM system.asynchronous_metrics WHERE metric = 'OSMemoryTotal')
+    - (SELECT value FROM system.asynchronous_metrics WHERE metric = 'OSMemoryAvailable')
+  ) * 100.0
+  / nullIf((SELECT value FROM system.asynchronous_metrics WHERE metric = 'OSMemoryTotal'), 0),
+  1
+) AS memory_percent`,
   },
   {
     id: 'disk-percent',
@@ -367,5 +415,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
         url: 'https://clickhouse.com/docs/en/engines/table-engines/mergetree-family/mergetree#table_engine-mergetree-multiple-volumes',
       },
     ],
+    sql: `SELECT round(max((total_space - free_space) * 100.0 / nullIf(total_space, 0)), 1) AS disk_percent
+FROM system.disks`,
   },
 ] as const

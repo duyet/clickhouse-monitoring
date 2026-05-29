@@ -2,6 +2,7 @@
 
 import { ExternalLink, Sparkles } from 'lucide-react'
 
+import type { AuditPromptInput } from '@/lib/health/audit-prompt'
 import type { HealthCheckDef } from './health-checks'
 
 import { HealthAuditPromptDialog } from './health-audit-prompt-dialog'
@@ -19,7 +20,6 @@ import {
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { buildAuditPrompt } from '@/lib/health/audit-prompt'
 import { cn } from '@/lib/utils'
 
 interface HealthDetailDialogProps {
@@ -71,7 +71,7 @@ export function HealthDetailDialog({
 }: HealthDetailDialogProps) {
   const [promptOpen, setPromptOpen] = useState(false)
 
-  const prompt = buildAuditPrompt({
+  const promptInput: AuditPromptInput = {
     check,
     value,
     thresholds,
@@ -79,7 +79,7 @@ export function HealthDetailDialog({
     row,
     hostId,
     clickhouseVersion,
-  })
+  }
 
   const displayValue = check.formatValue
     ? check.formatValue(value)
@@ -159,6 +159,18 @@ export function HealthDetailDialog({
                         </tbody>
                       </table>
                     </div>
+                  </div>
+                </>
+              )}
+
+              {check.sql && (
+                <>
+                  <Separator />
+                  <div>
+                    <h4 className="text-sm font-semibold mb-2">SQL query</h4>
+                    <pre className="rounded-md border bg-muted/40 p-3 overflow-x-auto text-xs font-mono leading-relaxed">
+                      <code>{check.sql}</code>
+                    </pre>
                   </div>
                 </>
               )}
@@ -263,7 +275,7 @@ export function HealthDetailDialog({
         open={promptOpen}
         onOpenChange={setPromptOpen}
         title={check.title}
-        prompt={prompt}
+        input={promptInput}
       />
     </>
   )
