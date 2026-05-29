@@ -77,7 +77,7 @@ export default function InsightsPage() {
   ).toLowerCase()
 
   return (
-    <div className="flex flex-col gap-4 p-3 sm:gap-4 sm:p-6">
+    <div className="flex flex-col gap-4 sm:gap-4">
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
