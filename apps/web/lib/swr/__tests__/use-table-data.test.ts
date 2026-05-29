@@ -25,6 +25,10 @@ mock.module('react', () => ({
   useRef: (val: unknown) => ({ current: val }),
 }))
 
+mock.module('@/lib/types/browser-connection', () => ({
+  BROWSER_CONNECTIONS_STORAGE_KEY: 'clickhouse-monitor-browser-connections',
+}))
+
 mock.module('@/lib/context/browser-connections-context', () => ({
   useBrowserConnectionsContext: () => ({ getConnection: () => undefined }),
 }))

@@ -1,34 +1,59 @@
 /**
  * Tests for browser-proxy-fetcher.ts — Browser connections proxy fetcher.
+ *
+ * Inlines throwIfNotOk in mock.module('../fetch-error') to avoid
+ * contamination from other test files that stub it with a no-op.
+ * bun:test mock.module is last-wins per module specifier, but file
+ * load order is non-deterministic, so we provide the real implementation.
  */
 
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
-// Mock apiFetch
-const mockApiFetch = mock(async () => ({
-  ok: true,
-  json: async () => ({
-    success: true,
-    data: [{ col1: 'val1' }],
-    metadata: { duration: 50 },
-  }),
-}))
+// Mock apiFetch to return real Response objects
+const mockApiFetch = mock(async () =>
+  new Response(
+    JSON.stringify({
+      success: true,
+      data: [{ col1: 'val1' }],
+      metadata: { duration: 50 },
+    }),
+    { status: 200, headers: { 'Content-Type': 'application/json' } }
+  )
+)
 
 mock.module('../api-fetch', () => ({
   apiFetch: mockApiFetch,
 }))
 
-// Mock throwIfNotOk to be a passthrough for ok responses
-const mockThrowIfNotOk = mock(async () => {})
-
+// Inline throwIfNotOk so error-path tests work regardless of other files' mocks.
+// This must be a proper function, not a no-op, because fetchViaBrowserProxy
+// calls throwIfNotOk before reading response.json().
 mock.module('../fetch-error', () => ({
-  throwIfNotOk: mockThrowIfNotOk,
+  throwIfNotOk: async (
+    response: Response,
+    fallbackMessage = 'Request failed'
+  ): Promise<void> => {
+    if (response.ok) return
+    const errorData = (await response.json().catch(() => ({}))) as {
+      error?: { message?: string; type?: string; details?: unknown }
+    }
+    const error = new Error(
+      errorData.error?.message ||
+        `${fallbackMessage}: ${response.statusText}`
+    ) as Error & { status?: number; type?: string; details?: unknown }
+    error.status = response.status
+    if (errorData.error) {
+      error.type = errorData.error.type
+      error.details = errorData.error.details
+    }
+    throw error
+  },
 }))
 
 // Mock BrowserConnection type
-mock.module('@/lib/types/browser-connection', () => ({}))
-
-import { fetchViaBrowserProxy } from '../browser-proxy-fetcher'
+mock.module('@/lib/types/browser-connection', () => ({
+  BROWSER_CONNECTIONS_STORAGE_KEY: 'clickhouse-monitor-browser-connections',
+}))
 
 describe('fetchViaBrowserProxy', () => {
   const mockConnection = {
@@ -40,20 +65,21 @@ describe('fetchViaBrowserProxy', () => {
 
   beforeEach(() => {
     mockApiFetch.mockClear()
-    mockThrowIfNotOk.mockClear()
 
-    mockApiFetch.mockImplementation(async () => ({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: [{ col1: 'val1' }],
-        metadata: { duration: 50 },
-      }),
-    }))
-    mockThrowIfNotOk.mockImplementation(async () => {})
+    mockApiFetch.mockImplementation(async () =>
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: [{ col1: 'val1' }],
+          metadata: { duration: 50 },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    )
   })
 
   it('sends POST to /api/v1/browser-connections/proxy', async () => {
+    const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
     await fetchViaBrowserProxy({
       connection: mockConnection,
       query: 'SELECT 1',
@@ -70,6 +96,7 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('sends connection credentials and query in body', async () => {
+    const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
     await fetchViaBrowserProxy({
       connection: mockConnection,
       query: 'SELECT * FROM system.tables',
@@ -88,6 +115,7 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('uses custom format when provided', async () => {
+    const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
     await fetchViaBrowserProxy({
       connection: mockConnection,
       query: 'SELECT 1',
@@ -100,6 +128,7 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('returns data and metadata from response', async () => {
+    const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
     const result = await fetchViaBrowserProxy({
       connection: mockConnection,
       query: 'SELECT 1',
@@ -109,13 +138,16 @@ describe('fetchViaBrowserProxy', () => {
     expect(result.metadata).toEqual({ duration: 50 })
   })
 
-  it('throws when throwIfNotOk rejects', async () => {
-    const error = new Error('Proxy request failed')
-    mockThrowIfNotOk.mockImplementation(async () => {
-      throw error
-    })
+  it('throws on non-OK response status', async () => {
+    mockApiFetch.mockImplementation(async () =>
+      new Response(
+        JSON.stringify({ error: { message: 'Proxy request failed' } }),
+        { status: 502, statusText: 'Bad Gateway' }
+      )
+    )
 
-    expect(
+    const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
+    await expect(
       fetchViaBrowserProxy({
         connection: mockConnection,
         query: 'SELECT 1',
@@ -123,22 +155,25 @@ describe('fetchViaBrowserProxy', () => {
     ).rejects.toThrow('Proxy request failed')
   })
 
-  it('passes fallback message to throwIfNotOk', async () => {
-    const okResponse = { ok: true }
-    mockApiFetch.mockImplementation(async () => okResponse)
-
-    await fetchViaBrowserProxy({
-      connection: mockConnection,
-      query: 'SELECT 1',
-    })
-
-    expect(mockThrowIfNotOk).toHaveBeenCalledWith(
-      okResponse,
-      'Proxy request failed'
+  it('uses fallback message when error body has no message', async () => {
+    mockApiFetch.mockImplementation(async () =>
+      new Response(JSON.stringify({}), {
+        status: 500,
+        statusText: 'Internal Server Error',
+      })
     )
+
+    const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
+    await expect(
+      fetchViaBrowserProxy({
+        connection: mockConnection,
+        query: 'SELECT 1',
+      })
+    ).rejects.toThrow('Proxy request failed')
   })
 
   it('handles queryParams undefined', async () => {
+    const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
     await fetchViaBrowserProxy({
       connection: mockConnection,
       query: 'SELECT 1',

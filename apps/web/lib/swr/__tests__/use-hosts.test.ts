@@ -2,18 +2,28 @@
  * Tests for useHosts SWR hook
  * Tests the hosts fetching functionality with SWR caching
  *
- * Note: Since this project doesn't use @testing-library/react,
- * we test the hook's SWR integration by verifying that useSWR
+ * Tests the SWR integration by verifying that useSWR
  * is called with the correct parameters.
  */
 
 import {
-  beforeEach as bunBeforeEach,
+  beforeEach,
   describe,
   expect,
   it,
   mock,
 } from 'bun:test'
+
+// Mock SWR before any imports that use it
+const mockUseSWR = mock(() => ({
+  data: undefined,
+  error: undefined,
+  isLoading: false,
+}))
+
+mock.module('swr', () => ({
+  default: mockUseSWR,
+}))
 
 // Mock the ErrorLogger before importing the hook
 const mockLogWarning = mock(() => {})
@@ -26,25 +36,20 @@ mock.module('@chm/logger', () => ({
   },
 }))
 
-// Mock React hooks - React's useCallback just returns the function in test environment
-const actualReact = await import('react')
-
-mock.module('react', () => ({
-  ...actualReact,
-  useCallback: (fn: () => void) => fn,
+// Mock apiFetch to control responses in fetcher tests
+const mockApiFetch = mock(async () => ({
+  ok: true,
+  json: async () => ({ success: true, data: [] }),
 }))
 
-// Mock SWR - must be before imports
-// Uses the shared mock from .sisyphus/swr-mock-preload.ts (globalThis.__swrUseSWR)
-// Falls back to local mock if preload is not active.
-const mockUseSWR =
-  (globalThis as unknown as { __swrUseSWR?: ReturnType<typeof mock> })
-    .__swrUseSWR ??
-  mock(() => ({
-    data: undefined,
-    error: undefined,
-    isLoading: false,
-  }))
+mock.module('../api-fetch', () => ({
+  apiFetch: mockApiFetch,
+}))
+
+// Mock React hooks
+mock.module('react', () => ({
+  useCallback: (fn: () => unknown) => fn,
+}))
 
 describe('useHosts', () => {
   const mockHosts = [
@@ -52,27 +57,30 @@ describe('useHosts', () => {
     { id: 1, name: 'Staging', host: 'clickhouse.staging.com', user: 'admin' },
   ]
 
-  bunBeforeEach(() => {
+  beforeEach(() => {
     mockUseSWR.mockReset()
+    mockApiFetch.mockReset()
     mockLogWarning.mockReset()
     mockLogError.mockReset()
+
+    mockUseSWR.mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: false,
+    })
   })
 
   describe('SWR integration', () => {
     it('should call useSWR with correct cache key', async () => {
-      // Mock SWR to return the data
-      const mockSwrResult = {
+      mockUseSWR.mockReturnValue({
         data: mockHosts,
         error: undefined,
         isLoading: false,
-      }
-      mockUseSWR.mockReturnValue(mockSwrResult)
+      })
 
-      // Import and call the hook (React hooks are mocked)
       const { useHosts } = await import('../use-hosts')
       useHosts()
 
-      // SWR should be called with correct key
       expect(mockUseSWR).toHaveBeenCalledWith(
         '/api/v1/hosts',
         expect.any(Function),
@@ -81,22 +89,19 @@ describe('useHosts', () => {
     })
 
     it('should configure SWR with correct caching options', async () => {
-      const mockSwrResult = {
+      mockUseSWR.mockReturnValue({
         data: mockHosts,
         error: undefined,
         isLoading: false,
-      }
-      mockUseSWR.mockReturnValue(mockSwrResult)
+      })
 
       const { useHosts } = await import('../use-hosts')
       useHosts()
 
-      // Verify SWR is called with the correct configuration
       expect(mockUseSWR).toHaveBeenCalledWith(
         '/api/v1/hosts',
         expect.any(Function),
         expect.objectContaining({
-          // Cache for 5 minutes since hosts list rarely changes
           dedupingInterval: 300000,
           revalidateOnFocus: false,
           revalidateOnReconnect: true,
@@ -105,12 +110,11 @@ describe('useHosts', () => {
     })
 
     it('should return data from SWR', async () => {
-      const mockSwrResult = {
+      mockUseSWR.mockReturnValue({
         data: mockHosts,
         error: undefined,
         isLoading: false,
-      }
-      mockUseSWR.mockReturnValue(mockSwrResult)
+      })
 
       const { useHosts } = await import('../use-hosts')
       const result = useHosts()
@@ -121,12 +125,11 @@ describe('useHosts', () => {
     })
 
     it('should return empty array when data is undefined', async () => {
-      const mockSwrResult = {
+      mockUseSWR.mockReturnValue({
         data: undefined,
         error: undefined,
         isLoading: false,
-      }
-      mockUseSWR.mockReturnValue(mockSwrResult)
+      })
 
       const { useHosts } = await import('../use-hosts')
       const result = useHosts()
@@ -137,12 +140,11 @@ describe('useHosts', () => {
     it('should return error from SWR', async () => {
       const mockError = new Error('Network error')
 
-      const mockSwrResult = {
+      mockUseSWR.mockReturnValue({
         data: undefined,
         error: mockError,
         isLoading: false,
-      }
-      mockUseSWR.mockReturnValue(mockSwrResult)
+      })
 
       const { useHosts } = await import('../use-hosts')
       const result = useHosts()
@@ -152,12 +154,11 @@ describe('useHosts', () => {
     })
 
     it('should return loading state from SWR', async () => {
-      const mockSwrResult = {
+      mockUseSWR.mockReturnValue({
         data: undefined,
         error: undefined,
         isLoading: true,
-      }
-      mockUseSWR.mockReturnValue(mockSwrResult)
+      })
 
       const { useHosts } = await import('../use-hosts')
       const result = useHosts()
@@ -169,7 +170,6 @@ describe('useHosts', () => {
 
   describe('fetcher function', () => {
     it('should fetch from /api/v1/hosts endpoint', async () => {
-      // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
       mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
@@ -188,23 +188,19 @@ describe('useHosts', () => {
         success: true,
         data: mockHosts,
       }
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: true,
-          json: async () => mockResponse,
-        })
-      )
-      global.fetch = mockFetch
+      mockApiFetch.mockImplementation(async () => ({
+        ok: true,
+        json: async () => mockResponse,
+      }))
 
       if (capturedFetcher) {
         const result = await capturedFetcher()
-        expect(global.fetch).toHaveBeenCalledWith('/api/v1/hosts')
+        expect(mockApiFetch).toHaveBeenCalledWith('/api/v1/hosts')
         expect(result).toEqual(mockHosts)
       }
     })
 
     it('should handle non-OK responses gracefully', async () => {
-      // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
       mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
@@ -218,16 +214,12 @@ describe('useHosts', () => {
       const { useHosts } = await import('../use-hosts')
       useHosts()
 
-      // Mock non-OK response
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: false,
-          status: 500,
-          statusText: 'Internal Server Error',
-          json: async () => ({}),
-        })
-      )
-      global.fetch = mockFetch
+      mockApiFetch.mockImplementation(async () => ({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        json: async () => ({}),
+      }))
 
       if (capturedFetcher) {
         const result = await capturedFetcher()
@@ -240,7 +232,6 @@ describe('useHosts', () => {
     })
 
     it('should handle JSON parsing errors', async () => {
-      // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
       mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
@@ -254,16 +245,12 @@ describe('useHosts', () => {
       const { useHosts } = await import('../use-hosts')
       useHosts()
 
-      // Mock response that throws on json()
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: true,
-          json: async () => {
-            throw new Error('Invalid JSON')
-          },
-        })
-      )
-      global.fetch = mockFetch
+      mockApiFetch.mockImplementation(async () => ({
+        ok: true,
+        json: async () => {
+          throw new Error('Invalid JSON')
+        },
+      }))
 
       if (capturedFetcher) {
         const result = await capturedFetcher()
@@ -273,7 +260,6 @@ describe('useHosts', () => {
     })
 
     it('should handle network errors', async () => {
-      // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
       mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
@@ -287,9 +273,9 @@ describe('useHosts', () => {
       const { useHosts } = await import('../use-hosts')
       useHosts()
 
-      // Mock network error
-      const mockFetch = mock(() => Promise.reject(new Error('Network error')))
-      global.fetch = mockFetch
+      mockApiFetch.mockImplementation(async () => {
+        throw new Error('Network error')
+      })
 
       if (capturedFetcher) {
         const result = await capturedFetcher()
@@ -299,7 +285,6 @@ describe('useHosts', () => {
     })
 
     it('should return empty array when response success is false', async () => {
-      // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
       mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
@@ -313,18 +298,10 @@ describe('useHosts', () => {
       const { useHosts } = await import('../use-hosts')
       useHosts()
 
-      // Mock response with success: false
-      const mockResponse = {
-        success: false,
-        data: mockHosts,
-      }
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: true,
-          json: async () => mockResponse,
-        })
-      )
-      global.fetch = mockFetch
+      mockApiFetch.mockImplementation(async () => ({
+        ok: true,
+        json: async () => ({ success: false, data: mockHosts }),
+      }))
 
       if (capturedFetcher) {
         const result = await capturedFetcher()
@@ -333,7 +310,6 @@ describe('useHosts', () => {
     })
 
     it('should return empty array when response data is missing', async () => {
-      // Capture the fetcher function
       let capturedFetcher: (() => Promise<unknown[]>) | undefined
       mockUseSWR.mockImplementation((_key, fetcher) => {
         capturedFetcher = fetcher as (() => Promise<unknown[]>) | undefined
@@ -347,17 +323,10 @@ describe('useHosts', () => {
       const { useHosts } = await import('../use-hosts')
       useHosts()
 
-      // Mock response without data field
-      const mockResponse = {
-        success: true,
-      }
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: true,
-          json: async () => mockResponse,
-        })
-      )
-      global.fetch = mockFetch
+      mockApiFetch.mockImplementation(async () => ({
+        ok: true,
+        json: async () => ({ success: true }),
+      }))
 
       if (capturedFetcher) {
         const result = await capturedFetcher()

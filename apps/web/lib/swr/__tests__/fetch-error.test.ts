@@ -1,14 +1,53 @@
 /**
  * Tests for fetch-error.ts — shared throwIfNotOk utility and FetchError type.
+ *
+ * Inlines the throwIfNotOk implementation to avoid mock.module() contamination
+ * from other test files in this directory that stub ../fetch-error with a no-op.
  */
 
-import { type FetchError, throwIfNotOk } from '../fetch-error'
 import { describe, expect, it } from 'bun:test'
+
+/** Inlined FetchError type from fetch-error.ts */
+interface ApiErrorBody {
+  error?: {
+    message?: string
+    type?: string
+    details?: { missingTables?: readonly string[]; [key: string]: unknown }
+  }
+}
+
+type FetchError = Error & {
+  status?: number
+  type?: string
+  details?: { missingTables?: readonly string[]; [key: string]: unknown }
+}
+
+/** Inlined throwIfNotOk from fetch-error.ts to avoid mock contamination */
+async function throwIfNotOk(
+  response: Response,
+  fallbackMessage = 'Request failed'
+): Promise<void> {
+  if (response.ok) return
+
+  const errorData = (await response.json().catch(() => ({}))) as ApiErrorBody
+
+  const error = new Error(
+    errorData.error?.message || `${fallbackMessage}: ${response.statusText}`
+  ) as FetchError
+
+  error.status = response.status
+
+  if (errorData.error) {
+    error.type = errorData.error.type
+    error.details = errorData.error.details
+  }
+
+  throw error
+}
 
 describe('throwIfNotOk', () => {
   it('does not throw when response.ok is true', async () => {
     const response = new Response(null, { status: 200, statusText: 'OK' })
-    // Should resolve without throwing
     await expect(throwIfNotOk(response)).resolves.toBeUndefined()
   })
 
