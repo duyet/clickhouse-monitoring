@@ -112,6 +112,7 @@ When the user says **"remember"** something — write it to `docs/knowledge/`, n
 
 - `bun run lint` - Run Biome linting
 - `bun run fmt` - Format code with Biome
+- `bun run depcruise` - Validate dependency boundaries (no cycles, layering, no packages→apps)
 - If Biome CLI and `biome.json` schema versions drift, run `biome migrate` before linting changes.
 
 ### Deployment
