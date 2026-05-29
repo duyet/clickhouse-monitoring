@@ -9,10 +9,10 @@
 
 import type { PeerDBStatusPayload } from '@/lib/peerdb/types'
 
+import { generateRequestId } from '@chm/logger'
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { PEERDB_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { generateRequestId } from '@/lib/logger'
 import {
   getPeerDBConfig,
   PeerDBError,

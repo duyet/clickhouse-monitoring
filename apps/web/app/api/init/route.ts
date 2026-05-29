@@ -1,9 +1,9 @@
+import { ErrorLogger } from '@chm/logger'
 import { NextResponse } from 'next/server'
 import { getHostIdFromParams } from '@/lib/api/error-handler'
 import { getClient } from '@/lib/clickhouse'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { ErrorLogger } from '@/lib/logger'
 import { initTrackingTable } from '@/lib/tracking'
 
 export const dynamic = 'force-dynamic'

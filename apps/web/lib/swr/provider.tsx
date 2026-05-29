@@ -7,9 +7,9 @@ import type React from 'react'
 
 import { apiFetch } from './api-fetch'
 import { onErrorRetry } from './config'
+import { ErrorLogger } from '@chm/logger'
 import { useEffect } from 'react'
 import { isDevelopment } from '@/lib/env-utils'
-import { ErrorLogger } from '@/lib/logger'
 
 // Re-export config for convenience
 export { REFRESH_INTERVAL, swrConfig } from './config'

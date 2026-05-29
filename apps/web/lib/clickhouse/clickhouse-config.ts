@@ -6,7 +6,7 @@
 import type { ClickHouseConfig } from './types'
 
 import { validateClickHouseEnv } from './env-schema'
-import { debug, error } from '@/lib/logger'
+import { debug, error } from '@chm/logger'
 
 /**
  * Retrieve a single ClickHouseConfig by hostId, throwing if the id is out of

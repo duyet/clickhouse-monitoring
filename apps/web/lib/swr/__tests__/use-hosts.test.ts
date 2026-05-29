@@ -19,7 +19,7 @@ import {
 const mockLogWarning = mock(() => {})
 const mockLogError = mock(() => {})
 
-mock.module('@/lib/logger', () => ({
+mock.module('@chm/logger', () => ({
   ErrorLogger: {
     logWarning: mockLogWarning,
     logError: mockLogError,

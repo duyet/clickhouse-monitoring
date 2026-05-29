@@ -3,6 +3,7 @@
 import { UpdateIcon } from '@radix-ui/react-icons'
 import * as z from 'zod'
 
+import { ErrorLogger } from '@chm/logger'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -12,7 +13,6 @@ import { Button } from '@/components/ui/button'
 import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { updateSettingParams } from '@/lib/api/dashboard-api-client'
-import { ErrorLogger } from '@/lib/logger'
 
 interface ChartParamsProps {
   params: Record<string, string>

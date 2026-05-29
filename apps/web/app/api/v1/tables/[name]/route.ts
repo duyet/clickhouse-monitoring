@@ -7,6 +7,7 @@
 
 import type { ApiResponse } from '@/lib/api/types'
 
+import { debug, error } from '@chm/logger'
 import {
   createErrorResponse as createApiErrorResponse,
   getHostIdFromParams,
@@ -28,7 +29,6 @@ import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
 import { TABLES_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { debug, error } from '@/lib/logger'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'

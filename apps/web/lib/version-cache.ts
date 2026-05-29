@@ -19,7 +19,7 @@
 
 import type { ClickHouseVersion } from './clickhouse-version'
 
-import { debug, warn } from './logger'
+import { debug, warn } from '@chm/logger'
 
 /**
  * Cloudflare KV Namespace type (for Workers environments)

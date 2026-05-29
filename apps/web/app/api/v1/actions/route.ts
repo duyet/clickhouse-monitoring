@@ -1,3 +1,4 @@
+import { ErrorLogger, generateRequestId, log } from '@chm/logger'
 import {
   createValidationError,
   getHostIdFromParams,
@@ -7,7 +8,6 @@ import { type Action, ActionSchema } from '@/lib/api/schemas'
 import { fetchData } from '@/lib/clickhouse'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { ErrorLogger, generateRequestId, log } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 

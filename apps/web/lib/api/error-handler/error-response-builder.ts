@@ -8,8 +8,8 @@
 import type { ApiResponse } from '@/lib/api/types'
 import type { ErrorDetails, RouteContext, StatusCodeMap } from './types'
 
+import { ErrorLogger, error } from '@chm/logger'
 import { ApiErrorType } from '@/lib/api/types'
-import { ErrorLogger, error } from '@/lib/logger'
 
 /**
  * Maps API error types to HTTP status codes

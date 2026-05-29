@@ -6,6 +6,7 @@
 
 import type { ApiResponse } from '@/lib/api/types'
 
+import { debug, error } from '@chm/logger'
 import { TABLE_SETTINGS } from '@/lib/api/dashboard-api'
 import {
   createErrorResponse as createApiErrorResponse,
@@ -15,7 +16,6 @@ import { ApiErrorType } from '@/lib/api/types'
 import { getClient } from '@/lib/clickhouse'
 import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { debug, error } from '@/lib/logger'
 
 const ROUTE_CONTEXT_GET = { route: '/api/v1/dashboard/settings', method: 'GET' }
 const ROUTE_CONTEXT_POST = {

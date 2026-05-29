@@ -5,8 +5,8 @@ import useSWR from 'swr'
 import type { HostInfo } from '@chm/types/host-info'
 
 import { apiFetch } from './api-fetch'
+import { ErrorLogger } from '@chm/logger'
 import { useCallback } from 'react'
-import { ErrorLogger } from '@/lib/logger'
 
 interface HostsResponse {
   success: boolean

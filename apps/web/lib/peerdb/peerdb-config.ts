@@ -11,7 +11,7 @@
  * multi-host config — because PeerDB monitoring targets a single flow-api.
  */
 
-import { debug, error } from '@/lib/logger'
+import { debug, error } from '@chm/logger'
 
 export interface PeerDBConfig {
   /** Base URL of the PeerDB flow-api, e.g. http://localhost:8113 */

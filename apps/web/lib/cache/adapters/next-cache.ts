@@ -1,6 +1,6 @@
 import type { CacheOptions, QueryCacheAdapter } from '../types'
 
-import { debug } from '@/lib/logger'
+import { debug } from '@chm/logger'
 
 type UnstableCacheFn = <T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,

@@ -11,9 +11,9 @@
  */
 
 import { getCachedDashboardQueries } from '../utils/cache-manager'
+import { error } from '@chm/logger'
 import { DASHBOARD_CHARTS_TABLE } from '@/lib/app-tables'
 import { fetchData } from '@/lib/clickhouse'
-import { error } from '@/lib/logger'
 
 /** Dashboard table name for query validation */
 export const DASHBOARD_QUERIES_TABLE = DASHBOARD_CHARTS_TABLE

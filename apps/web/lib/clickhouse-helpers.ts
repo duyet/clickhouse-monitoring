@@ -3,7 +3,7 @@ import type { DataFormat, QueryParams } from '@clickhouse/client'
 import type { QueryConfig } from '@/types/query-config'
 import type { FetchDataResult } from './clickhouse/types'
 
-import { ErrorLogger } from '@/lib/logger'
+import { ErrorLogger } from '@chm/logger'
 
 type QuerySettings = QueryParams['clickhouse_settings'] &
   Partial<{

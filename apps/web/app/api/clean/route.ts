@@ -1,13 +1,13 @@
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { ClickHouseClient as WebClickHouseClient } from '@clickhouse/client-web'
 
+import { ErrorLogger } from '@chm/logger'
 import { NextResponse } from 'next/server'
 import { getHostIdFromParams } from '@/lib/api/error-handler'
 import { EVENTS_TABLE } from '@/lib/app-tables'
 import { getClient } from '@/lib/clickhouse'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { ErrorLogger } from '@/lib/logger'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = process.env.CLICKHOUSE_USER || ''

@@ -16,7 +16,7 @@ const mockDebug = mock(() => {})
 const mockError = mock(() => {})
 const mockWarn = mock(() => {})
 
-mock.module('@/lib/logger', () => ({
+mock.module('@chm/logger', () => ({
   debug: mockDebug,
   error: mockError,
   warn: mockWarn,
@@ -189,7 +189,7 @@ describe('fetchDataWithHost', () => {
       })
 
       // The structured logger is mocked at the module level
-      // Warnings are logged through @/lib/logger.warn
+      // Warnings are logged through @chm/logger.warn
       expect(mockWarn).toHaveBeenCalledWith(
         'Invalid hostId: not-a-number',
         expect.objectContaining({ component: 'validateHostId' })

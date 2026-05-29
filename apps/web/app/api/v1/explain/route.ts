@@ -23,6 +23,7 @@
  * POST /api/v1/explain   { "hostId": 0, "query": "SELECT 1" }
  */
 
+import { debug, error as logError } from '@chm/logger'
 import {
   createErrorResponse,
   createValidationError,
@@ -38,7 +39,6 @@ import {
   getClient,
 } from '@/lib/clickhouse'
 import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
-import { debug, error as logError } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 

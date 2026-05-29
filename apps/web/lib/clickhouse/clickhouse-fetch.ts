@@ -8,6 +8,7 @@ import type { DataFormat, QueryParams } from '@clickhouse/client'
 import type { QueryConfig } from '@/types/query-config'
 import type { FetchDataErrorType, FetchDataResult } from './types'
 
+import { debug, error, warn } from '@chm/logger'
 import { getClient } from '@/lib/clickhouse/clickhouse-client'
 import { getClickHouseConfigs } from '@/lib/clickhouse/clickhouse-config'
 import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
@@ -16,7 +17,6 @@ import {
   selectQueryVariantSemver,
   selectVersionedSql,
 } from '@/lib/clickhouse-version'
-import { debug, error, warn } from '@/lib/logger'
 import { validateTableExistence } from '@/lib/table-validator'
 import { transformClickHouseJsonEachRowWasmJson } from '@/lib/wasm/monitor-core'
 

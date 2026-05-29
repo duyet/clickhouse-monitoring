@@ -3,8 +3,8 @@
 import '@/app/globals.css'
 import { BugIcon, RefreshCwIcon } from 'lucide-react'
 
+import { ErrorLogger, formatErrorForDisplay } from '@chm/logger'
 import { useEffect } from 'react'
-import { ErrorLogger, formatErrorForDisplay } from '@/lib/logger'
 
 export default function GlobalError({
   error,

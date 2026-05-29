@@ -1,6 +1,6 @@
 import type { CacheOptions, QueryCacheAdapter } from '../types'
 
-import { debug } from '@/lib/logger'
+import { debug } from '@chm/logger'
 
 const DEFAULT_MAX_SIZE = 1000
 const CLEANUP_INTERVAL_MS = 60_000 // 1 minute

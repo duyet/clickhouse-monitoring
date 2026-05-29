@@ -1,9 +1,9 @@
+import { debug } from '@chm/logger'
 import { NextResponse } from 'next/server'
 import { createValidationError } from '@/lib/api/error-handler'
 import { getAndValidateHostId } from '@/lib/api/shared/validators'
 import { fetchData } from '@/lib/clickhouse'
 import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
-import { debug } from '@/lib/logger'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

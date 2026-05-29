@@ -10,7 +10,7 @@ import type { ClickHouseClient as WebClickHouseClient } from '@clickhouse/client
 
 import type { ClickHouseConfig } from './types'
 
-import { debug } from '@/lib/logger'
+import { debug } from '@chm/logger'
 
 type PoolKey = string
 export type PooledClient = {
