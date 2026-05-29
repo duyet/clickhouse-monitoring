@@ -29,6 +29,16 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const ENV_FILE_PROD = join(__dirname, '..', '.env.prod')
 const ENV_FILE_LOCAL = join(__dirname, '..', '.env.local')
 
+// The MCP worker now lives at apps/mcp-worker/. cf:deploy runs with cwd=apps/web,
+// so pass an absolute --config path (wrangler resolves `main` relative to it).
+const MCP_WRANGLER_CONFIG = join(
+  __dirname,
+  '..',
+  'apps',
+  'mcp-worker',
+  'wrangler.toml'
+)
+
 type Step = [string, string, string, string[]]
 
 function formatCommand(cmd: string, args: string[]): string {
@@ -41,12 +51,12 @@ const STEPS: Step[] = [
   ['📦', 'Building for Cloudflare', 'bun', ['run', 'cf:build']],
   ['🚀', 'Deploying main worker', 'wrangler', ['deploy', '--minify']],
   // Deploy the MCP worker separately. Workers Routes on chmonitor.dev/api/mcp*
-  // are configured in wrangler-mcp.toml; this command provisions them.
+  // are configured in apps/mcp-worker/wrangler.toml; this command provisions them.
   [
     '🔌',
     'Deploying MCP worker',
     'wrangler',
-    ['deploy', '--minify', '--config', 'wrangler-mcp.toml'],
+    ['deploy', '--minify', '--config', MCP_WRANGLER_CONFIG],
   ],
   // Push secrets to both workers AFTER deploy so `wrangler secret bulk` finds
   // the worker on a fresh account. Without this, the MCP worker is live with

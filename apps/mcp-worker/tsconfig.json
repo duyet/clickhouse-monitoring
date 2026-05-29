@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "WebWorker"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "types": ["@cloudflare/workers-types"],
+    "paths": {
+      "@/*": ["../web/*"],
+      "@chm/types": ["../../packages/types/src"],
+      "@chm/types/*": ["../../packages/types/src/*"],
+      "@chm/sql-builder": ["../../packages/sql-builder/src"],
+      "@chm/sql-builder/*": ["../../packages/sql-builder/src/*"],
+      "@chm/platform": ["../../packages/platform/src"],
+      "@chm/platform/*": ["../../packages/platform/src/*"]
+    }
+  },
+  "include": [
+    "./src/**/*.ts",
+    "../web/lib/**/*.ts",
+    "../web/components/mcp/**/*.ts"
+  ]
+}

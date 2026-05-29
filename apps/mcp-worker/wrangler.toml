@@ -25,7 +25,7 @@
 #   the same secret) and CLICKHOUSE_PASSWORD.
 
 name = "clickhouse-monitor-mcp"
-main = "workers/mcp/index.ts"
+main = "src/index.ts"
 compatibility_date = "2026-05-28"
 
 minify = true
