@@ -47,8 +47,12 @@ import {
   useThread,
   useThreadRuntime,
 } from '@assistant-ui/react'
-import { type FC, type ReactNode, useCallback, useRef } from 'react'
+import { type FC, type ReactNode, useCallback, useRef, useState } from 'react'
 import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
+import {
+  type ContextItem,
+  formatContextBlock,
+} from '@/components/agents/welcome/add-context-dialog'
 import { AgentWelcomeScreen } from '@/components/agents/welcome/agent-welcome-screen'
 import { ComposerToolbar } from '@/components/agents/welcome/composer-toolbar'
 import { useAgentAuthGate } from '@/components/assistant-ui/agent-auth-gate'
@@ -212,6 +216,7 @@ function WelcomeComposer() {
   const threadRuntime = useThreadRuntime()
   const isRunning = useThread((thread) => thread.isRunning)
   const { ensureAuthed } = useAgentAuthGate()
+  const [contextItems, setContextItems] = useState<ContextItem[]>([])
 
   return (
     <div className="flex flex-col gap-2">
@@ -221,14 +226,23 @@ function WelcomeComposer() {
           const trimmed = text.trim()
           if (!trimmed) return
           if (!ensureAuthed()) return
+          const block = formatContextBlock(contextItems)
+          const full = block ? `${block}\n\n${trimmed}` : trimmed
           threadRuntime.append({
             role: 'user',
-            content: [{ type: 'text', text: trimmed }],
+            content: [{ type: 'text', text: full }],
           })
+          setContextItems([])
         }}
         onStop={() => threadRuntime.cancelRun()}
       />
-      <ComposerToolbar />
+      <ComposerToolbar
+        contextItems={contextItems}
+        onAddContext={(item) => setContextItems((prev) => [...prev, item])}
+        onRemoveContext={(id) =>
+          setContextItems((prev) => prev.filter((i) => i.id !== id))
+        }
+      />
     </div>
   )
 }

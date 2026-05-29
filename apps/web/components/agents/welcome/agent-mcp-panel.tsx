@@ -16,6 +16,7 @@
 
 import { PlusIcon, WrenchIcon } from 'lucide-react'
 
+import { McpToolsResourcesDialog } from './mcp-tools-resources-dialog'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -96,9 +97,11 @@ function StatusBadge({ status }: { status: McpServer['status'] }) {
 function McpServerRow({
   server,
   onToggle,
+  onViewDetails,
 }: {
   server: McpServer
   onToggle: (id: string, next: boolean) => void
+  onViewDetails: (server: McpServer) => void
 }) {
   return (
     <div className="flex items-center gap-2 py-2 pr-3 pl-2">
@@ -107,8 +110,13 @@ function McpServerRow({
         <WrenchIcon className="text-foreground size-3.5" />
       </div>
 
-      {/* Info */}
-      <div className="min-w-0 flex-1">
+      {/* Info — clickable region; stopPropagation not needed since Toggle is a sibling */}
+      <button
+        type="button"
+        className="hover:bg-muted/40 -mx-1 min-w-0 flex-1 cursor-pointer rounded px-1 py-0.5 text-left transition-colors"
+        onClick={() => onViewDetails(server)}
+        aria-label={`View tools and resources for ${server.name}`}
+      >
         <div className="flex items-center gap-1.5">
           <span className="truncate font-mono text-[12.5px]">
             {server.name}
@@ -133,9 +141,9 @@ function McpServerRow({
           <span className="text-border">·</span>
           <StatusBadge status={server.status} />
         </div>
-      </div>
+      </button>
 
-      {/* Toggle */}
+      {/* Toggle — separate from the clickable info region */}
       <Switch
         checked={server.enabled}
         onCheckedChange={(next) => onToggle(server.id, next)}
@@ -230,6 +238,7 @@ export function AgentMcpPanel({
     ...extraServers,
   ])
   const [showAddForm, setShowAddForm] = useState(false)
+  const [selectedServer, setSelectedServer] = useState<McpServer | null>(null)
 
   const handleToggle = (id: string, next: boolean) => {
     setServers((prev) =>
@@ -242,6 +251,15 @@ export function AgentMcpPanel({
 
   return (
     <div className="flex flex-col gap-2">
+      {/* Tools/resources detail dialog */}
+      <McpToolsResourcesDialog
+        server={selectedServer}
+        open={selectedServer !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedServer(null)
+        }}
+      />
+
       {/* Summary row */}
       <div className="text-muted-foreground flex items-center justify-between text-[10.5px]">
         <span>
@@ -268,6 +286,7 @@ export function AgentMcpPanel({
             key={server.id}
             server={server}
             onToggle={handleToggle}
+            onViewDetails={setSelectedServer}
           />
         ))}
       </div>

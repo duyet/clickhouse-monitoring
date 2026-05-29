@@ -66,6 +66,9 @@ function removeKey(key: string): void {
   }
 }
 
+const loadThreads = () => readJson<ThreadMeta[]>(THREADS_KEY, [])
+const saveThreads = (threads: ThreadMeta[]) => writeJson(THREADS_KEY, threads)
+
 /**
  * Per-thread message history. `useChatRuntime` calls `withFormat()` to obtain a
  * format-bound `GenericThreadHistoryAdapter`; the legacy `load` / `append` are
@@ -99,6 +102,55 @@ function createLocalHistoryAdapter(
           const repo = readRepo(remoteId)
           upsertHistoryItem(repo, item, getId)
           writeJson(messagesKey(remoteId), repo)
+
+          // Auto-title: derive from the first user message when the thread has
+          // no title yet (or still has the default placeholder).
+          const currentTitle = aui.threadListItem().getState().title
+          const isUntitled =
+            !currentTitle ||
+            currentTitle === 'New Conversation' ||
+            currentTitle === 'New Chat'
+          if (isUntitled) {
+            const msg = item.message as {
+              role?: string
+              parts?: Array<{ type?: unknown; text?: string }>
+              content?: string | Array<{ text?: string }>
+            }
+            if (msg.role === 'user') {
+              // Extract text from parts (AI SDK format) or content (plain string)
+              let text = ''
+              if (Array.isArray(msg.parts)) {
+                text = msg.parts
+                  .filter(
+                    (p) =>
+                      p &&
+                      typeof p === 'object' &&
+                      p.type === 'text' &&
+                      typeof p.text === 'string'
+                  )
+                  .map((p) => p.text ?? '')
+                  .join(' ')
+                  .trim()
+              }
+              if (!text && typeof msg.content === 'string') {
+                text = msg.content.trim()
+              } else if (!text && Array.isArray(msg.content)) {
+                text = (msg.content as Array<{ text?: string }>)
+                  .map((p) => p.text ?? '')
+                  .join(' ')
+                  .trim()
+              }
+              if (text) {
+                const title = generateTitleFromMessage(text)
+                const threads = loadThreads()
+                const thread = threads.find((t) => t.remoteId === remoteId)
+                if (thread) {
+                  thread.title = title
+                  saveThreads(threads)
+                }
+              }
+            }
+          }
         },
         async update(item, localMessageId) {
           const remoteId = aui.threadListItem().getState().remoteId
@@ -128,9 +180,6 @@ const HistoryProvider: FC<PropsWithChildren> = ({ children }) => {
  * `window.localStorage`.
  */
 export function createLocalThreadListAdapter(): RemoteThreadListAdapter {
-  const loadThreads = () => readJson<ThreadMeta[]>(THREADS_KEY, [])
-  const saveThreads = (threads: ThreadMeta[]) => writeJson(THREADS_KEY, threads)
-
   return {
     unstable_Provider: HistoryProvider,
 

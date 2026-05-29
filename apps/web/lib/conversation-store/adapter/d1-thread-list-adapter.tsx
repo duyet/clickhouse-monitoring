@@ -102,25 +102,40 @@ async function apiDelete(id: string): Promise<void> {
 }
 
 function deriveTitle(
-  message: { role?: string; parts?: unknown[] } | undefined
+  message:
+    | {
+        role?: string
+        parts?: unknown[]
+        content?: string | Array<{ text?: string }>
+      }
+    | undefined
 ): string | undefined {
-  if (!message || message.role !== 'user' || !Array.isArray(message.parts)) {
+  if (!message || message.role !== 'user') {
     return undefined
   }
-  for (const part of message.parts) {
-    if (
-      part &&
-      typeof part === 'object' &&
-      (part as { type?: unknown }).type === 'text' &&
-      typeof (part as { text?: unknown }).text === 'string'
-    ) {
-      const text = ((part as { text: string }).text ?? '').trim()
-      if (text) {
-        return text.length > 50 ? `${text.slice(0, 50)}...` : text
+  let text = ''
+  if (Array.isArray(message.parts)) {
+    for (const part of message.parts) {
+      if (
+        part &&
+        typeof part === 'object' &&
+        (part as { type?: unknown }).type === 'text' &&
+        typeof (part as { text?: unknown }).text === 'string'
+      ) {
+        text = ((part as { text: string }).text ?? '').trim()
+        if (text) break
       }
     }
   }
-  return undefined
+  if (!text && typeof message.content === 'string') {
+    text = message.content.trim()
+  } else if (!text && Array.isArray(message.content)) {
+    text = message.content
+      .map((p) => p.text ?? '')
+      .join(' ')
+      .trim()
+  }
+  return text ? generateTitleFromMessage(text) : undefined
 }
 
 /**
@@ -174,10 +189,20 @@ function createD1HistoryAdapter(
           const payload: { messages: unknown[]; title?: string } = {
             messages: repo.messages,
           }
-          // Seed the title from the first message only — never overwrite.
-          if (!aui.threadListItem().getState().title) {
+          // Auto-title: seed from the first user message when the thread has
+          // no title yet (or still has the default placeholder).
+          const currentTitle = aui.threadListItem().getState().title
+          const isUntitled =
+            !currentTitle ||
+            currentTitle === 'New Conversation' ||
+            currentTitle === 'New Chat'
+          if (isUntitled) {
             const title = deriveTitle(
-              item.message as { role?: string; parts?: unknown[] }
+              item.message as {
+                role?: string
+                parts?: unknown[]
+                content?: string | Array<{ text?: string }>
+              }
             )
             if (title) payload.title = title
           }

@@ -14,6 +14,7 @@ import {
   ArrowRightIcon,
   MonitorIcon,
   PanelRightCloseIcon,
+  PlugZapIcon,
   SparklesIcon,
 } from 'lucide-react'
 
@@ -23,6 +24,7 @@ import { useState } from 'react'
 import { AgentMcpPanel } from '@/components/agents/welcome/agent-mcp-panel'
 import { AgentModelPicker } from '@/components/agents/welcome/agent-model-picker'
 import { SkillDetailDialog } from '@/components/agents/welcome/skill-detail-dialog'
+import { SkillsLibraryDialog } from '@/components/agents/welcome/skills-library-dialog'
 import { SUGGESTED_PROMPTS } from '@/components/agents/welcome/suggested-prompts'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,6 +37,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAgentSkills } from '@/lib/hooks/use-agent-skills'
+import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
 interface AgentSettingsSidebarProps {
@@ -62,6 +65,8 @@ export function AgentSettingsSidebar({
   } = useAgentSkills()
   const topSkills = skills.slice(0, 3)
   const [skillDetail, setSkillDetail] = useState<Skill | null>(null)
+  const [libraryOpen, setLibraryOpen] = useState(false)
+  const hostId = useHostId()
 
   const sections = (
     <>
@@ -81,6 +86,23 @@ export function AgentSettingsSidebar({
       {/* MCP SERVER */}
       <SidebarSection label="MCP Servers">
         <AgentMcpPanel />
+        {/* For users who run their own agent/IDE and want to point it at this
+            cluster's MCP endpoint directly. */}
+        <a
+          href={`/mcp?host=${hostId}`}
+          className="text-muted-foreground hover:text-foreground hover:bg-muted/40 mt-1.5 flex items-center gap-2 rounded-md border border-dashed px-3 py-2 text-[11.5px] transition-colors"
+        >
+          <PlugZapIcon className="size-3.5 shrink-0" />
+          <span className="min-w-0 flex-1">
+            <span className="text-foreground font-medium">
+              Connect your own agent
+            </span>
+            <span className="block text-[10.5px]">
+              Use this cluster&apos;s MCP endpoint in your IDE or tooling
+            </span>
+          </span>
+          <ArrowRightIcon className="size-3 shrink-0" />
+        </a>
       </SidebarSection>
 
       {/* SKILLS */}
@@ -135,7 +157,7 @@ export function AgentSettingsSidebar({
           type="button"
           variant="outline"
           size="sm"
-          onClick={onOpenSkillsLibrary}
+          onClick={onOpenSkillsLibrary ?? (() => setLibraryOpen(true))}
           className="mt-1.5 h-8 w-full justify-center gap-1.5 text-[11.5px]"
         >
           <SparklesIcon className="size-3" />
@@ -185,6 +207,8 @@ export function AgentSettingsSidebar({
         isEnabled={skillDetail ? isSkillEnabled(skillDetail.id) : false}
         onToggle={(id) => toggleSkill(id)}
       />
+
+      <SkillsLibraryDialog open={libraryOpen} onOpenChange={setLibraryOpen} />
     </>
   )
 
