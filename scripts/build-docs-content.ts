@@ -3,10 +3,11 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-const ROOT = path.join(process.cwd(), 'docs/content')
+const repoRoot = path.resolve(import.meta.dir, '..')
+const ROOT = path.join(repoRoot, 'docs/content')
 const OUT = path.join(
-  process.cwd(),
-  'app/(docs)/docs/_lib/content.generated.ts'
+  repoRoot,
+  'apps/web/app/(docs)/docs/_lib/content.generated.ts'
 )
 
 async function walk(dir: string): Promise<string[]> {

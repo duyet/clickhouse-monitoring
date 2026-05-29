@@ -54,12 +54,13 @@ jobs:
         run: bun install
 
       - name: Run Bun tests with coverage
+        working-directory: apps/web
         run: bun run test:coverage
 
       - name: Upload Bun coverage to Codecov
         uses: codecov/codecov-action@v6
         with:
-          files: ./coverage/lcov.info
+          files: ./apps/web/coverage/lcov.info
           flags: bun
           fail_ci_if_error: true
           use_oidc: true
@@ -98,6 +99,7 @@ jobs:
         run: bun install
 
       - name: Run component tests
+        working-directory: apps/web
         run: bun run component:headless
         env:
           CYPRESS_BROWSER: chrome
@@ -146,9 +148,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: |
-            .next/cache
-            .next/static
-            .next/server
+            apps/web/.next/cache
+            apps/web/.next/static
+            apps/web/.next/server
           key: ${{ runner.os }}-nextjs-v1-${{ hashFiles('**/bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-v1-
@@ -165,9 +167,10 @@ jobs:
         run: bun install
 
       - name: Build
-        run: bun run build
+        run: bun run turbo run build
 
       - name: Run E2E tests
+        working-directory: apps/web
         run: bun run e2e:headless
         env:
           CYPRESS_BROWSER: chrome
@@ -221,4 +224,5 @@ jobs:
         run: bun install
 
       - name: Test queries config
+        working-directory: apps/web
         run: bun run test:query-config

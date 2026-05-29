@@ -3,10 +3,17 @@
 out
 dist
 build
+.open-next
+
+# apps/web build artifacts (explicit for monorepo layout)
+apps/web/.next
+apps/web/.open-next
+apps/web/out
 
 # Dependencies
 node_modules
 docs/node_modules
+apps/web/node_modules
 
 # CI/CD
 .git

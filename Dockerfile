@@ -10,6 +10,7 @@ ENV NODE_ENV=production
 RUN apk add --no-cache libc6-compat
 COPY package.json bun.lock ./
 COPY packages/ ./packages/
+COPY apps/web/package.json ./apps/web/package.json
 RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache \
     bun install --frozen-lockfile --ignore-scripts
 
@@ -27,11 +28,14 @@ RUN if [ "$SKIP_RUST" = "false" ]; then \
     fi
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-# Copy dependencies from deps stage (avoid reinstalling)
+# Copy dependencies from deps stage (avoid reinstalling).
+# Bun hoists all workspace deps to the root node_modules (with @chm/* symlinks),
+# so there is no apps/web/node_modules to copy — workspace resolution walks up.
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build the application (wasm:build is skipped by next.config.ts when WASM files exist)
+# Build the web app via turbo (root build delegates to the web workspace).
+# wasm:build is skipped by next.config.ts when WASM files exist.
 RUN bun run build
 
 # Production image, copy all the files and run next
@@ -42,24 +46,30 @@ ENV NODE_ENV=production \
 
 RUN addgroup --system --gid 1001 app && \
     adduser --system --uid 1001 app && \
-    mkdir .next && \
-    chown app:app .next
+    mkdir -p apps/web/.next && \
+    chown -R app:app apps
 
 # IMPORTANT: .next/standalone already contains all necessary production dependencies
 # DO NOT copy node_modules from deps stage - this causes 438MB+ duplication
-COPY --from=builder --chown=app:app /app/.next/standalone ./
-COPY --from=builder --chown=app:app /app/.next/static ./.next/static
-COPY --from=builder --chown=app:app /app/public ./public
+#
+# With outputFileTracingRoot inferred at the monorepo root, the standalone output
+# nests the server under apps/web/. Copying the whole standalone dir preserves that
+# nesting, so server.js lands at ./apps/web/server.js and static/public must sit
+# relative to it (./apps/web/.next/static and ./apps/web/public).
+COPY --from=builder --chown=app:app /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=app:app /app/apps/web/public ./apps/web/public
 
 USER app
 
 EXPOSE 3000
 
 # Copy migration files for auto-migration at startup
-COPY --from=builder --chown=app:app /app/lib/migration ./lib/migration
-COPY --from=builder --chown=app:app /app/lib/conversation-store/pg-migrations ./lib/conversation-store/pg-migrations
+COPY --from=builder --chown=app:app /app/apps/web/lib/migration ./apps/web/lib/migration
+COPY --from=builder --chown=app:app /app/apps/web/lib/conversation-store/pg-migrations ./apps/web/lib/conversation-store/pg-migrations
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
+# With the monorepo tracing root, server.js is nested under apps/web/.
 # Auto-migration runs on first API request via autoMigrate() singleton
-CMD ["bun", "run", "server.js"]
+CMD ["bun", "apps/web/server.js"]

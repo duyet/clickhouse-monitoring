@@ -78,9 +78,9 @@ jobs:
         with:
           name: wasm-output
           path: |
-            lib/wasm/generated/monitor_core.js
-            lib/wasm/generated/monitor_core.d.ts
-            lib/wasm/generated/monitor_core_bg.wasm
+            apps/web/lib/wasm/generated/monitor_core.js
+            apps/web/lib/wasm/generated/monitor_core.d.ts
+            apps/web/lib/wasm/generated/monitor_core_bg.wasm
           retention-days: 1
 
   build-docker-amd64:
@@ -116,7 +116,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: wasm-output
-          path: lib/wasm/generated
+          path: apps/web/lib/wasm/generated
 
       - name: Extract Docker metadata
         id: meta
@@ -325,21 +325,22 @@ jobs:
           NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.tag }}
           NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ github.event.repository.updated_at }}
           NEXT_PUBLIC_CI: "true"
+        working-directory: apps/web
         run: bun run cf:build
 
       - name: Package release archives
         run: |
           TAG="${{ steps.meta.outputs.tag }}"
           tar -czf "clickhouse-monitor-${TAG}-standalone.tar.gz" \
-            .next/standalone \
-            .next/static \
-            public \
-            package.json \
+            apps/web/.next/standalone \
+            apps/web/.next/static \
+            apps/web/public \
+            apps/web/package.json \
             bun.lock
           tar -czf "clickhouse-monitor-${TAG}-cloudflare.tar.gz" \
-            .open-next \
-            wrangler.toml \
-            package.json \
+            apps/web/.open-next \
+            apps/web/wrangler.toml \
+            apps/web/package.json \
             bun.lock
           shasum -a 256 "clickhouse-monitor-${TAG}-standalone.tar.gz" "clickhouse-monitor-${TAG}-cloudflare.tar.gz" > SHA256SUMS
 
