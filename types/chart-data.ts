@@ -1,5 +1,5 @@
+import type { ClickHouseInterval } from '@chm/types/clickhouse-interval'
 import type { FeaturePermission } from '@/lib/feature-permissions/types'
-import type { ClickHouseInterval } from './clickhouse-interval'
 import type { VersionedSql } from './query-config'
 
 /**

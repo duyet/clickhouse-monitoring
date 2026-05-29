@@ -135,7 +135,7 @@ ${error.stack}
                   label: 'Retry',
                   onClick: onRetry,
                   icon: (
-                    <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin-slow" />
+                    <RefreshCw className="mr-1.5 size-3.5 animate-spin-slow" />
                   ),
                 }
               : undefined
@@ -154,7 +154,7 @@ ${error.stack}
               onClick={() => setDetailsOpen(true)}
               className="h-7 px-2.5 text-xs rounded-full hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all"
             >
-              <Info className="h-3 w-3 mr-1 shrink-0" />
+              <Info className="size-3 mr-1 shrink-0" />
               Diagnostics
             </Button>
           </div>
@@ -165,7 +165,7 @@ ${error.stack}
           <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-6 rounded-xl border border-border/80 shadow-2xl backdrop-blur-xl">
             <DialogHeader className="shrink-0 pb-2">
               <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-destructive dark:text-red-400">
-                <AlertCircle className="h-5 w-5 shrink-0" />
+                <AlertCircle className="size-5 shrink-0" />
                 {title}
               </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground/90 mt-1">
@@ -195,7 +195,7 @@ ${error.stack}
                           }
                         }}
                       >
-                        <Copy className="h-3 w-3" />
+                        <Copy className="size-3" />
                         Copy SQL
                       </Button>
                     </div>
@@ -273,7 +273,7 @@ ${error.stack}
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline font-medium"
                         >
-                          <ExternalLink className="h-3 w-3" />
+                          <ExternalLink className="size-3" />
                           View ClickHouse docs
                         </a>
                       )}
@@ -333,7 +333,7 @@ ${error.stack}
                   onClick={handleCopyError}
                   className="text-xs h-8 gap-1.5"
                 >
-                  <Copy className="h-3.5 w-3.5" />
+                  <Copy className="size-3.5" />
                   Copy Diagnostics MD
                 </Button>
                 <Button
@@ -342,7 +342,7 @@ ${error.stack}
                   onClick={handleAskAI}
                   className="text-xs h-8 gap-1.5"
                 >
-                  <BotMessageSquare className="h-3.5 w-3.5" />
+                  <BotMessageSquare className="size-3.5" />
                   Ask AI to fix
                 </Button>
               </div>

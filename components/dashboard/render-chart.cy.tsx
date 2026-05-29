@@ -20,6 +20,8 @@ describe('<RenderChart />', () => {
     hostId: 0,
   }
 
+  const chartRegion = () => cy.get('[aria-label="Test Chart chart"]')
+
   beforeEach(() => {
     // Mock the useFetchData hook by intercepting the API call
     cy.intercept('POST', '/api/v1/data', {
@@ -41,7 +43,7 @@ describe('<RenderChart />', () => {
       cy.contains('Test Chart').should('be.visible')
 
       // Should render SVG chart
-      cy.get('svg').should('be.visible')
+      chartRegion().find('.recharts-surface').should('be.visible')
 
       // Should have area chart elements
       cy.get('.recharts-area').should('have.length', 2) // value1 and value2
@@ -56,7 +58,7 @@ describe('<RenderChart />', () => {
 
       cy.wait('@fetchData')
 
-      cy.get('svg').should('be.visible')
+      chartRegion().find('.recharts-surface').should('be.visible')
       cy.get('.recharts-area').should('have.length', 2)
     })
 
@@ -69,7 +71,7 @@ describe('<RenderChart />', () => {
 
       cy.wait('@fetchData')
 
-      cy.get('svg').should('be.visible')
+      chartRegion().find('.recharts-surface').should('be.visible')
     })
   })
 
@@ -83,7 +85,7 @@ describe('<RenderChart />', () => {
       cy.contains('Test Chart').should('be.visible')
 
       // Should render SVG chart
-      cy.get('svg').should('be.visible')
+      chartRegion().find('.recharts-surface').should('be.visible')
 
       // Should have bar chart elements
       cy.get('.recharts-bar').should('exist')
@@ -98,7 +100,7 @@ describe('<RenderChart />', () => {
 
       cy.wait('@fetchData')
 
-      cy.get('svg').should('be.visible')
+      chartRegion().find('.recharts-surface').should('be.visible')
       cy.get('.recharts-bar').should('exist')
     })
   })
@@ -127,7 +129,7 @@ describe('<RenderChart />', () => {
       cy.contains('Test Chart').should('be.visible')
 
       // Should render SVG chart
-      cy.get('svg').should('be.visible')
+      chartRegion().find('svg').should('be.visible')
     })
 
     it('renders calendar chart with custom colors', () => {
@@ -139,7 +141,7 @@ describe('<RenderChart />', () => {
 
       cy.wait('@fetchData')
 
-      cy.get('svg').should('be.visible')
+      chartRegion().find('.recharts-surface').should('be.visible')
     })
   })
 
@@ -220,7 +222,7 @@ describe('<RenderChart />', () => {
       cy.wait('@fetchDataSlow')
 
       // After data loads, skeleton should be gone
-      cy.get('svg').should('be.visible')
+      chartRegion().find('.recharts-surface').should('be.visible')
     })
   })
 
@@ -276,7 +278,7 @@ describe('<RenderChart />', () => {
       cy.wait('@fetchData')
 
       // Should render chart
-      cy.get('svg').should('be.visible')
+      chartRegion().find('.recharts-surface').should('be.visible')
     })
   })
 

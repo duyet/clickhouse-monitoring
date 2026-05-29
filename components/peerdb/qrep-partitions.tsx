@@ -138,7 +138,7 @@ export function QRepPartitions({
                       style={{ color: tone }}
                     >
                       <span
-                        className="h-1.5 w-1.5 rounded-full"
+                        className="size-1.5 rounded-full"
                         style={{ background: tone }}
                       />
                       {st}

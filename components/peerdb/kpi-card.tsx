@@ -31,7 +31,7 @@ export function KpiCard({
           {dotColor && (
             <span className="relative inline-flex">
               <span
-                className="h-2 w-2 rounded-full"
+                className="size-2 rounded-full"
                 style={{ background: dotColor }}
               />
               {pulse && (

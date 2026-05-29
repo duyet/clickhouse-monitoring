@@ -105,7 +105,7 @@ export const CommandPalette = function CommandPalette({
     <>
       {/* Search icon button for small screens */}
       <IconButton
-        icon={<Search className="h-4 w-4" />}
+        icon={<Search className="size-4" />}
         onClick={() => setOpen(true)}
         tooltip="Search"
         className="md:hidden"
@@ -121,9 +121,9 @@ export const CommandPalette = function CommandPalette({
       >
         <Search
           aria-hidden="true"
-          className="h-3.5 w-3.5 text-muted-foreground/60"
+          className="size-3.5 text-muted-foreground/60"
         />
-        <span className="text-muted-foreground/60">Search...</span>
+        <span className="text-muted-foreground/60">Search…</span>
         <kbd
           id="search-shortcut"
           className="ml-auto rounded border bg-muted px-1.5 text-[10px] font-medium"
@@ -157,7 +157,7 @@ export const CommandPalette = function CommandPalette({
                     onSelect={handleGoToQuery}
                     value={`query-id-${inputValue}`}
                   >
-                    <TextSearch className="mr-2 h-4 w-4" />
+                    <TextSearch className="mr-2 size-4" />
                     <span>Go to query: </span>
                     <span className="ml-1 font-mono text-xs text-muted-foreground truncate">
                       {inputValue.trim()}
@@ -169,7 +169,7 @@ export const CommandPalette = function CommandPalette({
                     onSelect={handleOpenInExplorer}
                     value={`explorer-${inputValue}`}
                   >
-                    <Table className="mr-2 h-4 w-4" />
+                    <Table className="mr-2 size-4" />
                     <span>Open in explorer: </span>
                     <span className="ml-1 font-mono text-xs text-muted-foreground">
                       {inputValue.trim()}
@@ -194,7 +194,7 @@ export const CommandPalette = function CommandPalette({
                     className="flex-col items-start gap-0.5"
                   >
                     <div className="flex w-full items-center gap-2">
-                      {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
+                      {item.icon && <item.icon className="size-4 shrink-0" />}
                       <span className="font-medium">{item.title}</span>
                     </div>
                     {item.description && (
@@ -210,7 +210,7 @@ export const CommandPalette = function CommandPalette({
                   onSelect={() => navigate(group.href)}
                   value={group.title}
                 >
-                  {group.icon && <group.icon className="mr-2 h-4 w-4" />}
+                  {group.icon && <group.icon className="mr-2 size-4" />}
                   <span>{group.title}</span>
                 </CommandItem>
               )}
@@ -222,7 +222,7 @@ export const CommandPalette = function CommandPalette({
               <CommandSeparator />
               <CommandGroup heading="Actions">
                 <CommandItem onSelect={handleOpenSettings} value="Settings">
-                  <Settings className="mr-2 h-4 w-4" />
+                  <Settings className="mr-2 size-4" />
                   <span>Settings</span>
                   <span className="ml-auto text-xs text-muted-foreground">
                     ⌘,

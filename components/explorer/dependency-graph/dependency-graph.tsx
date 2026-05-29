@@ -486,6 +486,7 @@ export function DependencyGraph({
         {/* Layout controls */}
         <Panel position="top-left" className="flex gap-1">
           <button
+            type="button"
             onClick={() => onLayoutChange('TB')}
             className={cn(
               'rounded px-2 py-1 text-xs font-medium transition-colors',
@@ -497,6 +498,7 @@ export function DependencyGraph({
             Vertical
           </button>
           <button
+            type="button"
             onClick={() => onLayoutChange('LR')}
             className={cn(
               'rounded px-2 py-1 text-xs font-medium transition-colors',

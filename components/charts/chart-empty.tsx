@@ -177,7 +177,7 @@ export const ChartEmpty = function ChartEmpty({
             onClick={onRetry}
             className="mt-3 gap-1.5 text-xs interactive-element"
           >
-            <RefreshCw className="h-3 w-3" />
+            <RefreshCw className="size-3" />
             Refresh data
           </Button>
         )}

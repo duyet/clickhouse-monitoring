@@ -109,7 +109,7 @@ export function QueryInsightsCard({ insights }: QueryInsightsCardProps) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <TrendingUpIcon className="h-4 w-4 text-primary" />
+          <TrendingUpIcon className="size-4 text-primary" />
           <span className="text-sm font-semibold">Query Insights</span>
         </div>
         <Badge variant="outline" className="text-[10px]">

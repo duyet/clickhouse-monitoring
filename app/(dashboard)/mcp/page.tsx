@@ -40,19 +40,19 @@ export default function McpPage() {
         <p className="text-sm text-muted-foreground max-w-2xl">
           Connect AI assistants like Claude, Cursor, and other MCP-compatible
           clients directly to your ClickHouse cluster. Query data, explore
-          schemas, and investigate performance — all through natural language.
+          schemas, and investigate performance, all through natural language.
         </p>
         <div className="flex flex-wrap gap-4">
           <FeaturePill
-            icon={<Globe className="h-3.5 w-3.5" />}
+            icon={<Globe className="size-3.5" />}
             label="Streamable HTTP"
           />
           <FeaturePill
-            icon={<Lock className="h-3.5 w-3.5" />}
+            icon={<Lock className="size-3.5" />}
             label="Read-only access"
           />
           <FeaturePill
-            icon={<Zap className="h-3.5 w-3.5" />}
+            icon={<Zap className="size-3.5" />}
             label="8 tools available"
           />
         </div>

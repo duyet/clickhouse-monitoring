@@ -2,7 +2,7 @@
 
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
 
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+import type { ClickHouseInterval } from '@chm/types/clickhouse-interval'
 
 import { useState } from 'react'
 import { useAppContext } from '@/app/context'

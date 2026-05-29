@@ -2,7 +2,7 @@
 
 import useSWR from 'swr'
 
-import type { HostInfo } from '@/app/api/v1/hosts/route'
+import type { HostInfo } from '@chm/types/host-info'
 
 import { apiFetch } from './api-fetch'
 import { useCallback } from 'react'

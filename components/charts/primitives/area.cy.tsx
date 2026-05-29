@@ -39,7 +39,7 @@ describe('<AreaChart />', () => {
     cy.screenshot()
 
     // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
 
     // Contains legend
     cy.get('.recharts-legend-wrapper').as('legend').should('be.visible')
@@ -63,7 +63,7 @@ describe('<AreaChart />', () => {
     cy.screenshot()
 
     // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
 
     // Contains legend
     cy.get('.recharts-legend-wrapper').as('legend').should('be.visible')
@@ -94,7 +94,7 @@ describe('<AreaChart />', () => {
     cy.screenshot()
 
     // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
 
     // Display data from readable_A instead of A
     // cy.get('@chart')
@@ -122,7 +122,7 @@ describe('<AreaChart />', () => {
     cy.screenshot()
 
     // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
 
     // Show legend
     cy.get('.recharts-legend-wrapper').should('be.visible')
@@ -141,7 +141,7 @@ describe('<AreaChart />', () => {
     cy.screenshot()
 
     // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
 
     // Should have sticks (do not have start, end)
     cy.get('.recharts-cartesian-axis-tick').should(
@@ -163,7 +163,7 @@ describe('<AreaChart />', () => {
     cy.screenshot()
 
     // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
     cy.get('.recharts-area').should('have.length', 2)
   })
 
@@ -176,7 +176,7 @@ describe('<AreaChart />', () => {
     cy.screenshot()
 
     // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
 
     // Single circle data point
     cy.get('.recharts-area-dots circle').should('have.length', 1)
@@ -207,7 +207,7 @@ describe('<AreaChart />', () => {
     cy.screenshot()
 
     // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
 
     // Should have two layer
     cy.get('.recharts-area').should('have.length', 2)
@@ -269,7 +269,7 @@ describe('<AreaChart />', () => {
     cy.screenshot()
 
     // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
 
     // Hover to show tooltip
     cy.get('.recharts-area-area').realHover()
@@ -301,7 +301,7 @@ describe('<AreaChart />', () => {
     cy.screenshot()
 
     // Render as svg
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
 
     // Hover to show tooltip
     cy.get('.recharts-area-area').realHover()
@@ -333,7 +333,7 @@ describe('<AreaChart />', () => {
     )
     cy.screenshot()
 
-    cy.get('svg:first').as('chart').should('be.visible')
+    cy.get('.recharts-surface').first().as('chart').should('be.visible')
 
     // Hover to show tooltip
     cy.get('.recharts-area-area').realHover()

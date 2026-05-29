@@ -2,7 +2,7 @@
 
 import { TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
 
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+import type { ClickHouseInterval } from '@chm/types/clickhouse-interval'
 
 import {
   type ChartValueUnit,
@@ -80,9 +80,9 @@ export const ChartChip = function ChartChip({
               )}
             >
               {summary.trend === 'up' ? (
-                <TrendingUpIcon className="h-3 w-3" />
+                <TrendingUpIcon className="size-3" />
               ) : (
-                <TrendingDownIcon className="h-3 w-3" />
+                <TrendingDownIcon className="size-3" />
               )}
               {Math.abs(summary.deltaPct).toFixed(0)}%
             </span>

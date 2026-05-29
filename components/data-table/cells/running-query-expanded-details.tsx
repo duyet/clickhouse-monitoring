@@ -156,7 +156,7 @@ export const RunningQueryExpandedDetails =
     return (
       <div
         data-slot="running-query-expanded"
-        className="border-t border-border/60 bg-muted/20 px-4 py-4"
+        className="border-t border-border/60 bg-muted/20 p-4"
       >
         <div className="flex flex-wrap items-center gap-1.5 pb-3">
           {queryKind && (

@@ -69,9 +69,9 @@ export function ClerkNavWrapper() {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 data-testid="nav-user-trigger"
               >
-                <Avatar className="avatar h-8 w-8 rounded-lg">
+                <Avatar className="avatar size-8 rounded-lg">
                   <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
-                    <UserIcon className="h-4 w-4" />
+                    <UserIcon className="size-4" />
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -93,7 +93,7 @@ export function ClerkNavWrapper() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                   data-testid="nav-user-trigger"
                 >
-                  <Avatar className="avatar h-8 w-8 rounded-lg">
+                  <Avatar className="avatar size-8 rounded-lg">
                     <AvatarImage
                       src={user?.imageUrl}
                       alt={user?.fullName ?? 'User'}
@@ -127,7 +127,7 @@ export function ClerkNavWrapper() {
               >
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="avatar h-8 w-8 rounded-lg">
+                    <Avatar className="avatar size-8 rounded-lg">
                       <AvatarImage
                         src={user?.imageUrl}
                         alt={user?.fullName ?? 'User'}
@@ -153,7 +153,7 @@ export function ClerkNavWrapper() {
                     onSelect={() => openUserProfile()}
                     data-testid="nav-user-account"
                   >
-                    <UserIcon className="h-4 w-4" />
+                    <UserIcon className="size-4" />
                     <span>Account Settings</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
@@ -161,7 +161,7 @@ export function ClerkNavWrapper() {
                     onClick={() => (window.location.href = '/about')}
                     data-testid="nav-user-about"
                   >
-                    <Info className="h-4 w-4" />
+                    <Info className="size-4" />
                     <span>About</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -172,7 +172,7 @@ export function ClerkNavWrapper() {
                       className="flex items-center gap-2"
                       data-testid="nav-user-github"
                     >
-                      <ExternalLink className="h-4 w-4" />
+                      <ExternalLink className="size-4" />
                       <span>GitHub Repo</span>
                     </a>
                   </DropdownMenuItem>
@@ -184,7 +184,7 @@ export function ClerkNavWrapper() {
                       }}
                       data-testid="nav-user-settings"
                     >
-                      <Settings className="h-4 w-4" />
+                      <Settings className="size-4" />
                       <span>Settings</span>
                       <span className="ml-auto text-xs text-muted-foreground">
                         ⌘,
@@ -195,7 +195,7 @@ export function ClerkNavWrapper() {
                 <DropdownMenuSeparator />
                 <SignOutButton>
                   <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive">
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="size-4" />
                     <span>Sign Out</span>
                   </DropdownMenuItem>
                 </SignOutButton>
@@ -221,7 +221,7 @@ function UserSkeleton() {
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton size="lg" disabled data-testid="nav-user-trigger">
-          <div className="h-8 w-8 rounded-lg bg-muted animate-pulse" />
+          <div className="size-8 rounded-lg bg-muted animate-pulse" />
           <div className="grid flex-1 gap-1">
             <div className="h-4 w-24 bg-muted animate-pulse rounded" />
             <div className="h-3 w-16 bg-muted animate-pulse rounded" />

@@ -1,13 +1,13 @@
 'use client'
 
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+import type { ClickHouseInterval } from '@chm/types/clickhouse-interval'
 
 import { usePathname } from 'next/navigation'
 import {
   createContext,
   type Dispatch,
   type SetStateAction,
-  useContext,
+  use,
   useState,
 } from 'react'
 
@@ -56,7 +56,7 @@ export const AppProvider = ({
 }
 
 export const useAppContext = () => {
-  const context = useContext(Context)
+  const context = use(Context)
 
   if (context === undefined) {
     throw new Error('useAppContext must be used within a AppProvider')

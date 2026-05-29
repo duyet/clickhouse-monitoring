@@ -63,7 +63,7 @@ export const TableSkeleton = function TableSkeleton({
       </div>
 
       {/* Pagination footer */}
-      <span className="sr-only">Loading table data...</span>
+      <span className="sr-only">Loading table data…</span>
     </div>
   )
 }

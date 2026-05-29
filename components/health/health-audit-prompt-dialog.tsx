@@ -46,7 +46,7 @@ export function HealthAuditPromptDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Audit prompt — {title}</DialogTitle>
+          <DialogTitle>Audit prompt: {title}</DialogTitle>
           <DialogDescription>
             Copy and paste this prompt into any AI/coding agent (Claude,
             ChatGPT, etc.) to get a tailored diagnosis and remediation plan.
@@ -67,9 +67,9 @@ export function HealthAuditPromptDialog({
           </Button>
           <Button onClick={handleCopy}>
             {copied ? (
-              <Check className="mr-2 h-4 w-4" />
+              <Check className="mr-2 size-4" />
             ) : (
-              <Copy className="mr-2 h-4 w-4" />
+              <Copy className="mr-2 size-4" />
             )}
             {copied ? 'Copied' : 'Copy prompt'}
           </Button>

@@ -70,7 +70,7 @@ export const ChartRow = function ChartRow({
               <ChartRowSummary charts={charts} />
               <span className="ml-auto flex shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground opacity-0 group-hover/row:opacity-100 transition-opacity duration-200">
                 Show
-                <ChevronDownIcon className="h-3 w-3" />
+                <ChevronDownIcon className="size-3" />
               </span>
             </div>
           </CollapsibleTrigger>
@@ -151,7 +151,7 @@ export const ChartRow = function ChartRow({
                 )}
                 aria-label="Collapse row"
               >
-                <ChevronUpIcon className="h-3 w-3" />
+                <ChevronUpIcon className="size-3" />
                 <span>Hide</span>
               </Button>
             </CollapsibleTrigger>

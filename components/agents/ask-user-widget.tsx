@@ -83,7 +83,7 @@ export function AskUserWidget({
     return (
       <div className="my-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 dark:border-green-900 dark:bg-green-950/30">
         <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
-          <CheckIcon className="h-4 w-4" />
+          <CheckIcon className="size-4" />
           <span>Response submitted</span>
         </div>
       </div>
@@ -94,7 +94,7 @@ export function AskUserWidget({
     <div className="my-2 rounded-lg border border-blue-200 bg-blue-50/50 px-4 py-3 dark:border-blue-900 dark:bg-blue-950/20">
       {/* Question header */}
       <div className="flex items-start gap-2 mb-3">
-        <MessageCircleQuestionIcon className="h-4 w-4 mt-0.5 text-blue-600 dark:text-blue-400 shrink-0" />
+        <MessageCircleQuestionIcon className="size-4 mt-0.5 text-blue-600 dark:text-blue-400 shrink-0" />
         <div>
           {output.context && (
             <p className="text-xs text-muted-foreground mb-1">
@@ -110,6 +110,7 @@ export function AskUserWidget({
         <div className="space-y-1.5 mb-3">
           {safeOptions.map((opt) => (
             <button
+              type="button"
               key={opt.value}
               onClick={() => setSelectedValue(opt.value)}
               className={cn(
@@ -128,7 +129,7 @@ export function AskUserWidget({
                 )}
               >
                 {selectedValue === opt.value && (
-                  <div className="h-2 w-2 rounded-full bg-blue-500" />
+                  <div className="size-2 rounded-full bg-blue-500" />
                 )}
               </div>
               <div>
@@ -246,6 +247,7 @@ export function AskUserWidget({
             {Array.from({ length: ratingSpan }, (_, i) => i + ratingMin).map(
               (n) => (
                 <button
+                  type="button"
                   key={n}
                   onClick={() => setRatingValue(n)}
                   className={cn(
@@ -256,7 +258,7 @@ export function AskUserWidget({
                   )}
                 >
                   <StarIcon
-                    className="h-6 w-6"
+                    className="size-6"
                     fill={ratingValue >= n ? 'currentColor' : 'none'}
                   />
                 </button>

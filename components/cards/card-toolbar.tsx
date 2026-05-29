@@ -109,6 +109,7 @@ function CopyableValue({
 
   return (
     <button
+      type="button"
       onClick={handleCopy}
       className={cn(
         'font-mono font-medium text-right truncate min-w-0 hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1 group/copy',
@@ -273,6 +274,7 @@ export const CardToolbar = function CardToolbar({
                       </dt>
                       <dd className="min-w-0 flex-1 text-right">
                         <button
+                          type="button"
                           onClick={() => handleCopy(fullApiUrl)}
                           className="font-mono text-xs text-right truncate max-w-full hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1.5 group/copy"
                           title={`Click to copy: ${fullApiUrl}`}

@@ -41,7 +41,7 @@ export const ChartZookeeperUptime = function ChartZookeeperUptime({
               <CardMultiMetrics
                 primary={
                   <span className="flex flex-row items-center gap-2">
-                    <ArrowUpIcon className="h-6 w-6" />
+                    <ArrowUpIcon className="size-6" />
                     {uptime.uptime}
                   </span>
                 }

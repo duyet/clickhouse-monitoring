@@ -6,7 +6,7 @@ import { isFeatureAllowed, resolveFeatureState } from './shared'
 import {
   createContext,
   type ReactNode,
-  useContext,
+  use,
   useEffect,
   useMemo,
   useState,
@@ -84,7 +84,7 @@ export function FeaturePermissionsProvider({
 
 export function useFeaturePermissions() {
   return (
-    useContext(FeaturePermissionsContext) ?? {
+    use(FeaturePermissionsContext) ?? {
       config: DEFAULT_PUBLIC_CONFIG,
       isLoading: true,
       isAllowed: (permission?: FeaturePermission) =>

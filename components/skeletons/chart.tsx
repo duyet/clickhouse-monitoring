@@ -186,7 +186,7 @@ const TableSkeletonMini = () => (
     </div>
 
     {/* Table rows with shimmering effects */}
-    <div className="space-y-3 px-1 py-1 flex-1">
+    <div className="space-y-3 p-1 flex-1">
       {[1, 2, 3].map((row) => (
         <div key={row} className="flex items-center gap-4">
           <Skeleton variant="shimmer" className="h-3 w-2/5" />
@@ -243,7 +243,7 @@ export const ChartSkeleton = function ChartSkeleton({
             <span className="flex items-center gap-2">
               <span className="truncate max-w-[200px]">{title}</span>
               <span className="text-[10px] text-muted-foreground/40 font-normal lowercase animate-pulse">
-                (loading...)
+                (loading…)
               </span>
             </span>
           ) : (

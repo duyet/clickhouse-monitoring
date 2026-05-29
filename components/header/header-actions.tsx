@@ -67,7 +67,7 @@ export const HeaderActions = function HeaderActions({
         />
       ) : (
         <Button variant="ghost" size="icon" className="inline-flex">
-          <Sun className="h-4 w-4" />
+          <Sun className="size-4" />
         </Button>
       )}
 

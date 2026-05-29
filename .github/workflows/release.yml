@@ -391,13 +391,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.meta.outputs.tag }}
         run: |
+          NEW_NOTES="$(cat release-notes.md)"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            # Append on top: keep any existing notes, prepend the new content.
+            # Keep prior manual notes, but avoid duplicating the generated block
+            # when the release workflow is re-run for the same tag.
             EXISTING="$(gh release view "$TAG" --json body --jq '.body // ""')"
-            if [ -n "$EXISTING" ]; then
-              printf '%s\n\n---\n\n%s\n' "$(cat release-notes.md)" "$EXISTING" > final-notes.md
+            if [ -n "$EXISTING" ] && [ "${EXISTING#"$NEW_NOTES"}" != "$EXISTING" ]; then
+              printf '%s\n' "$EXISTING" > final-notes.md
+            elif [ -n "$EXISTING" ]; then
+              printf '%s\n\n---\n\n%s\n' "$NEW_NOTES" "$EXISTING" > final-notes.md
             else
-              cp release-notes.md final-notes.md
+              printf '%s\n' "$NEW_NOTES" > final-notes.md
             fi
             gh release edit "$TAG" \
               --title "$TAG" \
