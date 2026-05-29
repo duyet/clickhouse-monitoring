@@ -89,6 +89,10 @@
   },
   "pnpm": {
     "overrides": {
+      "@codemirror/state": "6.6.0",
+      "@codemirror/view": "6.43.0",
+      "@codemirror/language": "6.12.3",
+      "@codemirror/autocomplete": "6.20.2",
       "ajv": "^8.20.0",
       "axios": "^1.16.0",
       "brace-expansion": "^5.0.6",
@@ -117,6 +121,10 @@
     }
   },
   "overrides": {
+    "@codemirror/state": "6.6.0",
+    "@codemirror/view": "6.43.0",
+    "@codemirror/language": "6.12.3",
+    "@codemirror/autocomplete": "6.20.2",
     "@anthropic-ai/sdk": "0.92.0",
     "@types/react": "$@types/react",
     "@types/react-dom": "$@types/react-dom",
