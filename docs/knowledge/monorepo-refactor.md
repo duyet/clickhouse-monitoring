@@ -11,7 +11,7 @@ Migration of `clickhouse-monitoring` from an informal single-app repo into a
 full Bun-workspaces + Turborepo monorepo (`apps/` + `packages/`). Strictly
 phased; each phase ships as its own PR with a green CI gate.
 
-## Target layout (reached, minus Phase 5 tooling)
+## Target layout (reached)
 
 ```
 apps/
@@ -49,8 +49,8 @@ app-local (`./*`) so the ~700 intra-web imports never changed.
 | 3 | mcp worker → apps/mcp-worker/ | #1225 | ✅ merged |
 | 3 | remove dead Nextra docs/app, recover doc images | #1227 | ✅ merged |
 | 4a | extract @chm/logger | #1228 | ✅ merged |
-| 4 | extract @chm/clickhouse-client + @chm/mcp-server | #1230 | 🔄 open, auto-merge |
-| 5 | dependency-cruiser boundaries + changesets + publish dry-run | — | ⏳ TODO |
+| 4 | extract @chm/clickhouse-client + @chm/mcp-server | #1230 | ✅ merged |
+| 5 | depcruise + changesets + MCP worker CI | #1232 | 🔄 open, auto-merge |
 
 `main` deploys to Cloudflare on every push (`cloudflare.yml`); Deploy has stayed
 green throughout. See [[deployment]].
@@ -114,25 +114,17 @@ green throughout. See [[deployment]].
 - **Turbo task `inputs` can't reference outside the package** — put cross-package
   / root deps (rust, scripts) in `globalDependencies`.
 
-## Remaining: Phase 5
+## Remaining: post-Phase 5 cleanup
 
-1. **dependency-cruiser**: add `.dependency-cruiser.cjs` enforcing no cycles, no
-   `apps/web` → other-app imports, and package layering
-   (`mcp-server`→`clickhouse-client`→`logger`/`sql-builder`→leaf). Wire a CI job
-   (`bun x depcruise apps packages`).
-2. **changesets**: `.changeset/config.json`; `bunx changeset` flow;
-   `npm publish --dry-run` per publishable `@chm/*` package.
-3. **Docs accuracy** (optional): update `CLAUDE.md` paths (`workers/mcp` →
+1. **Docs accuracy** (optional): update `CLAUDE.md` paths (`workers/mcp` →
    `apps/mcp-worker`, `lib/clickhouse` → `@chm/clickhouse-client`, drop Nextra
    docs refs).
+2. **npm publish**: when ready to publish `@chm/*` packages, run
+   `npm publish --dry-run` per package to verify, then publish for real.
 
 ## Resume command
 
 ```
-/goal finish the monorepo refactor: merge PR #1230 (Phase 4) once real CI gates
-(build/lint/preview/test-queries-config/docker) are green — admin-merge past the
-known-flaky unit-tests/component-test; confirm main Deploy-to-Cloudflare succeeds;
-then do Phase 5 (dependency-cruiser boundary rules + CI job, changesets, npm
-publish --dry-run per @chm/* package); keep all CI green, auto-fix + auto-merge
-PRs, good codebase, no slop. See docs/knowledge/monorepo-refactor.md.
+/goal merge PR #1232 (Phase 5) once real CI gates green; admin-merge past
+known-flaky unit-tests/component-test. Monorepo refactor is complete after merge.
 ```
