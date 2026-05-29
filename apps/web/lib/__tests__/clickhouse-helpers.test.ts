@@ -268,4 +268,27 @@ describe('validateHostId', () => {
     expect(validateHostId(1)).toBe(1)
     expect(validateHostId(10)).toBe(10)
   })
+
+  it('should parse valid numeric strings', () => {
+    expect(validateHostId('0')).toBe(0)
+    expect(validateHostId('1')).toBe(1)
+    expect(validateHostId('42')).toBe(42)
+  })
+
+  it('should parse numeric strings with surrounding whitespace', () => {
+    expect(validateHostId('  3  ')).toBe(3)
+  })
+
+  it('should return 0 for boolean values', () => {
+    expect(validateHostId(true as unknown as number)).toBe(0)
+    expect(validateHostId(false as unknown as number)).toBe(0)
+  })
+
+  it('should return 0 for object values', () => {
+    expect(validateHostId({} as unknown as number)).toBe(0)
+  })
+
+  it('should return 0 for array values', () => {
+    expect(validateHostId([1] as unknown as number)).toBe(0)
+  })
 })
