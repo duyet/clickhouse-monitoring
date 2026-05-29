@@ -1,7 +1,7 @@
 'use client'
 
 import { createCustomChart } from '@/components/charts/factory'
-import { cn } from '@/lib/utils'
+import { ProportionList } from '@/components/charts/primitives/proportion-list'
 
 interface QueryTypeData {
   type: string
@@ -23,38 +23,16 @@ export const ChartQueryType = createCustomChart({
   dateRangeConfig: 'realtime',
   render: (dataArray) => {
     const data = dataArray as QueryTypeData[]
-    const total = data.reduce((sum, d) => sum + d.query_count, 0)
 
     return (
-      <div className="flex flex-col gap-3 p-2">
-        {data.map((item, index) => {
-          const pct = total > 0 ? (item.query_count / total) * 100 : 0
-          return (
-            <div key={item.type} className="flex flex-col gap-1">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">{item.type}</span>
-                <span className="text-muted-foreground">
-                  {item.query_count.toLocaleString()} ({pct.toFixed(1)}%)
-                </span>
-              </div>
-              <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
-                <div
-                  className={cn(
-                    'h-full rounded-full transition-[width]',
-                    typeColors[item.type] || `bg-chart-${(index % 5) + 1}`
-                  )}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-            </div>
-          )
-        })}
-        {data.length === 0 && (
-          <div className="text-muted-foreground text-center text-sm">
-            No query type data available
-          </div>
-        )}
-      </div>
+      <ProportionList
+        items={data.map((d, index) => ({
+          label: d.type,
+          value: d.query_count,
+          colorClass: typeColors[d.type] ?? `bg-chart-${(index % 5) + 1}`,
+        }))}
+        emptyMessage="No query type data available"
+      />
     )
   },
 })

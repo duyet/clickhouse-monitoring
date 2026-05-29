@@ -3,7 +3,7 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 
 import { createCustomChart } from '@/components/charts/factory'
-import { cn } from '@/lib/utils'
+import { ProportionList } from '@/components/charts/primitives/proportion-list'
 
 interface CacheUsageData {
   query_cache_usage: string
@@ -30,38 +30,16 @@ export const ChartQueryCacheUsage = createCustomChart({
   dateRangeConfig: 'standard',
   render: (dataArray) => {
     const data = dataArray as CacheUsageData[]
-    const total = data.reduce((sum, d) => sum + d.query_count, 0)
 
     return (
-      <div className="flex flex-col gap-3 p-2">
-        {data.map((item) => {
-          const pct = total > 0 ? (item.query_count / total) * 100 : 0
-          return (
-            <div key={item.query_cache_usage} className="flex flex-col gap-1">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">{item.query_cache_usage}</span>
-                <span className="text-muted-foreground">
-                  {item.query_count.toLocaleString()} ({pct.toFixed(1)}%)
-                </span>
-              </div>
-              <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
-                <div
-                  className={cn(
-                    'h-full rounded-full transition-[width]',
-                    cacheColors[item.query_cache_usage] || 'bg-chart-1'
-                  )}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-            </div>
-          )
-        })}
-        {data.length === 0 && (
-          <div className="text-muted-foreground text-center text-sm">
-            No cache usage data available
-          </div>
-        )}
-      </div>
+      <ProportionList
+        items={data.map((d) => ({
+          label: d.query_cache_usage,
+          value: d.query_count,
+          colorClass: cacheColors[d.query_cache_usage] ?? 'bg-chart-1',
+        }))}
+        emptyMessage="No cache usage data available"
+      />
     )
   },
 })
