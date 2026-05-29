@@ -42,23 +42,23 @@ export const BackgroundBarFormat = function BackgroundBarFormat({
   // Calculate shade based on percentage (larger = darker)
   const shade = getShade(pct as number)
 
-  // Build inline style with dynamic color
-  const barStyle = getBarStyle(baseColor, shade)
+  // Build inline style with dynamic color (lower opacity for a subtle background bar)
+  const barStyle = getBarStyle(baseColor, shade, 0.35)
 
   return (
     <div
-      className="relative flex items-center w-full h-full overflow-hidden rounded-sm"
+      className="relative flex items-center w-full h-full overflow-hidden"
       title={`${orgValue} (${pct}%)`}
       aria-label={`${orgValue} (${pct}%)`}
       aria-roledescription="background-bar"
     >
       {/* Background bar - uses inline styles for dynamic color */}
       <div
-        className="absolute inset-y-0 left-0 rounded-sm transition-[width]"
+        className="absolute inset-y-0 left-0 transition-[width]"
         style={{ width: `${pct}%`, ...barStyle }}
         aria-hidden="true"
       />
-      <span className="relative inline-block min-w-0 truncate">
+      <span className="relative inline-block min-w-0 truncate px-1.5">
         {options?.numberFormat
           ? formatReadableQuantity(value as number, 'long')
           : value}
