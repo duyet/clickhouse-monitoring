@@ -17,7 +17,6 @@
 import { PanelLeftOpenIcon, PanelRightOpenIcon } from 'lucide-react'
 import { ErrorBoundary } from 'react-error-boundary'
 
-import { useUser } from '@clerk/nextjs'
 import { useEffect, useState } from 'react'
 import { AgentSettingsSidebar } from '@/components/agents/welcome/agent-settings-sidebar'
 import { AgentRuntimeProvider } from '@/components/assistant-ui/agent-runtime-provider'
@@ -25,8 +24,20 @@ import { Thread } from '@/components/assistant-ui/thread'
 import { ThreadList } from '@/components/assistant-ui/thread-list'
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { isClerkEnabled } from '@/lib/clerk/clerk-client'
 import { useHostId } from '@/lib/swr/use-host'
 import { useHosts } from '@/lib/swr/use-hosts'
+
+/**
+ * Clerk's `useUser()` throws unless a `<ClerkProvider />` is mounted, and that
+ * provider is only rendered when `isClerkEnabled()` is true (see
+ * `components/clerk/clerk-auth-provider.tsx`). Gate the hook behind the same
+ * build-time constant so the agents page never calls `useUser()` when Clerk is
+ * disabled — same lazy-require pattern as `components/nav-user.tsx`.
+ */
+const useClerkFirstName: () => string | null = isClerkEnabled()
+  ? require('@/components/assistant-ui/use-clerk-first-name').useClerkFirstName
+  : () => null
 
 function AgentThreadPageError() {
   return (
@@ -47,15 +58,11 @@ export function AgentThreadPage() {
   useEffect(() => {
     setRightSidebarOpen(!isMobile)
   }, [isMobile])
-  const { user } = useUser()
+  const firstName = useClerkFirstName()
   const hostId = useHostId()
   const { hosts } = useHosts()
   const currentHost = hosts.find((h) => h.id === hostId)
   const clusterName = currentHost?.name ?? null
-  const firstName =
-    user?.firstName ??
-    (user?.fullName ? user.fullName.split(' ')[0] : null) ??
-    null
 
   return (
     <ErrorBoundary FallbackComponent={AgentThreadPageError}>

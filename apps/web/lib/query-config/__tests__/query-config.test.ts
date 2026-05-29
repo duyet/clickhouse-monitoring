@@ -137,6 +137,13 @@ describe('Query Config Validation', () => {
       host,
       username,
       password,
+      // Fail fast when no ClickHouse is reachable (e.g. the unit-tests job runs
+      // this suite with no service container). Without a client-side timeout a
+      // hanging or proxied host burns the full QUERY_TIMEOUT_MS hook budget and
+      // fails `beforeAll` as "(unnamed)" before the catch below can mark it
+      // unavailable. test-queries-config has a real ClickHouse that responds in
+      // milliseconds, so this never trips there.
+      request_timeout: 10000,
       clickhouse_settings: {
         max_execution_time: 30,
       },
