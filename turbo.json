@@ -1,15 +1,17 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["tsconfig.base.json", "biome.json", "bun.lock"],
+  "globalDependencies": [
+    "tsconfig.base.json",
+    "biome.json",
+    "bun.lock",
+    "rust/monitor-core/**",
+    "scripts/**"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", "!**/*.test.ts", "!**/__tests__/**"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", ".open-next/**"]
-    },
-    "wasm:build": {
-      "inputs": ["rust/monitor-core/**", "scripts/build-wasm.ts"],
-      "outputs": ["lib/wasm/generated/**"]
     },
     "type-check": {
       "dependsOn": ["^build"]
@@ -21,6 +23,10 @@
     "test": {
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

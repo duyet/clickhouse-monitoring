@@ -11,14 +11,15 @@
 
 # testing
 /coverage
+apps/web/coverage
 .nyc_output
 /jest-reports
 /test-results
 
 # next.js
-/.next/
-/.next-prod/
-/out/
+apps/web/.next/
+apps/web/.next-prod/
+apps/web/out/
 next.config.compiled.js
 .next/next.config.compiled.js
 
@@ -73,11 +74,11 @@ cypress/screenshots
 bunfig.local.toml
 
 # Generated Rust/WASM bindings
-/lib/wasm/generated/*
-!/lib/wasm/generated/monitor_core.d.ts
-!/lib/wasm/generated/monitor_core.js
-!/lib/wasm/generated/monitor_core_bg.wasm
-!/lib/wasm/generated/monitor_core_bg.wasm.d.ts
+apps/web/lib/wasm/generated/*
+!apps/web/lib/wasm/generated/monitor_core.d.ts
+!apps/web/lib/wasm/generated/monitor_core.js
+!apps/web/lib/wasm/generated/monitor_core_bg.wasm
+!apps/web/lib/wasm/generated/monitor_core_bg.wasm.d.ts
 /rust/monitor-core/target/
 
 .claude/*.local.md

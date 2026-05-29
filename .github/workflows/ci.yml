@@ -88,9 +88,9 @@ jobs:
         with:
           name: wasm-output
           path: |
-            lib/wasm/generated/monitor_core.js
-            lib/wasm/generated/monitor_core.d.ts
-            lib/wasm/generated/monitor_core_bg.wasm
+            apps/web/lib/wasm/generated/monitor_core.js
+            apps/web/lib/wasm/generated/monitor_core.d.ts
+            apps/web/lib/wasm/generated/monitor_core_bg.wasm
           retention-days: 1
 
   # PRs: amd64 only for fast feedback (~3-5 min)

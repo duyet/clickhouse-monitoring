@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.base.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "plugins": [
       {
@@ -8,12 +8,12 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@chm/types": ["./packages/types/src"],
-      "@chm/types/*": ["./packages/types/src/*"],
-      "@chm/sql-builder": ["./packages/sql-builder/src"],
-      "@chm/sql-builder/*": ["./packages/sql-builder/src/*"],
-      "@chm/platform": ["./packages/platform/src"],
-      "@chm/platform/*": ["./packages/platform/src/*"]
+      "@chm/types": ["../../packages/types/src"],
+      "@chm/types/*": ["../../packages/types/src/*"],
+      "@chm/sql-builder": ["../../packages/sql-builder/src"],
+      "@chm/sql-builder/*": ["../../packages/sql-builder/src/*"],
+      "@chm/platform": ["../../packages/platform/src"],
+      "@chm/platform/*": ["../../packages/platform/src/*"]
     },
     "types": ["cypress", "node", "cypress-real-events"]
   },

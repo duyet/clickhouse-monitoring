@@ -1,5 +1,11 @@
 import type { NextConfig } from 'next'
 
+import path from 'node:path'
+
+// next.config.ts is compiled as CommonJS (require.resolve below), so __dirname
+// is the native CJS global — do NOT use import.meta.url, which forces ESM and
+// breaks the compiled config ("exports is not defined in ES module scope").
+
 // Check if optional @vercel/analytics is available
 let hasVercelAnalytics = false
 try {
@@ -12,6 +18,10 @@ try {
 const nextConfig: NextConfig = {
   // Use standalone output for hybrid static pages + dynamic API routes
   output: 'standalone',
+
+  // Trace from the monorepo root so standalone output includes hoisted
+  // node_modules and workspace packages (apps/web -> ../..)
+  outputFileTracingRoot: path.resolve(__dirname, '../..'),
 
   // Safety net: exclude non-production and development assets from tracing
   outputFileTracingExcludes: {
