@@ -137,23 +137,27 @@ describe('Query Config Validation', () => {
       host,
       username,
       password,
-      // Fail fast when no ClickHouse is reachable (e.g. the unit-tests job runs
-      // this suite with no service container). Without a client-side timeout a
-      // hanging or proxied host burns the full QUERY_TIMEOUT_MS hook budget and
-      // fails `beforeAll` as "(unnamed)" before the catch below can mark it
-      // unavailable. test-queries-config has a real ClickHouse that responds in
-      // milliseconds, so this never trips there.
-      request_timeout: 10000,
       clickhouse_settings: {
         max_execution_time: 30,
       },
     })
 
-    // Get ClickHouse version
+    // Get ClickHouse version.
+    //
+    // Fail fast when no ClickHouse is reachable (e.g. the unit-tests job runs
+    // this suite with no service container; the host may hang behind a proxy
+    // rather than refuse the connection). `request_timeout` does not abort such
+    // a hung fetch, so without an explicit abort the connect burns the full
+    // QUERY_TIMEOUT_MS hook budget and fails `beforeAll` as "(unnamed)". An
+    // AbortSignal cancels the fetch in 5s so the catch below can mark
+    // ClickHouse unavailable and the integration assertions skip.
+    // test-queries-config has a real ClickHouse that responds in milliseconds,
+    // so this never trips there.
     try {
       const result = await client.query({
         query: 'SELECT version() as version',
         format: 'JSONEachRow',
+        abort_signal: AbortSignal.timeout(5000),
       })
       const rows = await result.json<{ version: string }[]>()
       if (rows[0]?.version) {
