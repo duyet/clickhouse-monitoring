@@ -17,6 +17,10 @@ import {
 } from '@/components/ui/table'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
+import {
+  STATUS_BADGE_CLASS,
+  type StatusTone,
+} from '@/lib/utils/status-badge-class'
 
 interface ReplicationLagData {
   database: string
@@ -30,14 +34,11 @@ interface ReplicationLagData {
   [key: string]: string | number // Index signature for ChartDataPoint compatibility
 }
 
-const lagStatusColors: Record<string, string> = {
-  synced:
-    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  'slight lag':
-    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  'moderate lag':
-    'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  'severe lag': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+const LAG_STATUS_TONE: Record<ReplicationLagData['lag_status'], StatusTone> = {
+  synced: 'ok',
+  'slight lag': 'warning',
+  'moderate lag': 'caution',
+  'severe lag': 'error',
 }
 
 /**
@@ -104,7 +105,7 @@ export const ChartReplicationLag = function ChartReplicationLag({
                     variant="outline"
                     className={cn(
                       'text-xs',
-                      lagStatusColors[row.lag_status] || ''
+                      STATUS_BADGE_CLASS[LAG_STATUS_TONE[row.lag_status]]
                     )}
                   >
                     {row.lag_status}

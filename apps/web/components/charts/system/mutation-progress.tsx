@@ -7,6 +7,11 @@ import { ChartContainer } from '@/components/charts/chart-container'
 import { STUCK_THRESHOLD_SECONDS } from '@/lib/query-config/merges/mutations'
 import { useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
+import {
+  STATUS_BADGE_CLASS,
+  STATUS_ROW_CLASS,
+  type StatusTone,
+} from '@/lib/utils/status-badge-class'
 
 type DataRow = {
   mutation_id: string
@@ -20,17 +25,17 @@ type DataRow = {
   latest_fail_reason: string
 }
 
-function getStatusBadgeClass(row: DataRow): string {
+function getMutationTone(row: DataRow): StatusTone {
   if (
     row.elapsed_seconds > STUCK_THRESHOLD_SECONDS &&
     row.status === 'running'
   ) {
-    return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+    return 'error'
   }
   if (row.status === 'waiting') {
-    return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+    return 'caution'
   }
-  return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+  return 'info'
 }
 
 function getStatusLabel(row: DataRow): string {
@@ -97,59 +102,57 @@ export const ChartMutationProgress = function ChartMutationProgress({
                 <span className="text-right">Parts Left</span>
                 <span className="text-right">Elapsed</span>
               </div>
-              {rows.map((row) => (
-                <div
-                  key={row.mutation_id}
-                  className={cn(
-                    'grid grid-cols-[1fr_60px_80px_80px] gap-2 rounded px-2 py-1.5',
-                    'text-xs',
-                    row.elapsed_seconds > STUCK_THRESHOLD_SECONDS &&
-                      row.status === 'running'
-                      ? 'bg-red-50 dark:bg-red-950/20'
-                      : row.status === 'waiting'
-                        ? 'bg-amber-50 dark:bg-amber-950/20'
-                        : 'bg-muted/40'
-                  )}
-                >
-                  <div className="min-w-0">
-                    <div className="truncate font-medium text-foreground">
-                      {row.table_path}
-                    </div>
-                    <div
-                      className="truncate text-muted-foreground"
-                      title={row.command}
-                    >
-                      {row.command.length > 80
-                        ? `${row.command.slice(0, 80)}...`
-                        : row.command}
-                    </div>
-                    {row.latest_fail_reason && (
-                      <div
-                        className="truncate text-red-600 dark:text-red-400"
-                        title={row.latest_fail_reason}
-                      >
-                        {row.latest_fail_reason}
-                      </div>
+              {rows.map((row) => {
+                const tone = getMutationTone(row)
+                return (
+                  <div
+                    key={row.mutation_id}
+                    className={cn(
+                      'grid grid-cols-[1fr_60px_80px_80px] gap-2 rounded px-2 py-1.5',
+                      'text-xs',
+                      STATUS_ROW_CLASS[tone] || 'bg-muted/40'
                     )}
-                  </div>
-                  <div className="flex items-start justify-end pt-0.5">
-                    <span
-                      className={cn(
-                        'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
-                        getStatusBadgeClass(row)
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-foreground">
+                        {row.table_path}
+                      </div>
+                      <div
+                        className="truncate text-muted-foreground"
+                        title={row.command}
+                      >
+                        {row.command.length > 80
+                          ? `${row.command.slice(0, 80)}...`
+                          : row.command}
+                      </div>
+                      {row.latest_fail_reason && (
+                        <div
+                          className="truncate text-red-600 dark:text-red-400"
+                          title={row.latest_fail_reason}
+                        >
+                          {row.latest_fail_reason}
+                        </div>
                       )}
-                    >
-                      {getStatusLabel(row)}
-                    </span>
+                    </div>
+                    <div className="flex items-start justify-end pt-0.5">
+                      <span
+                        className={cn(
+                          'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
+                          STATUS_BADGE_CLASS[tone]
+                        )}
+                      >
+                        {getStatusLabel(row)}
+                      </span>
+                    </div>
+                    <div className="flex items-start justify-end pt-1 tabular-nums text-foreground">
+                      {row.readable_parts_to_do}
+                    </div>
+                    <div className="flex items-start justify-end pt-1 tabular-nums text-muted-foreground">
+                      {row.readable_elapsed}
+                    </div>
                   </div>
-                  <div className="flex items-start justify-end pt-1 tabular-nums text-foreground">
-                    {row.readable_parts_to_do}
-                  </div>
-                  <div className="flex items-start justify-end pt-1 tabular-nums text-muted-foreground">
-                    {row.readable_elapsed}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </ChartCard>
         )
