@@ -43,7 +43,24 @@ const ENV_FALLBACK: ClickHouseEnv = {
   CLICKHOUSE_MAX_EXECUTION_TIME: 60,
 }
 
-let _cachedEnv: ClickHouseEnv | null = null
+/**
+ * Use globalThis for the env cache so that all module instances (whether
+ * loaded directly, via `?test=` query-param, or through mock.module) share
+ * the same cache. Without this, Bun's mock.module / cache-busting imports
+ * create separate module instances with separate module-level state, which
+ * breaks `_resetEnvCache()` in tests.
+ */
+const GLOBAL_CACHE_KEY = '__chm_clickhouse_env_cache__' as const
+
+function getCachedEnv(): ClickHouseEnv | null {
+  return (globalThis as Record<string, unknown>)[
+    GLOBAL_CACHE_KEY
+  ] as ClickHouseEnv | null
+}
+
+function setCachedEnv(env: ClickHouseEnv | null): void {
+  ;(globalThis as Record<string, unknown>)[GLOBAL_CACHE_KEY] = env
+}
 
 /**
  * Validate ClickHouse environment variables.
@@ -51,7 +68,8 @@ let _cachedEnv: ClickHouseEnv | null = null
  * Returns parsed and validated config, or logs errors and returns defaults for graceful degradation.
  */
 export function validateClickHouseEnv(): ClickHouseEnv {
-  if (_cachedEnv) return _cachedEnv
+  const cached = getCachedEnv()
+  if (cached) return cached
 
   const result = clickhouseEnvSchema.safeParse({
     CLICKHOUSE_HOST: process.env.CLICKHOUSE_HOST,
@@ -75,13 +93,13 @@ export function validateClickHouseEnv(): ClickHouseEnv {
     return ENV_FALLBACK
   }
 
-  _cachedEnv = result.data
-  return _cachedEnv
+  setCachedEnv(result.data)
+  return result.data
 }
 
 /**
  * Reset the cached env — for use in tests only.
  */
 export function _resetEnvCache(): void {
-  _cachedEnv = null
+  setCachedEnv(null)
 }

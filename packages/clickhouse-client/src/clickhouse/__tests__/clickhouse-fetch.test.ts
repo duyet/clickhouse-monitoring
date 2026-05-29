@@ -20,8 +20,6 @@ mock.module('@chm/logger', () => ({
   warn: mockWarn,
 }))
 
-const mockGetClient = mock(() => Promise.resolve({}))
-const mockGetClickHouseConfigs = mock(() => [])
 const mockValidateTableExistence = mock(() =>
   Promise.resolve({ shouldProceed: true, missingTables: [] })
 )
@@ -62,14 +60,17 @@ function normalizeNumericStrings(value: unknown): unknown {
   return value
 }
 
-// Mock specifiers MUST match the import specifiers in clickhouse-fetch.ts.
-// On Linux CI, bun's mock.module only intercepts imports with matching specifiers.
-mock.module('../clickhouse-client', () => ({
-  getClient: mockGetClient,
+// Mock @clickhouse/client at the package level so clickhouse-client.ts
+// still loads normally but produces mock clients. This avoids mocking
+// '../clickhouse-client' which would intercept ?test= imports in other
+// test files (Bun resolves relative mock.module specifiers globally).
+const mockCreateClient = mock(() => ({}))
+mock.module('@clickhouse/client', () => ({
+  createClient: mockCreateClient,
 }))
 
-mock.module('../clickhouse-config', () => ({
-  getClickHouseConfigs: mockGetClickHouseConfigs,
+mock.module('@clickhouse/client-web', () => ({
+  createClient: mock(() => ({})),
 }))
 
 mock.module('../../table-validator', () => ({
@@ -83,14 +84,23 @@ mock.module('../../wasm/monitor-core', () => ({
     JSON.parse(await mockTransformClickHouseJsonEachRowWasmJson(input)),
 }))
 
+const originalEnv = { ...process.env }
+
 // Clean up all module mocks after tests complete
 afterAll(() => {
+  process.env = originalEnv
   mock.restore()
 })
 
 // Dynamic import ensures mocks are in place before the module loads.
 // The cache-busting query keeps this test isolated from earlier module loads
 // in Bun's shared test process.
+const { _resetEnvCache } = await import(
+  new URL('../env-schema.ts?test=clickhouse-fetch', import.meta.url).href
+)
+const { clientPool } = await import(
+  new URL('../connection-pool.ts?test=clickhouse-fetch', import.meta.url).href
+)
 const {
   __testCountJsonEachRowRows,
   fetchData,
@@ -117,32 +127,27 @@ describe('clickhouse-fetch', () => {
     text: mockResultSetText,
   }
 
-  const mockConfig = {
-    id: 0,
-    host: 'http://localhost:8123',
-    user: 'default',
-    password: '',
-  }
-
   const defaultParams = {
     query: 'SELECT 1',
     hostId: 0,
   }
 
   beforeEach(() => {
-    mockGetClient.mockReset()
-    mockGetClickHouseConfigs.mockReset()
+    process.env = { ...originalEnv }
+    process.env.CLICKHOUSE_HOST = 'http://localhost:8123'
+    process.env.CLICKHOUSE_USER = 'default'
+    process.env.CLICKHOUSE_PASSWORD = ''
+    _resetEnvCache()
+
+    // Clear the connection pool so each test gets a fresh client
+    clientPool.clear()
+
+    mockCreateClient.mockReset()
+    mockCreateClient.mockReturnValue(mockClient)
     mockValidateTableExistence.mockReset()
     mockClientQuery.mockReset()
     mockResultSetJson.mockReset()
     mockResultSetText.mockReset()
-    mockDebug.mockReset()
-    mockError.mockReset()
-    mockWarn.mockReset()
-    mockTransformClickHouseJsonEachRowWasmJson.mockClear()
-
-    mockGetClient.mockResolvedValue(mockClient as never)
-    mockGetClickHouseConfigs.mockReturnValue([mockConfig])
     mockResultSetJson.mockResolvedValue([{ result: 'data' }])
     mockResultSetText.mockResolvedValue('{"result":"1"}\n{"result":"2"}\n')
     mockClientQuery.mockResolvedValue(mockResultSet as never)
@@ -291,7 +296,8 @@ describe('clickhouse-fetch', () => {
 
     describe('configuration validation', () => {
       it('should return error when no configs available', async () => {
-        mockGetClickHouseConfigs.mockReturnValue([])
+        delete process.env.CLICKHOUSE_HOST
+        _resetEnvCache()
 
         const result = await fetchData(defaultParams)
 
@@ -304,8 +310,7 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should return error when hostId out of range', async () => {
-        mockGetClickHouseConfigs.mockReturnValue([mockConfig])
-
+        // Config has 1 host (id=0), requesting hostId=5
         const result = await fetchData({ ...defaultParams, hostId: 5 })
 
         expect(result.data).toBeNull()
@@ -592,7 +597,7 @@ describe('clickhouse-fetch', () => {
     it('should execute simple query', async () => {
       await query('SELECT 1')
 
-      expect(mockGetClient).toHaveBeenCalled()
+      expect(mockCreateClient).toHaveBeenCalled()
       expect(mockClientQuery).toHaveBeenCalledWith({
         query: expect.stringContaining('SELECT 1'),
         format: 'JSON',
@@ -621,14 +626,11 @@ describe('clickhouse-fetch', () => {
       )
     })
 
-    it('should pass web: false to getClient', async () => {
+    it('should use non-web client (standard createClient)', async () => {
       await query('SELECT 1')
 
-      expect(mockGetClient).toHaveBeenCalledWith(
-        expect.objectContaining({
-          web: false,
-        })
-      )
+      // query() uses getClient with web: false, which calls @clickhouse/client createClient
+      expect(mockCreateClient).toHaveBeenCalled()
     })
 
     it('should return resultSet', async () => {
