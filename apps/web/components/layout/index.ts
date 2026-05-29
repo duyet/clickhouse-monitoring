@@ -7,3 +7,5 @@
 
 // Re-export AppSidebar from the main components directory
 export { AppSidebar } from '@/components/app-sidebar'
+
+export { PageHeader } from './page-header'

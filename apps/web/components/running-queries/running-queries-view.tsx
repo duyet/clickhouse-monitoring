@@ -7,6 +7,7 @@ import type { CardError } from '@/lib/card-error-utils'
 
 import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
+import { PageHeader } from '@/components/layout'
 import { RunningQueriesCharts } from '@/components/running-queries/running-queries-charts'
 import { RunningQueriesTable } from '@/components/running-queries/running-queries-table'
 import { Skeleton } from '@/components/skeletons'
@@ -164,16 +165,21 @@ export const RunningQueriesView = function RunningQueriesView() {
     <TooltipProvider>
       <div className="flex flex-col gap-4">
         {/* Header */}
-        <div className="flex flex-col gap-1">
-          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:flex-wrap">
+        <PageHeader
+          title={
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold tracking-tight sm:text-[22px]">
-                Running Queries
-              </h1>
+              Running Queries
               <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium tabular-nums text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
                 {rows.length} active
               </span>
             </div>
+          }
+          description={
+            live
+              ? `Queries currently executing on the cluster · auto-refreshes every ${REFRESH_SECONDS}s`
+              : 'Queries currently executing on the cluster · auto-refresh paused'
+          }
+          actions={
             <div className="flex flex-wrap items-center gap-1.5">
               <HeaderButton onClick={() => setChartsOpen((v) => !v)}>
                 <ChevronDown
@@ -205,14 +211,8 @@ export const RunningQueriesView = function RunningQueriesView() {
                 {live ? 'Live' : 'Paused'}
               </HeaderButton>
             </div>
-          </div>
-          <p className="text-[12.5px] text-muted-foreground">
-            Queries currently executing on the cluster
-            {live
-              ? ` · auto-refreshes every ${REFRESH_SECONDS}s`
-              : ' · auto-refresh paused'}
-          </p>
-        </div>
+          }
+        />
 
         {/* Body */}
         {isLoading && !data ? (

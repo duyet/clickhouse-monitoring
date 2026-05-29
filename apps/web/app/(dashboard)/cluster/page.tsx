@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { ChartSummaryUsedByRunningQueries } from '@/components/charts/summary-used-by-running-queries'
 import { ChartCPUUsage } from '@/components/charts/system/cpu-usage'
 import { ChartMemoryUsage } from '@/components/charts/system/memory-usage'
+import { PageHeader } from '@/components/layout'
 import { ChartSkeleton } from '@/components/skeletons'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -92,16 +93,14 @@ function ClusterComparisonContent() {
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
       {/* Page header */}
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-          Cluster Comparison
-        </h1>
-        <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-          {isSingleHost
+      <PageHeader
+        title="Cluster Comparison"
+        description={
+          isSingleHost
             ? 'Side-by-side view of key metrics. Add more hosts to compare across nodes.'
-            : `Comparing ${hosts.length} hosts — spot imbalances in CPU, memory, and query load.`}
-        </p>
-      </div>
+            : `Comparing ${hosts.length} hosts — spot imbalances in CPU, memory, and query load.`
+        }
+      />
 
       {/* Metric rows: one section per metric, one card per host */}
       {METRICS.map(({ id, label, Component }) => (
