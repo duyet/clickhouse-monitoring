@@ -28,6 +28,7 @@ Agents discover knowledge in this order:
 | **Architecture** | [rust-wasm-performance.md](rust-wasm-performance.md) | decision | Rust/WASM benchmark: keep object transforms in TS, WASM for byte paths |
 | **Architecture** | [memory-optimization.md](memory-optimization.md) | reference | Memory optimization: pooling, memoization, cache limits, monitoring |
 | **Operations** | [deployment.md](deployment.md) | reference | Docker and Cloudflare Workers dual deployment guide |
+| **Operations** | [monorepo-refactor.md](monorepo-refactor.md) | operations | Bun-workspaces + Turborepo migration: status, workflow, gotchas, Phase 5 TODO |
 | **Operations** | [core-memory.md](core-memory.md) | workflow | Automation core memory: code-smell scans, dead-code rules |
 | **Operations** | [secret-rotation.md](secret-rotation.md) | workflow | Cloudflare Workers secret rotation: redeploy after wrangler secret put |
 | **Specs** | [mcp-server.md](mcp-server.md) | reference | MCP server at /api/mcp: tools, setup, security |
