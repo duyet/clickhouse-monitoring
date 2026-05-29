@@ -6,13 +6,7 @@
  * is called with the correct parameters.
  */
 
-import {
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-} from 'bun:test'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // Mock SWR before any imports that use it
 const mockUseSWR = mock(() => ({

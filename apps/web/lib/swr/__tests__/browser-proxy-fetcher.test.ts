@@ -10,15 +10,16 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // Local mock for apiFetch — only this file controls it.
-const mockApiFetch = mock(async () =>
-  new Response(
-    JSON.stringify({
-      success: true,
-      data: [{ col1: 'val1' }],
-      metadata: { duration: 50 },
-    }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } }
-  )
+const mockApiFetch = mock(
+  async () =>
+    new Response(
+      JSON.stringify({
+        success: true,
+        data: [{ col1: 'val1' }],
+        metadata: { duration: 50 },
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    )
 )
 
 // Inlined throwIfNotOk (from fetch-error.ts) to avoid mock contamination.
@@ -42,8 +43,7 @@ async function throwIfNotOk(
   if (response.ok) return
   const errorData = (await response.json().catch(() => ({}))) as ApiErrorBody
   const error = new Error(
-    errorData.error?.message ||
-      `${fallbackMessage}: ${response.statusText}`
+    errorData.error?.message || `${fallbackMessage}: ${response.statusText}`
   ) as FetchError
   error.status = response.status
   if (errorData.error) {
@@ -65,23 +65,20 @@ async function fetchViaBrowserProxy<T = unknown>({
   queryParams?: Record<string, string | number | boolean>
   format?: string
 }): Promise<{ data: T[]; metadata: Record<string, unknown> }> {
-  const response = await mockApiFetch(
-    '/api/v1/browser-connections/proxy',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        connection: {
-          host: connection.host,
-          user: connection.user,
-          password: connection.password,
-        },
-        query,
-        query_params: queryParams,
-        format,
-      }),
-    }
-  )
+  const response = await mockApiFetch('/api/v1/browser-connections/proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      connection: {
+        host: connection.host,
+        user: connection.user,
+        password: connection.password,
+      },
+      query,
+      query_params: queryParams,
+      format,
+    }),
+  })
 
   await throwIfNotOk(response, 'Proxy request failed')
 
@@ -104,15 +101,16 @@ describe('fetchViaBrowserProxy', () => {
   beforeEach(() => {
     mockApiFetch.mockClear()
 
-    mockApiFetch.mockImplementation(async () =>
-      new Response(
-        JSON.stringify({
-          success: true,
-          data: [{ col1: 'val1' }],
-          metadata: { duration: 50 },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      )
+    mockApiFetch.mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            success: true,
+            data: [{ col1: 'val1' }],
+            metadata: { duration: 50 },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
     )
   })
 
@@ -173,11 +171,12 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('throws on non-OK response status', async () => {
-    mockApiFetch.mockImplementation(async () =>
-      new Response(
-        JSON.stringify({ error: { message: 'Proxy request failed' } }),
-        { status: 502, statusText: 'Bad Gateway' }
-      )
+    mockApiFetch.mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({ error: { message: 'Proxy request failed' } }),
+          { status: 502, statusText: 'Bad Gateway' }
+        )
     )
 
     await expect(
@@ -189,11 +188,12 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('uses fallback message when error body has no message', async () => {
-    mockApiFetch.mockImplementation(async () =>
-      new Response(JSON.stringify({}), {
-        status: 500,
-        statusText: 'Internal Server Error',
-      })
+    mockApiFetch.mockImplementation(
+      async () =>
+        new Response(JSON.stringify({}), {
+          status: 500,
+          statusText: 'Internal Server Error',
+        })
     )
 
     await expect(
