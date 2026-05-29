@@ -30,7 +30,7 @@ export function MirrorStatusPill({ status, className }: MirrorStatusPillProps) {
     >
       <span className="relative inline-flex">
         <span
-          className="h-1.5 w-1.5 rounded-full"
+          className="size-1.5 rounded-full"
           style={{ background: meta.dot }}
         />
         {meta.pulse && (
