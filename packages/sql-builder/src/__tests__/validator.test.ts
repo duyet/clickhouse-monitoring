@@ -67,8 +67,7 @@ describe('validateBuilderState', () => {
     })
 
     it('should accept fully populated valid state', () => {
-      const base = sql().select('id').from('users')
-      const state: BuilderState = {
+      const _state: BuilderState = {
         ctes: [],
         columns: ['id', 'name'],
         from: { table: 'users', alias: 'u' },

@@ -524,9 +524,9 @@ describe('ExtendedBuilder', () => {
 
       const extended = base.extend()
 
-      const baseQuery = base.build()
       // The build output format differs between SqlBuilder and ExtendedBuilder
       // but both should produce valid SQL with the same columns
+      expect(base.build()).toContain('id')
       expect(extended.build()).toContain('id')
     })
 
