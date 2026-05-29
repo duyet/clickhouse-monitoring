@@ -8,6 +8,8 @@
  * field key, never raw SQL identifiers.
  */
 
+import { fetchData } from '@chm/clickhouse-client'
+import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
 import { error } from '@chm/logger'
 import {
   createErrorResponse,
@@ -16,8 +18,6 @@ import {
 } from '@/lib/api/error-handler'
 import { getTableConfig } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchData } from '@/lib/clickhouse'
-import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 
 export const dynamic = 'force-dynamic'
 

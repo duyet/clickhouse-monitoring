@@ -1,4 +1,4 @@
-import type { FetchDataError } from '@/lib/clickhouse'
+import type { FetchDataError } from '@chm/clickhouse-client'
 
 /**
  * Utility functions for handling and displaying ClickHouse errors

@@ -1,7 +1,7 @@
 import type { Dispatcher, Agent as UndiciAgent } from 'undici'
 
+import { isCloudflareWorkers } from '@chm/clickhouse-client/runtime/cloudflare-workers'
 import { Address4, Address6 } from 'ip-address'
-import { isCloudflareWorkers } from '@/lib/runtime/cloudflare-workers'
 
 const INTERNAL_ADDRESS_ERROR =
   'Connections to internal addresses are not allowed.'

@@ -13,6 +13,8 @@ import type { AgentVisualizationProps } from '@/components/agents/agent-visualiz
 import type { QueryConfig } from '@/types/query-config'
 
 import { QueryInsightsCard } from './query-insights-card'
+import { isCloudflareWorkers } from '@chm/clickhouse-client/runtime/cloudflare-workers'
+import { getToolMetadata } from '@chm/mcp-server/data'
 import { type ComponentProps, useEffect, useState } from 'react'
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
 import { AgentDataSources } from '@/components/agents/agent-data-sources'
@@ -27,7 +29,6 @@ import {
   isAskUserOutput,
 } from '@/components/agents/ask-user-widget'
 import { DataTable } from '@/components/data-table/data-table'
-import { getToolMetadata } from '@/components/mcp/mcp-tools-data'
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
@@ -36,7 +37,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { isCloudflareWorkers } from '@/lib/runtime/cloudflare-workers'
 import { cn } from '@/lib/utils'
 
 export interface AgentToolPart {

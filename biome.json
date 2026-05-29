@@ -125,7 +125,7 @@
       "**/*.js",
       "**/*.jsx",
       "**/*.json",
-      "!apps/web/lib/wasm/generated",
+      "!packages/clickhouse-client/src/wasm/generated",
       "!**/*.generated.ts"
     ]
   }

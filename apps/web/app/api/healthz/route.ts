@@ -1,6 +1,5 @@
+import { getClickHouseConfigs, getClient } from '@chm/clickhouse-client'
 import { NextResponse } from 'next/server'
-import { getClient } from '@/lib/clickhouse/clickhouse-client'
-import { getClickHouseConfigs } from '@/lib/clickhouse/clickhouse-config'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'

@@ -8,7 +8,7 @@ const wasmPath = resolve(
   root,
   'rust/target/wasm32-unknown-unknown/release/monitor_core.wasm'
 )
-const outDir = resolve(root, 'apps/web/lib/wasm/generated')
+const outDir = resolve(root, 'packages/clickhouse-client/src/wasm/generated')
 const wasmOutput = resolve(outDir, 'monitor_core_bg.wasm')
 
 // Skip build when pre-built WASM files are present (e.g. downloaded from CI artifact)

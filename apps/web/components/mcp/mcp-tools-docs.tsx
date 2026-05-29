@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'
 
 import { CodeBlock } from './copy-button'
-import { MCP_TOOLS } from './mcp-tools-data'
+import { MCP_TOOLS } from '@chm/mcp-server/data'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

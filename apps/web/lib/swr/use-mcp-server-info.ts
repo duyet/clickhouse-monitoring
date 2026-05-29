@@ -15,7 +15,7 @@ import type {
   McpTool,
   McpToolCategory,
   McpToolParam,
-} from '@/components/mcp/mcp-tools-data'
+} from '@chm/mcp-server/data'
 
 import { apiFetch } from './api-fetch'
 import { swrConfig } from '@/lib/swr/config'

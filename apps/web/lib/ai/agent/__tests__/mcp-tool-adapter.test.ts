@@ -4,7 +4,7 @@
  * Imports from ../tools directly to avoid mock leaks from clickhouse-agent.test.ts
  * which mocks @/lib/ai/agent/mcp-tool-adapter globally.
  *
- * Does NOT mock @/lib/api/shared/validators/sql to avoid leaking into SQL validator tests.
+ * Does NOT mock @chm/sql-builder to avoid leaking into SQL validator tests.
  * Tool execute tests use readOnlyQuery (no validation) so the real validator isn't invoked.
  */
 
@@ -14,7 +14,7 @@ import { describe, expect, mock, test } from 'bun:test'
 mock.module('server-only', () => ({}))
 
 // Mock fetchData — all tool helpers delegate to this
-mock.module('@/lib/clickhouse', () => ({
+mock.module('@chm/clickhouse-client', () => ({
   fetchData: async ({
     query,
   }: {

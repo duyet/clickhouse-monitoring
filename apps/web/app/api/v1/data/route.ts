@@ -13,11 +13,13 @@
 
 import type { DataFormat } from '@clickhouse/client'
 
+import type { FetchDataError } from '@chm/clickhouse-client'
 import type { ApiRequest } from '@/lib/api/types'
-import type { FetchDataError } from '@/lib/clickhouse'
 
 import { validateDashboardQuery } from './validators/dashboard-query-validator'
+import { fetchData } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
+import { validateSqlQuery } from '@chm/sql-builder'
 import {
   createErrorResponse as createApiErrorResponse,
   createValidationError,
@@ -29,11 +31,9 @@ import {
   getAndValidateHostId,
   validateDataRequest,
   validateSearchParams,
-  validateSqlQuery,
 } from '@/lib/api/shared/validators'
 import { getTableConfig } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchData } from '@/lib/clickhouse'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 // This route is dynamic and should not be statically exported

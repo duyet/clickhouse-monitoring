@@ -54,7 +54,7 @@ mock.module('@/lib/api/table-registry', () => ({
   hasTable: mockHasTable,
 }))
 
-mock.module('@/lib/clickhouse', () => ({
+mock.module('@chm/clickhouse-client', () => ({
   fetchData: mockFetchData,
 }))
 

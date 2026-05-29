@@ -11,6 +11,14 @@ import type {
 } from '@/lib/api/types'
 import type { CachePolicy } from '@/types/chart-data'
 
+import { fetchJsonEachRowAsNormalizedJson } from '@chm/clickhouse-client'
+import {
+  checkTableAvailability,
+  getClickHouseVersion,
+  getTableInfoMessage,
+  selectQueryVariant,
+  selectVersionedSql,
+} from '@chm/clickhouse-client/clickhouse-version'
 import { debug, error } from '@chm/logger'
 import { isValidInterval } from '@chm/types/clickhouse-interval'
 import {
@@ -26,14 +34,6 @@ import {
 } from '@/lib/api/error-handler'
 import { transformClickHouseData } from '@/lib/api/transform-data'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchJsonEachRowAsNormalizedJson } from '@/lib/clickhouse'
-import {
-  checkTableAvailability,
-  getClickHouseVersion,
-  getTableInfoMessage,
-  selectQueryVariant,
-  selectVersionedSql,
-} from '@/lib/clickhouse-version'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 // This route is dynamic and should not be statically exported
@@ -407,7 +407,6 @@ export async function GET(
       ? {
           name,
           sql: selectedQuery,
-          columns: [],
           tableCheck: queryDef.tableCheck,
           optional: true,
         }

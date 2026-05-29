@@ -51,6 +51,11 @@ const nextConfig: NextConfig = {
     cpus: 1,
   },
 
+  // Transpile workspace packages that ship raw TypeScript with node: scheme
+  // dynamic imports (e.g. @chm/clickhouse-client's WASM loader) so Next applies
+  // the same loaders/polyfills as app-internal code.
+  transpilePackages: ['@chm/clickhouse-client'],
+
   // Automatically bundle external packages in the Pages Router:
   bundlePagesRouterDependencies: true,
   // Opt specific packages out of bundling for both App and Pages Router:

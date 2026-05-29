@@ -34,7 +34,7 @@ mock.module('@/lib/api/table-registry', () => ({
   getTableQuery: mockGetTableQuery,
 }))
 
-mock.module('@/lib/clickhouse', () => ({
+mock.module('@chm/clickhouse-client', () => ({
   fetchData: mockFetchData,
 }))
 

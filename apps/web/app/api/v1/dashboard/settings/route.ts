@@ -6,6 +6,7 @@
 
 import type { ApiResponse } from '@/lib/api/types'
 
+import { getClient } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import { TABLE_SETTINGS } from '@/lib/api/dashboard-api'
 import {
@@ -13,7 +14,6 @@ import {
   createValidationError,
 } from '@/lib/api/error-handler'
 import { ApiErrorType } from '@/lib/api/types'
-import { getClient } from '@/lib/clickhouse'
 import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 

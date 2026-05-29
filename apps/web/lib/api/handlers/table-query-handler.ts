@@ -7,6 +7,7 @@
  * @module lib/api/handlers/table-query-handler
  */
 
+import { fetchData } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import {
   createErrorResponse,
@@ -15,7 +16,6 @@ import {
 } from '@/lib/api/error-handler'
 import { getTableConfig, getTableQuery } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchData } from '@/lib/clickhouse'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 export interface CreateTableQueryHandlerOptions {

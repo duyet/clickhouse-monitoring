@@ -1,8 +1,8 @@
+import { getClient } from '@chm/clickhouse-client'
 import { ErrorLogger } from '@chm/logger'
 import { geolocation } from '@vercel/functions'
 import { NextResponse, userAgent } from 'next/server'
 import { EVENTS_TABLE } from '@/lib/app-tables'
-import { getClient } from '@/lib/clickhouse'
 import { normalizeUrl } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'

@@ -2,8 +2,8 @@
  * Memory usage monitoring and health metrics
  */
 
-import { getConnectionPoolStats } from '@/lib/clickhouse'
-import { getCacheMetrics } from '@/lib/table-existence-cache'
+import { getConnectionPoolStats } from '@chm/clickhouse-client'
+import { getCacheMetrics } from '@chm/clickhouse-client/table-existence-cache'
 
 export interface MemoryMetrics {
   heapUsed: number

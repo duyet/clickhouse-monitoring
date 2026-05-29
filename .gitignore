@@ -74,11 +74,11 @@ cypress/screenshots
 bunfig.local.toml
 
 # Generated Rust/WASM bindings
-apps/web/lib/wasm/generated/*
-!apps/web/lib/wasm/generated/monitor_core.d.ts
-!apps/web/lib/wasm/generated/monitor_core.js
-!apps/web/lib/wasm/generated/monitor_core_bg.wasm
-!apps/web/lib/wasm/generated/monitor_core_bg.wasm.d.ts
+packages/clickhouse-client/src/wasm/generated/*
+!packages/clickhouse-client/src/wasm/generated/monitor_core.d.ts
+!packages/clickhouse-client/src/wasm/generated/monitor_core.js
+!packages/clickhouse-client/src/wasm/generated/monitor_core_bg.wasm
+!packages/clickhouse-client/src/wasm/generated/monitor_core_bg.wasm.d.ts
 /rust/monitor-core/target/
 
 .claude/*.local.md

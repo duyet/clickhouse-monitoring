@@ -1,0 +1,28 @@
+{
+  "name": "@chm/clickhouse-client",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./constants": "./src/clickhouse/constants.ts",
+    "./clickhouse-version": "./src/clickhouse-version.ts",
+    "./table-validator": "./src/table-validator.ts",
+    "./table-existence-cache": "./src/table-existence-cache.ts",
+    "./wasm/monitor-core": "./src/wasm/monitor-core.ts",
+    "./runtime/cloudflare-workers": "./src/runtime/cloudflare-workers.ts"
+  },
+  "dependencies": {
+    "@chm/logger": "workspace:*",
+    "@chm/sql-builder": "workspace:*",
+    "@clickhouse/client": "^1.18.5",
+    "@clickhouse/client-web": "^1.18.5",
+    "lru-cache": "^11.5.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.0"
+  }
+}

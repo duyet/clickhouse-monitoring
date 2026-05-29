@@ -1,4 +1,4 @@
-import type { FetchDataError } from '@/lib/clickhouse'
+import type { FetchDataError } from '@chm/clickhouse-client'
 
 import {
   formatErrorMessage,

@@ -1,11 +1,11 @@
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { ClickHouseClient as WebClickHouseClient } from '@clickhouse/client-web'
 
+import { getClient } from '@chm/clickhouse-client'
 import { ErrorLogger } from '@chm/logger'
 import { NextResponse } from 'next/server'
 import { getHostIdFromParams } from '@/lib/api/error-handler'
 import { EVENTS_TABLE } from '@/lib/app-tables'
-import { getClient } from '@/lib/clickhouse'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 

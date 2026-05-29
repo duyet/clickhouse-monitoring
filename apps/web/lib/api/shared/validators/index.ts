@@ -25,7 +25,5 @@ export {
   validateRequiredString,
   validateSearchParams,
 } from './request'
-// SQL validators
-export { validateSqlQuery } from './sql'
 // Utility functions
 export { sanitizeQueryParams } from './utils'

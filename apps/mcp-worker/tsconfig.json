@@ -7,19 +7,18 @@
     "noEmit": true,
     "types": ["@cloudflare/workers-types"],
     "paths": {
-      "@/*": ["../web/*"],
       "@chm/types": ["../../packages/types/src"],
       "@chm/types/*": ["../../packages/types/src/*"],
       "@chm/sql-builder": ["../../packages/sql-builder/src"],
       "@chm/sql-builder/*": ["../../packages/sql-builder/src/*"],
       "@chm/platform": ["../../packages/platform/src"],
       "@chm/platform/*": ["../../packages/platform/src/*"],
-      "@chm/logger": ["../../packages/logger/src"]
+      "@chm/logger": ["../../packages/logger/src"],
+      "@chm/clickhouse-client": ["../../packages/clickhouse-client/src"],
+      "@chm/clickhouse-client/*": ["../../packages/clickhouse-client/src/*"],
+      "@chm/mcp-server": ["../../packages/mcp-server/src"],
+      "@chm/mcp-server/*": ["../../packages/mcp-server/src/*"]
     }
   },
-  "include": [
-    "./src/**/*.ts",
-    "../web/lib/**/*.ts",
-    "../web/components/mcp/**/*.ts"
-  ]
+  "include": ["./src/**/*.ts"]
 }

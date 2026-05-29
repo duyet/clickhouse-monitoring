@@ -34,5 +34,4 @@ export {
   validateHostIdWithError,
   validateRequiredString,
   validateSearchParams,
-  validateSqlQuery,
 } from './validators'

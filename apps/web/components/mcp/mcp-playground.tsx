@@ -1,7 +1,7 @@
 'use client'
 
 import { CodeBlock, CopyButton } from './copy-button'
-import { MCP_TOOLS, type McpToolParam } from './mcp-tools-data'
+import { MCP_TOOLS, type McpToolParam } from '@chm/mcp-server/data'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {

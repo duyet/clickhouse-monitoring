@@ -1,12 +1,15 @@
+import {
+  apiKeyAuthEnabled,
+  getBearerToken,
+  verifyApiKey,
+} from '@chm/mcp-server/auth'
 import { clerkMiddleware } from '@clerk/nextjs/server'
 import {
   type NextFetchEvent,
   type NextRequest,
   NextResponse,
 } from 'next/server'
-import { apiKeyAuthEnabled, verifyApiKey } from '@/lib/api-key'
 import { isValidAgentApiBearerToken } from '@/lib/auth/agent-api-token'
-import { getBearerToken } from '@/lib/auth/bearer-token'
 import { getAuthProvider, isAuthProviderConfigError } from '@/lib/auth/provider'
 
 async function getApiKeyAuthFailure(request: Request) {
