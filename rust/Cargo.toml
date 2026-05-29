@@ -3,6 +3,8 @@ members = [
     "ch-json",
     "ch-pivot",
     "monitor-core",
+    "ch-monitor-cli",
+    "user-events-rs",
 ]
 resolver = "2"
 
