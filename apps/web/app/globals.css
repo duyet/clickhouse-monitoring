@@ -13,9 +13,24 @@
   }
   html {
     @apply h-full;
+    /* Reserve the scrollbar track so content width never shifts when a chart
+       grows the page past one viewport — a subtle but real source of horizontal
+       jump while charts stream in. */
+    scrollbar-gutter: stable;
   }
   body {
     @apply min-h-full bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Opt an element out of the browser's scroll-anchoring heuristic. Used on
+     lazily-mounted chart slots so inserting a chart above the viewport during a
+     fast scroll-to-bottom doesn't yank the scroll position around ("flaking").
+     Pairs with reserved slot heights so there is no shift to anchor against. */
+  .overflow-anchor-none {
+    overflow-anchor: none;
+    content-visibility: auto;
   }
 }
 
