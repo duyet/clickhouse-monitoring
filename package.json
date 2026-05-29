@@ -209,7 +209,7 @@
     "start-server-and-test": "^3.0.5",
     "turbo": "^2.9.15",
     "typescript": "^6.0.0",
-    "wrangler": "4.95.0"
+    "wrangler": "4.65.0"
   },
   "bun": {
     "onlyBuiltDependencies": [
