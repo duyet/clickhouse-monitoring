@@ -321,9 +321,7 @@ const EditComposer: FC = () => {
  * Module-level stable reference — required for GroupedParts performance.
  */
 const groupByChainOfThought = (
-  part: PartState,
-  _index: number,
-  _parts: readonly PartState[]
+  part: PartState
 ): readonly ChainOfThoughtKey[] | null => {
   if (part.type === 'reasoning') {
     return ['group-chainOfThought', 'group-chainOfThought-reasoning'] as const

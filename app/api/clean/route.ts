@@ -1,6 +1,5 @@
 import type { ClickHouseClient } from '@clickhouse/client'
-
-import type { WebClickHouseClient } from '@clickhouse/client-web/dist/client'
+import type { ClickHouseClient as WebClickHouseClient } from '@clickhouse/client-web'
 
 import { NextResponse } from 'next/server'
 import { getHostIdFromParams } from '@/lib/api/error-handler'
