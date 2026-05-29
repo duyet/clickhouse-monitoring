@@ -1,5 +1,7 @@
 'use client'
 
+import { GitMerge, Wrench } from 'lucide-react'
+
 import type { HealthStatus } from './health-card'
 
 import { useEffect, useRef } from 'react'
@@ -11,7 +13,7 @@ function StatusDot({ status }: { status: HealthStatus }) {
   return (
     <span
       className={cn(
-        'inline-block h-3 w-3 rounded-full flex-shrink-0',
+        'inline-block h-2 w-2 rounded-full flex-shrink-0',
         status === 'ok' && 'bg-green-500',
         status === 'warning' && 'bg-amber-500',
         status === 'critical' && 'bg-red-500',
@@ -118,13 +120,26 @@ export function StuckMutationsCard() {
       )}
     >
       <div className="flex items-center gap-2">
-        <StatusDot status={status} />
-        <span className="text-sm font-medium text-muted-foreground">
+        <Wrench
+          className={cn(
+            'size-4 flex-shrink-0',
+            status === 'critical' && 'text-red-500',
+            status === 'warning' && 'text-amber-500',
+            status === 'ok' && 'text-green-500',
+            (status === 'loading' || status === 'error') &&
+              'text-muted-foreground'
+          )}
+          aria-hidden
+        />
+        <span className="text-[12.5px] font-medium text-muted-foreground leading-tight flex-1 min-w-0 truncate">
           Mutations
         </span>
+        <StatusDot status={status} />
       </div>
       <div className="text-2xl font-bold tabular-nums">{stuck}</div>
-      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-[11.5px] text-muted-foreground leading-snug">
+        {label}
+      </div>
     </div>
   )
 }
@@ -181,15 +196,28 @@ export function RunningMutationsCard() {
       )}
     >
       <div className="flex items-center gap-2">
-        <StatusDot status={status} />
-        <span className="text-sm font-medium text-muted-foreground">
+        <GitMerge
+          className={cn(
+            'size-4 flex-shrink-0',
+            status === 'critical' && 'text-red-500',
+            status === 'warning' && 'text-amber-500',
+            status === 'ok' && 'text-green-500',
+            (status === 'loading' || status === 'error') &&
+              'text-muted-foreground'
+          )}
+          aria-hidden
+        />
+        <span className="text-[12.5px] font-medium text-muted-foreground leading-tight flex-1 min-w-0 truncate">
           Running Mutations
         </span>
+        <StatusDot status={status} />
       </div>
       <div className="text-2xl font-bold tabular-nums">
         {value.toLocaleString()}
       </div>
-      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-[11.5px] text-muted-foreground leading-snug">
+        {label}
+      </div>
     </div>
   )
 }

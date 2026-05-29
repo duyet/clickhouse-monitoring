@@ -1,3 +1,16 @@
+import type { LucideIcon } from 'lucide-react'
+import {
+  Clock,
+  HardDrive,
+  Layers,
+  MemoryStick,
+  PauseCircle,
+  ServerCrash,
+  ShieldAlert,
+  Timer,
+  XCircle,
+} from 'lucide-react'
+
 import type { Thresholds } from '@/lib/health/thresholds-storage'
 
 export interface RelatedLink {
@@ -15,6 +28,8 @@ export interface DocsLink {
 export interface HealthCheckDef {
   id: string
   title: string
+  /** Lucide icon rendered in the card header. */
+  icon?: LucideIcon
   chartName: string
   /** Field on first data row to read the numeric value from. */
   valueKey: string
@@ -47,6 +62,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
   {
     id: 'readonly-replicas',
     title: 'Readonly Replicas',
+    icon: ShieldAlert,
     chartName: 'health-readonly-replicas',
     valueKey: 'readonly_count',
     defaults: { warning: 1, critical: 3 },
@@ -78,6 +94,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
   {
     id: 'delayed-inserts',
     title: 'Delayed Inserts',
+    icon: PauseCircle,
     chartName: 'health-delayed-inserts',
     valueKey: 'delayed_inserts',
     defaults: { warning: 1, critical: 5 },
@@ -105,6 +122,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
   {
     id: 'max-parts',
     title: 'Max Parts / Partition',
+    icon: Layers,
     chartName: 'health-max-part-count',
     valueKey: 'part_count',
     defaults: { warning: 150, critical: 300 },
@@ -136,6 +154,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
   {
     id: 'long-running-queries',
     title: 'Long-Running Queries',
+    icon: Timer,
     chartName: 'health-long-running-queries',
     valueKey: 'long_running',
     defaults: { warning: 1, critical: 5 },
@@ -167,6 +186,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
   {
     id: 'oom-killed',
     title: 'OOM-Killed Queries (1h)',
+    icon: MemoryStick,
     chartName: 'health-oom-killed-recent',
     valueKey: 'oom_count',
     defaults: { warning: 1, critical: 10 },
@@ -198,6 +218,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
   {
     id: 'failed-queries',
     title: 'Failed Queries (1h)',
+    icon: XCircle,
     chartName: 'health-failed-queries-recent',
     valueKey: 'failed_count',
     defaults: { warning: 10, critical: 100 },
@@ -229,6 +250,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
   {
     id: 'replication-lag',
     title: 'Replication Lag',
+    icon: Clock,
     chartName: 'health-replication-lag',
     valueKey: 'max_lag',
     defaults: { warning: 30, critical: 300 },
@@ -260,6 +282,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
   {
     id: 'keeper-exceptions',
     title: 'Keeper Exceptions (1h)',
+    icon: ServerCrash,
     chartName: 'health-keeper-exceptions-recent',
     valueKey: 'exception_count',
     defaults: { warning: 1, critical: 20 },
@@ -286,6 +309,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
   {
     id: 'memory-percent',
     title: 'Memory Usage',
+    icon: MemoryStick,
     chartName: 'health-memory-percent',
     valueKey: 'memory_percent',
     defaults: { warning: 80, critical: 95 },
@@ -314,6 +338,7 @@ export const HEALTH_CHECKS: readonly HealthCheckDef[] = [
   {
     id: 'disk-percent',
     title: 'Disk Usage',
+    icon: HardDrive,
     chartName: 'health-disk-percent',
     valueKey: 'disk_percent',
     defaults: { warning: 80, critical: 95 },
