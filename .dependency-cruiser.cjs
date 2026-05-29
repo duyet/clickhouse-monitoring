@@ -27,8 +27,15 @@ module.exports = {
       name: 'no-cross-app-imports',
       severity: 'error',
       comment: 'Apps must not import from other apps.',
-      from: { path: '^apps/([^/]+)/' },
-      to: { path: '^apps/(?!(\\1))([^/]+)/' },
+      from: { path: '^apps/web/' },
+      to: { path: '^apps/mcp-worker/' },
+    },
+    {
+      name: 'no-cross-app-imports-reverse',
+      severity: 'error',
+      comment: 'Apps must not import from other apps.',
+      from: { path: '^apps/mcp-worker/' },
+      to: { path: '^apps/web/' },
     },
 
     // ── Leaf packages must stay leaf-only ─────────────────────────────────

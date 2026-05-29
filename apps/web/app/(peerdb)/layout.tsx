@@ -1,3 +1,8 @@
+// Near-identical to (dashboard)/layout.tsx — kept as a separate copy so PeerDB
+// pages can diverge (different sidebar, metadata, or provider tree) without
+// risking breakage in the main dashboard. If the layouts stay identical for
+// 60+ days, consider extracting a shared layout component.
+
 import type { Metadata, Viewport } from 'next'
 
 import Script from 'next/script'

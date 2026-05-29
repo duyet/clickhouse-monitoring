@@ -10,8 +10,14 @@ import {
 
 export function partitionState(
   p: QRepPartition
-): 'done' | 'running' | 'queued' {
-  if (p.endTime) return 'done'
+): 'done' | 'running' | 'queued' | 'error' {
+  if (p.endTime) {
+    const synced = toNumber(p.rowsSynced)
+    const total = toNumber(p.rowsInPartition ?? p.numRows)
+    // If endTime is set but rowsSynced < rowsInPartition, the partition failed.
+    if (total > 0 && synced > 0 && synced < total) return 'error'
+    return 'done'
+  }
   // A partition that has started (has a startTime) or already synced rows is
   // in flight; only un-started partitions are queued.
   if (p.startTime || toNumber(p.rowsSynced) > 0) return 'running'
@@ -22,6 +28,7 @@ const PART_TONE: Record<string, string> = {
   done: '#10b981',
   running: '#3b82f6',
   queued: '#94a3b8',
+  error: '#f43f5e',
 }
 
 /** Bucket partition rows-synced by completion hour for the sync-history chart. */
@@ -56,6 +63,7 @@ export function QRepPartitions({
   partitions: QRepPartition[]
 }) {
   const done = partitions.filter((p) => partitionState(p) === 'done').length
+  const errored = partitions.filter((p) => partitionState(p) === 'error').length
   const running = partitions.filter(
     (p) => partitionState(p) === 'running'
   ).length
@@ -82,6 +90,15 @@ export function QRepPartitions({
               {queued}
             </span>
             <span className="text-muted-foreground"> queued</span>
+            {errored > 0 && (
+              <>
+                <span className="mx-1.5 text-muted-foreground">·</span>
+                <span className="font-semibold text-rose-600 dark:text-rose-400">
+                  {errored}
+                </span>
+                <span className="text-muted-foreground"> error</span>
+              </>
+            )}
           </span>
         </div>
       </div>

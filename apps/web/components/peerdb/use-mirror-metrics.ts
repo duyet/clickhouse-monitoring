@@ -8,7 +8,7 @@ import type {
   QRepPartition,
 } from '@/lib/peerdb/types'
 
-import { toNumber } from './peerdb-utils'
+import { parseTs, toNumber } from './peerdb-utils'
 import { usePeerDB } from '@/lib/swr'
 
 export interface DerivedMetrics {
@@ -72,7 +72,10 @@ export function useMirrorMetrics(
   const batches = batchesReq.data?.cdcBatches ?? cdc?.cdcBatches ?? []
   const trend = (graph.data?.data ?? []).map((p) => toNumber(p.rows))
 
-  const rowsPerSec = trend.length ? Math.round(trend[trend.length - 1] / 60) : 0
+  // Use the second-to-last bucket when available (complete 1-min window);
+  // the latest bucket may be partial and understate throughput.
+  const _bucketIdx = trend.length > 1 ? trend.length - 2 : trend.length - 1
+  const rowsPerSec = trend.length ? trend[_bucketIdx] / 60 : 0
 
   const rowsSynced = isCdc
     ? cdc?.rowsSynced == null
@@ -83,8 +86,8 @@ export function useMirrorMetrics(
   let lagSec: number | null = status.data?.lagSec ?? null
   if (lagSec === null && isCdc && batches.length) {
     const last = batches[batches.length - 1]
-    const end = last.endTime ? Date.parse(last.endTime) : NaN
-    if (!Number.isNaN(end)) lagSec = Math.max(0, (Date.now() - end) / 1000)
+    const end = last.endTime ? parseTs(last.endTime) : null
+    if (end != null) lagSec = Math.max(0, (Date.now() - end) / 1000)
   }
 
   return {
