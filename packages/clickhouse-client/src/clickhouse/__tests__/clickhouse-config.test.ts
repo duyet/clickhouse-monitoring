@@ -7,10 +7,9 @@ mock.module('@chm/logger', () => ({
   warn: mock(() => {}),
 }))
 
-// _resetEnvCache must target the base env-schema instance that clickhouse-config.ts
-// statically imports (no query string). The config functions use a query-string instance
-// for test isolation from other test files' mocks.
-const { _resetEnvCache } = await import('../env-schema')
+const { _resetEnvCache } = await import(
+  new URL('../env-schema.ts?test=config', import.meta.url).href
+)
 const { getClickHouseHosts, getClickHouseConfigs, getAndValidateClientConfig } =
   await import(
     new URL('../clickhouse-config.ts?test=config', import.meta.url).href

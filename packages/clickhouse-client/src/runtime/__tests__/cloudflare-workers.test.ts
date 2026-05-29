@@ -1,24 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 
-// Inline the detection logic to avoid cross-test mock pollution.
-// clickhouse-client.test.ts mocks ../../runtime/cloudflare-workers, and Bun
-// loads all test modules before running any afterAll hooks, so dynamic imports
-// (even with cache-busting query strings) still resolve to the mocked version.
-function isCloudflareWorkers(): boolean {
-  if (
-    typeof process !== 'undefined' &&
-    (process.env.CF_PAGES || process.env.CLOUDFLARE_WORKERS === '1')
-  ) {
-    return true
-  }
-
-  return (
-    (typeof caches !== 'undefined' ||
-      typeof (globalThis as any).WebSocketPair !== 'undefined' ||
-      typeof (globalThis as any).DurableObject !== 'undefined') &&
-    typeof process === 'undefined'
-  )
-}
+const { isCloudflareWorkers } = await import(
+  new URL('../cloudflare-workers.ts?test=cf', import.meta.url).href
+)
 
 describe('isCloudflareWorkers', () => {
   const originalEnv = { ...process.env }
