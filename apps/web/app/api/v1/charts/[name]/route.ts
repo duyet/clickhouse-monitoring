@@ -168,9 +168,36 @@ async function handleMultiQueryChart(
 }
 
 /**
- * Handle GET requests for chart data
+ * GET requests for chart data.
+ *
+ * Thin wrapper that guarantees any *uncaught* exception from the handler is
+ * returned as a structured JSON error instead of an empty-body 500 (which is
+ * what an unhandled throw produces on Workers). Returned query errors are
+ * already handled inside the handler; this only catches the unexpected.
  */
 export async function GET(
+  request: Request,
+  ctx: { params: Promise<{ name: string }> }
+): Promise<Response> {
+  try {
+    return await handleChartGet(request, ctx)
+  } catch (err) {
+    error('[GET /api/v1/charts/[name]] Unhandled exception:', err)
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.QueryError,
+        message: err instanceof Error ? err.message : 'Unknown error',
+      },
+      500,
+      { ...ROUTE_CONTEXT_BASE, method: 'GET' } as RouteContext
+    )
+  }
+}
+
+/**
+ * Handle GET requests for chart data
+ */
+async function handleChartGet(
   request: Request,
   { params }: { params: Promise<{ name: string }> }
 ): Promise<Response> {
