@@ -52,11 +52,28 @@ artifacts:
 This note captures the component-test investigation from PR #1021. See the
 [knowledge index](./README.md) for all related notes.
 
-## Current State
+## Current State (updated 2026-05-29)
 
-The PR CI failure was `component-test` timing out after 30 minutes. The failure
-was not caused by the Rust/WASM changes directly. Local investigation found a
-mix of existing Cypress component-test fragility and one real component bug.
+The component-test job hangs for the full 30-minute `timeout-minutes` and is
+killed every run. Root cause: `defaultCommandTimeout: 30000` means any stuck
+test burns 30 s per attempt × 2 retries = 60 s, making the full 100-spec run
+exceed the job budget. Key offenders identified from CI logs:
+
+- `render-chart.cy.tsx` (~11 min): Tests asserted `.recharts-surface` with
+  `be.visible` but Recharts renders 0-height SVG in headless component tests.
+  Fixed by changing to `exist` assertions.
+- `data-table.cy.tsx` (~6 min): Row selection used synchronous `expect()` in
+  `.each()` (no retry), column visibility used `.contains('col1')` instead of
+  `[aria-label="col1"]`, resize drag (`realMouseDown/Move/Up`) doesn't work in
+  headless CI, sort assertion raced with React re-render.
+- `area.cy.tsx` (~5 min): Same Recharts 0-height issue. Fixed.
+- `host-version-status.cy.tsx` (~1 min): Test asserted `contains('Loading...')`
+  but component renders `Loading…` (Unicode ellipsis, not ASCII `...`).
+
+Primary fix: `defaultCommandTimeout` lowered from 30000 to 8000 ms. Each stuck
+test now fails in ≤8 s (× 2 retries = ≤16 s) instead of ≤60 s.
+
+Previous investigation (PR #1021):
 
 ## Findings
 
