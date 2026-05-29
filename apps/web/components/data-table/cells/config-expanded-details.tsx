@@ -1,4 +1,9 @@
-'use client'
+// NOTE: intentionally NOT a 'use client' module. This component is purely
+// presentational (no hooks, state, or event handlers), so it is a shared
+// component that renders on either side of the boundary. Crucially, that lets
+// `createConfigExpandedDetails()` be CALLED from server modules (the query-config
+// registry is imported by API routes); a 'use client' module's exports become
+// client references that throw when invoked on the server.
 
 import { InfoIcon } from 'lucide-react'
 
