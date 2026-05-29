@@ -10,7 +10,7 @@ import {
   peerdbFetch,
   readNonNegativeIntEnv,
 } from '../peerdb/peerdb-config'
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 
 // --- readNonNegativeIntEnv (already has a basic test, add more edge cases) ---
 
