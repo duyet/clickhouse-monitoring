@@ -212,7 +212,13 @@ export function isPeerDBNotConfigured(error: unknown): boolean {
 
 // ─────────────────────── design-spec formatting (CHM Redesign) ───────────────────────
 
-/** Compact count: 1.2K / 3.4M / 1.23B / 2.10T. */
+/**
+ * Compact count: 1.2K / 3.4M / 1.23B / 2.10T.
+ *
+ * Note: intentionally separate from formatCompactNumber (lib/format-readable.ts) due to
+ * different thresholds (adds T tier) and sub-1000 formatting (toLocaleString).
+ * Do not merge without design sign-off.
+ */
 export function pdbFmtNum(n?: number | null): string {
   if (n == null) return '—'
   if (n >= 1e12) return `${(n / 1e12).toFixed(2)}T`
@@ -254,11 +260,17 @@ export function pdbFmtDuration(s?: number | null): string {
  */
 export function parseTs(value?: string | number | null): number | null {
   if (value == null || value === '') return null
-  if (typeof value === 'number' || /^\d+$/.test(value)) {
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) return null
+    // < 1e11 (100 billion) is epoch seconds, otherwise epoch milliseconds.
+    // Using 1e11 avoids misclassifying epoch-ms timestamps before ~2001.
+    return value < 1e11 ? value * 1000 : value
+  }
+  if (/^\d+$/.test(value)) {
     const n = Number(value)
     if (!Number.isFinite(n)) return null
-    // < 1e12 is epoch seconds, otherwise epoch milliseconds.
-    return n < 1e12 ? n * 1000 : n
+    // < 1e11 (100 billion) is epoch seconds, otherwise epoch milliseconds.
+    return n < 1e11 ? n * 1000 : n
   }
   const t = Date.parse(value)
   return Number.isNaN(t) ? null : t
@@ -278,15 +290,8 @@ export function pdbFmtClock(iso?: string | number): string {
  */
 export function pdbFmtAgo(value?: string | number): string {
   if (value == null || value === '') return '—'
-  let t: number
-  if (typeof value === 'number' || /^\d+$/.test(value)) {
-    const n = Number(value)
-    // Heuristic: < 1e12 is epoch seconds, otherwise epoch milliseconds.
-    t = n < 1e12 ? n * 1000 : n
-  } else {
-    t = Date.parse(value)
-  }
-  if (Number.isNaN(t)) return '—'
+  const t = parseTs(value)
+  if (t == null) return '—'
   const sec = Math.max(0, (Date.now() - t) / 1000)
   const d = Math.floor(sec / 86400)
   const h = Math.floor((sec % 86400) / 3600)

@@ -1,3 +1,6 @@
+// PeerDB-specific KPI card with integrated sparkline and status dot.
+// Differs from overview-charts/kpi-card.tsx (main dashboard). Do not merge without design sign-off.
+
 import type { ReactNode } from 'react'
 
 import { PdbSparkline } from './pdb-charts'
