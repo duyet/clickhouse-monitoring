@@ -29,10 +29,10 @@
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "cy:open": "start-server-and-test dev http://localhost:3000 \"cypress open\"",
-    "e2e": "start-server-and-test dev http://localhost:3000 \"cypress open --e2e\"",
-    "e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
-    "component": "cypress open --component",
-    "component:headless": "cypress run --component",
+    "test:e2e": "start-server-and-test dev http://localhost:3000 \"cypress open --e2e\"",
+    "test:e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
+    "test:component": "cypress open --component",
+    "test:component:headless": "cypress run --component",
     "fmt": "biome format --write .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
@@ -47,7 +47,7 @@
     "rust:build": "cargo build --manifest-path ../../rust/monitor-core/Cargo.toml --release",
     "bench:wasm": "bun run wasm:build && bun run rust:build && bun ../../scripts/bench-wasm.ts",
     "bench:user-events": "bun ../../scripts/benchmarks/user-events-transform-benchmark.mjs",
-    "test:agent-e2e": "start-server-and-test dev http://localhost:3000 \"promptfoo eval -c ../../tests/agent/promptfooconfig.yaml\""
+    "test:agent": "start-server-and-test dev http://localhost:3000 \"promptfoo eval -c ../../tests/agent/promptfooconfig.yaml\""
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.65",

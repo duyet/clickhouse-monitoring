@@ -103,7 +103,7 @@ jobs:
 
       - name: Run component tests
         working-directory: apps/web
-        run: bun run component:headless
+        run: bun run test:component:headless
         env:
           CYPRESS_BROWSER: chrome
 
@@ -174,7 +174,7 @@ jobs:
 
       - name: Run E2E tests
         working-directory: apps/web
-        run: bun run e2e:headless
+        run: bun run test:e2e:headless
         env:
           CYPRESS_BROWSER: chrome
 

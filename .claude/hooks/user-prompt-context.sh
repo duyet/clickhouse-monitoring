@@ -42,7 +42,7 @@ fi
 
 # Testing related prompts
 if echo "$PROMPT" | grep -qE '(test|jest|cypress|e2e)'; then
-  CONTEXT+="Note: Jest has known hanging issues (see CLAUDE.md). Use Cypress for component tests: 'bun run component' or 'bun run e2e'.\n"
+  CONTEXT+="Note: Jest has known hanging issues (see CLAUDE.md). Use Cypress for component tests: 'bun run test:component' or 'bun run test:e2e'.\n"
 fi
 
 # Static site architecture
