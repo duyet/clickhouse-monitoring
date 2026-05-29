@@ -1,5 +1,6 @@
 'use client'
 
+import { LayoutGrid, Table2 } from 'lucide-react'
 import type { ColumnDef, RowData } from '@tanstack/react-table'
 
 import type { ExpandableConfig, QueryConfig } from '@/types/query-config'
@@ -24,8 +25,49 @@ import {
   TableBody as TableBodyRenderer,
   TableHeader as TableHeaderRenderer,
 } from '@/components/data-table/renderers'
+import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableHeader } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
+
+/** Segmented table/cards toggle shown above the content when offered. */
+function ViewToggle({
+  view,
+  onViewChange,
+}: {
+  view: 'table' | 'cards'
+  onViewChange?: (view: 'table' | 'cards') => void
+}) {
+  return (
+    <div
+      className="inline-flex items-center gap-0.5 rounded-md border border-border/60 p-0.5"
+      role="group"
+      aria-label="Result view"
+    >
+      <Button
+        type="button"
+        variant={view === 'table' ? 'secondary' : 'ghost'}
+        size="sm"
+        className="h-7 gap-1.5 px-2 text-xs"
+        aria-pressed={view === 'table'}
+        onClick={() => onViewChange?.('table')}
+      >
+        <Table2 className="size-3.5" />
+        Table
+      </Button>
+      <Button
+        type="button"
+        variant={view === 'cards' ? 'secondary' : 'ghost'}
+        size="sm"
+        className="h-7 gap-1.5 px-2 text-xs"
+        aria-pressed={view === 'cards'}
+        onClick={() => onViewChange?.('cards')}
+      >
+        <LayoutGrid className="size-3.5" />
+        Cards
+      </Button>
+    </div>
+  )
+}
 
 /**
  * Props for the DataTableContent component
@@ -80,6 +122,12 @@ export interface DataTableContentProps<
   compact?: boolean
   /** When set, rows render an expand chevron and clicking a row toggles a detail panel below it. */
   expandable?: true | ExpandableConfig
+  /** Active view. `'cards'` renders the card layout at all breakpoints. */
+  view?: 'table' | 'cards'
+  /** Show the table/cards toggle control above the content. */
+  offerViewToggle?: boolean
+  /** Callback when the user switches view. */
+  onViewChange?: (view: 'table' | 'cards') => void
 }
 
 /**
@@ -117,7 +165,11 @@ export const DataTableContent = memo(function DataTableContent<
   onResetColumnOrder: _onResetColumnOrder,
   compact = false,
   expandable,
+  view = 'table',
+  offerViewToggle = false,
+  onViewChange,
 }: DataTableContentProps<TData, TValue>) {
+  const cardsOnly = view === 'cards'
   // Configure drag-and-drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -197,6 +249,11 @@ export const DataTableContent = memo(function DataTableContent<
 
   return (
     <div className="relative">
+      {offerViewToggle && !compact && (
+        <div className="mb-2 flex justify-end">
+          <ViewToggle view={view} onViewChange={onViewChange} />
+        </div>
+      )}
       <div
         ref={tableContainerRef}
         className={cn(
@@ -204,15 +261,17 @@ export const DataTableContent = memo(function DataTableContent<
           isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto',
           {
             'max-h-[50vh]': compact && !isVirtualized,
-            'mb-5 rounded-lg border border-border/50 bg-card/30': !compact,
+            'mb-5 rounded-lg border border-border/50 bg-card/30':
+              !compact && !cardsOnly,
           }
         )}
         role="region"
         aria-label={`${title || 'Data'} table`}
         style={isVirtualized ? { height: '60vh' } : undefined}
       >
+        {/* Card layout: always on mobile, and at all widths when view==='cards'. */}
         {!compact && (
-          <div className="p-3 sm:hidden">
+          <div className={cn('p-3', cardsOnly ? 'block' : 'sm:hidden')}>
             <MobileTableCards
               table={table}
               title={title}
@@ -224,7 +283,9 @@ export const DataTableContent = memo(function DataTableContent<
             />
           </div>
         )}
-        <div className={cn(!compact && 'hidden sm:block')}>
+        <div
+          className={cn(cardsOnly ? 'hidden' : !compact && 'hidden sm:block')}
+        >
           {enableColumnReordering ? (
             <DndContext
               sensors={sensors}

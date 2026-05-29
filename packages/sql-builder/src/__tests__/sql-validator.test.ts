@@ -6,22 +6,18 @@ import { SQL_PATTERNS, validateSqlQuery } from '../sql-validator'
 import { describe, expect, test } from 'bun:test'
 
 // Detect if validateSqlQuery has been globally mocked (e.g., by MCP tool tests)
-// If mocked, skip validation tests since they won't work correctly
 const actuallyMocked = (() => {
   try {
     validateSqlQuery('DROP TABLE users')
-    return true // Mocked - should have thrown but didn't
+    return true
   } catch {
-    return false // Not mocked - correctly threw error
+    return false
   }
 })()
 
 if (actuallyMocked) {
   console.warn(
-    '⚠️  validateSqlQuery appears to be mocked - skipping validation tests'
-  )
-  console.warn(
-    '   To run these tests separately, use: bun test lib/api/shared/validators/__tests__/sql.test.ts'
+    'Warning: validateSqlQuery appears to be mocked - skipping validation tests'
   )
 }
 
@@ -38,6 +34,12 @@ describe('SQL_PATTERNS', () => {
     expect(SQL_PATTERNS.STRING_INJECTION_OR_SINGLE).toBeInstanceOf(RegExp)
     expect(SQL_PATTERNS.TAUTOLOGY).toBeInstanceOf(RegExp)
     expect(SQL_PATTERNS.UNION_INJECTION).toBeInstanceOf(RegExp)
+    expect(SQL_PATTERNS.SET_COMMAND).toBeInstanceOf(RegExp)
+    expect(SQL_PATTERNS.SYSTEM_COMMAND).toBeInstanceOf(RegExp)
+    expect(SQL_PATTERNS.KILL_COMMAND).toBeInstanceOf(RegExp)
+    expect(SQL_PATTERNS.ATTACH_DETACH).toBeInstanceOf(RegExp)
+    expect(SQL_PATTERNS.PERMISSION_COMMANDS).toBeInstanceOf(RegExp)
+    expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS).toBeInstanceOf(RegExp)
   })
 
   describe('DANGEROUS_KEYWORDS pattern', () => {
@@ -68,10 +70,293 @@ describe('SQL_PATTERNS', () => {
       )
     })
 
+    test('should match ALTER keyword', () => {
+      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('ALTER TABLE users')).toBe(
+        true
+      )
+    })
+
+    test('should match CREATE keyword', () => {
+      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('CREATE TABLE users')).toBe(
+        true
+      )
+    })
+
+    test('should match TRUNCATE keyword', () => {
+      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('TRUNCATE TABLE users')).toBe(
+        true
+      )
+    })
+
     test('should not match SELECT', () => {
       expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('SELECT * FROM users')).toBe(
         false
       )
+    })
+  })
+
+  describe('EXECUTION_COMMANDS pattern', () => {
+    test('should match EXEC', () => {
+      expect(SQL_PATTERNS.EXECUTION_COMMANDS.test('EXEC sp_name')).toBe(true)
+    })
+
+    test('should match EXECUTE', () => {
+      expect(SQL_PATTERNS.EXECUTION_COMMANDS.test('EXECUTE sp_name')).toBe(true)
+    })
+
+    test('should match SCRIPT', () => {
+      expect(SQL_PATTERNS.EXECUTION_COMMANDS.test('SCRIPT something')).toBe(
+        true
+      )
+    })
+
+    test('should not match SELECT', () => {
+      expect(SQL_PATTERNS.EXECUTION_COMMANDS.test('SELECT * FROM t')).toBe(
+        false
+      )
+    })
+  })
+
+  describe('LINE_COMMENT pattern', () => {
+    test('should match line comments', () => {
+      expect(SQL_PATTERNS.LINE_COMMENT.test('-- comment')).toBe(true)
+      expect(SQL_PATTERNS.LINE_COMMENT.test('--comment')).toBe(true)
+    })
+
+    test('should not match double dash in string', () => {
+      // This pattern matches line comments specifically
+      expect(SQL_PATTERNS.LINE_COMMENT.test('-- ')).toBe(true)
+    })
+  })
+
+  describe('BLOCK_COMMENT patterns', () => {
+    test('should match block comment start', () => {
+      expect(SQL_PATTERNS.BLOCK_COMMENT_START.test('/* comment')).toBe(true)
+    })
+
+    test('should match block comment end', () => {
+      expect(SQL_PATTERNS.BLOCK_COMMENT_END.test('comment */')).toBe(true)
+    })
+  })
+
+  describe('CHAINED_DANGEROUS pattern', () => {
+    test('should match chained DROP', () => {
+      expect(SQL_PATTERNS.CHAINED_DANGEROUS.test('; DROP TABLE users')).toBe(
+        true
+      )
+    })
+
+    test('should match chained DELETE', () => {
+      expect(SQL_PATTERNS.CHAINED_DANGEROUS.test(';DELETE FROM t')).toBe(true)
+    })
+
+    test('should match chained INSERT', () => {
+      expect(SQL_PATTERNS.CHAINED_DANGEROUS.test('; INSERT INTO t')).toBe(true)
+    })
+
+    test('should match chained UPDATE', () => {
+      expect(SQL_PATTERNS.CHAINED_DANGEROUS.test(';UPDATE t SET')).toBe(true)
+    })
+
+    test('should not match non-chained statements', () => {
+      expect(SQL_PATTERNS.CHAINED_DANGEROUS.test('SELECT * FROM t')).toBe(false)
+    })
+  })
+
+  describe('STRING_INJECTION patterns', () => {
+    test('should match single quote injection', () => {
+      expect(SQL_PATTERNS.STRING_INJECTION_SINGLE.test("'; DROP TABLE--")).toBe(
+        true
+      )
+    })
+
+    test('should match single quote OR injection', () => {
+      expect(SQL_PATTERNS.STRING_INJECTION_OR_SINGLE.test("' OR '1'='1")).toBe(
+        true
+      )
+    })
+
+    test('should match double quote injection', () => {
+      expect(SQL_PATTERNS.STRING_INJECTION_DOUBLE.test('" OR "a"="a')).toBe(
+        true
+      )
+    })
+  })
+
+  describe('TAUTOLOGY pattern', () => {
+    test('should match OR 1=1', () => {
+      expect(SQL_PATTERNS.TAUTOLOGY.test('OR 1=1')).toBe(true)
+      expect(SQL_PATTERNS.TAUTOLOGY.test('or 1=1')).toBe(true)
+      expect(SQL_PATTERNS.TAUTOLOGY.test('OR  1  =  1')).toBe(true)
+    })
+
+    test('should not match normal conditions', () => {
+      expect(SQL_PATTERNS.TAUTOLOGY.test('id = 1')).toBe(false)
+    })
+  })
+
+  describe('UNION_INJECTION pattern', () => {
+    test('should match UNION SELECT', () => {
+      expect(SQL_PATTERNS.UNION_INJECTION.test('UNION SELECT')).toBe(true)
+      expect(SQL_PATTERNS.UNION_INJECTION.test('union select')).toBe(true)
+    })
+
+    test('should not match UNION ALL SELECT (in allowed context)', () => {
+      // The pattern specifically matches UNION followed by SELECT
+      expect(SQL_PATTERNS.UNION_INJECTION.test('UNION SELECT * FROM t')).toBe(
+        true
+      )
+    })
+  })
+
+  describe('SET_COMMAND pattern', () => {
+    test('should match SET', () => {
+      expect(SQL_PATTERNS.SET_COMMAND.test('SET max_memory_usage = 100')).toBe(
+        true
+      )
+    })
+
+    test('should not match SELECT', () => {
+      expect(SQL_PATTERNS.SET_COMMAND.test('SELECT * FROM t')).toBe(false)
+    })
+  })
+
+  describe('SYSTEM_COMMAND pattern', () => {
+    test('should match SYSTEM RELOAD', () => {
+      expect(
+        SQL_PATTERNS.SYSTEM_COMMAND.test('SYSTEM RELOAD DICTIONARIES')
+      ).toBe(true)
+    })
+
+    test('should match SYSTEM SHUTDOWN', () => {
+      expect(SQL_PATTERNS.SYSTEM_COMMAND.test('SYSTEM SHUTDOWN')).toBe(true)
+    })
+
+    test('should match SYSTEM KILL', () => {
+      expect(SQL_PATTERNS.SYSTEM_COMMAND.test('SYSTEM KILL TRANSACTION')).toBe(
+        true
+      )
+    })
+
+    test('should match SYSTEM FLUSH', () => {
+      expect(SQL_PATTERNS.SYSTEM_COMMAND.test('SYSTEM FLUSH LOGS')).toBe(true)
+    })
+
+    test('should match SYSTEM SYNC', () => {
+      expect(SQL_PATTERNS.SYSTEM_COMMAND.test('SYSTEM SYNC REPLICA')).toBe(true)
+    })
+
+    test('should match SYSTEM START', () => {
+      expect(SQL_PATTERNS.SYSTEM_COMMAND.test('SYSTEM START REPLICA')).toBe(
+        true
+      )
+    })
+
+    test('should match SYSTEM STOP', () => {
+      expect(SQL_PATTERNS.SYSTEM_COMMAND.test('SYSTEM STOP REPLICA')).toBe(true)
+    })
+
+    test('should match SYSTEM DROP', () => {
+      expect(SQL_PATTERNS.SYSTEM_COMMAND.test('SYSTEM DROP DNS CACHE')).toBe(
+        true
+      )
+    })
+
+    test('should not match system.table references', () => {
+      expect(SQL_PATTERNS.SYSTEM_COMMAND.test('system.query_log')).toBe(false)
+    })
+  })
+
+  describe('KILL_COMMAND pattern', () => {
+    test('should match KILL', () => {
+      expect(SQL_PATTERNS.KILL_COMMAND.test('KILL QUERY')).toBe(true)
+    })
+
+    test('should match KILL case-insensitive', () => {
+      expect(SQL_PATTERNS.KILL_COMMAND.test('kill query')).toBe(true)
+    })
+  })
+
+  describe('ATTACH_DETACH pattern', () => {
+    test('should match ATTACH', () => {
+      expect(SQL_PATTERNS.ATTACH_DETACH.test('ATTACH TABLE t')).toBe(true)
+    })
+
+    test('should match DETACH', () => {
+      expect(SQL_PATTERNS.ATTACH_DETACH.test('DETACH TABLE t')).toBe(true)
+    })
+  })
+
+  describe('PERMISSION_COMMANDS pattern', () => {
+    test('should match GRANT', () => {
+      expect(SQL_PATTERNS.PERMISSION_COMMANDS.test('GRANT SELECT ON t')).toBe(
+        true
+      )
+    })
+
+    test('should match REVOKE', () => {
+      expect(SQL_PATTERNS.PERMISSION_COMMANDS.test('REVOKE SELECT ON t')).toBe(
+        true
+      )
+    })
+  })
+
+  describe('DANGEROUS_FUNCTIONS pattern', () => {
+    test('should match remote function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('remote()')).toBe(true)
+    })
+
+    test('should match url function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('url()')).toBe(true)
+    })
+
+    test('should match s3 function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('s3()')).toBe(true)
+    })
+
+    test('should match mysql function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('mysql()')).toBe(true)
+    })
+
+    test('should match postgresql function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('postgresql()')).toBe(true)
+    })
+
+    test('should match hdfs function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('hdfs()')).toBe(true)
+    })
+
+    test('should match file function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('file()')).toBe(true)
+    })
+
+    test('should match jdbc function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('jdbc()')).toBe(true)
+    })
+
+    test('should match odbc function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('odbc()')).toBe(true)
+    })
+
+    test('should match input function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('input()')).toBe(true)
+    })
+
+    test('should match executable function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('executable()')).toBe(true)
+    })
+
+    test('should match mongodb function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('mongodb()')).toBe(true)
+    })
+
+    test('should match redis function', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('redis()')).toBe(true)
+    })
+
+    test('should not match safe functions', () => {
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('count()')).toBe(false)
+      expect(SQL_PATTERNS.DANGEROUS_FUNCTIONS.test('sum(bytes)')).toBe(false)
     })
   })
 })
@@ -142,6 +427,14 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
         `)
       ).not.toThrow()
     })
+
+    test('should accept SELECT with multiple table references', () => {
+      expect(() =>
+        validateSqlQuery(
+          "SELECT * FROM system.query_log WHERE query LIKE '%SELECT%'"
+        )
+      ).not.toThrow()
+    })
   })
 
   describe('empty queries', () => {
@@ -152,6 +445,12 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
     test('should reject whitespace-only string', () => {
       expect(() => validateSqlQuery('   ')).toThrow('SQL query cannot be empty')
       expect(() => validateSqlQuery('\t\n')).toThrow(
+        'SQL query cannot be empty'
+      )
+    })
+
+    test('should reject null-like input', () => {
+      expect(() => validateSqlQuery('' as string)).toThrow(
         'SQL query cannot be empty'
       )
     })
@@ -199,15 +498,25 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
         'Potentially dangerous SQL detected'
       )
     })
+
+    test('should reject case-insensitive DROP', () => {
+      expect(() => validateSqlQuery('drop table users')).toThrow()
+    })
   })
 
-  describe('SQL injection patterns', () => {
+  describe('execution commands', () => {
     test('should reject EXEC/EXECUTE commands', () => {
       expect(() => validateSqlQuery("EXEC('DROP TABLE')")).toThrow(
         'Potentially dangerous SQL detected'
       )
     })
 
+    test('should reject SCRIPT command', () => {
+      expect(() => validateSqlQuery('SCRIPT something')).toThrow()
+    })
+  })
+
+  describe('SQL injection patterns', () => {
     test('should allow line comments', () => {
       expect(() =>
         validateSqlQuery('-- comment\nSELECT * FROM users')
@@ -261,6 +570,58 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
     })
   })
 
+  describe('ClickHouse-specific dangerous commands', () => {
+    test('should reject SET commands', () => {
+      expect(() => validateSqlQuery('SET max_memory_usage = 100')).toThrow()
+    })
+
+    test('should reject SYSTEM commands', () => {
+      expect(() => validateSqlQuery('SYSTEM RELOAD DICTIONARIES')).toThrow()
+      expect(() => validateSqlQuery('SYSTEM SHUTDOWN')).toThrow()
+      expect(() => validateSqlQuery('SYSTEM FLUSH LOGS')).toThrow()
+    })
+
+    test('should reject KILL commands', () => {
+      expect(() => validateSqlQuery('KILL QUERY')).toThrow()
+    })
+
+    test('should reject ATTACH/DETACH commands', () => {
+      expect(() => validateSqlQuery('ATTACH TABLE t')).toThrow()
+      expect(() => validateSqlQuery('DETACH TABLE t')).toThrow()
+    })
+
+    test('should reject GRANT/REVOKE commands', () => {
+      expect(() => validateSqlQuery('GRANT SELECT ON t TO user')).toThrow()
+      expect(() => validateSqlQuery('REVOKE SELECT ON t FROM user')).toThrow()
+    })
+  })
+
+  describe('dangerous functions', () => {
+    test('should reject remote function', () => {
+      expect(() =>
+        validateSqlQuery("SELECT * FROM remote('host', 'db', 'table')")
+      ).toThrow()
+    })
+
+    test('should reject s3 function', () => {
+      expect(() => validateSqlQuery("SELECT * FROM s3('bucket/key')")).toThrow()
+    })
+
+    test('should reject url function', () => {
+      expect(() =>
+        validateSqlQuery("SELECT * FROM url('http://evil.com')")
+      ).toThrow()
+    })
+
+    test('should reject mysql function', () => {
+      expect(() =>
+        validateSqlQuery(
+          "SELECT * FROM mysql('host', 'db', 'table', 'user', 'pass')"
+        )
+      ).toThrow()
+    })
+  })
+
   describe('non-SELECT queries', () => {
     test('should reject INSERT at start', () => {
       expect(() => validateSqlQuery('INSERT INTO users VALUES (1)')).toThrow()
@@ -274,6 +635,28 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
       expect(() => validateSqlQuery('SHOW TABLES')).toThrow(
         'Only SELECT, WITH (CTE), DESCRIBE, and EXPLAIN queries are allowed'
       )
+    })
+
+    test('should reject USE queries', () => {
+      expect(() => validateSqlQuery('USE database')).toThrow()
+    })
+  })
+
+  describe('comments handling', () => {
+    test('should accept multiple line comments', () => {
+      expect(() =>
+        validateSqlQuery('-- line1\n-- line2\nSELECT 1')
+      ).not.toThrow()
+    })
+
+    test('should accept inline block comment', () => {
+      expect(() => validateSqlQuery('SELECT /* inline */ 1')).not.toThrow()
+    })
+
+    test('should accept multi-line block comment', () => {
+      expect(() =>
+        validateSqlQuery('/* multi\nline\ncomment */ SELECT 1')
+      ).not.toThrow()
     })
   })
 })

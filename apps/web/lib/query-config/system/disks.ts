@@ -45,6 +45,9 @@ export const diskSpaceConfig: QueryConfig = {
     'percent_free',
     'keep_free_space',
   ],
+  // Usually only a handful of disks, each with many size columns — cards read
+  // better than a wide table.
+  defaultView: 'cards',
   columnFormats: {
     name: ColumnFormat.ColoredBadge,
   },

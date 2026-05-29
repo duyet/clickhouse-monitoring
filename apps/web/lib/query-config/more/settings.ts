@@ -1,6 +1,9 @@
 import type { QueryConfig } from '@/types/query-config'
 
+import { createConfigExpandedDetails } from '@/components/data-table/cells/config-expanded-details'
 import { ColumnFormat } from '@/types/column-format'
+
+const SETTINGS_COLUMNS = ['name', 'value', 'changed', 'description', 'default']
 
 export const settingsConfig: QueryConfig = {
   name: 'settings',
@@ -12,7 +15,14 @@ export const settingsConfig: QueryConfig = {
       WHERE if({changed: String} != '', changed = {changed: String}, true)
       ORDER BY name
   `,
-  columns: ['name', 'value', 'changed', 'description', 'default'],
+  columns: SETTINGS_COLUMNS,
+  // Expand a row to reveal the columns system.settings exposes beyond the
+  // table view: type, min, max, readonly, tier, is_obsolete, alias_for, …
+  expandable: {
+    renderExpanded: createConfigExpandedDetails({
+      primaryColumns: SETTINGS_COLUMNS,
+    }),
+  },
   columnFormats: {
     name: ColumnFormat.Code,
     changed: ColumnFormat.Boolean,
