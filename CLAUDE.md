@@ -103,10 +103,10 @@ When the user says **"remember"** something — write it to `docs/knowledge/`, n
 - `bun run test:query-config` - Run query-config-specific tests
 - `bun run test:coverage` - Run tests with coverage output
 - `bun run test:watch` - Run tests in watch mode
-- `bun run component` - Open Cypress component tests
-- `bun run component:headless` - Run Cypress component tests headless
-- `bun run e2e` - Open Cypress e2e tests
-- `bun run e2e:headless` - Run Cypress e2e tests headless
+- `bun run test:component` - Open Cypress component tests
+- `bun run test:component:headless` - Run Cypress component tests headless
+- `bun run test:e2e` - Open Cypress e2e tests
+- `bun run test:e2e:headless` - Run Cypress e2e tests headless
 
 ### Code Quality
 
@@ -180,6 +180,9 @@ Build lock errors: remove `.next/lock` and retry.
 - `bun run type-check` - Run standalone TypeScript verification
 - `bun run release:notes` - Generate release notes from recent changes
 - `bun run cy:open` - Start the dev server and open Cypress against `http://localhost:3000`
+- `bun run test:component:headless` - Run Cypress component tests headless
+- `bun run test:e2e:headless` - Run Cypress e2e tests headless
+- `bun run test:agent` - Run promptfoo agent eval against local dev server
 - `bun run test:unit`, `bun run test:query-config`, `bun run test:coverage`, `bun run test:watch` - Narrow test runs for common workflows
 - `bun run wasm:test` - Rebuild WASM module, run Rust tests, then run WASM integration test
 - `bun run rust:build` - Build the Rust monitor core in release mode

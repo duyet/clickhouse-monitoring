@@ -128,8 +128,8 @@ Tests query configurations with mocked database responses.
 ### Component Tests
 
 ```bash
-bun run component:headless  # Run component tests
-bun run e2e:headless        # Run end-to-end tests
+bun run test:component:headless  # Run component tests
+bun run test:e2e:headless        # Run end-to-end tests
 ```
 
 ### With Coverage
