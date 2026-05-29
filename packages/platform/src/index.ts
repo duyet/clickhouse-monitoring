@@ -8,7 +8,7 @@
  *
  * Usage:
  * ```typescript
- * import { getPlatformBindings } from '@/lib/platform'
+ * import { getPlatformBindings } from '@chm/platform'
  *
  * const db = getPlatformBindings().getD1Database('CONVERSATIONS_D1')
  * ```

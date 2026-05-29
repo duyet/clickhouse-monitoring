@@ -1,6 +1,6 @@
 'use client'
 
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+import type { ClickHouseInterval } from '@chm/types/clickhouse-interval'
 
 import { createContext, use, useCallback, useMemo, useState } from 'react'
 

@@ -11,10 +11,10 @@ import {
 } from '@radix-ui/react-icons'
 import type { Column, RowData } from '@tanstack/react-table'
 
+import type { Icon } from '@chm/types/icon'
 import type { FilterDraft } from '@/components/filters/filter-editor'
 import type { ActiveFilter, FilterField } from '@/lib/filters/types'
 import type { ColumnFormat } from '@/types/column-format'
-import type { Icon } from '@/types/icon'
 import type { ColumnFilterDef } from '@/types/query-config'
 
 import { ColumnFilter } from '@/components/data-table/column-filter'

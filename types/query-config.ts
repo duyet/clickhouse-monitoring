@@ -1,12 +1,12 @@
 import type { Row } from '@tanstack/react-table'
 import type { ClickHouseSettings } from '@clickhouse/client'
 
+import type { Icon } from '@chm/types/icon'
 import type { ChartProps } from '@/components/charts/chart-props'
 import type { CustomSortingFnNames } from '@/components/data-table/sorting-fns'
 import type { FeaturePermission } from '@/lib/feature-permissions/types'
 import type { FilterOperator, FilterSchema } from '@/lib/filters/types'
 import type { ColumnFormat, ColumnFormatWithArgs } from '@/types/column-format'
-import type { Icon } from '@/types/icon'
 
 /** Callback to compute conditional CSS class for a table row */
 export type RowClassNameFn = (

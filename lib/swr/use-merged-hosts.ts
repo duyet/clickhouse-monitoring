@@ -1,6 +1,6 @@
 'use client'
 
-import type { HostInfo } from '@/app/api/v1/hosts/route'
+import type { HostInfo } from '@chm/types/host-info'
 
 import { useHosts } from './use-hosts'
 import { useBrowserConnections } from '@/lib/hooks/use-browser-connections'

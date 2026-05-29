@@ -446,7 +446,7 @@ export class MigrationRunner {
    */
   private async executeD1Sql(sql: string): Promise<void> {
     try {
-      const { getPlatformBindings } = await import('@/lib/platform')
+      const { getPlatformBindings } = await import('@chm/platform')
       const bindings = getPlatformBindings()
 
       const db =

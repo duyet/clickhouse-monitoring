@@ -11,8 +11,8 @@ import { BrowserStore } from './browser-store'
 import { D1Store } from './d1-store'
 import { MemoryStore } from './memory-store'
 import { PostgresStore } from './postgres-store'
+import { getPlatformBindings } from '@chm/platform'
 import { featureFlags } from '@/lib/feature-flags'
-import { getPlatformBindings } from '@/lib/platform'
 
 /**
  * Environment variable names for database configuration.
