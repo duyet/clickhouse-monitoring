@@ -251,7 +251,7 @@ export default function PeerDBMirrorsPage() {
           >
             <span className="relative inline-flex">
               <span
-                className="h-1.5 w-1.5 rounded-full"
+                className="size-1.5 rounded-full"
                 style={{ background: dotColor }}
               />
               {connected && (
@@ -268,7 +268,7 @@ export default function PeerDBMirrorsPage() {
           </span>
           {isRefreshing && (
             <span className="mr-1 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground animate-pulse">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <span className="size-1.5 rounded-full bg-primary" />
               Syncing in background...
             </span>
           )}
