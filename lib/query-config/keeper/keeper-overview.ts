@@ -29,7 +29,7 @@ export const keeperOverviewConfig: QueryConfig = {
     ['zookeeper-wait', { title: 'Request Wait Time' }],
     ['keeper-connection-events', { title: 'Connection Events' }],
     'break',
-    ['keeper-operation-mix', { title: 'Operation Mix' }],
+    ['keeper-operation-mix', { title: 'Operation Mix (since server start)' }],
     ['zookeeper-exception', { title: 'Keeper Exceptions' }],
   ],
 }

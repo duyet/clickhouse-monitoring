@@ -78,15 +78,18 @@ export const zookeeperCharts: Record<string, ChartQueryBuilder> = {
   `,
   }),
 
-  // Single-row, real-time Keeper health snapshot from system.metrics. These
-  // metrics always exist (value 0 when Keeper/ZooKeeper is not in use), so the
-  // query is safe on every cluster and ClickHouse version. Consumed by the
-  // Keeper Overview KPI cards (not rendered as a standalone chart).
+  // Single-row, real-time Keeper health snapshot from system.metrics. Metrics
+  // compiled into the build are listed (value 0 when unused), so missing-metric
+  // subqueries resolve to 0 rather than erroring. `outstanding_requests` matches
+  // both spellings because the metric was renamed from the misspelled
+  // 'KeeperOutstandingRequets' to 'KeeperOutstandingRequests' in v24.8
+  // (PR #66206); summing over an IN-set works on the whole v23.3->v26 range.
+  // Consumed by the Keeper Overview KPI cards (not rendered as a standalone chart).
   'keeper-health': () => ({
     query: `
     SELECT
       (SELECT toUInt64(value) FROM system.metrics WHERE metric = 'KeeperAliveConnections') AS alive_connections,
-      (SELECT toUInt64(value) FROM system.metrics WHERE metric = 'KeeperOutstandingRequests') AS outstanding_requests,
+      (SELECT toUInt64(sum(value)) FROM system.metrics WHERE metric IN ('KeeperOutstandingRequests', 'KeeperOutstandingRequets')) AS outstanding_requests,
       (SELECT toUInt64(value) FROM system.metrics WHERE metric = 'ZooKeeperSession') AS sessions,
       (SELECT toUInt64(value) FROM system.metrics WHERE metric = 'ZooKeeperWatch') AS watches,
       (SELECT toUInt64(value) FROM system.metrics WHERE metric = 'ZooKeeperRequest') AS in_flight_requests,

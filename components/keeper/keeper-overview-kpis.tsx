@@ -144,7 +144,9 @@ export const KeeperOverviewKpis = memo(function KeeperOverviewKpis({
         />
         <KpiCard
           icon={Gauge}
-          tone={hasSummary && s!.max_log_lag > 0 ? 'rose' : 'blue'}
+          // A few uncommitted raft entries is normal under write load; only a
+          // large backlog signals a lagging/unhealthy node.
+          tone={hasSummary && s!.max_log_lag > 1000 ? 'rose' : 'blue'}
           label="Raft Log Lag"
           value={hasSummary ? s!.max_log_lag : DASH}
           sub={hasSummary ? `avg ${s!.avg_latency_ms} ms latency` : undefined}
