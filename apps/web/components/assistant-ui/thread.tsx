@@ -110,29 +110,35 @@ export function Thread({
         ['--user-max-width' as string]: 'min(100%, 46rem)',
       }}
     >
-      <ThreadPrimitive.Viewport
-        scrollToBottomOnInitialize={false}
-        className="relative flex flex-1 flex-col overflow-y-auto scroll-smooth px-4 pt-14"
-      >
-        <ThreadWelcome
-          firstName={firstName}
-          clusterName={clusterName}
-          hasClusterIssue={hasClusterIssue}
-        />
+      {/* Empty (welcome) state lives OUTSIDE the auto-scrolling Viewport.
+          assistant-ui's Viewport pins toward the bottom as content grows, so
+          the tall welcome screen (composer + suggested questions) scrolled
+          itself down on open. A plain overflow container starts at the top. */}
+      <ThreadPrimitive.If empty>
+        <div className="flex flex-1 flex-col overflow-y-auto px-4 pt-14">
+          <ThreadWelcome
+            firstName={firstName}
+            clusterName={clusterName}
+            hasClusterIssue={hasClusterIssue}
+          />
+        </div>
+      </ThreadPrimitive.If>
 
-        <ThreadPrimitive.Messages
-          components={{
-            UserMessage,
-            EditComposer,
-            AssistantMessage,
-          }}
-        />
+      <ThreadPrimitive.If empty={false}>
+        <ThreadPrimitive.Viewport
+          scrollToBottomOnInitialize={false}
+          className="relative flex flex-1 flex-col overflow-y-auto scroll-smooth px-4 pt-14"
+        >
+          <ThreadPrimitive.Messages
+            components={{
+              UserMessage,
+              EditComposer,
+              AssistantMessage,
+            }}
+          />
 
-        <ThreadPrimitive.If empty={false}>
           <div className="min-h-6 grow" />
-        </ThreadPrimitive.If>
 
-        <ThreadPrimitive.If empty={false}>
           <div className="sticky bottom-0 z-10 mx-auto flex w-full max-w-[var(--thread-max-width)] flex-col items-center gap-2 bg-background pb-3">
             <ThreadScrollToBottom />
             <ThreadComposer />
@@ -145,8 +151,8 @@ export function Thread({
               .
             </p>
           </div>
-        </ThreadPrimitive.If>
-      </ThreadPrimitive.Viewport>
+        </ThreadPrimitive.Viewport>
+      </ThreadPrimitive.If>
     </ThreadPrimitive.Root>
   )
 }
