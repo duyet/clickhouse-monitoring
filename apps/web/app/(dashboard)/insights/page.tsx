@@ -77,7 +77,7 @@ export default function InsightsPage() {
   ).toLowerCase()
 
   return (
-    <div className="flex flex-col gap-4 p-3 sm:gap-6 sm:p-6">
+    <div className="flex flex-col gap-4 p-3 sm:gap-4 sm:p-6">
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
@@ -914,7 +914,7 @@ function ChartsSection({ hostId }: { readonly hostId: number }) {
   const hasCompressionData = compressionData && compressionData.length > 0
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
       {hasTopTablesData && (
         <LazyChartWrapper>
           <TopTablesBySizeChart hostId={hostId} />
