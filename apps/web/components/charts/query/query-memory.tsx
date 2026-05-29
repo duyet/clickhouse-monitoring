@@ -2,10 +2,10 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { createBarChart } from '@/components/charts/factory'
+import { createAreaChart } from '@/components/charts/factory'
 import { chartTickFormatters } from '@/lib/utils'
 
-export const ChartQueryMemory = createBarChart({
+export const ChartQueryMemory = createAreaChart({
   chartName: 'query-memory',
   index: 'event_time',
   categories: ['memory_usage'],
@@ -14,11 +14,12 @@ export const ChartQueryMemory = createBarChart({
   defaultLastHours: 24 * 14,
   dataTestId: 'query-memory-chart',
   dateRangeConfig: 'query-duration',
-  barChartProps: {
+  areaChartProps: {
     readableColumn: 'readable_memory_usage',
     stack: true,
     showLegend: false,
-    showLabel: false,
+    showXAxis: true,
+    showCartesianGrid: true,
     colors: ['--chart-indigo-300'],
     yAxisTickFormatter: chartTickFormatters.bytes,
   },

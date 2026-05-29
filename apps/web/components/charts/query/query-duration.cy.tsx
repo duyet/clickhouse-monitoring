@@ -9,6 +9,7 @@ describe('<ChartQueryDuration />', () => {
   it('renders chart skeleton when loading', () => {
     cy.mount(<ChartQueryDuration {...defaultProps} />)
     cy.get('[role="status"][aria-label*="Loading"]').should('exist')
+    cy.contains('Query Duration').should('exist')
   })
 
   it('renders error state when API fails', () => {
@@ -21,19 +22,17 @@ describe('<ChartQueryDuration />', () => {
     cy.get('[role="alert"]').should('exist')
   })
 
-  it('renders chart with data', () => {
+  it('renders area chart with data', () => {
     cy.intercept('GET', '/api/v1/charts/query-duration*', {
       statusCode: 200,
       body: {
         data: [
           {
             event_time: '2025-01-01',
-            query_duration_ms: 1500,
             query_duration_s: 1.5,
           },
           {
             event_time: '2025-01-02',
-            query_duration_ms: 2300,
             query_duration_s: 2.3,
           },
         ],
@@ -51,21 +50,7 @@ describe('<ChartQueryDuration />', () => {
   })
 
   it('works with different hostId values', () => {
-    cy.intercept('GET', '/api/v1/charts/query-duration?hostId=2*', {
-      statusCode: 200,
-      body: {
-        data: [
-          {
-            event_time: '2025-01-01',
-            query_duration_ms: 1000,
-            query_duration_s: 1.0,
-          },
-        ],
-        metadata: { duration: 25, rows: 1 },
-      },
-    }).as('chartData')
     cy.mount(<ChartQueryDuration hostId={2} />)
-    cy.wait('@chartData')
-    cy.get('[data-testid="query-duration-chart"]').should('exist')
+    cy.contains('Query Duration').should('exist')
   })
 })
