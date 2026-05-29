@@ -2,7 +2,7 @@
 
 import { Check, Copy, MessageSquare } from 'lucide-react'
 
-import { EXAMPLE_PROMPTS } from './mcp-tools-data'
+import { EXAMPLE_PROMPTS } from '@chm/mcp-server/data'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {

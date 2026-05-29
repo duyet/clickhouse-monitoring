@@ -3,7 +3,7 @@
  *
  * Validation utilities for SQL queries to prevent injection attacks.
  *
- * @module lib/api/shared/validators/sql
+ * @module @chm/sql-builder/sql-validator
  */
 
 /**

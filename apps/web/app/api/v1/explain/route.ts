@@ -30,6 +30,7 @@ import {
 } from '@chm/clickhouse-client'
 import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
 import { debug, error as logError } from '@chm/logger'
+import { validateSqlQuery } from '@chm/sql-builder'
 import {
   createErrorResponse,
   createValidationError,
@@ -37,7 +38,6 @@ import {
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { mapErrorTypeToStatusCode } from '@/lib/api/shared/status-code-mapper'
 import { getAndValidateHostId } from '@/lib/api/shared/validators'
-import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { ApiErrorType } from '@/lib/api/types'
 
 export const dynamic = 'force-dynamic'

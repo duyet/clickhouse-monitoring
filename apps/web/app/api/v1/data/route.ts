@@ -19,6 +19,7 @@ import type { ApiRequest } from '@/lib/api/types'
 import { validateDashboardQuery } from './validators/dashboard-query-validator'
 import { fetchData } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
+import { validateSqlQuery } from '@chm/sql-builder'
 import {
   createErrorResponse as createApiErrorResponse,
   createValidationError,
@@ -30,7 +31,6 @@ import {
   getAndValidateHostId,
   validateDataRequest,
   validateSearchParams,
-  validateSqlQuery,
 } from '@/lib/api/shared/validators'
 import { getTableConfig } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'

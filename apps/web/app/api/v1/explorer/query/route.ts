@@ -14,6 +14,7 @@ import type { ApiResponse } from '@/lib/api/types'
 
 import { fetchData } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
+import { validateSqlQuery } from '@chm/sql-builder'
 import {
   createErrorResponse as createApiErrorResponse,
   getHostIdFromParams,
@@ -24,7 +25,6 @@ import {
   isSupportedFormat,
   SUPPORTED_FORMATS,
 } from '@/lib/api/shared/validators/format'
-import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { ApiErrorType } from '@/lib/api/types'
 import { TABLES_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'

@@ -2,7 +2,7 @@
  * SQL Validator Tests
  */
 
-import { SQL_PATTERNS, validateSqlQuery } from '../sql'
+import { SQL_PATTERNS, validateSqlQuery } from '../sql-validator'
 import { describe, expect, test } from 'bun:test'
 
 // Detect if validateSqlQuery has been globally mocked (e.g., by MCP tool tests)

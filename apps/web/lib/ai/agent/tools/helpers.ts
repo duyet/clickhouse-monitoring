@@ -10,8 +10,8 @@ import 'server-only'
 import type { DataFormat } from '@clickhouse/client'
 
 import { fetchData } from '@chm/clickhouse-client'
+import { validateSqlQuery } from '@chm/sql-builder'
 import { z } from 'zod/v3'
-import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 
 /**
  * Resolve the effective host ID from tool input and default.

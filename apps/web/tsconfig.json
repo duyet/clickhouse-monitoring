@@ -16,7 +16,9 @@
       "@chm/platform/*": ["../../packages/platform/src/*"],
       "@chm/logger": ["../../packages/logger/src"],
       "@chm/clickhouse-client": ["../../packages/clickhouse-client/src"],
-      "@chm/clickhouse-client/*": ["../../packages/clickhouse-client/src/*"]
+      "@chm/clickhouse-client/*": ["../../packages/clickhouse-client/src/*"],
+      "@chm/mcp-server": ["../../packages/mcp-server/src"],
+      "@chm/mcp-server/*": ["../../packages/mcp-server/src/*"]
     },
     "types": ["cypress", "node", "cypress-real-events"]
   },

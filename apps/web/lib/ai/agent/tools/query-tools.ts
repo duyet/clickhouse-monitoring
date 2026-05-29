@@ -1,7 +1,7 @@
 import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
+import { validateSqlQuery } from '@chm/sql-builder'
 import { dynamicTool } from 'ai'
 import { z } from 'zod/v3'
-import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 
 export function createQueryTools(hostId: number) {
   return {

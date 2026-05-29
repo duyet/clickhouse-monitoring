@@ -1,4 +1,4 @@
-import { apiKeyAuthEnabled, issueApiKey, verifyApiKey } from '../api-key'
+import { apiKeyAuthEnabled, issueApiKey, verifyApiKey } from '../auth/api-key'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 
 const ORIGINAL_SECRET = process.env.CHM_API_KEY_SECRET

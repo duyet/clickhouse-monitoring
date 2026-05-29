@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
+import { validateSqlQuery } from '@chm/sql-builder'
 
 export interface ReferencedTable {
   raw: string

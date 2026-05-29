@@ -1,7 +1,6 @@
+import { getBearerToken, verifyApiKey } from '@chm/mcp-server/auth'
+import { createMcpServer } from '@chm/mcp-server/server'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
-import { verifyApiKey } from '@/lib/api-key'
-import { getBearerToken } from '@/lib/auth/bearer-token'
-import { createMcpServer } from '@/lib/mcp/server'
 
 export const dynamic = 'force-dynamic'
 

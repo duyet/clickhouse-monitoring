@@ -57,6 +57,9 @@ jobs:
         working-directory: apps/web
         run: bun run test:coverage
 
+      - name: Run workspace package tests
+        run: bun test packages
+
       - name: Upload Bun coverage to Codecov
         uses: codecov/codecov-action@v6
         with:

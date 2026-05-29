@@ -7,8 +7,8 @@
  * Used by the agents sidebar to display available tools.
  */
 
+import { MCP_TOOLS } from '@chm/mcp-server/data'
 import { NextResponse } from 'next/server'
-import { MCP_TOOLS } from '@/components/mcp/mcp-tools-data'
 
 interface McpResourceInfo {
   name: string

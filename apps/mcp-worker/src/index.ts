@@ -10,10 +10,13 @@
  * KV/D1/R2 — MCP tools only query ClickHouse over HTTP.
  */
 
-import { MCP_TOOLS } from '../../web/components/mcp/mcp-tools-data'
-import { apiKeyAuthEnabled, verifyApiKey } from '../../web/lib/api-key'
-import { getBearerToken } from '../../web/lib/auth/bearer-token'
-import { createMcpServer } from '../../web/lib/mcp/server'
+import {
+  apiKeyAuthEnabled,
+  createMcpServer,
+  getBearerToken,
+  MCP_TOOLS,
+  verifyApiKey,
+} from '@chm/mcp-server'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
 
 // Minimal CORS for cross-origin MCP clients (browser-based playgrounds, web

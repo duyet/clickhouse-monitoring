@@ -1,4 +1,4 @@
-import { getBearerToken } from '@/lib/auth/bearer-token'
+import { getBearerToken } from '@chm/mcp-server/auth'
 
 function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false

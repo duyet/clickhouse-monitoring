@@ -165,14 +165,17 @@ describe('fetchData hostId parameter validation', () => {
   })
 
   it('should verify fetchData function signature accepts hostId', () => {
-    // fetchData was refactored to lib/clickhouse/clickhouse-fetch.ts
+    // fetchData lives in the @chm/clickhouse-client package (extracted from
+    // apps/web/lib/clickhouse in the monorepo refactor).
     const clickhouseFetchPath = path.join(
       projectRoot,
-      'lib/clickhouse/clickhouse-fetch.ts'
+      '../../packages/clickhouse-client/src/clickhouse/clickhouse-fetch.ts'
     )
 
     if (!fs.existsSync(clickhouseFetchPath)) {
-      throw new Error('lib/clickhouse/clickhouse-fetch.ts not found')
+      throw new Error(
+        'packages/clickhouse-client/src/clickhouse/clickhouse-fetch.ts not found'
+      )
     }
 
     const content = fs.readFileSync(clickhouseFetchPath, 'utf-8')

@@ -1,6 +1,5 @@
+import { getBearerToken, issueApiKey } from '@chm/mcp-server/auth'
 import { NextResponse } from 'next/server'
-import { issueApiKey } from '@/lib/api-key'
-import { getBearerToken } from '@/lib/auth/bearer-token'
 
 const MAX_API_KEY_DAYS = 365
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
+import { validateSqlQuery } from '@chm/sql-builder'
 
 describe('MCP Query Validation', () => {
   describe('valid queries', () => {
