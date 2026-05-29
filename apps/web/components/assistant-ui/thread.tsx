@@ -51,6 +51,7 @@ import { type FC, type ReactNode, useCallback, useRef } from 'react'
 import { PromptInputTextareaWithMentions } from '@/components/agents/mentions'
 import { AgentWelcomeScreen } from '@/components/agents/welcome/agent-welcome-screen'
 import { ComposerToolbar } from '@/components/agents/welcome/composer-toolbar'
+import { useAgentAuthGate } from '@/components/assistant-ui/agent-auth-gate'
 import { JsonRenderMessage } from '@/components/assistant-ui/json-render-message'
 import { MarkdownText } from '@/components/assistant-ui/markdown-text'
 import {
@@ -173,17 +174,19 @@ function ThreadWelcome({
 }: ThreadWelcomeProps) {
   const { activeToolCount } = useAgentSkills()
   const threadRuntime = useThreadRuntime()
+  const { ensureAuthed } = useAgentAuthGate()
 
   const handlePickPrompt = useCallback(
     (prompt: string) => {
       const trimmed = prompt.trim()
       if (!trimmed) return
+      if (!ensureAuthed()) return
       threadRuntime.append({
         role: 'user',
         content: [{ type: 'text', text: trimmed }],
       })
     },
-    [threadRuntime]
+    [threadRuntime, ensureAuthed]
   )
 
   return (
@@ -208,6 +211,7 @@ function ThreadWelcome({
 function WelcomeComposer() {
   const threadRuntime = useThreadRuntime()
   const isRunning = useThread((thread) => thread.isRunning)
+  const { ensureAuthed } = useAgentAuthGate()
 
   return (
     <div className="flex flex-col gap-2">
@@ -216,6 +220,7 @@ function WelcomeComposer() {
         onResolvedSubmit={(text) => {
           const trimmed = text.trim()
           if (!trimmed) return
+          if (!ensureAuthed()) return
           threadRuntime.append({
             role: 'user',
             content: [{ type: 'text', text: trimmed }],
@@ -231,6 +236,7 @@ function WelcomeComposer() {
 function ThreadComposer() {
   const threadRuntime = useThreadRuntime()
   const isRunning = useThread((thread) => thread.isRunning)
+  const { ensureAuthed } = useAgentAuthGate()
 
   return (
     <div className="w-full">
@@ -239,6 +245,7 @@ function ThreadComposer() {
         onResolvedSubmit={(text) => {
           const trimmed = text.trim()
           if (!trimmed) return
+          if (!ensureAuthed()) return
           threadRuntime.append({
             role: 'user',
             content: [{ type: 'text', text: trimmed }],
