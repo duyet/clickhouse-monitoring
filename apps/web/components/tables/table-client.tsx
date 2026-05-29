@@ -217,7 +217,7 @@ export const TableClient = function TableClient({
               aria-label={
                 title ? `${title} unavailable` : 'Table not available'
               }
-              className="pr-12"
+              className="border-0 pr-12"
             >
               <Info />
               <AlertTitle>{errorTitle}</AlertTitle>

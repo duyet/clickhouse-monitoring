@@ -18,7 +18,7 @@ function StatusDot({ status }: { status: HealthStatus }) {
   return (
     <span
       className={cn(
-        'inline-block h-3 w-3 rounded-full flex-shrink-0',
+        'inline-block h-2 w-2 rounded-full flex-shrink-0',
         status === 'ok' && 'bg-green-500',
         status === 'warning' && 'bg-amber-500',
         status === 'critical' && 'bg-red-500',
@@ -115,6 +115,8 @@ export function HealthCard({ check, thresholds }: HealthCardProps) {
   const withHost = (href: string) =>
     `${href}${href.includes('?') ? '&' : '?'}host=${hostId}`
 
+  const Icon = check.icon
+
   return (
     <>
       <div
@@ -124,41 +126,67 @@ export function HealthCard({ check, thresholds }: HealthCardProps) {
           status === 'warning' && 'border-amber-500/50 bg-amber-500/5'
         )}
       >
+        {/* Header: icon + title + status dot + expand button */}
         <div className="flex items-center gap-2">
-          <StatusDot status={status} />
-          <span className="text-sm font-medium text-muted-foreground">
+          {Icon && (
+            <Icon
+              className={cn(
+                'size-4 flex-shrink-0',
+                status === 'critical' && 'text-red-500',
+                status === 'warning' && 'text-amber-500',
+                status === 'ok' && 'text-green-500',
+                (status === 'loading' || status === 'error') &&
+                  'text-muted-foreground'
+              )}
+              aria-hidden
+            />
+          )}
+          <span className="text-[12.5px] font-medium text-muted-foreground leading-tight flex-1 min-w-0 truncate">
             {check.title}
           </span>
+          <StatusDot status={status} />
           <button
             type="button"
             onClick={() => setDetailOpen(true)}
             aria-label={`Open ${check.title} details`}
-            className="ml-auto rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+            className="rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
           >
-            <Maximize2 className="size-3.5" />
+            <Maximize2 className="size-3" />
           </button>
         </div>
+
+        {/* Body: big number + sub-label */}
         <button
           type="button"
           onClick={() => setDetailOpen(true)}
           className="text-left"
         >
           <div className="text-2xl font-bold tabular-nums">{displayValue}</div>
-          <div className="text-xs text-muted-foreground mt-1">{label}</div>
+          <div className="text-[11.5px] text-muted-foreground mt-0.5 leading-snug">
+            {label}
+          </div>
         </button>
+
+        {/* Footer: related links as tappable chips */}
         {check.relatedLinks && check.relatedLinks.length > 0 && (
-          <div className="flex flex-wrap gap-x-2 gap-y-1 border-t pt-2 text-xs text-muted-foreground">
-            {check.relatedLinks.slice(0, 3).map((l, i) => (
-              <span key={l.href} className="inline-flex items-center gap-2">
-                {i > 0 && <span aria-hidden>·</span>}
+          <div className="border-t pt-2">
+            <div className="flex flex-wrap gap-1">
+              {check.relatedLinks.slice(0, 3).map((l) => (
                 <AppLink
+                  key={l.href}
                   href={withHost(l.href)}
-                  className="text-primary hover:underline"
+                  className={cn(
+                    'inline-flex items-center rounded-md px-2 py-0.5',
+                    'text-[11px] font-medium leading-none',
+                    'bg-muted/60 text-muted-foreground',
+                    'hover:bg-muted hover:text-foreground',
+                    'transition-colors'
+                  )}
                 >
                   {l.label}
                 </AppLink>
-              </span>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>

@@ -1,6 +1,7 @@
 import type { QueryConfig } from '@/types/query-config'
 
 import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
+import { KeeperConnectionExpandedDetails } from '@/components/data-table/cells/keeper-connection-expanded-details'
 import { ColumnFormat } from '@/types/column-format'
 
 export const keeperConnectionsConfig: QueryConfig = {
@@ -97,36 +98,28 @@ export const keeperConnectionsConfig: QueryConfig = {
       `,
     },
   ],
+  // Key columns shown by default in the table.
+  // Secondary fields (index, client_id, xid, keeper_api_version,
+  // session_timeout_ms, last_zxid_seen, enabled_feature_flags,
+  // availability_zone) are rendered in the expandable detail panel.
   columns: [
     'name',
     'host',
     'port',
-    'index',
     'connected_time',
     'session_uptime_elapsed_seconds',
     'is_expired',
-    'keeper_api_version',
-    'client_id',
-    'xid',
-    'session_timeout_ms',
-    'last_zxid_seen',
-    'enabled_feature_flags',
-    'availability_zone',
   ],
   columnFormats: {
     name: ColumnFormat.Badge,
     host: ColumnFormat.Text,
     port: ColumnFormat.Number,
-    index: ColumnFormat.Number,
     connected_time: ColumnFormat.RelatedTime,
     session_uptime_elapsed_seconds: ColumnFormat.Duration,
     is_expired: ColumnFormat.Boolean,
-    keeper_api_version: ColumnFormat.Number,
-    client_id: ColumnFormat.Number,
-    xid: ColumnFormat.Number,
-    session_timeout_ms: ColumnFormat.Duration,
-    last_zxid_seen: ColumnFormat.Number,
-    enabled_feature_flags: ColumnFormat.ColoredBadge,
-    availability_zone: ColumnFormat.Text,
+  },
+
+  expandable: {
+    renderExpanded: (row) => <KeeperConnectionExpandedDetails row={row} />,
   },
 }

@@ -259,7 +259,7 @@ export const menuItemsConfig: MenuItem[] = [
     ],
   },
   {
-    title: 'Monitoring',
+    title: 'Metrics',
     href: '',
     icon: BarChartIcon,
     section: 'main',
@@ -281,13 +281,6 @@ export const menuItemsConfig: MenuItem[] = [
         icon: BarChartIcon,
         permission: { feature: 'metrics' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/asynchronous_metrics',
-      },
-      {
-        title: 'Chart Builder',
-        href: '/dashboard',
-        description: 'Build custom monitoring dashboards with charts',
-        icon: DashboardIcon,
-        permission: { feature: 'dashboard' },
       },
       {
         title: 'Profiler',
@@ -538,6 +531,13 @@ export const menuItemsConfig: MenuItem[] = [
     section: 'others',
     permission: { feature: 'operations' },
     items: [
+      {
+        title: 'Chart Builder',
+        href: '/dashboard',
+        description: 'Build custom monitoring dashboards with charts',
+        icon: DashboardIcon,
+        permission: { feature: 'dashboard' },
+      },
       {
         title: 'Backups',
         href: '/backups',
