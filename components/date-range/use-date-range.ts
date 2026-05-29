@@ -2,7 +2,7 @@
 
 import type { DateRangeConfig, DateRangeValue } from './date-range-types'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useState } from 'react'
 
 interface UseDateRangeOptions {
   /** Date range configuration */
@@ -55,12 +55,12 @@ export function useDateRange({
   onRangeChange,
 }: UseDateRangeOptions): UseDateRangeReturn {
   // Get initial option
-  const defaultOption = useMemo(() => {
+  const defaultOption = (() => {
     const targetValue = initialValue ?? config.defaultValue
     return (
       config.options.find((o) => o.value === targetValue) ?? config.options[0]
     )
-  }, [config, initialValue])
+  })()
 
   // Local state
   const [range, setRangeState] = useState<DateRangeValue>({
@@ -70,16 +70,13 @@ export function useDateRange({
   })
 
   // Change handler with callback
-  const setRange = useCallback(
-    (newRange: DateRangeValue) => {
-      setRangeState(newRange)
-      onRangeChange?.(newRange)
-    },
-    [onRangeChange]
-  )
+  const setRange = (newRange: DateRangeValue) => {
+    setRangeState(newRange)
+    onRangeChange?.(newRange)
+  }
 
   // Reset to default
-  const reset = useCallback(() => {
+  const reset = () => {
     const resetRange: DateRangeValue = {
       value: defaultOption.value,
       lastHours: defaultOption.lastHours,
@@ -87,7 +84,7 @@ export function useDateRange({
     }
     setRangeState(resetRange)
     onRangeChange?.(resetRange)
-  }, [defaultOption, onRangeChange])
+  }
 
   return {
     value: range.value,

@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const TOOL_CONFIG_STORAGE_KEY = 'clickhouse-monitor-tool-config'
 
@@ -70,38 +70,32 @@ export function useToolConfig(): UseToolConfigResult {
     writeStorage({ disabled: disabledTools })
   }, [disabledTools])
 
-  const isToolEnabled = useCallback(
-    (toolName: string) => !disabledTools.includes(toolName),
-    [disabledTools]
-  )
+  const isToolEnabled = (toolName: string) => !disabledTools.includes(toolName)
 
-  const toggleTool = useCallback((toolName: string) => {
+  const toggleTool = (toolName: string) => {
     setDisabledTools((prev) =>
       prev.includes(toolName)
         ? prev.filter((t) => t !== toolName)
         : [...prev, toolName]
     )
-  }, [])
+  }
 
-  const enableTool = useCallback((toolName: string) => {
+  const enableTool = (toolName: string) => {
     setDisabledTools((prev) => prev.filter((t) => t !== toolName))
-  }, [])
+  }
 
-  const disableTool = useCallback((toolName: string) => {
+  const disableTool = (toolName: string) => {
     setDisabledTools((prev) =>
       prev.includes(toolName) ? prev : [...prev, toolName]
     )
-  }, [])
+  }
 
-  const enableAll = useCallback(() => {
+  const enableAll = () => {
     setDisabledTools([])
-  }, [])
+  }
 
-  const getEnabledTools = useCallback(
-    (allToolNames: string[]) =>
-      allToolNames.filter((name) => !disabledTools.includes(name)),
-    [disabledTools]
-  )
+  const getEnabledTools = (allToolNames: string[]) =>
+    allToolNames.filter((name) => !disabledTools.includes(name))
 
   return {
     isToolEnabled,

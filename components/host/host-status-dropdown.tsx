@@ -8,14 +8,13 @@
 'use client'
 
 import { StatusIndicator } from './shared'
-import { memo } from 'react'
 import { useHostStatus } from '@/lib/swr/use-host-status'
 
 interface HostStatusDropdownProps {
   hostId: number
 }
 
-export const HostStatusDropdown = memo(function HostStatusDropdown({
+export const HostStatusDropdown = function HostStatusDropdown({
   hostId,
 }: HostStatusDropdownProps) {
   const { isOnline, isLoading } = useHostStatus(hostId, {
@@ -37,4 +36,4 @@ export const HostStatusDropdown = memo(function HostStatusDropdown({
   }
 
   return <StatusIndicator title={['Offline']} />
-})
+}

@@ -14,7 +14,6 @@ import {
   PinnedBreakdownTooltip,
   renderChartTooltip,
 } from './area-chart-tooltip'
-import { memo, useMemo } from 'react'
 import { useChartScaleValue } from '@/components/charts/chart-scale-context'
 import {
   type ChartConfig,
@@ -25,7 +24,7 @@ import {
 import { getYAxisDomain, resolveYAxisScale } from '@/lib/chart-scale'
 import { cn } from '@/lib/utils'
 
-export const AreaChart = memo(function AreaChart({
+export const AreaChart = function AreaChart({
   data,
   index,
   categories,
@@ -61,27 +60,19 @@ export const AreaChart = memo(function AreaChart({
   const effectiveScale = yAxisScale ?? contextScale ?? 'linear'
 
   // Resolve scale type (linear, log, or auto-detect)
-  const resolvedScale = useMemo(
-    () =>
-      resolveYAxisScale(
-        effectiveScale,
-        data as Record<string, unknown>[],
-        categories
-      ),
-    [effectiveScale, data, categories]
+  const resolvedScale = resolveYAxisScale(
+    effectiveScale,
+    data as Record<string, unknown>[],
+    categories
   )
 
   // Get appropriate domain for the scale type
-  const yAxisDomain = useMemo(
-    () =>
-      getYAxisDomain(
-        data as Record<string, unknown>[],
-        categories,
-        resolvedScale === 'log'
-      ),
-    [data, categories, resolvedScale]
+  const yAxisDomain = getYAxisDomain(
+    data as Record<string, unknown>[],
+    categories,
+    resolvedScale === 'log'
   )
-  const chartConfig = useMemo(() => {
+  const chartConfig = (() => {
     const config = categories.reduce(
       (acc, category, index) => {
         acc[category] = {
@@ -102,30 +93,18 @@ export const AreaChart = memo(function AreaChart({
       ...config,
       ...(customChartConfig || {}),
     }
-  }, [categories, colors, colorLabel, customChartConfig])
+  })()
 
   // Memoize tooltip renderer to prevent recreation on every render
-  const tooltip = useMemo(
-    () =>
-      renderChartTooltip({
-        breakdown,
-        breakdownLabel,
-        breakdownValue,
-        breakdownHeading,
-        tooltipActive,
-        chartConfig,
-        categories,
-      }),
-    [
-      breakdown,
-      breakdownLabel,
-      breakdownValue,
-      breakdownHeading,
-      tooltipActive,
-      chartConfig,
-      categories,
-    ]
-  )
+  const tooltip = renderChartTooltip({
+    breakdown,
+    breakdownLabel,
+    breakdownValue,
+    breakdownHeading,
+    tooltipActive,
+    chartConfig,
+    categories,
+  })
 
   const chart = (
     <ChartContainer
@@ -214,4 +193,4 @@ export const AreaChart = memo(function AreaChart({
   }
 
   return chart
-})
+}

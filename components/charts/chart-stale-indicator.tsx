@@ -4,7 +4,7 @@ import { AlertCircle, RefreshCw } from 'lucide-react'
 
 import type { StaleError } from '@/lib/swr/use-chart-data'
 
-import { memo, useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Popover,
@@ -32,7 +32,7 @@ interface ChartStaleIndicatorProps {
  * Displayed when SWR revalidation fails but previous data exists.
  * Follows the same hover pattern as CardToolbar and DateRangeSelector.
  */
-export const ChartStaleIndicator = memo(function ChartStaleIndicator({
+export const ChartStaleIndicator = function ChartStaleIndicator({
   error,
   onRetry,
   alwaysVisible = false,
@@ -96,4 +96,4 @@ export const ChartStaleIndicator = memo(function ChartStaleIndicator({
       </PopoverContent>
     </Popover>
   )
-})
+}

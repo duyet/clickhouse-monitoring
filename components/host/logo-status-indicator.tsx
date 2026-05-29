@@ -7,7 +7,6 @@
 
 'use client'
 
-import { memo } from 'react'
 import { useHostStatus } from '@/lib/swr/use-host-status'
 import { cn } from '@/lib/utils'
 
@@ -22,7 +21,7 @@ const indicatorBaseStyles =
  * Small status indicator positioned at bottom-right corner of logo
  * Only visible when sidebar is collapsed.
  */
-export const LogoStatusIndicator = memo(function LogoStatusIndicator({
+export const LogoStatusIndicator = function LogoStatusIndicator({
   hostId,
 }: LogoStatusIndicatorProps) {
   const { isOnline, isLoading } = useHostStatus(hostId, {
@@ -42,7 +41,7 @@ export const LogoStatusIndicator = memo(function LogoStatusIndicator({
       title={isOnline ? 'Online' : 'Offline'}
     />
   )
-})
+}
 
 export const LogoStatusIndicatorSkeleton = () => (
   <span className={cn(indicatorBaseStyles, 'bg-gray-400 animate-pulse')} />

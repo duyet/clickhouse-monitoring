@@ -6,7 +6,6 @@ import type {
   PeerListItem,
 } from '@/lib/peerdb/types'
 
-import { useMemo } from 'react'
 import { PeerGraph } from '@/components/peerdb/peer-graph'
 import { PeerTypeIcon } from '@/components/peerdb/peer-type-icon'
 import { PeerDBConnectionStatus } from '@/components/peerdb/peerdb-connection-status'
@@ -37,7 +36,7 @@ export default function PeerDBPeersPage() {
   // PeerDB returns `items` plus split source/destination lists; merge + dedupe.
   // Memoized so PeerGraph's dagre layout only recomputes when the data changes,
   // not on every render (which would reset node positions and the viewport).
-  const peers = useMemo(() => {
+  const peers = (() => {
     const seen = new Map<string, PeerListItem>()
     for (const p of [
       ...(peersReq.data?.items ?? []),
@@ -47,11 +46,8 @@ export default function PeerDBPeersPage() {
       if (p?.name && !seen.has(p.name)) seen.set(p.name, p)
     }
     return Array.from(seen.values())
-  }, [peersReq.data])
-  const mirrors = useMemo(
-    () => mirrorsReq.data?.mirrors ?? [],
-    [mirrorsReq.data]
-  )
+  })()
+  const mirrors = mirrorsReq.data?.mirrors ?? []
 
   if (isPeerDBNotConfigured(peersReq.error)) {
     return <PeerDBNotConfigured />

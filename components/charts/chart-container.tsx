@@ -11,13 +11,7 @@ import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { getChartSkeletonType } from './chart-registry'
 import { ChartZoomButton, ChartZoomDialog } from './chart-zoom-dialog'
-import {
-  cloneElement,
-  isValidElement,
-  useCallback,
-  useMemo,
-  useState,
-} from 'react'
+import { cloneElement, isValidElement, useState } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
 import { cn } from '@/lib/utils'
@@ -101,18 +95,18 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
   const [zoomOpen, setZoomOpen] = useState(false)
 
   // Resolve skeleton type: explicit prop, or dynamic lookup from registry, or fallback
-  const skeletonType = useMemo(() => {
+  const skeletonType = (() => {
     if (type) return type
     if (swr.chartName) {
       return getChartSkeletonType(swr.chartName)
     }
     return 'area'
-  }, [type, swr.chartName])
+  })()
 
   // Stable retry handler to prevent re-renders in ChartError
-  const handleRetry = useCallback(() => {
+  const handleRetry = () => {
     mutate()
-  }, [mutate])
+  }
 
   // Pass all metadata fields dynamically
   const toolbarMetadata: CardToolbarMetadata | undefined = metadata
@@ -126,12 +120,12 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
       : null
 
   // Extract raw chart content (without ChartCard wrapper) for zoom dialog
-  const dialogContent = useMemo(() => {
+  const dialogContent = (() => {
     if (!isValidElement(chartContent)) return chartContent
     return (
       (chartContent.props as { children?: ReactNode }).children ?? chartContent
     )
-  }, [chartContent])
+  })()
 
   // Loading state
   if (isLoading) {

@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
@@ -27,7 +26,7 @@ function partHealthLabel(count: number): string {
   return 'healthy'
 }
 
-export const ChartPartitionPartHealth = memo(function ChartPartitionPartHealth({
+export const ChartPartitionPartHealth = function ChartPartitionPartHealth({
   title,
   className,
   hostId,
@@ -64,6 +63,6 @@ export const ChartPartitionPartHealth = memo(function ChartPartitionPartHealth({
       }}
     </ChartContainer>
   )
-})
+}
 
 export default ChartPartitionPartHealth

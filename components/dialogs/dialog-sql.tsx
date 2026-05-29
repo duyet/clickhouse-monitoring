@@ -13,7 +13,7 @@ import {
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
 
-import { memo, useCallback, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { format } from 'sql-formatter'
 import {
   DialogContent,
@@ -119,7 +119,7 @@ function CopyableValue({
   )
 }
 
-export const DialogSQL = memo(function DialogSQL({
+export const DialogSQL = function DialogSQL({
   button,
   title = 'SQL Code',
   description = 'Raw SQL code of this table',
@@ -132,10 +132,10 @@ export const DialogSQL = memo(function DialogSQL({
   const [isBeautified, setIsBeautified] = useState(getInitialBeautifyState)
   const [copied, setCopied] = useState(false)
 
-  const handleBeautifyToggle = useCallback((checked: boolean) => {
+  const handleBeautifyToggle = (checked: boolean) => {
     setIsBeautified(checked)
     saveBeautifyState(checked)
-  }, [])
+  }
 
   const handleCopy = async (text: string) => {
     await navigator.clipboard.writeText(text)
@@ -144,13 +144,13 @@ export const DialogSQL = memo(function DialogSQL({
   }
 
   // Build full API URL for debugging
-  const fullApiUrl = useMemo(() => {
+  const fullApiUrl = (() => {
     if (!metadata?.api) return null
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
     return metadata.api.startsWith('http')
       ? metadata.api
       : `${baseUrl}${metadata.api}`
-  }, [metadata?.api])
+  })()
 
   // Check if we have metadata to show
   const hasMetadata =
@@ -405,4 +405,4 @@ export const DialogSQL = memo(function DialogSQL({
       {...props}
     />
   )
-})
+}

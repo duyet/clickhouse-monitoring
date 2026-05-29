@@ -7,7 +7,6 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback } from 'react'
 import { useHostId } from '@/lib/swr'
 import { buildUrl } from '@/lib/url/url-builder'
 
@@ -18,22 +17,22 @@ export function useShortcutHandlers() {
   const router = useRouter()
   const hostId = useHostId()
 
-  const goToOverview = useCallback(() => {
+  const goToOverview = () => {
     router.push(buildUrl('/overview', { host: hostId }))
-  }, [router, hostId])
+  }
 
-  const goToQueries = useCallback(() => {
+  const goToQueries = () => {
     router.push(buildUrl('/running-queries', { host: hostId }))
-  }, [router, hostId])
+  }
 
-  const goToTables = useCallback(() => {
+  const goToTables = () => {
     router.push(buildUrl('/tables', { host: hostId }))
-  }, [router, hostId])
+  }
 
-  const triggerRevalidate = useCallback(() => {
+  const triggerRevalidate = () => {
     // Trigger SWR revalidation by dispatching a custom event
     window.dispatchEvent(new CustomEvent('swr:revalidate'))
-  }, [])
+  }
 
   return {
     goToOverview,

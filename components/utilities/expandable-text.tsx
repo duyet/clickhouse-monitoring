@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react'
 
 import type { CSSProperties, ReactNode } from 'react'
 
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface ExpandableTextProps {
@@ -29,15 +29,12 @@ function checkOverflow(element: HTMLElement): boolean {
 }
 
 function useKeyboardToggle(toggle: () => void) {
-  return useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault()
-        toggle()
-      }
-    },
-    [toggle]
-  )
+  return (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      toggle()
+    }
+  }
 }
 
 function useClickOutside(
@@ -76,7 +73,7 @@ function useClickOutside(
 /**
  * Popover variant - shows full text in a floating tooltip on click
  */
-const PopoverVariant = memo(function PopoverVariant({
+const PopoverVariant = function PopoverVariant({
   maxLines,
   showIndicator,
   className,
@@ -96,9 +93,9 @@ const PopoverVariant = memo(function PopoverVariant({
   const [isOpen, setIsOpen] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
 
-  const handleToggle = useCallback(() => {
+  const handleToggle = () => {
     setIsOpen((prev) => !prev)
-  }, [])
+  }
 
   const handleKeyDown = useKeyboardToggle(handleToggle)
 
@@ -151,12 +148,12 @@ const PopoverVariant = memo(function PopoverVariant({
       )}
     </div>
   )
-})
+}
 
 /**
  * Inline variant - expands in place on click
  */
-const InlineVariant = memo(function InlineVariant({
+const InlineVariant = function InlineVariant({
   maxLines,
   showIndicator,
   className,
@@ -173,9 +170,9 @@ const InlineVariant = memo(function InlineVariant({
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const handleToggle = useCallback(() => {
+  const handleToggle = () => {
     setIsExpanded((prev) => !prev)
-  }, [])
+  }
 
   const handleKeyDown = useKeyboardToggle(handleToggle)
 
@@ -205,7 +202,7 @@ const InlineVariant = memo(function InlineVariant({
       )}
     </div>
   )
-})
+}
 
 /**
  * ExpandableText - A reusable text component with overflow detection and expansion
@@ -229,7 +226,7 @@ const InlineVariant = memo(function InlineVariant({
  * </ExpandableText>
  * ```
  */
-export const ExpandableText = memo(function ExpandableText({
+export const ExpandableText = function ExpandableText({
   children,
   variant = 'popover',
   maxLines = 1,
@@ -296,4 +293,4 @@ export const ExpandableText = memo(function ExpandableText({
       {children}
     </PopoverVariant>
   )
-})
+}

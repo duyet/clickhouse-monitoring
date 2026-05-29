@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface LazyChartWrapperProps {
@@ -18,7 +18,7 @@ interface LazyChartWrapperProps {
  * rootMargin='200px' starts loading 200px before the chart becomes visible,
  * giving the data fetch time to complete before the user reaches the chart.
  */
-export const LazyChartWrapper = memo(function LazyChartWrapper({
+export const LazyChartWrapper = function LazyChartWrapper({
   children,
   className,
   rootMargin = '200px',
@@ -50,4 +50,4 @@ export const LazyChartWrapper = memo(function LazyChartWrapper({
       {isVisible ? children : <Skeleton className="h-full w-full rounded-xl" />}
     </div>
   )
-})
+}

@@ -4,7 +4,6 @@ import { ChevronRightIcon } from 'lucide-react'
 import { menuItemsConfig } from '@/menu'
 
 import { usePathname } from 'next/navigation'
-import { memo, useMemo } from 'react'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
@@ -15,27 +14,22 @@ interface BreadcrumbProps {
   className?: string
 }
 
-export const Breadcrumb = memo(function Breadcrumb({
-  className,
-}: BreadcrumbProps) {
+export const Breadcrumb = function Breadcrumb({ className }: BreadcrumbProps) {
   const pathname = usePathname()
   const { config } = useFeaturePermissions()
-  const menuItems = useMemo(
-    () => filterMenuItemsByPermissions(menuItemsConfig, config),
-    [config]
-  )
+  const menuItems = filterMenuItemsByPermissions(menuItemsConfig, config)
 
-  const breadcrumbs = useMemo(() => {
+  const breadcrumbs = (() => {
     return getBreadcrumbPath(pathname, menuItems)
-  }, [pathname, menuItems])
+  })()
 
-  const breadcrumbLabel = useMemo(() => {
+  const breadcrumbLabel = (() => {
     if (breadcrumbs.length === 0) {
       return 'Breadcrumb navigation'
     }
 
     return `Breadcrumb: ${breadcrumbs.map((crumb) => crumb.title).join(' / ')}`
-  }, [breadcrumbs])
+  })()
 
   return (
     <nav
@@ -87,4 +81,4 @@ export const Breadcrumb = memo(function Breadcrumb({
       </ol>
     </nav>
   )
-})
+}

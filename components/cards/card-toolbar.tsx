@@ -17,7 +17,7 @@ import {
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartDataPoint } from '@/types/chart-data'
 
-import { memo, useCallback, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { format } from 'sql-formatter'
 import { Button } from '@/components/ui/button'
 import {
@@ -135,7 +135,7 @@ function CopyableValue({
  *
  * Extracted as a standalone component for reuse in both ChartCard and ChartEmpty.
  */
-export const CardToolbar = memo(function CardToolbar({
+export const CardToolbar = function CardToolbar({
   sql,
   data,
   metadata,
@@ -145,31 +145,31 @@ export const CardToolbar = memo(function CardToolbar({
   const [showData, setShowData] = useState(false)
   const [isBeautified, setIsBeautified] = useState(getInitialBeautifyState)
 
-  const handleBeautifyToggle = useCallback((checked: boolean) => {
+  const handleBeautifyToggle = (checked: boolean) => {
     setIsBeautified(checked)
     saveBeautifyState(checked)
-  }, [])
+  }
 
-  const dataJson = useMemo(() => {
+  const dataJson = (() => {
     return data ? JSON.stringify(data, null, 2) : null
-  }, [data])
+  })()
 
-  const displaySql = useMemo(() => {
+  const displaySql = (() => {
     if (!sql) return null
     return isBeautified ? formatSQL(sql) : dedent(sql)
-  }, [sql, isBeautified])
+  })()
 
   const [copied, setCopied] = useState(false)
 
   // Build full API URL for debugging - must be before any early returns
-  const fullApiUrl = useMemo(() => {
+  const fullApiUrl = (() => {
     if (!metadata?.api) return null
     // api field already contains full URL with params
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
     return metadata.api.startsWith('http')
       ? metadata.api
       : `${baseUrl}${metadata.api}`
-  }, [metadata?.api])
+  })()
 
   const handleCopy = async (text: string) => {
     await navigator.clipboard.writeText(text)
@@ -433,4 +433,4 @@ export const CardToolbar = memo(function CardToolbar({
       </Dialog>
     </>
   )
-})
+}

@@ -1,6 +1,5 @@
 import { ResetIcon } from '@radix-ui/react-icons'
 
-import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,
@@ -14,7 +13,7 @@ interface ResetColumnOrderButtonProps {
   disabled?: boolean
 }
 
-export const ResetColumnOrderButton = memo(function ResetColumnOrderButton({
+export const ResetColumnOrderButton = function ResetColumnOrderButton({
   onReset,
   disabled = false,
 }: ResetColumnOrderButtonProps) {
@@ -39,4 +38,4 @@ export const ResetColumnOrderButton = memo(function ResetColumnOrderButton({
       </Tooltip>
     </TooltipProvider>
   )
-})
+}

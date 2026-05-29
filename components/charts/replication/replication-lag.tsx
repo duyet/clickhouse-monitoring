@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -45,7 +44,7 @@ const lagStatusColors: Record<string, string> = {
  * Replication Lag Chart
  * Shows replica synchronization status and lag across tables
  */
-export const ChartReplicationLag = memo(function ChartReplicationLag({
+export const ChartReplicationLag = function ChartReplicationLag({
   title = 'Replication Lag',
   className,
   hostId,
@@ -126,7 +125,7 @@ export const ChartReplicationLag = memo(function ChartReplicationLag({
       </div>
     </ChartCard>
   )
-})
+}
 
 export type ChartReplicationLagProps = ChartProps
 

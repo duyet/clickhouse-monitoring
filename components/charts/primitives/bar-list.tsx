@@ -1,6 +1,5 @@
 'use client'
 
-import { memo, useCallback, useMemo } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface BarListProps {
@@ -13,20 +12,20 @@ export interface BarListProps {
   className?: string
 }
 
-export const BarList = memo(function BarList({
+export const BarList = function BarList({
   data,
   formatedColumn,
   className,
 }: BarListProps) {
   // Compact number formatter (e.g., 10.98 million -> 10.9M)
-  const compactFormat = useCallback((value: number): string => {
+  const compactFormat = (value: number): string => {
     if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`
     if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`
     if (value >= 1e3) return `${(value / 1e3).toFixed(1)}K`
     return value.toLocaleString()
-  }, [])
+  }
 
-  const valueFormatter = useMemo(() => {
+  const valueFormatter = (() => {
     if (!formatedColumn) {
       return (value: number) => compactFormat(value)
     }
@@ -44,17 +43,17 @@ export const BarList = memo(function BarList({
       }
       return formatted || compactFormat(value)
     }
-  }, [formatedColumn, data, compactFormat])
+  })()
 
   // Sort data by value in descending order
-  const sortedData = useMemo(() => {
+  const sortedData = (() => {
     return [...data].sort((a, b) => b.value - a.value)
-  }, [data])
+  })()
 
   // Find max value for percentage calculation
-  const maxValue = useMemo(() => {
+  const maxValue = (() => {
     return Math.max(...sortedData.map((d) => d.value), 1)
-  }, [sortedData])
+  })()
 
   return (
     <div className={cn('flex flex-col gap-1', className)}>
@@ -114,4 +113,4 @@ export const BarList = memo(function BarList({
       })}
     </div>
   )
-})
+}

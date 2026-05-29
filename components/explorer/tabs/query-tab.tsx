@@ -27,16 +27,7 @@ import type {
 } from '@/lib/api/types'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
-import {
-  lazy,
-  memo,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { format } from 'sql-formatter'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -98,28 +89,21 @@ function ensureLimit(sql: string, limit: number = DEFAULT_LIMIT): string {
 /**
  * Expandable cell component for long text content
  */
-const ExpandableCell = memo(function ExpandableCell({
-  value,
-}: {
-  value: unknown
-}) {
+const ExpandableCell = function ExpandableCell({ value }: { value: unknown }) {
   const [expanded, setExpanded] = useState(false)
   const stringValue = String(value ?? '')
   const isLong = stringValue.length > MAX_CELL_LENGTH
 
-  const toggleExpand = useCallback(() => {
+  const toggleExpand = () => {
     setExpanded((prev) => !prev)
-  }, [])
+  }
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        toggleExpand()
-      }
-    },
-    [toggleExpand]
-  )
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      toggleExpand()
+    }
+  }
 
   if (!isLong) {
     return <span className="block truncate">{stringValue}</span>
@@ -142,7 +126,7 @@ const ExpandableCell = memo(function ExpandableCell({
       {expanded ? stringValue : `${stringValue.slice(0, MAX_CELL_LENGTH)}…`}
     </span>
   )
-})
+}
 
 /** Custom error class to carry API error details */
 class QueryTabError extends Error {
@@ -253,7 +237,7 @@ function useAutoCompleteSchema(hostId: number) {
     { revalidateOnFocus: false }
   )
 
-  return useMemo(() => {
+  return (() => {
     const schema: Record<string, string[]> = {}
     const databases = dbResponse?.data || []
 
@@ -263,7 +247,7 @@ function useAutoCompleteSchema(hostId: number) {
     }
 
     return schema
-  }, [dbResponse])
+  })()
 }
 
 export function QueryTab() {
@@ -305,17 +289,17 @@ export function QueryTab() {
   }, [customQuery, database, tableName])
 
   // Build the SWR URL only when we have an executed query
-  const swrKey = useMemo(() => {
+  const swrKey = (() => {
     if (!executedQuery) return null
     const params = new URLSearchParams()
     params.set('hostId', String(hostId))
     params.set('sql', executedQuery)
     params.set('format', 'JSONEachRow')
     return `/api/v1/explorer/query?${params.toString()}`
-  }, [executedQuery, hostId])
+  })()
 
   // SWR fetcher with AbortController support
-  const swrFetcher = useCallback(async (url: string) => {
+  const swrFetcher = async (url: string) => {
     // Cancel previous request if still running
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -323,7 +307,7 @@ export function QueryTab() {
     // Create new abort controller for this request
     abortControllerRef.current = new AbortController()
     return fetcher(url, abortControllerRef.current.signal)
-  }, [])
+  }
 
   const {
     data: response,
@@ -336,11 +320,11 @@ export function QueryTab() {
     revalidateOnReconnect: false,
   })
 
-  const rows = useMemo(() => response?.data || [], [response?.data])
+  const rows = response?.data || []
   const metadata = response?.metadata
 
   // Generate columns dynamically from data
-  const columns = useMemo(() => {
+  const columns = (() => {
     if (rows.length === 0) return []
     return Object.keys(rows[0]).map((key) =>
       columnHelper.accessor(key, {
@@ -351,7 +335,7 @@ export function QueryTab() {
         maxSize: 500,
       })
     )
-  }, [rows])
+  })()
 
   const table = useReactTable({
     data: rows,
@@ -371,7 +355,7 @@ export function QueryTab() {
     },
   })
 
-  const handleRun = useCallback(() => {
+  const handleRun = () => {
     const sql = editorValue.trim()
     const error = validateSelectOnly(sql)
     if (error) {
@@ -389,28 +373,25 @@ export function QueryTab() {
     // Defer URL update to next frame so setExecutedQuery commits first,
     // preventing router.push re-render from racing with the SWR key
     requestAnimationFrame(() => setCustomQuery(finalSql))
-  }, [editorValue, setCustomQuery])
+  }
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
     }
     // Clear the SWR cache to stop loading state
     mutate(undefined, false)
-  }, [mutate])
+  }
 
-  const handleEditorChange = useCallback(
-    (newValue: string) => {
-      setEditorValue(newValue)
-      if (validationError) {
-        setValidationError(null)
-      }
-    },
-    [validationError]
-  )
+  const handleEditorChange = (newValue: string) => {
+    setEditorValue(newValue)
+    if (validationError) {
+      setValidationError(null)
+    }
+  }
 
-  const handleFormat = useCallback(() => {
+  const handleFormat = () => {
     try {
       setEditorValue(
         format(editorValue, { language: 'sql', keywordCase: 'upper' })
@@ -418,7 +399,7 @@ export function QueryTab() {
     } catch {
       // If formatting fails (e.g., invalid SQL), keep the current value
     }
-  }, [editorValue])
+  }
 
   const pageCount = table.getPageCount()
   const currentPage = table.getState().pagination.pageIndex

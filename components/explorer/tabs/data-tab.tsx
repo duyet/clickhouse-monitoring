@@ -12,7 +12,7 @@ import {
 import type { ApiError, ApiResponse } from '@/lib/api/types'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
-import { memo, useCallback, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { TableSkeleton } from '@/components/skeletons'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -41,28 +41,21 @@ const MAX_CELL_LENGTH = 100
  * Expandable cell component for long text content
  * Shows truncated text inline with click-to-expand functionality
  */
-const ExpandableCell = memo(function ExpandableCell({
-  value,
-}: {
-  value: unknown
-}) {
+const ExpandableCell = function ExpandableCell({ value }: { value: unknown }) {
   const [expanded, setExpanded] = useState(false)
   const stringValue = String(value ?? '')
   const isLong = stringValue.length > MAX_CELL_LENGTH
 
-  const toggleExpand = useCallback(() => {
+  const toggleExpand = () => {
     setExpanded((prev) => !prev)
-  }, [])
+  }
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        toggleExpand()
-      }
-    },
-    [toggleExpand]
-  )
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      toggleExpand()
+    }
+  }
 
   if (!isLong) {
     return <span className="block truncate">{stringValue}</span>
@@ -85,7 +78,7 @@ const ExpandableCell = memo(function ExpandableCell({
       {expanded ? stringValue : `${stringValue.slice(0, MAX_CELL_LENGTH)}…`}
     </span>
   )
-})
+}
 
 /** Custom error class to carry API error details */
 class DataTabError extends Error {
@@ -144,7 +137,7 @@ export function DataTab() {
   const rows = response?.data || []
 
   // Generate columns dynamically from data
-  const columns = useMemo(() => {
+  const columns = (() => {
     if (rows.length === 0) return []
     return Object.keys(rows[0]).map((key) =>
       columnHelper.accessor(key, {
@@ -155,7 +148,7 @@ export function DataTab() {
         maxSize: 500,
       })
     )
-  }, [rows])
+  })()
 
   const table = useReactTable({
     data: rows,

@@ -4,7 +4,6 @@ import { AlignJustifyIcon, ListIcon, Rows3Icon } from 'lucide-react'
 
 import type { TableDensity } from '@/components/data-table/hooks/use-table-density'
 
-import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -29,7 +28,7 @@ interface DensityToggleProps {
   onDensityChange: (density: TableDensity) => void
 }
 
-export const DensityToggle = memo(function DensityToggle({
+export const DensityToggle = function DensityToggle({
   density,
   onDensityChange,
 }: DensityToggleProps) {
@@ -64,4 +63,4 @@ export const DensityToggle = memo(function DensityToggle({
       </DropdownMenuContent>
     </DropdownMenu>
   )
-})
+}

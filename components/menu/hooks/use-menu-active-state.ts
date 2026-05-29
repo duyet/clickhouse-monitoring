@@ -9,7 +9,6 @@
 import type { MenuItem } from '../types'
 
 import { usePathname } from 'next/navigation'
-import { useMemo } from 'react'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 
 /**
@@ -18,7 +17,7 @@ import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 export function useMenuActiveState(item: MenuItem): boolean {
   const pathname = usePathname()
 
-  return useMemo(() => {
+  return (() => {
     // Check if item itself is active
     if (item.href && isMenuItemActive(item.href, pathname)) {
       return true
@@ -32,5 +31,5 @@ export function useMenuActiveState(item: MenuItem): boolean {
     }
 
     return false
-  }, [item, pathname])
+  })()
 }

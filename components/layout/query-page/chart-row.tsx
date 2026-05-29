@@ -19,7 +19,7 @@ import type { QueryConfig } from '@/types/query-config'
 
 import { ChartRowSummary } from './chart-row-summary'
 import { DynamicChart } from './dynamic-chart'
-import { memo, Suspense } from 'react'
+import { Suspense } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import {
@@ -47,7 +47,7 @@ export interface ChartRowProps {
   onToggle: () => void
 }
 
-export const ChartRow = memo(function ChartRow({
+export const ChartRow = function ChartRow({
   rowIndex: _rowIndex,
   charts,
   isCollapsed,
@@ -160,4 +160,4 @@ export const ChartRow = memo(function ChartRow({
       </div>
     </Collapsible>
   )
-})
+}

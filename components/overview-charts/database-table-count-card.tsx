@@ -3,7 +3,6 @@
 import { Database } from 'lucide-react'
 
 import { KpiCard } from './kpi-card'
-import { memo } from 'react'
 import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { buildUrl } from '@/lib/url/url-builder'
@@ -17,7 +16,7 @@ import { buildUrl } from '@/lib/url/url-builder'
  * Headline is the database count; the table count sits in the sub line.
  */
 
-export const DatabaseTableCountCard = memo(function DatabaseTableCountCard() {
+export const DatabaseTableCountCard = function DatabaseTableCountCard() {
   const hostId = useHostId()
   const databaseSwr = useChartData<{ count: number }>({
     chartName: 'database-count',
@@ -53,4 +52,4 @@ export const DatabaseTableCountCard = memo(function DatabaseTableCountCard() {
       isLoading={isLoading}
     />
   )
-})
+}

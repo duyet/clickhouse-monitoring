@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface TreeState {
   expandedDatabases: Set<string>
@@ -94,7 +94,7 @@ export function useTreeState(
     saveTreeState(state)
   }, [state])
 
-  const toggleDatabase = useCallback((database: string) => {
+  const toggleDatabase = (database: string) => {
     setState((prev) => {
       const newExpandedDatabases = new Set(prev.expandedDatabases)
       if (newExpandedDatabases.has(database)) {
@@ -104,9 +104,9 @@ export function useTreeState(
       }
       return { ...prev, expandedDatabases: newExpandedDatabases }
     })
-  }, [])
+  }
 
-  const toggleTable = useCallback((key: string) => {
+  const toggleTable = (key: string) => {
     setState((prev) => {
       const newExpandedTables = new Set(prev.expandedTables)
       if (newExpandedTables.has(key)) {
@@ -116,17 +116,12 @@ export function useTreeState(
       }
       return { ...prev, expandedTables: newExpandedTables }
     })
-  }, [])
+  }
 
-  const isDatabaseExpanded = useCallback(
-    (database: string) => state.expandedDatabases.has(database),
-    [state.expandedDatabases]
-  )
+  const isDatabaseExpanded = (database: string) =>
+    state.expandedDatabases.has(database)
 
-  const isTableExpanded = useCallback(
-    (key: string) => state.expandedTables.has(key),
-    [state.expandedTables]
-  )
+  const isTableExpanded = (key: string) => state.expandedTables.has(key)
 
   return {
     expandedDatabases: state.expandedDatabases,

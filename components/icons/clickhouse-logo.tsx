@@ -1,6 +1,4 @@
-import { memo } from 'react'
-
-export const ClickHouseLogo = memo(function ClickHouseLogo({
+export const ClickHouseLogo = function ClickHouseLogo({
   className,
   width = 24,
   height = 24,
@@ -25,4 +23,4 @@ export const ClickHouseLogo = memo(function ClickHouseLogo({
       />
     </svg>
   )
-})
+}

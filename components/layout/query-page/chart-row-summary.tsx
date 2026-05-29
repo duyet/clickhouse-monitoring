@@ -5,7 +5,6 @@ import type { QueryConfig } from '@/types/query-config'
 import type { ChartValueUnit } from './chart-format'
 
 import { ChartChip } from './chart-chip'
-import { memo } from 'react'
 
 const VALID_UNITS: ReadonlySet<string> = new Set([
   'count',
@@ -27,7 +26,7 @@ function chartLabel(name: string, props?: Record<string, unknown>): string {
   return name.replace(/-/g, ' ')
 }
 
-export const ChartRowSummary = memo(function ChartRowSummary({
+export const ChartRowSummary = function ChartRowSummary({
   charts,
 }: ChartRowSummaryProps) {
   const items = charts
@@ -79,4 +78,4 @@ export const ChartRowSummary = memo(function ChartRowSummary({
       ))}
     </div>
   )
-})
+}

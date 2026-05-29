@@ -12,7 +12,7 @@ import { useMenuActiveState } from '../hooks/use-menu-active-state'
 import { HostPrefixedLink } from '../link-with-context'
 import { ActiveIndicator } from './active-indicator'
 import { MenuIcon } from './menu-icon'
-import { lazy, memo, Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import { NavigationMenuItem } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
 
@@ -26,7 +26,7 @@ interface MenuSingleItemProps {
   item: MenuItem
 }
 
-export const MenuSingleItem = memo(function MenuSingleItem({
+export const MenuSingleItem = function MenuSingleItem({
   item,
 }: MenuSingleItemProps) {
   const isActive = useMenuActiveState(item)
@@ -68,4 +68,4 @@ export const MenuSingleItem = memo(function MenuSingleItem({
       </HostPrefixedLink>
     </NavigationMenuItem>
   )
-})
+}

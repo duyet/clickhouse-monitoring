@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 
 import { SignInButton, SignOutButton, useClerk, useUser } from '@clerk/nextjs'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { useSettingsShortcut } from '@/components/nav-user/use-settings-shortcut'
 import { SettingsDialog } from '@/components/settings'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -47,9 +47,9 @@ export function ClerkNavWrapper() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { config } = useFeaturePermissions()
   const canUseSettings = isFeatureAllowed(SETTINGS_FEATURE_PERMISSION, config)
-  const openSettings = useCallback(() => {
+  const openSettings = () => {
     if (canUseSettings) setSettingsOpen(true)
-  }, [canUseSettings])
+  }
   useSettingsShortcut(openSettings, canUseSettings)
 
   // Loading state - show skeleton

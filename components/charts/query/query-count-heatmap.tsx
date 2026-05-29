@@ -3,7 +3,6 @@
 import { ArrowUpRightIcon } from 'lucide-react'
 
 import Link from 'next/link'
-import { useMemo } from 'react'
 import { createCustomChart } from '@/components/charts/factory'
 import {
   Tooltip,
@@ -326,12 +325,9 @@ function HeatmapCellLink({
   totalCells,
   isCurrent,
 }: CellLinkProps) {
-  const slotDate = useMemo(
-    () => findMostRecentSlot(timezone, dayOfWeek, hour, windowHours),
-    [timezone, dayOfWeek, hour, windowHours]
-  )
+  const slotDate = findMostRecentSlot(timezone, dayOfWeek, hour, windowHours)
 
-  const href = useMemo(() => {
+  const href = (() => {
     if (!slotDate) return null
     // BETWEEN is inclusive on both ends in ClickHouse — use 59:59 so the
     // exact next-hour boundary belongs to the next hour's drilldown.
@@ -345,7 +341,7 @@ function HeatmapCellLink({
       `between:${formatChDateTime(slotDate)},${formatChDateTime(end)}`
     )
     return `/history-queries?${params.toString()}`
-  }, [slotDate, hostId])
+  })()
 
   const dayLabel = DAY_LABELS[dayOfWeek - 1]
   const hourLabel = String(hour).padStart(2, '0')

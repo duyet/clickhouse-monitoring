@@ -5,7 +5,7 @@ import { ReloadIcon } from '@radix-ui/react-icons'
 import { useReloadCountdown } from './use-reload-countdown'
 import { useReloadIntervals } from './use-reload-intervals'
 import { useRouter } from 'next/navigation'
-import { memo, useCallback, useTransition } from 'react'
+import { useTransition } from 'react'
 import { useAppContext } from '@/app/context'
 import { Button } from '@/components/ui/button'
 import {
@@ -37,7 +37,7 @@ export interface ReloadButtonProps {
  * <ReloadButton className="ml-auto" />
  * ```
  */
-export const ReloadButton = memo(function ReloadButton({
+export const ReloadButton = function ReloadButton({
   className,
 }: ReloadButtonProps) {
   const router = useRouter()
@@ -45,13 +45,10 @@ export const ReloadButton = memo(function ReloadButton({
   const { reloadInterval, setReloadInterval } = useAppContext()
 
   // Handle manual refresh
-  const revalidateCacheAndReload = useCallback(
-    () =>
-      startTransition(async () => {
-        router.refresh()
-      }),
-    [router]
-  )
+  const revalidateCacheAndReload = () =>
+    startTransition(async () => {
+      router.refresh()
+    })
 
   // Countdown timer hook
   const { countDown } = useReloadCountdown({
@@ -111,4 +108,4 @@ export const ReloadButton = memo(function ReloadButton({
       </DropdownMenuContent>
     </DropdownMenu>
   )
-})
+}

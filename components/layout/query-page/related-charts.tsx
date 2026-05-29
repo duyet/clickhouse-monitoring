@@ -21,7 +21,6 @@ import type { QueryConfig } from '@/types/query-config'
 
 import { ChartRow } from './chart-row'
 import { groupChartsIntoRows } from './utils'
-import { memo } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface RelatedChartsProps {
@@ -33,7 +32,7 @@ export interface RelatedChartsProps {
   onToggleRow?: (rowIndex: number) => void
 }
 
-export const RelatedCharts = memo(function RelatedCharts({
+export const RelatedCharts = function RelatedCharts({
   relatedCharts,
   gridClass,
   collapsedRows,
@@ -62,4 +61,4 @@ export const RelatedCharts = memo(function RelatedCharts({
       ))}
     </div>
   )
-})
+}

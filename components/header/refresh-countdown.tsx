@@ -3,7 +3,7 @@
 import { RefreshCw } from 'lucide-react'
 
 import { useRefreshTimer } from './hooks'
-import { memo, useCallback, useState } from 'react'
+import { useState } from 'react'
 import { useAppContext } from '@/app/context'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 const SECOND = 1000
 const MINUTE = 60 * SECOND
 
-export const RefreshCountdown = memo(function RefreshCountdown() {
+export const RefreshCountdown = function RefreshCountdown() {
   const { reloadInterval, setReloadInterval } = useAppContext()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -33,21 +33,18 @@ export const RefreshCountdown = memo(function RefreshCountdown() {
     },
   })
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = () => {
     setIsRefreshing(true)
     window.dispatchEvent(new CustomEvent('swr:revalidate'))
     setTimeout(() => {
       setIsRefreshing(false)
       reset()
     }, 1000)
-  }, [reset])
+  }
 
-  const handleSetReloadInterval = useCallback(
-    (interval: number | null) => {
-      setReloadInterval(interval)
-    },
-    [setReloadInterval]
-  )
+  const handleSetReloadInterval = (interval: number | null) => {
+    setReloadInterval(interval)
+  }
 
   return (
     <DropdownMenu>
@@ -92,4 +89,4 @@ export const RefreshCountdown = memo(function RefreshCountdown() {
       </DropdownMenuContent>
     </DropdownMenu>
   )
-})
+}

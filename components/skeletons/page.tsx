@@ -1,17 +1,10 @@
-/**
- * Page-Level Skeleton Components
- *
- * Simple loading states for pages
- */
-
-import { memo } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 /**
  * Page Skeleton - Charts grid and table
  */
-export const PageSkeleton = memo(function PageSkeleton({
+export const PageSkeleton = function PageSkeleton({
   chartCount = 4,
   tableRows = 5,
   className,
@@ -38,12 +31,12 @@ export const PageSkeleton = memo(function PageSkeleton({
       <TableSkeleton rows={tableRows} />
     </div>
   )
-})
+}
 
 /**
  * Charts Only Page Skeleton
  */
-export const ChartsOnlyPageSkeleton = memo(function ChartsOnlyPageSkeleton({
+export const ChartsOnlyPageSkeleton = function ChartsOnlyPageSkeleton({
   chartCount = 6,
   className,
 }: {
@@ -62,12 +55,12 @@ export const ChartsOnlyPageSkeleton = memo(function ChartsOnlyPageSkeleton({
       ))}
     </div>
   )
-})
+}
 
 /**
  * Table Only Page Skeleton
  */
-export const TableOnlyPageSkeleton = memo(function TableOnlyPageSkeleton({
+export const TableOnlyPageSkeleton = function TableOnlyPageSkeleton({
   rows = 10,
   className,
 }: {
@@ -84,12 +77,12 @@ export const TableOnlyPageSkeleton = memo(function TableOnlyPageSkeleton({
       <TableSkeleton rows={rows} />
     </div>
   )
-})
+}
 
 /**
  * Chart Skeleton
  */
-const ChartSkeleton = memo(function ChartSkeleton() {
+const ChartSkeleton = function ChartSkeleton() {
   return (
     <div
       className="rounded-lg border border-border/50 bg-card/50 p-4"
@@ -105,12 +98,12 @@ const ChartSkeleton = memo(function ChartSkeleton() {
       </div>
     </div>
   )
-})
+}
 
 /**
  * Table Skeleton
  */
-const TableSkeleton = memo(function TableSkeleton({
+const TableSkeleton = function TableSkeleton({
   rows = 5,
 }: {
   rows?: number
@@ -139,4 +132,4 @@ const TableSkeleton = memo(function TableSkeleton({
       </div>
     </div>
   )
-})
+}

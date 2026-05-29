@@ -1,4 +1,3 @@
-import { memo } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
@@ -6,7 +5,7 @@ import { cn } from '@/lib/utils'
  * Table skeleton with configurable rows and columns
  * Matches DataTable layout to prevent CLS
  */
-export const TableSkeleton = memo(function TableSkeleton({
+export const TableSkeleton = function TableSkeleton({
   rows = 5,
   cols = 4,
   className,
@@ -67,4 +66,4 @@ export const TableSkeleton = memo(function TableSkeleton({
       <span className="sr-only">Loading table data…</span>
     </div>
   )
-})
+}

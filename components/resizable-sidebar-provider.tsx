@@ -2,7 +2,7 @@
 
 import { GripVertical } from 'lucide-react'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 
@@ -36,31 +36,28 @@ function ResizeHandle() {
     }
   }, [])
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
 
-      const wrapper = document.querySelector(
-        '[data-slot="sidebar-wrapper"]'
-      ) as HTMLElement
-      if (!wrapper) return
+    const wrapper = document.querySelector(
+      '[data-slot="sidebar-wrapper"]'
+    ) as HTMLElement
+    if (!wrapper) return
 
-      setIsResizing(true)
-      shouldCollapseRef.current = false
-      startXRef.current = e.clientX
+    setIsResizing(true)
+    shouldCollapseRef.current = false
+    startXRef.current = e.clientX
 
-      // If collapsed, we're expanding - start from icon width
-      if (state === 'collapsed') {
-        startWidthRef.current = 48 // icon width (3rem)
-      } else {
-        const currentWidth =
-          getComputedStyle(wrapper).getPropertyValue('--sidebar-width')
-        startWidthRef.current = parseInt(currentWidth, 10) || DEFAULT_WIDTH
-      }
-    },
-    [state]
-  )
+    // If collapsed, we're expanding - start from icon width
+    if (state === 'collapsed') {
+      startWidthRef.current = 48 // icon width (3rem)
+    } else {
+      const currentWidth =
+        getComputedStyle(wrapper).getPropertyValue('--sidebar-width')
+      startWidthRef.current = parseInt(currentWidth, 10) || DEFAULT_WIDTH
+    }
+  }
 
   useEffect(() => {
     if (!isResizing) return

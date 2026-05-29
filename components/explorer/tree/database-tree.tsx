@@ -7,7 +7,7 @@ import { useTreeState } from '../hooks/use-tree-state'
 import { DatabaseNode } from './database-node'
 import { TreeSearch } from './tree-search'
 import { TreeSkeleton } from './tree-skeleton'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { SidebarMenu } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useHostId } from '@/lib/swr'
@@ -49,23 +49,17 @@ export function DatabaseTree() {
 
   const databases = response?.data
 
-  const handleSelectDatabase = useCallback(
-    (db: string) => {
-      setDatabase(db)
-      // Also expand the database if not already expanded
-      if (!isDatabaseExpanded(db)) {
-        toggleDatabase(db)
-      }
-    },
-    [setDatabase, isDatabaseExpanded, toggleDatabase]
-  )
+  const handleSelectDatabase = (db: string) => {
+    setDatabase(db)
+    // Also expand the database if not already expanded
+    if (!isDatabaseExpanded(db)) {
+      toggleDatabase(db)
+    }
+  }
 
-  const handleSelectTable = useCallback(
-    (db: string, tbl: string, engine: string) => {
-      setDatabaseAndTable(db, tbl, engine)
-    },
-    [setDatabaseAndTable]
-  )
+  const handleSelectTable = (db: string, tbl: string, engine: string) => {
+    setDatabaseAndTable(db, tbl, engine)
+  }
 
   if (error) {
     return (

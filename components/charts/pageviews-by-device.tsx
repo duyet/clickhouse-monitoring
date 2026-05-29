@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
@@ -24,7 +23,7 @@ type CountryRow = {
   views: number
 }
 
-export const PageviewsByDeviceChart = memo(function PageviewsByDeviceChart({
+export const PageviewsByDeviceChart = function PageviewsByDeviceChart({
   title,
   className,
   hostId,
@@ -139,4 +138,4 @@ export const PageviewsByDeviceChart = memo(function PageviewsByDeviceChart({
       }}
     </ChartContainer>
   )
-})
+}

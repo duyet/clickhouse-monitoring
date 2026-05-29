@@ -1,6 +1,5 @@
 'use client'
 
-import { memo } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface CardMultiMetricsProps {
@@ -17,7 +16,7 @@ export interface CardMultiMetricsProps {
   className?: string
 }
 
-const DottedLineProgress = memo(function DottedLineProgress({
+const DottedLineProgress = function DottedLineProgress({
   percent,
   className,
 }: {
@@ -44,9 +43,9 @@ const DottedLineProgress = memo(function DottedLineProgress({
       </div>
     </div>
   )
-})
+}
 
-export const CardMultiMetrics = memo(function CardMultiMetrics({
+export const CardMultiMetrics = function CardMultiMetrics({
   primary,
   items = [],
   currentLabel,
@@ -98,4 +97,4 @@ export const CardMultiMetrics = memo(function CardMultiMetrics({
       </div>
     </div>
   )
-})
+}

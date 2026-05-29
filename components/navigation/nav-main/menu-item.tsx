@@ -6,7 +6,7 @@ import type { MenuItem as MenuItemType } from '@/components/menu/types'
 import type { MenuItemActiveState, MenuItemProps } from './types'
 
 import { CollapsedSubmenu } from './collapsed-submenu'
-import { lazy, memo, Suspense, useCallback } from 'react'
+import { lazy, Suspense } from 'react'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
 
 const NewBadge = lazy(() =>
@@ -40,14 +40,11 @@ import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 function useCloseMobileSidebar() {
   const { isMobile, setOpenMobile } = useSidebar()
 
-  return useCallback(
-    (event?: React.MouseEvent<HTMLAnchorElement>) => {
-      if (!event?.defaultPrevented && isMobile) {
-        setOpenMobile(false)
-      }
-    },
-    [isMobile, setOpenMobile]
-  )
+  return (event?: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!event?.defaultPrevented && isMobile) {
+      setOpenMobile(false)
+    }
+  }
 }
 
 /**
@@ -73,7 +70,7 @@ function getMenuItemActiveState(
 /**
  * Renders a single menu item without children
  */
-const SingleMenuItem = memo(function SingleMenuItem({
+const SingleMenuItem = function SingleMenuItem({
   item,
   isActive,
 }: {
@@ -116,13 +113,13 @@ const SingleMenuItem = memo(function SingleMenuItem({
       )}
     </SidebarMenuItem>
   )
-})
+}
 
 /**
  * Renders a menu item with children (collapsible)
  * Uses standard shadcn/ui pattern - entire button triggers toggle
  */
-const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
+const CollapsibleMenuItem = function CollapsibleMenuItem({
   item,
   pathname,
   hasActiveChild,
@@ -240,15 +237,12 @@ const CollapsibleMenuItem = memo(function CollapsibleMenuItem({
       </SidebarMenuItem>
     </Collapsible>
   )
-})
+}
 
 /**
  * MenuItem component - renders a single menu item or collapsible menu with children
  */
-export const MenuItem = memo(function MenuItem({
-  item,
-  pathname,
-}: MenuItemProps) {
+export const MenuItem = function MenuItem({ item, pathname }: MenuItemProps) {
   const hasChildren = item.items && item.items.length > 0
   const { isActive, hasActiveChild } = getMenuItemActiveState(item, pathname)
 
@@ -263,4 +257,4 @@ export const MenuItem = memo(function MenuItem({
       hasActiveChild={hasActiveChild}
     />
   )
-})
+}

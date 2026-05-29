@@ -4,7 +4,6 @@ import { menuItemsConfig } from '@/menu'
 import type { MenuItem } from './types'
 
 import { HostPrefixedLink } from './link-with-context'
-import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -22,7 +21,7 @@ export interface MenuProps {
   className?: string
 }
 
-export const MenuDropdownStyle = memo(function MenuDropdownStyle({
+export const MenuDropdownStyle = function MenuDropdownStyle({
   items = menuItemsConfig,
   className,
 }: MenuProps) {
@@ -49,9 +48,9 @@ export const MenuDropdownStyle = memo(function MenuDropdownStyle({
       </DropdownMenuContent>
     </DropdownMenu>
   )
-})
+}
 
-const SingleItemDropdown = memo(function SingleItemDropdown({
+const SingleItemDropdown = function SingleItemDropdown({
   href,
   title,
   children,
@@ -72,9 +71,9 @@ const SingleItemDropdown = memo(function SingleItemDropdown({
       </HostPrefixedLink>
     </DropdownMenuItem>
   )
-})
+}
 
-const MenuItemComponent = memo(function MenuItemComponent({
+const MenuItemComponent = function MenuItemComponent({
   item,
 }: {
   item: MenuItem
@@ -90,13 +89,9 @@ const MenuItemComponent = memo(function MenuItemComponent({
       )}
     </SingleItemDropdown>
   )
-})
+}
 
-const HasChildItems = memo(function HasChildItems({
-  item,
-}: {
-  item: MenuItem
-}) {
+const HasChildItems = function HasChildItems({ item }: { item: MenuItem }) {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger
@@ -122,4 +117,4 @@ const HasChildItems = memo(function HasChildItems({
       </DropdownMenuPortal>
     </DropdownMenuSub>
   )
-})
+}

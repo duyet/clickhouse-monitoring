@@ -2,7 +2,7 @@
 
 import { useInterval } from 'usehooks-ts'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export interface ReloadCountdownOptions {
   /**
@@ -65,9 +65,9 @@ export function useReloadCountdown({
   }, [reloadInterval])
 
   // Reset countdown to initial value
-  const resetCountDown = useCallback(() => {
+  const resetCountDown = () => {
     setCountDown(initialCountDown)
-  }, [initialCountDown])
+  }
 
   // Countdown timer using useInterval
   useInterval(

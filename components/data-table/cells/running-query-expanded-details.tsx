@@ -9,7 +9,6 @@ import {
   UserIcon,
 } from 'lucide-react'
 
-import { memo, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {
   formatReadableQuantity,
@@ -128,7 +127,7 @@ function DetailField({
  * runtime (elapsed, memory), and a filtered, formatted view of
  * ProfileEvents (zero-valued counters omitted, top entries first).
  */
-export const RunningQueryExpandedDetails = memo(
+export const RunningQueryExpandedDetails =
   function RunningQueryExpandedDetails({
     row,
   }: RunningQueryExpandedDetailsProps) {
@@ -144,7 +143,7 @@ export const RunningQueryExpandedDetails = memo(
     const interfaceLabel =
       toStringSafe(row.interface_label) || toStringSafe(row.interface)
 
-    const profileEntries = useMemo(() => {
+    const profileEntries = (() => {
       const raw = row.ProfileEvents
       if (!raw || typeof raw !== 'object') return [] as Array<[string, number]>
       const entries = Object.entries(raw as Record<string, unknown>)
@@ -152,7 +151,7 @@ export const RunningQueryExpandedDetails = memo(
         .filter(([, v]) => Number.isFinite(v) && v !== 0)
       entries.sort((a, b) => b[1] - a[1])
       return entries
-    }, [row.ProfileEvents])
+    })()
 
     return (
       <div
@@ -247,4 +246,3 @@ export const RunningQueryExpandedDetails = memo(
       </div>
     )
   }
-)

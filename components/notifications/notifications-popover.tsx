@@ -23,7 +23,7 @@ import {
   X,
 } from 'lucide-react'
 
-import { memo, useState } from 'react'
+import { useState } from 'react'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -46,7 +46,7 @@ import { cn } from '@/lib/utils'
  * Displays a bell icon with notification count badge.
  * Click to see all notifications with dismiss and link actions.
  */
-export const NotificationsPopover = memo(function NotificationsPopover() {
+export const NotificationsPopover = function NotificationsPopover() {
   const [isOpen, setIsOpen] = useState(false)
   const hostId = useHostId()
   const { notifications, totalCount, isLoading, error, refresh, dismissAll } =
@@ -183,13 +183,13 @@ export const NotificationsPopover = memo(function NotificationsPopover() {
       </PopoverContent>
     </Popover>
   )
-})
+}
 
 interface NotificationItemProps {
   notification: NotificationWithKey
 }
 
-const NotificationItem = memo(function NotificationItem({
+const NotificationItem = function NotificationItem({
   notification,
 }: NotificationItemProps) {
   const hostId = useHostId()
@@ -254,4 +254,4 @@ const NotificationItem = memo(function NotificationItem({
       </div>
     </Link>
   )
-})
+}

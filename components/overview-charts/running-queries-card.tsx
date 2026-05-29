@@ -3,7 +3,6 @@
 import { Activity } from 'lucide-react'
 
 import { KpiCard } from './kpi-card'
-import { memo } from 'react'
 import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/swr/use-chart-data'
 import { buildUrl } from '@/lib/url/url-builder'
@@ -17,7 +16,7 @@ import { buildUrl } from '@/lib/url/url-builder'
  * Headline is the live running count; today's total sits in the sub line.
  */
 
-export const RunningQueriesCard = memo(function RunningQueriesCard() {
+export const RunningQueriesCard = function RunningQueriesCard() {
   const hostId = useHostId()
   const runningSwr = useChartData<{ count: number }>({
     chartName: 'running-queries-count',
@@ -69,4 +68,4 @@ export const RunningQueriesCard = memo(function RunningQueriesCard() {
       isLoading={isLoading}
     />
   )
-})
+}

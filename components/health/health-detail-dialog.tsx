@@ -5,7 +5,7 @@ import { ExternalLink, Sparkles } from 'lucide-react'
 import type { HealthCheckDef } from './health-checks'
 
 import { HealthAuditPromptDialog } from './health-audit-prompt-dialog'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { AppLink } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -71,19 +71,15 @@ export function HealthDetailDialog({
 }: HealthDetailDialogProps) {
   const [promptOpen, setPromptOpen] = useState(false)
 
-  const prompt = useMemo(
-    () =>
-      buildAuditPrompt({
-        check,
-        value,
-        thresholds,
-        status,
-        row,
-        hostId,
-        clickhouseVersion,
-      }),
-    [check, value, thresholds, status, row, hostId, clickhouseVersion]
-  )
+  const prompt = buildAuditPrompt({
+    check,
+    value,
+    thresholds,
+    status,
+    row,
+    hostId,
+    clickhouseVersion,
+  })
 
   const displayValue = check.formatValue
     ? check.formatValue(value)

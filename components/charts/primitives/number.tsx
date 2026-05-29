@@ -2,10 +2,9 @@
 
 import type { NumberChartProps } from '@/types/charts'
 
-import { memo } from 'react'
 import { cn } from '@/lib/utils'
 
-export const NumberChart = memo(function NumberChart({
+export const NumberChart = function NumberChart({
   data,
   nameKey,
   dataKey,
@@ -56,4 +55,4 @@ export const NumberChart = memo(function NumberChart({
       </div>
     </div>
   )
-})
+}

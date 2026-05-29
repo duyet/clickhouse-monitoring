@@ -4,7 +4,6 @@ import { ArrowRightIcon } from '@radix-ui/react-icons'
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo, useMemo } from 'react'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
@@ -18,7 +17,7 @@ import {
 import { formatReadableQuantity } from '@/lib/format-readable'
 import { useChartData } from '@/lib/swr'
 
-export const ChartSummaryUsedByRunningQueries = memo(
+export const ChartSummaryUsedByRunningQueries =
   function ChartSummaryUsedByRunningQueries({
     title,
     className,
@@ -44,7 +43,7 @@ export const ChartSummaryUsedByRunningQueries = memo(
       hostId,
     })
 
-    const transformedData = useMemo(() => {
+    const transformedData = (() => {
       if (!data || data.length === 0) return null
 
       const summaryData = {
@@ -89,7 +88,7 @@ export const ChartSummaryUsedByRunningQueries = memo(
           return item
         }),
       }
-    }, [data])
+    })()
 
     if (isLoading) {
       return <ChartSkeleton title={title} className={className} />
@@ -132,6 +131,5 @@ export const ChartSummaryUsedByRunningQueries = memo(
       </ChartCard>
     )
   }
-)
 
 export default ChartSummaryUsedByRunningQueries

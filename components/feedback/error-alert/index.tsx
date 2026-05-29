@@ -26,14 +26,13 @@ import type { ErrorAlertProps } from './types'
 
 import { useErrorCountdown } from './use-error-countdown'
 import { CompactErrorAlert, FullErrorAlert } from './variants'
-import { memo } from 'react'
 
 export type { ErrorIconType } from './error-alert-icons'
 export type { ErrorAlertVariant } from './error-alert-variants'
 export type { ErrorAlertProps } from './types'
 export type { CompactErrorAlertProps, FullErrorAlertProps } from './variants'
 
-export const ErrorAlert = memo(function ErrorAlert({
+export const ErrorAlert = function ErrorAlert({
   title = 'Something went wrong!',
   message = 'Checking console for more details.',
   docs,
@@ -77,4 +76,4 @@ export const ErrorAlert = memo(function ErrorAlert({
       countdown={countdown}
     />
   )
-})
+}

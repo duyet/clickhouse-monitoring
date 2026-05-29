@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { Suspense, useMemo } from 'react'
+import { Suspense } from 'react'
 import { FilterBar } from '@/components/filters/filter-bar'
 import { PageLayout } from '@/components/layout/query-page'
 import { ChartSkeleton } from '@/components/skeletons'
@@ -15,7 +15,7 @@ function HistoryQueriesPageContent() {
   const searchParams = useSearchParams()
 
   // Normalize URL filter state into the params the table query consumes.
-  const tableSearchParams = useMemo(() => {
+  const tableSearchParams = (() => {
     const schema = historyQueriesConfig.filterSchema
     if (!schema) return {}
     const params = serializeActiveFilters(
@@ -27,7 +27,7 @@ function HistoryQueriesPageContent() {
       params.query = `contains:${q.trim()}`
     }
     return params
-  }, [searchParams])
+  })()
 
   return (
     <PageLayout

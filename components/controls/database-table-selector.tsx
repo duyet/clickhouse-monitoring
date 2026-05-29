@@ -6,7 +6,6 @@ import useSWR from 'swr'
 import type { ApiResponse } from '@/lib/api/types'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useMemo } from 'react'
 import {
   Select,
   SelectContent,
@@ -72,51 +71,42 @@ export function DatabaseTableSelector({
     fetcher
   )
 
-  const databases = useMemo(
-    () => databasesResponse?.data ?? [],
-    [databasesResponse]
-  )
-  const tables = useMemo(() => tablesResponse?.data ?? [], [tablesResponse])
+  const databases = databasesResponse?.data ?? []
+  const tables = tablesResponse?.data ?? []
 
-  const updateParams = useCallback(
-    (updates: { database?: string | null; table?: string | null }) => {
-      const params = new URLSearchParams(searchParams.toString())
+  const updateParams = (updates: {
+    database?: string | null
+    table?: string | null
+  }) => {
+    const params = new URLSearchParams(searchParams.toString())
 
-      if (updates.database !== undefined) {
-        if (updates.database === null) {
-          params.delete('database')
-          params.delete('table')
-        } else {
-          params.set('database', updates.database)
-        }
+    if (updates.database !== undefined) {
+      if (updates.database === null) {
+        params.delete('database')
+        params.delete('table')
+      } else {
+        params.set('database', updates.database)
       }
+    }
 
-      if (updates.table !== undefined) {
-        if (updates.table === null) {
-          params.delete('table')
-        } else {
-          params.set('table', updates.table)
-        }
+    if (updates.table !== undefined) {
+      if (updates.table === null) {
+        params.delete('table')
+      } else {
+        params.set('table', updates.table)
       }
+    }
 
-      router.push(`${pathname}?${params.toString()}`)
-    },
-    [searchParams, pathname, router]
-  )
+    router.push(`${pathname}?${params.toString()}`)
+  }
 
-  const handleDatabaseChange = useCallback(
-    (value: string) => {
-      updateParams({ database: value, table: null })
-    },
-    [updateParams]
-  )
+  const handleDatabaseChange = (value: string) => {
+    updateParams({ database: value, table: null })
+  }
 
-  const handleTableChange = useCallback(
-    (value: string) => {
-      updateParams({ table: value })
-    },
-    [updateParams]
-  )
+  const handleTableChange = (value: string) => {
+    updateParams({ table: value })
+  }
 
   return (
     <div className={cn('flex items-center gap-3', className)}>

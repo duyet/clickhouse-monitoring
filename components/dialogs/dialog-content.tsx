@@ -1,6 +1,5 @@
 import { CodeIcon } from 'lucide-react'
 
-import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -34,7 +33,7 @@ const defaultButton = (
   </Button>
 )
 
-export const DialogContent = memo(function DialogContent({
+export const DialogContent = function DialogContent({
   button = defaultButton,
   title = '',
   description = '',
@@ -75,4 +74,4 @@ export const DialogContent = memo(function DialogContent({
       </UIDialogContent>
     </Dialog>
   )
-})
+}

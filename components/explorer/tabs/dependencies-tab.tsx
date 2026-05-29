@@ -10,7 +10,6 @@ import {
   type DependencyType,
 } from '../dependency-graph/dependency-graph'
 import { useExplorerState } from '../hooks/use-explorer-state'
-import { useMemo } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { apiFetch } from '@/lib/swr/api-fetch'
@@ -56,7 +55,7 @@ export function DependenciesTab() {
   const { database, table } = useExplorerState()
 
   // Use unified API for both table and database level
-  const apiUrl = useMemo(() => {
+  const apiUrl = (() => {
     if (!database) return null
     if (table) {
       // Table-level: get all dependencies for this specific table
@@ -64,7 +63,7 @@ export function DependenciesTab() {
     }
     // Database-level: get all dependencies in the database
     return `/api/v1/explorer/dependencies?hostId=${hostId}&database=${encodeURIComponent(database)}&direction=all`
-  }, [hostId, database, table])
+  })()
 
   const {
     data: response,
@@ -75,7 +74,7 @@ export function DependenciesTab() {
   const dependencies = response?.data || []
 
   // Count actual dependency edges (not standalone nodes)
-  const { depCount, hasRealDeps } = useMemo(() => {
+  const { depCount, hasRealDeps } = (() => {
     let count = 0
     for (const dep of dependencies) {
       if (dep.target_table && dep.dependency_type) {
@@ -83,10 +82,10 @@ export function DependenciesTab() {
       }
     }
     return { depCount: count, hasRealDeps: count > 0 }
-  }, [dependencies])
+  })()
 
   // Build summary of dependency types
-  const depTypeSummary = useMemo(() => {
+  const depTypeSummary = (() => {
     const types = new Map<DependencyType, number>()
     for (const dep of dependencies) {
       if (dep.dependency_type && dep.target_table) {
@@ -97,7 +96,7 @@ export function DependenciesTab() {
     return Array.from(types.entries())
       .map(([type, count]) => `${count} ${getDependencyTypeLabel(type)}`)
       .join(', ')
-  }, [dependencies])
+  })()
 
   if (!database) {
     return null

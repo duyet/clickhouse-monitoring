@@ -4,7 +4,7 @@ import type { OverviewChartConfig } from './charts-config'
 
 import { OVERVIEW_TABS } from './charts-config'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { memo, Suspense, useCallback, useMemo, useState } from 'react'
+import { Suspense, useState } from 'react'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { ClientOnly } from '@/components/client-only'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
@@ -45,7 +45,7 @@ const OVERVIEW_CHART_CLASS_NAME = 'h-full min-h-0 w-full'
 const OVERVIEW_CHART_CARD_CONTENT_CLASS_NAME =
   'flex min-h-0 flex-1 flex-col px-3 pb-3 pt-0'
 
-const LazyTabContent = memo(function LazyTabContent({
+const LazyTabContent = function LazyTabContent({
   charts,
   gridClassName,
   label,
@@ -91,7 +91,7 @@ const LazyTabContent = memo(function LazyTabContent({
       })}
     </div>
   )
-})
+}
 
 function OverviewPageContent() {
   const hostId = useHostId()
@@ -99,42 +99,39 @@ function OverviewPageContent() {
   const router = useRouter()
 
   // Read tab from URL, validate and fallback to default
-  const activeTab = useMemo(() => {
+  const activeTab = (() => {
     const tabParam = searchParams.get('tab')
     if (tabParam && VALID_TABS.has(tabParam)) {
       return tabParam
     }
     return DEFAULT_TAB
-  }, [searchParams])
+  })()
 
   // Track visited tabs for lazy loading (include the initial tab from URL)
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
     () => new Set([activeTab])
   )
 
-  const handleTabChange = useCallback(
-    (value: string) => {
-      // Update URL with new tab value, preserving other params
-      const params = new URLSearchParams(searchParams.toString())
-      if (value === DEFAULT_TAB) {
-        // Remove tab param if it's the default value (cleaner URL)
-        params.delete('tab')
-      } else {
-        params.set('tab', value)
-      }
+  const handleTabChange = (value: string) => {
+    // Update URL with new tab value, preserving other params
+    const params = new URLSearchParams(searchParams.toString())
+    if (value === DEFAULT_TAB) {
+      // Remove tab param if it's the default value (cleaner URL)
+      params.delete('tab')
+    } else {
+      params.set('tab', value)
+    }
 
-      // Use replace to avoid adding to browser history for every tab change
-      const newUrl = `${window.location.pathname}?${params.toString()}`
-      router.replace(newUrl, { scroll: false })
+    // Use replace to avoid adding to browser history for every tab change
+    const newUrl = `${window.location.pathname}?${params.toString()}`
+    router.replace(newUrl, { scroll: false })
 
-      // Update visited tabs for lazy loading
-      setVisitedTabs((prev) => {
-        if (prev.has(value)) return prev
-        return new Set([...prev, value])
-      })
-    },
-    [searchParams, router]
-  )
+    // Update visited tabs for lazy loading
+    setVisitedTabs((prev) => {
+      if (prev.has(value)) return prev
+      return new Set([...prev, value])
+    })
+  }
 
   return (
     <div>

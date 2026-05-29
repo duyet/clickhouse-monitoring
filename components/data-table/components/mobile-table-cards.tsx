@@ -27,7 +27,7 @@ import type {
   RowClassNameFn,
 } from '@/types/query-config'
 
-import { Fragment, memo } from 'react'
+import { Fragment } from 'react'
 import { EXPAND_COLUMN_ID } from '@/components/data-table/column-defs'
 import { DefaultExpandedRow } from '@/components/data-table/row-expand/default-renderer'
 import { Button } from '@/components/ui/button'
@@ -160,7 +160,7 @@ interface MobileTableCardProps<TData extends RowData> {
   expandable?: true | ExpandableConfig
 }
 
-const MobileTableCard = memo(function MobileTableCard<TData extends RowData>({
+const MobileTableCard = function MobileTableCard<TData extends RowData>({
   row,
   rowClassName,
   expandable,
@@ -266,7 +266,7 @@ const MobileTableCard = memo(function MobileTableCard<TData extends RowData>({
       )}
     </article>
   )
-}) as <TData extends RowData>(
+} as <TData extends RowData>(
   props: MobileTableCardProps<TData>
 ) => React.JSX.Element
 
@@ -280,7 +280,7 @@ export interface MobileTableCardsProps<TData extends RowData> {
   expandable?: true | ExpandableConfig
 }
 
-export const MobileTableCards = memo(function MobileTableCards<
+export const MobileTableCards = function MobileTableCards<
   TData extends RowData,
 >({
   table,
@@ -361,6 +361,6 @@ export const MobileTableCards = memo(function MobileTableCards<
       )}
     </div>
   )
-}) as <TData extends RowData>(
+} as <TData extends RowData>(
   props: MobileTableCardsProps<TData>
 ) => React.JSX.Element

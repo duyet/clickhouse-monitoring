@@ -3,7 +3,7 @@
 import { Moon, Sun } from 'lucide-react'
 
 import { useTheme } from 'next-themes'
-import { memo, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CommandPalette } from '@/components/controls/command-palette'
 import { RefreshCountdown } from '@/components/header/refresh-countdown'
 import { GlobalTimeRangePicker } from '@/components/header/time-range-picker'
@@ -19,7 +19,7 @@ interface HeaderActionsProps {
   menuComponent?: React.ReactNode
 }
 
-export const HeaderActions = memo(function HeaderActions({
+export const HeaderActions = function HeaderActions({
   menuComponent,
 }: HeaderActionsProps) {
   const { setTheme, resolvedTheme } = useTheme()
@@ -82,4 +82,4 @@ export const HeaderActions = memo(function HeaderActions({
       )}
     </div>
   )
-})
+}

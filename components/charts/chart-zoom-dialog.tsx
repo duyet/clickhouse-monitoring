@@ -20,7 +20,7 @@ import type { StaleError } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
-import { memo, useCallback, useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { format } from 'sql-formatter'
 import {
   CodeBlock,
@@ -134,7 +134,7 @@ export interface ChartZoomDialogProps {
   className?: string
 }
 
-export const ChartZoomDialog = memo(function ChartZoomDialog({
+export const ChartZoomDialog = function ChartZoomDialog({
   open,
   onOpenChange,
   title,
@@ -163,56 +163,53 @@ export const ChartZoomDialog = memo(function ChartZoomDialog({
     startHeight: number
   } | null>(null)
 
-  const handleBeautifyToggle = useCallback((checked: boolean) => {
+  const handleBeautifyToggle = (checked: boolean) => {
     setIsBeautified(checked)
     try {
       localStorage.setItem(BEAUTIFY_STORAGE_KEY, String(checked))
     } catch {
       // Ignore storage errors
     }
-  }, [])
+  }
 
-  const handleQueryCopy = useCallback(async () => {
+  const handleQueryCopy = async () => {
     if (!sql) return
     const displaySQL = isBeautified ? formatSQL(sql) : dedent(sql)
     await navigator.clipboard.writeText(displaySQL)
     setQueryCopied(true)
     setTimeout(() => setQueryCopied(false), 2000)
-  }, [sql, isBeautified])
+  }
 
   // Handle dialog resize via mouse drag
-  const handleResizeStart = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      const el = contentRef.current
-      if (!el) return
-      resizeStartRef.current = {
-        startY: e.clientY,
-        startHeight: el.offsetHeight,
-      }
+  const handleResizeStart = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const el = contentRef.current
+    if (!el) return
+    resizeStartRef.current = {
+      startY: e.clientY,
+      startHeight: el.offsetHeight,
+    }
 
-      const handleMouseMove = (moveEvent: MouseEvent) => {
-        if (!resizeStartRef.current) return
-        const { startY, startHeight } = resizeStartRef.current
-        const delta = moveEvent.clientY - startY
-        const newHeight = Math.max(400, startHeight + delta)
-        setDialogHeight(`${newHeight}px`)
-      }
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!resizeStartRef.current) return
+      const { startY, startHeight } = resizeStartRef.current
+      const delta = moveEvent.clientY - startY
+      const newHeight = Math.max(400, startHeight + delta)
+      setDialogHeight(`${newHeight}px`)
+    }
 
-      const handleMouseUp = () => {
-        resizeStartRef.current = null
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-      }
+    const handleMouseUp = () => {
+      resizeStartRef.current = null
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
 
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-    },
-    []
-  )
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
 
   // Memoize QueryConfig for DataTable
-  const queryConfig = useMemo<QueryConfig<string[]> | undefined>(() => {
+  const queryConfig = ((): QueryConfig<string[]> | undefined => {
     if (!data || data.length === 0) return undefined
     return {
       name: 'chart-data',
@@ -220,16 +217,16 @@ export const ChartZoomDialog = memo(function ChartZoomDialog({
       sql: sql ?? 'SELECT * FROM chart_data',
       columns: Object.keys(data[0]) as string[],
     }
-  }, [data, sql, title])
+  })()
 
   // Build full API URL
-  const fullApiUrl = useMemo(() => {
+  const fullApiUrl = (() => {
     if (!metadata?.api) return null
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
     return metadata.api.startsWith('http')
       ? metadata.api
       : `${baseUrl}${metadata.api}`
-  }, [metadata?.api])
+  })()
 
   // Check if we have metadata to show
   const hasMetadata =
@@ -432,14 +429,14 @@ export const ChartZoomDialog = memo(function ChartZoomDialog({
       </DialogContent>
     </Dialog>
   )
-})
+}
 
 export interface ChartZoomButtonProps {
   onClick: () => void
   disabled?: boolean
 }
 
-export const ChartZoomButton = memo(function ChartZoomButton({
+export const ChartZoomButton = function ChartZoomButton({
   onClick,
   disabled = false,
 }: ChartZoomButtonProps) {
@@ -466,4 +463,4 @@ export const ChartZoomButton = memo(function ChartZoomButton({
       </TooltipContent>
     </Tooltip>
   )
-})
+}

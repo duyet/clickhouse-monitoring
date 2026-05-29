@@ -16,7 +16,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { getEngineIconConfig } from '@/lib/clickhouse-engine-icons'
 import { computeDagrePositions } from '@/lib/graph/dagre-layout'
@@ -60,6 +60,13 @@ type LayoutDirection = 'TB' | 'LR'
 // Node dimensions for dagre layout (must match actual rendered size)
 const NODE_WIDTH = 280
 const NODE_HEIGHT = 65
+
+// Stable fit-view options shared across renders (module-level constant)
+const FIT_VIEW_OPTIONS = {
+  padding: 0.2,
+  minZoom: 0.5,
+  maxZoom: 1.5,
+}
 
 /**
  * Custom node component for tables/views
@@ -403,16 +410,13 @@ export function DependencyGraph({
     nodes: rawNodes,
     edges: rawEdges,
     edgeCount,
-  } = useMemo(
-    () =>
-      buildInitialGraph(dependencies, currentTable, currentDatabase, hostId),
-    [dependencies, currentTable, currentDatabase, hostId]
-  )
+  } = buildInitialGraph(dependencies, currentTable, currentDatabase, hostId)
 
   // Apply dagre layout
-  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
-    () => getLayoutedElements(rawNodes, rawEdges, direction),
-    [rawNodes, rawEdges, direction]
+  const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+    rawNodes,
+    rawEdges,
+    direction
   )
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes)
@@ -424,39 +428,26 @@ export function DependencyGraph({
     setEdges(layoutedEdges)
   }, [layoutedNodes, layoutedEdges, setNodes, setEdges])
 
-  // Fit view options
-  const fitViewOptions = useMemo(
-    () => ({
-      padding: 0.2,
-      minZoom: 0.5,
-      maxZoom: 1.5,
-    }),
-    []
-  )
-
   // Fit view when nodes change
   useEffect(() => {
     if (reactFlowInstance.current && nodes.length > 0) {
       setTimeout(() => {
-        reactFlowInstance.current?.fitView(fitViewOptions)
+        reactFlowInstance.current?.fitView(FIT_VIEW_OPTIONS)
       }, 50)
     }
-  }, [nodes, fitViewOptions])
+  }, [nodes])
 
-  const onInit = useCallback(
-    (instance: ReactFlowInstance) => {
-      reactFlowInstance.current = instance
-      setTimeout(() => {
-        instance.fitView(fitViewOptions)
-      }, 100)
-    },
-    [fitViewOptions]
-  )
+  const onInit = (instance: ReactFlowInstance) => {
+    reactFlowInstance.current = instance
+    setTimeout(() => {
+      instance.fitView(FIT_VIEW_OPTIONS)
+    }, 100)
+  }
 
   // Toggle layout direction
-  const onLayoutChange = useCallback((newDirection: LayoutDirection) => {
+  const onLayoutChange = (newDirection: LayoutDirection) => {
     setDirection(newDirection)
-  }, [])
+  }
 
   if (dependencies.length === 0) {
     return (
@@ -481,7 +472,7 @@ export function DependencyGraph({
         onInit={onInit}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={fitViewOptions}
+        fitViewOptions={FIT_VIEW_OPTIONS}
         minZoom={0.2}
         maxZoom={2}
         defaultEdgeOptions={{

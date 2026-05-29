@@ -6,7 +6,6 @@ import {
 } from '@radix-ui/react-icons'
 import type { Table } from '@tanstack/react-table'
 
-import { useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -34,14 +33,14 @@ function PaginationInfo({ table }: DataTablePaginationProps) {
   const totalRows = table.getPrePaginationRowModel().rows.length
   const pageCount = table.getPageCount()
 
-  const info = useMemo(() => {
+  const info = (() => {
     const from = pageIndex * pageSize + 1
     const to = Math.min((pageIndex + 1) * pageSize, totalRows)
     return {
       range: `${formatNumber(from)}–${formatNumber(to)} of ${formatNumber(totalRows)} rows`,
       page: `${pageIndex + 1}/${pageCount}`,
     }
-  }, [pageIndex, pageSize, totalRows, pageCount])
+  })()
 
   return (
     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
@@ -53,28 +52,25 @@ function PaginationInfo({ table }: DataTablePaginationProps) {
 
 export function DataTablePagination({ table }: DataTablePaginationProps) {
   // Memoized pagination handlers to prevent recreation on every render
-  const handleFirstPage = useCallback(() => {
+  const handleFirstPage = () => {
     table.setPageIndex(0)
-  }, [table])
+  }
 
-  const handlePreviousPage = useCallback(() => {
+  const handlePreviousPage = () => {
     table.previousPage()
-  }, [table])
+  }
 
-  const handleNextPage = useCallback(() => {
+  const handleNextPage = () => {
     table.nextPage()
-  }, [table])
+  }
 
-  const handleLastPage = useCallback(() => {
+  const handleLastPage = () => {
     table.setPageIndex(table.getPageCount() - 1)
-  }, [table])
+  }
 
-  const handlePageSizeChange = useCallback(
-    (value: string) => {
-      table.setPageSize(Number(value))
-    },
-    [table]
-  )
+  const handlePageSizeChange = (value: string) => {
+    table.setPageSize(Number(value))
+  }
 
   if (table.getRowModel().rows.length === 0) return null
 

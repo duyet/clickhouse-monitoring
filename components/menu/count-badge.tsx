@@ -3,7 +3,6 @@
 import type { BadgeVariant } from '@/types/badge-variant'
 
 import { useMenuCount } from './hooks/use-menu-count'
-import { memo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { formatReadableQuantity } from '@/lib/format-readable'
 import { useHostId } from '@/lib/swr'
@@ -20,7 +19,7 @@ export interface CountBadgeProps {
  * Uses countKey to fetch from /api/v1/menu-counts/[key] endpoint.
  * No raw SQL is sent from the client - security by design.
  */
-export const CountBadge = memo(function CountBadge({
+export const CountBadge = function CountBadge({
   countKey,
   className,
   variant = 'outline',
@@ -35,4 +34,4 @@ export const CountBadge = memo(function CountBadge({
       {formatReadableQuantity(count, 'short')}
     </Badge>
   )
-})
+}

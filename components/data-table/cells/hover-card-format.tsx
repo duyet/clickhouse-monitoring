@@ -1,6 +1,5 @@
 import type { Row } from '@tanstack/react-table'
 
-import { memo } from 'react'
 import {
   HoverCard,
   HoverCardContent,
@@ -20,7 +19,7 @@ interface HoverCardProps {
   options?: HoverCardOptions
 }
 
-export const HoverCardFormat = memo(function HoverCardFormat({
+export const HoverCardFormat = function HoverCardFormat({
   row,
   value,
   options,
@@ -49,7 +48,7 @@ export const HoverCardFormat = memo(function HoverCardFormat({
       </HoverCardContent>
     </HoverCard>
   )
-})
+}
 
 /**
  * Extract row data for columns referenced in the content template

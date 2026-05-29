@@ -2,7 +2,6 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { memo } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
@@ -20,7 +19,7 @@ type DataRow = {
   total_replicas: number
 }
 
-export const ChartReplicationLag = memo(function ChartReplicationLag({
+export const ChartReplicationLag = function ChartReplicationLag({
   title,
   className,
   hostId,
@@ -55,6 +54,6 @@ export const ChartReplicationLag = memo(function ChartReplicationLag({
       }}
     </ChartContainer>
   )
-})
+}
 
 export default ChartReplicationLag

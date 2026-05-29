@@ -8,7 +8,6 @@ import type { QueryConfig } from '@/types/query-config'
 import { useFilterState } from './hooks/use-filter-state'
 import { getFilterToggleHref } from './utils/filter-url-builder'
 import { usePathname } from 'next/navigation'
-import { memo } from 'react'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import {
@@ -104,7 +103,7 @@ interface FilterMenuItemProps
 /**
  * Individual filter menu item with icon and selection state
  */
-const FilterMenuItem = memo(function FilterMenuItem({
+const FilterMenuItem = function FilterMenuItem({
   name,
   isSelected,
   href,
@@ -125,4 +124,4 @@ const FilterMenuItem = memo(function FilterMenuItem({
       </a>
     </DropdownMenuItem>
   )
-})
+}

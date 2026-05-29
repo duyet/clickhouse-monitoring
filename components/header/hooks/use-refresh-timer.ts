@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * Configuration options for the refresh timer hook
@@ -64,29 +64,29 @@ export function useRefreshTimer({
   /**
    * Reset countdown to initial value
    */
-  const reset = useCallback(() => {
+  const reset = () => {
     setRemaining(initialSeconds)
     isRefreshingRef.current = false
-  }, [initialSeconds])
+  }
 
   /**
    * Pause the countdown timer
    */
-  const pause = useCallback(() => {
+  const pause = () => {
     setIsPaused(true)
-  }, [])
+  }
 
   /**
    * Resume the countdown timer
    */
-  const resume = useCallback(() => {
+  const resume = () => {
     setIsPaused(false)
-  }, [])
+  }
 
   /**
    * Handle the refresh callback with debouncing
    */
-  const triggerRefresh = useCallback(() => {
+  const triggerRefresh = () => {
     if (isRefreshingRef.current) return
 
     isRefreshingRef.current = true
@@ -96,7 +96,7 @@ export function useRefreshTimer({
     setTimeout(() => {
       isRefreshingRef.current = false
     }, 1000)
-  }, [onRefresh])
+  }
 
   // Update interval when the interval prop changes
   useEffect(() => {
@@ -145,6 +145,7 @@ export function useRefreshTimer({
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
+    // biome-ignore lint/correctness/useExhaustiveDependencies: React Compiler stabilizes triggerRefresh; dependency kept for correctness without the compiler.
   }, [enabled, isPaused, initialSeconds, triggerRefresh])
 
   // Calculate progress (0 = just started, 1 = about to refresh)

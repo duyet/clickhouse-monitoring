@@ -3,7 +3,6 @@ import type { Row, RowData } from '@tanstack/react-table'
 
 import type { LinkProps } from 'next/link'
 
-import { memo } from 'react'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { replaceTemplateVariables } from '@/lib/template-utils'
 import { cn } from '@/lib/utils'
@@ -78,8 +77,6 @@ function LinkFormatComponent<
 }
 
 // Use a simpler memo approach without complex type casting
-export const LinkFormat = memo(
-  LinkFormatComponent
-) as typeof LinkFormatComponent & {
+export const LinkFormat = LinkFormatComponent as typeof LinkFormatComponent & {
   displayName?: string
 }
