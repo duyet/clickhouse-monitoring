@@ -1,0 +1,23 @@
+{
+  "name": "@chm/types",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./clickhouse-interval": "./src/clickhouse-interval.ts",
+    "./generic": "./src/generic.ts",
+    "./icon": "./src/icon.ts",
+    "./host-info": "./src/host-info.ts",
+    "./docs": "./src/docs.ts"
+  },
+  "dependencies": {
+    "lucide-react": "^1.0.0",
+    "@radix-ui/react-icons": "^1.3.2"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.0"
+  }
+}

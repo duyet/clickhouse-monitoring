@@ -43,7 +43,7 @@ export function PeerInfoCard({ name, type, peerRole }: PeerInfoCardProps) {
       <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-2">
         <div className="flex min-w-0 items-center gap-2">
           <span
-            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md font-mono text-[10px] font-bold"
+            className="inline-flex size-6 shrink-0 items-center justify-center rounded-md font-mono text-[10px] font-bold"
             style={{ background: k.bg, color: k.fg }}
           >
             {hasDbLogo(resolvedType) ? (
@@ -86,7 +86,7 @@ export function PeerInfoCard({ name, type, peerRole }: PeerInfoCardProps) {
 
       <dl className="flex flex-col">
         {entries.length === 0 ? (
-          <div className="px-3 py-3 text-[11px] text-muted-foreground">
+          <div className="p-3 text-[11px] text-muted-foreground">
             {name ? 'No peer config available.' : 'Unknown peer.'}
           </div>
         ) : (

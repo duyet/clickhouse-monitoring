@@ -9,6 +9,7 @@ FROM base AS deps
 ENV NODE_ENV=production
 RUN apk add --no-cache libc6-compat
 COPY package.json bun.lock ./
+COPY packages/ ./packages/
 RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache \
     bun install --frozen-lockfile --ignore-scripts
 

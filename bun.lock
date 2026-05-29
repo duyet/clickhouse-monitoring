@@ -16,6 +16,9 @@
         "@aws-sdk/credential-provider-web-identity": "^3.972.43",
         "@aws-sdk/nested-clients": "^3.997.11",
         "@aws-sdk/xml-builder": "^3.972.26",
+        "@chm/platform": "workspace:*",
+        "@chm/sql-builder": "workspace:*",
+        "@chm/types": "workspace:*",
         "@clerk/nextjs": "^7.4.1",
         "@clickhouse/client": "^1.18.5",
         "@clickhouse/client-web": "^1.18.5",
@@ -155,14 +158,42 @@
         "@vercel/analytics": "^2.0.0",
       },
     },
+    "packages/platform": {
+      "name": "@chm/platform",
+      "version": "0.1.0",
+      "dependencies": {
+        "@opennextjs/cloudflare": "1.19.11",
+      },
+      "devDependencies": {
+        "typescript": "^6.0.0",
+      },
+    },
+    "packages/sql-builder": {
+      "name": "@chm/sql-builder",
+      "version": "0.1.0",
+      "devDependencies": {
+        "typescript": "^6.0.0",
+      },
+    },
+    "packages/types": {
+      "name": "@chm/types",
+      "version": "0.1.0",
+      "dependencies": {
+        "@radix-ui/react-icons": "^1.3.2",
+        "lucide-react": "^1.0.0",
+      },
+      "devDependencies": {
+        "typescript": "^6.0.0",
+      },
+    },
   },
   "overrides": {
     "@anthropic-ai/sdk": "0.92.0",
     "@babel/plugin-transform-modules-systemjs": "^7.29.4",
     "@hono/node-server": "^2.0.0",
     "@protobufjs/utf8": "^1.1.1",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
     "ajv": "^8.20.0",
     "axios": "^1.16.0",
     "brace-expansion": "^5.0.6",
@@ -186,7 +217,7 @@
     "undici": "^8.3.0",
     "uuid": "^14.0.0",
     "ws": "8.20.1",
-    "zod": "4.4.3",
+    "zod": "^4.4.3",
   },
   "packages": {
     "@actions/core": ["@actions/core@3.0.0", "", { "dependencies": { "@actions/exec": "^3.0.0", "@actions/http-client": "^4.0.0" } }, "sha512-zYt6cz+ivnTmiT/ksRVriMBOiuoUpDCJJlZ5KPl2/FRdvwU3f7MPh9qftvbkXJThragzUZieit2nyHUyw53Seg=="],
@@ -642,6 +673,12 @@
     "@cfworker/json-schema": ["@cfworker/json-schema@4.1.1", "", {}, "sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og=="],
 
     "@chevrotain/types": ["@chevrotain/types@11.1.2", "", {}, "sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw=="],
+
+    "@chm/platform": ["@chm/platform@workspace:packages/platform"],
+
+    "@chm/sql-builder": ["@chm/sql-builder@workspace:packages/sql-builder"],
+
+    "@chm/types": ["@chm/types@workspace:packages/types"],
 
     "@clerk/backend": ["@clerk/backend@3.4.13", "", { "dependencies": { "@clerk/shared": "^4.13.1", "standardwebhooks": "^1.0.0", "tslib": "2.8.1" } }, "sha512-3BABnKE1YZpQqJ/S8QD5FpzE7jq+mgaMrO7rLiWTI8Bfs/xk11XYSp1lMEf3BTo/rzEtaUsXaVDGvccYogKapg=="],
 

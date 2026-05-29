@@ -6,6 +6,8 @@
  * Excludes sensitive information like passwords
  */
 
+import type { HostInfo } from '@chm/types/host-info'
+
 import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
 import {
   CacheControl,
@@ -56,16 +58,6 @@ function sanitizePublicHost(rawHost: string): string {
   } catch {
     return fallback(rawHost)
   }
-}
-
-/**
- * Host information for public API responses
- */
-export interface HostInfo {
-  readonly id: number
-  readonly name: string
-  readonly host: string
-  readonly user: string
 }
 
 /**

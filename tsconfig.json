@@ -1,26 +1,19 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "es2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@chm/types": ["./packages/types/src"],
+      "@chm/types/*": ["./packages/types/src/*"],
+      "@chm/sql-builder": ["./packages/sql-builder/src"],
+      "@chm/sql-builder/*": ["./packages/sql-builder/src/*"],
+      "@chm/platform": ["./packages/platform/src"],
+      "@chm/platform/*": ["./packages/platform/src/*"]
     },
     "types": ["cypress", "node", "cypress-real-events"]
   },

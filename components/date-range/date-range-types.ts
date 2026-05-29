@@ -1,4 +1,4 @@
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
+import type { ClickHouseInterval } from '@chm/types/clickhouse-interval'
 
 /**
  * A single date range option for the selector

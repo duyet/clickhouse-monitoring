@@ -14,7 +14,7 @@ import type {
 } from './types'
 
 import { ConversationStoreError } from './types'
-import { getPlatformBindings } from '@/lib/platform'
+import { getPlatformBindings } from '@chm/platform'
 
 /**
  * D1 database schema row shape.
