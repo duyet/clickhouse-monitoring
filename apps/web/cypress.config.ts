@@ -2,9 +2,11 @@ import { defineConfig } from 'cypress'
 
 export default defineConfig({
   projectId: '8zgiqh',
-  defaultCommandTimeout: 30000,
-  requestTimeout: 15000,
-  responseTimeout: 30000,
+  // 8 s is enough for all real assertions; prevents a hung test from burning
+  // 30 s per attempt (the old value that caused the 30-min CI timeout).
+  defaultCommandTimeout: 8000,
+  requestTimeout: 10000,
+  responseTimeout: 15000,
   pageLoadTimeout: 60000,
   taskTimeout: 60000,
   execTimeout: 60000,
