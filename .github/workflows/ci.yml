@@ -263,15 +263,62 @@ jobs:
             docker buildx imagetools create -t "$TAG" "$AMD64" "$ARM64"
           done
 
-  # Validate only on main/release
+  # Validate only on main/release.
+  # Reuse the image build-docker-amd64 already built & pushed instead of
+  # rebuilding from scratch — tests the exact artifact that ships, and removes
+  # a full redundant image build (~5-10 min) from every main/release run.
   validate-docker:
     name: validate-docker
     if: github.event_name != 'pull_request'
     needs: [build-docker-amd64]
-    uses: ./.github/workflows/base.yml
-    with:
-      job-type: docker
-      clickhouse-versions: '["24.5"]'
-      platforms: linux/amd64
-      load-image: true
-      test-container: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: read
+
+    services:
+      clickhouse:
+        image: ghcr.io/duyet/docker-images:clickhouse_24.5
+        ports:
+          - 8123:8123
+          - 9000:9000
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8123/?query=SELECT%201 || exit 1"
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 5
+          --health-start-period 30s
+          --env CLICKHOUSE_SKIP_USER_SETUP=1
+
+    steps:
+      - name: Login to Container registry
+        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull prebuilt AMD64 image
+        run: docker pull "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-amd64"
+
+      - name: Test container
+        env:
+          TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}-amd64
+        run: |
+          docker run -d \
+            --name test-app \
+            --network host \
+            -e CLICKHOUSE_HOST=http://localhost:8123 \
+            -e CLICKHOUSE_USER=default \
+            -e CLICKHOUSE_PASSWORD="" \
+            -e PORT=3000 \
+            "$TAG"
+
+          # Wait for container health
+          timeout 60 bash -c 'until curl -sSf http://localhost:3000/ > /dev/null 2>&1; do sleep 2; done'
+
+          # Health checks
+          curl -sSf http://localhost:3000/ | grep -q "ClickHouse Monitoring"
+          curl -sSf http://localhost:3000/api/healthz | grep -q "ok"
+          curl -sSf http://localhost:3000/api/version | grep -q "version"
