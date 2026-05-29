@@ -1,5 +1,5 @@
+import type { ClickHouseInterval } from '@chm/types/clickhouse-interval'
 import type { AreaChartProps } from '@/types/charts'
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
 export interface ChartProps extends Partial<AreaChartProps> {
   title?: string

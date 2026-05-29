@@ -5,7 +5,7 @@
  *
  * @example
  * ```typescript
- * import { sql, col, fn, raw, param } from '@/lib/sql-builder'
+ * import { sql, col, fn, raw, param } from '@chm/sql-builder'
  *
  * // Basic query
  * const query = sql()

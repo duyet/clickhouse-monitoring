@@ -8,7 +8,7 @@
  * from this trusted schema, never from user input.
  */
 
-import type { Icon } from '@/types/icon'
+import type { Icon } from '@chm/types/icon'
 
 /** Comparison operators a filter field can use. */
 export type FilterOperator =

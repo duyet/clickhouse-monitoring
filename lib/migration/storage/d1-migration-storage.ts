@@ -13,7 +13,7 @@ import type {
 } from '../migration-runner'
 
 import { calculateChecksum, getPlatformInfo } from '../utils'
-import { getPlatformBindings } from '@/lib/platform'
+import { getPlatformBindings } from '@chm/platform'
 
 const MIGRATIONS_TABLE = `
 CREATE TABLE IF NOT EXISTS _migrations (

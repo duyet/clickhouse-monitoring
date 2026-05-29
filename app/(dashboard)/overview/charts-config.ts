@@ -12,9 +12,9 @@
  * - Health: Errors, connections, and coordination
  */
 
+import type { ClickHouseInterval } from '@chm/types/clickhouse-interval'
 import type { ComponentType } from 'react'
 import type { ChartProps } from '@/components/charts/chart-props'
-import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
 import dynamic from 'next/dynamic'
 

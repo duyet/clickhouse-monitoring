@@ -1,6 +1,6 @@
+import type { Icon } from '@chm/types/icon'
 import type { FeaturePermission } from '@/lib/feature-permissions/types'
 import type { BadgeVariant } from '@/types/badge-variant'
-import type { Icon } from '@/types/icon'
 
 export type MenuSection = 'main' | 'others'
 

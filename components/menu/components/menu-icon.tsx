@@ -6,7 +6,7 @@
 
 'use client'
 
-import type { Icon } from '@/types/icon'
+import type { Icon } from '@chm/types/icon'
 
 import { cn } from '@/lib/utils'
 

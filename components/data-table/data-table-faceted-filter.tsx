@@ -2,7 +2,7 @@
 
 import { ListFilterIcon, XIcon } from 'lucide-react'
 
-import type { ArrayElement } from '@/types/generic'
+import type { ArrayElement } from '@chm/types/generic'
 import type { QueryConfig } from '@/types/query-config'
 
 import { useFilterState } from './hooks/use-filter-state'
