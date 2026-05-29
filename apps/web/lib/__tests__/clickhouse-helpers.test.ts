@@ -44,17 +44,29 @@ const mockValidateTableExistence = mock(() =>
   Promise.resolve({ shouldProceed: true, missingTables: [] })
 )
 
-mock.module('@/lib/clickhouse/clickhouse-client', () => ({
-  getClient: mockGetClient,
-}))
+// Mock the @chm/clickhouse-client internals. These specifiers resolve to the
+// same absolute module files that the package's clickhouse-fetch imports via
+// relative paths, so Bun's mock.module intercepts them.
+mock.module(
+  '../../../../packages/clickhouse-client/src/clickhouse/clickhouse-client',
+  () => ({
+    getClient: mockGetClient,
+  })
+)
 
-mock.module('@/lib/clickhouse/clickhouse-config', () => ({
-  getClickHouseConfigs: mockGetClickHouseConfigs,
-}))
+mock.module(
+  '../../../../packages/clickhouse-client/src/clickhouse/clickhouse-config',
+  () => ({
+    getClickHouseConfigs: mockGetClickHouseConfigs,
+  })
+)
 
-mock.module('@/lib/table-validator', () => ({
-  validateTableExistence: mockValidateTableExistence,
-}))
+mock.module(
+  '../../../../packages/clickhouse-client/src/table-validator',
+  () => ({
+    validateTableExistence: mockValidateTableExistence,
+  })
+)
 
 // Clean up module mocks after all tests
 afterAll(() => {

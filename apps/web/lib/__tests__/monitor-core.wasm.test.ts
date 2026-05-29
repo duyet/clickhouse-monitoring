@@ -2,7 +2,7 @@ import {
   transformClickHouseDataWasm,
   transformClickHouseJsonEachRowWasm,
   transformUserEventCountsWasm,
-} from './monitor-core'
+} from '@chm/clickhouse-client/wasm/monitor-core'
 import { transformClickHouseData } from '@/lib/api/transform-data'
 import { transformUserEventCounts } from '@/lib/chart-data-transforms'
 

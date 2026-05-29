@@ -2,7 +2,7 @@
  * Tests for lib/clickhouse/clickhouse-fetch.ts
  */
 
-import type { QueryConfig } from '@/types/query-config'
+import type { QueryConfigLike } from '@chm/sql-builder'
 
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 
@@ -64,19 +64,19 @@ function normalizeNumericStrings(value: unknown): unknown {
 
 // Mock specifiers MUST match the import specifiers in clickhouse-fetch.ts.
 // On Linux CI, bun's mock.module only intercepts imports with matching specifiers.
-mock.module('@/lib/clickhouse/clickhouse-client', () => ({
+mock.module('../clickhouse-client', () => ({
   getClient: mockGetClient,
 }))
 
-mock.module('@/lib/clickhouse/clickhouse-config', () => ({
+mock.module('../clickhouse-config', () => ({
   getClickHouseConfigs: mockGetClickHouseConfigs,
 }))
 
-mock.module('@/lib/table-validator', () => ({
+mock.module('../../table-validator', () => ({
   validateTableExistence: mockValidateTableExistence,
 }))
 
-mock.module('@/lib/wasm/monitor-core', () => ({
+mock.module('../../wasm/monitor-core', () => ({
   transformClickHouseJsonEachRowWasmJson:
     mockTransformClickHouseJsonEachRowWasmJson,
   transformClickHouseJsonEachRowWasm: async (input: string) =>
@@ -203,10 +203,10 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should use queryConfig.sql when provided', async () => {
-        const queryConfig: QueryConfig = {
+        const queryConfig: QueryConfigLike = {
           name: 'test',
           sql: 'SELECT 2',
-        } as QueryConfig
+        } as QueryConfigLike
 
         await fetchData({ ...defaultParams, queryConfig })
 
@@ -318,11 +318,11 @@ describe('clickhouse-fetch', () => {
 
     describe('optional query validation', () => {
       it('should validate tables when queryConfig.optional is true', async () => {
-        const queryConfig: QueryConfig = {
+        const queryConfig: QueryConfigLike = {
           name: 'test',
           sql: 'SELECT * FROM system.backup_log',
           optional: true,
-        } as QueryConfig
+        } as QueryConfigLike
 
         mockValidateTableExistence.mockResolvedValue({
           shouldProceed: true,
@@ -335,11 +335,11 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should skip query when validation fails', async () => {
-        const queryConfig: QueryConfig = {
+        const queryConfig: QueryConfigLike = {
           name: 'test',
           sql: 'SELECT * FROM system.backup_log',
           optional: true,
-        } as QueryConfig
+        } as QueryConfigLike
 
         mockValidateTableExistence.mockResolvedValue({
           shouldProceed: false,
@@ -357,11 +357,11 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should not validate when queryConfig.optional is false', async () => {
-        const queryConfig: QueryConfig = {
+        const queryConfig: QueryConfigLike = {
           name: 'test',
           sql: 'SELECT 1',
           optional: false,
-        } as QueryConfig
+        } as QueryConfigLike
 
         await fetchData({ ...defaultParams, queryConfig })
 
@@ -376,11 +376,11 @@ describe('clickhouse-fetch', () => {
       })
 
       it('should include missingTables in error details', async () => {
-        const queryConfig: QueryConfig = {
+        const queryConfig: QueryConfigLike = {
           name: 'test',
           sql: 'SELECT * FROM system.backup_log',
           optional: true,
-        } as QueryConfig
+        } as QueryConfigLike
 
         mockValidateTableExistence.mockResolvedValue({
           shouldProceed: false,

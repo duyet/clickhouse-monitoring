@@ -1,5 +1,8 @@
-import { getTableInfoMessage, SYSTEM_TABLE_INFO } from '../clickhouse-version'
 import { describe, expect, it } from 'bun:test'
+import {
+  getTableInfoMessage,
+  SYSTEM_TABLE_INFO,
+} from '@chm/clickhouse-client/clickhouse-version'
 
 describe('getTableInfoMessage', () => {
   it('returns the catalog description for a known system table', () => {

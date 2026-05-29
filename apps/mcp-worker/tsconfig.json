@@ -14,7 +14,9 @@
       "@chm/sql-builder/*": ["../../packages/sql-builder/src/*"],
       "@chm/platform": ["../../packages/platform/src"],
       "@chm/platform/*": ["../../packages/platform/src/*"],
-      "@chm/logger": ["../../packages/logger/src"]
+      "@chm/logger": ["../../packages/logger/src"],
+      "@chm/clickhouse-client": ["../../packages/clickhouse-client/src"],
+      "@chm/clickhouse-client/*": ["../../packages/clickhouse-client/src/*"]
     }
   },
   "include": [

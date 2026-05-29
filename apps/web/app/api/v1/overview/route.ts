@@ -15,10 +15,10 @@
  * - hostInfo: ClickHouse version, uptime, hostname
  */
 
+import { fetchData } from '@chm/clickhouse-client'
 import { error } from '@chm/logger'
 import { getHostIdFromParams, withApiHandler } from '@/lib/api/error-handler'
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
-import { fetchData } from '@/lib/clickhouse'
 import { OVERVIEW_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 

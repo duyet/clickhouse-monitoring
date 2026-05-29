@@ -1,7 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 
+import { fetchData } from '@chm/clickhouse-client'
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { fetchData } from '@/lib/clickhouse'
 
 const SYSTEM_TABLES_TEXT = `Key ClickHouse System Tables for Monitoring:
 

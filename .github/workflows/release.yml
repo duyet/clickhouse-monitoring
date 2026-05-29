@@ -78,9 +78,9 @@ jobs:
         with:
           name: wasm-output
           path: |
-            apps/web/lib/wasm/generated/monitor_core.js
-            apps/web/lib/wasm/generated/monitor_core.d.ts
-            apps/web/lib/wasm/generated/monitor_core_bg.wasm
+            packages/clickhouse-client/src/wasm/generated/monitor_core.js
+            packages/clickhouse-client/src/wasm/generated/monitor_core.d.ts
+            packages/clickhouse-client/src/wasm/generated/monitor_core_bg.wasm
           retention-days: 1
 
   build-docker-amd64:
@@ -116,7 +116,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: wasm-output
-          path: apps/web/lib/wasm/generated
+          path: packages/clickhouse-client/src/wasm/generated
 
       - name: Extract Docker metadata
         id: meta

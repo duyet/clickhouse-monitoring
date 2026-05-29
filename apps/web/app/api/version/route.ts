@@ -1,7 +1,7 @@
 import packageInfo from '@/package.json'
 
+import { fetchData } from '@chm/clickhouse-client'
 import { NextResponse } from 'next/server'
-import { fetchData } from '@/lib/clickhouse'
 
 export const dynamic = 'force-dynamic'
 

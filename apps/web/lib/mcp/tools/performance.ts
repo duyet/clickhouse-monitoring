@@ -1,7 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 
+import { fetchData } from '@chm/clickhouse-client'
 import { z } from 'zod/v3'
-import { fetchData } from '@/lib/clickhouse'
 
 type Severity = 'OK' | 'WARNING' | 'CRITICAL'
 

@@ -7,8 +7,8 @@
  * Clients send a countKey, not raw SQL.
  */
 
+import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
 import { EVENTS_TABLE } from '@/lib/app-tables'
-import { QUERY_COMMENT } from '@/lib/clickhouse'
 
 export interface MenuCountQuery {
   query: string

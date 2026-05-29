@@ -5,20 +5,20 @@
 
 import type { DataFormat, QueryParams } from '@clickhouse/client'
 
-import type { QueryConfig } from '@/types/query-config'
+import type { QueryConfigLike } from '@chm/sql-builder'
 import type { FetchDataErrorType, FetchDataResult } from './types'
 
-import { debug, error, warn } from '@chm/logger'
-import { getClient } from '@/lib/clickhouse/clickhouse-client'
-import { getClickHouseConfigs } from '@/lib/clickhouse/clickhouse-config'
-import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import {
   getClickHouseVersion,
   selectQueryVariantSemver,
   selectVersionedSql,
-} from '@/lib/clickhouse-version'
-import { validateTableExistence } from '@/lib/table-validator'
-import { transformClickHouseJsonEachRowWasmJson } from '@/lib/wasm/monitor-core'
+} from '../clickhouse-version'
+import { validateTableExistence } from '../table-validator'
+import { transformClickHouseJsonEachRowWasmJson } from '../wasm/monitor-core'
+import { getClient } from './clickhouse-client'
+import { getClickHouseConfigs } from './clickhouse-config'
+import { QUERY_COMMENT } from './constants'
+import { debug, error, warn } from '@chm/logger'
 
 type FetchJsonEachRowTextResult = FetchDataResult<never> & {
   dataJson: string | null
@@ -46,7 +46,7 @@ export const fetchData = async <
     /** IANA timezone for ClickHouse session (mapped to session_timezone) */
     session_timezone?: string
   }
-  queryConfig?: QueryConfig
+  queryConfig?: QueryConfigLike
 }): Promise<FetchDataResult<T>> => {
   const start = new Date()
 
@@ -394,7 +394,7 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
     /** IANA timezone for ClickHouse session (mapped to session_timezone) */
     session_timezone?: string
   }
-  queryConfig?: QueryConfig
+  queryConfig?: QueryConfigLike
 }): Promise<FetchJsonEachRowTextResult> => {
   const start = new Date()
 

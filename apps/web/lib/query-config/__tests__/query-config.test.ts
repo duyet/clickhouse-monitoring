@@ -22,7 +22,7 @@ import {
   type ClickHouseVersion,
   parseVersion,
   selectVersionedSql,
-} from '@/lib/clickhouse-version'
+} from '@chm/clickhouse-client/clickhouse-version'
 
 // Test timeout for slow queries
 const QUERY_TIMEOUT_MS = 30000

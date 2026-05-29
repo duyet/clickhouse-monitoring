@@ -7,6 +7,7 @@
 
 import type { ApiResponse } from '@/lib/api/types'
 
+import { fetchData } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import {
   createErrorResponse as createApiErrorResponse,
@@ -15,7 +16,6 @@ import {
 } from '@/lib/api/error-handler'
 import { getTableQuery } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchData } from '@/lib/clickhouse'
 import { TABLES_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 

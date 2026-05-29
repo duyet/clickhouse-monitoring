@@ -26,10 +26,10 @@ mock.module('next/headers', () => ({
 // Import after mocks are registered so Bun does not cache the real modules
 // before the stubs are in place.
 const { _resetEnvCache } = await import(
-  new URL('./clickhouse/env-schema.ts?test=clickhouse', import.meta.url).href
+  new URL('../clickhouse/env-schema.ts?test=clickhouse', import.meta.url).href
 )
 const { getClickHouseHosts, getClient } = await import(
-  new URL('./clickhouse.ts?test=clickhouse', import.meta.url).href
+  new URL('../index.ts?test=clickhouse', import.meta.url).href
 )
 
 describe('getClickHouseHosts', () => {

@@ -6,7 +6,10 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { parseVersion, selectVersionedSql } from '@/lib/clickhouse-version'
+import {
+  parseVersion,
+  selectVersionedSql,
+} from '@chm/clickhouse-client/clickhouse-version'
 import { queries } from '@/lib/query-config'
 import { queryViewsLogConfig } from '@/lib/query-config/queries/query-views-log'
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'

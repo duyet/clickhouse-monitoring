@@ -10,8 +10,8 @@ import {
 import type { FilterSchema } from '@/lib/filters/types'
 import type { QueryConfig } from '@/types/query-config'
 
+import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
 import { RunningQueryExpandedDetails } from '@/components/data-table/cells/running-query-expanded-details'
-import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 import { FILTER_PLACEHOLDER } from '@/lib/filters/where-builder'
 import { ColumnFormat } from '@/types/column-format'
 

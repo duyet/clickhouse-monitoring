@@ -7,7 +7,7 @@ const mockFetchData = mock(() =>
   })
 )
 
-mock.module('@/lib/clickhouse', () => ({
+mock.module('@chm/clickhouse-client', () => ({
   fetchData: mockFetchData,
 }))
 

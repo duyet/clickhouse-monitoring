@@ -13,6 +13,7 @@ import type { AgentVisualizationProps } from '@/components/agents/agent-visualiz
 import type { QueryConfig } from '@/types/query-config'
 
 import { QueryInsightsCard } from './query-insights-card'
+import { isCloudflareWorkers } from '@chm/clickhouse-client/runtime/cloudflare-workers'
 import { type ComponentProps, useEffect, useState } from 'react'
 import { AgentChartRenderer } from '@/components/agents/agent-chart-renderer'
 import { AgentDataSources } from '@/components/agents/agent-data-sources'
@@ -36,7 +37,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { isCloudflareWorkers } from '@/lib/runtime/cloudflare-workers'
 import { cn } from '@/lib/utils'
 
 export interface AgentToolPart {

@@ -13,6 +13,7 @@ import {
 
 import type { ClickHouseConfig } from './types'
 
+import { isCloudflareWorkers } from '../runtime/cloudflare-workers'
 import { getAndValidateClientConfig } from './clickhouse-config'
 import {
   clientPool,
@@ -21,7 +22,6 @@ import {
   getPoolKey,
 } from './connection-pool'
 import { validateClickHouseEnv } from './env-schema'
-import { isCloudflareWorkers } from '@/lib/runtime/cloudflare-workers'
 
 export const getClient = async ({
   web,

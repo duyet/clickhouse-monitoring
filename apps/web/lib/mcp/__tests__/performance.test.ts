@@ -3,7 +3,7 @@ import { describe, expect, mock, test } from 'bun:test'
 // Mock fetchData before importing the tool
 const mockFetchData = mock(() => Promise.resolve({ data: [], error: null }))
 
-mock.module('@/lib/clickhouse', () => ({
+mock.module('@chm/clickhouse-client', () => ({
   fetchData: mockFetchData,
 }))
 

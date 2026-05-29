@@ -1,6 +1,6 @@
 import type { QueryConfig } from '@/types/query-config'
 
-import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
+import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
 import { ColumnFormat } from '@/types/column-format'
 
 export const keeperInfoConfig: QueryConfig = {

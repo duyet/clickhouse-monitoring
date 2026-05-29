@@ -14,7 +14,7 @@ import { describe, expect, mock, test } from 'bun:test'
 mock.module('server-only', () => ({}))
 
 // Mock fetchData — all tool helpers delegate to this
-mock.module('@/lib/clickhouse', () => ({
+mock.module('@chm/clickhouse-client', () => ({
   fetchData: async ({
     query,
   }: {

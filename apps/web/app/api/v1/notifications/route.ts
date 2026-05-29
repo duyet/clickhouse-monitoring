@@ -9,6 +9,7 @@
  * - hostId (query): Host to execute the query on
  */
 
+import { fetchData } from '@chm/clickhouse-client'
 import { debug, error, generateRequestId } from '@chm/logger'
 import { createErrorResponse } from '@/lib/api/error-handler'
 import { HostIdSchema } from '@/lib/api/schemas'
@@ -17,7 +18,6 @@ import {
   createSuccessResponse,
 } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
-import { fetchData } from '@/lib/clickhouse'
 
 export const dynamic = 'force-dynamic'
 

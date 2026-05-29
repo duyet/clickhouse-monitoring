@@ -17,7 +17,7 @@
  * ```
  */
 
-import type { ClickHouseVersion } from './clickhouse-version'
+import type { ClickHouseVersion } from '@chm/clickhouse-client/clickhouse-version'
 
 import { debug, warn } from '@chm/logger'
 

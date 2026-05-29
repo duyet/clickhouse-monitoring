@@ -2,7 +2,7 @@ import { describe, expect, mock, test } from 'bun:test'
 
 mock.module('server-only', () => ({}))
 
-mock.module('@/lib/clickhouse', () => ({
+mock.module('@chm/clickhouse-client', () => ({
   fetchData: async ({ query, hostId }: { query: string; hostId: number }) => {
     if (hostId === 999) {
       return { data: null, error: { message: 'Host not found' } }

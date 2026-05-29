@@ -23,6 +23,12 @@
  * POST /api/v1/explain   { "hostId": 0, "query": "SELECT 1" }
  */
 
+import {
+  fetchData,
+  getAndValidateClientConfig,
+  getClient,
+} from '@chm/clickhouse-client'
+import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
 import { debug, error as logError } from '@chm/logger'
 import {
   createErrorResponse,
@@ -33,12 +39,6 @@ import { mapErrorTypeToStatusCode } from '@/lib/api/shared/status-code-mapper'
 import { getAndValidateHostId } from '@/lib/api/shared/validators'
 import { validateSqlQuery } from '@/lib/api/shared/validators/sql'
 import { ApiErrorType } from '@/lib/api/types'
-import {
-  fetchData,
-  getAndValidateClientConfig,
-  getClient,
-} from '@/lib/clickhouse'
-import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 
 export const dynamic = 'force-dynamic'
 

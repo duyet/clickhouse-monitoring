@@ -1,9 +1,9 @@
-import type { QueryConfig } from '@/types/query-config'
+import type { QueryConfigLike } from '@chm/sql-builder'
 
-import { parseTableFromSQL, validateTableExistence } from './table-validator'
+import { parseTableFromSQL, validateTableExistence } from '../table-validator'
 
 // Mock the table existence cache
-jest.mock('./table-existence-cache', () => ({
+jest.mock('../table-existence-cache', () => ({
   tableExistenceCache: {
     checkTableExists: jest.fn(),
   },
@@ -163,7 +163,7 @@ describe('Table Validator', () => {
     })
 
     it('should return shouldProceed true when no tables to check', async () => {
-      const config: QueryConfig = {
+      const config: QueryConfigLike = {
         name: 'test',
         sql: 'SELECT * FROM some_view', // No database.table pattern
         columns: ['name'],
@@ -176,7 +176,7 @@ describe('Table Validator', () => {
     })
 
     it('should use explicit tableCheck when provided', async () => {
-      const { tableExistenceCache } = await import('./table-existence-cache')
+      const { tableExistenceCache } = await import('../table-existence-cache')
       const mockCheckTableExists =
         tableExistenceCache.checkTableExists as jest.MockedFunction<
           typeof tableExistenceCache.checkTableExists
@@ -185,7 +185,7 @@ describe('Table Validator', () => {
       // Mock the table existence check to return false
       mockCheckTableExists.mockResolvedValue(false)
 
-      const config: QueryConfig = {
+      const config: QueryConfigLike = {
         name: 'test',
         sql: 'SELECT * FROM system.backup_log',
         columns: ['name'],
@@ -204,7 +204,7 @@ describe('Table Validator', () => {
     })
 
     it('should fallback to SQL parsing when tableCheck is not provided', async () => {
-      const { tableExistenceCache } = await import('./table-existence-cache')
+      const { tableExistenceCache } = await import('../table-existence-cache')
       const mockCheckTableExists =
         tableExistenceCache.checkTableExists as jest.MockedFunction<
           typeof tableExistenceCache.checkTableExists
@@ -213,7 +213,7 @@ describe('Table Validator', () => {
       // Mock the table existence check to return false
       mockCheckTableExists.mockResolvedValue(false)
 
-      const config: QueryConfig = {
+      const config: QueryConfigLike = {
         name: 'test',
         sql: 'SELECT * FROM system.backup_log WHERE status = "BACKUP_CREATED"',
         columns: ['name'],

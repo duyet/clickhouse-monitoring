@@ -1,7 +1,7 @@
 import { describe, expect, mock, test } from 'bun:test'
 
 // Mock fetchData before importing tools
-mock.module('@/lib/clickhouse', () => ({
+mock.module('@chm/clickhouse-client', () => ({
   fetchData: async () => ({ data: [], error: null }),
 }))
 

@@ -32,10 +32,17 @@
  * ```
  */
 
+export type {
+  QueryConfigLike,
+  QueryConfigVariant,
+  VersionedSql,
+} from './query-config-types'
+
 export { SqlBuilder, sql } from './builder'
 export { ColumnBuilder, col } from './column'
 export { ExtendedBuilder } from './extension'
 export { fn } from './functions'
+export { getAllSqlStrings } from './query-config-types'
 export { param, RawSql, raw } from './raw'
 export * from './types'
 export { SqlBuilderError, validateBuilderState } from './validator'

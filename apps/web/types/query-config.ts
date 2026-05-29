@@ -1,6 +1,7 @@
 import type { Row } from '@tanstack/react-table'
 import type { ClickHouseSettings } from '@clickhouse/client'
 
+import type { QueryConfigVariant, VersionedSql } from '@chm/sql-builder'
 import type { Icon } from '@chm/types/icon'
 import type { ChartProps } from '@/components/charts/chart-props'
 import type { CustomSortingFnNames } from '@/components/data-table/sorting-fns'
@@ -157,30 +158,15 @@ export type ColumnNames<T extends string> = [T, ...T[]]
  * When using `merge()` across shards with different schemas, use `toInt8()`
  * for Enum columns to ensure compatibility.
  */
-export interface VersionedSql {
-  /**
-   * Minimum ClickHouse version for this query.
-   * Supports major.minor (e.g., "24.1") or full version (e.g., "24.1.2.3").
-   */
-  since: string
-  /** SQL query to use for this version and above */
-  sql: string
-  /** Description of what changed in this version */
-  description?: string
-  /** Columns available in this version (for type safety) */
-  columns?: string[]
-}
-
-/**
- * @deprecated Use `VersionedSql` instead. Will be removed in v0.3.0.
- */
-export interface QueryConfigVariant {
-  /** @deprecated Use VersionedSql.since instead */
-  versions: string
-  sql: string
-  description?: string
-  columns?: string[]
-}
+// VersionedSql, QueryConfigVariant, and getAllSqlStrings now live in
+// @chm/sql-builder so lower-level packages can consume them without depending
+// on this web-app god-type. Re-exported here for backward compatibility with
+// the many existing `@/types/query-config` consumers.
+export {
+  getAllSqlStrings,
+  type QueryConfigVariant,
+  type VersionedSql,
+} from '@chm/sql-builder'
 
 export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   name: string
@@ -489,24 +475,4 @@ export function getSqlForDisplay(sql: string | VersionedSql[]): string {
   }
   // Return the last (newest) SQL for display
   return sql[sql.length - 1].sql
-}
-
-/**
- * Get all SQL strings from a sql definition.
- * Useful for parsing tables from all version variants.
- *
- * @example
- * ```ts
- * getAllSqlStrings('SELECT 1') // ['SELECT 1']
- * getAllSqlStrings([
- *   { since: '24.1', sql: 'SELECT 1' },
- *   { since: '24.5', sql: 'SELECT 2' },
- * ]) // ['SELECT 1', 'SELECT 2']
- * ```
- */
-export function getAllSqlStrings(sql: string | VersionedSql[]): string[] {
-  if (typeof sql === 'string') {
-    return [sql]
-  }
-  return sql.map((v) => v.sql)
 }

@@ -1,3 +1,4 @@
+import { fetchData } from '@chm/clickhouse-client'
 import { ErrorLogger, generateRequestId, log } from '@chm/logger'
 import {
   createValidationError,
@@ -5,7 +6,6 @@ import {
   withApiHandler,
 } from '@/lib/api/error-handler'
 import { type Action, ActionSchema } from '@/lib/api/schemas'
-import { fetchData } from '@/lib/clickhouse'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 

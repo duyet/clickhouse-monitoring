@@ -1,9 +1,9 @@
+import { fetchData } from '@chm/clickhouse-client'
+import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
 import { debug } from '@chm/logger'
 import { NextResponse } from 'next/server'
 import { createValidationError } from '@/lib/api/error-handler'
 import { getAndValidateHostId } from '@/lib/api/shared/validators'
-import { fetchData } from '@/lib/clickhouse'
-import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

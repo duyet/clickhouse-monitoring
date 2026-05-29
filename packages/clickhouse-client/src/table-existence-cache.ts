@@ -1,6 +1,6 @@
+import { getClient } from './clickhouse/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import { LRUCache } from 'lru-cache'
-import { getClient } from '@/lib/clickhouse'
 
 /**
  * Cache configuration with memory limits

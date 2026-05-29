@@ -88,9 +88,9 @@ jobs:
         with:
           name: wasm-output
           path: |
-            apps/web/lib/wasm/generated/monitor_core.js
-            apps/web/lib/wasm/generated/monitor_core.d.ts
-            apps/web/lib/wasm/generated/monitor_core_bg.wasm
+            packages/clickhouse-client/src/wasm/generated/monitor_core.js
+            packages/clickhouse-client/src/wasm/generated/monitor_core.d.ts
+            packages/clickhouse-client/src/wasm/generated/monitor_core_bg.wasm
           retention-days: 1
 
   # PRs: amd64 only for fast feedback (~3-5 min)

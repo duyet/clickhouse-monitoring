@@ -20,10 +20,10 @@
  * @see https://github.com/duyet/clickhouse-monitoring/issues/510
  */
 
-import type { QueryConfig } from '@/types/query-config'
+import type { QueryConfigLike } from '@chm/sql-builder'
 
-import { tableExistenceCache } from '@/lib/table-existence-cache'
-import { getAllSqlStrings } from '@/types/query-config'
+import { tableExistenceCache } from './table-existence-cache'
+import { getAllSqlStrings } from '@chm/sql-builder'
 
 export type TableValidationResult = {
   shouldProceed: boolean
@@ -78,7 +78,7 @@ export function parseTableFromSQL(sql: string): string[] {
 }
 
 export async function validateTableExistence(
-  queryConfig: QueryConfig,
+  queryConfig: QueryConfigLike,
   hostId: number
 ): Promise<TableValidationResult> {
   // Force into string[] and add SQL parsing fallback

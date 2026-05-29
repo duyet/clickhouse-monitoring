@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'bun:test'
 import {
   compareVersions,
   matchesSemverRange,
@@ -8,8 +9,7 @@ import {
   selectQueryVariantSemver,
   selectVersionedSql,
   versionMatchesRange,
-} from './clickhouse-version'
-import { describe, expect, it } from 'bun:test'
+} from '@chm/clickhouse-client/clickhouse-version'
 
 describe('parseVersion', () => {
   it('should parse simple version strings', () => {
