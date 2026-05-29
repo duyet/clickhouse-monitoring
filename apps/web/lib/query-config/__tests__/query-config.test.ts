@@ -142,22 +142,24 @@ describe('Query Config Validation', () => {
       },
     })
 
-    // Get ClickHouse version.
+    // Probe the ClickHouse version with a hard wall-clock cap.
     //
-    // Fail fast when no ClickHouse is reachable (e.g. the unit-tests job runs
-    // this suite with no service container; the host may hang behind a proxy
-    // rather than refuse the connection). `request_timeout` does not abort such
-    // a hung fetch, so without an explicit abort the connect burns the full
-    // QUERY_TIMEOUT_MS hook budget and fails `beforeAll` as "(unnamed)". An
-    // AbortSignal cancels the fetch in 5s so the catch below can mark
-    // ClickHouse unavailable and the integration assertions skip.
-    // test-queries-config has a real ClickHouse that responds in milliseconds,
-    // so this never trips there.
-    try {
+    // The unit-tests CI job runs this suite with no ClickHouse service
+    // container; the configured host hangs behind a proxy rather than refusing
+    // the connection. Neither `request_timeout` nor `abort_signal` reliably
+    // aborts that hung fetch in CI (verified: both still burned the full 30s
+    // QUERY_TIMEOUT_MS hook budget and failed `beforeAll` as "(unnamed)"). So
+    // race the probe against a timer we fully control — it always wins if the
+    // fetch hangs, letting the catch mark ClickHouse unavailable so the
+    // integration assertions skip. test-queries-config has a real ClickHouse
+    // that responds in milliseconds, so the timer never trips there; the
+    // abandoned fetch (if any) is torn down by client.close() in afterAll.
+    const PROBE_TIMEOUT_MS = 6000
+    const probe = (async () => {
       const result = await client.query({
         query: 'SELECT version() as version',
         format: 'JSONEachRow',
-        abort_signal: AbortSignal.timeout(5000),
+        abort_signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
       })
       const rows = await result.json<{ version: string }[]>()
       if (rows[0]?.version) {
@@ -166,11 +168,29 @@ describe('Query Config Validation', () => {
         isClickHouseAvailable = true
         console.log(`Connected to ClickHouse version: ${versionString}`)
       }
+    })()
+    // Swallow a late rejection from an abandoned (timed-out) probe so it does
+    // not surface as an unhandled rejection after the race resolves.
+    probe.catch(() => {})
+
+    let timer: ReturnType<typeof setTimeout> | undefined
+    try {
+      await Promise.race([
+        probe,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error('ClickHouse probe timed out')),
+            PROBE_TIMEOUT_MS + 500
+          )
+        }),
+      ])
     } catch (_err) {
       console.warn(
         'ClickHouse not available - integration tests will be skipped'
       )
       console.warn('Run with ClickHouse running or in CI environment')
+    } finally {
+      if (timer) clearTimeout(timer)
     }
   }, QUERY_TIMEOUT_MS)
 
