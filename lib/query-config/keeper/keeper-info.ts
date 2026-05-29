@@ -10,36 +10,43 @@ export const keeperInfoConfig: QueryConfig = {
   optional: true,
   tableCheck: 'system.zookeeper_info',
   docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_info',
-  sql: `
-      ${QUERY_COMMENT}
-      SELECT
-          zookeeper_cluster_name,
-          host,
-          port,
-          is_connected,
-          server_state,
-          is_leader,
-          version,
-          avg_latency,
-          min_latency,
-          max_latency,
-          znode_count,
-          watch_count,
-          ephemerals_count,
-          approximate_data_size,
-          formatReadableSize(coalesce(approximate_data_size, 0)) AS readable_approximate_data_size,
-          round(coalesce(approximate_data_size, 0) * 100.0 / nullIf(max(coalesce(approximate_data_size, 0)) OVER (), 0), 2) AS pct_approximate_data_size,
-          packets_received,
-          packets_sent,
-          outstanding_requests,
-          followers,
-          synced_followers,
-          zxid,
-          last_log_idx,
-          last_committed_idx
-      FROM system.zookeeper_info
-      ORDER BY zookeeper_cluster_name ASC, is_leader DESC, host ASC
-  `,
+  // system.zookeeper_info and all 22 columns shipped atomically in v26.1
+  // (PR #90809); tableCheck handles older versions where the table is absent.
+  sql: [
+    {
+      since: '26.1',
+      sql: `
+        ${QUERY_COMMENT}
+        SELECT
+            zookeeper_cluster_name,
+            host,
+            port,
+            is_connected,
+            server_state,
+            is_leader,
+            version,
+            avg_latency,
+            min_latency,
+            max_latency,
+            znode_count,
+            watch_count,
+            ephemerals_count,
+            approximate_data_size,
+            formatReadableSize(coalesce(approximate_data_size, 0)) AS readable_approximate_data_size,
+            round(coalesce(approximate_data_size, 0) * 100.0 / nullIf(max(coalesce(approximate_data_size, 0)) OVER (), 0), 2) AS pct_approximate_data_size,
+            packets_received,
+            packets_sent,
+            outstanding_requests,
+            followers,
+            synced_followers,
+            zxid,
+            last_log_idx,
+            last_committed_idx
+        FROM system.zookeeper_info
+        ORDER BY zookeeper_cluster_name ASC, is_leader DESC, host ASC
+      `,
+    },
+  ],
   columns: [
     'zookeeper_cluster_name',
     'host',

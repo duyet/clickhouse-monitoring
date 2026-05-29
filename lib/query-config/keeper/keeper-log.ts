@@ -10,45 +10,95 @@ export const keeperLogConfig: QueryConfig = {
   optional: true,
   tableCheck: 'system.zookeeper_log',
   docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_log',
-  sql: `
-      ${QUERY_COMMENT}
-      SELECT
-        hostname,
-        event_time,
-        thread_id,
-        query_id,
-        toString(address) AS address,
-        port,
-        session_id,
-        xid,
-        type,
-        op_num,
-        path,
-        data,
-        is_ephemeral,
-        is_sequential,
-        has_watch,
-        version,
-        requests_size,
-        request_idx,
-        zxid,
-        error,
-        watch_type,
-        watch_state,
-        path_created,
-        stat_czxid,
-        stat_mzxid,
-        stat_pzxid,
-        stat_version,
-        stat_cversion,
-        stat_aversion,
-        stat_dataLength,
-        stat_numChildren
-      FROM system.zookeeper_log
-      WHERE event_time >= now() - INTERVAL 7 DAY
-      ORDER BY event_time DESC
-      LIMIT 1000
-  `,
+  // Version-aware: `hostname` was added in v23.11 (PR #55894); v23.3-v23.10 has
+  // the table without it. `stat_aversion` is intentionally NOT selected — it
+  // does not exist in system.zookeeper_log on any version (it belongs to the
+  // live-tree system.zookeeper table). Verified against ClickHouse source.
+  sql: [
+    {
+      since: '23.3',
+      sql: `
+        ${QUERY_COMMENT}
+        SELECT
+          event_time,
+          thread_id,
+          query_id,
+          toString(address) AS address,
+          port,
+          session_id,
+          xid,
+          type,
+          op_num,
+          path,
+          data,
+          is_ephemeral,
+          is_sequential,
+          has_watch,
+          version,
+          requests_size,
+          request_idx,
+          zxid,
+          error,
+          watch_type,
+          watch_state,
+          path_created,
+          stat_czxid,
+          stat_mzxid,
+          stat_pzxid,
+          stat_version,
+          stat_cversion,
+          stat_dataLength,
+          stat_numChildren,
+          children
+        FROM system.zookeeper_log
+        WHERE event_time >= now() - INTERVAL 7 DAY
+        ORDER BY event_time DESC
+        LIMIT 1000
+      `,
+    },
+    {
+      since: '23.11',
+      sql: `
+        ${QUERY_COMMENT}
+        SELECT
+          hostname,
+          event_time,
+          thread_id,
+          query_id,
+          toString(address) AS address,
+          port,
+          session_id,
+          xid,
+          type,
+          op_num,
+          path,
+          data,
+          is_ephemeral,
+          is_sequential,
+          has_watch,
+          version,
+          requests_size,
+          request_idx,
+          zxid,
+          error,
+          watch_type,
+          watch_state,
+          path_created,
+          stat_czxid,
+          stat_mzxid,
+          stat_pzxid,
+          stat_version,
+          stat_cversion,
+          stat_dataLength,
+          stat_numChildren,
+          children
+        FROM system.zookeeper_log
+        WHERE event_time >= now() - INTERVAL 7 DAY
+        ORDER BY event_time DESC
+        LIMIT 1000
+      `,
+    },
+  ],
   columns: [
     'hostname',
     'event_time',
@@ -78,9 +128,9 @@ export const keeperLogConfig: QueryConfig = {
     'stat_pzxid',
     'stat_version',
     'stat_cversion',
-    'stat_aversion',
     'stat_dataLength',
     'stat_numChildren',
+    'children',
   ],
   columnFormats: {
     hostname: ColumnFormat.Text,
@@ -111,8 +161,8 @@ export const keeperLogConfig: QueryConfig = {
     stat_pzxid: ColumnFormat.Number,
     stat_version: ColumnFormat.Number,
     stat_cversion: ColumnFormat.Number,
-    stat_aversion: ColumnFormat.Number,
     stat_dataLength: ColumnFormat.Number,
     stat_numChildren: ColumnFormat.Number,
+    children: ColumnFormat.Text,
   },
 }

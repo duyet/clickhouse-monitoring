@@ -10,30 +10,11 @@ export const keeperConnectionLogConfig: QueryConfig = {
   optional: true,
   tableCheck: 'system.zookeeper_connection_log',
   docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_connection_log',
+  // Introduced whole-cloth in v25.8 (PR #79494) with all columns; tableCheck
+  // handles older versions where the table is absent.
   sql: [
     {
-      since: '22.11',
-      sql: `
-        ${QUERY_COMMENT}
-        SELECT
-            event_time,
-            hostname,
-            type,
-            name,
-            host,
-            port,
-            index,
-            client_id,
-            reason,
-            keeper_api_version
-        FROM system.zookeeper_connection_log
-        WHERE event_time >= now() - INTERVAL 7 DAY
-        ORDER BY event_time DESC
-        LIMIT 1000
-      `,
-    },
-    {
-      since: '25.1',
+      since: '25.8',
       sql: `
         ${QUERY_COMMENT}
         SELECT
@@ -81,6 +62,7 @@ export const keeperConnectionLogConfig: QueryConfig = {
     client_id: ColumnFormat.Code,
     reason: ColumnFormat.Badge,
     keeper_api_version: ColumnFormat.Number,
+    enabled_feature_flags: ColumnFormat.ColoredBadge,
     availability_zone: ColumnFormat.Badge,
   },
 }
