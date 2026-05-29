@@ -72,4 +72,4 @@ COPY --from=builder --chown=app:app /app/apps/web/lib/conversation-store/pg-migr
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
 # With the monorepo tracing root, server.js is nested under apps/web/.
 # Auto-migration runs on first API request via autoMigrate() singleton
-CMD ["bun", "run", "apps/web/server.js"]
+CMD ["bun", "apps/web/server.js"]

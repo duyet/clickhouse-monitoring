@@ -21,7 +21,7 @@ apps/web/.next/
 apps/web/.next-prod/
 apps/web/out/
 next.config.compiled.js
-.next/next.config.compiled.js
+apps/web/.next/next.config.compiled.js
 
 # production
 /build
