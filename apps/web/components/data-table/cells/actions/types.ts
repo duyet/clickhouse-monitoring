@@ -7,6 +7,7 @@ export type Action =
   | 'delete-backup'
   | 'optimize'
   | 'query-settings'
+  | 'generate-ai-prompt'
 
 export type ActionResponse = {
   action: 'redirect' | 'toast'

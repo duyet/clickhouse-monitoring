@@ -1,5 +1,6 @@
 import type { QueryConfig } from '@/types/query-config'
 
+import { ReadonlyTableDetails } from '@/components/data-table/cells/readonly-table-details'
 import { ColumnFormat } from '@/types/column-format'
 
 export const readOnlyTablesConfig: QueryConfig = {
@@ -51,6 +52,7 @@ export const readOnlyTablesConfig: QueryConfig = {
     'replica_path',
     'log_pointer',
     'engine',
+    'action',
   ],
   columnFormats: {
     table: ColumnFormat.ColoredBadge,
@@ -60,6 +62,7 @@ export const readOnlyTablesConfig: QueryConfig = {
     is_readonly: ColumnFormat.Boolean,
     is_session_expired: ColumnFormat.Boolean,
     replica_name: ColumnFormat.ColoredBadge,
+    action: [ColumnFormat.Action, ['generate-ai-prompt']],
   },
   relatedCharts: [
     [
@@ -71,4 +74,7 @@ export const readOnlyTablesConfig: QueryConfig = {
       },
     ],
   ],
+  expandable: {
+    renderExpanded: (row) => <ReadonlyTableDetails row={row} />,
+  },
 }
