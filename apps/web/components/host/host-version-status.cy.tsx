@@ -19,8 +19,8 @@ describe('<HostVersionWithStatus />', () => {
 
     cy.mount(<HostVersionWithStatus hostId={hostId} />)
 
-    // Should show loading indicator
-    cy.contains('Loading...').should('exist')
+    // Should show loading indicator — component renders 'Loading…' (Unicode ellipsis)
+    cy.contains('Loading').should('exist')
     cy.get('.animate-pulse').should('exist')
 
     cy.wait('@hostStatus')

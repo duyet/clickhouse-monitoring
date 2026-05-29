@@ -51,7 +51,11 @@ Cypress.Commands.add('mount', (component, options) =>
   mount(
     createElement(
       'div',
-      { style: { height: '100%', width: '100%' } },
+      // Fixed pixel height (not 100%) so Recharts' ResponsiveContainer measures a
+      // real box. Cypress's [data-cy-root] has auto height, so height:100% collapses
+      // to 0 and charts (.recharts-surface) never render. cy.viewport() sizes the
+      // iframe, not this container, so it cannot fix the 0-height case.
+      { style: { height: '600px', width: '100%' } },
       createElement(
         AppRouterContext.Provider,
         {
