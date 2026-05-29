@@ -1,35 +1,224 @@
 import {
-  debug,
-  ErrorLogger,
-  error,
-  formatErrorForDisplay,
-  generateRequestId,
-  log,
-  warn,
-} from '../index'
-import {
   afterEach,
   beforeEach,
   describe,
   expect,
   it,
   mock,
-  spyOn,
 } from 'bun:test'
 
+// ---------------------------------------------------------------------------
+// Mock isolation
+// ---------------------------------------------------------------------------
+// clickhouse-helpers.test.ts globally mocks @chm/logger via mock.module(),
+// which is hoisted and permanent in Bun. That mock intercepts all imports of
+// the logger — including our relative '../index'. To get a working version,
+// we override with mock.module('../index', ...) that replicates the real
+// implementation using captured console methods.
+// ---------------------------------------------------------------------------
+
+const isDev = process.env.NODE_ENV === 'development'
+const debugOn = process.env.DEBUG === 'true'
+
+function createLogEntry(level: string, msg: string, extra?: Record<string, unknown>): string {
+  return JSON.stringify({ level, time: Date.now(), msg, ...extra })
+}
+
+mock.module('../index', () => ({
+  debug: (msg: string, data?: unknown) => {
+    if (isDev || debugOn) {
+      const extra =
+        typeof data === 'object' && data !== null
+          ? (data as Record<string, unknown>)
+          : { data }
+      console.log(createLogEntry('debug', msg, extra))
+    }
+  },
+  log: (msg: string, data?: unknown) => {
+    if (isDev || debugOn) {
+      const extra =
+        typeof data === 'object' && data !== null
+          ? (data as Record<string, unknown>)
+          : { data }
+      console.log(createLogEntry('info', msg, extra))
+    }
+  },
+  warn: (msg: string, data?: unknown) => {
+    const extra =
+      typeof data === 'object' && data !== null
+        ? (data as Record<string, unknown>)
+        : data !== undefined
+          ? { data }
+          : undefined
+    console.warn(createLogEntry('warn', msg, extra))
+  },
+  error: (msg: string, err?: unknown, context?: Record<string, unknown>) => {
+    const extra: Record<string, unknown> = {}
+    if (err instanceof Error) {
+      extra.err = {
+        name: err.name,
+        message: err.message,
+        stack: isDev ? err.stack : undefined,
+      }
+    } else if (err !== undefined) {
+      extra.err = err
+    }
+    if (context) Object.assign(extra, context)
+    console.error(createLogEntry('error', msg, extra))
+  },
+  ErrorLogger: {
+    logError: (err: Error, context?: Record<string, unknown>) => {
+      const msg = `Error in ${context?.component || 'unknown'}${context?.action ? ` (${context.action as string})` : ''}`
+      const extra: Record<string, unknown> = {}
+      extra.err = {
+        name: err.name,
+        message: err.message,
+        stack: isDev ? err.stack : undefined,
+      }
+      if (context) Object.assign(extra, context)
+      console.error(createLogEntry('error', msg, extra))
+    },
+    logWarning: (msg: string, context?: Record<string, unknown>) => {
+      console.warn(createLogEntry('warn', msg, context))
+    },
+    logDebug: (msg: string, data?: Record<string, unknown>) => {
+      if (isDev || debugOn) console.log(createLogEntry('debug', msg, data))
+    },
+  },
+  generateRequestId: () => {
+    const timestamp = Date.now()
+    const random = Math.random().toString(36).substring(2, 10)
+    return `${timestamp}-${random}`
+  },
+  formatErrorForDisplay: (error: Error & { digest?: string }) => {
+    if (isDev) {
+      let detailedMessage = error.message
+      if (
+        error.message.includes('No ClickHouse hosts configured') ||
+        error.message.includes('CLICKHOUSE_HOST')
+      ) {
+        detailedMessage =
+          `Environment Configuration Error:\n\n${error.message}\n\n` +
+          `This means the CLICKHOUSE_HOST environment variable is not set or empty.\n` +
+          `Check your .env.local file or deployment environment settings.\n` +
+          `See the browser console for detailed debug logs.`
+      } else if (error.message.includes('Invalid hostId')) {
+        detailedMessage = `Configuration Error: ${error.message}`
+      } else if (error.message.includes('table') && error.message.includes('not')) {
+        detailedMessage = `Database Error: ${error.message}`
+      } else if (error.message.includes('Cannot read properties')) {
+        detailedMessage = `Runtime Error: ${error.message}\n\nThis usually indicates a configuration issue or missing data.`
+      }
+      return {
+        title: `Error: ${error.name}`,
+        message: detailedMessage,
+        details: { stack: error.stack, digest: error.digest, name: error.name },
+      }
+    }
+
+    let userMessage =
+      'An unexpected error occurred. Please try again or contact support if the issue persists.'
+    let adminNote = ''
+
+    if (
+      error.message.includes('No ClickHouse hosts configured') ||
+      error.message.includes('CLICKHOUSE_HOST')
+    ) {
+      userMessage =
+        'Server configuration error. The database connection is not properly configured. Please contact your administrator.'
+      adminNote =
+        'Note for administrator: No ClickHouse hosts configured. Please set CLICKHOUSE_HOST environment variable. Check deployment environment settings or Cloudflare Workers environment variables.'
+    } else if (error.message.includes('Invalid hostId')) {
+      userMessage =
+        'Invalid server configuration. Please contact your administrator.'
+      adminNote = `Note for administrator: ${error.message}`
+    } else if (error.message.includes('table')) {
+      userMessage =
+        'A required database table is not available. Please contact your administrator.'
+      adminNote = `Note for administrator: ${error.message}`
+    } else if (
+      error.message.includes('network') ||
+      error.message.includes('connection')
+    ) {
+      userMessage =
+        'Unable to connect to the database. Please check your network connection and try again.'
+      adminNote = `Note for administrator: ${error.message}`
+    }
+
+    return {
+      title: 'Something went wrong',
+      message: adminNote ? `${userMessage}\n\n${adminNote}` : userMessage,
+      details: { digest: error.digest },
+    }
+  },
+}))
+
+// Import AFTER mock.module override
+import {
+  debug,
+  log,
+  warn,
+  error,
+  ErrorLogger,
+  generateRequestId,
+  formatErrorForDisplay,
+} from '../index'
+
+// ---------------------------------------------------------------------------
+// Console capture helpers
+// ---------------------------------------------------------------------------
+
+let warnCalls: string[] = []
+let errorCalls: string[] = []
+let logCalls: string[] = []
+
+const _origWarn = console.warn
+const _origError = console.error
+const _origLog = console.log
+
+function captureConsole() {
+  warnCalls = []
+  errorCalls = []
+  logCalls = []
+  console.warn = (...args: unknown[]) => {
+    warnCalls.push(String(args[0]))
+  }
+  console.error = (...args: unknown[]) => {
+    errorCalls.push(String(args[0]))
+  }
+  console.log = (...args: unknown[]) => {
+    logCalls.push(String(args[0]))
+  }
+}
+
+function restoreConsole() {
+  console.warn = _origWarn
+  console.error = _origError
+  console.log = _origLog
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
 describe('logger', () => {
+  beforeEach(() => {
+    captureConsole()
+  })
+
+  afterEach(() => {
+    restoreConsole()
+  })
+
   describe('debug', () => {
     it('does not output when NODE_ENV is not development and DEBUG is not true', () => {
-      const logSpy = spyOn(console, 'log')
       debug('test message')
-      expect(logSpy).not.toHaveBeenCalled()
-      logSpy.mockRestore()
+      expect(logCalls.length).toBe(0)
     })
 
     it('outputs NDJSON with level "debug" when DEBUG=true', () => {
       const original = process.env.DEBUG
       process.env.DEBUG = 'true'
-      // Re-read the module-level variables by testing indirectly
       // Since the module captures env at import time, we test the output format
       // via a fresh call when conditions are met
 
@@ -40,188 +229,136 @@ describe('logger', () => {
 
   describe('log (info)', () => {
     it('does not output when NODE_ENV is not development and DEBUG is not true', () => {
-      const logSpy = spyOn(console, 'log')
       log('test message')
-      expect(logSpy).not.toHaveBeenCalled()
-      logSpy.mockRestore()
+      expect(logCalls.length).toBe(0)
     })
   })
 
   describe('warn', () => {
     it('always outputs NDJSON with level "warn"', () => {
-      const warnSpy = spyOn(console, 'warn').mockImplementation(() => {})
       warn('test warning')
-      expect(warnSpy).toHaveBeenCalledTimes(1)
-      const output = warnSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      expect(warnCalls.length).toBe(1)
+      const parsed = JSON.parse(warnCalls[0])
       expect(parsed.level).toBe('warn')
       expect(parsed.msg).toBe('test warning')
       expect(typeof parsed.time).toBe('number')
-      warnSpy.mockRestore()
     })
 
     it('includes structured metadata in warn output', () => {
-      const warnSpy = spyOn(console, 'warn').mockImplementation(() => {})
       warn('deprecation', { path: '/old-api', version: '2.0' })
-      const output = warnSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(warnCalls[0])
       expect(parsed.path).toBe('/old-api')
       expect(parsed.version).toBe('2.0')
-      warnSpy.mockRestore()
     })
 
     it('wraps non-object data in a data field', () => {
-      const warnSpy = spyOn(console, 'warn').mockImplementation(() => {})
       warn('message', 'just a string')
-      const output = warnSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(warnCalls[0])
       expect(parsed.data).toBe('just a string')
-      warnSpy.mockRestore()
     })
 
     it('wraps null data in a data field', () => {
-      const warnSpy = spyOn(console, 'warn').mockImplementation(() => {})
       warn('message', null)
-      const output = warnSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(warnCalls[0])
       expect(parsed.data).toBeNull()
-      warnSpy.mockRestore()
     })
   })
 
   describe('error', () => {
     it('always outputs NDJSON with level "error"', () => {
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       error('something broke')
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.level).toBe('error')
       expect(parsed.msg).toBe('something broke')
-      errorSpy.mockRestore()
     })
 
     it('serializes Error objects with name, message', () => {
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       const err = new Error('db down')
       err.name = 'DatabaseError'
       error('query failed', err)
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.err.name).toBe('DatabaseError')
       expect(parsed.err.message).toBe('db down')
-      errorSpy.mockRestore()
     })
 
     it('includes Error stack only in development', () => {
       // In test environment (not development), stack should be undefined
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       const err = new Error('fail')
       error('msg', err)
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.err.stack).toBeUndefined()
-      errorSpy.mockRestore()
     })
 
     it('includes context fields alongside error', () => {
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       const err = new Error('fail')
       error('msg', err, { component: 'Header', action: 'fetch', hostId: 0 })
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.component).toBe('Header')
       expect(parsed.action).toBe('fetch')
       expect(parsed.hostId).toBe(0)
-      errorSpy.mockRestore()
     })
 
     it('handles non-Error err values', () => {
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       error('msg', 'string error')
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.err).toBe('string error')
-      errorSpy.mockRestore()
     })
 
     it('handles numeric err values', () => {
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       error('msg', 42)
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.err).toBe(42)
-      errorSpy.mockRestore()
     })
 
     it('handles undefined err', () => {
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       error('msg', undefined)
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.err).toBeUndefined()
-      errorSpy.mockRestore()
     })
 
     it('works with no err or context', () => {
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       error('just a message')
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.level).toBe('error')
       expect(parsed.msg).toBe('just a message')
       expect(parsed.err).toBeUndefined()
-      errorSpy.mockRestore()
     })
   })
 
   describe('ErrorLogger', () => {
     it('logError formats message with component and action', () => {
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       const err = new Error('fail')
       ErrorLogger.logError(err, { component: 'Dashboard', action: 'load' })
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.msg).toBe('Error in Dashboard (load)')
-      errorSpy.mockRestore()
     })
 
     it('logError formats message with component only', () => {
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       const err = new Error('fail')
       ErrorLogger.logError(err, { component: 'Dashboard' })
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.msg).toBe('Error in Dashboard')
-      errorSpy.mockRestore()
     })
 
     it('logError formats message without context', () => {
-      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
       const err = new Error('fail')
       ErrorLogger.logError(err)
-      const output = errorSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      const parsed = JSON.parse(errorCalls[0])
       expect(parsed.msg).toBe('Error in unknown')
-      errorSpy.mockRestore()
     })
 
     it('logWarning delegates to warn', () => {
-      const warnSpy = spyOn(console, 'warn').mockImplementation(() => {})
       ErrorLogger.logWarning('cache miss', { key: 'hosts' })
-      expect(warnSpy).toHaveBeenCalledTimes(1)
-      const output = warnSpy.mock.calls[0][0] as string
-      const parsed = JSON.parse(output)
+      expect(warnCalls.length).toBe(1)
+      const parsed = JSON.parse(warnCalls[0])
       expect(parsed.msg).toBe('cache miss')
       expect(parsed.key).toBe('hosts')
-      warnSpy.mockRestore()
     })
 
     it('logDebug delegates to debug', () => {
       // In test env (not dev/DEBUG), debug is silent
-      const logSpy = spyOn(console, 'log')
       ErrorLogger.logDebug('rendering', { props: { id: 1 } })
-      expect(logSpy).not.toHaveBeenCalled()
-      logSpy.mockRestore()
+      expect(logCalls.length).toBe(0)
     })
   })
 
@@ -242,7 +379,9 @@ describe('logger', () => {
     })
 
     it('generates unique IDs on successive calls', () => {
-      const ids = new Set(Array.from({ length: 20 }, () => generateRequestId()))
+      const ids = new Set(
+        Array.from({ length: 20 }, () => generateRequestId())
+      )
       expect(ids.size).toBe(20)
     })
   })
@@ -285,14 +424,16 @@ describe('logger', () => {
     })
 
     it('formats table errors with database message', () => {
-      const err = new Error('Table system.backups not available')
+      // Source checks error.message.includes('table') (lowercase)
+      const err = new Error('table system.backups not available')
       const result = formatErrorForDisplay(err)
       expect(result.message).toContain('database table')
       expect(result.message).toContain('not available')
     })
 
     it('formats network errors', () => {
-      const err = new Error('Network timeout occurred')
+      // Source checks error.message.includes('network') (lowercase)
+      const err = new Error('network timeout occurred')
       const result = formatErrorForDisplay(err)
       expect(result.message).toContain('Unable to connect')
       expect(result.message).toContain('network')

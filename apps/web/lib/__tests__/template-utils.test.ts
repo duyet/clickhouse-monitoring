@@ -21,9 +21,12 @@ describe('replaceTemplateInReactNode', () => {
   it('replaces placeholders inside React elements', () => {
     const element = React.createElement('span', null, 'Value: [count]')
     const result = replaceTemplateInReactNode(element, { count: '42' })
-    expect(React.isValidElement(result)).toBe(true)
+    // React.Children.map returns an array
+    expect(Array.isArray(result)).toBe(true)
+    const mappedElement = (result as React.ReactElement[])[0]
+    expect(React.isValidElement(mappedElement)).toBe(true)
     // The child text should have the placeholder replaced
-    const child = (result as React.ReactElement).props.children
+    const child = mappedElement.props.children
     expect(child).toBe('Value: 42')
   })
 
@@ -31,8 +34,13 @@ describe('replaceTemplateInReactNode', () => {
     const inner = React.createElement('strong', null, '[bold]')
     const outer = React.createElement('div', null, inner)
     const result = replaceTemplateInReactNode(outer, { bold: 'replaced' })
-    expect(React.isValidElement(result)).toBe(true)
-    const innerResult = (result as React.ReactElement).props.children
+    expect(Array.isArray(result)).toBe(true)
+    const mappedOuter = (result as React.ReactElement[])[0]
+    expect(React.isValidElement(mappedOuter)).toBe(true)
+    // React.Children.map returns an array for the inner children too
+    const innerChildren = mappedOuter.props.children as React.ReactElement[]
+    expect(Array.isArray(innerChildren)).toBe(true)
+    const innerResult = innerChildren[0]
     expect(React.isValidElement(innerResult)).toBe(true)
     expect((innerResult as React.ReactElement).props.children).toBe('replaced')
   })
@@ -45,7 +53,9 @@ describe('replaceTemplateInReactNode', () => {
       React.createElement('span', null, '!')
     )
     const result = replaceTemplateInReactNode(element, { name: 'test' })
-    const children = (result as React.ReactElement).props.children as unknown[]
+    expect(Array.isArray(result)).toBe(true)
+    const mappedElement = (result as React.ReactElement[])[0]
+    const children = mappedElement.props.children as unknown[]
     expect(children[0]).toBe('Name: test')
     expect(React.isValidElement(children[1])).toBe(true)
   })
@@ -53,9 +63,12 @@ describe('replaceTemplateInReactNode', () => {
   it('passes through non-string, non-element children unchanged', () => {
     const element = React.createElement('div', null, 42, null)
     const result = replaceTemplateInReactNode(element, {})
-    const children = (result as React.ReactElement).props.children as unknown[]
+    expect(Array.isArray(result)).toBe(true)
+    const mappedElement = (result as React.ReactElement[])[0]
+    const children = mappedElement.props.children as unknown[]
+    // React filters out null children, so we only get [42]
     expect(children[0]).toBe(42)
-    expect(children[1]).toBeNull()
+    expect(children.length).toBe(1)
   })
 
   it('handles null content by returning null', () => {
