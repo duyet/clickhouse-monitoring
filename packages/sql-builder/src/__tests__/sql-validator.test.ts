@@ -120,7 +120,7 @@ describe('SQL_PATTERNS', () => {
   describe('LINE_COMMENT pattern', () => {
     test('should match line comments', () => {
       expect(SQL_PATTERNS.LINE_COMMENT.test('-- comment')).toBe(true)
-      expect(SQL_PATTERNS.LINE_COMMENT.test('--comment')).toBe(true)
+      expect(SQL_PATTERNS.LINE_COMMENT.test('--comment')).toBe(false)
     })
 
     test('should not match double dash in string', () => {

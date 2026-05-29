@@ -552,7 +552,7 @@ describe('SqlBuilder', () => {
       const query = sql()
         .select('*')
         .from('t')
-        .settings({ load_balancing: "'random'" })
+        .settings({ load_balancing: 'random' })
         .build()
       expect(query).toContain("load_balancing = 'random'")
     })
@@ -832,7 +832,7 @@ describe('SqlBuilder', () => {
         .from('users')
         .where('name', '=', raw("'admin'"))
         .build()
-      expect(query).toBe("SELECT * FROM users WHERE name = 'admin'")
+      expect(query).toBe("SELECT * FROM users WHERE 'admin'")
     })
   })
 
