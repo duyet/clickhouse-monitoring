@@ -59,7 +59,7 @@ function benchRustBinary(data, iterations = ITERATIONS) {
   for (let i = 0; i < iterations; i++) {
     const start = performance.now()
     const proc = spawnSync('./target/release/user-events-rs', [], {
-      cwd: 'tools/user-events-rs',
+      cwd: 'rust/user-events-rs',
       input: payload,
       encoding: 'utf8',
       maxBuffer: 50 * 1024 * 1024,
@@ -82,7 +82,7 @@ function summarize(name, times) {
 
 // Build once
 console.log('Building Rust binary...')
-spawnSync('cargo', ['build', '--release', '--quiet'], { cwd: 'tools/user-events-rs', stdio: 'inherit' })
+spawnSync('cargo', ['build', '--release', '--quiet'], { cwd: 'rust/user-events-rs', stdio: 'inherit' })
 
 console.log(`\nIterations per test: ${ITERATIONS}`)
 console.log('─'.repeat(90))
