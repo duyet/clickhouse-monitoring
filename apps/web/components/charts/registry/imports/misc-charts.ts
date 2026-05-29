@@ -64,6 +64,13 @@ export const miscChartImports: ChartRegistryMap = {
     }))
   ),
 
+  // Dictionary Charts
+  'dictionary-count': lazy(() =>
+    import('@/components/charts/dictionary-count').then((m) => ({
+      default: m.ChartDictionaryCount,
+    }))
+  ),
+
   // Page Analytics Charts
   'top-pages': lazy(() =>
     import('@/components/charts/top-pages').then((m) => ({
