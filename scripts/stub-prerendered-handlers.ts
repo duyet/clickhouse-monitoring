@@ -45,11 +45,32 @@ interface AppPathRoutesManifest {
 }
 
 const ROOT = process.cwd()
+// In a monorepo (lockfile at the repo root, app under e.g. `apps/web`),
+// `output: 'standalone'` nests the build under the app's path relative to the
+// monorepo root: `.next/standalone/apps/web/.next/server/app`. Detect that
+// package sub-path the same way opennextjs/aws does (first lockfile walking up)
+// so this works in both single-package and monorepo layouts.
+function findMonorepoRoot(start: string): string {
+  const LOCKFILES = [
+    'bun.lockb',
+    'bun.lock',
+    'package-lock.json',
+    'yarn.lock',
+    'pnpm-lock.yaml',
+  ]
+  let cur = start
+  while (cur !== path.dirname(cur)) {
+    if (LOCKFILES.some((f) => existsSync(path.join(cur, f)))) return cur
+    cur = path.dirname(cur)
+  }
+  return start
+}
+const PKG_PATH = path.relative(findMonorepoRoot(ROOT), ROOT) // '' or e.g. 'apps/web'
 // `output: 'standalone'` produces a self-contained copy under `.next/standalone`
 // that opennextjs-cloudflare uses as its source of truth. We have to stub there
 // (and also in `.next/server/app` for symmetry) — the plain copy alone is ignored.
 const APP_ROOTS = [
-  path.join(ROOT, '.next/standalone/.next/server/app'),
+  path.join(ROOT, '.next/standalone', PKG_PATH, '.next/server/app'),
   path.join(ROOT, '.next/server/app'),
 ]
 // Originals are copied here before stubbing so `restore-prerendered-handlers.ts`
