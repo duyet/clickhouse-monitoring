@@ -68,7 +68,7 @@ beforeEach(() => {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function countUrl(key: string, extra = '') {
-  return `http://localhost:3000/api/v1/cluster-counts/${key}?cluster=default&hostId=0${extra ? '&' + extra : ''}`
+  return `http://localhost:3000/api/v1/cluster-counts/${key}?cluster=default&hostId=0${extra ? `&${extra}` : ''}`
 }
 
 // ── Tests ──────────────────────────────────────────────────────────────────────

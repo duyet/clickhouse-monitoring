@@ -102,7 +102,7 @@ beforeEach(() => {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function chartUrl(name: string, extra = '') {
-  return `http://localhost:3000/api/v1/charts/${name}?hostId=0${extra ? '&' + extra : ''}`
+  return `http://localhost:3000/api/v1/charts/${name}?hostId=0${extra ? `&${extra}` : ''}`
 }
 
 function chartRequest(name: string, extra = '') {
