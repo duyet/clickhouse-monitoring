@@ -14,7 +14,7 @@ const mockDebug = mock(() => {})
 const mockError = mock(() => {})
 const mockWarn = mock(() => {})
 
-mock.module('@/lib/logger', () => ({
+mock.module('@chm/logger', () => ({
   debug: mockDebug,
   error: mockError,
   warn: mockWarn,

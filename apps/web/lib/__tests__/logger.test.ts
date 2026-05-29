@@ -10,7 +10,7 @@ import {
   formatErrorForDisplay,
   log,
   warn,
-} from '../logger'
+} from '@chm/logger'
 
 describe('logger', () => {
   describe('formatErrorForDisplay', () => {

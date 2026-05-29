@@ -5,8 +5,8 @@
  * All flags default to false (unset) for safety — features must be explicitly enabled.
  */
 
+import { error } from '@chm/logger'
 import { isClerkAuthProvider } from '@/lib/auth/provider'
-import { error } from '@/lib/logger'
 
 /**
  * Feature flag definitions.

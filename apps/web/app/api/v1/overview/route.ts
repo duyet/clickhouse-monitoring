@@ -15,12 +15,12 @@
  * - hostInfo: ClickHouse version, uptime, hostname
  */
 
+import { error } from '@chm/logger'
 import { getHostIdFromParams, withApiHandler } from '@/lib/api/error-handler'
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { fetchData } from '@/lib/clickhouse'
 import { OVERVIEW_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { error } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 

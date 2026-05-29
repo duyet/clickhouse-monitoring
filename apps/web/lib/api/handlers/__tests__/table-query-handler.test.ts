@@ -38,7 +38,7 @@ mock.module('@/lib/clickhouse', () => ({
   fetchData: mockFetchData,
 }))
 
-mock.module('@/lib/logger', () => ({
+mock.module('@chm/logger', () => ({
   debug: mockDebug,
   error: mockError,
   info: mockInfo,

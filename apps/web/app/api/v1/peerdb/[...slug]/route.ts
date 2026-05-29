@@ -10,12 +10,12 @@
  * and never exposed to the browser.
  */
 
+import { generateRequestId } from '@chm/logger'
 import { createErrorResponse } from '@/lib/api/error-handler'
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
 import { PEERDB_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { generateRequestId } from '@/lib/logger'
 import {
   isPeerDBEnabled,
   PeerDBError,

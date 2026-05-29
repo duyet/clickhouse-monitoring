@@ -7,6 +7,7 @@
  * @module lib/api/handlers/table-query-handler
  */
 
+import { debug, error } from '@chm/logger'
 import {
   createErrorResponse,
   getHostIdFromParams,
@@ -16,7 +17,6 @@ import { getTableConfig, getTableQuery } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { debug, error } from '@/lib/logger'
 
 export interface CreateTableQueryHandlerOptions {
   route: string

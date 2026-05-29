@@ -5,8 +5,8 @@
  * These utilities allow components to safely check if Clerk is enabled.
  */
 
+import { error } from '@chm/logger'
 import { getAuthProvider } from '@/lib/auth/provider'
-import { error } from '@/lib/logger'
 
 /**
  * Check if Clerk authentication is enabled.

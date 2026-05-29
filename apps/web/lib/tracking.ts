@@ -1,8 +1,8 @@
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { ClickHouseClient as WebClickHouseClient } from '@clickhouse/client-web'
 
+import { ErrorLogger } from '@chm/logger'
 import { EVENTS_TABLE } from '@/lib/app-tables'
-import { ErrorLogger } from '@/lib/logger'
 
 const log = (...args: string[]) =>
   ErrorLogger.logDebug(`[/api/init] ${args.join(' ')}`, {

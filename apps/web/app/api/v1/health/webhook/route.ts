@@ -5,10 +5,10 @@
  * Securely proxies Slack/Discord webhook requests from the server side to bypass browser CORS preflight restrictions.
  */
 
+import { debug, error } from '@chm/logger'
 import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
 import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { debug, error } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 

@@ -13,7 +13,8 @@
       "@chm/sql-builder": ["../../packages/sql-builder/src"],
       "@chm/sql-builder/*": ["../../packages/sql-builder/src/*"],
       "@chm/platform": ["../../packages/platform/src"],
-      "@chm/platform/*": ["../../packages/platform/src/*"]
+      "@chm/platform/*": ["../../packages/platform/src/*"],
+      "@chm/logger": ["../../packages/logger/src"]
     }
   },
   "include": [

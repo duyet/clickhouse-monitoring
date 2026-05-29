@@ -19,12 +19,12 @@
 
 import type { VersionedSql } from '@/types/query-config'
 
+import { debug, error as logError } from '@chm/logger'
 // Use getClient directly to avoid circular dependency with fetchData.
 // Keep these imports on the same alias path the tests mock so Bun sees one specifier.
 import { getClient } from '@/lib/clickhouse/clickhouse-client'
 import { getClickHouseConfigs } from '@/lib/clickhouse/clickhouse-config'
 import { QUERY_COMMENT } from '@/lib/clickhouse/constants'
-import { debug, error as logError } from '@/lib/logger'
 
 /**
  * Parsed ClickHouse version

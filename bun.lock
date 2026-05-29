@@ -40,6 +40,7 @@
         "@aws-sdk/credential-provider-web-identity": "^3.972.43",
         "@aws-sdk/nested-clients": "^3.997.11",
         "@aws-sdk/xml-builder": "^3.972.26",
+        "@chm/logger": "workspace:*",
         "@chm/platform": "workspace:*",
         "@chm/sql-builder": "workspace:*",
         "@chm/types": "workspace:*",
@@ -173,6 +174,13 @@
       },
       "optionalDependencies": {
         "@vercel/analytics": "^2.0.0",
+      },
+    },
+    "packages/logger": {
+      "name": "@chm/logger",
+      "version": "0.1.0",
+      "devDependencies": {
+        "typescript": "^6.0.0",
       },
     },
     "packages/platform": {
@@ -688,6 +696,8 @@
     "@cfworker/json-schema": ["@cfworker/json-schema@4.1.1", "", {}, "sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og=="],
 
     "@chevrotain/types": ["@chevrotain/types@11.1.2", "", {}, "sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw=="],
+
+    "@chm/logger": ["@chm/logger@workspace:packages/logger"],
 
     "@chm/platform": ["@chm/platform@workspace:packages/platform"],
 

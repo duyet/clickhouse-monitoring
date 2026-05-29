@@ -11,6 +11,7 @@
 
 import { menuItemsConfig } from '@/menu'
 
+import { debug, error, generateRequestId } from '@chm/logger'
 import { createErrorResponse } from '@/lib/api/error-handler'
 import {
   getMenuCountQuery,
@@ -25,7 +26,6 @@ import { ApiErrorType } from '@/lib/api/types'
 import { fetchData } from '@/lib/clickhouse'
 import { findMenuPermissionForCountKey } from '@/lib/feature-permissions/menu'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { debug, error, generateRequestId } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 

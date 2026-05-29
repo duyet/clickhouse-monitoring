@@ -2,7 +2,7 @@ import type { QueryCacheAdapter } from './types'
 
 import { MemoryCacheAdapter } from './adapters/memory-cache'
 import { NextCacheAdapter } from './adapters/next-cache'
-import { debug } from '@/lib/logger'
+import { debug } from '@chm/logger'
 
 export const CLICKHOUSE_CACHE_TAG = 'clickhouse_results'
 

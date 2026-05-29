@@ -1,8 +1,8 @@
 'use client'
 
+import { ErrorLogger, formatErrorForDisplay } from '@chm/logger'
 import { useEffect } from 'react'
 import { ErrorAlert } from '@/components/feedback/error-alert'
-import { ErrorLogger, formatErrorForDisplay } from '@/lib/logger'
 
 export default function Error({
   error,

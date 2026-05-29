@@ -11,6 +11,7 @@ import type {
 } from '@/lib/api/types'
 import type { CachePolicy } from '@/types/chart-data'
 
+import { debug, error } from '@chm/logger'
 import { isValidInterval } from '@chm/types/clickhouse-interval'
 import {
   getAvailableCharts,
@@ -34,7 +35,6 @@ import {
   selectVersionedSql,
 } from '@/lib/clickhouse-version'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
-import { debug, error } from '@/lib/logger'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'

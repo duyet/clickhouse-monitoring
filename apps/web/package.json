@@ -61,6 +61,7 @@
     "@aws-sdk/credential-provider-web-identity": "^3.972.43",
     "@aws-sdk/nested-clients": "^3.997.11",
     "@aws-sdk/xml-builder": "^3.972.26",
+    "@chm/logger": "workspace:*",
     "@chm/platform": "workspace:*",
     "@chm/sql-builder": "workspace:*",
     "@chm/types": "workspace:*",

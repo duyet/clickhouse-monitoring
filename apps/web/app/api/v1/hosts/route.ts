@@ -8,6 +8,7 @@
 
 import type { HostInfo } from '@chm/types/host-info'
 
+import { debug, error, generateRequestId } from '@chm/logger'
 import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
 import {
   CacheControl,
@@ -15,7 +16,6 @@ import {
 } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
 import { getClickHouseConfigs } from '@/lib/clickhouse'
-import { debug, error, generateRequestId } from '@/lib/logger'
 import { getHost } from '@/lib/utils'
 
 // This route is dynamic and should not be statically exported
