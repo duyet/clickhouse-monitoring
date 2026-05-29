@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from 'lucide-react'
 
+import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { CommandPalette } from '@/components/controls/command-palette'
@@ -28,6 +29,10 @@ export const HeaderActions = function HeaderActions({
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { config } = useFeaturePermissions()
   const canUseSettings = isFeatureAllowed(SETTINGS_FEATURE_PERMISSION, config)
+  const pathname = usePathname()
+  // The /agents page owns its own surface and has no time-series charts, so the
+  // global time-range selector and refresh countdown are noise there.
+  const showTimeControls = !pathname?.startsWith('/agents')
 
   // Handle hydration - set mounted state after client-side render
   useEffect(() => {
@@ -40,9 +45,13 @@ export const HeaderActions = function HeaderActions({
 
   return (
     <div className="flex w-max shrink-0 items-center gap-1 sm:ml-auto sm:w-auto sm:gap-3">
-      <GlobalTimeRangePicker />
+      {showTimeControls ? (
+        <>
+          <GlobalTimeRangePicker />
 
-      <RefreshCountdown />
+          <RefreshCountdown />
+        </>
+      ) : null}
 
       <CommandPalette
         open={commandPaletteOpen}

@@ -20,6 +20,10 @@
 import { HashIcon, SparklesIcon, WrenchIcon } from 'lucide-react'
 
 import { useState } from 'react'
+import {
+  AddContextDialog,
+  type ContextItem,
+} from '@/components/agents/welcome/add-context-dialog'
 import { AgentModelPicker } from '@/components/agents/welcome/agent-model-picker'
 import { SkillDetailDialog } from '@/components/agents/welcome/skill-detail-dialog'
 import {
@@ -41,15 +45,17 @@ import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { cn } from '@/lib/utils'
 
 interface ComposerToolbarProps {
-  /** Number of "context" chips the user has attached (queries, tables, …). */
-  contextCount?: number
-  onAddContext?: () => void
+  /** Context items the user has attached (docs links, queries, …). */
+  contextItems?: ContextItem[]
+  onAddContext?: (item: ContextItem) => void
+  onRemoveContext?: (id: string) => void
   className?: string
 }
 
 export function ComposerToolbar({
-  contextCount = 0,
+  contextItems = [],
   onAddContext,
+  onRemoveContext,
   className,
 }: ComposerToolbarProps) {
   const {
@@ -64,6 +70,8 @@ export function ComposerToolbar({
   const [skillsOpen, setSkillsOpen] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
   const [skillDetail, setSkillDetail] = useState<Skill | null>(null)
+  const [addContextOpen, setAddContextOpen] = useState(false)
+  const contextCount = contextItems.length
 
   const allTools = getAllSkillTools()
   const enabledToolCount = allTools.filter((t) => isToolEnabled(t)).length
@@ -95,14 +103,14 @@ export function ComposerToolbar({
         <PopoverContent
           align="start"
           sideOffset={4}
-          className="w-[340px] p-1"
+          className="flex max-h-[min(28rem,var(--radix-popover-content-available-height))] w-[340px] flex-col overflow-hidden p-1"
           collisionPadding={8}
         >
-          <div className="text-muted-foreground px-2 py-1.5 text-[10px] font-semibold tracking-wider uppercase">
+          <div className="text-muted-foreground shrink-0 px-2 py-1.5 text-[10px] font-semibold tracking-wider uppercase">
             Skills
           </div>
-          <ScrollArea className="max-h-96">
-            <div className="space-y-0.5">
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="space-y-0.5 pr-1">
               {skills.map((skill) => {
                 const Icon = skill.icon
                 const on = isSkillEnabled(skill.id)
@@ -181,17 +189,17 @@ export function ComposerToolbar({
         <PopoverContent
           align="start"
           sideOffset={4}
-          className="w-[320px] p-1"
+          className="flex max-h-[min(28rem,var(--radix-popover-content-available-height))] w-[320px] flex-col overflow-hidden p-1"
           collisionPadding={8}
         >
-          <div className="text-muted-foreground flex items-center justify-between px-2 py-1.5 text-[10px] font-semibold tracking-wider uppercase">
+          <div className="text-muted-foreground flex shrink-0 items-center justify-between px-2 py-1.5 text-[10px] font-semibold tracking-wider uppercase">
             <span>Tools</span>
             <span className="text-muted-foreground/70 font-normal normal-case tabular-nums">
               {enabledToolCount} active
             </span>
           </div>
-          <ScrollArea className="max-h-96">
-            <div className="space-y-0.5">
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="space-y-0.5 pr-1">
               {allTools.map((tool) => {
                 const on = isToolEnabled(tool)
                 const owners = getSkillsForTool(tool)
@@ -235,7 +243,7 @@ export function ComposerToolbar({
         type="button"
         variant="ghost"
         size="sm"
-        onClick={onAddContext}
+        onClick={() => setAddContextOpen(true)}
         className="text-muted-foreground hover:text-foreground h-7 gap-1.5 px-2 text-[11.5px]"
       >
         <HashIcon className="size-3" />
@@ -257,6 +265,14 @@ export function ComposerToolbar({
         }}
         isEnabled={skillDetail ? isSkillEnabled(skillDetail.id) : false}
         onToggle={(id) => toggleSkill(id)}
+      />
+
+      <AddContextDialog
+        open={addContextOpen}
+        onOpenChange={setAddContextOpen}
+        items={contextItems}
+        onAdd={(item) => onAddContext?.(item)}
+        onRemove={(id) => onRemoveContext?.(id)}
       />
     </div>
   )
