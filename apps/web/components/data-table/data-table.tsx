@@ -495,6 +495,23 @@ export function DataTable<
     },
   })
 
+  // Render signature for the memoized table body. Computed HERE (not inside the
+  // memoized DataTableContent) because DataTable re-renders on every controlled
+  // state change (sorting, expanded, columnSizing, rowSelection, ...) whereas
+  // DataTableContent's props are otherwise stable — so a state change like
+  // `expanded` would never reach the memo and row expansion would silently
+  // no-op. Passing this down guarantees the body memo busts when rows change.
+  const tableState = table.getState()
+  const bodyRenderKey = JSON.stringify([
+    tableState.sorting,
+    tableState.pagination,
+    tableState.expanded,
+    tableState.columnSizing,
+    tableState.columnOrder,
+    tableState.columnVisibility,
+    tableState.rowSelection,
+  ])
+
   // Virtual rows for datasets larger than the standard pagination range.
   // Disabled when row expansion is on because expanded rows add out-of-band
   // height the fixed-size virtualizer can't account for.
@@ -605,6 +622,7 @@ export function DataTable<
           view={view}
           offerViewToggle={offerViewToggle}
           onViewChange={setView}
+          bodyRenderKey={bodyRenderKey}
         />
 
         <DataTableFooter table={table} footnote={footnote} compact={compact} />
