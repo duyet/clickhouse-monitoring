@@ -46,7 +46,7 @@ export function RecommendationsList({
           Suggested questions
         </h3>
         <p className="text-muted-foreground text-[11.5px]">
-          Pick one to get started — or write your own.
+          Pick one to get started, or write your own.
         </p>
       </div>
 

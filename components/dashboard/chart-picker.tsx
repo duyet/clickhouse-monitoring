@@ -100,7 +100,7 @@ export function ChartPicker({ selectedCharts, onChange }: ChartPickerProps) {
                       {checked && (
                         <svg
                           viewBox="0 0 10 10"
-                          className="h-2.5 w-2.5"
+                          className="size-2.5"
                           fill="currentColor"
                         >
                           <path

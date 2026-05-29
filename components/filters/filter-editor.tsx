@@ -372,13 +372,13 @@ function OptionsList({
       <CommandList className="max-h-44">
         {error && (
           <div className="px-2 py-3 text-xs text-amber-600 dark:text-amber-400">
-            Failed to load values — showing cached results
+            Failed to load values: showing cached results
           </div>
         )}
         {isLoading && (
           <div className="flex items-center justify-center gap-2 py-4 text-xs text-muted-foreground">
             <Loader2Icon className="size-3.5 animate-spin" />
-            Loading values...
+            Loading values…
           </div>
         )}
         {!isLoading && <CommandEmpty>No matching values</CommandEmpty>}

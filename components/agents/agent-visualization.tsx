@@ -140,7 +140,7 @@ function sortRows(
 function ChartLoadingSkeleton() {
   return (
     <div className="flex items-center justify-center h-48">
-      <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
+      <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
     </div>
   )
 }
@@ -343,6 +343,7 @@ function ChartControls({
         {/* Stacked toggle (bar and area) */}
         {(chartType === 'bar' || chartType === 'area') && yKeys.length > 1 && (
           <button
+            type="button"
             onClick={() => onStackedChange(!stacked)}
             className={cn(
               'h-7 px-2 rounded-md border text-xs transition-colors',
@@ -358,6 +359,7 @@ function ChartControls({
         {/* Log scale toggle */}
         {chartType !== 'pie' && (
           <button
+            type="button"
             onClick={() => onLogScaleChange(!logScale)}
             className={cn(
               'h-7 px-2 rounded-md border text-xs transition-colors',
@@ -379,6 +381,7 @@ function ChartControls({
               const isRight = rightAxisKeys.has(col)
               return (
                 <button
+                  type="button"
                   key={col}
                   onClick={() => {
                     const next = new Set(rightAxisKeys)
@@ -767,7 +770,7 @@ export function AgentVisualization({
     >
       {/* Header */}
       <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b">
-        <BarChart3Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+        <BarChart3Icon className="size-4 text-muted-foreground shrink-0" />
         {title && (
           <span className="text-sm font-semibold truncate max-w-[200px]">
             {title}
@@ -801,12 +804,12 @@ export function AgentVisualization({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="size-7"
             onClick={handleDownload}
             title="Download CSV"
             disabled={!hasData}
           >
-            <DownloadIcon className="h-3.5 w-3.5" />
+            <DownloadIcon className="size-3.5" />
           </Button>
         </div>
       </div>

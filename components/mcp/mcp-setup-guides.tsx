@@ -28,6 +28,7 @@ function GuideSection({ guide }: { guide: SetupGuide }) {
   return (
     <div className="border rounded-lg overflow-hidden">
       <button
+        type="button"
         className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted/50 transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
@@ -38,14 +39,14 @@ function GuideSection({ guide }: { guide: SetupGuide }) {
           </div>
         </div>
         {expanded ? (
-          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 ml-3" />
+          <ChevronDown className="size-4 text-muted-foreground shrink-0 ml-3" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-3" />
+          <ChevronRight className="size-4 text-muted-foreground shrink-0 ml-3" />
         )}
       </button>
 
       {expanded && (
-        <div className="border-t px-4 py-4 space-y-3 bg-muted/20">
+        <div className="border-t p-4 space-y-3 bg-muted/20">
           {guide.steps.map((step, i) =>
             step.type === 'text' ? (
               <p key={i} className="text-xs text-muted-foreground">

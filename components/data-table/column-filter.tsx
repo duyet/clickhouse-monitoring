@@ -64,7 +64,7 @@ export const ColumnFilter = memo(function ColumnFilter({
     >
       <div className="relative flex-1">
         <Search
-          className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50"
+          className="absolute left-1.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground/50"
           aria-hidden="true"
         />
         <DebouncedInput
@@ -92,11 +92,11 @@ export const ColumnFilter = memo(function ColumnFilter({
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 w-7 p-0 hover:bg-muted/60"
+          className="size-7 p-0 hover:bg-muted/60"
           onClick={handleClear}
           aria-label={`Clear ${column} filter`}
         >
-          <X className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+          <X className="size-3 text-muted-foreground" aria-hidden="true" />
         </Button>
       )}
     </div>

@@ -31,7 +31,7 @@ function StatItem({
 }) {
   return (
     <div className="flex items-center gap-2 text-xs">
-      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+      <Icon className="size-3.5 text-muted-foreground" />
       <span className="text-muted-foreground">{label}:</span>
       <span className="font-medium">{value}</span>
     </div>

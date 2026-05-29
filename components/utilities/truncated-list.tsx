@@ -24,6 +24,7 @@ export const TruncatedList = memo(function TruncatedList({
 
       {isClamped && (
         <button
+          type="button"
           onClick={() => setIsExpanded(!isExpanded)}
           className="mt-2 text-sm text-blue-500 hover:text-blue-700 focus:outline-hidden"
         >

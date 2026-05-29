@@ -102,7 +102,7 @@ export function SettingsForm({
               onClick={handleResetTimezone}
               disabled={!!isUsingDefault}
             >
-              <RotateCcw className="h-3 w-3 mr-1" />
+              <RotateCcw className="size-3 mr-1" />
               Reset to default
             </Button>
           )}
@@ -165,7 +165,7 @@ export function SettingsForm({
                 aria-pressed={isSelected}
                 aria-label={`Select ${option.description}`}
               >
-                <Icon className="mb-2 h-5 w-5" aria-hidden="true" />
+                <Icon className="mb-2 size-5" aria-hidden="true" />
                 <span className="text-xs font-medium">{option.label}</span>
               </button>
             )
@@ -176,7 +176,7 @@ export function SettingsForm({
       {/* MCP Server Section */}
       <div className="space-y-3">
         <Label className="text-sm font-medium flex items-center gap-1.5">
-          <Globe className="h-3.5 w-3.5" />
+          <Globe className="size-3.5" />
           MCP Server
         </Label>
         <p className="text-xs text-muted-foreground">
@@ -190,7 +190,7 @@ export function SettingsForm({
           className="w-full justify-start text-xs"
           onClick={() => window.open('/mcp', '_blank')}
         >
-          <Globe className="h-3 w-3 mr-2" />
+          <Globe className="size-3 mr-2" />
           View MCP Server Details
         </Button>
       </div>

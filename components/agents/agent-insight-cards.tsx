@@ -29,7 +29,7 @@ const INSIGHT_CARDS: InsightCardConfig[] = [
   {
     chartName: 'running-queries-count',
     label: 'Running Queries',
-    icon: <ActivityIcon className="h-4 w-4" />,
+    icon: <ActivityIcon className="size-4" />,
     question: 'Which queries are running right now?',
     getValue: (data) => Number(data[0]?.count ?? 0),
     getSeverity: (v) => (v > 50 ? 'critical' : v > 10 ? 'watch' : 'healthy'),
@@ -37,7 +37,7 @@ const INSIGHT_CARDS: InsightCardConfig[] = [
   {
     chartName: 'merge-active-count',
     label: 'Active Merges',
-    icon: <MergeIcon className="h-4 w-4" />,
+    icon: <MergeIcon className="size-4" />,
     question: 'How is the merge queue performing?',
     getValue: (data) => Number(data[0]?.count ?? 0),
     getSeverity: (v) => (v > 20 ? 'critical' : v > 5 ? 'watch' : 'healthy'),
@@ -45,7 +45,7 @@ const INSIGHT_CARDS: InsightCardConfig[] = [
   {
     chartName: 'summary-stuck-mutations',
     label: 'Stuck Mutations',
-    icon: <AlertTriangleIcon className="h-4 w-4" />,
+    icon: <AlertTriangleIcon className="size-4" />,
     question: 'Are there stuck mutations?',
     getValue: (data) => Number(data[0]?.count ?? 0),
     getSeverity: (v) => (v > 0 ? 'critical' : 'healthy'),
@@ -53,7 +53,7 @@ const INSIGHT_CARDS: InsightCardConfig[] = [
   {
     chartName: 'health-max-part-count',
     label: 'Max Part Count',
-    icon: <TablePropertiesIcon className="h-4 w-4" />,
+    icon: <TablePropertiesIcon className="size-4" />,
     question: 'Show tables with high part counts',
     getValue: (data) => Number(data[0]?.count ?? data[0]?.max_parts_count ?? 0),
     getSeverity: (v) => (v > 3000 ? 'critical' : v > 300 ? 'watch' : 'healthy'),
@@ -112,6 +112,7 @@ function InsightCard({
   if (error || !data || data.length === 0) {
     return (
       <button
+        type="button"
         onClick={() => onClick(config.question)}
         className="group w-full min-w-0 rounded-xl border border-dashed border-border/60 bg-card/40 p-3 text-left transition-colors hover:border-border hover:bg-accent/20"
       >
@@ -128,7 +129,7 @@ function InsightCard({
               Ask the agent to inspect this area directly.
             </div>
           </div>
-          <ArrowRightIcon className="mt-1 h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          <ArrowRightIcon className="mt-1 size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
         </div>
       </button>
     )
@@ -140,6 +141,7 @@ function InsightCard({
 
   return (
     <button
+      type="button"
       onClick={() => onClick(config.question)}
       className={cn(
         'group w-full min-w-0 rounded-xl border border-border/60 bg-card/50 p-3 text-left transition-[border-color,background-color] hover:border-border hover:bg-accent/20'
@@ -171,7 +173,7 @@ function InsightCard({
       </div>
       <div className="mt-2.5 flex items-center justify-between gap-3 text-xs text-muted-foreground">
         <span className="line-clamp-2">{config.question}</span>
-        <ArrowRightIcon className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
+        <ArrowRightIcon className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
       </div>
     </button>
   )

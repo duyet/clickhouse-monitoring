@@ -103,7 +103,7 @@ export function AgentIssuesPanel({ output }: { output: AgentIssuesOutput }) {
     <div className="rounded-md border border-border/60 bg-muted/20">
       <div className="flex items-center justify-between gap-3 border-b border-border/50 px-3 py-2">
         <div className="flex min-w-0 items-center gap-2">
-          <AlertTriangleIcon className="h-4 w-4 text-amber-500" />
+          <AlertTriangleIcon className="size-4 text-amber-500" />
           <span className="text-sm font-semibold">Issue scan</span>
         </div>
         <Badge variant="outline" className="text-[10px]">
@@ -112,8 +112,8 @@ export function AgentIssuesPanel({ output }: { output: AgentIssuesOutput }) {
       </div>
 
       {output.issues.length === 0 ? (
-        <div className="flex items-center gap-2 px-3 py-3 text-sm text-muted-foreground">
-          <CheckCircle2Icon className="h-4 w-4 text-emerald-500" />
+        <div className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
+          <CheckCircle2Icon className="size-4 text-emerald-500" />
           No confirmed issues found in the selected window.
         </div>
       ) : (
@@ -121,10 +121,10 @@ export function AgentIssuesPanel({ output }: { output: AgentIssuesOutput }) {
           {output.issues.map((issue) => {
             const Icon = SEVERITY_ICON[issue.severity]
             return (
-              <div key={issue.id} className="space-y-2 px-3 py-3">
+              <div key={issue.id} className="space-y-2 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-start gap-2">
-                    <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                     <div className="min-w-0">
                       <div className="text-sm font-medium text-foreground">
                         {issue.title}
@@ -168,7 +168,7 @@ export function QueryRepairPanel({ output }: { output: QueryRepairOutput }) {
     <div className="space-y-3 rounded-md border border-border/60 bg-muted/20 p-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <FileCode2Icon className="h-4 w-4 text-primary" />
+          <FileCode2Icon className="size-4 text-primary" />
           <span className="text-sm font-semibold">Query repair</span>
         </div>
         <Badge
@@ -242,7 +242,7 @@ export function TableDesignPanel({ output }: { output: TableDesignOutput }) {
     <div className="rounded-md border border-border/60 bg-muted/20">
       <div className="flex items-center justify-between gap-3 border-b border-border/50 px-3 py-2">
         <div className="flex min-w-0 items-center gap-2">
-          <DatabaseIcon className="h-4 w-4 text-primary" />
+          <DatabaseIcon className="size-4 text-primary" />
           <span className="truncate text-sm font-semibold">
             Table design: {output.table}
           </span>
@@ -253,7 +253,7 @@ export function TableDesignPanel({ output }: { output: TableDesignOutput }) {
       </div>
 
       {output.suggestedOrderBy.length > 0 ? (
-        <div className="border-b border-border/40 px-3 py-3">
+        <div className="border-b border-border/40 p-3">
           <div className="mb-1.5 text-xs font-medium text-muted-foreground">
             Suggested ORDER BY candidates
           </div>
@@ -269,14 +269,14 @@ export function TableDesignPanel({ output }: { output: TableDesignOutput }) {
 
       <div className="divide-y divide-border/40">
         {output.recommendations.length === 0 ? (
-          <div className="px-3 py-3 text-sm text-muted-foreground">
+          <div className="p-3 text-sm text-muted-foreground">
             No table-design recommendations found from available evidence.
           </div>
         ) : (
           output.recommendations.map((recommendation) => (
             <div
               key={`${recommendation.category}-${recommendation.title}`}
-              className="space-y-2 px-3 py-3"
+              className="space-y-2 p-3"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>

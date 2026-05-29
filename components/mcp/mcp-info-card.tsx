@@ -68,9 +68,9 @@ function CopyButton({ text, className }: { text: string; className?: string }) {
       onClick={handleCopy}
     >
       {copied ? (
-        <Check className="h-3.5 w-3.5 text-green-600" />
+        <Check className="size-3.5 text-green-600" />
       ) : (
-        <Copy className="h-3.5 w-3.5" />
+        <Copy className="size-3.5" />
       )}
     </Button>
   )
@@ -126,7 +126,7 @@ export function McpInfoCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Globe className="h-4 w-4" />
+          <Globe className="size-4" />
           MCP Server
         </CardTitle>
         <CardDescription>
@@ -179,7 +179,7 @@ export function McpInfoCard() {
           {/* Generic / curl */}
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-              <Terminal className="h-3 w-3" />
+              <Terminal className="size-3" />
               Test with curl
             </p>
             <CodeBlock>{curlExample}</CodeBlock>

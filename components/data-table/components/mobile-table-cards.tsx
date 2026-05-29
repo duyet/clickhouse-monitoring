@@ -194,7 +194,7 @@ const MobileTableCard = memo(function MobileTableCard<TData extends RowData>({
             onClick={() => row.toggleExpanded()}
             aria-expanded={isExpanded}
             aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
-            className="-ml-1 mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+            className="-ml-1 mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted/60 hover:text-foreground"
             data-testid="mobile-table-card-expand"
           >
             <ExpandIcon className="size-4" />
@@ -299,7 +299,7 @@ export const MobileTableCards = memo(function MobileTableCards<
         <Empty className="min-h-48 border-0 p-4">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <SearchX className="h-5 w-5" />
+              <SearchX className="size-5" />
             </EmptyMedia>
             <EmptyTitle>No results</EmptyTitle>
             <EmptyDescription>

@@ -22,7 +22,7 @@ export const SingleLineSkeleton = memo(function SingleLineSkeleton({
     >
       <Skeleton className="h-6 w-3/5" />
       <Skeleton className="h-6 w-2/5" />
-      <span className="sr-only">Loading...</span>
+      <span className="sr-only">Loading…</span>
     </div>
   )
 })
@@ -51,7 +51,7 @@ export const MultiLineSkeleton = memo(function MultiLineSkeleton({
         <Skeleton className="h-6 w-2/5" />
         <Skeleton className="h-6 w-1/5" />
       </div>
-      <span className="sr-only">Loading...</span>
+      <span className="sr-only">Loading…</span>
     </div>
   )
 })
@@ -76,7 +76,7 @@ export const ListSkeleton = memo(function ListSkeleton({
       {Array.from({ length: nrows }).map((_, i) => (
         <Skeleton key={i} className="h-6 w-full" />
       ))}
-      <span className="sr-only">Loading list items...</span>
+      <span className="sr-only">Loading list items…</span>
     </div>
   )
 })

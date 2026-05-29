@@ -319,7 +319,7 @@ export const TableClient = memo(function TableClient({
                 ? {
                     label: 'Retry',
                     onClick: refresh,
-                    icon: <RefreshCw className="mr-1.5 h-3.5 w-3.5" />,
+                    icon: <RefreshCw className="mr-1.5 size-3.5" />,
                   }
                 : undefined
             }

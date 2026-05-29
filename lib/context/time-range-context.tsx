@@ -2,13 +2,7 @@
 
 import type { ClickHouseInterval } from '@/types/clickhouse-interval'
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react'
+import { createContext, use, useCallback, useMemo, useState } from 'react'
 
 export interface TimeRangeOption {
   /** Display label shown in the picker (e.g., "24h") */
@@ -79,5 +73,5 @@ export function TimeRangeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useTimeRange(): TimeRangeContextValue {
-  return useContext(TimeRangeContext)
+  return use(TimeRangeContext)
 }

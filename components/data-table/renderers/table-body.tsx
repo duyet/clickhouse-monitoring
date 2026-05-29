@@ -395,7 +395,7 @@ export const TableBodyEmptyState = memo(function TableBodyEmptyState<
         <Empty className="h-full min-h-48 border-0 p-4 md:p-6">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <SearchX className="h-5 w-5" />
+              <SearchX className="size-5" />
             </EmptyMedia>
             <EmptyTitle>No results</EmptyTitle>
             <EmptyDescription>

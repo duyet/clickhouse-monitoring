@@ -20,20 +20,23 @@ import {
 import { getAgentMessageMetadata } from '@/lib/ai/agent/message-metadata'
 import { cn, formatDuration } from '@/lib/utils'
 
+const NUMBER_FORMAT = new Intl.NumberFormat('en-US')
+const CURRENCY_FORMAT = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 6,
+})
+
 function formatNumber(value: number | undefined): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) return '-'
-  return new Intl.NumberFormat('en-US').format(value)
+  return NUMBER_FORMAT.format(value)
 }
 
 function formatCost(value: number | null | undefined): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) return '-'
   if (value === 0) return '$0.00'
   if (value < 0.0001) return '<$0.0001'
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 6,
-  }).format(value)
+  return CURRENCY_FORMAT.format(value)
 }
 
 function DetailRow({
@@ -138,7 +141,7 @@ export function MessageDetailsDialog({
           size="sm"
           className="h-7 gap-1.5 rounded-full px-2.5 text-[11px] text-muted-foreground transition-[transform,background-color,color] hover:text-foreground active:scale-[0.96]"
         >
-          <BarChart3Icon className="h-3.5 w-3.5" />
+          <BarChart3Icon className="size-3.5" />
           Details
         </Button>
       </DialogTrigger>
@@ -289,7 +292,7 @@ export function MessageDetailsDialog({
                   onClick={handleCopy}
                   className="h-7 gap-1.5 rounded-full px-2.5 text-xs transition-[transform,background-color] active:scale-[0.96]"
                 >
-                  <CopyIcon className="h-3.5 w-3.5" />
+                  <CopyIcon className="size-3.5" />
                   {copied ? 'Copied' : 'Copy'}
                 </Button>
               </div>

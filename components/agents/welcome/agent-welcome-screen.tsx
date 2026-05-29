@@ -52,7 +52,7 @@ export function AgentWelcomeScreen({
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 pt-10 pb-6">
       {/* Greeting */}
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-foreground/[0.04]">
+        <div className="mx-auto mb-4 inline-flex size-11 items-center justify-center rounded-xl bg-foreground/[0.04]">
           <SparklesIcon
             className="text-foreground/70 size-[18px]"
             strokeWidth={1.8}
@@ -67,7 +67,7 @@ export function AgentWelcomeScreen({
           <span className="text-foreground/80 font-mono text-[12.5px]">
             {clusterName ?? 'unknown'}
           </span>
-          . Ask anything — schemas, queries, performance, health.
+          . Ask anything: schemas, queries, performance, health.
         </p>
       </div>
 

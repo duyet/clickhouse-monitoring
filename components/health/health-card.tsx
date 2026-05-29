@@ -135,7 +135,7 @@ export function HealthCard({ check, thresholds }: HealthCardProps) {
             aria-label={`Open ${check.title} details`}
             className="ml-auto rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
           >
-            <Maximize2 className="h-3.5 w-3.5" />
+            <Maximize2 className="size-3.5" />
           </button>
         </div>
         <button

@@ -94,13 +94,13 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
         {canSort && (
           <>
             <DropdownMenuItem onClick={handleSortAsc}>
-              <SortAscIcon className="mr-2 h-3.5 w-3.5" />A → Z
+              <SortAscIcon className="mr-2 size-3.5" />A → Z
               {column.getIsSorted() === 'asc' && (
                 <span className="ml-auto text-xs">✓</span>
               )}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSortDesc}>
-              <SortDescIcon className="mr-2 h-3.5 w-3.5" />Z → A
+              <SortDescIcon className="mr-2 size-3.5" />Z → A
               {column.getIsSorted() === 'desc' && (
                 <span className="ml-auto text-xs">✓</span>
               )}
@@ -109,12 +109,12 @@ export const ColumnHeaderDropdown = memo(function ColumnHeaderDropdown({
         )}
         {(canSort || column.getIsSorted()) && (
           <DropdownMenuItem onClick={handleResetSort}>
-            <RotateCcwIcon className="mr-2 h-3.5 w-3.5" />
+            <RotateCcwIcon className="mr-2 size-3.5" />
             Reset sort
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={handleCopy}>
-          <CopyIcon className="mr-2 h-3.5 w-3.5" />
+          <CopyIcon className="mr-2 size-3.5" />
           {copied ? 'Copied!' : 'Copy name'}
         </DropdownMenuItem>
       </DropdownMenuContent>

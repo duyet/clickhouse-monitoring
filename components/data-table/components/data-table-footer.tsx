@@ -53,27 +53,27 @@ export const DataTableFooter = memo(function DataTableFooter<
     const hasMultiplePages = canPrev || canNext
 
     return (
-      <div className="flex shrink-0 items-center justify-between px-1 py-1 text-xs text-muted-foreground">
+      <div className="flex shrink-0 items-center justify-between p-1 text-xs text-muted-foreground">
         <span>{formatNumber(totalRows)} rows</span>
         {hasMultiplePages && (
           <div className="flex items-center gap-0.5">
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6"
+              className="size-6"
               onClick={() => table.previousPage()}
               disabled={!canPrev}
             >
-              <ChevronLeftIcon className="h-3 w-3" />
+              <ChevronLeftIcon className="size-3" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6"
+              className="size-6"
               onClick={() => table.nextPage()}
               disabled={!canNext}
             >
-              <ChevronRightIcon className="h-3 w-3" />
+              <ChevronRightIcon className="size-3" />
             </Button>
           </div>
         )}

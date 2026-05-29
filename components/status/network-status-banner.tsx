@@ -78,6 +78,7 @@ export const NetworkStatusBanner = memo(function NetworkStatusBanner() {
             </span>
           </div>
           <button
+            type="button"
             onClick={() => window.location.reload()}
             className="text-xs font-medium underline hover:no-underline"
           >

@@ -15,7 +15,7 @@ function LayoutErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
     <div className="flex min-h-[400px] flex-col items-center justify-center p-8 text-center">
       <div className="flex max-w-md flex-col items-center gap-4">
         <div className="bg-destructive/10 flex size-16 items-center justify-center rounded-full">
-          <AlertTriangleIcon className="text-destructive h-8 w-8" />
+          <AlertTriangleIcon className="text-destructive size-8" />
         </div>
         <div className="space-y-2">
           <h2 className="text-xl font-semibold">Something went wrong</h2>
@@ -25,7 +25,7 @@ function LayoutErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
           </p>
         </div>
         <Button onClick={resetErrorBoundary} className="gap-2">
-          <RefreshCwIcon className="h-4 w-4" />
+          <RefreshCwIcon className="size-4" />
           Try Again
         </Button>
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext } from 'react'
+import { createContext, use } from 'react'
 
 interface TableDensityContextValue {
   /** CSS classes applied to each table cell for density control */
@@ -14,5 +14,5 @@ const TableDensityContext = createContext<TableDensityContextValue>({
 export const TableDensityProvider = TableDensityContext.Provider
 
 export function useTableDensityContext(): TableDensityContextValue {
-  return useContext(TableDensityContext)
+  return use(TableDensityContext)
 }
