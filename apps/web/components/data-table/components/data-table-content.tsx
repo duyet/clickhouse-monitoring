@@ -128,6 +128,14 @@ export interface DataTableContentProps<
   offerViewToggle?: boolean
   /** Callback when the user switches view. */
   onViewChange?: (view: 'table' | 'cards') => void
+  /**
+   * Render signature of the row-affecting table state, computed by the parent
+   * (which re-renders on every controlled-state change). Because this component
+   * is memoized and `table` has a stable identity, the parent MUST pass this so
+   * the memo busts when state like `expanded` changes. Falls back to a local
+   * computation only when omitted.
+   */
+  bodyRenderKey?: string
 }
 
 /**
@@ -168,6 +176,7 @@ export const DataTableContent = memo(function DataTableContent<
   view = 'table',
   offerViewToggle = false,
   onViewChange,
+  bodyRenderKey,
 }: DataTableContentProps<TData, TValue>) {
   const cardsOnly = view === 'cards'
   // Configure drag-and-drop sensors
@@ -199,19 +208,24 @@ export const DataTableContent = memo(function DataTableContent<
     .filter((id) => id !== EXPAND_COLUMN_ID && id !== 'select')
 
   // The memoized body reads row output from the stable `table` instance, so it
-  // needs an explicit signal to re-render when that output changes. Capture the
-  // state slices that affect rows/cells (order is set via columnOrder so it is
-  // covered) into a key the body memo can compare.
+  // needs an explicit signal to re-render when that output changes. The parent
+  // (DataTable) computes this from its controlled state and passes it in — that
+  // matters because THIS component is memoized: state like `expanded` does not
+  // change any prop here, so without the parent-provided key the memo would
+  // never bust and expansion (chevron + detail row) would silently no-op.
+  // The local computation is only a fallback for callers that don't pass it.
   const bodyState = table.getState()
-  const bodyRenderKey = JSON.stringify([
-    bodyState.sorting,
-    bodyState.pagination,
-    bodyState.expanded,
-    bodyState.columnSizing,
-    bodyState.columnOrder,
-    bodyState.columnVisibility,
-    bodyState.rowSelection,
-  ])
+  const resolvedRenderKey =
+    bodyRenderKey ??
+    JSON.stringify([
+      bodyState.sorting,
+      bodyState.pagination,
+      bodyState.expanded,
+      bodyState.columnSizing,
+      bodyState.columnOrder,
+      bodyState.columnVisibility,
+      bodyState.rowSelection,
+    ])
 
   const tableContent = (
     <Table
@@ -241,7 +255,7 @@ export const DataTableContent = memo(function DataTableContent<
           activeFilterCount={activeFilterCount}
           rowClassName={queryConfig.rowClassName}
           expandable={expandable}
-          renderKey={bodyRenderKey}
+          renderKey={resolvedRenderKey}
         />
       </TableBody>
     </Table>
