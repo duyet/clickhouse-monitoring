@@ -23,6 +23,8 @@ export const clustersConfig: QueryConfig = {
     GROUP BY 1
   `,
   columns: ['cluster', 'shard_count', 'replica_count', 'replica_status'],
+  // Few, wide rows (one per cluster) — cards read better than a sparse table.
+  defaultView: 'cards',
   columnFormats: {
     replica_status: [
       ColumnFormat.Link,

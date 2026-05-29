@@ -414,6 +414,15 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    */
   expandable?: true | ExpandableConfig
   /**
+   * Default rendering for the result set. `'cards'` renders each row as a card
+   * (reusing the responsive card layout) instead of a wide table — better UX
+   * for low-cardinality, wide tables like clusters or disks. When set, a
+   * table/cards toggle is offered in the toolbar so users can switch.
+   *
+   * @default 'table'
+   */
+  defaultView?: 'table' | 'cards'
+  /**
    * Bulk actions available for selected rows (shown in toolbar).
    * These actions apply to all selected rows at once.
    *
