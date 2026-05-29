@@ -198,7 +198,11 @@ describe('<TableClient />', () => {
     })
   })
 
-  it('polls table data when the query config opts in', () => {
+  // Quarantined: flaky under CI load — uses cy.clock()/cy.tick() to assert a 2nd
+  // poll request fires, but the request intermittently doesn't occur within the
+  // wait window (passed on PR runs, failed on a main run). Needs a more robust
+  // fake-timer/poll assertion. See docs/knowledge/component-ci-stability.md.
+  it.skip('polls table data when the query config opts in', () => {
     cy.clock()
     const getRequestCount = mockCountingTableResponse({
       data: [
