@@ -1,4 +1,5 @@
 import {
+  getHealthMetrics,
   getMemoryUsage,
   isMemoryCritical,
   isMemoryWarning,
@@ -59,5 +60,42 @@ describe('isMemoryWarning / isMemoryCritical', () => {
       expect(typeof isMemoryWarning()).toBe('boolean')
       expect(typeof isMemoryCritical()).toBe('boolean')
     }
+  })
+})
+
+describe('getHealthMetrics', () => {
+  it('returns memory metrics from getMemoryUsage', () => {
+    const health = getHealthMetrics()
+    expect(health.memory).toBeDefined()
+    expect(typeof health.memory.heapUsed).toBe('number')
+    expect(typeof health.memory.heapTotal).toBe('number')
+    expect(typeof health.memory.heapUsedPercent).toBe('number')
+    expect(typeof health.memory.external).toBe('number')
+    expect(typeof health.memory.rss).toBe('number')
+    expect(typeof health.memory.timestamp).toBe('number')
+  })
+
+  it('returns connection pool stats', () => {
+    const health = getHealthMetrics()
+    expect(health.connectionPool).toBeDefined()
+    expect(typeof health.connectionPool.poolSize).toBe('number')
+    expect(typeof health.connectionPool.maxPoolSize).toBe('number')
+    expect(typeof health.connectionPool.totalInUse).toBe('number')
+    expect(typeof health.connectionPool.totalIdle).toBe('number')
+  })
+
+  it('returns table cache stats with defaults', () => {
+    const health = getHealthMetrics()
+    expect(health.tableCache).toBeDefined()
+    expect(typeof health.tableCache.size).toBe('number')
+    expect(typeof health.tableCache.maxSize).toBe('number')
+    expect(typeof health.tableCache.memoryLimit).toBe('string')
+  })
+
+  it('returns uptime as a non-negative integer', () => {
+    const health = getHealthMetrics()
+    expect(typeof health.uptime).toBe('number')
+    expect(health.uptime).toBeGreaterThanOrEqual(0)
+    expect(Number.isInteger(health.uptime)).toBe(true)
   })
 })
