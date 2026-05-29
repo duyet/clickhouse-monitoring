@@ -18,33 +18,21 @@ function ReplicasStatusContent() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Breadcrumb and cluster info */}
-      <div className="bg-card flex items-center justify-between gap-4 rounded-lg border p-4">
-        <div className="flex items-center gap-2">
-          <Link
-            href={clustersUrl}
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-          >
-            Clusters
-          </Link>
-          <span className="text-muted-foreground">/</span>
-          <span className="font-medium">{cluster || 'Select a cluster'}</span>
-        </div>
-
-        {/* Readonly tables warning indicator */}
-        {cluster && <ReadonlyTablesWarning hostId={hostId} cluster={cluster} />}
-      </div>
-
       {/* Table Content */}
       {cluster ? (
-        <Suspense fallback={<TableSkeleton />}>
-          <TableClient
-            title={`Replicas Status: ${cluster}`}
-            description={clustersReplicasStatusConfig.description}
-            queryConfig={clustersReplicasStatusConfig}
-            searchParams={{ cluster }}
-          />
-        </Suspense>
+        <>
+          {/* Readonly tables warning indicator */}
+          <ReadonlyTablesWarning hostId={hostId} cluster={cluster} />
+
+          <Suspense fallback={<TableSkeleton />}>
+            <TableClient
+              title={`Replicas Status: ${cluster}`}
+              description={clustersReplicasStatusConfig.description}
+              queryConfig={clustersReplicasStatusConfig}
+              searchParams={{ cluster }}
+            />
+          </Suspense>
+        </>
       ) : (
         <div className="bg-card flex h-96 items-center justify-center rounded-lg border">
           <p className="text-muted-foreground text-sm">
