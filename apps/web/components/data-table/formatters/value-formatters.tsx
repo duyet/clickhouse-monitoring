@@ -34,6 +34,15 @@ export const booleanFormatter: ValueOnlyFormatter = (value) => (
 )
 
 /**
+ * Inverted boolean formatter - like {@link booleanFormatter} but renders a
+ * truthy value in red (alarming) and a falsy value in green. Use when `true`
+ * represents a problem state, e.g. `is_readonly` on the Readonly Tables page.
+ */
+export const booleanInvertedFormatter: ValueOnlyFormatter = (value) => (
+  <BooleanFormat value={value as string | number | boolean} invert />
+)
+
+/**
  * Duration formatter - converts seconds to human-readable duration
  *
  * @example
@@ -79,6 +88,7 @@ export const textFormatter: ValueOnlyFormatter = (value, options) => (
 export const VALUE_FORMATTERS: Record<
   | ColumnFormat.Badge
   | ColumnFormat.Boolean
+  | ColumnFormat.BooleanInverted
   | ColumnFormat.Duration
   | ColumnFormat.RelatedTime
   | ColumnFormat.Text,
@@ -86,6 +96,7 @@ export const VALUE_FORMATTERS: Record<
 > = {
   [ColumnFormat.Badge]: badgeFormatter,
   [ColumnFormat.Boolean]: booleanFormatter,
+  [ColumnFormat.BooleanInverted]: booleanInvertedFormatter,
   [ColumnFormat.Duration]: durationFormatter,
   [ColumnFormat.RelatedTime]: relatedTimeFormatter,
   [ColumnFormat.Text]: textFormatter,

@@ -59,7 +59,7 @@ export const readOnlyTablesConfig: QueryConfig = {
     engine: ColumnFormat.ColoredBadge,
     is_leader: ColumnFormat.Boolean,
     can_become_leader: ColumnFormat.Boolean,
-    is_readonly: ColumnFormat.Boolean,
+    is_readonly: ColumnFormat.BooleanInverted,
     is_session_expired: ColumnFormat.Boolean,
     replica_name: ColumnFormat.ColoredBadge,
     action: [ColumnFormat.Action, ['generate-ai-prompt']],

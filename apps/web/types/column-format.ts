@@ -20,6 +20,7 @@ export enum ColumnFormat {
   Duration = 'duration',
   Markdown = 'markdown',
   Boolean = 'boolean',
+  BooleanInverted = 'boolean-inverted',
   Action = 'action',
   InlineAction = 'inline-action',
   Number = 'number',
