@@ -56,6 +56,7 @@
     "peerdb:mock": "bun --filter web peerdb:mock",
     "test:agent-e2e": "bun --filter web test:agent-e2e",
     "docker:health": "docker compose exec app wget -q -O /dev/null http://localhost:3000/api/healthz || exit 1",
+    "depcruise": "depcruise apps packages --config .dependency-cruiser.cjs --exclude 'node_modules|\\.next|\\.open-next|dist|\\.turbo|__tests__|\\.test\\.|\\.spec\\.|\\.cy\\.'",
     "release:notes": "bun scripts/generate-release-notes.ts",
     "build:skills": "bun run scripts/build-skills-registry.ts",
     "preinstall": "npx only-allow bun",
@@ -63,8 +64,10 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.14",
+    "@changesets/cli": "^2.31.0",
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
+    "dependency-cruiser": "^17.4.2",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",
     "turbo": "^2.9.15",

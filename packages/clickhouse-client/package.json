@@ -24,5 +24,13 @@
   },
   "devDependencies": {
     "typescript": "^6.0.0"
+  },
+  "files": [
+    "src",
+    "tsconfig.json"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
   }
 }

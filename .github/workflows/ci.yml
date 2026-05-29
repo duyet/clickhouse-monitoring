@@ -39,6 +39,31 @@ jobs:
     with:
       job-type: lint
 
+  depcruise:
+    name: depcruise
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-v1-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-v1-
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Validate dependency boundaries
+        run: bun run depcruise
+
   # Build WASM natively on amd64 — WASM is platform-independent
   build-wasm:
     name: build-wasm
