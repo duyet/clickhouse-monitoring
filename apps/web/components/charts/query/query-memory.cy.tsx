@@ -13,11 +13,28 @@ describe('<ChartQueryMemory />', () => {
     cy.contains('Query Memory').should('exist')
   })
 
-  it('renders chart with data', () => {
+  it('renders area chart with data', () => {
+    cy.intercept('GET', '/api/v1/charts/query-memory*', {
+      statusCode: 200,
+      body: {
+        data: [
+          {
+            event_time: '2025-01-01',
+            memory_usage: 1073741824,
+            readable_memory_usage: '1.00 GiB',
+          },
+          {
+            event_time: '2025-01-02',
+            memory_usage: 2147483648,
+            readable_memory_usage: '2.00 GiB',
+          },
+        ],
+        metadata: { duration: 35, rows: 2 },
+      },
+    }).as('chartData')
     cy.mount(<ChartQueryMemory {...defaultProps} />)
-
-    // Component should render without throwing
-    cy.contains('Query Memory').should('exist')
+    cy.wait('@chartData')
+    cy.get('[data-testid="query-memory-chart"]').should('exist')
   })
 
   it('applies custom className', () => {

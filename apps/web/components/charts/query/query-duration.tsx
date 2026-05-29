@@ -2,9 +2,9 @@
 
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { createBarChart } from '@/components/charts/factory'
+import { createAreaChart } from '@/components/charts/factory'
 
-export const ChartQueryDuration = createBarChart({
+export const ChartQueryDuration = createAreaChart({
   chartName: 'query-duration',
   index: 'event_time',
   categories: ['query_duration_s'],
@@ -13,11 +13,12 @@ export const ChartQueryDuration = createBarChart({
   defaultLastHours: 24 * 14,
   dataTestId: 'query-duration-chart',
   dateRangeConfig: 'query-duration',
-  barChartProps: {
+  areaChartProps: {
     colors: ['--chart-rose-200'],
-    colorLabel: '--foreground',
     stack: true,
     showLegend: false,
+    showXAxis: true,
+    showCartesianGrid: true,
   },
 })
 
