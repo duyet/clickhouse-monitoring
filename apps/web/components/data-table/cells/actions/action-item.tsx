@@ -74,6 +74,62 @@ export function ActionItem<TData extends RowData, TValue>({
         message: `/agents?host=${hostId}`,
       }),
     },
+    'generate-ai-prompt': {
+      label: 'Generate AI Fix Prompt',
+      handler: async () => {
+        const data = row.original as Record<string, unknown>
+        const table = String(data.table ?? value ?? '')
+        const zkException = String(data.zookeeper_exception ?? '')
+        const queueException = String(data.last_queue_update_exception ?? '')
+        const isSessionExpired = String(data.is_session_expired ?? '')
+        const absoluteDelay = String(data.absolute_delay ?? '')
+        const logPointer = String(data.log_pointer ?? '')
+        const replicaPath = String(data.replica_path ?? '')
+        const zkPath = String(data.zookeeper_path ?? '')
+        const totalReplicas = String(data.total_replicas ?? '')
+        const activeReplicas = String(data.active_replicas ?? '')
+
+        const lines: string[] = [
+          `I have a ClickHouse replicated table \`${table}\` that is in read-only mode. Please help me diagnose and fix it.`,
+          '',
+          '## Replica Status',
+          `- Table: \`${table}\``,
+          `- Replica path: \`${replicaPath}\``,
+          `- ZooKeeper path: \`${zkPath}\``,
+          `- Total replicas: ${totalReplicas}`,
+          `- Active replicas: ${activeReplicas}`,
+          `- Absolute delay: ${absoluteDelay} seconds`,
+          `- Log pointer: ${logPointer}`,
+          `- Session expired: ${isSessionExpired}`,
+        ]
+
+        if (zkException) {
+          lines.push('', '## ZooKeeper Exception', '```', zkException, '```')
+        }
+        if (queueException) {
+          lines.push(
+            '',
+            '## Last Queue Update Exception',
+            '```',
+            queueException,
+            '```'
+          )
+        }
+
+        lines.push(
+          '',
+          '## Questions',
+          '1. What is the root cause of this read-only state?',
+          '2. What are the exact steps to restore this replica to read-write mode?',
+          '3. Are there any ClickHouse SQL commands I should run to recover?',
+          '4. How can I prevent this from happening again?'
+        )
+
+        const prompt = lines.join('\n')
+        await navigator.clipboard.writeText(prompt)
+        return { success: true, message: 'AI prompt copied to clipboard' }
+      },
+    },
     optimize: {
       label: 'Optimize Table',
       handler: () => optimizeTable(String(value)),
