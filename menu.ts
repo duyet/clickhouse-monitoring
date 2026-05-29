@@ -306,6 +306,14 @@ export const menuItemsConfig: MenuItem[] = [
     isNew: true,
     items: [
       {
+        title: 'Overview',
+        href: '/keeper/overview',
+        description:
+          'Keeper health at a glance: liveness, request load, latency, and per-node cluster state',
+        icon: HeartPulseIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_info',
+      },
+      {
         title: 'Data Browser',
         href: '/keeper?path=/',
         description:
@@ -318,7 +326,7 @@ export const menuItemsConfig: MenuItem[] = [
         href: '/keeper/info',
         description:
           'Cluster-health introspection of every Keeper node: role, latency, raft log, znode counts',
-        icon: HeartPulseIcon,
+        icon: InfoCircledIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_info',
       },
       {

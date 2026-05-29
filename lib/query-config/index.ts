@@ -15,6 +15,7 @@ import {
   keeperConnectionsConfig,
   keeperInfoConfig,
   keeperLogConfig,
+  keeperOverviewConfig,
   keeperWatchesConfig,
 } from './keeper'
 import { crashLogConfig } from './logs/crashes'
@@ -133,6 +134,7 @@ export const queries: Array<QueryConfig> = [
   pageViewsConfig,
 
   // Keeper / ZooKeeper
+  keeperOverviewConfig,
   keeperInfoConfig,
   keeperConnectionsConfig,
   keeperConnectionLogConfig,

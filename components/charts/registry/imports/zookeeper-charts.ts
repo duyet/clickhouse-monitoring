@@ -36,4 +36,21 @@ export const zookeeperChartImports: ChartRegistryMap = {
       default: m.ChartKeeperException,
     }))
   ),
+  'keeper-operation-mix': lazy(() =>
+    import('@/components/charts/zookeeper/keeper-operation-mix').then((m) => ({
+      default: m.default,
+    }))
+  ),
+  'keeper-bytes': lazy(() =>
+    import('@/components/charts/zookeeper/keeper-bytes').then((m) => ({
+      default: m.default,
+    }))
+  ),
+  'keeper-connection-events': lazy(() =>
+    import('@/components/charts/zookeeper/keeper-connection-events').then(
+      (m) => ({
+        default: m.default,
+      })
+    )
+  ),
 }
