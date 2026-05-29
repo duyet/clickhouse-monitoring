@@ -12,7 +12,7 @@
 
 import { WrenchIcon } from 'lucide-react'
 
-import type { McpServer } from './agent-mcp-panel'
+import type { McpServer } from './mcp-types'
 
 import { Badge } from '@/components/ui/badge'
 import {

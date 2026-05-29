@@ -16,6 +16,8 @@
 
 import { PlusIcon, WrenchIcon } from 'lucide-react'
 
+import type { McpServer } from './mcp-types'
+
 import { McpToolsResourcesDialog } from './mcp-tools-resources-dialog'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
@@ -23,24 +25,8 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-export interface McpServer {
-  id: string
-  name: string
-  /** Human-readable URL or transport description */
-  endpoint: string
-  toolCount: number
-  resourceCount?: number
-  version?: string
-  /** Whether this server ships with the app and cannot be removed */
-  builtin: boolean
-  enabled: boolean
-  /** Connection status */
-  status: 'connected' | 'connecting' | 'error' | 'unconfigured'
-}
+// Re-exported for existing consumers; canonical definition lives in mcp-types.ts.
+export type { McpServer }
 
 // ---------------------------------------------------------------------------
 // Built-in server definition (always present)
