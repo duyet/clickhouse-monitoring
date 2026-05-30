@@ -266,7 +266,7 @@ describe('createQueryTools', () => {
         }
       )
 
-      expect(
+      await expect(
         tools.explain_query.execute({ sql: 'DROP TABLE system.tables' })
       ).rejects.toThrow('SQL validation failed')
     })

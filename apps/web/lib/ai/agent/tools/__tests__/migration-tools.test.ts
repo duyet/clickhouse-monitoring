@@ -3,14 +3,8 @@ import { z } from 'zod/v3'
 
 mock.module('server-only', () => ({}))
 
-let queryIndex = 0
-const resetQueryIndex = () => {
-  queryIndex = 0
-}
-
 const readOnlyQuery = mock(async ({ query }: { query: string }) => {
   const q = query
-  queryIndex++
 
   if (q.includes('system.tables') && q.includes('WHERE database')) {
     return [
@@ -132,7 +126,6 @@ describe('createMigrationTools', () => {
 
   describe('analyze_schema_change', () => {
     test('classifies ADD COLUMN as low risk with no rewrite', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -157,7 +150,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies MODIFY COLUMN as high risk requiring rewrite', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -175,7 +167,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies DROP COLUMN as low risk', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -190,7 +181,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies RENAME COLUMN as low risk', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -204,7 +194,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies ALTER COLUMN as modify requiring rewrite', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -218,7 +207,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies ADD INDEX as requiring rewrite', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -233,7 +221,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies DROP INDEX as low risk', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -247,7 +234,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies MODIFY ORDER BY as sorting key change', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -262,7 +248,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies MODIFY SORTING KEY as sorting key change', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -276,7 +261,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies DROP PROJECTION as low risk', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -290,7 +274,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies ADD PROJECTION as requiring rewrite', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -305,7 +288,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies MODIFY TTL as low risk', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -320,7 +302,6 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies unknown statements as unknown type', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -367,7 +348,6 @@ describe('createMigrationTools', () => {
 
   describe('get_column_usage', () => {
     test('returns usage summary and affected users', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.get_column_usage.execute({
@@ -385,7 +365,6 @@ describe('createMigrationTools', () => {
     })
 
     test('clamps lastDays to max 30', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.get_column_usage.execute({
@@ -399,7 +378,6 @@ describe('createMigrationTools', () => {
     })
 
     test('clamps lastDays to min 1', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.get_column_usage.execute({
@@ -413,7 +391,6 @@ describe('createMigrationTools', () => {
     })
 
     test('uses default lastDays of 7 when not provided', async () => {
-      resetQueryIndex()
       const tools = createMigrationTools(0)
 
       const result = await tools.get_column_usage.execute({
