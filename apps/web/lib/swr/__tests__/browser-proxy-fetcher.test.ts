@@ -10,15 +10,16 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // Mock apiFetch to return real Response objects
-const mockApiFetch = mock(async () =>
-  new Response(
-    JSON.stringify({
-      success: true,
-      data: [{ col1: 'val1' }],
-      metadata: { duration: 50 },
-    }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } }
-  )
+const mockApiFetch = mock(
+  async () =>
+    new Response(
+      JSON.stringify({
+        success: true,
+        data: [{ col1: 'val1' }],
+        metadata: { duration: 50 },
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    )
 )
 
 mock.module('../api-fetch', () => ({
@@ -38,8 +39,7 @@ mock.module('../fetch-error', () => ({
       error?: { message?: string; type?: string; details?: unknown }
     }
     const error = new Error(
-      errorData.error?.message ||
-        `${fallbackMessage}: ${response.statusText}`
+      errorData.error?.message || `${fallbackMessage}: ${response.statusText}`
     ) as Error & { status?: number; type?: string; details?: unknown }
     error.status = response.status
     if (errorData.error) {
@@ -66,15 +66,16 @@ describe('fetchViaBrowserProxy', () => {
   beforeEach(() => {
     mockApiFetch.mockClear()
 
-    mockApiFetch.mockImplementation(async () =>
-      new Response(
-        JSON.stringify({
-          success: true,
-          data: [{ col1: 'val1' }],
-          metadata: { duration: 50 },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      )
+    mockApiFetch.mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            success: true,
+            data: [{ col1: 'val1' }],
+            metadata: { duration: 50 },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
     )
   })
 
@@ -139,11 +140,12 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('throws on non-OK response status', async () => {
-    mockApiFetch.mockImplementation(async () =>
-      new Response(
-        JSON.stringify({ error: { message: 'Proxy request failed' } }),
-        { status: 502, statusText: 'Bad Gateway' }
-      )
+    mockApiFetch.mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({ error: { message: 'Proxy request failed' } }),
+          { status: 502, statusText: 'Bad Gateway' }
+        )
     )
 
     const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
@@ -156,11 +158,12 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('uses fallback message when error body has no message', async () => {
-    mockApiFetch.mockImplementation(async () =>
-      new Response(JSON.stringify({}), {
-        status: 500,
-        statusText: 'Internal Server Error',
-      })
+    mockApiFetch.mockImplementation(
+      async () =>
+        new Response(JSON.stringify({}), {
+          status: 500,
+          statusText: 'Internal Server Error',
+        })
     )
 
     const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')

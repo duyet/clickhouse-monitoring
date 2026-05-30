@@ -39,7 +39,7 @@ export function useTableColumns<
   // Use JSON.stringify for stable comparison - context is a small object
   // and referential equality fails when callers create inline objects.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const contextKey = useMemo(() => JSON.stringify(context), [context])
+  const _contextKey = useMemo(() => JSON.stringify(context), [context])
   const contextWithPrefix = useMemo(
     () =>
       Object.entries(context).reduce(
@@ -50,7 +50,7 @@ export function useTableColumns<
         {} as Record<string, string>
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [contextKey]
+    [context]
   )
 
   // Column definitions for the table (memoized to prevent recalculation)

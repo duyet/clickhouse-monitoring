@@ -6,31 +6,31 @@ const queryStore: Record<string, unknown[]> = {}
 function setupIncidentMocks() {
   mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (query.includes('system.processes'))
-      return { data: queryStore['processes'] ?? [], error: null }
+      return { data: queryStore.processes ?? [], error: null }
     if (query.includes('system.query_log') && query.includes('toStartOfMinute'))
-      return { data: queryStore['query_timeline'] ?? [], error: null }
+      return { data: queryStore.query_timeline ?? [], error: null }
     if (query.includes('system.query_log') && query.includes('exception_code'))
-      return { data: queryStore['top_errors'] ?? [], error: null }
+      return { data: queryStore.top_errors ?? [], error: null }
     if (query.includes('system.query_log') && query.includes('query_kind'))
-      return { data: queryStore['ddl'] ?? [], error: null }
+      return { data: queryStore.ddl ?? [], error: null }
     if (query.includes('system.merges'))
-      return { data: queryStore['merges'] ?? [], error: null }
+      return { data: queryStore.merges ?? [], error: null }
     if (query.includes('system.errors'))
-      return { data: queryStore['errors'] ?? [], error: null }
+      return { data: queryStore.errors ?? [], error: null }
     if (query.includes('system.replicas'))
-      return { data: queryStore['replicas'] ?? [], error: null }
+      return { data: queryStore.replicas ?? [], error: null }
     if (query.includes('system.replication_queue'))
-      return { data: queryStore['replication_queue'] ?? [], error: null }
+      return { data: queryStore.replication_queue ?? [], error: null }
     if (query.includes('system.zookeeper'))
-      return { data: queryStore['zookeeper'] ?? [], error: null }
+      return { data: queryStore.zookeeper ?? [], error: null }
     if (query.includes('system.metrics'))
-      return { data: queryStore['metrics'] ?? [], error: null }
+      return { data: queryStore.metrics ?? [], error: null }
     if (query.includes('system.text_log'))
-      return { data: queryStore['text_log'] ?? [], error: null }
+      return { data: queryStore.text_log ?? [], error: null }
     if (query.includes('system.parts'))
-      return { data: queryStore['parts'] ?? [], error: null }
+      return { data: queryStore.parts ?? [], error: null }
     if (query.includes('system.mutations'))
-      return { data: queryStore['mutations'] ?? [], error: null }
+      return { data: queryStore.mutations ?? [], error: null }
     return { data: [], error: null }
   })
 }
@@ -45,11 +45,11 @@ describe('createIncidentTools', () => {
 
   test('investigates slow_queries symptom', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['processes'] = [{ query_id: 'q1', elapsed: 30 }]
-    queryStore['query_timeline'] = [{ minute: '2024-01-01', count: 5 }]
-    queryStore['merges'] = [{ active_merges: 3 }]
-    queryStore['metrics'] = [{ metric: 'Query', value: 10 }]
-    queryStore['ddl'] = []
+    queryStore.processes = [{ query_id: 'q1', elapsed: 30 }]
+    queryStore.query_timeline = [{ minute: '2024-01-01', count: 5 }]
+    queryStore.merges = [{ active_merges: 3 }]
+    queryStore.metrics = [{ metric: 'Query', value: 10 }]
+    queryStore.ddl = []
     setupIncidentMocks()
 
     const tools = createIncidentTools(0)
@@ -68,13 +68,13 @@ describe('createIncidentTools', () => {
 
   test('investigates high_errors symptom', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['query_timeline'] = [{ minute: '2024-01-01', errors: 10 }]
-    queryStore['top_errors'] = [
+    queryStore.query_timeline = [{ minute: '2024-01-01', errors: 10 }]
+    queryStore.top_errors = [
       { exception_code: 50, count: 5, sample_message: 'err' },
     ]
-    queryStore['errors'] = [{ name: 'UNKNOWN', code: 50, value: 10 }]
-    queryStore['metrics'] = []
-    queryStore['ddl'] = []
+    queryStore.errors = [{ name: 'UNKNOWN', code: 50, value: 10 }]
+    queryStore.metrics = []
+    queryStore.ddl = []
     setupIncidentMocks()
 
     const tools = createIncidentTools(0)
@@ -88,13 +88,13 @@ describe('createIncidentTools', () => {
 
   test('investigates replication_lag symptom', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['replicas'] = [
+    queryStore.replicas = [
       { database: 'db', table: 'tbl', absolute_delay: 120 },
     ]
-    queryStore['replication_queue'] = []
-    queryStore['zookeeper'] = [{ zk_nodes: 5 }]
-    queryStore['metrics'] = []
-    queryStore['ddl'] = []
+    queryStore.replication_queue = []
+    queryStore.zookeeper = [{ zk_nodes: 5 }]
+    queryStore.metrics = []
+    queryStore.ddl = []
     setupIncidentMocks()
 
     const tools = createIncidentTools(0)
@@ -107,10 +107,10 @@ describe('createIncidentTools', () => {
 
   test('investigates high_memory symptom', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['processes'] = [{ query_id: 'q1', memory_usage: 1000000 }]
-    queryStore['metrics'] = [{ metric: 'MemoryTracking', value: 5000000 }]
-    queryStore['text_log'] = []
-    queryStore['ddl'] = []
+    queryStore.processes = [{ query_id: 'q1', memory_usage: 1000000 }]
+    queryStore.metrics = [{ metric: 'MemoryTracking', value: 5000000 }]
+    queryStore.text_log = []
+    queryStore.ddl = []
     setupIncidentMocks()
 
     const tools = createIncidentTools(0)
@@ -123,11 +123,11 @@ describe('createIncidentTools', () => {
 
   test('investigates too_many_parts symptom', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['parts'] = [{ database: 'db', table: 'tbl', parts: 500 }]
-    queryStore['mutations'] = []
-    queryStore['merges'] = [{ active_merges: 2 }]
-    queryStore['metrics'] = []
-    queryStore['ddl'] = []
+    queryStore.parts = [{ database: 'db', table: 'tbl', parts: 500 }]
+    queryStore.mutations = []
+    queryStore.merges = [{ active_merges: 2 }]
+    queryStore.metrics = []
+    queryStore.ddl = []
     setupIncidentMocks()
 
     const tools = createIncidentTools(0)
@@ -140,8 +140,8 @@ describe('createIncidentTools', () => {
 
   test('custom since interval is sanitized', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['metrics'] = []
-    queryStore['ddl'] = []
+    queryStore.metrics = []
+    queryStore.ddl = []
     setupIncidentMocks()
 
     const tools = createIncidentTools(0)

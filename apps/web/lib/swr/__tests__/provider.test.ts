@@ -5,7 +5,7 @@
  */
 
 import { getRecentFetchMetrics } from '../provider'
-import { describe, expect, it, mock } from 'bun:test'
+import { describe, expect, it } from 'bun:test'
 
 describe('SWRProvider', () => {
   it('exports SWRProvider as a function', async () => {

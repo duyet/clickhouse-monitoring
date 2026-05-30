@@ -56,7 +56,7 @@ export async function POST(request: Request): Promise<Response> {
 
     debug(
       '[POST /api/v1/health/webhook] Proxying to:',
-      url.substring(0, 40) + '...'
+      `${url.substring(0, 40)}...`
     )
 
     const controller = new AbortController()

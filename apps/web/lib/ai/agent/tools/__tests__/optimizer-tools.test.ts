@@ -7,15 +7,15 @@ function setupOptimizerMock() {
   mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (query.startsWith('EXPLAIN PLAN'))
       return {
-        data: queryStore['plan'] ?? [{ explain: 'plan ok' }],
+        data: queryStore.plan ?? [{ explain: 'plan ok' }],
         error: null,
       }
     if (query.startsWith('EXPLAIN INDEXES'))
-      return { data: queryStore['indexes'] ?? [], error: null }
+      return { data: queryStore.indexes ?? [], error: null }
     if (query.includes('system.tables'))
-      return { data: queryStore['schema'] ?? [], error: null }
+      return { data: queryStore.schema ?? [], error: null }
     if (query.includes('system.data_skipping_indices'))
-      return { data: queryStore['skip_indexes'] ?? [], error: null }
+      return { data: queryStore.skip_indexes ?? [], error: null }
     return { data: [], error: null }
   })
 }
@@ -30,9 +30,9 @@ describe('createOptimizerTools', () => {
 
   test('returns query optimization analysis', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['plan'] = [{ explain: 'Full scan on events' }]
-    queryStore['indexes'] = [{ index: 'none' }]
-    queryStore['schema'] = [
+    queryStore.plan = [{ explain: 'Full scan on events' }]
+    queryStore.indexes = [{ index: 'none' }]
+    queryStore.schema = [
       {
         engine: 'MergeTree',
         sorting_key: 'date',
@@ -40,7 +40,7 @@ describe('createOptimizerTools', () => {
         partition_key: 'toYYYYMM(date)',
       },
     ]
-    queryStore['skip_indexes'] = [
+    queryStore.skip_indexes = [
       { name: 'idx1', type_full: 'minmax', granularity: 8192 },
     ]
     setupOptimizerMock()
@@ -72,9 +72,9 @@ describe('createOptimizerTools', () => {
 
   test('uses provided database context', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['plan'] = []
-    queryStore['indexes'] = []
-    queryStore['schema'] = []
+    queryStore.plan = []
+    queryStore.indexes = []
+    queryStore.schema = []
     setupOptimizerMock()
 
     const tools = createOptimizerTools(0)
@@ -88,9 +88,9 @@ describe('createOptimizerTools', () => {
 
   test('resolves hostId override', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['plan'] = []
-    queryStore['indexes'] = []
-    queryStore['schema'] = []
+    queryStore.plan = []
+    queryStore.indexes = []
+    queryStore.schema = []
     setupOptimizerMock()
 
     const tools = createOptimizerTools(0)
@@ -104,9 +104,9 @@ describe('createOptimizerTools', () => {
 
   test('includes optimization suggestions', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['plan'] = []
-    queryStore['indexes'] = []
-    queryStore['schema'] = []
+    queryStore.plan = []
+    queryStore.indexes = []
+    queryStore.schema = []
     setupOptimizerMock()
 
     const tools = createOptimizerTools(0)

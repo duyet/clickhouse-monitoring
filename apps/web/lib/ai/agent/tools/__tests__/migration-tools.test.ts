@@ -1,14 +1,14 @@
 import { mockFetchData } from './shared-mocks'
 import { describe, expect, test } from 'bun:test'
 
-let queryIndex = 0
+let _queryIndex = 0
 const resetQueryIndex = () => {
-  queryIndex = 0
+  _queryIndex = 0
 }
 
 const defaultMigrationMock = async ({ query }: { query: string }) => {
   const q = query
-  queryIndex++
+  _queryIndex++
 
   if (q.includes('system.tables') && q.includes('WHERE database')) {
     return {

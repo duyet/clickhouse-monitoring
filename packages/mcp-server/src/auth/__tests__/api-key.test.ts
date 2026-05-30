@@ -193,7 +193,7 @@ describe('api-key', () => {
       const raw = token.slice(4)
       const [payloadEnc, sigEnc] = raw.split('.')
       // Flip a character in the payload
-      const tampered = payloadEnc.slice(0, -1) + 'X'
+      const tampered = `${payloadEnc.slice(0, -1)}X`
       const tamperedToken = `chm_${tampered}.${sigEnc}`
 
       const result = await verifyApiKey(tamperedToken)

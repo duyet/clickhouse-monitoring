@@ -17,7 +17,7 @@ function setupAnomalyMocks() {
       query.includes('asynchronous_metric_log')
     ) {
       // memory baseline
-      const vals = queryValues['memoryBaseline']
+      const vals = queryValues.memoryBaseline
       return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (
@@ -25,7 +25,7 @@ function setupAnomalyMocks() {
       query.includes('ExceptionWhileProcessing')
     ) {
       // error_rate baseline
-      const vals = queryValues['errorRateBaseline']
+      const vals = queryValues.errorRateBaseline
       return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (
@@ -33,7 +33,7 @@ function setupAnomalyMocks() {
       query.includes('quantile')
     ) {
       // p95 baseline
-      const vals = queryValues['p95Baseline']
+      const vals = queryValues.p95Baseline
       return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (
@@ -41,17 +41,17 @@ function setupAnomalyMocks() {
       query.includes('count() / 24.0')
     ) {
       // volume baseline
-      const vals = queryValues['volumeBaseline']
+      const vals = queryValues.volumeBaseline
       return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (query.includes('ExceptionWhileProcessing')) {
       // error_rate recent
-      const vals = queryValues['errorRateRecent']
+      const vals = queryValues.errorRateRecent
       return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (query.includes('quantile(0.95)')) {
       // p95 recent
-      const vals = queryValues['p95Recent']
+      const vals = queryValues.p95Recent
       return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (
@@ -60,17 +60,17 @@ function setupAnomalyMocks() {
       query.includes('count() as value')
     ) {
       // volume recent
-      const vals = queryValues['volumeRecent']
+      const vals = queryValues.volumeRecent
       return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (query.includes('system.metrics') && query.includes('MemoryTracking')) {
       // memory recent
-      const vals = queryValues['memoryRecent']
+      const vals = queryValues.memoryRecent
       return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (query.includes('system.parts WHERE active')) {
       // parts (both recent and baseline use same query)
-      const vals = queryValues['partsCount']
+      const vals = queryValues.partsCount
       return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
 

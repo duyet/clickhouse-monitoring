@@ -1,4 +1,3 @@
-import { mockFetchData } from './shared-mocks'
 import { describe, expect, test } from 'bun:test'
 
 const {

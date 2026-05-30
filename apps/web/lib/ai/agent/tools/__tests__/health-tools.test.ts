@@ -8,19 +8,19 @@ const { createHealthTools } = await import('../health-tools')
 function setupHealthMock() {
   mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (query.includes('version()'))
-      return { data: queryStore['version'] ?? [], error: null }
+      return { data: queryStore.version ?? [], error: null }
     if (query.includes('uptime()'))
-      return { data: queryStore['uptime'] ?? [], error: null }
+      return { data: queryStore.uptime ?? [], error: null }
     if (query.includes('system.metrics'))
-      return { data: queryStore['metrics'] ?? [], error: null }
+      return { data: queryStore.metrics ?? [], error: null }
     if (query.includes('system.asynchronous_metrics'))
-      return { data: queryStore['async_metrics'] ?? [], error: null }
+      return { data: queryStore.async_metrics ?? [], error: null }
     if (query.includes('system.disks'))
-      return { data: queryStore['disks'] ?? [], error: null }
+      return { data: queryStore.disks ?? [], error: null }
     if (query.includes('system.errors'))
-      return { data: queryStore['errors'] ?? [], error: null }
+      return { data: queryStore.errors ?? [], error: null }
     if (query.includes('system.crash_log'))
-      return { data: queryStore['crash'] ?? [], error: null }
+      return { data: queryStore.crash ?? [], error: null }
     return { data: [], error: null }
   })
 }
@@ -37,9 +37,9 @@ describe('createHealthTools', () => {
 
   test('get_metrics returns version, uptime, and connection metrics', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['version'] = [{ version: '24.1.1' }]
-    queryStore['uptime'] = [{ uptime_seconds: 86400 }]
-    queryStore['metrics'] = [
+    queryStore.version = [{ version: '24.1.1' }]
+    queryStore.uptime = [{ uptime_seconds: 86400 }]
+    queryStore.metrics = [
       { metric: 'TCPConnection', value: 5 },
       { metric: 'HTTPConnection', value: 10 },
       { metric: 'MemoryTracking', value: 1000000 },
@@ -69,8 +69,8 @@ describe('createHealthTools', () => {
 
   test('get_system_resources returns metrics and async_metrics', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['metrics'] = [{ metric: 'MemoryTracking', value: 100 }]
-    queryStore['async_metrics'] = [
+    queryStore.metrics = [{ metric: 'MemoryTracking', value: 100 }]
+    queryStore.async_metrics = [
       { metric: 'LoadAverage1', value: 2.5 },
       { metric: 'OSMemoryTotal', value: 32000000000 },
     ]
@@ -88,7 +88,7 @@ describe('createHealthTools', () => {
 
   test('get_disk_usage returns disk data', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['disks'] = [
+    queryStore.disks = [
       {
         name: 'default',
         path: '/var/lib/clickhouse',
@@ -115,7 +115,7 @@ describe('createHealthTools', () => {
 
   test('get_errors returns error data with default limit', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['errors'] = [
+    queryStore.errors = [
       {
         name: 'UNKNOWN',
         code: 50,
@@ -134,7 +134,7 @@ describe('createHealthTools', () => {
 
   test('get_crash_log returns crash data with default limit', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['crash'] = [
+    queryStore.crash = [
       { event_time: '2024-01-01', signal: 11, thread_id: 1, trace: 'stack...' },
     ]
     setupHealthMock()
@@ -148,7 +148,7 @@ describe('createHealthTools', () => {
 
   test('get_errors respects custom limit', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['errors'] = [{ name: 'E1' }, { name: 'E2' }]
+    queryStore.errors = [{ name: 'E1' }, { name: 'E2' }]
     setupHealthMock()
 
     const tools = createHealthTools(0)
@@ -159,7 +159,7 @@ describe('createHealthTools', () => {
 
   test('get_crash_log respects custom limit', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['crash'] = [{ event_time: '2024-01-01' }]
+    queryStore.crash = [{ event_time: '2024-01-01' }]
     setupHealthMock()
 
     const tools = createHealthTools(0)
