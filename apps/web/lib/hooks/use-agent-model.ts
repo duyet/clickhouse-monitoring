@@ -194,15 +194,19 @@ export function useAgentModel(): UseAgentModelResult {
       // If the persisted model is no longer in the list (e.g. its provider's
       // API key was removed), fall back to the first available model so the
       // user is never stuck with an unselectable id.
+      let fallbackId: OpenAIModel | undefined
       setModelState((current) => {
         const stillAvailable = nextModels.some((m) => m.id === current)
         if (stillAvailable) return current
-
-        const fallback = nextModels[0].id
-        saveModel(fallback)
-        emitModelChange(fallback)
-        return fallback
+        fallbackId = nextModels[0].id
+        return fallbackId
       })
+
+      // Side effects outside the updater — save and broadcast fallback
+      if (fallbackId) {
+        saveModel(fallbackId)
+        emitModelChange(fallbackId)
+      }
     }
 
     loadModels()
