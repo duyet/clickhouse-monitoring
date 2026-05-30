@@ -247,6 +247,15 @@ export function ChInspector({
         : 'hsl(217 91% 60%)'
   const mems = membershipsOf(model, node.id)
   const isLocal = node.isLocal
+  // Show live resources whenever we actually have metrics for this node — real
+  // per-node numbers now come from the server-side clusterAllReplicas fan-out,
+  // so remote (non-local) reachable nodes show live data too.
+  const hasLive =
+    live.cpuPct !== null ||
+    live.memUsed !== null ||
+    live.diskUsed !== null ||
+    live.uptimeSeconds !== null
+  const unreachable = node.status === 'unreachable'
 
   return (
     <>
@@ -261,7 +270,9 @@ export function ChInspector({
                 ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300'
                 : node.status === 'down'
                   ? 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300'
-                  : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
+                  : node.status === 'unreachable'
+                    ? 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-500/30 dark:bg-slate-500/10 dark:text-slate-300'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
             )}
           >
             {node.status}
@@ -302,8 +313,11 @@ export function ChInspector({
         )}
       </InsSection>
 
-      {isLocal ? (
-        <InsSection title="Live resources" right={<LiveTag />}>
+      {hasLive ? (
+        <InsSection
+          title="Live resources"
+          right={isLocal ? <LiveTag /> : undefined}
+        >
           <div className="mb-2 flex items-center justify-between">
             <div>
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -316,7 +330,8 @@ export function ChInspector({
                 </span>
               </div>
             </div>
-            <Sparkline data={live.cpuHist} color={cpuColor} />
+            {/* CPU history is captured for the local fast tick only. */}
+            {isLocal && <Sparkline data={live.cpuHist} color={cpuColor} />}
           </div>
           {memPct !== null && (
             <MeterRow
@@ -338,22 +353,28 @@ export function ChInspector({
       ) : (
         <InsSection title="Live resources">
           <p className="text-[10.5px] leading-relaxed text-muted-foreground">
-            Live CPU / memory / disk are shown for the connected node only.
-            Switch the host selector to this node to inspect its live metrics.
+            {unreachable
+              ? 'Node unreachable in the live cluster fan-out — structural state is shown below; live metrics are intentionally not fabricated.'
+              : 'Live metrics unavailable for this node (cluster fan-out not permitted, e.g. a readonly profile). Structural state is shown below.'}
           </p>
         </InsSection>
       )}
 
       <InsSection title="Workload">
-        {isLocal && (
-          <InsRow label="Active queries">{live.activeQueries ?? '—'}</InsRow>
+        {live.activeQueries !== null && (
+          <InsRow label="Active queries">{live.activeQueries}</InsRow>
         )}
         <InsRow label="estimated_recovery_time" mono>
           {node.recoveryTime}s
         </InsRow>
-        {isLocal && (
+        {node.replicationLag !== null && (
+          <InsRow label="replication_lag" mono>
+            {node.replicationLag}s
+          </InsRow>
+        )}
+        {live.uptimeSeconds !== null && (
           <InsRow label="Uptime" mono>
-            {fmtUptime(live.uptimeSeconds ?? 0)}
+            {fmtUptime(live.uptimeSeconds)}
           </InsRow>
         )}
       </InsSection>
@@ -549,9 +570,9 @@ export function ClusterOverview({
           </>
         ) : (
           <p className="text-[10.5px] leading-relaxed text-muted-foreground">
-            system.zookeeper_info is unavailable on this server (requires
-            ClickHouse Keeper / ZooKeeper and v26.1+). Cluster structure is
-            shown without coordination details.
+            No coordination layer detected — this cluster uses Distributed
+            routing without ReplicatedMergeTree, or Keeper / ZooKeeper is not
+            configured. Cluster structure is shown without coordination details.
           </p>
         )}
       </InsSection>
@@ -613,6 +634,13 @@ export function ClusterOverview({
           {model.counts.clusters} ({model.counts.physical} physical ·{' '}
           {model.counts.logical} logical)
         </InsRow>
+        {model.meta.truncated && (
+          <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+            Showing {model.chNodes.length} of {model.counts.chNodes} ClickHouse
+            nodes — {model.meta.hiddenChNodes} hidden for readability. All nodes
+            remain counted above.
+          </p>
+        )}
       </InsSection>
     </>
   )
