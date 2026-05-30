@@ -13,6 +13,8 @@
 export { Skeleton } from './base'
 // Chart skeletons
 export { ChartSkeleton } from './chart'
+// Explorer skeleton
+export { ExplorerSkeleton } from './explorer'
 // Page skeletons
 export {
   ChartsOnlyPageSkeleton,
