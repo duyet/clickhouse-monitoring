@@ -12,6 +12,7 @@ import { createAskUserTools } from './ask-user-tools'
 import { createCapacityTools } from './capacity-tools'
 import { createClusterTools } from './cluster-tools'
 import { createComparisonTools } from './comparison-tools'
+import { createContextTools } from './context-tools'
 import { createControlTools } from './control-tools'
 import { createDashboardTools } from './dashboard-tools'
 import { createDiagnosticsTools } from './diagnostics-tools'
@@ -42,7 +43,7 @@ import { createZookeeperTools } from './zookeeper-tools'
 export function createAllTools(hostId: number, includeControlTools = false) {
   const enableControlTools = process.env.AGENT_ENABLE_CONTROL_TOOLS === 'true'
 
-  return {
+  const tools = {
     // Schema & exploration
     ...createSchemaTools(hostId),
 
@@ -125,5 +126,15 @@ export function createAllTools(hostId: number, includeControlTools = false) {
 
     // Visualization & data source discovery
     ...createVisualizationTools(hostId),
+  }
+
+  // Runtime context management — injected with the final tool count (+1 for
+  // get_context itself) to describe the agent's own capabilities without a
+  // circular import back into this assembler.
+  return {
+    ...tools,
+    ...createContextTools(hostId, {
+      toolCount: Object.keys(tools).length + 1,
+    }),
   }
 }

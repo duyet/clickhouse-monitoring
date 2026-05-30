@@ -1,6 +1,6 @@
 ---
 name: system-tables-reference
-description: "Exact column names for the system tables the agent queries most (processes, query_log, parts, merges, replicas, metrics) plus rules for choosing dedicated tools over raw SQL. Load before hand-writing SQL against system tables."
+description: "Exact column names for the system tables the agent queries most (processes, query_log, parts, merges, mutations, replicas, replication_queue, disks, settings, zookeeper, users/grants, metrics) plus rules for choosing dedicated tools over raw SQL. Load before hand-writing SQL against system tables."
 ---
 
 # System Tables Reference
@@ -108,6 +108,76 @@ These three are easy to confuse — they use different column names:
 
 Columns: `name`, `code`, `value`, `last_error_time`, `last_error_message`,
 `last_error_trace`. There is no `last_update_time` column.
+
+## system.mutations — ALTER UPDATE/DELETE progress
+
+One row per mutation. Columns: `database`, `table`, `mutation_id`, `command`,
+`create_time`, `parts_to_do`, `parts_to_do_names`, `is_done`,
+`latest_failed_part`, `latest_fail_time`, `latest_fail_reason`.
+
+- Stuck mutation = `is_done = 0` with a non-empty `latest_fail_reason`.
+- Prefer the `get_mutations` tool. `parts_to_do > 0` means still running.
+
+## system.replication_queue — pending replication tasks
+
+Columns: `database`, `table`, `type`, `create_time`, `num_tries`,
+`last_exception`, `last_attempt_time`, `num_postponed`, `postpone_reason`,
+`node_name`, `is_currently_executing`. High `num_tries` + `last_exception`
+signals a stuck entry. Prefer the `get_replication_queue` tool.
+
+## system.disks — storage devices
+
+Columns: `name`, `path`, `free_space`, `total_space`, `unreserved_space`,
+`keep_free_space`, `type`. Used % = `(total_space - free_space) / total_space`.
+Prefer the `get_disk_usage` tool.
+
+## system.detached_parts — parts needing attention
+
+Columns: `database`, `table`, `partition_id`, `name`, `disk`, `reason`,
+`bytes_on_disk`. A non-null `reason` (e.g. `broken`, `unexpected`) flags parts
+that won't be merged. Prefer the `get_detached_parts` tool.
+
+## system.settings vs system.merge_tree_settings — configuration
+
+- `system.settings`: session/server settings. Columns `name`, `value`,
+  `changed`, `default`, `description`, `type`, `readonly`. Filter `changed = 1`
+  for non-default values. Prefer the `get_settings` tool.
+- `system.merge_tree_settings`: MergeTree engine settings, same columns. Prefer
+  the `get_mergetree_settings` tool.
+
+## system.zookeeper / Keeper — coordination
+
+`system.zookeeper` is an **optional** table that only exists when ZooKeeper or
+ClickHouse Keeper is configured. Querying it **requires a `path` filter**, e.g.
+`SELECT name, value, ctime, mtime FROM system.zookeeper WHERE path = '/'`.
+Without `WHERE path = ...` it errors. Prefer the `get_zookeeper_info` tool. If
+the query fails with "Unknown table", Keeper is not configured.
+
+## Users, roles & grants — access control
+
+- `system.users`: `name`, `id`, `storage`, `auth_type`, `host_ip`,
+  `host_names`, `default_roles_all`, `default_roles_list`.
+- `system.roles`: `name`, `id`, `storage`.
+- `system.grants`: `user_name`, `role_name`, `access_type`, `database`,
+  `table`, `column`, `is_partial_revoke`, `grant_option`.
+- `system.role_grants`: `user_name`, `role_name`, `granted_role_name`.
+- `currentUser()` returns the connected user; `system.session_log` (optional)
+  has login history. Prefer the `get_users_and_roles` / `get_login_attempts`
+  tools.
+
+## system.metric_log & system.asynchronous_metric_log — historical metrics
+
+Time-series snapshots of `system.metrics` / `system.asynchronous_metrics`.
+Columns: `event_time`, `event_date`, plus one column per metric (wide table) in
+`metric_log`; `metric`, `value` in `asynchronous_metric_log`. Use for trends
+over time rather than instantaneous values.
+
+## system.distributed_ddl_queue — ON CLUSTER operations
+
+Columns: `entry`, `host_name`, `query`, `status`, `cluster`, `initiator`,
+`query_create_time`, `query_finish_time`, `exception_code`. `status = 'Failed'`
+or a non-zero `exception_code` flags a failed distributed DDL. Prefer the
+`get_distributed_ddl_queue` tool.
 
 ## Recovery Rules
 

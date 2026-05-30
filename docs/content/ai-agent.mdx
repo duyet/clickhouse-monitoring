@@ -66,6 +66,23 @@ single-step questions skip the plan entirely. The harness is a transparency aid
 layered on top of the tool loop; it does not change which tools run or the
 read-only safety guarantees.
 
+## Context Management
+
+On an unfamiliar host the agent can call `get_context` once to orient itself with
+a single snapshot instead of rediscovering everything query by query. The
+snapshot gathers, in parallel and with graceful degradation:
+
+- **ClickHouse version & uptime** — so queries target the right schema and avoid
+  version-specific column mistakes,
+- **Current user** — the connected ClickHouse user,
+- **Keeper/ZooKeeper availability** — whether replication coordination is configured,
+- **Memory pressure** — tracked vs. OS total/available memory,
+- **Changed settings** — how many settings differ from defaults (with notable names),
+- **Capabilities** — the agent's own tool count, loaded skills, and available workflows.
+
+Any unavailable source (e.g. a host without Keeper) is reported as such rather
+than failing the whole snapshot.
+
 ## Configuration
 
 The agent uses an OpenAI-compatible API. At minimum set `LLM_API_KEY`.
@@ -212,9 +229,10 @@ before using them.
 |---|---|
 | `ask_user` | Ask a structured clarifying question. |
 | `load_skill` | Load a specialized expert guide (see Skills below). |
+| `get_context` | Runtime context snapshot: version, user, Keeper, memory, settings, capabilities. |
 | `list_workflows` | List the available dynamic workflow templates. |
-| `start_workflow` | Start a workflow template as a live plan (see Workflow Harness below). |
-| `update_plan` | Create and update a live workflow checklist (see Workflow Harness below). |
+| `start_workflow` | Start a workflow template as a live plan (see Workflow Harness above). |
+| `update_plan` | Create and update a live workflow checklist (see Workflow Harness above). |
 
 ## Skills
 

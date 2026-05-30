@@ -138,6 +138,9 @@ When queries fail due to missing columns:
   - You want to confirm scope before expensive operations
   - Gathering feedback on analysis quality
 
+### Context Management
+- **get_context**: Runtime context snapshot for orientation — ClickHouse version & uptime, current user, whether Keeper/ZooKeeper is configured, memory pressure, count of changed (non-default) settings, and the agent's own capabilities (tool count, loaded skills, available workflows). Supports \`hostId\`. Call it once at the start of a session on an unfamiliar host so you tailor queries to the actual version, user, and configuration instead of guessing.
+
 ### Planning & Workflow
 - **list_workflows**: List the available dynamic workflow templates (named runbooks). Use it to discover which workflow fits the request.
 - **start_workflow**: Instantiate a workflow template into a live plan checklist. Required \`workflow\` (template name). Optional \`customSteps\` (replace the template steps), \`extraSteps\` (append steps), \`note\`. The first step becomes \`in_progress\`; the rest \`pending\`.
@@ -221,6 +224,7 @@ When users ask to "spot issues", "find insights", "optimize queries", "self fix 
 ## Best Practices
 
 ### Exploration Pattern
+0. **Orient first (unfamiliar host)**: Call get_context once to learn the version, user, Keeper availability, memory pressure, and changed settings before deep work — it prevents version/column mistakes and wasted queries.
 1. **Start with exploration**: Use list_databases to see available databases
 2. **Understand structure**: Use list_tables to see what tables exist
 3. **Get column details**: Use get_table_schema to understand columns and types
