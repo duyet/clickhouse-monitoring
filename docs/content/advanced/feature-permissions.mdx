@@ -69,7 +69,7 @@ docker run \
   -e CLICKHOUSE_PASSWORD='' \
   -e CHM_CONFIG_FILE='/etc/clickhouse-monitor/config.toml' \
   -v "$PWD/config.toml:/etc/clickhouse-monitor/config.toml:ro" \
-  ghcr.io/duyet/clickhouse-monitoring:vX.Y.Z
+  ghcr.io/duyet/chmonitor:vX.Y.Z
 ```
 
 For env-only Docker config:
@@ -81,7 +81,7 @@ docker run \
   -e CLICKHOUSE_PASSWORD='' \
   -e CHM_FEATURE_AGENT_ACCESS='authenticated' \
   -e CHM_FEATURE_SETTINGS_ENABLED='false' \
-  ghcr.io/duyet/clickhouse-monitoring:vX.Y.Z
+  ghcr.io/duyet/chmonitor:vX.Y.Z
 ```
 
 ## Environment Overrides

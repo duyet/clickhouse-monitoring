@@ -30,7 +30,7 @@ struct FileConfig {
 }
 
 #[derive(Parser, Debug)]
-#[command(name = "chm", version, about = "ClickHouse Monitoring CLI")]
+#[command(name = "chm", version, about = "chmonitor CLI")]
 struct Cli {
     #[arg(long, env = "CHM_CONFIG")]
     config: Option<PathBuf>,

@@ -164,7 +164,11 @@ jobs:
         id: meta
         uses: docker/metadata-action@85e876bd3a78bcc6b9925c818c482e365cf13b71
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Publish under BOTH the legacy image name and the new chmonitor brand.
+          # The legacy ghcr.io/<owner>/clickhouse-monitoring image is kept forever for backward compatibility.
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/chmonitor
           tags: |
             # ========== MAIN BRANCH (multi-arch only: common tags, otherwise arch-specific) ==========
             # Branch name ref (e.g., main) - only for main branch pushes, skip for per-arch builds
@@ -255,6 +259,6 @@ jobs:
           timeout 60 bash -c 'until curl -sSf http://localhost:3000/ > /dev/null 2>&1; do sleep 2; done'
 
           # Health checks
-          curl -sSf http://localhost:3000/ | grep -q "ClickHouse Monitoring"
+          curl -sSf http://localhost:3000/ | grep -q "chmonitor"
           curl -sSf http://localhost:3000/api/healthz | grep -q "ok"
           curl -sSf http://localhost:3000/api/version | grep -q "version"

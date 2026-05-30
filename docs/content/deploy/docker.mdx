@@ -4,6 +4,11 @@ Use the published image from GitHub Container Registry. Pin a release tag in
 production; use `:main` only when you intentionally want the rolling image.
 https://github.com/duyet/clickhouse-monitoring/pkgs/container/clickhouse-monitoring
 
+> **Image name:** the current image is `ghcr.io/duyet/chmonitor`. The legacy
+> `ghcr.io/duyet/clickhouse-monitoring` image name is also published for every
+> release and kept forever, so existing pulls keep working — both names point at
+> the same build.
+
 Replace `vX.Y.Z` with the release tag you want to run.
 
 ```bash
@@ -16,8 +21,8 @@ docker run --rm -it \
   -e CLICKHOUSE_TZ='UTC' \
   -e CLICKHOUSE_MAX_EXECUTION_TIME='15' \
   -e NEXT_QUERY_CACHE_TTL='300' \
-  --name clickhouse-monitoring \
-  ghcr.io/duyet/clickhouse-monitoring:vX.Y.Z
+  --name chmonitor \
+  ghcr.io/duyet/chmonitor:vX.Y.Z
 ```
 
 Open `http://localhost:3000` after the container starts.
@@ -26,8 +31,8 @@ Open `http://localhost:3000` after the container starts.
 
 ```yaml
 services:
-  clickhouse-monitoring:
-    image: ghcr.io/duyet/clickhouse-monitoring:vX.Y.Z
+  chmonitor:
+    image: ghcr.io/duyet/chmonitor:vX.Y.Z
     ports:
       - '3000:3000'
     environment:
@@ -52,7 +57,7 @@ address for your platform.
 ## Health Check
 
 ```bash
-docker compose exec clickhouse-monitoring \
+docker compose exec chmonitor \
   wget -q -O /dev/null http://localhost:3000/api/health
 ```
 

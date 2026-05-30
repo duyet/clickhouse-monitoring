@@ -1,8 +1,8 @@
 # Kubernetes
 
-Run the ClickHouse Monitoring dashboard on Kubernetes with either the in-repo
+Run the chmonitor dashboard on Kubernetes with either the in-repo
 Helm chart or the raw kustomize manifests. Both ship the same container image
-(`ghcr.io/duyet/clickhouse-monitoring`), expose port `3000`, run as the non-root
+(`ghcr.io/duyet/chmonitor`), expose port `3000`, run as the non-root
 `app` user (uid/gid `1001`), and wire the same health probes and `CLICKHOUSE_*`
 environment.
 
@@ -12,11 +12,11 @@ environment.
 ## Install with Helm
 
 The chart is vendored in the repo at
-[`deploy/helm/clickhouse-monitoring`](https://github.com/duyet/clickhouse-monitoring/tree/main/deploy/helm/clickhouse-monitoring)
+[`deploy/helm/chmonitor`](https://github.com/duyet/clickhouse-monitoring/tree/main/deploy/helm/chmonitor)
 so it tracks the app it ships.
 
 ```bash
-helm install my-chm ./deploy/helm/clickhouse-monitoring \
+helm install my-chm ./deploy/helm/chmonitor \
   --set clickhouse.host="https://clickhouse.example.com:8443" \
   --set clickhouse.user="default" \
   --set clickhouse.password="<password>"
@@ -36,13 +36,13 @@ extraEnv:
     value: "UTC"
 EOF
 
-helm install my-chm ./deploy/helm/clickhouse-monitoring -f values.yaml
+helm install my-chm ./deploy/helm/chmonitor -f values.yaml
 ```
 
 Upgrade and uninstall:
 
 ```bash
-helm upgrade my-chm ./deploy/helm/clickhouse-monitoring -f values.yaml
+helm upgrade my-chm ./deploy/helm/chmonitor -f values.yaml
 helm uninstall my-chm
 ```
 
@@ -63,7 +63,7 @@ kubectl apply -k deploy/kubernetes/base
 Reach the dashboard locally:
 
 ```bash
-kubectl port-forward svc/clickhouse-monitoring 3000:3000
+kubectl port-forward svc/chmonitor 3000:3000
 # open http://localhost:3000
 ```
 
@@ -80,10 +80,10 @@ namespace: monitoring
 resources:
   - ../../base
 images:
-  - name: ghcr.io/duyet/clickhouse-monitoring
+  - name: ghcr.io/duyet/chmonitor
     newTag: v1.2.3
 replicas:
-  - name: clickhouse-monitoring
+  - name: chmonitor
     count: 2
 ```
 
@@ -108,7 +108,7 @@ placeholder** you must override. Never commit a real password to Git — create
 the Secret out of band or use a secrets operator:
 
 ```bash
-kubectl create secret generic clickhouse-monitoring \
+kubectl create secret generic chmonitor \
   --from-literal=CLICKHOUSE_PASSWORD='change-me'
 ```
 
@@ -141,8 +141,8 @@ using `helm lint` and [kubeconform](https://github.com/yannh/kubeconform).
 Validate locally:
 
 ```bash
-helm lint ./deploy/helm/clickhouse-monitoring
-helm template release ./deploy/helm/clickhouse-monitoring | kubeconform -strict -summary
+helm lint ./deploy/helm/chmonitor
+helm template release ./deploy/helm/chmonitor | kubeconform -strict -summary
 kubectl kustomize deploy/kubernetes/base | kubeconform -strict -summary
 ```
 

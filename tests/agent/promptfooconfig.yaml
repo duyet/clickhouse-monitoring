@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
 
-description: 'ClickHouse Monitor Agent E2E Tests'
+description: 'chmonitor Agent E2E Tests'
 
 # Target: Local dev server agent API
 # Requires AGENT_API_TOKEN in environment for bearer auth.

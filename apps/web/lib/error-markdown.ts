@@ -3,7 +3,7 @@ import type { CardError } from './card-error-utils'
 export function getErrorMarkdown(error: CardError, title?: string): string {
   const now = new Date().toISOString()
 
-  let markdown = `# ClickHouse Monitoring Error\n\n`
+  let markdown = `# chmonitor Error\n\n`
   markdown += `**Timestamp**: ${now}\n\n`
 
   if (title) {

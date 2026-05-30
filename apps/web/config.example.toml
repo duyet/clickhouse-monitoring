@@ -1,4 +1,4 @@
-# ClickHouse Monitor — Feature Configuration
+# chmonitor — Feature Configuration
 #
 # Copy this file to /etc/clickhouse-monitor/config.toml and point
 # CHM_CONFIG_FILE at it. All features are public and enabled by

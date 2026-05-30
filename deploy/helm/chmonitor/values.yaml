@@ -1,11 +1,11 @@
-# Default values for clickhouse-monitoring.
+# Default values for chmonitor.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: ghcr.io/duyet/clickhouse-monitoring
+  repository: ghcr.io/duyet/chmonitor
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -57,7 +57,7 @@ ingress:
   className: ""
   annotations: {}
   hosts:
-    - host: clickhouse-monitoring.local
+    - host: chmonitor.local
       paths:
         - path: /
           pathType: Prefix

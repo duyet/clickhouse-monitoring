@@ -7,7 +7,7 @@ describe('getErrorMarkdown', () => {
   it('renders a minimal error with a timestamp, message, and fix-needed block', () => {
     const md = getErrorMarkdown({ message: 'boom' } as CardError)
 
-    expect(md).toContain('# ClickHouse Monitoring Error')
+    expect(md).toContain('# chmonitor Error')
     expect(md).toContain('**Timestamp**:')
     expect(md).toContain('**Message**:')
     expect(md).toContain('boom')

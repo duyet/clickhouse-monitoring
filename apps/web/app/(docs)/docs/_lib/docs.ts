@@ -27,7 +27,7 @@ export type DocsPage = {
 
 export const docsNav: DocsNavSection[] = [
   {
-    title: 'ClickHouse Monitoring',
+    title: 'chmonitor',
     items: [
       { title: 'Introduction', slug: '' },
       { title: 'Features', slug: 'features' },

@@ -6,7 +6,7 @@ kind: Kustomization
 labels:
   - includeSelectors: false
     pairs:
-      app.kubernetes.io/part-of: clickhouse-monitoring
+      app.kubernetes.io/part-of: chmonitor
 
 resources:
   - configmap.yaml
@@ -16,8 +16,8 @@ resources:
 
 # Pin the image in one place. Override the tag per-environment with an overlay:
 #   images:
-#     - name: ghcr.io/duyet/clickhouse-monitoring
+#     - name: ghcr.io/duyet/chmonitor
 #       newTag: v1.2.3
 images:
-  - name: ghcr.io/duyet/clickhouse-monitoring
+  - name: ghcr.io/duyet/chmonitor
     newTag: "0.2.0"

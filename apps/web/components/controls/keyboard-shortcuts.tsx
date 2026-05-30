@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useKeyboardShortcut } from '@/lib/hooks/use-keyboard-shortcut'
 
 /**
- * Global keyboard shortcuts for the ClickHouse Monitor dashboard
+ * Global keyboard shortcuts for the chmonitor dashboard
  *
  * Shortcuts:
  * - Cmd/Ctrl + K: Open command palette (handled by CommandPalette component)

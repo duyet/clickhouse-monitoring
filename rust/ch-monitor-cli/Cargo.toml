@@ -2,7 +2,7 @@
 name = "ch-monitor-cli"
 version = "0.1.0"
 edition = "2021"
-description = "Standalone ClickHouse Monitoring CLI for clickhouse-monitoring API"
+description = "Standalone chmonitor CLI for chmonitor API"
 license = "MIT"
 
 [dependencies]

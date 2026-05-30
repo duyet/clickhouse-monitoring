@@ -129,7 +129,7 @@ function DocsSidebar({ activeSlug }: { activeSlug: string }) {
         href="/docs"
         className="mb-4 block font-semibold text-foreground text-sm"
       >
-        ClickHouse Monitoring
+        chmonitor
       </Link>
       <DocsNavList activeSlug={activeSlug} />
     </aside>

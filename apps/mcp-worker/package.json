@@ -1,6 +1,6 @@
 {
   "name": "mcp-worker",
-  "description": "Standalone Cloudflare Worker for the ClickHouse Monitor MCP endpoint",
+  "description": "Standalone Cloudflare Worker for the chmonitor MCP endpoint",
   "version": "0.2.0",
   "private": true,
   "scripts": {

@@ -227,7 +227,7 @@ export function McpSetupGuides() {
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Setup Guides</CardTitle>
         <CardDescription className="text-xs">
-          Connect your AI assistant to this ClickHouse Monitor instance.
+          Connect your AI assistant to this chmonitor instance.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">

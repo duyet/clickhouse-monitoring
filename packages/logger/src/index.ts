@@ -1,5 +1,5 @@
 /**
- * Unified logging system for ClickHouse Monitor
+ * Unified logging system for chmonitor
  *
  * Uses Pino-compatible NDJSON (Newline Delimited JSON) format:
  * {"level":"info","time":1735633240000,"msg":"message","key":"value"}

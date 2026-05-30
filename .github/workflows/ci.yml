@@ -319,6 +319,6 @@ jobs:
           timeout 60 bash -c 'until curl -sSf http://localhost:3000/ > /dev/null 2>&1; do sleep 2; done'
 
           # Health checks
-          curl -sSf http://localhost:3000/ | grep -q "ClickHouse Monitoring"
+          curl -sSf http://localhost:3000/ | grep -q "chmonitor"
           curl -sSf http://localhost:3000/api/healthz | grep -q "ok"
           curl -sSf http://localhost:3000/api/version | grep -q "version"

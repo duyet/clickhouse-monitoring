@@ -257,7 +257,12 @@ jobs:
         id: meta
         uses: docker/metadata-action@85e876bd3a78bcc6b9925c818c482e365cf13b71
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Publish the multi-arch manifest under BOTH the legacy image name and the new
+          # chmonitor brand. The legacy clickhouse-monitoring image is kept forever for
+          # backward compatibility; the loop below creates manifests for every generated tag.
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/chmonitor
           tags: |
             type=raw,value=${{ steps.release_meta.outputs.version }}
             type=raw,value=${{ steps.release_meta.outputs.minor }},enable=${{ steps.release_meta.outputs.stable == 'true' }}
@@ -352,7 +357,7 @@ jobs:
           PREV="$(git describe --tags --abbrev=0 "${RELEASE_TAG}^" 2>/dev/null || git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo '')"
           if [ -n "$PREV" ]; then RANGE="$PREV..HEAD"; else RANGE="HEAD"; fi
           {
-            echo "Summarize the following git commits into concise, user-facing release notes for ClickHouse Monitor ${RELEASE_TAG}."
+            echo "Summarize the following git commits into concise, user-facing release notes for chmonitor ${RELEASE_TAG}."
             echo "Group changes under Features, Fixes, and Other headings using short markdown bullet points."
             echo "Skip noise such as merge commits, version bumps, and formatting-only changes. Do not invent changes."
             echo ""

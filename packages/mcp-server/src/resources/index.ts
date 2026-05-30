@@ -23,7 +23,7 @@ const SYSTEM_TABLES_TEXT = `Key ClickHouse System Tables for Monitoring:
 - system.errors — Server error counters
 `
 
-const QUERY_EXAMPLES_TEXT = `Common ClickHouse Monitoring Queries:
+const QUERY_EXAMPLES_TEXT = `Common chmonitor Queries:
 
 -- Server version and uptime
 SELECT version(), uptime()

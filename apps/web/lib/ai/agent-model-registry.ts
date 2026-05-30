@@ -55,7 +55,7 @@ export const MODEL_REGISTRY: readonly ModelEntry[] = [
   // ── Presets (auto-routing via AnyRouter) ──
   {
     id: '@preset/chmonitor',
-    description: 'Preset: ClickHouse Monitor agent routing',
+    description: 'Preset: chmonitor agent routing',
     contextLength: 200_000,
     providers: ['anyrouter'],
   },

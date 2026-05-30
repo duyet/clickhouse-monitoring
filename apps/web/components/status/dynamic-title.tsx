@@ -4,7 +4,7 @@ import useSWR from 'swr'
 
 import { useEffect } from 'react'
 
-const BASE_TITLE = 'ClickHouse Monitoring'
+const BASE_TITLE = 'chmonitor'
 const WARNING_PREFIX = '⚠️ '
 
 interface HealthzResponse {
