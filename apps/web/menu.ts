@@ -21,6 +21,7 @@ import {
   CircleDollarSignIcon,
   CombineIcon,
   CpuIcon,
+  DownloadIcon,
   EyeIcon,
   GitCompareArrowsIcon,
   Grid2x2CheckIcon,
@@ -204,6 +205,14 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'pending',
         icon: ShuffleIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/replication_queue',
+      },
+      {
+        title: 'Replicated Fetches',
+        href: '/replicated-fetches',
+        description:
+          'Currently executing background part downloads from replica sources',
+        icon: DownloadIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/replicated_fetches',
       },
       {
         title: 'Readonly Tables',

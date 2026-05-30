@@ -78,6 +78,7 @@ import { partInfoConfig } from './tables/part-info'
 import { projectionsConfig } from './tables/projections'
 import { readOnlyTablesConfig } from './tables/readonly-tables'
 import { replicasConfig } from './tables/replicas'
+import { replicatedFetchesConfig } from './tables/replicated-fetches'
 import { replicationQueueConfig } from './tables/replication-queue'
 import { tablesOverviewConfig } from './tables/tables-overview'
 import { viewRefreshesConfig } from './tables/view-refreshes'
@@ -96,6 +97,7 @@ export const queries: Array<QueryConfig> = [
   replicasConfig,
   replicationQueueConfig,
   movesConfig,
+  replicatedFetchesConfig,
   readOnlyTablesConfig,
   droppedTablesConfig,
   detachedPartsConfig,
