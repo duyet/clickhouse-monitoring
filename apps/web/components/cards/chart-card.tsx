@@ -180,7 +180,12 @@ function ChartCardContentWithScale({
                   onChange={onRangeChange}
                 />
               )}
-              <CardToolbar sql={sql} data={data} metadata={metadata} />
+              <CardToolbar
+                sql={sql}
+                data={data}
+                metadata={metadata}
+                filename={typeof title === 'string' ? title : undefined}
+              />
             </div>
           </header>
         </CardHeader>
@@ -277,7 +282,12 @@ function ChartCardContentWithoutScale({
                   onChange={onRangeChange}
                 />
               )}
-              <CardToolbar sql={sql} data={data} metadata={metadata} />
+              <CardToolbar
+                sql={sql}
+                data={data}
+                metadata={metadata}
+                filename={typeof title === 'string' ? title : undefined}
+              />
             </div>
           </header>
         </CardHeader>
