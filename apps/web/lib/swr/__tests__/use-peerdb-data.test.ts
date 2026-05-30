@@ -23,15 +23,7 @@ mock.module('react', () => ({
   useCallback: (fn: () => unknown) => fn,
 }))
 
-mock.module('../api-fetch', () => ({
-  apiFetch: (...args: unknown[]) =>
-    global.fetch(...(args as [RequestInfo | URL, RequestInit?])),
-}))
-
-mock.module('../fetch-error', () => ({
-  throwIfNotOk: async () => {},
-  FetchError: Error,
-}))
+import { mockApiFetch } from './shared-mocks'
 
 mock.module('../config', () => ({
   visibilityAwareInterval: (ms: number) => () => ms,

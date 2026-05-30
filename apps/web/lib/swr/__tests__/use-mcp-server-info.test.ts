@@ -15,10 +15,7 @@ mock.module('swr', () => ({
   default: mockUseSWR,
 }))
 
-mock.module('../api-fetch', () => ({
-  apiFetch: (...args: unknown[]) =>
-    global.fetch(...(args as [RequestInfo | URL, RequestInit?])),
-}))
+import { mockApiFetch } from './shared-mocks'
 
 mock.module('../config', () => ({
   swrConfig: {

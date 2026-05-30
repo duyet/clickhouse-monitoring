@@ -10,11 +10,7 @@ mock.module('swr', () => ({
   mutate: mockMutate,
 }))
 
-let mockFetchResponse: { ok: boolean; json: () => Promise<unknown> }
-
-mock.module('../api-fetch', () => ({
-  apiFetch: mock(async () => mockFetchResponse),
-}))
+import { mockApiFetch } from './shared-mocks'
 
 // Mock the route-prefetch-map with known routes
 mock.module('../route-prefetch-map', () => ({
@@ -40,10 +36,10 @@ import { prefetchRoute } from '../prefetch'
 describe('prefetchRoute', () => {
   beforeEach(() => {
     mockMutate.mockClear()
-    mockFetchResponse = {
+    mockApiFetch.mockImplementation(async () => ({
       ok: true,
       json: async () => ({ data: [], metadata: {} }),
-    }
+    }))
   })
 
   afterEach(() => {
@@ -82,7 +78,10 @@ describe('prefetchRoute', () => {
   })
 
   it('handles fetch failures silently', async () => {
-    mockFetchResponse = { ok: false, json: async () => ({}) }
+    mockApiFetch.mockImplementation(async () => ({
+      ok: false,
+      json: async () => ({}),
+    }))
 
     // Should not throw
     expect(() => prefetchRoute('/overview', 0)).not.toThrow()
@@ -91,12 +90,12 @@ describe('prefetchRoute', () => {
   })
 
   it('handles JSON parse failures silently', async () => {
-    mockFetchResponse = {
+    mockApiFetch.mockImplementation(async () => ({
       ok: true,
       json: async () => {
         throw new Error('Parse error')
       },
-    }
+    }))
 
     expect(() => prefetchRoute('/overview', 0)).not.toThrow()
 

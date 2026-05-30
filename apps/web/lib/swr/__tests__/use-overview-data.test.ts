@@ -20,12 +20,8 @@ mock.module('../use-host', () => ({
   useHostId: () => 0,
 }))
 
-mock.module('../api-fetch', () => ({
-  apiFetch: (...args: unknown[]) =>
-    global.fetch(...(args as [RequestInfo | URL, RequestInit?])),
-}))
-
 import { type OverviewData, useOverviewData } from '../use-overview-data'
+import { mockApiFetch } from './shared-mocks'
 
 describe('useOverviewData', () => {
   beforeEach(() => {

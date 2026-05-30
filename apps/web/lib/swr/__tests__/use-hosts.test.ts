@@ -30,15 +30,8 @@ mock.module('@chm/logger', () => ({
   },
 }))
 
-// Mock apiFetch to control responses in fetcher tests
-const mockApiFetch = mock(async () => ({
-  ok: true,
-  json: async () => ({ success: true, data: [] }),
-}))
-
-mock.module('../api-fetch', () => ({
-  apiFetch: mockApiFetch,
-}))
+// Mock apiFetch via shared-mocks
+import { mockApiFetch } from './shared-mocks'
 
 // Mock React hooks. `mock.module('react')` is global AND persists across files
 // in the aggregated `bun test` run, so spread the real module — otherwise every
