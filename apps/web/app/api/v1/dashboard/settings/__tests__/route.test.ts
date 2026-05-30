@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { mockAuthorizeFeatureRequest } from '@/app/api/v1/__tests__/feature-permissions-mock'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
 
@@ -28,10 +29,6 @@ mock.module('@chm/clickhouse-client', () => ({
   ),
 }))
 
-mock.module('@/lib/feature-permissions/server', () => ({
-  authorizeFeatureRequest: () => Promise.resolve(null),
-}))
-
 // ── Import route after mocks ───────────────────────────────────────────────────
 
 let GET: (request: Request) => Promise<Response>
@@ -47,6 +44,10 @@ beforeEach(() => {
   mockGetClient.mockClear()
   mockQuery.mockClear()
   mockCommand.mockClear()
+  mockAuthorizeFeatureRequest.mockClear()
+
+  // Bypass feature permission checks in route tests
+  mockAuthorizeFeatureRequest.mockResolvedValue(null)
 
   mockGetClient.mockResolvedValue({
     query: mockQuery,

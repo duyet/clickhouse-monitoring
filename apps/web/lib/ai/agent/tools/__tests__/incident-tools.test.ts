@@ -1,11 +1,10 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const queryStore: Record<string, unknown[]> = {}
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
+function setupIncidentMocks() {
+  mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (query.includes('system.processes'))
       return { data: queryStore['processes'] ?? [], error: null }
     if (query.includes('system.query_log') && query.includes('toStartOfMinute'))
@@ -33,12 +32,8 @@ mock.module('@chm/clickhouse-client', () => ({
     if (query.includes('system.mutations'))
       return { data: queryStore['mutations'] ?? [], error: null }
     return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
-}))
+  })
+}
 
 const { createIncidentTools } = await import('../incident-tools')
 
@@ -55,6 +50,7 @@ describe('createIncidentTools', () => {
     queryStore['merges'] = [{ active_merges: 3 }]
     queryStore['metrics'] = [{ metric: 'Query', value: 10 }]
     queryStore['ddl'] = []
+    setupIncidentMocks()
 
     const tools = createIncidentTools(0)
     const result = await tools.investigate_incident.execute({
@@ -79,6 +75,7 @@ describe('createIncidentTools', () => {
     queryStore['errors'] = [{ name: 'UNKNOWN', code: 50, value: 10 }]
     queryStore['metrics'] = []
     queryStore['ddl'] = []
+    setupIncidentMocks()
 
     const tools = createIncidentTools(0)
     const result = await tools.investigate_incident.execute({
@@ -98,6 +95,7 @@ describe('createIncidentTools', () => {
     queryStore['zookeeper'] = [{ zk_nodes: 5 }]
     queryStore['metrics'] = []
     queryStore['ddl'] = []
+    setupIncidentMocks()
 
     const tools = createIncidentTools(0)
     const result = await tools.investigate_incident.execute({
@@ -113,6 +111,7 @@ describe('createIncidentTools', () => {
     queryStore['metrics'] = [{ metric: 'MemoryTracking', value: 5000000 }]
     queryStore['text_log'] = []
     queryStore['ddl'] = []
+    setupIncidentMocks()
 
     const tools = createIncidentTools(0)
     const result = await tools.investigate_incident.execute({
@@ -129,6 +128,7 @@ describe('createIncidentTools', () => {
     queryStore['merges'] = [{ active_merges: 2 }]
     queryStore['metrics'] = []
     queryStore['ddl'] = []
+    setupIncidentMocks()
 
     const tools = createIncidentTools(0)
     const result = await tools.investigate_incident.execute({
@@ -142,6 +142,7 @@ describe('createIncidentTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     queryStore['metrics'] = []
     queryStore['ddl'] = []
+    setupIncidentMocks()
 
     const tools = createIncidentTools(0)
     const result = await tools.investigate_incident.execute({
@@ -153,6 +154,8 @@ describe('createIncidentTools', () => {
   })
 
   test('rejects invalid since interval', async () => {
+    setupIncidentMocks()
+
     const tools = createIncidentTools(0)
     const result = await tools.investigate_incident.execute({
       symptom: 'slow_queries',

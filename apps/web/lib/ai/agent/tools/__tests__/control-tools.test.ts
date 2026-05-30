@@ -1,27 +1,11 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const writtenQueries: Array<{
   query: string
   query_params?: Record<string, unknown>
   hostId: number
 }> = []
-
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async (opts: {
-    query: string
-    query_params?: Record<string, unknown>
-    hostId: number
-  }) => {
-    writtenQueries.push(opts)
-    return { data: { status: 'ok' }, error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
-}))
 
 const { createControlTools } = await import('../control-tools')
 
@@ -35,6 +19,17 @@ describe('createControlTools', () => {
 
   test('kill_query sends KILL QUERY with queryId', async () => {
     writtenQueries.length = 0
+    mockFetchData.mockImplementation(
+      async (opts: {
+        query: string
+        query_params?: Record<string, unknown>
+        hostId: number
+      }) => {
+        writtenQueries.push(opts)
+        return { data: { status: 'ok' }, error: null }
+      }
+    )
+
     const tools = createControlTools(0)
     const result = await tools.kill_query.execute({ queryId: 'abc-123' })
 
@@ -45,6 +40,17 @@ describe('createControlTools', () => {
 
   test('kill_query uses hostId override', async () => {
     writtenQueries.length = 0
+    mockFetchData.mockImplementation(
+      async (opts: {
+        query: string
+        query_params?: Record<string, unknown>
+        hostId: number
+      }) => {
+        writtenQueries.push(opts)
+        return { data: { status: 'ok' }, error: null }
+      }
+    )
+
     const tools = createControlTools(0)
     await tools.kill_query.execute({ queryId: 'q1', hostId: 3 })
 
@@ -53,6 +59,17 @@ describe('createControlTools', () => {
 
   test('optimize_table sends OPTIMIZE TABLE without FINAL', async () => {
     writtenQueries.length = 0
+    mockFetchData.mockImplementation(
+      async (opts: {
+        query: string
+        query_params?: Record<string, unknown>
+        hostId: number
+      }) => {
+        writtenQueries.push(opts)
+        return { data: { status: 'ok' }, error: null }
+      }
+    )
+
     const tools = createControlTools(0)
     const result = await tools.optimize_table.execute({
       database: 'my_db',
@@ -65,6 +82,17 @@ describe('createControlTools', () => {
 
   test('optimize_table sends OPTIMIZE TABLE with FINAL', async () => {
     writtenQueries.length = 0
+    mockFetchData.mockImplementation(
+      async (opts: {
+        query: string
+        query_params?: Record<string, unknown>
+        hostId: number
+      }) => {
+        writtenQueries.push(opts)
+        return { data: { status: 'ok' }, error: null }
+      }
+    )
+
     const tools = createControlTools(0)
     await tools.optimize_table.execute({
       database: 'my_db',
@@ -97,6 +125,17 @@ describe('createControlTools', () => {
 
   test('kill_mutation sends KILL MUTATION with params', async () => {
     writtenQueries.length = 0
+    mockFetchData.mockImplementation(
+      async (opts: {
+        query: string
+        query_params?: Record<string, unknown>
+        hostId: number
+      }) => {
+        writtenQueries.push(opts)
+        return { data: { status: 'ok' }, error: null }
+      }
+    )
+
     const tools = createControlTools(0)
     const result = await tools.kill_mutation.execute({
       database: 'analytics',
@@ -115,6 +154,17 @@ describe('createControlTools', () => {
 
   test('kill_mutation uses default hostId when no override', async () => {
     writtenQueries.length = 0
+    mockFetchData.mockImplementation(
+      async (opts: {
+        query: string
+        query_params?: Record<string, unknown>
+        hostId: number
+      }) => {
+        writtenQueries.push(opts)
+        return { data: { status: 'ok' }, error: null }
+      }
+    )
+
     const tools = createControlTools(5)
     await tools.kill_mutation.execute({
       database: 'db',

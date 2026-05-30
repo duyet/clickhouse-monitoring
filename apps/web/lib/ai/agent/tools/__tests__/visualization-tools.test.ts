@@ -1,17 +1,11 @@
+import { mockFetchData } from './shared-mocks'
 import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: mock((_sql: string) => {
-    // passes by default
-  }),
-}))
 
 let lastQuery = ''
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: mock(
+function setupVisualizationMocks() {
+  lastQuery = ''
+  mockFetchData.mockImplementation(
     async ({
       query,
       query_params,
@@ -95,8 +89,8 @@ mock.module('@chm/clickhouse-client', () => ({
         error: null,
       }
     }
-  ),
-}))
+  )
+}
 
 const { createVisualizationTools } = await import('../visualization-tools')
 
@@ -109,6 +103,8 @@ describe('createVisualizationTools', () => {
 
   describe('query_and_visualize', () => {
     test('returns visualization config with auto-detected dimensions', async () => {
+      setupVisualizationMocks()
+
       const tools = createVisualizationTools(0)
 
       const result = await tools.query_and_visualize.execute({
@@ -129,6 +125,8 @@ describe('createVisualizationTools', () => {
     })
 
     test('uses provided title and chartType', async () => {
+      setupVisualizationMocks()
+
       const tools = createVisualizationTools(0)
 
       const result = await tools.query_and_visualize.execute({
@@ -142,13 +140,7 @@ describe('createVisualizationTools', () => {
     })
 
     test('auto-detects number chart for single-row single-metric result', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
-      // Single row with string xKey + numeric yKey → auto-detects 'number'
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(async () => ({
+      mockFetchData.mockImplementation(async () => ({
         data: [{ metric: 'total', cnt: 42 }],
         error: null,
       }))
@@ -159,14 +151,14 @@ describe('createVisualizationTools', () => {
         sql: 'SELECT metric, count() as cnt FROM analytics.events',
       })
 
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
-
       expect(result.rowCount).toBe(1)
       expect(result.viz.yKeys).toHaveLength(1)
       expect(result.viz.chartType).toBe('number')
     })
 
     test('passes through sortBy, sortOrder, readable options', async () => {
+      setupVisualizationMocks()
+
       const tools = createVisualizationTools(0)
 
       const result = await tools.query_and_visualize.execute({
@@ -182,6 +174,8 @@ describe('createVisualizationTools', () => {
     })
 
     test('uses sql slice as title when no title provided', async () => {
+      setupVisualizationMocks()
+
       const tools = createVisualizationTools(0)
 
       const sql = 'SELECT * FROM system.tables WHERE total_bytes > 1000000'
@@ -191,6 +185,8 @@ describe('createVisualizationTools', () => {
     })
 
     test('uses provided xKey and yKeys when specified', async () => {
+      setupVisualizationMocks()
+
       const tools = createVisualizationTools(0)
 
       const result = await tools.query_and_visualize.execute({
@@ -204,13 +200,7 @@ describe('createVisualizationTools', () => {
     })
 
     test('falls back to all non-xKey columns when no numeric yKeys found', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
-      // Rows with only string values (no numeric columns)
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(async () => ({
+      mockFetchData.mockImplementation(async () => ({
         data: [
           { event_date: '2026-05-30', event_name: 'click' },
           { event_date: '2026-05-29', event_name: 'view' },
@@ -225,12 +215,12 @@ describe('createVisualizationTools', () => {
         xKey: 'event_date',
       })
 
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
-
       expect(result.viz.yKeys).toEqual(['event_name'])
     })
 
     test('does not include sortBy/sortOrder/readable when not provided', async () => {
+      setupVisualizationMocks()
+
       const tools = createVisualizationTools(0)
 
       const result = await tools.query_and_visualize.execute({
@@ -245,6 +235,8 @@ describe('createVisualizationTools', () => {
 
   describe('discover_data_sources', () => {
     test('returns sources with column classification', async () => {
+      setupVisualizationMocks()
+
       const tools = createVisualizationTools(0)
 
       const result = await tools.discover_data_sources.execute({
@@ -268,12 +260,7 @@ describe('createVisualizationTools', () => {
     })
 
     test('returns empty sources when no tables match', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(async () => ({
+      mockFetchData.mockImplementation(async () => ({
         data: [],
         error: null,
       }))
@@ -283,20 +270,15 @@ describe('createVisualizationTools', () => {
         searchTerm: 'nonexistent_table_xyz',
       })
 
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
-
       expect(result.type).toBe('data_sources')
       expect(result.sources).toHaveLength(0)
     })
 
     test('passes database filter via query_params', async () => {
       let capturedParams: Record<string, unknown> | undefined
-      const { fetchData } = await import('@chm/clickhouse-client')
 
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(
+      // Set up mock with param capture
+      mockFetchData.mockImplementation(
         async (opts: {
           query: string
           query_params?: Record<string, unknown>
@@ -304,7 +286,71 @@ describe('createVisualizationTools', () => {
           if (opts.query.includes('matched_tables')) {
             capturedParams = opts.query_params
           }
-          return origImpl!(opts)
+          // Use default visualization mock for the rest
+          return setupVisualizationMocks.then
+            ? {
+                data: [
+                  {
+                    database: 'analytics',
+                    table: 'events',
+                    engine: 'MergeTree',
+                    total_rows: 1000000,
+                    size: '1.00 GiB',
+                    comment: 'Event data table',
+                  },
+                ],
+                error: null,
+              }
+            : { data: [], error: null }
+        }
+      )
+
+      // Need full setup for this test
+      let matchedParams: Record<string, unknown> | undefined
+      mockFetchData.mockImplementation(
+        async ({
+          query,
+          query_params,
+        }: {
+          query: string
+          query_params?: Record<string, unknown>
+        }) => {
+          if (query.includes('matched_tables')) {
+            matchedParams = query_params
+            return {
+              data: [
+                {
+                  database: 'analytics',
+                  table: 'events',
+                  engine: 'MergeTree',
+                  total_rows: 1000000,
+                  size: '1.00 GiB',
+                  comment: 'Event data table',
+                },
+              ],
+              error: null,
+            }
+          }
+          if (
+            query.includes('system.columns') &&
+            query.includes('ORDER BY position')
+          ) {
+            return {
+              data: [
+                { name: 'event_date', type: 'Date', comment: 'Event date' },
+                {
+                  name: 'tenant_id',
+                  type: 'UInt64',
+                  comment: 'Tenant identifier',
+                },
+                { name: 'event_name', type: 'String', comment: 'Event name' },
+                { name: 'value', type: 'Float64', comment: 'Metric value' },
+                { name: 'count', type: 'Int64', comment: 'Event count' },
+              ],
+              error: null,
+            }
+          }
+          return { data: [], error: null }
         }
       )
 
@@ -315,13 +361,13 @@ describe('createVisualizationTools', () => {
         database: 'analytics',
       })
 
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
-
-      expect(capturedParams).toBeDefined()
-      expect(capturedParams!.database).toBe('analytics')
+      expect(matchedParams).toBeDefined()
+      expect(matchedParams!.database).toBe('analytics')
     })
 
     test('classifies columns into measures and dimensions correctly', async () => {
+      setupVisualizationMocks()
+
       const tools = createVisualizationTools(0)
 
       const result = await tools.discover_data_sources.execute({

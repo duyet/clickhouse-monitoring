@@ -1,11 +1,10 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const queryStore: Record<string, unknown> = {}
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
+function setupOptimizerMock() {
+  mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (query.startsWith('EXPLAIN PLAN'))
       return {
         data: queryStore['plan'] ?? [{ explain: 'plan ok' }],
@@ -18,24 +17,8 @@ mock.module('@chm/clickhouse-client', () => ({
     if (query.includes('system.data_skipping_indices'))
       return { data: queryStore['skip_indexes'] ?? [], error: null }
     return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
-}))
-
-mock.module('../sql-analysis', () => ({
-  validateAgentSql: (sql: string) => sql.trim(),
-  extractReferencedTables: (_sql: string, defaultDb: string) => [
-    {
-      raw: 'events',
-      database: defaultDb,
-      table: 'events',
-      qualifiedName: `${defaultDb}.events`,
-    },
-  ],
-}))
+  })
+}
 
 const { createOptimizerTools } = await import('../optimizer-tools')
 
@@ -60,6 +43,7 @@ describe('createOptimizerTools', () => {
     queryStore['skip_indexes'] = [
       { name: 'idx1', type_full: 'minmax', granularity: 8192 },
     ]
+    setupOptimizerMock()
 
     const tools = createOptimizerTools(0)
     const result = await tools.analyze_query_optimization.execute({
@@ -91,6 +75,7 @@ describe('createOptimizerTools', () => {
     queryStore['plan'] = []
     queryStore['indexes'] = []
     queryStore['schema'] = []
+    setupOptimizerMock()
 
     const tools = createOptimizerTools(0)
     const result = await tools.analyze_query_optimization.execute({
@@ -106,6 +91,7 @@ describe('createOptimizerTools', () => {
     queryStore['plan'] = []
     queryStore['indexes'] = []
     queryStore['schema'] = []
+    setupOptimizerMock()
 
     const tools = createOptimizerTools(0)
     const result = await tools.analyze_query_optimization.execute({
@@ -121,6 +107,7 @@ describe('createOptimizerTools', () => {
     queryStore['plan'] = []
     queryStore['indexes'] = []
     queryStore['schema'] = []
+    setupOptimizerMock()
 
     const tools = createOptimizerTools(0)
     const result = await tools.analyze_query_optimization.execute({

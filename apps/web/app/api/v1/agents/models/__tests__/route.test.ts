@@ -7,7 +7,11 @@ import {
   mock,
   test,
 } from 'bun:test'
-import { setMockClerkUserId } from '@/__mocks__/clerk-auth-mock'
+import { getClerkUserId, setMockClerkUserId } from '@/__mocks__/clerk-auth-mock'
+import {
+  agentAuthFromEnv,
+  mockAuthorizeFeatureRequest,
+} from '@/app/api/v1/__tests__/feature-permissions-mock'
 
 const originalFetch = globalThis.fetch
 const AGENT_API_TOKEN = 'test-agent-token'
@@ -26,6 +30,11 @@ beforeEach(() => {
   delete process.env.CHM_AUTH_PROVIDER
   delete process.env.CHM_FEATURE_AGENT_ACCESS
   setMockClerkUserId(null)
+
+  // Use agent auth mock that reads env vars and Clerk auth state
+  mockAuthorizeFeatureRequest.mockImplementation(
+    agentAuthFromEnv(getClerkUserId, AGENT_API_TOKEN)
+  )
 })
 
 afterEach(() => {

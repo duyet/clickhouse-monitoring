@@ -21,6 +21,11 @@ export function setMockClerkUserId(userId: string | null): void {
   state.userId = userId
 }
 
+/** Get the current mock Clerk userId (for composing with other mocks). */
+export function getClerkUserId(): string | null {
+  return state.userId
+}
+
 mock.module('@clerk/nextjs/server', () => ({
   auth: async () => ({ userId: state.userId }),
 }))

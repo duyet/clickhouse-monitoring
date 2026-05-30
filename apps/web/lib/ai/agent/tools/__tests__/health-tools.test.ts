@@ -1,11 +1,12 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const queryStore: Record<string, unknown[]> = {}
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
+const { createHealthTools } = await import('../health-tools')
+
+function setupHealthMock() {
+  mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (query.includes('version()'))
       return { data: queryStore['version'] ?? [], error: null }
     if (query.includes('uptime()'))
@@ -21,14 +22,8 @@ mock.module('@chm/clickhouse-client', () => ({
     if (query.includes('system.crash_log'))
       return { data: queryStore['crash'] ?? [], error: null }
     return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
-}))
-
-const { createHealthTools } = await import('../health-tools')
+  })
+}
 
 describe('createHealthTools', () => {
   test('creates all health tools', () => {
@@ -49,6 +44,7 @@ describe('createHealthTools', () => {
       { metric: 'HTTPConnection', value: 10 },
       { metric: 'MemoryTracking', value: 1000000 },
     ]
+    setupHealthMock()
 
     const tools = createHealthTools(0)
     const result = await tools.get_metrics.execute({})
@@ -62,6 +58,7 @@ describe('createHealthTools', () => {
 
   test('get_metrics handles empty data', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
+    setupHealthMock()
 
     const tools = createHealthTools(0)
     const result = await tools.get_metrics.execute({})
@@ -77,6 +74,7 @@ describe('createHealthTools', () => {
       { metric: 'LoadAverage1', value: 2.5 },
       { metric: 'OSMemoryTotal', value: 32000000000 },
     ]
+    setupHealthMock()
 
     const tools = createHealthTools(0)
     const result = await tools.get_system_resources.execute({})
@@ -99,6 +97,7 @@ describe('createHealthTools', () => {
         free_pct: 80,
       },
     ]
+    setupHealthMock()
 
     const tools = createHealthTools(0)
     const result = await tools.get_disk_usage.execute({})
@@ -124,6 +123,7 @@ describe('createHealthTools', () => {
         last_message: 'something broke',
       },
     ]
+    setupHealthMock()
 
     const tools = createHealthTools(0)
     const result = await tools.get_errors.execute({})
@@ -137,6 +137,7 @@ describe('createHealthTools', () => {
     queryStore['crash'] = [
       { event_time: '2024-01-01', signal: 11, thread_id: 1, trace: 'stack...' },
     ]
+    setupHealthMock()
 
     const tools = createHealthTools(0)
     const result = await tools.get_crash_log.execute({})
@@ -148,6 +149,7 @@ describe('createHealthTools', () => {
   test('get_errors respects custom limit', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     queryStore['errors'] = [{ name: 'E1' }, { name: 'E2' }]
+    setupHealthMock()
 
     const tools = createHealthTools(0)
     const result = await tools.get_errors.execute({ limit: 1 })
@@ -158,6 +160,7 @@ describe('createHealthTools', () => {
   test('get_crash_log respects custom limit', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     queryStore['crash'] = [{ event_time: '2024-01-01' }]
+    setupHealthMock()
 
     const tools = createHealthTools(0)
     const result = await tools.get_crash_log.execute({ limit: 5 })
@@ -167,8 +170,9 @@ describe('createHealthTools', () => {
 
   test('tools resolve hostId override', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    const tools = createHealthTools(0)
+    setupHealthMock()
 
+    const tools = createHealthTools(0)
     const result = await tools.get_disk_usage.execute({ hostId: 3 })
     expect(Array.isArray(result)).toBe(true)
   })
