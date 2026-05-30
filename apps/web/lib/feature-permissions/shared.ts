@@ -89,6 +89,19 @@ export function isFeatureAllowed(
     return config.principal === 'authenticated'
   }
 
+  // Interaction-gated features (e.g. the agent) render their UI for everyone
+  // but require sign-in to actually use. When an auth provider is active and
+  // the visitor is anonymous, hide them from the menu instead of advertising a
+  // feature they can't use without logging in. With no auth provider everyone
+  // is anonymous yet no sign-in is possible, so keep them visible.
+  if (
+    permission?.interactionGated &&
+    config.authProvider !== 'none' &&
+    config.principal !== 'authenticated'
+  ) {
+    return false
+  }
+
   return true
 }
 
