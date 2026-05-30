@@ -3,7 +3,6 @@
 import {
   ChevronDown,
   ChevronRight,
-  ChevronUp,
   CircleX,
   Clock,
   Code2,
@@ -27,6 +26,9 @@ import {
 import { toast } from 'sonner'
 
 import { memo, useCallback, useMemo, useState } from 'react'
+import { DetailField } from '@/components/query-tables/detail-field'
+import { formatDuration } from '@/components/query-tables/format-duration'
+import { SortableHeader } from '@/components/query-tables/sortable-header'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -158,15 +160,6 @@ function profileEvent(events: unknown, key: string): number {
     return Number.isFinite(n) ? n : 0
   }
   return 0
-}
-
-/** Compact elapsed time as a `{value, unit}` pair, e.g. `28.1 s`, `4.2 m`. */
-function formatDuration(elapsed: number): { value: string; unit: string } {
-  if (!Number.isFinite(elapsed) || elapsed < 0)
-    return { value: '0.0', unit: 's' }
-  if (elapsed < 60) return { value: elapsed.toFixed(1), unit: 's' }
-  if (elapsed < 3600) return { value: (elapsed / 60).toFixed(1), unit: 'm' }
-  return { value: (elapsed / 3600).toFixed(1), unit: 'h' }
 }
 
 // ───────────────────────── derived row ─────────────────────────
@@ -402,94 +395,7 @@ function CpuMeter({ pct }: { pct: number }) {
   )
 }
 
-interface SortableHeaderProps {
-  children: React.ReactNode
-  align?: 'left' | 'right'
-  width?: string
-  className?: string
-  sortKey?: SortKey
-  activeKey?: SortKey
-  dir?: SortDir
-  onSort?: (key: SortKey) => void
-}
-
-/** Table header cell with an optional click-to-sort affordance. */
-function SortableHeader({
-  children,
-  align = 'left',
-  width,
-  className,
-  sortKey,
-  activeKey,
-  dir,
-  onSort,
-}: SortableHeaderProps) {
-  const active = sortKey != null && sortKey === activeKey
-  return (
-    <th
-      className={cn(
-        'select-none whitespace-nowrap px-2 py-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground sm:px-3',
-        align === 'right' ? 'text-right' : 'text-left',
-        className
-      )}
-      style={width ? { width } : undefined}
-    >
-      {sortKey && onSort ? (
-        <button
-          type="button"
-          onClick={() => onSort(sortKey)}
-          className={cn(
-            'inline-flex items-center gap-1 transition-colors hover:text-foreground',
-            align === 'right' && 'flex-row-reverse'
-          )}
-        >
-          {children}
-          {active ? (
-            dir === 'desc' ? (
-              <ChevronDown className="size-3 text-foreground" />
-            ) : (
-              <ChevronUp className="size-3 text-foreground" />
-            )
-          ) : (
-            <ChevronDown className="size-3 opacity-30" />
-          )}
-        </button>
-      ) : (
-        children
-      )}
-    </th>
-  )
-}
-
 // ───────────────────────── expanded row ─────────────────────────
-
-/** A labelled value in the expandable execution-details grid. */
-function DetailField({
-  label,
-  value,
-  mono = true,
-}: {
-  label: string
-  value: React.ReactNode
-  mono?: boolean
-}) {
-  return (
-    <div className="min-w-0 border-l border-t border-border px-3 py-2">
-      <dt className="text-[10px] font-semibold uppercase leading-tight tracking-wider text-muted-foreground">
-        {label}
-      </dt>
-      <dd
-        className={cn(
-          'mt-0.5 truncate text-[12.5px] font-medium tabular-nums',
-          mono && 'font-mono'
-        )}
-        title={typeof value === 'string' ? value : undefined}
-      >
-        {value || '—'}
-      </dd>
-    </div>
-  )
-}
 
 interface ExpandedRowProps {
   d: DerivedQuery
