@@ -152,6 +152,14 @@ export const menuItemsConfig: MenuItem[] = [
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_thread_log',
       },
+      {
+        title: 'User Processes',
+        href: '/user-processes',
+        description: 'Per-user memory usage and resource summary',
+        icon: UsersIcon,
+        isNew: true,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/user_processes',
+      },
     ],
   },
   {

@@ -82,6 +82,7 @@ import { replicasConfig } from './tables/replicas'
 import { replicatedFetchesConfig } from './tables/replicated-fetches'
 import { replicationQueueConfig } from './tables/replication-queue'
 import { tablesOverviewConfig } from './tables/tables-overview'
+import { userProcessesConfig } from './tables/user-processes'
 import { viewRefreshesConfig } from './tables/view-refreshes'
 export const queries: Array<QueryConfig> = [
   // Explorer
@@ -117,6 +118,7 @@ export const queries: Array<QueryConfig> = [
   expensiveQueriesConfig,
   expensiveQueriesByMemoryConfig,
   slowQueriesConfig,
+  userProcessesConfig,
 
   // Merges
   mergesConfig,
