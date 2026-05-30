@@ -9,6 +9,7 @@ import {
   CaretSortIcon,
   CaretUpIcon,
 } from '@radix-ui/react-icons'
+import { MoreHorizontal } from 'lucide-react'
 import type { Column, RowData } from '@tanstack/react-table'
 
 import type { Icon } from '@chm/types/icon'
@@ -60,7 +61,12 @@ function HeaderContent({
   icon?: Icon
 }) {
   if (format === 'action') {
-    return <span className="text-muted-foreground/60">actions</span>
+    return (
+      <span className="inline-flex items-center text-muted-foreground/60">
+        <MoreHorizontal className="size-3.5 shrink-0" aria-hidden="true" />
+        <span className="sr-only">Actions</span>
+      </span>
+    )
   }
 
   return (

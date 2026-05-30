@@ -8,6 +8,37 @@ export const failedQueriesConfig: QueryConfig = {
   description: "type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']",
   docs: QUERY_LOG,
   tableCheck: 'system.query_log',
+  defaultParams: {
+    type: '',
+    last_hours: '336',
+  },
+  filterParamPresets: [
+    {
+      name: 'Exception before start',
+      key: 'type',
+      value: 'ExceptionBeforeStart',
+    },
+    {
+      name: 'Exception while processing',
+      key: 'type',
+      value: 'ExceptionWhileProcessing',
+    },
+    {
+      name: 'Last 1 hour',
+      key: 'last_hours',
+      value: '1',
+    },
+    {
+      name: 'Last 24 hours',
+      key: 'last_hours',
+      value: '24',
+    },
+    {
+      name: 'Last 7 days',
+      key: 'last_hours',
+      value: '168',
+    },
+  ],
   sql: [
     {
       since: '23.8',
@@ -48,6 +79,8 @@ export const failedQueriesConfig: QueryConfig = {
             Settings
         FROM system.query_log
         WHERE type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
+            AND ({type:String} = '' OR type = {type:String})
+            AND event_time > now() - interval {last_hours:UInt64} hour
         ORDER BY query_start_time DESC
         LIMIT 1000
       `,
@@ -92,6 +125,8 @@ export const failedQueriesConfig: QueryConfig = {
             Settings
         FROM system.query_log
         WHERE type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
+            AND ({type:String} = '' OR type = {type:String})
+            AND event_time > now() - interval {last_hours:UInt64} hour
         ORDER BY query_start_time DESC
         LIMIT 1000
       `,
