@@ -31,6 +31,7 @@ import {
   ShieldAlertIcon,
   ShieldIcon,
   SparklesIcon,
+  Trash2Icon,
   TrendingUpIcon,
   UngroupIcon,
   UnplugIcon,
@@ -211,6 +212,14 @@ export const menuItemsConfig: MenuItem[] = [
         countVariant: 'destructive',
         icon: ExclamationTriangleIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/replicas',
+      },
+      {
+        title: 'Dropped Tables',
+        href: '/dropped-tables',
+        description:
+          'Tables awaiting final asynchronous drop (Atomic database engine)',
+        icon: Trash2Icon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/dropped_tables',
       },
       {
         title: 'Dictionaries',
