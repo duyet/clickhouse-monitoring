@@ -69,6 +69,7 @@ import {
   clustersReplicasStatusConfig,
   replicaTablesConfig,
 } from './system/replicas-status'
+import { replicatedMergeTreeSettingsConfig } from './system/replicated-merge-tree-settings'
 import { warningsConfig } from './system/warnings'
 import { detachedPartsConfig } from './tables/detached-parts'
 import { distributedDdlQueueConfig } from './tables/distributed-ddl-queue'
@@ -125,6 +126,7 @@ export const queries: Array<QueryConfig> = [
   // Settings
   settingsConfig,
   mergeTreeSettingsConfig,
+  replicatedMergeTreeSettingsConfig,
 
   // Top Usage
   topUsageTablesConfig,

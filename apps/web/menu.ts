@@ -33,6 +33,7 @@ import {
   ScrollTextIcon,
   ShieldAlertIcon,
   ShieldIcon,
+  SlidersHorizontalIcon,
   SparklesIcon,
   Trash2Icon,
   TrendingUpIcon,
@@ -507,6 +508,14 @@ export const menuItemsConfig: MenuItem[] = [
         icon: TableIcon,
         permission: { feature: 'settings' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/merge_tree_settings',
+      },
+      {
+        title: 'Replicated MergeTree Settings',
+        href: '/replicated-merge-tree-settings',
+        description:
+          'Replicated MergeTree engine settings and whether each was changed from default',
+        icon: SlidersHorizontalIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/replicated_merge_tree_settings',
       },
       {
         title: 'Disks',
