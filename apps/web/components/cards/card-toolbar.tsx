@@ -19,6 +19,7 @@ import type { ChartDataPoint } from '@/types/chart-data'
 
 import { useState } from 'react'
 import { format } from 'sql-formatter'
+import { ChartCsvExportButton } from '@/components/cards/chart-csv-export-button'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -87,6 +88,8 @@ export interface CardToolbarProps {
   metadata?: CardToolbarMetadata
   /** Always show the button (not just on hover) */
   alwaysVisible?: boolean
+  /** Human-readable label used to name the CSV export download */
+  filename?: string
 }
 
 /**
@@ -140,6 +143,7 @@ export const CardToolbar = function CardToolbar({
   data,
   metadata,
   alwaysVisible = false,
+  filename,
 }: CardToolbarProps) {
   const [showRequestInfo, setShowRequestInfo] = useState(false)
   const [showData, setShowData] = useState(false)
@@ -204,6 +208,13 @@ export const CardToolbar = function CardToolbar({
 
   return (
     <>
+      {hasData && (
+        <ChartCsvExportButton
+          data={data as ChartDataPoint[] | Record<string, unknown>[]}
+          filename={filename}
+          alwaysVisible={alwaysVisible}
+        />
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
