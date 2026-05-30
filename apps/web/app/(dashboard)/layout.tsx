@@ -15,6 +15,7 @@ import { GlobalAssistantModal } from '@/components/assistant-ui/global-assistant
 import { ClerkAuthProvider } from '@/components/clerk/clerk-auth-provider'
 import { KeyboardShortcuts } from '@/components/controls/keyboard-shortcuts'
 import { HeaderActions } from '@/components/header/header-actions'
+import { FirstRunGate } from '@/components/host/first-run-gate'
 import { Breadcrumb } from '@/components/navigation/breadcrumb'
 import { ResizableSidebarProvider } from '@/components/resizable-sidebar-provider'
 import { DynamicTitle } from '@/components/status/dynamic-title'
@@ -132,7 +133,7 @@ export default function RootLayout({
                   </div>
                 </header>
                 <div className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-3 pt-0 sm:gap-4 sm:p-4 sm:pt-0">
-                  {children}
+                  <FirstRunGate>{children}</FirstRunGate>
                 </div>
               </SidebarInset>
             </ResizableSidebarProvider>

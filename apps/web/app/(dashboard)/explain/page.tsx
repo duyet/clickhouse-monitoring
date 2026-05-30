@@ -15,6 +15,7 @@ import { ChartSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
@@ -370,6 +371,18 @@ function ExplainContent() {
             >
               {data.data.map((row) => row.explain).join('\n')}
             </pre>
+          </CardContent>
+        </Card>
+      )}
+
+      {queryToExplain && !isLoading && !error && data?.data?.length === 0 && (
+        <Card>
+          <CardContent className="py-8">
+            <EmptyState
+              variant="no-data"
+              title="No plan to display"
+              description="The query was explained successfully but returned no plan output. Try a different EXPLAIN mode or adjust the query."
+            />
           </CardContent>
         </Card>
       )}
